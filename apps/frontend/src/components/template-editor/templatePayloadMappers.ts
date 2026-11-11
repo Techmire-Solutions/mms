@@ -74,28 +74,34 @@ export function mapToTypstReportCard(
   const subjects = subjectsRaw.map((subj) => {
     const s = (typeof subj === "object" && subj !== null ? subj : {}) as Record<string, unknown>;
     return {
-      name: String(s.name ?? "Subject"),
-      maxMarks: Number(s.maxMarks ?? 100),
+      name: String(s.name ?? ""),
+      maxMarks: Number(s.maxMarks ?? 0),
       obtainedMarks: Number(s.obtainedMarks ?? 0),
       grade: String(s.grade ?? "-"),
       remarks: String(s.remarks ?? ""),
     };
   });
 
+  // Unknown values print empty. The previous defaults invented a 100% attendance, an "excellent"
+  // remark and an Arabic name/term, which turned a missing datum into a false statement on a
+  // printed transcript (and in the JSON payload the template editor exports).
   const rawPayload = {
-    institution: String(data.institution ?? data.madrasaName ?? "Madrasa Management System"),
-    studentName: String(data.studentName ?? "الطالب"),
-    rollNumber: String(data.rollNumber ?? data.rollNo ?? "-"),
-    className: String(data.className ?? "-"),
-    term: String(data.term ?? "نهاية الفصل الدراسي"),
-    academicYear: String(data.academicYear ?? "1447-1448"),
+    institution: String(data.institution ?? data.madrasaName ?? ""),
+    studentName: String(data.studentName ?? ""),
+    rollNumber: String(data.rollNumber ?? data.rollNo ?? ""),
+    className: String(data.className ?? ""),
+    term: String(data.term ?? ""),
+    academicYear: String(data.academicYear ?? ""),
     subjects,
     totalMarks: Number(data.totalMarks ?? 0),
     obtainedMarks: Number(data.obtainedMarks ?? 0),
-    percentage: String(data.percentage ?? "0%"),
-    grade: String(data.grade ?? "ممتاز"),
-    attendance: String(data.attendance ?? "100%"),
-    remarks: String(data.remarks ?? "مستوى ممتاز وتقدم ملحوظ"),
+    percentage: String(data.percentage ?? ""),
+    // Never invent an "excellent" grade for a missing value; print "-" instead.
+    grade: String(data.grade ?? "-"),
+    ...(data.rank !== undefined && data.rank !== null ? { rank: String(data.rank) } : {}),
+    ...(typeof data.classSize === "number" ? { classSize: data.classSize } : {}),
+    attendance: String(data.attendance ?? ""),
+    remarks: String(data.remarks ?? ""),
   };
 
   return typstReportCardPayloadSchema.parse(rawPayload);

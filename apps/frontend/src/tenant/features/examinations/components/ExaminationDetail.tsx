@@ -72,7 +72,13 @@ export const ExaminationDetail = function ExaminationDetail({
           </DetailSectionCard>
         )}
 
-        {!isArchived && <ExamEligibilitySection examId={exam.id} canManage={canDelete} />}
+        {!isArchived && (
+          <ExamEligibilitySection
+            examId={exam.id}
+            canManage={canDelete}
+            resultsFinalizedAt={exam.resultsFinalizedAt ?? null}
+          />
+        )}
       </div>
     </DetailDrawerShell>
   );

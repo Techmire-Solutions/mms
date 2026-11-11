@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Printer, FileCode2 } from "lucide-react";
+import { Printer } from "lucide-react";
 import { getRankSuffix } from "@/tenant/features/examinations/lib/gradeUtils";
 import { type StudentResultItem } from "@/tenant/features/examinations/components/StudentResultCard";
 import { type Exam } from "@/lib/data/examinationData";
@@ -9,10 +9,7 @@ import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/app/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  printHtmlDocument,
-  exportTypstReportCard,
-} from "@/tenant/features/examinations/lib/certificatePrintWindow";
+import { printHtmlDocument } from "@/tenant/features/examinations/lib/certificatePrintWindow";
 
 export interface CertificatePreviewProps {
   result: StudentResultItem;
@@ -30,9 +27,10 @@ export function CertificatePreview({
 }: CertificatePreviewProps): React.JSX.Element {
   const certRef = useRef<HTMLDivElement | null>(null);
   const { primary, secondary } = useBrandPalette();
-  const { t } = useTranslation();
+  const { t, language, isRtl } = useTranslation();
 
-  const rankLabel = getRankSuffix(result.rank);
+  // Class position (the rank inside the student's own class), not the exam-wide rank.
+  const rankLabel = getRankSuffix(result.classRank ?? result.rank);
   const date = formatDate(exam.date, true);
 
   const handlePrint = () => {
@@ -40,11 +38,9 @@ export function CertificatePreview({
     const title = t("examinations.certificatePreview.windowTitle", {
       name: result.student?.name || t("examinations.certificatePreview.studentFallback"),
     });
-    printHtmlDocument(title, certRef.current.innerHTML);
-  };
-
-  const handleExportTypst = () => {
-    exportTypstReportCard(result, exam, rankLabel);
+    // The template print path sets lang/dir/@page; this legacy certificate must match it or an
+    // Arabic/Urdu certificate prints LTR in the wrong font at the wrong paper size.
+    printHtmlDocument(title, certRef.current.innerHTML, { language, isRtl });
   };
 
   return (
@@ -55,16 +51,6 @@ export function CertificatePreview({
       size="lg"
       headerActions={
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleExportTypst}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold cursor-pointer"
-            title={t("examinations.certificatePreview.exportTypstTooltip")}
-          >
-            <FileCode2 className="w-3.5 h-3.5 text-info" aria-hidden="true" />
-            <span>{t("templateEditor.typst")}</span>
-          </Button>
           <Button
             type="button"
             onClick={handlePrint}

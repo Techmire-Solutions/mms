@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
+import { MAX_MARKS_OBTAINED } from "@mms/shared";
 import { notify } from "@/lib/notify";
 import { type Exam } from "@/lib/data/examinationData";
 import { toTitleCase } from "@mms/shared";
@@ -76,6 +77,9 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
     }
     if (Number(examDraft.passingMarks) > Number(examDraft.totalMarks)) {
       newErrors.passingMarks = t("examinations.form.validation.passingExceedsTotal");
+    }
+    if (Number(examDraft.totalMarks) > MAX_MARKS_OBTAINED) {
+      newErrors.totalMarks = t("examinations.form.validation.totalTooLarge");
     }
 
     if (Object.keys(newErrors).length > 0) {

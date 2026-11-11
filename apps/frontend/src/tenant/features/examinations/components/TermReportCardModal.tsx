@@ -7,6 +7,7 @@
  */
 
 import React, { useMemo, useRef, useState } from "react";
+import { resolveResultScore } from "@mms/shared";
 import { FileStack, Printer } from "lucide-react";
 import { formatDate, getPageDimensions } from "@mms/shared";
 import { Modal } from "@/components/app/Modal";
@@ -162,10 +163,12 @@ export function TermReportCardModal({
             />
             <div role="group" aria-label={t("examinations.termReportCard.papers")}>
               {papers.map(({ exam, result: paperResult }) => {
-                const pct =
-                  exam.totalMarks > 0
-                    ? Math.round((paperResult.marksObtained / exam.totalMarks) * 100)
-                    : 0;
+                const pct = resolveResultScore({
+                  marksObtained: paperResult.marksObtained,
+                  totalMarks: exam.totalMarks,
+                  passingMarks: exam.passingMarks,
+                  graceMarks: "graceMarks" in paperResult ? paperResult.graceMarks : undefined,
+                }).displayPercentage;
                 return (
                   <CheckboxField
                     key={exam.id}

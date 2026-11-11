@@ -20,9 +20,47 @@ export const examinationsReportComparisonSchema = z.object({
   }),
 });
 
+export const examinationsReportSubjectPassRateSchema = z.object({
+  subject: z.string(),
+  total: z.number().nonnegative(),
+  passed: z.number().nonnegative(),
+  passRatePct: z.number().nonnegative().max(100),
+});
+
+export const examinationsReportGradeBucketSchema = z.object({
+  grade: z.string(),
+  count: z.number().nonnegative(),
+});
+
+export const examinationsReportTopPerformerSchema = z.object({
+  studentId: z.string(),
+  averagePct: z.number().nonnegative().max(100),
+  exams: z.number().nonnegative(),
+});
+
+/** Class/section averages (the section name is the class the roster is enrolled in). */
+export const examinationsReportSectionAverageSchema = z.object({
+  label: z.string(),
+  total: z.number().nonnegative(),
+  averagePct: z.number().nonnegative().max(100),
+});
+
+/**
+ * Always-computed analytics (not tied to ComparisonMode): subject pass/fail, grade distribution,
+ * top performers and section averages. These were previously computed in the browser from a capped
+ * marks page, which silently truncated at 10,000 rows.
+ */
+export const examinationsReportAnalyticsSchema = z.object({
+  subjectPassRates: z.array(examinationsReportSubjectPassRateSchema),
+  gradeDistribution: z.array(examinationsReportGradeBucketSchema),
+  topPerformers: z.array(examinationsReportTopPerformerSchema),
+  sectionAverages: z.array(examinationsReportSectionAverageSchema),
+});
+
 /** ComparisonMode examinations aggregates (optional comparison slice). */
 export const examinationsReportAggregatesSchema = z.object({
   comparison: examinationsReportComparisonSchema.optional(),
+  analytics: examinationsReportAnalyticsSchema.optional(),
 });
 
 export type ExaminationsReportComparisonSession = z.infer<
@@ -33,6 +71,7 @@ export type ExaminationsReportComparisonMonth = z.infer<
 >;
 export type ExaminationsReportComparison = z.infer<typeof examinationsReportComparisonSchema>;
 export type ExaminationsReportAggregates = z.infer<typeof examinationsReportAggregatesSchema>;
+export type ExaminationsReportAnalytics = z.infer<typeof examinationsReportAnalyticsSchema>;
 
 import {
   type BaseReportComparisonQuery,

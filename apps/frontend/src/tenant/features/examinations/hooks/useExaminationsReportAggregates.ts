@@ -3,16 +3,14 @@ import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import {
-  EXAMINATIONS_MODULE_MANIFEST,
   normalizeExaminationsReportComparisonQuery,
   type ExaminationsReportComparisonQuery,
   type ExaminationsReportAggregates,
 } from "@mms/shared";
 
-export const EXAMINATIONS_REPORT_AGGREGATES_QUERY_KEY = [
-  EXAMINATIONS_MODULE_MANIFEST.collectionKey,
-  "report-aggregates",
-] as const;
+import { EXAMINATIONS_REPORT_AGGREGATES_QUERY_KEY } from "./examinationsQueryKeys";
+
+export { EXAMINATIONS_REPORT_AGGREGATES_QUERY_KEY };
 
 export function useExaminationsReportAggregates(options?: {
   enabled?: boolean;

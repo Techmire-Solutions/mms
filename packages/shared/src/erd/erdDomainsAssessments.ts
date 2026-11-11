@@ -30,7 +30,8 @@ export const ERD_DOMAIN_EXAMINATIONS: ErdDomain = {
         { name: "id", type: "text", kind: "pk" },
         { name: "exam_id", type: "text", kind: "fk" },
         { name: "student_id", type: "varchar(64)", kind: "fk" },
-        { name: "marks_obtained", type: "integer", kind: "column" },
+        { name: "marks_obtained", type: "numeric(8,2)", kind: "column" },
+        { name: "version", type: "integer", kind: "column" },
       ],
     },
     {

@@ -62,7 +62,7 @@ export async function loadSessionCompletionFacts(
         ) att ON true
         LEFT JOIN LATERAL (
           SELECT count(DISTINCT x.id) AS total, count(r.id) AS taken,
-                 count(r.id) FILTER (WHERE r.marks_obtained >= x.passing_marks) AS passed
+                 count(r.id) FILTER (WHERE r.marks_obtained + COALESCE(r.grace_marks, 0) >= x.passing_marks) AS passed
             FROM exam_classes ec
             JOIN exams x ON x.workspace_subdomain = ec.workspace_subdomain AND x.id = ec.exam_id
              AND x.deleted_at IS NULL

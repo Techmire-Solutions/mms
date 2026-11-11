@@ -2,7 +2,7 @@ import type { ExamResult, User } from "@mms/shared";
 import { examEligibilityRepository as repo } from "../repository/examEligibilityAdapter.js";
 import { examinationsUseCases } from "./examinationsUseCases.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
-import { HttpDomainError } from "../../lib/httpErrors.js";
+import { HttpDomainError, NotFoundError } from "../../lib/httpErrors.js";
 
 /**
  * Exam eligibility gate for result entry.
@@ -27,7 +27,18 @@ export async function assertExamResultsEligible(
   if (!tenant || results.length === 0) return;
 
   const examIds = [...new Set(results.map((result) => result.examId).filter(Boolean))];
-  const exams = await examinationsUseCases.loadExamsByIds(examIds);
+  if (examIds.length === 0) return;
+
+  /**
+   * Two queries for the whole batch, not 6–7 per exam:
+   * the exams (for the marks bound) and one batched eligibility read (roster + attendance +
+   * overrides + the effective gate). The roster is the seat-holding enrollment set, so a withdrawn
+   * student is rejected instead of silently skipped.
+   */
+  const [exams, eligibilityByExam] = await Promise.all([
+    examinationsUseCases.loadExamsByIds(examIds),
+    repo.loadExamEligibilityBatch(tenant, examIds),
+  ]);
   const examsById = new Map(exams.map((exam) => [exam.id, exam]));
 
   const blocked: BlockedStudent[] = [];
@@ -37,8 +48,11 @@ export async function assertExamResultsEligible(
 
   for (const examId of examIds) {
     const exam = examsById.get(examId);
-    const rows = results.filter((result) => result.examId === examId);
     if (!exam) continue;
+    const rows = results.filter((result) => result.examId === examId);
+    const view = eligibilityByExam.get(examId);
+    const roster = view?.rows ?? [];
+    const rosterIds = new Set(roster.map((row) => row.studentId));
 
     // Marks sanity: the DB cannot compare against the exam's total, so the app must.
     for (const result of rows) {
@@ -46,34 +60,23 @@ export async function assertExamResultsEligible(
       if (!Number.isFinite(marks) || marks < 0 || marks > exam.totalMarks) {
         overMarks.push(`${result.studentId} (${marks}/${exam.totalMarks})`);
       }
-    }
-
-    const classIds = await repo.findExamClassIds(tenant, examId);
-    const enrolled = await repo.listEnrolledStudentIds(tenant, classIds);
-    for (const result of rows) {
-      if (!enrolled.has(result.studentId)) {
+      if (!rosterIds.has(String(result.studentId))) {
         notEnrolled.push(`${result.studentId} @ ${examId}`);
       }
     }
 
-    const eligibility = await repo.loadExamEligibility(tenant, examId);
-    if (eligibility.requiredPct === null) continue;
+    if (!view || view.requiredPct === null) continue;
 
-    const overrides = await repo.listActiveOverrides(
-      tenant,
-      [examId],
-      rows.map((result) => result.studentId),
-    );
-    const byStudent = new Map(eligibility.rows.map((row) => [row.studentId, row]));
+    const byStudent = new Map(roster.map((row) => [row.studentId, row]));
     for (const result of rows) {
-      if (overrides.has(`${examId}|${result.studentId}`)) continue;
-      const row = byStudent.get(result.studentId);
+      const row = byStudent.get(String(result.studentId));
+      // Unknown roster membership was already reported as `notEnrolled` above — never skipped.
       if (!row) continue;
       if (row.state === "blocked") {
         blocked.push({
           studentId: result.studentId,
           attendancePct: row.attendancePct,
-          requiredPct: row.requiredPct ?? eligibility.requiredPct,
+          requiredPct: row.requiredPct ?? view.requiredPct,
           state: row.state,
         });
       } else if (row.state === "unknown") {
@@ -129,6 +132,21 @@ export async function configureExamAttendanceGate(
   return repo.setExamAttendanceGate(tenant, input);
 }
 
+/** Revokes an audited eligibility override (evidence kept, reason audited). */
+export async function revokeExamEligibilityOverride(
+  tenant: string,
+  input: { examId: string; studentId: string; reason: string; actorId: string },
+) {
+  const revoked = await repo.revokeEligibilityOverride(tenant, {
+    examId: input.examId,
+    studentId: input.studentId,
+    reason: input.reason,
+    revokedBy: input.actorId,
+  });
+  if (!revoked) throw new NotFoundError("No active eligibility override to revoke");
+  return { success: true as const };
+}
+
 /** Grants an audited eligibility override for a blocked student. */
 export async function grantExamEligibilityOverride(
   tenant: string,
@@ -137,10 +155,5 @@ export async function grantExamEligibilityOverride(
   return repo.grantEligibilityOverride(tenant, input);
 }
 
-/** Stamps results finalisation on the exam to unblock session completion. */
-export async function updateExamResultsFinalized(
-  tenant: string,
-  input: { examId: string; finalized: boolean; actorId: string },
-) {
-  return repo.setExamResultsFinalized(tenant, input);
-}
+// Publication/un-publication moved to `examLifecycleUseCases.ts`: those are lifecycle transitions
+// that need preconditions and an audited unlock reason, not a thin repository passthrough.

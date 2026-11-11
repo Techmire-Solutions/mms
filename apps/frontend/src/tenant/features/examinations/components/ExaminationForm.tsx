@@ -52,6 +52,7 @@ const ExamForm = function ExamForm({
           t={form.t}
           errors={form.errors}
           examDraft={form.examDraft}
+          exam={form.exam}
           classes={form.classes}
           updateDraft={form.updateDraft}
           getFieldError={form.getFieldError}

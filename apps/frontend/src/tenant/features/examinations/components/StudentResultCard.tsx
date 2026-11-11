@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Award, FileStack, Printer } from "lucide-react";
+
 import { getRankSuffix, type GradeInfo } from "@/tenant/features/examinations/lib/gradeUtils";
 import { type Exam } from "@/lib/data/examinationData";
 import { formatDate } from "@mms/shared";
@@ -22,12 +23,27 @@ import {
 import { buildReportCardPayload } from "@/tenant/features/examinations/lib/reportCardPayload";
 import type { StudentExamPaper } from "@/tenant/features/examinations/lib/studentExamPapers";
 import { TermReportCardModal } from "@/tenant/features/examinations/components/TermReportCardModal";
+import { ExamResultModerationPanel } from "@/tenant/features/examinations/components/ExamResultModerationPanel";
 
 export interface StudentResultItem {
+  /** Mark row identity — required by the moderation action. */
+  id?: string;
+  studentId?: string;
   pct: number;
+  percentage?: number;
   grade: GradeInfo;
   rank: number;
+  /** Position inside the student's own class; falls back to the exam-wide rank. */
+  classRank?: number;
+  classPosition?: number;
+  classSize?: number;
+  overallSize?: number;
   marksObtained: number;
+  graceMarks?: number;
+  moderationReason?: string | null;
+  version?: number;
+  /** Effective score (marks + grace) from the scoring engine. */
+  effectiveMarks?: number;
   passed: boolean;
   student?: {
     name: string;
@@ -85,8 +101,9 @@ export function StudentResultCard({
   const circumference = 2 * Math.PI * 42;
   const offset = circumference - (percentage / 100) * circumference;
 
-  const position = result.rank;
-  const total = allResults.length;
+  // Class position is the rank inside the student's own class (the exam can span several classes).
+  const position = result.classRank ?? result.rank;
+  const total = result.classSize ?? allResults.length;
   const passFailConfig = (() => ({
     pass: { label: t("examinations.pass"), cls: SEMANTIC_BADGE.success },
     fail: { label: t("examinations.fail"), cls: SEMANTIC_BADGE.destructive },
@@ -206,6 +223,8 @@ export function StudentResultCard({
               </div>
             </div>
           </div>
+
+          <ExamResultModerationPanel exam={exam} result={result} onSaved={onClose} />
 
           {/* Stats */}
           <div

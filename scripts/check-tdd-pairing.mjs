@@ -22,6 +22,12 @@ const argv = process.argv.slice(2);
 const baseFlag = argv.indexOf("--base");
 const explicitBase = baseFlag >= 0 ? argv[baseFlag + 1] : process.env.MMS_CI_BASE;
 const STRICT = argv.includes("--strict");
+/**
+ * Blocking for `use-cases/` only: a use-case is where business rules live, so a changed one
+ * without a changed spec must fail the build. Repositories stay advisory because a DB-integration
+ * spec elsewhere often owns their behaviour.
+ */
+const STRICT_USE_CASES = argv.includes("--strict-use-cases");
 
 const DOMAIN_RE = /^apps\/backend\/src\/.+\/(?:use-cases|services|repositories|repository)\//;
 const TEST_RE = /\.(?:integration\.)?test\.(?:ts|tsx)$/;
@@ -109,4 +115,11 @@ for (const file of unpaired) console.warn(`   - ${file}`);
 console.warn(
   "   Write the failing spec first and record the Red evidence in the PR body (rule mms-tdd §1).",
 );
+const unpairedUseCases = unpaired.filter((file) => file.includes("/use-cases/"));
+if (STRICT_USE_CASES && unpairedUseCases.length > 0) {
+  console.error(
+    `💥 TDD pairing: ${unpairedUseCases.length} changed use-case file(s) without a changed spec.`,
+  );
+  process.exit(1);
+}
 process.exit(STRICT ? 1 : 0);

@@ -19,6 +19,11 @@ vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   deleteDocumentTemplateServer: vi.fn().mockResolvedValue(true),
 }));
 
+vi.mock("@/tenant/hooks/usePermissions", () => ({
+  // Presentational card: permission is a hook inside it, not the test's concern.
+  useModulePermissions: () => ({ canWrite: false }),
+}));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,

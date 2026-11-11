@@ -1,17 +1,39 @@
 import React, { useState } from "react";
-import { Save, CheckCircle2, Loader2 } from "lucide-react";
+import { Save, CheckCircle2, Loader2, Lock } from "lucide-react";
+import { examinationsMarksTransferSchema } from "@mms/shared";
+import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
+import { EnterMarksTransferActions } from "./EnterMarksTransferActions";
 import { type Exam, type ExamResult } from "@/lib/data/examinationData";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionFilterField } from "@/components/common/SectionFilterField";
 import { cn } from "@/lib/utils";
 import { useEnterMarksStudents } from "../hooks/useEnterMarksStudents";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
+import { notify } from "@/lib/notify";
 import { EnterMarksTable } from "./EnterMarksTable";
 
 export interface EnterMarksProps {
   exams: Exam[];
   results: ExamResult[];
   onSaveResults: (examId: string, results: ExamResult[]) => void | Promise<void>;
+}
+
+/**
+ * Marks already persisted for the exam, keyed by student id — the row identity and OCC token the
+ * grid must echo back so a concurrent save is refused instead of silently overwriting it.
+ */
+function persistedMarksFor(
+  exam: Exam | undefined,
+  results: ExamResult[],
+): Map<string, { id: string; version?: number }> {
+  const persisted = new Map<string, { id: string; version?: number }>();
+  if (!exam) return persisted;
+  for (const result of results) {
+    if (result.examId !== exam.id) continue;
+    persisted.set(String(result.studentId), { id: result.id, version: result.version });
+  }
+  return persisted;
 }
 
 /** Marks already persisted for the exam, keyed by student id (the editable grid's seed). */
@@ -35,6 +57,7 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
     prefilledMarksFor(exam, results),
   );
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [importOpen, setImportOpen] = useState<boolean>(false);
   const [saved, setSaved] = useState<boolean>(false);
 
   const { classNamesById, students: allStudents, sections } = useEnterMarksStudents(exam);
@@ -57,27 +80,58 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
     }
   }
 
-  const hasInvalidMarks = (() => {
-    if (!exam) return false;
-    return Object.values(marks).some((m) => {
+  const invalidMarkCount = (() => {
+    if (!exam) return 0;
+    return Object.values(marks).filter((m) => {
       if (m === "" || m === undefined) return false;
       const num = Number(m);
       return isNaN(num) || num < 0 || num > exam.totalMarks;
-    });
+    }).length;
   })();
+  const hasInvalidMarks = invalidMarkCount > 0;
+
+  // Unsaved edits: compare the draft against what is persisted for this exam.
+  const persistedSeed = prefilledMarksFor(exam, results);
+  const isDirty = Object.entries(marks).some(
+    ([studentId, value]) => String(value ?? "") !== String(persistedSeed[studentId] ?? ""),
+  );
+  useUnsavedChangesGuard({
+    isDirty,
+    message: t("examinations.enterMarks.unsavedConfirm"),
+  });
+
+  // Published results are immutable: the server refuses the write and the grid is read-only.
+  const isPublished = Boolean(exam?.resultsFinalizedAt);
 
   const handleSave = async () => {
-    if (!exam || isSaving || hasInvalidMarks) return;
+    if (!exam || isSaving || hasInvalidMarks || isPublished) return;
     setIsSaving(true);
     try {
-      const newResults: ExamResult[] = students.map((student) => ({
-        id: `er_${exam.id}_${student.id}`,
-        examId: exam.id,
-        studentId: String(student.id),
-        marksObtained: Number(marks[String(student.id)] || 0),
-      }));
+      const persisted = persistedMarksFor(exam, results);
+      // Only rows the user actually entered: a blank cell is "not entered", never a zero mark.
+      const newResults: ExamResult[] = students.flatMap((student) => {
+        const raw = marks[String(student.id)];
+        if (raw === "" || raw === undefined || raw === null) return [];
+        const existing = persisted.get(String(student.id));
+        return [
+          {
+            id: existing?.id ?? `er_${exam.id}_${student.id}`,
+            examId: exam.id,
+            studentId: String(student.id),
+            marksObtained: Number(raw),
+            ...(existing?.version !== undefined ? { version: existing.version } : {}),
+          },
+        ];
+      });
+      if (newResults.length === 0) {
+        notify.info(t("examinations.enterMarks.nothingToSave"));
+        return;
+      }
       await onSaveResults(exam.id, newResults);
       setSaved(true);
+    } catch {
+      // The controller already surfaced the failure; swallow it here so `void handleSave()` does
+      // not raise an unhandled rejection.
     } finally {
       setIsSaving(false);
     }
@@ -106,6 +160,9 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
                 role="radio"
                 aria-checked={isSelected}
                 onClick={() => {
+                  if (isDirty && !window.confirm(t("examinations.enterMarks.unsavedConfirm"))) {
+                    return;
+                  }
                   setSelectedExam(examOption.id);
                   setSaved(false);
                 }}
@@ -147,6 +204,21 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
             </span>
           </div>
 
+          {isPublished && (
+            <div
+              role="status"
+              className="rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm"
+            >
+              <p className="m-0 flex items-center gap-2 font-semibold text-foreground">
+                <Lock className="h-4 w-4" aria-hidden="true" />
+                {t("examinations.enterMarks.lockedTitle")}
+              </p>
+              <p className="m-0 mt-1 text-muted-foreground">
+                {t("examinations.enterMarks.lockedHelp")}
+              </p>
+            </div>
+          )}
+
           <SectionFilterField
             id="marks-section"
             sections={sections}
@@ -159,13 +231,26 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
             students={students}
             classNamesById={classNamesById}
             marks={marks}
+            readOnly={isPublished}
             onMarkChange={(studentId, value) => {
               setMarks((previousMarks) => ({ ...previousMarks, [studentId]: value }));
               setSaved(false);
             }}
           />
 
-          <div className="flex justify-end">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {exam && (
+              <EnterMarksTransferActions
+                examId={exam.id}
+                importDisabled={isPublished}
+                onImport={() => setImportOpen(true)}
+              />
+            )}
+            {hasInvalidMarks && (
+              <p role="alert" className="m-0 text-xs font-semibold text-destructive">
+                {t("examinations.enterMarks.invalidSummary", { count: invalidMarkCount })}
+              </p>
+            )}
             {saved ? (
               <div
                 className="flex items-center gap-2 text-success text-sm font-semibold"
@@ -177,7 +262,7 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
             ) : (
               <Button
                 type="button"
-                disabled={isSaving || hasInvalidMarks}
+                disabled={isSaving || hasInvalidMarks || isPublished}
                 onClick={() => {
                   void handleSave();
                 }}
@@ -193,6 +278,17 @@ export function EnterMarks({ exams, results, onSaveResults }: EnterMarksProps): 
             )}
           </div>
         </>
+      )}
+
+      {exam && (
+        <StandardModuleCsvImportDialog
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+          canWrite={!isPublished}
+          apiPath={`/api/examinations/exams/${exam.id}/results/import`}
+          schema={examinationsMarksTransferSchema}
+          title={t("common.import")}
+        />
       )}
     </section>
   );

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
-import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
+import { EXAM_STATUSES, SESSIONS_MODULE_MANIFEST, allowedNextStatuses } from "@mms/shared";
 import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import type { useExaminationForm } from "../hooks/useExaminationForm";
@@ -16,17 +16,30 @@ import type { Exam } from "@/lib/data/examinationData";
 
 export type ExaminationFormFieldsProps = Pick<
   ReturnType<typeof useExaminationForm>,
-  "t" | "errors" | "examDraft" | "classes" | "updateDraft" | "getFieldError"
+  "t" | "errors" | "examDraft" | "exam" | "classes" | "updateDraft" | "getFieldError"
 >;
 
 export function ExaminationFormFields({
   t,
   errors,
   examDraft,
+  exam,
   classes,
   updateDraft,
   getFieldError: _getFieldError,
 }: ExaminationFormFieldsProps): React.JSX.Element {
+  /**
+   * Only legal moves are offered. A new exam may start in any state; an existing one may keep its
+   * state or move forward (the backend rejects anything else with `illegal_exam_transition`).
+   */
+  const statusOptions = (() => {
+    const current = exam?.status;
+    const allowed = current ? [current, ...allowedNextStatuses(current)] : [...EXAM_STATUSES];
+    return [...new Set(allowed)].map((value) => ({
+      value,
+      label: t(`examinations.status.${value}`),
+    }));
+  })();
   // Subjects are a Sessions catalog; quick-create needs Sessions setup permission.
   const { canEditSetup: canCreateSubject } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
   return (
@@ -81,11 +94,7 @@ export function ExaminationFormFields({
               name="status"
               value={examDraft.status || "upcoming"}
               onChange={(val) => updateDraft({ status: val as Exam["status"] })}
-              options={[
-                { value: "upcoming", label: t("examinations.status.upcoming") },
-                { value: "ongoing", label: t("examinations.status.ongoing") },
-                { value: "completed", label: t("examinations.status.completed") },
-              ]}
+              options={statusOptions}
             />
           </Field>
 
@@ -98,8 +107,12 @@ export function ExaminationFormFields({
                 type="text"
                 inputMode="numeric"
                 className={`${FORM_INPUT} ps-10`}
-                value={examDraft.totalMarks ?? 100}
-                onChange={(event) => updateDraft({ totalMarks: Number(event.target.value) })}
+                value={examDraft.totalMarks ?? ""}
+                onChange={(event) =>
+                  updateDraft({
+                    totalMarks: event.target.value === "" ? undefined : Number(event.target.value),
+                  })
+                }
                 min={1}
                 required
               />
@@ -119,8 +132,13 @@ export function ExaminationFormFields({
                 type="text"
                 inputMode="numeric"
                 className={`${FORM_INPUT} ps-10`}
-                value={examDraft.passingMarks ?? 50}
-                onChange={(event) => updateDraft({ passingMarks: Number(event.target.value) })}
+                value={examDraft.passingMarks ?? ""}
+                onChange={(event) =>
+                  updateDraft({
+                    passingMarks:
+                      event.target.value === "" ? undefined : Number(event.target.value),
+                  })
+                }
                 min={1}
                 max={examDraft.totalMarks ?? 100}
                 required

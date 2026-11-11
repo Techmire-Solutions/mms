@@ -88,6 +88,7 @@ describe("ExaminationFormFields Component", () => {
           description: "Details here",
           status: "upcoming",
         }}
+        exam={null}
         classes={[{ id: "cls-1", name: "Class 1" }]}
         updateDraft={vi.fn()}
         getFieldError={() => undefined}

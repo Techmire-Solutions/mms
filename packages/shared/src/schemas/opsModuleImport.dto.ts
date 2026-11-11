@@ -23,7 +23,8 @@ export const examinationsImportRowSchema = z
     examDate: z.string().trim().max(50).optional(),
     totalMarks: z.union([z.string(), z.number()]).optional(),
     passingMarks: z.union([z.string(), z.number()]).optional(),
-    gradingScale: z.string().trim().max(100).optional(),
+    /** Session class name. Required: an exam with no class has no roster and can never be marked. */
+    className: z.string().trim().max(255).optional(),
     status: z.string().trim().max(50).optional(),
     notes: z.string().trim().max(2000).optional(),
   })
@@ -31,6 +32,26 @@ export const examinationsImportRowSchema = z
 
 export const examinationsImportBodySchema = csvImportBodySchema(examinationsImportRowSchema);
 export type ExaminationsImportBody = z.infer<typeof examinationsImportBodySchema>;
+
+/** One row of a marks import: a roll number resolved against the exam's own roster. */
+export const examMarksImportRowSchema = z
+  .object({
+    rollNumber: z.string().trim().min(1).max(64),
+    // An empty cell must fail, not coerce to 0 (a false zero mark).
+    marksObtained: z.union([z.number().finite(), z.string().trim().min(1).max(20)]),
+  })
+  .strict();
+
+export const examMarksImportBodySchema = z
+  .object({
+    rows: z.array(examMarksImportRowSchema).min(1).max(5_000),
+    label: z.string().trim().max(300).optional(),
+    idempotencyKey: z.string().trim().min(8).max(200).optional(),
+  })
+  .strict();
+
+export type ExamMarksImportRow = z.infer<typeof examMarksImportRowSchema>;
+export type ExamMarksImportBody = z.infer<typeof examMarksImportBodySchema>;
 
 export const hasanatImportRowSchema = z
   .object({

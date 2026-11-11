@@ -399,7 +399,8 @@ describe("exam attendance gate (real Postgres)", () => {
   it("finalises results so completion can count the exam", async () => {
     const finalized = await setExamResultsFinalized(TENANT, {
       examId: EXAM,
-      finalized: true,
+      resultsFinalizedAt: new Date(),
+      status: "completed",
       actorId: "u-spec-admin",
     });
     expect(finalized?.resultsFinalizedAt).toBeInstanceOf(Date);
@@ -407,7 +408,8 @@ describe("exam attendance gate (real Postgres)", () => {
 
     const reopened = await setExamResultsFinalized(TENANT, {
       examId: EXAM,
-      finalized: false,
+      resultsFinalizedAt: null,
+      status: "ongoing",
       actorId: "u-spec-admin",
     });
     expect(reopened?.resultsFinalizedAt).toBeNull();

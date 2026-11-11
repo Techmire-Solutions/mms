@@ -1653,6 +1653,20 @@
       "when": 1796122800000,
       "tag": "0235_audit_trail_immutability",
       "breakpoints": true
+    },
+    {
+      "idx": 236,
+      "version": "7",
+      "when": 1796209200000,
+      "tag": "0236_exams_results_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 237,
+      "version": "7",
+      "when": 1796295600000,
+      "tag": "0237_exam_scoring_moderation",
+      "breakpoints": true
     }
   ]
 }

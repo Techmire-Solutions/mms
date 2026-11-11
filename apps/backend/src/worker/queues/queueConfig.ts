@@ -53,6 +53,16 @@ export const SESSIONS_IMPORT_TIMEOUT_MS =
   Number(process.env.SESSIONS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
 export const SESSIONS_EXPORT_TIMEOUT_MS =
   Number(process.env.SESSIONS_EXPORT_TIMEOUT_MS) || 10 * 60_000;
+/** Exam CSV exports/imports walk up to 5,000 rows; the 60s sandbox ceiling is too tight. */
+export const EXAMINATIONS_EXPORT_TIMEOUT_MS =
+  Number(process.env.EXAMINATIONS_EXPORT_TIMEOUT_MS) || 10 * 60_000;
+export const EXAMINATIONS_IMPORT_TIMEOUT_MS =
+  Number(process.env.EXAMINATIONS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
+/** A marks import / broadsheet export is one exam, but a large cohort still exceeds 60s. */
+export const EXAMINATIONS_MARKS_IMPORT_TIMEOUT_MS =
+  Number(process.env.EXAMINATIONS_MARKS_IMPORT_TIMEOUT_MS) || 5 * 60_000;
+export const EXAMINATIONS_RESULTS_EXPORT_TIMEOUT_MS =
+  Number(process.env.EXAMINATIONS_RESULTS_EXPORT_TIMEOUT_MS) || 5 * 60_000;
 /** Enrollment imports resolve + write one row at a time (500-row body cap). */
 export const ENROLLMENTS_IMPORT_TIMEOUT_MS =
   Number(process.env.ENROLLMENTS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
@@ -102,6 +112,10 @@ export function resolveJobExecutionTimeoutMs(moduleId: string, kind: string): nu
     // A manual scan walks every marked day of one workspace; the 60s sandbox ceiling is too tight.
     "attendance:absence-scan": SESSIONS_IMPORT_TIMEOUT_MS,
     "attendance:export": SESSIONS_EXPORT_TIMEOUT_MS,
+    "examinations:export": EXAMINATIONS_EXPORT_TIMEOUT_MS,
+    "examinations:import": EXAMINATIONS_IMPORT_TIMEOUT_MS,
+    "examinations:marks-import": EXAMINATIONS_MARKS_IMPORT_TIMEOUT_MS,
+    "examinations:results-export": EXAMINATIONS_RESULTS_EXPORT_TIMEOUT_MS,
   };
   if (budgets[key] !== undefined) return budgets[key];
   return normalizedModule === "messaging" ? MESSAGING_JOB_TIMEOUT_MS : JOB_EXECUTION_TIMEOUT_MS;

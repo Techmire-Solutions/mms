@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getGrade } from "@mms/shared";
+import { rankResults, resolveResultScore } from "@mms/shared";
 import {
   useExaminationsExams,
   useExaminationsExamsCollection,
@@ -32,8 +32,12 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
     uniqueRegistryIds(examResults.map((examResult) => examResult.studentId)))();
   const { data: students = [] } = useStudentsByIds(studentIds);
 
+  /**
+   * One row per (student, exam), scored by the shared engine: grade/pass from raw marks against the
+   * exam's own pass mark (the previous code hardcoded 50), and rank computed per exam — not across
+   * unrelated exams, where a 90% quiz used to outrank an 89% final.
+   */
   const academicResultsData = (() => {
-    let academicResults: AcademicResultItem[] = [];
     const examsById = new Map(exams.map((exam) => [exam.id, exam]));
     const studentsById = new Map(
       students.map((student: { id?: string | number; name?: string }) => [
@@ -42,27 +46,56 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
       ]),
     );
 
-    examResults.forEach((examResult) => {
+    const scored = examResults.flatMap((examResult) => {
       const exam = examsById.get(examResult.examId);
       const student = studentsById.get(String(examResult.studentId));
-      if (!exam || !student) return;
-
-      const percentage = Math.round((examResult.marksObtained / exam.totalMarks) * 100);
-      academicResults.push({
-        studentName: student.name || "",
-        class: exam.name,
-        subject: exam.subject,
-        marks: percentage,
-        total: 100,
-        grade: getGrade(percentage).label,
-        rank: 0,
+      if (!exam || !student) return [];
+      const score = resolveResultScore({
+        marksObtained: examResult.marksObtained,
+        totalMarks: exam.totalMarks,
+        passingMarks: exam.passingMarks,
+        graceMarks: examResult.graceMarks,
       });
+      return [
+        {
+          examId: exam.id,
+          studentId: String(examResult.studentId),
+          studentName: student.name || "",
+          class: exam.name,
+          subject: exam.subject,
+          displayPct: score.displayPercentage,
+          rawPct: score.percentage,
+          grade: score.grade.label,
+          passed: score.passed,
+        },
+      ];
     });
 
-    academicResults.sort((firstResult, secondResult) => secondResult.marks - firstResult.marks);
-    academicResults.forEach((academicResult, index) => {
-      academicResult.rank = index + 1;
-    });
+    const rankedByExam = new Map<string, Array<(typeof scored)[number] & { rank: number }>>();
+    for (const row of scored) {
+      const bucket = rankedByExam.get(row.examId) ?? [];
+      bucket.push({ ...row, rank: 0 });
+      rankedByExam.set(row.examId, bucket);
+    }
+
+    const rankedRows: Array<(typeof scored)[number] & { rank: number }> = [];
+    for (const bucket of rankedByExam.values()) {
+      const ranked = rankResults(bucket, {
+        score: (row) => row.rawPct,
+        tieBreak: (row) => `${row.studentName}|${row.studentId}`,
+      });
+      rankedRows.push(...ranked);
+    }
+
+    let academicResults: AcademicResultItem[] = rankedRows.map((row) => ({
+      studentName: row.studentName,
+      class: row.class,
+      subject: row.subject,
+      marks: row.displayPct,
+      total: 100,
+      grade: row.grade,
+      rank: row.rank,
+    }));
 
     if (filters.class !== "all") {
       academicResults = academicResults.filter(
@@ -78,8 +111,6 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
   })() as AcademicResultItem[];
 
   const classRankings = (() => {
-    const resultsByClass: Record<string, { class: string; studentName: string; marks: number }[]> =
-      {};
     const examsById = new Map(exams.map((exam) => [exam.id, exam]));
     const studentsById = new Map(
       students.map((student: { id?: string | number; name?: string }) => [
@@ -87,23 +118,30 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
         student,
       ]),
     );
-    const rankingSourceResults = examResults
-      .map((examResult) => {
-        const exam = examsById.get(examResult.examId);
-        const student = studentsById.get(String(examResult.studentId));
-        if (!exam || !student) return null;
-        return {
-          class: exam.name,
-          studentName: student.name || "",
-          marks: Math.round((examResult.marksObtained / exam.totalMarks) * 100),
-        };
-      })
-      .filter(Boolean) as { class: string; studentName: string; marks: number }[];
 
-    rankingSourceResults.forEach((rankingSourceResult) => {
-      if (!resultsByClass[rankingSourceResult.class])
-        resultsByClass[rankingSourceResult.class] = [];
-      resultsByClass[rankingSourceResult.class].push(rankingSourceResult);
+    const resultsByClass: Record<
+      string,
+      { class: string; studentName: string; marks: number; passed: boolean }[]
+    > = {};
+
+    examResults.forEach((examResult) => {
+      const exam = examsById.get(examResult.examId);
+      const student = studentsById.get(String(examResult.studentId));
+      if (!exam || !student) return;
+      const score = resolveResultScore({
+        marksObtained: examResult.marksObtained,
+        totalMarks: exam.totalMarks,
+        passingMarks: exam.passingMarks,
+        graceMarks: examResult.graceMarks,
+      });
+      const className = exam.name;
+      if (!resultsByClass[className]) resultsByClass[className] = [];
+      resultsByClass[className].push({
+        class: className,
+        studentName: student.name || "",
+        marks: score.displayPercentage,
+        passed: score.passed,
+      });
     });
 
     let classRankingItems = Object.entries(resultsByClass).map(([className, classResults]) => {
@@ -113,7 +151,7 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
       const averageMarks = Math.round(
         classResults.reduce((sum, classResult) => sum + classResult.marks, 0) / classResults.length,
       );
-      const passingCount = classResults.filter((classResult) => classResult.marks >= 50).length;
+      const passingCount = classResults.filter((classResult) => classResult.passed).length;
       return {
         class: className,
         averageMarks,

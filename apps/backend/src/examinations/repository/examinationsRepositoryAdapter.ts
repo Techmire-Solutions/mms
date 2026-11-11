@@ -9,6 +9,8 @@ import {
   bulkSoftDeleteExams,
   bulkRestoreExams,
   listExamResultsByWorkspace,
+  listExamResultsPage,
+  applyExamResultModeration,
   findExamResultById,
   findExamResultsByIds,
   saveExamResult,
@@ -20,6 +22,7 @@ import {
   aggregateExaminationsCommandMetrics,
 } from "../../db/repositories/examinationRepositoryList.js";
 import { loadExaminationsReportAggregatesSql } from "../../db/repositories/examinationRepositoryReport.js";
+import { listSessionClassNames } from "../../db/repositories/examinationExamsRepository.js";
 import { aggregateExaminationsWidgetQueries } from "../../db/repositories/examinationsRepositoryWidgets.js";
 
 /**
@@ -37,12 +40,15 @@ export const examinationsRepository: ExaminationsRepository = {
   bulkRestoreExams,
   listExamsPage,
   listExamResultsByWorkspace,
+  listExamResultsPage,
+  applyExamResultModeration,
   findExamResultById,
   findExamResultsByIds,
   saveExamResult,
   bulkSaveExamResults,
   replaceExamResultsForWorkspace,
   aggregateExaminationsCommandMetrics,
+  listSessionClassNames,
   aggregateExaminationsWidgetQueries,
   loadExaminationsReportAggregates: loadExaminationsReportAggregatesSql,
 };

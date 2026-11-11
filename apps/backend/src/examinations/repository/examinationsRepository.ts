@@ -30,6 +30,8 @@ export interface ExaminationsRepository {
     },
   ): Promise<Exam[]>;
   findExamById(tenant: string, id: string): Promise<Exam | null>;
+  /** Session classes, by name, for the CSV importer's class resolution. */
+  listSessionClassNames(tenant: string): Promise<Array<{ id: string; name: string }>>;
   findExamsByIds(
     tenant: string,
     ids: string[],
@@ -53,6 +55,38 @@ export interface ExaminationsRepository {
 
   // Results
   listExamResultsByWorkspace(tenant: string): Promise<ExamResult[]>;
+  /** Filterable, keyset-paginated marks (the broadsheet read path). */
+  listExamResultsPage(
+    tenant: string,
+    query: {
+      examId?: string;
+      studentId?: string;
+      cursor?: string;
+      limit?: number;
+      publishedOnly?: boolean;
+    },
+  ): Promise<{ results: ExamResult[]; hasMore: boolean }>;
+  /** Audited grace-mark adjustment; the raw mark is preserved. */
+  applyExamResultModeration(
+    tenant: string,
+    input: {
+      examId: string;
+      studentId: string;
+      graceMarks: number;
+      reason: string;
+      actorId: string;
+      version?: number;
+    },
+  ): Promise<{
+    examId: string;
+    studentId: string;
+    marksObtained: number;
+    graceMarks: number;
+    effectiveMarks: number;
+    moderationReason: string | null;
+    moderatedAt: string | null;
+    version: number;
+  }>;
   findExamResultById(tenant: string, id: string): Promise<ExamResult | null>;
   findExamResultsByIds(tenant: string, ids: string[]): Promise<ExamResult[]>;
   saveExamResult(tenant: string, record: ExamResult): Promise<void>;

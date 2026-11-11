@@ -111,6 +111,33 @@ export function createExaminationsUseCases(repo: ExaminationsRepository = examin
 
     loadExamResults: async (): Promise<ExamResult[]> => examResultBulkService.load(),
 
+    /** Broadsheet read path: one page of marks, filtered and keyset-paginated. */
+    loadExamResultsPage: async (query: {
+      examId?: string;
+      studentId?: string;
+      cursor?: string;
+      limit?: number;
+      publishedOnly?: boolean;
+    }): Promise<{ results: ExamResult[]; hasMore: boolean }> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return { results: [], hasMore: false };
+      return repo.listExamResultsPage(tenant, query);
+    },
+
+    /** Audited grace-mark adjustment on one mark (raw mark preserved). */
+    moderateExamResult: async (input: {
+      examId: string;
+      studentId: string;
+      graceMarks: number;
+      reason: string;
+      actorId: string;
+      version?: number;
+    }) => {
+      const tenant = getRequestTenant();
+      if (!tenant) throw new Error("Tenant context required");
+      return repo.applyExamResultModeration(tenant, input);
+    },
+
     loadExamResultById: async (id: string): Promise<ExamResult | null> => {
       const tenant = getRequestTenant();
       const cleanId = id?.trim();

@@ -4,6 +4,20 @@ import type { Student } from "@/lib/data/studentsData";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
+import { enrollmentHoldsSeat } from "@mms/shared";
+
+/**
+ * The exam roster is the **seat-holding** enrollment set — the same rule the backend eligibility
+ * query uses. The grid previously listed every live enrollment, so a withdrawn student could be
+ * typed into the sheet while being absent from the eligibility rows.
+ */
+function isRosterEnrollment(enrollment: {
+  status?: string | null;
+  deletedAt?: string | null;
+}): boolean {
+  if (enrollment.deletedAt) return false;
+  return enrollmentHoldsSeat(String(enrollment.status ?? ""));
+}
 
 export type ExamStudent = Student & { classId: string; sectionId: string; rollNo: string };
 
@@ -29,7 +43,7 @@ export function useEnterMarksStudents(exam?: Exam) {
     const seen = new Set<string>();
     const ids: string[] = [];
     for (const enrollment of enrollments) {
-      if (classIds.has(enrollment.classId)) {
+      if (classIds.has(enrollment.classId) && isRosterEnrollment(enrollment)) {
         const idStr = String(enrollment.studentId);
         if (!seen.has(idStr)) {
           seen.add(idStr);
@@ -47,7 +61,7 @@ export function useEnterMarksStudents(exam?: Exam) {
     const classIds = new Set(exam.classIds);
     const enrollmentByStudent = new Map<string, (typeof enrollments)[number]>();
     for (const enrollment of enrollments) {
-      if (classIds.has(enrollment.classId)) {
+      if (classIds.has(enrollment.classId) && isRosterEnrollment(enrollment)) {
         enrollmentByStudent.set(String(enrollment.studentId), enrollment);
       }
     }

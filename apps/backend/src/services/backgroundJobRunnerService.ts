@@ -1,4 +1,5 @@
 import { registerAttendanceJobRunners } from "./backgroundJobAttendanceRunners.js";
+import { registerExaminationsJobRunners } from "./backgroundJobExaminationsRunners.js";
 import { registerHasanatJobRunners } from "./backgroundJobHasanatRunners.js";
 import { randomUUID } from "node:crypto";
 import {
@@ -78,8 +79,8 @@ export type {
   EnrollmentsExportJobPayload,
   MessagingExportJobPayload,
 } from "./backgroundJobPayloads.js";
-
 export function registerDefaultBackgroundJobRunners(): void {
+  registerExaminationsJobRunners();
   const contactsModuleId = CONTACTS_MODULE_MANIFEST.moduleId;
   const messagingModuleId = MESSAGING_MODULE_MANIFEST.moduleId;
   const studentsModuleId = STUDENTS_MODULE_MANIFEST.moduleId;

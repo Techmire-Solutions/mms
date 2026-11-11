@@ -2,14 +2,19 @@ import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInval
 import {
   EXAMINATIONS_EXAMS_QUERY_KEY,
   EXAMINATIONS_METRICS_QUERY_KEY,
+  EXAMINATIONS_REPORT_AGGREGATES_QUERY_KEY,
   EXAMINATIONS_RESULTS_QUERY_KEY,
 } from "@/tenant/features/examinations/hooks/examinationsQueryKeys";
 import { EXAMINATIONS_PREFERENCES_QUERY_KEY } from "@/tenant/features/examinations/hooks/useExaminationSetupConfig";
 
-/** Invalidate Examinations exams/results/metrics/setup Query keys (mutations + live push). */
+/**
+ * Invalidate Examinations exams/results/metrics/setup **and the Reports-tab analytics**.
+ * Analytics were omitted, so saving marks or moderating left subject pass-rates and the grade
+ * distribution stale until an unrelated refetch.
+ */
 export const invalidateExaminationsQueries = createModuleQueryInvalidator({
   list: EXAMINATIONS_EXAMS_QUERY_KEY,
-  lists: [EXAMINATIONS_RESULTS_QUERY_KEY],
+  lists: [EXAMINATIONS_RESULTS_QUERY_KEY, EXAMINATIONS_REPORT_AGGREGATES_QUERY_KEY],
   metrics: EXAMINATIONS_METRICS_QUERY_KEY,
   preferences: EXAMINATIONS_PREFERENCES_QUERY_KEY,
 });
