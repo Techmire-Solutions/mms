@@ -3,7 +3,7 @@ import type { FacultyAssignmentEntity } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { apiContractError } from "@/lib/apiContractError";
 import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";
-import { FACULTY_QUERY_KEY } from "./facultyQueryKeys";
+import { FACULTY_DETAIL_QUERY_KEY } from "./facultyQueryKeys";
 
 export function useFacultyAssignments(facultyId?: string | null, customClient?: QueryClient) {
   const contextClient = useQueryClientOrFallback();
@@ -11,7 +11,7 @@ export function useFacultyAssignments(facultyId?: string | null, customClient?: 
 
   return useQuery(
     {
-      queryKey: [...FACULTY_QUERY_KEY, "assignments", facultyId] as const,
+      queryKey: [...FACULTY_DETAIL_QUERY_KEY, facultyId, "assignments"] as const,
       queryFn: async ({ signal }) => {
         if (!facultyId) return [];
         const response = await apiContract.faculty.listAssignments({

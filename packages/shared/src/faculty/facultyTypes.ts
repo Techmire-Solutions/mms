@@ -19,8 +19,20 @@ export {
   type FacultyStatusRoles,
 } from "./facultyStatusTypes.js";
 
+import { z } from "zod";
 import type { FacultyEmployDesignationWriteRow } from "./facultyEmployDesignationTypes.js";
 import type { FacultyEmploymentStatus, FacultyProfileStatus } from "./facultyStatusTypes.js";
+
+/** Canonical Quranic and Islamic disciplines for faculty Ijazahs. */
+export const FACULTY_IJAZAH_FIELD_VALUES = [
+  "quran",
+  "hadith",
+  "fiqh",
+  "arabic",
+  "aqeedah",
+  "other",
+] as const;
+export type FacultyIjazahField = (typeof FACULTY_IJAZAH_FIELD_VALUES)[number];
 
 /** Teaching specialization options for madrasa faculty. */
 export const FACULTY_SPECIALIZATION_VALUES = [
@@ -160,6 +172,27 @@ export interface FacultyHierarchyNode {
   reportingFacultyId?: string | null;
   subordinates: FacultyHierarchyNode[];
 }
+
+/** Zod schema validating a hierarchical tree node. */
+export const facultyHierarchyNodeSchema: z.ZodType<FacultyHierarchyNode> = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    contactId: z.union([z.string(), z.number()]),
+    name: z.string(),
+    employeeId: z.string().optional(),
+    department: z.string().optional(),
+    designation: z.string().optional(),
+    designationId: z.string().optional(),
+    designationStartsOn: z.string().optional(),
+    designationEndsOn: z.string().nullable().optional(),
+    designationAssignableRoles: z.array(z.string()).optional(),
+    hierarchyRank: z.number(),
+    status: z.string(),
+    avatar: z.string().nullable().optional(),
+    reportingFacultyId: z.string().nullable().optional(),
+    subordinates: z.array(facultyHierarchyNodeSchema),
+  }),
+);
 
 /** Nested employment record (owns contact + employee code). */
 export interface FacultyEmploymentFields {

@@ -1,11 +1,13 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
+import { apiErrorResponseSchema } from "../schemas/api.dto.js";
 import {
   facultyRecordSchema,
   facultyBulkStatusSchema,
   facultyBulkSpecializationSchema,
   facultyNextEmployeeIdQuerySchema,
 } from "../faculty/facultyModuleManifest.js";
+import { facultyHierarchyNodeSchema } from "../faculty/facultyTypes.js";
 import { facultyListQuerySchema } from "../faculty/facultyListQuery.js";
 import { facultyWriteSchema, facultyDuplicateCheckBodySchema } from "../schemas/faculty.dto.js";
 import {
@@ -23,7 +25,7 @@ import { facultyAssignmentContractEndpoints } from "./faculty.contract.assignmen
 export { facultyListPageResponseSchema, facultyPreferencesResponseSchema };
 
 const c = initContract();
-const errorResponse = z.unknown();
+const errorResponse = apiErrorResponseSchema;
 
 export const facultyContract = c.router({
   list: {
@@ -104,7 +106,7 @@ export const facultyContract = c.router({
     path: "/api/faculty/hierarchy-tree",
     responses: {
       200: z.object({
-        nodes: z.array(z.record(z.string(), z.unknown())),
+        nodes: z.array(facultyHierarchyNodeSchema),
       }),
       400: errorResponse,
       403: errorResponse,
@@ -174,7 +176,7 @@ export const facultyContract = c.router({
   restore: {
     method: "POST",
     path: "/api/faculty/:id/restore",
-    body: z.unknown(),
+    body: z.object({}).optional(),
     responses: {
       200: z.object({ success: z.literal(true) }),
       403: errorResponse,

@@ -8,12 +8,10 @@ import {
   type FacultySortField,
 } from "@mms/shared";
 import { apiContract, tsrClient } from "@/lib/api";
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, keepPreviousData } from "@tanstack/react-query";
 import { FACULTY_QUERY_KEY } from "@/tenant/features/faculty/hooks/facultyQueryKeys";
 import {
-  facultyListQueryKeyParams,
   facultyPaginatedQueryKey,
-  sameFacultyListFilters,
   type FacultyPaginatedParams,
 } from "@/tenant/features/faculty/hooks/facultyListQueryBuilders";
 
@@ -51,7 +49,6 @@ export function facultyListQueryOptions(
   messages?: { loadFailed: string },
 ) {
   const params = facultyPaginatedParamsFromRecord(query);
-  const keyParams = facultyListQueryKeyParams(params);
   return queryOptions({
     queryKey: facultyPaginatedQueryKey(params),
     queryFn: async ({ signal }) => {
@@ -65,16 +62,7 @@ export function facultyListQueryOptions(
       }
       throw new Error(messages?.loadFailed ?? "Failed to fetch faculty");
     },
-    placeholderData: (previousData, previousQuery) => {
-      const previousKey = (previousQuery as unknown as { queryKey?: readonly unknown[] })
-        ?.queryKey?.[3];
-      return sameFacultyListFilters(
-        previousKey as ReturnType<typeof facultyListQueryKeyParams> | undefined,
-        keyParams,
-      )
-        ? previousData
-        : undefined;
-    },
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
@@ -82,22 +70,12 @@ export function facultyListQueryOptions(
 /** Contract-backed paginated list. */
 export function useFacultyContractList(query: Record<string, unknown>, enabled = true) {
   const params = facultyPaginatedParamsFromRecord(query);
-  const keyParams = facultyListQueryKeyParams(params);
   return facultyClient.list.useQuery({
     queryKey: facultyPaginatedQueryKey(params),
     queryData: { query },
     staleTime: 15_000,
     enabled,
-    placeholderData: (previousData: unknown, previousQuery: unknown) => {
-      const previousKey = (previousQuery as unknown as { queryKey?: readonly unknown[] })
-        ?.queryKey?.[3];
-      return sameFacultyListFilters(
-        previousKey as ReturnType<typeof facultyListQueryKeyParams> | undefined,
-        keyParams,
-      )
-        ? previousData
-        : undefined;
-    },
+    placeholderData: keepPreviousData,
   });
 }
 

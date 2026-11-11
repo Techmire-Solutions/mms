@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { apiErrorResponseSchema } from "../schemas/api.dto.js";
 import {
   facultyDesignationAssignmentSchema,
   facultyDesignationSchema,
   facultyDesignationWriteSchema,
 } from "../faculty/facultyDesignationTypes.js";
 
-const errorResponse = z.unknown();
+const errorResponse = apiErrorResponseSchema;
 
 export const facultyDesignationContractEndpoints = {
   listDesignations: {
