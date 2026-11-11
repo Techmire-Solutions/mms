@@ -68,9 +68,9 @@ export default function ModuleReports({ category }: ModuleReportsProps) {
   return (
     <section aria-label={t("reports.aria.root")} className="space-y-6">
       <div
-        className={`${WORK_SURFACE} flex items-center justify-between gap-4 flex-wrap p-4 rounded-3xl print:hidden`}
+        className={`${WORK_SURFACE} flex items-center justify-between gap-4 flex-wrap p-4 rounded-3xl print:hidden overflow-hidden`}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
             <BarChart2 className="w-5 h-5" />
           </div>
@@ -94,13 +94,13 @@ export default function ModuleReports({ category }: ModuleReportsProps) {
           />
         </div>
 
-        <div className="hidden w-full lg:block lg:w-auto">
+        <div className="hidden w-full lg:block lg:w-auto min-w-0 max-w-full overflow-x-auto no-scrollbar">
           <SubTabBar
             tabs={REPORT_TABS}
             value={activeTab}
             onChange={setActiveTab}
             panelIdPrefix="reports-tools"
-            className="w-full lg:w-auto"
+            className="w-auto"
           />
         </div>
       </div>

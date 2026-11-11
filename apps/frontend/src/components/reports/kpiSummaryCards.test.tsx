@@ -30,4 +30,12 @@ describe("KPICardsGrid Component", () => {
     expect(html).toContain("Active enrollments");
     expect(html).toContain("reports.kpiAddCustom");
   });
+
+  it("renders a balanced empty state when cards list is empty", () => {
+    const html = renderToStaticMarkup(<KPICardsGrid cards={[]} onAddCustom={vi.fn()} />);
+
+    expect(html).toContain("reports.kpiSettingsDesc");
+    expect(html).toContain("reports.kpiVisibilityDesc");
+    expect(html).toContain("reports.kpiAddCustom");
+  });
 });

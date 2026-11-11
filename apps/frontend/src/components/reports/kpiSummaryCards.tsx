@@ -65,8 +65,29 @@ interface KPICardsGridProps {
 export function KPICardsGrid({ cards, onAddCustom }: KPICardsGridProps): JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
+
+  if (cards.length === 0) {
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl border border-dashed border-border/80 bg-card/25 backdrop-blur-xs">
+        <div className="text-center sm:text-start">
+          <p className="text-sm font-semibold text-foreground">{t("reports.kpiSettingsDesc")}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{t("reports.kpiVisibilityDesc")}</p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onAddCustom}
+          className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl border-dashed border-primary/40 bg-primary/5 px-4 font-semibold text-primary transition-all duration-200 hover:border-primary hover:bg-primary/10"
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          <span>{t("reports.kpiAddCustom")}</span>
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-2 gap-3 font-sans sm:grid-cols-4 lg:grid-cols-8">
+    <div className="grid grid-cols-2 gap-3 font-sans sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
       {cards.map((kpi, index) => {
         const kpiColor = COLOR[kpi.color];
         const trend = TREND[kpi.trend];
