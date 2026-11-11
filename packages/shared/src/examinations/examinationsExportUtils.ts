@@ -1,6 +1,5 @@
 import type { Exam } from "./examinationsModuleManifest.js";
 import { buildExportGrid } from "../dataTransfer/export/buildExportGrid.js";
-import type { ExportColumn } from "../dataTransfer/core/exportTypes.js";
 
 /**
  * Examinations export column catalogue (CSV headers + row mapping).
@@ -85,5 +84,5 @@ export function buildExaminationsExportRows(
   exams: readonly Exam[],
   columns: readonly ExaminationsExportColumn[],
 ): unknown[][] {
-  return buildExportGrid([...exams], columns as ExportColumn[], extractExaminationsCell);
+  return buildExportGrid([...exams], [...columns], extractExaminationsCell);
 }

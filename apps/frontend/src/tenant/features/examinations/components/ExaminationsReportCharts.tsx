@@ -1,5 +1,6 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { useExaminationsReportAggregates } from "../hooks/useExaminationsReportAggregates";
@@ -43,7 +44,7 @@ function BarRow({
 
 export function ExaminationsReportCharts(): React.JSX.Element | null {
   const { t } = useTranslation();
-  const { data } = useExaminationsReportAggregates();
+  const { data, isLoading, isError, refetch } = useExaminationsReportAggregates();
   const analytics = data?.analytics;
   const top = analytics?.topPerformers ?? [];
   const { data: students = [] } = useStudentsByIds(top.map((entry) => entry.studentId));
@@ -53,6 +54,21 @@ export function ExaminationsReportCharts(): React.JSX.Element | null {
       student.name ?? "",
     ]),
   );
+
+  if (isLoading && !analytics) {
+    return <Card className="p-6 text-sm text-muted-foreground">{t("common.loading")}</Card>;
+  }
+
+  if (isError && !analytics) {
+    return (
+      <Card className="flex flex-wrap items-center justify-between gap-3 p-6 text-sm text-destructive">
+        <span>{t("examinations.analytics.loadFailed")}</span>
+        <Button type="button" size="sm" variant="outline" onClick={() => void refetch()}>
+          {t("common.retry")}
+        </Button>
+      </Card>
+    );
+  }
 
   if (!analytics) return null;
   const hasData =

@@ -106,3 +106,90 @@ concrete designs in
 R12 (exam timetable/room allocation), R13 (student/guardian results endpoint) and R14 (finish moving
 plain handlers into the ts-rest router with a parity ratchet) are recorded in
 [`examinations-api-serialization-audit-2026-11-11.md`](./examinations-api-serialization-audit-2026-11-11.md).
+
+## Decided in the security/compliance round 2 (2026-11-11)
+
+| ID | Decision |
+|---|---|
+| DS13 | Exam definition writes (create/update: scoring frame, status, classes, date) and the exams CSV import require `examinations.delete`; `examinations.write` is marks entry only. |
+| DS14 | The marks CSV import runs the same exact-section teacher scope as the grid save before enqueueing. |
+| DS15 | The attendance gate is controller-only (`examinations.delete`) and records an optional reason with `reasonCode: "attendance_gate"`. |
+| DS16 | Audit events carry a `reasonCode` (`marks_entry`/`marks_correction`, `scoring_frame`/`status_override`, `exam_created`, `attendance_gate`, `broadsheet_export`, `marks_import`); the broadsheet export is a `VIEW` event and the marks import a job summary. |
+| DS17 | The librarian default role has no examinations grant. |
+
+## Open from the security/compliance round 2
+
+SE1 (marking windows), SE2 (student/guardian portal), SE3 (stored-role resync), SE4 (dedicated
+moderate/publish permission keys), SE5 (read-scope granularity) and SE6 (result statuses) are recorded
+in
+[`examinations-security-tenancy-audit-2026-11-11-round2.md`](./examinations-security-tenancy-audit-2026-11-11-round2.md).
+
+## Decided in the async-workers round 2 (2026-11-11)
+
+| ID | Decision |
+|---|---|
+| DS18 | All `examinations:*` jobs run on a dedicated sandboxed `examinations` queue (concurrency 2); sandboxed workers use `maxStalledCount: 3` so a deploy retries instead of dead-lettering. |
+| DS19 | Sandboxed children abort on SIGTERM/SIGINT and the daemon force-closes sandboxed workers after aborting; long jobs are interrupted and retried, not drained. |
+| DS20 | A failed examination job is retried automatically when the same request is re-submitted (payload re-supplied); the deterministic runners make this replay-safe. |
+| DS21 | Idempotency keys are bound to the request payload (marks: exam + rows; CSV export: query/columns/filename/trash/viewer); broadsheet export keys include the marks fingerprint so a changed exam re-exports. |
+| DS22 | Background-job reads (and the client PUT) are owner-scoped, and the retained-job quota is enforced at enqueue (429). |
+
+## Open from the async-workers round 2
+
+Result compilation, GPA/rank aggregation, batch report cards, publication notifications, export
+snapshot isolation, a cross-worker import advisory lock and in-flight-counter reconciliation are
+recorded in
+[`examinations-async-workers-audit-2026-11-11-round2.md`](./examinations-async-workers-audit-2026-11-11-round2.md).
+
+## Decided in the documents/analytics round 2 (2026-11-11)
+
+| ID | Decision |
+|---|---|
+| DD1 | The Typst renderer never falls back to a synthetic PDF: missing/failed CLI fails the job (`TemplateRenderError`), so no placeholder artifact can reach a user. |
+| DD2 | The Typst payload is written to a private `data.json` root (never argv); the template is copied into the root and the bundled font path is always passed (`TYPST_FONT_DIR` override honoured). |
+| DD3 | Report-card templates honour `lang`/`direction` (inferred from the payload when absent), print `-`/empty for unknown values, and use ar/en labels; the PDF queue concurrency is the Typst cap (2, `PDF_RENDER_CONCURRENCY`). |
+| DD4 | Client print surfaces strip unresolved `{{token}}` placeholders; the editor keeps them visible. |
+| DD5 | The broadsheet exporter streams to storage page by page (backpressure, abort, per-cell escaping); no whole-grid buffer. |
+| DD6 | Analytics is one `MATERIALIZED` CTE statement (one tenant scan) with row-limited union branches; the covering marks index and the section-join composite are concurrent, out-of-band builds. |
+
+## Open from the documents/analytics round 2
+
+Admit cards/roll slips, transcripts, server batch report cards, gazette export and XLSX marks import
+remain unbuilt; the report-card labels are Arabic/English only; the server PDF pipeline still has no
+enqueue caller. See
+[`examinations-documents-analytics-audit-2026-11-11-round2.md`](./examinations-documents-analytics-audit-2026-11-11-round2.md).
+
+## Decided in the shared-contracts round (2026-11-11)
+
+| ID | Decision |
+|---|---|
+| SC1 | One declaration per enum: `EXAM_STATUSES`, `EXAM_ELIGIBILITY_STATES`, `GRADE_LABELS`, `EXAM_GRADING_SYSTEMS` and `EXAM_SORT_FIELDS` live in `@mms/shared`; the DB `exams.status` column is typed `ExamStatus` and a DB test inserts every value (unknown values still fail the CHECK). |
+| SC2 | Every list/result/preferences/settings type is derived from its Zod schema (`z.infer`) instead of a parallel hand-written interface; `examsListResponseSchema` + `examsFromResponse()` normalize the paged/unpaged exam list. |
+| SC3 | The preferences PUT is strict and `gradingSystem` is an enum (`percentage|letter|gpa|rubric`); legacy stored values normalize to defaults on read. The preference remains advisory until D3. |
+| SC4 | Reader result rows are the documented public projection; the staff record extends it with OCC/moderation/audit fields. The marks list response and moderation response have shared schemas/types. |
+| SC5 | A missing mark is never defaulted to zero by a read/write schema; bodies do not coerce numeric strings. |
+| SC6 | No contract version constant exists; the Zod schemas are the versioned source of truth and contract-parity tests pin the enums/derivations. |
+
+## Open from the shared-contracts round
+
+- **D1 result status** (`present|absent|exempted|disqualified|withheld`), **D2 assessment type**,
+  **D3 configurable grading/GPA**, **transcript response model** and **exam schedule/time/room** are
+  designed but unimplemented — adding the types without the columns would be drift. See
+  [`examinations-shared-contracts-audit-2026-11-11.md`](./examinations-shared-contracts-audit-2026-11-11.md).
+
+## Decided in the frontend/state round (2026-11-11)
+
+| ID | Decision |
+|---|---|
+| FE1 | Exam writes invalidate exams, results, report aggregates, metrics, preferences, eligibility, dynamic report widgets and the dashboard summary; imports invalidate on job completion. |
+| FE2 | The marks grid navigates by roster index (Tab/Shift+Tab/Enter/arrows/Home/End), scrolling the virtualizer before focusing; rows are memoized and filtering is deferred. |
+| FE3 | Draft state is seeded once per edit session (with id/version snapshot); background refetches never overwrite a dirty draft, and save uses the snapshot so external changes still 409. |
+| FE4 | Closing the marks or exam modal with edits confirms a discard; Setup preferences and the Setup tab switch are guarded too. |
+| FE5 | Exam form validation is live/pure, Save is disabled while invalid, numeric fields do not coerce partial input, and server failures show one inline message (controller notifies once via `NotifiedMutationError`). |
+| FE6 | Moderation and publication/gate changes broadcast `exams`/`exam_results`; exam CRUD/results already broadcast through the bulk service. |
+
+## Open from the frontend/state round
+
+- Timetable views, a grading-scale builder (D3) and a student-profile exam surface remain unbuilt.
+- The contract mutation hooks in `useExaminationsQueries` duplicate the `useExaminationsApi`
+  mutations; consolidation is a follow-up (both share the invalidator).

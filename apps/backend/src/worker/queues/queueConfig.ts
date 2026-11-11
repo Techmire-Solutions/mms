@@ -7,15 +7,30 @@ export const QUEUE_MESSAGING_BROADCAST = "messaging-broadcast";
 export const QUEUE_SESSIONS_ROLLOVER = "sessions-rollover";
 /** Point-award pipelines get their own queue so a long award cannot starve every module's export. */
 export const QUEUE_HASANAT_AWARDS = "hasanat-awards";
+/**
+ * Examinations marks imports and broadsheet exports are the module's heavy jobs; they get their own
+ * queue so a slow session/student export cannot starve grade work (and vice versa).
+ */
+export const QUEUE_EXAMINATIONS = "examinations";
 
 export interface QueueConcurrencyAndPriority {
   concurrency: number;
   priority: number;
 }
 
+/**
+ * PDF renders run the Typst CLI as a child process. The compiler's slot semaphore is
+ * per-process (each sandboxed worker is a fork), so the queue concurrency is the real global
+ * bound: more concurrent renders means more 512 MB child heaps plus Typst processes.
+ */
+const PDF_RENDER_CONCURRENCY = Math.max(
+  1,
+  Number.parseInt(process.env.PDF_RENDER_CONCURRENCY || "2", 10),
+);
+
 export const QUEUE_SETTINGS: Record<string, QueueConcurrencyAndPriority> = {
   [QUEUE_PDF_RENDERING]: {
-    concurrency: 4,
+    concurrency: PDF_RENDER_CONCURRENCY,
     priority: 1,
   },
   [QUEUE_BULK_EXPORT]: {
@@ -34,7 +49,34 @@ export const QUEUE_SETTINGS: Record<string, QueueConcurrencyAndPriority> = {
     concurrency: 2,
     priority: 2,
   },
+  [QUEUE_EXAMINATIONS]: {
+    concurrency: 2,
+    priority: 2,
+  },
 };
+
+/** Queues served by a forked sandboxed processor (memory ceiling + child-process isolation). */
+export const SANDBOXED_PDF_QUEUES: readonly string[] = [QUEUE_PDF_RENDERING];
+export const SANDBOXED_EXPORT_QUEUES: readonly string[] = [QUEUE_BULK_EXPORT, QUEUE_EXAMINATIONS];
+export const SANDBOXED_QUEUE_NAMES: readonly string[] = [
+  ...SANDBOXED_PDF_QUEUES,
+  ...SANDBOXED_EXPORT_QUEUES,
+];
+
+/**
+ * Lock/stall policy for the sandboxed workers.
+ *
+ * `maxStalledCount` deliberately exceeds 1: a deploy that force-closes a child must lead to a retry
+ * (the runners are replay-safe), not to a dead letter on the first missed lock renewal. The lock
+ * duration stays 60 s; BullMQ renews it while the child is alive.
+ */
+export function sandboxedWorkerOptions(): {
+  lockDuration: number;
+  maxStalledCount: number;
+  stalledInterval: number;
+} {
+  return { lockDuration: 60_000, maxStalledCount: 3, stalledInterval: 30_000 };
+}
 
 export { getBullMQConnectionOptions } from "../../lib/redis.js";
 export { getQueuePrefix } from "../../lib/redisBullMQ.js";

@@ -70,7 +70,12 @@ export function resolveElementText(
     return mode === "edit" ? `{${fieldKey}}` : "";
   }
   const label = el.label || "";
-  if (data && label) return interpolate(label, data);
+  if (data && label) {
+    const interpolated = interpolate(label, data);
+    // A printed document must not show an unresolved binding (`Roll: {{rollNumber}}`); the
+    // editor keeps it visible so a designer can see which token is unbound.
+    return mode === "print" ? interpolated.replace(/\{\{\s*[\w.-]+\s*\}\}/g, "") : interpolated;
+  }
   return label;
 }
 

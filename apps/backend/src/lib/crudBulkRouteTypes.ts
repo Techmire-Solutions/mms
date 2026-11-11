@@ -36,6 +36,11 @@ export interface SoftDeletableBulkRoutesOptions<T> {
   /** Fallback page size when the client omits `limit` (schema path). */
   defaultPageSize?: number;
   saveFn: (data: T) => Promise<unknown>;
+  /**
+   * Authority for the bulk PUT. Defaults to `canWriteCollection`; module routes whose upsert also
+   * creates/edits a controller-owned definition (e.g. examinations) pass a stronger predicate.
+   */
+  canSave?: (user: User) => boolean;
   deleteFn: (id: string, userId: string, reason?: string) => Promise<boolean | null | unknown>;
   restoreFn: (id: string, userId: string) => Promise<boolean | null | unknown>;
   bulkDeleteFn: (

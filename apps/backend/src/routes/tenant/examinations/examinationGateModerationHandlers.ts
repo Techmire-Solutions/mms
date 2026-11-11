@@ -5,6 +5,7 @@ import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { NotFoundError } from "../../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../../lib/cache/index.js";
+import { broadcastTenantUpdate } from "../../../lib/livePush.js";
 import {
   publishExamResults,
   unpublishExamResults,
@@ -60,6 +61,8 @@ export function moderationGateHandlers() {
           { readOnly: false },
         );
         await invalidateMultiTierCache({ tenantId: tenant, domain: "examinations" });
+        // Other clients' marks/analytics views must refresh after a grace adjustment.
+        broadcastTenantUpdate(tenant, "collection", "exam_results");
         return { status: 200 as const, body: result };
       } catch (error) {
         return mapGateError(request, error, "Failed to apply the moderation");
@@ -110,6 +113,9 @@ export function moderationGateHandlers() {
         if (!result) throw new NotFoundError("Exam not found");
         // Completion reads the finalisation stamp; its cached rows must not survive the change.
         await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+        // Publication flips the exam lock and the marks visibility for every client.
+        broadcastTenantUpdate(tenant, "collection", "exams");
+        broadcastTenantUpdate(tenant, "collection", "exam_results");
         return {
           status: 200 as const,
           body: {

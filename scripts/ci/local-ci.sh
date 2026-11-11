@@ -176,6 +176,9 @@ if [[ "$FULL" -eq 1 ]]; then
   pnpm run check:i18n && note_ran "check:i18n"
   pnpm build && note_ran "build"
   pnpm run check:bundle && note_ran "check:bundle"
+  pnpm run check:examinations-tests && note_ran "check:examinations-tests"
+  pnpm run check:examinations-route-injection && note_ran "check:examinations-route-injection"
+  pnpm run check:examinations-route-security && note_ran "check:examinations-route-security"
 fi
 
 if [[ "$WITH_DB" -eq 1 && "$NEED_BE_DB" -eq 1 ]]; then

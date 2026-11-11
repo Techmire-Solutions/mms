@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { QueryClient } from "@tanstack/react-query";
 import { invalidateEnrollmentsQueries } from "./invalidateEnrollmentsQueries";
+import { EXAMINATIONS_ELIGIBILITY_QUERY_KEY } from "@/tenant/hooks/collections/examinations";
 
 describe("invalidateEnrollmentsQueries", () => {
   it("calls invalidateQueries on queryClient for all enrollments keys", () => {
@@ -23,6 +24,7 @@ describe("invalidateEnrollmentsQueries", () => {
         ["enrollments", "report-aggregates"],
         ["enrollments", "placements"],
         ["enrollments", "admissions"],
+        EXAMINATIONS_ELIGIBILITY_QUERY_KEY,
       ]),
     );
   });

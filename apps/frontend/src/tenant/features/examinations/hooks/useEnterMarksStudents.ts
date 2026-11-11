@@ -66,7 +66,7 @@ export function useEnterMarksStudents(exam?: Exam) {
       }
     }
     const result: ExamStudent[] = [];
-    for (const student of resolvedStudents as Student[]) {
+    for (const student of resolvedStudents) {
       const enrollment = enrollmentByStudent.get(String(student.id));
       if (enrollment) {
         result.push({

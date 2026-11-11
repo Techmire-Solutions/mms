@@ -1,7 +1,9 @@
 // MMS Financial Ledger Template (Typst BiDi)
+#let doc_data = json("/data.json")
+#let lang = doc_data.at("lang", default: "en")
+#let is_rtl = doc_data.at("direction", default: "ltr") == "rtl"
 #set page(
   paper: "a4",
-  flipped: true,
   margin: (x: 1.5cm, y: 1.5cm),
   header: align(right)[
     #text(8pt, fill: luma(120))[تقرير دفتر الأستاذ المحاسبي | General Ledger Summary]
@@ -14,11 +16,10 @@
 #set text(
   font: ("Readex Pro", "Noto Nastaliq Urdu", "Geist", "Liberation Sans"),
   size: 8.5pt,
-  lang: "ar",
-  dir: rtl
+  lang: lang,
+  dir: if is_rtl { rtl } else { ltr }
 )
 
-#let doc_data = json.decode(sys.inputs.at("data", default: "{}"))
 
 #let institution = doc_data.at("institution", default: "Madrasa Management System")
 #let period = doc_data.at("period", default: "الفترة المالية الحالية")

@@ -25,6 +25,12 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
 });
 
 vi.mock("@/lib/api", () => ({
+  apiContract: {
+    examinations: {
+      listExams: async () => ({ status: 200, body: { exams: [] } }),
+      listResults: async () => ({ status: 200, body: { results: [], hasMore: false } }),
+    },
+  },
   tsrClient: {
     examinations: {
       listExams: {

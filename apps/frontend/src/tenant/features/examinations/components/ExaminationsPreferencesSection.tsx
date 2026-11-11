@@ -4,17 +4,20 @@ import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
 import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
+import { isExamGradingSystem } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ExaminationsSettings } from "@mms/shared";
 
 export interface ExaminationsPreferencesSectionProps {
   settingsDraft: ExaminationsSettings;
   upd: <K extends keyof ExaminationsSettings>(field: K, value: ExaminationsSettings[K]) => void;
+  errors?: { passMark?: string; maxMark?: string };
 }
 
 export function ExaminationsPreferencesSection({
   settingsDraft,
   upd,
+  errors,
 }: ExaminationsPreferencesSectionProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -26,7 +29,9 @@ export function ExaminationsPreferencesSection({
             id="exams-grading-system"
             name="gradingSystem"
             value={settingsDraft.gradingSystem}
-            onChange={(value) => upd("gradingSystem", value)}
+            onChange={(value) => {
+              if (isExamGradingSystem(value)) upd("gradingSystem", value);
+            }}
             options={[
               {
                 value: "percentage",
@@ -39,6 +44,10 @@ export function ExaminationsPreferencesSection({
               {
                 value: "gpa",
                 label: t("examinations.settings.grading.gpa"),
+              },
+              {
+                value: "rubric",
+                label: t("examinations.settings.grading.rubric"),
               },
             ]}
           />
@@ -67,7 +76,11 @@ export function ExaminationsPreferencesSection({
           />
         </Field>
 
-        <Field id="exams-pass-mark" label={t("examinations.settings.passMark")}>
+        <Field
+          id="exams-pass-mark"
+          label={t("examinations.settings.passMark")}
+          error={errors?.passMark}
+        >
           <Input
             id="exams-pass-mark"
             name="passMark"
@@ -80,7 +93,11 @@ export function ExaminationsPreferencesSection({
           />
         </Field>
 
-        <Field id="exams-max-mark" label={t("examinations.settings.maxMark")}>
+        <Field
+          id="exams-max-mark"
+          label={t("examinations.settings.maxMark")}
+          error={errors?.maxMark}
+        >
           <Input
             id="exams-max-mark"
             name="maxMark"

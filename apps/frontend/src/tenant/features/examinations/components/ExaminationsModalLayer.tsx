@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -33,6 +34,7 @@ export function ExaminationsModalLayer({
   onSaveResults,
 }: ExaminationsModalLayerProps): React.JSX.Element {
   const { t } = useTranslation();
+  const [marksDirty, setMarksDirty] = useState(false);
 
   return (
     <>
@@ -50,13 +52,26 @@ export function ExaminationsModalLayer({
       {canWrite && !showDeleted && (
         <FormModal
           open={showMarksModal}
-          onClose={onCloseMarks}
           title={t("examinations.marks")}
           size="xl"
           hideFooter
           panelClassName="h-modal-tall max-h-modal-tall"
+          isDirty={marksDirty}
+          discardUnsavedTitle={t("settings.unsavedChanges")}
+          discardUnsavedDescription={t("examinations.enterMarks.unsavedConfirm")}
+          discardConfirmLabel={t("common.yes")}
+          discardCancelLabel={t("common.cancel")}
+          onClose={() => {
+            setMarksDirty(false);
+            onCloseMarks();
+          }}
         >
-          <EnterMarks exams={exams} results={examResults} onSaveResults={onSaveResults} />
+          <EnterMarks
+            exams={exams}
+            results={examResults}
+            onSaveResults={onSaveResults}
+            onDirtyChange={setMarksDirty}
+          />
         </FormModal>
       )}
     </>

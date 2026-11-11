@@ -1,7 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
 import type { Exam, ExamResult, ExaminationsCommandMetricsSnapshot } from "@mms/shared";
-import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
+import {
+  EXAMINATIONS_MODULE_MANIFEST,
+  examResultsPageResponseSchema,
+  examsFromResponse,
+} from "@mms/shared";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { apiContract, tsrClient } from "@/lib/api";
@@ -44,12 +48,7 @@ export function useExaminationsExamsCollection(options?: {
 }): Exam[] {
   const query = useExaminationsExams(options);
   if (!query.data || query.data.status !== 200) return [];
-  const body = query.data.body;
-  if (Array.isArray(body)) return body as Exam[];
-  if (body && typeof body === "object" && "exams" in body && Array.isArray(body.exams)) {
-    return body.exams as Exam[];
-  }
-  return [];
+  return examsFromResponse(query.data.body);
 }
 
 /** Safety bound for the marks pager: 20 × 500 = 10,000 marks per workspace read. */
@@ -80,7 +79,7 @@ export function useExaminationsResults(options?: { enabled?: boolean }) {
           // Preserve the status/type on the query error (the repo-wide contract ratchet).
           throw apiContractError(response, "Failed to load exam results");
         }
-        const body = response.body as { results: ExamResult[]; hasMore: boolean };
+        const body = examResultsPageResponseSchema.parse(response.body);
         results.push(...body.results);
         if (!body.hasMore) break;
         cursor = body.results[body.results.length - 1]?.id;
@@ -97,12 +96,7 @@ export function useExaminationsResults(options?: { enabled?: boolean }) {
 export function useExaminationsResultsCollection(options?: { enabled?: boolean }): ExamResult[] {
   const query = useExaminationsResults(options);
   if (!query.data || query.data.status !== 200) return [];
-  const body = query.data.body;
-  if (Array.isArray(body)) return body as ExamResult[];
-  if (body && typeof body === "object" && "results" in body && Array.isArray(body.results)) {
-    return body.results as ExamResult[];
-  }
-  return [];
+  return query.data.body.results;
 }
 
 export function useExaminationsMetrics(options?: { enabled?: boolean }) {

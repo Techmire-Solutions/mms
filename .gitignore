@@ -62,6 +62,7 @@ dump.rdb
 # 6. Test Artifacts, Coverage & Caches
 coverage/
 **/coverage/
+**/coverage-*/
 .nyc_output/
 .vitest/
 # Vitest shard blob reports (written by the CI coverage gate: `--reporter=blob

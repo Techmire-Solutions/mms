@@ -12,6 +12,7 @@ import {
   registerSoftDeletableBulkRoutes,
 } from "../../lib/crudRouter.js";
 import { examinationsUseCases } from "../../examinations/use-cases/examinationsUseCases.js";
+import { canDeleteCollection } from "../../services/rbacService.js";
 
 import { examinationSetupConfigRoutes } from "./examinationSetupConfigRoutes.js";
 import { examinationsReportRoutes } from "./examinations/examinationsReportRoutes.js";
@@ -51,6 +52,9 @@ export default async function examinationsRoutes(
         path: "/exams",
         collection: EXAMS_COLLECTION,
         schema: examBulkWriteSchema,
+        // Creating/editing an exam defines its scoring frame and status for every student — a
+        // controller action. Teachers keep `examinations.write` for marks entry only.
+        canSave: (user) => canDeleteCollection(user, "exams"),
         loadFn: examinationsUseCases.loadExams,
         saveFn: examinationsUseCases.upsertExams,
         deleteFn: examinationsUseCases.deleteExamById,

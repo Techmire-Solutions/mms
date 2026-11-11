@@ -16,6 +16,8 @@ export interface StandardModuleCsvImportDialogProps<TRow = Record<string, unknow
   subtitle?: string;
   submitRows?: ModuleCsvImportSubmitRows<TRow>;
   preflightPath?: string;
+  /** Called after the queued import job completes (invalidate module caches). */
+  onSuccess?: () => void;
 }
 
 /**
@@ -33,6 +35,7 @@ export function StandardModuleCsvImportDialog<TRow = Record<string, unknown>>({
   subtitle,
   submitRows,
   preflightPath,
+  onSuccess,
 }: StandardModuleCsvImportDialogProps<TRow>): React.JSX.Element | null {
   const { t } = useTranslation();
 
@@ -41,6 +44,7 @@ export function StandardModuleCsvImportDialog<TRow = Record<string, unknown>>({
     schema,
     submitRows,
     preflightPath,
+    onSuccess,
     // Deliberately no `onSuccess: onClose`: closing on submit success unmounted the
     // dialog before `ModuleImportDialog` could render `completedJob`, so imported /
     // failed counts were never shown (2026-11-04 review, S-01). The dialog now stays

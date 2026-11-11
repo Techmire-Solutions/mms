@@ -5,7 +5,10 @@ import {
   QUEUE_BULK_EXPORT,
   QUEUE_MESSAGING_BROADCAST,
   QUEUE_SESSIONS_ROLLOVER,
+  QUEUE_EXAMINATIONS,
   QUEUE_SETTINGS,
+  SANDBOXED_QUEUE_NAMES,
+  sandboxedWorkerOptions,
   DEFAULT_JOB_OPTIONS,
   WORKER_HEAP_LIMIT_BYTES,
   resolveQueueNameForJob,
@@ -17,8 +20,10 @@ import {
 
 describe("BullMQ Queue Architecture (Phase 5)", () => {
   it("defines correct queue names and concurrencies", () => {
+    // One slot per Typst process: the compiler semaphore is per sandboxed child, so the queue
+    // concurrency is the global bound (each render also holds a 512 MB child heap).
     expect(QUEUE_SETTINGS[QUEUE_PDF_RENDERING]).toEqual({
-      concurrency: 4,
+      concurrency: 2,
       priority: 1,
     });
     expect(QUEUE_SETTINGS[QUEUE_BULK_EXPORT]).toEqual({
@@ -32,6 +37,10 @@ describe("BullMQ Queue Architecture (Phase 5)", () => {
     expect(QUEUE_SETTINGS[QUEUE_SESSIONS_ROLLOVER]).toEqual({
       concurrency: 1,
       priority: 1,
+    });
+    expect(QUEUE_SETTINGS[QUEUE_EXAMINATIONS]).toEqual({
+      concurrency: 2,
+      priority: 2,
     });
   });
 
@@ -74,6 +83,23 @@ describe("BullMQ Queue Architecture (Phase 5)", () => {
     expect(resolveQueueNameForJob("users", "export-csv")).toBe(QUEUE_BULK_EXPORT);
     // Long-running session rollover gets its own queue so exports/imports are not starved.
     expect(resolveQueueNameForJob("sessions", "promote")).toBe(QUEUE_SESSIONS_ROLLOVER);
+
+    // Examinations work (marks imports, broadsheet/exam CSV exports) has its own queue.
+    expect(resolveQueueNameForJob("examinations", "marks-import")).toBe(QUEUE_EXAMINATIONS);
+    expect(resolveQueueNameForJob("examinations", "results-export")).toBe(QUEUE_EXAMINATIONS);
+    expect(resolveQueueNameForJob("examinations", "export")).toBe(QUEUE_EXAMINATIONS);
+    expect(resolveQueueNameForJob("examinations", "import")).toBe(QUEUE_EXAMINATIONS);
+  });
+
+  it("applies a restart-tolerant stall policy to the sandboxed workers", () => {
+    expect(sandboxedWorkerOptions()).toEqual({
+      lockDuration: 60_000,
+      maxStalledCount: 3,
+      stalledInterval: 30_000,
+    });
+    expect(SANDBOXED_QUEUE_NAMES).toEqual(
+      expect.arrayContaining([QUEUE_PDF_RENDERING, QUEUE_BULK_EXPORT, QUEUE_EXAMINATIONS]),
+    );
   });
 
   it("handles dead-letter queue permanently failed jobs gracefully", async () => {

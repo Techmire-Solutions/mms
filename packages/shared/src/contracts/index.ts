@@ -61,6 +61,7 @@ import { workshopsCompletionContract } from "./workshopsCompletion.contract.js";
 import { notificationsContract } from "./notifications.contract.js";
 import { obligationContract } from "./obligations.contract.js";
 import { examinationContract } from "./examinations.contract.js";
+export type { ExamEligibilityResponse } from "./examinations.contractEligibility.js";
 import { enrollmentContract } from "./enrollments.contract.js";
 import { dashboardContract } from "./dashboard.contract.js";
 import { savedReportsContract } from "./savedReports.contract.js";

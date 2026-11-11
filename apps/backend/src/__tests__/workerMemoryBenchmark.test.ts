@@ -1,4 +1,19 @@
+import { writeFileSync } from "node:fs";
 import { describe, it, expect, vi } from "vitest";
+
+// The Typst CLI is not installed in CI; the mocked child process writes a minimal PDF so the
+// streaming/cleanup path is exercised without a placeholder fallback.
+vi.mock("node:child_process", () => ({
+  execFile: (
+    _file: string,
+    args: string[],
+    _options: unknown,
+    callback: (error: null, output: { stdout: string; stderr: string }) => void,
+  ) => {
+    writeFileSync(args[2]!, "%PDF-1.4\n% benchmark\n%%EOF\n");
+    callback(null, { stdout: "", stderr: "" });
+  },
+}));
 import type { BackgroundJobRecord } from "@mms/shared";
 import {
   dispatchJobToQueue,
@@ -95,6 +110,7 @@ describe("Worker Memory Footprint & Throughput Benchmark (500 Concurrent Tasks)"
   });
 
   it("streams Typst PDF render jobs directly to storage and cleans up disk artifacts", async () => {
+    process.env.TYPST_BIN = process.execPath;
     const progressUpdates: number[] = [];
     const uploadResult = await processPdfRenderJob(
       "bench-tenant",

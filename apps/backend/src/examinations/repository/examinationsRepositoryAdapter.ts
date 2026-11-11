@@ -23,6 +23,7 @@ import {
   aggregateExaminationsCommandMetrics,
 } from "../../db/repositories/examinationRepositoryList.js";
 import { loadExaminationsReportAggregatesSql } from "../../db/repositories/examinationRepositoryReport.js";
+import { findExamResultsFingerprint } from "../../db/repositories/examinationResultsRepository.js";
 import { listSessionClassNames } from "../../db/repositories/examinationExamsRepository.js";
 import { aggregateExaminationsWidgetQueries } from "../../db/repositories/examinationsRepositoryWidgets.js";
 
@@ -42,6 +43,7 @@ export const examinationsRepository: ExaminationsRepository = {
   listExamsPage,
   listExamResultsByWorkspace,
   listExamResultsPage,
+  findExamResultsFingerprint,
   applyExamResultModeration,
   findExamResultById,
   findExamResultsByIds,

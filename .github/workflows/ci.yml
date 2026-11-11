@@ -44,6 +44,8 @@ jobs:
           filters: |
             backend_db:
               - 'apps/backend/src/db/**'
+              - 'apps/backend/src/examinations/**'
+              - 'apps/backend/src/routes/tenant/examinations/**'
               - 'apps/backend/drizzle.config.ts'
               - 'apps/backend/src/**/repository/**'
               - 'apps/backend/src/**/ledgerPosting/**'
@@ -200,6 +202,20 @@ jobs:
       # a real PR.
       - name: CI and ratchet script tests
         run: pnpm run test:scripts
+
+      # Examinations test-matrix / route-injection / RBAC matrix and scoring coverage.
+      # These were only run by the local code-review skill; CI must enforce them too.
+      - name: Examinations test matrix
+        run: pnpm run check:examinations-tests
+
+      - name: Examinations route injection
+        run: pnpm run check:examinations-route-injection
+
+      - name: Examinations route-security matrix
+        run: pnpm run check:examinations-route-security
+
+      - name: Examinations scoring coverage
+        run: pnpm --filter @mms/shared run test:coverage:examinations
 
       # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
       # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
@@ -754,6 +770,12 @@ jobs:
       - name: Attendance integration coverage ratchet
         run: node scripts/ci/check-attendance-coverage.mjs --coverage apps/backend/coverage-attendance-db
 
+      - name: Examinations DB coverage
+        run: pnpm --filter mms-backend run test:db:coverage:examinations
+
+      - name: Examinations integration coverage ratchet
+        run: node scripts/ci/check-examinations-coverage.mjs --coverage apps/backend/coverage-examinations-db
+
       - name: DB test hygiene and manifest (enrollments + attendance)
         run: |
           node scripts/ci/check-db-test-hygiene.mjs
@@ -768,6 +790,7 @@ jobs:
           src/__tests__/db-integration/enrollment
           src/__tests__/db-integration/registration
           src/__tests__/db-integration/attendance
+          src/__tests__/db-integration/examination
           --sequence.shuffle.files --sequence.seed=20261108
 
   # Proves tenant isolation under the role production is supposed to use: a

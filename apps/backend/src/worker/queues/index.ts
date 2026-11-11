@@ -8,6 +8,7 @@ import {
   QUEUE_SESSIONS_ROLLOVER,
   DEFAULT_JOB_OPTIONS,
   QUEUE_HASANAT_AWARDS,
+  QUEUE_EXAMINATIONS,
   getBullMQConnectionOptions,
   getQueuePrefix,
 } from "./queueConfig.js";
@@ -131,6 +132,10 @@ export function resolveQueueNameForJob(moduleId: string, kind: string): string {
     (normalizedKind === "bulk-award" || normalizedKind === "import")
   ) {
     return QUEUE_HASANAT_AWARDS;
+  }
+
+  if (normalizedModule === "examinations") {
+    return QUEUE_EXAMINATIONS;
   }
 
   if (

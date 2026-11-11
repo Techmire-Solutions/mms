@@ -187,6 +187,7 @@ export function registerSoftDeletableBulkRoutes<T>(
     listQuerySchema: options.listQuerySchema,
     defaultPageSize: options.defaultPageSize,
     saveFn,
+    canSave: options.canSave,
     responseKey,
     errorMessagePrefix,
     customGetRoute,

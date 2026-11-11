@@ -36,23 +36,36 @@ export function ExamResultModerationPanel({
     result.graceMarks && result.graceMarks > 0 ? String(result.graceMarks) : "",
   );
   const [graceReason, setGraceReason] = useState(result.moderationReason ?? "");
+  const [error, setError] = useState<string | null>(null);
 
   const isPublished = Boolean(exam.resultsFinalizedAt);
   const canModerate = canDelete && !isPublished && Boolean(result.studentId);
 
   const moderate = tsrClient.examinations.moderateExamResult.useMutation({
     onSuccess: () => {
+      setError(null);
       notify.success(t("examinations.resultCard.graceSaved"));
       void invalidateExaminationsQueries(queryClient);
       onSaved();
     },
-    onError: (error: Error) => notify.error(error.message),
+    onError: (mutationError: Error) => setError(mutationError.message),
   });
 
   const graceMarks = Number(graceValue || 0);
   const effectivePreview = result.marksObtained + (Number.isFinite(graceMarks) ? graceMarks : 0);
 
   if (!canModerate) return null;
+
+  const graceInvalid = graceValue.trim() !== "" && (!Number.isFinite(graceMarks) || graceMarks < 0);
+  const reasonInvalid = graceReason.trim().length > 0 && graceReason.trim().length < 3;
+  const exceedsTotal = effectivePreview > exam.totalMarks;
+  const validationMessage = graceInvalid
+    ? t("examinations.resultCard.graceInvalid")
+    : reasonInvalid
+      ? t("examinations.resultCard.graceReasonTooShort")
+      : exceedsTotal
+        ? t("examinations.resultCard.graceExceedsTotal")
+        : null;
 
   const canApply =
     !moderate.isPending &&
@@ -93,7 +106,13 @@ export function ExamResultModerationPanel({
             name="graceMarks"
             inputMode="decimal"
             value={graceValue}
-            onChange={(event) => setGraceValue(event.target.value)}
+            onChange={(event) => {
+              setGraceValue(event.target.value);
+              setError(null);
+            }}
+            aria-invalid={graceInvalid || undefined}
+            dir="ltr"
+            className="text-end"
             maxLength={8}
           />
         </div>
@@ -108,7 +127,11 @@ export function ExamResultModerationPanel({
             id="exam-grace-reason"
             name="graceReason"
             value={graceReason}
-            onChange={(event) => setGraceReason(event.target.value)}
+            onChange={(event) => {
+              setGraceReason(event.target.value);
+              setError(null);
+            }}
+            aria-invalid={reasonInvalid || undefined}
             maxLength={500}
           />
         </div>
@@ -129,6 +152,11 @@ export function ExamResultModerationPanel({
           {t("examinations.resultCard.graceApply")}
         </Button>
       </div>
+      {(validationMessage || error) && (
+        <p role="alert" className="m-0 text-xs font-semibold text-destructive">
+          {validationMessage ?? error}
+        </p>
+      )}
     </section>
   );
 }

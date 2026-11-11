@@ -6,11 +6,7 @@ import {
 } from "@mms/shared";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
 import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
-import {
-  canDeleteCollection,
-  canReadCollection,
-  canWriteCollection,
-} from "../../../services/rbacService.js";
+import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 
 const COLLECTION = EXAMINATIONS_MODULE_MANIFEST.collectionKey;
 
@@ -28,7 +24,9 @@ export const examinationsExportRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   registerModuleCsvImportRoutes(fastify, {
-    canWrite: (user) => canWriteCollection(user, COLLECTION),
+    // The exams CSV import creates/edits scoring frames and status: controller authority, not the
+    // ordinary write grant. The marks import (per exam) keeps `examinations.write` + section scope.
+    canWrite: (user) => canDeleteCollection(user, COLLECTION),
     bodySchema: examinationsImportBodySchema,
     moduleId: EXAMINATIONS_MODULE_MANIFEST.moduleId,
     defaultLabel: "Importing examinations…",

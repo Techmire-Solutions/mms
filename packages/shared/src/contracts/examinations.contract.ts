@@ -5,10 +5,15 @@ import { bulkStringIdsBodySchema, resourceIdParamsSchema } from "../schemas/api.
 import {
   examRecordSchema,
   examResultRecordSchema,
+  examResultsPageResponseSchema,
   examBulkWriteSchema,
   examMarksWriteListSchema,
 } from "../examinations/examinationsModuleManifest.js";
-import { examsListQuerySchema } from "../examinations/examinationsListQuery.js";
+import {
+  examsListQuerySchema,
+  examsListResponseSchema,
+} from "../examinations/examinationsListQuery.js";
+import { examinationsPreferencesSchema } from "../examinations/examinationsSetupPreferences.js";
 import { examMarksImportBodySchema } from "../schemas/opsModuleImport.dto.js";
 import { examinationsReportAggregatesSchema } from "../examinations/examinationsReportAggregates.js";
 import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
@@ -29,9 +34,13 @@ const examJobAcceptedResponseSchema = z.object({
       kind: z.string(),
       status: z.enum(["pending", "running", "completed", "failed"]),
       label: z.string(),
+      hasDownload: z.boolean().optional(),
+      progress: z.object({ current: z.number(), total: z.number() }).optional(),
+      error: z.string().optional(),
+      completedAt: z.string().optional(),
       createdAt: z.string(),
     })
-    .passthrough(),
+    .strict(),
 });
 /** Capped at 500 ids and 500-char reason, matching the shared bulk schema and the DB column. */
 const bulkIds = bulkStringIdsBodySchema;
@@ -47,47 +56,11 @@ export const examResultsListQuerySchema = z
   })
   .strict();
 
-/**
- * Envelope for the marks list. `hasMore` exists because the previous array response silently
- * truncated at 500 rows and every rank/average was computed from an incomplete set.
- */
-export const examResultsPageResponseSchema = z.object({
-  results: z.array(examResultRecordSchema),
-  hasMore: z.boolean(),
-});
-
-/** Envelope for paginated exam list responses. */
-export const examsPageResponseSchema = z.object({
-  exams: z.array(examRecordSchema),
-  total: z.number(),
-  page: z.number(),
-  limit: z.number(),
-  hasMore: z.boolean(),
-  /** Keyset continuation for the next page, when the caller walks `afterId`. */
-  nextCursor: z.string().optional(),
-});
-
 /** `{ success: true, succeeded, failed }` bulk-operation envelope. */
 const examinationBulkResultResponseSchema = z.object({
   success: z.literal(true),
   succeeded: z.number(),
   failed: z.number(),
-});
-
-/** Normalized Examinations Setup preferences (`ExaminationsModulePreferences`). */
-export const examinationsPreferencesResponseSchema = z.object({
-  passMark: z.string(),
-  maxMark: z.string(),
-  gradingSystem: z.string(),
-  showRankings: z.boolean(),
-  allowRetake: z.boolean(),
-  autoPublishResults: z.boolean(),
-  notifyOnResult: z.boolean(),
-  certificateTemplate: z.string(),
-  aiGrading: z.boolean(),
-  distinguishHonours: z.boolean(),
-  examReminders: z.boolean(),
-  defaultViewLayout: z.string(),
 });
 
 const examinationsWidgetAggregateResultSchema = z.object({
@@ -106,7 +79,7 @@ export const examinationContract = c.router({
     path: "/api/examinations/exams",
     query: examsListQuerySchema,
     responses: {
-      200: z.union([z.object({ exams: z.array(examRecordSchema) }), examsPageResponseSchema]),
+      200: examsListResponseSchema,
       400: errorResponse,
       403: errorResponse,
       500: errorResponse,
@@ -263,7 +236,7 @@ export const examinationContract = c.router({
     method: "GET",
     path: "/api/examinations/preferences",
     responses: {
-      200: z.object({ preferences: examinationsPreferencesResponseSchema }),
+      200: z.object({ preferences: examinationsPreferencesSchema }),
       403: errorResponse,
       500: errorResponse,
     },
@@ -276,7 +249,7 @@ export const examinationContract = c.router({
     responses: {
       200: z.object({
         success: z.literal(true),
-        preferences: examinationsPreferencesResponseSchema,
+        preferences: examinationsPreferencesSchema,
       }),
       403: errorResponse,
       500: errorResponse,

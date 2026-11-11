@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { User } from "@mms/shared";
+import { randomUUID } from "node:crypto";
 import { examMarksImportBodySchema, resourceIdParamsSchema } from "@mms/shared";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import {
@@ -11,15 +12,57 @@ import {
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import {
+  BackgroundJobLimitError,
   enqueueBackgroundJob,
   getUserBackgroundJob,
+  getUserBackgroundJobPayload,
   hasBackgroundJobRunner,
   QueueUnavailableError,
+  retryFailedBackgroundJob,
 } from "../../../services/backgroundJobWorkerService.js";
+import { findLiveBackgroundJobForEntity } from "../../../services/backgroundJobService.js";
 import { buildBackgroundJobId, buildDeterministicJobKey } from "../../../lib/backgroundJobIds.js";
 import { examinationsUseCases } from "../../../examinations/use-cases/examinationsUseCases.js";
+import { assertMarksImportScope } from "../../../examinations/use-cases/examMarksImportScope.js";
+import { recordAuditEventSafely } from "../../../services/auditTrailService.js";
 
 const COLLECTION = "exams";
+
+/** Marks-state fingerprint for the export key; a read failure must not block an export. */
+async function loadExportFingerprint(examId: string): Promise<Record<string, unknown>> {
+  try {
+    const fingerprint = await examinationsUseCases.loadExamResultsFingerprint(examId);
+    return { count: fingerprint.count, maxUpdatedAt: fingerprint.maxUpdatedAt };
+  } catch {
+    return { count: -1, maxUpdatedAt: randomUUID() };
+  }
+}
+
+/**
+ * Marks are personal data: a broadsheet download is an access event. Best-effort (read-side), so a
+ * transient audit failure never blocks a legitimate export — the same convention as other reads.
+ */
+async function auditBroadsheetExport(
+  user: User,
+  tenant: string,
+  examId: string,
+  includeInternal: boolean,
+  jobId: string,
+): Promise<void> {
+  await recordAuditEventSafely({
+    workspaceSubdomain: tenant,
+    tableName: "exam_results",
+    recordId: examId,
+    actionType: "VIEW",
+    realUserId: String(user.id),
+    newState: {
+      reasonCode: "broadsheet_export",
+      examId,
+      includeInternal,
+      jobId,
+    },
+  });
+}
 
 /**
  * Marks transfer routes: a per-exam CSV import and a broadsheet export.
@@ -63,6 +106,15 @@ export const examinationMarksTransferRoutes: FastifyPluginAsync = async (fastify
           message: "Results are published — unpublish them before importing marks",
         });
       }
+      try {
+        // The importer is a writer: it obeys the same exact-section staffing rule as the grid
+        // save, resolved from the rolls being imported (the worker re-runs the attendance gate).
+        await assertMarksImportScope(user, tenant, examId, parsed.data.rows);
+      } catch (error) {
+        const mapped = sendIfHttpDomainError(reply, error);
+        if (mapped) return mapped;
+        return sendDatabaseError(reply, "Failed to authorise the marks import", error);
+      }
 
       const label =
         parsed.data.label?.trim() || `Importing ${parsed.data.rows.length} marks into ${exam.name}`;
@@ -76,8 +128,52 @@ export const examinationMarksTransferRoutes: FastifyPluginAsync = async (fastify
         });
       const jobId = buildBackgroundJobId(tenant, userId, idempotencyKey);
 
+      const clientKey = parsed.data.idempotencyKey?.trim();
       const existing = await getUserBackgroundJob(userId, jobId);
-      if (existing) return reply.status(202).send({ job: existing });
+      if (existing) {
+        const importPayload = { examId, rows: parsed.data.rows, label };
+        if (existing.status === "failed") {
+          return reply
+            .status(202)
+            .send({ job: await retryFailedBackgroundJob(tenant, userId, existing, importPayload) });
+        }
+        const stored = await getUserBackgroundJobPayload(userId, jobId, tenant);
+        if (stored && stored.examId !== undefined) {
+          const mismatch =
+            stored.examId !== examId ||
+            JSON.stringify(stored.rows) !== JSON.stringify(parsed.data.rows);
+          if (mismatch) {
+            return reply.status(409).send({
+              type: "exam_marks_import_conflict",
+              message:
+                "This idempotency key was already used for a different exam or row set — start a new import",
+            });
+          }
+        } else if (clientKey && existing.status === "completed") {
+          return reply.status(409).send({
+            type: "exam_marks_import_conflict",
+            message:
+              "This idempotency key belongs to a finished import whose rows were discarded — start a new import with a new key",
+          });
+        }
+        return reply.status(202).send({ job: existing });
+      }
+
+      // One import per exam at a time: concurrent imports churn OCC stale_write errors and
+      // duplicate work. The check is tenant-wide (a co-teacher importing the same exam counts).
+      const live = await findLiveBackgroundJobForEntity(
+        "examinations",
+        "marks-import",
+        "examId",
+        examId,
+      );
+      if (live) {
+        return reply.status(409).send({
+          type: "exam_marks_import_in_progress",
+          message: "A marks import for this exam is already running — wait for it to finish",
+          details: { jobId: live.id },
+        });
+      }
 
       try {
         const job = await enqueueBackgroundJob(
@@ -95,6 +191,9 @@ export const examinationMarksTransferRoutes: FastifyPluginAsync = async (fastify
         );
         return reply.status(202).send({ job });
       } catch (error) {
+        if (error instanceof BackgroundJobLimitError) {
+          return reply.status(429).send({ type: "background_job_limit", message: error.message });
+        }
         if (error instanceof QueueUnavailableError) {
           return sendServiceUnavailable(reply, error.message);
         }
@@ -131,14 +230,30 @@ export const examinationMarksTransferRoutes: FastifyPluginAsync = async (fastify
     }
 
     const userId = String(user.id);
+    // The key includes the marks state: a double click dedupes, but an export requested after a
+    // correction produces a fresh artifact instead of the stale one.
+    const fingerprint = await loadExportFingerprint(examId);
+    const exportPayload = {
+      examId,
+      includeInternal,
+      fingerprint,
+      label: `Exported marks for ${exam.name}`,
+    };
     const idempotencyKey = buildDeterministicJobKey({
       moduleId: "examinations",
       kind: "results-export",
-      payload: { examId },
+      payload: exportPayload,
     });
     const jobId = buildBackgroundJobId(tenant, userId, idempotencyKey);
     const existing = await getUserBackgroundJob(userId, jobId);
-    if (existing) return reply.status(202).send({ job: existing });
+    if (existing) {
+      const job =
+        existing.status === "failed"
+          ? await retryFailedBackgroundJob(tenant, userId, existing, exportPayload)
+          : existing;
+      await auditBroadsheetExport(user, tenant, examId, includeInternal, job.id);
+      return reply.status(202).send({ job });
+    }
 
     try {
       const job = await enqueueBackgroundJob(
@@ -152,10 +267,14 @@ export const examinationMarksTransferRoutes: FastifyPluginAsync = async (fastify
           label: `Exporting marks for ${exam.name}`,
           createdAt: new Date().toISOString(),
         },
-        { examId, includeInternal, label: `Exported marks for ${exam.name}` },
+        exportPayload,
       );
+      await auditBroadsheetExport(user, tenant, examId, includeInternal, job.id);
       return reply.status(202).send({ job });
     } catch (error) {
+      if (error instanceof BackgroundJobLimitError) {
+        return reply.status(429).send({ type: "background_job_limit", message: error.message });
+      }
       if (error instanceof QueueUnavailableError) {
         return sendServiceUnavailable(reply, error.message);
       }

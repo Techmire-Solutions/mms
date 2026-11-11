@@ -6,9 +6,11 @@ import { loadBackendEnv } from "../config/loadEnv.js";
 
 loadBackendEnv();
 import {
-  QUEUE_PDF_RENDERING,
-  QUEUE_BULK_EXPORT,
   QUEUE_SETTINGS,
+  SANDBOXED_EXPORT_QUEUES,
+  SANDBOXED_PDF_QUEUES,
+  SANDBOXED_QUEUE_NAMES,
+  sandboxedWorkerOptions,
   getBullMQConnectionOptions,
   getQueuePrefix,
   closeAllQueues,
@@ -63,23 +65,23 @@ export function createWorkerForQueue(queueName: string): Worker<EnqueuedJobData>
 
   let worker: Worker<EnqueuedJobData>;
 
-  if (queueName === QUEUE_PDF_RENDERING) {
+  if (SANDBOXED_PDF_QUEUES.includes(queueName)) {
     worker = new Worker<EnqueuedJobData>(queueName, SANDBOXED_PDF_PROCESSOR_PATH, {
       connection,
       prefix,
       concurrency,
       useWorkerThreads: false,
       workerForkOptions: WORKER_FORK_OPTIONS,
-      lockDuration: 60000,
+      ...sandboxedWorkerOptions(),
     });
-  } else if (queueName === QUEUE_BULK_EXPORT) {
+  } else if (SANDBOXED_EXPORT_QUEUES.includes(queueName)) {
     worker = new Worker<EnqueuedJobData>(queueName, SANDBOXED_EXPORT_PROCESSOR_PATH, {
       connection,
       prefix,
       concurrency,
       useWorkerThreads: false,
       workerForkOptions: WORKER_FORK_OPTIONS,
-      lockDuration: 60000,
+      ...sandboxedWorkerOptions(),
     });
   } else {
     worker = new Worker<EnqueuedJobData>(
@@ -229,7 +231,11 @@ export async function startWorkerDaemon(): Promise<void> {
       }
       for (const worker of activeWorkers) {
         try {
-          await worker.close();
+          // Sandboxed children run in a separate process and never see the parent's abort above;
+          // force-close makes the child pool send SIGTERM so their runner stops at the next
+          // page/chunk. In-process workers keep the graceful "wait for current job" close.
+          const sandboxed = SANDBOXED_QUEUE_NAMES.includes(worker.name);
+          await worker.close(sandboxed);
         } catch (err) {
           logger.error({ err }, "Error closing worker");
         }

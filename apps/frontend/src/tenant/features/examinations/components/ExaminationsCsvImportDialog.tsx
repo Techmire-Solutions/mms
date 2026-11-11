@@ -1,6 +1,8 @@
 import React from "react";
 import { examinationsTransferSchema, type ExaminationTransferEntity } from "@mms/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
+import { invalidateExaminationsQueries } from "@/tenant/features/examinations/hooks/invalidateExaminationsQueries";
 
 export interface ExaminationsCsvImportDialogProps {
   open: boolean;
@@ -14,6 +16,16 @@ export function ExaminationsCsvImportDialog({
   onClose,
   canWrite,
 }: ExaminationsCsvImportDialogProps): React.JSX.Element | null {
+  if (!open || !canWrite) return null;
+  return <OpenExaminationsCsvImportDialog open={open} onClose={onClose} canWrite={canWrite} />;
+}
+
+function OpenExaminationsCsvImportDialog({
+  open,
+  onClose,
+  canWrite,
+}: ExaminationsCsvImportDialogProps): React.JSX.Element {
+  const queryClient = useQueryClient();
   return (
     <StandardModuleCsvImportDialog<ExaminationTransferEntity>
       open={open}
@@ -22,6 +34,7 @@ export function ExaminationsCsvImportDialog({
       apiPath="/api/examinations/import"
       schema={examinationsTransferSchema}
       navKey="nav.examinations"
+      onSuccess={() => invalidateExaminationsQueries(queryClient)}
     />
   );
 }

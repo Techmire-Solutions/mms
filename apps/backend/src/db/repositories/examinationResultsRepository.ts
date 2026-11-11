@@ -1,4 +1,4 @@
-import { and, eq, gt, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type ExamResult } from "@mms/shared";
 import { examResults, exams } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
@@ -126,6 +126,39 @@ export async function listExamResultsPage(
     const hasMore = rows.length > limit;
     const page = hasMore ? rows.slice(0, limit) : rows;
     return { results: page.map(resultRowToRecord), hasMore };
+  });
+}
+
+/** Stable identity of an exam's marks state — used to key broadsheet exports. */
+export interface ExamResultsFingerprint {
+  count: number;
+  maxUpdatedAt: string | null;
+}
+
+/**
+ * Cheap fingerprint of one exam's marks (`count`, newest `updated_at`).
+ *
+ * The broadsheet export key includes it so a re-export after a correction produces a fresh
+ * artifact, while a double-click on an unchanged exam still dedupes to the same job.
+ */
+export async function findExamResultsFingerprint(
+  tenant: string,
+  examId: string,
+): Promise<ExamResultsFingerprint> {
+  const subdomain = tenant.trim().toLowerCase();
+  const trimmedExamId = examId?.trim();
+  if (!trimmedExamId) return { count: 0, maxUpdatedAt: null };
+  return withTenantRead(subdomain, async (tx) => {
+    const [row] = await tx
+      .select({
+        count: sql<number>`count(*)::int`,
+        maxUpdatedAt: sql<string | null>`max(${examResults.updatedAt})::text`,
+      })
+      .from(examResults)
+      .where(
+        and(eq(examResults.workspaceSubdomain, subdomain), eq(examResults.examId, trimmedExamId)),
+      );
+    return { count: Number(row?.count ?? 0), maxUpdatedAt: row?.maxUpdatedAt ?? null };
   });
 }
 

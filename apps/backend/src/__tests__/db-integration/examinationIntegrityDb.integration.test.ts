@@ -1,4 +1,5 @@
-import { and, eq, sql } from "drizzle-orm";
+import { EXAM_STATUSES, type ExamStatus } from "@mms/shared";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Exam, ExamResult } from "@mms/shared";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
@@ -362,11 +363,12 @@ describe("database-enforced score invariants", () => {
   });
 
   it("enforces the exams range and status checks", async () => {
-    const invalid = [
+    const invalid: Array<Partial<typeof exams.$inferInsert>> = [
       { totalMarks: 100, passingMarks: 120, duration: 60, status: "ongoing" },
       { totalMarks: 0, passingMarks: 0, duration: 60, status: "ongoing" },
       { totalMarks: 100, passingMarks: 50, duration: 0, status: "ongoing" },
-      { totalMarks: 100, passingMarks: 50, duration: 60, status: "postponed" },
+      // Deliberately outside the enum: proves the DB CHECK still rejects unknown statuses.
+      { totalMarks: 100, passingMarks: 50, duration: 60, status: "postponed" as ExamStatus },
     ];
 
     for (const [index, values] of invalid.entries()) {
@@ -386,6 +388,28 @@ describe("database-enforced score invariants", () => {
       }
       expect(code, JSON.stringify(values)).toBe("23514");
     }
+  });
+
+  it("accepts every shared exam status at the DB boundary", async () => {
+    const ids = EXAM_STATUSES.map((status) => `ex-status-${status}`);
+    for (const [index, status] of EXAM_STATUSES.entries()) {
+      await withTenant(TENANT, (tx) =>
+        tx.insert(exams).values({
+          id: ids[index]!,
+          workspaceSubdomain: TENANT,
+          name: `Status ${status}`,
+          date: "2026-04-01",
+          status,
+        }),
+      );
+    }
+    const rows = await withTenant(TENANT, (tx) =>
+      tx
+        .select({ status: exams.status })
+        .from(exams)
+        .where(and(eq(exams.workspaceSubdomain, TENANT), inArray(exams.id, ids))),
+    );
+    expect(rows.map((row) => row.status).sort()).toEqual([...EXAM_STATUSES].sort());
   });
 });
 
@@ -710,7 +734,38 @@ describe("state-machine guards on the live save path (real Postgres)", () => {
     expect(
       events.some((event) => event.recordId === createdId && event.actionType === "CREATE"),
     ).toBe(true);
-    expect(events.some((event) => event.recordId === EXAM && event.newState?.includes("120"))).toBe(
+    expect(
+      events.some(
+        (event) =>
+          event.recordId === createdId && event.newState?.includes('"reasonCode":"exam_created"'),
+      ),
+    ).toBe(true);
+    expect(
+      events.some(
+        (event) =>
+          event.recordId === EXAM &&
+          event.newState?.includes("120") &&
+          event.newState?.includes('"reasonCode":"scoring_frame"'),
+      ),
+    ).toBe(true);
+  });
+
+  it("reason-codes a pure status move as a status override", async () => {
+    await bulkSaveExams(TENANT, [examRecord({ status: "completed" })]);
+
+    const events = await withTenant(TENANT, (tx) =>
+      tx
+        .select({ recordId: auditTrailEvents.recordId, newState: auditTrailEvents.newState })
+        .from(auditTrailEvents)
+        .where(
+          and(
+            eq(auditTrailEvents.workspaceSubdomain, TENANT),
+            eq(auditTrailEvents.tableName, "exams"),
+            eq(auditTrailEvents.recordId, EXAM),
+          ),
+        ),
+    );
+    expect(events.some((event) => event.newState?.includes('"reasonCode":"status_override"'))).toBe(
       true,
     );
   });
@@ -763,5 +818,109 @@ describe("state-machine guards on the live save path (real Postgres)", () => {
         .set({ status: "draft" })
         .where(and(eq(sessions.workspaceSubdomain, TENANT), eq(sessions.id, SESSION))),
     );
+  });
+});
+
+describe("audit evidence for grade-affecting actions", () => {
+  it("reason-codes a mark entry and a later correction", async () => {
+    await saveExamResult(TENANT, mark({ id: "er-reasoned", marksObtained: 55, markedBy: "u-1" }));
+    await saveExamResult(TENANT, mark({ id: "er-reasoned", marksObtained: 61, markedBy: "u-2" }));
+
+    const events = await withTenant(TENANT, (tx) =>
+      tx
+        .select({ actionType: auditTrailEvents.actionType, newState: auditTrailEvents.newState })
+        .from(auditTrailEvents)
+        .where(
+          and(
+            eq(auditTrailEvents.workspaceSubdomain, TENANT),
+            eq(auditTrailEvents.tableName, "exam_results"),
+            eq(auditTrailEvents.recordId, "er-reasoned"),
+          ),
+        ),
+    );
+    expect(events.some((event) => event.newState?.includes('"reasonCode":"marks_entry"'))).toBe(
+      true,
+    );
+    expect(
+      events.some(
+        (event) =>
+          event.actionType === "UPDATE" &&
+          event.newState?.includes('"reasonCode":"marks_correction"'),
+      ),
+    ).toBe(true);
+  });
+
+  it("audits an attendance-gate change with its reason code and reason", async () => {
+    await setExamAttendanceGate(TENANT, {
+      examId: EXAM,
+      minAttendancePct: 75,
+      actorId: "u-controller",
+      reason: "policy review",
+    });
+
+    const events = await withTenant(TENANT, (tx) =>
+      tx
+        .select({ newState: auditTrailEvents.newState })
+        .from(auditTrailEvents)
+        .where(
+          and(
+            eq(auditTrailEvents.workspaceSubdomain, TENANT),
+            eq(auditTrailEvents.tableName, "exams"),
+            eq(auditTrailEvents.recordId, EXAM),
+          ),
+        ),
+    );
+    expect(
+      events.some(
+        (event) =>
+          event.newState?.includes('"reasonCode":"attendance_gate"') &&
+          event.newState?.includes("policy review"),
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("the audit trail is append-only (real Postgres)", () => {
+  it("rejects a direct UPDATE or DELETE of an audit event", async () => {
+    await saveExamResult(TENANT, mark({ id: "er-immutable", marksObtained: 55, markedBy: "u-1" }));
+
+    expect(
+      await pgCode(() =>
+        withTenant(TENANT, (tx) =>
+          tx.execute(
+            sql`UPDATE audit_trail_events SET new_state = '{}' WHERE record_id = 'er-immutable'`,
+          ),
+        ),
+      ),
+    ).toBe("23514");
+    expect(
+      await pgCode(() =>
+        withTenant(TENANT, (tx) =>
+          tx.execute(sql`DELETE FROM audit_trail_events WHERE record_id = 'er-immutable'`),
+        ),
+      ),
+    ).toBe("23514");
+  });
+
+  it("keeps the audited purge escape for retention jobs (and only behind it)", async () => {
+    await saveExamResult(TENANT, mark({ id: "er-purgeable", marksObtained: 55, markedBy: "u-1" }));
+
+    // The retention/hard-purge path opens the escape; this transaction rolls back, so the chain
+    // stays intact while proving the trigger honours the escape.
+    await expect(
+      withTenant(TENANT, async (tx) => {
+        await tx.execute(sql`SET LOCAL app.allow_audit_purge = 'on'`);
+        await tx.execute(sql`DELETE FROM audit_trail_events WHERE record_id = 'er-purgeable'`);
+        throw new Error("rollback-marker");
+      }),
+    ).rejects.toThrow("rollback-marker");
+
+    const remaining = await withTenant(TENANT, (tx) =>
+      tx
+        .select({ id: auditTrailEvents.id })
+        .from(auditTrailEvents)
+        .where(eq(auditTrailEvents.recordId, "er-purgeable")),
+    );
+    expect(remaining).toHaveLength(1);
   });
 });

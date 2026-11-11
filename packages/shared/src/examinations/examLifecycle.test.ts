@@ -43,6 +43,16 @@ describe("exam lifecycle state machine", () => {
     expect(canTransitionExam("ongoing", "upcoming")).toBe(false);
   });
 
+  it("matches the transition table for every ordered status pair", () => {
+    for (const from of EXAM_STATUSES) {
+      for (const to of EXAM_STATUSES) {
+        const expected =
+          from === to || (EXAM_STATUS_TRANSITIONS[from] as readonly string[]).includes(to);
+        expect(canTransitionExam(from, to), `${from} -> ${to}`).toBe(expected);
+      }
+    }
+  });
+
   it("treats a no-op as an update, not a transition", () => {
     for (const status of EXAM_STATUSES) {
       expect(canTransitionExam(status, status)).toBe(true);

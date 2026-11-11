@@ -100,6 +100,7 @@ async function applyChunk(
   records: Exam[],
   startIndex: number,
   errors: Array<{ row: number; reason: string }>,
+  signal?: AbortSignal,
 ): Promise<number> {
   try {
     await examinationsUseCases.upsertExams(records);
@@ -108,6 +109,8 @@ async function applyChunk(
     // Attribute the failure: retry row-by-row so one bad row does not fail the whole chunk.
     let imported = 0;
     for (const [offset, record] of records.entries()) {
+      // The row-by-row fallback can run 100 writes; a shutdown must interrupt it too.
+      throwIfBackgroundJobAborted(signal);
       try {
         await examinationsUseCases.upsertExams([record]);
         imported += 1;
@@ -146,7 +149,7 @@ export function registerExaminationsImportJobRunner(): void {
           }
           records.push(mapped.record);
         }
-        imported += await applyChunk(records, start, errors);
+        imported += await applyChunk(records, start, errors, ctx.signal);
         await ctx.updateProgress(Math.min(start + slice.length, rows.length), rows.length);
       }
 

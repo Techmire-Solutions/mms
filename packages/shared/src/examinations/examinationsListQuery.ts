@@ -1,22 +1,10 @@
 import { z } from "zod";
-import type { Exam } from "./examinationsModuleManifest.js";
+import { examRecordSchema, type Exam } from "./examinationsModuleManifest.js";
 import { EXAM_STATUSES } from "./examLifecycle.js";
 import { LIST_PAGE_MAX_LIMIT } from "../core/apiSchemas.js";
 
 /** Columns the exams directory may sort by — mirrors the repository's SQL whitelist. */
 export const EXAM_SORT_FIELDS = ["name", "subject", "status", "date", "updatedAt"] as const;
-
-/** Query accepted by the examinations exams list endpoint. */
-export interface ExaminationsListQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
-  /** Comma-separated exam statuses (`upcoming|ongoing|completed|scheduled|cancelled`). */
-  status?: string;
-  sortField?: string;
-  sortDir?: "asc" | "desc" | "";
-  includeDeleted?: boolean;
-}
 
 /**
  * Strict query schema for `GET /api/examinations/exams`.
@@ -54,10 +42,36 @@ export const examsListQuerySchema = z
   .strict();
 
 /** Paginated examinations exams response. */
-export interface ExaminationsListPageResult {
-  exams: Exam[];
-  total: number;
-  page: number;
-  limit: number;
-  hasMore: boolean;
+export const examsPageResponseSchema = z.object({
+  exams: z.array(examRecordSchema),
+  total: z.number(),
+  page: z.number(),
+  limit: z.number(),
+  hasMore: z.boolean(),
+  /** Keyset continuation for the next page, when the caller walked `afterId`. */
+  nextCursor: z.string().optional(),
+});
+
+export type ExaminationsListPageResult = z.infer<typeof examsPageResponseSchema>;
+/** Query accepted by the examinations exams list endpoint (derived from the wire schema). */
+export type ExaminationsListQuery = z.infer<typeof examsListQuerySchema>;
+
+/**
+ * The list endpoint returns a bare `{ exams }` for an unpaged read (reports/collection) and the
+ * page envelope when the caller paginates. The union is first-class here so clients narrow with
+ * {@link examsFromResponse} instead of casting the response body.
+ */
+export const examsListResponseSchema = z.union([
+  z.object({ exams: z.array(examRecordSchema) }),
+  examsPageResponseSchema,
+]);
+export type ExaminationsListResponse = z.infer<typeof examsListResponseSchema>;
+
+/** Extracts the exam rows from either list envelope (never casts). */
+export function examsFromResponse(
+  body: ExaminationsListResponse | Exam[] | null | undefined,
+): Exam[] {
+  if (!body) return [];
+  if (Array.isArray(body)) return body;
+  return Array.isArray(body.exams) ? body.exams : [];
 }

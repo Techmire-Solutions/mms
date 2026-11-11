@@ -32,6 +32,10 @@ const BASELINE = {
   // Hasanat: one-winner concurrency (redeem/void/issue/OCC/stock/quota) and DDL lifecycle guarantees.
   "hasanatConcurrencyDb.integration.test.ts": 7,
   "hasanatLifecycleCascadeDb.integration.test.ts": 7,
+  // Examinations: marks/OCC/publication integrity, specialised subsystems, repeated races.
+  "examinationIntegrityDb.integration.test.ts": 31,
+  "examinationSubsystemsDb.integration.test.ts": 21,
+  "examinationsConcurrencyDb.integration.test.ts": 4,
 };
 
 const update = process.argv.includes("--update");

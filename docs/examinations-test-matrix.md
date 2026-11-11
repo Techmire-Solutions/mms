@@ -85,6 +85,46 @@ grouped by the invariant they protect; **Status** records what exists today, **W
 | Bulk marks gate 409 carries `details.students` | ✅ | same (`bulk writes keep structured errors`) |
 | Bulk exam upsert rejects bad date / passing>total / blank name (400) | ✅ | same; shared `examinationsApiSchemas` |
 | Non-grader export is published-only and omits the grace column | ✅ | `examinationsMarksTransfer.test.ts` |
+| Teacher cannot create/edit exam definitions or import exams (controller-only) | ✅ | `examinations.integration.test.ts` (`controller-only definition writes`) |
+| Teacher cannot change the attendance gate; controller reason is audited | ✅ | same; `examinationIntegrityDb` (`attendance_gate` code) |
+| Marks import enforces exact-section teacher scope before enqueue | ✅ | `examMarksImportScope.test.ts` + route 403 test |
+| Audit append-only: direct UPDATE/DELETE rejected; purge escape retained | ✅ | `examinationIntegrityDb` (`audit trail is append-only`) |
+| Mark entry/correction and pure status moves carry reason codes | ✅ | `examinationIntegrityDb` |
+| Report analytics is tenant-isolated (CI non-bypass role) | ✅ (CI) | `rls/examinationsTenantIsolation` (analytics assertion) |
+| Examination jobs use a dedicated sandboxed queue with a restart-tolerant stall policy | ✅ | `bullmqQueues` (`examinations` queue + `sandboxedWorkerOptions`) |
+| Typst render fails loudly without the CLI (never a placeholder PDF) | ✅ | `typstEngine` |
+| Typst payload is file-based (no argv), with language/direction and bundled fonts | ✅ | `typstEngine` |
+| Print surfaces strip unresolved `{{tokens}}` (editor keeps them) | ✅ | `templateDataResolution.test.ts` |
+| Broadsheet export neutralises formula-leading names/rolls | ✅ | `examinationsMarksTransfer` |
+| Broadsheet export streams page by page and stops on abort | ✅ | `examinationsMarksTransfer` |
+| Analytics compute all four aggregates in one statement | ✅ | `examinationRepositoryAnalytics.test.ts` + `examinationSubsystemsDb` |
+| Exam list page/unpaged envelopes normalize without casts | ✅ | `examinationsApiSchemas` |
+| Public/record result projections derive and never default marks | ✅ | `examinationsApiSchemas` |
+| Finalization status and grade buckets validate their enums | ✅ | `examinationsApiSchemas` |
+| Preferences reject unknown keys/grading systems; PUT stays partial | ✅ | `examinationsApiSchemas` |
+| Every shared exam status is accepted by the DB CHECK | ✅ | `examinationIntegrityDb` |
+| Grid keyboard navigation crosses the visible virtual window (index resolver) | ✅ | `marksGridNavigation.test.ts`, `EnterMarksTable.test.tsx` |
+| Unsaved marks survive a background results refetch | ✅ | `EnterMarks` |
+| Exam form validates live and keeps the draft on save failure | ✅ | `examFormValidation.test.ts`, `useExaminationForm.test.ts` |
+| Exam writes invalidate results/analytics/eligibility/widgets/dashboard | ✅ | `invalidateExaminationsQueries.test.ts` |
+| Exact-pass, NaN/Infinity, negative/over-total scoring and cent-half rounding | ✅ | `resultScoring.test.ts` |
+| Ranking ties (overall/per class), null class, empty list, missing tie-break | ✅ | `resultScoring.test.ts` |
+| Grade-label registry and NaN/negative grade fallback | ✅ | `gradeUtils.test.ts` |
+| Exhaustive lifecycle pair matrix | ✅ | `examLifecycle.test.ts` |
+| Concurrent exam batches, publication CAS, moderation-vs-save | ✅ | `examinationsConcurrencyDb` (repeated by `test:db:concurrency`) |
+| Student archive/purge, exam archive analytics, enrollment purge evidence | ✅ | `examinationSubsystemsDb` |
+| Teacher bulk-marks section denial, guardian privileged denial | ✅ | `examinations.integration` |
+| Reader draft-mark payload hiding and cross-tenant mutation tokens | ✅ | `examinations.integration` |
+| Cross-tenant eligibility override isolation | ✅ (CI RLS) | `examinationsTenantIsolation` |
+| Browser marks entry: keyboard, inline range error, save, discard guard, publication lock | ✅ | `examinations-marks-entry.spec.ts` |
+| Sandboxed child aborts on SIGTERM | ✅ | `sandboxShutdownAbort.test.ts` |
+| Failed examination job is retried from the same request | ✅ | `backgroundJobRetry.test.ts` + `examinations.integration` (queued-job idempotency) |
+| Reused marks-import key with different rows → 409; finished/unverifiable key → 409 | ✅ | `examinations.integration` |
+| A second live marks import for the exam → 409 | ✅ | same |
+| Broadsheet export key changes with the marks fingerprint | ✅ | same |
+| Exam CSV export stops paging on abort | ✅ | `examinationsJobRunners` |
+| Background-job GET/PUT are owner-scoped | ✅ | `backgroundJobsOwnership.test.ts` |
+| Retained-job quota → 429 | ✅ | `examinations.integration` |
 | Contract/gate handlers map PostgreSQL constraints (23505→409, 23514→400) | ✅ | `contractError.test.ts`, `examEligibilityGate.test.ts`, `errorHandler.test.ts` |
 
 ## Gaps to close before CI-hardening

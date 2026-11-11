@@ -38,6 +38,7 @@ import {
   setExamAttendanceGate,
 } from "../../db/repositories/examEligibilityRepository.js";
 import { ConflictError } from "../../lib/httpErrors.js";
+import { cascadeSoftDeleteEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
 import { extractPgErrorCode, requireDatabaseConnection } from "./dbTestSupport.js";
 
 /**
@@ -756,5 +757,115 @@ describe("enrollment archive keeps the historical evidence", () => {
 
     const restored = await loadExamRoster(TENANT, EXAM);
     expect(restored.map((row) => row.studentId)).toContain(STUDENT);
+  });
+});
+
+describe("student archive and purge around exam evidence", () => {
+  it("keeps marks when a student is archived, drops them from the roster, and restores", async () => {
+    await saveExamResult(TENANT, {
+      id: "er-student-archive",
+      examId: EXAM,
+      studentId: STUDENT,
+      marksObtained: 81,
+      markedBy: "u-sub",
+    });
+
+    const archivedAt = new Date();
+    await withTenant(TENANT, async (tx) => {
+      await tx
+        .update(students)
+        .set({ deletedAt: archivedAt, deletedBy: "u-admin" })
+        .where(and(eq(students.workspaceSubdomain, TENANT), eq(students.id, STUDENT)));
+      await cascadeSoftDeleteEnrollmentsForStudents(
+        tx,
+        TENANT,
+        [STUDENT],
+        "u-admin",
+        undefined,
+        archivedAt,
+      );
+    });
+
+    // Archived student: not markable, but the exam result is retained for transcripts/audit.
+    expect(await loadExamRoster(TENANT, EXAM)).toHaveLength(0);
+    expect((await listExamResultsPage(TENANT, { examId: EXAM })).results).toHaveLength(1);
+
+    await withTenant(TENANT, (tx) =>
+      Promise.all([
+        tx
+          .update(students)
+          .set({ deletedAt: null, deletedBy: null })
+          .where(and(eq(students.workspaceSubdomain, TENANT), eq(students.id, STUDENT))),
+        tx
+          .update(enrollments)
+          .set({ deletedAt: null, deletedBy: null })
+          .where(
+            and(eq(enrollments.workspaceSubdomain, TENANT), eq(enrollments.studentId, STUDENT)),
+          ),
+      ]),
+    );
+
+    expect((await loadExamRoster(TENANT, EXAM)).map((row) => row.studentId)).toContain(STUDENT);
+  });
+
+  it("hides an archived exam from analytics but keeps its marks for restore", async () => {
+    await saveExamResult(TENANT, {
+      id: "er-exam-archive",
+      examId: EXAM,
+      studentId: STUDENT,
+      marksObtained: 82,
+      markedBy: "u-sub",
+    });
+    const before = await loadExaminationsReportAggregatesSql(TENANT);
+    expect(before.analytics?.subjectPassRates[0]?.total).toBe(1);
+
+    await bulkSoftDeleteExams(TENANT, [EXAM], "u-admin", "archived for review");
+    const archived = await loadExaminationsReportAggregatesSql(TENANT);
+    expect(archived.analytics?.subjectPassRates ?? []).toHaveLength(0);
+    expect((await listExamResultsPage(TENANT, { examId: EXAM })).results).toHaveLength(1);
+
+    await bulkRestoreExams(TENANT, [EXAM], "u-admin");
+    expect((await loadExaminationsReportAggregatesSql(TENANT)).analytics?.subjectPassRates).toEqual(
+      before.analytics?.subjectPassRates,
+    );
+  });
+
+  it("keeps marks when an enrollment is hard-purged (enrollment is not the mark owner)", async () => {
+    await saveExamResult(TENANT, {
+      id: "er-enrollment-purge",
+      examId: EXAM,
+      studentId: STUDENT,
+      marksObtained: 74,
+    });
+    await withTenant(TENANT, async (tx) => {
+      await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+      await tx
+        .delete(enrollments)
+        .where(and(eq(enrollments.workspaceSubdomain, TENANT), eq(enrollments.studentId, STUDENT)));
+    });
+    expect((await listExamResultsPage(TENANT, { examId: EXAM })).results).toHaveLength(1);
+  });
+  it("pins the student hard-purge FK cascade (retention decision pending)", async () => {
+    await saveExamResult(TENANT, {
+      id: "er-student-purge",
+      examId: EXAM,
+      studentId: STUDENT,
+      marksObtained: 77,
+    });
+
+    await withTenant(TENANT, async (tx) => {
+      await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+      await tx
+        .update(enrollments)
+        .set({ deletedAt: new Date() })
+        .where(and(eq(enrollments.workspaceSubdomain, TENANT), eq(enrollments.studentId, STUDENT)));
+      await tx
+        .delete(students)
+        .where(and(eq(students.workspaceSubdomain, TENANT), eq(students.id, STUDENT)));
+    });
+
+    // The FK is ON DELETE CASCADE: a real purge destroys exam marks. This test makes the behaviour
+    // explicit so a future retention guard (block or archive-copy) must update it deliberately.
+    expect((await listExamResultsPage(TENANT, { examId: EXAM })).results).toHaveLength(0);
   });
 });

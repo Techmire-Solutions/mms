@@ -1,6 +1,7 @@
 import type { TabDefinition } from "../contacts/contactTypes.js";
 import type { ModuleFieldDef } from "../settings/moduleFieldSchema.js";
 import { INITIAL_EXAMINATIONS_FIELD_SEED } from "../settings/moduleFieldSetupAcademic.js";
+import type { ExaminationsModulePreferences } from "./examinationsSetupPreferences.js";
 
 // ─── Examinations Module Settings ─────────────────────────────────────────────
 
@@ -8,32 +9,9 @@ import { INITIAL_EXAMINATIONS_FIELD_SEED } from "../settings/moduleFieldSetupAca
  * Configuration for the Examinations module.
  * Stored under the key "examinations_settings".
  */
-export interface ExaminationsSettings {
-  /** Default passing mark threshold, e.g. "50". */
-  passMark: string;
-  /** Maximum possible mark for exams, e.g. "100". */
-  maxMark: string;
-  /** Grading scheme: "percentage" | "letter" | "gpa" | "rubric". */
-  gradingSystem: string;
-  /** Whether student class rankings are calculated and shown on reports. */
-  showRankings: boolean;
-  /** Whether students who failed an exam can take a retake. */
-  allowRetake: boolean;
-  /** Whether exam results are immediately visible to students upon entry. */
-  autoPublishResults: boolean;
-  /** Whether an SMS/email notification is sent to guardians upon result entry. */
-  notifyOnResult: boolean;
-  /** Certificate/transcript layout template identifier. */
-  certificateTemplate: string;
-  /** Whether AI-assisted rubric grading is enabled. */
-  aiGrading: boolean;
-  /** Whether distinction / honours badges are assigned for top performers. */
-  distinguishHonours: boolean;
-  /** Whether exam reminder notifications are sent to students/guardians. */
-  examReminders: boolean;
-  defaultViewLayout?: string;
+export interface ExaminationsSettings extends ExaminationsModulePreferences {
   fields?: Record<string, unknown>;
-  customFields?: [];
+  customFields?: ModuleFieldDef[];
   fieldOrder?: string[];
   formTabs?: TabDefinition[];
   enabledTabs?: string[];

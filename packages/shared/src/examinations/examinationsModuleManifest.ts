@@ -130,35 +130,6 @@ export function filterActiveExams<T extends { deletedAt?: string | null }>(exams
   return exams.filter((e) => !isExamDeleted(e));
 }
 
-/** Zod schema for single Exam Result entry. */
-export const examResultRecordSchema = z
-  .object({
-    id: z.string(),
-    examId: z.string(),
-    studentId: z.string(),
-    marksObtained: z.number().nonnegative().max(MAX_MARKS_OBTAINED).default(0),
-    /**
-     * Optimistic-concurrency token (migration 0236). A save that carries a token is applied only if
-     * the stored row still holds it; otherwise the write is refused with 409 instead of silently
-     * overwriting a colleague's marks.
-     */
-    version: z.number().int().positive().optional(),
-    /**
-     * Moderation adjustment (migration 0237). Added to `marksObtained` for the effective score; the
-     * raw mark is never rewritten, so the original result stays auditable. Only a moderation action
-     * may change it, never a bulk marks save.
-     */
-    graceMarks: z.number().nonnegative().max(MAX_GRACE_MARKS).optional(),
-    moderationReason: z.string().nullable().optional(),
-    moderatedBy: z.string().nullable().optional(),
-    moderatedAt: z.string().nullable().optional(),
-    /** Server-set: user who entered the marks. */
-    markedBy: z.string().nullable().optional(),
-    createdAt: z.string().optional(),
-    updatedAt: z.string().optional(),
-  })
-  .strict();
-
 /**
  * Public marks projection for audiences that cannot grade.
  *
@@ -172,11 +143,59 @@ export const examResultPublicSchema = z
     id: z.string(),
     examId: z.string(),
     studentId: z.string(),
-    marksObtained: z.number().nonnegative(),
-    graceMarks: z.number().nonnegative().optional(),
+    marksObtained: z.number().nonnegative().max(MAX_MARKS_OBTAINED),
+    graceMarks: z.number().nonnegative().max(MAX_GRACE_MARKS).optional(),
   })
   .strict();
 export type ExamResultPublic = z.infer<typeof examResultPublicSchema>;
+
+/** Full staff record: the public projection plus grader-only metadata. */
+export const examResultRecordSchema = examResultPublicSchema
+  .extend({
+    /**
+     * Optimistic-concurrency token (migration 0236). A save that carries a token is applied only if
+     * the stored row still holds it; otherwise the write is refused with 409 instead of silently
+     * overwriting a colleague's marks.
+     */
+    version: z.number().int().positive().optional(),
+    /**
+     * Moderation adjustment (migration 0237). Added to `marksObtained` for the effective score; the
+     * raw mark is never rewritten, so the original result stays auditable. Only a moderation action
+     * may change it, never a bulk marks save.
+     */
+    moderationReason: z.string().nullable().optional(),
+    moderatedBy: z.string().nullable().optional(),
+    moderatedAt: z.string().nullable().optional(),
+    /** Server-set: user who entered the marks. */
+    markedBy: z.string().nullable().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+  })
+  .strict();
+
+/** One keyset page of marks (the broadsheet/read contract). */
+export const examResultsPageResponseSchema = z
+  .object({
+    results: z.array(examResultRecordSchema),
+    hasMore: z.boolean(),
+  })
+  .strict();
+export type ExamResultsPage = z.infer<typeof examResultsPageResponseSchema>;
+
+/** Audited grace-mark adjustment response (raw mark + effective score + OCC token). */
+export const examResultModerationResponseSchema = z
+  .object({
+    examId: z.string(),
+    studentId: z.string(),
+    marksObtained: z.number(),
+    graceMarks: z.number(),
+    effectiveMarks: z.number(),
+    moderationReason: z.string().nullable(),
+    moderatedAt: z.string().nullable(),
+    version: z.number().int(),
+  })
+  .strict();
+export type ExamResultModerationResult = z.infer<typeof examResultModerationResponseSchema>;
 
 export const examResultRecordInsertSchema = z
   .object({
