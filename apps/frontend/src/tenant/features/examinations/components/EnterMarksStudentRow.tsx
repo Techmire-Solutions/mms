@@ -21,7 +21,7 @@ export interface EnterMarksStudentRowProps {
   readOnly?: boolean;
 }
 
-export function EnterMarksStudentRow({
+export const EnterMarksStudentRow = React.memo(function EnterMarksStudentRow({
   student,
   index,
   exam,
@@ -29,7 +29,9 @@ export function EnterMarksStudentRow({
   markValue,
   onMarkChange,
   readOnly = false,
-}: EnterMarksStudentRowProps): React.JSX.Element {
+  position,
+  total,
+}: EnterMarksStudentRowProps & { position?: number; total?: number }): React.JSX.Element {
   const { t } = useTranslation();
   const numValue = Number(markValue);
   const isInvalid =
@@ -55,6 +57,8 @@ export function EnterMarksStudentRow({
       transition={{ delay: Math.min(index * 0.02, 0.3) }}
       className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-4"
       role="listitem"
+      aria-posinset={position != null ? position + 1 : undefined}
+      aria-setsize={total}
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <UserAvatar id={student.id} name={student.name} size="sm" className="shrink-0" />
@@ -79,6 +83,7 @@ export function EnterMarksStudentRow({
             name={`marks_${student.id}`}
             type="text"
             inputMode="decimal"
+            dir="ltr"
             disabled={readOnly}
             value={markValue}
             aria-label={t("examinations.enterMarks.marksInputAria", {
@@ -87,10 +92,11 @@ export function EnterMarksStudentRow({
             aria-invalid={isInvalid}
             aria-describedby={isInvalid ? errorId : undefined}
             data-marks-input
+            data-marks-index={index}
             onChange={(event) => onMarkChange(String(student.id), event.target.value)}
             className={cn(
               FORM_INPUT_COMPACT,
-              "w-20 shrink-0 tabular-nums",
+              "w-20 shrink-0 text-end tabular-nums",
               isInvalid &&
                 "border-destructive bg-destructive/10 text-destructive focus-visible:ring-destructive",
             )}
@@ -108,4 +114,4 @@ export function EnterMarksStudentRow({
       </div>
     </m.div>
   );
-}
+});

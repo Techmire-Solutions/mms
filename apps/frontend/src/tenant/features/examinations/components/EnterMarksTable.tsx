@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useDeferredValue, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Users, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { EnterMarksStudentRow } from "./EnterMarksStudentRow";
+import { resolveMarksGridTarget, type MarksGridNavigationKey } from "../lib/marksGridNavigation";
 import type { Exam } from "@/lib/data/examinationData";
 import type { ExamStudent } from "../hooks/useEnterMarksStudents";
 
@@ -31,38 +32,21 @@ export function EnterMarksTable({
 }: EnterMarksTableProps): React.JSX.Element {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState<string>("");
-
-  const filteredStudents = (() => {
-    if (!searchQuery.trim()) return students;
-    const query = searchQuery.toLowerCase();
+  // Filtering runs over the whole roster on every keystroke; defer it so the focused input stays
+  // responsive while a large roster is filtered.
+  const deferredQuery = useDeferredValue(searchQuery);
+  const filteredStudents = useMemo(() => {
+    const query = deferredQuery.trim().toLowerCase();
+    if (!query) return students;
     return students.filter(
       (s) =>
         (s.name && s.name.toLowerCase().includes(query)) ||
         (s.rollNo && s.rollNo.toLowerCase().includes(query)),
     );
-  })();
+  }, [students, deferredQuery]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  /**
-   * Enter / ArrowDown / ArrowUp move between mark inputs in visual order (the same order the
-   * virtualizer renders), so a marker can walk a roster without leaving the keyboard.
-   */
-  const handleGridKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
-    if (event.key !== "Enter" && event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
-    const target = event.target as HTMLElement;
-    if (target.tagName !== "INPUT") return;
-    const inputs = Array.from(
-      event.currentTarget.querySelectorAll<HTMLInputElement>("[data-marks-input]"),
-    );
-    const index = inputs.indexOf(target as HTMLInputElement);
-    if (index === -1) return;
-    const next = event.key === "ArrowUp" ? inputs[index - 1] : inputs[index + 1];
-    if (!next) return;
-    event.preventDefault();
-    next.focus();
-    next.select();
-  };
   const isVirtualized = filteredStudents.length > 30;
   const rowVirtualizer = useVirtualizer({
     count: filteredStudents.length,
@@ -71,6 +55,36 @@ export function EnterMarksTable({
     overscan: 8,
     enabled: isVirtualized,
   });
+
+  /**
+   * Enter/ArrowDown/ArrowUp/Tab move through the whole filtered roster, not just the mounted
+   * virtual window: compute the target index, scroll it into view, then focus its input.
+   */
+  const handleGridKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>): void => {
+      const key = event.key as MarksGridNavigationKey;
+      if (!["Tab", "Enter", "ArrowDown", "ArrowUp", "Home", "End"].includes(key)) return;
+      const target = event.target as HTMLInputElement;
+      if (target.tagName !== "INPUT" || !target.hasAttribute("data-marks-input")) return;
+      const current = Number(target.dataset.marksIndex ?? "-1");
+      const next = resolveMarksGridTarget(current, key, event.shiftKey, filteredStudents.length);
+      if (next === null) return;
+      event.preventDefault();
+      const student = filteredStudents[next];
+      if (!student) return;
+      const inputId = `marks-${student.id}`;
+      if (isVirtualized) {
+        rowVirtualizer.scrollToIndex(next, { align: "auto" });
+        // The row mounts on the virtualizer's next render; focus after that paint.
+        requestAnimationFrame(() => {
+          document.getElementById(inputId)?.focus();
+        });
+      } else {
+        document.getElementById(inputId)?.focus();
+      }
+    },
+    [filteredStudents, isVirtualized, rowVirtualizer],
+  );
 
   return (
     <Card accentColor="primary" className="p-0 overflow-hidden">
@@ -150,6 +164,8 @@ export function EnterMarksTable({
                     markValue={marks[String(student.id)] ?? ""}
                     onMarkChange={onMarkChange}
                     readOnly={readOnly}
+                    position={virtualRow.index}
+                    total={filteredStudents.length}
                   />
                 </div>
               );
@@ -166,6 +182,8 @@ export function EnterMarksTable({
               markValue={marks[String(student.id)] ?? ""}
               onMarkChange={onMarkChange}
               readOnly={readOnly}
+              position={index}
+              total={filteredStudents.length}
             />
           ))
         )}

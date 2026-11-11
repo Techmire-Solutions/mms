@@ -1,21 +1,10 @@
-import { logger } from "../lib/logger.js";
-
-export class QueueUnavailableError extends Error {
-  constructor(
-    message = "Failed to enqueue background job. The task queue service may be unavailable.",
-  ) {
-    super(message);
-    this.name = "QueueUnavailableError";
-  }
-}
 import type { BackgroundJobRecord } from "@mms/shared";
 import { bindRequestUserId, runWithTenant } from "../lib/tenantContext.js";
 import { getBackgroundJobModuleDenial } from "../lib/backgroundJobModuleAccess.js";
-import { createDatabaseBackgroundJob } from "./backgroundJobService.js";
+
 import { patchJob } from "./backgroundJobPatch.js";
 import { markJobPermanentlyFailed } from "./backgroundJobTerminalState.js";
 import { createJobDeadline, runWithJobDeadline } from "./backgroundJobDeadline.js";
-import { dispatchJobToQueue, QueuePayloadTooLargeError } from "../worker/queues/index.js";
 import { publishJobEvent } from "../worker/pubsub/jobPubSub.js";
 
 export { markJobPermanentlyFailed };
@@ -179,85 +168,15 @@ export async function executeJob(
   }
 }
 
-/** Persists a running job and delegates execution to the out-of-process worker queue. */
-export async function enqueueBackgroundJob(
-  tenant: string,
-  userId: string,
-  job: BackgroundJobRecord,
-  payload: unknown,
-): Promise<BackgroundJobRecord> {
-  // Create job with 'pending' status in PostgreSQL
-  const pendingJob: BackgroundJobRecord = {
-    ...job,
-    status: "pending",
-  };
-  await runWithTenant(tenant, () =>
-    createDatabaseBackgroundJob(tenant, userId, pendingJob, payload),
-  );
-
-  // Dispatch to BullMQ Queue
-  let enqueued: boolean;
-  try {
-    enqueued = await dispatchJobToQueue(tenant, userId, pendingJob, payload);
-  } catch (error) {
-    if (error instanceof QueuePayloadTooLargeError) {
-      await markJobPermanentlyFailed(
-        tenant,
-        userId,
-        pendingJob.id,
-        pendingJob.moduleId,
-        pendingJob.kind,
-        "Background job payload is too large.",
-      );
-      throw new QueueUnavailableError("Background job payload is too large.");
-    }
-    throw error;
-  }
-
-  if (!enqueued) {
-    // Heavy export/PDF jobs must not run on the API event loop: the sandboxed
-    // worker owns the heap ceiling, execution timeout, retry/backoff and DLQ.
-    // Fail the job and let the caller surface a 503, unless an operator has
-    // explicitly opted into the dev-only in-process fallback.
-    if (process.env.MMS_ALLOW_IN_PROCESS_JOB_FALLBACK === "true") {
-      logger.warn(
-        { jobId: pendingJob.id, moduleId: pendingJob.moduleId, kind: pendingJob.kind },
-        "Queue service unavailable; MMS_ALLOW_IN_PROCESS_JOB_FALLBACK is set — running in-process (no sandbox, no retry/DLQ)",
-      );
-      setImmediate(() => {
-        executeJob(
-          tenant,
-          userId,
-          pendingJob.id,
-          pendingJob.moduleId,
-          pendingJob.kind,
-          payload,
-        ).catch((err) => {
-          logger.error(
-            { jobId: pendingJob.id, err },
-            "In-process fallback background job execution failed",
-          );
-        });
-      });
-      return pendingJob;
-    }
-
-    logger.error(
-      { jobId: pendingJob.id, moduleId: pendingJob.moduleId, kind: pendingJob.kind },
-      "Queue service unavailable (Redis unreachable or timed out); rejecting background job",
-    );
-    await markJobPermanentlyFailed(
-      tenant,
-      userId,
-      pendingJob.id,
-      pendingJob.moduleId,
-      pendingJob.kind,
-      "Background job queue is unavailable.",
-    );
-    throw new QueueUnavailableError();
-  }
-
-  return pendingJob;
-}
-
-export { getUserBackgroundJob, getUserBackgroundJobPayload } from "./backgroundJobService.js";
+export {
+  getUserBackgroundJob,
+  getUserBackgroundJobPayload,
+  BackgroundJobLimitError,
+  countUserBackgroundJobs,
+  findLiveBackgroundJobForEntity,
+} from "./backgroundJobService.js";
+export {
+  QueueUnavailableError,
+  enqueueBackgroundJob,
+  retryFailedBackgroundJob,
+} from "./backgroundJobEnqueue.js";

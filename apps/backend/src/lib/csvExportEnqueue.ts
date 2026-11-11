@@ -4,6 +4,7 @@ import {
   enqueueBackgroundJob,
   getUserBackgroundJob,
   getUserBackgroundJobPayload,
+  retryFailedBackgroundJob,
 } from "../services/backgroundJobWorkerService.js";
 import { ConflictError } from "./httpErrors.js";
 
@@ -50,14 +51,35 @@ export async function enqueueCsvExportJob(
         columns: input.columns,
         filename: input.filename,
         allowDeleted: input.allowDeleted,
+        viewerRole: input.viewerRole,
       },
     });
   const jobId = buildBackgroundJobId(input.tenant, input.userId, idempotencyKey);
   const existing = await getUserBackgroundJob(input.userId, jobId);
   if (existing) {
+    const exportPayload = {
+      query: input.query,
+      columns: input.columns,
+      filename: input.filename,
+      allowDeleted: input.allowDeleted,
+      viewerRole: input.viewerRole,
+    };
+    if (existing.status === "failed") {
+      // A terminal failure cleared the stored payload; re-run with the payload we already hold.
+      return retryFailedBackgroundJob(input.tenant, input.userId, existing, {
+        ...exportPayload,
+        label: input.label,
+      });
+    }
     const stored = await getUserBackgroundJobPayload(input.userId, jobId);
     if (stored && stored.query !== undefined) {
-      if (JSON.stringify(stored.query) !== JSON.stringify(input.query)) {
+      const mismatch =
+        JSON.stringify(stored.query) !== JSON.stringify(input.query) ||
+        JSON.stringify(stored.columns ?? null) !== JSON.stringify(input.columns ?? null) ||
+        (stored.filename ?? "") !== (input.filename ?? "") ||
+        (stored.allowDeleted === true) !== input.allowDeleted ||
+        (typeof stored.viewerRole === "string" && stored.viewerRole !== input.viewerRole);
+      if (mismatch) {
         throw new ConflictError(
           "This idempotency key was already used for a different export — start a new export",
         );

@@ -1,4 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
+import type { ExamResultModerationResult } from "@mms/shared";
+
+export type { ExamResultModerationResult };
 import { resolveResultScore } from "@mms/shared";
 import { examResults, exams } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
@@ -29,17 +32,6 @@ export interface ExamResultModerationInput {
   actorId: string;
   /** OCC token the moderator read; a stale token refuses the write. */
   version?: number;
-}
-
-export interface ExamResultModerationResult {
-  examId: string;
-  studentId: string;
-  marksObtained: number;
-  graceMarks: number;
-  effectiveMarks: number;
-  moderationReason: string | null;
-  moderatedAt: string | null;
-  version: number;
 }
 
 /**

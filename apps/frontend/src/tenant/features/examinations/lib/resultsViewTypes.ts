@@ -1,4 +1,4 @@
-import type { Exam, ExamResult } from "@/lib/data/examinationData";
+import type { Exam, ExamResult, RankedInExam, RankedPosition } from "@mms/shared";
 import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import type { StudentResultItem } from "@/tenant/features/examinations/components/StudentResultCard";
 
@@ -15,7 +15,11 @@ export interface ResultsViewProps {
   columnCustomizer?: ModuleColumnCustomizerProps;
 }
 
-export interface RankedResult extends StudentResultItem {
+export interface RankedResult
+  extends
+    Omit<StudentResultItem, "classRank" | "classPosition" | "classSize" | "overallSize">,
+    RankedPosition,
+    RankedInExam {
   id: string;
   examId: string;
   studentId: string;
@@ -27,14 +31,6 @@ export interface RankedResult extends StudentResultItem {
   /** Moderation adjustment; the effective score is `marksObtained + graceMarks`. */
   graceMarks?: number;
   moderationReason?: string | null;
-  /** Exam-wide rank/position (competition ranking, ties share). */
-  rank: number;
-  position: number;
-  /** Rank within the student's class — the "class position" printed on documents. */
-  classRank: number;
-  classPosition: number;
-  classSize: number;
-  overallSize: number;
   version?: number;
 }
 

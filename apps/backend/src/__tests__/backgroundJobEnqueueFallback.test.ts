@@ -33,7 +33,9 @@ vi.mock("../worker/pubsub/jobPubSub.js", () => ({
   publishJobEvent: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("../services/backgroundJobService.js", () => ({
-  createDatabaseBackgroundJob: vi.fn().mockResolvedValue(undefined),
+  createDatabaseBackgroundJob: vi.fn().mockResolvedValue(true),
+  countUserBackgroundJobs: vi.fn().mockResolvedValue(0),
+  BackgroundJobLimitError: class BackgroundJobLimitError extends Error {},
   rowToJobRecord: (row: unknown) => row,
   getUserBackgroundJob: vi.fn(),
   getUserBackgroundJobPayload: vi.fn(),

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { ShieldCheck, ShieldAlert, Lock, Unlock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import type { ExamEligibilityResponse } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { invalidateExaminationsQueries } from "../hooks/invalidateExaminationsQueries";
+import { EXAMINATIONS_ELIGIBILITY_QUERY_KEY } from "../hooks/examinationsQueryKeys";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +41,7 @@ export function ExamEligibilitySection({
   const isPublished = Boolean(resultsFinalizedAt);
 
   const query = tsrClient.examinations.getExamEligibility.useQuery({
-    queryKey: ["examinations", "eligibility", examId],
+    queryKey: [...EXAMINATIONS_ELIGIBILITY_QUERY_KEY, examId],
     params: { id: examId },
     query: undefined,
   });
@@ -56,18 +58,7 @@ export function ExamEligibilitySection({
     onError: (error: Error) => notify.error(error.message),
   });
 
-  const body = query.data?.body as
-    | {
-        requiredPct: number | null;
-        students: Array<{
-          studentId: string;
-          studentName: string;
-          state: "eligible" | "blocked" | "unknown";
-          attendancePct: number | null;
-          overridden: boolean;
-        }>;
-      }
-    | undefined;
+  const body = query.data?.body as ExamEligibilityResponse | undefined;
 
   const students = body?.students ?? [];
   const blocked = students.filter((student) => student.state === "blocked");

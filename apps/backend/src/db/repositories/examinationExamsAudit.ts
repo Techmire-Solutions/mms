@@ -64,7 +64,14 @@ export async function auditScoringFrameChange(
     recordId: examId,
     actionType: "UPDATE",
     oldState: Object.fromEntries(Object.entries(changes).map(([k, v]) => [k, v.from])),
-    newState: Object.fromEntries(Object.entries(changes).map(([k, v]) => [k, v.to])),
+    newState: {
+      ...Object.fromEntries(Object.entries(changes).map(([k, v]) => [k, v.to])),
+      // A pure status move is an override; anything else rewrites the scoring frame.
+      reasonCode:
+        Object.keys(changes).length === 1 && "status" in changes
+          ? "status_override"
+          : "scoring_frame",
+    },
     minimizeDelta: true,
   });
 }
@@ -90,6 +97,7 @@ export async function auditExamCreated(
       duration: frame.duration,
       status: frame.status ?? "upcoming",
       classIds: [...frame.classIds].sort(),
+      reasonCode: "exam_created",
     },
   });
 }

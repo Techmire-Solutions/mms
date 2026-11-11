@@ -131,6 +131,7 @@ async function auditMarkChanges(
         studentId: delta.studentId,
         marksObtained: delta.to,
         reason: delta.from === null ? "marks_entry" : "marks_correction",
+        reasonCode: delta.from === null ? "marks_entry" : "marks_correction",
       },
       minimizeDelta: true,
     });

@@ -29,6 +29,8 @@ export type RegisterModuleCsvExportJobRunnerOptions = {
       allowDeleted?: boolean;
     },
     tenant?: string,
+    /** Abort signal for long paged builds; a builder that ignores it is still bounded by the deadline. */
+    signal?: AbortSignal,
   ) => Promise<{ csv: string; filename: string; count: number }>;
   /**
    * Optional streaming generator. When provided, the runner streams the CSV to
@@ -140,6 +142,7 @@ export function registerModuleCsvExportJobRunner(
           allowDeleted: exportPayload.allowDeleted === true,
         },
         ctx.tenant,
+        ctx.signal,
       );
       throwIfBackgroundJobAborted(ctx.signal);
       count = result.count;

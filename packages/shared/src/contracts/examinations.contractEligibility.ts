@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { MAX_GRACE_MARKS } from "../examinations/examinationsModuleManifest.js";
+import {
+  MAX_GRACE_MARKS,
+  examResultModerationResponseSchema,
+} from "../examinations/examinationsModuleManifest.js";
+import { examEligibilityStateSchema } from "../attendance/examEligibility.js";
+import { EXAM_STATUSES } from "../examinations/examLifecycle.js";
 import { resourceIdParamsSchema } from "../schemas/api.dto.js";
 
 /**
@@ -26,7 +31,7 @@ export const examEligibilityStudentSchema = z
     studentId: z.string(),
     studentName: z.string(),
     classId: z.string(),
-    state: z.enum(["eligible", "blocked", "unknown"]),
+    state: examEligibilityStateSchema,
     attendancePct: z.number().nullable(),
     requiredPct: z.number().nullable(),
     overridden: z.boolean(),
@@ -41,8 +46,14 @@ export const examEligibilityResponseSchema = z
   })
   .strict();
 
+export type ExamEligibilityResponse = z.infer<typeof examEligibilityResponseSchema>;
+
 export const examAttendanceGateBodySchema = z
-  .object({ minAttendancePct: z.number().min(0).max(100).nullable() })
+  .object({
+    minAttendancePct: z.number().min(0).max(100).nullable(),
+    /** Controller's motivation; persisted on the audit event when supplied. */
+    reason: z.string().trim().min(3).max(500).optional(),
+  })
   .strict();
 
 export const examEligibilityOverrideBodySchema = z
@@ -77,24 +88,11 @@ export const examResultModerationBodySchema = z
   })
   .strict();
 
-export const examResultModerationResponseSchema = z
-  .object({
-    examId: z.string(),
-    studentId: z.string(),
-    marksObtained: z.number(),
-    graceMarks: z.number(),
-    effectiveMarks: z.number(),
-    moderationReason: z.string().nullable(),
-    moderatedAt: z.string().nullable(),
-    version: z.number(),
-  })
-  .strict();
-
 export const examResultsFinalizationResponseSchema = z
   .object({
     examId: z.string(),
     resultsFinalizedAt: z.string().nullable(),
-    status: z.string(),
+    status: z.enum(EXAM_STATUSES),
   })
   .strict();
 

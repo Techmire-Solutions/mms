@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
@@ -26,15 +26,23 @@ export interface ExaminationsSetupTierProps {
 export const ExaminationsSetupTier = function ExaminationsSetupTier({
   onPrefsDirtyChange,
 }: ExaminationsSetupTierProps = {}): React.JSX.Element {
+  const reportPrefsDirty = (dirty: boolean): void => {
+    setPrefsDirty(dirty);
+    onPrefsDirtyChange?.(dirty);
+  };
   const { t } = useTranslation();
   const { canEditSetup } = useModulePermissions(EXAMINATIONS_MODULE_MANIFEST);
   const templateGuard = useTemplateDraftGuard();
+  const [prefsDirty, setPrefsDirty] = useState(false);
 
   const subTabs = useModuleSetupSubTabs({
     initialKey: "preferences",
-    isDirty: (currentKey: string) => currentKey === "templates" && templateGuard.isDirty(),
+    isDirty: (currentKey: string) =>
+      (currentKey === "templates" && templateGuard.isDirty()) ||
+      (currentKey === "preferences" && prefsDirty),
     onDiscard: (leavingKey: string) => {
       if (leavingKey === "templates") templateGuard.discard();
+      // Preferences discard on leaving = unmount the editor, which reloads the saved settings.
     },
     onChange: () => {},
   });
@@ -55,7 +63,7 @@ export const ExaminationsSetupTier = function ExaminationsSetupTier({
           ) : (
             <Suspense fallback={<ModulePanelSuspenseFallback />}>
               {subTabs.sub === "preferences" && (
-                <ExaminationsSettings onPrefsDirtyChange={onPrefsDirtyChange} />
+                <ExaminationsSettings onPrefsDirtyChange={reportPrefsDirty} />
               )}
               {subTabs.sub === "templates" && (
                 <ExaminationTemplateEditor

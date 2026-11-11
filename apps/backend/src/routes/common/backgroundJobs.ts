@@ -106,6 +106,9 @@ export default async function backgroundJobRoutes(
       return replyValidationError(reply, "Job id mismatch");
     }
     try {
+      // Never let a client overwrite a job it does not own: the upsert keys on the id alone.
+      const owned = await getUserBackgroundJob(String(user.id), params.data.id);
+      if (!owned) return sendNotFound(reply, "Job not found");
       const job = await upsertUserBackgroundJob(String(user.id), parsed.data);
       return reply.send({ job });
     } catch {

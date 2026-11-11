@@ -7,6 +7,7 @@ import { examinationsRepository } from "../examinations/repository/examinationsR
 import { examEligibilityRepository } from "../examinations/repository/examEligibilityAdapter.js";
 import { examinationsUseCases } from "../examinations/use-cases/examinationsUseCases.js";
 import { assertExamResultsEligible } from "../examinations/use-cases/examEligibilityGate.js";
+import { recordAuditEventSafely } from "./auditTrailService.js";
 
 /**
  * Bulk marks import (`examinations:marks-import`).
@@ -134,6 +135,7 @@ export function registerExaminationsMarksImportJobRunner(): void {
           // fail the whole chunk; a stale row reports its OCC conflict instead of overwriting the
           // mark, and the blocked row is rejected by the same gate.
           for (const [offset, result] of batch.entries()) {
+            throwIfBackgroundJobAborted(ctx.signal);
             try {
               await assertExamResultsEligible(ctx.tenant, [result]);
               await examinationsUseCases.upsertExamResults([result]);
@@ -151,6 +153,23 @@ export function registerExaminationsMarksImportJobRunner(): void {
     }
 
     throwIfBackgroundJobAborted(ctx.signal);
+    // Per-mark writes are audited by the persist layer; this is the job-level evidence of who
+    // imported which file into which exam, and how much of it applied.
+    await recordAuditEventSafely({
+      workspaceSubdomain: ctx.tenant,
+      tableName: "exam_results",
+      recordId: examId,
+      actionType: "UPDATE",
+      realUserId: ctx.userId,
+      newState: {
+        reasonCode: "marks_import",
+        examId,
+        imported,
+        rejected: errors.length,
+        jobId: ctx.jobId,
+      },
+    });
+
     await ctx.complete({
       label: data.label ?? `Imported ${imported} of ${rows.length} marks`,
       progress: { current: imported, total: Math.max(rows.length, 1) },

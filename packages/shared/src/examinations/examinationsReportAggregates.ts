@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { monthKeySchema } from "../core/monthKeySchema.js";
+import { GRADE_LABELS } from "./gradeUtils.js";
 
 export const examinationsReportComparisonSessionSchema = z.object({
   sessionId: z.string(),
@@ -28,7 +29,7 @@ export const examinationsReportSubjectPassRateSchema = z.object({
 });
 
 export const examinationsReportGradeBucketSchema = z.object({
-  grade: z.string(),
+  grade: z.enum(GRADE_LABELS),
   count: z.number().nonnegative(),
 });
 

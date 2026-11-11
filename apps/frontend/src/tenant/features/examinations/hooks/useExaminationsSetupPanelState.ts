@@ -12,6 +12,7 @@ export interface UseExaminationsSetupPanelStateReturn {
   saving: boolean;
   isPrefsDirty: boolean;
   isDirty: boolean;
+  errors: { passMark?: string; maxMark?: string };
   handleSave: () => Promise<void>;
 }
 
@@ -23,7 +24,7 @@ export function useExaminationsSetupPanelState(): UseExaminationsSetupPanelState
       config,
     });
 
-  const { saving, isPrefsDirty, handleSave } = useExaminationsSetupSaveActions({
+  const { saving, isPrefsDirty, errors, handleSave } = useExaminationsSetupSaveActions({
     settings,
     settingsDraft,
     setSaved,
@@ -39,6 +40,7 @@ export function useExaminationsSetupPanelState(): UseExaminationsSetupPanelState
     saving,
     isPrefsDirty,
     isDirty: isPrefsDirty,
+    errors,
     handleSave,
   };
 }

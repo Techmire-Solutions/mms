@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
+import { parseIntegerInput } from "../lib/examFormValidation";
 import { EXAM_STATUSES, SESSIONS_MODULE_MANIFEST, allowedNextStatuses } from "@mms/shared";
 import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
@@ -106,12 +107,11 @@ export function ExaminationFormFields({
                 name="totalMarks"
                 type="text"
                 inputMode="numeric"
-                className={`${FORM_INPUT} ps-10`}
+                dir="ltr"
+                className={`${FORM_INPUT} ps-10 text-end`}
                 value={examDraft.totalMarks ?? ""}
                 onChange={(event) =>
-                  updateDraft({
-                    totalMarks: event.target.value === "" ? undefined : Number(event.target.value),
-                  })
+                  updateDraft({ totalMarks: parseIntegerInput(event.target.value) })
                 }
                 min={1}
                 required
@@ -131,13 +131,11 @@ export function ExaminationFormFields({
                 name="passingMarks"
                 type="text"
                 inputMode="numeric"
-                className={`${FORM_INPUT} ps-10`}
+                dir="ltr"
+                className={`${FORM_INPUT} ps-10 text-end`}
                 value={examDraft.passingMarks ?? ""}
                 onChange={(event) =>
-                  updateDraft({
-                    passingMarks:
-                      event.target.value === "" ? undefined : Number(event.target.value),
-                  })
+                  updateDraft({ passingMarks: parseIntegerInput(event.target.value) })
                 }
                 min={1}
                 max={examDraft.totalMarks ?? 100}
@@ -147,7 +145,11 @@ export function ExaminationFormFields({
           </Field>
 
           <div className="sm:col-span-2">
-            <Field id="exam-duration" label={t("examinations.form.fields.durationMinutes")}>
+            <Field
+              id="exam-duration"
+              label={t("examinations.form.fields.durationMinutes")}
+              error={errors.duration}
+            >
               <div className="relative flex items-center group/input">
                 <Clock className="absolute start-3.5 w-4 h-4 text-muted-foreground/60 group-focus-within/input:text-primary transition-colors pointer-events-none" />
                 <Input
@@ -155,9 +157,12 @@ export function ExaminationFormFields({
                   name="duration"
                   type="text"
                   inputMode="numeric"
-                  className={`${FORM_INPUT} ps-10`}
+                  dir="ltr"
+                  className={`${FORM_INPUT} ps-10 text-end`}
                   value={examDraft.duration ?? 60}
-                  onChange={(event) => updateDraft({ duration: Number(event.target.value) })}
+                  onChange={(event) =>
+                    updateDraft({ duration: parseIntegerInput(event.target.value) })
+                  }
                   min={5}
                   required
                 />

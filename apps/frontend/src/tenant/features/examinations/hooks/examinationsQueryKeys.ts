@@ -7,3 +7,6 @@ export const EXAMINATIONS_REPORT_AGGREGATES_QUERY_KEY = [
   "examinations",
   "report-aggregates",
 ] as const;
+
+/** Per-exam eligibility panel (attendance gate + roster states). */
+export const EXAMINATIONS_ELIGIBILITY_QUERY_KEY = ["examinations", "eligibility"] as const;

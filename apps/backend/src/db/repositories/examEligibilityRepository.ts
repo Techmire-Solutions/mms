@@ -20,7 +20,12 @@ export { loadExamRoster, loadExamStudentSections } from "./examEligibilityRoster
 /** Sets (or clears) the exam's own attendance gate. */
 export async function setExamAttendanceGate(
   tenant: string,
-  input: { examId: string; minAttendancePct: number | null; actorId: string },
+  input: {
+    examId: string;
+    minAttendancePct: number | null;
+    actorId: string;
+    reason?: string | null;
+  },
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
@@ -41,7 +46,11 @@ export async function setExamAttendanceGate(
       actionType: "UPDATE",
       realUserId: input.actorId,
       oldState: { minAttendancePct: before.minAttendancePct },
-      newState: { minAttendancePct: input.minAttendancePct },
+      newState: {
+        minAttendancePct: input.minAttendancePct,
+        reasonCode: "attendance_gate",
+        ...(input.reason ? { reason: input.reason } : {}),
+      },
       minimizeDelta: true,
     });
   });

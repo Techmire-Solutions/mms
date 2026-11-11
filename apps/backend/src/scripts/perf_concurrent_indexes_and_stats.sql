@@ -25,3 +25,9 @@ DROP INDEX CONCURRENTLY IF EXISTS "contacts_workspace_last_name_idx";
 DROP INDEX CONCURRENTLY IF EXISTS "contacts_workspace_gender_idx";
 DROP INDEX CONCURRENTLY IF EXISTS "contacts_workspace_gender_active_idx";
 
+
+-- 6. Examinations reporting hot paths: one covering marks index (analytics CTE, command-centre
+--    pass rate, broadsheet fingerprint) and the section-average enrollment composite.
+--    Run out of band; see docs/examinations-documents-analytics-audit-2026-11-11-round2.md.
+CREATE INDEX CONCURRENTLY IF NOT EXISTS "exam_results_workspace_exam_covering_idx" ON "exam_results" ("workspace_subdomain", "exam_id") INCLUDE ("student_id", "marks_obtained", "grace_marks", "updated_at");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS "enrollments_workspace_class_student_idx" ON "enrollments" ("workspace_subdomain", "class_id", "student_id") WHERE "deleted_at" IS NULL;

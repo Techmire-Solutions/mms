@@ -12,6 +12,8 @@ const FILES = [
   "src/__tests__/db-integration/attendanceConcurrencyDb.integration.test.ts",
   // Double redeem/void, idempotent issue, OCC, stock and quota races behind the Hasanat cards.
   "src/__tests__/db-integration/hasanatConcurrencyDb.integration.test.ts",
+  // Exam OCC batches/moderation/publication: repeated so a lucky single run cannot hide a race.
+  "src/__tests__/db-integration/examinationsConcurrencyDb.integration.test.ts",
 ];
 
 for (const file of FILES) {

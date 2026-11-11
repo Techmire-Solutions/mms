@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const eligibility = vi.hoisted(() => ({
   loadExamEligibilityBatch: vi.fn(),
+  setExamAttendanceGate: vi.fn(),
 }));
 
 vi.mock("../examinations/repository/examEligibilityAdapter.js", () => ({
@@ -14,7 +15,7 @@ vi.mock("../examinations/repository/examinationsRepositoryAdapter.js", () => ({
   examinationsRepository: examinations,
 }));
 
-const { assertExamResultsEligible } =
+const { assertExamResultsEligible, configureExamAttendanceGate } =
   await import("../examinations/use-cases/examEligibilityGate.js");
 const { examinationsRepository } =
   await import("../examinations/repository/examinationsRepositoryAdapter.js");
@@ -142,5 +143,22 @@ describe("exam eligibility gate (batched)", () => {
         ],
       },
     });
+  });
+
+  it("delegates configureExamAttendanceGate with optional reason", async () => {
+    eligibility.setExamAttendanceGate.mockResolvedValue({ id: "ex-1", minAttendancePct: 75 });
+    const result = await configureExamAttendanceGate("demo", {
+      examId: "ex-1",
+      minAttendancePct: 75,
+      actorId: "u-1",
+      reason: "Quarterly requirement",
+    });
+    expect(eligibility.setExamAttendanceGate).toHaveBeenCalledWith("demo", {
+      examId: "ex-1",
+      minAttendancePct: 75,
+      actorId: "u-1",
+      reason: "Quarterly requirement",
+    });
+    expect(result).toEqual({ id: "ex-1", minAttendancePct: 75 });
   });
 });

@@ -5,20 +5,13 @@ import {
   ModuleFilterDropdown,
 } from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
-
-export const EXAM_STATUSES = [
-  "upcoming",
-  "ongoing",
-  "completed",
-  "scheduled",
-  "cancelled",
-] as const;
+import { EXAM_STATUSES, isExamStatus, type ExamStatus } from "@mms/shared";
 
 export interface ExaminationsFiltersMenuButtonProps {
   filterStatus: string[];
   activeFilterCount: number;
-  statusLabels: Record<(typeof EXAM_STATUSES)[number], string>;
-  onToggleStatus: (status: string) => void;
+  statusLabels: Record<ExamStatus, string>;
+  onToggleStatus: (status: ExamStatus) => void;
   onClearFilters: () => void;
 }
 
@@ -47,7 +40,9 @@ export function ExaminationsFiltersMenuButton({
           label: statusLabels[status],
         }))}
         selected={filterStatus}
-        onToggle={onToggleStatus}
+        onToggle={(value) => {
+          if (isExamStatus(value)) onToggleStatus(value);
+        }}
       />
     </ModuleFilterDropdown>
   );

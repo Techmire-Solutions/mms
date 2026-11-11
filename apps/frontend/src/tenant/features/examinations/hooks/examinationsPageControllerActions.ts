@@ -45,7 +45,7 @@ export function createExaminationsSaveExamHandler(deps: ExaminationsMutationDeps
       deps.setEditExam(null);
     } catch (error: unknown) {
       notifySaveFailure(error);
-      throw error;
+      throw new NotifiedMutationError(error instanceof Error ? error.message : String(error));
     }
   };
 }
@@ -64,7 +64,7 @@ export function createExaminationsSaveResultsHandler(
       await deps.replaceExamResults.mutateAsync(newResults);
     } catch (error: unknown) {
       notifySaveFailure(error);
-      throw error;
+      throw new NotifiedMutationError(error instanceof Error ? error.message : String(error));
     }
   };
 }

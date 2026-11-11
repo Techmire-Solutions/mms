@@ -18,6 +18,7 @@ import { students } from "./students.js";
 import { softDeleteColumns } from "./softDeleteSchema.js";
 import { subjects } from "./academicCatalogs.js";
 import { sessionClasses } from "./sessions.js";
+import type { ExamStatus } from "@mms/shared";
 
 export const exams = pgTable(
   "exams",
@@ -32,7 +33,7 @@ export const exams = pgTable(
     passingMarks: integer("passing_marks").notNull().default(50),
     date: date("date", { mode: "string" }),
     duration: integer("duration").notNull().default(60),
-    status: varchar("status", { length: 20 }).notNull().default("upcoming"),
+    status: varchar("status", { length: 20 }).$type<ExamStatus>().notNull().default("upcoming"),
     /** Set when the exam is finalised; completion may only count finalized results (migration 0207). */
     resultsFinalizedAt: timestamp("results_finalized_at", {
       withTimezone: true,

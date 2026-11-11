@@ -7,7 +7,14 @@
  * completion gate at the threshold, so 74.5 % was "75" in one place and "below 75" in another.
  */
 
-export type ExamEligibilityState = "eligible" | "blocked" | "unknown";
+import { z } from "zod";
+
+/** Every eligibility decision the gate can return (shared by the engine, DTO and contract). */
+export const EXAM_ELIGIBILITY_STATES = ["eligible", "blocked", "unknown"] as const;
+
+export type ExamEligibilityState = (typeof EXAM_ELIGIBILITY_STATES)[number];
+
+export const examEligibilityStateSchema = z.enum(EXAM_ELIGIBILITY_STATES);
 
 export interface ExamEligibilityInput {
   /** Present-or-late share of countable days, one decimal. `null` when nothing is countable yet. */

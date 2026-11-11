@@ -125,6 +125,13 @@ export function createExaminationsUseCases(repo: ExaminationsRepository = examin
       return repo.listExamResultsPage(tenant, query);
     },
 
+    /** Marks fingerprint used to key broadsheet exports (count + newest update). */
+    loadExamResultsFingerprint: async (examId: string) => {
+      const tenant = getRequestTenant();
+      if (!tenant) return { count: 0, maxUpdatedAt: null };
+      return repo.findExamResultsFingerprint(tenant, examId);
+    },
+
     /** Audited grace-mark adjustment on one mark (raw mark preserved). */
     moderateExamResult: async (input: {
       examId: string;

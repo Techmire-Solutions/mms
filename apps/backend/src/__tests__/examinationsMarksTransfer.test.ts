@@ -42,7 +42,29 @@ vi.mock("../examinations/use-cases/examEligibilityGate.js", () => ({
 }));
 
 const saveExportArtifact = vi.hoisted(() => vi.fn(async (..._args: unknown[]) => undefined));
-vi.mock("../services/exportArtifactService.js", () => ({ saveExportArtifact }));
+const saveStreamedExportArtifact = vi.hoisted(() =>
+  vi.fn(async (..._args: unknown[]) => undefined),
+);
+vi.mock("../services/exportArtifactService.js", () => ({
+  saveExportArtifact,
+  saveStreamedExportArtifact,
+}));
+
+/** Captures the streamed broadsheet instead of writing to disk. */
+const uploads = vi.hoisted(() => [] as Array<{ key: string; content: string }>);
+vi.mock("../config/storage.js", () => ({
+  resolveTenantExportKey: (_tenant: string, filename: string) => `tenants/demo/exports/${filename}`,
+  uploadStreamToStorage: async (_tenant: string, key: string, stream: NodeJS.ReadableStream) => {
+    let content = "";
+    try {
+      for await (const chunk of stream) content += String(chunk);
+    } catch {
+      // A destroyed stream means the job failed; the runner rethrows.
+    }
+    uploads.push({ key, content });
+    return { key, storageType: "local" as const };
+  },
+}));
 
 import { registerExaminationsMarksImportJobRunner } from "../services/examinationsMarksImportService.js";
 import { registerExaminationsResultsExportJobRunner } from "../services/examinationsResultsExportService.js";
@@ -64,6 +86,7 @@ function fakeCtx(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   runners.clear();
   vi.clearAllMocks();
+  uploads.length = 0;
   findExamById.mockResolvedValue(EXAM);
   findExamResultVersionsByExam.mockResolvedValue([]);
   assertExamResultsEligible.mockReset();
@@ -193,7 +216,7 @@ describe("examinations:results-export", () => {
 
     await runner!({ examId: "ex-1", label: "Export", includeInternal: true }, ctx);
 
-    const csv = String(saveExportArtifact.mock.calls[0]?.[2]);
+    const csv = uploads.at(-1)?.content ?? "";
     expect(csv).toContain("Roll Number");
     expect(csv).toContain("Midterm");
     expect(csv).toContain("90");
@@ -221,7 +244,7 @@ describe("examinations:results-export", () => {
       "demo",
       expect.objectContaining({ publishedOnly: true }),
     );
-    const csv = String(saveExportArtifact.mock.calls[0]?.[2]);
+    const csv = uploads.at(-1)?.content ?? "";
     expect(csv).not.toContain("Grace Marks");
     expect(ctx.complete).toHaveBeenCalledWith(expect.objectContaining({ hasDownload: true }));
   });
@@ -232,6 +255,72 @@ describe("examinations:results-export", () => {
     findExamById.mockResolvedValue({ ...EXAM, resultsFinalizedAt: null });
 
     await expect(runner!({ examId: "ex-1" }, fakeCtx())).rejects.toThrow("Exam not found");
-    expect(saveExportArtifact).not.toHaveBeenCalled();
+    expect(uploads).toHaveLength(0);
+    expect(saveStreamedExportArtifact).not.toHaveBeenCalled();
+  });
+
+  it("neutralises formula-leading student names and roll numbers in the streamed broadsheet", async () => {
+    registerExaminationsResultsExportJobRunner();
+    const runner = runners.get("examinations:results-export");
+    loadExamRoster.mockResolvedValue([
+      {
+        studentId: "s-1",
+        rollNumber: "+1",
+        studentName: '=HYPERLINK("http://evil.test")',
+      },
+    ]);
+    const repo = (await import("../examinations/repository/examinationsRepositoryAdapter.js"))
+      .examinationsRepository;
+    (repo.listExamResultsPage as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      results: [{ id: "r-1", examId: "ex-1", studentId: "s-1", marksObtained: 90 }],
+      hasMore: false,
+    });
+    findExamById.mockResolvedValue({ ...EXAM, resultsFinalizedAt: "2026-03-11T00:00:00.000Z" });
+
+    await runner!({ examId: "ex-1", label: "Export", includeInternal: true }, fakeCtx());
+
+    const csv = uploads.at(-1)?.content ?? "";
+    expect(csv).toContain("'=HYPERLINK");
+    expect(csv).toContain("'+1");
+    expect(csv).not.toContain(",=HYPERLINK");
+  });
+
+  it("streams a page at a time until the marks run out", async () => {
+    registerExaminationsResultsExportJobRunner();
+    const runner = runners.get("examinations:results-export");
+    const repo = (await import("../examinations/repository/examinationsRepositoryAdapter.js"))
+      .examinationsRepository;
+    const listPage = repo.listExamResultsPage as unknown as ReturnType<typeof vi.fn>;
+    listPage
+      .mockResolvedValueOnce({
+        results: [{ id: "r-1", examId: "ex-1", studentId: "s-1", marksObtained: 90 }],
+        hasMore: true,
+      })
+      .mockResolvedValueOnce({
+        results: [{ id: "r-2", examId: "ex-1", studentId: "s-2", marksObtained: 80 }],
+        hasMore: false,
+      });
+    findExamById.mockResolvedValue({ ...EXAM, resultsFinalizedAt: "2026-03-11T00:00:00.000Z" });
+
+    await runner!({ examId: "ex-1", includeInternal: true }, fakeCtx());
+
+    expect(listPage).toHaveBeenCalledTimes(2);
+    expect(listPage.mock.calls[1]?.[1]).toMatchObject({ cursor: "r-1" });
+    const csv = uploads.at(-1)?.content ?? "";
+    expect(csv).toContain("90");
+    expect(csv).toContain("80");
+  });
+
+  it("stops a streamed export when the job is aborted", async () => {
+    registerExaminationsResultsExportJobRunner();
+    const runner = runners.get("examinations:results-export");
+    findExamById.mockResolvedValue({ ...EXAM, resultsFinalizedAt: "2026-03-11T00:00:00.000Z" });
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(
+      runner!({ examId: "ex-1", includeInternal: true }, fakeCtx({ signal: controller.signal })),
+    ).rejects.toThrow(/abort/i);
+    expect(saveStreamedExportArtifact).not.toHaveBeenCalled();
   });
 });

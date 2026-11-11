@@ -21,6 +21,7 @@ function createFakeRepo(): ExaminationsRepository {
     }),
     listExamResultsByWorkspace: vi.fn().mockResolvedValue([]),
     listExamResultsPage: vi.fn().mockResolvedValue({ results: [], hasMore: false }),
+    findExamResultsFingerprint: vi.fn().mockResolvedValue({ count: 0, maxUpdatedAt: null }),
     applyExamResultModeration: vi.fn().mockResolvedValue({
       examId: "ex-1",
       studentId: "std-1",

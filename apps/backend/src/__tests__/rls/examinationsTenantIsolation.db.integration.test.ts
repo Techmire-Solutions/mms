@@ -16,8 +16,12 @@ import {
 } from "../../db/schema.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { listExamResultsPage } from "../../db/repositories/examinationResultsRepository.js";
-import { loadExamEligibilityBatch } from "../../db/repositories/examEligibilityRepository.js";
+import {
+  grantEligibilityOverride,
+  loadExamEligibilityBatch,
+} from "../../db/repositories/examEligibilityRepository.js";
 import { listExamsByWorkspace } from "../../db/repositories/examinationExamsRepository.js";
+import { loadExaminationsReportAggregatesSql } from "../../db/repositories/examinationRepositoryReport.js";
 import { requireDatabaseConnection } from "../db-integration/dbTestSupport.js";
 
 /**
@@ -173,7 +177,9 @@ describe("examinations tenant isolation", () => {
          WHERE n.nspname = 'public'
            AND c.relname IN (
              'exams', 'exam_classes', 'exam_results', 'exam_eligibility_overrides',
-             'examinations_field_configs', 'examinations_module_preferences'
+             'examinations_field_configs', 'examinations_module_preferences',
+             'tests', 'test_sections', 'test_questions', 'test_section_questions',
+             'question_bank_field_configs', 'question_bank_module_preferences'
            )
       `);
       const byName = new Map((rows.rows ?? []).map((row) => [row.relname, row]));
@@ -184,6 +190,12 @@ describe("examinations tenant isolation", () => {
         "exam_eligibility_overrides",
         "examinations_field_configs",
         "examinations_module_preferences",
+        "tests",
+        "test_sections",
+        "test_questions",
+        "test_section_questions",
+        "question_bank_field_configs",
+        "question_bank_module_preferences",
       ]) {
         const entry = byName.get(table);
         expect(entry, `${table} missing`).toBeDefined();
@@ -193,6 +205,22 @@ describe("examinations tenant isolation", () => {
     } finally {
       await tx.commit();
     }
+  });
+
+  it("report analytics aggregate only the calling tenant's marks", async () => {
+    // The analytics path joins exam_results ⋈ exams ⋈ subjects; under RLS (and its explicit
+    // tenant predicate) tenant A must never see tenant B's 75 mark.
+    const analyticsA = await loadExaminationsReportAggregatesSql(TENANT_A);
+    const analyticsB = await loadExaminationsReportAggregatesSql(TENANT_B);
+
+    expect(analyticsA.analytics?.subjectPassRates).toEqual([
+      expect.objectContaining({ total: 1, passed: 1 }),
+    ]);
+    expect(analyticsB.analytics?.subjectPassRates).toEqual([
+      expect.objectContaining({ total: 1, passed: 1 }),
+    ]);
+    expect(analyticsA.analytics?.topPerformers.map((row) => row.studentId)).toEqual([STUDENT_A]);
+    expect(analyticsB.analytics?.topPerformers.map((row) => row.studentId)).toEqual([STUDENT_B]);
   });
 
   it("unfiltered reads return only the tenant's own rows", async () => {
@@ -236,6 +264,34 @@ describe("examinations tenant isolation", () => {
         .returning({ id: examResults.id }),
     );
     expect(deleted).toEqual([]);
+  });
+
+  it("cross-tenant eligibility overrides cannot be read, updated or granted", async () => {
+    const overrides = await withTenantRead(TENANT_A, (tx) =>
+      tx
+        .select()
+        .from(examEligibilityOverrides)
+        .where(eq(examEligibilityOverrides.workspaceSubdomain, TENANT_B)),
+    );
+    expect(overrides).toEqual([]);
+
+    const updated = await withTenant(TENANT_A, (tx) =>
+      tx
+        .update(examEligibilityOverrides)
+        .set({ reason: "cross-tenant" })
+        .where(eq(examEligibilityOverrides.workspaceSubdomain, TENANT_B))
+        .returning({ id: examEligibilityOverrides.studentId }),
+    );
+    expect(updated).toEqual([]);
+
+    await expect(
+      grantEligibilityOverride(TENANT_A, {
+        examId: `ex-${TENANT_B}`,
+        studentId: STUDENT_A,
+        reason: "cross-tenant grant",
+        grantedBy: "u-iso",
+      }),
+    ).rejects.toBeTruthy();
   });
 
   it("a cross-tenant mark cannot be inserted (composite tenant FK)", async () => {

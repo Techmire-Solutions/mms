@@ -66,6 +66,11 @@ export interface ExaminationsRepository {
       publishedOnly?: boolean;
     },
   ): Promise<{ results: ExamResult[]; hasMore: boolean }>;
+  /** Marks-state fingerprint (count + newest update) used to key broadsheet exports. */
+  findExamResultsFingerprint(
+    tenant: string,
+    examId: string,
+  ): Promise<{ count: number; maxUpdatedAt: string | null }>;
   /** Audited grace-mark adjustment; the raw mark is preserved. */
   applyExamResultModeration(
     tenant: string,

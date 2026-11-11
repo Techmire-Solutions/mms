@@ -8,6 +8,9 @@
  * global error handler) without changing any status code.
  */
 
+import type { ExamEligibilityState } from "../attendance/examEligibility.js";
+import type { ExamStatus } from "./examLifecycle.js";
+
 /** Rows attached to a gate error are capped so a large roster cannot bloat one error body. */
 export const EXAM_ERROR_DETAILS_LIMIT = 100;
 
@@ -22,7 +25,7 @@ export interface ExamGateStudentDetail {
   /** Present for the marks-bound failure. */
   marksObtained?: number;
   totalMarks?: number;
-  state?: "blocked" | "unknown";
+  state?: Exclude<ExamEligibilityState, "eligible">;
 }
 
 /** `details` for `exam_marks_out_of_range` / `exam_student_not_enrolled` / eligibility errors. */
@@ -45,8 +48,8 @@ export interface ExamLifecycleErrorDetails {
   examId?: string;
   examIds?: string[];
   /** Transition endpoints, when the rejection is a state move. */
-  from?: string;
-  to?: string;
+  from?: ExamStatus;
+  to?: ExamStatus;
 }
 
 /** `details` for an optimistic-concurrency (`stale_write`) rejection. */

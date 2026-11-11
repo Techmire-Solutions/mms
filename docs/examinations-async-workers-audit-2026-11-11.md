@@ -1,5 +1,13 @@
 # Examinations Async Workers & Queue Pipelines Audit — 2026-11-11
 
+> **Round 2 (same day):** re-audited after the import/export and later rounds. Examination jobs now
+> have a dedicated sandboxed queue; sandboxed children abort on SIGTERM and the worker force-closes
+> them on shutdown; failed jobs auto-retry from every examination enqueue path; idempotency keys are
+> bound to the payload and broadsheet keys include a marks fingerprint; a same-exam import guard,
+> background-job quota and owner-scoped reads were added. See
+> [examinations-async-workers-audit-2026-11-11-round2.md](./examinations-async-workers-audit-2026-11-11-round2.md).
+
+
 **Scope:** BullMQ processors, idempotency/retry safety, DLQ behaviour, graceful shutdown, and the
 examination-specific pipelines the brief named.
 

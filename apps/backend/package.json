@@ -44,7 +44,8 @@
     "test:db:coverage": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/sessions/**' --coverage.include='src/db/repositories/session*.ts' --coverage.include='src/routes/tenant/sessions/**' --coverage.include='src/worker/sessionLifecycleScheduler.ts' --coverage.reportsDirectory=coverage-sessions-db --coverage.reporter=json",
     "test:db:coverage:enrollments": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/enrollments/**' --coverage.include='src/db/repositories/enrollment*' --coverage.include='src/db/repositories/registration*' --coverage.include='src/routes/tenant/enrollments/**' --coverage.reportsDirectory=coverage-enrollments-db --coverage.reporter=json",
     "test:db:coverage:attendance": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/attendance/**' --coverage.include='src/db/repositories/attendance*' --coverage.include='src/routes/tenant/attendance/**' --coverage.reportsDirectory=coverage-attendance-db --coverage.reporter=json",
-    "test:db:concurrency": "node ../../scripts/ci/run-concurrency-suite.mjs"
+    "test:db:concurrency": "node ../../scripts/ci/run-concurrency-suite.mjs",
+    "test:db:coverage:examinations": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/db/repositories/examination*' --coverage.include='src/examinations/domain/**' --coverage.reportsDirectory=coverage-examinations-db --coverage.reporter=json-summary --coverage.reporter=text-summary"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",

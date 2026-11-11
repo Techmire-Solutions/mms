@@ -401,6 +401,15 @@ async function findRelationshipTypeButton(dialog: Locator, contactName: string):
 /**
  * Executes backend class & enrollment seed script for a given subdomain
  */
+export function seedExamForE2e(subdomain: string): void {
+  if (process.env.E2E_TARGET === "production" || process.env.NODE_ENV === "production") {
+    console.warn("[E2E SAFEGUARD] Skipping exam seed on production environment.");
+    return;
+  }
+  const output = runBackendSeedScript("src/scripts/seed-exam-e2e.ts", subdomain);
+  console.log(output);
+}
+
 export function seedTestClassAndEnrollment(subdomain: string): void {
   if (process.env.E2E_TARGET === "production" || process.env.NODE_ENV === "production") {
     console.warn("[E2E SAFEGUARD] Skipping class seed on production environment.");

@@ -51,6 +51,39 @@ describe("resolveResultScore", () => {
     expect(broken.passed).toBe(false);
   });
 
+  it("passes exactly at the exam's pass mark", () => {
+    const exact = resolveResultScore({ marksObtained: 50, totalMarks: 100, passingMarks: 50 });
+    expect(exact.passed).toBe(true);
+    expect(exact.grade.label).toBe("D");
+  });
+
+  it("clamps malformed and out-of-range inputs instead of producing NaN/Infinity", () => {
+    const malformed = resolveResultScore({
+      marksObtained: Number.NaN,
+      totalMarks: Number.POSITIVE_INFINITY,
+      passingMarks: -5,
+    });
+    expect(malformed.effectiveMarks).toBe(0);
+    expect(Number.isFinite(malformed.percentage)).toBe(true);
+    // A non-finite total is a scoring fault, so the result is a failure (not an Infinity/A+).
+    expect(malformed.passed).toBe(false);
+
+    const negative = resolveResultScore({
+      marksObtained: -10,
+      totalMarks: 100,
+      passingMarks: 50,
+      graceMarks: -2,
+    });
+    expect(negative.effectiveMarks).toBe(0);
+    expect(negative.passed).toBe(false);
+
+    // Marks above the total are clamped for percentage, but the pass comparison uses the score.
+    const over = resolveResultScore({ marksObtained: 120, totalMarks: 100, passingMarks: 50 });
+    expect(over.rawPercentage).toBe(100);
+    expect(over.displayPercentage).toBe(100);
+    expect(over.passed).toBe(true);
+  });
+
   it("rounds percentages to two decimals only for display", () => {
     const score = resolveResultScore({
       marksObtained: 2,
@@ -61,6 +94,13 @@ describe("resolveResultScore", () => {
     expect(score.percentage).toBe(66.67);
     expect(score.displayPercentage).toBe(67);
     expect(roundPercentage(33.3333)).toBe(33.33);
+    // Decimal-text rounding, not binary-double drift: halves and near-halves at the cent boundary.
+    expect(roundPercentage(0.005)).toBe(0.01);
+    expect(roundPercentage(0.015)).toBe(0.02);
+    expect(roundPercentage(66.665)).toBe(66.67);
+    expect(roundPercentage(-12.345)).toBe(-12.34);
+    expect(Number.isNaN(roundPercentage(Number.NaN))).toBe(true);
+    expect(roundPercentage(Number.POSITIVE_INFINITY)).toBe(Number.POSITIVE_INFINITY);
   });
 });
 
@@ -82,6 +122,22 @@ describe("rankResults", () => {
       ["b", 1, 2],
       ["c", 3, 3],
       ["d", 4, 4],
+    ]);
+  });
+
+  it("handles an empty list and a missing tie-break without inventing order", () => {
+    expect(rankResults([], { score: () => 0 })).toEqual([]);
+    const tied = rankResults(
+      [
+        { id: "b", marks: 70 },
+        { id: "a", marks: 70 },
+      ],
+      { score: (row) => row.marks },
+    );
+    // No tie-break: stable input order, shared rank.
+    expect(tied.map((row) => [row.id, row.rank])).toEqual([
+      ["b", 1],
+      ["a", 1],
     ]);
   });
 
@@ -115,6 +171,42 @@ describe("rankInExam", () => {
     expect(byId.get("s1")).toMatchObject({ rank: 1, classRank: 1, classSize: 2, overallSize: 3 });
     expect(byId.get("s2")).toMatchObject({ rank: 3, classRank: 2, classSize: 2 });
     expect(byId.get("s3")).toMatchObject({ rank: 2, classRank: 1, classSize: 1 });
+  });
+
+  it("shares ranks for ties inside a class and overall (competition ranking)", () => {
+    const rows = [
+      { id: "a", marks: 90, classId: "c1" },
+      { id: "b", marks: 90, classId: "c1" },
+      { id: "c", marks: 90, classId: "c2" },
+      { id: "d", marks: 80, classId: "c2" },
+    ];
+    const ranked = rankInExam(rows, {
+      score: (row) => row.marks,
+      classId: (row) => row.classId,
+      tieBreak: (row) => row.id,
+    });
+    const byId = new Map(ranked.map((row) => [row.id, row]));
+    expect(byId.get("a")).toMatchObject({ rank: 1, classRank: 1, classSize: 2 });
+    expect(byId.get("b")).toMatchObject({ rank: 1, classRank: 1, classSize: 2 });
+    expect(byId.get("c")).toMatchObject({ rank: 1, classRank: 1, classSize: 2 });
+    expect(byId.get("d")).toMatchObject({ rank: 4, classRank: 2, classSize: 2 });
+  });
+
+  it("groups a null/unknown class under one bucket and handles an empty exam", () => {
+    const rows = [
+      { id: "a", marks: 70, classId: null },
+      { id: "b", marks: 60, classId: undefined },
+    ];
+    const ranked = rankInExam(rows, {
+      score: (row) => row.marks,
+      classId: (row) => row.classId,
+      tieBreak: (row) => row.id,
+    });
+    expect(ranked.map((row) => [row.id, row.classRank, row.classSize])).toEqual([
+      ["a", 1, 2],
+      ["b", 2, 2],
+    ]);
+    expect(rankInExam([], { score: () => 0, classId: () => null })).toEqual([]);
   });
 });
 

@@ -44,7 +44,8 @@
     "ci:local:full": "bash scripts/ci/local-ci.sh --full",
     "prepare": "node -e \"try{require('node:child_process').execSync('git config core.hooksPath .githooks',{stdio:'ignore'})}catch{}\"",
     "check:examinations-tests": "node scripts/check-examinations-test-matrix.mjs",
-    "check:examinations-route-injection": "node scripts/ci/check-examinations-route-injection.mjs"
+    "check:examinations-route-injection": "node scripts/ci/check-examinations-route-injection.mjs",
+    "check:examinations-route-security": "node scripts/ci/check-examinations-route-security.mjs"
   },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",

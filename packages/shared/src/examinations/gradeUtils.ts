@@ -15,6 +15,10 @@ export interface GradeInfo {
  * grade distribution, imports and the printed card. They were previously inline literals in
  * `getGrade`, so any new aggregate had to re-encode 90/80/70/60/50 and could drift.
  */
+/** Every letter grade the scale can emit, highest first (the enum used by DTOs). */
+export const GRADE_LABELS = ["A+", "A", "B", "C", "D", "F"] as const;
+export type GradeLabel = (typeof GRADE_LABELS)[number];
+
 export const GRADE_BANDS = [
   { label: "A+", minPct: 90, tone: "success" },
   { label: "A", minPct: 80, tone: "info" },
@@ -22,12 +26,12 @@ export const GRADE_BANDS = [
   { label: "C", minPct: 60, tone: "warning" },
   { label: "D", minPct: 50, tone: "secondary" },
   { label: "F", minPct: 0, tone: "destructive" },
-] as const satisfies ReadonlyArray<{ label: string; minPct: number; tone: GradeTone }>;
+] as const satisfies ReadonlyArray<{ label: GradeLabel; minPct: number; tone: GradeTone }>;
 
 /** Lowest band (the fallback for any percentage, including a failed score). */
 export const LOWEST_GRADE_BAND = GRADE_BANDS[GRADE_BANDS.length - 1]!;
 
-function bandInfo(label: string, tone: GradeTone): GradeInfo {
+function bandInfo(label: GradeLabel, tone: GradeTone): GradeInfo {
   return {
     label,
     tone,

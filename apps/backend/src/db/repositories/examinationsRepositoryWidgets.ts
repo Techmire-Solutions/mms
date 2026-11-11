@@ -37,11 +37,13 @@ function singleFilterSql(
   if (op === "contains") {
     return sql`lower(${colSql}::text) LIKE ${`%${value.trim().toLowerCase()}%`}`;
   }
-  if (op === "gt") {
-    return sql`${colSql}::numeric > ${Number(value)}`;
-  }
-  if (op === "lt") {
-    return sql`${colSql}::numeric < ${Number(value)}`;
+  if (op === "gt" || op === "lt") {
+    // A non-numeric filter value must not reach `::numeric` (NaN/pg parse errors); ignore it.
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return null;
+    return op === "gt"
+      ? sql`${colSql}::numeric > ${numeric}`
+      : sql`${colSql}::numeric < ${numeric}`;
   }
   return null;
 }

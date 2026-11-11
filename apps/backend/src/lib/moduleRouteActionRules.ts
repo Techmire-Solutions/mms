@@ -1,4 +1,5 @@
 import type { ModuleAction } from "@mms/shared";
+import { EXAMINATIONS_MODULE_ROUTE_ACTION_RULES } from "./moduleRouteActionRulesExaminations.js";
 
 /**
  * Single registry of module routes whose required action differs from the HTTP-method default.
@@ -63,49 +64,7 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "manage",
     onlyModules: ["enrollment"],
   },
-  // Examinations: trash/restore are `examinations.delete` operations (the method default made them
-  // `write`, so a delete-only role could not trash while any writer could). Publication is a
-  // lifecycle action and the CSV export is a read — its handler already requires `canRead`, but the
-  // module gate demanded `write`.
-  {
-    methods: ["DELETE"],
-    pattern: /^\/api\/examinations\/exams\/:id$/,
-    action: "delete",
-    onlyModules: ["examination"],
-  },
-  {
-    methods: ["POST"],
-    pattern:
-      /^\/api\/examinations\/exams\/(bulk-delete|bulk-restore)$|^\/api\/examinations\/exams\/:id\/restore$/,
-    action: "delete",
-    onlyModules: ["examination"],
-  },
-  {
-    methods: ["POST"],
-    pattern: /^\/api\/examinations\/exams\/:id\/(results-finalization|moderation)$/,
-    // Publishing, unlocking and moderating are controller actions; the handlers enforce the same.
-    action: "delete",
-    onlyModules: ["examination"],
-  },
-  {
-    methods: ["POST"],
-    pattern: /^\/api\/examinations\/exams\/:id\/eligibility-overrides(\/:studentId\/revoke)?$/,
-    // Granting or revoking an override is an administrative decision; the handlers enforce the same.
-    action: "delete",
-    onlyModules: ["examination"],
-  },
-  {
-    methods: ["POST"],
-    pattern: /^\/api\/examinations\/(export\/csv|export-audit)$/,
-    action: "read",
-    onlyModules: ["examination"],
-  },
-  {
-    methods: ["POST"],
-    pattern: /^\/api\/examinations\/exams\/:id\/results\/export$/,
-    action: "read",
-    onlyModules: ["examination"],
-  },
+  ...EXAMINATIONS_MODULE_ROUTE_ACTION_RULES,
   // Faculty: archive/restore are `faculty.delete` operations. The handlers
   // already require `canDeleteCollection("faculty")`, so the method default
   // (`write`) wrongly 403'd a delete-only role. Registered on the canonical,

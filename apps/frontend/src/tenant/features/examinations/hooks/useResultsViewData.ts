@@ -109,7 +109,7 @@ export function useResultsViewData({
       tieBreak: (row) => `${row.student?.rollNo ?? ""}|${row.studentId}`,
     });
 
-    return ranked as unknown as RankedResult[];
+    return ranked;
   })();
 
   useEffect(() => {

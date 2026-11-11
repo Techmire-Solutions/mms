@@ -1,14 +1,11 @@
 import { type User, type examinationContract } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import {
-  canDeleteCollection,
-  canReadCollection,
-  canWriteCollection,
-} from "../../../services/rbacService.js";
+import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { NotFoundError } from "../../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../../lib/cache/index.js";
+import { broadcastTenantUpdate } from "../../../lib/livePush.js";
 import {
   configureExamAttendanceGate,
   getExamEligibilityView,
@@ -74,10 +71,12 @@ export function gateHandlers() {
       ContractRouteResponse<(typeof examinationContract)["setExamAttendanceGate"]>
     > => {
       const user = request.user as User;
-      if (!canWriteCollection(user, "exams")) {
+      // The threshold decides who may be graded: lowering it is a controller decision, not an
+      // ordinary marking edit.
+      if (!canDeleteCollection(user, "exams")) {
         return {
           status: 403 as const,
-          body: { type: "forbidden", message: "Insufficient permissions" },
+          body: { type: "forbidden", message: "Controller rights required" },
         };
       }
       const tenant = getRequestTenant();
@@ -94,11 +93,14 @@ export function gateHandlers() {
             configureExamAttendanceGate(tenant, {
               examId: id,
               minAttendancePct: body.minAttendancePct,
+              reason: body.reason,
               actorId: String(user.id),
             }),
           { readOnly: false },
         );
         await invalidateMultiTierCache({ tenantId: tenant, domain: "examinations" });
+        // The threshold changes every client's eligibility panel/drawer.
+        broadcastTenantUpdate(tenant, "collection", "exams");
         return {
           status: 200 as const,
           body: { examId: id, minAttendancePct: body.minAttendancePct },
@@ -141,6 +143,7 @@ export function gateHandlers() {
             }),
           { readOnly: false },
         );
+        broadcastTenantUpdate(tenant, "collection", "exams");
         return { status: 200 as const, body: { success: true as const } };
       } catch (error) {
         return mapGateError(request, error, "Failed to grant the eligibility override");
@@ -180,6 +183,7 @@ export function gateHandlers() {
             }),
           { readOnly: false },
         );
+        broadcastTenantUpdate(tenant, "collection", "exams");
         return { status: 200 as const, body: result };
       } catch (error) {
         return mapGateError(request, error, "Failed to revoke the eligibility override");

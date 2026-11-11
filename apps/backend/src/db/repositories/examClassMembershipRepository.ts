@@ -1,5 +1,5 @@
 import { and, count, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { PUBLISHABLE_EXAM_STATUSES } from "@mms/shared";
+import { PUBLISHABLE_EXAM_STATUSES, type ExamStatus } from "@mms/shared";
 import {
   contacts,
   enrollments,
@@ -56,7 +56,7 @@ export async function listEnrolledStudentIds(
 /** Persisted lifecycle state needed to decide whether a publication change is legal. */
 export interface ExamLifecycleState {
   id: string;
-  status: string;
+  status: ExamStatus;
   resultsFinalizedAt: Date | null;
   deletedAt: Date | null;
 }
@@ -138,7 +138,7 @@ export async function setExamResultsFinalized(
   input: {
     examId: string;
     resultsFinalizedAt: Date | null;
-    status: string;
+    status: ExamStatus;
     actorId: string;
     reason?: string | null;
     /**
@@ -155,7 +155,7 @@ export async function setExamResultsFinalized(
      */
     require?: "publishable" | "unlockable";
   },
-): Promise<{ examId: string; resultsFinalizedAt: Date | null; status: string } | null> {
+): Promise<{ examId: string; resultsFinalizedAt: Date | null; status: ExamStatus } | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
     const [before] = await tx
@@ -249,7 +249,7 @@ export async function setExamResultsFinalized(
     return {
       examId: input.examId,
       resultsFinalizedAt: row?.resultsFinalizedAt ?? null,
-      status: String(row?.status ?? before.status),
+      status: row?.status ?? before.status,
     };
   });
 }

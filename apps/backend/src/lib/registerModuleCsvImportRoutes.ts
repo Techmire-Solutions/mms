@@ -9,11 +9,13 @@ import {
   mapActionStringToAuditType,
 } from "../services/auditTrailService.js";
 import {
+  BackgroundJobLimitError,
   enqueueBackgroundJob,
   getUserBackgroundJob,
   getUserBackgroundJobPayload,
   hasBackgroundJobRunner,
   QueueUnavailableError,
+  retryFailedBackgroundJob,
 } from "../services/backgroundJobWorkerService.js";
 import { buildBackgroundJobId, buildDeterministicJobKey } from "./backgroundJobIds.js";
 
@@ -74,8 +76,20 @@ export function registerModuleCsvImportRoutes(
       });
     const jobId = buildBackgroundJobId(tenant, userId, idempotencyKey);
 
+    const clientKey = data.idempotencyKey?.trim();
     const existing = await getUserBackgroundJob(userId, jobId);
     if (existing) {
+      const importPayload = {
+        rows: data.rows,
+        label,
+        viewerRole: user.role,
+        language: (request.headers?.["accept-language"] as string | undefined) || "en",
+      };
+      if (existing.status === "failed") {
+        return reply
+          .status(202)
+          .send({ job: await retryFailedBackgroundJob(tenant, userId, existing, importPayload) });
+      }
       // Same key, different body: never silently ignore the new rows.
       const stored = await getUserBackgroundJobPayload(userId, jobId);
       if (stored && Array.isArray(stored.rows)) {
@@ -86,6 +100,14 @@ export function registerModuleCsvImportRoutes(
               "This idempotency key was already used for a different row set — start a new import",
           });
         }
+      } else if (clientKey && existing.status === "completed") {
+        // A finished job drops the row payload (PII); a client-supplied key that cannot be
+        // verified against the stored body must not silently return the old result.
+        return reply.status(409).send({
+          type: "conflict",
+          message:
+            "This idempotency key belongs to a finished job whose rows were discarded — start a new import with a new key",
+        });
       }
       return reply.status(202).send({ job: existing });
     }
@@ -111,6 +133,9 @@ export function registerModuleCsvImportRoutes(
         },
       );
     } catch (err) {
+      if (err instanceof BackgroundJobLimitError) {
+        return reply.status(429).send({ type: "background_job_limit", message: err.message });
+      }
       if (err instanceof QueueUnavailableError) {
         return sendServiceUnavailable(reply, err.message);
       }

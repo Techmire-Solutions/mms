@@ -72,6 +72,15 @@ describe("examinations export", () => {
   it("refuses to run without a tenant", async () => {
     await expect(buildExaminationsCsvExport({}, exportOptions)).rejects.toThrow(/Tenant context/);
   });
+
+  it("stops paging when the job is aborted (shutdown/deadline)", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      buildExaminationsCsvExport({}, exportOptions, "demo", controller.signal),
+    ).rejects.toThrow(/aborted/i);
+    expect(listExamsByWorkspace).not.toHaveBeenCalled();
+  });
 });
 
 describe("examinations import mapping", () => {

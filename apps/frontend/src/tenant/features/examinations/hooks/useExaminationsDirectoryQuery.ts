@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import type { Exam } from "@/lib/data/examinationData";
 import { useDebounce } from "@/hooks/useDebounce";
 import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
 import { useExaminationsContractList } from "@/tenant/features/examinations/hooks/useExaminationsQueries";
@@ -37,7 +36,7 @@ export function useExaminationsDirectoryQuery({
     includeDeleted: showDeleted,
   });
 
-  const pageExams = (examsPageQuery.data?.body?.exams ?? []) as Exam[];
+  const pageExams = examsPageQuery.data?.body?.exams ?? [];
   const serverTotal = examsPageQuery.data?.body?.total ?? 0;
   const serverPage = examsPageQuery.data?.body?.page ?? listPage;
   const serverLimit =

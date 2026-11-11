@@ -210,7 +210,7 @@ export async function getExamEligibilityView(tenant: string, examId: string) {
 /** Configures or removes the exam-level attendance threshold. */
 export async function configureExamAttendanceGate(
   tenant: string,
-  input: { examId: string; minAttendancePct: number | null; actorId: string },
+  input: { examId: string; minAttendancePct: number | null; actorId: string; reason?: string },
 ) {
   return repo.setExamAttendanceGate(tenant, input);
 }

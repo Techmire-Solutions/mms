@@ -1,14 +1,8 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey, ExamStatus } from "@mms/shared";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
-export interface ExaminationStatusLabels {
-  upcoming: string;
-  ongoing: string;
-  completed: string;
-  scheduled: string;
-  cancelled: string;
-}
+export type ExaminationStatusLabels = Record<ExamStatus, string>;
 
 export function resolveExaminationStatusLabels(
   t: (key: AppTranslationKey) => string,

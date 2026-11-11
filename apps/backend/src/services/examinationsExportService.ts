@@ -6,6 +6,7 @@ import {
   type ExaminationsExportColumn,
 } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
+import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { examinationsRepository } from "../examinations/repository/examinationsRepositoryAdapter.js";
 
 /**
@@ -47,6 +48,7 @@ export async function buildExaminationsCsvExport(
   _query: Record<string, unknown>,
   options: ExaminationsCsvExportOptions,
   tenant?: string,
+  signal?: AbortSignal,
 ): Promise<ExaminationsCsvExportResult> {
   const subdomain = requireTenant(tenant);
   const columns = resolveExaminationsExportColumns(
@@ -55,6 +57,8 @@ export async function buildExaminationsCsvExport(
 
   const exams: Exam[] = [];
   for (let offset = 0; exams.length < MAX_EXPORT_ROWS; offset += PAGE_SIZE) {
+    // A deploy/shutdown aborts the runner; stop reading instead of building the whole artifact.
+    throwIfBackgroundJobAborted(signal);
     const page = await examinationsRepository.listExamsByWorkspace(subdomain, {
       limit: PAGE_SIZE,
       offset,
@@ -62,6 +66,7 @@ export async function buildExaminationsCsvExport(
     exams.push(...page);
     if (page.length < PAGE_SIZE) break;
   }
+  throwIfBackgroundJobAborted(signal);
 
   return {
     csv: buildCsvContent(buildExaminationsExportRows(exams, columns)),

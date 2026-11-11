@@ -124,4 +124,65 @@ describe("useExaminationForm Hook", () => {
     expect(hookResult.errors.classes).toBeUndefined();
     expect(hookResult.submitError).toBeUndefined();
   });
+
+  it("flags an invalid numeric frame live and becomes dirty only after an edit", async () => {
+    let hookResult!: ReturnType<typeof useExaminationForm>;
+    function TestComponent() {
+      hookResult = useExaminationForm({
+        open: true,
+        exam: mockExam,
+        onClose: vi.fn(),
+        onSave: vi.fn(),
+      });
+      return null;
+    }
+    const root = createRoot(container!);
+    await act(async () => {
+      root.render(React.createElement(TestComponent));
+    });
+
+    expect(hookResult.valid).toBe(true);
+    expect(hookResult.isDirty).toBe(false);
+
+    await act(async () => {
+      hookResult.updateDraft({ passingMarks: 120 });
+    });
+
+    expect(hookResult.isDirty).toBe(true);
+    expect(hookResult.valid).toBe(false);
+    expect(hookResult.errors.passingMarks).toBe("examinations.form.validation.passingExceedsTotal");
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("shows a save failure inline without losing the draft", async () => {
+    const onSave = vi.fn().mockRejectedValue(new Error("server rejected"));
+    let hookResult!: ReturnType<typeof useExaminationForm>;
+    function TestComponent() {
+      hookResult = useExaminationForm({
+        open: true,
+        exam: mockExam,
+        onClose: vi.fn(),
+        onSave,
+      });
+      return null;
+    }
+    const root = createRoot(container!);
+    await act(async () => {
+      root.render(React.createElement(TestComponent));
+    });
+    await act(async () => {
+      hookResult.updateDraft({ name: "Updated" });
+    });
+    await act(async () => {
+      await hookResult.handleSave();
+    });
+
+    expect(hookResult.submitError).toBe("server rejected");
+    expect(hookResult.examDraft.name).toBe("Updated");
+    await act(async () => {
+      root.unmount();
+    });
+  });
 });

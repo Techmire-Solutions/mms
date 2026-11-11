@@ -1,5 +1,13 @@
 # Examinations Security, Multi-Tenancy & Compliance Audit — 2026-11-11
 
+> **Round 2 (same day):** re-audited after the lifecycle, specialized-subsystems and API rounds; the
+> marks CSV import bypassed teacher section scope, exam definition writes (create/update, scoring
+> frame, status) and the exams CSV import were writable by any teacher, the attendance gate was
+> writable by any writer, the librarian role kept examinations write, and the broadsheet export/marks
+> import lacked access/summary audit rows. Fixes and the extended RLS/audit proofs are in
+> [examinations-security-tenancy-audit-2026-11-11-round2.md](./examinations-security-tenancy-audit-2026-11-11-round2.md).
+
+
 **Scope:** tenant isolation, granular RBAC for marking/moderation/publication, and the audit trail for
 every grade-affecting action in the Examinations module.
 

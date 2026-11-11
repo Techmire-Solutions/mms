@@ -1,5 +1,13 @@
 # Examinations Import / Export / Templates / Analytics Audit — 2026-11-11
 
+> **Round 2 (same day):** re-audited after the lifecycle/import/worker rounds. The Typst PDF engine
+> was replaced with a fail-loudly, file-based renderer (no placeholder PDF, no payload in argv,
+> language/direction-aware templates, bundled fonts, concurrency aligned); the broadsheet export now
+> streams instead of buffering the grid; and the four analytics statements became one materialized
+> scan with covering indexes. See
+> [examinations-documents-analytics-audit-2026-11-11-round2.md](./examinations-documents-analytics-audit-2026-11-11-round2.md).
+
+
 **Scope:** document-template rendering (report cards, certificates, invoices of outcomes), CSV/XLSX
 import-export, and the analytics behind the module's reports and widgets.
 

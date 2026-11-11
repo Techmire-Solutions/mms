@@ -1,5 +1,10 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
+  return { ...actual, useQueryClient: () => ({ invalidateQueries: vi.fn() }) };
+});
 import { renderToStaticMarkup } from "react-dom/server";
 import { createRoot } from "react-dom/client";
 import { act } from "react";
@@ -115,6 +120,13 @@ describe("EnterMarks Component", () => {
       );
     });
 
+    // The save action is dirty-gated: make an edit before saving.
+    const input = container.querySelector("input[name='marks_std-1']") as HTMLInputElement;
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      setter?.call(input, "90");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
     const saveButton = findSaveButton(container);
     expect(saveButton).toBeDefined();
 
@@ -129,9 +141,47 @@ describe("EnterMarks Component", () => {
       id: "er_ex-1_std-1",
       examId: "ex-1",
       studentId: "std-1",
-      marksObtained: 85,
+      marksObtained: 90,
       version: 3,
     });
+  });
+
+  it("keeps the draft when a background results refetch arrives while dirty", async () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    const onSaveResults = vi.fn().mockResolvedValue(undefined);
+
+    await act(async () => {
+      root.render(
+        <EnterMarks exams={[mockExam]} results={mockResults} onSaveResults={onSaveResults} />,
+      );
+    });
+
+    const input = container.querySelector("input[name='marks_std-1']") as HTMLInputElement;
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      setter?.call(input, "90");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    // Another client's save/moderation changes the persisted rows while the draft is dirty.
+    await act(async () => {
+      root.render(
+        <EnterMarks
+          exams={[mockExam]}
+          results={[{ ...mockResults[0]!, marksObtained: 70 }]}
+          onSaveResults={onSaveResults}
+        />,
+      );
+    });
+
+    expect((container.querySelector("input[name='marks_std-1']") as HTMLInputElement).value).toBe(
+      "90",
+    );
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 
   it("locks the grid and the save action once results are published", async () => {
