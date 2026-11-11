@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
-import { invalidateContactsQueries } from "@/tenant/hooks/collections/contacts";
+import { CONTACTS_QUERY_KEY } from "@/tenant/hooks/collections/contacts";
 import {
   FACULTY_METRICS_QUERY_KEY,
   FACULTY_QUERY_KEY,
@@ -22,8 +22,10 @@ const invalidateModuleQueries = createModuleQueryInvalidator({
  * The backend reconciles contact-derived tags (`Faculty`) on every faculty write
  * (`reconcileContactSystemTags`), and the reconciler emits no live event of its
  * own, so the Contacts caches must refresh alongside the faculty ones.
+ * We invalidate CONTACTS_QUERY_KEY directly rather than calling invalidateContactsQueries
+ * to prevent cascading invalidation into STUDENTS_QUERY_KEY and messaging caches.
  */
 export function invalidateFacultyQueries(queryClient: QueryClient): void {
   invalidateModuleQueries(queryClient);
-  invalidateContactsQueries(queryClient);
+  void queryClient.invalidateQueries({ queryKey: CONTACTS_QUERY_KEY });
 }

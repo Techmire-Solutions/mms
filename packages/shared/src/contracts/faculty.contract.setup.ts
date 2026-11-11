@@ -1,8 +1,13 @@
 import { z } from "zod";
+import { apiErrorResponseSchema } from "../schemas/api.dto.js";
 import { facultyLookupsMapSchema } from "../faculty/facultyLookupTypes.js";
+import {
+  facultyFieldConfigPutBodySchema,
+  facultyPreferencesPutBodySchema,
+} from "../faculty/facultySetupConfigTypes.js";
 import { facultyPreferencesResponseSchema } from "./faculty.contract.schemas.js";
 
-const errorResponse = z.unknown();
+const errorResponse = apiErrorResponseSchema;
 
 export const facultySetupContractEndpoints = {
   setupAudit: {
@@ -29,7 +34,7 @@ export const facultySetupContractEndpoints = {
   updateFieldConfig: {
     method: "PUT" as const,
     path: "/api/faculty/field-config",
-    body: z.unknown(),
+    body: facultyFieldConfigPutBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), config: z.record(z.string(), z.unknown()) }),
       403: errorResponse,
@@ -50,7 +55,7 @@ export const facultySetupContractEndpoints = {
   updatePreferences: {
     method: "PUT" as const,
     path: "/api/faculty/preferences",
-    body: z.unknown(),
+    body: facultyPreferencesPutBodySchema,
     responses: {
       200: z.object({ success: z.literal(true), preferences: facultyPreferencesResponseSchema }),
       403: errorResponse,

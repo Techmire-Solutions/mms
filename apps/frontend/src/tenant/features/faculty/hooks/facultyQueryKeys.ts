@@ -1,6 +1,7 @@
 import { FACULTY_MODULE_MANIFEST, type FacultyWidgetQuery } from "@mms/shared";
 
 export const FACULTY_QUERY_KEY = [FACULTY_MODULE_MANIFEST.collectionKey, "list"] as const;
+export const FACULTY_DETAIL_QUERY_KEY = [FACULTY_MODULE_MANIFEST.collectionKey, "detail"] as const;
 export const FACULTY_METRICS_QUERY_KEY = [
   FACULTY_MODULE_MANIFEST.collectionKey,
   "metrics",

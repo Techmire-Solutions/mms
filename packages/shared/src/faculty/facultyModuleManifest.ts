@@ -7,6 +7,8 @@ import {
   FACULTY_CONTRACT_TYPE_VALUES,
   FACULTY_EMPLOYMENT_STATUS_VALUES,
   FACULTY_PROFILE_STATUS_VALUES,
+  FACULTY_IJAZAH_FIELD_VALUES,
+  FACULTY_LEAVE_CATEGORY_VALUES,
 } from "./facultyTypes.js";
 import {
   FACULTY_PERFORMANCE_RATING_MAX,
@@ -30,7 +32,7 @@ const facultyEmploymentWireSchema = z
 export const facultyIjazahSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1).max(200),
-  field: z.string().max(50),
+  field: z.enum(FACULTY_IJAZAH_FIELD_VALUES).or(z.string().max(50)),
   grantingAuthority: z.string().min(1).max(200),
   year: z.union([z.number(), z.string()]).nullable().optional(),
   sanadChain: z.string().max(4000).nullable().optional(),
@@ -41,7 +43,7 @@ export const facultyLeaveDetailsSchema = z.object({
   startDate: isoDateSchema.nullable().optional(),
   endDate: isoDateSchema.nullable().optional(),
   reason: z.string().max(1000).nullable().optional(),
-  category: z.string().max(50).nullable().optional(),
+  category: z.enum(FACULTY_LEAVE_CATEGORY_VALUES).or(z.string().max(50)).nullable().optional(),
   substituteFacultyId: z.string().nullable().optional(),
   substituteFacultyName: z.string().nullable().optional(),
 });
