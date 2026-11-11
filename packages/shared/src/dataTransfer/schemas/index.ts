@@ -16,6 +16,7 @@ export * from "./accountingTransferSchema.js";
 export * from "./financeTransferSchema.js";
 export * from "./attendanceTransferSchema.js";
 export * from "./examinationsTransferSchema.js";
+export * from "./examinationsMarksTransferSchema.js";
 export * from "./hasanatTransferSchema.js";
 export * from "./obligationsTransferSchema.js";
 export * from "./tasksTransferSchema.js";

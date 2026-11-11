@@ -15,7 +15,7 @@ export interface ExaminationTransferEntity {
   examDate?: string;
   totalMarks?: number;
   passingMarks?: number;
-  gradingScale?: string;
+  className?: string;
   status?: string;
   notes?: string;
 }
@@ -65,11 +65,12 @@ export const examinationsTransferSchema: ModuleTransferSchema<ExaminationTransfe
         parse: (raw) => (raw ? Number(raw) : undefined),
       },
       {
-        key: "gradingScale",
-        label: "Grading Scale",
-        aliases: ["scale", "Grade System"],
-        sample: "Standard Letter (A-F)",
-        extract: (e) => e.gradingScale || "",
+        key: "className",
+        label: "Class",
+        aliases: ["class", "section", "Class Name"],
+        required: true,
+        sample: "Class 5 - A",
+        extract: (e) => e.className || "",
       },
       {
         key: "status",

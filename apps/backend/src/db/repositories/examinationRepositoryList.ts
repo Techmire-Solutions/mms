@@ -179,7 +179,7 @@ export async function aggregateExaminationsCommandMetrics(
         totalResults: sql<number>`count(*)::int`,
         examsWithResults: sql<number>`count(DISTINCT ${examResults.examId})::int`,
         scored: sql<number>`count(${exams.id})::int`,
-        passed: sql<number>`count(*) FILTER (WHERE ${exams.id} IS NOT NULL AND ${examResults.marksObtained} >= ${exams.passingMarks})::int`,
+        passed: sql<number>`count(*) FILTER (WHERE ${exams.id} IS NOT NULL AND ${examResults.marksObtained} + coalesce(${examResults.graceMarks}, 0) >= ${exams.passingMarks})::int`,
       })
       .from(examResults)
       .leftJoin(

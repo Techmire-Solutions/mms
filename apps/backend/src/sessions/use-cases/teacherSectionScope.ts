@@ -1,6 +1,8 @@
 import { type User } from "@mms/shared";
 import { sessionsAcademicRepository as repo } from "../repository/sessionsAcademicRepositoryAdapter.js";
 import type { ClassSectionDate } from "../repository/sessionsAcademicRepository.js";
+
+export type { ClassSectionDate } from "../repository/sessionsAcademicRepository.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { userHasPermission } from "../../lib/userPermissionContext.js";
 
@@ -55,6 +57,31 @@ export async function assertTeacherClassScope(
   if (entries.length === 0) return;
   const untaught = await findUntaughtPairs(user, tenant, entries);
   if (untaught && untaught.size > 0) throw forbidden();
+}
+
+/**
+ * Row-scope for examination marks.
+ *
+ * Two things differ from the attendance guard: a user **without a faculty link** is refused rather
+ * than treated as unscoped (office staff holding `examinations.write` could otherwise mark any
+ * class), and the exact-section rule always applies because a teacher is staffed on a section.
+ * Only the coordinator bypass (`sessions.delete`) skips it.
+ */
+export async function assertTeacherExamScope(
+  user: User,
+  tenant: string,
+  entries: readonly ClassSectionDate[],
+): Promise<void> {
+  if (entries.length === 0) return;
+  if (userHasPermission(user, SECTION_SCOPE_BYPASS_PERMISSION)) return;
+  if (!(await repo.isFacultyLinked(tenant, user.id))) {
+    throw new HttpDomainError(
+      403,
+      "forbidden",
+      "Your account is not linked to a faculty record, so it cannot record examination marks",
+    );
+  }
+  await assertTeacherSectionScope(user, tenant, entries);
 }
 
 /**

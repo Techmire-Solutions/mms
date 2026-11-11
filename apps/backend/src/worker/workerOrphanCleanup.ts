@@ -28,6 +28,9 @@ export async function cleanupOrphanedJobs(): Promise<void> {
           error: "Worker heartbeat lost while job was running",
           completedAt: new Date(),
           updatedAt: new Date(),
+          // Mark it replayable: a heartbeat-lost job exhausted its worker without exhausting
+          // BullMQ retries, so without this the DLQ replay tool refuses it.
+          deadLetteredAt: new Date(),
         })
         .where(
           and(eq(backgroundJobs.status, "running"), lt(backgroundJobs.updatedAt, runningCutoff)),

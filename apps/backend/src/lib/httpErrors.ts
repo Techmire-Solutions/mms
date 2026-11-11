@@ -1,5 +1,6 @@
 import type { FastifyReply } from "fastify";
 import { logger } from "./logger.js";
+import { pgErrorCode } from "./pgErrors.js";
 
 export function sendForbidden(
   reply: FastifyReply,
@@ -50,11 +51,31 @@ export function sendIfHttpDomainError(reply: FastifyReply, error: unknown): Fast
   return null;
 }
 
+/**
+ * Maps a PostgreSQL constraint failure to the status it actually is, instead of reporting every
+ * database rejection as a 500. The exam paths rely on this: the marks-bounds trigger (`23514`), a
+ * FK (`23503`), an oversized `varchar` (`22001`) and the natural-key unique index (`23505`) are all
+ * client-correctable, not server faults.
+ */
+const PG_CONSTRAINT_RESPONSES: Record<string, { status: number; type: string }> = {
+  "23505": { status: 409, type: "conflict" },
+  "23503": { status: 409, type: "reference_conflict" },
+  "23514": { status: 400, type: "constraint_violation" },
+  "22001": { status: 400, type: "value_too_long" },
+  "22P02": { status: 400, type: "invalid_value" },
+};
+
 export function sendDatabaseError(
   reply: FastifyReply,
   message = "Database error occurred",
   cause?: unknown,
 ): FastifyReply {
+  const code = cause === undefined ? undefined : pgErrorCode(cause);
+  const mapped = code ? PG_CONSTRAINT_RESPONSES[code] : undefined;
+  if (mapped) {
+    logger.warn({ err: cause, code }, message);
+    return reply.status(mapped.status).send({ type: mapped.type, message });
+  }
   if (cause !== undefined) {
     // Log full cause server-side only — never echo DB internals to the client.
     logger.error({ err: cause }, message);

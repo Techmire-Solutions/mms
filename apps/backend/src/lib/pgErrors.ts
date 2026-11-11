@@ -1,3 +1,13 @@
+/** The SQLSTATE behind a driver error, walking the `cause` chain. */
+export function pgErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  if ("code" in error && typeof (error as { code?: unknown }).code === "string") {
+    return String((error as { code: string }).code);
+  }
+  const cause = "cause" in error ? (error as { cause?: unknown }).cause : undefined;
+  return pgErrorCode(cause);
+}
+
 /**
  * Postgres error probes shared across services. `isUniqueViolation` walks nested
  * `cause` chains because pg wraps driver errors, hiding the `23505` code.

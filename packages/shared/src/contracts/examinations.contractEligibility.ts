@@ -39,7 +39,43 @@ export const examEligibilityOverrideBodySchema = z
   })
   .strict();
 
-export const examResultsFinalizationBodySchema = z.object({ finalized: z.boolean() }).strict();
+export const examEligibilityRevokeBodySchema = z
+  .object({ reason: z.string().trim().min(3).max(500) })
+  .strict();
+
+export const examResultsFinalizationBodySchema = z
+  .object({
+    finalized: z.boolean(),
+    /**
+     * Motivation for the change, required when re-opening published results: unpublishing is the
+     * administrative unlock, and the reason is persisted on the audit event.
+     */
+    reason: z.string().trim().min(3).max(500).optional(),
+  })
+  .strict();
+
+/** Grace-mark adjustment on one mark. The raw `marks_obtained` is never rewritten. */
+export const examResultModerationBodySchema = z
+  .object({
+    graceMarks: z.number().min(0).max(999999.99),
+    reason: z.string().trim().min(3).max(500),
+    /** OCC token of the mark being moderated. */
+    version: z.number().int().positive().optional(),
+  })
+  .strict();
+
+export const examResultModerationResponseSchema = z
+  .object({
+    examId: z.string(),
+    studentId: z.string(),
+    marksObtained: z.number(),
+    graceMarks: z.number(),
+    effectiveMarks: z.number(),
+    moderationReason: z.string().nullable(),
+    moderatedAt: z.string().nullable(),
+    version: z.number(),
+  })
+  .strict();
 
 export const examResultsFinalizationResponseSchema = z
   .object({
@@ -89,6 +125,33 @@ export const examinationEligibilityRoutes = {
     },
     summary: "Audited override allowing one student to sit the exam",
   },
+  moderateExamResult: {
+    method: "POST",
+    path: "/api/examinations/exams/:id/results/:studentId/moderation",
+    body: examResultModerationBodySchema,
+    responses: {
+      200: examResultModerationResponseSchema,
+      400: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
+      409: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Apply an audited grace-mark adjustment to one student's mark",
+  },
+  revokeExamEligibilityOverride: {
+    method: "POST",
+    path: "/api/examinations/exams/:id/eligibility-overrides/:studentId/revoke",
+    body: examEligibilityRevokeBodySchema,
+    responses: {
+      200: z.object({ success: z.literal(true) }),
+      400: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Revoke an audited eligibility override (keeps the evidence)",
+  },
   setExamResultsFinalized: {
     method: "POST",
     path: "/api/examinations/exams/:id/results-finalization",
@@ -98,6 +161,7 @@ export const examinationEligibilityRoutes = {
       400: errorResponse,
       403: errorResponse,
       404: errorResponse,
+      409: errorResponse,
       500: errorResponse,
     },
     summary: "Finalise (or re-open) exam results — completion only counts finalised exams",

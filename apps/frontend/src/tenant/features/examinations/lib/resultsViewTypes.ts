@@ -15,6 +15,22 @@ export interface RankedResult extends StudentResultItem {
   examId: string;
   studentId: string;
   marksObtained: number;
+  /** 2-decimal and unrounded percentages from the shared scoring engine. */
+  percentage: number;
+  rawPercentage: number;
+  effectiveMarks: number;
+  /** Moderation adjustment; the effective score is `marksObtained + graceMarks`. */
+  graceMarks?: number;
+  moderationReason?: string | null;
+  /** Exam-wide rank/position (competition ranking, ties share). */
+  rank: number;
+  position: number;
+  /** Rank within the student's class — the "class position" printed on documents. */
+  classRank: number;
+  classPosition: number;
+  classSize: number;
+  overallSize: number;
+  version?: number;
 }
 
 export interface ResultsViewStatsData {

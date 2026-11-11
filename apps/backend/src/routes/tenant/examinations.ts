@@ -13,8 +13,9 @@ import { examinationSetupConfigRoutes } from "./examinationSetupConfigRoutes.js"
 import { examinationsReportRoutes } from "./examinations/examinationsReportRoutes.js";
 import { examinationContractRouter } from "./examinations/examinationContractRouter.js";
 import { examinationSubjectsRouter } from "./examinations/examinationSubjectsRouter.js";
-import { scopeAndStampExamResults } from "./examinations/examResultsWriteGuard.js";
+import { authorizeAndStampExamResults } from "../../examinations/use-cases/examResultsSubmission.js";
 import { examinationsExportRoutes } from "./examinations/examinationsExportRoutes.js";
+import { examinationMarksTransferRoutes } from "./examinations/examinationMarksTransferRoutes.js";
 
 const EXAMS_COLLECTION = EXAMINATIONS_MODULE_MANIFEST.collectionKey;
 const RESULTS_COLLECTION = EXAMINATIONS_MODULE_MANIFEST.resultsCollectionKey;
@@ -34,6 +35,7 @@ export default async function examinationsRoutes(
       await sub.register(examinationSetupConfigRoutes);
       await sub.register(examinationsReportRoutes);
       await sub.register(examinationsExportRoutes);
+      await sub.register(examinationMarksTransferRoutes);
 
       registerMetricsRoute(sub, {
         collection: EXAMS_COLLECTION,
@@ -64,7 +66,7 @@ export default async function examinationsRoutes(
         collection: RESULTS_COLLECTION,
         schema: examResultListSchema,
         saveFn: examinationsUseCases.upsertExamResults,
-        beforeSave: scopeAndStampExamResults,
+        beforeSave: authorizeAndStampExamResults,
         responseKey: "results",
         errorMessagePrefix: "exam results",
 

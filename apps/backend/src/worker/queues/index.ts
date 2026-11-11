@@ -17,6 +17,7 @@ import {
 } from "./queueTenantInflight.js";
 import { stripUndefinedFields } from "../../lib/payloadTrimmer.js";
 import { logger } from "../../lib/logger.js";
+import { removeRetainedJob } from "./replaceRetainedJob.js";
 import { getRedisClient, checkIsRedisConnected } from "../../lib/redis.js";
 
 export const MAX_JOB_PAYLOAD_BYTES = 1024 * 1024; // 1 MB payload ceiling
@@ -145,6 +146,7 @@ export function resolveQueueNameForJob(moduleId: string, kind: string): string {
 }
 
 export * from "./queueTenantInflight.js";
+export { removeRetainedJob } from "./replaceRetainedJob.js";
 
 /**
  * Dispatches a background job to the appropriate BullMQ queue with tenant fair-share scheduling.
@@ -155,6 +157,7 @@ export async function dispatchJobToQueue(
   userId: string,
   job: BackgroundJobRecord,
   payload: unknown,
+  options?: { replaceExisting?: boolean },
 ): Promise<boolean> {
   const queueName = resolveQueueNameForJob(job.moduleId, job.kind);
   if (process.env.MMS_ALLOW_IN_PROCESS_JOB_FALLBACK === "true") {
@@ -209,6 +212,11 @@ export async function dispatchJobToQueue(
     const longRunningRollover =
       job.moduleId.trim().toLowerCase() === "sessions" &&
       job.kind.trim().toLowerCase() === "promote";
+    if (options?.replaceExisting) {
+      // Replay path: clear the retained job first, otherwise BullMQ dedupes the id and the
+      // re-enqueue is silently ignored.
+      await removeRetainedJob(queue, job.id);
+    }
     const addPromise = queue.add(`${job.moduleId}:${job.kind}`, jobData, {
       jobId: job.id,
       priority: fairSharePriority,

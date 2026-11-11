@@ -13,6 +13,7 @@ import {
 } from "@mms/shared";
 import { getQueryRows } from "../documentStoreKeys.js";
 import { withTenantRead } from "../tenant-context.js";
+import { loadExaminationsAnalytics } from "./examinationRepositoryAnalytics.js";
 
 function activeExamWhere(subdomain: string, alias = "e"): ReturnType<typeof sql> {
   return sql`
@@ -29,12 +30,18 @@ export async function loadExaminationsReportAggregatesSql(
   const subdomain = tenant.trim().toLowerCase();
   if (!subdomain) return { ...EMPTY_EXAMINATIONS_REPORT_AGGREGATES };
 
-  return withTenantRead(subdomain, async (tx) => {
-    const aggregates: ExaminationsReportAggregates = { ...EMPTY_EXAMINATIONS_REPORT_AGGREGATES };
-    if (!examinationsReportComparisonQueryActive(comparisonQuery) || !comparisonQuery) {
-      return aggregates;
-    }
+  // Analytics are not tied to ComparisonMode and are always returned: the reports tab used them
+  // only as a client-side reduction over a capped marks page, which silently truncated.
+  const analytics = await loadExaminationsAnalytics(subdomain);
+  const aggregates: ExaminationsReportAggregates = {
+    ...EMPTY_EXAMINATIONS_REPORT_AGGREGATES,
+    analytics,
+  };
+  if (!examinationsReportComparisonQueryActive(comparisonQuery) || !comparisonQuery) {
+    return aggregates;
+  }
 
+  return withTenantRead(subdomain, async (tx) => {
     const comparison: ExaminationsReportComparison = {
       sessions: [],
       monthly: { a: [], b: [] },
@@ -65,7 +72,7 @@ export async function loadExaminationsReportAggregatesSql(
         exam_results_cte AS (
           SELECT
             er.exam_id,
-            er.marks_obtained
+            er.marks_obtained + COALESCE(er.grace_marks, 0) AS marks_obtained
           FROM exam_results er
           WHERE er.workspace_subdomain = ${subdomain}
         )
@@ -110,7 +117,7 @@ export async function loadExaminationsReportAggregatesSql(
         SELECT
           to_char(e.date, 'YYYY-MM') AS "monthKey",
           COUNT(er.id) AS "totalCount",
-          SUM(CASE WHEN COALESCE(er.marks_obtained, 0) >= COALESCE(e.passing_marks, 0) THEN 1 ELSE 0 END) AS "passCount"
+          SUM(CASE WHEN COALESCE(er.marks_obtained, 0) + COALESCE(er.grace_marks, 0) >= COALESCE(e.passing_marks, 0) THEN 1 ELSE 0 END) AS "passCount"
         FROM exams e
         LEFT JOIN exam_results er ON er.exam_id = e.id AND er.workspace_subdomain = ${subdomain}
         WHERE ${activeExamWhere(subdomain, "e")}

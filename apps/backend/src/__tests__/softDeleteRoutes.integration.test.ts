@@ -443,13 +443,13 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
     expect(contactsResAfter.json().message).toMatch(/Session revoked/i);
   });
 
-  it("Assertion 5: Manifest compliance — strips deletionReason when captureDeletionReason is false and preserves it when true", async () => {
+  it("Assertion 5: Manifest compliance — forwards deletionReason for modules that capture it", async () => {
     mockDeleteExamById.mockResolvedValue(true);
     mockSoftDeleteContactById.mockResolvedValue(true);
 
     const token = adminToken(app, { workspaceSubdomain: "demo" });
 
-    // 1. Examinations has captureDeletionReason: false -> reason is stripped to undefined
+    // 1. Examinations captures the reason (compliance: an archived exam removes marks from reports)
     const examRes = await app.inject({
       method: "DELETE",
       url: "/api/examinations/exams/exam-101",
@@ -458,12 +458,16 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
         host: "demo.localhost",
       },
       payload: {
-        deletionReason: "Should be stripped by route factory",
+        deletionReason: "Exam archived after a scheduling mistake",
       },
     });
 
     expect(examRes.statusCode).toBe(200);
-    expect(mockDeleteExamById).toHaveBeenCalledWith("exam-101", "u-admin");
+    expect(mockDeleteExamById).toHaveBeenCalledWith(
+      "exam-101",
+      "u-admin",
+      "Exam archived after a scheduling mistake",
+    );
 
     // 2. Contacts has captureDeletionReason: true -> reason is preserved
     const contactRes = await app.inject({

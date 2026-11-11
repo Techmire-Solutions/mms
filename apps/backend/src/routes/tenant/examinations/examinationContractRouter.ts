@@ -4,9 +4,14 @@ import { examinationContract } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { canReadCollection, canDeleteCollection } from "../../../services/rbacService.js";
+import {
+  canReadCollection,
+  canDeleteCollection,
+  canWriteCollection,
+} from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { examinationsUseCases } from "../../../examinations/use-cases/examinationsUseCases.js";
+import { handleContractError } from "../../../lib/contractError.js";
 import { gateHandlers } from "./examinationGateHandlers.js";
 
 const s = initServer();
@@ -54,11 +59,11 @@ export const examinationContractRouter: FastifyPluginAsync = async (fastify) => 
           { readOnly: true },
         );
         return { status: 200 as const, body: { exams } };
-      } catch {
-        return {
-          status: 500 as const,
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to list exams" },
-        };
+        }) as ContractRouteResponse<(typeof examinationContract)["listExams"]>;
       }
     },
     bulkDeleteExams: async ({
@@ -86,11 +91,11 @@ export const examinationContractRouter: FastifyPluginAsync = async (fastify) => 
           { readOnly: false },
         );
         return { status: 200 as const, body: { success: true, ...result } };
-      } catch {
-        return {
-          status: 500 as const,
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to bulk delete exams" },
-        };
+        }) as ContractRouteResponse<(typeof examinationContract)["bulkDeleteExams"]>;
       }
     },
     bulkRestoreExams: async ({
@@ -113,14 +118,15 @@ export const examinationContractRouter: FastifyPluginAsync = async (fastify) => 
           { readOnly: false },
         );
         return { status: 200 as const, body: { success: true, ...result } };
-      } catch {
-        return {
-          status: 500 as const,
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to bulk restore exams" },
-        };
+        }) as ContractRouteResponse<(typeof examinationContract)["bulkRestoreExams"]>;
       }
     },
     listResults: async ({
+      query,
       request,
     }: ContractRouteArgs<(typeof examinationContract)["listResults"]>): Promise<
       ContractRouteResponse<(typeof examinationContract)["listResults"]>
@@ -133,17 +139,42 @@ export const examinationContractRouter: FastifyPluginAsync = async (fastify) => 
         };
       }
       try {
-        const result = await withTenant(
+        // Keyset page: the caller loops `cursor`/`hasMore` instead of receiving a silently
+        // truncated 500-row slice. Audiences that cannot grade only ever see published marks, and
+        // never the internal fields (who marked it, the OCC token, moderation notes).
+        const canGrade = canWriteCollection(user, "exams");
+        const publishedOnly = !canGrade;
+        const page = await withTenant(
           String(request.tenant?.id),
-          () => examinationsUseCases.loadExamResults(),
+          () =>
+            examinationsUseCases.loadExamResultsPage({
+              examId: query?.examId,
+              studentId: query?.studentId,
+              cursor: query?.cursor,
+              limit: query?.limit,
+              publishedOnly,
+            }),
           { readOnly: true },
         );
-        return { status: 200 as const, body: result };
-      } catch {
+        if (canGrade) return { status: 200 as const, body: page };
         return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to list exam results" },
+          status: 200 as const,
+          body: {
+            ...page,
+            results: page.results.map((row) => ({
+              id: row.id,
+              examId: row.examId,
+              studentId: row.studentId,
+              marksObtained: row.marksObtained,
+              graceMarks: row.graceMarks,
+            })),
+          },
         };
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "database_error", message: "Failed to list exam results" },
+        }) as ContractRouteResponse<(typeof examinationContract)["listResults"]>;
       }
     },
     widgetAggregates: async ({
@@ -166,11 +197,11 @@ export const examinationContractRouter: FastifyPluginAsync = async (fastify) => 
           { readOnly: true },
         );
         return { status: 200 as const, body: result };
-      } catch (error) {
-        return {
-          status: 500 as const,
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
           body: { type: "database_error", message: "Failed to load widget aggregates" },
-        };
+        }) as ContractRouteResponse<(typeof examinationContract)["widgetAggregates"]>;
       }
     },
   } as unknown as RouterImplementation<typeof examinationContract>);

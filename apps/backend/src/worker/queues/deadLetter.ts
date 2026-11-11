@@ -52,6 +52,25 @@ export async function handleDeadLetterJob(
     });
   }
 
+  // Exam imports can mutate marks; a permanently failed job must leave an audit trace, not only a
+  // row marker, exactly like hasanat award jobs.
+  if (jobData.moduleId.trim().toLowerCase() === "examinations") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: "exams",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: "examinations.job.dead_letter",
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
   if (
     jobData.moduleId.trim().toLowerCase() === "sessions" &&
     jobData.kind.trim().toLowerCase() === "promote"

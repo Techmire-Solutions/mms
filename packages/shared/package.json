@@ -46,7 +46,8 @@
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:examinations": "vitest run src/examinations/resultScoring.test.ts src/examinations/examLifecycle.test.ts --coverage --coverage.include=src/examinations/resultScoring.ts --coverage.include=src/examinations/gradeUtils.ts --coverage.include=src/examinations/examLifecycle.ts --coverage.thresholds.lines=95 --coverage.thresholds.statements=95 --coverage.thresholds.functions=95 --coverage.thresholds.branches=83 --coverage.reporter=text-summary"
   },
   "dependencies": {
     "@ts-rest/core": "^3.52.1",

@@ -1,11 +1,12 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import { baseListQuerySchema, softDeleteBodySchema } from "../core/apiSchemas.js";
+import { bulkStringIdsBodySchema } from "../schemas/api.dto.js";
 import {
   examRecordSchema,
   examResultRecordSchema,
   examListSchema,
-  examResultListSchema,
+  examMarksWriteListSchema,
 } from "../examinations/examinationsModuleManifest.js";
 import { examinationsReportAggregatesSchema } from "../examinations/examinationsReportAggregates.js";
 import { reportComparisonQuerySchema } from "../reports/reportComparisonQuery.js";
@@ -18,7 +19,28 @@ import {
 const c = initContract();
 const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
 const ok = z.unknown();
-const bulkIds = z.object({ ids: z.array(z.string()), deletionReason: z.string().optional() });
+/** Capped at 500 ids and 500-char reason, matching the shared bulk schema and the DB column. */
+const bulkIds = bulkStringIdsBodySchema;
+
+/** Marks query: optional server-side filters plus keyset pagination. */
+export const examResultsListQuerySchema = z
+  .object({
+    examId: z.string().trim().min(1).max(128).optional(),
+    studentId: z.string().trim().min(1).max(64).optional(),
+    /** Keyset cursor: the last `id` of the previous page. */
+    cursor: z.string().trim().min(1).max(128).optional(),
+    limit: z.coerce.number().int().min(1).max(500).optional(),
+  })
+  .strict();
+
+/**
+ * Envelope for the marks list. `hasMore` exists because the previous array response silently
+ * truncated at 500 rows and every rank/average was computed from an incomplete set.
+ */
+export const examResultsPageResponseSchema = z.object({
+  results: z.array(examResultRecordSchema),
+  hasMore: z.boolean(),
+});
 
 /** Envelope for paginated exam list responses. */
 export const examsPageResponseSchema = z.object({
@@ -91,29 +113,34 @@ export const examinationContract = c.router({
   listResults: {
     method: "GET",
     path: "/api/examinations/results",
-    query: z.object({}).optional(),
-    responses: { 200: z.array(examResultRecordSchema), 403: ok, 500: ok },
-    summary: "List exam results",
+    query: examResultsListQuerySchema,
+    responses: { 200: examResultsPageResponseSchema, 403: ok, 500: ok },
+    summary: "List exam results (filterable, keyset-paginated)",
   },
   bulkUpdateExams: {
     method: "PUT",
     path: "/api/examinations/exams/bulk",
     body: examListSchema,
-    responses: { 200: z.object({ exams: z.array(examRecordSchema) }), 403: ok, 500: ok },
+    responses: { 200: z.object({ exams: z.array(examRecordSchema) }), 403: ok, 409: ok, 500: ok },
     summary: "Bulk upsert exams",
   },
   bulkUpdateResults: {
     method: "PUT",
     path: "/api/examinations/results/bulk",
-    body: examResultListSchema,
-    responses: { 200: z.object({ results: z.array(examResultRecordSchema) }), 403: ok, 500: ok },
+    body: examMarksWriteListSchema,
+    responses: {
+      200: z.object({ results: z.array(examResultRecordSchema) }),
+      403: ok,
+      409: ok,
+      500: ok,
+    },
     summary: "Bulk upsert exam results",
   },
   deleteExam: {
     method: "DELETE",
     path: "/api/examinations/exams/:id",
     body: softDeleteBodySchema.optional(),
-    responses: { 200: z.object({ success: z.literal(true) }), 403: ok, 500: ok },
+    responses: { 200: z.object({ success: z.literal(true) }), 403: ok, 409: ok, 500: ok },
     summary: "Soft delete an exam",
   },
   restoreExam: {
@@ -186,17 +213,5 @@ export const examinationContract = c.router({
       500: errorResponse,
     },
     summary: "Update preferences",
-  },
-  getLookups: {
-    method: "GET",
-    path: "/api/examinations/lookups",
-    responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
-    summary: "Get all lookups",
-  },
-  getLookupKind: {
-    method: "GET",
-    path: "/api/examinations/lookups/:kind",
-    responses: { 200: z.unknown(), 403: errorResponse, 500: errorResponse },
-    summary: "Get a specific lookup kind",
   },
 });

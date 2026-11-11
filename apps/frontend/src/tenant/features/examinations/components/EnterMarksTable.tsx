@@ -17,6 +17,8 @@ export interface EnterMarksTableProps {
   classNamesById: Map<string, string>;
   marks: Record<string, number | string>;
   onMarkChange: (studentId: string, value: string) => void;
+  /** Published results: renders the grid read-only. */
+  readOnly?: boolean;
 }
 
 export function EnterMarksTable({
@@ -25,6 +27,7 @@ export function EnterMarksTable({
   classNamesById,
   marks,
   onMarkChange,
+  readOnly = false,
 }: EnterMarksTableProps): React.JSX.Element {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -40,6 +43,26 @@ export function EnterMarksTable({
   })();
 
   const listRef = useRef<HTMLDivElement | null>(null);
+
+  /**
+   * Enter / ArrowDown / ArrowUp move between mark inputs in visual order (the same order the
+   * virtualizer renders), so a marker can walk a roster without leaving the keyboard.
+   */
+  const handleGridKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (event.key !== "Enter" && event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    const target = event.target as HTMLElement;
+    if (target.tagName !== "INPUT") return;
+    const inputs = Array.from(
+      event.currentTarget.querySelectorAll<HTMLInputElement>("[data-marks-input]"),
+    );
+    const index = inputs.indexOf(target as HTMLInputElement);
+    if (index === -1) return;
+    const next = event.key === "ArrowUp" ? inputs[index - 1] : inputs[index + 1];
+    if (!next) return;
+    event.preventDefault();
+    next.focus();
+    next.select();
+  };
   const isVirtualized = filteredStudents.length > 30;
   const rowVirtualizer = useVirtualizer({
     count: filteredStudents.length,
@@ -86,6 +109,7 @@ export function EnterMarksTable({
           CARD_STRIPE_INSET,
         )}
         role="list"
+        onKeyDown={handleGridKeyDown}
       >
         {filteredStudents.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted-foreground">
@@ -125,6 +149,7 @@ export function EnterMarksTable({
                     classNameText={classNamesById.get(student.classId) || student.classId}
                     markValue={marks[String(student.id)] ?? ""}
                     onMarkChange={onMarkChange}
+                    readOnly={readOnly}
                   />
                 </div>
               );
@@ -140,6 +165,7 @@ export function EnterMarksTable({
               classNameText={classNamesById.get(student.classId) || student.classId}
               markValue={marks[String(student.id)] ?? ""}
               onMarkChange={onMarkChange}
+              readOnly={readOnly}
             />
           ))
         )}

@@ -51,16 +51,17 @@ export function createExaminationsSaveExamHandler(deps: ExaminationsMutationDeps
 }
 
 export function createExaminationsSaveResultsHandler(
-  deps: Pick<ExaminationsMutationDeps, "examResults" | "replaceExamResults" | "t">,
+  deps: Pick<ExaminationsMutationDeps, "replaceExamResults" | "t">,
 ) {
   const notifySaveFailure = createExaminationsNotifySaveFailure(deps.t);
 
-  return async (examId: string, newResults: ExamResult[]): Promise<void> => {
+  return async (_examId: string, newResults: ExamResult[]): Promise<void> => {
     try {
-      await deps.replaceExamResults.mutateAsync([
-        ...deps.examResults.filter((result) => result.examId !== examId),
-        ...newResults,
-      ]);
+      // Send only the rows being saved. The endpoint upserts by (exam, student), so re-sending the
+      // rest of the collection bought nothing — and it actively broke OCC: a stale version on an
+      // untouched exam would have refused the whole batch with 409. It also kept every save's
+      // payload proportional to the workspace's total marks history instead of one roster.
+      await deps.replaceExamResults.mutateAsync(newResults);
     } catch (error: unknown) {
       notifySaveFailure(error);
       throw error;

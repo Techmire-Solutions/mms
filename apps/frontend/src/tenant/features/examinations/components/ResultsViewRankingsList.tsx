@@ -80,7 +80,9 @@ export function ResultsViewRankingsList({
                     </span>
                   ) : (
                     <span className="text-sm font-bold text-muted-foreground">
-                      {t("examinations.rankLabel", { rank: rankedResult.rank })}
+                      {rankedResult.classRank === rankedResult.classPosition
+                        ? t("examinations.rankLabel", { rank: rankedResult.classRank })
+                        : `=${rankedResult.classRank}`}
                     </span>
                   )}
                 </div>
@@ -117,11 +119,18 @@ export function ResultsViewRankingsList({
               {showMarks && (
                 <div className="text-end flex-shrink-0">
                   <p className="text-sm font-bold text-foreground m-0">
-                    {rankedResult.marksObtained}
+                    {rankedResult.effectiveMarks ?? rankedResult.marksObtained}
                     <span className="text-xs font-normal text-muted-foreground">
                       /{exam.totalMarks}
                     </span>
                   </p>
+                  {rankedResult.graceMarks !== undefined && rankedResult.graceMarks > 0 && (
+                    <p className="text-xs font-semibold text-warning m-0">
+                      {t("examinations.rankingsGraceBadge", {
+                        grace: String(rankedResult.graceMarks),
+                      })}
+                    </p>
+                  )}
                   {showPercentage && (
                     <p className="text-xs text-muted-foreground m-0">{rankedResult.pct}%</p>
                   )}

@@ -448,9 +448,11 @@ describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
       { name: "hasanat", manifest: HASANAT_MODULE_MANIFEST, expectedReasonCapture: false },
       { name: "obligations", manifest: OBLIGATIONS_MODULE_MANIFEST, expectedReasonCapture: false },
       {
+        // An archived exam removes marks from every report, so the operator's reason is captured
+        // and lands on the audit row.
         name: "examinations",
         manifest: EXAMINATIONS_MODULE_MANIFEST,
-        expectedReasonCapture: false,
+        expectedReasonCapture: true,
       },
       {
         name: "questionBank",
