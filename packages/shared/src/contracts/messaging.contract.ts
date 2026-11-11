@@ -6,9 +6,13 @@ import {
   messagingLogsQuerySchema,
   messagingRecipientsMatchResponseSchema,
   messagingRecipientsQuerySchema,
+  messagingRecipientsMatchQuerySchema,
   messagingMetricsSchema,
+  recordMessageLogsSchema,
 } from "../schemas/messaging.dto.js";
 import { messageTemplateSchema } from "../messaging/messagingTemplateSchemas.js";
+import { messageTemplateInputSchema } from "../schemas/messagingTemplate.dto.js";
+import { entityResolveBodySchema } from "../schemas/common.dto.js";
 import {
   messagingRecipientsPageResponseSchema,
   messagingResolveResponseSchema,
@@ -84,7 +88,7 @@ export const messagingContract = c.router({
   saveTemplate: {
     method: "POST",
     path: "/api/messaging/templates",
-    body: ok,
+    body: messageTemplateInputSchema,
     responses: {
       200: z.object({ template: messageTemplateSchema }),
       201: z.object({ template: messageTemplateSchema }),
@@ -105,7 +109,7 @@ export const messagingContract = c.router({
   recordLogs: {
     method: "POST",
     path: "/api/messaging/logs",
-    body: ok,
+    body: recordMessageLogsSchema,
     responses: {
       200: messagingRecordedResponseSchema,
       201: messagingRecordedResponseSchema,
@@ -133,14 +137,14 @@ export const messagingContract = c.router({
   resolveContacts: {
     method: "POST",
     path: "/api/messaging/contacts/resolve",
-    body: z.object({ ids: z.array(z.string()) }),
+    body: entityResolveBodySchema,
     responses: { 200: messagingResolveResponseSchema, 403: ok, 500: ok },
     summary: "Resolve contacts by ids",
   },
   matchRecipients: {
     method: "GET",
     path: "/api/messaging/recipients/match",
-    query: z.object({}).passthrough(),
+    query: messagingRecipientsMatchQuerySchema,
     responses: { 200: messagingRecipientsMatchResponseSchema, 403: ok, 500: ok },
     summary: "Match recipients",
   },

@@ -645,6 +645,106 @@ describe("messaging REST routes", () => {
     await app.close();
   });
 
+  it("GET /api/messaging/history scopes non-admin senders to their own userId", async () => {
+    mockLoadFilteredMessageLogs.mockResolvedValueOnce({
+      logs: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      hasMore: false,
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/history",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { id: "teacher-42", role: "teacher", name: "teacher" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockLoadFilteredMessageLogs).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ userId: "teacher-42" }),
+    );
+    await app.close();
+  });
+
+  it("GET /api/messaging/history overwrites attempted userId spoofing by non-admin senders", async () => {
+    mockLoadFilteredMessageLogs.mockResolvedValueOnce({
+      logs: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      hasMore: false,
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/history?userId=victim-99",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { id: "teacher-42", role: "teacher", name: "teacher" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockLoadFilteredMessageLogs).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ userId: "teacher-42" }),
+    );
+    await app.close();
+  });
+
+  it("GET /api/messaging/history allows admin to query across all users or filter by specific userId", async () => {
+    mockLoadFilteredMessageLogs.mockResolvedValueOnce({
+      logs: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      hasMore: false,
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/history?userId=target-user-10",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { id: "admin-1", role: "admin", name: "admin" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockLoadFilteredMessageLogs).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ userId: "target-user-10" }),
+    );
+    await app.close();
+  });
+
+  it("GET /api/messaging/logs legacy route also scopes non-admin senders to their own userId", async () => {
+    mockLoadFilteredMessageLogs.mockResolvedValueOnce({
+      logs: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      hasMore: false,
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/messaging/logs",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { id: "teacher-7", role: "teacher", name: "teacher" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(mockLoadFilteredMessageLogs).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ userId: "teacher-7" }),
+    );
+    await app.close();
+  });
+
   it("GET /api/messaging/logs rejects invalid query", async () => {
     const app = await buildApp();
     const res = await app.inject({

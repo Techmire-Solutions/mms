@@ -55,11 +55,16 @@ export async function messagingListLogsHandler({
       body: { type: "forbidden", message: "Insufficient permissions" },
     };
   }
+  // Non-administrative senders may only inspect message logs dispatched by their own userId.
+  const effectiveQuery = { ...query };
+  if (!canClearMessagingLogs(user)) {
+    effectiveQuery.userId = String(user.id);
+  }
   try {
     const tenant = getTenantInfo(request);
     const result = await withTenant(
       tenant.id,
-      () => messagingUseCases.loadFilteredMessageLogs(tenant.subdomain, query),
+      () => messagingUseCases.loadFilteredMessageLogs(tenant.subdomain, effectiveQuery),
       { readOnly: true },
     );
     return { status: 200 as const, body: result };
