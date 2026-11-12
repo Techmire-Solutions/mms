@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Enrollment + attendance + hasanat DB test manifest ratchet.
+ * Enrollment + attendance + hasanat + workshops DB test manifest ratchet.
  *
  * Counting cases from source keeps this dependency-free and makes an accidental deletion or
  * skip-as-comment visible. Counts may grow freely; they may only drop with a reviewed baseline
@@ -36,6 +36,18 @@ const BASELINE = {
   "examinationIntegrityDb.integration.test.ts": 31,
   "examinationSubsystemsDb.integration.test.ts": 21,
   "examinationsConcurrencyDb.integration.test.ts": 4,
+  // Workshops: lifecycle, completion gating, waitlist/capacity races, tenancy, audit, import.
+  "workshopsDb.integration.test.ts": 14,
+  "workshopsCompletionDb.integration.test.ts": 5,
+  "workshopsCompletionEligibilityDb.integration.test.ts": 6,
+  "workshopsCompletionConcurrencyDb.integration.test.ts": 5,
+  "workshopsLifecycleDb.integration.test.ts": 10,
+  "workshopsCapacityConcurrencyDb.integration.test.ts": 8,
+  "workshopsWaitlistDb.integration.test.ts": 14,
+  "workshopsTenantIsolationDb.integration.test.ts": 6,
+  "workshopsAuditDb.integration.test.ts": 9,
+  "workshopsImportDb.integration.test.ts": 3,
+  "workshopsJourneyDb.integration.test.ts": 3,
 };
 
 const update = process.argv.includes("--update");

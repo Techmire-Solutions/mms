@@ -30,7 +30,7 @@ function isAttendanceStatus(value: string): value is WorkshopAttendanceStatus {
 }
 
 /** One day's check-in grid: pick a day, set each participant's status, save in one upsert. */
-export function WorkshopCheckInSection({
+function WorkshopCheckInSectionInner({
   detail,
   canWrite,
 }: WorkshopCheckInSectionProps): React.JSX.Element | null {
@@ -148,3 +148,16 @@ export function WorkshopCheckInSection({
     </section>
   );
 }
+
+export const WorkshopCheckInSection = React.memo(
+  WorkshopCheckInSectionInner,
+  (prev, next) =>
+    prev.canWrite === next.canWrite &&
+    prev.detail.participants === next.detail.participants &&
+    prev.detail.attendance === next.detail.attendance &&
+    prev.detail.workshop.id === next.detail.workshop.id &&
+    prev.detail.workshop.startDate === next.detail.workshop.startDate &&
+    prev.detail.workshop.endDate === next.detail.workshop.endDate &&
+    prev.detail.workshop.status === next.detail.workshop.status &&
+    prev.detail.workshop.deletedAt === next.detail.workshop.deletedAt,
+);

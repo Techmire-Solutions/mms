@@ -13,7 +13,7 @@ export interface WorkshopScoresSectionProps {
 }
 
 /** Scores for one criterion at a time; saving the same criterion again updates it. */
-export function WorkshopScoresSection({
+function WorkshopScoresSectionInner({
   detail,
   canWrite,
 }: WorkshopScoresSectionProps): React.JSX.Element {
@@ -165,3 +165,14 @@ export function WorkshopScoresSection({
     </section>
   );
 }
+
+export const WorkshopScoresSection = React.memo(
+  WorkshopScoresSectionInner,
+  (prev, next) =>
+    prev.canWrite === next.canWrite &&
+    prev.detail.participants === next.detail.participants &&
+    prev.detail.scores === next.detail.scores &&
+    prev.detail.workshop.id === next.detail.workshop.id &&
+    prev.detail.workshop.status === next.detail.workshop.status &&
+    prev.detail.workshop.deletedAt === next.detail.workshop.deletedAt,
+);

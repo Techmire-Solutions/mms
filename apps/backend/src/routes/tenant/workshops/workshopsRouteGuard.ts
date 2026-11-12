@@ -21,7 +21,16 @@ export const forbidden = {
   body: { type: "forbidden", message: "Insufficient permissions" },
 };
 
-type ErrorResult = { status: number; body: { type: string; message: string } };
+interface ErrorBody {
+  type: string;
+  message: string;
+  /** Structured context carried by a domain error (blockers, ids, capacity…). */
+  details?: Record<string, unknown>;
+  /** Machine-readable reasons (e.g. blocked lifecycle transitions). */
+  violations?: string[];
+}
+
+type ErrorResult = { status: number; body: ErrorBody };
 
 function allowed(user: User, rule: WorkshopRule): boolean {
   if ("permission" in rule) return userHasPermission(user, rule.permission);
@@ -42,11 +51,27 @@ export async function guarded<T>(
 ): Promise<T | typeof forbidden | ErrorResult> {
   const user = request.user as User;
   if (!allowed(user, rule)) return forbidden;
+  const tenant = request.tenant?.id;
+  if (!tenant) {
+    // Fail closed: entering the tenant callback with "" would only surface a generic 500 later.
+    return forbidden;
+  }
   try {
-    return await runWithTenant(String(request.tenant?.id ?? ""), () => work(user));
+    return await runWithTenant(String(tenant), () => work(user));
   } catch (error) {
     if (error instanceof HttpDomainError) {
-      return { status: error.statusCode, body: { type: error.type, message: error.message } };
+      // Keep the structured payload: the shared handler forwards `details`/`violations`, and the
+      // workshop guard used to drop them (capacity blockers, transition violations, ids).
+      const violations = (error as { violations?: unknown }).violations;
+      return {
+        status: error.statusCode,
+        body: {
+          type: error.type,
+          message: error.message,
+          ...(error.details ? { details: error.details } : {}),
+          ...(Array.isArray(violations) ? { violations: violations.map(String) } : {}),
+        },
+      };
     }
     return handleContractError(request, error, {
       status: 500,

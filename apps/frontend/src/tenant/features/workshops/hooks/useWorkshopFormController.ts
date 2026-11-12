@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   workshopEventCreateSchema,
   type AppTranslationKey,
@@ -12,6 +12,7 @@ const VALIDATION_KEYS: readonly AppTranslationKey[] = [
   "workshops.validation.titleRequired",
   "workshops.validation.endBeforeStart",
   "workshops.validation.deadlineAfterEnd",
+  "workshops.validation.spanTooLong",
 ];
 
 function isValidationKey(message: string): message is AppTranslationKey {
@@ -25,6 +26,7 @@ export interface WorkshopFormValues {
   endDate: string;
   registrationDeadline: string;
   capacity: string;
+  waitlistEnabled: boolean;
   fee: string;
   minAttendancePct: string;
   minScorePct: string;
@@ -37,6 +39,7 @@ const EMPTY: WorkshopFormValues = {
   endDate: "",
   registrationDeadline: "",
   capacity: "",
+  waitlistEnabled: false,
   fee: "",
   minAttendancePct: "",
   minScorePct: "",
@@ -50,6 +53,7 @@ function fromWorkshop(workshop: WorkshopEvent): WorkshopFormValues {
     endDate: workshop.endDate ?? "",
     registrationDeadline: workshop.registrationDeadline ?? "",
     capacity: workshop.capacity === null ? "" : String(workshop.capacity),
+    waitlistEnabled: workshop.waitlistEnabled,
     fee: workshop.fee === null ? "" : String(workshop.fee),
     minAttendancePct: workshop.minAttendancePct === null ? "" : String(workshop.minAttendancePct),
     minScorePct: workshop.minScorePct === null ? "" : String(workshop.minScorePct),
@@ -83,17 +87,22 @@ export function useWorkshopFormController({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  // The page remounts the modal (new `key`) on every open, so initial state is set once here.
-  const [values, setValues] = useState<WorkshopFormValues>(() =>
+  // The page remounts the modal (new `key`) on every open, so the snapshot is set once here.
+  const initialValues = useRef(
     initialData ? fromWorkshop(initialData) : fromDefaults(defaults),
-  );
+  ).current;
+  const [values, setValues] = useState<WorkshopFormValues>(initialValues);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const submitLock = useRef(false);
 
   const setField = <K extends keyof WorkshopFormValues>(key: K, value: WorkshopFormValues[K]) =>
     setValues((current) => ({ ...current, [key]: value }));
 
   const handleSubmit = async () => {
+    // A rapid double click can fire before React re-renders with `saving=true`; the ref is the
+    // only synchronous guard, and it is released in `finally` so a 409 can be corrected and retried.
+    if (submitLock.current) return;
     const parsed = workshopEventCreateSchema.safeParse({
       title: values.title,
       description: values.description,
@@ -101,6 +110,8 @@ export function useWorkshopFormController({
       endDate: values.endDate || null,
       registrationDeadline: values.registrationDeadline || null,
       capacity: optionalNumber(values.capacity),
+      // A waitlist without a capacity has no "full" trigger; never persist that combination.
+      waitlistEnabled: values.capacity.trim() ? values.waitlistEnabled : false,
       fee: optionalNumber(values.fee),
       minAttendancePct: optionalNumber(values.minAttendancePct),
       minScorePct: optionalNumber(values.minScorePct),
@@ -110,6 +121,7 @@ export function useWorkshopFormController({
       setError(isValidationKey(message) ? t(message) : t("workshops.validation.invalid"));
       return;
     }
+    submitLock.current = true;
     setSaving(true);
     try {
       await onSave(parsed.data);
@@ -117,6 +129,7 @@ export function useWorkshopFormController({
     } catch (err) {
       setError(err instanceof Error ? err.message : t("workshops.saveFailed"));
     } finally {
+      submitLock.current = false;
       setSaving(false);
     }
   };
@@ -127,7 +140,10 @@ export function useWorkshopFormController({
     setField,
     error,
     saving,
-    isDirty: Boolean(values.title.trim()),
+    isDirty: Object.keys(initialValues).some(
+      (key) =>
+        values[key as keyof WorkshopFormValues] !== initialValues[key as keyof WorkshopFormValues],
+    ),
     handleSubmit,
   };
 }

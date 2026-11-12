@@ -4,6 +4,7 @@ import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { DatePicker } from "@/components/app/DatePicker";
 import { Input } from "@/components/ui/input";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkshopFormController } from "../hooks/useWorkshopFormController";
 
@@ -38,6 +39,10 @@ export function WorkshopFormModal({
       error={error ?? undefined}
       saving={saving}
       isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("workshops.form.discardDescription")}
+      discardConfirmLabel={t("common.yes")}
+      discardCancelLabel={t("common.cancel")}
       onSave={handleSubmit}
     >
       <div className="space-y-4 py-2">
@@ -116,6 +121,15 @@ export function WorkshopFormModal({
             />
           </Field>
         </div>
+        <CheckboxField
+          id="workshop-waitlist-enabled"
+          name="waitlistEnabled"
+          checked={values.waitlistEnabled}
+          onCheckedChange={(checked) => setField("waitlistEnabled", checked)}
+          disabled={!values.capacity.trim()}
+          label={t("workshops.waitlist.enabled")}
+          description={t("workshops.waitlist.hint")}
+        />
         <fieldset className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <legend className="mb-2 text-sm font-medium text-foreground">
             {t("workshops.completionCriteria")}

@@ -1,28 +1,12 @@
+import { and, eq, getTableColumns, isNull } from "drizzle-orm";
 import {
-  and,
-  asc,
-  desc,
-  eq,
-  getTableColumns,
-  ilike,
-  inArray,
-  isNotNull,
-  isNull,
-  or,
-  sql,
-  type AnyColumn,
-  type SQL,
-} from "drizzle-orm";
-import {
-  dedupeTrimmedIds,
-  isQueryFlagTrue,
-  toSqlSearchPattern,
+  isWorkshopWaitlistPromotable,
   type BaseListQuery,
   type WorkshopEvent,
   type WorkshopEventCreate,
   type WorkshopEventUpdate,
 } from "@mms/shared";
-import { workshopEvents, workshopParticipants } from "../schema.js";
+import { workshopEvents } from "../schema.js";
 import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
 import {
@@ -31,8 +15,23 @@ import {
   workshopRowToRecord,
   type WorkshopEventRow,
 } from "./workshopEventMapping.js";
+import { listConditions, orderByFor } from "./workshopEventListQuery.js";
+import {
+  countActiveParticipants,
+  countActiveParticipantsByWorkshop,
+} from "./workshopParticipantsRepository.js";
+import { requireActiveCatalogRefs } from "./workshopCatalogGuard.js";
+import {
+  assertCapacityAboveActive,
+  assertWorkshopDates,
+  assertWorkshopMutable,
+} from "../../workshops/domain/workshopWriteGuards.js";
+import { workshopToday } from "./workshopClock.js";
+import { countWaitlistedTx, promoteOldestWaitlistTx } from "./workshopWaitlistRepository.js";
+import { auditRow } from "./workshopAudit.js";
 
 export { workshopRowToRecord };
+export { softDeleteWorkshops, restoreWorkshop } from "./workshopEventsTrash.js";
 
 export interface WorkshopsPage {
   workshops: WorkshopEvent[];
@@ -42,75 +41,30 @@ export interface WorkshopsPage {
   hasMore: boolean;
 }
 
-/** Active participant counts for the given workshops, in one grouped query. */
-async function participantCounts(
-  tx: TenantTransaction,
-  subdomain: string,
-  ids: string[],
-): Promise<Map<string, number>> {
-  if (ids.length === 0) return new Map();
-  const rows = await tx
-    .select({ workshopId: workshopParticipants.workshopId, count: sql<number>`count(*)::int` })
-    .from(workshopParticipants)
-    .where(
-      and(
-        eq(workshopParticipants.workspaceSubdomain, subdomain),
-        inArray(workshopParticipants.workshopId, ids),
-        isNull(workshopParticipants.deletedAt),
-      ),
-    )
-    .groupBy(workshopParticipants.workshopId);
-  return new Map(rows.map((row) => [row.workshopId, Number(row.count)]));
-}
-
-const SORT_COLUMNS: Record<string, AnyColumn> = {
-  title: workshopEvents.title,
-  startDate: workshopEvents.startDate,
-  endDate: workshopEvents.endDate,
-  registrationDeadline: workshopEvents.registrationDeadline,
-  capacity: workshopEvents.capacity,
-  updatedAt: workshopEvents.updatedAt,
-};
-
-function listConditions(subdomain: string, query: BaseListQuery): SQL[] {
-  const conditions: SQL[] = [eq(workshopEvents.workspaceSubdomain, subdomain)];
-  conditions.push(
-    isQueryFlagTrue(query.includeDeleted)
-      ? isNotNull(workshopEvents.deletedAt)
-      : isNull(workshopEvents.deletedAt),
-  );
-  const search = query.search?.trim();
-  if (search) {
-    const pattern = toSqlSearchPattern(search);
-    conditions.push(
-      or(ilike(workshopEvents.title, pattern), ilike(workshopEvents.description, pattern)) as SQL,
-    );
-  }
-  return conditions;
-}
-
 export async function listWorkshopsPage(
   tenant: string,
   query: BaseListQuery,
 ): Promise<WorkshopsPage> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
-    const column = SORT_COLUMNS[query.sortField?.trim() ?? ""] ?? workshopEvents.startDate;
+    const today = await workshopToday(subdomain);
     const result = await runListPage<WorkshopEventRow, WorkshopEventRow>(tx, workshopEvents, {
       conditions: listConditions(subdomain, query),
-      orderBy: query.sortDir === "asc" ? asc(column) : desc(column),
+      orderBy: orderByFor(query),
       page: query.page,
       limit: query.limit,
       defaultPageSize: 15,
       rowMapper: (row) => row,
     });
-    const counts = await participantCounts(
+    const counts = await countActiveParticipantsByWorkshop(
       tx,
       subdomain,
       result.items.map((row) => row.id),
     );
     return {
-      workshops: result.items.map((row) => workshopRowToRecord(row, counts.get(row.id) ?? 0)),
+      workshops: result.items.map((row) =>
+        workshopRowToRecord(row, counts.get(row.id) ?? 0, today),
+      ),
       total: result.total,
       page: result.page,
       limit: result.limit,
@@ -119,7 +73,12 @@ export async function listWorkshopsPage(
   });
 }
 
-/** Locks the event row (`FOR UPDATE`) when `forUpdate` is set, so capacity checks serialize. */
+/**
+ * Locks the event row (`FOR UPDATE`) when `forUpdate` is set.
+ *
+ * The lock is the seat-capacity mutex: registration, capacity edits, trash/restore and the
+ * check-in/score writes all take it, so every read-modify-write on the workshop row serializes.
+ */
 export async function findWorkshopRow(
   tx: TenantTransaction,
   subdomain: string,
@@ -142,8 +101,9 @@ export async function findWorkshopById(tenant: string, id: string): Promise<Work
   return withTenantRead(subdomain, async (tx) => {
     const row = await findWorkshopRow(tx, subdomain, id, { includeDeleted: true });
     if (!row) return null;
-    const counts = await participantCounts(tx, subdomain, [row.id]);
-    return workshopRowToRecord(row, counts.get(row.id) ?? 0);
+    const today = await workshopToday(subdomain);
+    const counts = await countActiveParticipantsByWorkshop(tx, subdomain, [row.id]);
+    return workshopRowToRecord(row, counts.get(row.id) ?? 0, today);
   });
 }
 
@@ -154,6 +114,17 @@ export async function insertWorkshop(
 ): Promise<WorkshopEvent> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
+    await requireActiveCatalogRefs(tx, subdomain, {
+      programId: input.programId,
+      subjectId: input.subjectId,
+    });
+    // The route's Zod schema rejects these first; the write transaction re-checks so an importer or
+    // a direct call cannot create an inverted or over-long workshop.
+    assertWorkshopDates({
+      startDate: input.startDate,
+      endDate: input.endDate,
+      registrationDeadline: input.registrationDeadline,
+    });
     const [row] = await tx
       .insert(workshopEvents)
       .values({
@@ -170,9 +141,21 @@ export async function insertWorkshop(
         subjectId: input.subjectId ?? null,
         minAttendancePct: pctValue(input.minAttendancePct) ?? null,
         minScorePct: pctValue(input.minScorePct) ?? null,
+        // Omitted = open (the form publishes immediately); a draft stays out of registration until
+        // it is explicitly published through the lifecycle action.
+        status: input.status ?? "open",
+        waitlistEnabled: input.waitlistEnabled ?? false,
       })
       .returning();
-    return workshopRowToRecord(row!, 0);
+    await auditRow(tx, {
+      workspaceSubdomain: subdomain,
+      tableName: "workshop_events",
+      recordId: id,
+      actionType: "CREATE",
+      subjectId: id,
+      newState: row,
+    });
+    return workshopRowToRecord(row!, 0, await workshopToday(subdomain));
   });
 }
 
@@ -183,6 +166,31 @@ export async function updateWorkshop(
 ): Promise<WorkshopEvent | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
+    // Lock first: a registration in flight holds this row, so the capacity check below observes
+    // the committed seat count, and the UPDATE cannot interleave with one.
+    const current = await findWorkshopRow(tx, subdomain, id, { forUpdate: true });
+    if (!current) return null;
+
+    // Rules that depend on the stored row are evaluated under the same lock as the write, so two
+    // concurrent editors cannot both validate against a stale snapshot (the old use-case pre-read
+    // validated in one transaction and wrote in another).
+    assertWorkshopMutable(current);
+    assertWorkshopDates({
+      startDate: patch.startDate === undefined ? current.startDate : patch.startDate,
+      endDate: patch.endDate === undefined ? current.endDate : patch.endDate,
+      registrationDeadline:
+        patch.registrationDeadline === undefined
+          ? current.registrationDeadline
+          : patch.registrationDeadline,
+    });
+    if (patch.capacity !== undefined) {
+      assertCapacityAboveActive(patch.capacity, await countActiveParticipants(tx, subdomain, id));
+    }
+    await requireActiveCatalogRefs(tx, subdomain, {
+      programId: patch.programId,
+      subjectId: patch.subjectId,
+    });
+
     const [row] = await tx
       .update(workshopEvents)
       .set({
@@ -197,6 +205,7 @@ export async function updateWorkshop(
         subjectId: patch.subjectId,
         minAttendancePct: pctValue(patch.minAttendancePct),
         minScorePct: pctValue(patch.minScorePct),
+        waitlistEnabled: patch.waitlistEnabled,
         updatedAt: new Date(),
       })
       .where(
@@ -208,63 +217,30 @@ export async function updateWorkshop(
       )
       .returning();
     if (!row) return null;
-    const counts = await participantCounts(tx, subdomain, [row.id]);
-    return workshopRowToRecord(row, counts.get(row.id) ?? 0);
-  });
-}
 
-export async function softDeleteWorkshops(
-  tenant: string,
-  ids: string[],
-  deletedBy: string | null,
-  deletionReason: string | null,
-): Promise<{ succeeded: number; failed: number }> {
-  const subdomain = tenant.trim().toLowerCase();
-  const uniqueIds = dedupeTrimmedIds(ids);
-  if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
-  return withTenant(subdomain, async (tx) => {
-    const now = new Date();
-    const updated = await tx
-      .update(workshopEvents)
-      .set({ deletedAt: now, deletedBy, deletionReason, updatedAt: now })
-      .where(
-        and(
-          eq(workshopEvents.workspaceSubdomain, subdomain),
-          inArray(workshopEvents.id, uniqueIds),
-          isNull(workshopEvents.deletedAt),
-        ),
-      )
-      .returning({ id: workshopEvents.id });
-    return { succeeded: updated.length, failed: uniqueIds.length - updated.length };
-  });
-}
+    // A capacity increase (or removing the cap) frees seats: promote the queue oldest-first in the
+    // same transaction, under the same row lock the registration path uses.
+    if (patch.capacity !== undefined || patch.waitlistEnabled !== undefined) {
+      const today = await workshopToday(subdomain);
+      if (isWorkshopWaitlistPromotable(row, today)) {
+        const seated = await countActiveParticipants(tx, subdomain, id);
+        const waiting = await countWaitlistedTx(tx, subdomain, id);
+        const free = row.capacity === null ? waiting : Math.max(0, row.capacity - seated);
+        if (free > 0) await promoteOldestWaitlistTx(tx, subdomain, id, free);
+      }
+    }
 
-export async function restoreWorkshop(
-  tenant: string,
-  id: string,
-  restoredBy: string | null,
-): Promise<boolean> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    const now = new Date();
-    const updated = await tx
-      .update(workshopEvents)
-      .set({
-        deletedAt: null,
-        deletedBy: null,
-        deletionReason: null,
-        restoredAt: now,
-        restoredBy,
-        updatedAt: now,
-      })
-      .where(
-        and(
-          eq(workshopEvents.workspaceSubdomain, subdomain),
-          eq(workshopEvents.id, id),
-          isNotNull(workshopEvents.deletedAt),
-        ),
-      )
-      .returning({ id: workshopEvents.id });
-    return updated.length > 0;
+    await auditRow(tx, {
+      workspaceSubdomain: subdomain,
+      tableName: "workshop_events",
+      recordId: id,
+      actionType: "UPDATE",
+      subjectId: id,
+      oldState: current,
+      newState: { ...row, operation: "update" },
+    });
+
+    const counts = await countActiveParticipantsByWorkshop(tx, subdomain, [row.id]);
+    return workshopRowToRecord(row, counts.get(row.id) ?? 0, await workshopToday(subdomain));
   });
 }

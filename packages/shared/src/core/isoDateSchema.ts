@@ -91,6 +91,29 @@ export const isoDateOrEmptySchema = z
 /** A strict ISO-8601 instant with an explicit offset (UTC `Z` or `±HH:MM`). */
 export const isoDateTimeSchema = z.string().datetime({ offset: true });
 
+const ISO_UTC_TIMESTAMP_SHAPE =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?Z$/;
+
+/**
+ * True when `value` is a real calendar date/time in ISO-8601 UTC with a mandatory `Z`.
+ *
+ * A `Date.parse` round-trip normalizes impossible components (Feb 31 → Mar 3), so the date part is
+ * validated with {@link isValidIsoDate} and the clock part is bounded explicitly. The backend's OCC
+ * header parser and the shared Zod schema use this one predicate, not two drifting regexes.
+ */
+export function isIsoUtcTimestamp(value: string): boolean {
+  const match = ISO_UTC_TIMESTAMP_SHAPE.exec(value.trim());
+  if (!match) return false;
+  const [, year, month, day, hour, minute, second] = match;
+  if (!isValidIsoDate(`${year}-${month}-${day}`)) return false;
+  return Number(hour) < 24 && Number(minute) < 60 && Number(second) < 60;
+}
+
+/** An ISO-8601 UTC timestamp (`2026-03-01T10:00:00.000Z`), required. */
+export const isoUtcTimestampSchema = z
+  .string()
+  .refine(isIsoUtcTimestamp, "Timestamp must be ISO-8601 UTC ending in Z");
+
 /**
  * Compares two `YYYY-MM-DD` strings chronologically.
  *

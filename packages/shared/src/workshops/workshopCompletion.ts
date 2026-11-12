@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { isoDateSchema, isoUtcTimestampSchema } from "../core/isoDateSchema.js";
+import { WORKSHOP_PARTICIPANT_STATUSES } from "./workshopsRecords.js";
 
 /** Why a participant does not (yet) meet the workshop's completion rule. */
 export const WORKSHOP_COMPLETION_SHORTFALLS = [
@@ -10,7 +12,8 @@ export const WORKSHOP_COMPLETION_SHORTFALLS = [
 ] as const;
 export type WorkshopCompletionShortfall = (typeof WORKSHOP_COMPLETION_SHORTFALLS)[number];
 
-export const WORKSHOP_COMPLETION_STATUSES = ["completed", "attended", "registered"] as const;
+/** Completion statuses are exactly the participant statuses; one tuple cannot drift from the other. */
+export const WORKSHOP_COMPLETION_STATUSES = WORKSHOP_PARTICIPANT_STATUSES;
 export type WorkshopCompletionStatus = (typeof WORKSHOP_COMPLETION_STATUSES)[number];
 
 /** A workshop's completion criteria; a null minimum means that criterion is not used. */
@@ -30,14 +33,26 @@ export interface WorkshopCompletionFacts {
   scoreMax: number;
 }
 
+/** Exact percentage used for threshold comparisons; display rounds it. */
 const percent = (part: number, whole: number): number | null =>
-  whole > 0 ? Math.round((part / whole) * 1000) / 10 : null;
+  whole > 0 ? (part / whole) * 100 : null;
+
+const rounded = (value: number | null): number | null =>
+  value === null ? null : Math.round(value * 10) / 10;
 
 /**
- * Completion rule for a participation certificate. Every configured minimum must hold, and
- * attending at least one day is always required — a certificate of participation needs
- * participation even when no attendance minimum is set. `attended` means present at least
- * once but not (yet) completing; `registered` means never present.
+ * Completion rule for a participation certificate.
+ *
+ * Every configured minimum must hold, and attending at least one day is always required — a
+ * certificate of participation needs participation even when no minimum is set. `attended` means
+ * present at least once but short of a criterion (incomplete); `registered` means never present
+ * (no-show).
+ *
+ * Correctness details the audit pinned down:
+ *  - thresholds compare the **unrounded** ratio (59.96% must not round up to a passing 60.0%);
+ *  - `countableDays === 0` (no start date, or the workshop has not begun) is never completable —
+ *    otherwise a dateless workshop with one orphan check-in would report `completed`;
+ *  - a non-null minimum of `0` is a criterion that always passes (not "unused").
  */
 export function evaluateWorkshopCompletion(
   facts: WorkshopCompletionFacts,
@@ -53,20 +68,32 @@ export function evaluateWorkshopCompletion(
   const shortfalls: WorkshopCompletionShortfall[] = [];
 
   if (facts.presentDays === 0) shortfalls.push("attendance_none");
+  // No countable day means there is no attendance denominator: never claim completion.
+  if (facts.countableDays === 0 && !shortfalls.includes("attendance_unknown")) {
+    shortfalls.push("attendance_unknown");
+  }
   const minAttendance = criteria.minAttendancePct;
-  if (minAttendance !== null && minAttendance > 0) {
-    if (attendancePct === null) shortfalls.push("attendance_unknown");
-    else if (attendancePct < minAttendance) shortfalls.push("attendance_below");
+  if (minAttendance !== null) {
+    if (attendancePct === null) {
+      if (!shortfalls.includes("attendance_unknown")) shortfalls.push("attendance_unknown");
+    } else if (attendancePct < minAttendance) {
+      shortfalls.push("attendance_below");
+    }
   }
   const minScore = criteria.minScorePct;
-  if (minScore !== null && minScore > 0) {
-    if (scorePct === null) shortfalls.push("score_missing");
-    else if (scorePct < minScore) shortfalls.push("score_below");
+  if (minScore !== null) {
+    // A 0% minimum is satisfied by "no score lines at all" (0/0); only a positive minimum needs
+    // actual scores to evaluate.
+    if (scorePct === null) {
+      if (minScore > 0) shortfalls.push("score_missing");
+    } else if (scorePct < minScore) {
+      shortfalls.push("score_below");
+    }
   }
 
   const status: WorkshopCompletionStatus =
     shortfalls.length === 0 ? "completed" : facts.presentDays > 0 ? "attended" : "registered";
-  return { status, shortfalls, attendancePct, scorePct };
+  return { status, shortfalls, attendancePct: rounded(attendancePct), scorePct: rounded(scorePct) };
 }
 
 export const workshopCompletionRowSchema = z
@@ -77,8 +104,8 @@ export const workshopCompletionRowSchema = z
     scorePct: z.number().nullable(),
     status: z.enum(WORKSHOP_COMPLETION_STATUSES),
     shortfalls: z.array(z.enum(WORKSHOP_COMPLETION_SHORTFALLS)),
-    completedAt: z.string().nullable(),
-    certificateIssuedAt: z.string().nullable(),
+    completedAt: isoUtcTimestampSchema.nullable(),
+    certificateIssuedAt: isoUtcTimestampSchema.nullable(),
   })
   .strict();
 export type WorkshopCompletionRow = z.infer<typeof workshopCompletionRowSchema>;
@@ -107,10 +134,14 @@ export const workshopReportRowSchema = z
   .object({
     workshopId: z.string(),
     title: z.string(),
-    startDate: z.string().nullable(),
-    endDate: z.string().nullable(),
+    startDate: isoDateSchema.nullable(),
+    endDate: isoDateSchema.nullable(),
     participants: z.number().int(),
     attendancePct: z.number().nullable(),
+    /** Seated participants ÷ capacity; null when the workshop has no capacity. */
+    seatUtilizationPct: z.number().nullable(),
+    /** Completed participants ÷ participants; null when nobody registered. */
+    completionPct: z.number().nullable(),
     completed: z.number().int(),
     certificates: z.number().int(),
   })

@@ -3,7 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { closeDatabase } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { withTenant } from "../../db/tenant-context.js";
-import { contacts, workspaces } from "../../db/schema.js";
+import { contacts, workshopParticipants, workspaces } from "../../db/schema.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { workshopsUseCases } from "../../workshops/use-cases/workshopsUseCases.js";
 import { workshopsCompletionUseCases } from "../../workshops/use-cases/workshopsCompletionUseCases.js";
@@ -47,10 +47,28 @@ beforeAll(async () => {
       minScorePct: 60,
     }),
   );
-  const a = await inTenant(() => workshopsUseCases.addParticipant("done", "a"));
-  const b = await inTenant(() => workshopsUseCases.addParticipant("done", "b"));
-  amina = a.id;
-  bilal = b.id;
+  // Historical registrations of a finished workshop are seeded directly: registration through the
+  // public path correctly refuses a workshop whose last day has passed.
+  await withTenant(TENANT, async (tx) => {
+    await tx.insert(workshopParticipants).values([
+      {
+        id: "wp-amina",
+        workspaceSubdomain: TENANT,
+        workshopId: "done",
+        contactId: "a",
+        status: "registered",
+      },
+      {
+        id: "wp-bilal",
+        workspaceSubdomain: TENANT,
+        workshopId: "done",
+        contactId: "b",
+        status: "registered",
+      },
+    ]);
+  });
+  amina = "wp-amina";
+  bilal = "wp-bilal";
   await inTenant(() =>
     workshopsUseCases.saveAttendanceDay(
       "done",
@@ -127,7 +145,7 @@ describe("workshop completion and certificates (real Postgres)", () => {
     expect(first.rows.find((row) => row.participantId === bilal)?.certificateIssuedAt).toBeNull();
   });
 
-  it("given a re-evaluation that no longer completes, should keep the issued certificate's date", async () => {
+  it("given a re-evaluation that no longer completes, should keep the certificate and its completed standing", async () => {
     // Arrange: Amina's score drops below the minimum
     await inTenant(() =>
       workshopsUseCases.saveScores("done", {
@@ -140,7 +158,8 @@ describe("workshop completion and certificates (real Postgres)", () => {
 
     // Assert
     const row = rows.find((r) => r.participantId === amina);
-    expect(row?.status).toBe("attended");
+    // The certificate pins the standing: a later score drop cannot un-earn it.
+    expect(row?.status).toBe("completed");
     expect(row?.certificateIssuedAt).not.toBeNull();
     expect(row?.completedAt).not.toBeNull();
   });
@@ -155,7 +174,8 @@ describe("workshop completion and certificates (real Postgres)", () => {
         workshopId: "done",
         participants: 2,
         attendancePct: 75,
-        completed: 0,
+        // Amina's certificate pins her to completed, so the report must not show 0.
+        completed: 1,
         certificates: 1,
       }),
     ]);

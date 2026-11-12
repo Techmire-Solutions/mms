@@ -15,6 +15,7 @@ import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 export const WORKSHOP_WORK_COLUMN_KEYS = [
   "title",
   "dates",
+  "phase",
   "registrationDeadline",
   "participants",
   "fee",
@@ -28,6 +29,7 @@ export const WORKSHOP_TITLE_DEFAULT_WIDTH = 260;
 const WIDTHS: Record<WorkshopWorkColumnKey, number | undefined> = {
   title: WORKSHOP_TITLE_DEFAULT_WIDTH,
   dates: 200,
+  phase: 150,
   registrationDeadline: 150,
   participants: 140,
   fee: 110,
@@ -36,6 +38,7 @@ const WIDTHS: Record<WorkshopWorkColumnKey, number | undefined> = {
 export const WORKSHOP_WORK_COLUMN_LABEL_KEYS: Record<WorkshopWorkColumnKey, AppTranslationKey> = {
   title: "workshops.title",
   dates: "workshops.dates",
+  phase: "workshops.status",
   registrationDeadline: "workshops.registrationDeadline",
   participants: "workshops.participants",
   fee: "workshops.fee",

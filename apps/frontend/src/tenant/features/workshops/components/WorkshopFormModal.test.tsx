@@ -27,6 +27,9 @@ const workshop = (fields: Partial<WorkshopEvent> = {}): WorkshopEvent => ({
   minAttendancePct: null,
   minScorePct: null,
   participantCount: 0,
+  waitlistEnabled: false,
+  status: "open",
+  phase: "registration_open",
   ...fields,
 });
 
@@ -93,6 +96,50 @@ describe("WorkshopFormModal", () => {
     // Assert
     expect(onSave).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain("workshops.validation.endBeforeStart");
+  });
+
+  it("given a rapid double submit, should call onSave once", async () => {
+    let release: (() => void) | undefined;
+    onSave.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        }),
+    );
+    await render(workshop());
+    await act(async () => {
+      saveButton()?.click();
+      saveButton()?.click();
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
+    await act(async () => release?.());
+  });
+
+  it("given a span longer than the maximum, should show the translated rule", async () => {
+    await render(workshop({ startDate: "2099-01-01", endDate: "2099-12-31" }));
+    await act(async () => saveButton()?.click());
+    expect(onSave).not.toHaveBeenCalled();
+    expect(document.body.textContent).toContain("workshops.validation.spanTooLong");
+  });
+
+  it("given edited values, should ask before discarding on close", async () => {
+    await render(workshop());
+    const title = document.querySelector<HTMLInputElement>("#workshop-title")!;
+    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    await act(async () => {
+      setValue.call(title, "Changed");
+      title.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    const cancel = Array.from(document.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("common.cancel"),
+    );
+    await act(async () => cancel?.click());
+    expect(document.body.textContent).toContain("settings.unsavedChanges");
+    const confirm = Array.from(document.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "common.yes",
+    );
+    await act(async () => confirm?.click());
+    expect(onClose).toHaveBeenCalled();
   });
 
   it("given a failing save, should keep the modal open with the error", async () => {

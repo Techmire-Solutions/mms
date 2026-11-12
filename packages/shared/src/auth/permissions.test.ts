@@ -22,6 +22,16 @@ describe("roleHasPermission", () => {
     expect(roleHasPermission("super_admin", "messaging.clearLogs")).toBe(true);
   });
 
+  it("restricts workshop lifecycle management to admins and principals", () => {
+    expect(isValidPermission("workshops.manage")).toBe(true);
+    expect(roleHasPermission("admin", "workshops.manage")).toBe(true);
+    expect(roleHasPermission("super_admin", "workshops.manage")).toBe(true);
+    expect(roleHasPermission("principal", "workshops.manage")).toBe(true);
+    expect(roleHasPermission("teacher", "workshops.manage")).toBe(false);
+    expect(roleHasPermission("registrar", "workshops.manage")).toBe(false);
+    expect(roleHasPermission("assistant_teacher", "workshops.manage")).toBe(false);
+  });
+
   it("denies teacher access to administrative and financial modules", () => {
     expect(roleHasPermission("teacher", "users.manage")).toBe(false);
     expect(roleHasPermission("teacher", "configuration.view")).toBe(false);

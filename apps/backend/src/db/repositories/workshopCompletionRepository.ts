@@ -1,9 +1,5 @@
-import { and, eq, getTableColumns, inArray, isNull, lte, sql } from "drizzle-orm";
-import {
-  DEFAULT_WORKSHOP_PREFERENCES,
-  type WorkshopCompletionStatus,
-  type WorkshopPreferences,
-} from "@mms/shared";
+import { and, eq, getTableColumns, gte, inArray, isNull, lte, sql } from "drizzle-orm";
+import { DEFAULT_WORKSHOP_PREFERENCES, type WorkshopPreferences } from "@mms/shared";
 import {
   workshopAttendance,
   workshopEvents,
@@ -12,6 +8,7 @@ import {
   workshopScores,
 } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { auditRow } from "./workshopAudit.js";
 import { NotFoundError } from "../../lib/httpErrors.js";
 import { findWorkshopRow, workshopRowToRecord } from "./workshopEventsRepository.js";
 import { listActiveParticipants } from "./workshopParticipantsRepository.js";
@@ -26,7 +23,12 @@ export interface WorkshopCompletionInputs {
   scores: Map<string, { total: number; max: number }>;
 }
 
-/** Everything the completion rule needs for one workshop, read in one transaction. */
+/**
+ * Everything the completion rule needs for one workshop, read in one transaction.
+ *
+ * Called by `evaluateCompletion` from inside its own transaction: nested `withTenantRead` joins the
+ * active transaction, so the evaluation and the standing it persists come from one snapshot.
+ */
 export async function loadCompletionInputs(
   tenant: string,
   workshopId: string,
@@ -37,20 +39,29 @@ export async function loadCompletionInputs(
     const row = await findWorkshopRow(tx, subdomain, workshopId);
     if (!row) throw new NotFoundError("Workshop not found");
     const participants = await listActiveParticipants(tx, subdomain, workshopId);
-    const attendance = await tx
-      .select({
-        participantId: workshopAttendance.participantId,
-        days: sql<number>`count(*) filter (where ${workshopAttendance.status} in ('present', 'late'))::int`,
-      })
-      .from(workshopAttendance)
-      .where(
-        and(
-          eq(workshopAttendance.workspaceSubdomain, subdomain),
-          eq(workshopAttendance.workshopId, workshopId),
-          lte(workshopAttendance.dayOn, today),
-        ),
-      )
-      .groupBy(workshopAttendance.participantId);
+    // Only marks inside the *current* workshop window count: an attendance row left behind by a
+    // date edit must not inflate the numerator while the denominator follows the new dates.
+    const firstDay = row.startDate;
+    const lastDay = row.endDate ?? row.startDate;
+    const attendance =
+      firstDay && lastDay
+        ? await tx
+            .select({
+              participantId: workshopAttendance.participantId,
+              days: sql<number>`count(*) filter (where ${workshopAttendance.status} in ('present', 'late'))::int`,
+            })
+            .from(workshopAttendance)
+            .where(
+              and(
+                eq(workshopAttendance.workspaceSubdomain, subdomain),
+                eq(workshopAttendance.workshopId, workshopId),
+                gte(workshopAttendance.dayOn, firstDay),
+                lte(workshopAttendance.dayOn, lastDay),
+                lte(workshopAttendance.dayOn, today),
+              ),
+            )
+            .groupBy(workshopAttendance.participantId)
+        : [];
     const scores = await tx
       .select({
         participantId: workshopScores.participantId,
@@ -66,75 +77,13 @@ export async function loadCompletionInputs(
       )
       .groupBy(workshopScores.participantId);
     return {
-      workshop: workshopRowToRecord(row, participants.length),
+      workshop: workshopRowToRecord(row, participants.length, today),
       participants,
       presentDays: new Map(attendance.map((a) => [a.participantId, Number(a.days)])),
       scores: new Map(
         scores.map((s) => [s.participantId, { total: Number(s.total), max: Number(s.max) }]),
       ),
     };
-  });
-}
-
-/**
- * Stores each participant's evaluated status. `completed_at` is set on first completion and kept
- * while a certificate exists (a certificate cannot be un-earned by a later re-evaluation).
- */
-export async function saveCompletionOutcomes(
-  tenant: string,
-  workshopId: string,
-  outcomes: Array<{ participantId: string; status: WorkshopCompletionStatus }>,
-): Promise<void> {
-  const subdomain = tenant.trim().toLowerCase();
-  if (outcomes.length === 0) return;
-  await withTenant(subdomain, async (tx) => {
-    for (const outcome of outcomes) {
-      const completed = outcome.status === "completed";
-      await tx
-        .update(workshopParticipants)
-        .set({
-          status: outcome.status,
-          completedAt: completed
-            ? sql`coalesce(${workshopParticipants.completedAt}, now())`
-            : sql`case when ${workshopParticipants.certificateIssuedAt} is null then null else ${workshopParticipants.completedAt} end`,
-          updatedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(workshopParticipants.workspaceSubdomain, subdomain),
-            eq(workshopParticipants.workshopId, workshopId),
-            eq(workshopParticipants.id, outcome.participantId),
-            isNull(workshopParticipants.deletedAt),
-          ),
-        );
-    }
-  });
-}
-
-/** Marks certificates issued for completed participants; returns the ids newly issued. */
-export async function markCertificatesIssued(
-  tenant: string,
-  workshopId: string,
-  participantIds: string[],
-): Promise<string[]> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    const conditions = [
-      eq(workshopParticipants.workspaceSubdomain, subdomain),
-      eq(workshopParticipants.workshopId, workshopId),
-      eq(workshopParticipants.status, "completed"),
-      isNull(workshopParticipants.deletedAt),
-      isNull(workshopParticipants.certificateIssuedAt),
-      sql`${workshopParticipants.completedAt} is not null`,
-    ];
-    if (participantIds.length > 0)
-      conditions.push(inArray(workshopParticipants.id, participantIds));
-    const issued = await tx
-      .update(workshopParticipants)
-      .set({ certificateIssuedAt: new Date(), updatedAt: new Date() })
-      .where(and(...conditions))
-      .returning({ id: workshopParticipants.id });
-    return issued.map((row) => row.id);
   });
 }
 
@@ -174,6 +123,7 @@ export async function loadReportFacts(
           eq(workshopParticipants.workspaceSubdomain, subdomain),
           inArray(workshopParticipants.workshopId, ids),
           isNull(workshopParticipants.deletedAt),
+          isNull(workshopParticipants.waitlistedAt),
         ),
       )
       .groupBy(workshopParticipants.workshopId);
@@ -186,6 +136,14 @@ export async function loadReportFacts(
           eq(workshopParticipants.workspaceSubdomain, workshopAttendance.workspaceSubdomain),
           eq(workshopParticipants.id, workshopAttendance.participantId),
           isNull(workshopParticipants.deletedAt),
+          isNull(workshopParticipants.waitlistedAt),
+        ),
+      )
+      .innerJoin(
+        workshopEvents,
+        and(
+          eq(workshopEvents.workspaceSubdomain, workshopAttendance.workspaceSubdomain),
+          eq(workshopEvents.id, workshopAttendance.workshopId),
         ),
       )
       .where(
@@ -194,6 +152,11 @@ export async function loadReportFacts(
           inArray(workshopAttendance.workshopId, ids),
           inArray(workshopAttendance.status, ["present", "late"]),
           lte(workshopAttendance.dayOn, today),
+          gte(workshopAttendance.dayOn, workshopEvents.startDate),
+          lte(
+            workshopAttendance.dayOn,
+            sql`coalesce(${workshopEvents.endDate}, ${workshopEvents.startDate})`,
+          ),
         ),
       )
       .groupBy(workshopAttendance.workshopId);
@@ -202,7 +165,7 @@ export async function loadReportFacts(
     return events.map((event) => {
       const counts = peopleBy.get(event.id);
       return {
-        workshop: workshopRowToRecord(event, Number(counts?.participants ?? 0)),
+        workshop: workshopRowToRecord(event, Number(counts?.participants ?? 0), today),
         presentMarks: marksBy.get(event.id) ?? 0,
         completed: Number(counts?.completed ?? 0),
         certificates: Number(counts?.certificates ?? 0),
@@ -241,14 +204,35 @@ export async function saveWorkshopPreferences(
     defaultMinAttendancePct: preferences.defaultMinAttendancePct?.toFixed(2) ?? null,
     defaultMinScorePct: preferences.defaultMinScorePct?.toFixed(2) ?? null,
   };
-  await withTenant(subdomain, (tx) =>
-    tx
+  return withTenant(subdomain, async (tx) => {
+    const [before] = await tx
+      .select({
+        workspaceSubdomain: workshopModulePreferences.workspaceSubdomain,
+        defaultMinAttendancePct: workshopModulePreferences.defaultMinAttendancePct,
+        defaultMinScorePct: workshopModulePreferences.defaultMinScorePct,
+        updatedAt: workshopModulePreferences.updatedAt,
+      })
+      .from(workshopModulePreferences)
+      .where(eq(workshopModulePreferences.workspaceSubdomain, subdomain))
+      .limit(1);
+    await tx
       .insert(workshopModulePreferences)
       .values({ workspaceSubdomain: subdomain, ...values })
       .onConflictDoUpdate({
         target: workshopModulePreferences.workspaceSubdomain,
         set: { ...values, updatedAt: new Date() },
-      }),
-  );
-  return loadWorkshopPreferences(subdomain);
+      });
+    const saved = await loadWorkshopPreferences(subdomain);
+    await auditRow(tx, {
+      workspaceSubdomain: subdomain,
+      tableName: "workshop_module_preferences",
+      recordId: subdomain,
+      actionType: before ? "UPDATE" : "CREATE",
+      subjectId: subdomain,
+      ...(before ? { oldState: before } : {}),
+      newState: saved,
+      minimizeDelta: false,
+    });
+    return saved;
+  });
 }

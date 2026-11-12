@@ -1,7 +1,6 @@
 import React from "react";
 import { Award, Printer, RefreshCw } from "lucide-react";
 import {
-  todayISO,
   type WorkshopCompletionRow,
   type WorkshopCompletionShortfall,
   type WorkshopEvent,
@@ -10,9 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/app/ErrorState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
-import { printHtmlDocument } from "@/lib/ui/printHtmlDocument";
-import { completionCertificateHtml } from "@/lib/ui/completionCertificateHtml";
-import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {
@@ -20,7 +17,7 @@ import {
   useIssueWorkshopCertificates,
   useWorkshopCompletion,
 } from "../hooks/useWorkshopsCompletionApi";
-import { formatWorkshopDates } from "./workshopsWorkColumns";
+import { WorkshopCertificatePrintModal } from "./WorkshopCertificatePrintModal";
 
 const SHORTFALL_KEYS = {
   attendance_none: "workshops.shortfall.attendanceNone",
@@ -38,12 +35,12 @@ export interface WorkshopCompletionSectionProps {
 }
 
 /** Completion standing, re-evaluation and participation certificates for one workshop. */
-export function WorkshopCompletionSection({
+function WorkshopCompletionSectionInner({
   workshop,
   canWrite,
 }: WorkshopCompletionSectionProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { primary } = useBrandPalette();
+  const [printTargets, setPrintTargets] = React.useState<WorkshopCompletionRow[] | null>(null);
   const completion = useWorkshopCompletion(workshop.id);
   const evaluate = useEvaluateWorkshopCompletion();
   const issue = useIssueWorkshopCertificates();
@@ -59,21 +56,7 @@ export function WorkshopCompletionSection({
   };
 
   const print = (targets: WorkshopCompletionRow[]) => {
-    const html = targets
-      .map((row) =>
-        completionCertificateHtml({
-          heading: t("workshops.certificate.heading"),
-          statement: t("workshops.certificate.statement"),
-          recipientName: row.contactName,
-          courseName: workshop.title,
-          period: formatWorkshopDates(workshop),
-          issuedLabel: t("workshops.certificate.issuedOn"),
-          issuedOn: row.certificateIssuedAt?.slice(0, 10) || todayISO(),
-          accent: primary,
-        }),
-      )
-      .join("");
-    printHtmlDocument(t("workshops.certificate.heading"), html);
+    if (targets.length > 0) setPrintTargets(targets);
   };
 
   const issueAndPrint = async (targets: WorkshopCompletionRow[]) => {
@@ -133,7 +116,14 @@ export function WorkshopCompletionSection({
         </div>
       </div>
 
-      {completion.isError ? (
+      {completion.isLoading ? (
+        <div aria-busy="true" aria-live="polite" className="space-y-2">
+          <span className="sr-only">{t("common.loading")}</span>
+          {[0, 1, 2].map((row) => (
+            <Skeleton key={row} className="h-14 w-full rounded-md" />
+          ))}
+        </div>
+      ) : completion.isError ? (
         <ErrorState
           title={t("workshops.loadFailed")}
           description={t("workshops.loadFailedHint")}
@@ -180,6 +170,26 @@ export function WorkshopCompletionSection({
           ))}
         </ul>
       )}
+      {printTargets ? (
+        <WorkshopCertificatePrintModal
+          workshop={workshop}
+          rows={printTargets}
+          onClose={() => setPrintTargets(null)}
+        />
+      ) : null}
     </section>
   );
 }
+
+export const WorkshopCompletionSection = React.memo(
+  WorkshopCompletionSectionInner,
+  (prev, next) =>
+    prev.canWrite === next.canWrite &&
+    prev.workshop.id === next.workshop.id &&
+    prev.workshop.title === next.workshop.title &&
+    prev.workshop.startDate === next.workshop.startDate &&
+    prev.workshop.endDate === next.workshop.endDate &&
+    prev.workshop.status === next.workshop.status &&
+    prev.workshop.deletedAt === next.workshop.deletedAt &&
+    prev.workshop.updatedAt === next.workshop.updatedAt,
+);

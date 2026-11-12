@@ -63,13 +63,13 @@ import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
 import { registerTasksBackgroundJobRunners } from "./backgroundJobTasksRunners.js";
 import { registerQuestionBankBackgroundJobRunners } from "./backgroundJobQuestionBankRunners.js";
+import { registerWorkshopImportJobRunner } from "../workshops/jobs/workshopImportJob.js";
 import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
 import { registerStudentsBulkJobRunners } from "../students/studentsBulkStatusService.js";
 import {
   registerDocumentAndFinanceJobRunners,
   MAX_EXCEL_PAYLOAD_ENTRIES,
 } from "./backgroundJobDocumentFinanceRunners.js";
-
 export { MAX_EXCEL_PAYLOAD_ENTRIES };
 export type {
   ContactsExportJobPayload,
@@ -87,14 +87,14 @@ export function registerDefaultBackgroundJobRunners(): void {
   const studentsModuleId = STUDENTS_MODULE_MANIFEST.moduleId;
   const sessionsModuleId = SESSIONS_MODULE_MANIFEST.moduleId;
   registerAttendanceJobRunners();
-  // Hasanat award/import jobs are consumed by the worker process; register them here so the worker
-  // and the API share one registry (a route plugin only ever runs in the API).
+  // Hasanat jobs run in the worker, so the shared registry registers them here.
   registerHasanatJobRunners();
   registerSessionRolloverJobRunner();
   registerSessionImportJobRunner();
   registerSessionsBulkJobRunners();
   registerStudentsBulkJobRunners();
   registerEnrollmentsImportJobRunner();
+  registerWorkshopImportJobRunner();
 
   registerModuleCsvExportJobRunner({
     moduleId: contactsModuleId,

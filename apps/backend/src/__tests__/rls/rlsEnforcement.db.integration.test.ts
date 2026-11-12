@@ -7,8 +7,12 @@ import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
 import {
   auditMerkleRoots,
   auditTrailEvents,
+  contacts,
   documentTemplates,
   students,
+  workshopEvents,
+  workshopModulePreferences,
+  workshopParticipants,
   workspaces,
 } from "../../db/schema.js";
 import {
@@ -91,6 +95,46 @@ describe("RLS enforcement", () => {
         { id: "student-a", workspaceSubdomain: TENANT_A, status: "active" },
         { id: "student-b", workspaceSubdomain: TENANT_B, status: "active" },
       ]);
+      await tx.insert(contacts).values([
+        { id: "rls-c-a", workspaceSubdomain: TENANT_A, firstName: "A", name: "RLS A contact" },
+        { id: "rls-c-b", workspaceSubdomain: TENANT_B, firstName: "B", name: "RLS B contact" },
+      ]);
+      await tx.insert(workshopEvents).values([
+        {
+          id: "w-a",
+          workspaceSubdomain: TENANT_A,
+          title: "A workshop",
+          status: "open",
+          startDate: "2099-01-01",
+        },
+        {
+          id: "w-b",
+          workspaceSubdomain: TENANT_B,
+          title: "B workshop",
+          status: "open",
+          startDate: "2099-01-01",
+        },
+      ]);
+      await tx.insert(workshopParticipants).values([
+        {
+          id: "p-a",
+          workspaceSubdomain: TENANT_A,
+          workshopId: "w-a",
+          contactId: "rls-c-a",
+          status: "registered",
+        },
+        {
+          id: "p-b",
+          workspaceSubdomain: TENANT_B,
+          workshopId: "w-b",
+          contactId: "rls-c-b",
+          status: "registered",
+        },
+      ]);
+      await tx.insert(workshopModulePreferences).values([
+        { workspaceSubdomain: TENANT_A, defaultMinAttendancePct: "80.00" },
+        { workspaceSubdomain: TENANT_B, defaultMinAttendancePct: "20.00" },
+      ]);
       await tx.insert(auditMerkleRoots).values({
         id: "merkle-rls-test",
         rootHash: "c".repeat(64),
@@ -111,6 +155,26 @@ describe("RLS enforcement", () => {
   it("scopes a tenant transaction to its own rows", async () => {
     const rows = await withTenant(TENANT_A, (tx) => tx.select({ id: students.id }).from(students));
     expect(rows.map((row) => row.id)).toEqual(["student-a"]);
+  });
+
+  it("scopes every workshop table to the tenant", async () => {
+    const events = await withTenant(TENANT_A, (tx) =>
+      tx.select({ id: workshopEvents.id }).from(workshopEvents),
+    );
+    const participants = await withTenant(TENANT_A, (tx) =>
+      tx.select({ id: workshopParticipants.id }).from(workshopParticipants),
+    );
+    const preferences = await withTenant(TENANT_A, (tx) =>
+      tx
+        .select({ attendance: workshopModulePreferences.defaultMinAttendancePct })
+        .from(workshopModulePreferences),
+    );
+    expect(events.map((row) => row.id)).toEqual(["w-a"]);
+    expect(participants.map((row) => row.id)).toEqual(["p-a"]);
+    expect(preferences).toHaveLength(1);
+
+    const outside = await activeDb().select({ id: workshopEvents.id }).from(workshopEvents);
+    expect(outside).toEqual([]);
   });
 
   it("returns no tenant rows outside a transaction (RLS is enforced)", async () => {

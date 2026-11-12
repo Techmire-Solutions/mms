@@ -1,9 +1,8 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { WORKSHOPS_MODULE_MANIFEST } from "@mms/shared";
+import { WORKSHOPS_MODULE_MANIFEST, workshopsCommandMetricsResponseSchema } from "@mms/shared";
 import { authenticateTenant } from "../../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../../middleware/requireTenantModule.js";
 import { registerMetricsRoute } from "../../../lib/crudRouter.js";
-import { runWithTenant } from "../../../lib/tenantContext.js";
 import { workshopsUseCases } from "../../../workshops/use-cases/workshopsUseCases.js";
 import { workshopsContractRouter } from "./workshopsContractRouter.js";
 import { workshopsCompletionRouter } from "./workshopsCompletionRouter.js";
@@ -20,8 +19,10 @@ export default async function workshopsRoutes(
     async (sub) => {
       registerMetricsRoute(sub, {
         collection: WORKSHOPS_MODULE_MANIFEST.collectionKey,
-        loadMetricsFn: (request) =>
-          runWithTenant(String(request.tenant?.id ?? ""), () => workshopsUseCases.loadMetrics()),
+        // `authenticateTenant` already bound the request tenant; `loadMetrics` uses it.
+        loadMetricsFn: () => workshopsUseCases.loadMetrics(),
+        // The metrics endpoint is outside the ts-rest contract; this is its response schema.
+        metricsSchema: workshopsCommandMetricsResponseSchema,
         errorMessagePrefix: "workshops",
       });
     },

@@ -80,6 +80,10 @@ export function registerMetricsRoute(fastify: FastifyInstance, options: MetricsR
         }
         return reply.send({ metrics });
       } catch (error) {
+        // A domain rejection (e.g. a missing tenant binding) keeps its status instead of becoming
+        // an opaque 500 on a route that lives outside the ts-rest contract.
+        const domain = sendIfHttpDomainError(reply, error);
+        if (domain) return domain;
         request.log.error(
           { err: error, url: request.url },
           `Failed to load ${errorMessagePrefix} metrics`,

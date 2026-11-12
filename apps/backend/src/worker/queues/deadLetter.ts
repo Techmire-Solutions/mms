@@ -90,6 +90,25 @@ export async function handleDeadLetterJob(
     });
   }
 
+  // A workshop import/notification can register participants or send messages: a permanently
+  // failed job must leave an audit trace, not only a row marker.
+  if (jobData.moduleId.trim().toLowerCase() === "workshops") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: "workshop_events",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: "workshops.job.dead_letter",
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
   // A Question Bank import/export mutates questions and answer keys: a permanently failed job must
   // leave an audit row, not only a DB status marker.
   if (jobData.moduleId.trim().toLowerCase() === "questionbank") {

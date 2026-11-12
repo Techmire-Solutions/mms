@@ -126,11 +126,20 @@ export async function reparentContactReferences(
         AND contact_id = ${deleteId}
     `);
 
-    // `workshop_participants_contact_uidx` is (workspace, workshop, contact) on
-    // active rows: drop the duplicate registration before re-pointing.
+    // `workshop_participants_contact_uidx` is (workspace, workshop, contact) on active rows:
+    // archive the duplicate registration before re-pointing. It must be a soft-delete — a hard
+    // DELETE trips `trg_workshop_participants_forbid_hard_delete` (0178) because the merge
+    // transaction never sets `app.allow_hard_purge`, and the survivor already holds the seat, so
+    // the loser cannot simply be re-pointed.
     await tx.execute(sql`
-      DELETE FROM ${workshopParticipants} loser
+      UPDATE ${workshopParticipants} loser
+      SET deleted_at = now(),
+          deleted_by = ${deletedBy ?? null},
+          deletion_reason = ${mergeReason},
+          deleted_with_cascade = false,
+          updated_at = now()
       WHERE loser.workspace_subdomain = ${subdomain}
+        AND loser.deleted_at IS NULL
         AND loser.contact_id = ${deleteId}
         AND EXISTS (
           SELECT 1 FROM ${workshopParticipants} keep_row

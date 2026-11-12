@@ -53,7 +53,7 @@ export const DEFAULT_WORKSPACE_ROLES: readonly WorkspaceRole[] = [
       attendance: ["create", "read", "update"],
       enrollments: ["create", "read", "update", "manage"],
       hasanat: ["create", "read", "update", "delete"],
-      workshops: ["create", "read", "update", "delete"],
+      workshops: ["create", "read", "update", "delete", "manage"],
       examinations: ["create", "read", "update", "delete"],
       questionBank: ["create", "read", "update", "delete"],
       finance: ["read"],
