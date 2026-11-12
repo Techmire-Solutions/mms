@@ -133,7 +133,7 @@ describe("opening balances can be corrected after a reversal", () => {
         .from(accountingEntries)
         .where(eq(accountingEntries.sourceType, "opening")),
     );
-    expect(openings.map((row) => row.sourceId)).toEqual([FY, `${FY}:r2`]);
+    expect(openings.map((row) => row.sourceId).sort()).toEqual([FY, `${FY}:r2`].sort());
 
     // Net opening position: original 1000 − reversed 1000 + revision 1500.
     const ledger = await runWithTenant(TENANT, () =>
