@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { useComposedQuestionBankSettings } from "./useQuestionBankSetupConfig";
@@ -56,47 +56,58 @@ export function useQuestionBankConfig(
     [updateAsync],
   );
 
-  const updateSettings = (settingsDraft: QuestionBankSettings) => {
-    // Fire-and-forget for local updates
-    updateSettingsAsync(settingsDraft).catch((error) =>
-      reportClientError(error, { context: "questionBank.updateSettings" }),
-    );
-  };
+  const updateSettings = useCallback(
+    (settingsDraft: QuestionBankSettings) => {
+      // Fire-and-forget for local updates
+      updateSettingsAsync(settingsDraft).catch((error) =>
+        reportClientError(error, { context: "questionBank.updateSettings" }),
+      );
+    },
+    [updateSettingsAsync],
+  );
 
-  const fields = (() => getFlatFieldsConfig(settings.fields))();
-  const customFields = (() => (settings.customFields || []) as ModuleCustomField[])();
-  const fieldOrder = (() => settings.fieldOrder ?? defaultSettings.fieldOrder ?? [])();
+  // Everything derived from the settings snapshot and the (up to 500-row) question list is computed
+  // once per change instead of on every keystroke of the authoring form.
+  const derived = useMemo(() => {
+    const fields = getFlatFieldsConfig(settings.fields);
+    const customFields = (settings.customFields || []) as ModuleCustomField[];
+    const fieldOrder = settings.fieldOrder ?? defaultSettings.fieldOrder ?? [];
+    return {
+      orderedFields: getSortedFields(defaultFieldDefs, fieldOrder, fields, customFields),
+      enabledDifficulties: (settings.difficultyLevels ?? [])
+        .filter((entry) => entry.enabled)
+        .map((entry) => entry.id),
+      enabledQuestionTypes: (settings.questionTypes ?? [])
+        .filter((entry) => entry.enabled)
+        .map((entry) => entry.id),
+      categories: mergeQuestionCategories(settings.categories, questions),
+      sourceBooks: settings.sourceBooks ?? [],
+      defaultTestDuration: settings.defaultTestDuration ?? 30,
+      aiGrading: settings.aiGrading ?? false,
+      isFieldEnabled: (fieldId: string): boolean => fields[fieldId]?.enabled !== false,
+    };
+  }, [settings, questions, defaultSettings, defaultFieldDefs]);
 
-  const orderedFields = (() =>
-    getSortedFields(defaultFieldDefs, fieldOrder, fields, customFields))();
-
-  const isFieldEnabled = (fieldId: string): boolean => fields[fieldId]?.enabled !== false;
-
-  const enabledDifficulties = (() =>
-    (settings.difficultyLevels ?? []).filter((entry) => entry.enabled).map((entry) => entry.id))();
-
-  const enabledQuestionTypes = (() =>
-    (settings.questionTypes ?? []).filter((entry) => entry.enabled).map((entry) => entry.id))();
-
-  const categories = (() => mergeQuestionCategories(settings.categories, questions))();
-
-  const sourceBooks = (() => settings.sourceBooks ?? [])();
-
-  return {
-    settings,
-    categories,
-    sourceBooks,
-    orderedFields,
-    enabledDifficulties,
-    enabledQuestionTypes,
-    defaultTestDuration: settings.defaultTestDuration ?? 30,
-    aiGrading: settings.aiGrading ?? false,
-    isFieldEnabled,
-    fieldLabel,
-    typeLabel,
-    difficultyLabel,
-    questionLanguageLabel,
-    updateSettings,
-    updateSettingsAsync,
-  };
+  return useMemo(
+    () => ({
+      settings,
+      ...derived,
+      fieldLabel,
+      typeLabel,
+      difficultyLabel,
+      questionLanguageLabel,
+      updateSettings,
+      updateSettingsAsync,
+    }),
+    [
+      settings,
+      derived,
+      fieldLabel,
+      typeLabel,
+      difficultyLabel,
+      questionLanguageLabel,
+      updateSettings,
+      updateSettingsAsync,
+    ],
+  );
 }

@@ -78,6 +78,10 @@ export function QuestionBank({
     setFilterCats,
     filterDiff,
     setFilterDiff,
+    filterStatus,
+    setFilterStatus,
+    filterType,
+    setFilterType,
     listPage,
     pageQuestions,
   } = filters;
@@ -90,6 +94,8 @@ export function QuestionBank({
     search,
     filterCats,
     filterDiff,
+    filterStatus,
+    filterType,
     showDeleted,
     canDelete,
     onClearSelection,
@@ -123,6 +129,8 @@ export function QuestionBank({
         search={search}
         filterCats={filterCats}
         filterDiff={filterDiff}
+        filterStatus={filterStatus}
+        filterType={filterType}
         hideToolbarAdd={hideToolbarAdd}
         canWrite={canWrite}
         canDelete={canDelete}
@@ -132,6 +140,8 @@ export function QuestionBank({
         onSearchChange={setSearch}
         onFilterCatsChange={setFilterCats}
         onFilterDiffChange={setFilterDiff}
+        onFilterStatusChange={setFilterStatus}
+        onFilterTypeChange={setFilterType}
         onAddQuestion={openNewQuestion}
       />
 

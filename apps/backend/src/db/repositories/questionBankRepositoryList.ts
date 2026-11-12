@@ -1,6 +1,7 @@
 import {
   and,
   eq,
+  getTableColumns,
   ilike,
   inArray,
   isNotNull,
@@ -15,22 +16,30 @@ import {
   dedupeTrimmedIds,
   isQueryFlagTrue,
   toSqlSearchPattern,
-  type QuestionBankCommandMetricsSnapshot,
   type QuestionBankListQuery,
   type QuestionBankListPageResult,
 } from "@mms/shared";
 import {
-  assessmentResults,
   questions,
   questionCategories,
   questionOptions,
   questionTags,
   questionCitations,
-  tests,
 } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { runListPage } from "./listPageHelper.js";
 import { questionRowToRecord } from "./questionBankRepository.js";
+
+/**
+ * Number of papers that reference a question. Correlated on
+ * `test_questions_workspace_question_idx` (0240), so it is cheap for one row and opt-in for a list.
+ */
+const USAGE_COUNT_SQL = sql<number>`(
+  SELECT count(*)::int FROM test_questions tq
+   WHERE tq.workspace_subdomain = ${questions.workspaceSubdomain}
+     AND tq.question_id = ${questions.id}
+)`;
+import { listQuestionAttachmentsTx } from "./questionBankAttachmentsRepository.js";
 
 function buildQuestionsListConditions(subdomain: string, query: QuestionBankListQuery): SQL[] {
   const conditions: SQL[] = [eq(questions.workspaceSubdomain, subdomain)];
@@ -63,6 +72,25 @@ function buildQuestionsListConditions(subdomain: string, query: QuestionBankList
     conditions.push(inArray(questions.difficulty, difficulties));
   }
 
+  if (query.type) conditions.push(eq(questions.type, query.type));
+  if (query.status) conditions.push(eq(questions.status, query.status));
+
+  const tag = query.tag?.trim();
+  if (tag) {
+    conditions.push(
+      sql`exists (
+        SELECT 1 FROM ${questionTags}
+        WHERE ${questionTags.workspaceSubdomain} = ${subdomain}
+          AND ${questionTags.questionId} = ${questions.id}
+          AND ${questionTags.tag} = ${tag}
+      )`,
+    );
+  }
+
+  if (query.minUsage !== undefined) {
+    conditions.push(sql`${USAGE_COUNT_SQL} >= ${query.minUsage}`);
+  }
+
   return conditions;
 }
 
@@ -77,6 +105,9 @@ const QUESTION_SORT_FIELDS = new Set([
 
 function buildQuestionsOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
   const field = sortField?.trim();
+  if (field === "usageCount") {
+    return sortDir === "asc" ? asc(USAGE_COUNT_SQL) : desc(USAGE_COUNT_SQL);
+  }
   let column: AnyColumn = questions.updatedAt;
   if (field && QUESTION_SORT_FIELDS.has(field)) {
     switch (field) {
@@ -110,6 +141,8 @@ export async function listQuestionsPage(
   const subdomain = tenant.trim().toLowerCase();
 
   return withTenantRead(subdomain, async (tx) => {
+    // The usage count is opt-in: only pay for the correlated subquery when it is sorted/filtered on.
+    const withUsage = query.sortField === "usageCount" || query.minUsage !== undefined;
     const result = await runListPage(tx, questions, {
       conditions: buildQuestionsListConditions(subdomain, query),
       orderBy: buildQuestionsOrderBy(query.sortField, query.sortDir),
@@ -118,7 +151,10 @@ export async function listQuestionsPage(
       afterId: query.afterId,
       skipCount: query.skipCount,
       defaultPageSize: 15,
-      rowMapper: (row) => row as typeof questions.$inferSelect,
+      ...(withUsage
+        ? { columns: { ...getTableColumns(questions), usageCount: USAGE_COUNT_SQL } }
+        : {}),
+      rowMapper: (row) => row as typeof questions.$inferSelect & { usageCount?: number },
     });
 
     if (result.items.length === 0) {
@@ -132,7 +168,7 @@ export async function listQuestionsPage(
     }
 
     const qIds = result.items.map((r) => r.id);
-    const [allCats, allOpts, allTags, allCits] = await Promise.all([
+    const [allCats, allOpts, allTags, allCits, attachmentsByQuestion] = await Promise.all([
       tx
         .select({
           questionId: questionCategories.questionId,
@@ -183,6 +219,7 @@ export async function listQuestionsPage(
             inArray(questionCitations.questionId, qIds),
           ),
         ),
+      listQuestionAttachmentsTx(tx, subdomain, qIds),
     ]);
 
     const catsByQ = new Map<string, string[]>();
@@ -198,7 +235,6 @@ export async function listQuestionsPage(
       arr.push({ index: o.optionIndex, text: o.optionText });
       optsByQ.set(o.questionId, arr);
     }
-
     const tagsByQ = new Map<string, string[]>();
     for (const t of allTags) {
       const arr = tagsByQ.get(t.questionId) ?? [];
@@ -223,13 +259,19 @@ export async function listQuestionsPage(
       const sortedOpts = (optsByQ.get(r.id) ?? [])
         .sort((a, b) => a.index - b.index)
         .map((o) => o.text);
-      return questionRowToRecord(
+      const record = questionRowToRecord(
         r,
         catsByQ.get(r.id) ?? [],
         sortedOpts,
         tagsByQ.get(r.id) ?? [],
         citsByQ.get(r.id) ?? [],
       );
+      if (withUsage) {
+        record.usageCount = Number((r as { usageCount?: number }).usageCount ?? 0);
+      }
+      const attachments = attachmentsByQuestion.get(r.id);
+      if (attachments?.length) record.attachments = attachments;
+      return record;
     });
 
     return {
@@ -239,57 +281,6 @@ export async function listQuestionsPage(
       limit: result.limit,
       hasMore: result.hasMore,
       ...(result.nextCursor ? { nextCursor: result.nextCursor } : {}),
-    };
-  });
-}
-
-/**
- * SQL aggregates for Question Bank command-centre metrics (active rows only).
- * `categories` is sourced from typed module preferences by the service caller.
- */
-export async function aggregateQuestionBankCommandMetrics(
-  tenant: string,
-): Promise<QuestionBankCommandMetricsSnapshot> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
-    const activeQuestions = and(
-      eq(questions.workspaceSubdomain, subdomain),
-      isNull(questions.deletedAt),
-    );
-    const qRows = await tx
-      .select({
-        total: sql<number>`count(*)::int`,
-        easy: sql<number>`count(*) FILTER (WHERE ${questions.difficulty} = 'easy')::int`,
-        medium: sql<number>`count(*) FILTER (WHERE ${questions.difficulty} = 'medium')::int`,
-        hard: sql<number>`count(*) FILTER (WHERE ${questions.difficulty} = 'hard')::int`,
-      })
-      .from(questions)
-      .where(activeQuestions);
-
-    const [testRow] = await tx
-      .select({ totalTests: sql<number>`count(*)::int` })
-      .from(tests)
-      .where(and(eq(tests.workspaceSubdomain, subdomain), isNull(tests.deletedAt)));
-
-    const [resultRow] = await tx
-      .select({ totalResults: sql<number>`count(*)::int` })
-      .from(assessmentResults)
-      .where(
-        and(
-          eq(assessmentResults.workspaceSubdomain, subdomain),
-          isNull(assessmentResults.deletedAt),
-        ),
-      );
-
-    const row = qRows[0];
-    return {
-      total: Number(row?.total ?? 0),
-      easy: Number(row?.easy ?? 0),
-      medium: Number(row?.medium ?? 0),
-      hard: Number(row?.hard ?? 0),
-      totalTests: Number(testRow?.totalTests ?? 0),
-      totalResults: Number(resultRow?.totalResults ?? 0),
-      categories: 0,
     };
   });
 }

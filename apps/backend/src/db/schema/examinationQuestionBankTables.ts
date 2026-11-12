@@ -8,6 +8,7 @@ import {
   foreignKey,
   varchar,
   check,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -26,6 +27,10 @@ export const questions = pgTable(
     text: text("text").notNull(),
     answer: text("answer").notNull(),
     marks: integer("marks").notNull().default(1),
+    /** Authoring lifecycle (0241). Server-owned: never written by the generic bulk save. */
+    status: varchar("status", { length: 20 }).notNull().default("draft"),
+    /** OCC token (0240): a save carrying a stale version writes nothing and returns 409. */
+    version: integer("version").notNull().default(1),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -38,10 +43,26 @@ export const questions = pgTable(
     index("questions_workspace_active_idx")
       .on(table.workspaceSubdomain)
       .where(sql`${table.deletedAt} is null`),
+    // 0240: the list/blueprint filter key and the default `updated_at DESC` order. Without the sort
+    // index every default page top-N-sorts the tenant's whole question set.
+    index("questions_ws_active_difficulty_type_idx")
+      .on(table.workspaceSubdomain, table.difficulty, table.type)
+      .where(sql`${table.deletedAt} is null`),
+    index("questions_ws_updated_active_idx")
+      .on(table.workspaceSubdomain, table.updatedAt.desc())
+      .where(sql`${table.deletedAt} is null`),
+    index("questions_ws_active_status_updated_idx")
+      .on(table.workspaceSubdomain, table.status, table.updatedAt.desc())
+      .where(sql`${table.deletedAt} is null`),
     index("questions_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
-    check("questions_marks_non_negative_check", sql`${table.marks} >= 0`),
+    check("questions_marks_positive_check", sql`${table.marks} > 0`),
+    check("questions_version_positive_check", sql`${table.version} > 0`),
+    check(
+      "questions_status_check",
+      sql`${table.status} IN ('draft', 'under_review', 'approved', 'retired')`,
+    ),
   ],
 );
 
@@ -61,7 +82,6 @@ export const questionCategories = pgTable(
       columns: [table.workspaceSubdomain, table.questionId],
       foreignColumns: [questions.workspaceSubdomain, questions.id],
     }).onDelete("cascade"),
-    index("question_categories_workspace_q_idx").on(table.workspaceSubdomain, table.questionId),
     index("question_categories_workspace_cat_idx").on(table.workspaceSubdomain, table.categoryId),
   ],
 );
@@ -84,7 +104,13 @@ export const questionOptions = pgTable(
       columns: [table.workspaceSubdomain, table.questionId],
       foreignColumns: [questions.workspaceSubdomain, questions.id],
     }).onDelete("cascade"),
-    index("question_options_workspace_q_idx").on(table.workspaceSubdomain, table.questionId),
+    // Replaces `question_options_workspace_q_idx` (0240): same leading columns, plus the ordering
+    // guarantee the column previously only had by convention.
+    uniqueIndex("question_options_ws_q_index_uidx").on(
+      table.workspaceSubdomain,
+      table.questionId,
+      table.optionIndex,
+    ),
   ],
 );
 
@@ -104,7 +130,6 @@ export const questionTags = pgTable(
       columns: [table.workspaceSubdomain, table.questionId],
       foreignColumns: [questions.workspaceSubdomain, questions.id],
     }).onDelete("cascade"),
-    index("question_tags_workspace_q_idx").on(table.workspaceSubdomain, table.questionId),
   ],
 );
 
@@ -126,7 +151,9 @@ export const questionCitations = pgTable(
       columns: [table.workspaceSubdomain, table.questionId],
       foreignColumns: [questions.workspaceSubdomain, questions.id],
     }).onDelete("cascade"),
-    index("question_citations_workspace_q_idx").on(table.workspaceSubdomain, table.questionId),
+    // Declared in 0240: migration 0090 created this index but it was never mirrored, so a rebuilt
+    // database silently lost it (the round-2 F6 drift class).
+    index("question_citations_workspace_book_idx").on(table.workspaceSubdomain, table.bookId),
   ],
 );
 

@@ -17,6 +17,8 @@ export interface UseQuestionBankWorkControllerOptions {
   search: string;
   filterCats: string[];
   filterDiff: string[];
+  filterStatus?: string;
+  filterType?: string;
   showDeleted: boolean;
   canDelete: boolean;
   onClearSelection?: () => void;
@@ -38,6 +40,8 @@ export function useQuestionBankWorkController({
   search,
   filterCats,
   filterDiff,
+  filterStatus,
+  filterType,
   showDeleted,
   canDelete,
   onClearSelection,
@@ -68,7 +72,7 @@ export function useQuestionBankWorkController({
 
   useEffect(() => {
     onClearSelection?.();
-  }, [listPage, search, filterCats, filterDiff, onClearSelection]);
+  }, [listPage, search, filterCats, filterDiff, filterStatus, filterType, onClearSelection]);
 
   const { difficultyConfig, typeConfig } = useQuestionBankDisplayConfig(config);
 

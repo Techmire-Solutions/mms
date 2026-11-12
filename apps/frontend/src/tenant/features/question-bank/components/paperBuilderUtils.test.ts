@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import {
+  buildPaperPrintHtml,
   coercePaperNumberInput,
   createPaperDraftFromTest,
   escapeHtml,
@@ -100,6 +101,24 @@ describe("paperBuilderUtils", () => {
     ).toEqual([
       { id: "test-1-section-1", title: "Section 1", instructions: "", questionIds: ["q1", "q2"] },
     ]);
+  });
+
+  it("prints with the active locale direction and the Arabic/Urdu font stack", () => {
+    const content = document.createElement("div");
+    content.innerHTML = '<article class="qpaper">paper</article>';
+    const html = buildPaperPrintHtml(content, "Paper <1>", { language: "ur", direction: "rtl" });
+
+    expect(html).toContain('lang="ur"');
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain("Noto Nastaliq Urdu");
+    expect(html).toContain("Paper &lt;1&gt;");
+  });
+
+  it("defaults to an English LTR document", () => {
+    const content = document.createElement("div");
+    const html = buildPaperPrintHtml(content, "Paper");
+    expect(html).toContain('lang="en"');
+    expect(html).toContain('dir="ltr"');
   });
 
   it("escapes printable document titles before writing print HTML", () => {

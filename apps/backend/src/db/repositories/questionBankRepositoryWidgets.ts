@@ -1,50 +1,39 @@
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
 import type { WidgetAggregateResult, WidgetQuery } from "@mms/shared";
-import { questions } from "../schema.js";
+import { questionCategories, questions } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
+import { HttpDomainError } from "../../lib/httpErrors.js";
 
 function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(questions.workspaceSubdomain, subdomain), isNull(questions.deletedAt))!;
 }
 
-const FIELD_TO_SQL_COLUMN: Record<string, string> = {
-  type: "type",
-  difficulty: "difficulty",
-  questionLanguage: "question_language",
-  marks: "marks",
-};
+import { chartExpression, targetExpression, widgetFilterSql } from "./questionBankWidgetFields.js";
 
-function resolveSqlColumn(field: string): SQL {
-  const col = FIELD_TO_SQL_COLUMN[field] ?? "type";
-  return sql.raw(`"questions"."${col}"`);
-}
-
-function singleFilterSql(
-  field: string | undefined,
-  operator: WidgetQuery["filterOperator"],
-  value: string | undefined,
-): SQL | null {
-  const trimmedField = field?.trim();
-  if (!trimmedField || value == null || value === "") return null;
-  const colSql = resolveSqlColumn(trimmedField);
-  const op = operator ?? "equals";
-  if (op === "equals") {
-    return sql`lower(trim(${colSql}::text)) = ${value.trim().toLowerCase()}`;
+/**
+ * One scalar value per widget, expressed as a conditional aggregate so every widget's number comes
+ * back from a single round trip. The chart query stays per widget: each has its own GROUP BY and
+ * LIMIT cardinality, so it cannot share a result set.
+ */
+function widgetValueSql(query: WidgetQuery): SQL<number> {
+  const predicate = widgetFilterSql(query) ?? sql`true`;
+  switch (query.operation) {
+    case "count":
+    case "percentage":
+      return sql<number>`count(*) FILTER (WHERE ${predicate})::int`;
+    case "sum":
+    case "avg": {
+      const target = targetExpression(query.targetField);
+      const filteredSum = sql`coalesce(sum(${target}::numeric) FILTER (WHERE ${predicate}), 0)`;
+      if (query.operation === "sum") return sql<number>`${filteredSum}`;
+      return sql<number>`case when count(*) FILTER (WHERE ${predicate} and ${target} is not null) = 0
+        then 0
+        else round(${filteredSum} / count(*) FILTER (WHERE ${predicate} and ${target} is not null))
+      end`;
+    }
+    default:
+      return sql<number>`0`;
   }
-  if (op === "contains") {
-    return sql`lower(${colSql}::text) LIKE ${`%${value.trim().toLowerCase()}%`}`;
-  }
-  if (op === "gt") {
-    return sql`${colSql}::numeric > ${Number(value)}`;
-  }
-  if (op === "lt") {
-    return sql`${colSql}::numeric < ${Number(value)}`;
-  }
-  return null;
-}
-
-function widgetFilterSql(query: WidgetQuery): SQL | null {
-  return singleFilterSql(query.filterField, query.filterOperator, query.filterValue);
 }
 
 export async function aggregateQuestionBankWidgetQueries(
@@ -62,67 +51,81 @@ export async function aggregateQuestionBankWidgetQueries(
       .where(activeWorkspaceWhere(subdomain));
     const totalCount = Number(totalRows[0]?.count ?? 0);
 
+    // 2N+1 queries → N+2: the scalar values share one conditional-aggregate SELECT.
+    const valueColumns = queries.map((query) => widgetValueSql(query));
+    const [valueRow] = await tx
+      .select(
+        Object.fromEntries(
+          valueColumns.map((expression, index) => [`v${index}`, expression]),
+        ) as Record<string, SQL<number>>,
+      )
+      .from(questions)
+      .where(activeWorkspaceWhere(subdomain));
+
     const queryResults = await Promise.all(
-      queries.map(async (query) => {
+      queries.map(async (query, index) => {
+        const raw = Number((valueRow as Record<string, unknown> | undefined)?.[`v${index}`] ?? 0);
+        const value =
+          query.operation === "percentage"
+            ? totalCount > 0
+              ? Math.round((raw / totalCount) * 100)
+              : 0
+            : raw;
+
         const filterSql = widgetFilterSql(query);
         const whereClause = filterSql
           ? and(activeWorkspaceWhere(subdomain), filterSql)
           : activeWorkspaceWhere(subdomain);
         const chartLimit = Math.max(1, Math.min(query.chartLimit ?? 8, 50));
-
-        let value = 0;
-        if (query.operation === "count" || query.operation === "percentage") {
-          const countRows = await tx
-            .select({ count: sql<number>`count(*)::int` })
-            .from(questions)
-            .where(whereClause);
-          const filteredCount = Number(countRows[0]?.count ?? 0);
-          value =
-            query.operation === "percentage"
-              ? totalCount > 0
-                ? Math.round((filteredCount / totalCount) * 100)
-                : 0
-              : filteredCount;
-        } else if (query.operation === "sum" || query.operation === "avg") {
-          const target = query.targetField?.trim() || "";
-          if (target) {
-            const targetColSql = resolveSqlColumn(target);
-            const aggRows = await tx
-              .select({
-                sum: sql<number>`coalesce(sum(${targetColSql}::numeric), 0)`,
-                count: sql<number>`count(*) FILTER (WHERE ${targetColSql} IS NOT NULL)::int`,
-              })
-              .from(questions)
-              .where(whereClause);
-            const sum = Number(aggRows[0]?.sum ?? 0);
-            const count = Number(aggRows[0]?.count ?? 0);
-            value = query.operation === "sum" ? sum : count > 0 ? Math.round(sum / count) : 0;
-          }
+        const categoryAxis = (query.xAxisField?.trim() || "type") === "categoryId";
+        if (categoryAxis && (query.operation === "sum" || query.operation === "avg")) {
+          throw new HttpDomainError(
+            400,
+            "validation_error",
+            "categoryId cannot be combined with sum/avg (a question can hold several categories)",
+          );
         }
-
-        const xAxis = query.xAxisField?.trim() || "type";
-        const xAxisColSql = resolveSqlColumn(xAxis);
-        const groupExpr = sql<string>`COALESCE(NULLIF(trim(${xAxisColSql}::text), ''), 'Unknown')`;
-
-        // For sum/avg with a target the count-based chart is discarded by the
-        // numeric chart, so only run the count chart for the other operations.
         const target =
           query.operation === "sum" || query.operation === "avg"
-            ? query.targetField?.trim() || ""
-            : "";
+            ? targetExpression(query.targetField)
+            : null;
 
         let chartData: { name: string; value: number }[];
-        if (target) {
-          const targetColSql = resolveSqlColumn(target);
+        if (categoryAxis) {
+          // Group through the junction table instead of a correlated subquery in GROUP BY: the
+          // subquery would reference ungrouped `questions` columns (Postgres 42803).
+          const chartRows = await tx
+            .select({
+              name: questionCategories.categoryId,
+              value: sql<number>`count(*)::int`,
+            })
+            .from(questionCategories)
+            .innerJoin(
+              questions,
+              and(
+                eq(questionCategories.workspaceSubdomain, questions.workspaceSubdomain),
+                eq(questionCategories.questionId, questions.id),
+              ),
+            )
+            .where(and(activeWorkspaceWhere(subdomain), filterSql ?? sql`true`))
+            .groupBy(questionCategories.categoryId)
+            .orderBy(sql`count(*) desc`)
+            .limit(chartLimit);
+          chartData = chartRows.map((row) => ({
+            name: row.name || "Uncategorized",
+            value: Number(row.value ?? 0),
+          }));
+        } else if (target) {
+          const groupExpr = chartExpression(query.xAxisField);
           const sortExpr =
             query.operation === "sum"
-              ? sql`coalesce(sum(${targetColSql}::numeric), 0) desc`
-              : sql`coalesce(sum(${targetColSql}::numeric), 0) / nullif(count(*) FILTER (WHERE ${targetColSql} IS NOT NULL), 0) desc`;
+              ? sql`coalesce(sum(${target}::numeric), 0) desc`
+              : sql`coalesce(sum(${target}::numeric), 0) / nullif(count(*) FILTER (WHERE ${target} IS NOT NULL), 0) desc`;
           const numericChart = await tx
             .select({
               name: groupExpr,
-              sum: sql<number>`coalesce(sum(${targetColSql}::numeric), 0)`,
-              count: sql<number>`count(*) FILTER (WHERE ${targetColSql} IS NOT NULL)::int`,
+              sum: sql<number>`coalesce(sum(${target}::numeric), 0)`,
+              count: sql<number>`count(*) FILTER (WHERE ${target} IS NOT NULL)::int`,
             })
             .from(questions)
             .where(whereClause)
@@ -141,6 +144,7 @@ export async function aggregateQuestionBankWidgetQueries(
             .sort((a, b) => b.value - a.value)
             .slice(0, chartLimit);
         } else {
+          const groupExpr = chartExpression(query.xAxisField);
           const chartRows = await tx
             .select({
               name: groupExpr,

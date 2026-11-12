@@ -14,6 +14,7 @@ import {
   resolveModuleTierTab,
   type QuestionBankQuestion,
   type QuestionBankTest,
+  type QuestionStatus,
 } from "@mms/shared";
 import { useQuestionBankColumnLayout } from "@/tenant/features/question-bank/hooks/useQuestionBankColumnLayout";
 import {
@@ -25,6 +26,7 @@ import {
 } from "@/tenant/features/question-bank/hooks/useQuestionBankApi";
 import { useQuestionBankTrashActions } from "@/tenant/features/question-bank/hooks/useQuestionBankTrashActions";
 import { useQuestionBankModalState } from "./useQuestionBankModalState";
+import { notify } from "@/lib/notify";
 
 export function useQuestionBankPageController() {
   const { t } = useTranslation();
@@ -71,6 +73,8 @@ export function useQuestionBankPageController() {
     restoreQuestion,
     bulkDeleteQuestions,
     bulkRestoreQuestions,
+    setQuestionStatus,
+    duplicateQuestion,
   } = useQuestionBankMutations();
 
   const {
@@ -118,24 +122,40 @@ export function useQuestionBankPageController() {
   const openAddQuestion = () => modalState.openAddQuestion(setActiveTab, setActiveSubTab);
   const openCreatePaper = () => modalState.openCreatePaper(setActiveTab, setActiveSubTab);
 
+  const handleSetQuestionStatus = async (
+    question: QuestionBankQuestion,
+    status: QuestionStatus,
+  ): Promise<void> => {
+    try {
+      await setQuestionStatus.mutateAsync(question.id, status);
+      modalState.setActiveQuestion(null);
+    } catch (error) {
+      notify.error(t("questionBank.statusChangeFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
+
+  const handleDuplicateQuestion = async (question: QuestionBankQuestion): Promise<void> => {
+    try {
+      await duplicateQuestion.mutateAsync(question.id);
+      modalState.setActiveQuestion(null);
+    } catch (error) {
+      notify.error(t("questionBank.duplicateFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
+
   const handleQuestionSave = async (question: QuestionBankQuestion): Promise<void> => {
-    const existingQuestion = questions.find((questionItem) => questionItem.id === question.id);
-    await setQuestions(
-      existingQuestion
-        ? questions.map((questionItem) =>
-            questionItem.id === question.id ? question : questionItem,
-          )
-        : [...questions, question],
-    );
+    // The bulk endpoint is an upsert; send only the saved record so one edit does not upload the
+    // whole collection (and does not widen the OCC window for unrelated rows).
+    await replaceQuestions.mutateAsync([question]);
     modalState.closeQuestionModal();
   };
 
   const handleSaveTest = async (test: QuestionBankTest) => {
-    await replaceTests.mutateAsync(
-      tests.some((paper) => paper.id === test.id)
-        ? tests.map((paper) => (paper.id === test.id ? test : paper))
-        : [...tests, test],
-    );
+    await replaceTests.mutateAsync([test]);
   };
 
   const effectiveTab = resolveModuleTierTab(
@@ -178,6 +198,8 @@ export function useQuestionBankPageController() {
     filteredCount,
     setFilteredCount,
     ...modalState,
+    handleSetQuestionStatus,
+    handleDuplicateQuestion,
     columnLayout,
     questions,
     tests,

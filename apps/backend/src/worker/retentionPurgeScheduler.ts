@@ -5,15 +5,30 @@ import { LEADER_LOCK_RETENTION_PURGE, tryAcquireLeaderLease } from "../lib/leade
 import { purgeExpiredArchivedRecords } from "./purgeArchivedRecordsJob.js";
 import { purgeExpiredPlatformActivityLogs } from "./purgePlatformActivityLogsJob.js";
 import { runAttachmentSweep } from "../services/attachmentSweepService.js";
+import { settleInFlight, throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 
 /** NodeJS timer handle for the daily retention purge scheduler — cleared on shutdown. */
 let purgeSchedulerTimer: ReturnType<typeof setTimeout> | null = null;
+/** Aborts the in-flight cycle on shutdown so the sweep can stop unlinking. */
+let retentionAbortController = new AbortController();
+let inFlightRetentionCycle: Promise<unknown> | null = null;
+/** Shutdown settle budget for the in-flight cycle (the sweep checks its signal every 25 files). */
+const RETENTION_DRAIN_MS = 5_000;
 
 export function clearRetentionPurgeScheduler(): void {
   if (purgeSchedulerTimer !== null) {
     clearTimeout(purgeSchedulerTimer);
     purgeSchedulerTimer = null;
   }
+}
+
+/**
+ * Stops a running retention cycle and waits (bounded) for it to unwind before the worker closes the
+ * DB/Redis pools. Without this the sweep kept unlinking while shutdown tore down its connection.
+ */
+export async function abortAndDrainRetentionCycle(timeoutMs = RETENTION_DRAIN_MS): Promise<void> {
+  retentionAbortController.abort(new Error("Worker is shutting down"));
+  if (inFlightRetentionCycle) await settleInFlight(inFlightRetentionCycle, timeoutMs);
 }
 
 /**
@@ -35,12 +50,14 @@ export function getMsUntilNextUtcHour(targetUtcHour = 2): number {
  */
 export async function runRetentionPurgeCycle(
   dbClient: DbClient = activeDb(),
+  signal?: AbortSignal,
 ): Promise<Record<string, Record<string, number>>> {
   const results: Record<string, Record<string, number>> = {};
   try {
     const tenants = await dbClient.select({ subdomain: workspaces.subdomain }).from(workspaces);
 
     for (const { subdomain } of tenants) {
+      throwIfBackgroundJobAborted(signal);
       try {
         const res = await purgeExpiredArchivedRecords(dbClient, subdomain);
         results[subdomain] = res.purgedTables;
@@ -65,6 +82,7 @@ export async function runRetentionPurgeCycle(
         const applySweep = process.env.DRY_RUN !== "true";
         const { orphanFiles: _orphanFiles, ...sweep } = await runAttachmentSweep({
           apply: applySweep,
+          signal,
         });
         results.__orphaned_attachments = {
           scanned: sweep.scanned,
@@ -83,6 +101,8 @@ export async function runRetentionPurgeCycle(
 
     logger.info({ results }, "[RetentionPurge] Completed scheduled daily purge cycle");
   } catch (err) {
+    // Shutdown must stop the cycle, not be swallowed as a generic failure.
+    if (err instanceof Error && err.name === "AbortError") throw err;
     logger.error({ err }, "[RetentionPurge] Error running scheduled retention purge cycle");
   }
   return results;
@@ -107,11 +127,19 @@ export function scheduleNextDailyPurge(
         logger.info("[RetentionPurge] Another replica holds the purge lease; skipping this run");
         return;
       }
+      retentionAbortController = new AbortController();
+      const cycle = runRetentionPurgeCycle(dbClient, retentionAbortController.signal);
+      inFlightRetentionCycle = cycle;
       try {
-        await runRetentionPurgeCycle(dbClient);
+        await cycle;
       } catch (err) {
-        logger.error({ err }, "[RetentionPurge] Error during scheduled purge run");
+        if (err instanceof Error && err.name === "AbortError") {
+          logger.info("[RetentionPurge] Cycle aborted for shutdown");
+        } else {
+          logger.error({ err }, "[RetentionPurge] Error during scheduled purge run");
+        }
       } finally {
+        inFlightRetentionCycle = null;
         await lease.release();
       }
     })()

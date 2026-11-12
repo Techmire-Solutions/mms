@@ -1681,6 +1681,34 @@
       "when": 1796468400000,
       "tag": "0239_exam_total_guard_effective_score",
       "breakpoints": true
+    },
+    {
+      "idx": 240,
+      "version": "7",
+      "when": 1796554800000,
+      "tag": "0240_question_bank_schema_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 241,
+      "version": "7",
+      "when": 1796641200000,
+      "tag": "0241_question_bank_lifecycle_and_marks",
+      "breakpoints": true
+    },
+    {
+      "idx": 242,
+      "version": "7",
+      "when": 1796727600000,
+      "tag": "0242_question_bank_subsystems",
+      "breakpoints": true
+    },
+    {
+      "idx": 243,
+      "version": "7",
+      "when": 1796814000000,
+      "tag": "0243_question_bank_taxonomy_checks",
+      "breakpoints": true
     }
   ]
 }

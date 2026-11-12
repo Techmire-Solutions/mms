@@ -50,7 +50,11 @@ export function usePaperBuilderState({
         categoryFilter === ALL_FILTER || getQuestionCategoryIds(question).includes(categoryFilter);
       const matchesDifficulty =
         difficultyFilter === ALL_FILTER || question.difficulty === difficultyFilter;
-      return matchesSearch && matchesCategory && matchesDifficulty;
+      // Only approved questions may enter a new paper (0241); already-selected legacy questions
+      // stay visible through `questionsById` so an existing paper is never silently emptied.
+      const selectable =
+        (question.status ?? "approved") === "approved" || selectedQuestionIds.has(question.id);
+      return matchesSearch && matchesCategory && matchesDifficulty && selectable;
     });
   })();
 

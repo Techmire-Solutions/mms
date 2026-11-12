@@ -3,6 +3,7 @@ import type { QuestionBankTest } from "@mms/shared";
 import { tests, testQuestions, testSections, testSectionQuestions } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
 import { syncTestChildren } from "./questionBankTestsSync.js";
+import { assertPaperCompositionsEditable } from "./questionBankPaperCompositionGuard.js";
 
 type Transaction = TenantTransaction;
 
@@ -55,6 +56,8 @@ export async function insertTestChildrenTx(
 export async function saveTest(tenant: string, record: QuestionBankTest): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
+    // A published paper's question set is frozen (0241).
+    await assertPaperCompositionsEditable(tx, subdomain, [record]);
     await tx
       .insert(tests)
       .values({
@@ -107,6 +110,10 @@ export async function bulkSaveTests(tenant: string, records: QuestionBankTest[])
 
   await withTenant(subdomain, async (tx) => {
     const testIds = uniqueRecords.map((r) => r.id);
+
+    // A published paper's question set is frozen (0241) — checked under the row lock, before any
+    // link is deleted.
+    await assertPaperCompositionsEditable(tx, subdomain, uniqueRecords);
 
     await tx
       .insert(tests)

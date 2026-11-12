@@ -1,29 +1,33 @@
-import { APP_LANGUAGES, type AppLanguageCode } from "../core/languageUtils.js";
+import type { AppLanguageCode } from "../core/languageUtils.js";
+import {
+  QUESTION_DIFFICULTIES,
+  QUESTION_LANGUAGES,
+  QUESTION_TYPES,
+  type QuestionDifficulty,
+  type QuestionType,
+} from "./questionTaxonomy.js";
 
-/** Supported question content languages (matches app UI languages). */
-export const QUESTION_LANGUAGE_IDS = APP_LANGUAGES.map((lang) => lang.code);
+export {
+  QUESTION_DIFFICULTIES,
+  QUESTION_LANGUAGES,
+  QUESTION_TYPES,
+  questionDifficultySchema,
+  questionLanguageSchema,
+  questionStatusSchema,
+  questionTypeSchema,
+} from "./questionTaxonomy.js";
+export type {
+  QuestionDifficulty,
+  QuestionLanguage,
+  QuestionStatus,
+  QuestionType,
+} from "./questionTaxonomy.js";
+
+/** Registry ids (kept for existing consumers; the taxonomy arrays are the source). */
+export const QUESTION_DIFFICULTY_IDS = QUESTION_DIFFICULTIES;
+export const QUESTION_TYPE_IDS = QUESTION_TYPES;
+export const QUESTION_LANGUAGE_IDS = QUESTION_LANGUAGES;
 export type QuestionLanguageCode = AppLanguageCode;
-
-/** Question difficulty levels for the question bank. */
-export type QuestionDifficulty = "easy" | "medium" | "hard";
-
-/** Supported question formats. */
-export type QuestionType =
-  "mcq" | "true_false" | "short" | "fill_blank" | "matching" | "numeric" | "ordering";
-
-/** Registry ids for difficulty — labels via `questionBank.difficulty.*` i18n keys. */
-export const QUESTION_DIFFICULTY_IDS = ["easy", "medium", "hard"] as const;
-
-/** Registry ids for question types — labels via `questionBank.type.*` i18n keys. */
-export const QUESTION_TYPE_IDS = [
-  "mcq",
-  "true_false",
-  "short",
-  "fill_blank",
-  "matching",
-  "numeric",
-  "ordering",
-] as const;
 
 /** Placeholder in question text for each blank (`fill_blank`). */
 export const FILL_BLANK_MARKER = "___";

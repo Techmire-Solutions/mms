@@ -5,6 +5,12 @@ import {
   type QuestionBankSettings,
 } from "./questionBankModuleSettings.js";
 import { moduleFieldConfigPutBodyBaseSchema } from "../schemas/moduleFieldConfig.dto.js";
+import {
+  questionDifficultySchema,
+  questionSourceReferenceSchema,
+  questionTypeSchema,
+} from "./questionBankModuleManifest.js";
+import { QUESTION_SOURCE_FIELD_IDS } from "./questionBankSourceFields.js";
 import { deepSanitizeStrings } from "../schemas/sanitize.js";
 import {
   QUESTION_BANK_TAB_REGISTRY,
@@ -90,10 +96,41 @@ export function resolveQuestionBankFieldsMap(
   return tabbed;
 }
 
+/**
+ * Strict mirrors of the preference/registry TypeScript interfaces.
+ *
+ * These previously accepted `z.record(z.string(), z.unknown())`, so any client could persist values
+ * the typed consumers (`QuestionCategory`, `QuestionTypeRegistryEntry`, …) would then mis-read.
+ */
+export const questionCategorySchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string(),
+    icon: z.string(),
+    color: z.string(),
+  })
+  .strict();
+
+export const questionTypeRegistryEntrySchema = z
+  .object({ id: questionTypeSchema, enabled: z.boolean() })
+  .strict();
+
+export const questionDifficultyRegistryEntrySchema = z
+  .object({ id: questionDifficultySchema, enabled: z.boolean() })
+  .strict();
+
+export const questionSourceBookSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string(),
+    fieldIds: z.array(z.enum(QUESTION_SOURCE_FIELD_IDS)),
+    metadata: questionSourceReferenceSchema,
+  })
+  .strict();
+
 /** PUT /api/question-bank/config/fields — field registry JSON without prefs keys. */
 const questionBankFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
   .extend({
-    customFields: z.array(z.record(z.string(), z.unknown())).optional(),
     fieldOrder: z.array(z.string()).optional(),
   })
   .strict();
@@ -108,12 +145,33 @@ export const questionBankPreferencesPutBodySchema = z
   .object({
     aiGrading: z.boolean().optional(),
     defaultTestDuration: z.number().optional(),
-    categories: z.array(z.record(z.string(), z.unknown())).optional(),
-    sourceBooks: z.array(z.record(z.string(), z.unknown())).optional(),
-    questionTypes: z.array(z.record(z.string(), z.unknown())).optional(),
-    difficultyLevels: z.array(z.record(z.string(), z.unknown())).optional(),
+    categories: z.array(questionCategorySchema).optional(),
+    sourceBooks: z.array(questionSourceBookSchema).optional(),
+    questionTypes: z.array(questionTypeRegistryEntrySchema).optional(),
+    difficultyLevels: z.array(questionDifficultyRegistryEntrySchema).optional(),
   })
-  .passthrough();
+  .strict();
+
+/** GET/PUT /config/preferences response — mirrors `QuestionBankModulePreferences`. */
+export const questionBankPreferencesResponseSchema = z
+  .object({
+    aiGrading: z.boolean(),
+    defaultTestDuration: z.number(),
+    categories: z.array(questionCategorySchema),
+    sourceBooks: z.array(questionSourceBookSchema),
+    questionTypes: z.array(questionTypeRegistryEntrySchema),
+    difficultyLevels: z.array(questionDifficultyRegistryEntrySchema),
+  })
+  .strict();
+
+function parsePreferenceArray<T>(
+  schema: z.ZodType<T>,
+  value: unknown,
+  fallback: readonly T[],
+): T[] {
+  const parsed = z.array(schema).safeParse(value);
+  return parsed.success ? parsed.data : [...fallback];
+}
 
 /** Typed preference state extracted from legacy QuestionBankSettings. */
 export interface QuestionBankModulePreferences {
@@ -124,6 +182,11 @@ export interface QuestionBankModulePreferences {
   questionTypes: QuestionTypeRegistryEntry[];
   difficultyLevels: QuestionDifficultyRegistryEntry[];
 }
+
+/** Stored JSONB blob for the field-config registry (typed at the Drizzle layer). */
+export type QuestionBankFieldConfigBlob = Partial<QuestionBankSettings>;
+/** Stored JSONB blob for the module preferences (typed at the Drizzle layer). */
+export type QuestionBankPreferencesBlob = Partial<QuestionBankModulePreferences>;
 
 /** Extracts preferences slice from a raw composed settings blob. */
 export function normalizeQuestionBankModulePreferences(
@@ -150,18 +213,28 @@ export function normalizeQuestionBankModulePreferences(
       typeof prefs.defaultTestDuration === "number"
         ? prefs.defaultTestDuration
         : (DEFAULT_QUESTION_BANK_SETTINGS.defaultTestDuration ?? 30),
-    categories: Array.isArray(prefs.categories)
-      ? prefs.categories
-      : (DEFAULT_QUESTION_BANK_SETTINGS.categories ?? []),
-    sourceBooks: Array.isArray(prefs.sourceBooks)
-      ? prefs.sourceBooks
-      : (DEFAULT_QUESTION_BANK_SETTINGS.sourceBooks ?? []),
-    questionTypes: Array.isArray(prefs.questionTypes)
-      ? prefs.questionTypes
-      : (DEFAULT_QUESTION_BANK_SETTINGS.questionTypes ?? []),
-    difficultyLevels: Array.isArray(prefs.difficultyLevels)
-      ? prefs.difficultyLevels
-      : (DEFAULT_QUESTION_BANK_SETTINGS.difficultyLevels ?? []),
+    // Legacy/hand-edited blobs are validated on read; a bad array falls back to the default rather
+    // than leaking a shape the typed consumers cannot read.
+    categories: parsePreferenceArray(
+      questionCategorySchema,
+      prefs.categories,
+      DEFAULT_QUESTION_BANK_SETTINGS.categories ?? [],
+    ),
+    sourceBooks: parsePreferenceArray(
+      questionSourceBookSchema,
+      prefs.sourceBooks,
+      DEFAULT_QUESTION_BANK_SETTINGS.sourceBooks ?? [],
+    ),
+    questionTypes: parsePreferenceArray(
+      questionTypeRegistryEntrySchema,
+      prefs.questionTypes,
+      DEFAULT_QUESTION_BANK_SETTINGS.questionTypes ?? [],
+    ),
+    difficultyLevels: parsePreferenceArray(
+      questionDifficultyRegistryEntrySchema,
+      prefs.difficultyLevels,
+      DEFAULT_QUESTION_BANK_SETTINGS.difficultyLevels ?? [],
+    ),
   };
 }
 

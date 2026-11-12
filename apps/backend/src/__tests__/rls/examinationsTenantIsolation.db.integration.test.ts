@@ -179,7 +179,9 @@ describe("examinations tenant isolation", () => {
              'exams', 'exam_classes', 'exam_results', 'exam_eligibility_overrides',
              'examinations_field_configs', 'examinations_module_preferences',
              'tests', 'test_sections', 'test_questions', 'test_section_questions',
-             'question_bank_field_configs', 'question_bank_module_preferences'
+             'question_bank_field_configs', 'question_bank_module_preferences',
+             'questions', 'question_options', 'question_tags', 'question_categories',
+             'question_citations', 'question_attachments', 'test_blueprint_buckets'
            )
       `);
       const byName = new Map((rows.rows ?? []).map((row) => [row.relname, row]));
@@ -196,6 +198,13 @@ describe("examinations tenant isolation", () => {
         "test_section_questions",
         "question_bank_field_configs",
         "question_bank_module_preferences",
+        "questions",
+        "question_options",
+        "question_tags",
+        "question_categories",
+        "question_citations",
+        "question_attachments",
+        "test_blueprint_buckets",
       ]) {
         const entry = byName.get(table);
         expect(entry, `${table} missing`).toBeDefined();

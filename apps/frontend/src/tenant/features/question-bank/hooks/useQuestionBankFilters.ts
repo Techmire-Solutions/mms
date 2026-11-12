@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { QUESTION_BANK_MODULE_MANIFEST, type QuestionBankQuestion as Question } from "@mms/shared";
+import {
+  QUESTION_BANK_MODULE_MANIFEST,
+  type QuestionBankQuestion as Question,
+  type QuestionStatus,
+  type QuestionType,
+} from "@mms/shared";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useQuestionBankContractList } from "@/tenant/features/question-bank/hooks/useQuestionBankQueries";
 
@@ -23,12 +28,15 @@ export function useQuestionBankFilters({
   const [search, setSearch] = useState("");
   const [filterCats, setFilterCats] = useState<string[]>([]);
   const [filterDiff, setFilterDiff] = useState<string[]>([]);
+  /** Single-select workflow facets; the API accepts one status/type per query. */
+  const [filterStatus, setFilterStatus] = useState<QuestionStatus | "">("");
+  const [filterType, setFilterType] = useState<QuestionType | "">("");
   const [listPage, setListPage] = useState(1);
 
   const debouncedSearch = useDebounce(search, QUESTION_SEARCH_DEBOUNCE_MS);
 
   // Server-side filter/page reset whenever a filter dimension changes.
-  const filterKey = `${debouncedSearch}|${filterCats.join(",")}|${filterDiff.join(",")}|${String(showDeleted)}`;
+  const filterKey = `${debouncedSearch}|${filterCats.join(",")}|${filterDiff.join(",")}|${filterStatus}|${filterType}|${String(showDeleted)}`;
   const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
   if (previousFilterKey !== filterKey) {
     setPreviousFilterKey(filterKey);
@@ -41,6 +49,8 @@ export function useQuestionBankFilters({
     search: debouncedSearch,
     categoryId: filterCats.length ? filterCats.join(",") : undefined,
     difficulty: filterDiff.length ? filterDiff.join(",") : undefined,
+    status: filterStatus || undefined,
+    type: filterType || undefined,
     includeDeleted: showDeleted,
   });
 
@@ -61,6 +71,10 @@ export function useQuestionBankFilters({
     setFilterCats,
     filterDiff,
     setFilterDiff,
+    filterStatus,
+    setFilterStatus,
+    filterType,
+    setFilterType,
     listPage,
     setListPage,
     pageQuestions,

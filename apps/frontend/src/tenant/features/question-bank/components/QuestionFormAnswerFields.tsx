@@ -1,12 +1,9 @@
-import { HelpCircle } from "lucide-react";
 import { type AppTranslationKey, type QuestionType } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { Field, FieldErrorMessage, LABEL, RequiredMark } from "@/components/app/FormPrimitives";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/app/RadioGroup";
 import { Textarea } from "@/components/ui/textarea";
-import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
+import { QuestionFormMcqOptions } from "@/tenant/features/question-bank/components/QuestionFormMcqOptions";
 import { QuestionTypeAnswerFields } from "@/tenant/features/question-bank/components/QuestionTypeAnswerFields";
 
 import type {
@@ -39,44 +36,11 @@ export function QuestionFormAnswerFields({
 
   if (questionDraft.type === "mcq") {
     return (
-      <div className="sm:col-span-2">
-        <span className={LABEL}>{t("questionBank.optionsLabel")}</span>
-        <RadioGroup
-          name="qb-answer"
-          value={questionDraft.answer}
-          onValueChange={(val) => updateDraft({ answer: val })}
-          className="space-y-2 mt-1.5"
-        >
-          {questionDraft.options.slice(0, 4).map((optionValue, optionIndex) => (
-            <div key={optionIndex} className="relative flex items-center group/input w-full gap-2">
-              <RadioGroupItem
-                id={`qb-choice-radio-${optionIndex}`}
-                value={optionValue}
-                disabled={!optionValue}
-                aria-label={t("questionBank.markChoiceCorrect", { n: optionIndex + 1 })}
-              />
-              <div className="relative flex items-center w-full">
-                <HelpCircle className="absolute start-3.5 w-4 h-4 text-muted-foreground/60 group-focus-within/input:text-primary transition-colors pointer-events-none" />
-                <Input
-                  id={`qb-choice-input-${optionIndex}`}
-                  name={`options.${optionIndex}`}
-                  type="text"
-                  className={`${FORM_INPUT} ps-10`}
-                  value={optionValue}
-                  onChange={(e) => {
-                    const nextOptions = [...questionDraft.options];
-                    nextOptions[optionIndex] = e.target.value;
-                    updateDraft({ options: nextOptions });
-                  }}
-                  placeholder={t("questionBank.optionN", { n: optionIndex + 1 })}
-                  aria-label={t("questionBank.optionN", { n: optionIndex + 1 })}
-                />
-              </div>
-            </div>
-          ))}
-        </RadioGroup>
-        <FieldErrorMessage message={errors.answer} />
-      </div>
+      <QuestionFormMcqOptions
+        questionDraft={questionDraft}
+        errors={errors}
+        onChange={(patch) => updateDraft(patch)}
+      />
     );
   }
 

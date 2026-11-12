@@ -8,6 +8,7 @@ import {
   foreignKey,
   varchar,
   numeric,
+  jsonb,
   uniqueIndex,
   check,
 } from "drizzle-orm/pg-core";
@@ -34,6 +35,11 @@ export const tests = pgTable(
     classId: text("class_id"),
     totalMarks: integer("total_marks"),
     instructions: text("instructions"),
+    /** Publication stamp (0241): a published paper's question set is frozen. */
+    publishedAt: timestamp("published_at", { withTimezone: true, mode: "date" }),
+    publishedBy: text("published_by"),
+    /** Seed of the last deterministic blueprint assembly (0242). */
+    assemblySeed: varchar("assembly_seed", { length: 64 }),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -60,6 +66,10 @@ export const tests = pgTable(
       sql`${table.totalMarks} is null or ${table.totalMarks} > 0`,
     ),
     check("tests_duration_positive_check", sql`${table.duration} > 0`),
+    check(
+      "tests_published_pair_check",
+      sql`(${table.publishedAt} is null) = (${table.publishedBy} is null)`,
+    ),
   ],
 );
 
@@ -72,6 +82,8 @@ export const testQuestions = pgTable(
     testId: text("test_id").notNull(),
     questionId: text("question_id").notNull(),
     sortOrder: integer("sort_order").notNull().default(0),
+    /** Frozen copy of the question at publication (0241) — the paper's historical evidence. */
+    questionSnapshot: jsonb("question_snapshot").$type<import("@mms/shared").QuestionSnapshot>(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
@@ -85,6 +97,8 @@ export const testQuestions = pgTable(
       foreignColumns: [questions.workspaceSubdomain, questions.id],
     }).onDelete("cascade"),
     index("test_questions_workspace_test_idx").on(table.workspaceSubdomain, table.testId),
+    // 0240: answers "which papers use question X" from an index; the PK puts `question_id` last.
+    index("test_questions_workspace_question_idx").on(table.workspaceSubdomain, table.questionId),
   ],
 );
 
@@ -138,6 +152,11 @@ export const testSectionQuestions = pgTable(
       foreignColumns: [testSections.workspaceSubdomain, testSections.id],
     }).onDelete("cascade"),
     index("test_section_questions_workspace_sec_idx").on(table.workspaceSubdomain, table.sectionId),
+    // 0240: reverse lookup for the referenced-question guard.
+    index("test_section_questions_workspace_question_idx").on(
+      table.workspaceSubdomain,
+      table.questionId,
+    ),
   ],
 );
 

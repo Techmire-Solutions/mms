@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 import { Filter } from "lucide-react";
+import { QUESTION_STATUSES, type QuestionStatus, type QuestionType } from "@mms/shared";
 import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDivider,
@@ -14,9 +15,13 @@ interface QuestionBankFiltersMenuButtonProps {
   config: QuestionBankConfig;
   filterCats: string[];
   filterDiff: string[];
+  filterStatus: QuestionStatus | "";
+  filterType: QuestionType | "";
   activeFilterCount: number;
   onToggleCategory: (categoryId: string) => void;
   onToggleDifficulty: (difficulty: string) => void;
+  onFilterStatusChange: (status: QuestionStatus | "") => void;
+  onFilterTypeChange: (type: QuestionType | "") => void;
   onClearFilters: () => void;
 }
 
@@ -25,9 +30,13 @@ export function QuestionBankFiltersMenuButton({
   config,
   filterCats,
   filterDiff,
+  filterStatus,
+  filterType,
   activeFilterCount,
   onToggleCategory,
   onToggleDifficulty,
+  onFilterStatusChange,
+  onFilterTypeChange,
   onClearFilters,
 }: QuestionBankFiltersMenuButtonProps): JSX.Element {
   const { t } = useTranslation();
@@ -65,6 +74,34 @@ export function QuestionBankFiltersMenuButton({
           selected={filterDiff}
           onToggle={onToggleDifficulty}
         />
+      ) : null}
+      <ModuleFilterDivider />
+      <ModuleFilterCheckboxGroup
+        label={t("questionBank.filterStatus")}
+        options={QUESTION_STATUSES.map((status) => ({
+          value: status,
+          label: t(`questionBank.status.${status}`),
+        }))}
+        selected={filterStatus ? [filterStatus] : []}
+        onToggle={(status) =>
+          onFilterStatusChange(filterStatus === status ? "" : (status as QuestionStatus))
+        }
+      />
+      {config.enabledQuestionTypes.length > 0 ? (
+        <>
+          <ModuleFilterDivider />
+          <ModuleFilterCheckboxGroup
+            label={t("questionBank.filterType")}
+            options={config.enabledQuestionTypes.map((type) => ({
+              value: type,
+              label: config.typeLabel(type),
+            }))}
+            selected={filterType ? [filterType] : []}
+            onToggle={(type) =>
+              onFilterTypeChange(filterType === type ? "" : (type as QuestionType))
+            }
+          />
+        </>
       ) : null}
     </ModuleFilterDropdown>
   );

@@ -90,6 +90,25 @@ export async function handleDeadLetterJob(
     });
   }
 
+  // A Question Bank import/export mutates questions and answer keys: a permanently failed job must
+  // leave an audit row, not only a DB status marker.
+  if (jobData.moduleId.trim().toLowerCase() === "questionbank") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: "questions",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: "questionBank.job.dead_letter",
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
   if (
     jobData.moduleId.trim().toLowerCase() === "sessions" &&
     jobData.kind.trim().toLowerCase() === "promote"

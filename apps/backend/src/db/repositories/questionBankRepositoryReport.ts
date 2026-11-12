@@ -86,7 +86,7 @@ export async function aggregateQuestionBankReport(
     const [passRow] = await tx
       .select({
         passCount: sql<number>`count(*) FILTER (
-          WHERE sub.total_score >= (t.total_marks * 0.5)
+          WHERE sub.total_score >= (${tests.totalMarks} * 0.5)
         )::int`,
         totalCount: sql<number>`count(*)::int`,
       })
@@ -162,7 +162,10 @@ export async function aggregateQuestionBankReport(
       .where(
         and(
           activeResults,
-          sql`(${assessmentResults.submittedAt})::date >= (now() - interval '12 months')::date`,
+          // `submitted_at` is an ISO-8601 string, so compare the raw column lexically (a `::date`
+          // cast would defeat assessment_results_workspace_submitted_idx). Twelve buckets including
+          // the current month.
+          sql`${assessmentResults.submittedAt} >= to_char(date_trunc('month', now()) - interval '11 months', 'YYYY-MM-DD')`,
         ),
       )
       .groupBy(sql`to_char((${assessmentResults.submittedAt})::date, 'YYYY-MM')`)

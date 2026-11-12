@@ -62,6 +62,7 @@ import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
 import { registerTasksBackgroundJobRunners } from "./backgroundJobTasksRunners.js";
+import { registerQuestionBankBackgroundJobRunners } from "./backgroundJobQuestionBankRunners.js";
 import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
 import { registerStudentsBulkJobRunners } from "../students/studentsBulkStatusService.js";
 import {
@@ -182,9 +183,8 @@ export function registerDefaultBackgroundJobRunners(): void {
 
   // Modular faculty and catalog export/import runners
   registerFacultyBackgroundJobRunners();
-
   registerTasksBackgroundJobRunners();
-
+  registerQuestionBankBackgroundJobRunners();
   registerModuleCsvExportJobRunner({
     moduleId: ENROLLMENTS_MODULE_MANIFEST.moduleId,
     entityNounPlural: "enrollments",

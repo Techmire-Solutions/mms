@@ -8,51 +8,27 @@ import {
   questionCitations,
 } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { syncQuestionChildren } from "./questionBankQuestionsSync.js";
+// OCC + restore-provenance upsert plumbing (0240) lives in its own module to keep this file inside
+// the 300-line ceiling; see `questionBankQuestionUpsert.ts`.
+import {
+  assertEveryQuestionWritten,
+  toQuestionInsert,
+  upsertQuestionRows,
+} from "./questionBankQuestionUpsert.js";
+import { buildQuestionWritePlan } from "./questionBankQuestionWritePlan.js";
+import {
+  auditQuestionCreated,
+  auditQuestionDeleted,
+  auditQuestionRestored,
+  auditQuestionUpdated,
+} from "./questionBankAudit.js";
 
 type Transaction = TenantTransaction;
 
-function toQuestionInsert(record: QuestionBankQuestion, subdomain: string) {
-  return {
-    id: record.id,
-    workspaceSubdomain: subdomain,
-    type: record.type,
-    difficulty: record.difficulty,
-    questionLanguage: record.questionLanguage ?? "en",
-    text: record.text,
-    answer: record.answer,
-    marks: record.marks ?? 1,
-    deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
-    deletedBy: record.deletedBy ?? null,
-    deletionReason: record.deletionReason ?? null,
-    updatedAt: new Date(),
-  };
-}
-
 export async function saveQuestion(tenant: string, record: QuestionBankQuestion): Promise<void> {
-  const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx
-      .insert(questions)
-      .values(toQuestionInsert(record, subdomain))
-      .onConflictDoUpdate({
-        target: [questions.workspaceSubdomain, questions.id],
-        set: {
-          type: record.type,
-          difficulty: record.difficulty,
-          questionLanguage: record.questionLanguage ?? "en",
-          text: record.text,
-          answer: record.answer,
-          marks: record.marks ?? 1,
-          deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
-          deletedBy: record.deletedBy ?? null,
-          deletionReason: record.deletionReason ?? null,
-          updatedAt: new Date(),
-        },
-      });
-
-    await syncQuestionChildren(tx, subdomain, record);
-  });
+  // One path for every write: the bulk plan applies the merge/validate/guard rules even for a
+  // single record, so the generic create/update path cannot bypass them.
+  await bulkSaveQuestions(tenant, [record]);
 }
 
 async function insertQuestionChildrenTx(
@@ -124,26 +100,19 @@ export async function bulkSaveQuestions(
   const uniqueRecords = Array.from(dedupedMap.values());
 
   await withTenant(subdomain, async (tx) => {
-    const qIds = uniqueRecords.map((r) => r.id);
+    // Merge server-owned fields, normalize, validate and guard inside the write transaction.
+    // Unchanged rows are skipped: no version bump, no child rewrite, no OCC churn for other editors.
+    const plan = await buildQuestionWritePlan(tx, subdomain, uniqueRecords);
+    if (plan.changed.length === 0) return;
 
-    await tx
-      .insert(questions)
-      .values(uniqueRecords.map((record) => toQuestionInsert(record, subdomain)))
-      .onConflictDoUpdate({
-        target: [questions.workspaceSubdomain, questions.id],
-        set: {
-          type: sql`excluded.type`,
-          difficulty: sql`excluded.difficulty`,
-          questionLanguage: sql`excluded.question_language`,
-          text: sql`excluded.text`,
-          answer: sql`excluded.answer`,
-          marks: sql`excluded.marks`,
-          deletedAt: sql`excluded.deleted_at`,
-          deletedBy: sql`excluded.deleted_by`,
-          deletionReason: sql`excluded.deletion_reason`,
-          updatedAt: new Date(),
-        },
-      });
+    const qIds = plan.changed.map((record) => record.id);
+    const withToken = plan.changed.filter((record) => typeof record.version === "number");
+    const withoutToken = plan.changed.filter((record) => typeof record.version !== "number");
+    const written = [
+      ...(await upsertQuestionRows(tx, subdomain, withToken, true)),
+      ...(await upsertQuestionRows(tx, subdomain, withoutToken, false)),
+    ];
+    assertEveryQuestionWritten(written, plan.changed);
 
     await Promise.all([
       tx
@@ -180,7 +149,17 @@ export async function bulkSaveQuestions(
         ),
     ]);
 
-    await insertQuestionChildrenTx(tx, subdomain, uniqueRecords);
+    await insertQuestionChildrenTx(tx, subdomain, plan.changed);
+
+    // Audit inside the same transaction: a mutation cannot commit without its row, and an audit
+    // failure rolls the write back (fail-closed).
+    for (const change of plan.changes) {
+      if (change.isNew) {
+        await auditQuestionCreated(tx, subdomain, change.after);
+      } else if (change.before) {
+        await auditQuestionUpdated(tx, subdomain, change.before, change.after);
+      }
+    }
   });
 }
 
@@ -230,6 +209,8 @@ export async function bulkSoftDeleteQuestions(
         deletedAt: now,
         deletedBy: deletedBy || null,
         deletionReason: deletionReason || null,
+        // A state change invalidates an in-flight edit: bump the token so a stale save 409s.
+        version: sql`${questions.version} + 1`,
         updatedAt: now,
       })
       .where(
@@ -241,6 +222,15 @@ export async function bulkSoftDeleteQuestions(
       )
       .returning({ id: questions.id });
 
+    for (const row of updated) {
+      await auditQuestionDeleted(tx, subdomain, {
+        id: row.id,
+        deletedBy: deletedBy ?? null,
+        deletionReason: deletionReason ?? null,
+        at: now,
+      });
+    }
+
     return {
       succeeded: updated.length,
       failed: uniqueIds.length - updated.length,
@@ -251,7 +241,7 @@ export async function bulkSoftDeleteQuestions(
 export async function bulkRestoreQuestions(
   tenant: string,
   ids: string[],
-  _userId?: string,
+  userId?: string,
 ): Promise<{ succeeded: number; failed: number }> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
@@ -264,6 +254,11 @@ export async function bulkRestoreQuestions(
         deletedAt: null,
         deletedBy: null,
         deletionReason: null,
+        // Restore provenance (`mms-soft-delete` §2.5) — without it a trash row has no restore evidence.
+        restoredAt: now,
+        restoredBy: userId || null,
+        deletedWithCascade: false,
+        version: sql`${questions.version} + 1`,
         updatedAt: now,
       })
       .where(
@@ -274,6 +269,14 @@ export async function bulkRestoreQuestions(
         ),
       )
       .returning({ id: questions.id });
+
+    for (const row of updated) {
+      await auditQuestionRestored(tx, subdomain, {
+        id: row.id,
+        restoredBy: userId ?? null,
+        at: now,
+      });
+    }
 
     return {
       succeeded: updated.length,

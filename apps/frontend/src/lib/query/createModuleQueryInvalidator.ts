@@ -11,6 +11,8 @@ export interface ModuleQueryInvalidatorKeys {
   /** Optional — omit when the module has no separate count key (avoids a duplicate invalidate). */
   count?: readonly unknown[];
   metrics: readonly unknown[];
+  /** Reporting/coverage aggregates (dashboards keep a long staleTime, so they must be listed). */
+  reports?: readonly unknown[];
   /** Omit when the module has no widget-aggregate cache. */
   widgetAggregates?: readonly unknown[];
   /** Setup tier. Omitting it left 18 modules with stale setup screens after a mutation. */
@@ -30,6 +32,7 @@ export function createModuleQueryInvalidator(keys: ModuleQueryInvalidatorKeys) {
     }
     if (keys.count) void queryClient.invalidateQueries({ queryKey: keys.count });
     void queryClient.invalidateQueries({ queryKey: keys.metrics });
+    if (keys.reports) void queryClient.invalidateQueries({ queryKey: keys.reports });
     if (keys.widgetAggregates) {
       void queryClient.invalidateQueries({ queryKey: keys.widgetAggregates });
     }
