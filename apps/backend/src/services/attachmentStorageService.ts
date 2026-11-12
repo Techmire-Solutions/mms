@@ -84,6 +84,11 @@ export interface AttachmentFileCandidate {
   file: string;
   path: string;
   mtimeMs: number;
+  /**
+   * Stable reference key. Defaults to `<tenant>/<file>` (the legacy attachments layout); the
+   * question-media category sets `<tenant>/question-media/<file>` so the two cannot collide.
+   */
+  key?: string;
 }
 
 /**
@@ -99,6 +104,6 @@ export function selectOrphanAttachmentFiles(
   return files.filter(
     (file) =>
       nowMs - file.mtimeMs >= minAgeMs &&
-      !referencedKeys.has(`${file.tenant.toLowerCase()}/${file.file}`),
+      !referencedKeys.has(file.key ?? `${file.tenant.toLowerCase()}/${file.file}`),
   );
 }

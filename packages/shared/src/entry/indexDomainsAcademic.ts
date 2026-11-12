@@ -108,7 +108,6 @@ export * from "../schemas/sms.dto.js";
 export * from "../schemas/sanitize.js";
 export * from "../schemas/hasanat.dto.js";
 export * from "../schemas/examinations.dto.js";
-export * from "../schemas/questionBank.dto.js";
 export * from "../schemas/backgroundJob.dto.js";
 export * from "../schemas/messaging.dto.js";
 export * from "../schemas/api.dto.js";

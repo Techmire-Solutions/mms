@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Printer, Save } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { PrintablePaper } from "@/tenant/features/question-bank/components/PrintablePaper";
+import { PrintableAnswerSheet } from "@/tenant/features/question-bank/components/PrintableAnswerSheet";
 import type { QuestionBankQuestion as Question } from "@mms/shared";
 import type {
   PaperConfig,
+  PaperPrintMode,
   PaperSection,
 } from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
@@ -16,6 +18,8 @@ interface PaperPreviewPanelProps {
   sections: PaperSection[];
   selectedCount: number;
   saving: boolean;
+  /** Answer-key/sheet views expose the stored answer, so they follow the write permission. */
+  canViewAnswers?: boolean;
   onPrint: () => void;
   onSave: () => void;
 }
@@ -27,10 +31,18 @@ export function PaperPreviewPanel({
   sections,
   selectedCount,
   saving,
+  canViewAnswers = false,
   onPrint,
   onSave,
 }: PaperPreviewPanelProps): React.ReactElement {
   const { t } = useTranslation();
+  const [mode, setMode] = useState<PaperPrintMode>("paper");
+  const effectiveMode: PaperPrintMode = canViewAnswers ? mode : "paper";
+  const modeOptions: Array<{ value: PaperPrintMode; label: string }> = [
+    { value: "paper", label: t("questionBank.paperView") },
+    { value: "answerKey", label: t("questionBank.answerKey") },
+    { value: "answerSheet", label: t("questionBank.answerSheet") },
+  ];
 
   return (
     <section
@@ -45,6 +57,23 @@ export function PaperPreviewPanel({
           <p className="m-0 text-xs text-muted-foreground">{t("questionBank.paperPreviewDesc")}</p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          {canViewAnswers && (
+            <div className="flex overflow-hidden rounded-md border border-border" role="group">
+              {modeOptions.map((option) => (
+                <Button
+                  key={option.value}
+                  type="button"
+                  size="sm"
+                  variant={effectiveMode === option.value ? "default" : "ghost"}
+                  className="rounded-none"
+                  aria-pressed={effectiveMode === option.value}
+                  onClick={() => setMode(option.value)}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
+          )}
           <Button
             type="button"
             onClick={onSave}
@@ -77,7 +106,20 @@ export function PaperPreviewPanel({
             minHeight: "297mm",
           }}
         >
-          <PrintablePaper config={config} sections={sections} questionsById={questionsById} />
+          {effectiveMode === "answerSheet" ? (
+            <PrintableAnswerSheet
+              config={config}
+              sections={sections}
+              questionsById={questionsById}
+            />
+          ) : (
+            <PrintablePaper
+              config={config}
+              sections={sections}
+              questionsById={questionsById}
+              mode={effectiveMode}
+            />
+          )}
         </div>
       </div>
     </section>

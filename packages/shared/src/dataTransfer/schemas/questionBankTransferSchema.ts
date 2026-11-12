@@ -14,6 +14,8 @@ export interface QuestionBankTransferEntity {
   category: string;
   difficulty?: string;
   type?: string;
+  /** Pipe-separated choices for `mcq` (e.g. `Cairo | Alexandria | Giza`). */
+  options?: string;
   points?: number;
   explanation?: string;
   source?: string;
@@ -56,6 +58,13 @@ export const questionBankTransferSchema: ModuleTransferSchema<QuestionBankTransf
         aliases: ["question_type", "Kind"],
         sample: "open-ended",
         extract: (q) => q.type || "text",
+      },
+      {
+        key: "options",
+        label: "Options (pipe-separated)",
+        aliases: ["choices", "Choices", "option_list"],
+        sample: "Cairo | Alexandria | Giza",
+        extract: (q) => q.options || "",
       },
       {
         key: "points",

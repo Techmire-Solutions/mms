@@ -9,6 +9,7 @@ import {
   DEFAULT_JOB_OPTIONS,
   QUEUE_HASANAT_AWARDS,
   QUEUE_EXAMINATIONS,
+  QUEUE_QUESTION_BANK,
   getBullMQConnectionOptions,
   getQueuePrefix,
 } from "./queueConfig.js";
@@ -136,6 +137,12 @@ export function resolveQueueNameForJob(moduleId: string, kind: string): string {
 
   if (normalizedModule === "examinations") {
     return QUEUE_EXAMINATIONS;
+  }
+
+  // Imports/exports and item-analysis rollups are long and DB-heavy: keep them off the shared
+  // export queue so they neither wait for nor block another module's export.
+  if (normalizedModule === "questionbank") {
+    return QUEUE_QUESTION_BANK;
   }
 
   if (

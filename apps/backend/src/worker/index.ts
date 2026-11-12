@@ -31,7 +31,11 @@ import { logger } from "../lib/logger.js";
 import { defaultSearchAdapter } from "./adapters/searchIndexAdapter.js";
 import { purgeExpiredArchivedRecords } from "./purgeArchivedRecordsJob.js";
 import { purgeExpiredPlatformActivityLogs } from "./purgePlatformActivityLogsJob.js";
-import { clearRetentionPurgeScheduler, scheduleNextDailyPurge } from "./retentionPurgeScheduler.js";
+import {
+  abortAndDrainRetentionCycle,
+  clearRetentionPurgeScheduler,
+  scheduleNextDailyPurge,
+} from "./retentionPurgeScheduler.js";
 import {
   clearAttendanceAbsenceScheduler,
   scheduleAttendanceAbsence,
@@ -214,6 +218,8 @@ export async function startWorkerDaemon(): Promise<void> {
         cdcListenerHandle = null;
       }
       clearRetentionPurgeScheduler();
+      // The sweep is not a BullMQ job: abort it and let it unwind before the pools close.
+      await abortAndDrainRetentionCycle();
       clearSessionLifecycleScheduler();
       clearAttendanceAbsenceScheduler();
       clearFxRateFeedScheduler();

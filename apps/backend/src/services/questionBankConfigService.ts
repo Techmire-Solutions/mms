@@ -1,4 +1,4 @@
-import type { QuestionBankSettings } from "@mms/shared";
+import type { QuestionBankFieldConfigBlob, QuestionBankSettings } from "@mms/shared";
 import {
   getQuestionBankFieldConfigsForWorkspace,
   replaceQuestionBankFieldConfigsForWorkspace,
@@ -13,10 +13,7 @@ export async function getQuestionBankFieldConfig(
 
 export async function updateQuestionBankFieldConfig(
   workspaceSubdomain: string,
-  config: Partial<QuestionBankSettings> | Record<string, unknown>,
+  config: QuestionBankFieldConfigBlob,
 ): Promise<void> {
-  await replaceQuestionBankFieldConfigsForWorkspace(
-    workspaceSubdomain,
-    config as Partial<QuestionBankSettings>,
-  );
+  await replaceQuestionBankFieldConfigsForWorkspace(workspaceSubdomain, config);
 }

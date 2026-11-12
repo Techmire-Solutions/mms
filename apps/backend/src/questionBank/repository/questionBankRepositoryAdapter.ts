@@ -21,12 +21,23 @@ import {
   bulkSaveResults,
   replaceResultsForWorkspace,
 } from "../../db/repositories/questionBankRepository.js";
-import {
-  listQuestionsPage,
-  aggregateQuestionBankCommandMetrics,
-} from "../../db/repositories/questionBankRepositoryList.js";
+import { listQuestionsPage } from "../../db/repositories/questionBankRepositoryList.js";
+import { listQuestionsPicker } from "../../db/repositories/questionBankRepositoryPicker.js";
+import { aggregateQuestionBankCommandMetrics } from "../../db/repositories/questionBankRepositoryMetrics.js";
 import { aggregateQuestionBankWidgetQueries } from "../../db/repositories/questionBankRepositoryWidgets.js";
 import { aggregateQuestionBankReport } from "../../db/repositories/questionBankRepositoryReport.js";
+import {
+  duplicateQuestionRow,
+  setPaperPublished,
+  updateQuestionStatus,
+} from "../../db/repositories/questionBankLifecyclePersist.js";
+import { assemblePaperForTest } from "../../db/repositories/questionBankAssemblyPersist.js";
+import { findSimilarQuestions } from "../../db/repositories/questionSimilarityRepository.js";
+import {
+  addQuestionAttachment,
+  isQuestionAttachmentReferenced,
+  removeQuestionAttachment,
+} from "../../db/repositories/questionBankAttachmentsRepository.js";
 
 /**
  * Drizzle-backed adapter for {@link QuestionBankRepository}. Delegates to the
@@ -42,6 +53,15 @@ export const questionBankRepository: QuestionBankRepository = {
   bulkSoftDeleteQuestions,
   bulkRestoreQuestions,
   listQuestionsPage,
+  listQuestionsPicker,
+  updateQuestionStatus,
+  duplicateQuestionRow,
+  setPaperPublished,
+  assemblePaper: assemblePaperForTest,
+  findSimilarQuestions,
+  addQuestionAttachment,
+  removeQuestionAttachment,
+  isQuestionAttachmentReferenced,
   listTestsByWorkspace,
   findTestById,
   findTestsByIds,

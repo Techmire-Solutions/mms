@@ -17,6 +17,8 @@ interface PaperBuilderProps {
   tests: QuestionBankTest[];
   activeTab?: PaperBuilderTab;
   showHeader?: boolean;
+  /** Enables the answer-key/sheet views; false for a caller who cannot see the key. */
+  canViewAnswers?: boolean;
   onSaveTest: (test: QuestionBankTest) => Promise<void>;
 }
 
@@ -30,6 +32,7 @@ export function PaperBuilder({
   tests,
   activeTab,
   showHeader = true,
+  canViewAnswers = false,
   onSaveTest,
 }: PaperBuilderProps): React.ReactElement {
   const { t } = useTranslation();
@@ -197,6 +200,7 @@ export function PaperBuilder({
       {(!activeTab || activeTab === "preview") && (
         <PaperPreviewPanel
           config={config}
+          canViewAnswers={canViewAnswers}
           printRef={printRef}
           questionsById={questionsById}
           sections={sections}

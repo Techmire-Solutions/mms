@@ -25,7 +25,8 @@ export async function listQuestionsByWorkspace(
   options?: ListQuestionsOptions,
 ): Promise<QuestionBankQuestion[]> {
   const subdomain = tenant.trim().toLowerCase();
-  const limit = Math.min(Math.max(options?.limit ?? 500, 1), 5000);
+  // Snapshot cap: the paginated endpoint and the picker are the scalable paths.
+  const limit = Math.min(Math.max(options?.limit ?? 500, 1), 500);
   const offset = Math.max(options?.offset ?? 0, 0);
   const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
@@ -40,6 +41,8 @@ export async function listQuestionsByWorkspace(
         text: questions.text,
         answer: questions.answer,
         marks: questions.marks,
+        version: questions.version,
+        status: questions.status,
         deletedAt: questions.deletedAt,
         deletedBy: questions.deletedBy,
         deletionReason: questions.deletionReason,
@@ -83,6 +86,8 @@ export async function findQuestionsByIds(
         text: questions.text,
         answer: questions.answer,
         marks: questions.marks,
+        version: questions.version,
+        status: questions.status,
         deletedAt: questions.deletedAt,
         deletedBy: questions.deletedBy,
         deletionReason: questions.deletionReason,

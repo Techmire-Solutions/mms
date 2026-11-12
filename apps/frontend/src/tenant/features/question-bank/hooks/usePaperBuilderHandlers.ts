@@ -42,7 +42,7 @@ export function usePaperBuilderHandlers({
   sections,
   loadPaperDraft,
 }: UsePaperBuilderHandlersOptions) {
-  const { t } = useTranslation();
+  const { t, language, dir } = useTranslation();
   const qbConfig = useQuestionBankConfig(questions);
 
   const categoryById = (() =>
@@ -70,7 +70,7 @@ export function usePaperBuilderHandlers({
     const content = printRef.current;
     if (!content) return;
     const title = config.name || t("questionBank.previewDefaultName");
-    const didOpen = openPaperPrintWindow(content, title);
+    const didOpen = openPaperPrintWindow(content, title, { language, direction: dir });
     if (!didOpen) notify.warning(t("questionBank.printWindowBlocked"));
   };
 

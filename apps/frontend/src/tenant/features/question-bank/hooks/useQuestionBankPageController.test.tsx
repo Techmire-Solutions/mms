@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
+import type { QuestionBankQuestion } from "@mms/shared";
 import { useQuestionBankPageController } from "./useQuestionBankPageController";
+
+const replaceQuestionsSpy = vi.hoisted(() => vi.fn(async () => []));
 
 vi.mock("@/tenant/hooks/usePermissions", () => ({
   useModulePermissions: () => ({
@@ -46,7 +49,7 @@ vi.mock("@/tenant/features/question-bank/hooks/useQuestionBankApi", () => ({
   useQuestionBankTestsCollection: () => [],
   useQuestionBankResultsCollection: () => [],
   useQuestionBankMutations: () => ({
-    replaceQuestions: { mutateAsync: vi.fn() },
+    replaceQuestions: { mutateAsync: replaceQuestionsSpy },
     replaceTests: { mutateAsync: vi.fn() },
     deleteQuestion: { mutateAsync: vi.fn() },
     restoreQuestion: { mutateAsync: vi.fn() },
@@ -135,6 +138,34 @@ describe("useQuestionBankPageController selection", () => {
 
       act(() => result.current.setShowDeleted(true));
       expect(result.current.questionSelection.selectedIds).toEqual([]);
+    } finally {
+      unmount();
+    }
+  });
+});
+
+describe("useQuestionBankPageController saves", () => {
+  it("upserts only the edited record instead of the whole collection", async () => {
+    const { result, unmount } = renderQuestionBankControllerHook();
+    try {
+      replaceQuestionsSpy.mockClear();
+      const question = {
+        id: "q-9",
+        categoryIds: ["cat-1"],
+        type: "short",
+        difficulty: "easy",
+        questionLanguage: "en",
+        text: "Edited",
+        options: [],
+        answer: "a",
+        marks: 1,
+      } as QuestionBankQuestion;
+
+      await act(async () => {
+        await result.current.handleQuestionSave(question);
+      });
+
+      expect(replaceQuestionsSpy).toHaveBeenCalledWith([question]);
     } finally {
       unmount();
     }

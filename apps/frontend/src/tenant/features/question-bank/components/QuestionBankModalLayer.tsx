@@ -72,6 +72,7 @@ export function QuestionBankModalLayer({
             tests={tests}
             activeTab={paperBuilderTab}
             showHeader={false}
+            canViewAnswers={canWrite}
             onSaveTest={onSaveTest}
           />
         </FormModal>

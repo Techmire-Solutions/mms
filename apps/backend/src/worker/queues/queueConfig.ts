@@ -12,6 +12,11 @@ export const QUEUE_HASANAT_AWARDS = "hasanat-awards";
  * queue so a slow session/student export cannot starve grade work (and vice versa).
  */
 export const QUEUE_EXAMINATIONS = "examinations";
+/**
+ * Question Bank bulk imports/exports and (later) item-analysis rollups. Heavy jobs get their own
+ * sandboxed queue so a large import cannot be time-boxed by, or starve, the shared export queue.
+ */
+export const QUEUE_QUESTION_BANK = "question-bank";
 
 export interface QueueConcurrencyAndPriority {
   concurrency: number;
@@ -53,11 +58,19 @@ export const QUEUE_SETTINGS: Record<string, QueueConcurrencyAndPriority> = {
     concurrency: 2,
     priority: 2,
   },
+  [QUEUE_QUESTION_BANK]: {
+    concurrency: 2,
+    priority: 2,
+  },
 };
 
 /** Queues served by a forked sandboxed processor (memory ceiling + child-process isolation). */
 export const SANDBOXED_PDF_QUEUES: readonly string[] = [QUEUE_PDF_RENDERING];
-export const SANDBOXED_EXPORT_QUEUES: readonly string[] = [QUEUE_BULK_EXPORT, QUEUE_EXAMINATIONS];
+export const SANDBOXED_EXPORT_QUEUES: readonly string[] = [
+  QUEUE_BULK_EXPORT,
+  QUEUE_EXAMINATIONS,
+  QUEUE_QUESTION_BANK,
+];
 export const SANDBOXED_QUEUE_NAMES: readonly string[] = [
   ...SANDBOXED_PDF_QUEUES,
   ...SANDBOXED_EXPORT_QUEUES,
@@ -108,6 +121,11 @@ export const EXAMINATIONS_RESULTS_EXPORT_TIMEOUT_MS =
 /** Enrollment imports resolve + write one row at a time (500-row body cap). */
 export const ENROLLMENTS_IMPORT_TIMEOUT_MS =
   Number(process.env.ENROLLMENTS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
+/** Question Bank imports/exports validate and upsert up to 5,000 questions. */
+export const QUESTION_BANK_IMPORT_TIMEOUT_MS =
+  Number(process.env.QUESTION_BANK_IMPORT_TIMEOUT_MS) || 10 * 60_000;
+export const QUESTION_BANK_EXPORT_TIMEOUT_MS =
+  Number(process.env.QUESTION_BANK_EXPORT_TIMEOUT_MS) || 10 * 60_000;
 /** Student CSV imports and exports walk up to 5,000 rows. */
 export const STUDENTS_IMPORT_TIMEOUT_MS =
   Number(process.env.STUDENTS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
@@ -158,6 +176,9 @@ export function resolveJobExecutionTimeoutMs(moduleId: string, kind: string): nu
     "examinations:import": EXAMINATIONS_IMPORT_TIMEOUT_MS,
     "examinations:marks-import": EXAMINATIONS_MARKS_IMPORT_TIMEOUT_MS,
     "examinations:results-export": EXAMINATIONS_RESULTS_EXPORT_TIMEOUT_MS,
+    "questionbank:import": QUESTION_BANK_IMPORT_TIMEOUT_MS,
+    "questionbank:export": QUESTION_BANK_EXPORT_TIMEOUT_MS,
+    "questionbank:item-analysis": QUESTION_BANK_IMPORT_TIMEOUT_MS,
   };
   if (budgets[key] !== undefined) return budgets[key];
   return normalizedModule === "messaging" ? MESSAGING_JOB_TIMEOUT_MS : JOB_EXECUTION_TIMEOUT_MS;

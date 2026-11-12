@@ -12,6 +12,7 @@ export * from "./sessionsTransferSchema.js";
 export * from "./enrollmentsTransferSchema.js";
 export * from "./usersTransferSchema.js";
 export * from "./questionBankTransferSchema.js";
+export * from "./questionBankTransferMapping.js";
 export * from "./accountingTransferSchema.js";
 export * from "./financeTransferSchema.js";
 export * from "./attendanceTransferSchema.js";

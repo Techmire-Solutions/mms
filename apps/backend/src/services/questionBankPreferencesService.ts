@@ -1,4 +1,4 @@
-import type { QuestionBankModulePreferences } from "@mms/shared";
+import type { QuestionBankPreferencesBlob } from "@mms/shared";
 import {
   getQuestionBankModulePreferencesForWorkspace,
   replaceQuestionBankModulePreferencesForWorkspace,
@@ -6,17 +6,14 @@ import {
 
 export async function getQuestionBankPreferences(
   workspaceSubdomain: string,
-): Promise<Partial<QuestionBankModulePreferences>> {
+): Promise<QuestionBankPreferencesBlob> {
   const prefs = await getQuestionBankModulePreferencesForWorkspace(workspaceSubdomain);
   return prefs ?? {};
 }
 
 export async function updateQuestionBankPreferences(
   workspaceSubdomain: string,
-  preferences: Partial<QuestionBankModulePreferences> | Record<string, unknown>,
+  preferences: QuestionBankPreferencesBlob,
 ): Promise<void> {
-  await replaceQuestionBankModulePreferencesForWorkspace(
-    workspaceSubdomain,
-    preferences as Partial<QuestionBankModulePreferences>,
-  );
+  await replaceQuestionBankModulePreferencesForWorkspace(workspaceSubdomain, preferences);
 }

@@ -4,6 +4,7 @@ import {
   adminToken,
   assistantTeacherToken,
   guardianToken,
+  signTenantToken,
   teacherToken,
 } from "./helpers/tokens.js";
 import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/shared";
@@ -38,8 +39,28 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
+const mockEnqueueCsvExportJob = vi.fn();
+const mockRecordAuditEvent = vi.fn().mockResolvedValue({ sequence: 1 });
+
+vi.mock("../lib/csvExportEnqueue.js", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    enqueueCsvExportJob: (...args: unknown[]) => mockEnqueueCsvExportJob(...args),
+  };
+});
+
+vi.mock("../services/auditTrailService.js", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    recordModernAuditEvent: (...args: unknown[]) => mockRecordAuditEvent(...args),
+  };
+});
+
 const mockLoadQuestions = vi.fn();
 const mockLoadQuestionsPage = vi.fn();
+const mockLoadQuestionsPicker = vi.fn();
 const mockUpsertQuestions = vi.fn();
 const mockLoadTests = vi.fn();
 const mockUpsertTests = vi.fn();
@@ -55,6 +76,7 @@ vi.mock("../questionBank/use-cases/questionBankUseCases.js", () => ({
   questionBankUseCases: {
     loadQuestions: (...args: unknown[]) => mockLoadQuestions(...args),
     loadQuestionsPage: (...args: unknown[]) => mockLoadQuestionsPage(...args),
+    loadQuestionsPicker: (...args: unknown[]) => mockLoadQuestionsPicker(...args),
     upsertQuestions: (...args: unknown[]) => mockUpsertQuestions(...args),
     loadTests: (...args: unknown[]) => mockLoadTests(...args),
     upsertTests: (...args: unknown[]) => mockUpsertTests(...args),
@@ -412,8 +434,20 @@ describe("question bank questions pagination", () => {
   });
 
   it("GET /api/question-bank/questions returns paginated shape and forwards filters", async () => {
+    const pageQuestion = {
+      id: "q-9",
+      categoryIds: ["cat-1"],
+      categoryId: "cat-1",
+      type: "short",
+      difficulty: "easy",
+      questionLanguage: "en",
+      text: "What is wudu?",
+      options: [],
+      answer: "ritual purity",
+      marks: 1,
+    };
     mockLoadQuestionsPage.mockResolvedValueOnce({
-      questions: [{ id: "q-9", text: "What is wudu?", categoryId: "cat-1", difficulty: "easy" }],
+      questions: [pageQuestion],
       total: 1,
       page: 1,
       limit: 10,
@@ -430,7 +464,7 @@ describe("question bank questions pagination", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({
-      questions: [{ id: "q-9", text: "What is wudu?", categoryId: "cat-1", difficulty: "easy" }],
+      questions: [pageQuestion],
       total: 1,
       page: 1,
       limit: 10,
@@ -451,7 +485,20 @@ describe("question bank questions pagination", () => {
 
   it("includeDeleted=true forwards deleted-only request for admins", async () => {
     mockLoadQuestionsPage.mockResolvedValueOnce({
-      questions: [{ id: "q-8", text: "Archived question", deletedAt: "2026-07-27T12:00:00.000Z" }],
+      questions: [
+        {
+          id: "q-8",
+          categoryIds: ["cat-1"],
+          type: "short",
+          difficulty: "easy",
+          questionLanguage: "en",
+          text: "Archived question",
+          options: [],
+          answer: "archived",
+          marks: 1,
+          deletedAt: "2026-07-27T12:00:00.000Z",
+        },
+      ],
       total: 1,
       page: 1,
       limit: 15,
@@ -487,6 +534,277 @@ describe("question bank questions pagination", () => {
     });
     expect(res.statusCode).toBe(403);
     expect(mockLoadQuestionsPage).not.toHaveBeenCalled();
+    await app.close();
+  });
+});
+
+describe("answer-key redaction and request validation", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    mockLoadQuestions.mockReset().mockResolvedValue([]);
+    mockLoadQuestionsPicker.mockReset().mockResolvedValue({
+      questions: [],
+      total: 0,
+      page: 1,
+      limit: 50,
+      hasMore: false,
+    });
+    mockBulkSoftDeleteQuestions.mockReset();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("strips the answer key for a read-only caller", async () => {
+    mockLoadQuestions.mockResolvedValueOnce([sampleQuestion]);
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/question-bank/questions",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "auditor" })}`,
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { questions: Array<Record<string, unknown>> };
+    expect(body.questions[0]).not.toHaveProperty("answer");
+    expect(body.questions[0]?.text).toBe("Simple Question");
+    await app.close();
+  });
+
+  it("keeps the answer key for a caller with write authority", async () => {
+    mockLoadQuestions.mockResolvedValueOnce([sampleQuestion]);
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/question-bank/questions",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { questions: Array<Record<string, unknown>> };
+    expect(body.questions[0]?.answer).toBe("A");
+    await app.close();
+  });
+
+  it("never returns the answer key from the picker, even for an admin", async () => {
+    mockLoadQuestionsPicker.mockResolvedValueOnce({
+      questions: [sampleQuestion],
+      total: 1,
+      page: 1,
+      limit: 50,
+      hasMore: false,
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/question-bank/questions/picker?limit=20&difficulty=easy",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { questions: Array<Record<string, unknown>> };
+    expect(body.questions[0]).not.toHaveProperty("answer");
+    expect(mockLoadQuestionsPicker).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 20, difficulty: "easy" }),
+    );
+    await app.close();
+  });
+
+  it("rejects an out-of-range limit and an unknown status before the use case runs", async () => {
+    const app = await buildApp();
+    for (const url of [
+      "/api/question-bank/questions?limit=101",
+      "/api/question-bank/questions?status=bogus",
+      "/api/question-bank/questions?difficulty=extreme",
+      "/api/question-bank/questions?unknownFilter=1",
+    ]) {
+      const res = await app.inject({
+        method: "GET",
+        url,
+        headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      });
+      expect(res.statusCode, url).toBe(400);
+    }
+    expect(mockLoadQuestionsPage).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("validates the action body schemas", async () => {
+    const app = await buildApp();
+    const statusRes = await app.inject({
+      method: "POST",
+      url: "/api/question-bank/questions/q-1/status",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { status: "bogus" },
+    });
+    expect(statusRes.statusCode).toBe(400);
+
+    const attachmentRes = await app.inject({
+      method: "POST",
+      url: "/api/question-bank/questions/q-1/attachments",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { kind: "bogus", url: "x", name: "x", mime: "x", size: 1 },
+    });
+    expect(attachmentRes.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("maps a constraint failure on bulk delete to a 4xx instead of a 500", async () => {
+    mockBulkSoftDeleteQuestions.mockRejectedValueOnce(
+      Object.assign(new Error("guarded"), { code: "23514" }),
+    );
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/question-bank/questions/bulk-delete",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { ids: ["q-1"] },
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({ type: "constraint_violation" });
+    await app.close();
+  });
+});
+
+describe("question bank RBAC (module-scoped permissions)", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    mockLoadQuestions.mockReset().mockResolvedValue([]);
+    mockLoadQuestionsPage.mockReset().mockResolvedValue({
+      questions: [],
+      total: 0,
+      page: 1,
+      limit: 15,
+      hasMore: false,
+    });
+    mockUpsertQuestions.mockReset().mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function getQuestionsAs(role: "assistant_teacher" | "registrar" | "auditor" | "teacher") {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/question-bank/questions",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role })}`,
+      },
+    });
+    await app.close();
+    return res.statusCode;
+  }
+
+  it("denies roles that only hold Students permissions", async () => {
+    // These roles have students.read but no questionBank grant: the old manifest mapping let them in.
+    expect(await getQuestionsAs("assistant_teacher")).toBe(403);
+    expect(await getQuestionsAs("registrar")).toBe(403);
+  });
+
+  it("allows the read-only auditor to read but not write", async () => {
+    expect(await getQuestionsAs("auditor")).toBe(200);
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/question-bank/questions/bulk",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "auditor" })}`,
+      },
+      payload: [sampleQuestion],
+    });
+    expect(res.statusCode).toBe(403);
+    await app.close();
+  });
+
+  it("lets a teacher author but not approve or retire", async () => {
+    const app = await buildApp();
+    const read = await app.inject({
+      method: "GET",
+      url: "/api/question-bank/questions",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+    });
+    expect(read.statusCode).toBe(200);
+
+    const approve = await app.inject({
+      method: "POST",
+      url: "/api/question-bank/questions/q-1/status",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: { status: "approved" },
+    });
+    expect(approve.statusCode).toBe(403);
+
+    // Submit-for-review is authoring authority and reaches body validation (not 403).
+    const submit = await app.inject({
+      method: "POST",
+      url: "/api/question-bank/questions/q-1/status",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: { status: "bogus" },
+    });
+    expect(submit.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("lets an approver reach the approve path", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/question-bank/questions/q-1/status",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "principal" })}`,
+      },
+      payload: { status: "bogus" },
+    });
+    // 400 means the permission gate passed and the body schema rejected the status.
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("reserves the master answer-key export for approvers", async () => {
+    mockEnqueueCsvExportJob.mockResolvedValueOnce({
+      id: "job-export-1",
+      status: "pending",
+      moduleId: "questionBank",
+      kind: "export",
+      label: "Exporting questions",
+    });
+    const app = await buildApp();
+    const teacherExport = await app.inject({
+      method: "POST",
+      url: "/api/question-bank/export/csv",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: {},
+    });
+    expect(teacherExport.statusCode).toBe(403);
+
+    const principalExport = await app.inject({
+      method: "POST",
+      url: "/api/question-bank/export/csv",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "principal" })}`,
+      },
+      payload: {},
+    });
+    // The approver passes the gate and the job is queued; the teacher never reaches the enqueue.
+    expect(principalExport.statusCode).toBe(202);
+    expect(mockEnqueueCsvExportJob).toHaveBeenCalledTimes(1);
     await app.close();
   });
 });

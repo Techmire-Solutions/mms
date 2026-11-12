@@ -38,7 +38,7 @@ export async function getQuestionBankFieldConfigsForWorkspace(
     if (!row) {
       return null;
     }
-    return row.config as Partial<QuestionBankSettings>;
+    return row.config;
   });
 }
 
@@ -55,7 +55,7 @@ export async function listAllQuestionBankFieldConfigsByWorkspace(): Promise<
     const result: Record<string, Partial<QuestionBankSettings>> = {};
     for (const row of rows) {
       if (row.workspaceSubdomain) {
-        result[row.workspaceSubdomain] = row.config as Partial<QuestionBankSettings>;
+        result[row.workspaceSubdomain] = row.config;
       }
     }
     return result;

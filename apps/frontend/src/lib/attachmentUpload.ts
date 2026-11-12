@@ -2,7 +2,7 @@ import { type AttachmentUploadResponse } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 
 /** Purpose-scoped uploads: the server authorises and content-type-filters per purpose. */
-export type AttachmentUploadPurpose = "contact" | "attendance_excuse";
+export type AttachmentUploadPurpose = "contact" | "attendance_excuse" | "question_media";
 
 /**
  * Uploads an attachment file to the MMS backend.

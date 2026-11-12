@@ -1,4 +1,5 @@
 import type { Dispatch, JSX, SetStateAction } from "react";
+import type { QuestionStatus, QuestionType } from "@mms/shared";
 import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { FilterChips } from "@/components/app/FilterChips";
 import { WorkTaskToolbar } from "@/components/common/work";
@@ -18,6 +19,8 @@ interface QuestionsListFiltersProps {
   search: string;
   filterCats: string[];
   filterDiff: string[];
+  filterStatus: QuestionStatus | "";
+  filterType: QuestionType | "";
   hideToolbarAdd: boolean;
   canWrite: boolean;
   canDelete?: boolean;
@@ -27,6 +30,8 @@ interface QuestionsListFiltersProps {
   onSearchChange: (value: string) => void;
   onFilterCatsChange: Dispatch<SetStateAction<string[]>>;
   onFilterDiffChange: Dispatch<SetStateAction<string[]>>;
+  onFilterStatusChange: (status: QuestionStatus | "") => void;
+  onFilterTypeChange: (type: QuestionType | "") => void;
   onAddQuestion: () => void;
 }
 
@@ -37,6 +42,8 @@ export function QuestionsListFilters({
   search,
   filterCats,
   filterDiff,
+  filterStatus,
+  filterType,
   hideToolbarAdd: _hideToolbarAdd,
   canWrite: _canWrite,
   canDelete = false,
@@ -46,6 +53,8 @@ export function QuestionsListFilters({
   onSearchChange,
   onFilterCatsChange,
   onFilterDiffChange,
+  onFilterStatusChange,
+  onFilterTypeChange,
   onAddQuestion: _onAddQuestion,
 }: QuestionsListFiltersProps): JSX.Element {
   const { t } = useTranslation();
@@ -65,8 +74,11 @@ export function QuestionsListFilters({
   const clearFilters = () => {
     onFilterCatsChange([]);
     onFilterDiffChange([]);
+    onFilterStatusChange("");
+    onFilterTypeChange("");
   };
-  const activeFilterCount = filterCats.length + filterDiff.length;
+  const activeFilterCount =
+    filterCats.length + filterDiff.length + (filterStatus ? 1 : 0) + (filterType ? 1 : 0);
 
   const categoriesById = new Map(config.categories.map((item) => [item.id, item]));
   const categoryChips = filterCats.map((categoryId) => {
@@ -82,6 +94,24 @@ export function QuestionsListFilters({
     label: config.difficultyLabel(difficulty),
     onRemove: () => toggleDifficulty(difficulty),
   }));
+  const statusChip = filterStatus
+    ? [
+        {
+          key: `status:${filterStatus}`,
+          label: t(`questionBank.status.${filterStatus}` as never),
+          onRemove: () => onFilterStatusChange(""),
+        },
+      ]
+    : [];
+  const typeChip = filterType
+    ? [
+        {
+          key: `type:${filterType}`,
+          label: config.typeLabel(filterType),
+          onRemove: () => onFilterTypeChange(""),
+        },
+      ]
+    : [];
 
   return (
     <WorkTaskToolbar
@@ -98,14 +128,21 @@ export function QuestionsListFilters({
           config={config}
           filterCats={filterCats}
           filterDiff={filterDiff}
+          filterStatus={filterStatus}
+          filterType={filterType}
           activeFilterCount={activeFilterCount}
           onToggleCategory={toggleCategory}
           onToggleDifficulty={toggleDifficulty}
+          onFilterStatusChange={onFilterStatusChange}
+          onFilterTypeChange={onFilterTypeChange}
           onClearFilters={clearFilters}
         />
       }
       filterChips={
-        <FilterChips chips={[...categoryChips, ...difficultyChips]} onClearAll={clearFilters} />
+        <FilterChips
+          chips={[...categoryChips, ...difficultyChips, ...statusChip, ...typeChip]}
+          onClearAll={clearFilters}
+        />
       }
       primaryAction={undefined}
       trashToggle={

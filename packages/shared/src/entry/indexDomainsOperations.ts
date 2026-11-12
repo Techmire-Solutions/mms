@@ -100,10 +100,17 @@ export * from "../examinations/questionBankEntities.js";
 export * from "../examinations/questionBankFormUtils.js";
 export * from "../examinations/questionBankListQuery.js";
 export * from "../examinations/questionBankModuleManifest.js";
+export * from "../examinations/questionInvariants.js";
+export * from "../examinations/questionBankSerialization.js";
+export * from "../examinations/questionDto.js";
+export * from "../examinations/questionTaxonomy.js";
+export * from "../examinations/questionLifecycle.js";
 export * from "../examinations/questionBankModuleSettings.js";
 export * from "../examinations/questionBankSetupConfigTypes.js";
 export * from "../examinations/questionBankSourceUtils.js";
 export * from "../examinations/questionBankReportAggregates.js";
+export * from "../examinations/paperBlueprint.js";
+export * from "../examinations/questionSimilarity.js";
 export * from "../examinations/questionBankTypes.js";
 
 // ---------------------------------------------------------------------------

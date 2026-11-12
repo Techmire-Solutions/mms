@@ -92,6 +92,7 @@ export default function QuestionBankPage(): JSX.Element {
                   showDeleted={c.showDeleted}
                   listLoadFailed={c.listLoadFailed}
                   questions={c.questions}
+                  tests={c.tests}
                   showQuestionModal={c.showQuestionModal}
                   editQuestion={c.editQuestion}
                   canWrite={c.canWrite}
@@ -108,7 +109,6 @@ export default function QuestionBankPage(): JSX.Element {
                   onBulkDelete={c.handleBulkDelete}
                   onBulkRestore={c.handleBulkRestore}
                   onFilteredCountChange={c.setFilteredCount}
-                  onCreatePaper={c.openCreatePaper}
                   selectedIds={c.questionSelection.selectedIds}
                   onToggleSelectedQuestion={c.questionSelection.toggleSelected}
                   onToggleSelectAll={c.questionSelection.toggleSelectAll}
@@ -135,7 +135,11 @@ export default function QuestionBankPage(): JSX.Element {
                 c.setShowQuestionModal(true);
               }}
               canDelete={c.canDelete}
+              canWrite={c.canWrite}
+              canApprove={c.canDelete}
               onRestore={c.handleRestoreQuestion}
+              onSetStatus={c.handleSetQuestionStatus}
+              onDuplicate={c.handleDuplicateQuestion}
             />
           )}
         </AnimatePresence>

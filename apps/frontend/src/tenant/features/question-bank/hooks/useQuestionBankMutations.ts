@@ -1,6 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
-import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/shared";
+import type {
+  QuestionBankQuestion,
+  QuestionBankTest,
+  QuestionBankResult,
+  QuestionStatus,
+} from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { invalidateQuestionBankQueries } from "./invalidateQuestionBankQueries";
 
@@ -36,6 +41,30 @@ export function useQuestionBankMutations() {
   });
 
   const bulkRestoreQuestions = tsrClient.questionBank.bulkRestoreQuestions.useMutation({
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
+  });
+
+  const setQuestionStatus = tsrClient.questionBank.setQuestionStatus.useMutation({
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
+  });
+
+  const duplicateQuestion = tsrClient.questionBank.duplicateQuestion.useMutation({
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
+  });
+
+  const setTestPublished = tsrClient.questionBank.setTestPublished.useMutation({
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
+  });
+
+  const assemblePaper = tsrClient.questionBank.assemblePaper.useMutation({
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
+  });
+
+  const addQuestionAttachment = tsrClient.questionBank.addQuestionAttachment.useMutation({
+    onSuccess: () => invalidateQuestionBankQueries(queryClient),
+  });
+
+  const removeQuestionAttachment = tsrClient.questionBank.removeQuestionAttachment.useMutation({
     onSuccess: () => invalidateQuestionBankQueries(queryClient),
   });
 
@@ -81,6 +110,44 @@ export function useQuestionBankMutations() {
       mutate: (ids: string[], opts?: MutateOptions) =>
         bulkRestoreQuestions.mutate({ body: { ids } }, opts),
       mutateAsync: (ids: string[]) => bulkRestoreQuestions.mutateAsync({ body: { ids } }),
+    },
+    setQuestionStatus: {
+      ...setQuestionStatus,
+      mutateAsync: (id: string, status: QuestionStatus) =>
+        setQuestionStatus.mutateAsync({ params: { id }, body: { status } }),
+    },
+    duplicateQuestion: {
+      ...duplicateQuestion,
+      mutateAsync: (id: string) => duplicateQuestion.mutateAsync({ params: { id }, body: {} }),
+    },
+    setTestPublished: {
+      ...setTestPublished,
+      mutateAsync: (id: string, published: boolean) =>
+        setTestPublished.mutateAsync({ params: { id }, body: { published } }),
+    },
+    assemblePaper: {
+      ...assemblePaper,
+      mutateAsync: (id: string, blueprint: Record<string, unknown>) =>
+        assemblePaper.mutateAsync({ params: { id }, body: blueprint as never }),
+    },
+    addQuestionAttachment: {
+      ...addQuestionAttachment,
+      mutateAsync: (
+        id: string,
+        body: {
+          kind: "stem" | "option";
+          optionIndex?: number | null;
+          url: string;
+          name: string;
+          mime: string;
+          size: number;
+        },
+      ) => addQuestionAttachment.mutateAsync({ params: { id }, body }),
+    },
+    removeQuestionAttachment: {
+      ...removeQuestionAttachment,
+      mutateAsync: (id: string, attachmentId: string) =>
+        removeQuestionAttachment.mutateAsync({ params: { id, attachmentId } }),
     },
     invalidate,
   };

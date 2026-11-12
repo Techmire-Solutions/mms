@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { BookOpen } from "lucide-react";
 import {
   type AppTranslationKey,
@@ -19,7 +20,7 @@ interface QuestionFormSourcesSectionProps {
   onRemoveBook: (bookId: string) => Promise<void> | void;
 }
 
-export function QuestionFormSourcesSection({
+function QuestionFormSourcesSectionComponent({
   questionDraft,
   updateDraft,
   sourceBooks,
@@ -95,3 +96,14 @@ export function QuestionFormSourcesSection({
     </div>
   );
 }
+
+/** Memoized: only citation edits re-render the sources card. */
+export const QuestionFormSourcesSection = memo(
+  QuestionFormSourcesSectionComponent,
+  (prev, next) =>
+    prev.questionDraft.sourceCitations === next.questionDraft.sourceCitations &&
+    prev.sourceBooks === next.sourceBooks &&
+    prev.updateDraft === next.updateDraft &&
+    prev.onPersistBook === next.onPersistBook &&
+    prev.onRemoveBook === next.onRemoveBook,
+);

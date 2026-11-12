@@ -18,6 +18,7 @@ import {
   resolveTenantAttachmentPath,
 } from "../../services/attachmentStorageService.js";
 import { canWriteCollection } from "../../lib/rbacCanHelpers.js";
+import { questionMediaMimeRejection } from "../../lib/questionMediaPolicy.js";
 import type { User } from "@mms/shared";
 
 /**
@@ -32,7 +33,7 @@ export function canUploadAttachments(user: User): boolean {
 }
 
 /** Supported attachment purposes; anything else keeps the contacts-only behaviour. */
-export const ATTACHMENT_PURPOSES = ["contact", "attendance_excuse"] as const;
+export const ATTACHMENT_PURPOSES = ["contact", "attendance_excuse", "question_media"] as const;
 export type AttachmentPurpose = (typeof ATTACHMENT_PURPOSES)[number];
 
 /**
@@ -50,12 +51,15 @@ export const ATTENDANCE_EXCUSE_MIME_ALLOWLIST = [
 ] as const;
 
 export function resolveAttachmentPurpose(raw: unknown): AttachmentPurpose {
-  return raw === "attendance_excuse" ? "attendance_excuse" : "contact";
+  if (raw === "attendance_excuse") return "attendance_excuse";
+  if (raw === "question_media") return "question_media";
+  return "contact";
 }
 
 /** Whether the caller may upload for this purpose. */
 export function canUploadAttachmentForPurpose(user: User, purpose: AttachmentPurpose): boolean {
   if (purpose === "attendance_excuse") return canWriteCollection(user, "attendance_records");
+  if (purpose === "question_media") return canWriteCollection(user, "questions");
   return canUploadAttachments(user);
 }
 
@@ -64,6 +68,7 @@ export function attachmentMimeRejection(
   purpose: AttachmentPurpose,
   mimetype: string,
 ): string | null {
+  if (purpose === "question_media") return questionMediaMimeRejection(mimetype);
   if (purpose !== "attendance_excuse") return null;
   const normalised = mimetype.trim().toLowerCase();
   return (ATTENDANCE_EXCUSE_MIME_ALLOWLIST as readonly string[]).includes(normalised)
@@ -208,7 +213,8 @@ export default async function uploadRoutes(
 
       const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024; // 10 MB
       const root = resolveUploadsRoot();
-      const dir = join(root, "tenants", tenant, "attachments");
+      const category = purpose === "question_media" ? "question-media" : "attachments";
+      const dir = join(root, "tenants", tenant, category);
       await mkdir(dir, { recursive: true });
 
       // Sanitize filename to prevent directory traversal
@@ -249,7 +255,7 @@ export default async function uploadRoutes(
         return replyValidationError(reply, "File size exceeds limit of 10 MB");
       }
 
-      const url = `/uploads/tenants/${tenant}/attachments/${filename}`;
+      const url = `/uploads/tenants/${tenant}/${category}/${filename}`;
       return reply.send({
         url,
         name: file.filename,

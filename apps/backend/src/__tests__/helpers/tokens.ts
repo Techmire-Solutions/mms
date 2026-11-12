@@ -2,7 +2,15 @@ import { randomUUID } from "node:crypto";
 import type { FastifyInstance } from "fastify";
 
 type TokenRole =
-  "admin" | "teacher" | "accountant" | "assistant_teacher" | "viewer" | "guardian" | "auditor";
+  | "admin"
+  | "principal"
+  | "registrar"
+  | "teacher"
+  | "accountant"
+  | "assistant_teacher"
+  | "viewer"
+  | "guardian"
+  | "auditor";
 
 type TenantTokenOptions = {
   role?: TokenRole;
