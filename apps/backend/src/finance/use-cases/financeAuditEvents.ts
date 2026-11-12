@@ -9,9 +9,13 @@ export interface InvoiceAuditState {
   finalAmt: number;
   paidAmt: number;
   creditedAmt: number;
+  /** Late fee applied to the invoice (money-affecting; captured on the event that set it). */
+  lateFeeAmt: number;
   dueDate: string;
-  /** Distinguishes a settlement event (cancel) from a plain field update. */
+  /** Distinguishes a settlement event (cancel, archive, restore) from a field update. */
   event?: string;
+  /** Operator-supplied justification (archive reason, waiver/credit reason). */
+  reason?: string;
 }
 
 export interface PaymentAuditState {
@@ -33,9 +37,10 @@ export function invoiceAuditState(
     id: invoice.id,
     studentId: invoice.studentId,
     status: invoice.status,
-    finalAmt: Number(invoice.finalAmt ?? 0),
-    paidAmt: Number(invoice.paidAmt ?? 0),
-    creditedAmt: Number(invoice.creditedAmt ?? 0),
+    finalAmt: invoice.finalAmt ?? 0,
+    paidAmt: invoice.paidAmt ?? 0,
+    creditedAmt: invoice.creditedAmt ?? 0,
+    lateFeeAmt: invoice.lateFeeAmt ?? 0,
     dueDate: invoice.dueDate,
     ...(event ? { event } : {}),
   };
@@ -46,8 +51,8 @@ export function paymentAuditState(payment: Payment): PaymentAuditState {
     id: payment.id,
     invoiceId: payment.invoiceId,
     studentId: payment.studentId ?? null,
-    amount: Number(payment.amount ?? 0),
-    invoiceAmount: Number(payment.invoiceAmount ?? payment.amount ?? 0),
+    amount: payment.amount,
+    invoiceAmount: payment.invoiceAmount ?? payment.amount,
     date: payment.date,
     method: payment.method ?? "",
   };
@@ -63,6 +68,7 @@ export async function recordInvoiceAudit(
   invoice: Invoice | null | undefined,
   oldState?: InvoiceAuditState | null,
   event?: string,
+  reason?: string,
 ): Promise<void> {
   const newState = invoiceAuditState(invoice, event);
   if (!newState) return;
@@ -72,7 +78,7 @@ export async function recordInvoiceAudit(
     recordId: newState.id,
     actionType,
     oldState: oldState ?? undefined,
-    newState,
+    newState: reason ? { ...newState, reason } : newState,
   });
 }
 
@@ -81,14 +87,16 @@ export async function recordPaymentAudit(
   payment: Payment,
   actionType: AuditActionType = "CREATE",
   oldState?: PaymentAuditState | null,
+  reason?: string,
 ): Promise<void> {
+  const state = paymentAuditState(payment);
   await recordModernAuditEvent({
     workspaceSubdomain: tenant,
     tableName: "finance_payments",
     recordId: payment.id,
     actionType,
     oldState: oldState ?? undefined,
-    newState: paymentAuditState(payment),
+    newState: reason ? { ...state, reason } : state,
   });
 }
 
@@ -105,8 +113,10 @@ export async function recordCreditNoteAudit(
     newState: {
       id: note.id,
       invoiceId: note.invoiceId,
-      amount: Number(note.amount ?? 0),
-      creditedAmt: Number(creditedAmt ?? 0),
+      amount: note.amount,
+      creditedAmt,
+      // The waiver justification is part of the record, not only the note row.
+      reason: note.reason ?? "",
     },
   });
 }

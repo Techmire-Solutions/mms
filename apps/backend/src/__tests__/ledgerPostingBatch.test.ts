@@ -28,6 +28,11 @@ vi.mock("../db/repositories/accountingCurrencySettingsRepository.js", () => ({
     enabledCurrencies: [],
   }),
 }));
+// The posting guard reads the monthly lock; stub it so this stays a pure
+// orchestration test (no DB connection).
+vi.mock("../db/repositories/accountingPostingPeriodsRepository.js", () => ({
+  findClosedPostingPeriodForDate: vi.fn().mockResolvedValue(null),
+}));
 
 import { tryPostInvoiceJournals } from "../accounting/ledgerPosting/ledgerPostingService.js";
 

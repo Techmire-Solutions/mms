@@ -1,6 +1,7 @@
 import { ensureFacultyContactIndex } from "./migrations/facultyContactIndex.js";
 import { ensureEnrollmentIntegrityIndexes } from "./migrations/enrollmentIntegrityIndexes.js";
 import { ensureAttendanceAnalyticsIndexes } from "./migrations/attendanceAnalyticsIndexes.js";
+import { ensureFinanceConcurrentIndexes } from "./migrations/financeConcurrentIndexes.js";
 import { prepareContactSystemTagsPreMigration } from "./contactSystemTagsPreMigration.js";
 import { dataMigrationsToRun } from "./dataMigrationRegistry.js";
 import { existsSync } from "node:fs";
@@ -85,6 +86,9 @@ export async function applyDrizzleMigrations(): Promise<{ migrationsFolder: stri
   // Attendance's analytics covering indexes are CONCURRENTLY-only for the same reason (populated
   // table, migrator transaction); provisioning them here is what makes them exist at all.
   await ensureAttendanceAnalyticsIndexes(migrateClient);
+  // Finance's directory indexes are same reason: finance_invoices/finance_payments are large tables,
+  // so their indexes are CONCURRENTLY-only and provisioned here (0248 audit).
+  await ensureFinanceConcurrentIndexes(migrateClient);
 
   return { migrationsFolder };
 }

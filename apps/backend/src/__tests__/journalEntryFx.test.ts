@@ -14,6 +14,7 @@ function makeFx(overrides: Partial<AccountingFxRepository> = {}): AccountingFxRe
     }),
     saveCurrencySettings: vi.fn(),
     listExchangeRates: vi.fn(),
+    findExchangeRatesByKeys: vi.fn().mockResolvedValue([]),
     upsertExchangeRates: vi.fn(),
     lookupExchangeRate: vi.fn().mockResolvedValue({
       fromCurrency: "USD",

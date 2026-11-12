@@ -17,7 +17,13 @@ import {
 import { seedAccountsIfEmpty } from "../../db/repositories/accountingAccountsSeed.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
-const WORKSPACES = ["coa-seed-fresh", "coa-seed-prefs", "coa-seed-race"];
+const WORKSPACES = [
+  "coa-seed-fresh",
+  "coa-seed-prefs",
+  "coa-seed-race",
+  "coa-seed-other",
+  "coa-seed-archived",
+];
 
 type RootTx = Awaited<ReturnType<typeof beginLongLivedTenantTransaction>>["tx"];
 
@@ -162,6 +168,48 @@ describe("seedAccountsIfEmpty (PostgreSQL)", () => {
       retainedEarningsAccount: defaults.retainedEarningsAccountId,
     });
     expect(state.cashAccountId).toBe(defaults.cashAccountId);
+  });
+
+  it("seeds two tenants concurrently without cross-contamination", async () => {
+    const first = chartRecords();
+    const second = chartRecords();
+    const results = await Promise.all([
+      seedAccountsIfEmpty("coa-seed-fresh", first, defaultsFor(first)),
+      seedAccountsIfEmpty("coa-seed-other", second, defaultsFor(second)),
+    ]);
+    // The advisory lock is per workspace, not global: different tenants must both
+    // succeed and each must receive exactly its own chart.
+    expect(results.every((result) => result.seeded)).toBe(true);
+    expect(await readState("coa-seed-fresh")).toMatchObject({
+      accounts: DEFAULT_CHART_OF_ACCOUNTS.length,
+    });
+    expect(await readState("coa-seed-other")).toMatchObject({
+      accounts: DEFAULT_CHART_OF_ACCOUNTS.length,
+      cashAccountId: defaultsFor(second).cashAccountId,
+    });
+    expect(await readState("coa-seed-fresh")).not.toMatchObject({
+      cashAccountId: defaultsFor(second).cashAccountId,
+    });
+  });
+
+  it("refuses to seed over an archived account row", async () => {
+    await asRoot(async (tx) => {
+      await tx.insert(accountingAccounts).values({
+        id: "a-archived-1000",
+        workspaceSubdomain: "coa-seed-archived",
+        code: "1000",
+        name: "Archived cash",
+        type: "Asset",
+        subtype: "",
+        description: "",
+        isActive: false,
+        deletedAt: new Date(),
+      });
+    });
+    const records = chartRecords();
+    const result = await seedAccountsIfEmpty("coa-seed-archived", records, defaultsFor(records));
+    expect(result).toEqual({ seeded: false, existing: 1 });
+    expect(await readState("coa-seed-archived")).toMatchObject({ accounts: 1 });
   });
 
   it("lets exactly one of two concurrent seeds win", async () => {

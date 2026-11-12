@@ -2,12 +2,16 @@ import type { FastifyPluginAsync } from "fastify";
 import { FINANCE_MODULE_MANIFEST, type User, financeContract, isQueryFlagTrue } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { handleContractError } from "../../../lib/contractError.js";
-import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
+import {
+  installContractErrorHandler,
+  standardRequestValidationErrorHandler,
+} from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { financeUseCases } from "../../../finance/use-cases/financeUseCases.js";
 import {
   canDeleteCollection,
+  canManageFinance,
   canWriteCollection,
   canReadCollection,
 } from "../../../services/rbacService.js";
@@ -18,6 +22,7 @@ const FINANCE_COLLECTION = FINANCE_MODULE_MANIFEST.collectionKey;
 const s = initServer();
 
 export const financeContractRouter: FastifyPluginAsync = async (fastify) => {
+  installContractErrorHandler(fastify);
   const router = s.router(financeContract, {
     ...financePaymentHandlers,
     ...financeMetricsHandlers,
@@ -242,7 +247,7 @@ export const financeContractRouter: FastifyPluginAsync = async (fastify) => {
       ContractRouteResponse<(typeof financeContract)["bulkStatusInvoices"]>
     > => {
       const user = request.user as User;
-      if (!canWriteCollection(user, FINANCE_COLLECTION))
+      if (!canManageFinance(user))
         return {
           status: 403 as const,
           body: { type: "forbidden", message: "Insufficient permissions" },
@@ -265,5 +270,8 @@ export const financeContractRouter: FastifyPluginAsync = async (fastify) => {
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    // The session routers already validate responses; finance/accounting did not,
+    // so their declared response schemas were compile-time only.
+    responseValidation: true,
   });
 };

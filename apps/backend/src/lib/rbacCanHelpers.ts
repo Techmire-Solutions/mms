@@ -11,6 +11,8 @@ export {
   canResetTenantData,
 } from "./rbacCanObjectHelpers.js";
 export {
+  canManageAccounting,
+  canManageFinance,
   canReadContacts,
   canWriteContacts,
   canDeleteContacts,

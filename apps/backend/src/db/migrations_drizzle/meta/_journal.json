@@ -1737,6 +1737,41 @@
       "when": 1797159600000,
       "tag": "0247_workshop_analytics_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 248,
+      "version": "7",
+      "when": 1797246000000,
+      "tag": "0248_finance_accounting_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 249,
+      "version": "7",
+      "when": 1797332400000,
+      "tag": "0249_finance_ledger_invariants",
+      "breakpoints": true
+    },
+    {
+      "idx": 250,
+      "version": "7",
+      "when": 1797418800000,
+      "tag": "0250_audit_partition_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 251,
+      "version": "7",
+      "when": 1797505200000,
+      "tag": "0251_fiscal_year_no_overlap",
+      "breakpoints": true
+    },
+    {
+      "idx": 252,
+      "version": "7",
+      "when": 1797591600000,
+      "tag": "0252_finance_enum_checks",
+      "breakpoints": true
     }
   ]
 }

@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
-import type { Invoice } from "@/lib/data/financeData";
+import { FINANCE_MODULE_MANIFEST, type Invoice } from "@mms/shared";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { FinanceBulkActionBar } from "@/tenant/features/finance/components/FinanceBulkActionBar";
 import { InvoicesListContent } from "@/tenant/features/finance/components/InvoicesListContent";
@@ -16,10 +16,13 @@ import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
 
 export interface InvoicesListProps {
+  isLoading?: boolean;
   invoices: Invoice[];
   onView: (invoice: Invoice) => void;
   onRecord: (invoice: Invoice) => void;
   canWrite?: boolean;
+  /** Cancelling/status/credit actions need the manage capability, not plain write. */
+  canManage?: boolean;
   canDelete?: boolean;
   canWriteMessaging?: boolean;
   showDeleted?: boolean;
@@ -44,10 +47,12 @@ export interface InvoicesListProps {
 }
 
 export function InvoicesList({
+  isLoading = false,
   invoices,
   onView,
   onRecord,
   canWrite = true,
+  canManage = false,
   canDelete = false,
   canWriteMessaging = false,
   showDeleted = false,
@@ -156,10 +161,14 @@ export function InvoicesList({
           }
           isBulkStatusPending={isBulkStatusPending}
           statusBadgeConfig={statusConfig}
+          bulkActions={FINANCE_MODULE_MANIFEST.work.bulkActions.filter(
+            (action) => action !== "status" || canManage,
+          )}
         />
       )}
 
       <InvoicesListContent
+        isLoading={isLoading}
         viewMode={viewMode}
         invoices={filtered}
         selectedIds={selectedIds}

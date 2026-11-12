@@ -108,13 +108,29 @@ export function computeFxRevaluation(
   return lines;
 }
 
+/**
+ * Raised when a stored amount carries more decimals than its currency allows
+ * (e.g. `1000.1234` for USD). The stored scale is `numeric(19,4)`, so such a value
+ * is representable in the database but not as money — callers must surface it as
+ * a validation error, never as a 500.
+ */
+export class AmountScaleError extends RangeError {
+  constructor(
+    readonly value: string,
+    readonly currency: string,
+  ) {
+    super(`Amount ${value} exceeds ${currency} precision`);
+    this.name = "AmountScaleError";
+  }
+}
+
 /** Round a stored `numeric(19,4)` string to the currency's own scale. */
 export function normalizeStoredAmount(value: string, currency: string): string {
   const scale = currencyMinorUnits(currency);
   const [whole, fraction = ""] = value.split(".");
   const kept = fraction.slice(0, scale).padEnd(scale, "0");
   const dropped = fraction.slice(scale).replace(/0+$/, "");
-  if (dropped) throw new RangeError(`Balance ${value} exceeds ${currency} precision`);
+  if (dropped) throw new AmountScaleError(value, currency);
   return scale > 0 ? `${whole}.${kept}` : whole;
 }
 

@@ -11,7 +11,9 @@ import {
 } from "./FinancialStatementPanels";
 import { PinnedWidgets } from "@/tenant/components/reports";
 import { FxReportPanel } from "./FxReportPanel";
+import { ReceivablesAgingPanel } from "./ReceivablesAgingPanel";
 import { useFinancialReportsModel } from "../hooks/useFinancialReportsModel";
+import { todayISO } from "@mms/shared";
 
 /**
  * FinancialReports component.
@@ -45,6 +47,7 @@ export function FinancialReports(): React.JSX.Element {
     { key: "balance" as const, label: t("accounting.reports.views.balance") },
     { key: "cashflow" as const, label: t("accounting.reports.views.cashflow") },
     { key: "fx" as const, label: t("accounting.reports.views.fx") },
+    { key: "aging" as const, label: t("accounting.reports.views.aging") },
   ];
 
   if (isError) {
@@ -91,7 +94,9 @@ export function FinancialReports(): React.JSX.Element {
           panelIdPrefix="financial-report"
         />
 
-        {view === "fx" ? (
+        {view === "aging" ? (
+          <ReceivablesAgingPanel asOf={dateTo || todayISO()} />
+        ) : view === "fx" ? (
           <FxReportPanel dateFrom={dateFrom} dateTo={dateTo} />
         ) : (
           <ReportDataGridContainer

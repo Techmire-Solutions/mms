@@ -2,16 +2,18 @@ import type { FastifyPluginAsync } from "fastify";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   voucherNumberingQuerySchema,
+  voucherNumberingResponseSchema,
   voucherNumberingUpdateSchema,
   type User,
 } from "@mms/shared";
-import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import { canManageAccounting, canReadCollection } from "../../../services/rbacService.js";
 import {
   sendForbidden,
   sendIfHttpDomainError,
   sendDatabaseError,
 } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
+import { sendValidated } from "../../../lib/validatedReply.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import {
   loadVoucherNumbering,
@@ -26,13 +28,13 @@ export const accountingVoucherNumberingRoutes: FastifyPluginAsync = async (fasti
     const user = request.user as User;
     if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
     const query = parseRequest(voucherNumberingQuerySchema, request.query);
-    if (!query.ok) return replyValidationError(reply, query.message);
+    if (!query.ok) return replyValidationError(reply, query);
     try {
       // Primary, not replica: the preview must reflect numbers issued a moment ago.
       const numbering = await withTenant(String(request.tenant?.id), () =>
         loadVoucherNumbering(query.data.date),
       );
-      return reply.send({ numbering });
+      return sendValidated(reply, 200, voucherNumberingResponseSchema, { numbering });
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
@@ -43,14 +45,15 @@ export const accountingVoucherNumberingRoutes: FastifyPluginAsync = async (fasti
 
   fastify.put("/voucher-numbering", async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
+    // Renumbering changes every future voucher reference: controller authority.
+    if (!canManageAccounting(user)) return sendForbidden(reply);
     const parsed = parseRequest(voucherNumberingUpdateSchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
     try {
       const numbering = await withTenant(String(request.tenant?.id), () =>
         upsertVoucherNumbering(parsed.data),
       );
-      return reply.send({ numbering });
+      return sendValidated(reply, 200, voucherNumberingResponseSchema, { numbering });
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??

@@ -136,6 +136,10 @@ export const generateInvoicesResultSchema = z
     created: z.number().int().nonnegative(),
     skipped: z.number().int().nonnegative(),
     eligible: z.number().int().nonnegative(),
+    /** Invoices that reached the ledger (a source posting exists). */
+    posted: z.number().int().nonnegative(),
+    /** Invoices created but with no ledger posting (posting rules unset/blocked). */
+    unposted: z.number().int().nonnegative(),
   })
   .strict();
 

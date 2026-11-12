@@ -27,6 +27,7 @@ const METHOD_LABEL_KEYS: Record<string, AppTranslationKey> = {
 
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
 export interface PaymentsListProps {
+  isLoading?: boolean;
   onRowClick?: (id: string) => void;
   payments: Payment[];
   canDelete?: boolean;
@@ -46,6 +47,7 @@ export interface PaymentsListProps {
 }
 
 export function PaymentsList({
+  isLoading = false,
   payments,
   canDelete = false,
   showDeleted = false,
@@ -118,6 +120,7 @@ export function PaymentsList({
         />
       )}
       <PaymentsListContent
+        isLoading={isLoading}
         payments={payments}
         selectedIds={selectedIds}
         isColumnVisible={columnVisible}

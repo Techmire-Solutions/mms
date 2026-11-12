@@ -3,6 +3,20 @@ import { z } from "zod";
 import { paymentAllocationInsertSchema, paymentAllocationRecordSchema } from "./financeBilling.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import { documentFxFields } from "./financeDocumentFx.js";
+import { FINANCE_PAYMENT_METHODS, normalizePaymentMethod } from "./accountingEnums.js";
+import {
+  positiveMoneyAmountSchema,
+  signedMoneyAmountSchema,
+} from "./accountingLedgerInvariants.js";
+
+/** Canonicalizes legacy lowercase/snake-case methods before the enum check. */
+export const paymentMethodSchema = z.preprocess(
+  (value) => (typeof value === "string" ? normalizePaymentMethod(value) : value),
+  z.enum(FINANCE_PAYMENT_METHODS),
+);
+
+/** Stored rows may predate the canonical vocabulary; read leniently, write strictly. */
+const storedPaymentMethodSchema = paymentMethodSchema.catch("Other");
 
 export const paymentRecordSchema = z
   .object({
@@ -10,18 +24,18 @@ export const paymentRecordSchema = z
     invoiceId: z.string(),
     studentId: z.string().nullable().optional(),
     studentName: z.string().nullable().optional(),
-    amount: z.number().positive(),
+    amount: positiveMoneyAmountSchema,
     date: z.string(),
-    method: z.string().default("cash"),
+    method: storedPaymentMethodSchema.default("Cash"),
     receivedByUserId: z.string().nullable().optional(),
     receivedBy: z.string().nullable().optional(),
     note: z.string().default(""),
     /** Same as the invoice's currency; `exchangeRate` is the settlement (payment-date) rate. */
     ...documentFxFields,
     /** Server-computed realized FX gain (+) / loss (−) in the functional currency. */
-    realizedFx: z.number().optional(),
+    realizedFx: signedMoneyAmountSchema.optional(),
     /** Server-computed amount applied to the invoice, in the invoice currency. */
-    invoiceAmount: z.number().positive().optional(),
+    invoiceAmount: positiveMoneyAmountSchema.optional(),
     allocations: z.array(paymentAllocationRecordSchema).optional(),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
@@ -40,9 +54,9 @@ export const paymentRecordInsertSchema = z
     invoiceId: z.string().min(1, "Invoice ID is required"),
     studentId: z.string().nullable().optional(),
     studentName: z.string().nullable().optional(),
-    amount: z.number().positive("Amount must be greater than 0"),
+    amount: positiveMoneyAmountSchema,
     date: isoDateSchema,
-    method: z.string().optional().default("cash"),
+    method: paymentMethodSchema.optional().default("Cash"),
     receivedByUserId: z.string().nullable().optional(),
     receivedBy: z.string().nullable().optional(),
     note: z.string().optional().default(""),

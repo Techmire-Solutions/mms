@@ -1,5 +1,11 @@
 import React from "react";
-import { DEFAULT_CURRENCIES, type AppTranslationKey, type FinanceSettings } from "@mms/shared";
+import {
+  DEFAULT_CURRENCIES,
+  FINANCE_PAYMENT_METHODS,
+  type AppTranslationKey,
+  type FinancePaymentMethod,
+  type FinanceSettings,
+} from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
@@ -8,8 +14,6 @@ import { Input } from "@/components/ui/input";
 import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
-
-const ALL_PAYMENT_METHODS = ["cash", "bank_transfer", "cheque", "online", "card", "other"] as const;
 
 export interface FinancePreferencesSectionProps {
   settings: FinanceSettings;
@@ -24,7 +28,7 @@ export function FinancePreferencesSection({
 }: FinancePreferencesSectionProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const toggleMethod = (method: string) => {
+  const toggleMethod = (method: FinancePaymentMethod) => {
     const paymentMethods = settingsDraft.paymentMethods || [];
     const nextMethods = paymentMethods.includes(method)
       ? paymentMethods.filter((selectedMethod) => selectedMethod !== method)
@@ -108,7 +112,7 @@ export function FinancePreferencesSection({
             role="group"
             aria-label={t("finance.settings.paymentMethods")}
           >
-            {ALL_PAYMENT_METHODS.map((method) => {
+            {FINANCE_PAYMENT_METHODS.map((method) => {
               const active = (settingsDraft.paymentMethods || []).includes(method);
               return (
                 <Button

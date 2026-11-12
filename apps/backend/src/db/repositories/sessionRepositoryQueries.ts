@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { type Session } from "@mms/shared";
-import { sessions, sessionClasses, type SessionReadRow } from "../schema.js";
+import { enrollments, sessions, sessionClasses, type SessionReadRow } from "../schema.js";
 import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { hydrateSessionsList, hydrateSessionsListSummary } from "./sessionRepositoryHydrate.js";
 import { getPreparedSessionById } from "../preparedStatements.js";
@@ -268,4 +268,29 @@ export async function findClassById(
 ): Promise<{ id: string; deletedAt?: unknown } | null> {
   const [result] = await findClassesByIds(tenant, [id]);
   return result ?? null;
+}
+
+/**
+ * True when the session still has non-archived enrollments. Enrollments carry
+ * their fee without a currency (it is implied by the session at billing time),
+ * so changing the session currency would reinterpret every enrolled fee.
+ */
+export async function sessionHasEnrollments(tenant: string, sessionId: string): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  const cleanId = sessionId?.trim();
+  if (!cleanId) return false;
+  return withTenantRead(subdomain, async (tx) => {
+    const [row] = await tx
+      .select({ id: enrollments.id })
+      .from(enrollments)
+      .where(
+        and(
+          eq(enrollments.workspaceSubdomain, subdomain),
+          eq(enrollments.sessionId, cleanId),
+          isNull(enrollments.deletedAt),
+        ),
+      )
+      .limit(1);
+    return Boolean(row);
+  });
 }

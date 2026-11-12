@@ -21,13 +21,17 @@ export const FINANCE_MODULE_MANIFEST = {
     retentionDays: null,
   },
   permissions: {
-    read: "finance.write",
+    // Distinct capabilities: a read-only role (auditor, principal) must be able to
+    // inspect financial records, and archiving/waiving must not be implied by the
+    // ordinary write permission held by cashiers and billing staff.
+    read: "finance.read",
     write: "finance.write",
-    delete: "finance.write",
+    delete: "finance.delete",
+    manage: "finance.manage",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
-    export: "finance.write",
-    reports: "finance.write",
+    export: "finance.read",
+    reports: "finance.read",
   } satisfies Record<string, Permission>,
   work: {
     directoryViews: ["invoices", "payments"] as const,

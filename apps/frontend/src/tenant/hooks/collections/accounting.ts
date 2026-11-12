@@ -12,6 +12,10 @@ export {
   useAccountingMetrics,
   ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/accounting/hooks/useAccountingApi";
+export {
+  ACCOUNTING_ENTRIES_QUERY_KEY,
+  ACCOUNTING_METRICS_QUERY_KEY,
+} from "@/tenant/features/accounting/hooks/accountingQueryKeys";
 export { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
 export {
   useComposedAccountingSettings,

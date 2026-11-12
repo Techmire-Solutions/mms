@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import { moneyAmountSchema, signedMoneyAmountSchema } from "./accountingLedgerInvariants.js";
+import { POSTING_PERIOD_STATUSES } from "./accountingEnums.js";
 
 export const postingRulesRecordSchema = z
   .object({
@@ -88,8 +89,8 @@ export const bankStatementRecordSchema = z
     accountId: z.string().min(1),
     periodStart: isoDateSchema,
     periodEnd: isoDateSchema,
-    openingBalance: z.number().default(0),
-    closingBalance: z.number().default(0),
+    openingBalance: signedMoneyAmountSchema.default(0),
+    closingBalance: signedMoneyAmountSchema.default(0),
     lines: z.array(bankStatementLineRecordSchema).default([]),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
@@ -102,8 +103,8 @@ export const bankStatementInsertSchema = z
     accountId: z.string().min(1),
     periodStart: isoDateSchema,
     periodEnd: isoDateSchema,
-    openingBalance: z.number().optional().default(0),
-    closingBalance: z.number().optional().default(0),
+    openingBalance: signedMoneyAmountSchema.optional().default(0),
+    closingBalance: signedMoneyAmountSchema.optional().default(0),
     lines: z.array(bankStatementLineInsertSchema).optional().default([]),
   })
   .strict();
@@ -121,6 +122,43 @@ export const bankReconciliationMatchSchema = z
   .strict();
 
 export type BankReconciliationMatch = z.infer<typeof bankReconciliationMatchSchema>;
+
+/** One monthly posting period derived from a fiscal year (migration 0249 enforces it). */
+export const postingPeriodRecordSchema = z
+  .object({
+    id: z.string(),
+    fiscalYearId: z.string(),
+    label: z.string(),
+    startDate: isoDateSchema,
+    endDate: isoDateSchema,
+    status: z.enum(POSTING_PERIOD_STATUSES),
+    closedAt: z.string().nullable().optional(),
+    closedBy: z.string().nullable().optional(),
+    updatedAt: z.string().optional(),
+  })
+  .strict();
+
+export type PostingPeriod = z.infer<typeof postingPeriodRecordSchema>;
+
+export const postingPeriodParamsSchema = z.object({ id: z.string().trim().min(1) }).strict();
+
+export const postingPeriodsQuerySchema = z
+  .object({ fiscalYearId: z.string().trim().min(1).optional() })
+  .strict();
+
+/** Optional reason recorded with a period lock (audit trail). */
+export const closePostingPeriodBodySchema = z
+  .object({ reason: z.string().trim().max(500).optional() })
+  .strict();
+
+export type ClosePostingPeriodBody = z.infer<typeof closePostingPeriodBodySchema>;
+
+/** Optional justification recorded when a period lock is lifted (audit trail). */
+export const reopenPostingPeriodBodySchema = z
+  .object({ reason: z.string().trim().max(500).optional() })
+  .strict();
+
+export type ReopenPostingPeriodBody = z.infer<typeof reopenPostingPeriodBodySchema>;
 
 export const closeFiscalYearBodySchema = z
   .object({

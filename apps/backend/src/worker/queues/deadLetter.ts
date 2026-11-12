@@ -128,6 +128,28 @@ export async function handleDeadLetterJob(
     });
   }
 
+  // Finance/accounting jobs are not enqueued today (exports fail fast with 503 and
+  // scheduled automation runs as a leader-only sweep), but any future job in these
+  // modules must leave a chain row: a dead letter is an unrecoverable financial
+  // operation, not only a failed row in the job tray.
+  const financeModule = jobData.moduleId.trim().toLowerCase();
+  if (financeModule === "finance" || financeModule === "accounting") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: financeModule === "finance" ? "finance_invoices" : "accounting_entries",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: `${financeModule}.job.dead_letter`,
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
   if (
     jobData.moduleId.trim().toLowerCase() === "sessions" &&
     jobData.kind.trim().toLowerCase() === "promote"

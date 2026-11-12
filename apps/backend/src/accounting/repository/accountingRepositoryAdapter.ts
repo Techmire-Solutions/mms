@@ -3,6 +3,12 @@ import { accountingFxRepository } from "./accountingFxRepositoryAdapter.js";
 import { lockJournalEntries } from "../../db/repositories/accountingEntryLocks.js";
 import { allocateVoucherNumbers } from "../../db/repositories/accountingVoucherRepository.js";
 import {
+  findClosedPostingPeriodForDate,
+  findPostingPeriodById,
+  listPostingPeriods,
+  setPostingPeriodStatus,
+} from "../../db/repositories/accountingPostingPeriodsRepository.js";
+import {
   listAccountsByWorkspace,
   findAccountById,
   findAccountsByIds,
@@ -55,6 +61,10 @@ export const accountingRepository: AccountingRepository = {
   findActiveEntryRefs,
   allocateVoucherNumbers,
   findEntriesByIds,
+  findClosedPostingPeriodForDate,
+  listPostingPeriods,
+  findPostingPeriodById,
+  setPostingPeriodStatus,
   saveEntry,
   bulkSaveEntries,
   replaceEntriesForWorkspace,

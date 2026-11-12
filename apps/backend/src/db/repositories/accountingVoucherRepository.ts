@@ -12,7 +12,8 @@ import {
   accountingVoucherCounters,
   accountingVoucherNumbering,
 } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { withTenant, type AppDb, type TenantTransaction } from "../tenant-context.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { resolveVoucherPeriod, type VoucherPeriod } from "./accountingVoucherPeriod.js";
 
 /** Bound on catch-up rounds after hand-typed refs are found ahead of the counter. */
@@ -71,11 +72,23 @@ export async function saveVoucherNumbering(
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
+    // Numbering is a ledger control: a silent change to the prefix, digits or
+    // reset policy is how duplicate or skipped voucher numbers get introduced,
+    // so the before/after state goes on the audit chain with the write.
+    const previous = await readConfig(tx, subdomain);
     const values = { ...config, updatedAt: new Date() };
     await tx
       .insert(accountingVoucherNumbering)
       .values({ workspaceSubdomain: subdomain, ...values })
       .onConflictDoUpdate({ target: accountingVoucherNumbering.workspaceSubdomain, set: values });
+    await recordModernAuditEvent(tx as unknown as AppDb, {
+      workspaceSubdomain: subdomain,
+      tableName: "accounting_voucher_numbering",
+      recordId: subdomain,
+      actionType: "UPDATE",
+      oldState: previous,
+      newState: { ...config, updatedAt: values.updatedAt.toISOString() },
+    });
   });
 }
 
@@ -111,25 +124,38 @@ async function claimSequences(
   count: number,
 ): Promise<number[]> {
   const floor = config.startingSequence - 1;
-  const [row] = await tx
+  // Seed the counter only when the period's row does not exist yet.
+  //
+  // The regex seed must NOT live in `ON CONFLICT DO UPDATE`: VALUES are
+  // evaluated before conflict detection, so every allocation — the hot path,
+  // once per journal save — scanned `accounting_entries` with `ref ~ pattern`
+  // (no index can serve `~`). Split into DO NOTHING + UPDATE, so the scan runs
+  // once per counter row, not once per allocation.
+  await tx
     .insert(accountingVoucherCounters)
     .values({
       workspaceSubdomain: subdomain,
       formatKey: voucherFormatKey(config),
       periodYear,
-      lastValue: sql`GREATEST(${existingMaxSequence(subdomain, voucherSequencePattern(config, periodYear))}, ${floor}) + ${count}`,
+      lastValue: sql`GREATEST(${existingMaxSequence(subdomain, voucherSequencePattern(config, periodYear))}, ${floor})`,
     })
-    .onConflictDoUpdate({
+    .onConflictDoNothing({
       target: [
         accountingVoucherCounters.workspaceSubdomain,
         accountingVoucherCounters.formatKey,
         accountingVoucherCounters.periodYear,
       ],
-      set: {
-        lastValue: sql`GREATEST(${accountingVoucherCounters.lastValue}, ${floor}) + ${count}`,
-        updatedAt: new Date(),
-      },
+    });
+  // The UPDATE (re)reads the row under its row lock, so concurrent allocators
+  // serialize here and each gets a disjoint range. A losing INSERT from a
+  // concurrent transaction resolves as DO NOTHING and then joins this UPDATE.
+  const [row] = await tx
+    .update(accountingVoucherCounters)
+    .set({
+      lastValue: sql`GREATEST(${accountingVoucherCounters.lastValue}, ${floor}) + ${count}`,
+      updatedAt: new Date(),
     })
+    .where(counterWhere(subdomain, config, periodYear))
     .returning({ lastValue: accountingVoucherCounters.lastValue });
   const last = row?.lastValue ?? count;
   return Array.from({ length: count }, (_, index) => last - count + 1 + index);

@@ -47,6 +47,10 @@ import {
 import { clearFxRateFeedScheduler, scheduleFxRateFeed } from "./fxRates/fxRateFeedScheduler.js";
 import { clearWaitlistOfferScheduler, scheduleWaitlistOffers } from "./waitlistOfferScheduler.js";
 import {
+  clearFinanceAutomationScheduler,
+  scheduleFinanceAutomation,
+} from "./financeAutomationScheduler.js";
+import {
   clearContactSystemTagSweep,
   scheduleContactSystemTagSweep,
 } from "./contactSystemTagSweep.js";
@@ -193,6 +197,9 @@ export async function startWorkerDaemon(): Promise<void> {
   scheduleContactSystemTagSweep(() => isRunning);
   // Every 15 min: waitlist seat offers that lapsed revert to the waitlist.
   scheduleWaitlistOffers(() => isRunning);
+  // Hourly leader-only finance automation (billing, revaluation, IAS 29, overdue
+  // alerts). Off unless FINANCE_AUTOMATION_ENABLED=true; the tick no-ops otherwise.
+  scheduleFinanceAutomation(() => isRunning);
 
   const shutdown = async (signal: string) => {
     if (!isRunning) return;
@@ -225,6 +232,7 @@ export async function startWorkerDaemon(): Promise<void> {
       clearFxRateFeedScheduler();
       clearContactSystemTagSweep();
       clearWaitlistOfferScheduler();
+      clearFinanceAutomationScheduler();
 
       abortBackgroundJobsOnShutdown("SIGTERM");
       // Stop accepting new jobs without waiting for the now-aborting active ones.

@@ -19,6 +19,16 @@ export interface AccountingFxRepository {
     userId: string | null,
   ): Promise<AccountingCurrencySettings>;
   listExchangeRates(tenant: string, query: ExchangeRateListQuery): Promise<ExchangeRateRecord[]>;
+  /** Stored rates at exactly the given keys (before-state capture for the audit chain). */
+  findExchangeRatesByKeys(
+    tenant: string,
+    keys: readonly {
+      fromCurrency: string;
+      toCurrency: string;
+      rateDate: string;
+      rateType: import("@mms/shared").ExchangeRateType;
+    }[],
+  ): Promise<ExchangeRateRecord[]>;
   upsertExchangeRates(
     tenant: string,
     items: readonly ExchangeRatePutItem[],

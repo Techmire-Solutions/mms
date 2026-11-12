@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Trash2 } from "lucide-react";
 import type { AppTranslationKey } from "@mms/shared";
 import { ACCOUNT_TYPE_META, type Account } from "@/lib/data/accountingData";
@@ -27,7 +28,7 @@ interface JournalEntryLineRowProps {
   lockTemplateName?: string | null;
 }
 
-export function JournalEntryLineRow({
+export const JournalEntryLineRow = memo(function JournalEntryLineRow({
   line,
   lineIndex,
   account,
@@ -131,5 +132,27 @@ export function JournalEntryLineRow({
         </Button>
       </TableCell>
     </TableRow>
+  );
+}, areRowPropsEqual);
+
+/**
+ * A voucher row only needs to re-render when its own line, account, options or
+ * error/lock flags change. Without this, one keystroke re-rendered every row of a
+ * long voucher (and the mobile list), which is what made 50-line entries sluggish.
+ */
+function areRowPropsEqual(prev: JournalEntryLineRowProps, next: JournalEntryLineRowProps): boolean {
+  return (
+    prev.line === next.line &&
+    prev.lineIndex === next.lineIndex &&
+    prev.account === next.account &&
+    prev.accountOptions === next.accountOptions &&
+    prev.errorMessage === next.errorMessage &&
+    prev.canRemove === next.canRemove &&
+    prev.canAddAccount === next.canAddAccount &&
+    prev.lockedSide === next.lockedSide &&
+    prev.lockTemplateName === next.lockTemplateName &&
+    prev.onUpdateLine === next.onUpdateLine &&
+    prev.onRemoveLine === next.onRemoveLine &&
+    prev.onOpenAddAccount === next.onOpenAddAccount
   );
 }

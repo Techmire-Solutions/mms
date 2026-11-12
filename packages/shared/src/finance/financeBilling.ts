@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { moneyAmountSchema, positiveMoneyAmountSchema } from "./accountingLedgerInvariants.js";
 import {
   formatDeterministicSequence,
   financeSettingsToSequenceConfig,
@@ -15,8 +16,8 @@ export const invoiceLineRecordSchema = z
     feeItemId: z.string().nullable().optional(),
     description: z.string().default(""),
     quantity: z.number().positive().default(1),
-    amount: z.number().nonnegative().default(0),
-    discountAmt: z.number().nonnegative().default(0),
+    amount: moneyAmountSchema.default(0),
+    discountAmt: moneyAmountSchema.default(0),
   })
   .strict();
 
@@ -32,7 +33,7 @@ export const paymentAllocationRecordSchema = z
     id: z.string(),
     invoiceId: z.string().min(1),
     invoiceLineId: z.string().nullable().optional(),
-    amount: z.number().positive(),
+    amount: positiveMoneyAmountSchema,
   })
   .strict();
 
@@ -131,7 +132,10 @@ export function invoiceTotalsFromLines(
   }
   const discountAmt = Math.min(discountCents, baseCents) / 100;
   const baseFee = baseCents / 100;
-  return { baseFee, discountAmt, finalAmt: Math.max(0, baseFee - discountAmt) };
+  // Subtract in integer cents: `baseFee - discountAmt` over two 2 dp floats can
+  // produce 899.9999999999999, which the ledger would round later while the same
+  // request already used the unrounded value for its posting.
+  return { baseFee, discountAmt, finalAmt: Math.max(0, baseCents - discountCents) / 100 };
 }
 
 /** Formats invoice display number using deterministic sequence engine. Defaults to `INV-{YEAR}-{SEQ}` (4 digits). */

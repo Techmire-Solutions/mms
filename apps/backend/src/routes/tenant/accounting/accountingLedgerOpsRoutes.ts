@@ -4,14 +4,22 @@ import {
   bankReconciliationMatchSchema,
   bankStatementInsertSchema,
   closeFiscalYearBodySchema,
+  reopenPostingPeriodBodySchema,
+  closePostingPeriodBodySchema,
   fiscalYearParamsSchema,
+  postingPeriodParamsSchema,
+  postingPeriodsQuerySchema,
   openingBalancesQuerySchema,
   openingBalancesReplaceSchema,
   postingRulesUpdateSchema,
   resourceIdParamsSchema,
   type User,
 } from "@mms/shared";
-import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import {
+  canManageAccounting,
+  canReadCollection,
+  canWriteCollection,
+} from "../../../services/rbacService.js";
 import {
   sendForbidden,
   sendIfHttpDomainError,
@@ -21,11 +29,14 @@ import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import {
   closeFiscalYear,
+  closePostingPeriod,
   loadBankStatements,
   loadOpeningBalances,
+  loadPostingPeriods,
   loadPostingRules,
   matchBankStatementLine,
   postOpeningBalances,
+  reopenPostingPeriod,
   upsertBankStatement,
   upsertOpeningBalances,
   upsertPostingRules,
@@ -73,7 +84,8 @@ export const accountingLedgerOpsRoutes: FastifyPluginAsync = async (fastify) => 
 
   fastify.post("/fiscal-years/:id/close", async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
+    // Closing a year posts the closing entry and locks it: controller authority.
+    if (!canManageAccounting(user)) return sendForbidden(reply);
     const params = parseRequest(resourceIdParamsSchema, request.params);
     if (!params.ok) return replyValidationError(reply, params.message);
     const body = parseRequest(closeFiscalYearBodySchema, request.body ?? {});
@@ -89,6 +101,70 @@ export const accountingLedgerOpsRoutes: FastifyPluginAsync = async (fastify) => 
       return (
         sendIfHttpDomainError(reply, error) ??
         sendDatabaseError(reply, "Failed to close fiscal year", error)
+      );
+    }
+  });
+
+  fastify.get("/posting-periods", async (request, reply) => {
+    const user = request.user as User;
+    if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
+    const parsed = parseRequest(postingPeriodsQuerySchema, request.query);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    try {
+      const periods = await withTenant(
+        String(request.tenant?.id),
+        () => loadPostingPeriods(parsed.data.fiscalYearId),
+        { readOnly: true },
+      );
+      return reply.send({ periods });
+    } catch (error) {
+      return (
+        sendIfHttpDomainError(reply, error) ??
+        sendDatabaseError(reply, "Failed to load posting periods", error)
+      );
+    }
+  });
+
+  fastify.post("/posting-periods/:id/close", async (request, reply) => {
+    const user = request.user as User;
+    if (!canManageAccounting(user)) return sendForbidden(reply);
+    const params = parseRequest(postingPeriodParamsSchema, request.params);
+    if (!params.ok) return replyValidationError(reply, params.message);
+    const body = parseRequest(closePostingPeriodBodySchema, request.body ?? {});
+    if (!body.ok) return replyValidationError(reply, body.message);
+    try {
+      const period = await withTenant(
+        String(request.tenant?.id),
+        () => closePostingPeriod(params.data.id, String(user.id), body.data.reason),
+        { readOnly: false },
+      );
+      return reply.send({ period });
+    } catch (error) {
+      return (
+        sendIfHttpDomainError(reply, error) ??
+        sendDatabaseError(reply, "Failed to close posting period", error)
+      );
+    }
+  });
+
+  fastify.post("/posting-periods/:id/reopen", async (request, reply) => {
+    const user = request.user as User;
+    if (!canManageAccounting(user)) return sendForbidden(reply);
+    const params = parseRequest(postingPeriodParamsSchema, request.params);
+    if (!params.ok) return replyValidationError(reply, params.message);
+    const body = parseRequest(reopenPostingPeriodBodySchema, request.body ?? {});
+    if (!body.ok) return replyValidationError(reply, body);
+    try {
+      const period = await withTenant(
+        String(request.tenant?.id),
+        () => reopenPostingPeriod(params.data.id, String(user.id), body.data.reason),
+        { readOnly: false },
+      );
+      return reply.send({ period });
+    } catch (error) {
+      return (
+        sendIfHttpDomainError(reply, error) ??
+        sendDatabaseError(reply, "Failed to reopen posting period", error)
       );
     }
   });

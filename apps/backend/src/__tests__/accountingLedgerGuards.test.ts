@@ -133,11 +133,31 @@ describe("assertJournalEntryPeriodOpen", () => {
     expect(() => assertJournalEntryPeriodOpen(entry({ date: "2026-08-01" }), years)).not.toThrow();
   });
 
-  it("allows an entry whose date falls outside every configured year", () => {
-    // A workspace with no fiscal years (or a date beyond the configured range)
-    // must stay postable rather than locking every write.
+  it("allows a forward date beyond the configured range", () => {
+    // The next year not being created yet must not block an invoice due next month.
     expect(() => assertJournalEntryPeriodOpen(entry({ date: "2030-01-01" }), years)).not.toThrow();
+  });
+
+  it("allows any date when no fiscal year exists yet (bootstrap)", () => {
     expect(() => assertJournalEntryPeriodOpen(entry({ date: "2020-01-01" }), [])).not.toThrow();
+  });
+
+  it("rejects a date before the configured calendar", () => {
+    // Backdating before the first fiscal year escaped every closed-year check
+    // while still moving the books.
+    expect(() =>
+      assertJournalEntryPeriodOpen(entry({ date: "2020-01-01", fiscal_year: "" }), years),
+    ).toThrow(/outside every configured fiscal year/);
+  });
+
+  it("rejects a date that falls in a gap between configured years", () => {
+    const withGap: FiscalYear[] = [
+      { ...years[0]!, startDate: "2026-07-01", endDate: "2027-06-30" },
+      { ...years[1]!, startDate: "2024-07-01", endDate: "2025-06-30" },
+    ];
+    expect(() =>
+      assertJournalEntryPeriodOpen(entry({ date: "2026-01-01", fiscal_year: "" }), withGap),
+    ).toThrow(/outside every configured fiscal year/);
   });
 });
 

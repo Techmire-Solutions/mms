@@ -1,11 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { readFileSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import {
-  initializeDatabaseConnection,
-  pingDatabase,
   closeDatabase,
   beginLongLivedTenantTransaction,
   withActiveTransaction,
@@ -19,23 +14,9 @@ import {
   accountingEntryAttachments,
 } from "../../db/schema.js";
 import { aggregateAccountingReport } from "../../db/repositories/accountingRepositoryReport.js";
+import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TEST_SUBDOMAIN = "report-aggregates-accounting";
-
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-
-function applyDatabaseUrlFromEnvFile(): void {
-  if (process.env.DATABASE_URL) return;
-  try {
-    const content = readFileSync(join(backendRoot, ".env"), "utf-8");
-    const match = content.match(/^DATABASE_URL\s*=\s*"?([^"\n]+)"?$/m);
-    if (match) process.env.DATABASE_URL = match[1].trim();
-  } catch {
-    // no .env present — loadServerConfig will use its test default
-  }
-}
-
-let dbAvailable = false;
 
 const ACCOUNTS = [
   { id: "acc-cash", code: "1000", name: "Cash", type: "Asset", subtype: "Current" },
@@ -135,10 +116,7 @@ async function purge(): Promise<void> {
 }
 
 beforeAll(async () => {
-  applyDatabaseUrlFromEnvFile();
-  initializeDatabaseConnection();
-  dbAvailable = await pingDatabase();
-  if (!dbAvailable) return;
+  await requireDatabaseConnection();
 
   await purge().catch(() => undefined);
 
@@ -191,7 +169,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (dbAvailable) await purge().catch(() => undefined);
+  await purge().catch(() => undefined);
   await closeDatabase().catch(() => undefined);
 });
 
@@ -202,7 +180,6 @@ const WINDOW = { dateFrom: "2026-01-01", dateTo: "2026-12-31" };
 // silently skipping the closing-report regression forever.
 describe("aggregateAccountingReport (real Postgres)", () => {
   it("keeps income and cash-flow figures after closing while the trial balance includes the close", async () => {
-    expect(dbAvailable, "PostgreSQL is required for the closing-report regression").toBe(true);
     const tx = await beginLongLivedTenantTransaction(TEST_SUBDOMAIN);
     try {
       await tx.tx.insert(accountingEntries).values({
@@ -246,8 +223,6 @@ describe("aggregateAccountingReport (real Postgres)", () => {
     }
   });
   it("reports range flows and cumulative stock figures side by side", async () => {
-    if (!dbAvailable) return;
-
     const report = await aggregateAccountingReport(TEST_SUBDOMAIN, WINDOW);
 
     // Flow figures cover the requested window.
@@ -281,8 +256,6 @@ describe("aggregateAccountingReport (real Postgres)", () => {
   });
 
   it("reconciles the indirect cash-flow build-up with the direct cash movement", async () => {
-    if (!dbAvailable) return;
-
     const report = await aggregateAccountingReport(TEST_SUBDOMAIN, WINDOW);
 
     expect(report.cashInflow).toBe(500);
@@ -300,8 +273,6 @@ describe("aggregateAccountingReport (real Postgres)", () => {
   });
 
   it("lets configured posting-rule accounts override the name heuristics", async () => {
-    if (!dbAvailable) return;
-
     // 'acc-buildings' is neither coded nor named like cash or a receivable, yet an
     // explicit rule makes it the authority for both roles.
     const report = await aggregateAccountingReport(TEST_SUBDOMAIN, {
@@ -323,8 +294,6 @@ describe("aggregateAccountingReport (real Postgres)", () => {
   });
 
   it("ignores drafts, deleted rows and out-of-window entries", async () => {
-    if (!dbAvailable) return;
-
     const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await tx.tx.insert(accountingEntries).values({

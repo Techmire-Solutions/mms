@@ -1,5 +1,6 @@
 import type { ModuleAction } from "@mms/shared";
 import { EXAMINATIONS_MODULE_ROUTE_ACTION_RULES } from "./moduleRouteActionRulesExaminations.js";
+import { FINANCE_ACCOUNTING_MODULE_ROUTE_ACTION_RULES } from "./moduleRouteActionRulesFinance.js";
 
 /**
  * Single registry of module routes whose required action differs from the HTTP-method default.
@@ -259,4 +260,6 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     pattern: /\/(widget-aggregates|resolve|duplicate-check|identity-match|duplicates\/scan)$/,
     action: "read",
   },
+
+  ...FINANCE_ACCOUNTING_MODULE_ROUTE_ACTION_RULES,
 ];

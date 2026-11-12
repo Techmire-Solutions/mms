@@ -265,6 +265,15 @@ jobs:
       - name: Backend route→storage boundary
         run: pnpm run check:backend-boundaries
 
+      # Finance contract parity: every shared finance module is exported from the
+      # barrel, and all workspaces keep the single catalogued zod/TypeScript.
+      - name: Finance shared-contract parity
+        run: pnpm run check:contracts
+
+      # No parseFloat / unchecked Number() / any casts in finance money paths.
+      - name: Finance money-safety ratchet
+        run: pnpm run check:money-safety
+
       # Ratchet: the rest of the ports-and-adapters chain (use-case/services
       # storage imports, services/ re-export shims, tenant route aggregation).
       - name: Backend structural ratchets
@@ -781,8 +790,14 @@ jobs:
           node scripts/ci/check-db-test-hygiene.mjs
           node scripts/ci/check-db-test-manifest.mjs
 
-      - name: Repeat concurrency suites (enrollments + attendance)
+      - name: Repeat concurrency suites (enrollments, attendance, finance)
         run: pnpm --filter mms-backend run test:db:concurrency
+
+      - name: Finance/accounting DB coverage
+        run: pnpm --filter mms-backend run test:db:coverage:finance
+
+      - name: Finance/accounting coverage ratchet
+        run: node scripts/ci/check-finance-coverage.mjs --coverage apps/backend/coverage-finance-db
 
       - name: Shuffle enrollment DB files before execution
         run: >

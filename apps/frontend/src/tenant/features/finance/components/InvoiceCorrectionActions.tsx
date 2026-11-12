@@ -7,13 +7,16 @@ import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
+import { tryParseMoneyAmountNumber } from "@mms/shared";
 import { notify } from "@/lib/notify";
 import {
   canCancelInvoice,
   canCreditInvoice,
+  FINANCE_MODULE_MANIFEST,
   getOutstandingAmountForInvoice,
   type Invoice,
 } from "@mms/shared";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
 import {
   useFinanceCollectMutations,
   useFinanceCreditNotes,
@@ -27,6 +30,10 @@ export function InvoiceCorrectionActions({
   onCancelled?: () => void;
 }): React.JSX.Element | null {
   const { t } = useTranslation();
+  const { can } = usePermissions();
+  // Cancelling and credit notes are money-affecting decisions (the fee-waiver
+  // path); recording a payment is not enough authority to undo one.
+  const canManage = can(FINANCE_MODULE_MANIFEST.permissions.manage);
   const { cancel, credit } = useFinanceCollectMutations();
   const { data: notes = [] } = useFinanceCreditNotes(invoice.id);
   const [creditOpen, setCreditOpen] = useState(false);
@@ -34,9 +41,9 @@ export function InvoiceCorrectionActions({
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const openBalance = getOutstandingAmountForInvoice(invoice);
-  const creditAmt = Number(amount);
-  const showCredit = openBalance > 0 && canCreditInvoice(invoice, openBalance);
-  const showCancel = canCancelInvoice(invoice);
+  const creditAmt = tryParseMoneyAmountNumber(amount) ?? 0;
+  const showCredit = canManage && openBalance > 0 && canCreditInvoice(invoice, openBalance);
+  const showCancel = canManage && canCancelInvoice(invoice);
 
   if (invoice.status === "cancelled" || (!showCredit && !showCancel && notes.length === 0))
     return null;

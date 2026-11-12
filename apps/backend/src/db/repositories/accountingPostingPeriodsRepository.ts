@@ -1,7 +1,7 @@
-import { sql } from "drizzle-orm";
-import type { FiscalYear } from "@mms/shared";
+import { and, asc, eq, gte, lte, sql } from "drizzle-orm";
+import type { FiscalYear, PostingPeriod } from "@mms/shared";
 import { accountingPostingPeriods } from "../schema.js";
-import type { withTenant } from "../tenant-context.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
 
 export interface PostingPeriodSeed {
   id: string;
@@ -55,4 +55,144 @@ export async function syncPostingPeriods(
         updatedAt: new Date(),
       },
     });
+}
+
+/** Explicit projection: a bare `.select()` would widen with every future column. */
+const periodColumns = {
+  id: accountingPostingPeriods.id,
+  fiscalYearId: accountingPostingPeriods.fiscalYearId,
+  label: accountingPostingPeriods.label,
+  startDate: accountingPostingPeriods.startDate,
+  endDate: accountingPostingPeriods.endDate,
+  status: accountingPostingPeriods.status,
+  closedAt: accountingPostingPeriods.closedAt,
+  closedBy: accountingPostingPeriods.closedBy,
+  updatedAt: accountingPostingPeriods.updatedAt,
+};
+
+function periodRowToRecord(row: {
+  id: string;
+  fiscalYearId: string;
+  label: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  closedAt: Date | null;
+  closedBy: string | null;
+  updatedAt: Date;
+}): PostingPeriod {
+  return {
+    id: row.id,
+    fiscalYearId: row.fiscalYearId,
+    label: row.label,
+    startDate: row.startDate,
+    endDate: row.endDate,
+    status: row.status === "closed" ? "closed" : "open",
+    closedAt: row.closedAt ? row.closedAt.toISOString() : null,
+    closedBy: row.closedBy ?? null,
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+/** Periods of one fiscal year (all years when omitted), oldest first. */
+export async function listPostingPeriods(
+  tenant: string,
+  fiscalYearId?: string,
+): Promise<PostingPeriod[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const conditions = [eq(accountingPostingPeriods.workspaceSubdomain, subdomain)];
+    const yearId = fiscalYearId?.trim();
+    if (yearId) conditions.push(eq(accountingPostingPeriods.fiscalYearId, yearId));
+    const rows = await tx
+      .select(periodColumns)
+      .from(accountingPostingPeriods)
+      .where(and(...conditions))
+      .orderBy(asc(accountingPostingPeriods.startDate));
+    return rows.map(periodRowToRecord);
+  });
+}
+
+export async function findPostingPeriodById(
+  tenant: string,
+  id: string,
+): Promise<PostingPeriod | null> {
+  const subdomain = tenant.trim().toLowerCase();
+  const cleanId = id?.trim();
+  if (!cleanId) return null;
+  return withTenantRead(subdomain, async (tx) => {
+    const [row] = await tx
+      .select(periodColumns)
+      .from(accountingPostingPeriods)
+      .where(
+        and(
+          eq(accountingPostingPeriods.workspaceSubdomain, subdomain),
+          eq(accountingPostingPeriods.id, cleanId),
+        ),
+      )
+      .limit(1);
+    return row ? periodRowToRecord(row) : null;
+  });
+}
+
+/**
+ * Label of the closed period covering `date`, or null. This is the read the
+ * posting guard makes: a workspace with no periods (or no period covering the
+ * date) has no monthly lock, so posting keeps working (bootstrap rule).
+ */
+export async function findClosedPostingPeriodForDate(
+  tenant: string,
+  date: string,
+): Promise<string | null> {
+  const subdomain = tenant.trim().toLowerCase();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  return withTenantRead(subdomain, async (tx) => {
+    const [row] = await tx
+      .select({ label: accountingPostingPeriods.label })
+      .from(accountingPostingPeriods)
+      .where(
+        and(
+          eq(accountingPostingPeriods.workspaceSubdomain, subdomain),
+          eq(accountingPostingPeriods.status, "closed"),
+          lte(accountingPostingPeriods.startDate, date),
+          gte(accountingPostingPeriods.endDate, date),
+        ),
+      )
+      .limit(1);
+    return row?.label ?? null;
+  });
+}
+
+/**
+ * Flips one period's lock state. Opens a transaction (joining the caller's when
+ * one is active) so the write stays inside the caller's unit of work.
+ */
+export async function setPostingPeriodStatus(
+  tenant: string,
+  id: string,
+  status: "open" | "closed",
+  actorId: string,
+): Promise<PostingPeriod | null> {
+  const subdomain = tenant.trim().toLowerCase();
+  const cleanId = id?.trim();
+  if (!cleanId) return null;
+  const now = new Date();
+  return withTenant(subdomain, async (tx) => {
+    const [row] = await tx
+      .update(accountingPostingPeriods)
+      .set({
+        status,
+        closedAt: status === "closed" ? now : null,
+        closedBy: status === "closed" ? actorId : null,
+        updatedAt: now,
+      })
+      .where(
+        and(
+          eq(accountingPostingPeriods.workspaceSubdomain, subdomain),
+          eq(accountingPostingPeriods.id, cleanId),
+        ),
+      )
+      .returning(periodColumns);
+    return row ? periodRowToRecord(row) : null;
+  });
 }

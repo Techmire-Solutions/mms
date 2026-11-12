@@ -22,6 +22,7 @@ import {
   listFeeStructures,
 } from "../../db/repositories/financeBillingRepository.js";
 import { bulkSaveInvoices } from "../../db/repositories/financeInvoicesRepository.js";
+import { findEntryIdBySource } from "../../db/repositories/accountingRepository.js";
 import { linkEnrollmentInvoiceIds } from "../../db/repositories/enrollmentRepositoryPersist.js";
 import {
   listBillableEnrollments,
@@ -140,13 +141,29 @@ export async function generateInvoices(
     })),
     new Map(enrollments.map((enrollment) => [enrollment.id, enrollment.sessionCurrency])),
   );
-  const created = await persistGeneratedInvoices(tenant, draftsWithFamily, prefix);
-  await linkEnrollmentInvoiceIds(
-    tenant,
-    created
-      .filter((invoice) => invoice.enrollmentId)
-      .map((invoice) => ({ enrollmentId: invoice.enrollmentId as string, invoiceId: invoice.id })),
-  );
+  // One transaction for the whole generation: invoices, their ledger postings and
+  // the enrollment links. Linking after the commit left posted invoices the
+  // enrollment did not record whenever the link write failed.
+  const created = await withTenant(tenant, async () => {
+    const invoices = await persistGeneratedInvoices(tenant, draftsWithFamily, prefix);
+    await linkEnrollmentInvoiceIds(
+      tenant,
+      invoices
+        .filter((invoice) => invoice.enrollmentId)
+        .map((invoice) => ({
+          enrollmentId: invoice.enrollmentId as string,
+          invoiceId: invoice.id,
+        })),
+    );
+    return invoices;
+  });
+  // Surface the billing→ledger link honestly: `tryPostInvoiceJournals` skips
+  // silently when posting rules are unset, and an unposted receivable used to look
+  // exactly like a posted one in the response.
+  let posted = 0;
+  for (const invoice of created) {
+    if (await findEntryIdBySource(tenant, "invoice", invoice.id)) posted += 1;
+  }
   const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   broadcastTenantUpdate(tenant, "collection", "finance_metrics");
@@ -155,6 +172,8 @@ export async function generateInvoices(
     created: created.length,
     skipped: enrollments.length - created.length,
     eligible: enrollments.length,
+    posted,
+    unposted: created.length - posted,
   };
 }
 

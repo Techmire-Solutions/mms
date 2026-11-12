@@ -61,6 +61,12 @@ vi.mock("../finance/use-cases/financeUseCases.js", () => mockFinanceUseCases);
 vi.mock("../db/repositories/studentRepository.js", () => mockStudentRepo);
 vi.mock("../lib/livePush.js", () => mockWs);
 vi.mock("../db/repositories/enrollmentRepository.js", () => mockEnrollmentRepo);
+// Partial mock: the repository barrel also feeds the adapter, so only the ledger
+// source lookup used by the posted/unposted count is replaced.
+vi.mock("../db/repositories/accountingRepository.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../db/repositories/accountingRepository.js")>()),
+  findEntryIdBySource: vi.fn(async (_tenant: string, _type: string, id: string) => `je-${id}`),
+}));
 // Functional-currency workspace: generated drafts pass through unchanged (FX stamping is covered in financeDocumentFx.test.ts).
 vi.mock("../finance/use-cases/financeDocumentFx.js", () => ({
   applyGeneratedInvoiceFx: async (_tenant: string, drafts: readonly unknown[]) => drafts,
@@ -139,7 +145,13 @@ describe("financeInvoiceGenerationUseCases", () => {
         generateInvoices({ billingPeriod: "2026-09" }),
       );
 
-      expect(result).toEqual({ created: 2, skipped: 0, eligible: 2 });
+      expect(result).toEqual({
+        created: 2,
+        skipped: 0,
+        eligible: 2,
+        posted: 2,
+        unposted: 0,
+      });
       expect(mockBillingRepo.allocateInvoiceNumberBatch).toHaveBeenCalledWith(
         "tenant-1",
         2026,
@@ -176,6 +188,40 @@ describe("financeInvoiceGenerationUseCases", () => {
         "collection",
         "finance_invoices",
       );
+    });
+
+    it("propagates an enrollment-link failure instead of committing invoices without it", async () => {
+      // Invoices, postings and the enrollment links share one transaction: a link
+      // failure must fail the whole generation rather than report success while
+      // the enrollment has no invoice_id.
+      mockPrefs.loadFinanceModulePreferences.mockResolvedValue(null);
+      mockBillingRepo.listFeeStructures.mockResolvedValue([]);
+      mockGenRepo.listBillableEnrollments.mockResolvedValue([
+        {
+          id: "e-1",
+          studentId: "s-1",
+          studentName: "Student One",
+          sessionName: "Session 1",
+          className: "Grade 1",
+          status: "confirmed",
+          baseFee: 100,
+          finalFee: 100,
+          discountAmount: 0,
+        },
+      ]);
+      mockGenRepo.listEnrollmentInvoiceMarks.mockResolvedValue([]);
+      mockStudentRepo.findStudentsByIds.mockResolvedValue([]);
+      mockFinanceUseCases.financeUseCases.createInvoice.mockResolvedValue({
+        id: "inv-link-fail",
+        enrollmentId: "e-1",
+      });
+      mockEnrollmentPersistRepo.linkEnrollmentInvoiceIds.mockRejectedValue(
+        new Error("link write failed"),
+      );
+
+      await expect(
+        runWithTenant("tenant-1", () => generateInvoices({ billingPeriod: "2026-09" })),
+      ).rejects.toThrow("link write failed");
     });
 
     it("creates single invoice via createInvoice helper", async () => {

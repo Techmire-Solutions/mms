@@ -25,10 +25,13 @@ export async function markOverdueInvoices(tenant: string, today: string): Promis
   });
 }
 
-export async function listOpenInvoicesForCollect(tenant: string): Promise<Invoice[]> {
+export async function listOpenInvoicesForCollect(
+  tenant: string,
+  options?: { forUpdate?: boolean },
+): Promise<Invoice[]> {
   const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
-    const rows = await tx
+  return withTenant(subdomain, async (tx) => {
+    const query = tx
       .select({
         id: financeInvoices.id,
         workspaceSubdomain: financeInvoices.workspaceSubdomain,
@@ -75,22 +78,36 @@ export async function listOpenInvoicesForCollect(tenant: string): Promise<Invoic
         ),
       )
       .limit(100);
-    return rows.map(invoiceRowToRecord);
+    // Row-lock the candidates when late fees are about to be decided: a concurrent
+    // payment/credit must not settle an invoice between the check and the write.
+    const locked = options?.forUpdate ? await query.for("update") : await query;
+    return locked.map(invoiceRowToRecord);
   });
 }
 
+/**
+ * Applies late fees and returns only the rows that actually received one.
+ *
+ * The conditional `late_fee_amt <= 0` + open-status guard makes concurrent
+ * collectors (two schedulers, a retried job, a duplicate API call) mutually
+ * exclusive: the second UPDATE matches nothing instead of overwriting a fee that
+ * was already posted, and a payment that settled the invoice in the meantime
+ * excludes it. Callers must post journals and audit rows for the returned rows
+ * only.
+ */
 export async function applyLateFeeAmounts(
   tenant: string,
   fees: readonly { invoiceId: string; amount: number }[],
-): Promise<void> {
-  if (fees.length === 0) return;
+): Promise<Array<{ invoiceId: string; amount: number }>> {
+  if (fees.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx.execute(sql`
+  return withTenant(subdomain, async (tx) => {
+    const result = await tx.execute(sql`
       UPDATE ${financeInvoices}
       SET late_fee_amt = CASE ${sql.join(
         fees.map(
-          (fee) => sql`WHEN ${financeInvoices.id} = ${fee.invoiceId} THEN ${String(fee.amount)}`,
+          (fee) =>
+            sql`WHEN ${financeInvoices.id} = ${fee.invoiceId} THEN ${String(fee.amount)}::numeric`,
         ),
         sql` `,
       )} END,
@@ -101,16 +118,33 @@ export async function applyLateFeeAmounts(
           sql`, `,
         )})
         AND ${financeInvoices.deletedAt} IS NULL
+        AND ${financeInvoices.lateFeeAmt} <= 0
+        AND ${financeInvoices.status} IN ('pending', 'partial', 'overdue')
+      RETURNING ${financeInvoices.id} AS id, ${financeInvoices.lateFeeAmt} AS late_fee_amt
     `);
+    return (result.rows as Array<{ id: string; late_fee_amt: string | null }>).map((row) => ({
+      invoiceId: row.id,
+      amount: Number(row.late_fee_amt ?? 0),
+    }));
   });
 }
 
-export async function markInvoicesReminded(tenant: string, invoiceIds: string[]): Promise<void> {
+/**
+ * Claims invoices for a reminder and returns only the ids this caller won.
+ *
+ * The 24 h guard is part of the UPDATE, so two concurrent reminder runs (or a
+ * retried job) cannot both decide to notify the same invoice: the loser matches
+ * zero rows and must not send. Mirrors `wasRemindedRecently` in `@mms/shared`.
+ */
+export async function claimInvoicesForReminder(
+  tenant: string,
+  invoiceIds: string[],
+): Promise<string[]> {
   const cleanIds = dedupeTrimmedIds(invoiceIds);
-  if (cleanIds.length === 0) return;
+  if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx
+  return withTenant(subdomain, async (tx) => {
+    const claimed = await tx
       .update(financeInvoices)
       .set({
         lastRemindedAt: new Date(),
@@ -122,8 +156,11 @@ export async function markInvoicesReminded(tenant: string, invoiceIds: string[])
           eq(financeInvoices.workspaceSubdomain, subdomain),
           isNull(financeInvoices.deletedAt),
           inArray(financeInvoices.id, cleanIds),
+          sql`(${financeInvoices.lastRemindedAt} IS NULL OR ${financeInvoices.lastRemindedAt} < now() - interval '24 hours')`,
         ),
-      );
+      )
+      .returning({ id: financeInvoices.id });
+    return claimed.map((row) => row.id);
   });
 }
 

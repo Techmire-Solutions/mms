@@ -106,6 +106,15 @@ export const WORKER_HEAP_LIMIT_BYTES =
 export const WORKER_SUBPROCESS_MEMORY_LIMIT_MB = 512;
 export const JOB_EXECUTION_TIMEOUT_MS = 60_000;
 
+/** Overdue marking + reminder dispatch for one workspace (bulk status, then sends). */
+export const FINANCE_AUTOMATION_OVERDUE_TIMEOUT_MS =
+  Number(process.env.FINANCE_AUTOMATION_OVERDUE_TIMEOUT_MS) || 5 * 60_000;
+/** One billing period of generated invoices across a workspace's enrollments. */
+export const FINANCE_AUTOMATION_GENERATE_TIMEOUT_MS =
+  Number(process.env.FINANCE_AUTOMATION_GENERATE_TIMEOUT_MS) || 10 * 60_000;
+/** A period-end revaluation / IAS 29 restatement over one workspace's ledger. */
+export const FINANCE_AUTOMATION_REVALUE_TIMEOUT_MS =
+  Number(process.env.FINANCE_AUTOMATION_REVALUE_TIMEOUT_MS) || 5 * 60_000;
 /** Session rollover walks up to 5,000 students, one transaction per student. */
 export const SESSIONS_ROLLOVER_TIMEOUT_MS =
   Number(process.env.SESSIONS_ROLLOVER_TIMEOUT_MS) || 15 * 60_000;
@@ -189,6 +198,14 @@ export function resolveJobExecutionTimeoutMs(moduleId: string, kind: string): nu
     "questionbank:export": QUESTION_BANK_EXPORT_TIMEOUT_MS,
     "questionbank:item-analysis": QUESTION_BANK_IMPORT_TIMEOUT_MS,
     "workshops:import": WORKSHOPS_IMPORT_TIMEOUT_MS,
+    // Scheduled finance sweeps share the deadline helper even though they are not
+    // BullMQ jobs: a tenant-wide collect or month-end revaluation must not be cut
+    // off by the 60s sandbox default.
+    "finance:automation-overdue": FINANCE_AUTOMATION_OVERDUE_TIMEOUT_MS,
+    "finance:automation-remind": FINANCE_AUTOMATION_OVERDUE_TIMEOUT_MS,
+    "finance:automation-generate": FINANCE_AUTOMATION_GENERATE_TIMEOUT_MS,
+    "finance:automation-revalue": FINANCE_AUTOMATION_REVALUE_TIMEOUT_MS,
+    "finance:automation-ias29": FINANCE_AUTOMATION_REVALUE_TIMEOUT_MS,
   };
   if (budgets[key] !== undefined) return budgets[key];
   return normalizedModule === "messaging" ? MESSAGING_JOB_TIMEOUT_MS : JOB_EXECUTION_TIMEOUT_MS;

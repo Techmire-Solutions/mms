@@ -24,7 +24,8 @@ export function SimpleTransactionTagSelector({
   const inputId = `${idPrefix ?? "wizard"}-custom-tag`;
   const [customTagInput, setCustomTagInput] = useState("");
   const customTags = useMemo(
-    () => tags.filter((tag) => !JOURNAL_TAGS.includes(tag) && tag !== typeTag),
+    () =>
+      tags.filter((tag) => !(JOURNAL_TAGS as readonly string[]).includes(tag) && tag !== typeTag),
     [tags, typeTag],
   );
 

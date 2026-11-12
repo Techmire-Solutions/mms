@@ -257,3 +257,93 @@ describe("IAS 21 period-end revaluation", () => {
     });
   });
 });
+
+describe("revaluation posting is idempotent under concurrency and refuses bad money", () => {
+  it("posts one run and one entry set for concurrent submits of the same date", async () => {
+    const [first, second] = await Promise.all([
+      withTenant(TENANT, () =>
+        postFxRevaluation(fxRevaluationDeps, { tenant: TENANT, userId: "u1" }, "2026-12-31"),
+      ),
+      withTenant(TENANT, () =>
+        postFxRevaluation(fxRevaluationDeps, { tenant: TENANT, userId: "u1" }, "2026-12-31"),
+      ),
+    ]);
+
+    expect(second.id).toBe(first.id);
+    const runs = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT count(*)::int AS n FROM accounting_fx_revaluation_runs
+         WHERE workspace_subdomain = ${TENANT} AND revaluation_date = '2026-12-31'
+      `),
+    );
+    expect(Number((runs.rows as Array<{ n: number }>)[0]?.n ?? 0)).toBe(1);
+    const entries = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT count(*)::int AS n FROM accounting_entries
+         WHERE workspace_subdomain = ${TENANT}
+           AND source_type = 'fx_reval' AND source_id = '2026-12-31'
+      `),
+    );
+    expect(Number((entries.rows as Array<{ n: number }>)[0]?.n ?? 0)).toBe(1);
+  });
+
+  it("turns a legacy balance with more decimals than the currency into a 422", async () => {
+    // Pre-guard data: numeric(19,4) can hold 1000.1234 USD, which is not money.
+    await withTenant(TENANT, async (tx) => {
+      await tx.insert(accountingAccounts).values({
+        id: "ar2",
+        workspaceSubdomain: TENANT,
+        code: "1101",
+        name: "Legacy receivable",
+        type: "Asset",
+        isMonetary: true,
+      });
+      await tx.insert(accountingEntries).values({
+        id: "je-legacy-scale",
+        workspaceSubdomain: TENANT,
+        date: "2026-11-01",
+        ref: "LEGACY-SCALE",
+        description: "",
+        status: "posted",
+        createdBy: "t",
+        fiscalYear: "",
+      });
+      await tx.insert(accountingJournalLines).values([
+        {
+          id: "legacy-d",
+          workspaceSubdomain: TENANT,
+          entryId: "je-legacy-scale",
+          accountId: "ar2",
+          debit: "280.00",
+          credit: "0",
+          txnCurrency: "USD",
+          txnDebit: "1000.1234",
+          txnCredit: "0",
+          exchangeRate: "280",
+          funcDebit: "280.00",
+          funcCredit: "0",
+          description: "",
+        },
+        {
+          id: "legacy-c",
+          workspaceSubdomain: TENANT,
+          entryId: "je-legacy-scale",
+          accountId: "inc",
+          debit: "0",
+          credit: "280.00",
+          txnCurrency: "USD",
+          txnDebit: "0",
+          txnCredit: "1000.1234",
+          exchangeRate: "280",
+          funcDebit: "0",
+          funcCredit: "280.00",
+          description: "",
+        },
+      ]);
+    });
+
+    await expect(
+      withTenant(TENANT, () => previewFxRevaluation(fxRevaluationDeps, TENANT, "2027-01-31")),
+    ).rejects.toMatchObject({ statusCode: 422 });
+  });
+});

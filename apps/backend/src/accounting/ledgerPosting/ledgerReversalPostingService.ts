@@ -11,7 +11,7 @@ import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFisc
 import {
   entryForSource,
   persistGeneratedEntry,
-  postingDate,
+  postingDateForTenant,
   resolveYearId,
 } from "./ledgerPostingHelpers.js";
 import { stampLinesForDocument } from "./documentFxPosting.js";
@@ -24,7 +24,7 @@ export async function tryPostInvoiceReversalJournal(
   if (!existingId) return;
   const original = await findEntryById(tenant, existingId);
   if (!original?.lines?.length) return;
-  const date = postingDate(undefined);
+  const date = await postingDateForTenant(tenant);
   const lines = buildReversalLines(original.lines);
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
@@ -52,7 +52,7 @@ export async function tryPostReversalOfSource(
   if (!existingId) return;
   const original = await findEntryById(tenant, existingId);
   if (!original?.lines?.length) return;
-  const date = postingDate(undefined);
+  const date = await postingDateForTenant(tenant);
   const lines = buildReversalLines(original.lines);
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
@@ -119,7 +119,7 @@ export async function tryPostArchiveReversalJournal(
   if (!existingId) return;
   const original = await findEntryById(tenant, existingId);
   if (!original?.lines?.length) return;
-  const date = postingDate(undefined);
+  const date = await postingDateForTenant(tenant);
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
     tenant,
@@ -159,7 +159,7 @@ export async function tryPostRestoreJournal(
   if (!existingId) return;
   const original = await findEntryById(tenant, existingId);
   if (!original?.lines?.length) return;
-  const date = postingDate(undefined);
+  const date = await postingDateForTenant(tenant);
   const years = await listFiscalYearsByWorkspace(tenant);
   await persistGeneratedEntry(
     tenant,
@@ -182,7 +182,7 @@ export async function tryPostCreditNoteJournal(
   amount: number,
 ): Promise<void> {
   const accounts = await getPostingRules(tenant);
-  const date = postingDate(undefined);
+  const date = await postingDateForTenant(tenant);
   const lines = buildCreditNotePostingLines({
     creditNoteId,
     amount,

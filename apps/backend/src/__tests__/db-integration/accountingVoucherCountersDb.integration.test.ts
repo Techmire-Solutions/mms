@@ -1,11 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { readFileSync } from "node:fs";
-import {
-  closeDatabase,
-  initializeDatabaseConnection,
-  pingDatabase,
-} from "../../db/dbConnection.js";
+import { closeDatabase } from "../../db/dbConnection.js";
 import { withTenant } from "../../db/tenant-context.js";
 import {
   accountingEntries,
@@ -15,6 +10,7 @@ import {
   workspaces,
 } from "../../db/schema.js";
 import { DEFAULT_VOUCHER_NUMBERING } from "@mms/shared";
+import { requireDatabaseConnection } from "./dbTestSupport.js";
 import {
   allocateVoucherNumbers,
   peekVoucherSequence,
@@ -41,6 +37,24 @@ async function seedEntryRefs(refs: string[]): Promise<void> {
   );
 }
 
+/** An entry carrying `ref` that is already archived — its number must not be reissued. */
+async function seedTrashedRef(ref: string): Promise<void> {
+  await withTenant(tenant, (tx) =>
+    tx.insert(accountingEntries).values({
+      id: `trashed-${ref}`,
+      workspaceSubdomain: tenant,
+      ref,
+      date: "2026-03-01",
+      description: "trashed",
+      status: "draft",
+      createdBy: "test",
+      fiscalYear: "",
+      deletedAt: new Date("2026-02-01T00:00:00.000Z"),
+      deletedBy: "other-session",
+    }),
+  );
+}
+
 async function resetCounters(): Promise<void> {
   await withTenant(tenant, async (tx) => {
     await tx
@@ -58,14 +72,8 @@ async function resetCounters(): Promise<void> {
 }
 
 beforeAll(async () => {
-  if (!process.env.DATABASE_URL) {
-    const env = readFileSync(new URL("../../../.env", import.meta.url), "utf8");
-    const match = env.match(/^DATABASE_URL\s*=\s*"?([^"\n]+)"?$/m);
-    if (match) process.env.DATABASE_URL = match[1].trim();
-  }
-  initializeDatabaseConnection();
-  available = await pingDatabase();
-  if (!available) throw new Error("PostgreSQL is required for the voucher counter regression");
+  await requireDatabaseConnection();
+  available = true;
   await withTenant(tenant, (tx) =>
     tx.insert(workspaces).values({
       id: tenant,
@@ -191,5 +199,73 @@ describe("journal voucher counters (Postgres)", () => {
     await resetCounters();
     await saveVoucherNumbering(tenant, { ...DEFAULT_VOUCHER_NUMBERING, autoGenerate: false });
     expect(await allocateVoucherNumbers(tenant, {})).toBeNull();
+  });
+
+  it("never reissues a number held only by a trashed entry", async () => {
+    await resetCounters();
+    // The archived row is invisible to the app, but reissuing its ref would make
+    // a later restore fail on the active-unique index. The seed scan deliberately
+    // includes trashed refs.
+    await seedTrashedRef("JE-0001");
+    expect(await allocateVoucherNumbers(tenant, {})).toEqual(["JE-0002"]);
+  });
+
+  it("keeps one counter per format so a prefix change cannot reissue old refs", async () => {
+    await resetCounters();
+    expect(await allocateVoucherNumbers(tenant, {})).toEqual(["JE-0001"]);
+    await saveVoucherNumbering(tenant, { ...DEFAULT_VOUCHER_NUMBERING, prefix: "JV" });
+    // Format key includes the prefix: the JV counter starts fresh…
+    expect(await allocateVoucherNumbers(tenant, {})).toEqual(["JV-0001"]);
+    // …and switching back resumes the JE counter rather than restarting it.
+    await saveVoucherNumbering(tenant, { ...DEFAULT_VOUCHER_NUMBERING, prefix: "JE" });
+    expect(await allocateVoucherNumbers(tenant, {})).toEqual(["JE-0002"]);
+  });
+
+  it("allocates disjoint ranges to concurrent transactions that share a format", async () => {
+    await resetCounters();
+    // Two independent writers race for the same counter row. Each transaction
+    // keeps its numbers (nothing is committed until it ends), so a duplicate
+    // here would mean the row lock was not held.
+    const issued = await Promise.all(
+      Array.from({ length: 4 }, () =>
+        withTenant(tenant, async () => {
+          const refs = await allocateVoucherNumbers(tenant, { count: 2 });
+          return refs ?? [];
+        }),
+      ),
+    );
+    const flat = issued.flat();
+    expect(new Set(flat).size).toBe(flat.length);
+    expect(flat.sort()).toEqual([
+      "JE-0001",
+      "JE-0002",
+      "JE-0003",
+      "JE-0004",
+      "JE-0005",
+      "JE-0006",
+      "JE-0007",
+      "JE-0008",
+    ]);
+  });
+
+  it("reuses a rolled-back batch without duplicating a committed batch", async () => {
+    await resetCounters();
+    const rolledBack = withTenant(tenant, async () => {
+      await allocateVoucherNumbers(tenant, { count: 2 });
+      throw new Error("rollback");
+    });
+    const committed = withTenant(tenant, () => allocateVoucherNumbers(tenant, { count: 2 }));
+    const [rollbackResult, committedResult] = await Promise.allSettled([rolledBack, committed]);
+    expect(rollbackResult.status).toBe("rejected");
+    expect(committedResult.status).toBe("fulfilled");
+    const committedRefs = (committedResult as PromiseFulfilledResult<string[] | null>).value ?? [];
+    expect(committedRefs).toHaveLength(2);
+
+    const after = (await allocateVoucherNumbers(tenant, { count: 2 })) ?? [];
+    expect(after).toHaveLength(2);
+    const all = [...committedRefs, ...after];
+    // No duplicate can be issued even when the freed range is handed out again.
+    expect(new Set(all).size).toBe(all.length);
+    expect(new Set(all)).toEqual(new Set(["JE-0001", "JE-0002", "JE-0003", "JE-0004"]));
   });
 });

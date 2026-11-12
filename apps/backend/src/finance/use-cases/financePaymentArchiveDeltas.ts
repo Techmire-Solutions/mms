@@ -1,3 +1,4 @@
+import { moneyToCents } from "@mms/shared";
 import type { Invoice, Payment } from "@mms/shared";
 import type { FinanceRepository } from "../repository/financeRepository.js";
 
@@ -16,12 +17,14 @@ export function invoiceTotalDue(invoice: Invoice): number {
  * on its next sweep.
  */
 export function applyCollectedDelta(invoice: Invoice, delta: number): Invoice {
-  const paidAmt = Math.max(0, (invoice.paidAmt ?? 0) + delta);
-  const totalDue = invoiceTotalDue(invoice);
+  // Integer cents end-to-end: `paidAmt + delta` over 2 dp floats can drift a cent
+  // per archive/restore cycle and flip the derived status.
+  const paidCents = Math.max(0, moneyToCents(invoice.paidAmt ?? 0) + moneyToCents(delta));
+  const dueCents = moneyToCents(invoiceTotalDue(invoice));
   return {
     ...invoice,
-    paidAmt,
-    status: paidAmt <= 0 ? "pending" : paidAmt >= totalDue ? "paid" : "partial",
+    paidAmt: paidCents / 100,
+    status: paidCents <= 0 ? "pending" : paidCents >= dueCents ? "paid" : "partial",
   };
 }
 

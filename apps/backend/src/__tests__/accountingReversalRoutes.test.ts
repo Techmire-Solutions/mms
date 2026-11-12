@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
+import { makeReversalResult } from "./helpers/accountingRouteFixtures.js";
 import { accountantToken, auditorToken, guardianToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({
@@ -65,12 +66,7 @@ const VALID = { date: "2026-10-08", reason: "Posted to the wrong account" };
 describe("POST /api/accounting/entries/:id/reverse", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
-    mockReverse.mockReset().mockResolvedValue({
-      entry: { id: "je-rev", ref: "REV-JV-1" },
-      original: { id: "je-orig", ref: "JV-1", date: "2026-09-15" },
-      priorPeriod: false,
-      executedAt: "2026-10-08T09:30:00.000Z",
-    });
+    mockReverse.mockReset().mockResolvedValue(makeReversalResult());
   });
 
   it("given no session, should return 401 without reversing", async () => {

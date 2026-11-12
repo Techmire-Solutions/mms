@@ -9,10 +9,9 @@ import {
 import {
   buildFinancialReportExportRows,
   getFinancialReportExportColumns,
-  type TrialBalanceRow,
 } from "../lib/financialReportsExportHelpers";
 
-export type FinancialReportViewType = "income" | "balance" | "cashflow" | "fx";
+export type FinancialReportViewType = "income" | "balance" | "cashflow" | "fx" | "aging";
 
 export function useFinancialReportsModel() {
   const { t } = useTranslation();
@@ -74,8 +73,8 @@ export function useFinancialReportsModel() {
         netCashFlowIndirect: agg.netCashFlowIndirect,
         cashInflow: agg.cashInflow,
         cashOutflow: agg.cashOutflow,
-        tb: (agg.incomeStatementTrialBalance ?? agg.trialBalance) as TrialBalanceRow[],
-        balanceSheetTb: agg.balanceSheetTrialBalance as TrialBalanceRow[],
+        tb: agg.incomeStatementTrialBalance ?? agg.trialBalance,
+        balanceSheetTb: agg.balanceSheetTrialBalance,
         cashFlowAdjustments: agg.cashFlowAdjustments,
       }
     : {
@@ -89,8 +88,8 @@ export function useFinancialReportsModel() {
         netCashFlowIndirect: 0,
         cashInflow: 0,
         cashOutflow: 0,
-        tb: [] as TrialBalanceRow[],
-        balanceSheetTb: [] as TrialBalanceRow[],
+        tb: [],
+        balanceSheetTb: [],
         cashFlowAdjustments: { depreciation: 0, receivables: 0, payables: 0 },
       };
 
@@ -104,8 +103,9 @@ export function useFinancialReportsModel() {
   const payablesChange = metrics.cashFlowAdjustments.payables;
 
   const exportColumns = getFinancialReportExportColumns(t);
+  // FX and aging export from their own panels (different columns/data source).
   const exportRows =
-    view === "fx"
+    view === "fx" || view === "aging"
       ? []
       : buildFinancialReportExportRows({
           view,

@@ -5,6 +5,8 @@ export const TENANT_NOTIFICATION_KINDS = [
   "waitlist_seat_offered",
   "attendance_leave_decided",
   "attendance_chronic_absence",
+  /** Scheduled finance sweep found invoices past their due date. */
+  "finance_invoices_overdue",
 ] as const;
 export type TenantNotificationKind = (typeof TENANT_NOTIFICATION_KINDS)[number];
 

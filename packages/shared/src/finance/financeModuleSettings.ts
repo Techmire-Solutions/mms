@@ -2,6 +2,7 @@ import type { TabDefinition } from "../contacts/contactTypes.js";
 import type { ModuleFieldDef } from "../settings/moduleFieldSchema.js";
 import { INITIAL_FINANCE_FIELD_SEED } from "../settings/moduleFieldSetupFinance.js";
 import type { SequenceYearFormat, SequenceRolloverPolicy } from "../core/sequenceNumberingTypes.js";
+import type { FinancePaymentMethod } from "./accountingEnums.js";
 
 // ─── Finance Module Settings ──────────────────────────────────────────────────
 
@@ -11,7 +12,7 @@ export interface FinanceSettings {
   dueDays: string;
   lateFeePercent: string;
   taxRate: string;
-  paymentMethods: string[];
+  paymentMethods: FinancePaymentMethod[];
   autoGenerateInvoice: boolean;
   invoiceYearFormat?: SequenceYearFormat;
   invoiceSequenceDigits?: number;
@@ -40,7 +41,7 @@ export const DEFAULT_FINANCE_SETTINGS: FinanceSettings = {
   dueDays: "30",
   lateFeePercent: "5",
   taxRate: "0",
-  paymentMethods: ["cash", "bank_transfer"],
+  paymentMethods: ["Cash", "Bank Transfer"],
   autoGenerateInvoice: true,
   sendInvoiceEmail: true,
   allowPartialPayment: true,

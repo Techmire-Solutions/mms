@@ -66,11 +66,7 @@ import { registerQuestionBankBackgroundJobRunners } from "./backgroundJobQuestio
 import { registerWorkshopImportJobRunner } from "../workshops/jobs/workshopImportJob.js";
 import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
 import { registerStudentsBulkJobRunners } from "../students/studentsBulkStatusService.js";
-import {
-  registerDocumentAndFinanceJobRunners,
-  MAX_EXCEL_PAYLOAD_ENTRIES,
-} from "./backgroundJobDocumentFinanceRunners.js";
-export { MAX_EXCEL_PAYLOAD_ENTRIES };
+import { registerDocumentAndFinanceJobRunners } from "./backgroundJobDocumentFinanceRunners.js";
 export type {
   ContactsExportJobPayload,
   ContactsVcfExportJobPayload,

@@ -1,5 +1,6 @@
 /** Invoice amount derivations (collected / outstanding, per record and per month). */
 import type { Invoice } from "./financeInvoiceTypes.js";
+import { moneyToCents } from "./accountingLedgerInvariants.js";
 
 /**
  * Calculates the collected amount for a single invoice.
@@ -29,10 +30,14 @@ export function getOutstandingAmountForInvoice(invoice: Invoice): number {
   if (invoice.status === "cancelled" || invoice.status === "paid") {
     return 0;
   }
-  const paid = invoice.paidAmt ?? 0;
-  const late = invoice.lateFeeAmt ?? 0;
-  const credited = invoice.creditedAmt ?? 0;
-  return Math.max(0, invoice.finalAmt + late - credited - paid);
+  // Integer cents: four 2 dp floats added and subtracted can leave 0.0100000000002
+  // style residue, which flips the `applied > remaining` check in createPayment.
+  const outstandingCents =
+    moneyToCents(invoice.finalAmt) +
+    moneyToCents(invoice.lateFeeAmt ?? 0) -
+    moneyToCents(invoice.creditedAmt ?? 0) -
+    moneyToCents(invoice.paidAmt ?? 0);
+  return Math.max(0, outstandingCents) / 100;
 }
 
 /**

@@ -36,6 +36,11 @@ export interface SessionsRepository {
   /** Primary read for control flow that must see its own writes (rollover retries). */
   findSessionByIdPrimary(tenant: string, id: string): Promise<Session | null>;
   findSessionsByIds(tenant: string, ids: string[]): Promise<Session[]>;
+  /**
+   * True when the session still has non-archived enrollments. Their fees inherit
+   * the session currency at billing time, so the currency cannot be edited.
+   */
+  sessionHasEnrollments(tenant: string, sessionId: string): Promise<boolean>;
   /** Stored status per id (one query) for bulk lifecycle transitions. */
   findSessionStatusesByIds(tenant: string, ids: string[]): Promise<Map<string, string>>;
   /** Live sessions whose inclusive date range intersects the requested one (overlap guard). */

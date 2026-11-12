@@ -8,7 +8,9 @@ import {
   numeric,
   uniqueIndex,
   foreignKey,
+  check,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import {
   accountingAccounts,
@@ -112,6 +114,15 @@ export const accountingOpeningBalances = pgTable(
     index("accounting_opening_balances_workspace_year_idx").on(
       table.workspaceSubdomain,
       table.fiscalYearId,
+    ),
+    /** Same IAS 21 sign/single-side rule as the journal lines (0248). */
+    check(
+      "accounting_opening_balances_txn_sign_chk",
+      sql`coalesce(${table.txnDebit}, 0) >= 0 AND coalesce(${table.txnCredit}, 0) >= 0`,
+    ),
+    check(
+      "accounting_opening_balances_func_sign_chk",
+      sql`coalesce(${table.funcDebit}, 0) >= 0 AND coalesce(${table.funcCredit}, 0) >= 0`,
     ),
   ],
 );

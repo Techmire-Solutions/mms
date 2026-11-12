@@ -1,5 +1,7 @@
 import {
+  moneyToCents,
   todayISO,
+  tryParseMoneyAmountNumber,
   formatInvoiceNumber,
   type FinanceSettings,
   type FeeStructure,
@@ -43,11 +45,18 @@ export function createInitialDraft(dueDays: string): InvoiceDraft {
 }
 
 export function computeInvoiceAmounts(baseFeeRaw: string, discountValueRaw: string) {
-  const baseFee = Number(baseFeeRaw || 0);
-  const discountValue = Number(discountValueRaw || 0);
-  const discountAmt = Math.min(Math.max(discountValue, 0), Math.max(baseFee, 0));
-  const finalAmt = Math.max(baseFee - discountAmt, 0);
-  return { baseFee, discountValue, discountAmt, finalAmt };
+  // Draft strings → integer cents, so a discount cannot leave a float residue in
+  // the invoice payload the server stores at 2 dp.
+  const baseFeeCents = moneyToCents(tryParseMoneyAmountNumber(baseFeeRaw) ?? 0);
+  const discountValueCents = moneyToCents(tryParseMoneyAmountNumber(discountValueRaw) ?? 0);
+  const discountAmtCents = Math.min(Math.max(discountValueCents, 0), Math.max(baseFeeCents, 0));
+  const finalAmtCents = Math.max(baseFeeCents - discountAmtCents, 0);
+  return {
+    baseFee: baseFeeCents / 100,
+    discountValue: discountValueCents / 100,
+    discountAmt: discountAmtCents / 100,
+    finalAmt: finalAmtCents / 100,
+  };
 }
 
 export function canSaveInvoiceDraft(draft: InvoiceDraft, baseFee: number): boolean {

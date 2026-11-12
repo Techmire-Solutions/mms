@@ -111,6 +111,7 @@ export default function Finance(): React.JSX.Element {
                 c.activeTab === "work" &&
                 c.activeSubTab === "invoices" && (
                   <InvoicesList
+                    isLoading={c.invoicesResult.isLoading}
                     invoices={c.invoices}
                     {...c.invoiceStatusFilter}
                     onView={c.setViewInvoice}
@@ -185,6 +186,7 @@ export default function Finance(): React.JSX.Element {
                 c.activeTab === "work" &&
                 c.activeSubTab === "payments" && (
                   <PaymentsList
+                    isLoading={c.paymentsResult.isLoading}
                     payments={c.payments}
                     canDelete={c.canDelete}
                     showDeleted={c.showDeleted}

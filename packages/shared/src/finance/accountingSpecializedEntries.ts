@@ -5,8 +5,22 @@ import { billingPeriodSchema } from "../core/billingPeriodSchema.js";
 /** Decimal money string, per MMS currency convention (never IEEE 754 floats). */
 const moneyDecimalStringSchema = z.string().regex(/^\d+(\.\d{1,2})?$/, "Enter a valid amount");
 
+import type { FinancePaymentMethod } from "./accountingEnums.js";
+
 export const FEE_ENTRY_PAYMENT_METHODS = ["cash", "bank", "card", "online", "cheque"] as const;
 export type FeeEntryPaymentMethod = (typeof FEE_ENTRY_PAYMENT_METHODS)[number];
+
+/** Fee-entry methods are lowercase; payments store the canonical labels. */
+export const FEE_ENTRY_TO_FINANCE_PAYMENT_METHOD: Record<
+  FeeEntryPaymentMethod,
+  FinancePaymentMethod
+> = {
+  cash: "Cash",
+  bank: "Bank Transfer",
+  card: "Card",
+  online: "Online",
+  cheque: "Cheque",
+};
 
 const specializedEntryBaseSchema = z.object({
   date: isoDateSchema,

@@ -1,7 +1,7 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
+  AmountScaleError,
   buildHedgeValuationLines,
-  buildReserveReclassificationLines,
   buildReversalLines,
   computeHedgeValuation,
   type HedgeRelationship,
@@ -9,7 +9,9 @@ import {
   type HedgeValuationRecord,
   type JournalEntry,
 } from "@mms/shared";
+import { isUniqueViolation } from "../../lib/pgErrors.js";
 import type { RecordModernAuditInput } from "../../services/auditTrailService.js";
+import { lockLedgerEvent } from "../ledgerPosting/ledgerEventLock.js";
 import type { AccountingFxRepository } from "../repository/accountingFxRepository.js";
 import type { AccountingHedgesStore } from "../repository/accountingHedgesRepositoryAdapter.js";
 import { lookupClosingRate, nextCalendarDay } from "./fxRevaluationUseCases.js";
@@ -32,29 +34,129 @@ export interface HedgeDeps {
   recordAudit: (input: RecordModernAuditInput) => Promise<unknown>;
 }
 
-interface Actor {
+export interface Actor {
   tenant: string;
   userId: string | null;
 }
 
-function unprocessable(message: string): Error {
+export function unprocessable(message: string): Error {
   return Object.assign(new Error(message), { statusCode: 422, type: "validation_error" });
 }
 
-function notFound(): Error {
+/** A stored amount that cannot be represented in its currency is a 422, not a 500. */
+export function valuationOrThrow(
+  hedge: Parameters<typeof computeHedgeValuation>[0],
+  rate: string,
+  functionalCurrency: string,
+) {
+  try {
+    return computeHedgeValuation(hedge, rate, functionalCurrency);
+  } catch (error) {
+    if (error instanceof AmountScaleError) {
+      throw unprocessable(
+        `Hedge notional ${error.value} cannot be represented in ${error.currency} — use at most ${error.currency} minor units`,
+      );
+    }
+    throw error;
+  }
+}
+
+export function notFound(): Error {
   return Object.assign(new Error("Hedge relationship not found"), {
     statusCode: 404,
     type: "not_found",
   });
 }
 
-async function load(deps: HedgeDeps, tenant: string, id: string): Promise<HedgeRelationship> {
+/**
+ * Deterministic record id for a hedge event.
+ *
+ * It doubles as the journal `source_id`, so a repeated or concurrent submit for
+ * the same relationship/date/kind resolves to the *same* generated entry instead
+ * of posting a second one under a random key. The unique index on
+ * `accounting_hedge_valuations` is still the invariant; this makes the entry side
+ * idempotent as well.
+ */
+export function hedgeRecordId(relationshipId: string, kind: string, date: string): string {
+  // `accounting_entries.source_id` is varchar(64), and the full relationship id is
+  // a 43-char uuid string, so the relationship part is hashed: deterministic, but
+  // short enough for the source key it doubles as.
+  const subject = createHash("sha256").update(relationshipId).digest("hex").slice(0, 12);
+  return `hv-${subject}-${kind}-${date}`;
+}
+
+/**
+ * Runs a hedging write that may collide with a concurrent submit for the same
+ * event. The unique index on the valuation table is the invariant, so a unique
+ * violation means "the other request already recorded it" — report back the
+ * stored relationship instead of failing the caller with a 500.
+ */
+export async function insertOnce(run: () => Promise<void>): Promise<boolean> {
+  try {
+    await run();
+    return true;
+  } catch (error) {
+    if (isUniqueViolation(error)) return false;
+    throw error;
+  }
+}
+
+type HedgeAccountField = "instrumentAccountId" | "reserveAccountId" | "pnlAccountId";
+
+const HEDGE_ACCOUNT_ROLES: Record<HedgeAccountField, readonly string[]> = {
+  instrumentAccountId: ["Asset", "Liability"],
+  reserveAccountId: ["Equity"],
+  pnlAccountId: ["Revenue", "Expense"],
+};
+
+/**
+ * Each account has a role: the derivative/cash instrument is an Asset/Liability,
+ * the cash flow hedge reserve is Equity and the ineffective part is P&L. The FK
+ * only proves the account exists, so a Revenue account could be designated as
+ * the reserve and every valuation would post to the wrong statement.
+ */
+async function assertHedgeAccounts(
+  deps: Pick<HedgeDeps, "store">,
+  tenant: string,
+  hedge: HedgeRelationshipCreate,
+): Promise<void> {
+  const fields = Object.keys(HEDGE_ACCOUNT_ROLES) as HedgeAccountField[];
+  const ids = fields
+    .map((field) => hedge[field])
+    .filter((id): id is string => typeof id === "string" && id.length > 0);
+  const byId = new Map((await deps.store.findAccountsByIds(tenant, ids)).map((a) => [a.id, a]));
+  const problems: string[] = [];
+  for (const field of fields) {
+    const accountId = hedge[field];
+    if (typeof accountId !== "string" || !accountId) continue;
+    const allowed = HEDGE_ACCOUNT_ROLES[field];
+    const account = byId.get(accountId);
+    if (!account) {
+      problems.push(`${field}: unknown or archived account "${accountId}"`);
+    } else if (account.isActive === false) {
+      problems.push(`${field}: ${account.code} ${account.name} is deactivated`);
+    } else if (!allowed.includes(account.type)) {
+      problems.push(
+        `${field}: ${account.code} ${account.name} is type ${account.type}, expected ${allowed.join(" or ")}`,
+      );
+    }
+  }
+  if (problems.length > 0) {
+    throw unprocessable(`Invalid hedge accounts — ${problems.join("; ")}`);
+  }
+}
+
+export async function load(
+  deps: HedgeDeps,
+  tenant: string,
+  id: string,
+): Promise<HedgeRelationship> {
   const hedge = await deps.store.findHedgeRelationship(tenant, id);
   if (!hedge) throw notFound();
   return hedge;
 }
 
-async function audit(
+export async function audit(
   deps: HedgeDeps,
   actor: Actor,
   recordId: string,
@@ -80,11 +182,7 @@ export async function createHedgeRelationship(
   const { functionalCurrency } = await deps.fx.getCurrencySettings(actor.tenant);
   if (hedge.currency === functionalCurrency)
     throw unprocessable("A hedged currency must differ from the functional currency");
-  for (const accountId of [hedge.instrumentAccountId, hedge.reserveAccountId, hedge.pnlAccountId]) {
-    if (accountId && !(await deps.store.accountExists(actor.tenant, accountId))) {
-      throw unprocessable(`Account ${accountId} does not exist`);
-    }
-  }
+  await assertHedgeAccounts(deps, actor.tenant, hedge);
   const id = `hedge-${randomUUID()}`;
   await deps.store.insertHedgeRelationship(actor.tenant, id, hedge, actor.userId);
   await audit(deps, actor, id, "CREATE", hedge);
@@ -110,7 +208,7 @@ export async function previewHedgeValuation(
   return {
     valuationDate: date,
     kind: "valuation",
-    ...computeHedgeValuation(hedge, rate, functionalCurrency),
+    ...valuationOrThrow(hedge, rate, functionalCurrency),
     entryId: null,
     reversalEntryId: null,
   };
@@ -123,6 +221,10 @@ export async function postHedgeValuation(
   id: string,
   date: string,
 ): Promise<HedgeRelationship> {
+  // One valuation per hedge and date: serialise the read-then-post so a
+  // concurrent submit returns the stored valuation instead of racing the unique
+  // index after its journal entries were written.
+  await lockLedgerEvent(actor.tenant, `hedge:${id}:valuation:${date}`);
   const existing = await load(deps, actor.tenant, id);
   if (
     existing.valuations.some(
@@ -132,7 +234,7 @@ export async function postHedgeValuation(
     return existing;
   }
   const preview = await previewHedgeValuation(deps, actor.tenant, id, date);
-  const recordId = `hv-${randomUUID()}`;
+  const recordId = hedgeRecordId(id, "valuation", date);
   const record = { ...preview };
   if (Number(preview.instrumentValue) !== 0) {
     const lines = buildHedgeValuationLines(
@@ -159,118 +261,11 @@ export async function postHedgeValuation(
     record.entryId = (await deps.postEntry(actor.tenant, entry))?.id ?? entry.id;
     record.reversalEntryId = (await deps.postEntry(actor.tenant, reversal))?.id ?? reversal.id;
   }
-  await deps.store.insertHedgeValuation(actor.tenant, id, recordId, record, actor.userId);
-  await audit(deps, actor, id, "UPDATE", { valuation: record });
+  const inserted = await insertOnce(() =>
+    deps.store.insertHedgeValuation(actor.tenant, id, recordId, record, actor.userId),
+  );
+  if (inserted) await audit(deps, actor, id, "UPDATE", { valuation: record });
   return load(deps, actor.tenant, id);
 }
 
-/**
- * Settle the forward in cash at `settlementRate`: the cash account takes the
- * fair value, the effective part stays in the reserve until reclassified, the
- * rest goes to P&L. Settlement must follow the last valuation, whose reversal
- * has then already cleared the derivative balance.
- */
-export async function settleHedge(
-  deps: HedgeDeps,
-  actor: Actor,
-  id: string,
-  request: { settlementDate: string; settlementRate: string; cashAccountId: string },
-): Promise<HedgeRelationship> {
-  const hedge = await load(deps, actor.tenant, id);
-  if (hedge.status !== "active") throw unprocessable("Only an active hedge can be settled");
-  if (hedge.valuations.some((record) => record.valuationDate >= request.settlementDate)) {
-    throw unprocessable("Settle after the last valuation date");
-  }
-  if (!(await deps.store.accountExists(actor.tenant, request.cashAccountId))) {
-    throw unprocessable("The settlement cash account does not exist");
-  }
-  const { functionalCurrency } = await deps.fx.getCurrencySettings(actor.tenant);
-  const valuation = computeHedgeValuation(hedge, request.settlementRate, functionalCurrency);
-  const recordId = `hv-${randomUUID()}`;
-  const lines = buildHedgeValuationLines(
-    valuation,
-    { ...hedge, instrumentAccountId: request.cashAccountId },
-    `Hedge settlement ${hedge.name}`,
-  );
-  let entryId: string | null = null;
-  if (lines.length > 0) {
-    const entry = await deps.buildEntry(
-      actor.tenant,
-      "hedge_settle",
-      recordId,
-      request.settlementDate,
-      `Hedge settlement ${hedge.name}`,
-      lines,
-    );
-    entryId = (await deps.postEntry(actor.tenant, entry))?.id ?? entry.id;
-  }
-  const record: HedgeValuationRecord = {
-    valuationDate: request.settlementDate,
-    kind: "settlement",
-    ...valuation,
-    entryId,
-    reversalEntryId: null,
-  };
-  await deps.store.insertHedgeValuation(actor.tenant, id, recordId, record, actor.userId);
-  await deps.store.updateHedgeStatus(actor.tenant, id, "settled", valuation.effective);
-  await audit(deps, actor, id, "UPDATE", { settlement: record });
-  return load(deps, actor.tenant, id);
-}
-
-/** Move the settled cash flow hedge reserve into profit or loss (IFRS 9.6.5.11(d)(ii)). */
-export async function reclassifyHedgeReserve(
-  deps: HedgeDeps,
-  actor: Actor,
-  id: string,
-  request: { date: string; targetAccountId: string },
-): Promise<HedgeRelationship> {
-  const hedge = await load(deps, actor.tenant, id);
-  const settlement = hedge.valuations.find((record) => record.kind === "settlement");
-  if (
-    hedge.status !== "settled" ||
-    hedge.hedgeType !== "cash_flow" ||
-    !settlement ||
-    !hedge.reserveAccountId
-  ) {
-    throw unprocessable("Only a settled cash flow hedge has a reserve to reclassify");
-  }
-  if (request.date < settlement.valuationDate)
-    throw unprocessable("Reclassify on or after the settlement date");
-  if (!(await deps.store.accountExists(actor.tenant, request.targetAccountId))) {
-    throw unprocessable("The target account does not exist");
-  }
-  const recordId = `hv-${randomUUID()}`;
-  const lines = buildReserveReclassificationLines(
-    hedge.settledReserve,
-    hedge.reserveAccountId,
-    request.targetAccountId,
-    `Reclassify hedge reserve ${hedge.name}`,
-  );
-  let entryId: string | null = null;
-  if (lines.length > 0) {
-    const entry = await deps.buildEntry(
-      actor.tenant,
-      "hedge_reclass",
-      recordId,
-      request.date,
-      `Reclassify hedge reserve ${hedge.name}`,
-      lines,
-    );
-    entryId = (await deps.postEntry(actor.tenant, entry))?.id ?? entry.id;
-  }
-  const record: HedgeValuationRecord = {
-    valuationDate: request.date,
-    kind: "reclassification",
-    rate: settlement.rate,
-    instrumentValue: "0",
-    hedgedChange: "0",
-    effective: hedge.settledReserve,
-    ineffective: "0",
-    entryId,
-    reversalEntryId: null,
-  };
-  await deps.store.insertHedgeValuation(actor.tenant, id, recordId, record, actor.userId);
-  await deps.store.updateHedgeStatus(actor.tenant, id, "reclassified");
-  await audit(deps, actor, id, "UPDATE", { reclassification: record });
-  return load(deps, actor.tenant, id);
-}
+export { reclassifyHedgeReserve, settleHedge } from "./hedgeSettlementUseCases.js";

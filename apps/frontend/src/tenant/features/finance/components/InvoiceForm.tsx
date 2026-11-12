@@ -28,6 +28,7 @@ import {
 } from "@/tenant/features/finance/lib/invoiceFormDraft";
 import { useFinanceFeeStructures } from "@/tenant/features/finance/hooks/useFinanceFeeStructures";
 import { useDocumentCurrency } from "@/tenant/hooks/useDocumentCurrency";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import { DocumentCurrencyFields } from "@/components/app/DocumentCurrencyFields";
 
 export interface InvoiceFormProps {
@@ -123,63 +124,66 @@ export const InvoiceForm = function InvoiceForm({
     onClose();
   };
 
-  const handleSubmit = async (): Promise<void> => {
-    const newErrors: Record<string, string> = {};
-    if (!draft.studentName.trim()) newErrors.studentName = t("common.required");
-    if (!draft.studentId.trim()) newErrors.studentId = t("common.required");
-    if (!draft.class.trim()) newErrors.class = t("common.required");
-    if (!draft.session.trim()) newErrors.session = t("common.required");
-    if (!draft.baseFee.trim() || baseFee <= 0) newErrors.baseFee = t("finance.amountRequired");
-    if (!draft.dueDate.trim()) newErrors.dueDate = t("finance.dateRequired");
-    if (fx.needsRate && !isValidExchangeRate(fx.rate)) {
-      newErrors.exchangeRate = t("fx.field.rateMissing");
-    }
+  const guard = useSubmitGuard();
 
-    if (Object.keys(newErrors).length > 0 || !canSave) {
-      setErrors(newErrors);
-      setSubmitError(t("finance.fixErrors"));
-      return;
-    }
-
-    const payload = {
-      ...buildInvoiceCreatePayload(
-        draft,
-        baseFee,
-        discountValue,
-        discountAmt,
-        finalAmt,
-        nextInvoiceId(settings),
-        feeStructures,
-      ),
-      // Functional-currency invoices omit both fields (stored as rate 1).
-      ...(fx.isForeign ? { currency: fx.currency, exchangeRate: fx.rate.trim() } : {}),
-    };
-
-    const parsed = invoiceRecordInsertSchema.safeParse(payload);
-    if (!parsed.success) {
-      setErrors((prev) => ({
-        ...prev,
-        ...mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey)),
-      }));
-      setSubmitError(t("finance.fixErrors"));
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await onSave(payload);
-      notify.success(t("finance.invoiceSaved"));
-      resetAndClose();
-    } catch (error: unknown) {
-      if (!(error instanceof NotifiedMutationError)) {
-        notify.error(t("finance.invoiceSaveFailed"), {
-          description: error instanceof Error ? error.message : String(error),
-        });
+  const handleSubmit = (): Promise<void | undefined> =>
+    guard(async () => {
+      const newErrors: Record<string, string> = {};
+      if (!draft.studentName.trim()) newErrors.studentName = t("common.required");
+      if (!draft.studentId.trim()) newErrors.studentId = t("common.required");
+      if (!draft.class.trim()) newErrors.class = t("common.required");
+      if (!draft.session.trim()) newErrors.session = t("common.required");
+      if (!draft.baseFee.trim() || baseFee <= 0) newErrors.baseFee = t("finance.amountRequired");
+      if (!draft.dueDate.trim()) newErrors.dueDate = t("finance.dateRequired");
+      if (fx.needsRate && !isValidExchangeRate(fx.rate)) {
+        newErrors.exchangeRate = t("fx.field.rateMissing");
       }
-    } finally {
-      setSubmitting(false);
-    }
-  };
+
+      if (Object.keys(newErrors).length > 0 || !canSave) {
+        setErrors(newErrors);
+        setSubmitError(t("finance.fixErrors"));
+        return;
+      }
+
+      const payload = {
+        ...buildInvoiceCreatePayload(
+          draft,
+          baseFee,
+          discountValue,
+          discountAmt,
+          finalAmt,
+          nextInvoiceId(settings),
+          feeStructures,
+        ),
+        // Functional-currency invoices omit both fields (stored as rate 1).
+        ...(fx.isForeign ? { currency: fx.currency, exchangeRate: fx.rate.trim() } : {}),
+      };
+
+      const parsed = invoiceRecordInsertSchema.safeParse(payload);
+      if (!parsed.success) {
+        setErrors((prev) => ({
+          ...prev,
+          ...mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey)),
+        }));
+        setSubmitError(t("finance.fixErrors"));
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        await onSave(payload);
+        notify.success(t("finance.invoiceSaved"));
+        resetAndClose();
+      } catch (error: unknown) {
+        if (!(error instanceof NotifiedMutationError)) {
+          notify.error(t("finance.invoiceSaveFailed"), {
+            description: error instanceof Error ? error.message : String(error),
+          });
+        }
+      } finally {
+        setSubmitting(false);
+      }
+    });
 
   return (
     <FormModal

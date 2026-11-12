@@ -33,7 +33,7 @@ export function JournalEntryFormTagsSection({
 }: JournalEntryFormTagsSectionProps): React.JSX.Element {
   const [customTagInput, setCustomTagInput] = useState("");
   const activeTags = form.tags || [];
-  const presetTags =
+  const presetTags: readonly string[] =
     templates.length > 0 ? templates.map((template) => template.name) : JOURNAL_TAGS;
   const customTags = activeTags.filter((tag) => !presetTags.includes(tag));
 

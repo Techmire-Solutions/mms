@@ -22,6 +22,12 @@ export const PHASE7_FINANCE_DATE_COLUMNS: ReadonlyArray<DateColumn> = [
   ["accounting_posting_periods", "start_date"],
   ["accounting_posting_periods", "end_date"],
   ["accounting_entries", "date"],
+  // IAS 21 rate dates: converted with the rest of Phase 7 in 0248 (they were the
+  // only date-shaped columns still stored as varchar(10)).
+  ["accounting_journal_lines", "rate_date"],
+  ["accounting_opening_balances", "rate_date"],
+  ["accounting_exchange_rates", "rate_date"],
+  ["fx_reference_rates", "rate_date"],
   ["accounting_bank_statements", "period_start"],
   ["accounting_bank_statements", "period_end"],
   ["accounting_bank_statement_lines", "date"],

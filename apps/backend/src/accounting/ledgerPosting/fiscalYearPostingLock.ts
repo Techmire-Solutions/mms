@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm";
+import {
+  findFiscalYearForDate,
+  resolveFiscalYearRef,
+  type FiscalYear,
+  type JournalEntry,
+} from "@mms/shared";
 import { withTenant } from "../../db/tenant-context.js";
+import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 
 /**
  * Serialises postings and the fiscal-year close for one accounting year.
@@ -37,4 +44,45 @@ export async function lockFiscalYearForPosting(
       await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`fy:${subdomain}:${yearId}`}))`);
     }
   });
+}
+
+/**
+ * Every fiscal year an entry touches: the year its **date** falls in and the year
+ * it **declares** (`fiscal_year_id`/label), plus the declared id even when the
+ * list does not contain it yet.
+ *
+ * Locking only the date's year is not enough: `prepareJournalEntryForPersist`
+ * stores `declared ?? containing`, so an entry can be attributed to year A while
+ * dated in year B. A close of A would then run unprotected while the posting is
+ * in flight (it takes the lock for A, which nobody held) and the entry could
+ * commit into a closed year.
+ */
+export function postingYearIds(
+  entries: readonly JournalEntry[],
+  years: readonly FiscalYear[],
+): string[] {
+  const ids = new Set<string>();
+  for (const entry of entries) {
+    const containing = findFiscalYearForDate(years, entry.date)?.id;
+    if (containing) ids.add(containing);
+    const declared =
+      resolveFiscalYearRef(years, entry.fiscal_year_id ?? entry.fiscal_year)?.id ??
+      entry.fiscal_year_id;
+    if (declared) ids.add(declared);
+  }
+  return [...ids];
+}
+
+/**
+ * Locks every year the batch can land in. Callers must re-read the fiscal years
+ * *after* this returns (through their own loader), so a close that committed
+ * while they waited is visible.
+ */
+export async function lockFiscalYearsForEntries(
+  tenant: string,
+  entries: readonly JournalEntry[],
+  years?: readonly FiscalYear[],
+): Promise<void> {
+  const known = years ?? (await listFiscalYearsByWorkspace(tenant));
+  await lockFiscalYearForPosting(tenant, postingYearIds(entries, known));
 }

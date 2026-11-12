@@ -104,7 +104,10 @@ export async function replacePaymentAllocations(
         paymentId,
         invoiceId: allocation.invoiceId,
         invoiceLineId: allocation.invoiceLineId ?? null,
-        amount: String(allocation.amount),
+        // Round at the column's own scale (4 dp) instead of letting Postgres
+        // round a settlement amount silently, so Σ allocations always reconciles
+        // against `finance_payments.invoice_amount`.
+        amount: Number(allocation.amount).toFixed(4),
       })),
     );
   });

@@ -50,6 +50,12 @@ const STORED_NOTIFICATION_COPY: Record<
     type: "attendance",
     target: { kind: "students", status: "active" },
   },
+  finance_invoices_overdue: {
+    titleKey: "notifications.financeInvoicesOverdueTitle",
+    descKey: "notifications.financeInvoicesOverdueDesc",
+    type: "fee",
+    target: { kind: "invoices", statuses: ["overdue"] },
+  },
 };
 
 export function toStoredNotificationItem(
