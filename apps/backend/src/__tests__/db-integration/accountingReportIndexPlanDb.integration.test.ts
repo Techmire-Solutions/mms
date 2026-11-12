@@ -172,6 +172,7 @@ describe("report aggregations are index-backed at scale", () => {
               ON pl.workspace_subdomain = a.workspace_subdomain AND pl.account_id = a.id
            WHERE a.workspace_subdomain = ${TENANT} AND a.deleted_at IS NULL
            GROUP BY a.id, a.code`,
+      { disableSeqScan: true },
     );
     assertNoSeqScanOn(plan, ["accounting_journal_lines", "accounting_entries"]);
     expect(
