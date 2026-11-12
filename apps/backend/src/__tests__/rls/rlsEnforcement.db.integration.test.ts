@@ -60,6 +60,20 @@ async function assertNonBypassRole(): Promise<void> {
 }
 
 async function cleanup(): Promise<void> {
+  for (const tenant of [TENANT_A, TENANT_B]) {
+    await withTenant(tenant, async (tx) => {
+      await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+      await tx
+        .delete(workshopParticipants)
+        .where(eq(workshopParticipants.workspaceSubdomain, tenant));
+      await tx.delete(workshopEvents).where(eq(workshopEvents.workspaceSubdomain, tenant));
+      await tx
+        .delete(workshopModulePreferences)
+        .where(eq(workshopModulePreferences.workspaceSubdomain, tenant));
+      await tx.delete(contacts).where(eq(contacts.workspaceSubdomain, tenant));
+    }).catch(() => undefined);
+  }
+
   const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
     await tx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
@@ -95,46 +109,6 @@ describe("RLS enforcement", () => {
         { id: "student-a", workspaceSubdomain: TENANT_A, status: "active" },
         { id: "student-b", workspaceSubdomain: TENANT_B, status: "active" },
       ]);
-      await tx.insert(contacts).values([
-        { id: "rls-c-a", workspaceSubdomain: TENANT_A, firstName: "A", name: "RLS A contact" },
-        { id: "rls-c-b", workspaceSubdomain: TENANT_B, firstName: "B", name: "RLS B contact" },
-      ]);
-      await tx.insert(workshopEvents).values([
-        {
-          id: "w-a",
-          workspaceSubdomain: TENANT_A,
-          title: "A workshop",
-          status: "open",
-          startDate: "2099-01-01",
-        },
-        {
-          id: "w-b",
-          workspaceSubdomain: TENANT_B,
-          title: "B workshop",
-          status: "open",
-          startDate: "2099-01-01",
-        },
-      ]);
-      await tx.insert(workshopParticipants).values([
-        {
-          id: "p-a",
-          workspaceSubdomain: TENANT_A,
-          workshopId: "w-a",
-          contactId: "rls-c-a",
-          status: "registered",
-        },
-        {
-          id: "p-b",
-          workspaceSubdomain: TENANT_B,
-          workshopId: "w-b",
-          contactId: "rls-c-b",
-          status: "registered",
-        },
-      ]);
-      await tx.insert(workshopModulePreferences).values([
-        { workspaceSubdomain: TENANT_A, defaultMinAttendancePct: "80.00" },
-        { workspaceSubdomain: TENANT_B, defaultMinAttendancePct: "20.00" },
-      ]);
       await tx.insert(auditMerkleRoots).values({
         id: "merkle-rls-test",
         rootHash: "c".repeat(64),
@@ -143,6 +117,60 @@ describe("RLS enforcement", () => {
         periodEnd: new Date("2026-10-31T23:59:59.999Z"),
         shardCount: 2,
         publishedAt: new Date("2026-11-01T00:00:00.000Z"),
+      });
+    });
+
+    await withTenant(TENANT_A, async (tx) => {
+      await tx.insert(contacts).values({
+        id: "rls-c-a",
+        workspaceSubdomain: TENANT_A,
+        firstName: "A",
+        name: "RLS A contact",
+      });
+      await tx.insert(workshopEvents).values({
+        id: "w-a",
+        workspaceSubdomain: TENANT_A,
+        title: "A workshop",
+        status: "open",
+        startDate: "2099-01-01",
+      });
+      await tx.insert(workshopParticipants).values({
+        id: "p-a",
+        workspaceSubdomain: TENANT_A,
+        workshopId: "w-a",
+        contactId: "rls-c-a",
+        status: "registered",
+      });
+      await tx.insert(workshopModulePreferences).values({
+        workspaceSubdomain: TENANT_A,
+        defaultMinAttendancePct: "80.00",
+      });
+    });
+
+    await withTenant(TENANT_B, async (tx) => {
+      await tx.insert(contacts).values({
+        id: "rls-c-b",
+        workspaceSubdomain: TENANT_B,
+        firstName: "B",
+        name: "RLS B contact",
+      });
+      await tx.insert(workshopEvents).values({
+        id: "w-b",
+        workspaceSubdomain: TENANT_B,
+        title: "B workshop",
+        status: "open",
+        startDate: "2099-01-01",
+      });
+      await tx.insert(workshopParticipants).values({
+        id: "p-b",
+        workspaceSubdomain: TENANT_B,
+        workshopId: "w-b",
+        contactId: "rls-c-b",
+        status: "registered",
+      });
+      await tx.insert(workshopModulePreferences).values({
+        workspaceSubdomain: TENANT_B,
+        defaultMinAttendancePct: "20.00",
       });
     });
   });
