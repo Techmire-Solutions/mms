@@ -41,6 +41,7 @@ export const ALL_PERMISSIONS = [
   "workshops.read",
   "workshops.write",
   "workshops.delete",
+  "workshops.manage",
   "examinations.read",
   "examinations.write",
   "examinations.delete",

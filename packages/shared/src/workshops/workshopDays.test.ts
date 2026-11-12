@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { listWorkshopDays, WORKSHOP_MAX_DAYS } from "./workshopDays.js";
+import { countWorkshopDays, listWorkshopDays, WORKSHOP_MAX_DAYS } from "./workshopDays.js";
 
 describe("listWorkshopDays", () => {
   it("given a start and end, should list every day inclusive", () => {
@@ -27,5 +27,24 @@ describe("listWorkshopDays", () => {
 
   it("given a very long range, should cap the list", () => {
     expect(listWorkshopDays("2026-01-01", "2027-01-01")).toHaveLength(WORKSHOP_MAX_DAYS);
+  });
+});
+
+describe("countWorkshopDays", () => {
+  it("counts inclusively and treats a missing end as one day", () => {
+    expect(countWorkshopDays("2026-02-27", "2026-03-02")).toBe(4);
+    expect(countWorkshopDays("2026-03-01", null)).toBe(1);
+  });
+
+  it("caps at the business day without capping the span itself", () => {
+    expect(countWorkshopDays("2026-03-01", "2026-03-10", "2026-03-05")).toBe(5);
+    expect(countWorkshopDays("2026-01-01", "2027-01-01")).toBeGreaterThan(WORKSHOP_MAX_DAYS);
+  });
+
+  it("returns 0 for no start, junk, an inverted range or a business day before the start", () => {
+    expect(countWorkshopDays(null, "2026-03-01")).toBe(0);
+    expect(countWorkshopDays("not-a-date", null)).toBe(0);
+    expect(countWorkshopDays("2026-03-05", "2026-03-01")).toBe(0);
+    expect(countWorkshopDays("2026-03-05", "2026-03-06", "2026-03-01")).toBe(0);
   });
 });

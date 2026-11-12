@@ -392,6 +392,7 @@ PostgreSQL 15 introduced `UNIQUE NULLS NOT DISTINCT`, which treats `NULL` values
 | `examinations.ts` | `exams`, `questions`, `tests`, `assessment_results` |
 | `examinationQuestionBankTables.ts` | question bank entity tables |
 | `messaging.ts` | `message_logs` |
+| `workshops.ts` | `workshop_events`, `workshop_participants`; `workshop_attendance` / `workshop_scores` are append-only **child rows** (no sextuple, no trash surface — reads inner-join active participants so a withdrawn participant's marks stop being published) |
 
 ### 2.10 PostgreSQL HOT Updates, Partial Index Eviction & Autovacuum Tuning
 

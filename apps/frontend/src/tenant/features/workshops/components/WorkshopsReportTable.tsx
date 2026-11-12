@@ -47,12 +47,32 @@ export function WorkshopsReportTable(): React.JSX.Element {
         render: (row) => <span className="tabular-nums">{row.participants}</span>,
       },
       {
+        id: "utilization",
+        label: t("workshops.report.seatUtilization"),
+        width: 140,
+        render: (row) => (
+          <span className="tabular-nums">
+            {row.seatUtilizationPct === null ? "—" : `${row.seatUtilizationPct}%`}
+          </span>
+        ),
+      },
+      {
         id: "attendance",
         label: t("workshops.report.attendanceRate"),
         width: 140,
         render: (row) => (
           <span className="tabular-nums">
             {row.attendancePct === null ? "—" : `${row.attendancePct}%`}
+          </span>
+        ),
+      },
+      {
+        id: "completionRate",
+        label: t("workshops.report.completionRate"),
+        width: 140,
+        render: (row) => (
+          <span className="tabular-nums">
+            {row.completionPct === null ? "—" : `${row.completionPct}%`}
           </span>
         ),
       },

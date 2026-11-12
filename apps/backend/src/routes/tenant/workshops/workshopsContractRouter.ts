@@ -1,9 +1,23 @@
 import type { FastifyPluginAsync } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { isQueryFlagTrue, workshopsContract, WORKSHOPS_MODULE_MANIFEST } from "@mms/shared";
+import {
+  isQueryFlagTrue,
+  toWorkshopParticipantSummary,
+  workshopsContract,
+  WORKSHOPS_MODULE_MANIFEST,
+} from "@mms/shared";
+import { parseOccHeaders } from "../../../lib/occHeaders.js";
+import { ValidationError } from "../../../lib/httpErrors.js";
+import { buildBackgroundJobId, buildDeterministicJobKey } from "../../../lib/backgroundJobIds.js";
+import {
+  enqueueBackgroundJob,
+  QueueUnavailableError,
+} from "../../../services/backgroundJobEnqueue.js";
+import { getUserBackgroundJob } from "../../../services/backgroundJobService.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { guarded } from "./workshopsRouteGuard.js";
+import { canWriteCollection } from "../../../services/rbacService.js";
 import { workshopsUseCases } from "../../../workshops/use-cases/workshopsUseCases.js";
 
 type Contract = typeof workshopsContract;
@@ -34,9 +48,12 @@ export const workshopsContractRouter: FastifyPluginAsync = async (fastify) => {
         request,
         { collection: EVENTS, access: "read" },
         "Failed to load the workshop",
-        async () => ({
+        async (user) => ({
           status: 200 as const,
-          body: await workshopsUseCases.getWorkshop(params.id),
+          body: await workshopsUseCases.getWorkshop(params.id, {
+            // Contact details are operational data; read-only staff see names but not phones.
+            includeContactDetails: canWriteCollection(user, PARTICIPANTS),
+          }),
         }),
       ),
     createWorkshop: async ({ body, request }: ContractRouteArgs<Contract["createWorkshop"]>) =>
@@ -73,17 +90,12 @@ export const workshopsContractRouter: FastifyPluginAsync = async (fastify) => {
         { collection: EVENTS, access: "delete" },
         "Failed to delete the workshop",
         async (user) => {
-          const result = await workshopsUseCases.deleteWorkshops(
-            [params.id],
+          // The use case owns the not-found decision; the controller only maps the success shape.
+          await workshopsUseCases.deleteWorkshop(
+            params.id,
             user.id ?? null,
             body?.deletionReason ?? null,
           );
-          if (result.succeeded === 0) {
-            return {
-              status: 404 as const,
-              body: { type: "not_found", message: "Workshop not found" },
-            };
-          }
           return { status: 200 as const, body: { success: true as const } };
         },
       ),
@@ -110,6 +122,39 @@ export const workshopsContractRouter: FastifyPluginAsync = async (fastify) => {
           return { status: 200 as const, body: { success: true as const, ...result } };
         },
       ),
+    transitionWorkshop: async ({
+      params,
+      body,
+      request,
+    }: ContractRouteArgs<Contract["transitionWorkshop"]>) =>
+      guarded(
+        request,
+        // Publishing/unpublishing is a writer action; completing or cancelling the workshop is an
+        // administrative one (`workshops.manage`, admin/principal by default).
+        body.to === "completed" || body.to === "cancelled"
+          ? { permission: "workshops.manage" }
+          : { collection: EVENTS, access: "write" },
+        "Failed to change the workshop lifecycle",
+        async (user) => {
+          const { expectedUpdatedAt, expectedVersion } = parseOccHeaders(request);
+          if (expectedVersion !== undefined) {
+            throw new ValidationError(
+              "Workshops use x-expected-updated-at; x-expected-version is not supported",
+            );
+          }
+          return {
+            status: 200 as const,
+            body: {
+              workshop: await workshopsUseCases.transitionWorkshop(
+                params.id,
+                body,
+                { id: user.id ?? null, label: user.name },
+                expectedUpdatedAt,
+              ),
+            },
+          };
+        },
+      ),
     addParticipant: async ({
       params,
       body,
@@ -121,8 +166,59 @@ export const workshopsContractRouter: FastifyPluginAsync = async (fastify) => {
         "Failed to register the participant",
         async () => ({
           status: 201 as const,
-          body: { participant: await workshopsUseCases.addParticipant(params.id, body.contactId) },
+          body: {
+            participant: toWorkshopParticipantSummary(
+              await workshopsUseCases.addParticipant(params.id, body.contactId),
+            ),
+          },
         }),
+      ),
+    importParticipants: async ({
+      params,
+      body,
+      request,
+    }: ContractRouteArgs<Contract["importParticipants"]>) =>
+      guarded(
+        request,
+        { collection: PARTICIPANTS, access: "write" },
+        "Failed to queue the participant import",
+        async (user) => {
+          const tenant = String(request.tenant?.id ?? "");
+          const userId = String(user.id ?? "");
+          await workshopsUseCases.ensureWorkshop(params.id);
+          const key = buildDeterministicJobKey({
+            moduleId: "workshops",
+            kind: "import",
+            payload: { workshopId: params.id, contactIds: body.contactIds },
+          });
+          const jobId = buildBackgroundJobId(tenant, userId, key);
+          const existing = await getUserBackgroundJob(userId, jobId, tenant);
+          if (existing) return { status: 202 as const, body: { job: existing } };
+          try {
+            const job = await enqueueBackgroundJob(
+              tenant,
+              userId,
+              {
+                id: jobId,
+                moduleId: "workshops",
+                kind: "import",
+                status: "running",
+                label: "Importing workshop participants…",
+                createdAt: new Date().toISOString(),
+              },
+              { workshopId: params.id, contactIds: body.contactIds },
+            );
+            return { status: 202 as const, body: { job } };
+          } catch (error) {
+            if (error instanceof QueueUnavailableError) {
+              return {
+                status: 503 as const,
+                body: { type: "service_unavailable", message: error.message },
+              };
+            }
+            throw error;
+          }
+        },
       ),
     removeParticipant: async ({
       params,
@@ -133,12 +229,38 @@ export const workshopsContractRouter: FastifyPluginAsync = async (fastify) => {
         { collection: PARTICIPANTS, access: "delete" },
         "Failed to withdraw the participant",
         async (user) => {
-          await workshopsUseCases.removeParticipant(
+          const promoted = await workshopsUseCases.removeParticipant(
             params.id,
             params.participantId,
             user.id ?? null,
           );
-          return { status: 200 as const, body: { success: true as const } };
+          return {
+            status: 200 as const,
+            body: {
+              success: true as const,
+              promoted: promoted ? toWorkshopParticipantSummary(promoted) : null,
+            },
+          };
+        },
+      ),
+    addParticipants: async ({
+      params,
+      body,
+      request,
+    }: ContractRouteArgs<Contract["addParticipants"]>) =>
+      guarded(
+        request,
+        { collection: PARTICIPANTS, access: "write" },
+        "Failed to register the participants",
+        async () => {
+          const result = await workshopsUseCases.addParticipants(params.id, body.contactIds);
+          return {
+            status: 201 as const,
+            body: {
+              added: result.added.map(toWorkshopParticipantSummary),
+              waitlisted: result.waitlisted.map(toWorkshopParticipantSummary),
+            },
+          };
         },
       ),
     saveAttendanceDay: async ({
@@ -171,5 +293,7 @@ export const workshopsContractRouter: FastifyPluginAsync = async (fastify) => {
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    // Declared response schemas are the wire contract — validate them at runtime.
+    responseValidation: true,
   });
 };

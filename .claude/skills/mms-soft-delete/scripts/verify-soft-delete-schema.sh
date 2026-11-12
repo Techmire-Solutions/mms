@@ -41,6 +41,10 @@ const tenantEntityFiles = [
   // `hasanat.ts` is a barrel since the 0230-era split; the entity module declares the table.
   "hasanatDistributions.ts",
   "examinationExamTables.ts",
+  // Workshops: `workshop_events` + `workshop_participants` carry the sextuple and the 3-tier
+  // indexes; `workshop_attendance` / `workshop_scores` are append-only child rows (see
+  // docs/workshops-schema-persistence-audit-2026-11-12.md).
+  "workshops.ts",
 ];
 
 for (const file of tenantEntityFiles) {

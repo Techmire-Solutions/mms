@@ -14,6 +14,12 @@ const FILES = [
   "src/__tests__/db-integration/hasanatConcurrencyDb.integration.test.ts",
   // Exam OCC batches/moderation/publication: repeated so a lucky single run cannot hide a race.
   "src/__tests__/db-integration/examinationsConcurrencyDb.integration.test.ts",
+  // Workshop seat capacity: concurrent registration, duplicate submission, cap lowering, trash race.
+  "src/__tests__/db-integration/workshopsCapacityConcurrencyDb.integration.test.ts",
+  // Workshop waitlist: concurrent fills, promotions on withdrawal, capacity-raise promotion order.
+  "src/__tests__/db-integration/workshopsWaitlistDb.integration.test.ts",
+  // Completion/certificate races: evaluate, issue, transition vs issue, attendance, cancel.
+  "src/__tests__/db-integration/workshopsCompletionConcurrencyDb.integration.test.ts",
 ];
 
 for (const file of FILES) {

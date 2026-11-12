@@ -71,6 +71,9 @@ export async function cleanupOrphanedJobs(): Promise<void> {
           error: "Job was never dispatched to the queue",
           completedAt: new Date(),
           updatedAt: new Date(),
+          // Replayable via the DLQ tool: without this marker a crash between the DB insert and
+          // queue.add stranded the job forever.
+          deadLetteredAt: new Date(),
         })
         .where(
           and(

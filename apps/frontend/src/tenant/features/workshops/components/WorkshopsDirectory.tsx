@@ -5,7 +5,7 @@
 
 import React, { useMemo } from "react";
 import { CalendarDays, Pencil, RotateCcw, Trash2, Users } from "lucide-react";
-import type { WorkshopEvent } from "@mms/shared";
+import type { WorkshopEvent, WorkshopStatus } from "@mms/shared";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import { DataTableRowActions } from "@/components/common/data-table";
 import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";
@@ -40,6 +40,7 @@ export interface WorkshopsDirectoryProps {
   onEdit: (workshop: WorkshopEvent) => void;
   onDelete: (id: string) => void;
   onRestore: (id: string) => void;
+  onTransition: (workshop: WorkshopEvent, to: WorkshopStatus, reason?: string) => Promise<boolean>;
 }
 
 export function WorkshopsDirectory({
@@ -59,6 +60,7 @@ export function WorkshopsDirectory({
   onEdit,
   onDelete,
   onRestore,
+  onTransition: _onTransition,
 }: WorkshopsDirectoryProps): React.JSX.Element {
   const { t } = useTranslation();
   const { formatCurrency } = useCurrency();

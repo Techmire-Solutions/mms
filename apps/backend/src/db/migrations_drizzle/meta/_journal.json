@@ -1709,6 +1709,34 @@
       "when": 1796814000000,
       "tag": "0243_question_bank_taxonomy_checks",
       "breakpoints": true
+    },
+    {
+      "idx": 244,
+      "version": "7",
+      "when": 1796900400000,
+      "tag": "0244_workshops_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 245,
+      "version": "7",
+      "when": 1796986800000,
+      "tag": "0245_workshops_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 246,
+      "version": "7",
+      "when": 1797073200000,
+      "tag": "0246_workshop_waitlist",
+      "breakpoints": true
+    },
+    {
+      "idx": 247,
+      "version": "7",
+      "when": 1797159600000,
+      "tag": "0247_workshop_analytics_indexes",
+      "breakpoints": true
     }
   ]
 }

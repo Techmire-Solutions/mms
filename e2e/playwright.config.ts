@@ -16,6 +16,7 @@ const LOCAL_ONLY_SPECS = [
   "**/tenant-academic-flow.spec.ts",
   "**/tenant-critical-lifecycles.spec.ts",
   "**/tenant-operations-flow.spec.ts",
+  "**/workshops-lifecycle.spec.ts",
 ] as const;
 
 /** Heavy mutation/seed flows excluded when running against production environments. */

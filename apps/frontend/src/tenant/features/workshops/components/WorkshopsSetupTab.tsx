@@ -11,6 +11,7 @@ import {
   useSaveWorkshopPreferences,
   useWorkshopPreferences,
 } from "../hooks/useWorkshopsCompletionApi";
+import { WorkshopCertificateTemplateEditor } from "./WorkshopCertificateTemplateEditor";
 
 const toText = (value: number | null) => (value === null ? "" : String(value));
 const toPct = (value: string) => (value.trim() === "" ? null : Number(value.trim()));
@@ -105,6 +106,7 @@ function PreferencesForm({
 /** Workshops Setup tier — default completion criteria copied into new workshops. */
 export function WorkshopsSetupTab({ canEditSetup }: { canEditSetup: boolean }): React.JSX.Element {
   const { t } = useTranslation();
+  const [templateOpen, setTemplateOpen] = useState(false);
   const preferences = useWorkshopPreferences();
 
   if (preferences.isError) {
@@ -121,5 +123,33 @@ export function WorkshopsSetupTab({ canEditSetup }: { canEditSetup: boolean }): 
   }
   // Keyed on the saved values so a save (or another user's change) resets the inputs.
   const key = `${preferences.data.defaultMinAttendancePct}:${preferences.data.defaultMinScorePct}`;
-  return <PreferencesForm key={key} saved={preferences.data} canEditSetup={canEditSetup} />;
+  return (
+    <div className="space-y-4">
+      <PreferencesForm key={key} saved={preferences.data} canEditSetup={canEditSetup} />
+      {canEditSetup ? (
+        <section
+          aria-labelledby="workshops-certificate-template-heading"
+          className="space-y-3 rounded-lg border border-border bg-card p-4 text-start"
+        >
+          <div>
+            <h2
+              id="workshops-certificate-template-heading"
+              className="text-sm font-semibold text-foreground"
+            >
+              {t("workshops.certificateTemplate.heading")}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("workshops.certificateTemplate.description")}
+            </p>
+          </div>
+          <Button type="button" variant="outline" onClick={() => setTemplateOpen(true)}>
+            {t("workshops.certificateTemplate.edit")}
+          </Button>
+        </section>
+      ) : null}
+      {templateOpen ? (
+        <WorkshopCertificateTemplateEditor fullscreen onClose={() => setTemplateOpen(false)} />
+      ) : null}
+    </div>
+  );
 }

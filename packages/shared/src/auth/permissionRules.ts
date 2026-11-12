@@ -59,6 +59,7 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   "workshops.read": { module: "workshops", requiredActions: ["read"] },
   "workshops.write": { module: "workshops", requiredActions: ["create", "update"] },
   "workshops.delete": { module: "workshops", requiredActions: ["delete"] },
+  "workshops.manage": { module: "workshops", requiredActions: ["manage"] },
 
   // Examinations
   "examinations.read": { module: "examinations", requiredActions: ["read"] },

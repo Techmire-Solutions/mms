@@ -1,11 +1,9 @@
-import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import {
-  type WorkshopAttendanceDayBody,
+  workshopAttendanceStatusSchema,
   type WorkshopAttendanceMark,
-  type WorkshopAttendanceStatus,
   type WorkshopDetail,
   type WorkshopScore,
-  type WorkshopScoresBody,
   type WorkshopsCommandMetricsSnapshot,
 } from "@mms/shared";
 import {
@@ -14,12 +12,15 @@ import {
   workshopParticipants,
   workshopScores,
 } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
-import { NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { findWorkshopRow, workshopRowToRecord } from "./workshopEventsRepository.js";
-import { listActiveParticipants } from "./workshopParticipantsRepository.js";
+import {
+  listActiveParticipants,
+  listWaitlistedParticipants,
+} from "./workshopParticipantsRepository.js";
+import { workshopToday } from "./workshopClock.js";
 
-async function listAttendance(
+export async function listAttendance(
   tx: TenantTransaction,
   subdomain: string,
   workshopId: string,
@@ -31,6 +32,16 @@ async function listAttendance(
       status: workshopAttendance.status,
     })
     .from(workshopAttendance)
+    // Withdrawn participants keep their historical marks, but the workshop payload must not
+    // re-publish them (`soft-delete` §1: enforce deleted_at across joins, not just the parent read).
+    .innerJoin(
+      workshopParticipants,
+      and(
+        eq(workshopParticipants.workspaceSubdomain, workshopAttendance.workspaceSubdomain),
+        eq(workshopParticipants.id, workshopAttendance.participantId),
+        isNull(workshopParticipants.deletedAt),
+      ),
+    )
     .where(
       and(
         eq(workshopAttendance.workspaceSubdomain, subdomain),
@@ -38,10 +49,13 @@ async function listAttendance(
       ),
     )
     .orderBy(asc(workshopAttendance.dayOn));
-  return rows.map((row) => ({ ...row, status: row.status as WorkshopAttendanceStatus }));
+  return rows.map((row) => ({
+    ...row,
+    status: workshopAttendanceStatusSchema.parse(row.status),
+  }));
 }
 
-async function listScores(
+export async function listScores(
   tx: TenantTransaction,
   subdomain: string,
   workshopId: string,
@@ -56,6 +70,14 @@ async function listScores(
       remarks: workshopScores.remarks,
     })
     .from(workshopScores)
+    .innerJoin(
+      workshopParticipants,
+      and(
+        eq(workshopParticipants.workspaceSubdomain, workshopScores.workspaceSubdomain),
+        eq(workshopParticipants.id, workshopScores.participantId),
+        isNull(workshopParticipants.deletedAt),
+      ),
+    )
     .where(
       and(
         eq(workshopScores.workspaceSubdomain, subdomain),
@@ -75,9 +97,13 @@ export async function loadWorkshopDetail(
     const row = await findWorkshopRow(tx, subdomain, id, { includeDeleted: true });
     if (!row) return null;
     const participants = await listActiveParticipants(tx, subdomain, id);
+    const waitlisted = await listWaitlistedParticipants(tx, subdomain, id);
+    const today = await workshopToday(subdomain);
     return {
-      workshop: workshopRowToRecord(row, participants.length),
+      workshop: workshopRowToRecord(row, participants.length, today),
       participants,
+      waitlisted,
+      waitlistCount: waitlisted.length,
       attendance: await listAttendance(tx, subdomain, id),
       scores: await listScores(tx, subdomain, id),
     };
@@ -85,125 +111,7 @@ export async function loadWorkshopDetail(
 }
 
 /** Rejects ids that are not active participants of this (active) workshop. */
-async function requireParticipants(
-  tx: TenantTransaction,
-  subdomain: string,
-  workshopId: string,
-  participantIds: string[],
-): Promise<void> {
-  const workshop = await findWorkshopRow(tx, subdomain, workshopId);
-  if (!workshop) throw new NotFoundError("Workshop not found");
-  const unique = [...new Set(participantIds)];
-  const found = await tx
-    .select({ id: workshopParticipants.id })
-    .from(workshopParticipants)
-    .where(
-      and(
-        eq(workshopParticipants.workspaceSubdomain, subdomain),
-        eq(workshopParticipants.workshopId, workshopId),
-        inArray(workshopParticipants.id, unique),
-        isNull(workshopParticipants.deletedAt),
-      ),
-    );
-  if (found.length !== unique.length) {
-    throw new ValidationError("Every row must name an active participant of this workshop");
-  }
-}
 
-export async function saveAttendanceDay(
-  tenant: string,
-  workshopId: string,
-  body: WorkshopAttendanceDayBody,
-  markedBy: string | null,
-): Promise<WorkshopAttendanceMark[]> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    const workshop = await findWorkshopRow(tx, subdomain, workshopId);
-    if (!workshop) throw new NotFoundError("Workshop not found");
-    const outside =
-      (workshop.startDate && body.dayOn < workshop.startDate) ||
-      (workshop.endDate && body.dayOn > workshop.endDate);
-    if (outside) throw new ValidationError("Check-in day is outside the workshop dates");
-    await requireParticipants(
-      tx,
-      subdomain,
-      workshopId,
-      body.marks.map((mark) => mark.participantId),
-    );
-    await tx
-      .insert(workshopAttendance)
-      .values(
-        body.marks.map((mark) => ({
-          id: `${mark.participantId}:${body.dayOn}`,
-          workspaceSubdomain: subdomain,
-          workshopId,
-          participantId: mark.participantId,
-          dayOn: body.dayOn,
-          status: mark.status,
-          markedBy,
-        })),
-      )
-      .onConflictDoUpdate({
-        target: [
-          workshopAttendance.workspaceSubdomain,
-          workshopAttendance.participantId,
-          workshopAttendance.dayOn,
-        ],
-        set: {
-          status: sql`excluded.status`,
-          markedBy: sql`excluded.marked_by`,
-          updatedAt: new Date(),
-        },
-      });
-    return listAttendance(tx, subdomain, workshopId);
-  });
-}
-
-export async function saveScores(
-  tenant: string,
-  workshopId: string,
-  body: WorkshopScoresBody,
-): Promise<WorkshopScore[]> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    await requireParticipants(
-      tx,
-      subdomain,
-      workshopId,
-      body.scores.map((line) => line.participantId),
-    );
-    await tx
-      .insert(workshopScores)
-      .values(
-        body.scores.map((line) => ({
-          id: crypto.randomUUID(),
-          workspaceSubdomain: subdomain,
-          workshopId,
-          participantId: line.participantId,
-          criterionName: line.criterionName,
-          score: line.score.toFixed(2),
-          maxScore: line.maxScore.toFixed(2),
-          remarks: line.remarks ?? null,
-        })),
-      )
-      .onConflictDoUpdate({
-        target: [
-          workshopScores.workspaceSubdomain,
-          workshopScores.participantId,
-          workshopScores.criterionName,
-        ],
-        set: {
-          score: sql`excluded.score`,
-          maxScore: sql`excluded.max_score`,
-          remarks: sql`excluded.remarks`,
-          updatedAt: new Date(),
-        },
-      });
-    return listScores(tx, subdomain, workshopId);
-  });
-}
-
-/** Counts relative to `today` (YYYY-MM-DD); events without dates count toward the total only. */
 export async function aggregateWorkshopsMetrics(
   tenant: string,
   today: string,
@@ -214,9 +122,9 @@ export async function aggregateWorkshopsMetrics(
     const [events] = await tx
       .select({
         total: sql<number>`count(*)::int`,
-        upcoming: sql<number>`count(*) filter (where ${workshopEvents.startDate} > ${today}::date)::int`,
-        ongoing: sql<number>`count(*) filter (where ${workshopEvents.startDate} <= ${today}::date and ${lastDay} >= ${today}::date)::int`,
-        finished: sql<number>`count(*) filter (where ${lastDay} < ${today}::date)::int`,
+        upcoming: sql<number>`count(*) filter (where ${workshopEvents.status} = 'open' and ${workshopEvents.startDate} > ${today}::date)::int`,
+        ongoing: sql<number>`count(*) filter (where ${workshopEvents.status} = 'open' and ${workshopEvents.startDate} <= ${today}::date and ${lastDay} >= ${today}::date)::int`,
+        finished: sql<number>`count(*) filter (where ${workshopEvents.status} = 'completed' or (${workshopEvents.status} = 'open' and ${lastDay} < ${today}::date))::int`,
       })
       .from(workshopEvents)
       .where(
@@ -236,7 +144,9 @@ export async function aggregateWorkshopsMetrics(
         and(
           eq(workshopParticipants.workspaceSubdomain, subdomain),
           isNull(workshopParticipants.deletedAt),
+          isNull(workshopParticipants.waitlistedAt),
           isNull(workshopEvents.deletedAt),
+          sql`${workshopEvents.status} <> 'cancelled'`,
         ),
       );
     return {

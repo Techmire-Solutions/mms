@@ -7,6 +7,7 @@ import { formatDate, type AppTranslationKey, type WorkshopEvent } from "@mms/sha
 import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { TableCellLink } from "@shared/ui";
 import { WORKSHOP_TITLE_DEFAULT_WIDTH } from "../hooks/useWorkshopsColumnLayout";
+import { WorkshopPhaseBadge } from "./WorkshopPhaseBadge";
 
 type Translate = (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 
@@ -57,6 +58,13 @@ export function buildWorkshopsWorkColumns(
       width: widthOf?.("dates") ?? 200,
       noWrap: true,
       render: (workshop) => <span className="text-sm">{formatWorkshopDates(workshop)}</span>,
+    },
+    {
+      id: "phase",
+      label: t("workshops.status"),
+      width: widthOf?.("phase") ?? 150,
+      noWrap: true,
+      render: (workshop) => <WorkshopPhaseBadge phase={workshop.phase} />,
     },
     {
       id: "registrationDeadline",

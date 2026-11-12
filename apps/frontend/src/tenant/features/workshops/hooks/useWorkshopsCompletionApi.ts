@@ -7,7 +7,12 @@ import {
   type WorkshopPreferences,
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { read, useWorkshopsMutation } from "./useWorkshopsApi";
+import {
+  invalidateWorkshopActivityQueries,
+  invalidateWorkshopPreferenceQueries,
+  read,
+  useWorkshopsMutation,
+} from "./useWorkshopsApi";
 import {
   WORKSHOP_COMPLETION_QUERY_KEY,
   WORKSHOPS_PREFERENCES_QUERY_KEY,
@@ -33,24 +38,28 @@ export function useWorkshopCompletion(id: string | null) {
 }
 
 export const useEvaluateWorkshopCompletion = () =>
-  useWorkshopsMutation(async (id: string) =>
-    read(
-      await apiContract.workshopsCompletion.evaluateCompletion({ params: { id }, body: {} }),
-      rowsSchema,
-      "Failed to evaluate completion",
-    ),
+  useWorkshopsMutation(
+    async (id: string) =>
+      read(
+        await apiContract.workshopsCompletion.evaluateCompletion({ params: { id }, body: {} }),
+        rowsSchema,
+        "Failed to evaluate completion",
+      ),
+    (queryClient, id) => invalidateWorkshopActivityQueries(queryClient, id),
   );
 
 export const useIssueWorkshopCertificates = () =>
-  useWorkshopsMutation(async ({ id, participantIds }: { id: string; participantIds: string[] }) =>
-    read(
-      await apiContract.workshopsCompletion.issueCertificates({
-        params: { id },
-        body: { participantIds },
-      }),
-      rowsSchema.extend({ issued: z.array(z.string()) }),
-      "Failed to issue certificates",
-    ),
+  useWorkshopsMutation(
+    async ({ id, participantIds }: { id: string; participantIds: string[] }) =>
+      read(
+        await apiContract.workshopsCompletion.issueCertificates({
+          params: { id },
+          body: { participantIds },
+        }),
+        rowsSchema.extend({ issued: z.array(z.string()) }),
+        "Failed to issue certificates",
+      ),
+    (queryClient, { id }) => invalidateWorkshopActivityQueries(queryClient, id),
   );
 
 export function useWorkshopsReport(options: { enabled?: boolean } = {}) {
@@ -80,10 +89,12 @@ export function useWorkshopPreferences(options: { enabled?: boolean } = {}) {
 }
 
 export const useSaveWorkshopPreferences = () =>
-  useWorkshopsMutation(async (body: WorkshopPreferences) =>
-    read(
-      await apiContract.workshopsCompletion.savePreferences({ body }),
-      workshopPreferencesSchema,
-      "Failed to save workshop settings",
-    ),
+  useWorkshopsMutation(
+    async (body: WorkshopPreferences) =>
+      read(
+        await apiContract.workshopsCompletion.savePreferences({ body }),
+        workshopPreferencesSchema,
+        "Failed to save workshop settings",
+      ),
+    (queryClient) => invalidateWorkshopPreferenceQueries(queryClient),
   );

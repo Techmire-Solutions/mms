@@ -16,6 +16,7 @@ export {
   useUpdateWorkshop,
   useDeleteWorkshop,
   useRestoreWorkshop,
+  useTransitionWorkshop,
   useAddWorkshopParticipant,
   useRemoveWorkshopParticipant,
   useSaveWorkshopAttendance,

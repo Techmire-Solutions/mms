@@ -93,5 +93,6 @@ export const workshopsCompletionRouter: FastifyPluginAsync = async (fastify) => 
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    responseValidation: true,
   });
 };

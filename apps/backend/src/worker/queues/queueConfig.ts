@@ -17,6 +17,8 @@ export const QUEUE_EXAMINATIONS = "examinations";
  * sandboxed queue so a large import cannot be time-boxed by, or starve, the shared export queue.
  */
 export const QUEUE_QUESTION_BANK = "question-bank";
+/** Workshops participant imports/notifications: DB-bound work with its own retry budget. */
+export const QUEUE_WORKSHOPS = "workshops";
 
 export interface QueueConcurrencyAndPriority {
   concurrency: number;
@@ -59,6 +61,10 @@ export const QUEUE_SETTINGS: Record<string, QueueConcurrencyAndPriority> = {
     priority: 2,
   },
   [QUEUE_QUESTION_BANK]: {
+    concurrency: 2,
+    priority: 2,
+  },
+  [QUEUE_WORKSHOPS]: {
     concurrency: 2,
     priority: 2,
   },
@@ -126,6 +132,9 @@ export const QUESTION_BANK_IMPORT_TIMEOUT_MS =
   Number(process.env.QUESTION_BANK_IMPORT_TIMEOUT_MS) || 10 * 60_000;
 export const QUESTION_BANK_EXPORT_TIMEOUT_MS =
   Number(process.env.QUESTION_BANK_EXPORT_TIMEOUT_MS) || 10 * 60_000;
+/** Workshop participant imports walk up to 5,000 contacts in chunks. */
+export const WORKSHOPS_IMPORT_TIMEOUT_MS =
+  Number(process.env.WORKSHOPS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
 /** Student CSV imports and exports walk up to 5,000 rows. */
 export const STUDENTS_IMPORT_TIMEOUT_MS =
   Number(process.env.STUDENTS_IMPORT_TIMEOUT_MS) || 10 * 60_000;
@@ -179,6 +188,7 @@ export function resolveJobExecutionTimeoutMs(moduleId: string, kind: string): nu
     "questionbank:import": QUESTION_BANK_IMPORT_TIMEOUT_MS,
     "questionbank:export": QUESTION_BANK_EXPORT_TIMEOUT_MS,
     "questionbank:item-analysis": QUESTION_BANK_IMPORT_TIMEOUT_MS,
+    "workshops:import": WORKSHOPS_IMPORT_TIMEOUT_MS,
   };
   if (budgets[key] !== undefined) return budgets[key];
   return normalizedModule === "messaging" ? MESSAGING_JOB_TIMEOUT_MS : JOB_EXECUTION_TIMEOUT_MS;

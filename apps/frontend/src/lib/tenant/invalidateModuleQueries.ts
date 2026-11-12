@@ -94,7 +94,8 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
       return invalidateHasanatQueries(queryClient);
     case "workshops":
     case "workshop_events":
-      return invalidateWorkshopsQueries(queryClient);
+      void invalidateWorkshopsQueries(queryClient);
+      return;
     case "examinations":
     case "exams":
     case "exam_results":

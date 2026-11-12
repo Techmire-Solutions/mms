@@ -1,131 +1,229 @@
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
-import type { WorkshopParticipant, WorkshopParticipantStatus } from "@mms/shared";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql, type SQL } from "drizzle-orm";
+import { workshopParticipantStatusSchema, type WorkshopParticipant } from "@mms/shared";
 import { contactPhones, contacts, workshopParticipants } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
-import { findWorkshopRow } from "./workshopEventsRepository.js";
+import type { TenantTransaction } from "../tenant-context.js";
 
-/** Primary phone of the participant's contact, first by sort order when none is marked primary. */
-const primaryPhone = sql<string>`coalesce((
-  select ${contactPhones.number} from ${contactPhones}
-   where ${contactPhones.workspaceSubdomain} = ${workshopParticipants.workspaceSubdomain}
-     and ${contactPhones.contactId} = ${workshopParticipants.contactId}
-   order by ${contactPhones.isPrimary} desc, ${contactPhones.sortOrder} asc
-   limit 1), '')`;
+/**
+ * Participant reads.
+ *
+ * The primary phone is resolved by a **lateral join** (`ORDER BY is_primary DESC, sort_order ASC
+ * LIMIT 1`), matching `contact_phones_workspace_contact_priority_idx`. The previous correlated
+ * subquery re-ran the same lookup for every participant row; the lateral join is planned once and
+ * uses the same index. Rows always join only live contacts (soft-delete §1), while the registration
+ * itself is never dropped because its contact was archived.
+ */
+
+const participantColumns = {
+  id: workshopParticipants.id,
+  workshopId: workshopParticipants.workshopId,
+  contactId: workshopParticipants.contactId,
+  contactName: sql<string>`coalesce(${contacts.name}, '')`,
+  status: workshopParticipants.status,
+  completedAt: workshopParticipants.completedAt,
+  certificateIssuedAt: workshopParticipants.certificateIssuedAt,
+  waitlistedAt: workshopParticipants.waitlistedAt,
+  createdAt: workshopParticipants.createdAt,
+};
+
+const contactJoin = and(
+  eq(contacts.workspaceSubdomain, workshopParticipants.workspaceSubdomain),
+  eq(contacts.id, workshopParticipants.contactId),
+  isNull(contacts.deletedAt),
+);
+
+function primaryPhoneLateral(tx: TenantTransaction) {
+  return tx
+    .select({ number: contactPhones.number })
+    .from(contactPhones)
+    .where(
+      and(
+        eq(contactPhones.workspaceSubdomain, workshopParticipants.workspaceSubdomain),
+        eq(contactPhones.contactId, workshopParticipants.contactId),
+      ),
+    )
+    .orderBy(desc(contactPhones.isPrimary), asc(contactPhones.sortOrder))
+    .limit(1)
+    .as("primary_phone");
+}
+
+function participantQuery(
+  tx: TenantTransaction,
+  subdomain: string,
+  workshopId: string,
+  extra: SQL[] = [],
+  seatedOnly = true,
+) {
+  const phone = primaryPhoneLateral(tx);
+  return tx
+    .select({
+      ...participantColumns,
+      contactPhone: sql<string>`coalesce(${phone.number}, '')`,
+    })
+    .from(workshopParticipants)
+    .leftJoin(contacts, contactJoin)
+    .leftJoinLateral(phone, sql`true`)
+    .where(
+      and(
+        eq(workshopParticipants.workspaceSubdomain, subdomain),
+        eq(workshopParticipants.workshopId, workshopId),
+        isNull(workshopParticipants.deletedAt),
+        ...(seatedOnly ? [isNull(workshopParticipants.waitlistedAt)] : []),
+        ...extra,
+      ),
+    );
+}
+
+function toParticipant(row: {
+  id: string;
+  workshopId: string;
+  contactId: string;
+  contactName: string;
+  contactPhone: string;
+  status: string;
+  completedAt: Date | null;
+  certificateIssuedAt: Date | null;
+  waitlistedAt: Date | null;
+  createdAt: Date;
+}): WorkshopParticipant {
+  return {
+    ...row,
+    status: workshopParticipantStatusSchema.parse(row.status),
+    completedAt: row.completedAt ? row.completedAt.toISOString() : null,
+    certificateIssuedAt: row.certificateIssuedAt ? row.certificateIssuedAt.toISOString() : null,
+    waitlistedAt: row.waitlistedAt ? row.waitlistedAt.toISOString() : null,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
 
 export async function listActiveParticipants(
   tx: TenantTransaction,
   subdomain: string,
   workshopId: string,
 ): Promise<WorkshopParticipant[]> {
+  const rows = await participantQuery(tx, subdomain, workshopId).orderBy(asc(contacts.name));
+  return rows.map(toParticipant);
+}
+
+/** One seated registration of the workshop (waitlisted rows are not participants yet). */
+export async function findActiveParticipant(
+  tx: TenantTransaction,
+  subdomain: string,
+  workshopId: string,
+  participantId: string,
+): Promise<WorkshopParticipant | null> {
+  const [row] = await participantQuery(tx, subdomain, workshopId, [
+    eq(workshopParticipants.id, participantId),
+  ]).limit(1);
+  return row ? toParticipant(row) : null;
+}
+
+/** One active registration, seated or waitlisted — used to read back an insert. */
+export async function findParticipantById(
+  tx: TenantTransaction,
+  subdomain: string,
+  workshopId: string,
+  participantId: string,
+): Promise<WorkshopParticipant | null> {
+  const [row] = await participantQuery(
+    tx,
+    subdomain,
+    workshopId,
+    [eq(workshopParticipants.id, participantId)],
+    false,
+  ).limit(1);
+  return row ? toParticipant(row) : null;
+}
+
+/** Batch read-back for registration results. */
+export async function listParticipantsByIds(
+  tx: TenantTransaction,
+  subdomain: string,
+  workshopId: string,
+  participantIds: readonly string[],
+): Promise<WorkshopParticipant[]> {
+  if (participantIds.length === 0) return [];
+  const rows = await participantQuery(
+    tx,
+    subdomain,
+    workshopId,
+    [inArray(workshopParticipants.id, [...participantIds])],
+    false,
+  );
+  return rows.map(toParticipant);
+}
+
+/** Queued registrations, ordered by waitlist position (oldest first), live contacts only. */
+export async function listWaitlistedParticipants(
+  tx: TenantTransaction,
+  subdomain: string,
+  workshopId: string,
+): Promise<WorkshopParticipant[]> {
+  const phone = primaryPhoneLateral(tx);
   const rows = await tx
     .select({
-      id: workshopParticipants.id,
-      workshopId: workshopParticipants.workshopId,
-      contactId: workshopParticipants.contactId,
-      contactName: sql<string>`coalesce(${contacts.name}, '')`,
-      contactPhone: primaryPhone,
-      status: workshopParticipants.status,
-      completedAt: workshopParticipants.completedAt,
-      certificateIssuedAt: workshopParticipants.certificateIssuedAt,
-      createdAt: workshopParticipants.createdAt,
+      ...participantColumns,
+      contactPhone: sql<string>`coalesce(${phone.number}, '')`,
     })
     .from(workshopParticipants)
-    .leftJoin(
-      contacts,
-      and(
-        eq(contacts.workspaceSubdomain, workshopParticipants.workspaceSubdomain),
-        eq(contacts.id, workshopParticipants.contactId),
-      ),
-    )
+    .innerJoin(contacts, contactJoin)
+    .leftJoinLateral(phone, sql`true`)
     .where(
       and(
         eq(workshopParticipants.workspaceSubdomain, subdomain),
         eq(workshopParticipants.workshopId, workshopId),
         isNull(workshopParticipants.deletedAt),
+        isNotNull(workshopParticipants.waitlistedAt),
       ),
     )
-    .orderBy(asc(contacts.name));
-  return rows.map((row) => ({
-    ...row,
-    status: row.status as WorkshopParticipantStatus,
-    completedAt: row.completedAt ? row.completedAt.toISOString() : null,
-    certificateIssuedAt: row.certificateIssuedAt ? row.certificateIssuedAt.toISOString() : null,
-    createdAt: row.createdAt.toISOString(),
-  }));
+    .orderBy(
+      asc(workshopParticipants.waitlistedAt),
+      asc(workshopParticipants.createdAt),
+      asc(workshopParticipants.id),
+    );
+  return rows.map(toParticipant);
 }
 
 /**
- * Registers a contact. The event row is locked first, so two concurrent registrations cannot
- * both pass the capacity check; the partial unique index still backstops duplicates.
+ * Seat count for the capacity check. A `count(*)` — not the materialized roster — because this
+ * runs on every registration inside the event-row lock.
  */
-export async function registerParticipant(
-  tenant: string,
-  input: { id: string; workshopId: string; contactId: string; today: string },
-): Promise<WorkshopParticipant> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    const workshop = await findWorkshopRow(tx, subdomain, input.workshopId, { forUpdate: true });
-    if (!workshop) throw new NotFoundError("Workshop not found");
-    if (workshop.registrationDeadline && input.today > workshop.registrationDeadline) {
-      throw new ValidationError("Registration for this workshop has closed");
-    }
-
-    const [contact] = await tx
-      .select({ id: contacts.id })
-      .from(contacts)
-      .where(
-        and(
-          eq(contacts.workspaceSubdomain, subdomain),
-          eq(contacts.id, input.contactId),
-          isNull(contacts.deletedAt),
-        ),
-      )
-      .limit(1);
-    if (!contact) throw new NotFoundError("Contact not found");
-
-    const active = await listActiveParticipants(tx, subdomain, input.workshopId);
-    if (active.some((participant) => participant.contactId === input.contactId)) {
-      throw new ConflictError("This contact is already registered");
-    }
-    if (workshop.capacity !== null && active.length >= workshop.capacity) {
-      throw new ConflictError("This workshop is full");
-    }
-
-    await tx.insert(workshopParticipants).values({
-      id: input.id,
-      workspaceSubdomain: subdomain,
-      workshopId: input.workshopId,
-      contactId: input.contactId,
-      status: "registered",
-    });
-    const added = (await listActiveParticipants(tx, subdomain, input.workshopId)).find(
-      (participant) => participant.id === input.id,
+export async function countActiveParticipants(
+  tx: TenantTransaction,
+  subdomain: string,
+  workshopId: string,
+): Promise<number> {
+  const [row] = await tx
+    .select({ count: sql<number>`count(*)::int` })
+    .from(workshopParticipants)
+    .where(
+      and(
+        eq(workshopParticipants.workspaceSubdomain, subdomain),
+        eq(workshopParticipants.workshopId, workshopId),
+        isNull(workshopParticipants.deletedAt),
+        isNull(workshopParticipants.waitlistedAt),
+      ),
     );
-    if (!added) throw new NotFoundError("Participant not found");
-    return added;
-  });
+  return Number(row?.count ?? 0);
 }
 
-export async function withdrawParticipant(
-  tenant: string,
-  input: { workshopId: string; participantId: string; deletedBy: string | null },
-): Promise<boolean> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    const now = new Date();
-    const updated = await tx
-      .update(workshopParticipants)
-      .set({ deletedAt: now, deletedBy: input.deletedBy, updatedAt: now })
-      .where(
-        and(
-          eq(workshopParticipants.workspaceSubdomain, subdomain),
-          eq(workshopParticipants.workshopId, input.workshopId),
-          eq(workshopParticipants.id, input.participantId),
-          isNull(workshopParticipants.deletedAt),
-        ),
-      )
-      .returning({ id: workshopParticipants.id });
-    return updated.length > 0;
-  });
+/** Active seat counts for several workshops in one grouped query (list / detail projections). */
+export async function countActiveParticipantsByWorkshop(
+  tx: TenantTransaction,
+  subdomain: string,
+  workshopIds: string[],
+): Promise<Map<string, number>> {
+  if (workshopIds.length === 0) return new Map();
+  const rows = await tx
+    .select({ workshopId: workshopParticipants.workshopId, count: sql<number>`count(*)::int` })
+    .from(workshopParticipants)
+    .where(
+      and(
+        eq(workshopParticipants.workspaceSubdomain, subdomain),
+        inArray(workshopParticipants.workshopId, workshopIds),
+        isNull(workshopParticipants.deletedAt),
+        isNull(workshopParticipants.waitlistedAt),
+      ),
+    )
+    .groupBy(workshopParticipants.workshopId);
+  return new Map(rows.map((row) => [row.workshopId, Number(row.count)]));
 }

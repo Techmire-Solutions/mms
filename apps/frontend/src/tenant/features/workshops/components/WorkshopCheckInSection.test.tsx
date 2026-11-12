@@ -28,6 +28,7 @@ const participant = (id: string, name: string) => ({
   status: "registered" as const,
   completedAt: null,
   certificateIssuedAt: null,
+  waitlistedAt: null,
 });
 
 const detail = (fields: Partial<WorkshopDetail["workshop"]> = {}): WorkshopDetail => ({
@@ -45,9 +46,14 @@ const detail = (fields: Partial<WorkshopDetail["workshop"]> = {}): WorkshopDetai
     minAttendancePct: null,
     minScorePct: null,
     participantCount: 2,
+    waitlistEnabled: false,
+    status: "open",
+    phase: "registration_open",
     ...fields,
   },
   participants: [participant("p1", "Amina"), participant("p2", "Bilal")],
+  waitlisted: [],
+  waitlistCount: 0,
   attendance: [{ participantId: "p1", dayOn: "2099-03-01", status: "present" }],
   scores: [],
 });

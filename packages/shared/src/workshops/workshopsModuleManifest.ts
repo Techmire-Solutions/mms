@@ -25,6 +25,7 @@ export const WORKSHOPS_MODULE_MANIFEST = {
     read: "workshops.read",
     write: "workshops.write",
     delete: "workshops.delete",
+    manage: "workshops.manage",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
     export: "workshops.read",
@@ -52,3 +53,8 @@ export const workshopsCommandMetricsSnapshotSchema = z
   .strict();
 
 export type WorkshopsCommandMetricsSnapshot = z.infer<typeof workshopsCommandMetricsSnapshotSchema>;
+
+/** Envelope returned by `GET /api/workshops/metrics` (the route factory serializes `{ metrics }`). */
+export const workshopsCommandMetricsResponseSchema = z
+  .object({ metrics: workshopsCommandMetricsSnapshotSchema })
+  .strict();

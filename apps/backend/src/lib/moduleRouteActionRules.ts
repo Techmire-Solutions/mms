@@ -65,6 +65,14 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     onlyModules: ["enrollment"],
   },
   ...EXAMINATIONS_MODULE_ROUTE_ACTION_RULES,
+  // Workshops: restore and bulk-trash are `workshops.delete` operations in the handlers. The method
+  // default (`write`, for POST) would let a writer past the module gate only to 403 in the handler.
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/workshops\/(:id\/restore|bulk-delete)$/,
+    action: "delete",
+    onlyModules: ["workshops"],
+  },
   // Faculty: archive/restore are `faculty.delete` operations. The handlers
   // already require `canDeleteCollection("faculty")`, so the method default
   // (`write`) wrongly 403'd a delete-only role. Registered on the canonical,

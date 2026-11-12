@@ -10,7 +10,6 @@ import type {
   WorkshopScore,
   WorkshopScoresBody,
   WorkshopsCommandMetricsSnapshot,
-  WorkshopCompletionStatus,
   WorkshopPreferences,
 } from "@mms/shared";
 import type { WorkshopsPage } from "../../db/repositories/workshopEventsRepository.js";
@@ -45,12 +44,17 @@ export interface WorkshopsRepository {
   restoreWorkshop(tenant: string, id: string, restoredBy: string | null): Promise<boolean>;
   registerParticipant(
     tenant: string,
-    input: { id: string; workshopId: string; contactId: string; today: string },
+    input: { id: string; workshopId: string; contactId: string },
   ): Promise<WorkshopParticipant>;
+  /** Atomic bulk registration; overflow is queued when the workshop's waitlist is enabled. */
+  registerParticipants(
+    tenant: string,
+    input: { workshopId: string; contactIds: readonly string[] },
+  ): Promise<{ added: WorkshopParticipant[]; waitlisted: WorkshopParticipant[] }>;
   withdrawParticipant(
     tenant: string,
     input: { workshopId: string; participantId: string; deletedBy: string | null },
-  ): Promise<boolean>;
+  ): Promise<{ removed: boolean; promoted: WorkshopParticipant | null }>;
   saveAttendanceDay(
     tenant: string,
     workshopId: string,
@@ -72,16 +76,6 @@ export interface WorkshopsRepository {
     workshopId: string,
     today: string,
   ): Promise<WorkshopCompletionInputs>;
-  saveCompletionOutcomes(
-    tenant: string,
-    workshopId: string,
-    outcomes: Array<{ participantId: string; status: WorkshopCompletionStatus }>,
-  ): Promise<void>;
-  markCertificatesIssued(
-    tenant: string,
-    workshopId: string,
-    participantIds: string[],
-  ): Promise<string[]>;
   loadReportFacts(tenant: string, today: string): Promise<WorkshopReportFacts[]>;
   loadWorkshopPreferences(tenant: string): Promise<WorkshopPreferences>;
   saveWorkshopPreferences(

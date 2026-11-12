@@ -5,7 +5,7 @@
 
 import React, { useState } from "react";
 import { Presentation } from "lucide-react";
-import { WORKSHOPS_MODULE_MANIFEST, type WorkshopEvent } from "@mms/shared";
+import { WORKSHOPS_MODULE_MANIFEST, type WorkshopEvent, type WorkshopStatus } from "@mms/shared";
 import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -26,6 +26,7 @@ export interface WorkshopsWorkTabProps {
   search: string;
   onSearchChange: (value: string) => void;
   canWrite: boolean;
+  canManage: boolean;
   canDelete: boolean;
   viewingDeleted: boolean;
   selectedIds: string[];
@@ -36,6 +37,8 @@ export interface WorkshopsWorkTabProps {
   onEdit: (workshop: WorkshopEvent) => void;
   onDelete: (ids: string[]) => void;
   onRestore: (id: string) => void;
+  /** Publish / unpublish / complete / cancel; resolves true when the transition committed. */
+  onTransition: (workshop: WorkshopEvent, to: WorkshopStatus, reason?: string) => Promise<boolean>;
 }
 
 export function WorkshopsWorkTab({
@@ -46,6 +49,7 @@ export function WorkshopsWorkTab({
   search,
   onSearchChange,
   canWrite,
+  canManage,
   canDelete,
   viewingDeleted,
   selectedIds,
@@ -56,6 +60,7 @@ export function WorkshopsWorkTab({
   onEdit,
   onDelete,
   onRestore,
+  onTransition,
 }: WorkshopsWorkTabProps): React.JSX.Element {
   const { t } = useTranslation();
   const [viewing, setViewing] = useState<WorkshopEvent | null>(null);
@@ -141,12 +146,15 @@ export function WorkshopsWorkTab({
           onEdit={onEdit}
           onDelete={(id) => onDelete([id])}
           onRestore={onRestore}
+          onTransition={onTransition}
         />
       )}
 
       <WorkshopDetailDrawer
+        key={viewing?.id ?? "no-workshop"}
         workshop={viewing}
         canWrite={canWrite && !viewingDeleted}
+        canManage={canManage && !viewingDeleted}
         canDelete={canDelete}
         onClose={() => setViewing(null)}
         onEdit={(workshop) => {
@@ -154,6 +162,7 @@ export function WorkshopsWorkTab({
           onEdit(workshop);
         }}
         onRestore={onRestore}
+        onTransition={onTransition}
       />
     </div>
   );
