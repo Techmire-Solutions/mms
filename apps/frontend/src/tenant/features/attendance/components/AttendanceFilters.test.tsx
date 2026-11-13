@@ -59,4 +59,31 @@ describe("AttendanceFilters Component", () => {
     expect(html).toContain("attendance.filters.faculty");
     expect(html).toContain("attendance.filters.date");
   });
+
+  it("keeps the clear action outside the collapsible toggle (axe nested-interactive)", () => {
+    // A non-today date makes `activeCount > 0`, so the Clear button renders.
+    const html = renderToStaticMarkup(
+      <AttendanceFilters
+        filters={{
+          sessionId: "",
+          classId: "",
+          facultyId: "",
+          date: "2024-01-01",
+        }}
+        onChange={vi.fn()}
+      />,
+    );
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const toggle = doc.querySelector('[aria-controls="filters-panel"]');
+    expect(toggle).not.toBeNull();
+
+    const clearButton = Array.from(doc.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("attendance.filters.clear"),
+    );
+    expect(clearButton).toBeDefined();
+    // Interactive controls must not be nested inside another interactive control.
+    expect(
+      toggle!.querySelector("button, a[href], input, select, textarea, [role='button']"),
+    ).toBeNull();
+  });
 });
