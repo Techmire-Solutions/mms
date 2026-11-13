@@ -252,10 +252,15 @@ export const InvoiceDetail = function InvoiceDetail({
           <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
             <CreditCard className="w-3.5 h-3.5" aria-hidden="true" />
             <span>
-              {t("finance.detail.paidVia", {
-                date: formatDate(invoice.paidDate),
-                method: invoice.method ?? t("common.none"),
-              })}
+              {invoice.status === "paid"
+                ? t("finance.detail.paidVia", {
+                    date: formatDate(invoice.paidDate),
+                    method: invoice.method ?? t("common.none"),
+                  })
+                : t("finance.detail.lastPayment", {
+                    date: formatDate(invoice.paidDate),
+                    method: invoice.method ?? t("common.none"),
+                  })}
             </span>
           </div>
         )}

@@ -53,7 +53,7 @@ export function getCollectedAmountForMonth(
   year: number,
   month: number,
 ): number {
-  let sum = 0;
+  let sumCents = 0;
   invoices.forEach((inv) => {
     if (!inv || inv.status === "cancelled") return;
     const dateStr = inv.paidDate || inv.dueDate || "";
@@ -61,10 +61,11 @@ export function getCollectedAmountForMonth(
     const invYear = Number(dateStr.slice(0, 4));
     const invMonth = Number(dateStr.slice(5, 7)) - 1;
     if (invYear === year && invMonth === month) {
-      sum += getCollectedAmountForInvoice(inv);
+      // Integer cents: a float month total drifts into 0.30000000000000004.
+      sumCents += moneyToCents(getCollectedAmountForInvoice(inv));
     }
   });
-  return sum;
+  return sumCents / 100;
 }
 
 /**
@@ -80,7 +81,7 @@ export function getOutstandingAmountForMonth(
   year: number,
   month: number,
 ): number {
-  let sum = 0;
+  let sumCents = 0;
   invoices.forEach((inv) => {
     if (!inv || inv.status === "cancelled" || inv.status === "paid") return;
     const dateStr = inv.dueDate || "";
@@ -88,8 +89,8 @@ export function getOutstandingAmountForMonth(
     const invYear = Number(dateStr.slice(0, 4));
     const invMonth = Number(dateStr.slice(5, 7)) - 1;
     if (invYear === year && invMonth === month) {
-      sum += getOutstandingAmountForInvoice(inv);
+      sumCents += moneyToCents(getOutstandingAmountForInvoice(inv));
     }
   });
-  return sum;
+  return sumCents / 100;
 }

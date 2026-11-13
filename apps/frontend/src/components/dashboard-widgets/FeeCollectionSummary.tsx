@@ -13,6 +13,7 @@ import {
   getOutstandingAmountForMonth,
   FINANCE_MODULE_MANIFEST,
   formatPercent,
+  moneyToCents,
 } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { percentChange } from "@/tenant/hooks/collections/dashboard";
@@ -92,11 +93,11 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
         if (!map[className]) {
           map[className] = { name: className, collected: 0, target: 0 };
         }
-        map[className].target += inv.finalAmt;
+        map[className].target += moneyToCents(inv.finalAmt);
         if (inv.status === "paid") {
-          map[className].collected += inv.finalAmt;
+          map[className].collected += moneyToCents(inv.finalAmt);
         } else if (inv.status === "partial") {
-          map[className].collected += inv.paidAmt || 0;
+          map[className].collected += moneyToCents(inv.paidAmt || 0);
         }
       }
     });
@@ -111,7 +112,11 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
       collectedPct: colPct,
       outstandingPct: outPct,
       breakdown: bDown,
-      byClass: Object.values(map),
+      byClass: Object.values(map).map((row) => ({
+        ...row,
+        collected: row.collected / 100,
+        target: row.target / 100,
+      })),
       displayDate: formatMonthYear(now, "long"),
       comparisonMonthName: formatMonthName(prevMonthDate),
       displayTrendPct: Math.abs(chgPct),

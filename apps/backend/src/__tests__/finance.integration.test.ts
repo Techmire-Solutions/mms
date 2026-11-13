@@ -299,6 +299,25 @@ describe("finance REST routes integration", () => {
     expect(res.statusCode).toBe(403);
     await app.close();
   });
+
+  it("GET /api/finance/report-aggregates handles and logs database errors gracefully", async () => {
+    mockLoadFinanceReportAggregates.mockRejectedValueOnce(new Error("DB failure"));
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/finance/report-aggregates",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${accountantToken(app, { email: "finance@test.com", name: "Finance User" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(500);
+    expect(res.json()).toEqual({
+      type: "database_error",
+      message: "Failed to load finance report aggregates",
+    });
+    await app.close();
+  });
 });
 
 describe("finance metrics REST", () => {

@@ -29,8 +29,9 @@ export async function financeReportRoutes(
     try {
       const aggregates = await financeUseCases.loadFinanceReportAggregates(comparisonQuery);
       return reply.send(aggregates);
-    } catch {
-      return sendDatabaseError(reply, "Failed to load finance report aggregates");
+    } catch (err) {
+      request.log.error(err, "Failed to load finance report aggregates");
+      return sendDatabaseError(reply, "Failed to load finance report aggregates", err);
     }
   });
 }

@@ -21,6 +21,7 @@ import {
   getCollectedAmountForInvoice,
   getOutstandingAmountForInvoice,
   moneyToCents,
+  parseIsoDate,
 } from "@mms/shared";
 import type {
   DiscountUsageByTypeItem,
@@ -83,8 +84,8 @@ const FinancialReport = function FinancialReport({
     const monthlyTotals: Record<string, { collected: number; outstanding: number; total: number }> =
       {};
     financeInvoices.forEach((invoice) => {
-      const dueDate = new Date(invoice.dueDate);
-      if (isNaN(dueDate.getTime())) return;
+      const dueDate = parseIsoDate(invoice.dueDate);
+      if (!dueDate) return;
       const monthLabel = formatMonthYear(dueDate);
 
       if (!monthlyTotals[monthLabel])
@@ -152,9 +153,8 @@ const FinancialReport = function FinancialReport({
     }
     if (selectedMonth) {
       filteredInvoices = filteredInvoices.filter((invoice) => {
-        const dueDate = new Date(invoice.dueDate);
-        if (isNaN(dueDate.getTime())) return false;
-        return formatMonthYear(dueDate) === selectedMonth;
+        const dueDate = parseIsoDate(invoice.dueDate);
+        return dueDate ? formatMonthYear(dueDate) === selectedMonth : false;
       });
     }
     return filteredInvoices;

@@ -4135,6 +4135,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "finance.detail.breakdown": "تفصيل الرسوم",
   "finance.detail.discount": "الخصم ({type} – {value}%)",
   "finance.detail.due": "الاستحقاق: {date}",
+  "finance.detail.lastPayment": "آخر دفعة في {date} عبر {method}",
   "finance.detail.paidVia": "دُفع في {date} عبر {method}",
   "finance.detail.status": "حالة الفاتورة: {status}",
   "finance.detail.title": "الفاتورة {id}",
