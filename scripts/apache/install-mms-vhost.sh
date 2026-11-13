@@ -88,16 +88,6 @@ run_priv rm -f /etc/apache2/sites-enabled/mmsv2.conf /etc/apache2/sites-enabled/
 run_priv rm -f /etc/apache2/sites-enabled/000-mmsv2.conf 2>/dev/null || true
 run_priv a2ensite 000-mmsv2.conf 2>/dev/null || true
 run_priv a2enmod proxy proxy_http proxy_wstunnel headers ssl rewrite http2 brotli deflate 2>/dev/null || true
-
-# Enforce mpm_event over mpm_prefork for HTTP/2 multiplexing compatibility
-if command -v a2query >/dev/null 2>&1; then
-  if a2query -m mpm_prefork >/dev/null 2>&1; then
-    echo -e "${YELLOW}Switching Apache MPM from prefork to event for HTTP/2 support...${NC}"
-    run_priv a2dismod mpm_prefork || true
-    run_priv a2enmod mpm_event || true
-  fi
-fi
-
 run_priv apache2ctl configtest
 
 if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet apache2 2>/dev/null; then

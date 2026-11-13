@@ -100,36 +100,6 @@ export function StatisticsGrid({
         const hasPositiveTrend = statItem.trend >= 0;
         const isCustomCard = customCardSet.has(statItem.id);
 
-        // Meaningful empty state explanation for zero-value cards:
-        // Guides user on the next operational action instead of just a raw 0.
-        const isZeroVal =
-          statItem.value === "0" ||
-          statItem.value === "Rs 0" ||
-          statItem.value === "PKR 0" ||
-          statItem.value === "0%";
-        let emptyActionAdvice: string | undefined;
-        if (isZeroVal && !statItem.unavailable && !isEditMode) {
-          if (statItem.id.includes("students")) {
-            emptyActionAdvice = t("dashboard.emptyStat.students");
-          } else if (statItem.id.includes("fees")) {
-            emptyActionAdvice = t("dashboard.emptyStat.fees");
-          } else if (statItem.id.includes("attendance")) {
-            emptyActionAdvice = t("dashboard.emptyStat.attendance");
-          } else if (statItem.id.includes("outstanding")) {
-            emptyActionAdvice = t("dashboard.emptyStat.outstanding");
-          } else if (statItem.id.includes("sessions")) {
-            emptyActionAdvice = t("dashboard.emptyStat.sessions");
-          } else if (statItem.id.includes("classes")) {
-            emptyActionAdvice = t("dashboard.emptyStat.classes");
-          } else if (statItem.id.includes("contacts")) {
-            emptyActionAdvice = t("dashboard.emptyStat.contacts");
-          } else if (statItem.id.includes("hasanat")) {
-            emptyActionAdvice = t("dashboard.emptyStat.hasanat");
-          }
-        }
-
-        const cardFooter = emptyActionAdvice || statItem.sub;
-
         const motionProps = reducedMotion
           ? { initial: false, animate: { opacity: 1, y: 0 } }
           : {
@@ -162,7 +132,7 @@ export function StatisticsGrid({
                 )
               }
               title={statItem.title}
-              footer={cardFooter}
+              footer={statItem.sub}
               trend={isEditMode || statItem.unavailable ? undefined : statItem.trend}
               trendAriaLabel={
                 statItem.trend !== 0 && !isEditMode && !statItem.unavailable

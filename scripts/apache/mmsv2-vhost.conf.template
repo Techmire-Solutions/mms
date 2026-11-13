@@ -45,28 +45,13 @@
 
     # Terminate Brotli and Gzip compression at Apache edge for compressible MIME types
     <IfModule mod_brotli.c>
-        AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json application/xml image/svg+xml application/manifest+json
+        AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json application/xml image/svg+xml
         BrotliCompressionQuality 5
     </IfModule>
     <IfModule mod_deflate.c>
-        AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json application/xml image/svg+xml application/manifest+json
+        AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json application/xml image/svg+xml
         DeflateCompressionLevel 6
     </IfModule>
-
-    # Static Asset Caching Policies & Preload Hints
-    <LocationMatch "^/assets/">
-        Header always set Cache-Control "public, max-age=31536000, immutable"
-    </LocationMatch>
-
-    <LocationMatch "^/(index\.html)?$">
-        Header always set Cache-Control "no-cache, must-revalidate"
-        Header always set Pragma "no-cache"
-    </LocationMatch>
-
-    <LocationMatch "^/(sw\.js|site\.webmanifest|manifest\.json)$">
-        Header always set Cache-Control "no-cache, no-store, must-revalidate"
-        Header always set Pragma "no-cache"
-    </LocationMatch>
 
     # Inform upstream Fastify that edge handles compression (prevent double-compression)
     RequestHeader set X-Edge-Compression "brotli,gzip"

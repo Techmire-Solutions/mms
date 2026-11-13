@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   lighthouse-ci:
-    name: Lighthouse CI (Mobile & Desktop)
+    name: Lighthouse CI (Mobile)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -37,10 +37,10 @@ jobs:
         env:
           ANALYZE: "1"
 
-      - name: Run Lighthouse CI (Mobile & Desktop - 3 runs each)
+      - name: Run Lighthouse CI (Mobile - 3 runs)
         id: lhci
         run: |
-          npx --yes @lhci/cli@0.14.x autorun --config=./lighthouserc.cjs
+          npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.cjs
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
@@ -48,28 +48,7 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         id: comment
         run: |
-          node -e '
-            const fs = require("fs");
-            const path = "./.lighthouseci/manifest.json";
-            if (!fs.existsSync(path)) {
-              console.log("No LHCI manifest found");
-              process.exit(0);
-            }
-            const runs = JSON.parse(fs.readFileSync(path, "utf8"));
-            let md = "### ⚡ Lighthouse CI Performance Summary (3 Runs)\n\n";
-            md += "| Run | URL | Performance | Accessibility | Best Practices | SEO | LCP | TBT |\n";
-            md += "|:---:|---|:---:|:---:|:---:|:---:|:---:|:---:|\n";
-            runs.forEach((r, idx) => {
-              const s = r.summary;
-              const p = Math.round(s.performance * 100);
-              const a = Math.round(s.accessibility * 100);
-              const b = Math.round(s["best-practices"] * 100);
-              const seo = Math.round(s.seo * 100);
-              md += `| #${idx + 1} | \`${r.url}\` | **${p}/100** | ${a}/100 | ${b}/100 | ${seo}/100 | - | - |\n`;
-            });
-            md += "\n> **Budgets:** Performance ≥ 70 | LCP ≤ 4.0s | TBT ≤ 300ms | Initial JS ≤ 200 KiB gzip\n";
-            fs.writeFileSync("lhci-comment.md", md);
-          '
+          node scripts/perf/format-lhci-comment.cjs
 
       - name: Post PR Comment
         if: always() && github.event_name == 'pull_request'

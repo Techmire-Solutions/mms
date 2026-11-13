@@ -9,8 +9,21 @@ import {
   isNavPathActive,
   isTenantAppPath,
   SETTINGS_SECTIONS,
+  TENANT_APP_PATHS,
 } from "@/lib/config/routes";
 import { TENANT_APP_ENTRIES, TENANT_PATHS } from "@/lib/routing/moduleRegistry";
+
+describe("TENANT_APP_PATHS", () => {
+  it("stays in sync with the apex-redirectable entries in the module registry", () => {
+    // The literal list lives in `routes.ts` so entry-path modules do not pull the
+    // icon-bearing registry; this guards the duplication against drift.
+    const registryPaths = TENANT_APP_ENTRIES.filter((entry) => entry.apexRedirectable).map(
+      (entry) => entry.path,
+    );
+
+    expect([...TENANT_APP_PATHS].sort()).toEqual([...registryPaths].sort());
+  });
+});
 
 describe("tenantNotFoundPath", () => {
   it("builds the redirect path with a subdomain query param", () => {

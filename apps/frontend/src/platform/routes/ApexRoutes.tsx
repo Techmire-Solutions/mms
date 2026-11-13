@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { ROUTES, TENANT_APP_PATHS } from "@/lib/config/routes";
 import PlatformBootGate, { PlatformFallbackRoute } from "@/platform/components/PlatformBootGate";
 import { PlatformFirstRunGate } from "@/platform/components/PlatformFirstRunGate";
-import { PlatformPageShell } from "@/platform/components/PlatformPageShell";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { PlatformAuthProvider } from "@/platform/lib/PlatformAuthContext";
 import { ApexBootPrefetch } from "@/platform/components/ApexBootPrefetch";
@@ -13,6 +12,15 @@ import {
   type ApexConsoleEntry,
   type ApexConsoleGroup,
 } from "@/platform/routes/apexRouteRegistry";
+
+// The platform shell pulls the `@shared/ui` barrel (tables, DatePicker, forms,
+// motion) — none of which the public apex entry routes need. Load it only when
+// an authenticated console route actually renders the shell.
+const PlatformPageShell = React.lazy(() =>
+  import("@/platform/components/PlatformPageShell").then((m) => ({
+    default: m.PlatformPageShell,
+  })),
+);
 
 const ApexHome = React.lazy(() => import("@/platform/pages/ApexHome"));
 const ApexWorkspaceGate = React.lazy(() => import("@/platform/pages/ApexWorkspaceGate"));

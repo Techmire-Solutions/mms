@@ -137,3 +137,7 @@ desktop.ini
 # Python bytecode and caches
 __pycache__/
 *.py[cod]
+
+# Lighthouse CI local artifacts
+.lighthouseci/
+lhci-comment.md
