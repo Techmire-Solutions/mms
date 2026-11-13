@@ -21,6 +21,7 @@ import * as messagingSchema from "../../db/schema/messaging.js";
 import * as inventorySchema from "../../db/schema/inventory.js";
 import * as charitySchema from "../../db/schema/charity.js";
 import * as workshopsSchema from "../../db/schema/workshops.js";
+import * as workshopActivitySchema from "../../db/schema/workshopActivityTables.js";
 import * as tasksSchema from "../../db/schema/tasksTables.js";
 import * as taskSettingsSchema from "../../db/schema/taskSettingsTables.js";
 import * as usersSchema from "../../db/schema/users.js";
@@ -143,6 +144,6 @@ export const DOMAIN_REGISTRY: readonly DomainConfig[] = [
   {
     id: "workshops",
     labelKey: "platform.erdDomainWorkshops",
-    modules: [workshopsSchema],
+    modules: [workshopsSchema, workshopActivitySchema],
   },
 ];

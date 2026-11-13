@@ -6,9 +6,11 @@ import { loadBackendEnv } from "../config/loadEnv.js";
 
 loadBackendEnv();
 import {
-  QUEUE_PDF_RENDERING,
-  QUEUE_BULK_EXPORT,
   QUEUE_SETTINGS,
+  SANDBOXED_EXPORT_QUEUES,
+  SANDBOXED_PDF_QUEUES,
+  SANDBOXED_QUEUE_NAMES,
+  sandboxedWorkerOptions,
   getBullMQConnectionOptions,
   getQueuePrefix,
   closeAllQueues,
@@ -29,7 +31,11 @@ import { logger } from "../lib/logger.js";
 import { defaultSearchAdapter } from "./adapters/searchIndexAdapter.js";
 import { purgeExpiredArchivedRecords } from "./purgeArchivedRecordsJob.js";
 import { purgeExpiredPlatformActivityLogs } from "./purgePlatformActivityLogsJob.js";
-import { clearRetentionPurgeScheduler, scheduleNextDailyPurge } from "./retentionPurgeScheduler.js";
+import {
+  abortAndDrainRetentionCycle,
+  clearRetentionPurgeScheduler,
+  scheduleNextDailyPurge,
+} from "./retentionPurgeScheduler.js";
 import {
   clearAttendanceAbsenceScheduler,
   scheduleAttendanceAbsence,
@@ -40,6 +46,10 @@ import {
 } from "./sessionLifecycleScheduler.js";
 import { clearFxRateFeedScheduler, scheduleFxRateFeed } from "./fxRates/fxRateFeedScheduler.js";
 import { clearWaitlistOfferScheduler, scheduleWaitlistOffers } from "./waitlistOfferScheduler.js";
+import {
+  clearFinanceAutomationScheduler,
+  scheduleFinanceAutomation,
+} from "./financeAutomationScheduler.js";
 import {
   clearContactSystemTagSweep,
   scheduleContactSystemTagSweep,
@@ -63,23 +73,23 @@ export function createWorkerForQueue(queueName: string): Worker<EnqueuedJobData>
 
   let worker: Worker<EnqueuedJobData>;
 
-  if (queueName === QUEUE_PDF_RENDERING) {
+  if (SANDBOXED_PDF_QUEUES.includes(queueName)) {
     worker = new Worker<EnqueuedJobData>(queueName, SANDBOXED_PDF_PROCESSOR_PATH, {
       connection,
       prefix,
       concurrency,
       useWorkerThreads: false,
       workerForkOptions: WORKER_FORK_OPTIONS,
-      lockDuration: 60000,
+      ...sandboxedWorkerOptions(),
     });
-  } else if (queueName === QUEUE_BULK_EXPORT) {
+  } else if (SANDBOXED_EXPORT_QUEUES.includes(queueName)) {
     worker = new Worker<EnqueuedJobData>(queueName, SANDBOXED_EXPORT_PROCESSOR_PATH, {
       connection,
       prefix,
       concurrency,
       useWorkerThreads: false,
       workerForkOptions: WORKER_FORK_OPTIONS,
-      lockDuration: 60000,
+      ...sandboxedWorkerOptions(),
     });
   } else {
     worker = new Worker<EnqueuedJobData>(
@@ -187,6 +197,9 @@ export async function startWorkerDaemon(): Promise<void> {
   scheduleContactSystemTagSweep(() => isRunning);
   // Every 15 min: waitlist seat offers that lapsed revert to the waitlist.
   scheduleWaitlistOffers(() => isRunning);
+  // Hourly leader-only finance automation (billing, revaluation, IAS 29, overdue
+  // alerts). Off unless FINANCE_AUTOMATION_ENABLED=true; the tick no-ops otherwise.
+  scheduleFinanceAutomation(() => isRunning);
 
   const shutdown = async (signal: string) => {
     if (!isRunning) return;
@@ -212,11 +225,14 @@ export async function startWorkerDaemon(): Promise<void> {
         cdcListenerHandle = null;
       }
       clearRetentionPurgeScheduler();
+      // The sweep is not a BullMQ job: abort it and let it unwind before the pools close.
+      await abortAndDrainRetentionCycle();
       clearSessionLifecycleScheduler();
       clearAttendanceAbsenceScheduler();
       clearFxRateFeedScheduler();
       clearContactSystemTagSweep();
       clearWaitlistOfferScheduler();
+      clearFinanceAutomationScheduler();
 
       abortBackgroundJobsOnShutdown("SIGTERM");
       // Stop accepting new jobs without waiting for the now-aborting active ones.
@@ -229,7 +245,11 @@ export async function startWorkerDaemon(): Promise<void> {
       }
       for (const worker of activeWorkers) {
         try {
-          await worker.close();
+          // Sandboxed children run in a separate process and never see the parent's abort above;
+          // force-close makes the child pool send SIGTERM so their runner stops at the next
+          // page/chunk. In-process workers keep the graceful "wait for current job" close.
+          const sandboxed = SANDBOXED_QUEUE_NAMES.includes(worker.name);
+          await worker.close(sandboxed);
         } catch (err) {
           logger.error({ err }, "Error closing worker");
         }

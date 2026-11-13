@@ -1,13 +1,11 @@
-import { FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";
 import { SubTabBar } from "@/components/app/SubTabBar";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionBank as QuestionsPanel } from "@/tenant/features/question-bank/components/QuestionBank";
 import type { useQuestionBankColumnLayout } from "@/tenant/features/question-bank/hooks/useQuestionBankColumnLayout";
-import type { QuestionBankQuestion } from "@mms/shared";
+import type { QuestionBankQuestion, QuestionBankTest } from "@mms/shared";
+import { PaperBlueprintPanel } from "./PaperBlueprintPanel";
 
 interface WorkTab {
   id: string;
@@ -20,6 +18,7 @@ interface QuestionBankWorkTierProps {
   showDeleted: boolean;
   listLoadFailed: boolean;
   questions: QuestionBankQuestion[];
+  tests: QuestionBankTest[];
   showQuestionModal: boolean;
   editQuestion: QuestionBankQuestion | null;
   canWrite: boolean;
@@ -36,7 +35,6 @@ interface QuestionBankWorkTierProps {
   onBulkDelete: (ids: string[]) => Promise<void>;
   onBulkRestore: (ids: string[]) => Promise<void>;
   onFilteredCountChange: (count: number) => void;
-  onCreatePaper: () => void;
   selectedIds?: string[];
   onToggleSelectedQuestion?: (id: string, checked: boolean) => void;
   onToggleSelectAll?: (checked: boolean, visibleIds: string[]) => void;
@@ -50,6 +48,7 @@ export function QuestionBankWorkTier({
   showDeleted,
   listLoadFailed,
   questions,
+  tests,
   showQuestionModal,
   editQuestion,
   canWrite,
@@ -66,7 +65,6 @@ export function QuestionBankWorkTier({
   onBulkDelete,
   onBulkRestore,
   onFilteredCountChange,
-  onCreatePaper,
   selectedIds,
   onToggleSelectedQuestion,
   onToggleSelectAll,
@@ -130,22 +128,7 @@ export function QuestionBankWorkTier({
       )}
 
       {activeSubTab === "generate" && canWrite && !showDeleted && (
-        <section className={`${WORK_SURFACE} p-4 sm:p-5`}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <h2 className="m-0 text-sm font-bold text-foreground">
-                {t("questionBank.generatorTitle")}
-              </h2>
-              <p className="m-0 text-xs text-muted-foreground">
-                {t("questionBank.manualPaperGeneratorSubtitle")}
-              </p>
-            </div>
-            <Button type="button" onClick={onCreatePaper} className="w-full sm:w-auto">
-              <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-              {t("questionBank.generator")}
-            </Button>
-          </div>
-        </section>
+        <PaperBlueprintPanel questions={questions} tests={tests} canWrite={canWrite} />
       )}
     </ErrorBoundary>
   );

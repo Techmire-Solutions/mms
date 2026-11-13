@@ -164,9 +164,7 @@ export function AccountingWorkTier({
         />
       )}
 
-      {!listLoadFailed && activeSubTab === "ledger" && (
-        <GeneralLedger accounts={accounts} entries={aggregateEntries} />
-      )}
+      {!listLoadFailed && activeSubTab === "ledger" && <GeneralLedger accounts={accounts} />}
 
       {!listLoadFailed && activeSubTab === "trial" && (
         <TrialBalance accounts={accounts} entries={aggregateEntries} fiscalYears={fiscalYears} />

@@ -26,7 +26,7 @@ describe("financeAuditEvents", () => {
       expect(invoiceAuditState(undefined)).toBeNull();
     });
 
-    it("given invoice with PII and string amounts, should return minimised projection with numbers and exclude PII", () => {
+    it("given invoice with PII, should return minimised projection with numbers and exclude PII", () => {
       // Arrange
       const rawInvoice = {
         id: "inv-100",
@@ -34,9 +34,9 @@ describe("financeAuditEvents", () => {
         studentName: "Ahmad Zahid", // PII to exclude
         notes: "Sensitive internal note", // PII to exclude
         status: "unpaid",
-        finalAmt: "1500.50",
-        paidAmt: "500.00",
-        creditedAmt: "100.00",
+        finalAmt: 1500.5,
+        paidAmt: 500,
+        creditedAmt: 100,
         dueDate: "2026-05-01",
       } as unknown as Invoice;
 
@@ -51,6 +51,7 @@ describe("financeAuditEvents", () => {
         finalAmt: 1500.5,
         paidAmt: 500,
         creditedAmt: 100,
+        lateFeeAmt: 0,
         dueDate: "2026-05-01",
         event: "settlement_cancel",
       });
@@ -115,6 +116,7 @@ describe("financeAuditEvents", () => {
         finalAmt: 300,
         paidAmt: 0,
         creditedAmt: 0,
+        lateFeeAmt: 0,
         dueDate: "2026-06-01",
       };
 
@@ -135,6 +137,7 @@ describe("financeAuditEvents", () => {
           finalAmt: 300,
           paidAmt: 300,
           creditedAmt: 0,
+          lateFeeAmt: 0,
           dueDate: "2026-06-01",
           event: "paid_event",
         },
@@ -200,6 +203,7 @@ describe("financeAuditEvents", () => {
           invoiceId: "inv-200",
           amount: 50,
           creditedAmt: 50,
+          reason: "",
         },
       });
     });

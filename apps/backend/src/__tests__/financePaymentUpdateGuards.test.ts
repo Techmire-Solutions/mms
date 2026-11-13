@@ -139,6 +139,70 @@ describe("finance payment update guards", () => {
     expect(mockRecordModernAuditEvent).toHaveBeenCalledTimes(1);
   });
 
+  it("re-derives the invoice balance when an unposted payment amount is edited", async () => {
+    const repo = repoWithPayment(null);
+    const invoice = {
+      id: "inv-1",
+      studentId: "stu-1",
+      finalAmt: 500,
+      paidAmt: 100,
+      lateFeeAmt: 0,
+      creditedAmt: 0,
+      status: "partial",
+      dueDate: "2026-01-31",
+    };
+    vi.mocked(repo.findInvoicesByIds).mockResolvedValue([invoice as never]);
+
+    await runWithTenant("demo", () =>
+      createFinanceUseCases(repo).updatePaymentById("pay-1", { amount: 150 }),
+    );
+
+    const saved = vi
+      .mocked(repo.saveInvoice)
+      .mock.calls.map(([, updated]) => updated as { id: string; paidAmt: number; status: string });
+    expect(saved).toHaveLength(1);
+    expect(saved[0]).toMatchObject({ id: "inv-1", paidAmt: 150, status: "partial" });
+  });
+
+  it("rejects an unposted amount edit that would overpay the invoice", async () => {
+    const repo = repoWithPayment(null);
+    vi.mocked(repo.findInvoicesByIds).mockResolvedValue([
+      {
+        id: "inv-1",
+        finalAmt: 100,
+        paidAmt: 100,
+        lateFeeAmt: 0,
+        creditedAmt: 0,
+        status: "paid",
+        dueDate: "2026-01-31",
+      } as never,
+    ]);
+
+    await expect(
+      runWithTenant("demo", () =>
+        createFinanceUseCases(repo).updatePaymentById("pay-1", { amount: 150 }),
+      ),
+    ).rejects.toThrow(/exceeds the remaining/);
+    expect(repo.savePayment).not.toHaveBeenCalled();
+  });
+
+  it("refuses to edit a foreign-currency payment amount without re-entering it", async () => {
+    const repo = repoWithPayment(null);
+    vi.mocked(repo.findPaymentById).mockResolvedValue({
+      ...storedPayment,
+      currency: "USD",
+      exchangeRate: "281",
+      invoiceAmount: 100,
+    } as never);
+
+    await expect(
+      runWithTenant("demo", () =>
+        createFinanceUseCases(repo).updatePaymentById("pay-1", { amount: 120 }),
+      ),
+    ).rejects.toThrow(/foreign-currency/);
+    expect(repo.savePayment).not.toHaveBeenCalled();
+  });
+
   it("treats an echoed unchanged amount as a no-op, not an edit", async () => {
     const repo = repoWithPayment("je-payment");
 

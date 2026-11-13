@@ -1,24 +1,8 @@
 import { z } from "zod";
 import { baseListQueryFields } from "../core/apiSchemas.js";
+import { isoDateSchema } from "../core/isoDateSchema.js";
 import type { Account, JournalEntry, FiscalYear } from "./accountingModuleManifest.js";
-
-/** Account types accepted by the chart-of-accounts type filter. */
-export const ACCOUNTING_ACCOUNT_TYPES = [
-  "Asset",
-  "Liability",
-  "Equity",
-  "Revenue",
-  "Expense",
-] as const;
-export type AccountingAccountType = (typeof ACCOUNTING_ACCOUNT_TYPES)[number];
-
-export const ACCOUNT_SUBTYPES: Record<AccountingAccountType, string[]> = {
-  Asset: ["Current Asset", "Fixed Asset", "Contra Asset", "Other Asset"],
-  Liability: ["Current Liability", "Long-term Liability", "Other Liability"],
-  Equity: ["Owner's Equity", "Retained Earnings", "Other Equity"],
-  Revenue: ["Operating Revenue", "Non-operating Revenue", "Other Revenue"],
-  Expense: ["Operating Expense", "Administrative Expense", "Financial Expense", "Other Expense"],
-};
+import { ACCOUNTING_ACCOUNT_TYPES, JOURNAL_ENTRY_STATUSES } from "./accountingEnums.js";
 
 export interface AccountingListQuery {
   page?: number;
@@ -53,9 +37,11 @@ export interface AccountingListQuery {
 export const accountingEntriesListQuerySchema = z
   .object({
     ...baseListQueryFields,
-    status: z.enum(["posted", "draft"]).optional(),
-    dateFrom: z.string().max(32).optional(),
-    dateTo: z.string().max(32).optional(),
+    status: z.enum(JOURNAL_ENTRY_STATUSES).optional(),
+    // Real calendar days, ordered: a malformed string reached the `date` column
+    // and raised PostgreSQL 22007 (unhandled 500) instead of a 400.
+    dateFrom: isoDateSchema.optional(),
+    dateTo: isoDateSchema.optional(),
     accountId: z.string().max(64).optional(),
     // 64 is the `accounting_entry_tags.tag` column width.
     tag: z.string().max(64).optional(),

@@ -59,6 +59,7 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   "workshops.read": { module: "workshops", requiredActions: ["read"] },
   "workshops.write": { module: "workshops", requiredActions: ["create", "update"] },
   "workshops.delete": { module: "workshops", requiredActions: ["delete"] },
+  "workshops.manage": { module: "workshops", requiredActions: ["manage"] },
 
   // Examinations
   "examinations.read": { module: "examinations", requiredActions: ["read"] },
@@ -74,9 +75,16 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   "finance.read": { module: "finance", requiredActions: ["read"] },
   "finance.write": { module: "finance", requiredActions: ["create", "update"] },
   "finance.delete": { module: "finance", requiredActions: ["delete"] },
+  // Money-affecting billing decisions (cancel/void, credit note/waiver, fee
+  // schedules) sit above ordinary write: a cashier who records payments must not
+  // be able to waive them.
+  "finance.manage": { module: "finance", requiredActions: ["manage"] },
   "accounting.read": { module: "accounting", requiredActions: ["read"] },
   "accounting.write": { module: "accounting", requiredActions: ["create", "update"] },
   "accounting.delete": { module: "accounting", requiredActions: ["delete"] },
+  // Period close, fiscal-year close and voucher-numbering configuration are
+  // controller/admin authority, not ordinary voucher posting.
+  "accounting.manage": { module: "accounting", requiredActions: ["manage"] },
   "obligations.read": { module: "obligations", requiredActions: ["read"] },
   "obligations.write": { module: "obligations", requiredActions: ["create", "update"] },
   "obligations.delete": { module: "obligations", requiredActions: ["delete"] },

@@ -71,7 +71,7 @@ describe("StandardModuleCsvImportDialog", () => {
     });
 
     expect(hookCalls).toHaveLength(1);
-    expect(hookCalls[0]).not.toHaveProperty("onSuccess");
+    expect(hookCalls[0]?.onSuccess).toBeUndefined();
     expect(onClose).not.toHaveBeenCalled();
   });
 

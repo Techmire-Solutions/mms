@@ -158,6 +158,24 @@ describe("accounting REST routes", () => {
     mockLoadEntries.mockReset().mockResolvedValue([sampleEntry]);
     mockUpsertEntries.mockReset().mockResolvedValue([sampleEntry]);
     mockLoadFiscalYears.mockReset().mockResolvedValue([sampleFiscalYear]);
+    // The no-?page= compatibility branch reads one capped page and reports truncation.
+    mockLoadAccountsPage.mockReset().mockResolvedValue({
+      accounts: [sampleAccount],
+      total: 1,
+      page: 1,
+      limit: 500,
+      hasMore: false,
+    });
+    mockLoadEntriesPage
+      .mockReset()
+      .mockResolvedValue({ entries: [sampleEntry], total: 1, page: 1, limit: 500, hasMore: false });
+    mockLoadFiscalYearsPage.mockReset().mockResolvedValue({
+      fiscalYears: [sampleFiscalYear],
+      total: 1,
+      page: 1,
+      limit: 500,
+      hasMore: false,
+    });
     mockUpsertFiscalYears.mockReset().mockResolvedValue([sampleFiscalYear]);
     mockDeleteJournalEntryById.mockReset().mockResolvedValue(true);
     mockRestoreJournalEntryById.mockReset().mockResolvedValue(true);
@@ -237,8 +255,29 @@ describe("accounting REST routes", () => {
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ accounts: [sampleAccount] });
-    expect(mockLoadAccounts).toHaveBeenCalled();
+    expect(res.json()).toEqual({ accounts: [sampleAccount], truncated: false });
+    expect(mockLoadAccountsPage).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 500, includeDeleted: false }),
+    );
+    await app.close();
+  });
+
+  it("GET /api/accounting/accounts reports truncation when the compatibility cap is hit", async () => {
+    mockLoadAccountsPage.mockResolvedValue({
+      accounts: [sampleAccount],
+      total: 700,
+      page: 1,
+      limit: 500,
+      hasMore: true,
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/accounting/accounts",
+      headers: { host: "demo.localhost", authorization: `Bearer ${accountantToken(app)}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ accounts: [sampleAccount], truncated: true });
     await app.close();
   });
 
@@ -271,8 +310,10 @@ describe("accounting REST routes", () => {
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ entries: [sampleEntry] });
-    expect(mockLoadEntries).toHaveBeenCalled();
+    expect(res.json()).toEqual({ entries: [sampleEntry], truncated: false });
+    expect(mockLoadEntriesPage).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 500, includeDeleted: false }),
+    );
     await app.close();
   });
 
@@ -305,8 +346,10 @@ describe("accounting REST routes", () => {
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ fiscalYears: [sampleFiscalYear] });
-    expect(mockLoadFiscalYears).toHaveBeenCalled();
+    expect(res.json()).toEqual({ fiscalYears: [sampleFiscalYear], truncated: false });
+    expect(mockLoadFiscalYearsPage).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 500, includeDeleted: false }),
+    );
     await app.close();
   });
 

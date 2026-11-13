@@ -53,7 +53,7 @@ export const DEFAULT_WORKSPACE_ROLES: readonly WorkspaceRole[] = [
       attendance: ["create", "read", "update"],
       enrollments: ["create", "read", "update", "manage"],
       hasanat: ["create", "read", "update", "delete"],
-      workshops: ["create", "read", "update", "delete"],
+      workshops: ["create", "read", "update", "delete", "manage"],
       examinations: ["create", "read", "update", "delete"],
       questionBank: ["create", "read", "update", "delete"],
       finance: ["read"],
@@ -136,7 +136,8 @@ export const DEFAULT_WORKSPACE_ROLES: readonly WorkspaceRole[] = [
     permissions: {
       dashboard: ["read"],
       questionBank: ["create", "read", "update", "delete"],
-      examinations: ["create", "read", "update"],
+      // A librarian has no teaching/marking duty: no examinations grant at all. (Marks, drafts and
+      // the attendance gate are staff/controller surfaces.)
       students: ["read"],
       sessions: ["read"],
       messaging: ["read"],

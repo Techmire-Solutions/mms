@@ -19,6 +19,15 @@ import type {
  * Drizzle directly), and the Drizzle-backed adapter is the only implementation.
  * Tests can inject a fake repository at the seam.
  */
+/** Ranked near-duplicate returned by the similarity lookup. */
+export interface SimilarQuestionMatch {
+  id: string;
+  text: string;
+  difficulty: string;
+  categoryIds: string[];
+  score: number;
+}
+
 export interface QuestionBankRepository {
   // Questions
   listQuestionsByWorkspace(
@@ -54,9 +63,69 @@ export interface QuestionBankRepository {
     tenant: string,
     query: QuestionBankListQuery,
   ): Promise<QuestionBankListPageResult>;
+  listQuestionsPicker(
+    tenant: string,
+    query: QuestionBankListQuery,
+  ): Promise<QuestionBankListPageResult>;
+
+  // Lifecycle (0241)
+  updateQuestionStatus?(
+    tenant: string,
+    change: {
+      id: string;
+      to: import("@mms/shared").QuestionStatus;
+      actorId: string;
+      reason?: string | null;
+    },
+  ): Promise<QuestionBankQuestion>;
+  duplicateQuestionRow?(
+    tenant: string,
+    input: { sourceId: string; newId: string; actorId?: string | null },
+  ): Promise<QuestionBankQuestion>;
+  assemblePaper?(
+    tenant: string,
+    input: {
+      testId: string;
+      blueprint: import("@mms/shared").PaperBlueprint;
+      actorId?: string | null;
+    },
+  ): Promise<{
+    result: import("@mms/shared").BlueprintResult;
+    questionIds: string[];
+  }>;
+  findSimilarQuestions?(
+    tenant: string,
+    input: { text: string; excludeId?: string; limit?: number },
+  ): Promise<SimilarQuestionMatch[]>;
+  addQuestionAttachment?(
+    tenant: string,
+    input: {
+      id: string;
+      questionId: string;
+      kind: "stem" | "option";
+      optionIndex: number | null;
+      name: string;
+      mime: string;
+      size: number;
+      url: string;
+      actorId?: string | null;
+    },
+  ): Promise<import("@mms/shared").QuestionAttachment>;
+  removeQuestionAttachment?(
+    tenant: string,
+    input: { questionId: string; attachmentId: string; actorId?: string | null },
+  ): Promise<string>;
+  isQuestionAttachmentReferenced?(tenant: string, urls: string[]): Promise<boolean>;
+  setPaperPublished?(
+    tenant: string,
+    change: { testId: string; published: boolean; actorId: string },
+  ): Promise<void>;
 
   // Tests
-  listTestsByWorkspace(tenant: string): Promise<QuestionBankTest[]>;
+  listTestsByWorkspace(
+    tenant: string,
+    options?: { limit?: number; offset?: number },
+  ): Promise<QuestionBankTest[]>;
   findTestById(tenant: string, id: string): Promise<QuestionBankTest | null>;
   findTestsByIds(
     tenant: string,
@@ -68,7 +137,10 @@ export interface QuestionBankRepository {
   replaceTestsForWorkspace(tenant: string, records: QuestionBankTest[]): Promise<void>;
 
   // Results
-  listResultsByWorkspace(tenant: string): Promise<QuestionBankResult[]>;
+  listResultsByWorkspace(
+    tenant: string,
+    options?: { limit?: number; offset?: number },
+  ): Promise<QuestionBankResult[]>;
   findResultById(tenant: string, id: string): Promise<QuestionBankResult | null>;
   findResultsByIds(
     tenant: string,

@@ -9,20 +9,21 @@ import {
 } from "../../db/repositories/workshopEventsRepository.js";
 import {
   registerParticipant,
+  registerParticipants,
   withdrawParticipant,
-} from "../../db/repositories/workshopParticipantsRepository.js";
+} from "../../db/repositories/workshopRegistrationRepository.js";
 import {
   aggregateWorkshopsMetrics,
   loadWorkshopDetail,
+} from "../../db/repositories/workshopActivityRepository.js";
+import {
   saveAttendanceDay,
   saveScores,
-} from "../../db/repositories/workshopActivityRepository.js";
+} from "../../db/repositories/workshopActivityWriteRepository.js";
 import {
   loadCompletionInputs,
   loadReportFacts,
   loadWorkshopPreferences,
-  markCertificatesIssued,
-  saveCompletionOutcomes,
   saveWorkshopPreferences,
 } from "../../db/repositories/workshopCompletionRepository.js";
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceSettingsRepository.js";
@@ -37,15 +38,14 @@ export const workshopsRepository: WorkshopsRepository = {
   softDeleteWorkshops,
   restoreWorkshop,
   registerParticipant,
+  registerParticipants,
   withdrawParticipant,
-  saveAttendanceDay,
-  saveScores,
   aggregateWorkshopsMetrics,
   findWorkspaceTimezone,
   loadCompletionInputs,
-  saveCompletionOutcomes,
-  markCertificatesIssued,
   loadReportFacts,
+  saveAttendanceDay,
+  saveScores,
   loadWorkshopPreferences,
   saveWorkshopPreferences,
 };

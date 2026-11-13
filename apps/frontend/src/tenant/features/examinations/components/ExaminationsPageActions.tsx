@@ -3,7 +3,13 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ExaminationsPageActionsProps {
+  /** Marks entry and export: an ordinary `examinations.write` authority. */
   canWrite: boolean;
+  /**
+   * Exam definition (create) and the exams CSV import: controller authority
+   * (`examinations.delete`). Defaults to `canWrite` for callers that do not split them.
+   */
+  canManage?: boolean;
   canExport?: boolean;
   showDeleted: boolean;
   isExporting?: boolean;
@@ -15,6 +21,7 @@ export interface ExaminationsPageActionsProps {
 
 export function ExaminationsPageActions({
   canWrite,
+  canManage = canWrite,
   canExport = true,
   showDeleted,
   isExporting = false,
@@ -25,11 +32,11 @@ export function ExaminationsPageActions({
 }: ExaminationsPageActionsProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  if (!canWrite || showDeleted) return <div className="flex items-center gap-2" />;
+  if ((!canWrite && !canManage) || showDeleted) return <div className="flex items-center gap-2" />;
 
   return (
     <div className="flex items-center gap-2">
-      {canExport && onExport ? (
+      {canWrite && canExport && onExport ? (
         <Button
           variant="ghost"
           icon={Download}
@@ -40,17 +47,21 @@ export function ExaminationsPageActions({
           {t("common.export")}
         </Button>
       ) : null}
-      {onImport ? (
+      {canManage && onImport ? (
         <Button variant="outline" icon={Upload} onClick={onImport}>
           {t("common.import")}
         </Button>
       ) : null}
-      <Button variant="ghost" icon={PenTool} onClick={onEnterMarks}>
-        {t("examinations.marks")}
-      </Button>
-      <Button variant="primary" icon={Plus} onClick={onCreateExam}>
-        {t("examinations.newExam")}
-      </Button>
+      {canWrite ? (
+        <Button variant="ghost" icon={PenTool} onClick={onEnterMarks}>
+          {t("examinations.marks")}
+        </Button>
+      ) : null}
+      {canManage ? (
+        <Button variant="primary" icon={Plus} onClick={onCreateExam}>
+          {t("examinations.newExam")}
+        </Button>
+      ) : null}
     </div>
   );
 }

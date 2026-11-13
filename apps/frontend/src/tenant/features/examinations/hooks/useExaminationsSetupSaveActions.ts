@@ -41,8 +41,39 @@ export function useExaminationsSetupSaveActions({
     );
   })();
 
+  // Pass/max are free-text settings today; a non-numeric or inverted pair must not be saved.
+  const numeric = (value: string): number | null => {
+    const trimmed = value.trim();
+    if (trimmed === "" || !/^\d+(\.\d+)?$/.test(trimmed)) return null;
+    return Number(trimmed);
+  };
+  const passMark = numeric(settingsDraft.passMark);
+  const maxMark = numeric(settingsDraft.maxMark);
+  const errors: { passMark?: string; maxMark?: string } = {};
+  if (passMark === null || passMark < 0) {
+    errors.passMark = t("examinations.settings.validation.passMarkInvalid");
+  }
+  if (maxMark === null || maxMark <= 0) {
+    errors.maxMark = t("examinations.settings.validation.maxMarkInvalid");
+  }
+  if (
+    !errors.passMark &&
+    !errors.maxMark &&
+    passMark !== null &&
+    maxMark !== null &&
+    passMark > maxMark
+  ) {
+    errors.passMark = t("examinations.settings.validation.passExceedsMax");
+  }
+
   const handleSave = async (): Promise<void> => {
     if (!isPrefsDirty || saving) return;
+    if (errors.passMark || errors.maxMark) {
+      notify.error(t("examinations.settings.saveFailed"), {
+        description: errors.passMark ?? errors.maxMark,
+      });
+      return;
+    }
     setSaving(true);
     try {
       await saveSettingsAsync();
@@ -60,6 +91,7 @@ export function useExaminationsSetupSaveActions({
   return {
     saving,
     isPrefsDirty,
+    errors,
     handleSave,
   };
 }

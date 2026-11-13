@@ -4,10 +4,8 @@ import { FilterChips } from "@/components/app/FilterChips";
 import { WorkTaskToolbar } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
-import {
-  ExaminationsFiltersMenuButton,
-  type EXAM_STATUSES,
-} from "@/tenant/features/examinations/components/ExaminationsFiltersMenuButton";
+import { ExaminationsFiltersMenuButton } from "@/tenant/features/examinations/components/ExaminationsFiltersMenuButton";
+import { isExamStatus, type ExamStatus } from "@mms/shared";
 
 export const EXAMINATIONS_WORK_SEARCH_INPUT_ID = "examinations-work-search";
 
@@ -21,9 +19,9 @@ export interface ExaminationsListFiltersProps {
   showDeleted: boolean;
   onToggleDeleted?: () => void;
   columnCustomizer?: ModuleColumnCustomizerProps;
-  statusLabels: Record<(typeof EXAM_STATUSES)[number], string>;
+  statusLabels: Record<ExamStatus, string>;
   onSearchChange: (value: string) => void;
-  onToggleStatus: (status: string) => void;
+  onToggleStatus: (status: ExamStatus) => void;
   onClearStatuses: () => void;
   onNew: () => void;
 }
@@ -73,8 +71,10 @@ export function ExaminationsListFilters({
         <FilterChips
           chips={filterStatus.map((status) => ({
             key: `status:${status}`,
-            label: statusLabels[status as (typeof EXAM_STATUSES)[number]],
-            onRemove: () => onToggleStatus(status),
+            label: statusLabels[status as ExamStatus],
+            onRemove: () => {
+              if (isExamStatus(status)) onToggleStatus(status);
+            },
           }))}
           onClearAll={clearFilters}
         />

@@ -9,6 +9,7 @@ import {
   exchangeRateValueSchema,
 } from "../money/moneySchemas.js";
 import { isSupportedFunctionalCurrency } from "./accountingFxLines.js";
+import { EXCHANGE_RATE_SOURCES } from "./accountingEnums.js";
 
 export const accountingCurrencySettingsSchema = z
   .object({
@@ -35,9 +36,6 @@ export const accountingCurrencySettingsPutSchema = accountingCurrencySettingsSch
 
 export type AccountingCurrencySettingsPut = z.infer<typeof accountingCurrencySettingsPutSchema>;
 
-/** Where a rate came from: entered by a user, or a scheduled provider feed. */
-export const EXCHANGE_RATE_SOURCES = ["manual", "feed"] as const;
-
 export const exchangeRateRecordSchema = z
   .object({
     id: z.string(),
@@ -47,7 +45,7 @@ export const exchangeRateRecordSchema = z
     rateType: exchangeRateTypeSchema,
     /** Units of `toCurrency` per one unit of `fromCurrency`. */
     rate: exchangeRateValueSchema,
-    source: z.string(),
+    source: z.enum(EXCHANGE_RATE_SOURCES),
     overrideReason: z.string(),
     createdAt: z.string().optional(),
     createdBy: z.string().nullable().optional(),
@@ -110,7 +108,8 @@ export const exchangeRateLookupResultSchema = z
     rate: exchangeRateValueSchema,
     rateDate: isoDateSchema,
     rateType: exchangeRateTypeSchema,
-    source: z.string(),
+    /** Provenance label: `manual`, `feed:<provider>`, `estimate[:inverse]`, `identity`. */
+    source: z.string().max(64),
   })
   .strict();
 

@@ -1,10 +1,13 @@
 import { z } from "zod";
+import { ACCOUNTING_ACCOUNT_TYPES } from "./accountingEnums.js";
+import { isoDateSchema } from "../core/isoDateSchema.js";
+import { moneyAmountSchema, signedMoneyAmountSchema } from "./accountingLedgerInvariants.js";
 
 export const accountingFinancialStatementItemSchema = z.object({
   code: z.string(),
   name: z.string(),
   type: z.string(),
-  amount: z.number(),
+  amount: signedMoneyAmountSchema,
   section: z.string().optional(),
 });
 
@@ -17,10 +20,11 @@ export const accountingTrialBalanceRowSchema = z.object({
   id: z.string(),
   code: z.string(),
   name: z.string(),
-  type: z.string(),
-  totalDebit: z.number(),
-  totalCredit: z.number(),
-  balance: z.number(),
+  type: z.enum(ACCOUNTING_ACCOUNT_TYPES),
+  subtype: z.string().optional(),
+  totalDebit: moneyAmountSchema,
+  totalCredit: moneyAmountSchema,
+  balance: signedMoneyAmountSchema,
 });
 
 export type AccountingTrialBalanceRow = z.infer<typeof accountingTrialBalanceRowSchema>;
@@ -31,9 +35,9 @@ export type AccountingTrialBalanceRow = z.infer<typeof accountingTrialBalanceRow
  * identified by subtype or name) instead of hard-coded chart-of-accounts codes.
  */
 export const accountingCashFlowAdjustmentsSchema = z.object({
-  depreciation: z.number().default(0),
-  receivables: z.number().default(0),
-  payables: z.number().default(0),
+  depreciation: signedMoneyAmountSchema.default(0),
+  receivables: signedMoneyAmountSchema.default(0),
+  payables: signedMoneyAmountSchema.default(0),
 });
 
 export type AccountingCashFlowAdjustments = z.infer<typeof accountingCashFlowAdjustmentsSchema>;
@@ -53,21 +57,21 @@ export type AccountingCashFlowAdjustments = z.infer<typeof accountingCashFlowAdj
  *   the window must still appear. Equity includes unclosed P&L as of `dateTo`.
  */
 export const accountingReportAggregatesSchema = z.object({
-  revenue: z.number().default(0),
-  expenses: z.number().default(0),
-  netSurplus: z.number().default(0),
+  revenue: signedMoneyAmountSchema.default(0),
+  expenses: signedMoneyAmountSchema.default(0),
+  netSurplus: signedMoneyAmountSchema.default(0),
   /** Cumulative asset balances as of `dateTo`. */
-  assets: z.number().default(0),
+  assets: signedMoneyAmountSchema.default(0),
   /** Cumulative liability balances as of `dateTo`. */
-  liabilities: z.number().default(0),
+  liabilities: signedMoneyAmountSchema.default(0),
   /** Cumulative equity (incl. unclosed `netSurplus`) as of `dateTo`. */
-  equity: z.number().default(0),
-  cashInflow: z.number().default(0),
-  cashOutflow: z.number().default(0),
+  equity: signedMoneyAmountSchema.default(0),
+  cashInflow: signedMoneyAmountSchema.default(0),
+  cashOutflow: signedMoneyAmountSchema.default(0),
   /** Direct-method net movement on cash/bank accounts within the window. */
-  netCashFlow: z.number().default(0),
+  netCashFlow: signedMoneyAmountSchema.default(0),
   /** Indirect-method total: `netSurplus` plus `cashFlowAdjustments`. */
-  netCashFlowIndirect: z.number().default(0),
+  netCashFlowIndirect: signedMoneyAmountSchema.default(0),
   cashFlowAdjustments: accountingCashFlowAdjustmentsSchema.default({
     depreciation: 0,
     receivables: 0,
@@ -83,22 +87,22 @@ export const accountingReportAggregatesSchema = z.object({
     .object({
       revenue: z
         .object({
-          a: z.number().default(0),
-          b: z.number().default(0),
+          a: signedMoneyAmountSchema.default(0),
+          b: signedMoneyAmountSchema.default(0),
           deltaPct: z.number().default(0),
         })
         .optional(),
       expenses: z
         .object({
-          a: z.number().default(0),
-          b: z.number().default(0),
+          a: signedMoneyAmountSchema.default(0),
+          b: signedMoneyAmountSchema.default(0),
           deltaPct: z.number().default(0),
         })
         .optional(),
       netSurplus: z
         .object({
-          a: z.number().default(0),
-          b: z.number().default(0),
+          a: signedMoneyAmountSchema.default(0),
+          b: signedMoneyAmountSchema.default(0),
           deltaPct: z.number().default(0),
         })
         .optional(),
@@ -108,10 +112,21 @@ export const accountingReportAggregatesSchema = z.object({
 
 export type AccountingReportAggregates = z.infer<typeof accountingReportAggregatesSchema>;
 
-export const accountingReportQuerySchema = z.object({
-  dateFrom: z.string().max(32).optional(),
-  dateTo: z.string().max(32).optional(),
-});
+/**
+ * Report window. Dates are validated as real calendar days and the range is
+ * ordered here: a free-form string used to reach the `date` column and make
+ * PostgreSQL raise `22007`/`22008` (an unhandled 500) instead of a clean 400.
+ */
+export const accountingReportQuerySchema = z
+  .object({
+    dateFrom: isoDateSchema.optional(),
+    dateTo: isoDateSchema.optional(),
+  })
+  .strict()
+  .refine((query) => !query.dateFrom || !query.dateTo || query.dateFrom <= query.dateTo, {
+    message: "accounting.validation.reportRange",
+    path: ["dateTo"],
+  });
 
 export type AccountingReportQuery = z.infer<typeof accountingReportQuerySchema>;
 

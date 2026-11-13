@@ -123,6 +123,7 @@ export const questionBankImportRowSchema = z
     category: z.string().trim().max(200).optional(),
     difficulty: z.string().trim().max(50).optional(),
     type: z.string().trim().max(50).optional(),
+    options: z.string().trim().max(2000).optional(),
     points: z.union([z.string(), z.number()]).optional(),
     explanation: z.string().trim().max(2000).optional(),
     source: z.string().trim().max(200).optional(),

@@ -7,6 +7,7 @@
  */
 
 import React, { useMemo, useRef, useState } from "react";
+import { resolveResultScore } from "@mms/shared";
 import { FileStack, Printer } from "lucide-react";
 import { formatDate, getPageDimensions } from "@mms/shared";
 import { Modal } from "@/components/app/Modal";
@@ -26,7 +27,10 @@ import {
   buildTermReportCardPayload,
   type ReportCardResultInput,
 } from "@/tenant/features/examinations/lib/reportCardPayload";
-import type { StudentExamPaper } from "@/tenant/features/examinations/lib/studentExamPapers";
+import {
+  initialTermPaperSelection,
+  type StudentExamPaper,
+} from "@/tenant/features/examinations/lib/studentExamPapers";
 
 export interface TermReportCardModalProps {
   result: ReportCardResultInput;
@@ -34,15 +38,6 @@ export interface TermReportCardModalProps {
   /** Paper whose result card opened this modal; always preselected. */
   currentExamId: string;
   onClose: () => void;
-}
-
-function initialSelection(papers: readonly StudentExamPaper[], currentExamId: string): Set<string> {
-  const current = papers.find((paper) => paper.exam.id === currentExamId);
-  const termName = current?.exam.name;
-  const preselected = papers.filter(
-    (paper) => paper.exam.id === currentExamId || paper.exam.name === termName,
-  );
-  return new Set(preselected.map((paper) => paper.exam.id));
 }
 
 export function TermReportCardModal({
@@ -59,7 +54,7 @@ export function TermReportCardModal({
   );
   const printRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() =>
-    initialSelection(papers, currentExamId),
+    initialTermPaperSelection(papers, currentExamId),
   );
 
   const selectedPapers = useMemo(
@@ -162,10 +157,12 @@ export function TermReportCardModal({
             />
             <div role="group" aria-label={t("examinations.termReportCard.papers")}>
               {papers.map(({ exam, result: paperResult }) => {
-                const pct =
-                  exam.totalMarks > 0
-                    ? Math.round((paperResult.marksObtained / exam.totalMarks) * 100)
-                    : 0;
+                const pct = resolveResultScore({
+                  marksObtained: paperResult.marksObtained,
+                  totalMarks: exam.totalMarks,
+                  passingMarks: exam.passingMarks,
+                  graceMarks: "graceMarks" in paperResult ? paperResult.graceMarks : undefined,
+                }).displayPercentage;
                 return (
                   <CheckboxField
                     key={exam.id}

@@ -57,6 +57,30 @@ describe("settingsDateFormatters", () => {
     expect(formatDate("2026-03-31T12:00:00.000Z", true)).toContain("٢٠٢٦");
   });
 
+  it.each([
+    ["America/Los_Angeles", "2026-03-05"],
+    ["Asia/Karachi", "2026-03-05"],
+    ["Pacific/Kiritimati", "2026-03-05"],
+    ["Etc/GMT+12", "2026-03-05"],
+  ] as const)("treats a date-only string as a calendar date in %s", (timezone, expected) => {
+    registerSettingsProvider(() => ({
+      dateFormat: "YYYY-MM-DD",
+      timezone,
+      language: "en",
+    }));
+    expect(formatDate(expected)).toBe(expected);
+    expect(formatDate(`${expected}T02:00:00.000Z`, true)).not.toBe("");
+  });
+
+  it("keeps ISO datetimes timezone-aware", () => {
+    registerSettingsProvider(() => ({
+      dateFormat: "YYYY-MM-DD",
+      timezone: "America/Los_Angeles",
+      language: "en",
+    }));
+    expect(formatDate("2026-03-05T02:00:00.000Z")).toBe("2026-03-04");
+  });
+
   it("returns seven Monday-first short weekday labels", () => {
     const labels = formatShortWeekdayLabels();
     expect(labels).toHaveLength(7);

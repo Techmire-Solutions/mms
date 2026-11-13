@@ -44,10 +44,55 @@ describe("ExaminationsPageActions", () => {
 
     const exportBtn = container.querySelector("button:has(svg.lucide-download)");
     const importBtn = container.querySelector("button:has(svg.lucide-upload)");
-    expect(exportBtn).toBeTruthy();
-    expect(importBtn).toBeTruthy();
+    expect(exportBtn).toBeInstanceOf(HTMLButtonElement);
+    expect(importBtn).toBeInstanceOf(HTMLButtonElement);
 
     exportBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(onExport).toHaveBeenCalled();
+  });
+
+  it("shows a writer only the marks action, never exam definition controls", () => {
+    act(() => {
+      root.render(
+        <ExaminationsPageActions
+          canWrite={true}
+          canManage={false}
+          showDeleted={false}
+          onEnterMarks={vi.fn()}
+          onCreateExam={vi.fn()}
+          onImport={vi.fn()}
+        />,
+      );
+    });
+
+    expect(container.querySelector("button:has(svg.lucide-pen-tool)")).toBeInstanceOf(
+      HTMLButtonElement,
+    );
+    expect(container.querySelector("button:has(svg.lucide-upload)")).toBeNull();
+    expect(container.querySelector("button:has(svg.lucide-plus)")).toBeNull();
+  });
+
+  it("shows a controller the create and import actions", () => {
+    act(() => {
+      root.render(
+        <ExaminationsPageActions
+          canWrite={false}
+          canManage={true}
+          showDeleted={false}
+          onEnterMarks={vi.fn()}
+          onCreateExam={vi.fn()}
+          onImport={vi.fn()}
+        />,
+      );
+    });
+
+    expect(container.querySelector("button:has(svg.lucide-upload)")).toBeInstanceOf(
+      HTMLButtonElement,
+    );
+    expect(container.querySelector("button:has(svg.lucide-plus)")).toBeInstanceOf(
+      HTMLButtonElement,
+    );
+    // No marking authority: the marks action is hidden.
+    expect(container.querySelector("button:has(svg.lucide-pen-tool)")).toBeNull();
   });
 });

@@ -37,6 +37,20 @@ describe("formatAmountInWords", () => {
     expect(formatAmountInWords(null)).toBe("");
     expect(formatAmountInWords(undefined)).toBe("");
     expect(formatAmountInWords("not-a-number")).toBe("");
+    expect(formatAmountInWords("1.234.5")).toBe("");
+  });
+
+  it("rounds 4-dp transaction amounts half-up without a float", () => {
+    expect(formatAmountInWords("1.0050", "USD")).toBe("One and 01/100 USD Only");
+    expect(formatAmountInWords("1.0049", "USD")).toBe("One USD Only");
+    expect(formatAmountInWords("-10.50", "USD")).toBe("Minus Ten and 50/100 USD Only");
+  });
+
+  it("keeps cents for amounts beyond float precision", () => {
+    // 9,007,199,254,740.99 is the largest safe integer-cents value; parseFloat would
+    // already have lost the last digit when the string is longer.
+    expect(formatAmountInWords("9007199254740.99", "USD")).toContain("and 99/100");
+    expect(formatAmountInWords("1234567890123.45", "USD")).toContain("and 45/100");
   });
 });
 

@@ -18,6 +18,8 @@ export interface IncludableBulkRoutesOptions<T> {
   /** Fallback page size when the client omits `limit` (schema path). */
   defaultPageSize?: number;
   saveFn: (data: T) => Promise<unknown>;
+  /** Authority for the bulk PUT; defaults to `canWriteCollection`. */
+  canSave?: (user: User) => boolean;
   responseKey: string;
   errorMessagePrefix: string;
   customGetRoute?: boolean;
@@ -41,6 +43,7 @@ export function registerIncludableBulkRoutes<T>(
     listQuerySchema,
     defaultPageSize,
     saveFn,
+    canSave,
     responseKey,
     errorMessagePrefix,
     customGetRoute,
@@ -66,7 +69,8 @@ export function registerIncludableBulkRoutes<T>(
 
   fastify.put(bulkPath, async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteCollection(user, collection)) return sendForbidden(reply);
+    const allowed = canSave ? canSave(user) : canWriteCollection(user, collection);
+    if (!allowed) return sendForbidden(reply);
     const parsed = parseRequest(schema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
     try {

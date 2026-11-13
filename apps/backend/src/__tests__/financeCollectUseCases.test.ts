@@ -6,7 +6,7 @@ const mockRepo = vi.hoisted(() => ({
   listOpenInvoicesForCollect: vi.fn(),
   applyLateFeeAmounts: vi.fn(),
   listInvoicesByIds: vi.fn(),
-  markInvoicesReminded: vi.fn(),
+  claimInvoicesForReminder: vi.fn(),
   saveCreditNote: vi.fn(),
   listCreditNotesForInvoice: vi.fn(),
 }));
@@ -16,6 +16,10 @@ const mockLedgerPosting = vi.hoisted(() => ({
   tryPostInvoiceReversalJournal: vi.fn(),
   tryPostLateFeeJournals: vi.fn(),
   tryPostLateFeeReversalJournal: vi.fn(),
+}));
+
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn(),
 }));
 
 const mockPrefs = vi.hoisted(() => ({
@@ -100,7 +104,7 @@ describe("financeCollectUseCases", () => {
           dueDate: "2026-01-01",
         },
       ]);
-      mockRepo.applyLateFeeAmounts.mockResolvedValue(undefined);
+      mockRepo.applyLateFeeAmounts.mockResolvedValue([{ invoiceId: "inv-1", amount: 10 }]);
       mockLedgerPosting.tryPostLateFeeJournals.mockResolvedValue(undefined);
 
       const result = await runWithTenant("tenant-1", () =>
@@ -148,14 +152,14 @@ describe("financeCollectUseCases", () => {
       mockContacts.loadContactsByIdsForTenant.mockResolvedValue([
         { id: "c-1", name: "Parent One", phone: "+1234567890", email: "p@test.com" },
       ]);
-      mockRepo.markInvoicesReminded.mockResolvedValue(undefined);
+      mockRepo.claimInvoicesForReminder.mockResolvedValue(["inv-1"]);
 
       const result = await runWithTenant("tenant-1", () => remindOpenInvoices());
 
       expect(result.reminded).toBe(1);
       expect(result.recipients).toHaveLength(1);
       expect(result.recipients[0]?.phone).toBe("+1234567890");
-      expect(mockRepo.markInvoicesReminded).toHaveBeenCalledWith("tenant-1", ["inv-1"]);
+      expect(mockRepo.claimInvoicesForReminder).toHaveBeenCalledWith("tenant-1", ["inv-1"]);
     });
   });
 

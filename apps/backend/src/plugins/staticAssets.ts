@@ -4,7 +4,8 @@ import { ensureUploadsRoot } from "../config/uploadConfig.js";
 import { authenticateUploader } from "../middleware/authenticateUploader.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { sendForbidden } from "../lib/httpErrors.js";
-import { canReadContacts } from "../services/rbacService.js";
+import { canReadCollection, canReadContacts } from "../services/rbacService.js";
+import { isQuestionMediaUploadPath } from "../lib/questionMediaPolicy.js";
 import type { User } from "@mms/shared";
 
 export type HeaderTarget = {
@@ -33,6 +34,15 @@ export function setStaticAssetHeaders(reply: HeaderTarget, filePath: string): vo
   const normalized = filePath.replace(/\\/g, "/");
   // Strip .br or .gz extension if preCompressed served a compressed artifact
   const cleanPath = normalized.replace(/\.(?:br|gz)$/i, "");
+
+  // Question media is rendered inline (img/audio), so it must not be served as a forced download.
+  // It stays private: the file is tenant + module gated and must never land in a shared proxy cache.
+  if (cleanPath.includes("/question-media/")) {
+    reply.header("Cache-Control", "private, no-store");
+    reply.header("X-Content-Type-Options", "nosniff");
+    reply.header("Vary", "Cookie, Accept-Encoding");
+    return;
+  }
 
   if (cleanPath.includes("/attachments/")) {
     reply.header("Content-Type", "application/octet-stream");
@@ -167,6 +177,10 @@ export function isUploadModuleAccessDenied(
   pathBelowUploads: string,
   user: User | undefined,
 ): boolean {
+  // Question media belongs to the Question Bank module, not to contacts (0242).
+  if (isQuestionMediaUploadPath(pathBelowUploads)) {
+    return !user || !canReadCollection(user, "questions");
+  }
   if (!isContactAttachmentUploadPath(pathBelowUploads)) return false;
   return !user || !canReadContacts(user);
 }

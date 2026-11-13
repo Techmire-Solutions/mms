@@ -28,6 +28,7 @@ export function useFinancePageController() {
   const {
     canWrite,
     canDelete,
+    canManage,
     canReports: canViewReports,
     canViewSetup,
   } = useModulePermissions(FINANCE_MODULE_MANIFEST);
@@ -146,6 +147,7 @@ export function useFinancePageController() {
     t,
     canWrite,
     canDelete,
+    canManage,
     PAGE_TABS,
     SUB_TABS,
     activeTab,

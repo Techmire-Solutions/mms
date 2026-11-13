@@ -63,3 +63,31 @@ describe("evaluateWorkshopCompletion", () => {
     ).toBe("completed");
   });
 });
+
+describe("evaluateWorkshopCompletion correctness boundaries", () => {
+  it("never completes a participant when there is no countable day (dateless / not started)", () => {
+    expect(evaluateWorkshopCompletion(facts(1, 0), noCriteria)).toMatchObject({
+      status: "attended",
+      shortfalls: ["attendance_unknown"],
+      attendancePct: null,
+    });
+  });
+
+  it("compares the unrounded ratio, so 59.96% does not pass a 60% minimum", () => {
+    const criteria = { minAttendancePct: 60, minScorePct: null };
+    expect(evaluateWorkshopCompletion(facts(5996, 10000), criteria).status).toBe("attended");
+    expect(evaluateWorkshopCompletion(facts(6000, 10000), criteria).status).toBe("completed");
+  });
+
+  it("treats an explicit 0% minimum as a criterion that always passes", () => {
+    expect(
+      evaluateWorkshopCompletion(facts(1), { minAttendancePct: 0, minScorePct: 0 }).status,
+    ).toBe("completed");
+  });
+
+  it("reports >100% only when the numerator is genuinely larger (data bug surfaced, not hidden)", () => {
+    const result = evaluateWorkshopCompletion(facts(5, 2), noCriteria);
+    expect(result.attendancePct).toBe(250);
+    expect(result.status).toBe("completed");
+  });
+});

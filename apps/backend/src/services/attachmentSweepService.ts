@@ -3,12 +3,22 @@ import { join } from "node:path";
 import { resolveUploadsRoot } from "../config/uploadConfig.js";
 import { runInGlobalTransaction } from "../db/dbTransactions.js";
 import { activeDb } from "../db/database.js";
-import { contactAttachments } from "../db/schema.js";
+import { contactAttachments, questionAttachments } from "../db/schema.js";
 import {
   attachmentFileKey,
   selectOrphanAttachmentFiles,
   type AttachmentFileCandidate,
 } from "./attachmentStorageService.js";
+import { QUESTION_MEDIA_CATEGORY, questionMediaReferenceKey } from "../lib/questionMediaPolicy.js";
+import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
+
+/**
+ * Directories under `tenants/<tenant>/` that hold referenced files and are safe to sweep.
+ *
+ * `images/` is deliberately excluded: avatars, branding and general images have no reference table
+ * yet, so sweeping that directory would delete live files. Recorded as deferred in the audit.
+ */
+const SWEPT_CATEGORIES = ["attachments", QUESTION_MEDIA_CATEGORY] as const;
 
 const DEFAULT_MIN_AGE_MS = 24 * 60 * 60 * 1000;
 
@@ -20,6 +30,8 @@ export interface AttachmentSweepOptions {
   minAgeMs?: number;
   /** Injection seam for tests; defaults to the global attachment-reference query. */
   loadReferencedKeys?: () => Promise<Set<string>>;
+  /** Worker shutdown signal: stops the sweep between tenants and between unlinks. */
+  signal?: AbortSignal;
 }
 
 export interface AttachmentSweepResult {
@@ -40,27 +52,52 @@ export async function collectTenantAttachmentFiles(
 
   for (const tenantEntry of tenants) {
     if (!tenantEntry.isDirectory()) continue;
-    const dir = join(tenantsDir, tenantEntry.name, "attachments");
-    const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
-    for (const entry of entries) {
-      if (!entry.isFile()) continue;
-      const path = join(dir, entry.name);
-      const info = await stat(path).catch(() => null);
-      if (!info?.isFile()) continue;
-      files.push({ tenant: tenantEntry.name, file: entry.name, path, mtimeMs: info.mtimeMs });
+    for (const category of SWEPT_CATEGORIES) {
+      const dir = join(tenantsDir, tenantEntry.name, category);
+      const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+      for (const entry of entries) {
+        if (!entry.isFile()) continue;
+        const path = join(dir, entry.name);
+        const info = await stat(path).catch(() => null);
+        if (!info?.isFile()) continue;
+        files.push({
+          tenant: tenantEntry.name,
+          file: entry.name,
+          path,
+          mtimeMs: info.mtimeMs,
+          ...(category === QUESTION_MEDIA_CATEGORY
+            ? { key: `${tenantEntry.name.toLowerCase()}/${category}/${entry.name}` }
+            : {}),
+        });
+      }
     }
   }
   return files;
 }
 
-/** Reference keys for every contact attachment row, including soft-deleted contacts. */
+/**
+ * Reference keys for every attachment row, including soft-deleted questions and contacts.
+ *
+ * Question media is a first-class reference source (0242): without it the nightly sweep would treat
+ * every question image as an orphan and delete it after the age floor.
+ */
 export async function loadReferencedAttachmentKeys(): Promise<Set<string>> {
-  const rows = await runInGlobalTransaction(async () =>
-    activeDb().select({ url: contactAttachments.url }).from(contactAttachments),
-  );
+  const { contactRows, questionRows } = await runInGlobalTransaction(async () => {
+    const contacts = await activeDb()
+      .select({ url: contactAttachments.url })
+      .from(contactAttachments);
+    const questionMedia = await activeDb()
+      .select({ url: questionAttachments.url })
+      .from(questionAttachments);
+    return { contactRows: contacts, questionRows: questionMedia };
+  });
   const keys = new Set<string>();
-  for (const row of rows) {
+  for (const row of contactRows) {
     const key = attachmentFileKey(row.url);
+    if (key) keys.add(key);
+  }
+  for (const row of questionRows) {
+    const key = questionMediaReferenceKey(row.url);
     if (key) keys.add(key);
   }
   return keys;
@@ -77,7 +114,10 @@ export async function runAttachmentSweep(
   options: AttachmentSweepOptions,
 ): Promise<AttachmentSweepResult> {
   const minAgeMs = options.minAgeMs ?? DEFAULT_MIN_AGE_MS;
+  throwIfBackgroundJobAborted(options.signal);
+  // References are loaded before any deletion: a failed/aborted load must never remove files.
   const referenced = await (options.loadReferencedKeys ?? loadReferencedAttachmentKeys)();
+  throwIfBackgroundJobAborted(options.signal);
   const files = await collectTenantAttachmentFiles(options.root ?? resolveUploadsRoot());
   const orphanFiles = selectOrphanAttachmentFiles(
     files,
@@ -88,7 +128,8 @@ export async function runAttachmentSweep(
 
   let deleted = 0;
   if (options.apply) {
-    for (const orphan of orphanFiles) {
+    for (const [index, orphan] of orphanFiles.entries()) {
+      if (index % 25 === 0) throwIfBackgroundJobAborted(options.signal);
       try {
         await unlink(orphan.path);
         deleted += 1;

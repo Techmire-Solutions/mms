@@ -8,12 +8,16 @@ import {
   foreignKey,
   varchar,
   numeric,
+  jsonb,
+  uniqueIndex,
+  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { students } from "./students.js";
 import { softDeleteColumns } from "./softDeleteSchema.js";
 import { questions } from "./examinationQuestionBankTables.js";
+import { sessionClasses } from "./sessions.js";
 
 export const tests = pgTable(
   "tests",
@@ -31,6 +35,11 @@ export const tests = pgTable(
     classId: text("class_id"),
     totalMarks: integer("total_marks"),
     instructions: text("instructions"),
+    /** Publication stamp (0241): a published paper's question set is frozen. */
+    publishedAt: timestamp("published_at", { withTimezone: true, mode: "date" }),
+    publishedBy: text("published_by"),
+    /** Seed of the last deterministic blueprint assembly (0242). */
+    assemblySeed: varchar("assembly_seed", { length: 64 }),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -46,6 +55,21 @@ export const tests = pgTable(
     index("tests_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
+    // Added by 0171; mirrored here in 0238 so the declared shape and a rebuilt database agree.
+    foreignKey({
+      name: "tests_class_fk",
+      columns: [table.workspaceSubdomain, table.classId],
+      foreignColumns: [sessionClasses.workspaceSubdomain, sessionClasses.id],
+    }).onDelete("restrict"),
+    check(
+      "tests_total_marks_positive_check",
+      sql`${table.totalMarks} is null or ${table.totalMarks} > 0`,
+    ),
+    check("tests_duration_positive_check", sql`${table.duration} > 0`),
+    check(
+      "tests_published_pair_check",
+      sql`(${table.publishedAt} is null) = (${table.publishedBy} is null)`,
+    ),
   ],
 );
 
@@ -58,6 +82,8 @@ export const testQuestions = pgTable(
     testId: text("test_id").notNull(),
     questionId: text("question_id").notNull(),
     sortOrder: integer("sort_order").notNull().default(0),
+    /** Frozen copy of the question at publication (0241) — the paper's historical evidence. */
+    questionSnapshot: jsonb("question_snapshot").$type<import("@mms/shared").QuestionSnapshot>(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
@@ -71,6 +97,8 @@ export const testQuestions = pgTable(
       foreignColumns: [questions.workspaceSubdomain, questions.id],
     }).onDelete("cascade"),
     index("test_questions_workspace_test_idx").on(table.workspaceSubdomain, table.testId),
+    // 0240: answers "which papers use question X" from an index; the PK puts `question_id` last.
+    index("test_questions_workspace_question_idx").on(table.workspaceSubdomain, table.questionId),
   ],
 );
 
@@ -94,6 +122,9 @@ export const testSections = pgTable(
       foreignColumns: [tests.workspaceSubdomain, tests.id],
     }).onDelete("cascade"),
     index("test_sections_workspace_test_idx").on(table.workspaceSubdomain, table.testId),
+    // Referenced by `test_section_questions_section_fk`; the PK is (workspace, test_id, id), so
+    // this is the minimal unique key a child FK can target (0238).
+    uniqueIndex("test_sections_ws_id_uidx").on(table.workspaceSubdomain, table.id),
   ],
 );
 
@@ -114,7 +145,18 @@ export const testSectionQuestions = pgTable(
       columns: [table.workspaceSubdomain, table.questionId],
       foreignColumns: [questions.workspaceSubdomain, questions.id],
     }).onDelete("cascade"),
+    // Without this a deleted section stranded its question links (0238).
+    foreignKey({
+      name: "test_section_questions_section_fk",
+      columns: [table.workspaceSubdomain, table.sectionId],
+      foreignColumns: [testSections.workspaceSubdomain, testSections.id],
+    }).onDelete("cascade"),
     index("test_section_questions_workspace_sec_idx").on(table.workspaceSubdomain, table.sectionId),
+    // 0240: reverse lookup for the referenced-question guard.
+    index("test_section_questions_workspace_question_idx").on(
+      table.workspaceSubdomain,
+      table.questionId,
+    ),
   ],
 );
 
@@ -153,9 +195,22 @@ export const assessmentResults = pgTable(
     index("assessment_results_workspace_active_idx")
       .on(table.workspaceSubdomain)
       .where(sql`${table.deletedAt} is null`),
+    index("assessment_results_workspace_test_active_idx")
+      .on(table.workspaceSubdomain, table.testId)
+      .where(sql`${table.deletedAt} is null`),
     index("assessment_results_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
+    // One active paper result per student: `id`-only uniqueness allowed duplicates (0238).
+    // Partial on the soft-delete column so a trashed result never blocks a fresh one.
+    uniqueIndex("assessment_results_ws_test_student_uidx")
+      .on(table.workspaceSubdomain, table.testId, table.studentId)
+      .where(sql`${table.deletedAt} is null`),
+    // The reports cast `submitted_at::date`; malformed text used to reach that cast (22007 → 500).
+    check(
+      "assessment_results_submitted_at_check",
+      sql`${table.submittedAt} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'`,
+    ),
   ],
 );
 
@@ -186,5 +241,6 @@ export const assessmentAnswers = pgTable(
       table.workspaceSubdomain,
       table.questionId,
     ),
+    check("assessment_answers_score_non_negative_check", sql`${table.score} >= 0`),
   ],
 );

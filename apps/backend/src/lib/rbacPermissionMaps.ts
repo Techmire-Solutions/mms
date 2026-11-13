@@ -163,12 +163,27 @@ export const COLLECTION_DELETE_PERMISSION: Record<string, Permission> = {
   obligation_collections: OBLIGATIONS_MODULE_MANIFEST.permissions.delete,
   workshop_events: WORKSHOPS_MODULE_MANIFEST.permissions.delete,
   workshop_participants: WORKSHOPS_MODULE_MANIFEST.permissions.delete,
+  // Examination trash/restore, publication (lock/unlock) and moderation are controller actions.
+  // Without these entries the fallback was `canWriteCollection`, so every teacher could delete an
+  // exam, publish results and grant grace marks.
+  exams: EXAMINATIONS_MODULE_MANIFEST.permissions.delete,
+  exam_results: EXAMINATIONS_MODULE_MANIFEST.permissions.delete,
   // Hasanat delete/restore/void/reconcile is a distinct capability from daily write: instructors
   // award cards, administrators reverse or erase them.
   hasanat_distributions: HASANAT_MODULE_MANIFEST.permissions.delete,
   hasanat_batches: HASANAT_MODULE_MANIFEST.permissions.delete,
   hasanat_denoms: HASANAT_MODULE_MANIFEST.permissions.delete,
   hasanat_redemptions: HASANAT_MODULE_MANIFEST.permissions.delete,
+  // Finance/accounting archive was falling through to `canWriteCollection`, so a
+  // write-only role could archive invoices, payments, ledger entries, accounts and
+  // fiscal years. Delete is its own capability.
+  finance_invoices: FINANCE_MODULE_MANIFEST.permissions.delete,
+  finance_payments: FINANCE_MODULE_MANIFEST.permissions.delete,
+  accounting_entries: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
+  accounting_accounts: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
+  accounts: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
+  accounting_fiscal_years: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
+  fiscal_years: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
 };
 
 // `global_settings`/`branding` keep entries here even though `dbObjectRoutes.ts` no

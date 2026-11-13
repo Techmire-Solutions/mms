@@ -1,24 +1,61 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { baseListQuerySchema } from "../core/apiSchemas.js";
 import { widgetAggregatesBodySchema, widgetAggregateResultSchema } from "../schemas/common.dto.js";
 import {
+  questionBankQuestionListSchema,
   questionBankQuestionRecordSchema,
-  questionBankTestRecordSchema,
+  questionBankResultListSchema,
   questionBankResultRecordSchema,
+  questionBankTestListSchema,
+  questionBankTestRecordSchema,
 } from "../examinations/questionBankModuleManifest.js";
+import {
+  questionBankQuestionClientSchema,
+  questionBankQuestionSummarySchema,
+} from "../examinations/questionBankSerialization.js";
+import {
+  questionBankQuestionsQuerySchema,
+  questionBankPagedCollectionQuerySchema,
+  questionBankPickerQuerySchema,
+  questionIdParamsSchema,
+} from "../examinations/questionBankListQuery.js";
+import {
+  questionBankFieldConfigPutBodySchema,
+  questionBankPreferencesPutBodySchema,
+  questionBankPreferencesResponseSchema,
+} from "../examinations/questionBankSetupConfigTypes.js";
 import {
   questionBankReportAggregatesSchema,
   questionBankReportQuerySchema,
 } from "../examinations/questionBankReportAggregates.js";
+import {
+  questionBankActionRoutes,
+  questionDomainResponseStatuses,
+} from "./questionBankActionRoutes.js";
 
 const c = initContract();
 const ok = z.unknown();
-const bulkIds = z.object({ ids: z.array(z.string()), deletionReason: z.string().optional() });
+const bulkIds = z
+  .object({
+    ids: z.array(z.string().trim().min(1).max(128)).min(1).max(500),
+    deletionReason: z.string().max(500).optional(),
+  })
+  .strict();
 
 /** Envelope for paginated question list responses. */
-export const questionBankQuestionsPageResponseSchema = z.object({
-  questions: z.array(questionBankQuestionRecordSchema),
+export const questionBankQuestionsPageResponseSchema = z
+  .object({
+    questions: z.array(questionBankQuestionClientSchema),
+    total: z.number(),
+    page: z.number(),
+    limit: z.number(),
+    hasMore: z.boolean(),
+  })
+  .strict();
+
+/** Picker response: summaries only, always paginated. */
+export const questionBankPickerResponseSchema = z.object({
+  questions: z.array(questionBankQuestionSummarySchema),
   total: z.number(),
   page: z.number(),
   limit: z.number(),
@@ -39,10 +76,12 @@ export const questionBankContract = c.router({
   listQuestions: {
     method: "GET",
     path: "/api/question-bank/questions",
-    query: baseListQuerySchema,
+    query: questionBankQuestionsQuerySchema,
     responses: {
       200: z.union([
-        z.object({ questions: z.array(questionBankQuestionRecordSchema) }),
+        // Both branches are strict so the union picks the right shape instead of stripping the
+        // pagination fields as "extra keys".
+        z.object({ questions: z.array(questionBankQuestionClientSchema) }).strict(),
         questionBankQuestionsPageResponseSchema,
       ]),
       403: ok,
@@ -50,26 +89,45 @@ export const questionBankContract = c.router({
     },
     summary: "List questions",
   },
+  pickerQuestions: {
+    method: "GET",
+    path: "/api/question-bank/questions/picker",
+    query: questionBankPickerQuerySchema,
+    responses: {
+      200: questionBankPickerResponseSchema,
+      400: ok,
+      403: ok,
+      500: ok,
+    },
+    summary: "Paginated, answer-key-free question picker",
+  },
   bulkDeleteQuestions: {
     method: "POST",
     path: "/api/question-bank/questions/bulk-delete",
     body: bulkIds,
-    responses: { 200: questionBankBulkResultResponseSchema, 403: ok, 500: ok },
+    responses: {
+      200: questionBankBulkResultResponseSchema,
+      ...questionDomainResponseStatuses,
+    },
     summary: "Bulk soft-delete questions",
   },
   bulkRestoreQuestions: {
     method: "POST",
     path: "/api/question-bank/questions/bulk-restore",
     body: bulkIds,
-    responses: { 200: questionBankBulkResultResponseSchema, 403: ok, 500: ok },
+    responses: {
+      200: questionBankBulkResultResponseSchema,
+      ...questionDomainResponseStatuses,
+    },
     summary: "Bulk restore questions",
   },
   listTests: {
     method: "GET",
     path: "/api/question-bank/tests",
-    query: z.object({}).optional(),
+    query: questionBankPagedCollectionQuerySchema,
     responses: {
       200: z.object({ tests: z.array(questionBankTestRecordSchema) }),
+      400: ok,
       403: ok,
       500: ok,
     },
@@ -78,9 +136,10 @@ export const questionBankContract = c.router({
   listResults: {
     method: "GET",
     path: "/api/question-bank/assessment-results",
-    query: z.object({}).optional(),
+    query: questionBankPagedCollectionQuerySchema,
     responses: {
       200: z.object({ results: z.array(questionBankResultRecordSchema) }),
+      400: ok,
       403: ok,
       500: ok,
     },
@@ -89,54 +148,60 @@ export const questionBankContract = c.router({
   bulkUpdateQuestions: {
     method: "PUT",
     path: "/api/question-bank/questions/bulk",
-    body: ok,
+    body: questionBankQuestionListSchema,
     responses: {
       200: z.object({ questions: z.array(questionBankQuestionRecordSchema) }),
-      403: ok,
-      500: ok,
+      ...questionDomainResponseStatuses,
     },
     summary: "Bulk update questions",
   },
   bulkUpdateTests: {
     method: "PUT",
     path: "/api/question-bank/tests/bulk",
-    body: ok,
+    body: questionBankTestListSchema,
     responses: {
       200: z.object({ tests: z.array(questionBankTestRecordSchema) }),
-      403: ok,
-      500: ok,
+      ...questionDomainResponseStatuses,
     },
     summary: "Bulk update tests",
   },
   bulkUpdateResults: {
     method: "PUT",
     path: "/api/question-bank/assessment-results/bulk",
-    body: ok,
+    body: questionBankResultListSchema,
     responses: {
       200: z.object({ results: z.array(questionBankResultRecordSchema) }),
-      403: ok,
-      500: ok,
+      ...questionDomainResponseStatuses,
     },
     summary: "Bulk update assessment results",
   },
   deleteQuestion: {
     method: "DELETE",
     path: "/api/question-bank/questions/:id",
+    pathParams: questionIdParamsSchema,
     body: ok,
-    responses: { 200: z.object({ success: z.literal(true) }), 403: ok, 500: ok },
+    responses: {
+      200: z.object({ success: z.literal(true) }),
+      ...questionDomainResponseStatuses,
+    },
     summary: "Delete question",
   },
   restoreQuestion: {
     method: "POST",
     path: "/api/question-bank/questions/:id/restore",
+    pathParams: questionIdParamsSchema,
     body: ok,
-    responses: { 200: z.object({ success: z.literal(true) }), 403: ok, 500: ok },
+    responses: {
+      200: z.object({ success: z.literal(true) }),
+      ...questionDomainResponseStatuses,
+    },
     summary: "Restore question",
   },
+  ...questionBankActionRoutes,
   reportAggregates: {
     method: "GET",
     path: "/api/question-bank/report-aggregates",
-    query: questionBankReportQuerySchema.optional(),
+    query: questionBankReportQuerySchema.strict().optional(),
     responses: { 200: questionBankReportAggregatesSchema, 403: ok, 500: ok },
     summary: "Get question bank report aggregates",
   },
@@ -160,21 +225,21 @@ export const questionBankContract = c.router({
   updateFieldConfig: {
     method: "PUT",
     path: "/api/question-bank/config/fields",
-    body: ok,
+    body: questionBankFieldConfigPutBodySchema,
     responses: { 200: questionBankConfigResponseSchema, 403: ok, 500: ok },
     summary: "Update field config",
   },
   getPreferences: {
     method: "GET",
     path: "/api/question-bank/config/preferences",
-    responses: { 200: questionBankConfigResponseSchema, 403: ok, 500: ok },
+    responses: { 200: questionBankPreferencesResponseSchema, 403: ok, 500: ok },
     summary: "Get preferences",
   },
   updatePreferences: {
     method: "PUT",
     path: "/api/question-bank/config/preferences",
-    body: ok,
-    responses: { 200: questionBankConfigResponseSchema, 403: ok, 500: ok },
+    body: questionBankPreferencesPutBodySchema,
+    responses: { 200: questionBankPreferencesResponseSchema, 403: ok, 500: ok },
     summary: "Update preferences",
   },
   getComposedConfig: {
@@ -184,3 +249,5 @@ export const questionBankContract = c.router({
     summary: "Get composed config",
   },
 });
+
+export type QuestionBankContract = typeof questionBankContract;

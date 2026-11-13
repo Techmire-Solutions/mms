@@ -10,6 +10,7 @@ import { notify } from "@/lib/notify";
 import { billingPeriodFromDate, todayISO } from "@mms/shared";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useFinanceInvoiceGeneration } from "@/tenant/features/finance/hooks/useFinanceInvoiceGeneration";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 
 export function FinanceGenerateInvoicesDialog({
   open,
@@ -21,6 +22,7 @@ export function FinanceGenerateInvoicesDialog({
   const { t } = useTranslation();
   const sessions = useSessionsCollection({ enabled: open });
   const generate = useFinanceInvoiceGeneration();
+  const guard = useSubmitGuard();
   const [period, setPeriod] = useState(() => billingPeriodFromDate(todayISO()));
   const [sessionId, setSessionId] = useState("");
   const [classId, setClassId] = useState("");
@@ -30,27 +32,37 @@ export function FinanceGenerateInvoicesDialog({
     [sessionId, sessions],
   );
 
-  const handleGenerate = async (): Promise<void> => {
-    try {
-      const result = await generate.mutateAsync({
-        billingPeriod: period,
-        ...(sessionId ? { sessionId } : {}),
-        ...(classId ? { classId } : {}),
-      });
-      if (result.created === 0) {
-        notify.info(t("finance.generate.none", { skipped: result.skipped }));
-      } else {
-        notify.success(
-          t("finance.generate.success", { count: result.created, skipped: result.skipped }),
-        );
+  const handleGenerate = (): Promise<void> =>
+    guard(async () => {
+      try {
+        const result = await generate.mutateAsync({
+          billingPeriod: period,
+          ...(sessionId ? { sessionId } : {}),
+          ...(classId ? { classId } : {}),
+        });
+        if (result.created === 0) {
+          notify.info(t("finance.generate.none", { skipped: result.skipped }));
+        } else if (result.unposted > 0) {
+          // The invoice exists but has no ledger entry: posting rules are missing or
+          // the posting was refused. Say so instead of reporting plain success.
+          notify.warning(
+            t("finance.generate.unposted", {
+              count: result.created,
+              unposted: result.unposted,
+            }),
+          );
+        } else {
+          notify.success(
+            t("finance.generate.success", { count: result.created, skipped: result.skipped }),
+          );
+        }
+        onClose();
+      } catch (error) {
+        notify.error(t("finance.generate.failed"), {
+          description: error instanceof Error ? error.message : String(error),
+        });
       }
-      onClose();
-    } catch (error) {
-      notify.error(t("finance.generate.failed"), {
-        description: error instanceof Error ? error.message : String(error),
-      });
-    }
-  };
+    });
 
   return (
     <FormModal

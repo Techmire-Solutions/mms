@@ -5,6 +5,13 @@ import { notify } from "@/lib/notify";
 import { type Exam } from "@/lib/data/examinationData";
 import { toTitleCase } from "@mms/shared";
 import { EXAMINATION_FORM_EMPTY } from "../lib/examinationFormConstants";
+import {
+  isExamDraftDirty,
+  validateExamDraft,
+  type ExamFormErrors,
+  type ExamFormField,
+} from "../lib/examFormValidation";
+import { isNotifiedMutationError } from "@/lib/notifiedMutationError";
 
 export interface UseExaminationFormOptions {
   open: boolean;
@@ -18,9 +25,12 @@ export type UseExaminationFormResult = ReturnType<typeof useExaminationForm>;
 export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminationFormOptions) {
   const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Partial<Record<ExamFormField, boolean>>>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const sessions = useSessionsCollection();
 
+  const baseline = exam ?? EXAMINATION_FORM_EMPTY;
   const [examDraft, setExamDraft] = useState<Omit<Exam, "id">>(() => {
     return exam ? { ...exam } : { ...EXAMINATION_FORM_EMPTY };
   });
@@ -33,25 +43,46 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
     setPrevExam(exam);
     if (open) {
       setExamDraft(exam ? { ...exam } : { ...EXAMINATION_FORM_EMPTY });
-      setErrors({});
+      setTouched({});
+      setSubmitAttempted(false);
+      setServerError(null);
     }
   }
 
+  const validationErrors = validateExamDraft(examDraft);
+  const isDirty = isExamDraftDirty(examDraft, baseline);
+
   const updateDraft = (patch: Partial<typeof examDraft>) => {
     setExamDraft((prev) => ({ ...prev, ...patch }));
-    const patchedKeys = Object.keys(patch);
-    setErrors((prev) => {
-      let changed = false;
+    setServerError(null);
+    setTouched((prev) => {
       const next = { ...prev };
-      for (const key of patchedKeys) {
-        if (next[key]) {
-          delete next[key];
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
+      for (const key of Object.keys(patch)) next[key as ExamFormField] = true;
+      return next;
     });
   };
+
+  const errors: Record<string, string> = {};
+  for (const [field, code] of Object.entries(validationErrors) as Array<
+    [ExamFormField, NonNullable<ExamFormErrors[ExamFormField]>]
+  >) {
+    if (!touched[field] && !submitAttempted) continue;
+    const key =
+      code === "passingExceedsTotal"
+        ? "examinations.form.validation.passingExceedsTotal"
+        : code === "totalInvalid"
+          ? "examinations.form.validation.totalInvalid"
+          : code === "passingInvalid"
+            ? "examinations.form.validation.passingInvalid"
+            : code === "durationInvalid"
+              ? "examinations.form.validation.durationInvalid"
+              : code === "nameRequired"
+                ? "examinations.form.validation.nameRequired"
+                : code === "dateRequired"
+                  ? "examinations.form.validation.dateRequired"
+                  : "examinations.form.validation.classRequired";
+    errors[field] = t(key);
+  }
 
   const classes = (() =>
     sessions.flatMap((session) =>
@@ -62,24 +93,10 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
     ))();
 
   const handleSave = async () => {
-    setErrors({});
-    const newErrors: Record<string, string> = {};
-
-    if (!examDraft.name?.trim()) {
-      newErrors.name = t("examinations.form.validation.nameRequired");
-    }
-    if (!examDraft.date) {
-      newErrors.date = t("examinations.form.validation.dateRequired");
-    }
-    if (!examDraft.classIds || examDraft.classIds.length === 0) {
-      newErrors.classIds = t("examinations.form.validation.classRequired");
-    }
-    if (Number(examDraft.passingMarks) > Number(examDraft.totalMarks)) {
-      newErrors.passingMarks = t("examinations.form.validation.passingExceedsTotal");
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    setSubmitAttempted(true);
+    setServerError(null);
+    const allErrors = validateExamDraft(examDraft);
+    if (Object.keys(allErrors).length > 0) {
       notify.error(t("examinations.form.toast.validationError"));
       return;
     }
@@ -97,21 +114,19 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
       );
       onClose();
     } catch (err: unknown) {
-      notify.error(t("examinations.form.toast.saveFailed"), {
-        description: err instanceof Error ? err.message : String(err),
-      });
+      const message = err instanceof Error ? err.message : String(err);
+      // The controller already surfaced a toast for API failures; show the detail inline only.
+      if (!isNotifiedMutationError(err)) {
+        notify.error(t("examinations.form.toast.saveFailed"), { description: message });
+      }
+      setServerError(message);
     } finally {
       setSaving(false);
     }
   };
 
-  const valid = !!(
-    examDraft.name &&
-    examDraft.date &&
-    examDraft.classIds &&
-    examDraft.classIds.length > 0
-  );
-  const submitError = Object.values(errors)[0] || undefined;
+  const valid = Object.keys(validationErrors).length === 0;
+  const submitError = serverError ?? Object.values(errors)[0] ?? undefined;
 
   const getFieldError = (fieldId: string): string | undefined => errors[fieldId];
 
@@ -127,5 +142,6 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
     handleSave,
     valid,
     getFieldError,
+    isDirty,
   };
 }

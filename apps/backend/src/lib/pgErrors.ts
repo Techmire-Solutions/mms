@@ -1,3 +1,13 @@
+/** The SQLSTATE behind a driver error, walking the `cause` chain. */
+export function pgErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  if ("code" in error && typeof (error as { code?: unknown }).code === "string") {
+    return String((error as { code: string }).code);
+  }
+  const cause = "cause" in error ? (error as { cause?: unknown }).cause : undefined;
+  return pgErrorCode(cause);
+}
+
 /**
  * Postgres error probes shared across services. `isUniqueViolation` walks nested
  * `cause` chains because pg wraps driver errors, hiding the `23505` code.
@@ -29,6 +39,22 @@ export function uniqueViolationConstraint(error: unknown): string | null {
   }
   const cause = "cause" in error ? (error as { cause?: unknown }).cause : undefined;
   return uniqueViolationConstraint(cause);
+}
+
+/**
+ * The driver error message behind any wrapping, or undefined.
+ *
+ * Drizzle wraps a rejected statement as `Error("Failed query: …", { cause })`, so
+ * the server's own `RAISE EXCEPTION` text (the domain reason a trigger rejected
+ * the write) is only reachable through the cause chain.
+ */
+export function pgErrorMessage(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const message = (error as { message?: unknown }).message;
+  const cause = "cause" in error ? (error as { cause?: unknown }).cause : undefined;
+  const causeMessage = pgErrorMessage(cause);
+  if (causeMessage) return causeMessage;
+  return typeof message === "string" && message ? message : undefined;
 }
 
 /** True for `23503` (foreign_key_violation), including wrapped driver errors. */

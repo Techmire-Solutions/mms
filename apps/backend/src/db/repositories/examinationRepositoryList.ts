@@ -19,6 +19,8 @@ import {
   type Exam,
   type ExaminationsCommandMetricsSnapshot,
   type ExaminationsListQuery,
+  EXAM_SORT_FIELDS as EXAM_SORT_FIELDS_SHARED,
+  isExamStatus,
   type ExaminationsListPageResult,
 } from "@mms/shared";
 import { examResults, exams, examClasses, subjects } from "../schema.js";
@@ -43,7 +45,7 @@ function buildExamsListConditions(subdomain: string, query: ExaminationsListQuer
     conditions.push(or(ilike(exams.name, pattern), ilike(examSubjectSql, pattern)) as SQL);
   }
 
-  const statuses = dedupeTrimmedIds(query.status);
+  const statuses = dedupeTrimmedIds(query.status).filter(isExamStatus);
   if (statuses.length) {
     conditions.push(inArray(exams.status, statuses));
   }
@@ -51,7 +53,7 @@ function buildExamsListConditions(subdomain: string, query: ExaminationsListQuer
   return conditions;
 }
 
-const EXAM_SORT_FIELDS = new Set(["name", "subject", "status", "date", "updatedAt"]);
+const EXAM_SORT_FIELDS = new Set<string>(EXAM_SORT_FIELDS_SHARED);
 
 function buildExamsOrderBy(sortField?: string, sortDir?: "asc" | "desc" | ""): SQL {
   const field = sortField?.trim();
@@ -179,7 +181,7 @@ export async function aggregateExaminationsCommandMetrics(
         totalResults: sql<number>`count(*)::int`,
         examsWithResults: sql<number>`count(DISTINCT ${examResults.examId})::int`,
         scored: sql<number>`count(${exams.id})::int`,
-        passed: sql<number>`count(*) FILTER (WHERE ${exams.id} IS NOT NULL AND ${examResults.marksObtained} >= ${exams.passingMarks})::int`,
+        passed: sql<number>`count(*) FILTER (WHERE ${exams.id} IS NOT NULL AND ${examResults.marksObtained} + coalesce(${examResults.graceMarks}, 0) >= ${exams.passingMarks})::int`,
       })
       .from(examResults)
       .leftJoin(

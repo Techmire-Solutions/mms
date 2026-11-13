@@ -1,6 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import type { HedgeRelationshipCreate } from "@mms/shared";
+import {
+  hedgeRelationshipRecordSchema,
+  hedgeValuationRecordSchema,
+  type HedgeRelationshipCreate,
+} from "@mms/shared";
 import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
 import {
   accountingAccounts,
@@ -18,9 +22,13 @@ import { withTenant } from "../../db/tenant-context.js";
 import {
   createHedgeRelationship,
   postHedgeValuation,
+  hedgeRecordId,
+  previewHedgeValuation,
+} from "../../accounting/use-cases/hedgeUseCases.js";
+import {
   reclassifyHedgeReserve,
   settleHedge,
-} from "../../accounting/use-cases/hedgeUseCases.js";
+} from "../../accounting/use-cases/hedgeSettlementUseCases.js";
 import { hedgeDeps } from "../../accounting/use-cases/hedgeDeps.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
@@ -237,5 +245,108 @@ describe("IFRS 9 cash flow hedge of a forecast USD purchase", () => {
         ["cost", 0, 7000],
       ],
     );
+  });
+});
+
+describe("hedge responses satisfy the route schema", () => {
+  it("emits a relationship that validates against the declared HTTP schema", async () => {
+    const created = await withTenant(TENANT, () =>
+      createHedgeRelationship(hedgeDeps, actor, {
+        ...designation,
+        name: "Schema-checked hedge",
+        designationDate: "2026-12-01",
+        maturityDate: "2027-04-30",
+      }),
+    );
+
+    // The route validates this payload before sending; a mapper change that drops
+    // a key or emits a non-canonical amount must fail here, not in production.
+    expect(hedgeRelationshipRecordSchema.safeParse(created).success).toBe(true);
+
+    // The preview returns the full valuation record under `{ valuation }`.
+    const preview = await withTenant(TENANT, () =>
+      previewHedgeValuation(hedgeDeps, TENANT, created.id, "2026-12-31"),
+    );
+    expect(hedgeValuationRecordSchema.safeParse(preview).success).toBe(true);
+  });
+});
+
+describe("hedge designation and postings are guarded", () => {
+  it("rejects an account whose role does not match its type", async () => {
+    // The FK proves the account exists; the role proves the statement it lands on.
+    await expect(
+      withTenant(TENANT, () =>
+        createHedgeRelationship(hedgeDeps, actor, { ...designation, pnlAccountId: "cfhr" }),
+      ),
+    ).rejects.toThrow(/expected Revenue or Expense/);
+    await expect(
+      withTenant(TENANT, () =>
+        createHedgeRelationship(hedgeDeps, actor, { ...designation, reserveAccountId: "hpl" }),
+      ),
+    ).rejects.toThrow(/expected Equity/);
+  });
+
+  it("turns a notional that does not fit the currency into a 422, not a 500", async () => {
+    // The HTTP schema rejects this now; a row stored before that guard must still
+    // fail as a validation error rather than crashing the valuation.
+    const { tx, commit } = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+    await tx.insert(accountingHedgeRelationships).values({
+      id: "hedge-legacy-scale",
+      workspaceSubdomain: TENANT,
+      ...designation,
+      notional: "1000.1234",
+    });
+    await commit();
+
+    await expect(
+      withTenant(TENANT, () =>
+        previewHedgeValuation(hedgeDeps, TENANT, "hedge-legacy-scale", "2026-11-30"),
+      ),
+    ).rejects.toMatchObject({ statusCode: 422 });
+  });
+
+  it("posts one valuation per hedge and date even under concurrent submits", async () => {
+    const hedge = await withTenant(TENANT, () =>
+      createHedgeRelationship(hedgeDeps, actor, {
+        ...designation,
+        name: "Concurrent valuation hedge",
+        designationDate: "2026-11-01",
+        maturityDate: "2027-03-31",
+        contractRate: "284",
+        designationRate: "285",
+      }),
+    );
+
+    const [first, second] = await Promise.all([
+      withTenant(TENANT, () => postHedgeValuation(hedgeDeps, actor, hedge.id, "2026-12-15")),
+      withTenant(TENANT, () => postHedgeValuation(hedgeDeps, actor, hedge.id, "2026-12-15")),
+    ]);
+
+    const valuations = [first, second].map(
+      (result) =>
+        result.valuations.filter((record) => record.valuationDate === "2026-12-15").length,
+    );
+    expect(valuations).toEqual([1, 1]);
+
+    const stored = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT count(*)::int AS n FROM accounting_hedge_valuations
+         WHERE workspace_subdomain = ${TENANT}
+           AND relationship_id = ${hedge.id}
+           AND valuation_date = '2026-12-15'
+           AND kind = 'valuation'
+      `),
+    );
+    expect(Number((stored.rows as Array<{ n: number }>)[0]?.n ?? 0)).toBe(1);
+
+    const entries = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT count(*)::int AS n FROM accounting_entries
+         WHERE workspace_subdomain = ${TENANT}
+           AND source_type = 'hedge_val'
+           AND source_id = ${hedgeRecordId(hedge.id, "valuation", "2026-12-15")}
+      `),
+    );
+    expect(Number((entries.rows as Array<{ n: number }>)[0]?.n ?? 0)).toBe(1);
   });
 });

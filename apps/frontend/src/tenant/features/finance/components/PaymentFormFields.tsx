@@ -8,6 +8,8 @@ import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { FormSelect } from "@/components/app/FormSelect";
 import { SectionCard } from "@/components/app/SectionCard";
 import { cn } from "@/lib/utils";
+import { coerceFinancePaymentMethod } from "@mms/shared";
+import { tryParseMoneyAmountNumber } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { buildInitialPaymentDraft } from "@/tenant/features/finance/lib/paymentFormHelpers";
 
@@ -61,13 +63,16 @@ export function PaymentFormFields({
                 required
               />
             </div>
-            {Number(paymentDraft.amount) < balance && Number(paymentDraft.amount) > 0 && (
-              <p className="m-0 mt-1 text-xs text-warning">
-                {t("finance.partialPayment", {
-                  balance: formatCurrency(balance - Number(paymentDraft.amount)),
-                })}
-              </p>
-            )}
+            {(tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) < balance &&
+              (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) > 0 && (
+                <p className="m-0 mt-1 text-xs text-warning">
+                  {t("finance.partialPayment", {
+                    balance: formatCurrency(
+                      balance - (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0),
+                    ),
+                  })}
+                </p>
+              )}
           </Field>
         </div>
 
@@ -81,7 +86,7 @@ export function PaymentFormFields({
             id="payment-method-select"
             name="method"
             value={paymentDraft.method}
-            onChange={(value) => updateDraft({ method: value })}
+            onChange={(value) => updateDraft({ method: coerceFinancePaymentMethod(value) })}
             options={paymentMethodOptions}
           />
         </Field>

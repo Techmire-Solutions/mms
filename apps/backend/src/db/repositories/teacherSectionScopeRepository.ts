@@ -15,6 +15,19 @@ export type ClassSectionDate = {
   onDate: string;
 };
 
+/** Whether the user is linked to an active faculty record (and therefore section-scopeable). */
+export async function isFacultyLinked(tenant: string, userId: string): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const result = await tx.execute<{ id: string }>(sql`
+      SELECT id FROM faculty
+       WHERE workspace_subdomain = ${subdomain} AND user_id = ${userId} AND deleted_at IS NULL
+       LIMIT 1
+    `);
+    return (result.rows?.length ?? 0) > 0;
+  });
+}
+
 /**
  * Class/date pairs the user's faculty records do NOT teach (no active section staff assignment
  * and no timetable period, primary or assistant). `null` when the user is not linked to faculty.

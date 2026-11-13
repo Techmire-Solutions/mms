@@ -1,16 +1,20 @@
 import { z } from "zod";
 import type { Permission } from "../auth/permissions.js";
+import { validateQuestionByType } from "./questionInvariants.js";
+import { QUESTION_STATUSES } from "./questionLifecycle.js";
+import {
+  questionDifficultySchema,
+  questionLanguageSchema,
+  questionTypeSchema,
+  type QuestionType,
+} from "./questionTaxonomy.js";
 
-export const questionDifficultySchema = z.enum(["easy", "medium", "hard"]);
-export const questionTypeSchema = z.enum([
-  "mcq",
-  "true_false",
-  "short",
-  "fill_blank",
-  "matching",
-  "numeric",
-  "ordering",
-]);
+export {
+  questionDifficultySchema,
+  questionLanguageSchema,
+  questionStatusSchema,
+  questionTypeSchema,
+} from "./questionTaxonomy.js";
 
 export const questionSourceReferenceSchema = z.object({
   bookName: z.string().optional(),
@@ -48,6 +52,19 @@ export const questionBookCitationSchema = z.object({
   citation: questionSourceReferenceSchema.partial(),
 });
 
+export const questionAttachmentSchema = z
+  .object({
+    id: z.string(),
+    kind: z.enum(["stem", "option"]),
+    optionIndex: z.number().int().nonnegative().nullable(),
+    name: z.string(),
+    mime: z.string(),
+    size: z.number().int().nonnegative(),
+    url: z.string(),
+    sortOrder: z.number().int().nonnegative(),
+  })
+  .strict();
+
 export const questionBankQuestionRecordSchema = z
   .object({
     id: z.string(),
@@ -55,15 +72,22 @@ export const questionBankQuestionRecordSchema = z
     categoryId: z.string().optional(),
     type: questionTypeSchema,
     difficulty: questionDifficultySchema,
-    questionLanguage: z.enum(["en", "ar", "ur", "fa"]),
+    questionLanguage: questionLanguageSchema,
     text: z.string(),
     options: z.array(z.string()),
     answer: z.string(),
-    marks: z.number().optional(),
+    marks: z.number().int().optional(),
     tags: z.array(z.string()).optional(),
     sourceCitations: z.array(questionBookCitationSchema).optional(),
+    attachments: z.array(questionAttachmentSchema).optional(),
     sources: z.array(questionSourceReferenceSchema).optional(),
     source: questionSourceReferenceSchema.optional(),
+    /** OCC token (0240); omitted means "no token supplied" — legacy last-write-wins. */
+    version: z.number().int().positive().optional(),
+    /** Computed on list/picker reads (papers referencing the question); never stored. */
+    usageCount: z.number().int().nonnegative().optional(),
+    /** Authoring lifecycle (0241); server-owned, never accepted from the generic bulk write. */
+    status: z.enum(QUESTION_STATUSES).optional(),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
     deletionReason: z.string().nullable().optional(),
@@ -81,11 +105,11 @@ export const questionBankQuestionInsertSchema = z
     categoryIds: z.array(z.string()).min(1),
     type: questionTypeSchema,
     difficulty: questionDifficultySchema,
-    questionLanguage: z.enum(["en", "ar", "ur", "fa"]).default("en"),
+    questionLanguage: questionLanguageSchema.default("en"),
     text: z.string().min(1),
     options: z.array(z.string()).default([]),
     answer: z.string(),
-    marks: z.number().optional().default(1),
+    marks: z.number().int().nonnegative().optional().default(1),
     tags: z.array(z.string()).optional(),
     sourceCitations: z.array(questionBookCitationSchema).optional(),
   })
@@ -108,142 +132,42 @@ export function filterActiveQuestions<T extends { deletedAt?: string | null }>(
 }
 
 /**
- * Strict single-question write schema (FE form + BE write boundary).
- * Omits server-owned soft-delete and deprecated legacy fields; `message` values
- * are translation keys resolved via `mapZodFormErrors`.
+ * Strict single-question write schema (FE form + BE write boundary), discriminated by `type`.
+ *
+ * The branches exist so `z.infer` narrows on the discriminant; the semantic rules still come from
+ * `validateQuestionByType`, the one engine shared with the bulk write plan and the API.
  */
+const questionWriteBase = {
+  id: z.string(),
+  categoryIds: z.array(z.string()),
+  difficulty: questionDifficultySchema,
+  questionLanguage: questionLanguageSchema,
+  text: z.string(),
+  options: z.array(z.string()),
+  answer: z.string(),
+  sourceCitations: z.array(questionBookCitationSchema).optional(),
+  /** OCC token echoed from the record being edited (0240). */
+  version: z.number().int().positive().optional(),
+};
+
+const questionWriteBranch = <T extends QuestionType>(type: T) =>
+  z.object({ ...questionWriteBase, type: z.literal(type) }).strict();
+
 export const questionBankQuestionWriteSchema = z
-  .object({
-    id: z.string(),
-    categoryIds: z
-      .array(z.string())
-      .min(1, { message: "questionBank.validation.categoryRequired" }),
-    type: questionTypeSchema,
-    difficulty: questionDifficultySchema,
-    questionLanguage: z.enum(["en", "ar", "ur", "fa"]),
-    text: z.string().min(1, { message: "questionBank.validation.textRequired" }),
-    options: z.array(z.string()),
-    answer: z.string(),
-    sourceCitations: z.array(questionBookCitationSchema).optional(),
-  })
-  .strict()
+  .discriminatedUnion("type", [
+    questionWriteBranch("mcq"),
+    questionWriteBranch("true_false"),
+    questionWriteBranch("short"),
+    questionWriteBranch("fill_blank"),
+    questionWriteBranch("matching"),
+    questionWriteBranch("numeric"),
+    questionWriteBranch("ordering"),
+  ])
   .superRefine((question, ctx) => {
-    if (question.type === "mcq") {
-      if (!question.answer || !question.options.includes(question.answer)) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["answer"],
-          message: "questionBank.validation.answerFromChoices",
-        });
-      }
-    } else if (question.type === "true_false") {
-      if (!question.answer) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["answer"],
-          message: "questionBank.validation.trueFalseRequired",
-        });
-      }
+    for (const issue of validateQuestionByType(question)) {
+      ctx.addIssue({ code: "custom", path: issue.path, message: issue.messageKey });
     }
   });
-
-export const questionBankTestRecordSchema = z
-  .object({
-    id: z.string(),
-    name: z.string(),
-    categoryId: z.string().nullable(),
-    questionIds: z.array(z.string()),
-    difficulty: z.enum(["easy", "medium", "hard", "mixed"]),
-    duration: z.number(),
-    createdAt: z.string(),
-    updatedAt: z.string().optional(),
-    examClass: z.string().optional(),
-    /** `session_classes.id`; `examClass` is the display snapshot. */
-    classId: z.string().nullable().optional(),
-    totalMarks: z.number().optional(),
-    instructions: z.string().optional(),
-    sections: z
-      .array(
-        z.object({
-          id: z.string(),
-          title: z.string(),
-          instructions: z.string(),
-          questionIds: z.array(z.string()),
-        }),
-      )
-      .optional(),
-    deletedAt: z.string().nullable().optional(),
-    deletedBy: z.string().nullable().optional(),
-    deletionReason: z.string().nullable().optional(),
-  })
-  .strict();
-
-export const questionBankTestInsertSchema = z
-  .object({
-    id: z.string().optional(),
-    name: z.string().min(1),
-    categoryId: z.string().nullable().optional(),
-    questionIds: z.array(z.string()).default([]),
-    difficulty: z.enum(["easy", "medium", "hard", "mixed"]).default("mixed"),
-    duration: z.number().default(60),
-    examClass: z.string().optional(),
-    /** `session_classes.id`; `examClass` is the display snapshot. */
-    classId: z.string().nullable().optional(),
-    totalMarks: z.number().optional(),
-    instructions: z.string().optional(),
-    sections: z
-      .array(
-        z.object({
-          id: z.string(),
-          title: z.string(),
-          instructions: z.string(),
-          questionIds: z.array(z.string()),
-        }),
-      )
-      .optional(),
-  })
-  .strict();
-
-export const questionBankTestUpdateSchema = questionBankTestInsertSchema.partial().strict();
-
-export type QuestionBankTestInsert = z.infer<typeof questionBankTestInsertSchema>;
-export type QuestionBankTestUpdate = z.infer<typeof questionBankTestUpdateSchema>;
-export const questionBankTestListSchema = z.array(questionBankTestRecordSchema);
-
-export const questionBankResultRecordSchema = z
-  .object({
-    id: z.string(),
-    testId: z.string(),
-    studentId: z.string(),
-    studentName: z.string(),
-    submittedAt: z.string(),
-    answers: z.record(z.string(), z.string()).default({}),
-    scores: z.record(z.string(), z.number()).default({}),
-    deletedAt: z.string().nullable().optional(),
-    deletedBy: z.string().nullable().optional(),
-    deletionReason: z.string().nullable().optional(),
-    createdAt: z.string().optional(),
-    updatedAt: z.string().optional(),
-  })
-  .strict();
-
-export const questionBankResultInsertSchema = z
-  .object({
-    id: z.string().optional(),
-    testId: z.string(),
-    studentId: z.string(),
-    studentName: z.string().default(""),
-    submittedAt: z.string(),
-    answers: z.record(z.string(), z.string()).default({}),
-    scores: z.record(z.string(), z.number()).default({}),
-  })
-  .strict();
-
-export const questionBankResultUpdateSchema = questionBankResultInsertSchema.partial().strict();
-
-export type QuestionBankResultInsert = z.infer<typeof questionBankResultInsertSchema>;
-export type QuestionBankResultUpdate = z.infer<typeof questionBankResultUpdateSchema>;
-export const questionBankResultListSchema = z.array(questionBankResultRecordSchema);
 
 /**
  * Question Bank module manifest — soft-delete on questions (JSONB); tests/results upsert-only.
@@ -269,13 +193,15 @@ export const QUESTION_BANK_MODULE_MANIFEST = {
     retentionDays: null,
   },
   permissions: {
-    read: "students.read",
-    write: "students.write",
-    delete: "students.write",
+    // Module-owned keys: mapping to `students.*` made the gate read the Students grant.
+    read: "questionBank.read",
+    write: "questionBank.write",
+    // Trash/restore stays author-level; approval and master-key export use `questionBank.delete`.
+    delete: "questionBank.write",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
-    export: "students.read",
-    reports: "students.read",
+    export: "questionBank.delete",
+    reports: "questionBank.read",
   } satisfies Record<string, Permission>,
   work: {
     directoryViews: ["questions", "generate"] as const,
@@ -286,3 +212,20 @@ export const QUESTION_BANK_MODULE_MANIFEST = {
 } as const;
 
 export type QuestionBankModuleTier = (typeof QUESTION_BANK_MODULE_MANIFEST.tiers)[number];
+
+export {
+  questionBankResultInsertSchema,
+  questionBankResultListSchema,
+  questionBankResultRecordSchema,
+  questionBankResultUpdateSchema,
+  questionBankTestInsertSchema,
+  questionBankTestListSchema,
+  questionBankTestRecordSchema,
+  questionBankTestUpdateSchema,
+} from "./questionBankTestSchemas.js";
+export type {
+  QuestionBankResultInsert,
+  QuestionBankResultUpdate,
+  QuestionBankTestInsert,
+  QuestionBankTestUpdate,
+} from "./questionBankTestSchemas.js";

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { getGrade } from "@mms/shared";
 import {
   useExaminationsExams,
   useExaminationsExamsCollection,
@@ -10,6 +9,12 @@ import {
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { uniqueRegistryIds } from "@/lib/registryResolve";
 import { useTranslation } from "@/hooks/useTranslation";
+import {
+  rankAcademicRows,
+  scoreAcademicRows,
+  summarizeClassRankings,
+  toAcademicResultItems,
+} from "@/tenant/features/reports/lib/academicReportRanking";
 
 import type {
   AcademicReportProps,
@@ -32,104 +37,31 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
     uniqueRegistryIds(examResults.map((examResult) => examResult.studentId)))();
   const { data: students = [] } = useStudentsByIds(studentIds);
 
-  const academicResultsData = (() => {
-    let academicResults: AcademicResultItem[] = [];
-    const examsById = new Map(exams.map((exam) => [exam.id, exam]));
-    const studentsById = new Map(
-      students.map((student: { id?: string | number; name?: string }) => [
-        String(student.id),
-        student,
-      ]),
+  // One row per (student, exam) scored by the shared engine; ranking and the class leaderboard use
+  // the unrounded raw percentage (ranked/averaged rounded values created artificial ties).
+  const scoredRows = scoreAcademicRows(exams, examResults, students);
+  const rankedRows = rankAcademicRows(scoredRows);
+
+  let academicResults = toAcademicResultItems(rankedRows);
+  if (filters.class !== "all") {
+    academicResults = academicResults.filter(
+      (academicResult) => academicResult.class === filters.class,
     );
-
-    examResults.forEach((examResult) => {
-      const exam = examsById.get(examResult.examId);
-      const student = studentsById.get(String(examResult.studentId));
-      if (!exam || !student) return;
-
-      const percentage = Math.round((examResult.marksObtained / exam.totalMarks) * 100);
-      academicResults.push({
-        studentName: student.name || "",
-        class: exam.name,
-        subject: exam.subject,
-        marks: percentage,
-        total: 100,
-        grade: getGrade(percentage).label,
-        rank: 0,
-      });
-    });
-
-    academicResults.sort((firstResult, secondResult) => secondResult.marks - firstResult.marks);
-    academicResults.forEach((academicResult, index) => {
-      academicResult.rank = index + 1;
-    });
-
-    if (filters.class !== "all") {
-      academicResults = academicResults.filter(
-        (academicResult) => academicResult.class === filters.class,
-      );
-    }
-    if (filters.student) {
-      academicResults = academicResults.filter((academicResult) =>
-        academicResult.studentName.toLowerCase().includes(filters.student.toLowerCase()),
-      );
-    }
-    return academicResults;
-  })() as AcademicResultItem[];
-
-  const classRankings = (() => {
-    const resultsByClass: Record<string, { class: string; studentName: string; marks: number }[]> =
-      {};
-    const examsById = new Map(exams.map((exam) => [exam.id, exam]));
-    const studentsById = new Map(
-      students.map((student: { id?: string | number; name?: string }) => [
-        String(student.id),
-        student,
-      ]),
+  }
+  if (filters.student) {
+    academicResults = academicResults.filter((academicResult) =>
+      academicResult.studentName.toLowerCase().includes(filters.student.toLowerCase()),
     );
-    const rankingSourceResults = examResults
-      .map((examResult) => {
-        const exam = examsById.get(examResult.examId);
-        const student = studentsById.get(String(examResult.studentId));
-        if (!exam || !student) return null;
-        return {
-          class: exam.name,
-          studentName: student.name || "",
-          marks: Math.round((examResult.marksObtained / exam.totalMarks) * 100),
-        };
-      })
-      .filter(Boolean) as { class: string; studentName: string; marks: number }[];
+  }
+  const academicResultsData = academicResults as AcademicResultItem[];
 
-    rankingSourceResults.forEach((rankingSourceResult) => {
-      if (!resultsByClass[rankingSourceResult.class])
-        resultsByClass[rankingSourceResult.class] = [];
-      resultsByClass[rankingSourceResult.class].push(rankingSourceResult);
-    });
-
-    let classRankingItems = Object.entries(resultsByClass).map(([className, classResults]) => {
-      const sortedClassResults = [...classResults].sort(
-        (firstResult, secondResult) => secondResult.marks - firstResult.marks,
-      );
-      const averageMarks = Math.round(
-        classResults.reduce((sum, classResult) => sum + classResult.marks, 0) / classResults.length,
-      );
-      const passingCount = classResults.filter((classResult) => classResult.marks >= 50).length;
-      return {
-        class: className,
-        averageMarks,
-        topMarks: sortedClassResults[0]?.marks || 0,
-        passRate: Math.round((passingCount / classResults.length) * 100),
-        topStudent: sortedClassResults[0]?.studentName || "—",
-      };
-    });
-
-    if (filters.class !== "all") {
-      classRankingItems = classRankingItems.filter(
-        (classRankingItem) => classRankingItem.class === filters.class,
-      );
-    }
-    return classRankingItems;
-  })() as ClassRankingItem[];
+  let classRankingItems = summarizeClassRankings(scoredRows);
+  if (filters.class !== "all") {
+    classRankingItems = classRankingItems.filter(
+      (classRankingItem) => classRankingItem.class === filters.class,
+    );
+  }
+  const classRankings = classRankingItems as ClassRankingItem[];
 
   const filteredAcademicResultsData = (() => {
     let filteredAcademicResults = academicResultsData;

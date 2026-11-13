@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { type QuestionBankQuestion } from "@mms/shared";
 import {
-  type questions,
+  questions,
   questionCategories,
   questionOptions,
   questionTags,
@@ -9,9 +9,37 @@ import {
 } from "../schema.js";
 import { type TenantTransaction } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
+import { listQuestionAttachmentsTx } from "./questionBankAttachmentsRepository.js";
 
 type QuestionRow = typeof questions.$inferSelect;
 type Transaction = TenantTransaction;
+
+/**
+ * Explicit projection for a full question row.
+ *
+ * Hydration needs every column, but a bare `.select()` is banned (a future wide column would silently
+ * inflate the query). Callers that need the whole row project this object instead.
+ */
+export const questionRowColumns = {
+  id: questions.id,
+  workspaceSubdomain: questions.workspaceSubdomain,
+  type: questions.type,
+  difficulty: questions.difficulty,
+  questionLanguage: questions.questionLanguage,
+  text: questions.text,
+  answer: questions.answer,
+  marks: questions.marks,
+  status: questions.status,
+  version: questions.version,
+  deletedAt: questions.deletedAt,
+  deletedBy: questions.deletedBy,
+  deletionReason: questions.deletionReason,
+  restoredAt: questions.restoredAt,
+  restoredBy: questions.restoredBy,
+  deletedWithCascade: questions.deletedWithCascade,
+  createdAt: questions.createdAt,
+  updatedAt: questions.updatedAt,
+} as const;
 
 export function questionRowToRecord(
   row: QuestionRow,
@@ -31,9 +59,15 @@ export function questionRowToRecord(
     options,
     answer: row.answer,
     marks: row.marks,
+    version: row.version,
+    status: row.status as QuestionBankQuestion["status"],
     deletedAt: audit.deletedAt ?? null,
     deletedBy: audit.deletedBy ?? null,
     deletionReason: audit.deletionReason ?? null,
+    // Trash evidence: the DTO and the table both carry these, so a trash row must round-trip them.
+    restoredAt: audit.restoredAt ?? null,
+    restoredBy: audit.restoredBy ?? null,
+    deletedWithCascade: audit.deletedWithCascade ?? null,
   };
 
   if (categories[0]) question.categoryId = categories[0];
@@ -134,7 +168,7 @@ export async function hydrateQuestionRecords(
   if (rows.length === 0) return [];
   const qIds = rows.map((r) => r.id);
 
-  const [allCats, allOpts, allTags, allCits] = await Promise.all([
+  const [allCats, allOpts, allTags, allCits, attachmentsByQuestion] = await Promise.all([
     tx
       .select({
         questionId: questionCategories.questionId,
@@ -182,6 +216,7 @@ export async function hydrateQuestionRecords(
           inArray(questionCitations.questionId, qIds),
         ),
       ),
+    listQuestionAttachmentsTx(tx, subdomain, qIds),
   ]);
 
   const catsByQ = new Map<string, string[]>();
@@ -222,12 +257,15 @@ export async function hydrateQuestionRecords(
     const sortedOpts = (optsByQ.get(r.id) ?? [])
       .sort((a, b) => a.optionIndex - b.optionIndex)
       .map((o) => o.optionText);
-    return questionRowToRecord(
+    const record = questionRowToRecord(
       r,
       catsByQ.get(r.id) ?? [],
       sortedOpts,
       tagsByQ.get(r.id) ?? [],
       citsByQ.get(r.id) ?? [],
     );
+    const attachments = attachmentsByQuestion.get(r.id);
+    if (attachments && attachments.length > 0) record.attachments = attachments;
+    return record;
   });
 }

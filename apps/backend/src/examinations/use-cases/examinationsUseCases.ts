@@ -1,6 +1,7 @@
 import type { ExaminationsRepository } from "../repository/examinationsRepository.js";
 import { examinationsRepository } from "../repository/examinationsRepositoryAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import { assertGraceWithinRange, normalizeModerationReason } from "../domain/moderation.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import {
   defineTenantBulkCollectionService,
@@ -12,7 +13,7 @@ import {
   type ExamResult,
   type ExaminationsCommandMetricsSnapshot,
   type ExaminationsListQuery,
-  examListSchema,
+  examBulkWriteSchema,
   examResultListSchema,
   examRecordSchema,
   type WidgetQuery,
@@ -46,7 +47,7 @@ export function createExaminationsUseCases(repo: ExaminationsRepository = examin
       listByWorkspace: repo.listExamsByWorkspace,
       replaceForWorkspace: repo.replaceExamsForWorkspace,
     },
-    examListSchema,
+    examBulkWriteSchema,
     "exams",
   );
 
@@ -111,6 +112,44 @@ export function createExaminationsUseCases(repo: ExaminationsRepository = examin
 
     loadExamResults: async (): Promise<ExamResult[]> => examResultBulkService.load(),
 
+    /** Broadsheet read path: one page of marks, filtered and keyset-paginated. */
+    loadExamResultsPage: async (query: {
+      examId?: string;
+      studentId?: string;
+      cursor?: string;
+      limit?: number;
+      publishedOnly?: boolean;
+    }): Promise<{ results: ExamResult[]; hasMore: boolean }> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return { results: [], hasMore: false };
+      return repo.listExamResultsPage(tenant, query);
+    },
+
+    /** Marks fingerprint used to key broadsheet exports (count + newest update). */
+    loadExamResultsFingerprint: async (examId: string) => {
+      const tenant = getRequestTenant();
+      if (!tenant) return { count: 0, maxUpdatedAt: null };
+      return repo.findExamResultsFingerprint(tenant, examId);
+    },
+
+    /** Audited grace-mark adjustment on one mark (raw mark preserved). */
+    moderateExamResult: async (input: {
+      examId: string;
+      studentId: string;
+      graceMarks: number;
+      reason: string;
+      actorId: string;
+      version?: number;
+    }) => {
+      const tenant = getRequestTenant();
+      if (!tenant) throw new Error("Tenant context required");
+      // The domain rules are evaluated before the transaction; the effective-score bound is
+      // re-evaluated inside it against the stored mark and exam total.
+      const reason = normalizeModerationReason(input.reason);
+      assertGraceWithinRange(input.graceMarks);
+      return repo.applyExamResultModeration(tenant, { ...input, reason });
+    },
+
     loadExamResultById: async (id: string): Promise<ExamResult | null> => {
       const tenant = getRequestTenant();
       const cleanId = id?.trim();
@@ -126,12 +165,9 @@ export function createExaminationsUseCases(repo: ExaminationsRepository = examin
     },
 
     upsertExams: (records: Exam[]) =>
-      upsertWithBroadcast(examListSchema, records, repo.bulkSaveExams, "exams"),
+      upsertWithBroadcast(examBulkWriteSchema, records, repo.bulkSaveExams, "exams"),
     upsertExamResults: (records: ExamResult[]) =>
       upsertWithBroadcast(examResultListSchema, records, repo.bulkSaveExamResults, "exam_results"),
-
-    createExam: examCrud.create,
-    updateExamById: examCrud.updateById,
 
     deleteExamById: examCrud.deleteById,
     restoreExamById: examCrud.restoreById,
@@ -154,10 +190,11 @@ export function createExaminationsUseCases(repo: ExaminationsRepository = examin
 
     loadExaminationsReportAggregates: async (
       comparisonQuery: ExaminationsReportComparisonQuery | undefined,
+      options?: { publishedOnly?: boolean },
     ): Promise<ExaminationsReportAggregates> => {
       const tenant = getRequestTenant();
       if (!tenant) return EMPTY_EXAMINATIONS_REPORT_AGGREGATES;
-      return repo.loadExaminationsReportAggregates(tenant, comparisonQuery);
+      return repo.loadExaminationsReportAggregates(tenant, comparisonQuery, options);
     },
   };
 }

@@ -14,18 +14,28 @@ import { journalLineFxInsertValues } from "./accountingJournalLineFx.js";
 
 export * from "./accountingEntriesLifecyclePersist.js";
 
-async function syncEntryChildren(
+/**
+ * Deletes the child rows of the given entries.
+ *
+ * Runs BEFORE the parent upsert on purpose. Posting a draft rewrites its lines,
+ * and the database only lets that happen while the parent still reads `draft`
+ * (0248 rejects UPDATE/DELETE on the lines of a posted entry). Upserting first
+ * would flip the parent to `posted` and make a legitimate draft→posted save
+ * fail. Line INSERTs are allowed either way, so new entries are unaffected.
+ */
+async function clearEntryChildren(
   tx: TenantTransaction,
   subdomain: string,
-  entry: JournalEntry,
+  entryIds: readonly string[],
 ): Promise<void> {
+  if (entryIds.length === 0) return;
   await Promise.all([
     tx
       .delete(accountingJournalLines)
       .where(
         and(
           eq(accountingJournalLines.workspaceSubdomain, subdomain),
-          eq(accountingJournalLines.entryId, entry.id),
+          inArray(accountingJournalLines.entryId, [...entryIds]),
         ),
       ),
     tx
@@ -33,7 +43,7 @@ async function syncEntryChildren(
       .where(
         and(
           eq(accountingEntryTags.workspaceSubdomain, subdomain),
-          eq(accountingEntryTags.entryId, entry.id),
+          inArray(accountingEntryTags.entryId, [...entryIds]),
         ),
       ),
     tx
@@ -41,11 +51,17 @@ async function syncEntryChildren(
       .where(
         and(
           eq(accountingEntryAttachments.workspaceSubdomain, subdomain),
-          eq(accountingEntryAttachments.entryId, entry.id),
+          inArray(accountingEntryAttachments.entryId, [...entryIds]),
         ),
       ),
   ]);
+}
 
+async function insertEntryChildren(
+  tx: TenantTransaction,
+  subdomain: string,
+  entry: JournalEntry,
+): Promise<void> {
   if (entry.lines && entry.lines.length > 0) {
     const { functionalCurrency } = await ensureCurrencySettingsInTx(tx, subdomain);
     await tx.insert(accountingJournalLines).values(
@@ -87,6 +103,9 @@ export async function saveEntry(tenant: string, record: JournalEntry): Promise<v
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     await lockJournalEntries(subdomain, [record.id]);
+    // Children first: see clearEntryChildren. A promotion to `posted` must not
+    // reach the line delete with the parent already flipped.
+    await clearEntryChildren(tx, subdomain, [record.id]);
     await tx
       .insert(accountingEntries)
       .values(entryInsertValues(subdomain, record))
@@ -95,7 +114,7 @@ export async function saveEntry(tenant: string, record: JournalEntry): Promise<v
         set: entryUpdateSetValues(record),
       });
 
-    await syncEntryChildren(tx, subdomain, record);
+    await insertEntryChildren(tx, subdomain, record);
   });
 }
 
@@ -121,7 +140,11 @@ function entryUpdateSetValues(record: JournalEntry) {
   return setFields;
 }
 
-export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): Promise<void> {
+export async function bulkSaveEntries(
+  tenant: string,
+  records: JournalEntry[],
+  options?: { preserveChildren?: ReadonlySet<string> },
+): Promise<void> {
   if (records.length === 0) return;
   const subdomain = tenant.trim().toLowerCase();
   const uniqueMap = new Map<string, JournalEntry>();
@@ -132,9 +155,19 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
   const uniqueRecords = Array.from(uniqueMap.values());
   if (uniqueRecords.length === 0) return;
   const entryIds = uniqueRecords.map((r) => r.id);
+  // Posted entries are immutable, so their children are already what the batch
+  // carries; rewriting them would delete and reinsert ledger rows for no reason
+  // (and 0248 rejects any write to a posted entry's lines).
+  const preserved = options?.preserveChildren ?? new Set<string>();
+  const childEntryIds = entryIds.filter((id) => !preserved.has(id));
+  const childRecords = uniqueRecords.filter((record) => !preserved.has(record.id));
 
   await withTenant(subdomain, async (tx) => {
     await lockJournalEntries(subdomain, entryIds);
+    // Children of the mutable entries are cleared while their parents still hold
+    // their stored status; the upsert then flips statuses and the lines are
+    // re-inserted (inserts are allowed on posted entries — the rewrite is not).
+    await clearEntryChildren(tx, subdomain, childEntryIds);
     // Single batched upsert of all entries (keeps rows not in the batch, updates
     // matching rows — semantically identical to the previous per-record upsert).
     // The soft-delete columns are deliberately absent from this SET list: a bulk
@@ -162,38 +195,8 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
         },
       });
 
-    // Batch child replacement: delete all children of the touched entries, then
-    // re-insert the provided children — identical final state to the previous
-    // per-entry syncEntryChildren, but via 3 batched deletes + 3 batched inserts.
-    await Promise.all([
-      tx
-        .delete(accountingJournalLines)
-        .where(
-          and(
-            eq(accountingJournalLines.workspaceSubdomain, subdomain),
-            inArray(accountingJournalLines.entryId, entryIds),
-          ),
-        ),
-      tx
-        .delete(accountingEntryTags)
-        .where(
-          and(
-            eq(accountingEntryTags.workspaceSubdomain, subdomain),
-            inArray(accountingEntryTags.entryId, entryIds),
-          ),
-        ),
-      tx
-        .delete(accountingEntryAttachments)
-        .where(
-          and(
-            eq(accountingEntryAttachments.workspaceSubdomain, subdomain),
-            inArray(accountingEntryAttachments.entryId, entryIds),
-          ),
-        ),
-    ]);
-
     const { functionalCurrency } = await ensureCurrencySettingsInTx(tx, subdomain);
-    const allLines = uniqueRecords.flatMap((record) =>
+    const allLines = childRecords.flatMap((record) =>
       (record.lines ?? []).map((l) => ({
         id: l.id,
         workspaceSubdomain: subdomain,
@@ -209,7 +212,7 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
       await tx.insert(accountingJournalLines).values(allLines);
     }
 
-    const allTags = uniqueRecords.flatMap((record) =>
+    const allTags = childRecords.flatMap((record) =>
       (record.tags ?? []).map((tag) => ({
         workspaceSubdomain: subdomain,
         entryId: record.id,
@@ -220,7 +223,7 @@ export async function bulkSaveEntries(tenant: string, records: JournalEntry[]): 
       await tx.insert(accountingEntryTags).values(allTags);
     }
 
-    const allAttachments = uniqueRecords.flatMap((record) =>
+    const allAttachments = childRecords.flatMap((record) =>
       (record.attachments ?? []).map((url) => ({
         workspaceSubdomain: subdomain,
         entryId: record.id,

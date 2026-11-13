@@ -5,6 +5,7 @@ import {
   saveCurrencySettings,
 } from "../../db/repositories/accountingCurrencySettingsRepository.js";
 import {
+  findExchangeRatesByKeys,
   listExchangeRates,
   lookupExchangeRate,
   upsertExchangeRates,
@@ -19,6 +20,7 @@ export const accountingFxRepository: AccountingFxRepository = {
   getCurrencySettings,
   saveCurrencySettings,
   listExchangeRates,
+  findExchangeRatesByKeys,
   upsertExchangeRates,
   lookupExchangeRate,
   findFxRoundingAccountId,

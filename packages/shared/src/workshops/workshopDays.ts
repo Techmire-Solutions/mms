@@ -26,3 +26,27 @@ export function listWorkshopDays(startDate: string | null, endDate: string | nul
   }
   return days;
 }
+
+/**
+ * Inclusive number of calendar days the workshop runs, optionally capped at `until` (the workspace
+ * business day). Arithmetic in UTC and **uncapped** — this is the denominator for completion
+ * percentages, where truncating at {@link WORKSHOP_MAX_DAYS} would let a long workshop report more
+ * present days than there are days (a numerator/denominator mismatch).
+ *
+ * Returns 0 when there is no start date, either date is unparsable, the end precedes the start, or
+ * `until` is before the start.
+ */
+export function countWorkshopDays(
+  startDate: string | null | undefined,
+  endDate: string | null | undefined,
+  until?: string | null,
+): number {
+  if (!startDate) return 0;
+  const start = toUtcDay(startDate.slice(0, 10));
+  const rawEnd = toUtcDay((endDate ?? startDate).slice(0, 10));
+  if (start === null || rawEnd === null || rawEnd < start) return 0;
+  const cap = until ? toUtcDay(until.slice(0, 10)) : null;
+  const end = cap !== null && cap < rawEnd ? cap : rawEnd;
+  if (end < start) return 0;
+  return Math.floor((end - start) / DAY_MS) + 1;
+}

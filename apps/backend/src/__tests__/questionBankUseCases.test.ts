@@ -22,6 +22,13 @@ function createFakeRepo(): QuestionBankRepository {
       limit: 15,
       hasMore: false,
     }),
+    listQuestionsPicker: vi.fn().mockResolvedValue({
+      questions: [],
+      total: 0,
+      page: 1,
+      limit: 50,
+      hasMore: false,
+    }),
     listTestsByWorkspace: vi.fn().mockResolvedValue([]),
     findTestById: vi.fn().mockResolvedValue(null),
     findTestsByIds: vi.fn().mockResolvedValue([]),
@@ -326,5 +333,38 @@ describe("questionBank use-cases (DI with fake repository)", () => {
     expect(repo.findTestsByIds).not.toHaveBeenCalled();
     expect(repo.findResultById).not.toHaveBeenCalled();
     expect(repo.findResultsByIds).not.toHaveBeenCalled();
+  });
+});
+
+describe("questionBank use-cases — server-side scoring", () => {
+  it("recomputes scores from the paper's answer keys and discards client scores", async () => {
+    const repo = createFakeRepo();
+    repo.findTestsByIds = vi
+      .fn()
+      .mockResolvedValue([{ id: "t1", name: "Paper", questionIds: ["q1", "q2"] }] as never);
+    repo.findQuestionsByIds = vi.fn().mockResolvedValue([
+      { id: "q1", type: "mcq", options: ["a", "b"], answer: "a", marks: 2 },
+      { id: "q2", type: "short", options: [], answer: "x", marks: 1 },
+    ] as never);
+    const useCases = createQuestionBankUseCases(repo);
+
+    await runWithTenant("demo", () =>
+      useCases.upsertResults([
+        {
+          id: "r1",
+          testId: "t1",
+          studentId: "s1",
+          studentName: "Student",
+          submittedAt: "2026-01-01",
+          answers: { q1: "a", q99: "anything" },
+          // A client-supplied score must never survive the write path.
+          scores: { q1: 999, q99: 999 },
+        },
+      ]),
+    );
+
+    expect(repo.bulkSaveResults).toHaveBeenCalledWith("demo", [
+      expect.objectContaining({ id: "r1", scores: { q1: 2, q2: 0 } }),
+    ]);
   });
 });

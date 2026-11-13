@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
+import { makeIas29Run } from "./helpers/accountingRouteFixtures.js";
 import { accountantToken, adminToken, auditorToken, guardianToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({
@@ -50,6 +51,23 @@ vi.mock("../accounting/use-cases/ias29UseCases.js", () => ({
 
 type Role = "admin" | "accountant" | "auditor" | "guardian";
 
+async function get(role: Role, url: string) {
+  const app = await buildApp();
+  const tokens = {
+    admin: adminToken,
+    accountant: accountantToken,
+    auditor: auditorToken,
+    guardian: guardianToken,
+  };
+  const res = await app.inject({
+    method: "GET",
+    url,
+    headers: { host: "demo.localhost", authorization: `Bearer ${tokens[role](app)}` },
+  });
+  await app.close();
+  return res;
+}
+
 async function call(
   role: Role,
   method: "PUT" | "POST",
@@ -76,7 +94,7 @@ async function call(
 describe("IAS 29 routes", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
-    mockPost.mockReset().mockResolvedValue({ id: "ias29-1", status: "posted", lines: [] });
+    mockPost.mockReset().mockResolvedValue(makeIas29Run());
     mockSaveIndices.mockReset().mockResolvedValue([]);
     mockSaveSettings.mockReset();
   });
@@ -169,5 +187,12 @@ describe("IAS 29 routes", () => {
     );
     expect(putSettings.statusCode).toBe(403);
     expect(mockSaveSettings).not.toHaveBeenCalled();
+  });
+
+  it("rejects a query parameter the restatement list does not support", async () => {
+    const res = await get("accountant", "/api/accounting/ias29-restatements?date=2026-12-31");
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({ type: "validation_error" });
   });
 });

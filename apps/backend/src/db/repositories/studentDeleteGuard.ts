@@ -1,7 +1,14 @@
 import { sql } from "drizzle-orm";
 import { withTenantRead } from "../tenant-context.js";
 import { ConflictError } from "../../lib/httpErrors.js";
-import { facultyEmployments, financeInvoices, students, tenantUsers } from "../schema.js";
+import {
+  facultyEmployments,
+  financeInvoices,
+  students,
+  tenantUsers,
+  workshopEvents,
+  workshopParticipants,
+} from "../schema.js";
 
 /**
  * Pre-deletion guard for students.
@@ -40,6 +47,8 @@ const DEPENDENT_LINK_MESSAGES = {
   faculty:
     "Cannot delete contact linked to an active faculty employment. Remove or reassign the employment first.",
   user: "Cannot delete contact linked to an active staff user. Unlink or reassign the user first.",
+  workshop:
+    "Cannot delete contact registered for an active workshop. Withdraw the registration first.",
 } as const;
 
 type DependentLinkKind = keyof typeof DEPENDENT_LINK_MESSAGES;
@@ -103,6 +112,25 @@ export async function guardContactSoftDeleteDependents(
     `);
     if (linkedUser.rows.length > 0) {
       throw new ConflictError(DEPENDENT_LINK_MESSAGES.user);
+    }
+
+    // A seat belongs to the registration, not to the (archived) contact row: archiving the contact
+    // would leave an active registration pointing at a deleted person and keep the seat silently
+    // taken. Restrict Guard (soft-delete §2.2 policy A) — withdraw first, then archive.
+    const linkedRegistration = await tx.execute(sql`
+      SELECT 1
+      FROM ${workshopParticipants} wp
+      JOIN ${workshopEvents} we
+        ON we.workspace_subdomain = wp.workspace_subdomain
+       AND we.id = wp.workshop_id
+      WHERE wp.workspace_subdomain = ${subdomain}
+        AND wp.contact_id IN (${members})
+        AND wp.deleted_at IS NULL
+        AND we.deleted_at IS NULL
+      LIMIT 1
+    `);
+    if (linkedRegistration.rows.length > 0) {
+      throw new ConflictError(DEPENDENT_LINK_MESSAGES.workshop);
     }
   });
 }

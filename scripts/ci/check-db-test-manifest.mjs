@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Enrollment + attendance + hasanat DB test manifest ratchet.
+ * Enrollment + attendance + hasanat + workshops + finance/accounting DB test manifest ratchet.
  *
  * Counting cases from source keeps this dependency-free and makes an accidental deletion or
  * skip-as-comment visible. Counts may grow freely; they may only drop with a reviewed baseline
@@ -32,6 +32,56 @@ const BASELINE = {
   // Hasanat: one-winner concurrency (redeem/void/issue/OCC/stock/quota) and DDL lifecycle guarantees.
   "hasanatConcurrencyDb.integration.test.ts": 7,
   "hasanatLifecycleCascadeDb.integration.test.ts": 7,
+  // Examinations: marks/OCC/publication integrity, specialised subsystems, repeated races.
+  "examinationIntegrityDb.integration.test.ts": 31,
+  "examinationSubsystemsDb.integration.test.ts": 21,
+  "examinationsConcurrencyDb.integration.test.ts": 4,
+  // Workshops: lifecycle, completion gating, waitlist/capacity races, tenancy, audit, import.
+  "workshopsDb.integration.test.ts": 14,
+  "workshopsCompletionDb.integration.test.ts": 5,
+  "workshopsCompletionEligibilityDb.integration.test.ts": 6,
+  "workshopsCompletionConcurrencyDb.integration.test.ts": 5,
+  "workshopsLifecycleDb.integration.test.ts": 10,
+  "workshopsCapacityConcurrencyDb.integration.test.ts": 8,
+  "workshopsWaitlistDb.integration.test.ts": 14,
+  "workshopsTenantIsolationDb.integration.test.ts": 6,
+  "workshopsAuditDb.integration.test.ts": 9,
+  "workshopsImportDb.integration.test.ts": 3,
+  "workshopsJourneyDb.integration.test.ts": 3,
+
+  // Finance / Accounting: concurrency, voucher numbering, FX/hedges/IAS 29,
+  // period locks, reports and tenant/audit integrity. Deleting one of these
+  // suites (or most of its cases) must fail CI.
+  "accountingBalanceInvariantDb.integration.test.ts": 9,
+  "accountingCloseConcurrencyDb.integration.test.ts": 2,
+  "accountingConcurrencyDb.integration.test.ts": 6,
+  "accountingFxDb.integration.test.ts": 5,
+  "accountingFxExchangeabilityDb.integration.test.ts": 3,
+  "accountingFxRevaluationDb.integration.test.ts": 6,
+  "accountingHedgesDb.integration.test.ts": 7,
+  "accountingIas29Db.integration.test.ts": 9,
+  "accountingListFiltersDb.integration.test.ts": 9,
+  "accountingOpeningBalancesDb.integration.test.ts": 2,
+  "accountingPeriodLockDb.integration.test.ts": 10,
+  "accountingPersistDb.integration.test.ts": 3,
+  "accountingPersistSoftDeleteDb.integration.test.ts": 1,
+  "accountingPostedLedgerGuardsDb.integration.test.ts": 7,
+  "accountingReportDb.integration.test.ts": 5,
+  "accountingReportEndpointsDb.integration.test.ts": 5,
+  "accountingReportIndexPlanDb.integration.test.ts": 3,
+  "accountingReportPrecisionDb.integration.test.ts": 1,
+  "accountingSeedDb.integration.test.ts": 6,
+  "accountingVoucherCountersDb.integration.test.ts": 13,
+  "financeCollectConcurrencyDb.integration.test.ts": 3,
+  "financeDateColumnsDb.integration.test.ts": 7,
+  "financeEnumParityDb.integration.test.ts": 2,
+  "financeFxDb.integration.test.ts": 3,
+  "financeGeneratedInvoiceFxDb.integration.test.ts": 6,
+  "financeInvoiceAtomicityDb.integration.test.ts": 2,
+  "financePaymentConcurrencyDb.integration.test.ts": 2,
+  "financePersistSoftDeleteDb.integration.test.ts": 2,
+  "financeSecurityDb.integration.test.ts": 8,
+  "fiscalYearOverlapDb.integration.test.ts": 5,
 };
 
 const update = process.argv.includes("--update");

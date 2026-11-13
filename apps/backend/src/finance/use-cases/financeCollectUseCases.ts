@@ -19,6 +19,7 @@ import {
   type RemindInvoicesBody,
   type RemindInvoicesResult,
 } from "@mms/shared";
+import { tryParseMoneyAmountNumber } from "@mms/shared";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
 import { loadContactsByIdsForTenant } from "../../services/contactService.js";
@@ -28,7 +29,7 @@ import {
   listCreditNotesForInvoice,
   listInvoicesByIds,
   listOpenInvoicesForCollect,
-  markInvoicesReminded,
+  claimInvoicesForReminder,
   markOverdueInvoices,
   saveCreditNote,
 } from "../../db/repositories/financeCollectRepository.js";
@@ -39,6 +40,7 @@ import {
   tryPostLateFeeReversalJournal,
 } from "../../accounting/ledgerPosting/ledgerPostingService.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import {
   invoiceAuditState,
   recordCreditNoteAudit,
@@ -57,8 +59,8 @@ function domainError(message: string, statusCode: number, type: string): Error {
  * a failure part-way through the posting loop left invoices carrying
  * `late_fee_amt` with no ledger entry — and because `canApplyLateFee` requires
  * `lateFeeAmt <= 0`, every later run skipped them, so those fees could never be
- * posted. The HTTP route happened to wrap this call in a transaction; the
- * `finance:collect` background job did not.
+ * posted. The transaction lives here rather than in the route, so the HTTP caller
+ * and the scheduled automation sweep get the same guarantee.
  */
 export async function collectOverdueInvoices(
   input: CollectInvoicesBody = {},
@@ -69,21 +71,46 @@ export async function collectOverdueInvoices(
     const today = todayISO();
     const prefs = await loadFinanceModulePreferences();
     const lateFeePercent =
-      Number.parseFloat(prefs?.lateFeePercent ?? DEFAULT_FINANCE_SETTINGS.lateFeePercent) || 0;
+      tryParseMoneyAmountNumber(prefs?.lateFeePercent ?? DEFAULT_FINANCE_SETTINGS.lateFeePercent) ??
+      0;
     const markedOverdue = await markOverdueInvoices(tenant, today);
+    if (markedOverdue > 0) {
+      // Bulk status flips are still financial-document mutations: one chain row per run.
+      await recordModernAuditEvent({
+        workspaceSubdomain: tenant,
+        tableName: "finance_invoices",
+        recordId: tenant,
+        actionType: "UPDATE",
+        newState: { event: "overdue_marked", date: today, count: markedOverdue },
+      });
+    }
     let lateFeesApplied = 0;
     if (body.applyLateFee && lateFeePercent > 0) {
-      const open = await listOpenInvoicesForCollect(tenant);
-      const fees = open
+      // Lock the candidates: the fee decision must not race a payment settling the row.
+      const open = await listOpenInvoicesForCollect(tenant, { forUpdate: true });
+      const candidates = open
         .filter((invoice) => canApplyLateFee(invoice, lateFeePercent, today))
         .map((invoice) => ({ invoice, amount: computeLateFee(invoice.finalAmt, lateFeePercent) }))
         .filter((fee) => fee.amount > 0);
-      await applyLateFeeAmounts(
+      // Only the rows this transaction actually set get a journal and an audit row; a
+      // concurrent collector's rows are excluded by the conditional UPDATE.
+      const applied = await applyLateFeeAmounts(
         tenant,
-        fees.map((fee) => ({ invoiceId: fee.invoice.id, amount: fee.amount })),
+        candidates.map((fee) => ({ invoiceId: fee.invoice.id, amount: fee.amount })),
       );
-      await tryPostLateFeeJournals(tenant, fees);
-      lateFeesApplied = fees.length;
+      const appliedIds = new Set(applied.map((fee) => fee.invoiceId));
+      const appliedFees = candidates.filter((fee) => appliedIds.has(fee.invoice.id));
+      await tryPostLateFeeJournals(tenant, appliedFees);
+      for (const fee of appliedFees) {
+        await recordInvoiceAudit(
+          tenant,
+          "UPDATE",
+          { ...fee.invoice, lateFeeAmt: fee.amount },
+          invoiceAuditState(fee.invoice),
+          "late_fee_applied",
+        );
+      }
+      lateFeesApplied = appliedFees.length;
     }
     return { markedOverdue, lateFeesApplied };
   });
@@ -123,9 +150,17 @@ export async function remindOpenInvoices(
   const contacts =
     contactIds.length > 0 ? await loadContactsByIdsForTenant(tenant, contactIds) : [];
   const contactById = new Map(contacts.map((contact) => [String(contact.id), contact]));
+  // Claim the reminders before building the recipient list: a concurrent run (or a
+  // retried job) that already stamped an invoice must not notify it again.
+  const claimedIds = await claimInvoicesForReminder(
+    tenant,
+    eligible.map((invoice) => invoice.id),
+  );
+  const claimed = new Set(claimedIds);
   const recipients: RemindInvoicesResult["recipients"] = [];
   const remindedIds: string[] = [];
   for (const invoice of eligible) {
+    if (!claimed.has(invoice.id)) continue;
     const contact = invoice.familyContactId ? contactById.get(invoice.familyContactId) : undefined;
     if (!contact) continue;
     const recipient = toMessagingRecipient(contact);
@@ -141,7 +176,19 @@ export async function remindOpenInvoices(
     });
     remindedIds.push(invoice.id);
   }
-  await markInvoicesReminded(tenant, remindedIds);
+  if (remindedIds.length > 0) {
+    await recordModernAuditEvent({
+      workspaceSubdomain: tenant,
+      tableName: "finance_invoices",
+      recordId: tenant,
+      actionType: "UPDATE",
+      newState: {
+        event: "invoices_reminded",
+        count: remindedIds.length,
+        invoiceIds: remindedIds.slice(0, 100),
+      },
+    });
+  }
   const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "finance_invoices");
   return {

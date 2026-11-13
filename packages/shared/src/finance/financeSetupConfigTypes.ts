@@ -1,6 +1,9 @@
 import { z } from "zod";
 import type { FieldDefinition, TabDefinition } from "../contacts/contactTypes.js";
 import { DEFAULT_FINANCE_SETTINGS, type FinanceSettings } from "./financeModuleSettings.js";
+import { normalizeFinancePaymentMethods } from "./financeSetupPaymentMethods.js";
+
+export { normalizeFinancePaymentMethods } from "./financeSetupPaymentMethods.js";
 import {
   FINANCE_TAB_REGISTRY,
   INITIAL_FINANCE_FIELD_SEED,
@@ -166,11 +169,8 @@ function normalizeBool(v: unknown, def: boolean): boolean {
   return typeof v === "boolean" ? v : def;
 }
 
-function normalizeStrArr(v: unknown, def: string[]): string[] {
-  return Array.isArray(v) && v.every((x) => typeof x === "string") ? (v as string[]) : def;
-}
-
 /** Normalize Finance module preferences (typed `finance_module_preferences`). */
+
 export function normalizeFinanceModulePreferences(
   partial?: Partial<FinanceModulePreferences> | Record<string, unknown> | null,
 ): FinanceModulePreferences {
@@ -182,7 +182,7 @@ export function normalizeFinanceModulePreferences(
     dueDays: normalizeStr(p.dueDays, d.dueDays),
     lateFeePercent: normalizeStr(p.lateFeePercent, d.lateFeePercent),
     taxRate: normalizeStr(p.taxRate, d.taxRate),
-    paymentMethods: normalizeStrArr(p.paymentMethods, d.paymentMethods),
+    paymentMethods: normalizeFinancePaymentMethods(p.paymentMethods, d.paymentMethods),
     autoGenerateInvoice: normalizeBool(p.autoGenerateInvoice, d.autoGenerateInvoice),
     sendInvoiceEmail: normalizeBool(p.sendInvoiceEmail, d.sendInvoiceEmail),
     allowPartialPayment: normalizeBool(p.allowPartialPayment, d.allowPartialPayment),

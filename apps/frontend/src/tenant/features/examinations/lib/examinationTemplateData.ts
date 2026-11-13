@@ -25,7 +25,9 @@ export const EXAMINATION_AVAILABLE_FIELDS: TemplateFieldDefinition<TypstReportCa
   { field: "obtainedMarks", label: "Obtained Marks", sampleValue: 475 },
   { field: "percentage", label: "Percentage %", sampleValue: "95%" },
   { field: "grade", label: "Grade", sampleValue: "ممتاز (Excellent)" },
-  { field: "attendance", label: "Attendance %", sampleValue: "98%" },
+  // Class position on the exam (rankResults), and the cohort size it is out of.
+  { field: "rank", label: "Class Position", sampleValue: "3" },
+  { field: "classSize", label: "Class Size", sampleValue: 40 },
   { field: "remarks", label: "Remarks", sampleValue: "Outstanding achievement" },
   { field: "institution", label: "Institution Name", sampleValue: "Madrasa Management System" },
 ];
@@ -118,10 +120,10 @@ export const DEFAULT_EXAMINATION_TEMPLATE: DocumentTemplate<TypstReportCardPaylo
       style: { fontSize: 11 },
     },
     {
-      id: "e_att",
+      id: "e_rank",
       type: "field",
-      field: "attendance",
-      label: "نسبة الحضور: 98%",
+      field: "rank",
+      label: "الترتيب: 3",
       x: 420,
       y: 172,
       w: 334,

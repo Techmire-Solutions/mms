@@ -1,5 +1,7 @@
 import {
-  todayISO,
+  formatDateToIso,
+  moneyToCents,
+  tryParseMoneyAmountNumber,
   formatInvoiceNumber,
   type FinanceSettings,
   type FeeStructure,
@@ -29,6 +31,8 @@ export function nextInvoiceId(
 export function createInitialDraft(dueDays: string): InvoiceDraft {
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + Math.max(0, Number.parseInt(dueDays, 10) || 0));
+  // Format the local calendar day: `toISOString()` is UTC, so in a UTC+ zone the
+  // default due date landed one day before the intended local date.
   return {
     studentId: "",
     studentName: "",
@@ -37,17 +41,24 @@ export function createInitialDraft(dueDays: string): InvoiceDraft {
     baseFee: "",
     discountType: "",
     discountValue: "0",
-    dueDate: dueDate.toISOString().slice(0, 10) || todayISO(),
+    dueDate: formatDateToIso(dueDate),
     feeStructureId: "",
   };
 }
 
 export function computeInvoiceAmounts(baseFeeRaw: string, discountValueRaw: string) {
-  const baseFee = Number(baseFeeRaw || 0);
-  const discountValue = Number(discountValueRaw || 0);
-  const discountAmt = Math.min(Math.max(discountValue, 0), Math.max(baseFee, 0));
-  const finalAmt = Math.max(baseFee - discountAmt, 0);
-  return { baseFee, discountValue, discountAmt, finalAmt };
+  // Draft strings → integer cents, so a discount cannot leave a float residue in
+  // the invoice payload the server stores at 2 dp.
+  const baseFeeCents = moneyToCents(tryParseMoneyAmountNumber(baseFeeRaw) ?? 0);
+  const discountValueCents = moneyToCents(tryParseMoneyAmountNumber(discountValueRaw) ?? 0);
+  const discountAmtCents = Math.min(Math.max(discountValueCents, 0), Math.max(baseFeeCents, 0));
+  const finalAmtCents = Math.max(baseFeeCents - discountAmtCents, 0);
+  return {
+    baseFee: baseFeeCents / 100,
+    discountValue: discountValueCents / 100,
+    discountAmt: discountAmtCents / 100,
+    finalAmt: finalAmtCents / 100,
+  };
 }
 
 export function canSaveInvoiceDraft(draft: InvoiceDraft, baseFee: number): boolean {

@@ -1,10 +1,12 @@
 /** IFRS 9 hedge relationship, valuation and settlement DTOs for `/api/accounting/hedges*`. */
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+import { LIST_PAGE_MAX_LIMIT } from "../core/apiSchemas.js";
 import {
   currencyCodeSchema,
   exchangeRateValueSchema,
   moneyDecimalAmountSchema,
+  refineMoneyForCurrency,
 } from "../money/moneySchemas.js";
 
 export const HEDGE_TYPES = ["cash_flow", "fair_value"] as const;
@@ -16,8 +18,12 @@ export type HedgeStatus = (typeof HEDGE_STATUSES)[number];
 
 const accountId = z.string().trim().min(1, "accounting.validation.accountRequired");
 
-/** Body of `POST /api/accounting/hedges` — designation and documentation (IFRS 9.6.4.1(b)). */
-export const hedgeRelationshipCreateSchema = z
+/**
+ * Designation fields, before the cross-field refinements. Exported so the record
+ * schema (the HTTP response shape) can extend the same fields instead of keeping
+ * a second copy that drifts from what designation accepts.
+ */
+export const hedgeRelationshipFieldsSchema = z
   .object({
     name: z.string().trim().min(1).max(150),
     hedgeType: z.enum(HEDGE_TYPES),
@@ -43,7 +49,10 @@ export const hedgeRelationshipCreateSchema = z
     reserveAccountId: accountId.nullable(),
     pnlAccountId: accountId,
   })
-  .strict()
+  .strict();
+
+/** Body of `POST /api/accounting/hedges` — designation and documentation (IFRS 9.6.4.1(b)). */
+export const hedgeRelationshipCreateSchema = hedgeRelationshipFieldsSchema
   .refine((hedge) => hedge.maturityDate > hedge.designationDate, {
     message: "accounting.validation.hedgeMaturity",
     path: ["maturityDate"],
@@ -51,7 +60,14 @@ export const hedgeRelationshipCreateSchema = z
   .refine((hedge) => hedge.hedgeType !== "cash_flow" || hedge.reserveAccountId, {
     message: "accounting.validation.hedgeReserveAccount",
     path: ["reserveAccountId"],
-  });
+  })
+  // The notional is the foreign amount that gets measured at every valuation.
+  // Four decimals are accepted by `moneyDecimalAmountSchema` for storage, but a
+  // value with more decimals than the hedged currency has cannot be represented
+  // as money: it used to pass designation and then throw on the first valuation.
+  .superRefine((hedge, ctx) =>
+    refineMoneyForCurrency(hedge.notional, hedge.currency, ctx, ["notional"]),
+  );
 
 export type HedgeRelationshipCreate = z.infer<typeof hedgeRelationshipCreateSchema>;
 
@@ -75,6 +91,17 @@ export interface HedgeRelationship extends HedgeRelationshipCreate {
   valuations: HedgeValuationRecord[];
   createdAt?: string;
 }
+
+/**
+ * Query of `GET /api/accounting/hedges`. The list was previously unpaged (the
+ * repository hard-capped it at 200 with no way to tell a full page from the whole
+ * set); `limit` bounds the page and the response reports `truncated`.
+ */
+export const hedgeListQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(LIST_PAGE_MAX_LIMIT).optional(),
+  })
+  .strict();
 
 /** Body of `POST /api/accounting/hedges/:id/valuations[/preview]`. */
 export const hedgeValuationRequestSchema = z.object({ valuationDate: isoDateSchema }).strict();

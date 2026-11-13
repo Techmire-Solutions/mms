@@ -1,5 +1,12 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import type { AccountingReportAggregates, LedgerPostingAccounts } from "@mms/shared";
+import {
+  accountTypeFromDb,
+  isDebitNormalAccountType,
+  moneyToCents,
+  type AccountingAccountType,
+  type AccountingReportAggregates,
+  type LedgerPostingAccounts,
+} from "@mms/shared";
 import { accountingAccounts, accountingEntries, accountingJournalLines } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 
@@ -18,7 +25,7 @@ interface TrialBalanceRow {
   id: string;
   code: string;
   name: string;
-  type: string;
+  type: AccountingAccountType;
   subtype: string;
   totalDebit: number;
   totalCredit: number;
@@ -148,8 +155,11 @@ export async function aggregateAccountingReport(
           name: accountingAccounts.name,
           type: accountingAccounts.type,
           subtype: accountingAccounts.subtype,
-          totalDebit: sql<number>`coalesce(sum(${postedLines.debit}), 0)::float8`,
-          totalCredit: sql<number>`coalesce(sum(${postedLines.credit}), 0)::float8`,
+          // Exact decimal text, converted once at the boundary: a float8 sum
+          // re-introduces binary rounding into a figure the ledger (and the
+          // year-end closing entry) is supposed to balance on.
+          totalDebit: sql<string>`coalesce(sum(${postedLines.debit}), 0)::numeric::text`,
+          totalCredit: sql<string>`coalesce(sum(${postedLines.credit}), 0)::numeric::text`,
         })
         .from(accountingAccounts)
         .leftJoin(
@@ -177,16 +187,22 @@ export async function aggregateAccountingReport(
       return rows.map((r) => {
         const totalDebit = Number(r.totalDebit);
         const totalCredit = Number(r.totalCredit);
-        const isDebitNormal = r.type === "Asset" || r.type === "Expense";
+        const totalDebitCents = moneyToCents(totalDebit);
+        const totalCreditCents = moneyToCents(totalCredit);
+        // Balance in integer cents: a float subtraction here would feed a
+        // rounding error into every report total below.
+        const balanceCents = isDebitNormalAccountType(r.type)
+          ? totalDebitCents - totalCreditCents
+          : totalCreditCents - totalDebitCents;
         return {
           id: r.id,
           code: r.code,
           name: r.name,
-          type: r.type,
+          type: accountTypeFromDb(r.type),
           subtype: r.subtype,
           totalDebit,
           totalCredit,
-          balance: isDebitNormal ? totalDebit - totalCredit : totalCredit - totalDebit,
+          balance: balanceCents / 100,
         };
       });
     };
@@ -197,27 +213,36 @@ export async function aggregateAccountingReport(
     // dateFrom so prior-period assets/equity still appear.
     const asOfRows = dateFrom ? await buildTrialBalance(undefined, dateTo) : rangeRows;
 
-    const sumByType = (rows: readonly TrialBalanceRow[], type: string): number =>
-      rows.reduce((total, row) => (row.type === type ? total + row.balance : total), 0);
+    // Every report total is accumulated in integer cents and converted once, so a
+    // float sum of 2-dp balances cannot produce 0.30000000000000004 — the reason
+    // the aggregate schemas could not enforce a 2-dp money type.
+    const sumCentsByType = (rows: readonly TrialBalanceRow[], type: string): number =>
+      rows.reduce(
+        (total, row) => (row.type === type ? total + moneyToCents(row.balance) : total),
+        0,
+      );
 
-    const revenue = sumByType(flowRows, "Revenue");
-    const expenses = sumByType(flowRows, "Expense");
-    const netSurplus = revenue - expenses;
-    const assets = sumByType(asOfRows, "Asset");
-    const liabilities = sumByType(asOfRows, "Liability");
-    const equityAccounts = sumByType(asOfRows, "Equity");
-    const asOfSurplus = sumByType(asOfRows, "Revenue") - sumByType(asOfRows, "Expense");
+    const revenueCents = sumCentsByType(flowRows, "Revenue");
+    const expensesCents = sumCentsByType(flowRows, "Expense");
+    const netSurplusCents = revenueCents - expensesCents;
+    const assetsCents = sumCentsByType(asOfRows, "Asset");
+    const liabilitiesCents = sumCentsByType(asOfRows, "Liability");
+    const equityAccountsCents = sumCentsByType(asOfRows, "Equity");
+    const asOfSurplusCents =
+      sumCentsByType(asOfRows, "Revenue") - sumCentsByType(asOfRows, "Expense");
 
-    let cashInflow = 0;
-    let cashOutflow = 0;
-    let receivableMovement = 0;
-    let payableMovement = 0;
-    let depreciation = 0;
+    let cashInflowCents = 0;
+    let cashOutflowCents = 0;
+    let receivableMovementCents = 0;
+    let payableMovementCents = 0;
+    let depreciationCents = 0;
 
     for (const row of flowRows) {
+      const debitCents = moneyToCents(row.totalDebit);
+      const creditCents = moneyToCents(row.totalCredit);
       if (isCashAccount(row, postingRules.cashAccountId)) {
-        cashInflow += row.totalDebit;
-        cashOutflow += row.totalCredit;
+        cashInflowCents += debitCents;
+        cashOutflowCents += creditCents;
       }
       // A configured AR account is authoritative and EXCLUSIVE: unlike cash there
       // is exactly one receivable, so the name heuristic must not add further
@@ -225,46 +250,44 @@ export async function aggregateAccountingReport(
       const isConfiguredAr =
         Boolean(postingRules.arAccountId) && row.id === postingRules.arAccountId;
       if (isConfiguredAr || (!postingRules.arAccountId && isReceivableAccount(row))) {
-        receivableMovement += row.totalDebit - row.totalCredit;
+        receivableMovementCents += debitCents - creditCents;
       }
       if (isPayableAccount(row)) {
-        payableMovement += row.totalCredit - row.totalDebit;
+        payableMovementCents += creditCents - debitCents;
       }
       if (isDepreciationAccount(row)) {
-        depreciation += row.totalDebit - row.totalCredit;
+        depreciationCents += debitCents - creditCents;
       }
     }
 
-    const netCashFlow = cashInflow - cashOutflow;
-    const cashFlowAdjustments = {
-      depreciation,
-      // A receivable increase consumes cash, so the working-capital adjustment
-      // is the negated movement; a payable increase releases cash.
-      receivables: -receivableMovement,
-      payables: payableMovement,
-    };
-    const netCashFlowIndirect =
-      netSurplus +
-      cashFlowAdjustments.depreciation +
-      cashFlowAdjustments.receivables +
-      cashFlowAdjustments.payables;
+    const netCashFlowCents = cashInflowCents - cashOutflowCents;
+    const receivablesAdjustmentCents = -receivableMovementCents;
+    const netCashFlowIndirectCents =
+      netSurplusCents + depreciationCents + receivablesAdjustmentCents + payableMovementCents;
+    const centsToAmount = (cents: number): number => cents / 100;
 
     return {
-      revenue,
-      expenses,
-      netSurplus,
-      assets,
-      liabilities,
+      revenue: centsToAmount(revenueCents),
+      expenses: centsToAmount(expensesCents),
+      netSurplus: centsToAmount(netSurplusCents),
+      assets: centsToAmount(assetsCents),
+      liabilities: centsToAmount(liabilitiesCents),
       // Unclosed P&L is not yet in a retained-earnings account, so equity only
       // reconciles with assets once the as-of surplus is included. When a
       // closing entry IS inside the window the P&L accounts net to zero and this
       // term correctly contributes nothing.
-      equity: equityAccounts + asOfSurplus,
-      cashInflow,
-      cashOutflow,
-      netCashFlow,
-      netCashFlowIndirect,
-      cashFlowAdjustments,
+      equity: centsToAmount(equityAccountsCents + asOfSurplusCents),
+      cashInflow: centsToAmount(cashInflowCents),
+      cashOutflow: centsToAmount(cashOutflowCents),
+      netCashFlow: centsToAmount(netCashFlowCents),
+      netCashFlowIndirect: centsToAmount(netCashFlowIndirectCents),
+      cashFlowAdjustments: {
+        depreciation: centsToAmount(depreciationCents),
+        // A receivable increase consumes cash, so the working-capital adjustment
+        // is the negated movement; a payable increase releases cash.
+        receivables: centsToAmount(receivablesAdjustmentCents),
+        payables: centsToAmount(payableMovementCents),
+      },
       trialBalance: rangeRows,
       incomeStatementTrialBalance: flowRows,
       balanceSheetTrialBalance: asOfRows.filter(

@@ -30,6 +30,8 @@ export interface ExaminationsRepository {
     },
   ): Promise<Exam[]>;
   findExamById(tenant: string, id: string): Promise<Exam | null>;
+  /** Session classes, by name, for the CSV importer's class resolution. */
+  listSessionClassNames(tenant: string): Promise<Array<{ id: string; name: string }>>;
   findExamsByIds(
     tenant: string,
     ids: string[],
@@ -53,8 +55,55 @@ export interface ExaminationsRepository {
 
   // Results
   listExamResultsByWorkspace(tenant: string): Promise<ExamResult[]>;
+  /** Filterable, keyset-paginated marks (the broadsheet read path). */
+  listExamResultsPage(
+    tenant: string,
+    query: {
+      examId?: string;
+      studentId?: string;
+      cursor?: string;
+      limit?: number;
+      publishedOnly?: boolean;
+    },
+  ): Promise<{ results: ExamResult[]; hasMore: boolean }>;
+  /** Marks-state fingerprint (count + newest update) used to key broadsheet exports. */
+  findExamResultsFingerprint(
+    tenant: string,
+    examId: string,
+  ): Promise<{ count: number; maxUpdatedAt: string | null }>;
+  /** Audited grace-mark adjustment; the raw mark is preserved. */
+  applyExamResultModeration(
+    tenant: string,
+    input: {
+      examId: string;
+      studentId: string;
+      graceMarks: number;
+      reason: string;
+      actorId: string;
+      version?: number;
+    },
+  ): Promise<{
+    examId: string;
+    studentId: string;
+    marksObtained: number;
+    graceMarks: number;
+    effectiveMarks: number;
+    moderationReason: string | null;
+    moderatedAt: string | null;
+    version: number;
+  }>;
   findExamResultById(tenant: string, id: string): Promise<ExamResult | null>;
   findExamResultsByIds(tenant: string, ids: string[]): Promise<ExamResult[]>;
+  /**
+   * Existing `(student, id, version)` marks for one exam.
+   *
+   * Non-interactive writers (the queued CSV import) must echo the stored OCC token, otherwise they
+   * take the last-write-wins upsert branch and silently replace a concurrent examiner's correction.
+   */
+  findExamResultVersionsByExam(
+    tenant: string,
+    examId: string,
+  ): Promise<Array<{ studentId: string; id: string; version: number }>>;
   saveExamResult(tenant: string, record: ExamResult): Promise<void>;
   bulkSaveExamResults(tenant: string, records: ExamResult[]): Promise<void>;
   replaceExamResultsForWorkspace(tenant: string, records: ExamResult[]): Promise<void>;
@@ -68,5 +117,6 @@ export interface ExaminationsRepository {
   loadExaminationsReportAggregates(
     tenant: string,
     comparisonQuery?: ExaminationsReportComparisonQuery,
+    options?: { publishedOnly?: boolean },
   ): Promise<ExaminationsReportAggregates>;
 }

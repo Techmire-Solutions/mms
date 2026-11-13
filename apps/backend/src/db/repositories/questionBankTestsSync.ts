@@ -32,6 +32,9 @@ export function testRowToRecord(
   if (row.classId) test.classId = row.classId;
   if (row.totalMarks != null) test.totalMarks = row.totalMarks;
   if (row.instructions) test.instructions = row.instructions;
+  if (row.assemblySeed) test.assemblySeed = row.assemblySeed;
+  if (row.publishedAt) test.publishedAt = row.publishedAt.toISOString();
+  if (row.publishedBy) test.publishedBy = row.publishedBy;
   if (sections.length > 0) test.sections = sections;
 
   return test;

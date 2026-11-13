@@ -4,6 +4,7 @@
  * while cash is recognised at the settlement rate (IAS 21.28 realized FX).
  */
 import { convertMoney, invertExchangeRate } from "../money/fxConvert.js";
+import { roundMoneyAmount } from "./accountingLedgerInvariants.js";
 import { currencyMinorUnits } from "../money/iso4217.js";
 import { moneyToDecimalString, parseMoney, subtractMoney, type Money } from "../money/money.js";
 import { resolveJournalFxLines } from "./accountingFxLines.js";
@@ -97,12 +98,14 @@ export function settlementInvoiceAmount(
   if (paymentCurrency === invoiceCurrency) return amount;
   const paid = toDocumentMoney(amount, paymentCurrency);
   if (paymentCurrency === functionalCurrency) {
-    return Number(
+    return roundMoneyAmount(
       moneyToDecimalString(convertMoney(paid, invertExchangeRate(settlementRate), invoiceCurrency)),
     );
   }
   if (invoiceCurrency === functionalCurrency) {
-    return Number(moneyToDecimalString(convertMoney(paid, settlementRate, invoiceCurrency)));
+    return roundMoneyAmount(
+      moneyToDecimalString(convertMoney(paid, settlementRate, invoiceCurrency)),
+    );
   }
   throw new UnsupportedSettlementError(paymentCurrency, invoiceCurrency);
 }

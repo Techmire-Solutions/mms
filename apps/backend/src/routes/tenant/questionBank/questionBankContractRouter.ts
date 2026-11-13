@@ -1,12 +1,25 @@
 import type { FastifyPluginAsync } from "fastify";
-import { isQueryFlagTrue, type User } from "@mms/shared";
+import type { User } from "@mms/shared";
 import { questionBankContract } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { canReadCollection, canDeleteCollection } from "../../../services/rbacService.js";
+import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { questionBankUseCases } from "../../../questionBank/use-cases/questionBankUseCases.js";
+import {
+  assemblePaperHandler,
+  duplicateQuestionHandler,
+  mappedFailure,
+  setQuestionStatusHandler,
+  setTestPublishedHandler,
+} from "./questionBankLifecycleHandlers.js";
+import {
+  addQuestionAttachmentHandler,
+  removeQuestionAttachmentHandler,
+} from "./questionBankAttachmentHandlers.js";
+import { checkQuestionDuplicatesHandler } from "./questionBankDuplicateHandlers.js";
+import { listQuestionsHandler, pickerQuestionsHandler } from "./questionBankListHandlers.js";
 
 const s = initServer();
 
@@ -32,61 +45,17 @@ export const questionBankContractRouter: FastifyPluginAsync = async (fastify) =>
           { readOnly: true },
         );
         return { status: 200 as const, body: aggregates };
-      } catch {
+      } catch (error) {
+        const mapped = mappedFailure(error);
+        if (mapped) return mapped;
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to load report aggregates" },
         };
       }
     },
-    listQuestions: async ({
-      query,
-      request,
-    }: ContractRouteArgs<(typeof questionBankContract)["listQuestions"]>): Promise<
-      ContractRouteResponse<(typeof questionBankContract)["listQuestions"]>
-    > => {
-      const user = request.user as User;
-      if (!canReadCollection(user, "questions")) {
-        return {
-          status: 403 as const,
-          body: { type: "forbidden", message: "Insufficient permissions" },
-        };
-      }
-      const includeDeleted = isQueryFlagTrue(query?.includeDeleted);
-      if (includeDeleted && !canDeleteCollection(user, "questions")) {
-        return {
-          status: 403 as const,
-          body: { type: "forbidden", message: "Insufficient permissions" },
-        };
-      }
-      try {
-        if (
-          query?.page !== undefined ||
-          query?.limit !== undefined ||
-          query?.search !== undefined ||
-          query?.categoryId !== undefined ||
-          query?.difficulty !== undefined
-        ) {
-          const result = await withTenant(
-            String(request.tenant?.id),
-            () => questionBankUseCases.loadQuestionsPage({ ...query, includeDeleted }),
-            { readOnly: true },
-          );
-          return { status: 200 as const, body: result };
-        }
-        const questions = await withTenant(
-          String(request.tenant?.id),
-          () => questionBankUseCases.loadQuestions({ includeDeleted }),
-          { readOnly: true },
-        );
-        return { status: 200 as const, body: { questions } };
-      } catch {
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to list questions" },
-        };
-      }
-    },
+    listQuestions: listQuestionsHandler,
+    pickerQuestions: pickerQuestionsHandler,
     bulkDeleteQuestions: async ({
       body,
       request,
@@ -112,7 +81,9 @@ export const questionBankContractRouter: FastifyPluginAsync = async (fastify) =>
           { readOnly: false },
         );
         return { status: 200 as const, body: { success: true, ...result } };
-      } catch {
+      } catch (error) {
+        const mapped = mappedFailure(error);
+        if (mapped) return mapped;
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to bulk delete questions" },
@@ -139,14 +110,24 @@ export const questionBankContractRouter: FastifyPluginAsync = async (fastify) =>
           { readOnly: false },
         );
         return { status: 200 as const, body: { success: true, ...result } };
-      } catch {
+      } catch (error) {
+        const mapped = mappedFailure(error);
+        if (mapped) return mapped;
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to bulk restore questions" },
         };
       }
     },
+    setQuestionStatus: setQuestionStatusHandler,
+    duplicateQuestion: duplicateQuestionHandler,
+    assemblePaper: assemblePaperHandler,
+    checkQuestionDuplicates: checkQuestionDuplicatesHandler,
+    addQuestionAttachment: addQuestionAttachmentHandler,
+    removeQuestionAttachment: removeQuestionAttachmentHandler,
+    setTestPublished: setTestPublishedHandler,
     listTests: async ({
+      query,
       request,
     }: ContractRouteArgs<(typeof questionBankContract)["listTests"]>): Promise<
       ContractRouteResponse<(typeof questionBankContract)["listTests"]>
@@ -161,11 +142,13 @@ export const questionBankContractRouter: FastifyPluginAsync = async (fastify) =>
       try {
         const tests = await withTenant(
           String(request.tenant?.id),
-          () => questionBankUseCases.loadTests(),
+          () => questionBankUseCases.loadTests({ page: query?.page, limit: query?.limit }),
           { readOnly: true },
         );
         return { status: 200 as const, body: { tests } };
-      } catch {
+      } catch (error) {
+        const mapped = mappedFailure(error);
+        if (mapped) return mapped;
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to list tests" },
@@ -173,6 +156,7 @@ export const questionBankContractRouter: FastifyPluginAsync = async (fastify) =>
       }
     },
     listResults: async ({
+      query,
       request,
     }: ContractRouteArgs<(typeof questionBankContract)["listResults"]>): Promise<
       ContractRouteResponse<(typeof questionBankContract)["listResults"]>
@@ -187,11 +171,13 @@ export const questionBankContractRouter: FastifyPluginAsync = async (fastify) =>
       try {
         const results = await withTenant(
           String(request.tenant?.id),
-          () => questionBankUseCases.loadResults(),
+          () => questionBankUseCases.loadResults({ page: query?.page, limit: query?.limit }),
           { readOnly: true },
         );
         return { status: 200 as const, body: { results } };
-      } catch {
+      } catch (error) {
+        const mapped = mappedFailure(error);
+        if (mapped) return mapped;
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to list assessment results" },
@@ -219,6 +205,8 @@ export const questionBankContractRouter: FastifyPluginAsync = async (fastify) =>
         );
         return { status: 200 as const, body: result };
       } catch (error) {
+        const mapped = mappedFailure(error);
+        if (mapped) return mapped;
         return {
           status: 500 as const,
           body: { type: "database_error", message: "Failed to load widget aggregates" },
@@ -229,5 +217,7 @@ export const questionBankContractRouter: FastifyPluginAsync = async (fastify) =>
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    // Declared response schemas are the wire contract (including the answer-key summary shape).
+    responseValidation: true,
   });
 };

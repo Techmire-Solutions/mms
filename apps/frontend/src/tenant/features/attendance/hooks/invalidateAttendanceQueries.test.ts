@@ -5,6 +5,7 @@ import {} from "./useAttendance";
 import { attendanceQueryKeys } from "./attendanceQueryKeys";
 import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
+import { EXAMINATIONS_ELIGIBILITY_QUERY_KEY } from "@/tenant/hooks/collections/examinations";
 
 describe("invalidateAttendanceQueries utility", () => {
   it("invalidates the attendance root plus the cross-module widget/dashboard roots", () => {
@@ -23,6 +24,7 @@ describe("invalidateAttendanceQueries utility", () => {
       attendanceQueryKeys.all,
       DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY,
       DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
+      EXAMINATIONS_ELIGIBILITY_QUERY_KEY,
     ]);
   });
 });

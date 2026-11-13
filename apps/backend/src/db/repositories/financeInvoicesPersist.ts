@@ -7,6 +7,18 @@ import { invoiceWriteValues } from "./financeInvoiceValues.js";
 import { replaceInvoiceLines } from "./financeBillingRepository.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 
+/**
+ * Trash/restore own the soft-delete columns, so both upsert SET lists below
+ * deliberately omit `deletedAt` / `deletedBy` / `deletionReason`.
+ *
+ * `invoiceWriteValues` includes them (a backup restore may legitimately insert
+ * an already-trashed row), but a whole-list invoice save re-sends
+ * `deletedAt: null` for every active invoice it holds, and writing that through
+ * meant a save in one session silently un-deleted an invoice another session
+ * had trashed — or re-trashed a restored one. Soft-delete state now changes
+ * only through {@link bulkSoftDeleteInvoices} / {@link bulkRestoreInvoices}.
+ * This is the same parity rule as `accountingEntriesPersist.entryUpdateSetValues`.
+ */
 export async function saveInvoice(tenant: string, record: Invoice): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   const values = invoiceWriteValues(subdomain, record);
@@ -40,16 +52,18 @@ export async function saveInvoice(tenant: string, record: Invoice): Promise<void
           creditedAmt: values.creditedAmt,
           lastRemindedAt: values.lastRemindedAt,
           reminderCount: values.reminderCount,
-          deletedAt: values.deletedAt,
-          deletedBy: values.deletedBy,
-          deletionReason: values.deletionReason,
+          // deletedAt / deletedBy / deletionReason are deliberately absent — see
+          // invoiceUpdateSetValues above.
           updatedAt: values.updatedAt,
         },
       });
+    // Lines belong to the same aggregate: writing them in a second transaction
+    // left an invoice without its lines whenever the caller did not already own
+    // one (payments/status updates pass no lines, updates do).
+    if (record.lines) {
+      await replaceInvoiceLines(tenant, record.id, record.lines);
+    }
   });
-  if (record.lines) {
-    await replaceInvoiceLines(tenant, record.id, record.lines);
-  }
   await invalidateMultiTierCache({
     tenantId: subdomain,
     domain: "finance",
@@ -98,9 +112,8 @@ export async function bulkSaveInvoices(tenant: string, records: Invoice[]): Prom
           creditedAmt: sql`excluded.credited_amt`,
           lastRemindedAt: sql`excluded.last_reminded_at`,
           reminderCount: sql`excluded.reminder_count`,
-          deletedAt: sql`excluded.deleted_at`,
-          deletedBy: sql`excluded.deleted_by`,
-          deletionReason: sql`excluded.deletion_reason`,
+          // Soft-delete columns are omitted on purpose: trash/restore own them
+          // (see the note on saveInvoice).
           updatedAt: new Date(),
         },
       });
@@ -131,14 +144,20 @@ export async function replaceInvoicesForWorkspace(
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "finance" });
 }
 
-export async function deleteInvoice(tenant: string, id: string): Promise<void> {
-  const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx
-      .delete(financeInvoices)
-      .where(and(eq(financeInvoices.workspaceSubdomain, subdomain), eq(financeInvoices.id, id)));
-  });
-  await invalidateMultiTierCache({ tenantId: subdomain, domain: "finance", key: id });
+/**
+ * Archive one invoice. Delegates to the soft-delete path on purpose: invoices
+ * carry a `forbid_hard_delete` trigger, so a hard `DELETE` could only ever
+ * raise (or, under `app.allow_hard_purge`, destroy the subledger and its
+ * ledger link outright). Ledger-aware archiving lives one layer up in
+ * `financeRecordLifecycle.deleteInvoiceById`, which also posts the reversal.
+ */
+export async function deleteInvoice(
+  tenant: string,
+  id: string,
+  deletedBy?: string,
+  deletionReason?: string,
+): Promise<void> {
+  await bulkSoftDeleteInvoices(tenant, [id], deletedBy, deletionReason);
 }
 
 export async function bulkSoftDeleteInvoices(
@@ -195,7 +214,7 @@ export async function bulkSoftDeleteInvoices(
 export async function bulkRestoreInvoices(
   tenant: string,
   ids: string[],
-  _userId?: string,
+  userId?: string,
 ): Promise<{ succeeded: number; failed: number }> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
@@ -208,6 +227,8 @@ export async function bulkRestoreInvoices(
         deletedAt: null,
         deletedBy: null,
         deletionReason: null,
+        restoredAt: now,
+        restoredBy: userId || null,
         updatedAt: now,
       })
       .where(

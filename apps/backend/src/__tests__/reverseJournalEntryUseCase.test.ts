@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { describe, expect, it } from "vitest";
+import { journalReversalResultSchema } from "@mms/shared";
 import type { Account, FiscalYear, JournalEntry } from "@mms/shared";
 import type { RecordModernAuditInput } from "../services/auditTrailService.js";
 import {
@@ -90,6 +91,7 @@ function createHarness(
   const visible = () => [...entries, ...(tx.getStore()?.staged ?? [])];
 
   const deps: ReverseJournalEntryDeps = {
+    findClosedPostingPeriodForDate: async () => null,
     transaction: async (_tenant, work) => {
       const state = {
         staged: [] as JournalEntry[],
@@ -181,6 +183,8 @@ describe("reverseJournalEntry", () => {
     );
 
     // Assert
+    // The route sends this payload after validating it against the HTTP schema.
+    expect(journalReversalResultSchema.safeParse(result).success).toBe(true);
     expect(result.entry.lines.map((line) => [line.account_id, line.debit, line.credit])).toEqual([
       ["office", 0, 30000],
       ["office", 0, 20000],

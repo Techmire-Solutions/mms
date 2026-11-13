@@ -1,5 +1,18 @@
 import type { FastifyReply } from "fastify";
 import { logger } from "./logger.js";
+export {
+  mapConstraintError,
+  mapDatabaseErrorCode,
+  ledgerGuardMessage,
+  type DatabaseConstraintResponse,
+} from "./dbErrorMapping.js";
+export type { ErrorEnvelopeBody } from "./dbErrorMapping.js";
+import { pgErrorCode } from "./pgErrors.js";
+import {
+  ledgerGuardMessage,
+  mapDatabaseErrorCode,
+  type ErrorEnvelopeBody,
+} from "./dbErrorMapping.js";
 
 export function sendForbidden(
   reply: FastifyReply,
@@ -24,30 +37,58 @@ export function sendBadRequest(reply: FastifyReply, message = "Bad request"): Fa
   return reply.status(400).send({ type: "bad_request", message });
 }
 
+function defaultTypeForStatus(statusCode: number): string {
+  return statusCode === 400
+    ? "validation_error"
+    : statusCode === 404
+      ? "not_found"
+      : statusCode === 409
+        ? "conflict"
+        : statusCode === 422
+          ? "policy_violation"
+          : "error";
+}
+
+/** Reads the optional structured context off an error, in the contract's envelope shape. */
+export function errorEnvelopeExtras(
+  error: unknown,
+): Pick<ErrorEnvelopeBody, "violations" | "details"> {
+  if (typeof error !== "object" || error === null) return {};
+  const violations = (error as { violations?: unknown }).violations;
+  const details = (error as { details?: unknown }).details;
+  return {
+    ...(Array.isArray(violations) ? { violations: violations.map((value) => String(value)) } : {}),
+    ...(typeof details === "object" && details !== null
+      ? { details: details as Record<string, unknown> }
+      : {}),
+  };
+}
+
+/**
+ * Maps a domain error (anything carrying a 4xx `statusCode`) to the shared envelope.
+ *
+ * Preserves `violations`/`details` — the gate's blocked-student list and a lifecycle transition's
+ * endpoints used to be dropped here even when the error carried them.
+ */
+export function mapDomainError(error: unknown): { status: number; body: ErrorEnvelopeBody } | null {
+  if (typeof error !== "object" || error === null) return null;
+  const statusCode = (error as { statusCode?: unknown }).statusCode;
+  if (typeof statusCode !== "number" || statusCode < 400 || statusCode >= 500) return null;
+  const type = (error as { type?: unknown }).type;
+  return {
+    status: statusCode,
+    body: {
+      type: typeof type === "string" && type ? type : defaultTypeForStatus(statusCode),
+      message: error instanceof Error ? error.message : "Request rejected",
+      ...errorEnvelopeExtras(error),
+    },
+  };
+}
+
 /** Domain errors thrown from use-cases with an explicit HTTP status + type. */
 export function sendIfHttpDomainError(reply: FastifyReply, error: unknown): FastifyReply | null {
-  if (
-    error instanceof Error &&
-    "statusCode" in error &&
-    typeof (error as { statusCode?: unknown }).statusCode === "number"
-  ) {
-    const statusCode = (error as { statusCode: number }).statusCode;
-    const type =
-      "type" in error && typeof (error as { type?: unknown }).type === "string"
-        ? (error as { type: string }).type
-        : statusCode === 400
-          ? "validation_error"
-          : statusCode === 404
-            ? "not_found"
-            : statusCode === 409
-              ? "conflict"
-              : "error";
-    return reply.status(statusCode).send({
-      type,
-      message: error.message,
-    });
-  }
-  return null;
+  const mapped = mapDomainError(error);
+  return mapped ? reply.status(mapped.status).send(mapped.body) : null;
 }
 
 export function sendDatabaseError(
@@ -55,6 +96,17 @@ export function sendDatabaseError(
   message = "Database error occurred",
   cause?: unknown,
 ): FastifyReply {
+  const code = cause === undefined ? undefined : pgErrorCode(cause);
+  const guard = code === "23514" ? ledgerGuardMessage(cause) : null;
+  if (guard) {
+    logger.warn({ err: cause, code }, "Ledger guard rejected the write");
+    return reply.status(422).send({ type: "ledger_guard", message: guard });
+  }
+  const mapped = mapDatabaseErrorCode(code);
+  if (mapped) {
+    logger.warn({ err: cause, code }, message);
+    return reply.status(mapped.status).send({ type: mapped.type, message });
+  }
   if (cause !== undefined) {
     // Log full cause server-side only — never echo DB internals to the client.
     logger.error({ err: cause }, message);

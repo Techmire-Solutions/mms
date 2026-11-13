@@ -20,6 +20,8 @@ import {
   formatMonthYear,
   getCollectedAmountForInvoice,
   getOutstandingAmountForInvoice,
+  moneyToCents,
+  parseIsoDate,
 } from "@mms/shared";
 import type {
   DiscountUsageByTypeItem,
@@ -77,30 +79,31 @@ const FinancialReport = function FinancialReport({
     ) {
       return aggregatesQuery.data.monthlyFeeCollection;
     }
+    // Aggregate integer cents: `+=` on money numbers drifts before the display
+    // rounding (0.10 + 0.20 + … in binary floats), and this is a fallback chart.
     const monthlyTotals: Record<string, { collected: number; outstanding: number; total: number }> =
       {};
     financeInvoices.forEach((invoice) => {
-      const dueDate = new Date(invoice.dueDate);
-      if (isNaN(dueDate.getTime())) return;
+      const dueDate = parseIsoDate(invoice.dueDate);
+      if (!dueDate) return;
       const monthLabel = formatMonthYear(dueDate);
 
       if (!monthlyTotals[monthLabel])
         monthlyTotals[monthLabel] = { collected: 0, outstanding: 0, total: 0 };
 
-      const collected = getCollectedAmountForInvoice(invoice);
-      const outstanding = getOutstandingAmountForInvoice(invoice);
-
-      monthlyTotals[monthLabel].collected += collected;
-      monthlyTotals[monthLabel].outstanding += outstanding;
-      monthlyTotals[monthLabel].total += invoice.finalAmt;
+      monthlyTotals[monthLabel].collected += moneyToCents(getCollectedAmountForInvoice(invoice));
+      monthlyTotals[monthLabel].outstanding += moneyToCents(
+        getOutstandingAmountForInvoice(invoice),
+      );
+      monthlyTotals[monthLabel].total += moneyToCents(invoice.finalAmt);
     });
 
     return Object.entries(monthlyTotals)
       .map(([month, monthTotals]) => ({
         month,
-        collected: monthTotals.collected,
-        outstanding: monthTotals.outstanding,
-        total: monthTotals.total,
+        collected: monthTotals.collected / 100,
+        outstanding: monthTotals.outstanding / 100,
+        total: monthTotals.total / 100,
         rate:
           monthTotals.total > 0 ? Math.round((monthTotals.collected / monthTotals.total) * 100) : 0,
       }))
@@ -127,15 +130,15 @@ const FinancialReport = function FinancialReport({
         if (!discountTotalsByType[discountType])
           discountTotalsByType[discountType] = { count: 0, totalDiscounted: 0 };
         discountTotalsByType[discountType].count++;
-        discountTotalsByType[discountType].totalDiscounted += invoice.discountAmt;
-        totalDiscountAmount += invoice.discountAmt;
+        discountTotalsByType[discountType].totalDiscounted += moneyToCents(invoice.discountAmt);
+        totalDiscountAmount += moneyToCents(invoice.discountAmt);
       }
     });
 
     return Object.entries(discountTotalsByType).map(([discountType, discountTotals]) => ({
       type: discountType,
       count: discountTotals.count,
-      totalDiscounted: discountTotals.totalDiscounted,
+      totalDiscounted: discountTotals.totalDiscounted / 100,
       percentage:
         totalDiscountAmount > 0
           ? Math.round((discountTotals.totalDiscounted / totalDiscountAmount) * 100)
@@ -150,9 +153,8 @@ const FinancialReport = function FinancialReport({
     }
     if (selectedMonth) {
       filteredInvoices = filteredInvoices.filter((invoice) => {
-        const dueDate = new Date(invoice.dueDate);
-        if (isNaN(dueDate.getTime())) return false;
-        return formatMonthYear(dueDate) === selectedMonth;
+        const dueDate = parseIsoDate(invoice.dueDate);
+        return dueDate ? formatMonthYear(dueDate) === selectedMonth : false;
       });
     }
     return filteredInvoices;
@@ -161,6 +163,19 @@ const FinancialReport = function FinancialReport({
   const toggleMonthFilter = (month: string) => {
     setSelectedMonth((current) => (current === month ? null : month));
   };
+
+  const usingFallback =
+    !aggregatesQuery.data?.monthlyFeeCollection?.length &&
+    !aggregatesQuery.data?.discountUsageByType?.length;
+
+  if (invoicesQuery.isLoading || aggregatesQuery.isLoading) {
+    return (
+      <div className="space-y-4 p-1" aria-busy="true">
+        <Skeleton className="h-chart-md w-full rounded-2xl" />
+        <Skeleton className="h-40 w-full rounded-2xl" />
+      </div>
+    );
+  }
 
   if (invoicesQuery.isError || aggregatesQuery.isError) {
     return (
@@ -179,6 +194,11 @@ const FinancialReport = function FinancialReport({
 
   return (
     <div className="space-y-4">
+      {usingFallback && (
+        <p role="status" className="rounded-lg border border-warning/40 bg-warning/10 p-2 text-xs">
+          {t("finance.report.fallbackNotice")}
+        </p>
+      )}
       <Suspense fallback={<Skeleton className="h-chart-md w-full rounded-xl" />}>
         <FinancialReportCharts
           monthlyFeeCollection={monthlyFeeCollection}

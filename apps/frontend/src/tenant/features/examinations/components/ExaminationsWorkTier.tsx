@@ -20,11 +20,11 @@ export interface ExaminationsWorkTierProps {
   activeSubTab: string;
   showDeleted: boolean;
   listLoadFailed: boolean;
-  canWrite: boolean;
   canDelete: boolean;
   createExamKey: number;
   exams: Exam[];
   examResults: ExamResult[];
+  resultsTruncated?: boolean;
   examColumnLayout: ReturnType<typeof useExaminationExamColumnLayout>;
   resultsColumnLayout: ReturnType<typeof useExaminationResultsColumnLayout>;
   onSubTabChange: (tab: string) => void;
@@ -45,11 +45,11 @@ export function ExaminationsWorkTier({
   activeSubTab,
   showDeleted,
   listLoadFailed,
-  canWrite,
   canDelete,
   createExamKey,
   exams,
   examResults,
+  resultsTruncated,
   examColumnLayout,
   resultsColumnLayout,
   onSubTabChange,
@@ -87,7 +87,7 @@ export function ExaminationsWorkTier({
         <>
           {activeSubTab === "exams" && (
             <ExaminationsList
-              canWrite={canWrite}
+              canWrite={canDelete}
               canDelete={canDelete}
               showDeleted={showDeleted}
               onToggleDeleted={onToggleDeleted}
@@ -115,6 +115,7 @@ export function ExaminationsWorkTier({
             <ResultsView
               exams={exams}
               results={examResults}
+              resultsTruncated={resultsTruncated}
               onFilteredCountChange={onFilteredCountChange}
               isColumnVisible={resultsColumnLayout.isColumnVisible}
               columnCustomizer={{

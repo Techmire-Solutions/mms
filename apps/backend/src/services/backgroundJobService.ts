@@ -1,39 +1,49 @@
 import { and, eq, desc, or } from "drizzle-orm";
-import {
-  BACKGROUND_JOBS_MAX_PER_USER,
-  type BackgroundJobRecord,
-  type BackgroundJobStatus,
-} from "@mms/shared";
+import { BACKGROUND_JOBS_MAX_PER_USER, type BackgroundJobRecord } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { withTenant } from "../db/tenant-context.js";
 import { backgroundJobs } from "../db/schema.js";
 import { resolveEffectiveTenantUserId } from "../db/repositories/backgroundJobCleanupRepository.js";
-
 export {
   CLEARABLE_BACKGROUND_JOB_STATUSES,
   clearFinishedUserBackgroundJobs,
   clearTenantBackgroundJobs,
 } from "../db/repositories/backgroundJobCleanupRepository.js";
+import {
+  countBackgroundJobsForUser,
+  findLiveBackgroundJob,
+  rowToJobRecord,
+} from "../db/repositories/backgroundJobQueryRepository.js";
 
-export function rowToJobRecord(row: typeof backgroundJobs.$inferSelect): BackgroundJobRecord {
-  const record: BackgroundJobRecord = {
-    id: row.id,
-    moduleId: row.moduleId,
-    kind: row.kind,
-    status: row.status as BackgroundJobStatus,
-    label: row.label,
-    hasDownload: row.hasDownload,
-    createdAt: row.createdAt.toISOString(),
-  };
+export { rowToJobRecord } from "../db/repositories/backgroundJobQueryRepository.js";
 
-  if (row.progressCurrent !== null && row.progressTotal !== null) {
-    record.progress = { current: row.progressCurrent, total: row.progressTotal };
+/** Thrown when a user already holds the maximum retained background jobs. */
+export class BackgroundJobLimitError extends Error {
+  constructor(max: number) {
+    super(
+      `Too many retained background jobs (limit ${max}); clear finished jobs from the task tray and retry`,
+    );
+    this.name = "BackgroundJobLimitError";
   }
-  if (row.error) record.error = row.error;
-  if (row.errors) record.errors = row.errors;
-  if (row.completedAt) record.completedAt = row.completedAt.toISOString();
+}
 
-  return record;
+/** Retained-job count for the caller (requests the tenant from ALS). */
+export async function countUserBackgroundJobs(userId: string): Promise<number> {
+  const tenantId = getRequestTenant();
+  if (!tenantId) return 0;
+  return countBackgroundJobsForUser(tenantId, userId);
+}
+
+/** A live (pending/running) job for one entity key — e.g. a marks import already running. */
+export async function findLiveBackgroundJobForEntity(
+  moduleId: string,
+  kind: string,
+  payloadKey: string,
+  payloadValue: string,
+): Promise<BackgroundJobRecord | null> {
+  const tenantId = getRequestTenant();
+  if (!tenantId) return null;
+  return findLiveBackgroundJob(tenantId, moduleId, kind, payloadKey, payloadValue);
 }
 
 export async function listUserBackgroundJobs(userId: string): Promise<BackgroundJobRecord[]> {
@@ -45,23 +55,17 @@ export async function listUserBackgroundJobs(userId: string): Promise<Background
     const rows = await tx
       .select({
         id: backgroundJobs.id,
-        tenantId: backgroundJobs.tenantId,
-        userId: backgroundJobs.userId,
         moduleId: backgroundJobs.moduleId,
         kind: backgroundJobs.kind,
         status: backgroundJobs.status,
         label: backgroundJobs.label,
-        payload: backgroundJobs.payload,
         progressCurrent: backgroundJobs.progressCurrent,
         progressTotal: backgroundJobs.progressTotal,
-        artifactId: backgroundJobs.artifactId,
         hasDownload: backgroundJobs.hasDownload,
         error: backgroundJobs.error,
         errors: backgroundJobs.errors,
-        deadLetteredAt: backgroundJobs.deadLetteredAt,
         completedAt: backgroundJobs.completedAt,
         createdAt: backgroundJobs.createdAt,
-        updatedAt: backgroundJobs.updatedAt,
       })
       .from(backgroundJobs)
       .where(
@@ -73,7 +77,15 @@ export async function listUserBackgroundJobs(userId: string): Promise<Background
       .orderBy(desc(backgroundJobs.createdAt))
       .limit(BACKGROUND_JOBS_MAX_PER_USER);
 
-    return rows.map(rowToJobRecord);
+    const validJobs: BackgroundJobRecord[] = [];
+    for (const row of rows) {
+      try {
+        validJobs.push(rowToJobRecord(row));
+      } catch {
+        /* skip corrupted row */
+      }
+    }
+    return validJobs;
   });
 }
 
@@ -126,29 +138,38 @@ export async function upsertUserBackgroundJob(
   return job;
 }
 
+/**
+ * Inserts the job row unless an identical id already exists (double-submit race).
+ * Returns `false` when the row pre-existed, so the caller can return the winner's job.
+ */
 export async function createDatabaseBackgroundJob(
   tenantId: string,
   userId: string,
   job: BackgroundJobRecord,
   payload: unknown,
-): Promise<void> {
-  await withTenant(tenantId, async (tx) => {
+): Promise<boolean> {
+  return withTenant(tenantId, async (tx) => {
     const effectiveUserId = await resolveEffectiveTenantUserId(tx, tenantId, userId);
-    await tx.insert(backgroundJobs).values({
-      id: job.id,
-      tenantId,
-      userId: effectiveUserId,
-      moduleId: job.moduleId,
-      kind: job.kind,
-      status: job.status,
-      label: job.label,
-      payload: payload as Record<string, unknown>,
-      progressCurrent: job.progress?.current ?? null,
-      progressTotal: job.progress?.total ?? null,
-      hasDownload: job.hasDownload ?? false,
-      error: job.error ?? null,
-      completedAt: job.completedAt ? new Date(job.completedAt) : null,
-    });
+    const inserted = await tx
+      .insert(backgroundJobs)
+      .values({
+        id: job.id,
+        tenantId,
+        userId: effectiveUserId,
+        moduleId: job.moduleId,
+        kind: job.kind,
+        status: job.status,
+        label: job.label,
+        payload: payload as Record<string, unknown>,
+        progressCurrent: job.progress?.current ?? null,
+        progressTotal: job.progress?.total ?? null,
+        hasDownload: job.hasDownload ?? false,
+        error: job.error ?? null,
+        completedAt: job.completedAt ? new Date(job.completedAt) : null,
+      })
+      .onConflictDoNothing({ target: backgroundJobs.id })
+      .returning({ id: backgroundJobs.id });
+    return inserted.length > 0;
   });
 }
 
@@ -181,8 +202,14 @@ export async function dismissUserBackgroundJob(
   });
 }
 
+/**
+ * One job, scoped to its owner (or the owner's effective tenant identity).
+ *
+ * This used to ignore `userId`, so `GET /api/background-jobs/:id` and the artifact download served
+ * any job in the tenant to any authenticated user who knew the id. Ownership is part of the read.
+ */
 export async function getUserBackgroundJob(
-  _userId: string,
+  userId: string,
   jobId: string,
   explicitTenantId?: string,
 ): Promise<BackgroundJobRecord | null> {
@@ -190,33 +217,39 @@ export async function getUserBackgroundJob(
   if (!tenantId) return null;
 
   return withTenant(tenantId, async (tx) => {
+    const effectiveUserId = await resolveEffectiveTenantUserId(tx, tenantId, userId);
     const rows = await tx
       .select({
         id: backgroundJobs.id,
-        tenantId: backgroundJobs.tenantId,
-        userId: backgroundJobs.userId,
         moduleId: backgroundJobs.moduleId,
         kind: backgroundJobs.kind,
         status: backgroundJobs.status,
         label: backgroundJobs.label,
-        payload: backgroundJobs.payload,
         progressCurrent: backgroundJobs.progressCurrent,
         progressTotal: backgroundJobs.progressTotal,
-        artifactId: backgroundJobs.artifactId,
         hasDownload: backgroundJobs.hasDownload,
         error: backgroundJobs.error,
         errors: backgroundJobs.errors,
-        deadLetteredAt: backgroundJobs.deadLetteredAt,
         completedAt: backgroundJobs.completedAt,
         createdAt: backgroundJobs.createdAt,
-        updatedAt: backgroundJobs.updatedAt,
       })
       .from(backgroundJobs)
-      .where(and(eq(backgroundJobs.tenantId, tenantId), eq(backgroundJobs.id, jobId)))
+      .where(
+        and(
+          eq(backgroundJobs.tenantId, tenantId),
+          eq(backgroundJobs.id, jobId),
+          or(eq(backgroundJobs.userId, userId), eq(backgroundJobs.userId, effectiveUserId)),
+        ),
+      )
       .limit(1);
 
     const row = rows[0];
-    return row ? rowToJobRecord(row) : null;
+    if (!row) return null;
+    try {
+      return rowToJobRecord(row);
+    } catch {
+      return null;
+    }
   });
 }
 

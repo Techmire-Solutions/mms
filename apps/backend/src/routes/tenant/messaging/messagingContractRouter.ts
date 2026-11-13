@@ -43,6 +43,10 @@ export const messagingContractRouter: FastifyPluginAsync = async (fastify) => {
     matchRecipients: messagingMatchRecipientsHandler,
     getPreferences: messagingGetPreferencesHandler,
     updatePreferences: messagingUpdatePreferencesHandler,
+    // Deliberate, documented exception to the `as unknown as T` ban (mms-agent-universal):
+    // ts-rest's own `RouterImplementation` degrades this contract to any/never past the TS
+    // union-depth limit, so responses are typed by `ContractRouteResponse` instead — see
+    // `lib/contractRouterTypes.ts` for the rationale. All backend routers share this workaround.
   } as unknown as RouterImplementation<typeof messagingContract>);
 
   await fastify.register(async (scoped) => {

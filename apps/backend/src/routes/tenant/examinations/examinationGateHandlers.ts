@@ -1,21 +1,20 @@
-import type { FastifyRequest } from "fastify";
 import { type User, type examinationContract } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import {
-  canDeleteCollection,
-  canReadCollection,
-  canWriteCollection,
-} from "../../../services/rbacService.js";
+import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
-import { HttpDomainError, NotFoundError } from "../../../lib/httpErrors.js";
+import { NotFoundError } from "../../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../../lib/cache/index.js";
+import { broadcastTenantUpdate } from "../../../lib/livePush.js";
 import {
   configureExamAttendanceGate,
   getExamEligibilityView,
   grantExamEligibilityOverride,
-  updateExamResultsFinalized,
+  revokeExamEligibilityOverride,
 } from "../../../examinations/use-cases/examEligibilityGate.js";
+import { examinationsUseCases } from "../../../examinations/use-cases/examinationsUseCases.js";
+import { moderationGateHandlers } from "./examinationGateModerationHandlers.js";
+import { mapGateError } from "./examinationGateErrors.js";
 
 /**
  * Exam attendance-gate handlers (0222): per-student eligibility, the audited override, the exam's
@@ -46,6 +45,12 @@ export function gateHandlers() {
         };
       }
       try {
+        // An unknown (or another tenant's) exam id must look exactly like a missing one: the
+        // eligibility read returns an empty view, which would otherwise confirm the id exists.
+        const exam = await withTenant(tenant, () => examinationsUseCases.loadExamById(id, true), {
+          readOnly: true,
+        });
+        if (!exam) throw new NotFoundError("Exam not found");
         const view = await withTenant(tenant, () => getExamEligibilityView(tenant, id), {
           readOnly: true,
         });
@@ -66,10 +71,12 @@ export function gateHandlers() {
       ContractRouteResponse<(typeof examinationContract)["setExamAttendanceGate"]>
     > => {
       const user = request.user as User;
-      if (!canWriteCollection(user, "exams")) {
+      // The threshold decides who may be graded: lowering it is a controller decision, not an
+      // ordinary marking edit.
+      if (!canDeleteCollection(user, "exams")) {
         return {
           status: 403 as const,
-          body: { type: "forbidden", message: "Insufficient permissions" },
+          body: { type: "forbidden", message: "Controller rights required" },
         };
       }
       const tenant = getRequestTenant();
@@ -86,11 +93,14 @@ export function gateHandlers() {
             configureExamAttendanceGate(tenant, {
               examId: id,
               minAttendancePct: body.minAttendancePct,
+              reason: body.reason,
               actorId: String(user.id),
             }),
           { readOnly: false },
         );
         await invalidateMultiTierCache({ tenantId: tenant, domain: "examinations" });
+        // The threshold changes every client's eligibility panel/drawer.
+        broadcastTenantUpdate(tenant, "collection", "exams");
         return {
           status: 200 as const,
           body: { examId: id, minAttendancePct: body.minAttendancePct },
@@ -133,18 +143,19 @@ export function gateHandlers() {
             }),
           { readOnly: false },
         );
+        broadcastTenantUpdate(tenant, "collection", "exams");
         return { status: 200 as const, body: { success: true as const } };
       } catch (error) {
         return mapGateError(request, error, "Failed to grant the eligibility override");
       }
     },
 
-    setExamResultsFinalized: async ({
-      params: { id },
+    revokeExamEligibilityOverride: async ({
+      params: { id, studentId },
       body,
       request,
-    }: ContractRouteArgs<(typeof examinationContract)["setExamResultsFinalized"]>): Promise<
-      ContractRouteResponse<(typeof examinationContract)["setExamResultsFinalized"]>
+    }: ContractRouteArgs<(typeof examinationContract)["revokeExamEligibilityOverride"]>): Promise<
+      ContractRouteResponse<(typeof examinationContract)["revokeExamEligibilityOverride"]>
     > => {
       const user = request.user as User;
       if (!canDeleteCollection(user, "exams")) {
@@ -164,44 +175,21 @@ export function gateHandlers() {
         const result = await withTenant(
           tenant,
           () =>
-            updateExamResultsFinalized(tenant, {
+            revokeExamEligibilityOverride(tenant, {
               examId: id,
-              finalized: body.finalized,
+              studentId,
+              reason: body.reason,
               actorId: String(user.id),
             }),
           { readOnly: false },
         );
-        if (!result) throw new NotFoundError("Exam not found");
-        // Completion reads the finalisation stamp; its cached rows must not survive the change.
-        await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
-        return {
-          status: 200 as const,
-          body: {
-            examId: result.examId,
-            resultsFinalizedAt: result.resultsFinalizedAt
-              ? result.resultsFinalizedAt.toISOString()
-              : null,
-            status: result.status,
-          },
-        };
+        broadcastTenantUpdate(tenant, "collection", "exams");
+        return { status: 200 as const, body: result };
       } catch (error) {
-        return mapGateError(request, error, "Failed to update the results finalisation");
+        return mapGateError(request, error, "Failed to revoke the eligibility override");
       }
     },
-  };
-}
 
-function mapGateError(
-  request: FastifyRequest,
-  error: unknown,
-  fallback: string,
-): { status: number; body: { type: string; message: string } } {
-  if (error instanceof HttpDomainError) {
-    return { status: error.statusCode, body: { type: error.type, message: error.message } };
-  }
-  if (error instanceof NotFoundError) {
-    return { status: 404, body: { type: "not_found", message: error.message } };
-  }
-  request.log.error({ err: error, url: request.url }, fallback);
-  return { status: 500, body: { type: "database_error", message: fallback } };
+    ...moderationGateHandlers(),
+  };
 }

@@ -11,6 +11,7 @@ import {
   mapActionStringToAuditType,
 } from "../services/auditTrailService.js";
 import {
+  BackgroundJobLimitError,
   QueueUnavailableError,
   hasBackgroundJobRunner,
 } from "../services/backgroundJobWorkerService.js";
@@ -98,6 +99,9 @@ export function registerModuleCsvExportRoutes(
         idempotencyKey: data.idempotencyKey,
       });
     } catch (err) {
+      if (err instanceof BackgroundJobLimitError) {
+        return reply.status(429).send({ type: "background_job_limit", message: err.message });
+      }
       if (err instanceof QueueUnavailableError) {
         return sendServiceUnavailable(reply, err.message);
       }

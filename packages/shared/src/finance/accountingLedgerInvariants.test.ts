@@ -7,9 +7,12 @@ import {
   isJournalSourceType,
   moneyAmountSchema,
   moneyToCents,
+  parseMoneyAmountNumber,
+  roundMoneyAmount,
   resolveDefaultFiscalYear,
   resolveFiscalYearRef,
   signedMoneyAmountSchema,
+  tryParseMoneyAmountNumber,
 } from "./accountingLedgerInvariants.js";
 
 describe("accountingLedgerInvariants", () => {
@@ -173,5 +176,35 @@ describe("resolveDefaultFiscalYear", () => {
     expect(resolveDefaultFiscalYear([fy2025, fy2026], "2030-01-01")?.id).toBe("a");
     expect(resolveDefaultFiscalYear([fy2026], "2030-01-01")).toBeNull();
     expect(resolveDefaultFiscalYear(undefined, "2026-10-17")).toBeNull();
+  });
+});
+
+describe("exact money parsing", () => {
+  it("parses validated 2-dp input without a float", () => {
+    expect(parseMoneyAmountNumber("1250.75")).toBe(1250.75);
+    expect(parseMoneyAmountNumber("0.10")).toBe(0.1);
+    expect(parseMoneyAmountNumber(10.5)).toBe(10.5);
+    expect(() => parseMoneyAmountNumber("1.234")).toThrow(/two decimal/);
+    expect(() => parseMoneyAmountNumber("-1")).toThrow(/negative/);
+    expect(() => parseMoneyAmountNumber("abc")).toThrow(/Invalid decimal/);
+  });
+
+  it("returns null for invalid UI input instead of NaN", () => {
+    expect(tryParseMoneyAmountNumber("")).toBeNull();
+    expect(tryParseMoneyAmountNumber("abc")).toBeNull();
+    expect(tryParseMoneyAmountNumber("10.25")).toBe(10.25);
+  });
+
+  it("rounds arbitrary decimals half-up to the ledger's cents", () => {
+    expect(roundMoneyAmount("1.005")).toBe(1.01);
+    expect(roundMoneyAmount("1.0049")).toBe(1);
+    expect(roundMoneyAmount("0.0049")).toBe(0);
+    expect(roundMoneyAmount("1234.5678912345")).toBe(1234.57);
+    // Half-up on the magnitude: -1.005 rounds away from zero to -1.01.
+    expect(roundMoneyAmount(-1.005)).toBe(-1.01);
+  });
+
+  it("rejects a value beyond exact integer cents", () => {
+    expect(() => parseMoneyAmountNumber("999999999999999.99")).toThrow(/exact integer cents/);
   });
 });

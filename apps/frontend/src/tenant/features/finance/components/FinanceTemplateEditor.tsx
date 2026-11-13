@@ -10,7 +10,7 @@ import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
-import { type TypstFeeReceiptPayload, type ZohoInvoicePayload } from "@mms/shared";
+import { todayISO, type TypstFeeReceiptPayload, type ZohoInvoicePayload } from "@mms/shared";
 import {
   mapToTypstFeeReceipt,
   mapToZohoInvoice,
@@ -43,7 +43,7 @@ export function FinanceTemplateEditor({
   const sampleData: TypstFeeReceiptPayload = {
     institution: "Madrasa Management System",
     receiptNo: "REC-2026-0089",
-    date: new Date().toISOString().slice(0, 10),
+    date: todayISO(),
     studentName: "Muhammad Ibrahim",
     rollNo: "STU-4402",
     className: "Class 4 - Afternoon",

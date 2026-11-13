@@ -1,0 +1,90 @@
+{
+  "GET /api/examinations/exams": {
+    "allowedRoles": ["admin", "teacher", "auditor"],
+    "deniedRoles": ["guardian"]
+  },
+  "POST /api/examinations/exams/bulk-delete": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "POST /api/examinations/exams/bulk-restore": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "GET /api/examinations/results": {
+    "allowedRoles": ["admin", "teacher", "auditor"],
+    "deniedRoles": ["guardian"]
+  },
+  "PUT /api/examinations/exams/bulk": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "PUT /api/examinations/results/bulk": {
+    "allowedRoles": ["admin", "teacher"],
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "DELETE /api/examinations/exams/:id": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "POST /api/examinations/exams/:id/restore": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "POST /api/examinations/exams/:id/results/import": {
+    "allowedRoles": ["admin", "teacher"],
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/examinations/exams/:id/results/export": {
+    "allowedRoles": ["admin", "teacher"],
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/examinations/widget-aggregates": {
+    "allowedRoles": ["admin", "teacher", "auditor"],
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/examinations/report-aggregates": {
+    "allowedRoles": ["admin", "teacher", "auditor"],
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/examinations/field-config": {
+    "allowedRoles": ["admin", "teacher", "auditor"],
+    "deniedRoles": ["guardian"]
+  },
+  "PUT /api/examinations/field-config": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "GET /api/examinations/preferences": {
+    "allowedRoles": ["admin", "teacher", "auditor"],
+    "deniedRoles": ["guardian"]
+  },
+  "PUT /api/examinations/preferences": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "GET /api/examinations/exams/:id/eligibility": {
+    "allowedRoles": ["admin", "teacher"],
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/examinations/exams/:id/attendance-gate": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "POST /api/examinations/exams/:id/eligibility-overrides": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "POST /api/examinations/exams/:id/results/:studentId/moderation": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "POST /api/examinations/exams/:id/eligibility-overrides/:studentId/revoke": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  },
+  "POST /api/examinations/exams/:id/results-finalization": {
+    "allowedRoles": ["admin"],
+    "deniedRoles": ["teacher", "auditor", "guardian"]
+  }
+}

@@ -21,7 +21,9 @@ const ExaminationDetail = React.lazy(() =>
 );
 
 const ExaminationsReportsTier = React.lazy(() =>
-  import("@/tenant/components/moduleReports").then((m) => ({ default: m.ModuleReportsTier })),
+  import("./components/ExaminationsReportsTier").then((m) => ({
+    default: m.ExaminationsReportsTier,
+  })),
 );
 const ExaminationsSetupTier = React.lazy(() =>
   import("@/tenant/features/examinations/components/ExaminationsSetupTier").then((m) => ({
@@ -35,6 +37,7 @@ const ExaminationsSetupTier = React.lazy(() =>
 export default function Examinations(): React.JSX.Element {
   const c = useExaminationsPageController();
   const [importOpen, setImportOpen] = React.useState(false);
+  const [setupDirty, setSetupDirty] = React.useState(false);
   const { handleExport, isExporting } = useGenericModuleExport({
     path: "/api/examinations/export/csv",
     filename: "examinations.csv",
@@ -53,6 +56,7 @@ export default function Examinations(): React.JSX.Element {
       headerActions={
         <ExaminationsPageActions
           canWrite={c.canWrite}
+          canManage={c.canDelete}
           canExport={c.canWrite}
           isExporting={isExporting}
           showDeleted={c.showDeleted}
@@ -67,7 +71,18 @@ export default function Examinations(): React.JSX.Element {
       <ResponsiveAccordionTabs
         tabs={c.PAGE_TABS}
         activeTab={c.effectiveTab}
-        onTabChange={c.setActiveTab}
+        onTabChange={(tab) => {
+          if (
+            c.effectiveTab === "setup" &&
+            tab !== "setup" &&
+            setupDirty &&
+            !window.confirm(c.t("examinations.setup.unsavedPreferencesWarning"))
+          ) {
+            return;
+          }
+          setSetupDirty(false);
+          c.setActiveTab(tab);
+        }}
         panelIdPrefix="examinations-tab"
       >
         <AnimatePresence mode="wait">
@@ -77,13 +92,13 @@ export default function Examinations(): React.JSX.Element {
           >
             {c.effectiveTab === "setup" && (
               <React.Suspense fallback={<RouteStatusFallback />}>
-                <ExaminationsSetupTier />
+                <ExaminationsSetupTier onPrefsDirtyChange={setSetupDirty} />
               </React.Suspense>
             )}
 
             {c.effectiveTab === "reports" && (
               <React.Suspense fallback={<RouteStatusFallback />}>
-                <ExaminationsReportsTier category="examinations" />
+                <ExaminationsReportsTier />
               </React.Suspense>
             )}
 
@@ -94,11 +109,11 @@ export default function Examinations(): React.JSX.Element {
                   activeSubTab={c.effectiveSubTab}
                   showDeleted={c.showDeleted}
                   listLoadFailed={c.listLoadFailed}
-                  canWrite={c.canWrite}
                   canDelete={c.canDelete}
                   createExamKey={c.createExamKey}
                   exams={c.exams}
                   examResults={c.examResults}
+                  resultsTruncated={c.resultsTruncated}
                   examColumnLayout={c.examColumnLayout}
                   resultsColumnLayout={c.resultsColumnLayout}
                   onSubTabChange={c.setActiveSubTab}

@@ -8,6 +8,7 @@ export {
   findSessionsSummaryByIds,
   findSessionStatusesByIds,
   findOverlappingSessions,
+  sessionHasEnrollments,
 } from "./sessionRepositoryQueries.js";
 export {
   saveSession,

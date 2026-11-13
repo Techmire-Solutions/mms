@@ -12,13 +12,13 @@ export async function replaceQuestionBankModulePreferencesForWorkspace(
       .insert(questionBankModulePreferences)
       .values({
         workspaceSubdomain,
-        preferences: preferences as never,
+        preferences,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
         target: [questionBankModulePreferences.workspaceSubdomain],
         set: {
-          preferences: preferences as never,
+          preferences,
           updatedAt: new Date(),
         },
       });

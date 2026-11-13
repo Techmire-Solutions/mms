@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, like, or } from "drizzle-orm";
 import { dedupeTrimmedIds, type JournalEntry } from "@mms/shared";
 import { accountingEntries } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
@@ -132,6 +132,37 @@ export async function findEntryIdBySource(
       )
       .limit(1);
     return rows[0]?.id ?? null;
+  });
+}
+
+/**
+ * Opening-balance entries for a fiscal year, oldest first.
+ *
+ * The first posting uses `source_id = fiscalYearId`; a correction after reversing
+ * that entry posts a revision (`fiscalYearId:r2`, `:r3`, …) because the
+ * `(source_type, source_id)` unique index keeps the reversed original row alive.
+ */
+export async function listOpeningEntries(
+  tenant: string,
+  fiscalYearId: string,
+): Promise<Array<{ id: string; ref: string }>> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    return tx
+      .select({ id: accountingEntries.id, ref: accountingEntries.ref })
+      .from(accountingEntries)
+      .where(
+        and(
+          eq(accountingEntries.workspaceSubdomain, subdomain),
+          eq(accountingEntries.sourceType, "opening"),
+          isNull(accountingEntries.deletedAt),
+          or(
+            eq(accountingEntries.sourceId, fiscalYearId),
+            like(accountingEntries.sourceId, `${fiscalYearId}:r%`),
+          ),
+        ),
+      )
+      .orderBy(accountingEntries.createdAt);
   });
 }
 

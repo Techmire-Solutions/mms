@@ -1,126 +1,29 @@
-import type { Invoice, Payment } from "@mms/shared";
-import type { FinanceRepository } from "../repository/financeRepository.js";
 import { withTenant } from "../../db/tenant-context.js";
 import {
-  tryPostArchiveReversalJournal,
-  tryPostRestoreJournal,
-} from "../../accounting/ledgerPosting/ledgerPostingService.js";
-import { applyPaymentDeltas } from "./financePaymentArchiveDeltas.js";
+  invoiceAuditState,
+  paymentAuditState,
+  recordInvoiceAudit,
+  recordPaymentAudit,
+} from "./financeAuditEvents.js";
+import {
+  onInvoicesArchived,
+  onInvoicesRestored,
+  onPaymentsArchived,
+  onPaymentsRestored,
+  readArchivedInvoices,
+  readArchivedPayments,
+  type ArchivableRepo,
+} from "./financeRecordLifecycleLedger.js";
 
-/**
- * Ledger and subledger consequences of archiving or restoring a finance record.
- *
- * Cancelling an invoice has always posted its reversal, but archiving went
- * straight to a soft-delete: the invoice left the directory while its Dr AR /
- * Cr Income stayed on the books, and archiving a payment additionally left the
- * invoice reading `paid` with the collected amount intact. These helpers make
- * archive and restore symmetric on both sides.
- */
-
-type ArchivableRepo = Pick<
-  FinanceRepository,
-  "findInvoicesByIds" | "findPaymentsByIds" | "saveInvoice"
->;
-
-/** Late fees post under their own source key, so the invoice entry alone is not the whole posting. */
-function invoicePostingSources(invoice: Invoice): { sourceId: string; label: string }[] {
-  const label = invoice.invoiceNumber ?? invoice.id;
-  return [
-    { sourceId: invoice.id, label: `Archive ${label}` },
-    { sourceId: `latefee:${invoice.id}`, label: `Archive late fee ${label}` },
-  ];
-}
-
-/** Reverses the ledger postings of every invoice that was just archived. */
-export async function onInvoicesArchived(
-  repo: ArchivableRepo,
-  tenant: string,
-  ids: readonly string[],
-): Promise<void> {
-  const invoices = await repo.findInvoicesByIds(tenant, [...ids], { includeDeleted: true });
-  for (const invoice of invoices) {
-    if (!invoice.deletedAt) continue;
-    for (const source of invoicePostingSources(invoice)) {
-      await tryPostArchiveReversalJournal(
-        tenant,
-        "invoice",
-        source.sourceId,
-        invoice.deletedAt,
-        source.label,
-      );
-    }
-  }
-}
-
-/**
- * Re-applies the ledger postings of every invoice that was just restored.
- *
- * `archivedAt` is read before the restore clears it, because it is the key the
- * archive reversal was filed under.
- */
-export async function onInvoicesRestored(
-  tenant: string,
-  restored: readonly { invoice: Invoice; archivedAt: string }[],
-): Promise<void> {
-  for (const { invoice, archivedAt } of restored) {
-    const label = invoice.invoiceNumber ?? invoice.id;
-    await tryPostRestoreJournal(tenant, "invoice", invoice.id, archivedAt, `Restore ${label}`);
-    await tryPostRestoreJournal(
-      tenant,
-      "invoice",
-      `latefee:${invoice.id}`,
-      archivedAt,
-      `Restore late fee ${label}`,
-    );
-  }
-}
-
-/** Reverses the cash posting and un-collects the invoice for every payment just archived. */
-export async function onPaymentsArchived(
-  repo: ArchivableRepo,
-  tenant: string,
-  ids: readonly string[],
-): Promise<void> {
-  const payments = await repo.findPaymentsByIds(tenant, [...ids], { includeDeleted: true });
-  const archived = payments.filter((payment) => payment.deletedAt);
-  if (archived.length === 0) return;
-
-  await applyPaymentDeltas(repo, tenant, archived, -1);
-  for (const payment of archived) {
-    await tryPostArchiveReversalJournal(
-      tenant,
-      "payment",
-      payment.id,
-      payment.deletedAt as string,
-      `Archive payment ${payment.id}`,
-    );
-  }
-}
-
-/** Re-applies the cash posting and re-collects the invoice for every payment just restored. */
-export async function onPaymentsRestored(
-  repo: ArchivableRepo,
-  tenant: string,
-  restored: readonly { payment: Payment; archivedAt: string }[],
-): Promise<void> {
-  if (restored.length === 0) return;
-
-  await applyPaymentDeltas(
-    repo,
-    tenant,
-    restored.map((entry) => entry.payment),
-    1,
-  );
-  for (const { payment, archivedAt } of restored) {
-    await tryPostRestoreJournal(
-      tenant,
-      "payment",
-      payment.id,
-      archivedAt,
-      `Restore payment ${payment.id}`,
-    );
-  }
-}
+export {
+  onInvoicesArchived,
+  onInvoicesRestored,
+  onPaymentsArchived,
+  onPaymentsRestored,
+  readArchivedInvoices,
+  readArchivedPayments,
+  type ArchivableRepo,
+} from "./financeRecordLifecycleLedger.js";
 
 /** The soft-delete surface of a `createGenericRelationalService` collection. */
 interface SoftDeletableCrud {
@@ -149,38 +52,111 @@ export function createFinanceLifecycleOperations(deps: {
 }) {
   const { repo, invoiceCrud, paymentCrud, requireTenant } = deps;
 
+  /**
+   * Archive/restore changes recognised revenue and the ledger posting, so it is a
+   * financial mutation: the audit row is appended in the same tenant transaction
+   * (the soft-delete columns alone are not an audit trail). The before state is
+   * read while the row is still active, and the archive reversal runs first so a
+   * posting failure rolls the whole operation back with the audit row.
+   */
+  const invoiceStates = async (tenant: string, ids: readonly string[]) => {
+    const rows = await repo.findInvoicesByIds(tenant, [...ids], { includeDeleted: true });
+    // The before state is the plain row state; the event belongs to the new state.
+    return new Map(rows.map((invoice) => [invoice.id, invoiceAuditState(invoice)]));
+  };
+  const paymentStates = async (tenant: string, ids: readonly string[]) => {
+    const rows = await repo.findPaymentsByIds(tenant, [...ids], { includeDeleted: true });
+    return new Map(rows.map((payment) => [payment.id, paymentAuditState(payment)]));
+  };
+
   return {
     deleteInvoiceById: async (id: string, deletedBy: string, deletionReason?: string) => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const before = await invoiceStates(tenant, [id]);
         const archived = await invoiceCrud.deleteById(id, deletedBy, deletionReason);
-        if (archived) await onInvoicesArchived(repo, tenant, [id]);
+        if (archived) {
+          await onInvoicesArchived(repo, tenant, [id]);
+          const [invoice] = await repo.findInvoicesByIds(tenant, [id], { includeDeleted: true });
+          if (invoice) {
+            await recordInvoiceAudit(
+              tenant,
+              "DELETE",
+              invoice,
+              before.get(id) ?? null,
+              "invoice_archived",
+              deletionReason,
+            );
+          }
+        }
         return archived;
       });
     },
     restoreInvoiceById: async (id: string, userId?: string) => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const before = await invoiceStates(tenant, [id]);
         const snapshot = await readArchivedInvoices(repo, tenant, [id]);
         const restored = await invoiceCrud.restoreById(id, userId);
-        if (restored) await onInvoicesRestored(tenant, snapshot);
+        if (restored) {
+          await onInvoicesRestored(tenant, snapshot);
+          const [invoice] = await repo.findInvoicesByIds(tenant, [id], { includeDeleted: true });
+          if (invoice) {
+            await recordInvoiceAudit(
+              tenant,
+              "RESTORE",
+              invoice,
+              before.get(id) ?? null,
+              "invoice_restored",
+            );
+          }
+        }
         return restored;
       });
     },
     bulkSoftDeleteInvoices: async (ids: string[], deletedBy: string, deletionReason?: string) => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const before = await invoiceStates(tenant, ids);
         const result = await invoiceCrud.bulkDeleteByIds(ids, deletedBy, deletionReason);
-        if (result.succeeded > 0) await onInvoicesArchived(repo, tenant, ids);
+        if (result.succeeded > 0) {
+          await onInvoicesArchived(repo, tenant, ids);
+          const archived = await repo.findInvoicesByIds(tenant, ids, { includeDeleted: true });
+          for (const invoice of archived) {
+            if (!invoice.deletedAt) continue;
+            await recordInvoiceAudit(
+              tenant,
+              "DELETE",
+              invoice,
+              before.get(invoice.id) ?? null,
+              "invoice_archived",
+              deletionReason,
+            );
+          }
+        }
         return result;
       });
     },
     bulkRestoreInvoices: async (ids: string[], userId?: string) => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const before = await invoiceStates(tenant, ids);
         const snapshot = await readArchivedInvoices(repo, tenant, ids);
         const result = await invoiceCrud.bulkRestoreByIds(ids, userId);
-        if (result.succeeded > 0) await onInvoicesRestored(tenant, snapshot);
+        if (result.succeeded > 0) {
+          await onInvoicesRestored(tenant, snapshot);
+          const restored = await repo.findInvoicesByIds(tenant, ids, { includeDeleted: true });
+          for (const invoice of restored) {
+            if (invoice.deletedAt) continue;
+            await recordInvoiceAudit(
+              tenant,
+              "RESTORE",
+              invoice,
+              before.get(invoice.id) ?? null,
+              "invoice_restored",
+            );
+          }
+        }
         return result;
       });
     },
@@ -188,59 +164,78 @@ export function createFinanceLifecycleOperations(deps: {
     deletePaymentById: async (id: string, deletedBy: string, deletionReason?: string) => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const before = await paymentStates(tenant, [id]);
         const archived = await paymentCrud.deleteById(id, deletedBy, deletionReason);
-        if (archived) await onPaymentsArchived(repo, tenant, [id]);
+        if (archived) {
+          await onPaymentsArchived(repo, tenant, [id]);
+          const [payment] = await repo.findPaymentsByIds(tenant, [id], { includeDeleted: true });
+          if (payment) {
+            await recordPaymentAudit(
+              tenant,
+              payment,
+              "DELETE",
+              before.get(id) ?? null,
+              deletionReason,
+            );
+          }
+        }
         return archived;
       });
     },
     restorePaymentById: async (id: string, userId?: string) => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const before = await paymentStates(tenant, [id]);
         const snapshot = await readArchivedPayments(repo, tenant, [id]);
         const restored = await paymentCrud.restoreById(id, userId);
-        if (restored) await onPaymentsRestored(repo, tenant, snapshot);
+        if (restored) {
+          await onPaymentsRestored(repo, tenant, snapshot);
+          const [payment] = await repo.findPaymentsByIds(tenant, [id], { includeDeleted: true });
+          if (payment) {
+            await recordPaymentAudit(tenant, payment, "RESTORE", before.get(id) ?? null);
+          }
+        }
         return restored;
       });
     },
     bulkSoftDeletePayments: async (ids: string[], deletedBy: string, deletionReason?: string) => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const before = await paymentStates(tenant, ids);
         const result = await paymentCrud.bulkDeleteByIds(ids, deletedBy, deletionReason);
-        if (result.succeeded > 0) await onPaymentsArchived(repo, tenant, ids);
+        if (result.succeeded > 0) {
+          await onPaymentsArchived(repo, tenant, ids);
+          const archived = await repo.findPaymentsByIds(tenant, ids, { includeDeleted: true });
+          for (const payment of archived) {
+            if (!payment.deletedAt) continue;
+            await recordPaymentAudit(
+              tenant,
+              payment,
+              "DELETE",
+              before.get(payment.id) ?? null,
+              deletionReason,
+            );
+          }
+        }
         return result;
       });
     },
     bulkRestorePayments: async (ids: string[], userId?: string) => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
+        const before = await paymentStates(tenant, ids);
         const snapshot = await readArchivedPayments(repo, tenant, ids);
         const result = await paymentCrud.bulkRestoreByIds(ids, userId);
-        if (result.succeeded > 0) await onPaymentsRestored(repo, tenant, snapshot);
+        if (result.succeeded > 0) {
+          await onPaymentsRestored(repo, tenant, snapshot);
+          const restored = await repo.findPaymentsByIds(tenant, ids, { includeDeleted: true });
+          for (const payment of restored) {
+            if (payment.deletedAt) continue;
+            await recordPaymentAudit(tenant, payment, "RESTORE", before.get(payment.id) ?? null);
+          }
+        }
         return result;
       });
     },
   };
-}
-
-/** Snapshot of the rows about to be restored, taken while `deletedAt` is still set. */
-export async function readArchivedInvoices(
-  repo: ArchivableRepo,
-  tenant: string,
-  ids: readonly string[],
-): Promise<{ invoice: Invoice; archivedAt: string }[]> {
-  const invoices = await repo.findInvoicesByIds(tenant, [...ids], { includeDeleted: true });
-  return invoices
-    .filter((invoice) => invoice.deletedAt)
-    .map((invoice) => ({ invoice, archivedAt: invoice.deletedAt as string }));
-}
-
-export async function readArchivedPayments(
-  repo: ArchivableRepo,
-  tenant: string,
-  ids: readonly string[],
-): Promise<{ payment: Payment; archivedAt: string }[]> {
-  const payments = await repo.findPaymentsByIds(tenant, [...ids], { includeDeleted: true });
-  return payments
-    .filter((payment) => payment.deletedAt)
-    .map((payment) => ({ payment, archivedAt: payment.deletedAt as string }));
 }

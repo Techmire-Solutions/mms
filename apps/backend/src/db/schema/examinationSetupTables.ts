@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, jsonb, primaryKey } from "drizzle-orm/pg-core";
+import type { QuestionBankFieldConfigBlob, QuestionBankPreferencesBlob } from "@mms/shared";
 import { workspaces } from "./platform.js";
 
 export const examinationsFieldConfigs = pgTable(
@@ -33,7 +34,7 @@ export const questionBankFieldConfigs = pgTable(
     workspaceSubdomain: text("workspace_subdomain")
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
-    config: jsonb("config").$type<Record<string, unknown>>().notNull().default({}),
+    config: jsonb("config").$type<QuestionBankFieldConfigBlob>().notNull().default({}),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.workspaceSubdomain] })],
@@ -45,7 +46,7 @@ export const questionBankModulePreferences = pgTable(
     workspaceSubdomain: text("workspace_subdomain")
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
-    preferences: jsonb("preferences").$type<Record<string, unknown>>().notNull().default({}),
+    preferences: jsonb("preferences").$type<QuestionBankPreferencesBlob>().notNull().default({}),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.workspaceSubdomain] })],

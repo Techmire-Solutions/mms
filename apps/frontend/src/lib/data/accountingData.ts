@@ -1,6 +1,9 @@
 import {
   ACCOUNTING_ACCOUNT_TYPES,
   ACCOUNT_SUBTYPES,
+  JOURNAL_TAGS,
+  isJournalEntryReversed,
+  normalBalanceForAccountType,
   type Account,
   type JournalLine,
   type JournalEntry,
@@ -16,31 +19,31 @@ export { ACCOUNT_SUBTYPES };
 
 export const ACCOUNT_TYPE_META = {
   Asset: {
-    normalBalance: "debit",
+    normalBalance: normalBalanceForAccountType("Asset"),
     color: "bg-info/15 text-info border-info/30",
     group: "balance" as const,
     icon: "🏦",
   },
   Liability: {
-    normalBalance: "credit",
+    normalBalance: normalBalanceForAccountType("Liability"),
     color: "bg-destructive/15 text-destructive border-destructive/30",
     group: "balance" as const,
     icon: "💳",
   },
   Equity: {
-    normalBalance: "credit",
+    normalBalance: normalBalanceForAccountType("Equity"),
     color: "bg-primary/15 text-primary border-primary/30",
     group: "balance" as const,
     icon: "📊",
   },
   Revenue: {
-    normalBalance: "credit",
+    normalBalance: normalBalanceForAccountType("Revenue"),
     color: "bg-success/15 text-success border-success/30",
     group: "income" as const,
     icon: "💰",
   },
   Expense: {
-    normalBalance: "debit",
+    normalBalance: normalBalanceForAccountType("Expense"),
     color: "bg-warning/15 text-warning border-warning/30",
     group: "income" as const,
     icon: "📉",
@@ -57,34 +60,14 @@ export function centsToMoney(cents: number): number {
   return cents / 100;
 }
 
-export interface Currency {
-  id: string;
-  code: string;
-  name: string;
-  symbol: string;
-}
-
 /**
  * Journal tags offered by the entry form and the tag filter.
  */
-export const JOURNAL_TAGS = [
-  "Payroll",
-  "Fees",
-  "Donation",
-  "Obligation",
-  "Utilities",
-  "Rent",
-  "Capital",
-  "Expense",
-  "Adjustment",
-  "Reversal",
-  "Opening",
-];
-/** True when another entry already reverses `entry` (guards double reversal). */
+/** Shared tag vocabulary (includes server-written "Prior Period"). */
+export { JOURNAL_TAGS };
+/** True when another entry already reverses `entry` (shared rule, guards double reversal). */
 export function hasReversalEntry(entry: JournalEntry, allEntries: JournalEntry[]): boolean {
-  return allEntries.some(
-    (candidate) => candidate.id !== entry.id && candidate.reversed_ref === entry.ref,
-  );
+  return isJournalEntryReversed(entry, allEntries);
 }
 
 export function isJournalRefUnique(

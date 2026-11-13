@@ -15,6 +15,7 @@ import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository
 import {
   findUntaughtClassDates,
   findUnstaffedSectionDates,
+  isFacultyLinked,
   listTaughtStudentIds,
 } from "../../db/repositories/teacherSectionScopeRepository.js";
 import {
@@ -46,6 +47,7 @@ export const sessionsAcademicRepository: SessionsAcademicRepository = {
   softDeleteRegistrationLink,
   findSessionById,
   findWorkspaceTimezone,
+  isFacultyLinked,
   findUntaughtClassDates,
   findUnstaffedSectionDates,
   listTaughtStudentIds,

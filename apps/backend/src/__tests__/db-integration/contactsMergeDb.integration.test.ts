@@ -177,6 +177,75 @@ describe("contact merge (Postgres)", () => {
     expect(other?.deletedAt).toBeTruthy();
   });
 
+  it("soft-deletes a duplicate workshop registration instead of tripping the hard-delete guard", async () => {
+    // Arrange — both contacts hold an active registration for the same workshop.
+    const keepDupId = "merge-dup-keep";
+    const loserDupId = "merge-dup-loser";
+    const dupWorkshopId = "merge-dup-workshop";
+    await runWithTenant(tenant, async () => {
+      await contactUseCases.upsertContact(baseContact(keepDupId, "Sara", "3001000030", "s@x.com"));
+      await contactUseCases.upsertContact(
+        baseContact(loserDupId, "Saara", "3001000031", "ss@x.com"),
+      );
+    });
+    await withTenant(tenant, async (tx) => {
+      await tx.insert(workshopEvents).values({
+        id: dupWorkshopId,
+        workspaceSubdomain: tenant,
+        title: "Duplicate registration workshop",
+      });
+      await tx.insert(workshopParticipants).values([
+        {
+          id: "merge-dup-keep-row",
+          workspaceSubdomain: tenant,
+          workshopId: dupWorkshopId,
+          contactId: keepDupId,
+          status: "attended",
+        },
+        {
+          id: "merge-dup-loser-row",
+          workspaceSubdomain: tenant,
+          workshopId: dupWorkshopId,
+          contactId: loserDupId,
+          status: "registered",
+        },
+      ]);
+    });
+
+    // Act — the dedupe used to be a hard DELETE, which the 0178 forbid_hard_delete trigger
+    // rejects with SQLSTATE 23514, i.e. a 500 on a legitimate merge.
+    await expect(
+      runWithTenant(tenant, () =>
+        contactUseCases.mergeContactsById(keepDupId, loserDupId, undefined, "u-admin"),
+      ),
+    ).resolves.toMatchObject({ id: keepDupId });
+
+    // Assert — one live seat, and the loser's registration is archived with provenance.
+    const rows = await withTenant(tenant, async (tx) =>
+      tx
+        .select({
+          id: workshopParticipants.id,
+          contactId: workshopParticipants.contactId,
+          deletedAt: workshopParticipants.deletedAt,
+          reason: workshopParticipants.deletionReason,
+        })
+        .from(workshopParticipants)
+        .where(
+          and(
+            eq(workshopParticipants.workspaceSubdomain, tenant),
+            eq(workshopParticipants.workshopId, dupWorkshopId),
+          ),
+        ),
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows.every((row) => row.contactId === keepDupId)).toBe(true);
+    const survivor = rows.find((row) => row.id === "merge-dup-keep-row");
+    const archived = rows.find((row) => row.id === "merge-dup-loser-row");
+    expect(survivor?.deletedAt).toBeNull();
+    expect(archived?.deletedAt).toBeTruthy();
+    expect(archived?.reason).toContain("Merged into");
+  });
+
   it("archives a conflicting faculty employment instead of violating the unique index", async () => {
     const thirdId = "merge-contact-third";
     await runWithTenant(tenant, () =>
@@ -323,6 +392,7 @@ describe("contact write guards (Postgres)", () => {
         .where(
           and(
             eq(workshopParticipants.workspaceSubdomain, tenant),
+            eq(workshopParticipants.workshopId, workshopId),
             isNull(workshopParticipants.deletedAt),
           ),
         ),

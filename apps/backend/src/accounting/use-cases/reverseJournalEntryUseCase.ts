@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
+  JOURNAL_TAG_PRIOR_PERIOD,
+  JOURNAL_TAG_REVERSAL,
   NON_REVERSIBLE_JOURNAL_SOURCES,
   buildReversalLines,
   isPriorPeriodJournalReversal,
@@ -16,6 +18,7 @@ import type { RecordModernAuditInput } from "../../services/auditTrailService.js
 import {
   assertJournalAccountsWritable,
   assertJournalEntryPeriodOpen,
+  assertPostingPeriodOpen,
   ledgerError,
   prepareJournalEntryForPersist,
 } from "./accountingLedgerGuards.js";
@@ -30,6 +33,8 @@ export interface ReverseJournalEntryDeps {
     original: { id: string; ref: string },
   ) => Promise<{ id: string; ref: string } | null>;
   listFiscalYears: (tenant: string) => Promise<FiscalYear[]>;
+  /** Label of the closed posting period covering `date`, or null (monthly lock). */
+  findClosedPostingPeriodForDate: (tenant: string, date: string) => Promise<string | null>;
   findAccountsByIds: (tenant: string, ids: string[]) => Promise<Account[]>;
   saveEntry: (tenant: string, entry: JournalEntry) => Promise<void>;
   /** Must write inside the same transaction so the audit row commits or rolls back with the reversal. */
@@ -94,7 +99,7 @@ function buildReversalEntry(
     description: `Reversal of ${label}: ${request.reason}${remarks}`,
     status: "posted",
     created_by: (actor.name?.trim() || actor.id).slice(0, 120),
-    tags: priorPeriod ? ["Reversal", "Prior Period"] : ["Reversal"],
+    tags: priorPeriod ? [JOURNAL_TAG_REVERSAL, JOURNAL_TAG_PRIOR_PERIOD] : [JOURNAL_TAG_REVERSAL],
     attachments: [],
     fiscal_year: "",
     source_type: "reversal",
@@ -162,6 +167,9 @@ export async function reverseJournalEntry(
     await lockFiscalYearForPosting(tenant, [entry.fiscal_year_id]);
     const lockedYears = await deps.listFiscalYears(tenant);
     assertJournalEntryPeriodOpen(entry, lockedYears);
+    await assertPostingPeriodOpen(entry.date, (date) =>
+      deps.findClosedPostingPeriodForDate(tenant, date),
+    );
     await assertJournalAccountsWritable(tenant, [entry], deps.findAccountsByIds);
 
     try {

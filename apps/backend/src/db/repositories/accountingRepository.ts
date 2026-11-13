@@ -25,6 +25,7 @@ export {
   findEntryById,
   findEntriesByIds,
   findEntryIdBySource,
+  listOpeningEntries,
   findEntryByRef,
   findActiveEntryRefs,
   type JournalLineRow,

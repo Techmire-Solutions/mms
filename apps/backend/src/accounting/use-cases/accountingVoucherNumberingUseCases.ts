@@ -32,6 +32,8 @@ export async function upsertVoucherNumbering(
   input: VoucherNumberingUpdate,
 ): Promise<VoucherNumbering> {
   const tenant = requireTenant();
+  // The repository appends the before/after audit row in the same transaction:
+  // numbering is a ledger control, so the event belongs with the write itself.
   await saveVoucherNumbering(tenant, voucherNumberingUpdateSchema.parse(input));
   const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
   broadcastTenantUpdate(tenant, "collection", "accounting_voucher_numbering");

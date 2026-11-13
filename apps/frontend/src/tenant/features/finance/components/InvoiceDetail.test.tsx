@@ -16,6 +16,10 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+vi.mock("@/tenant/hooks/usePermissions", () => ({
+  usePermissions: () => ({ can: () => true }),
+}));
+
 vi.mock("@/hooks/useCurrency", () => ({
   useFinanceCurrency: () => ({
     formatCurrency: (val: number) => `$${val}`,

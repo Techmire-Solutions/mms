@@ -4,7 +4,7 @@ import type {
   QuestionBankTest,
 } from "@mms/shared";
 import { escapeHtml } from "@/lib/escapeHtml";
-import { autoPrintWindow } from "@/lib/printWindowHtml";
+import { autoPrintWindow, PRINT_FONT_LINK, PRINT_FONT_STACK } from "@/lib/printWindowHtml";
 import {
   PRINT_COLORS,
   PRINT_SECTION_NOTE,
@@ -17,7 +17,7 @@ import {
 // Per mms-ui-ux-design.mdc §2, physical print styles (A4/PDF) are quarantined from application UI chrome tokens.
 // Hex values sourced from lib/printTemplateStyles.ts SSOT — do not re-declare inline.
 export const PAPER_PRINT_STYLES = `
-  .qpaper { width: 210mm; min-height: 297mm; margin: 0 auto; background: ${PRINT_COLORS.white}; color: ${PRINT_COLORS.black}; font-family: Inter, Arial, sans-serif; padding: 18mm; box-sizing: border-box; }
+  .qpaper { width: 210mm; min-height: 297mm; margin: 0 auto; background: ${PRINT_COLORS.white}; color: ${PRINT_COLORS.black}; font-family: ${PRINT_FONT_STACK}; padding: 18mm; box-sizing: border-box; }
   .qpaper-header { text-align: center; border-bottom: 2px solid ${PRINT_COLORS.black}; padding-bottom: 10px; margin-bottom: 14px; }
   .qpaper-title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0; }
   .qpaper-subtitle { margin: 6px 0 0; font-size: 12px; color: ${PRINT_COLORS.darkGray}; }
@@ -33,6 +33,19 @@ export const PAPER_PRINT_STYLES = `
   .qpaper-question-number { min-width: 24px; font-weight: 800; }
   .qpaper-options { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; margin-inline-start: 32px; font-size: 12px; }
   .qpaper-option { display: flex; gap: 6px; align-items: flex-start; }
+  .qpaper-question-text, .qpaper-option span, .qpaper-section-note, .qpaper-instructions, .qpaper-answer { unicode-bidi: plaintext; }
+  .qpaper bdi { unicode-bidi: isolate; }
+  .qpaper-answer { margin-inline-start: 32px; margin-top: 4px; font-size: 12px; line-height: 1.45; }
+  .qpaper-option-correct span { font-weight: 800; text-decoration: underline; }
+  .qpaper-sheet { width: 210mm; min-height: 297mm; margin: 0 auto; background: ${PRINT_COLORS.white}; color: ${PRINT_COLORS.black}; font-family: ${PRINT_FONT_STACK}; padding: 18mm; box-sizing: border-box; }
+  .qpaper-sheet-head { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0 14px; font-size: 11px; }
+  .qpaper-sheet-field { border: 1px solid ${PRINT_BORDER}; padding: 7px 8px; min-height: 30px; }
+  .qpaper-sheet-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 11px; }
+  .qpaper-sheet-cell { border: 1px solid ${PRINT_BORDER}; padding: 5px 6px; display: flex; align-items: center; gap: 6px; }
+  .qpaper-sheet-number { min-width: 22px; font-weight: 800; }
+  .qpaper-sheet-options { display: flex; gap: 5px; }
+  .qpaper-bubble { width: 13px; height: 13px; border: 1px solid ${PRINT_COLORS.black}; border-radius: 50%; display: inline-block; }
+  .qpaper-sheet-label { font-weight: 700; margin-bottom: 6px; }
   .qpaper-lines { margin-inline-start: 32px; padding-top: 4px; }
   .qpaper-line { border-bottom: 1px solid ${PRINT_RULE}; height: 20px; margin-bottom: 8px; }
   .qpaper-matching { margin-inline-start: 32px; width: calc(100% - 32px); border-collapse: collapse; font-size: 12px; }
@@ -145,17 +158,43 @@ export function createPaperDraftFromTest(
 
 export { escapeHtml };
 
+/** What the preview/print surface renders: the paper, its marking key, or an answer sheet. */
+export type PaperPrintMode = "paper" | "answerKey" | "answerSheet";
+
+export interface PaperPrintOptions {
+  /** Active UI language, so the printed document declares the right `lang`. */
+  language?: string;
+  /** Active UI direction; a paper printed from an RTL locale must stay RTL. */
+  direction?: "ltr" | "rtl";
+}
+
+const DEFAULT_PAPER_PRINT_OPTIONS: Required<PaperPrintOptions> = {
+  language: "en",
+  direction: "ltr",
+};
+
 /**
  * Printable HTML for a paper preview. Deliberately contains no inline script element:
  * the print popup inherits the app's nonce-only CSP, so inline scripts are blocked and
  * never run (`docs/project-review-2026-10-30.md` P-01). `autoPrintWindow` does the
  * printing.
+ *
+ * `lang`/`dir` follow the active locale: without them every Arabic/Urdu paper printed
+ * left-to-right and used the Latin font stack.
  */
-export function buildPaperPrintHtml(content: HTMLElement, title: string): string {
+export function buildPaperPrintHtml(
+  content: HTMLElement,
+  title: string,
+  options: PaperPrintOptions = {},
+): string {
+  const language = options.language?.trim() || DEFAULT_PAPER_PRINT_OPTIONS.language;
+  const direction = options.direction ?? DEFAULT_PAPER_PRINT_OPTIONS.direction;
   return `<!DOCTYPE html>
-    <html lang="en">
+    <html lang="${escapeHtml(language)}" dir="${direction}">
     <head>
+      <meta charset="utf-8" />
       <title>${escapeHtml(title)}</title>
+      <link rel="stylesheet" href="${PRINT_FONT_LINK}" />
       <style>${PAPER_PRINT_STYLES}</style>
     </head>
     <body>
@@ -164,11 +203,15 @@ export function buildPaperPrintHtml(content: HTMLElement, title: string): string
     </html>`;
 }
 
-export function openPaperPrintWindow(content: HTMLElement, title: string): boolean {
+export function openPaperPrintWindow(
+  content: HTMLElement,
+  title: string,
+  options: PaperPrintOptions = {},
+): boolean {
   const printWindow = window.open("", "_blank", "width=900,height=800");
   if (!printWindow) return false;
   printWindow.opener = null;
-  printWindow.document.write(buildPaperPrintHtml(content, title));
+  printWindow.document.write(buildPaperPrintHtml(content, title, options));
   printWindow.document.close();
   autoPrintWindow(printWindow);
   return true;

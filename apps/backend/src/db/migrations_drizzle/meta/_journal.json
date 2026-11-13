@@ -1653,6 +1653,125 @@
       "when": 1796122800000,
       "tag": "0235_audit_trail_immutability",
       "breakpoints": true
+    },
+    {
+      "idx": 236,
+      "version": "7",
+      "when": 1796209200000,
+      "tag": "0236_exams_results_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 237,
+      "version": "7",
+      "when": 1796295600000,
+      "tag": "0237_exam_scoring_moderation",
+      "breakpoints": true
+    },
+    {
+      "idx": 238,
+      "version": "7",
+      "when": 1796382000000,
+      "tag": "0238_exams_persistence_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 239,
+      "version": "7",
+      "when": 1796468400000,
+      "tag": "0239_exam_total_guard_effective_score",
+      "breakpoints": true
+    },
+    {
+      "idx": 240,
+      "version": "7",
+      "when": 1796554800000,
+      "tag": "0240_question_bank_schema_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 241,
+      "version": "7",
+      "when": 1796641200000,
+      "tag": "0241_question_bank_lifecycle_and_marks",
+      "breakpoints": true
+    },
+    {
+      "idx": 242,
+      "version": "7",
+      "when": 1796727600000,
+      "tag": "0242_question_bank_subsystems",
+      "breakpoints": true
+    },
+    {
+      "idx": 243,
+      "version": "7",
+      "when": 1796814000000,
+      "tag": "0243_question_bank_taxonomy_checks",
+      "breakpoints": true
+    },
+    {
+      "idx": 244,
+      "version": "7",
+      "when": 1796900400000,
+      "tag": "0244_workshops_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 245,
+      "version": "7",
+      "when": 1796986800000,
+      "tag": "0245_workshops_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 246,
+      "version": "7",
+      "when": 1797073200000,
+      "tag": "0246_workshop_waitlist",
+      "breakpoints": true
+    },
+    {
+      "idx": 247,
+      "version": "7",
+      "when": 1797159600000,
+      "tag": "0247_workshop_analytics_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 248,
+      "version": "7",
+      "when": 1797246000000,
+      "tag": "0248_finance_accounting_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 249,
+      "version": "7",
+      "when": 1797332400000,
+      "tag": "0249_finance_ledger_invariants",
+      "breakpoints": true
+    },
+    {
+      "idx": 250,
+      "version": "7",
+      "when": 1797418800000,
+      "tag": "0250_audit_partition_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 251,
+      "version": "7",
+      "when": 1797505200000,
+      "tag": "0251_fiscal_year_no_overlap",
+      "breakpoints": true
+    },
+    {
+      "idx": 252,
+      "version": "7",
+      "when": 1797591600000,
+      "tag": "0252_finance_enum_checks",
+      "breakpoints": true
     }
   ]
 }

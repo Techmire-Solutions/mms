@@ -73,4 +73,74 @@ describe("handleContractError", () => {
       details: { sectionId: "sec-1", seatsLeft: 0 },
     });
   });
+
+  it("preserves the structured details and violations a domain error carries", () => {
+    const { request } = fakeRequest();
+    const error = Object.assign(new Error("Below the exam attendance threshold"), {
+      statusCode: 409,
+      type: "exam_eligibility_blocked",
+      details: {
+        examId: "e-1",
+        students: [{ examId: "e-1", studentId: "s-1", state: "blocked" }],
+      },
+      violations: ["attendance: 40 < 75"],
+    });
+
+    const result = handleContractError(request, error, fallback);
+
+    expect(result).toEqual({
+      status: 409,
+      body: {
+        type: "exam_eligibility_blocked",
+        message: "Below the exam attendance threshold",
+        details: {
+          examId: "e-1",
+          students: [{ examId: "e-1", studentId: "s-1", state: "blocked" }],
+        },
+        violations: ["attendance: 40 < 75"],
+      },
+    });
+  });
+
+  it("maps a unique-violation constraint to 409 instead of a server fault", () => {
+    const { request } = fakeRequest();
+    const error = Object.assign(new Error("duplicate key value violates unique constraint"), {
+      code: "23505",
+    });
+
+    const result = handleContractError(request, error, fallback);
+
+    expect(result.status).toBe(409);
+    expect(result.body).toMatchObject({ type: "conflict" });
+  });
+
+  it("maps a check-trigger rejection to 400", () => {
+    const { request } = fakeRequest();
+    const error = Object.assign(new Error("check constraint violated"), { code: "23514" });
+
+    const result = handleContractError(request, error, fallback);
+
+    expect(result.status).toBe(400);
+    expect(result.body).toMatchObject({ type: "constraint_violation" });
+  });
+
+  it("maps a ledger-guard check violation to 422 with the reason intact", () => {
+    const { request } = fakeRequest();
+    const error = new Error("Failed query: update accounting_journal_lines", {
+      cause: Object.assign(
+        new Error("Line il-1 of posted journal entry je-1 is immutable — post a reversal instead"),
+        { code: "23514" },
+      ),
+    });
+
+    const result = handleContractError(request, error, fallback);
+
+    expect(result).toEqual({
+      status: 422,
+      body: {
+        type: "ledger_guard",
+        message: "Line il-1 of posted journal entry je-1 is immutable — post a reversal instead",
+      },
+    });
+  });
 });

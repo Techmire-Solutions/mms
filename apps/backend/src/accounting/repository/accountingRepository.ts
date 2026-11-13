@@ -1,3 +1,4 @@
+import type { PostingPeriod } from "@mms/shared";
 import type {
   Account,
   JournalEntry,
@@ -82,8 +83,35 @@ export interface AccountingRepository {
     ids: string[],
     options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<JournalEntry[]>;
+  /**
+   * Label of the closed posting period covering `date`, or null. Required (not
+   * optional): the monthly lock must not disappear merely because a caller or a
+   * test double forgot to provide it.
+   */
+  findClosedPostingPeriodForDate(tenant: string, date: string): Promise<string | null>;
+  /** Posting periods of a fiscal year (all when omitted). */
+  listPostingPeriods(tenant: string, fiscalYearId?: string): Promise<PostingPeriod[]>;
+  findPostingPeriodById(tenant: string, id: string): Promise<PostingPeriod | null>;
+  /** Locks/unlocks one period; the fiscal-year lock is the caller's. */
+  setPostingPeriodStatus(
+    tenant: string,
+    id: string,
+    status: "open" | "closed",
+    actorId: string,
+  ): Promise<PostingPeriod | null>;
   saveEntry(tenant: string, record: JournalEntry): Promise<void>;
-  bulkSaveEntries(tenant: string, records: JournalEntry[]): Promise<void>;
+  /**
+   * `preserveChildren` lists entries whose lines/tags/attachments must not be
+   * rewritten. The caller passes the posted entries of the batch: their content
+   * is immutable (posted entries are only ever sent unchanged), so the child
+   * delete+reinsert would be a no-op that still touches the ledger rows — and
+   * the database rejects any such write (0248 journal-line immutability).
+   */
+  bulkSaveEntries(
+    tenant: string,
+    records: JournalEntry[],
+    options?: { preserveChildren?: ReadonlySet<string> },
+  ): Promise<void>;
   replaceEntriesForWorkspace(tenant: string, records: JournalEntry[]): Promise<void>;
   listEntriesPage(
     tenant: string,

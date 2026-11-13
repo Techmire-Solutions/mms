@@ -9,56 +9,44 @@ export interface GradeInfo {
 }
 
 /**
+ * Letter-grade bands, highest first.
+ *
+ * Exported because every surface must agree on the thresholds: the scoring engine, the analytics
+ * grade distribution, imports and the printed card. They were previously inline literals in
+ * `getGrade`, so any new aggregate had to re-encode 90/80/70/60/50 and could drift.
+ */
+/** Every letter grade the scale can emit, highest first (the enum used by DTOs). */
+export const GRADE_LABELS = ["A+", "A", "B", "C", "D", "F"] as const;
+export type GradeLabel = (typeof GRADE_LABELS)[number];
+
+export const GRADE_BANDS = [
+  { label: "A+", minPct: 90, tone: "success" },
+  { label: "A", minPct: 80, tone: "info" },
+  { label: "B", minPct: 70, tone: "primary" },
+  { label: "C", minPct: 60, tone: "warning" },
+  { label: "D", minPct: 50, tone: "secondary" },
+  { label: "F", minPct: 0, tone: "destructive" },
+] as const satisfies ReadonlyArray<{ label: GradeLabel; minPct: number; tone: GradeTone }>;
+
+/** Lowest band (the fallback for any percentage, including a failed score). */
+export const LOWEST_GRADE_BAND = GRADE_BANDS[GRADE_BANDS.length - 1]!;
+
+function bandInfo(label: GradeLabel, tone: GradeTone): GradeInfo {
+  return {
+    label,
+    tone,
+    color: `hsl(var(--${tone}))`,
+    bg: `hsl(var(--${tone}) / 0.1)`,
+    border: `hsl(var(--${tone}) / 0.2)`,
+  };
+}
+
+/**
  * Resolves score percentage to appropriate Grade metadata (label, semantic colors).
  */
 export function getGrade(pct: number): GradeInfo {
-  if (pct >= 90)
-    return {
-      label: "A+",
-      tone: "success",
-      color: "hsl(var(--success))",
-      bg: "hsl(var(--success) / 0.1)",
-      border: "hsl(var(--success) / 0.2)",
-    };
-  if (pct >= 80)
-    return {
-      label: "A",
-      tone: "info",
-      color: "hsl(var(--info))",
-      bg: "hsl(var(--info) / 0.1)",
-      border: "hsl(var(--info) / 0.2)",
-    };
-  if (pct >= 70)
-    return {
-      label: "B",
-      tone: "primary",
-      color: "hsl(var(--primary))",
-      bg: "hsl(var(--primary) / 0.1)",
-      border: "hsl(var(--primary) / 0.2)",
-    };
-  if (pct >= 60)
-    return {
-      label: "C",
-      tone: "warning",
-      color: "hsl(var(--warning))",
-      bg: "hsl(var(--warning) / 0.1)",
-      border: "hsl(var(--warning) / 0.2)",
-    };
-  if (pct >= 50)
-    return {
-      label: "D",
-      tone: "secondary",
-      color: "hsl(var(--secondary))",
-      bg: "hsl(var(--secondary) / 0.1)",
-      border: "hsl(var(--secondary) / 0.2)",
-    };
-  return {
-    label: "F",
-    tone: "destructive",
-    color: "hsl(var(--destructive))",
-    bg: "hsl(var(--destructive) / 0.1)",
-    border: "hsl(var(--destructive) / 0.2)",
-  };
+  const band = GRADE_BANDS.find((entry) => pct >= entry.minPct) ?? LOWEST_GRADE_BAND;
+  return bandInfo(band.label, band.tone);
 }
 
 /**

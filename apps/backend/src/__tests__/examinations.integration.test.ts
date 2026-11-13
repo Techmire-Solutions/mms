@@ -1,9 +1,36 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
+import { registerBackgroundJobRunner } from "../services/backgroundJobWorkerService.js";
+
+const mockGetUserJob = vi.hoisted(() => vi.fn());
+const mockGetUserJobPayload = vi.hoisted(() => vi.fn());
+const mockRetryJob = vi.hoisted(() => vi.fn());
+const mockEnqueueJob = vi.hoisted(() => vi.fn());
+vi.mock("../services/backgroundJobWorkerService.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/backgroundJobWorkerService.js")>();
+  return {
+    ...actual,
+    getUserBackgroundJob: mockGetUserJob,
+    getUserBackgroundJobPayload: mockGetUserJobPayload,
+    retryFailedBackgroundJob: mockRetryJob,
+    enqueueBackgroundJob: mockEnqueueJob,
+  };
+});
+const mockLiveJob = vi.hoisted(() => vi.fn());
+vi.mock("../services/backgroundJobService.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/backgroundJobService.js")>();
+  return { ...actual, findLiveBackgroundJobForEntity: mockLiveJob };
+});
+vi.mock("../services/auditTrailService.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/auditTrailService.js")>();
+  return { ...actual, recordAuditEventSafely: vi.fn() };
+});
 import {
   adminToken,
   assistantTeacherToken,
+  auditorToken,
   guardianToken,
+  signTenantToken,
   teacherToken,
 } from "./helpers/tokens.js";
 
@@ -34,6 +61,57 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
 
 const mockLoadExams = vi.fn();
 const mockLoadExamsPage = vi.fn();
+const mockLoadExamResultsPage = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({ results: [], hasMore: false }),
+);
+
+// The bulk results route composes the real eligibility/scope gate (DB-backed). Stub it so the
+// route-level contract test can assert the locked-write mapping without a database; individual
+// tests replace the implementation to exercise the structured-error envelope.
+const mockAssertMarksImportScope = vi.hoisted(() =>
+  vi.fn(async (_user: unknown, _tenant: string, _examId: string, _rows: unknown[]) => undefined),
+);
+vi.mock("../examinations/use-cases/examMarksImportScope.js", () => ({
+  assertMarksImportScope: mockAssertMarksImportScope,
+}));
+
+const mockAuthorizeAndStamp = vi.hoisted(() =>
+  vi.fn(async (user: { id: string }, results: Array<Record<string, unknown>>) =>
+    results.map((result) => ({ ...result, markedBy: user.id })),
+  ),
+);
+vi.mock("../examinations/use-cases/examResultsSubmission.js", () => ({
+  authorizeAndStampExamResults: mockAuthorizeAndStamp,
+}));
+
+// Gate/lifecycle/setup routes are DB-backed; the route contract (validation, permissions, error
+// envelope) is what this file pins, so their use cases are stubbed.
+const mockGetEligibilityView = vi.hoisted(() => vi.fn());
+const mockConfigureGate = vi.hoisted(() => vi.fn());
+const mockGrantOverride = vi.hoisted(() => vi.fn());
+const mockRevokeOverride = vi.hoisted(() => vi.fn());
+vi.mock("../examinations/use-cases/examEligibilityGate.js", () => ({
+  getExamEligibilityView: (...args: unknown[]) => mockGetEligibilityView(...args),
+  configureExamAttendanceGate: (...args: unknown[]) => mockConfigureGate(...args),
+  grantExamEligibilityOverride: (...args: unknown[]) => mockGrantOverride(...args),
+  revokeExamEligibilityOverride: (...args: unknown[]) => mockRevokeOverride(...args),
+}));
+
+const mockPublishExamResults = vi.hoisted(() => vi.fn());
+const mockUnpublishExamResults = vi.hoisted(() => vi.fn());
+vi.mock("../examinations/use-cases/examLifecycleUseCases.js", () => ({
+  publishExamResults: (...args: unknown[]) => mockPublishExamResults(...args),
+  unpublishExamResults: (...args: unknown[]) => mockUnpublishExamResults(...args),
+}));
+
+vi.mock("../services/examinationConfigService.js", () => ({
+  getExaminationFieldConfigService: vi.fn().mockResolvedValue({ tabs: [] }),
+  updateExaminationFieldConfigService: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("../services/examinationPreferencesService.js", () => ({
+  getExaminationPreferencesService: vi.fn().mockResolvedValue({ passMark: "50" }),
+  updateExaminationPreferencesService: vi.fn().mockResolvedValue(undefined),
+}));
 const mockLoadExaminationsCommandMetrics = vi.fn();
 
 vi.mock("../examinations/use-cases/examinationsUseCases.js", () => ({
@@ -43,6 +121,8 @@ vi.mock("../examinations/use-cases/examinationsUseCases.js", () => ({
     upsertExams: vi.fn().mockResolvedValue([]),
     replaceExams: vi.fn(),
     loadExamResults: vi.fn().mockResolvedValue([]),
+    loadExamResultsPage: mockLoadExamResultsPage,
+    loadExamById: vi.fn().mockResolvedValue(null),
     upsertExamResults: vi.fn().mockResolvedValue([]),
     replaceExamResults: vi.fn(),
     deleteExamById: vi.fn(),
@@ -53,8 +133,15 @@ vi.mock("../examinations/use-cases/examinationsUseCases.js", () => ({
       mockLoadExaminationsCommandMetrics(...args),
     loadExaminationsWidgetAggregates: vi.fn().mockResolvedValue({}),
     loadExaminationsReportAggregates: vi.fn().mockResolvedValue({}),
+    loadExamResultsFingerprint: vi.fn().mockResolvedValue({ count: 0, maxUpdatedAt: null }),
   },
 }));
+
+// The marks-import route refuses to enqueue unless a runner is registered; a no-op runner lets
+// the route-level scope/authority checks run without Redis.
+registerBackgroundJobRunner("examinations:marks-import", async () => undefined);
+registerBackgroundJobRunner("examinations:import", async () => undefined);
+registerBackgroundJobRunner("examinations:results-export", async () => undefined);
 
 describe("examinations REST routes integration", () => {
   beforeEach(() => {
@@ -252,6 +339,1092 @@ describe("examinations metrics REST", () => {
     });
     expect(res.statusCode).toBe(403);
     expect(mockLoadExaminationsCommandMetrics).not.toHaveBeenCalled();
+    await app.close();
+  });
+});
+
+describe("examinations marks privacy and mutation authority", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    process.env.JWT_SECRET = "test-secret";
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("strips internal mark fields for a read-only auditor", async () => {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as {
+      loadExamResultsPage: ReturnType<typeof vi.fn>;
+    };
+    useCases.loadExamResultsPage.mockResolvedValueOnce({
+      results: [
+        {
+          id: "r-1",
+          examId: "e-1",
+          studentId: "s-1",
+          marksObtained: 80,
+          version: 4,
+          markedBy: "u-teacher",
+          graceMarks: 2,
+          moderationReason: "internal note",
+          moderatedBy: "u-admin",
+        },
+      ],
+      hasMore: false,
+    });
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/examinations/results",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "auditor" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { results: Array<Record<string, unknown>> };
+    expect(body.results[0]).toEqual({
+      id: "r-1",
+      examId: "e-1",
+      studentId: "s-1",
+      marksObtained: 80,
+      graceMarks: 2,
+    });
+    expect(body.results[0]).not.toHaveProperty("markedBy");
+    expect(body.results[0]).not.toHaveProperty("version");
+    expect(body.results[0]).not.toHaveProperty("moderationReason");
+    await app.close();
+  });
+
+  it("does not let a teacher moderate marks", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results/s-1/moderation",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${teacherToken(app)}`,
+      },
+      payload: { graceMarks: 2, reason: "borderline script" },
+    });
+    // The module gate requires `examinations.delete` for moderation.
+    expect(res.statusCode, res.body).toBe(403);
+    await app.close();
+  });
+
+  it("returns 404 for eligibility of an unknown exam", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/examinations/exams/does-not-exist/eligibility",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+      },
+    });
+    expect(res.statusCode).toBe(404);
+    await app.close();
+  });
+});
+
+describe("examinations publication scope and tenant binding", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function resultsMock() {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as {
+      loadExamResultsPage: ReturnType<typeof vi.fn>;
+    };
+    useCases.loadExamResultsPage.mockResolvedValue({ results: [], hasMore: false });
+    useCases.loadExamResultsPage.mockClear();
+    return useCases.loadExamResultsPage;
+  }
+
+  it("asks for published-only marks for a read-only audience", async () => {
+    const loadPage = await resultsMock();
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/examinations/results",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "auditor" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(loadPage).toHaveBeenCalledWith(expect.objectContaining({ publishedOnly: true }));
+    await app.close();
+  });
+
+  it("keeps the full marks scope for a writer", async () => {
+    const loadPage = await resultsMock();
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/examinations/results",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(loadPage).toHaveBeenCalledWith(expect.objectContaining({ publishedOnly: false }));
+    await app.close();
+  });
+
+  it("rejects a token issued for a different workspace than the request host", async () => {
+    // Tenant binding failure is a 403 (authenticated but not for this workspace), not a 401.
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/examinations/exams",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "admin", workspaceSubdomain: "other" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(403);
+    await app.close();
+  });
+});
+
+describe("examinations report aggregates endpoint", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns the always-on analytics slice to a reader", async () => {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as {
+      loadExaminationsReportAggregates: ReturnType<typeof vi.fn>;
+    };
+    useCases.loadExaminationsReportAggregates.mockResolvedValueOnce({
+      analytics: {
+        subjectPassRates: [{ subject: "Quran", total: 2, passed: 1, passRatePct: 50 }],
+        gradeDistribution: [{ grade: "A+", count: 1 }],
+        topPerformers: [{ studentId: "s-1", averagePct: 90, exams: 1 }],
+        sectionAverages: [{ label: "Class 5", total: 2, averagePct: 75 }],
+      },
+    });
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/examinations/report-aggregates",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json() as { analytics?: { subjectPassRates: unknown[] } };
+    expect(body.analytics?.subjectPassRates).toHaveLength(1);
+    await app.close();
+  });
+});
+
+describe("examinations bulk marks write", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("maps a locked (published) write to 409", async () => {
+    const { ConflictError } = await import("../lib/httpErrors.js");
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as {
+      upsertExamResults: ReturnType<typeof vi.fn>;
+    };
+    useCases.upsertExamResults.mockRejectedValueOnce(
+      new ConflictError("Results are published", "exam_results_finalized"),
+    );
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/results/bulk",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: [{ id: "r-1", examId: "e-1", studentId: "s-1", marksObtained: 80 }],
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toMatchObject({ type: "exam_results_finalized" });
+    await app.close();
+  });
+
+  it("rejects a marks body without marksObtained instead of silently recording zero", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/results/bulk",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      // The contract's strict write schema requires the mark; the old record schema defaulted it
+      // to 0, turning an omitted field into a real (failed) score.
+      payload: [{ id: "r-1", examId: "e-1", studentId: "s-1" }],
+    });
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("rejects moderation fields on a plain marks save", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/results/bulk",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: [{ id: "r-1", examId: "e-1", studentId: "s-1", marksObtained: 80, graceMarks: 2 }],
+    });
+    expect(res.statusCode).toBe(400);
+    await app.close();
+  });
+});
+
+describe("examinations widget aggregates and bulk delete routes", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("POST /api/examinations/widget-aggregates returns SQL-backed widget results", async () => {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as {
+      loadExaminationsWidgetAggregates: ReturnType<typeof vi.fn>;
+    };
+    useCases.loadExaminationsWidgetAggregates.mockResolvedValueOnce({
+      "w-1": { value: 3, totalCount: 5, chartData: [] },
+    });
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/widget-aggregates",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: { widgets: [{ id: "w-1", operation: "count" }] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ "w-1": { value: 3, totalCount: 5 } });
+    await app.close();
+  });
+
+  it("POST /api/examinations/exams/bulk-delete forwards ids and reports the result", async () => {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as {
+      bulkSoftDeleteExams: ReturnType<typeof vi.fn>;
+    };
+    useCases.bulkSoftDeleteExams.mockResolvedValueOnce({ succeeded: 1, failed: 0 });
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/bulk-delete",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { ids: ["e-1"] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ success: true, succeeded: 1, failed: 0 });
+    expect(useCases.bulkSoftDeleteExams).toHaveBeenCalledWith(["e-1"], "u-admin", undefined);
+    await app.close();
+  });
+});
+
+describe("examinations bulk exam upsert (contract path used by the UI)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("PUT /api/examinations/exams/bulk saves through the contract path", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/exams/bulk",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: [
+        {
+          id: "e-1",
+          name: "Midterm",
+          subject: "Quran",
+          totalMarks: 100,
+          passingMarks: 50,
+          date: "2026-03-10",
+          duration: 60,
+          classIds: ["c-1"],
+          status: "scheduled",
+          description: "",
+        },
+      ],
+    });
+    expect(res.statusCode, res.body).toBe(200);
+    await app.close();
+  });
+
+  it("POST /api/examinations/exams/:id/results/export responds through the contract path", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results/export",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+    });
+    expect([202, 404, 503]).toContain(res.statusCode);
+    await app.close();
+  });
+
+  it("POST /api/examinations/exams/:id/results/import responds through the contract path", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results/import",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { rows: [] },
+    });
+    expect([202, 400, 404, 503]).toContain(res.statusCode);
+    await app.close();
+  });
+});
+
+describe("examinations strict request validation", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("rejects unknown query keys, invalid page sizes and unknown statuses", async () => {
+    const app = await buildApp();
+    const headers = { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` };
+    for (const url of [
+      "/api/examinations/exams?limit=101",
+      "/api/examinations/exams?page=0",
+      "/api/examinations/exams?status=upcoming,bogus",
+      "/api/examinations/exams?unexpected=1",
+    ]) {
+      const res = await app.inject({ method: "GET", url, headers });
+      expect(res.statusCode, url).toBe(400);
+      expect(res.json()).toMatchObject({ type: "validation_error" });
+    }
+    await app.close();
+  });
+
+  it("rejects an overlong student id before the handler runs", async () => {
+    const app = await buildApp();
+    // Fastify's own maxParamLength is 100, so a >100 id answers 414; 65 characters is inside the
+    // router limit but above the contract's `studentId` cap, so ts-rest validation must answer 400.
+    const res = await app.inject({
+      method: "POST",
+      url: `/api/examinations/exams/e-1/results/${"s".repeat(65)}/moderation`,
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { graceMarks: 1, reason: "board moderation" },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({ type: "validation_error" });
+    await app.close();
+  });
+});
+
+describe("examinations gate, override and publication routes", () => {
+  const EXAM = {
+    id: "e-1",
+    name: "Midterm",
+    subject: "Quran",
+    totalMarks: 100,
+    passingMarks: 50,
+    duration: 60,
+    classIds: ["c-1"],
+    status: "ongoing",
+    description: "",
+    date: "2026-03-10",
+  };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function mockLoadedExam() {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as {
+      loadExamById: ReturnType<typeof vi.fn>;
+    };
+    useCases.loadExamById.mockResolvedValue(EXAM);
+    return useCases;
+  }
+
+  it("GET .../eligibility returns the per-student view", async () => {
+    await mockLoadedExam();
+    mockGetEligibilityView.mockResolvedValueOnce({
+      examId: "e-1",
+      requiredPct: 75,
+      rows: [
+        {
+          studentId: "s-1",
+          studentName: "Aisha",
+          classId: "c-1",
+          state: "eligible",
+          attendancePct: 90,
+          requiredPct: 75,
+          overridden: false,
+        },
+      ],
+    });
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/examinations/exams/e-1/eligibility",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({
+      examId: "e-1",
+      requiredPct: 75,
+      students: [{ studentId: "s-1", state: "eligible" }],
+    });
+    await app.close();
+  });
+
+  it("PUT .../attendance-gate validates the threshold and persists it", async () => {
+    mockConfigureGate.mockResolvedValueOnce(undefined);
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/exams/e-1/attendance-gate",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { minAttendancePct: 74.5 },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ examId: "e-1", minAttendancePct: 74.5 });
+    expect(mockConfigureGate).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ examId: "e-1", minAttendancePct: 74.5 }),
+    );
+    await app.close();
+  });
+
+  it("POST override and revoke both answer with success", async () => {
+    mockGrantOverride.mockResolvedValueOnce(undefined);
+    mockRevokeOverride.mockResolvedValueOnce({ success: true });
+    const app = await buildApp();
+    const headers = { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` };
+
+    const grant = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/eligibility-overrides",
+      headers,
+      payload: { studentId: "s-1", reason: "medical leave evidenced" },
+    });
+    expect(grant.statusCode).toBe(200);
+    expect(grant.json()).toEqual({ success: true });
+
+    const revoke = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/eligibility-overrides/s-1/revoke",
+      headers,
+      payload: { reason: "leave withdrawn" },
+    });
+    expect(revoke.statusCode).toBe(200);
+    expect(revoke.json()).toEqual({ success: true });
+    await app.close();
+  });
+
+  it("POST results-finalization publishes and serializes the stamp", async () => {
+    const finalizedAt = new Date("2026-03-11T00:00:00.000Z");
+    mockPublishExamResults.mockResolvedValueOnce({
+      examId: "e-1",
+      resultsFinalizedAt: finalizedAt,
+      status: "completed",
+    });
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results-finalization",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { finalized: true },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({
+      examId: "e-1",
+      resultsFinalizedAt: "2026-03-11T00:00:00.000Z",
+      status: "completed",
+    });
+    await app.close();
+  });
+
+  it("serializes a publication rejection with its structured details", async () => {
+    const { ConflictError } = await import("../lib/httpErrors.js");
+    mockPublishExamResults.mockRejectedValueOnce(
+      new ConflictError("Exam e-1 has not been sat yet", "exam_not_sat", { examId: "e-1" }),
+    );
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results-finalization",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { finalized: true },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toMatchObject({ type: "exam_not_sat", details: { examId: "e-1" } });
+    await app.close();
+  });
+
+  it("serves the Setup field-config and preferences reads", async () => {
+    const app = await buildApp();
+    const headers = { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` };
+    const config = await app.inject({
+      method: "GET",
+      url: "/api/examinations/field-config",
+      headers,
+    });
+    expect(config.statusCode).toBe(200);
+    expect(config.json()).toMatchObject({ config: { tabs: [] } });
+
+    const preferences = await app.inject({
+      method: "GET",
+      url: "/api/examinations/preferences",
+      headers,
+    });
+    expect(preferences.statusCode).toBe(200);
+    expect(preferences.json()).toHaveProperty("preferences");
+    await app.close();
+  });
+});
+
+describe("examinations serialization privacy on every read path", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("forbids a guardian token on the marks list and the broadsheet export", async () => {
+    const app = await buildApp();
+    for (const [method, url] of [
+      ["GET", "/api/examinations/results"],
+      ["POST", "/api/examinations/exams/e-1/results/export"],
+    ] as const) {
+      const res = await app.inject({
+        method,
+        url,
+        headers: { host: "demo.localhost", authorization: `Bearer ${guardianToken(app)}` },
+      });
+      expect(res.statusCode, url).toBe(403);
+      expect(res.body).not.toContain("marksObtained");
+    }
+    await app.close();
+  });
+
+  it("asks a reader's report aggregates to include only published marks", async () => {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as {
+      loadExaminationsReportAggregates: ReturnType<typeof vi.fn>;
+    };
+    useCases.loadExaminationsReportAggregates.mockResolvedValueOnce({});
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/examinations/report-aggregates",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${signTenantToken(app, { role: "auditor" })}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(useCases.loadExaminationsReportAggregates).toHaveBeenCalledWith(undefined, {
+      publishedOnly: true,
+    });
+    await app.close();
+  });
+});
+
+describe("examinations bulk writes keep structured errors and strict inputs", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const baseExam = {
+    id: "e-1",
+    name: "Midterm",
+    subject: "Quran",
+    totalMarks: 100,
+    passingMarks: 50,
+    date: "2026-03-10",
+    duration: 60,
+    classIds: ["c-1"],
+    status: "scheduled",
+    description: "",
+  };
+
+  it("forwards the gate's structured details on a blocked marks save", async () => {
+    const { HttpDomainError } = await import("../lib/httpErrors.js");
+    mockAuthorizeAndStamp.mockRejectedValueOnce(
+      new HttpDomainError(409, "exam_eligibility_blocked", "Below the exam attendance threshold", {
+        details: {
+          examId: "e-1",
+          students: [
+            {
+              examId: "e-1",
+              studentId: "s-1",
+              attendancePct: 40,
+              requiredPct: 75,
+              state: "blocked",
+            },
+          ],
+          counts: { outOfRange: 0, notEnrolled: 0, unknown: 0, blocked: 1 },
+          truncated: false,
+        },
+      }),
+    );
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/results/bulk",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: [{ id: "r-1", examId: "e-1", studentId: "s-1", marksObtained: 80 }],
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toMatchObject({
+      type: "exam_eligibility_blocked",
+      details: { students: [{ studentId: "s-1", state: "blocked" }] },
+    });
+    await app.close();
+  });
+
+  it("rejects an invalid exam date, passing marks above the total and a blank name", async () => {
+    const app = await buildApp();
+    const headers = { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` };
+    for (const payload of [
+      [{ ...baseExam, date: "2026-02-31" }],
+      [{ ...baseExam, passingMarks: 120 }],
+      [{ ...baseExam, name: "" }],
+    ]) {
+      const res = await app.inject({
+        method: "PUT",
+        url: "/api/examinations/exams/bulk",
+        headers,
+        payload,
+      });
+      expect(res.statusCode, JSON.stringify(payload)).toBe(400);
+    }
+    await app.close();
+  });
+
+  it("accepts the read-only metadata the list round-trips without writing it", async () => {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as { upsertExams: ReturnType<typeof vi.fn> };
+    useCases.upsertExams.mockClear();
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/exams/bulk",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: [
+        {
+          ...baseExam,
+          resultsFinalizedAt: null,
+          deletedAt: null,
+          createdAt: "2026-01-01T00:00:00.000Z",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+          minAttendancePct: 75,
+        },
+      ],
+    });
+    expect(res.statusCode, res.body).toBe(200);
+    expect(useCases.upsertExams).toHaveBeenCalledTimes(1);
+    await app.close();
+  });
+});
+
+describe("examinations controller-only definition writes", () => {
+  const definition = [
+    {
+      id: "e-1",
+      name: "Midterm",
+      subject: "Quran",
+      totalMarks: 100,
+      passingMarks: 50,
+      date: "2026-03-10",
+      duration: 60,
+      classIds: ["c-1"],
+      status: "scheduled",
+      description: "",
+    },
+  ];
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("refuses a teacher's exam definition save and allows the controller", async () => {
+    const app = await buildApp();
+    const teacher = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/exams/bulk",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: definition,
+    });
+    expect(teacher.statusCode, teacher.body).toBe(403);
+
+    const controller = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/exams/bulk",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: definition,
+    });
+    expect(controller.statusCode, controller.body).toBe(200);
+    await app.close();
+  });
+
+  it("refuses a teacher's exams CSV import before any job is queued", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/import",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: { rows: [{ title: "Midterm", className: "Grade 1", examDate: "2026-03-10" }] },
+    });
+    expect(res.statusCode, res.body).toBe(403);
+    await app.close();
+  });
+
+  it("refuses a teacher's attendance-gate change and records the controller's reason", async () => {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as { loadExamById: ReturnType<typeof vi.fn> };
+    useCases.loadExamById.mockResolvedValue({
+      id: "e-1",
+      name: "Midterm",
+      totalMarks: 100,
+      date: "2026-03-10",
+    });
+    mockConfigureGate.mockResolvedValue(undefined);
+    const app = await buildApp();
+
+    const teacher = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/exams/e-1/attendance-gate",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: { minAttendancePct: 40 },
+    });
+    expect(teacher.statusCode, teacher.body).toBe(403);
+
+    const controller = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/exams/e-1/attendance-gate",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { minAttendancePct: 75, reason: "board policy" },
+    });
+    expect(controller.statusCode, controller.body).toBe(200);
+    expect(mockConfigureGate).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ examId: "e-1", minAttendancePct: 75, reason: "board policy" }),
+    );
+    await app.close();
+  });
+
+  it("refuses a marks import outside the teacher's staffed sections", async () => {
+    const { HttpDomainError } = await import("../lib/httpErrors.js");
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as { loadExamById: ReturnType<typeof vi.fn> };
+    useCases.loadExamById.mockResolvedValue({
+      id: "e-1",
+      name: "Midterm",
+      totalMarks: 100,
+      date: "2026-03-10",
+      resultsFinalizedAt: null,
+    });
+    mockAssertMarksImportScope.mockRejectedValueOnce(
+      new HttpDomainError(403, "exam_marks_import_forbidden", "Not staffed on this section", {
+        details: { examId: "e-1" },
+      }),
+    );
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results/import",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: { rows: [{ rollNumber: "1", marksObtained: 80 }] },
+    });
+    expect(res.statusCode, res.body).toBe(403);
+    expect(res.json()).toMatchObject({
+      type: "exam_marks_import_forbidden",
+      details: { examId: "e-1" },
+    });
+    expect(mockAssertMarksImportScope).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "u-teacher" }),
+      "demo",
+      "e-1",
+      [{ rollNumber: "1", marksObtained: 80 }],
+    );
+    await app.close();
+  });
+});
+
+describe("examinations queued-job idempotency and recovery", () => {
+  const EXAM = {
+    id: "e-1",
+    name: "Midterm",
+    subject: "Quran",
+    totalMarks: 100,
+    passingMarks: 50,
+    duration: 60,
+    classIds: ["c-1"],
+    status: "ongoing",
+    description: "",
+    date: "2026-03-10",
+    resultsFinalizedAt: null,
+  };
+  const rows = [{ rollNumber: "1", marksObtained: 80 }];
+  const idempotentJob = {
+    id: "job-1",
+    moduleId: "examinations",
+    kind: "marks-import",
+    status: "failed",
+    label: "Import",
+    createdAt: "2026-01-01T00:00:00.000Z",
+  };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function arrangeExam() {
+    const useCases = (await import("../examinations/use-cases/examinationsUseCases.js"))
+      .examinationsUseCases as unknown as {
+      loadExamById: ReturnType<typeof vi.fn>;
+      loadExamResultsFingerprint: ReturnType<typeof vi.fn>;
+    };
+    useCases.loadExamById.mockResolvedValue(EXAM);
+    return useCases;
+  }
+
+  function headers(app: Awaited<ReturnType<typeof buildApp>>) {
+    return { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` };
+  }
+
+  it("retries a failed marks import with the same payload instead of returning the dead job", async () => {
+    await arrangeExam();
+    mockGetUserJob.mockResolvedValueOnce(idempotentJob);
+    mockRetryJob.mockResolvedValueOnce({ ...idempotentJob, status: "pending" });
+    mockLiveJob.mockResolvedValue(null);
+    mockAssertMarksImportScope.mockResolvedValue(undefined);
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results/import",
+      headers: headers(app),
+      payload: { rows },
+    });
+    expect(res.statusCode, res.body).toBe(202);
+    expect(mockRetryJob).toHaveBeenCalledWith(
+      "demo",
+      "u-teacher",
+      idempotentJob,
+      expect.objectContaining({ examId: "e-1", rows }),
+    );
+    await app.close();
+  });
+
+  it("rejects a reused key whose stored rows belong to a different import", async () => {
+    await arrangeExam();
+    mockGetUserJob.mockResolvedValueOnce({ ...idempotentJob, status: "completed" });
+    mockGetUserJobPayload.mockResolvedValueOnce({
+      examId: "e-1",
+      rows: [{ rollNumber: "9", marksObtained: 10 }],
+    });
+    mockAssertMarksImportScope.mockResolvedValue(undefined);
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results/import",
+      headers: headers(app),
+      payload: { rows, idempotencyKey: "custom-key-1" },
+    });
+    expect(res.statusCode, res.body).toBe(409);
+    expect(res.json()).toMatchObject({ type: "exam_marks_import_conflict" });
+    await app.close();
+  });
+
+  it("rejects a finished key whose rows were discarded (unverifiable body)", async () => {
+    await arrangeExam();
+    mockGetUserJob.mockResolvedValueOnce({ ...idempotentJob, status: "completed" });
+    mockGetUserJobPayload.mockResolvedValueOnce(null);
+    mockAssertMarksImportScope.mockResolvedValue(undefined);
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results/import",
+      headers: headers(app),
+      payload: { rows, idempotencyKey: "custom-key-1" },
+    });
+    expect(res.statusCode, res.body).toBe(409);
+    await app.close();
+  });
+
+  it("refuses a second live import for the same exam", async () => {
+    await arrangeExam();
+    mockGetUserJob.mockResolvedValueOnce(null);
+    mockLiveJob.mockResolvedValueOnce({ ...idempotentJob, status: "running" });
+    mockAssertMarksImportScope.mockResolvedValue(undefined);
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results/import",
+      headers: headers(app),
+      payload: { rows },
+    });
+    expect(res.statusCode, res.body).toBe(409);
+    expect(res.json()).toMatchObject({
+      type: "exam_marks_import_in_progress",
+      details: { jobId: idempotentJob.id },
+    });
+    await app.close();
+  });
+
+  it("keys the broadsheet export on the marks fingerprint", async () => {
+    const useCases = await arrangeExam();
+    mockGetUserJob.mockResolvedValue(null);
+    mockEnqueueJob.mockImplementation(async (_tenant: string, _user: string, job: unknown) => job);
+
+    const app = await buildApp();
+    const runExport = async () =>
+      app.inject({
+        method: "POST",
+        url: "/api/examinations/exams/e-1/results/export",
+        headers: {
+          host: "demo.localhost",
+          authorization: `Bearer ${adminToken(app)}`,
+        },
+      });
+
+    useCases.loadExamResultsFingerprint.mockResolvedValueOnce({ count: 1, maxUpdatedAt: "t1" });
+    const first = await runExport();
+    useCases.loadExamResultsFingerprint.mockResolvedValueOnce({ count: 2, maxUpdatedAt: "t2" });
+    const second = await runExport();
+
+    expect(first.statusCode, first.body).toBe(202);
+    expect(second.statusCode, second.body).toBe(202);
+    const firstJob = mockEnqueueJob.mock.calls[0]?.[2] as { id: string };
+    const secondJob = mockEnqueueJob.mock.calls[1]?.[2] as { id: string };
+    expect(firstJob.id).not.toBe(secondJob.id);
+    expect(mockEnqueueJob.mock.calls[0]?.[3]).toMatchObject({
+      fingerprint: { count: 1, maxUpdatedAt: "t1" },
+    });
+    await app.close();
+  });
+
+  it("maps the background-job quota to 429", async () => {
+    await arrangeExam();
+    const { BackgroundJobLimitError } = await import("../services/backgroundJobWorkerService.js");
+    mockGetUserJob.mockResolvedValue(null);
+    mockLiveJob.mockResolvedValue(null);
+    mockAssertMarksImportScope.mockResolvedValue(undefined);
+    mockEnqueueJob.mockRejectedValueOnce(new BackgroundJobLimitError(50));
+
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/examinations/exams/e-1/results/import",
+      headers: headers(app),
+      payload: { rows },
+    });
+    expect(res.statusCode, res.body).toBe(429);
+    await app.close();
+  });
+});
+
+describe("examinations RBAC and tenant denial on privileged routes", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("refuses a teacher's bulk marks save for a section they do not staff", async () => {
+    const app = await buildApp();
+    const { HttpDomainError } = await import("../lib/httpErrors.js");
+    mockAuthorizeAndStamp.mockRejectedValueOnce(
+      new HttpDomainError(403, "exam_marks_scope_forbidden", "Not staffed on this section", {
+        details: {
+          students: [{ examId: "e-1", studentId: "s-1", state: "blocked" }],
+          counts: { outOfRange: 0, notEnrolled: 0, unknown: 0, blocked: 1 },
+          truncated: false,
+        },
+      }),
+    );
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/examinations/results/bulk",
+      headers: { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` },
+      payload: [{ id: "r-1", examId: "e-1", studentId: "s-1", marksObtained: 80 }],
+    });
+    expect(res.statusCode, res.body).toBe(403);
+    expect(res.json()).toMatchObject({ type: "exam_marks_scope_forbidden" });
+    await app.close();
+  });
+
+  it("denies a guardian every privileged exam action", async () => {
+    const app = await buildApp();
+    const cases = [
+      [
+        "POST",
+        "/api/examinations/exams/e-1/results/s-1/moderation",
+        { graceMarks: 1, reason: "x" },
+      ],
+      ["POST", "/api/examinations/exams/e-1/results-finalization", { finalized: true }],
+      ["PUT", "/api/examinations/exams/e-1/attendance-gate", { minAttendancePct: 75 }],
+      [
+        "POST",
+        "/api/examinations/exams/e-1/eligibility-overrides",
+        { studentId: "s-1", reason: "x" },
+      ],
+    ] as const;
+    for (const [method, url, payload] of cases) {
+      const res = await app.inject({
+        method,
+        url,
+        headers: { host: "demo.localhost", authorization: `Bearer ${guardianToken(app)}` },
+        payload,
+      });
+      expect(res.statusCode, url).toBe(403);
+    }
+    await app.close();
+  });
+
+  it("serves a reader no draft mark payload (published-only read is real hiding)", async () => {
+    const app = await buildApp();
+    mockLoadExamResultsPage.mockImplementation(async (query: { publishedOnly?: boolean }) =>
+      query.publishedOnly
+        ? { results: [], hasMore: false }
+        : {
+            results: [{ id: "r-draft", examId: "e-1", studentId: "s-1", marksObtained: 91 }],
+            hasMore: false,
+          },
+    );
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/examinations/results?examId=e-1",
+      headers: { host: "demo.localhost", authorization: `Bearer ${auditorToken(app)}` },
+    });
+    expect(res.statusCode, res.body).toBe(200);
+    expect(res.json().results).toEqual([]);
+    expect(res.body).not.toContain("91");
+    await app.close();
+  });
+
+  it("rejects a cross-tenant token on exam mutations", async () => {
+    const app = await buildApp();
+    const foreign = adminToken(app, { workspaceSubdomain: "other-workspace" });
+    for (const [method, url, payload] of [
+      [
+        "PUT",
+        "/api/examinations/results/bulk",
+        [{ id: "r-1", examId: "e-1", studentId: "s-1", marksObtained: 80 }],
+      ],
+      ["POST", "/api/examinations/exams/e-1/results-finalization", { finalized: true }],
+    ] as const) {
+      const res = await app.inject({
+        method,
+        url,
+        headers: { host: "demo.localhost", authorization: `Bearer ${foreign}` },
+        payload,
+      });
+      expect(res.statusCode, url).toBeGreaterThanOrEqual(401);
+      expect(res.statusCode, url).toBeLessThan(500);
+    }
     await app.close();
   });
 });

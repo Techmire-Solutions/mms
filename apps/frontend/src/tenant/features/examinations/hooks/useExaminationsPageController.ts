@@ -7,7 +7,7 @@ import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { BookOpen, FileText } from "lucide-react";
-import { EXAMINATIONS_MODULE_MANIFEST, resolveModuleTierTab, type ExamResult } from "@mms/shared";
+import { EXAMINATIONS_MODULE_MANIFEST, examsFromResponse, resolveModuleTierTab } from "@mms/shared";
 import { type Exam } from "@/lib/data/examinationData";
 import { useExaminationExamColumnLayout } from "@/tenant/features/examinations/hooks/useExaminationExamColumnLayout";
 import { useExaminationResultsColumnLayout } from "@/tenant/features/examinations/hooks/useExaminationResultsColumnLayout";
@@ -49,13 +49,10 @@ export function useExaminationsPageController() {
 
   const examsResult = useExaminationsExams({ includeDeleted: showDeleted });
   const resultsResult = useExaminationsResults();
-  const examsEnvelope = examsResult.data?.body as Exam[] | { exams?: Exam[] } | null;
-  const resultsEnvelope = resultsResult.data?.body as
-    ExamResult[] | { results?: ExamResult[] } | null;
-  const exams = Array.isArray(examsEnvelope) ? examsEnvelope : (examsEnvelope?.exams ?? []);
-  const examResults = Array.isArray(resultsEnvelope)
-    ? resultsEnvelope
-    : (resultsEnvelope?.results ?? []);
+  const exams = examsFromResponse(examsResult.data?.body);
+  const examResults = resultsResult.data?.body?.results ?? [];
+  // The marks walker caps at 20×500; when it stops there, rankings/averages are incomplete.
+  const resultsTruncated = resultsResult.data?.body?.hasMore === true;
   const {
     replaceExams,
     replaceExamResults,
@@ -109,7 +106,7 @@ export function useExaminationsPageController() {
     hasActiveFilters: false,
     clearFilters: () => {},
     clearSelection: () => {},
-    canWrite,
+    canWrite: canDelete,
     showDeleted,
     onCreate: () => {
       setActiveTab("work");
@@ -156,6 +153,7 @@ export function useExaminationsPageController() {
     setFilteredCount,
     exams,
     examResults,
+    resultsTruncated,
     examColumnLayout,
     resultsColumnLayout,
     listLoadFailed,

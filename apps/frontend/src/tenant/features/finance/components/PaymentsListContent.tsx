@@ -6,6 +6,8 @@ import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Payment } from "@/lib/data/financeData";
 import { PaymentsListCards } from "@/tenant/features/finance/components/PaymentsListCards";
 import { PaymentsListDesktopTable } from "@/tenant/features/finance/components/PaymentsListDesktopTable";
+import { FinanceListLoadingSkeleton } from "./FinanceListLoadingSkeleton";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export const PAYMENT_TRACKER_COLUMN_KEYS = [
   "date",
@@ -18,6 +20,8 @@ export const PAYMENT_TRACKER_COLUMN_KEYS = [
 ] as const;
 
 export interface PaymentsListContentProps {
+  /** First page still loading: show rows, not the empty state. */
+  isLoading?: boolean;
   payments: Payment[];
   selectedIds: string[];
   isColumnVisible: (key: string) => boolean;
@@ -39,6 +43,7 @@ export interface PaymentsListContentProps {
 }
 
 export function PaymentsListContent({
+  isLoading = false,
   payments,
   selectedIds,
   isColumnVisible,
@@ -57,7 +62,11 @@ export function PaymentsListContent({
   onRequestDelete,
   onRestore,
 }: PaymentsListContentProps): React.JSX.Element {
+  const { t } = useTranslation();
   const { viewMode, setViewMode } = useWorkDirectoryViewMode();
+  if (isLoading) {
+    return <FinanceListLoadingSkeleton ariaLabel={t("finance.payments")} />;
+  }
   const listProps = {
     payments,
     selectedIds,

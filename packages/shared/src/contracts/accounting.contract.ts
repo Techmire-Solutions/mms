@@ -16,6 +16,12 @@ import {
   accountingReportQuerySchema,
 } from "../finance/accountingReportAggregates.js";
 import {
+  accountingLedgerPageSchema,
+  accountingLedgerQuerySchema,
+  receivablesAgingQuerySchema,
+  receivablesAgingSchema,
+} from "../finance/accountingReportEndpoints.js";
+import {
   accountingFieldConfigPutBodySchema,
   accountingPreferencesPutBodySchema,
 } from "../finance/accountingSetupConfigTypes.js";
@@ -89,7 +95,11 @@ export const accountingContract = c.router({
     query: accountingAccountsListQuerySchema,
     responses: {
       200: z.union([
-        z.object({ accounts: z.array(accountRecordSchema) }),
+        z.object({
+          accounts: z.array(accountRecordSchema),
+          /** True when the compatibility branch hit its cap and more rows exist. */
+          truncated: z.boolean(),
+        }),
         accountingAccountsPageResponseSchema,
       ]),
       403: ok,
@@ -103,7 +113,10 @@ export const accountingContract = c.router({
     query: accountingEntriesListQuerySchema,
     responses: {
       200: z.union([
-        z.object({ entries: z.array(journalEntryRecordSchema) }),
+        z.object({
+          entries: z.array(journalEntryRecordSchema),
+          truncated: z.boolean(),
+        }),
         accountingEntriesPageResponseSchema,
       ]),
       403: ok,
@@ -117,7 +130,10 @@ export const accountingContract = c.router({
     query: baseListQuerySchema,
     responses: {
       200: z.union([
-        z.object({ fiscalYears: z.array(fiscalYearRecordSchema) }),
+        z.object({
+          fiscalYears: z.array(fiscalYearRecordSchema),
+          truncated: z.boolean(),
+        }),
         accountingFiscalYearsPageResponseSchema,
       ]),
       403: ok,
@@ -227,5 +243,30 @@ export const accountingContract = c.router({
     query: accountingReportQuerySchema.optional(),
     responses: { 200: accountingReportAggregatesSchema, 403: errorResponse, 500: errorResponse },
     summary: "Get accounting report aggregates",
+  },
+  getLedger: {
+    method: "GET",
+    path: "/api/accounting/ledger",
+    query: accountingLedgerQuerySchema,
+    responses: {
+      200: accountingLedgerPageSchema,
+      400: errorResponse,
+      403: errorResponse,
+      404: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get a server-computed account ledger page",
+  },
+  getReceivablesAging: {
+    method: "GET",
+    path: "/api/accounting/receivables-aging",
+    query: receivablesAgingQuerySchema,
+    responses: {
+      200: receivablesAgingSchema,
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Get student receivables aging as of a date",
   },
 });

@@ -22,6 +22,12 @@ const argv = process.argv.slice(2);
 const baseFlag = argv.indexOf("--base");
 const explicitBase = baseFlag >= 0 ? argv[baseFlag + 1] : process.env.MMS_CI_BASE;
 const STRICT = argv.includes("--strict");
+/**
+ * Blocking for `use-cases/` only: a use-case is where business rules live, so a changed one
+ * without a changed spec must fail the build. Repositories stay advisory because a DB-integration
+ * spec elsewhere often owns their behaviour.
+ */
+const STRICT_USE_CASES = argv.includes("--strict-use-cases");
 
 const DOMAIN_RE = /^apps\/backend\/src\/.+\/(?:use-cases|services|repositories|repository)\//;
 const TEST_RE = /\.(?:integration\.)?test\.(?:ts|tsx)$/;
@@ -69,8 +75,52 @@ const domainFiles = [...changed].filter(
   (file) => DOMAIN_RE.test(file) && file.endsWith(".ts") && !isTest(file),
 );
 
-/** First four path segments: `apps/backend/src/<module>`. */
-const moduleOf = (file) => file.split("/").slice(0, 4).join("/");
+const KNOWN_MODULES = [
+  "accounting",
+  "attendance",
+  "audit",
+  "contacts",
+  "documents",
+  "enrollments",
+  "examinations",
+  "faculty",
+  "finance",
+  "hasanat",
+  "integrations",
+  "messaging",
+  "notifications",
+  "obligations",
+  "platform",
+  "plugins",
+  "questionBank",
+  "savedReports",
+  "sessions",
+  "students",
+  "tasks",
+  "users",
+  "worker",
+  "workshops",
+];
+
+/** First four path segments: `apps/backend/src/<module>`, mapping `__tests__` paths to the target module. */
+const moduleOf = (file) => {
+  if (file.startsWith("apps/backend/src/__tests__/")) {
+    const rel = file.slice("apps/backend/src/__tests__/".length).toLowerCase();
+    const found = KNOWN_MODULES.find((mod) => {
+      const lower = mod.toLowerCase();
+      return (
+        rel.startsWith(lower) ||
+        rel.includes(`/${lower}`) ||
+        rel.includes(`_${lower}`) ||
+        rel.includes(lower)
+      );
+    });
+    if (found) {
+      return `apps/backend/src/${found}`;
+    }
+  }
+  return file.split("/").slice(0, 4).join("/");
+};
 const basenameOf = (file) =>
   file
     .split("/")
@@ -109,4 +159,11 @@ for (const file of unpaired) console.warn(`   - ${file}`);
 console.warn(
   "   Write the failing spec first and record the Red evidence in the PR body (rule mms-tdd §1).",
 );
+const unpairedUseCases = unpaired.filter((file) => file.includes("/use-cases/"));
+if (STRICT_USE_CASES && unpairedUseCases.length > 0) {
+  console.error(
+    `💥 TDD pairing: ${unpairedUseCases.length} changed use-case file(s) without a changed spec.`,
+  );
+  process.exit(1);
+}
 process.exit(STRICT ? 1 : 0);

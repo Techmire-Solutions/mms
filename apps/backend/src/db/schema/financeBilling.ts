@@ -9,7 +9,9 @@ import {
   numeric,
   integer,
   foreignKey,
+  check,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { financeInvoices, financePayments } from "./finance.js";
 import { accountingAccounts } from "./accounting.js";
@@ -131,7 +133,13 @@ export const financePaymentAllocations = pgTable(
     paymentId: text("payment_id").notNull(),
     invoiceId: text("invoice_id").notNull(),
     invoiceLineId: text("invoice_line_id"),
-    amount: numeric("amount", { precision: 12, scale: 2 }).notNull().default("0"),
+    /**
+     * 4 dp to match `finance_payments.invoice_amount` (numeric(19,4)): a payment
+     * settles an invoice in the invoice's currency, and at 2 dp the allocation
+     * silently re-rounded a cross-currency settlement so Σ allocations no longer
+     * equalled the applied amount (migration 0248).
+     */
+    amount: numeric("amount", { precision: 19, scale: 4 }).notNull().default("0"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
@@ -152,6 +160,7 @@ export const financePaymentAllocations = pgTable(
       table.workspaceSubdomain,
       table.invoiceId,
     ),
+    check("finance_payment_allocations_amount_chk", sql`${table.amount} > 0`),
   ],
 );
 

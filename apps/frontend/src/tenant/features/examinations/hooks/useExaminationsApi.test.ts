@@ -22,6 +22,14 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-query")>();
   return {
     ...actual,
+    // The marks hook pages through the endpoint; the test asserts wiring, not pagination.
+    useQuery: () => ({
+      data: {
+        status: 200,
+        body: { results: [{ id: "r-1", marksObtained: 90 }], hasMore: false },
+      },
+      isLoading: false,
+    }),
     useQueryClient: () => ({
       invalidateQueries: vi.fn(),
     }),
@@ -29,6 +37,14 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
 });
 
 vi.mock("@/lib/api", () => ({
+  apiContract: {
+    examinations: {
+      listResults: vi.fn().mockResolvedValue({
+        status: 200,
+        body: { results: [{ id: "r-1", marksObtained: 90 }], hasMore: false },
+      }),
+    },
+  },
   tsrClient: {
     examinations: {
       listExams: {
@@ -105,7 +121,7 @@ describe("useExaminationsApi Hooks", () => {
 
     expect(examsResult.data.status).toBe(200);
     expect(examsCollection).toHaveLength(1);
-    expect(resultsQuery.data.status).toBe(200);
+    expect(resultsQuery.data?.status).toBe(200);
     expect(resultsCollection).toHaveLength(1);
     expect(metricsResult.data?.total).toBe(1);
     expect(mutationsResult.replaceExams).toBeDefined();

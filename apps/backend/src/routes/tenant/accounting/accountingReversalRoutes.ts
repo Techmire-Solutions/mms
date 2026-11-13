@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import {
   ACCOUNTING_MODULE_MANIFEST,
+  journalReversalResultSchema,
   journalReversalRequestSchema,
   resourceIdParamsSchema,
   type User,
@@ -12,6 +13,7 @@ import {
   sendDatabaseError,
 } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
+import { sendValidated } from "../../../lib/validatedReply.js";
 import { reverseJournalEntry } from "../../../accounting/use-cases/reverseJournalEntryUseCase.js";
 import { reverseJournalEntryDeps } from "../../../accounting/use-cases/reverseJournalEntryDeps.js";
 
@@ -23,9 +25,9 @@ export const accountingReversalRoutes: FastifyPluginAsync = async (fastify) => {
     const user = request.user as User;
     if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
     const params = parseRequest(resourceIdParamsSchema, request.params);
-    if (!params.ok) return replyValidationError(reply, params.message);
+    if (!params.ok) return replyValidationError(reply, params);
     const body = parseRequest(journalReversalRequestSchema, request.body ?? {});
-    if (!body.ok) return replyValidationError(reply, body.message);
+    if (!body.ok) return replyValidationError(reply, body);
     try {
       const result = await reverseJournalEntry(
         String(request.tenant?.id),
@@ -34,7 +36,7 @@ export const accountingReversalRoutes: FastifyPluginAsync = async (fastify) => {
         { id: String(user.id), name: user.name },
         reverseJournalEntryDeps,
       );
-      return reply.status(201).send(result);
+      return sendValidated(reply, 201, journalReversalResultSchema, result);
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??

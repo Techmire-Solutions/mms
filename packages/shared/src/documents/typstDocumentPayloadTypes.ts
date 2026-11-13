@@ -61,6 +61,9 @@ export const typstReportCardPayloadSchema = z
     grade: z.string(),
     attendance: z.string(),
     remarks: z.string(),
+    /** Class position and class size; omitted when the document has no ranking context. */
+    rank: z.string().optional(),
+    classSize: z.number().int().nonnegative().optional(),
   })
   .strict();
 

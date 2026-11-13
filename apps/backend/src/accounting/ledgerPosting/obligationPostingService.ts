@@ -18,7 +18,7 @@ import { logger } from "../../lib/logger.js";
 import {
   entryForSource,
   persistGeneratedEntry,
-  postingDate,
+  postingDateForTenant,
   resolveYearId,
 } from "./ledgerPostingHelpers.js";
 import {
@@ -153,7 +153,7 @@ async function postObligationEntry(
   }
 
   const distributions = await resolveDistributionRules(tenant, collection);
-  const date = postingDate(collection.received_date);
+  const date = await postingDateForTenant(tenant, collection.received_date);
   const description = `Obligation Receipt ${collection.receipt_no}`;
   const lines = buildObligationPostingLines({
     collectionId: collection.id,

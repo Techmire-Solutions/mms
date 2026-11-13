@@ -18,6 +18,7 @@ export {
   EXAMINATIONS_PREFERENCES_QUERY_KEY,
 } from "@/tenant/features/examinations/hooks/useExaminationSetupConfig";
 export { invalidateExaminationsQueries } from "@/tenant/features/examinations/hooks/invalidateExaminationsQueries";
+export { EXAMINATIONS_ELIGIBILITY_QUERY_KEY } from "@/tenant/features/examinations/hooks/examinationsQueryKeys";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   examinationsExamsListQueryOptions,

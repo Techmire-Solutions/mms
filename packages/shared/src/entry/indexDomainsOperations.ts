@@ -9,6 +9,7 @@
 export * from "../finance/accountingDefaultChart.js";
 export * from "../finance/accountingFxAccounts.js";
 export * from "../finance/accountingFxLines.js";
+export * from "../finance/accountingEnums.js";
 export * from "../finance/accountingFxSettings.js";
 export * from "../finance/accountingFxExchangeability.js";
 export * from "../finance/accountingFxRevaluation.js";
@@ -16,6 +17,7 @@ export * from "../finance/accountingFxReport.js";
 export * from "../finance/accountingHyperinflation.js";
 export * from "../finance/accountingHyperinflationSchemas.js";
 export * from "../finance/accountingHedgeSchemas.js";
+export * from "../finance/accountingHttpResponses.js";
 export * from "../finance/accountingHedges.js";
 export * from "../finance/consolidationTranslation.js";
 export * from "../finance/consolidationGroups.js";
@@ -30,6 +32,7 @@ export * from "../finance/accountingListQuery.js";
 export * from "../finance/accountingModuleManifest.js";
 export * from "../finance/accountingModuleSettings.js";
 export * from "../finance/accountingReportAggregates.js";
+export * from "../finance/accountingReportEndpoints.js";
 export * from "../finance/accountingSetupConfigTypes.js";
 export * from "../finance/accountingSpecializedEntries.js";
 export * from "../finance/financialLedgerTypes.js";
@@ -70,6 +73,10 @@ export * from "../obligations/obligationsReportAggregates.js";
 // ---------------------------------------------------------------------------
 // 10. Hasanat, Examinations & Question Bank
 // ---------------------------------------------------------------------------
+export * from "../examinations/examLifecycle.js";
+export * from "../examinations/examErrorDetails.js";
+export * from "../examinations/examinationsExportUtils.js";
+export * from "../examinations/resultScoring.js";
 export * from "../examinations/examinationsListQuery.js";
 export * from "../examinations/examinationsModuleManifest.js";
 export * from "../examinations/examinationsModuleSettings.js";
@@ -88,6 +95,11 @@ export * from "../workshops/workshopsModuleManifest.js";
 export * from "../workshops/workshopsRecords.js";
 export * from "../workshops/workshopDays.js";
 export * from "../workshops/workshopCompletion.js";
+export * from "../workshops/workshopLifecycle.js";
+export * from "../workshops/workshopLifecycleSchemas.js";
+export * from "../workshops/workshopRegistrationRules.js";
+export * from "../workshops/workshopRegistrationState.js";
+export * from "../workshops/workshopScheduleRules.js";
 export * from "../examinations/questionBankAnswerUtils.js";
 export * from "../examinations/questionBankCategoryUtils.js";
 export * from "../examinations/questionBankCore.js";
@@ -96,10 +108,17 @@ export * from "../examinations/questionBankEntities.js";
 export * from "../examinations/questionBankFormUtils.js";
 export * from "../examinations/questionBankListQuery.js";
 export * from "../examinations/questionBankModuleManifest.js";
+export * from "../examinations/questionInvariants.js";
+export * from "../examinations/questionBankSerialization.js";
+export * from "../examinations/questionDto.js";
+export * from "../examinations/questionTaxonomy.js";
+export * from "../examinations/questionLifecycle.js";
 export * from "../examinations/questionBankModuleSettings.js";
 export * from "../examinations/questionBankSetupConfigTypes.js";
 export * from "../examinations/questionBankSourceUtils.js";
 export * from "../examinations/questionBankReportAggregates.js";
+export * from "../examinations/paperBlueprint.js";
+export * from "../examinations/questionSimilarity.js";
 export * from "../examinations/questionBankTypes.js";
 
 // ---------------------------------------------------------------------------

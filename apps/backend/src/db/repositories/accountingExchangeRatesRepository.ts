@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm";
 import {
   ESTIMATED_RATE_SOURCE,
+  coerceExchangeRateSource,
   crossExchangeRate,
   invertExchangeRate,
   type ExchangeRateListQuery,
@@ -49,6 +50,7 @@ function rateRowToRecord(row: RateRow): ExchangeRateRecord {
     ...row,
     rateType: row.rateType as ExchangeRateType,
     rate: canonicalStoredRate(row.rate),
+    source: coerceExchangeRateSource(row.source),
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -77,6 +79,38 @@ export async function listExchangeRates(
 }
 
 /** Upsert by (from, to, date, type); a changed rate keeps the row id and records the reason. */
+/**
+ * Stored rates at exactly the given keys — used to capture the before state when
+ * an upsert overwrites them. Bounded by the caller (the PUT body caps at 500).
+ */
+export async function findExchangeRatesByKeys(
+  tenant: string,
+  keys: readonly {
+    fromCurrency: string;
+    toCurrency: string;
+    rateDate: string;
+    rateType: ExchangeRateType;
+  }[],
+): Promise<ExchangeRateRecord[]> {
+  if (keys.length === 0) return [];
+  const subdomain = tenant.trim().toLowerCase();
+  const predicates = keys.map((key) =>
+    and(
+      eq(accountingExchangeRates.fromCurrency, key.fromCurrency),
+      eq(accountingExchangeRates.toCurrency, key.toCurrency),
+      eq(accountingExchangeRates.rateDate, key.rateDate),
+      eq(accountingExchangeRates.rateType, key.rateType),
+    ),
+  );
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select(rateColumns)
+      .from(accountingExchangeRates)
+      .where(and(eq(accountingExchangeRates.workspaceSubdomain, subdomain), or(...predicates)));
+    return rows.map(rateRowToRecord);
+  });
+}
+
 export async function upsertExchangeRates(
   tenant: string,
   items: readonly ExchangeRatePutItem[],

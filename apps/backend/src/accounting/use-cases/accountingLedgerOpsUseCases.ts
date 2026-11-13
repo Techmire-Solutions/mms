@@ -22,6 +22,10 @@ import {
   saveBankStatement,
   savePostingRules,
 } from "../../db/repositories/accountingLedgerOpsRepository.js";
+import { findFiscalYearById } from "../../db/repositories/accountingFiscalYearsRepository.js";
+import { findActiveReversalOf } from "../../db/repositories/accountingEntryReversalRepository.js";
+import { listOpeningEntries } from "../../db/repositories/accountingRepository.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { closeFiscalYearForTenant } from "./accountingPeriodClose.js";
 import { tryPostOpeningJournal } from "../ledgerPosting/ledgerPostingService.js";
 
@@ -122,6 +126,34 @@ export async function upsertOpeningBalances(
   balances: OpeningBalanceInsert[],
 ): Promise<OpeningBalance[]> {
   const tenant = requireTenant();
+  // Editing opening balances after the year is closed (or after they were
+  // posted) silently desynchronised the stored balances from the opening
+  // journal, which can no longer be posted for that year.
+  const year = await findFiscalYearById(tenant, fiscalYearId);
+  if (!year) {
+    throw Object.assign(new Error("Fiscal year not found"), {
+      statusCode: 404,
+      type: "not_found",
+    });
+  }
+  if (year.status === "closed") {
+    throw Object.assign(new Error("Cannot edit opening balances of a closed fiscal year"), {
+      statusCode: 422,
+      type: "validation_error",
+    });
+  }
+  // Editing is allowed again once the posted opening entry has been reversed: the
+  // re-post then writes a revision entry. Previously the reversal left the source
+  // key in place, so the "reverse that entry" advice could never be followed.
+  const latestOpening = (await listOpeningEntries(tenant, fiscalYearId)).at(-1);
+  if (latestOpening && !(await findActiveReversalOf(tenant, latestOpening))) {
+    throw Object.assign(
+      new Error(
+        "Opening balances for this fiscal year are already posted — reverse that entry before editing them",
+      ),
+      { statusCode: 422, type: "validation_error" },
+    );
+  }
   const parsed = openingBalancesReplaceSchema.parse({ fiscalYearId, balances });
   const records = parsed.balances.map((row, index) => ({
     ...row,
@@ -141,6 +173,20 @@ export async function postOpeningBalances(fiscalYearId: string): Promise<{ poste
   // success — previously an edited-but-already-posted set reported success while
   // the ledger kept the original figures.
   const entry = await tryPostOpeningJournal(tenant, fiscalYearId, balances);
+  if (entry) {
+    await recordModernAuditEvent({
+      workspaceSubdomain: tenant,
+      tableName: "accounting_entries",
+      recordId: entry.id,
+      actionType: "CREATE",
+      newState: {
+        event: "opening_balances_posted",
+        fiscalYearId,
+        sourceId: entry.source_id ?? fiscalYearId,
+        lineCount: entry.lines?.length ?? 0,
+      },
+    });
+  }
   await broadcast(tenant, "accounting_entries");
   return { posted: entry !== null };
 }
@@ -188,3 +234,9 @@ export async function matchBankStatementLine(input: unknown): Promise<void> {
   await matchBankReconciliation(tenant, parsed);
   await broadcast(tenant, "accounting_bank_reconciliations");
 }
+
+export {
+  closePostingPeriod,
+  loadPostingPeriods,
+  reopenPostingPeriod,
+} from "./accountingPostingPeriodUseCases.js";

@@ -1,4 +1,9 @@
-import { buildClosingEntryLines, type FiscalYear, type JournalEntry } from "@mms/shared";
+import {
+  buildClosingEntryLines,
+  moneyToCents,
+  type FiscalYear,
+  type JournalEntry,
+} from "@mms/shared";
 import { findEntryIdBySource, saveEntry } from "../../db/repositories/accountingRepository.js";
 import {
   findFiscalYearByIdForUpdate,
@@ -76,6 +81,22 @@ export async function closeFiscalYearForTenant(
       dateFrom: year.startDate,
       dateTo: year.endDate,
     });
+    // Never close a year whose own ledger does not balance: the closing entry
+    // plugs P&L into retained earnings, so an unbalanced trial balance would be
+    // silently absorbed by that plug instead of failing loudly.
+    const debitCents = report.trialBalance.reduce(
+      (sum, row) => sum + moneyToCents(row.totalDebit),
+      0,
+    );
+    const creditCents = report.trialBalance.reduce(
+      (sum, row) => sum + moneyToCents(row.totalCredit),
+      0,
+    );
+    if (debitCents !== creditCents) {
+      throw ledgerError(
+        `Trial balance does not balance for ${year.label}: ${(debitCents / 100).toFixed(2)} debit vs ${(creditCents / 100).toFixed(2)} credit — run audit:ledger-balance`,
+      );
+    }
     const balances = report.trialBalance
       .filter((row) => row.type === "Revenue" || row.type === "Expense")
       .map((row) => ({

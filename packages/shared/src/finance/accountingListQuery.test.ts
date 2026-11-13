@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { ACCOUNTING_ACCOUNT_TYPES, ACCOUNT_SUBTYPES } from "./accountingEnums.js";
 import {
-  ACCOUNTING_ACCOUNT_TYPES,
-  ACCOUNT_SUBTYPES,
   accountingAccountsListQuerySchema,
   accountingEntriesListQuerySchema,
 } from "./accountingListQuery.js";

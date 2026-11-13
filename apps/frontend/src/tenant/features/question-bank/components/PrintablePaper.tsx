@@ -6,8 +6,16 @@ import {
   getPaperQuestionCount,
   PAPER_PRINT_STYLES,
   type PaperConfig,
+  type PaperPrintMode,
   type PaperSection,
 } from "@/tenant/features/question-bank/lib/paperBuilderUtils";
+
+const OPTION_LABELS = ["A", "B", "C", "D", "E", "F"] as const;
+
+/** Latin exam labels, isolated so RTL punctuation cannot flip `A.` into `.A`. */
+function optionLabel(index: number): string {
+  return `${OPTION_LABELS[index] ?? `${index + 1}`}.`;
+}
 
 function renderAnswerLines(question: Question): React.ReactElement | null {
   const lineCount = ANSWER_LINE_COUNT_BY_TYPE[question.type] ?? 2;
@@ -24,26 +32,33 @@ function renderAnswerLines(question: Question): React.ReactElement | null {
 function PaperQuestion({
   question,
   number,
+  mode,
 }: {
   question: Question;
   number: number;
+  mode: PaperPrintMode;
 }): React.ReactElement {
   const { t } = useTranslation();
-  const optionLabels = ["A", "B", "C", "D", "E", "F"];
   const options = question.options.filter(Boolean);
+  const isAnswerKey = mode === "answerKey";
 
   return (
     <div className="qpaper-question">
       <div className="qpaper-question-text">
-        <span className="qpaper-question-number">{number}.</span>
+        <bdi className="qpaper-question-number">{number}.</bdi>
         <span>{question.text}</span>
       </div>
 
       {question.type === "mcq" && options.length > 0 && (
         <div className="qpaper-options">
           {options.map((option, optionIndex) => (
-            <div key={`${question.id}-${option}`} className="qpaper-option">
-              <strong>{optionLabels[optionIndex] ?? `${optionIndex + 1}`}.</strong>
+            <div
+              key={`${question.id}-${option}`}
+              className={`qpaper-option${isAnswerKey && option === question.answer ? " qpaper-option-correct" : ""}`}
+            >
+              <strong>
+                <bdi>{optionLabel(optionIndex)}</bdi>
+              </strong>
               <span>{option}</span>
             </div>
           ))}
@@ -52,12 +67,20 @@ function PaperQuestion({
 
       {question.type === "true_false" && (
         <div className="qpaper-options">
-          <div className="qpaper-option">
-            <strong>A.</strong>
+          <div
+            className={`qpaper-option${isAnswerKey && question.answer.trim().toLowerCase() === "true" ? " qpaper-option-correct" : ""}`}
+          >
+            <strong>
+              <bdi>A.</bdi>
+            </strong>
             <span>{t("questionBank.true")}</span>
           </div>
-          <div className="qpaper-option">
-            <strong>B.</strong>
+          <div
+            className={`qpaper-option${isAnswerKey && question.answer.trim().toLowerCase() === "false" ? " qpaper-option-correct" : ""}`}
+          >
+            <strong>
+              <bdi>B.</bdi>
+            </strong>
             <span>{t("questionBank.false")}</span>
           </div>
         </div>
@@ -72,7 +95,7 @@ function PaperQuestion({
             {options.map((option, optionIndex) => (
               <tr key={`${question.id}-${option}`}>
                 <td>
-                  {optionIndex + 1}. {option}
+                  <bdi>{optionIndex + 1}.</bdi> {option}
                 </td>
                 <td aria-hidden="true">&nbsp;</td>
               </tr>
@@ -85,14 +108,22 @@ function PaperQuestion({
         <div className="qpaper-options">
           {options.map((option, optionIndex) => (
             <div key={`${question.id}-${option}`} className="qpaper-option">
-              <strong>{optionIndex + 1}.</strong>
+              <strong>
+                <bdi>{optionIndex + 1}.</bdi>
+              </strong>
               <span>{option}</span>
             </div>
           ))}
         </div>
       )}
 
-      {renderAnswerLines(question)}
+      {isAnswerKey ? (
+        <div className="qpaper-answer">
+          <strong>{t("questionBank.answerKey")}:</strong> <span>{question.answer}</span>
+        </div>
+      ) : (
+        renderAnswerLines(question)
+      )}
     </div>
   );
 }
@@ -101,10 +132,12 @@ export function PrintablePaper({
   config,
   sections,
   questionsById,
+  mode = "paper",
 }: {
   config: PaperConfig;
   sections: PaperSection[];
   questionsById: Map<string, Question>;
+  mode?: Exclude<PaperPrintMode, "answerSheet">;
 }): React.ReactElement {
   const { t } = useTranslation();
   const title = config.name || t("questionBank.previewDefaultName");
@@ -117,7 +150,11 @@ export function PrintablePaper({
       <article className="qpaper" aria-label={t("questionBank.paperPreview")}>
         <header className="qpaper-header">
           <h1 className="qpaper-title">{title}</h1>
-          <p className="qpaper-subtitle">{t("questionBank.paperSubtitle")}</p>
+          <p className="qpaper-subtitle">
+            {mode === "answerKey"
+              ? `${t("questionBank.paperSubtitle")} — ${t("questionBank.answerKey")}`
+              : t("questionBank.paperSubtitle")}
+          </p>
         </header>
 
         <section className="qpaper-meta" aria-label={t("questionBank.paperDetails")}>
@@ -170,7 +207,12 @@ export function PrintablePaper({
               {sectionQuestions.map((question) => {
                 questionNumber += 1;
                 return (
-                  <PaperQuestion key={question.id} question={question} number={questionNumber} />
+                  <PaperQuestion
+                    key={question.id}
+                    question={question}
+                    number={questionNumber}
+                    mode={mode}
+                  />
                 );
               })}
             </section>

@@ -8,6 +8,9 @@ import {
   QUEUE_SESSIONS_ROLLOVER,
   DEFAULT_JOB_OPTIONS,
   QUEUE_HASANAT_AWARDS,
+  QUEUE_EXAMINATIONS,
+  QUEUE_QUESTION_BANK,
+  QUEUE_WORKSHOPS,
   getBullMQConnectionOptions,
   getQueuePrefix,
 } from "./queueConfig.js";
@@ -17,8 +20,8 @@ import {
 } from "./queueTenantInflight.js";
 import { stripUndefinedFields } from "../../lib/payloadTrimmer.js";
 import { logger } from "../../lib/logger.js";
+import { removeRetainedJob } from "./replaceRetainedJob.js";
 import { getRedisClient, checkIsRedisConnected } from "../../lib/redis.js";
-
 export const MAX_JOB_PAYLOAD_BYTES = 1024 * 1024; // 1 MB payload ceiling
 export const QUEUE_ADD_TIMEOUT_MS = 6000;
 export const QUEUE_ADD_RECONCILE_TIMEOUT_MS = 2000;
@@ -132,6 +135,20 @@ export function resolveQueueNameForJob(moduleId: string, kind: string): string {
     return QUEUE_HASANAT_AWARDS;
   }
 
+  if (normalizedModule === "workshops") {
+    return QUEUE_WORKSHOPS;
+  }
+
+  if (normalizedModule === "examinations") {
+    return QUEUE_EXAMINATIONS;
+  }
+
+  // Imports/exports and item-analysis rollups are long and DB-heavy: keep them off the shared
+  // export queue so they neither wait for nor block another module's export.
+  if (normalizedModule === "questionbank") {
+    return QUEUE_QUESTION_BANK;
+  }
+
   if (
     normalizedModule === "messaging" ||
     normalizedKind.includes("broadcast") ||
@@ -145,6 +162,7 @@ export function resolveQueueNameForJob(moduleId: string, kind: string): string {
 }
 
 export * from "./queueTenantInflight.js";
+export { removeRetainedJob } from "./replaceRetainedJob.js";
 
 /**
  * Dispatches a background job to the appropriate BullMQ queue with tenant fair-share scheduling.
@@ -155,6 +173,7 @@ export async function dispatchJobToQueue(
   userId: string,
   job: BackgroundJobRecord,
   payload: unknown,
+  options?: { replaceExisting?: boolean },
 ): Promise<boolean> {
   const queueName = resolveQueueNameForJob(job.moduleId, job.kind);
   if (process.env.MMS_ALLOW_IN_PROCESS_JOB_FALLBACK === "true") {
@@ -209,10 +228,20 @@ export async function dispatchJobToQueue(
     const longRunningRollover =
       job.moduleId.trim().toLowerCase() === "sessions" &&
       job.kind.trim().toLowerCase() === "promote";
+    // Workshop imports are chunked/idempotent; a short 1s retry budget would dead-letter on a
+    // transient DB blip, so give them the same longer backoff as rollover.
+    const longRunningImport =
+      job.moduleId.trim().toLowerCase() === "workshops" &&
+      job.kind.trim().toLowerCase() === "import";
+    if (options?.replaceExisting) {
+      // Replay path: clear the retained job first, otherwise BullMQ dedupes the id and the
+      // re-enqueue is silently ignored.
+      await removeRetainedJob(queue, job.id);
+    }
     const addPromise = queue.add(`${job.moduleId}:${job.kind}`, jobData, {
       jobId: job.id,
       priority: fairSharePriority,
-      ...(longRunningRollover
+      ...(longRunningRollover || longRunningImport
         ? { attempts: 3, backoff: { type: "exponential" as const, delay: 30_000 } }
         : {}),
     });

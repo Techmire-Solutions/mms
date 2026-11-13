@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   convertMoney,
   crossExchangeRate,
+  exchangeRateStringsEqual,
   InvalidExchangeRateError,
   invertExchangeRate,
   isValidExchangeRate,
@@ -100,5 +101,20 @@ describe("money schemas", () => {
     expect(exchangeRateValueSchema.safeParse("280.5").success).toBe(true);
     expect(moneyValueSchema.safeParse({ amount: "10.5", currency: "JPY" }).success).toBe(false);
     expect(moneyValueSchema.safeParse({ amount: "10.500", currency: "KWD" }).success).toBe(true);
+  });
+});
+
+describe("exchangeRateStringsEqual", () => {
+  it("treats equivalent decimal spellings as equal", () => {
+    expect(exchangeRateStringsEqual("1", "1.0000000000")).toBe(true);
+    expect(exchangeRateStringsEqual("278.50", "278.5")).toBe(true);
+    expect(exchangeRateStringsEqual(" 1.25 ", "1.2500")).toBe(true);
+    expect(exchangeRateStringsEqual(null, undefined)).toBe(true);
+  });
+
+  it("detects tenth-decimal changes Number() cannot see reliably", () => {
+    expect(exchangeRateStringsEqual("1.0000000001", "1")).toBe(false);
+    expect(exchangeRateStringsEqual("278.5", "278.5000000001")).toBe(false);
+    expect(exchangeRateStringsEqual("-1.5", "1.5")).toBe(false);
   });
 });

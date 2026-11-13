@@ -1,5 +1,10 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { dedupeTrimmedIds, type Payment, type RepositoryListOptions } from "@mms/shared";
+import {
+  coerceFinancePaymentMethod,
+  dedupeTrimmedIds,
+  type Payment,
+  type RepositoryListOptions,
+} from "@mms/shared";
 import { financePayments } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
@@ -17,7 +22,7 @@ export function paymentRowToRecord(row: PaymentRow): Payment {
     invoiceId: row.invoiceId,
     amount: Number(row.amount ?? 0),
     date: row.date,
-    method: row.method,
+    method: coerceFinancePaymentMethod(row.method),
     note: row.note,
     ...mapAuditTimestamps(row),
   };

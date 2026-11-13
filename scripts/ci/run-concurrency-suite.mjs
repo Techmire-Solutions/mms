@@ -12,6 +12,26 @@ const FILES = [
   "src/__tests__/db-integration/attendanceConcurrencyDb.integration.test.ts",
   // Double redeem/void, idempotent issue, OCC, stock and quota races behind the Hasanat cards.
   "src/__tests__/db-integration/hasanatConcurrencyDb.integration.test.ts",
+  // Exam OCC batches/moderation/publication: repeated so a lucky single run cannot hide a race.
+  "src/__tests__/db-integration/examinationsConcurrencyDb.integration.test.ts",
+  // Workshop seat capacity: concurrent registration, duplicate submission, cap lowering, trash race.
+  "src/__tests__/db-integration/workshopsCapacityConcurrencyDb.integration.test.ts",
+  // Workshop waitlist: concurrent fills, promotions on withdrawal, capacity-raise promotion order.
+  "src/__tests__/db-integration/workshopsWaitlistDb.integration.test.ts",
+  // Completion/certificate races: evaluate, issue, transition vs issue, attendance, cancel.
+  "src/__tests__/db-integration/workshopsCompletionConcurrencyDb.integration.test.ts",
+  // Finance/Accounting: concurrent postings, stale-save rejection, double reversal and
+  // transactional voucher numbering (gap/duplicate refs are a financial defect).
+  "src/__tests__/db-integration/accountingConcurrencyDb.integration.test.ts",
+  "src/__tests__/db-integration/accountingVoucherCountersDb.integration.test.ts",
+  // One-winner collection (late fee + reminder claim) and payment/invoice balance races.
+  "src/__tests__/db-integration/financeCollectConcurrencyDb.integration.test.ts",
+  "src/__tests__/db-integration/financePaymentConcurrencyDb.integration.test.ts",
+  // Parallel fiscal-year close: exactly one closing entry, one closed year, one audit row.
+  "src/__tests__/db-integration/accountingCloseConcurrencyDb.integration.test.ts",
+  // Serialised FX revaluation and IAS 29 restatement runs (one per date).
+  "src/__tests__/db-integration/accountingFxRevaluationDb.integration.test.ts",
+  "src/__tests__/db-integration/accountingIas29Db.integration.test.ts",
 ];
 
 for (const file of FILES) {

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Tag } from "lucide-react";
 import {
   APP_LANGUAGES,
@@ -29,7 +30,7 @@ interface QuestionFormClassificationSectionProps {
   ) => Promise<QuestionCategory[] | void> | QuestionCategory[] | void;
 }
 
-export function QuestionFormClassificationSection({
+function QuestionFormClassificationSectionComponent({
   questionDraft,
   errors,
   updateDraft,
@@ -90,3 +91,19 @@ export function QuestionFormClassificationSection({
     </div>
   );
 }
+
+/**
+ * Memoized so typing in the stem does not re-render the classification card.
+ * `updateDraft` and the config arrays are stable (`useCallback`/`useMemo`).
+ */
+export const QuestionFormClassificationSection = memo(
+  QuestionFormClassificationSectionComponent,
+  (prev, next) =>
+    prev.questionDraft.categoryIds === next.questionDraft.categoryIds &&
+    prev.questionDraft.difficulty === next.questionDraft.difficulty &&
+    prev.questionDraft.questionLanguage === next.questionDraft.questionLanguage &&
+    prev.errors === next.errors &&
+    prev.categories === next.categories &&
+    prev.updateDraft === next.updateDraft &&
+    prev.onCreateCategory === next.onCreateCategory,
+);

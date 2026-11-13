@@ -32,14 +32,17 @@ echo "=================================================="
 echo "🚀 MMS Pre-PR Automated Verification (scope: $SCOPE, parallel)"
 echo "=================================================="
 
-# Advisory only (never fails): flags backend domain files changed without a
-# changed spec. Test-first ordering itself is unprovable (rule mms-tdd §2).
-node scripts/check-tdd-pairing.mjs || true
+# Blocking for use-cases (business rules), advisory for repositories (their behaviour is often
+# pinned by a DB-integration spec elsewhere). Test-first ordering itself is unprovable.
+node scripts/check-tdd-pairing.mjs --strict-use-cases
 
 gate "Staged secrets" pnpm run check:secrets
 gate "Rules & skills integrity" node scripts/verify-rules-integrity.mjs
 # Attendance contract coverage: every contract path must appear in an app.inject test.
 gate "Attendance route injection" node scripts/ci/check-attendance-route-injection.mjs --strict
+gate "Examinations test matrix" pnpm run check:examinations-tests
+gate "Examinations route injection" pnpm run check:examinations-route-injection
+gate "Examinations scoring coverage" pnpm --filter @mms/shared run test:coverage:examinations
 gate "i18n completeness (en/ar/ur/fa)" pnpm run check:i18n
 gate "i18n unused keys" pnpm run check:i18n-unused
 gate "@mms/shared purity & boundaries" pnpm run check:shared-purity

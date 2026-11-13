@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
 import { FormModal } from "@/components/app/FormModal";
@@ -38,6 +38,7 @@ function buildQuestionValues(question: Question | null, language: string): Quest
     options: question?.options ? [...question.options] : ["", "", "", ""],
     answer: question?.answer ?? "",
     sourceCitations: question?.sourceCitations ? [...question.sourceCitations] : [],
+    version: question?.version,
   } as QuestionFormValues;
 }
 
@@ -86,14 +87,18 @@ export function QuestionForm({
     return map;
   }, [formState.errors]);
 
-  const updateDraft = (patch: Partial<QuestionFormDraft>) => {
-    for (const [key, value] of Object.entries(patch)) {
-      setValue(key as keyof QuestionFormValues, value as never, {
-        shouldDirty: true,
-        shouldValidate: false,
-      });
-    }
-  };
+  // Stable identity: the memoized form sections compare it by reference.
+  const updateDraft = useCallback(
+    (patch: Partial<QuestionFormDraft>) => {
+      for (const [key, value] of Object.entries(patch)) {
+        setValue(key as keyof QuestionFormValues, value as never, {
+          shouldDirty: true,
+          shouldValidate: false,
+        });
+      }
+    },
+    [setValue],
+  );
 
   // Inline category/source-book creation in the question form persists to the
   // typed Question Bank preferences (`PUT /api/question-bank/config/preferences`)

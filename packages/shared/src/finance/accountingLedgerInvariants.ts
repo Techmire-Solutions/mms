@@ -48,20 +48,108 @@ const hasAtMostTwoDecimals = (value: number): boolean =>
   Math.abs(value - Math.round(value * 100) / 100) < 1e-9;
 
 /**
- * Non-negative money with at most two decimal places, so ledger arithmetic can
- * round-trip through integer cents without silent precision loss.
+ * Every money field that travels as a number must round-trip through integer cents
+ * exactly. Beyond 2^53 cents, `Number` storage silently drops a cent — such a
+ * column must move to a decimal-string DTO instead of widening this bound.
+ */
+const hasSafeCents = (value: number): boolean => Number.isSafeInteger(Math.round(value * 100));
+
+const moneyCentsChecks = [
+  (value: number) => Number.isFinite(value),
+  (value: number) => hasAtMostTwoDecimals(value),
+  (value: number) => hasSafeCents(value),
+] as const;
+
+/**
+ * Non-negative money with at most two decimal places and safe integer cents, so
+ * ledger arithmetic can round-trip without silent precision loss.
  */
 export const moneyAmountSchema = z
   .number()
   .finite()
   .nonnegative()
-  .refine(hasAtMostTwoDecimals, { message: "accounting.validation.moneyTwoDecimals" });
+  .refine(moneyCentsChecks[1], { message: "accounting.validation.moneyTwoDecimals" })
+  .refine(moneyCentsChecks[2], { message: "accounting.validation.moneySafeCents" });
 
-/** Signed money with at most two decimal places (bank statement lines). */
+/** Positive money (payments, allocations): 2-dp and safely convertible to cents. */
+export const positiveMoneyAmountSchema = moneyAmountSchema.refine((value) => value > 0, {
+  message: "accounting.validation.moneyPositive",
+});
+
+/** Signed money with at most two decimal places (bank statement lines, balances). */
 export const signedMoneyAmountSchema = z
   .number()
-  .finite()
-  .refine(hasAtMostTwoDecimals, { message: "accounting.validation.moneyTwoDecimals" });
+  .refine(moneyCentsChecks[0], { message: "accounting.validation.moneyFinite" })
+  .refine(moneyCentsChecks[1], { message: "accounting.validation.moneyTwoDecimals" })
+  .refine(moneyCentsChecks[2], { message: "accounting.validation.moneySafeCents" });
+
+const DECIMAL_AMOUNT_RE = /^(-?)(\d{1,15})(?:\.(\d{1,10}))?$/;
+
+/**
+ * Exact decimal string → integer cents, half-up when `round` is set.
+ *
+ * Never passes through a float: `Number('1234567890123.45')` is exact only until
+ * the cent count leaves 2^53, and an FX conversion can carry ten decimals.
+ */
+function decimalAmountToCents(value: string, round: boolean): number {
+  const match = DECIMAL_AMOUNT_RE.exec(value.trim());
+  if (!match) throw new Error(`Invalid decimal amount "${value}"`);
+  const sign = match[1] === "-" ? -1 : 1;
+  const wholeCents = Number.parseInt(match[2]!, 10) * 100;
+  const fraction = (match[3] ?? "").padEnd(10, "0");
+  const cents = Number.parseInt(fraction.slice(0, 2), 10);
+  const subCent = Number.parseInt(fraction.slice(2), 10);
+  if (!round && subCent !== 0) {
+    throw new Error(`Amount "${value}" has more than two decimal places`);
+  }
+  // `subCent` is the remaining 8 digits of the 10-digit fraction: half a cent is
+  // 50,000,000 of those units.
+  const rounded = cents + (round && subCent >= 50_000_000 ? 1 : 0);
+  const total = wholeCents + rounded;
+  if (!Number.isSafeInteger(total)) {
+    throw new Error(`Amount "${value}" exceeds exact integer cents`);
+  }
+  return sign * total;
+}
+
+/**
+ * Parses a validated money input (form draft, specialized-entry amount) to the
+ * 2-dp number the DTOs carry. Throws on more than two decimals or unsafe cents —
+ * use {@link tryParseMoneyAmountNumber} where invalid input is expected.
+ */
+export function parseMoneyAmountNumber(value: string | number): number {
+  if (typeof value === "number") {
+    moneyAmountSchema.parse(value);
+    return value;
+  }
+  const cents = decimalAmountToCents(value, false);
+  if (cents < 0) throw new Error(`Amount "${value}" must not be negative`);
+  return cents / 100;
+}
+
+/** Null-returning variant for UI comparisons (`Number(input) > 0`). */
+export function tryParseMoneyAmountNumber(
+  value: string | number | null | undefined,
+): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  try {
+    return parseMoneyAmountNumber(value);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rounds any decimal string (e.g. an FX-converted amount with ten decimals) to the
+ * ledger's 2-dp number, half-up and exact. Replaces `Number(moneyToDecimalString())`.
+ */
+export function roundMoneyAmount(value: string | number): number {
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error("Invalid money amount");
+    return decimalAmountToCents(value.toFixed(10), true) / 100;
+  }
+  return decimalAmountToCents(value, true) / 100;
+}
 
 /**
  * A journal line is single-sided when at most one of debit/credit is positive

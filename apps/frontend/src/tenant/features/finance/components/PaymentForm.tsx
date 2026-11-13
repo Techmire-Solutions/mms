@@ -8,6 +8,7 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { PaymentFormFields } from "@/tenant/features/finance/components/PaymentFormFields";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
+import { tryParseMoneyAmountNumber } from "@mms/shared";
 import {
   formatMoney,
   isValidExchangeRate,
@@ -17,6 +18,7 @@ import {
 } from "@mms/shared";
 import { DocumentCurrencyFields } from "@/components/app/DocumentCurrencyFields";
 import { useDocumentCurrency } from "@/tenant/hooks/useDocumentCurrency";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import { invoiceAmountInPaymentCurrency } from "@/tenant/features/finance/lib/paymentCurrency";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";
@@ -95,57 +97,60 @@ export function PaymentForm({
     });
   };
 
-  const handleSave = async () => {
-    setErrors({});
-    const newErrors = validatePaymentFormDraft(paymentDraft, balance, t);
-    if (fx.needsRate && !isValidExchangeRate(fx.rate)) {
-      newErrors.exchangeRate = t("fx.field.rateMissing");
-    }
+  const guard = useSubmitGuard();
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      notify.error(t("finance.fixErrors"));
-      return;
-    }
-
-    if (!invoice) return;
-
-    const payload = {
-      ...buildPaymentCreatePayload(
-        paymentDraft,
-        invoice.id,
-        invoice.studentId,
-        invoice.studentName,
-        authUser?.id || "",
-      ),
-      ...(fx.needsRate ? { currency: fx.currency, exchangeRate: fx.rate.trim() } : {}),
-    };
-
-    const parsed = paymentRecordInsertSchema.safeParse(payload);
-    if (!parsed.success) {
-      setErrors((prev) => ({
-        ...prev,
-        ...mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey)),
-      }));
-      notify.error(t("finance.fixErrors"));
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await onSave(payload);
-      notify.success(t("finance.paymentSaved"));
-      onClose();
-    } catch (err: unknown) {
-      if (!(err instanceof NotifiedMutationError)) {
-        notify.error(t("finance.paymentSaveFailed"), {
-          description: err instanceof Error ? err.message : String(err),
-        });
+  const handleSave = () =>
+    guard(async () => {
+      setErrors({});
+      const newErrors = validatePaymentFormDraft(paymentDraft, balance, t);
+      if (fx.needsRate && !isValidExchangeRate(fx.rate)) {
+        newErrors.exchangeRate = t("fx.field.rateMissing");
       }
-    } finally {
-      setSaving(false);
-    }
-  };
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        notify.error(t("finance.fixErrors"));
+        return;
+      }
+
+      if (!invoice) return;
+
+      const payload = {
+        ...buildPaymentCreatePayload(
+          paymentDraft,
+          invoice.id,
+          invoice.studentId,
+          invoice.studentName,
+          authUser?.id || "",
+        ),
+        ...(fx.needsRate ? { currency: fx.currency, exchangeRate: fx.rate.trim() } : {}),
+      };
+
+      const parsed = paymentRecordInsertSchema.safeParse(payload);
+      if (!parsed.success) {
+        setErrors((prev) => ({
+          ...prev,
+          ...mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey)),
+        }));
+        notify.error(t("finance.fixErrors"));
+        return;
+      }
+
+      setSaving(true);
+      try {
+        await onSave(payload);
+        notify.success(t("finance.paymentSaved"));
+        onClose();
+      } catch (err: unknown) {
+        if (!(err instanceof NotifiedMutationError)) {
+          notify.error(t("finance.paymentSaveFailed"), {
+            description: err instanceof Error ? err.message : String(err),
+          });
+        }
+      } finally {
+        setSaving(false);
+      }
+    });
 
   const footerStart = invoice ? (
     <div className="flex flex-wrap items-center gap-2.5 text-xs">
@@ -155,7 +160,9 @@ export function PaymentForm({
       <div className="flex items-center gap-1.5">
         <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-success/10 text-success font-semibold border border-success/20 text-xs">
           {t("finance.balance", {
-            balance: formatCurrency(balance - Number(paymentDraft.amount || 0)),
+            balance: formatCurrency(
+              balance - (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0),
+            ),
           })}
         </span>
       </div>
@@ -176,8 +183,8 @@ export function PaymentForm({
         saving ||
         !invoice ||
         !paymentDraft.amount ||
-        Number(paymentDraft.amount) <= 0 ||
-        (balance > 0 && Number(paymentDraft.amount) > balance) ||
+        (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) <= 0 ||
+        (balance > 0 && (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) > balance) ||
         !paymentDraft.date
       }
       error={Object.values(errors)[0]}
@@ -193,8 +200,8 @@ export function PaymentForm({
             !saving &&
             invoice &&
             paymentDraft.amount &&
-            Number(paymentDraft.amount) > 0 &&
-            !(balance > 0 && Number(paymentDraft.amount) > balance) &&
+            (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) > 0 &&
+            !(balance > 0 && (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) > balance) &&
             paymentDraft.date
           ) {
             void handleSave();

@@ -251,4 +251,42 @@ describe("background jobs REST routes", () => {
     expect(mockDeleteExportArtifacts).toHaveBeenCalledWith("u-teacher", ["job-1"]);
     await app.close();
   });
+
+  it("handles and logs database errors across route handlers gracefully", async () => {
+    const app = await buildApp();
+    const headers = { host: "demo.localhost", authorization: `Bearer ${teacherToken(app)}` };
+    const err = new Error("err");
+
+    mockListUserBackgroundJobs.mockRejectedValueOnce(err);
+    const r1 = await app.inject({ method: "GET", url: "/api/background-jobs", headers });
+    mockGetUserBackgroundJob.mockRejectedValueOnce(err);
+    const r2 = await app.inject({ method: "GET", url: "/api/background-jobs/job-1", headers });
+    mockGetUserBackgroundJob.mockResolvedValueOnce(sampleJob);
+    mockUpsertUserBackgroundJob.mockRejectedValueOnce(err);
+    const r3 = await app.inject({
+      method: "PUT",
+      url: "/api/background-jobs/job-1",
+      headers,
+      payload: sampleJob,
+    });
+    mockDismissUserBackgroundJob.mockRejectedValueOnce(err);
+    const r4 = await app.inject({ method: "DELETE", url: "/api/background-jobs/job-1", headers });
+    mockClearFinishedUserBackgroundJobs.mockRejectedValueOnce(err);
+    const r5 = await app.inject({
+      method: "POST",
+      url: "/api/background-jobs/clear-finished",
+      headers,
+    });
+    mockGetUserBackgroundJob.mockRejectedValueOnce(err);
+    const r6 = await app.inject({
+      method: "GET",
+      url: "/api/background-jobs/job-1/download",
+      headers,
+    });
+
+    for (const res of [r1, r2, r3, r4, r5, r6]) {
+      expect(res.statusCode).toBe(500);
+    }
+    await app.close();
+  });
 });

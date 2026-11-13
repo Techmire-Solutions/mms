@@ -1,4 +1,5 @@
 import { registerAttendanceJobRunners } from "./backgroundJobAttendanceRunners.js";
+import { registerExaminationsJobRunners } from "./backgroundJobExaminationsRunners.js";
 import { registerHasanatJobRunners } from "./backgroundJobHasanatRunners.js";
 import { randomUUID } from "node:crypto";
 import {
@@ -61,14 +62,11 @@ import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
 import { registerTasksBackgroundJobRunners } from "./backgroundJobTasksRunners.js";
+import { registerQuestionBankBackgroundJobRunners } from "./backgroundJobQuestionBankRunners.js";
+import { registerWorkshopImportJobRunner } from "../workshops/jobs/workshopImportJob.js";
 import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
 import { registerStudentsBulkJobRunners } from "../students/studentsBulkStatusService.js";
-import {
-  registerDocumentAndFinanceJobRunners,
-  MAX_EXCEL_PAYLOAD_ENTRIES,
-} from "./backgroundJobDocumentFinanceRunners.js";
-
-export { MAX_EXCEL_PAYLOAD_ENTRIES };
+import { registerDocumentAndFinanceJobRunners } from "./backgroundJobDocumentFinanceRunners.js";
 export type {
   ContactsExportJobPayload,
   ContactsVcfExportJobPayload,
@@ -78,21 +76,21 @@ export type {
   EnrollmentsExportJobPayload,
   MessagingExportJobPayload,
 } from "./backgroundJobPayloads.js";
-
 export function registerDefaultBackgroundJobRunners(): void {
+  registerExaminationsJobRunners();
   const contactsModuleId = CONTACTS_MODULE_MANIFEST.moduleId;
   const messagingModuleId = MESSAGING_MODULE_MANIFEST.moduleId;
   const studentsModuleId = STUDENTS_MODULE_MANIFEST.moduleId;
   const sessionsModuleId = SESSIONS_MODULE_MANIFEST.moduleId;
   registerAttendanceJobRunners();
-  // Hasanat award/import jobs are consumed by the worker process; register them here so the worker
-  // and the API share one registry (a route plugin only ever runs in the API).
+  // Hasanat jobs run in the worker, so the shared registry registers them here.
   registerHasanatJobRunners();
   registerSessionRolloverJobRunner();
   registerSessionImportJobRunner();
   registerSessionsBulkJobRunners();
   registerStudentsBulkJobRunners();
   registerEnrollmentsImportJobRunner();
+  registerWorkshopImportJobRunner();
 
   registerModuleCsvExportJobRunner({
     moduleId: contactsModuleId,
@@ -181,9 +179,8 @@ export function registerDefaultBackgroundJobRunners(): void {
 
   // Modular faculty and catalog export/import runners
   registerFacultyBackgroundJobRunners();
-
   registerTasksBackgroundJobRunners();
-
+  registerQuestionBankBackgroundJobRunners();
   registerModuleCsvExportJobRunner({
     moduleId: ENROLLMENTS_MODULE_MANIFEST.moduleId,
     entityNounPlural: "enrollments",

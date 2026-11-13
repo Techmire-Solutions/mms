@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
+  AmountScaleError,
   MissingClosingRatesError,
   buildFxRevaluationJournalLines,
   buildReversalLines,
@@ -12,6 +13,7 @@ import {
   type PostingRules,
 } from "@mms/shared";
 import type { RecordModernAuditInput } from "../../services/auditTrailService.js";
+import { lockLedgerEvent } from "../ledgerPosting/ledgerEventLock.js";
 import type { AccountingFxRepository } from "../repository/accountingFxRepository.js";
 
 export interface FxRevaluationDeps {
@@ -112,6 +114,11 @@ export async function previewFxRevaluation(
         `${error.message} on or before ${date}; add a CLOSING or SPOT rate first`,
       );
     }
+    if (error instanceof AmountScaleError) {
+      throw validationError(
+        `Balance ${error.value} has more decimals than ${error.currency} allows — correct the posted amounts before revaluing`,
+      );
+    }
     throw error;
   }
   return {
@@ -138,6 +145,9 @@ export async function postFxRevaluation(
   date: string,
 ): Promise<FxRevaluationRun> {
   const { tenant } = actor;
+  // One run per date: serialise the read-then-insert so a concurrent submit waits
+  // and then returns the stored run instead of aborting on the unique index.
+  await lockLedgerEvent(tenant, `fx_reval:${date}`);
   if (await deps.findRunId(tenant, date)) {
     const existing = (await deps.listRuns(tenant)).find((run) => run.revaluationDate === date);
     if (existing) return existing;

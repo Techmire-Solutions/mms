@@ -5,6 +5,7 @@ import {
   WORKSHOPS_MODULE_MANIFEST,
   type WorkshopEvent,
   type WorkshopEventCreate,
+  type WorkshopStatus,
 } from "@mms/shared";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
@@ -14,12 +15,14 @@ import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
+import { useDebounce } from "@/hooks/useDebounce";
 import { notify } from "@/lib/notify";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
   useCreateWorkshop,
   useDeleteWorkshop,
   useRestoreWorkshop,
+  useTransitionWorkshop,
   useUpdateWorkshop,
   useWorkshopMetrics,
   useWorkshops,
@@ -42,17 +45,22 @@ export default function WorkshopsPage(): React.JSX.Element {
   const [viewingDeleted, setViewingDeleted] = useDirectoryTrashState();
   const { selectedIds, toggleSelected, toggleSelectAll, clearSelection } =
     useWorkSelection<string>();
-  const { canRead, canWrite, canDelete, canViewSetup, canEditSetup } =
+  const { canRead, canWrite, canManage, canDelete, canViewSetup, canEditSetup } =
     useModulePermissions(WORKSHOPS_MODULE_MANIFEST);
   // Setup defaults prefill a new workshop's completion criteria.
   const { data: preferences } = useWorkshopPreferences({ enabled: canWrite });
 
-  const list = useWorkshops({ includeDeleted: viewingDeleted, search });
-  const { data: metrics } = useWorkshopMetrics({ enabled: !viewingDeleted });
+  const debouncedSearch = useDebounce(search, 300);
+  const list = useWorkshops({ includeDeleted: viewingDeleted, search: debouncedSearch });
+  const { data: metrics, isError: metricsError } = useWorkshopMetrics({
+    enabled: !viewingDeleted,
+  });
+  const metricValue = (value: number | undefined) => (metricsError ? "—" : (value ?? 0));
   const createWorkshop = useCreateWorkshop();
   const updateWorkshop = useUpdateWorkshop();
   const deleteWorkshop = useDeleteWorkshop();
   const restoreWorkshop = useRestoreWorkshop();
+  const transitionWorkshop = useTransitionWorkshop();
 
   const openCreate = () => {
     if (!canWrite || viewingDeleted) return;
@@ -81,6 +89,30 @@ export default function WorkshopsPage(): React.JSX.Element {
       onError: (err) =>
         notify.error(err instanceof Error ? err.message : t("workshops.restoreFailed")),
     });
+  };
+
+  const handleTransition = async (
+    workshop: WorkshopEvent,
+    to: WorkshopStatus,
+    reason?: string,
+  ): Promise<boolean> => {
+    if (!workshop.updatedAt) {
+      notify.error(t("workshops.transitionFailed"));
+      return false;
+    }
+    try {
+      await transitionWorkshop.mutateAsync({
+        id: workshop.id,
+        to,
+        ...(reason ? { reason } : {}),
+        expectedUpdatedAt: workshop.updatedAt,
+      });
+      notify.success(t("workshops.transitioned"));
+      return true;
+    } catch (error) {
+      notify.error(error instanceof Error ? error.message : t("workshops.transitionFailed"));
+      return false;
+    }
   };
 
   const handleDelete = (ids: string[]) => {
@@ -118,15 +150,15 @@ export default function WorkshopsPage(): React.JSX.Element {
         <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-muted-foreground">
           <span>
             {t("workshops.metrics.upcoming")}:{" "}
-            <strong className="text-foreground">{metrics?.upcoming ?? 0}</strong>
+            <strong className="text-foreground">{metricValue(metrics?.upcoming)}</strong>
           </span>
           <span>
             {t("workshops.metrics.ongoing")}:{" "}
-            <strong className="text-foreground">{metrics?.ongoing ?? 0}</strong>
+            <strong className="text-foreground">{metricValue(metrics?.ongoing)}</strong>
           </span>
           <span>
             {t("workshops.metrics.participants")}:{" "}
-            <strong className="text-foreground">{metrics?.participants ?? 0}</strong>
+            <strong className="text-foreground">{metricValue(metrics?.participants)}</strong>
           </span>
         </div>
       }
@@ -148,6 +180,8 @@ export default function WorkshopsPage(): React.JSX.Element {
                 search={search}
                 onSearchChange={setSearch}
                 canWrite={canWrite && !viewingDeleted}
+                canManage={canManage}
+                onTransition={handleTransition}
                 canDelete={canDelete}
                 viewingDeleted={viewingDeleted}
                 selectedIds={selectedIds}

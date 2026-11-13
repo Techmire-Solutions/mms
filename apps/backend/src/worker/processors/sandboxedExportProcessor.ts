@@ -7,6 +7,7 @@ import { executeJob } from "../../services/backgroundJobWorkerService.js";
 import { logger } from "../../lib/logger.js";
 import { resolveJobExecutionTimeoutMs } from "../queues/queueConfig.js";
 import { settleInFlight } from "../../lib/backgroundJobAbort.js";
+import { installSandboxShutdownAbort } from "./sandboxShutdown.js";
 
 let initialized = false;
 let initPromise: Promise<void> | null = null;
@@ -35,6 +36,7 @@ async function ensureWorkerSubprocessInitialized(): Promise<void> {
 export default async function sandboxedExportProcessor(
   job: SandboxedJob<EnqueuedJobData>,
 ): Promise<void> {
+  installSandboxShutdownAbort();
   await ensureWorkerSubprocessInitialized();
 
   const { tenantId, userId, jobId, moduleId, kind, payload } = job.data;

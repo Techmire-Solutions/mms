@@ -1,22 +1,23 @@
 import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
 import { dedupeTrimmedIds, type Exam, type RepositoryListOptions } from "@mms/shared";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
-import { exams, examClasses } from "../schema.js";
+import { exams, examClasses, sessionClasses } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 import { examSubjectSql } from "./academicCatalogNameSql.js";
+export { saveExam, bulkSaveExams } from "./examinationExamsPersist.js";
 export {
-  saveExam,
-  bulkSaveExams,
   replaceExamsForWorkspace,
   bulkSoftDeleteExams,
   bulkRestoreExams,
-} from "./examinationExamsPersist.js";
+} from "./examinationExamsTrash.js";
 
 type ExamRow = Omit<typeof exams.$inferSelect, "resultsFinalizedAt" | "minAttendancePct"> & {
   subject: string;
   /** Selected by the completion/finalisation queries; not part of every exam projection. */
   resultsFinalizedAt?: Date | null;
+  /** Per-exam attendance gate; selected with `exams.*` and surfaced to the client. */
+  minAttendancePct?: string | number | null;
 };
 
 export function examRowToRecord(row: ExamRow, classIds: string[] = []): Exam {
@@ -31,7 +32,14 @@ export function examRowToRecord(row: ExamRow, classIds: string[] = []): Exam {
     duration: row.duration,
     classIds,
     status: row.status as Exam["status"],
+    // Publication stamp: the client needs it to lock the marks grid. Absent from older
+    // projections, hence the null fallback rather than an undefined field.
+    resultsFinalizedAt: row.resultsFinalizedAt ? row.resultsFinalizedAt.toISOString() : null,
     description: row.description,
+    minAttendancePct:
+      row.minAttendancePct === null || row.minAttendancePct === undefined
+        ? null
+        : Number(row.minAttendancePct),
     ...mapAuditTimestamps(row),
   };
 
@@ -59,9 +67,11 @@ export async function listExamsByWorkspace(
         subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
+        minAttendancePct: exams.minAttendancePct,
         date: exams.date,
         duration: exams.duration,
         status: exams.status,
+        resultsFinalizedAt: exams.resultsFinalizedAt,
         description: exams.description,
         deletedAt: exams.deletedAt,
         deletedBy: exams.deletedBy,
@@ -116,9 +126,11 @@ export async function findExamById(tenant: string, id: string): Promise<Exam | n
         subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
+        minAttendancePct: exams.minAttendancePct,
         date: exams.date,
         duration: exams.duration,
         status: exams.status,
+        resultsFinalizedAt: exams.resultsFinalizedAt,
         description: exams.description,
         deletedAt: exams.deletedAt,
         deletedBy: exams.deletedBy,
@@ -182,9 +194,11 @@ export async function findExamsByIds(
         subjectId: exams.subjectId,
         totalMarks: exams.totalMarks,
         passingMarks: exams.passingMarks,
+        minAttendancePct: exams.minAttendancePct,
         date: exams.date,
         duration: exams.duration,
         status: exams.status,
+        resultsFinalizedAt: exams.resultsFinalizedAt,
         description: exams.description,
         deletedAt: exams.deletedAt,
         deletedBy: exams.deletedBy,
@@ -219,5 +233,27 @@ export async function findExamsByIds(
     }
 
     return examRows.map((row) => examRowToRecord(row, classMap.get(row.id) ?? []));
+  });
+}
+
+/** A session class the CSV importer can attach an exam to. */
+export interface SessionClassRef {
+  id: string;
+  name: string;
+}
+
+/**
+ * Active session classes for the tenant, by name, so the CSV importer can resolve a `class`
+ * column to the ids the exam's roster is derived from (an exam with no class cannot be marked).
+ */
+export async function listSessionClassNames(tenant: string): Promise<SessionClassRef[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: sessionClasses.id, name: sessionClasses.name })
+      .from(sessionClasses)
+      .where(eq(sessionClasses.workspaceSubdomain, subdomain))
+      .orderBy(sessionClasses.name);
+    return rows.map((row) => ({ id: row.id, name: row.name }));
   });
 }

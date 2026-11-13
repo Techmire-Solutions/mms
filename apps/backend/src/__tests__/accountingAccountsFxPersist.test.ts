@@ -31,6 +31,26 @@ describe("accountingAccountsFxPersist", () => {
       });
     });
 
+    it("treats an account locked to a foreign currency as monetary", () => {
+      // The name heuristic would miss "Bookshop prepayment" (Asset, not matching
+      // the cash/bank/receivable pattern), and a non-monetary flag silently drops
+      // the balance from period-end revaluation.
+      const account: Account = {
+        id: "acc-fx",
+        code: "1200",
+        name: "Bookshop prepayment",
+        type: "Asset",
+        subtype: "",
+        description: "",
+        isActive: true,
+        accountCurrency: "USD",
+      };
+
+      expect(accountFxInsertValues(account).isMonetary).toBe(true);
+      // An explicit false still wins — the operator may exclude an item on purpose.
+      expect(accountFxInsertValues({ ...account, isMonetary: false }).isMonetary).toBe(false);
+    });
+
     it("falls back to inferred and default values when omitted", () => {
       const account: Account = {
         id: "acc-2",

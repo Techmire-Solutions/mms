@@ -1,13 +1,18 @@
 import { z } from "zod";
 import type { Invoice } from "./financeModuleManifest.js";
 import { todayISO } from "../core/utils.js";
+import { moneyToCents } from "./accountingLedgerInvariants.js";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Late fee as a percent of `finalAmt`, rounded to cents. */
 export function computeLateFee(finalAmt: number, lateFeePercent: number): number {
   if (finalAmt <= 0 || lateFeePercent <= 0) return 0;
-  return Math.round(finalAmt * lateFeePercent) / 100;
+  // Cents × basis points with BigInt: finalAmt × percent can exceed 2^53 cents
+  // (1e12 cents × 10000 bps), so a float product could round a cent away.
+  const amountCents = BigInt(moneyToCents(finalAmt));
+  const basisPoints = BigInt(Math.round(lateFeePercent * 100));
+  return Number((amountCents * basisPoints + 5000n) / 10000n) / 100;
 }
 
 /** True when `dueDate` is a calendar day strictly before `today`. */

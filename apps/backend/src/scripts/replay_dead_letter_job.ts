@@ -66,6 +66,8 @@ async function main(): Promise<void> {
     row.userId,
     rowToJobRecord({ ...row, deadLetteredAt: null }),
     row.payload,
+    // The failed BullMQ job is retained for 24h and dedupes by id; clear it so the replay runs.
+    { replaceExisting: true },
   );
   if (!dispatched)
     throw new Error("Queue is unavailable; the job remains pending and can be replayed later");

@@ -108,7 +108,6 @@ export * from "../schemas/sms.dto.js";
 export * from "../schemas/sanitize.js";
 export * from "../schemas/hasanat.dto.js";
 export * from "../schemas/examinations.dto.js";
-export * from "../schemas/questionBank.dto.js";
 export * from "../schemas/backgroundJob.dto.js";
 export * from "../schemas/messaging.dto.js";
 export * from "../schemas/api.dto.js";
@@ -168,6 +167,7 @@ export * from "../demo/demoFaculty.js";
 export { facultyCsvExportBodySchema } from "../schemas/csvExport.dto.js";
 export * from "../faculty/facultyDepartmentTypes.js";
 export * from "../faculty/facultyPerformanceRating.js";
+export * from "../faculty/facultyWorkload.js";
 export * from "../settings/moduleFieldSetupFaculty.js";
 
 // ---------------------------------------------------------------------------

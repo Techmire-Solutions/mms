@@ -1,19 +1,20 @@
 import {
   WORKSHOPS_MODULE_MANIFEST,
-  workshopEventUpdateSchema,
   type BaseListQuery,
   type WorkshopAttendanceDayBody,
   type WorkshopEventCreate,
   type WorkshopEventUpdate,
   type WorkshopScoresBody,
+  type WorkshopTransitionBody,
 } from "@mms/shared";
 import type { WorkshopsRepository } from "../repository/workshopsRepository.js";
 import { workshopsRepository } from "../repository/workshopsRepositoryAdapter.js";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
+import { transitionWorkshop as transition } from "./workshopLifecycleUseCases.js";
 
 const EVENTS = WORKSHOPS_MODULE_MANIFEST.collectionKey;
 
@@ -27,10 +28,25 @@ export function createWorkshopsUseCases(repo: WorkshopsRepository = workshopsRep
   return {
     listWorkshops: (query: BaseListQuery) => repo.listWorkshopsPage(requireTenant(), query),
 
-    getWorkshop: async (id: string) => {
+    getWorkshop: async (id: string, options: { includeContactDetails?: boolean } = {}) => {
       const detail = await repo.loadWorkshopDetail(requireTenant(), id);
       if (!detail) throw new NotFoundError("Workshop not found");
+      if (options.includeContactDetails === false) {
+        const mask = <T extends { contactPhone: string }>(row: T): T => ({
+          ...row,
+          contactPhone: "",
+        });
+        detail.participants = detail.participants.map(mask);
+        detail.waitlisted = detail.waitlisted.map(mask);
+      }
       return detail;
+    },
+
+    /** Light existence check for enqueue paths (no roster/attendance hydration). */
+    ensureWorkshop: async (id: string) => {
+      const workshop = await repo.findWorkshopById(requireTenant(), id);
+      if (!workshop) throw new NotFoundError("Workshop not found");
+      return workshop;
     },
 
     createWorkshop: async (input: WorkshopEventCreate) => {
@@ -43,32 +59,38 @@ export function createWorkshopsUseCases(repo: WorkshopsRepository = workshopsRep
         await broadcastCollection(EVENTS);
         return workshop;
       } catch (error) {
-        if (isUniqueViolation(error))
-          throw new ConflictError("A workshop with this id already exists");
+        if (isUniqueViolation(error)) {
+          throw new ConflictError("A workshop with this id already exists", "workshop_exists");
+        }
         throw error;
       }
     },
 
     updateWorkshop: async (id: string, patch: WorkshopEventUpdate) => {
-      const tenant = requireTenant();
-      const current = await repo.findWorkshopById(tenant, id);
-      if (!current || current.deletedAt) throw new NotFoundError("Workshop not found");
-      // Re-check date order against the stored values the patch leaves untouched.
-      const merged = workshopEventUpdateSchema.safeParse({
-        startDate: patch.startDate === undefined ? current.startDate : patch.startDate,
-        endDate: patch.endDate === undefined ? current.endDate : patch.endDate,
-        registrationDeadline:
-          patch.registrationDeadline === undefined
-            ? current.registrationDeadline
-            : patch.registrationDeadline,
-      });
-      if (!merged.success) {
-        throw new ValidationError(merged.error.issues[0]?.message ?? "Invalid workshop dates");
-      }
-      const updated = await repo.updateWorkshop(tenant, id, patch);
+      // The adapter locks the row and re-validates the merged dates/state under that lock; the
+      // use case no longer pre-reads into a separate transaction (the old TOCTOU hole).
+      const updated = await repo.updateWorkshop(requireTenant(), id, patch);
       if (!updated) throw new NotFoundError("Workshop not found");
       await broadcastCollection(EVENTS);
       return updated;
+    },
+
+    /** Lifecycle actions (publish/unpublish/complete/cancel) — the only status write path. */
+    transitionWorkshop: async (
+      id: string,
+      body: WorkshopTransitionBody,
+      actor: { id?: string | null; label?: string | null },
+      expectedUpdatedAt: string | null | undefined,
+    ) => {
+      const workshop = await transition(requireTenant(), id, body, actor, expectedUpdatedAt);
+      return workshop;
+    },
+
+    /** Single-record archive; the bulk route keeps the counts-returning `deleteWorkshops`. */
+    deleteWorkshop: async (id: string, deletedBy: string | null, reason: string | null) => {
+      const result = await repo.softDeleteWorkshops(requireTenant(), [id], deletedBy, reason);
+      if (result.succeeded === 0) throw new NotFoundError("Workshop not found");
+      await broadcastCollection(EVENTS);
     },
 
     deleteWorkshops: async (ids: string[], deletedBy: string | null, reason: string | null) => {
@@ -90,28 +112,48 @@ export function createWorkshopsUseCases(repo: WorkshopsRepository = workshopsRep
           id: crypto.randomUUID(),
           workshopId,
           contactId,
-          today: await today(tenant),
         });
         await broadcastCollection(EVENTS);
         return participant;
       } catch (error) {
-        if (isUniqueViolation(error)) throw new ConflictError("This contact is already registered");
+        if (isUniqueViolation(error)) {
+          throw new ConflictError("This contact is already registered", "already_registered");
+        }
         throw error;
       }
     },
 
+    /** Registers several contacts atomically; overflow is queued when the waitlist is enabled. */
+    addParticipants: async (workshopId: string, contactIds: string[]) => {
+      try {
+        const result = await repo.registerParticipants(requireTenant(), { workshopId, contactIds });
+        if (result.added.length + result.waitlisted.length > 0) await broadcastCollection(EVENTS);
+        return result;
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          throw new ConflictError("This contact is already registered", "already_registered");
+        }
+        throw error;
+      }
+    },
+
+    /**
+     * Withdraws a registration. Returns the queued participant promoted into the freed seat, when
+     * one existed, so the caller can announce it.
+     */
     removeParticipant: async (
       workshopId: string,
       participantId: string,
       deletedBy: string | null,
     ) => {
-      const removed = await repo.withdrawParticipant(requireTenant(), {
+      const result = await repo.withdrawParticipant(requireTenant(), {
         workshopId,
         participantId,
         deletedBy,
       });
-      if (!removed) throw new NotFoundError("Participant not found");
+      if (!result.removed) throw new NotFoundError("Participant not found");
       await broadcastCollection(EVENTS);
+      return result.promoted;
     },
 
     saveAttendanceDay: (

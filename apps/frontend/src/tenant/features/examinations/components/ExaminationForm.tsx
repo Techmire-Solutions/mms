@@ -38,6 +38,11 @@ const ExamForm = function ExamForm({
       onSave={form.handleSave}
       saving={form.saving}
       saveDisabled={form.saving || !form.valid}
+      isDirty={form.isDirty}
+      discardUnsavedTitle={form.t("settings.unsavedChanges")}
+      discardUnsavedDescription={form.t("examinations.form.discardDescription")}
+      discardConfirmLabel={form.t("common.yes")}
+      discardCancelLabel={form.t("common.cancel")}
       formId="examination-form"
     >
       <form
@@ -52,6 +57,7 @@ const ExamForm = function ExamForm({
           t={form.t}
           errors={form.errors}
           examDraft={form.examDraft}
+          exam={form.exam}
           classes={form.classes}
           updateDraft={form.updateDraft}
           getFieldError={form.getFieldError}

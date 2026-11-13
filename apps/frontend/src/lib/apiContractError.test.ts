@@ -143,4 +143,22 @@ describe("assertContractOk", () => {
     expect(error.status).toBe(404);
     expect(error.message).toBe("Student not found");
   });
+
+  it("carries the structured details of a domain rejection", () => {
+    const details = {
+      examId: "e-1",
+      students: [{ examId: "e-1", studentId: "s-1", attendancePct: 40, requiredPct: 75 }],
+    };
+
+    const error = apiContractError(
+      {
+        status: 409,
+        body: { type: "exam_eligibility_blocked", message: "Below threshold", details },
+      },
+      "fallback message",
+    );
+
+    expect(error.type).toBe("exam_eligibility_blocked");
+    expect(error.details).toEqual(details);
+  });
 });

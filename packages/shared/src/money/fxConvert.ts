@@ -117,3 +117,30 @@ export function previewConvertedAmount(
   const converted = convertMoney(money, rate, toCurrency);
   return Number(converted.minor) / 10 ** currencyMinorUnits(toCurrency);
 }
+
+/**
+ * Exact decimal-string equality for exchange rates (up to ten decimals).
+ *
+ * `Number(a) !== Number(b)` loses precision at the tenth decimal, so a payment edit
+ * guard built on it could either miss a real rate change or invent one. Normalize
+ * the decimal text (leading zeros, trailing fractional zeros) and compare.
+ */
+export function exchangeRateStringsEqual(
+  left: string | number | null | undefined,
+  right: string | number | null | undefined,
+): boolean {
+  const normalize = (value: string | number | null | undefined): string | null => {
+    if (value === null || value === undefined) return null;
+    // A malformed numeric update must still be *detected* as a change, never throw.
+    const trimmed = (typeof value === "number" ? String(value) : value).trim();
+    if (!trimmed) return null;
+    const negative = trimmed.startsWith("-");
+    const unsigned = trimmed.replace(/^[+-]/, "");
+    const [wholeRaw = "", fractionRaw = ""] = unsigned.split(".");
+    const whole = wholeRaw.replace(/^0+(?=\d)/, "") || "0";
+    const fraction = fractionRaw.replace(/0+$/, "");
+    const body = fraction ? `${whole}.${fraction}` : whole;
+    return negative && body !== "0" ? `-${body}` : body;
+  };
+  return normalize(left) === normalize(right);
+}

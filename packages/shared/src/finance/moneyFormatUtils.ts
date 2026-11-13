@@ -4,6 +4,8 @@
 import { findIsoCurrency } from "../money/iso4217.js";
 import { moneyToDecimalString, parseMoney } from "../money/money.js";
 
+export { formatAmountInWords } from "./moneyAmountWords.js";
+
 type FinanceCurrencyProvider = () => string | null | undefined;
 
 let financeCurrencyProvider: FinanceCurrencyProvider | null = null;
@@ -193,104 +195,4 @@ export function formatPercent(
     minimumFractionDigits: options?.minimumFractionDigits,
     signDisplay: options?.signDisplay,
   }).format(numeric / 100);
-}
-
-const ONES = [
-  "",
-  "One",
-  "Two",
-  "Three",
-  "Four",
-  "Five",
-  "Six",
-  "Seven",
-  "Eight",
-  "Nine",
-  "Ten",
-  "Eleven",
-  "Twelve",
-  "Thirteen",
-  "Fourteen",
-  "Fifteen",
-  "Sixteen",
-  "Seventeen",
-  "Eighteen",
-  "Nineteen",
-];
-
-const TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-
-const SCALES = ["", "Thousand", "Million", "Billion", "Trillion"];
-
-function convertChunk(num: number): string {
-  let chunkStr = "";
-  if (num >= 100) {
-    chunkStr += `${ONES[Math.floor(num / 100)]} Hundred `;
-    num %= 100;
-  }
-  if (num >= 20) {
-    chunkStr += `${TENS[Math.floor(num / 10)]} `;
-    num %= 10;
-  }
-  if (num > 0) {
-    chunkStr += `${ONES[num]} `;
-  }
-  return chunkStr.trim();
-}
-
-/**
- * Formats a numeric amount as capitalized words in English with currency for receipts and vouchers.
- *
- * @param amount - The numeric amount to format.
- * @param currency - Optional currency code or label (e.g. "USD", "PKR").
- * @returns The formatted words representation (e.g. "Five Thousand USD Only").
- */
-export function formatAmountInWords(
-  amount: number | string | null | undefined,
-  currency?: string,
-): string {
-  if (amount === null || amount === undefined) return "";
-  const numeric = typeof amount === "number" ? amount : parseFloat(String(amount));
-  if (isNaN(numeric)) return "";
-  if (numeric === 0) {
-    return currency ? `Zero ${currency} Only` : "Zero Only";
-  }
-
-  const isNegative = numeric < 0;
-  const absVal = Math.abs(numeric);
-  const fixed = Math.round(absVal * 100) / 100;
-  if (fixed === 0) {
-    return currency ? `Zero ${currency} Only` : "Zero Only";
-  }
-  const integerPart = Math.floor(fixed);
-  const decimalPart = Math.round((fixed - integerPart) * 100);
-
-  let words: string;
-  if (integerPart === 0) {
-    words = "Zero";
-  } else {
-    let rem = integerPart;
-    let scaleIdx = 0;
-    const parts: string[] = [];
-
-    while (rem > 0 && scaleIdx < SCALES.length) {
-      const chunk = rem % 1000;
-      if (chunk !== 0) {
-        const chunkText = convertChunk(chunk);
-        const scaleText = SCALES[scaleIdx];
-        parts.unshift(scaleText ? `${chunkText} ${scaleText}` : chunkText);
-      }
-      rem = Math.floor(rem / 1000);
-      scaleIdx++;
-    }
-    words = parts.join(" ");
-  }
-
-  if (decimalPart > 0) {
-    words += ` and ${decimalPart.toString().padStart(2, "0")}/100`;
-  }
-
-  const prefix = isNegative ? "Minus " : "";
-  const currencySuffix = currency ? ` ${currency}` : "";
-  return `${prefix}${words}${currencySuffix} Only`.replace(/\s+/g, " ").trim();
 }

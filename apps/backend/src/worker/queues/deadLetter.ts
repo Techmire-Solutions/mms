@@ -52,6 +52,104 @@ export async function handleDeadLetterJob(
     });
   }
 
+  // Exam imports can mutate marks; a permanently failed job must leave an audit trace, not only a
+  // row marker, exactly like hasanat award jobs.
+  if (jobData.moduleId.trim().toLowerCase() === "examinations") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: "exams",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: "examinations.job.dead_letter",
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
+  // Messaging broadcast batches permanently failing in queue must record an audit trail so
+  // operators have a definitive record of the unrecoverable dispatch failure.
+  if (jobData.moduleId.trim().toLowerCase() === "messaging") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: "message_logs",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: "messaging.job.dead_letter",
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
+  // A workshop import/notification can register participants or send messages: a permanently
+  // failed job must leave an audit trace, not only a row marker.
+  if (jobData.moduleId.trim().toLowerCase() === "workshops") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: "workshop_events",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: "workshops.job.dead_letter",
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
+  // A Question Bank import/export mutates questions and answer keys: a permanently failed job must
+  // leave an audit row, not only a DB status marker.
+  if (jobData.moduleId.trim().toLowerCase() === "questionbank") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: "questions",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: "questionBank.job.dead_letter",
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
+  // Finance/accounting jobs are not enqueued today (exports fail fast with 503 and
+  // scheduled automation runs as a leader-only sweep), but any future job in these
+  // modules must leave a chain row: a dead letter is an unrecoverable financial
+  // operation, not only a failed row in the job tray.
+  const financeModule = jobData.moduleId.trim().toLowerCase();
+  if (financeModule === "finance" || financeModule === "accounting") {
+    await recordAuditEventSafely({
+      workspaceSubdomain: jobData.tenantId,
+      tableName: financeModule === "finance" ? "finance_invoices" : "accounting_entries",
+      recordId: String(jobData.jobId),
+      actionType: "UPDATE",
+      realUserId: String(jobData.userId),
+      newState: {
+        tag: `${financeModule}.job.dead_letter`,
+        kind: jobData.kind,
+        reason: failedReason,
+        label: jobData.label,
+        reasonCode: "job_dead_letter",
+      },
+    });
+  }
+
   if (
     jobData.moduleId.trim().toLowerCase() === "sessions" &&
     jobData.kind.trim().toLowerCase() === "promote"

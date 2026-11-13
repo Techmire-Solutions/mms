@@ -9,13 +9,17 @@
 
 import { type TypstReportCardPayload } from "@mms/shared";
 import { mapToTypstReportCard } from "@/components/template-editor/templatePayloadMappers";
-import { getGrade } from "./gradeUtils";
+import { resolveResultScore } from "@mms/shared";
 
 /** Structural subset of `StudentResultItem` (avoids importing the component). */
 export interface ReportCardResultInput {
   pct: number;
   marksObtained: number;
   grade: { label: string };
+  /** Class position, when the caller has it (the drawer/certificate ranking). */
+  classRank?: number;
+  classSize?: number;
+  graceMarks?: number;
   student?: { name: string; rollNo: string };
   cls?: { name: string };
 }
@@ -25,6 +29,8 @@ export interface ReportCardExamInput {
   name: string;
   subject?: string;
   totalMarks: number;
+  /** The exam's pass mark; a failed paper must print `F` on every card, not just the grid. */
+  passingMarks?: number;
   date: string;
 }
 
@@ -40,6 +46,14 @@ export function buildReportCardPayload({
   institution,
 }: BuildReportCardPayloadOptions): TypstReportCardPayload {
   const subjectName = exam.subject || exam.name;
+  // The printed row must equal the printed total: the term card already scores through the engine
+  // (grace included), so a single-paper card using the raw mark silently disagreed when grace > 0.
+  const score = resolveResultScore({
+    marksObtained: result.marksObtained,
+    totalMarks: exam.totalMarks,
+    passingMarks: 0,
+    graceMarks: result.graceMarks,
+  });
 
   return mapToTypstReportCard({
     institution,
@@ -52,15 +66,17 @@ export function buildReportCardPayload({
       {
         name: subjectName,
         maxMarks: exam.totalMarks,
-        obtainedMarks: result.marksObtained,
+        obtainedMarks: score.effectiveMarks,
         grade: result.grade.label,
         remarks: "",
       },
     ],
     totalMarks: exam.totalMarks,
-    obtainedMarks: result.marksObtained,
+    obtainedMarks: score.effectiveMarks,
     percentage: `${Math.round(result.pct)}%`,
     grade: result.grade.label,
+    ...(typeof result.classRank === "number" ? { rank: String(result.classRank) } : {}),
+    ...(typeof result.classSize === "number" ? { classSize: result.classSize } : {}),
     // Attendance and remarks are not part of the result record; bound fields print
     // empty rather than inventing values.
     attendance: "",
@@ -71,7 +87,7 @@ export function buildReportCardPayload({
 /** One selected paper for a term report card. */
 export interface TermReportPaper {
   exam: ReportCardExamInput;
-  result: { marksObtained: number };
+  result: { marksObtained: number; graceMarks?: number };
 }
 
 export interface BuildTermReportCardPayloadOptions {
@@ -94,21 +110,35 @@ export function buildTermReportCardPayload({
   institution,
   mixedTermLabel,
 }: BuildTermReportCardPayloadOptions): TypstReportCardPayload {
-  const subjects = papers.map(({ exam, result: paperResult }) => {
-    const percentage =
-      exam.totalMarks > 0 ? (paperResult.marksObtained / exam.totalMarks) * 100 : 0;
-    return {
-      name: exam.subject || exam.name,
-      maxMarks: exam.totalMarks,
-      obtainedMarks: paperResult.marksObtained,
-      grade: getGrade(percentage).label,
-      remarks: "",
-    };
-  });
+  // One scoring pass per paper: the subject grade uses the exam's own pass mark (the grid's fail
+  // floor), and the same effective score feeds the weighted aggregate.
+  const scoredPapers = papers.map(({ exam, result: paperResult }) => ({
+    exam,
+    score: resolveResultScore({
+      marksObtained: paperResult.marksObtained,
+      totalMarks: exam.totalMarks,
+      passingMarks: exam.passingMarks ?? 0,
+      graceMarks: paperResult.graceMarks,
+    }),
+  }));
+
+  const subjects = scoredPapers.map(({ exam, score }) => ({
+    name: exam.subject || exam.name,
+    maxMarks: exam.totalMarks,
+    obtainedMarks: score.effectiveMarks,
+    grade: score.grade.label,
+    remarks: "",
+  }));
 
   const totalMarks = papers.reduce((sum, paper) => sum + paper.exam.totalMarks, 0);
-  const obtainedMarks = papers.reduce((sum, paper) => sum + paper.result.marksObtained, 0);
-  const percentage = totalMarks > 0 ? Math.round((obtainedMarks / totalMarks) * 100) : 0;
+  const obtainedMarks = scoredPapers.reduce((sum, paper) => sum + paper.score.effectiveMarks, 0);
+  // A term aggregate has no single pass mark, so its grade is percentage-band-only (documented).
+  const aggregate = resolveResultScore({
+    marksObtained: obtainedMarks,
+    totalMarks,
+    passingMarks: 0,
+  });
+  const percentage = aggregate.displayPercentage;
   const termNames = new Set(papers.map((paper) => paper.exam.name));
 
   return mapToTypstReportCard({
@@ -122,7 +152,9 @@ export function buildTermReportCardPayload({
     totalMarks,
     obtainedMarks,
     percentage: `${percentage}%`,
-    grade: getGrade(percentage).label,
+    grade: aggregate.grade.label,
+    // No rank/classSize: the selected papers form a term with no cohort aggregate yet, and printing
+    // the current single exam's position here made the "term position" depend on the selection.
     // Term-wide attendance/remarks are not modelled; bound fields print empty.
     attendance: "",
     remarks: "",

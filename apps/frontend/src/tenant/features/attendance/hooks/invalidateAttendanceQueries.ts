@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { attendanceQueryKeys } from "./attendanceQueryKeys.js";
 import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
+import { EXAMINATIONS_ELIGIBILITY_QUERY_KEY } from "@/tenant/hooks/collections/examinations";
 
 /**
  * Invalidate every attendance-owned query after a mutation.
@@ -16,4 +17,6 @@ export function invalidateAttendanceQueries(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.all });
   void queryClient.invalidateQueries({ queryKey: DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY });
   void queryClient.invalidateQueries({ queryKey: DASHBOARD_SUMMARY_QUERY_KEY_ROOT });
+  // Attendance percentages gate exam eligibility; an open eligibility drawer must refresh.
+  void queryClient.invalidateQueries({ queryKey: EXAMINATIONS_ELIGIBILITY_QUERY_KEY });
 }

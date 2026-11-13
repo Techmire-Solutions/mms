@@ -22,6 +22,7 @@ export interface SessionsAcademicRepository {
   softDeleteRegistrationLink: LinkStore["softDeleteRegistrationLink"];
   findSessionById: SessionQueries["findSessionById"];
   findWorkspaceTimezone: WorkspaceStore["findWorkspaceTimezone"];
+  isFacultyLinked: ScopeStore["isFacultyLinked"];
   findUntaughtClassDates: ScopeStore["findUntaughtClassDates"];
   /** Exact-section staffing check for attendance marks. */
   findUnstaffedSectionDates: ScopeStore["findUnstaffedSectionDates"];

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
-import { accountantToken, guardianToken } from "./helpers/tokens.js";
+import { accountantToken, adminToken, guardianToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -59,16 +59,18 @@ const numbering = {
 async function send(
   method: "GET" | "PUT",
   url: string,
-  token?: "accountant" | "guardian",
+  token?: "accountant" | "admin" | "guardian",
   payload?: Record<string, unknown>,
 ) {
   const app = await buildApp();
   const authorization =
     token === "accountant"
       ? accountantToken(app)
-      : token === "guardian"
-        ? guardianToken(app)
-        : undefined;
+      : token === "admin"
+        ? adminToken(app)
+        : token === "guardian"
+          ? guardianToken(app)
+          : undefined;
   const res = await app.inject({
     method,
     url,
@@ -120,13 +122,13 @@ describe("accounting voucher numbering routes", () => {
   });
 
   it("saves a valid format", async () => {
-    const res = await send("PUT", "/api/accounting/voucher-numbering", "accountant", format);
+    const res = await send("PUT", "/api/accounting/voucher-numbering", "admin", format);
     expect(res.statusCode).toBe(200);
     expect(mockUpsert).toHaveBeenCalledWith(format);
   });
 
   it("rejects a prefix that is not plain alphanumerics", async () => {
-    const res = await send("PUT", "/api/accounting/voucher-numbering", "accountant", {
+    const res = await send("PUT", "/api/accounting/voucher-numbering", "admin", {
       ...format,
       prefix: "J.V",
     });
@@ -135,7 +137,7 @@ describe("accounting voucher numbering routes", () => {
   });
 
   it("rejects yearly restarts that would print no year", async () => {
-    const res = await send("PUT", "/api/accounting/voucher-numbering", "accountant", {
+    const res = await send("PUT", "/api/accounting/voucher-numbering", "admin", {
       ...format,
       yearFormat: "NONE",
     });

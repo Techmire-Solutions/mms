@@ -7,11 +7,14 @@ import {
   upsertWithBroadcast,
 } from "../../services/tenantBulkService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
+import { scoreResultsForTenant } from "./questionBankResultScoring.js";
+import { pagingWindow } from "./questionBankPaging.js";
 import { getQuestionBankModulePreferencesForWorkspace } from "../../db/repositories/questionBankModulePreferencesRepository.js";
 import {
   type QuestionBankQuestion,
   type QuestionBankTest,
   type QuestionBankResult,
+  type QuestionBankListPageResult,
   type QuestionBankListQuery,
   type QuestionBankReportAggregates,
   type QuestionBankReportQuery,
@@ -108,8 +111,36 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
       return repo.listQuestionsPage(tenant, query);
     },
 
-    loadTests: async (): Promise<QuestionBankTest[]> => testBulkService.load(),
-    loadResults: async (): Promise<QuestionBankResult[]> => resultBulkService.load(),
+    /** Paper-builder picker — approved questions only; the route strips the answer key. */
+    loadQuestionsPicker: async (
+      query: QuestionBankListQuery,
+    ): Promise<QuestionBankListPageResult> => {
+      const tenant = getRequestTenant();
+      if (!tenant) {
+        return {
+          questions: [],
+          total: 0,
+          page: query.page ?? 1,
+          limit: query.limit ?? 50,
+          hasMore: false,
+        };
+      }
+      return repo.listQuestionsPicker(tenant, query);
+    },
+
+    loadTests: async (paging?: { page?: number; limit?: number }): Promise<QuestionBankTest[]> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return [];
+      return repo.listTestsByWorkspace(tenant, pagingWindow(paging));
+    },
+    loadResults: async (paging?: {
+      page?: number;
+      limit?: number;
+    }): Promise<QuestionBankResult[]> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return [];
+      return repo.listResultsByWorkspace(tenant, pagingWindow(paging));
+    },
 
     upsertQuestions: (records: QuestionBankQuestion[]) =>
       upsertWithBroadcast(
@@ -120,13 +151,17 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
       ),
     upsertTests: (records: QuestionBankTest[]) =>
       upsertWithBroadcast(questionBankTestListSchema, records, repo.bulkSaveTests, "tests"),
-    upsertResults: (records: QuestionBankResult[]) =>
-      upsertWithBroadcast(
+    upsertResults: async (records: QuestionBankResult[]) => {
+      const tenant = getRequestTenant();
+      if (!tenant) throw new Error("Tenant context required");
+      const scored = await scoreResultsForTenant(repo, tenant, records);
+      return upsertWithBroadcast(
         questionBankResultListSchema,
-        records,
+        scored,
         repo.bulkSaveResults,
         "assessment_results",
-      ),
+      );
+    },
 
     createQuestion: questionCrud.create,
     updateQuestionById: questionCrud.updateById,
@@ -216,7 +251,8 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
     saveResult: async (record: QuestionBankResult): Promise<void> => {
       const tenant = getRequestTenant();
       if (!tenant) return;
-      const parsed = questionBankResultRecordSchema.parse(record);
+      const [scored] = await scoreResultsForTenant(repo, tenant, [record]);
+      const parsed = questionBankResultRecordSchema.parse(scored);
       await repo.saveResult(tenant, parsed);
       await broadcastCollection("assessment_results");
     },

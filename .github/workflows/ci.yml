@@ -44,6 +44,8 @@ jobs:
           filters: |
             backend_db:
               - 'apps/backend/src/db/**'
+              - 'apps/backend/src/examinations/**'
+              - 'apps/backend/src/routes/tenant/examinations/**'
               - 'apps/backend/drizzle.config.ts'
               - 'apps/backend/src/**/repository/**'
               - 'apps/backend/src/**/ledgerPosting/**'
@@ -201,6 +203,20 @@ jobs:
       - name: CI and ratchet script tests
         run: pnpm run test:scripts
 
+      # Examinations test-matrix / route-injection / RBAC matrix and scoring coverage.
+      # These were only run by the local code-review skill; CI must enforce them too.
+      - name: Examinations test matrix
+        run: pnpm run check:examinations-tests
+
+      - name: Examinations route injection
+        run: pnpm run check:examinations-route-injection
+
+      - name: Examinations route-security matrix
+        run: pnpm run check:examinations-route-security
+
+      - name: Examinations scoring coverage
+        run: pnpm --filter @mms/shared run test:coverage:examinations
+
       # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
       # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
       # A full-repo scan costs 45-57 s per run; PRs check only the files they
@@ -248,6 +264,15 @@ jobs:
       # Baseline is 0 — every offender has been migrated.
       - name: Backend route→storage boundary
         run: pnpm run check:backend-boundaries
+
+      # Finance contract parity: every shared finance module is exported from the
+      # barrel, and all workspaces keep the single catalogued zod/TypeScript.
+      - name: Finance shared-contract parity
+        run: pnpm run check:contracts
+
+      # No parseFloat / unchecked Number() / any casts in finance money paths.
+      - name: Finance money-safety ratchet
+        run: pnpm run check:money-safety
 
       # Ratchet: the rest of the ports-and-adapters chain (use-case/services
       # storage imports, services/ re-export shims, tenant route aggregation).
@@ -754,13 +779,25 @@ jobs:
       - name: Attendance integration coverage ratchet
         run: node scripts/ci/check-attendance-coverage.mjs --coverage apps/backend/coverage-attendance-db
 
+      - name: Examinations DB coverage
+        run: pnpm --filter mms-backend run test:db:coverage:examinations
+
+      - name: Examinations integration coverage ratchet
+        run: node scripts/ci/check-examinations-coverage.mjs --coverage apps/backend/coverage-examinations-db
+
       - name: DB test hygiene and manifest (enrollments + attendance)
         run: |
           node scripts/ci/check-db-test-hygiene.mjs
           node scripts/ci/check-db-test-manifest.mjs
 
-      - name: Repeat concurrency suites (enrollments + attendance)
+      - name: Repeat concurrency suites (enrollments, attendance, finance)
         run: pnpm --filter mms-backend run test:db:concurrency
+
+      - name: Finance/accounting DB coverage
+        run: pnpm --filter mms-backend run test:db:coverage:finance
+
+      - name: Finance/accounting coverage ratchet
+        run: node scripts/ci/check-finance-coverage.mjs --coverage apps/backend/coverage-finance-db
 
       - name: Shuffle enrollment DB files before execution
         run: >
@@ -768,6 +805,7 @@ jobs:
           src/__tests__/db-integration/enrollment
           src/__tests__/db-integration/registration
           src/__tests__/db-integration/attendance
+          src/__tests__/db-integration/examination
           --sequence.shuffle.files --sequence.seed=20261108
 
   # Proves tenant isolation under the role production is supposed to use: a

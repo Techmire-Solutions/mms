@@ -9,6 +9,7 @@ import {
 } from "@mms/shared";
 import { financeInvoices, financePayments } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { runListPage } from "./listPageHelper.js";
 import { invoiceRowToRecord, paymentRowToRecord } from "./financeRepository.js";
 import {
@@ -80,18 +81,22 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
 
 /**
  * SQL aggregates for Finance command-centre metrics. Month buckets are computed
- * in JS (local-time `new Date()`, matching the prior JS reducer) and passed as
- * params to avoid DB-timezone drift at month boundaries. Money columns are
- * `numeric`; sums cast to `float8` to mirror JS `Number` math on loaded records.
+ * in the workspace's timezone (`todayInTimeZone` + the month key) so a day is
+ * bucketed the way the tenant sees it, not the way the server clock sees it.
+ *
+ * Money columns are `numeric`; the sums stay `numeric` in SQL and are rendered as
+ * exact decimal text, then converted once at the boundary. Casting the sum to
+ * `float8` (the previous shape) reintroduced binary floating point on a value
+ * that the column types exist to keep exact.
  */
 export async function aggregateFinanceCommandMetrics(
   tenant: string,
 ): Promise<FinanceCommandMetricsSnapshot> {
   const subdomain = tenant.trim().toLowerCase();
-  const now = new Date();
-  const thisMonth = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`;
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const prevMonth = `${prev.getFullYear()}-${pad2(prev.getMonth() + 1)}`;
+  const today = await workspaceTodayIso(subdomain);
+  const thisMonth = today.slice(0, 7);
+  const [year, month] = thisMonth.split("-").map((part) => Number(part));
+  const prevMonth = month === 1 ? `${year - 1}-12` : `${year}-${pad2(month - 1)}`;
 
   return withTenantRead(subdomain, async (tx) => {
     const activeInvoices = and(
@@ -125,13 +130,13 @@ export async function aggregateFinanceCommandMetrics(
         overdue: sql<number>`count(*) filter (where ${financeInvoices.status} = 'overdue')::int`,
         paid: sql<number>`count(*) filter (where ${financeInvoices.status} = 'paid')::int`,
         partial: sql<number>`count(*) filter (where ${financeInvoices.status} = 'partial')::int`,
-        collectedTotal: sql<number>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled'), 0)::float8`,
-        outstandingBalance: sql<number>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled'), 0)::float8`,
-        discountTotal: sql<number>`coalesce(sum(${financeInvoices.discountAmt}) filter (where ${financeInvoices.status} <> 'cancelled'), 0)::float8`,
-        collectedThisMonth: sql<number>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${collectMonth} = ${thisMonth}), 0)::float8`,
-        collectedPrevMonth: sql<number>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${collectMonth} = ${prevMonth}), 0)::float8`,
-        outstandingThisMonth: sql<number>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${dueMonth} = ${thisMonth}), 0)::float8`,
-        outstandingPrevMonth: sql<number>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${dueMonth} = ${prevMonth}), 0)::float8`,
+        collectedTotal: sql<string>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled'), 0)::numeric::text`,
+        outstandingBalance: sql<string>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled'), 0)::numeric::text`,
+        discountTotal: sql<string>`coalesce(sum(${financeInvoices.discountAmt}) filter (where ${financeInvoices.status} <> 'cancelled'), 0)::numeric::text`,
+        collectedThisMonth: sql<string>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${collectMonth} = ${thisMonth}), 0)::numeric::text`,
+        collectedPrevMonth: sql<string>`coalesce(sum(${collectedExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${collectMonth} = ${prevMonth}), 0)::numeric::text`,
+        outstandingThisMonth: sql<string>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${dueMonth} = ${thisMonth}), 0)::numeric::text`,
+        outstandingPrevMonth: sql<string>`coalesce(sum(${outstandingExpr}) filter (where ${financeInvoices.status} <> 'cancelled' and ${dueMonth} = ${prevMonth}), 0)::numeric::text`,
       })
       .from(financeInvoices)
       .where(activeInvoices);

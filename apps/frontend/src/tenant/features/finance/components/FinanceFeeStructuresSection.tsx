@@ -10,6 +10,7 @@ import {
 } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
+import { tryParseMoneyAmountNumber } from "@mms/shared";
 import {
   SessionClassSectionSelect,
   type SessionClassSectionValue,
@@ -49,7 +50,13 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
         isActive: true,
         frequency,
         items: itemName.trim()
-          ? [{ name: itemName.trim(), amount: Number(itemAmount || 0), sortOrder: 0 }]
+          ? [
+              {
+                name: itemName.trim(),
+                amount: tryParseMoneyAmountNumber(itemAmount) ?? 0,
+                sortOrder: 0,
+              },
+            ]
           : [],
       });
       setName("");

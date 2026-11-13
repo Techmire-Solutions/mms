@@ -3,6 +3,7 @@ import { ShieldCheck } from "lucide-react";
 import {
   formatDate,
   formatMoney,
+  tryParseMoneyAmountNumber,
   type Account,
   type AppTranslationKey,
   type HedgeRelationship,
@@ -93,7 +94,9 @@ export function AccountingHedgesSection({
       label: t("accounting.settings.hedges.fairValueColumn"),
       render: (hedge) => (
         <span className="font-mono">
-          {formatMoney(Number(latest(hedge)?.instrumentValue ?? 0), undefined, { useSymbol: true })}
+          {formatMoney(tryParseMoneyAmountNumber(latest(hedge)?.instrumentValue) ?? 0, undefined, {
+            useSymbol: true,
+          })}
         </span>
       ),
     },
