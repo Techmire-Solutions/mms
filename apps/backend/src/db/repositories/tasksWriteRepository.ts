@@ -85,8 +85,10 @@ export async function createTask(
       actionType: "CREATE",
       realUserId: actorUserId,
       newState: {
+        title: data.title,
         status: data.status,
         priority: data.priority,
+        dueAt: data.dueAt ? new Date(data.dueAt).toISOString() : null,
         recipients: recipients.map((recipient) => recipient.userId),
       },
     });
@@ -167,10 +169,22 @@ export async function updateTask(
       recordId: id,
       actionType: "UPDATE",
       realUserId: actorUserId,
-      oldState: { status: current.status, priority: current.priority },
+      oldState: {
+        title: current.title,
+        status: current.status,
+        priority: current.priority,
+        dueAt: current.dueAt,
+      },
       newState: {
+        title: data.title ?? current.title,
         status: data.status ?? current.status,
         priority: data.priority ?? current.priority,
+        dueAt:
+          data.dueAt !== undefined
+            ? data.dueAt
+              ? new Date(data.dueAt).toISOString()
+              : null
+            : current.dueAt,
         ...(recipients ? { recipients: recipients.map((recipient) => recipient.userId) } : {}),
       },
     });
