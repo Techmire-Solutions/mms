@@ -6,6 +6,8 @@ export interface EntryPageHeadProps {
   description: string;
   /** Auth and workspace-picker pages should not be indexed. */
   noIndex?: boolean;
+  /** Canonical URL for public indexable landing/entry pages. */
+  canonicalUrl?: string;
 }
 
 /** Sets document title and SEO meta for public entry routes (React 19 head hoisting). */
@@ -13,12 +15,18 @@ export default function EntryPageHead({
   title,
   description,
   noIndex = true,
+  canonicalUrl,
 }: EntryPageHeadProps): React.JSX.Element {
   return (
     <>
       <title>{title}</title>
       <meta name="description" content={description} />
-      {noIndex ? <meta name="robots" content="noindex, nofollow" /> : null}
+      {noIndex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta name="robots" content="index, follow" />
+      )}
+      {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
     </>
   );
 }

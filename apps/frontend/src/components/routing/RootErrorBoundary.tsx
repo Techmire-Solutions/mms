@@ -1,8 +1,5 @@
 import React from "react";
-import { translateAppParams } from "@mms/shared";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
-
-import { Button } from "@/components/ui/button";
 
 export default function RootErrorBoundary({
   children,
@@ -14,15 +11,17 @@ export default function RootErrorBoundary({
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-background p-6">
           <div className="text-center max-w-md space-y-4">
-            <h2 className="text-xl font-bold text-foreground">
-              {translateAppParams("errors.boundary.title", "en")}
-            </h2>
+            <h2 className="text-xl font-bold text-foreground">Something went wrong</h2>
             <p className="text-sm text-muted-foreground">
-              {translateAppParams("errors.boundary.description", "en")}
+              An unexpected application error occurred. Reload the page to continue.
             </p>
-            <Button onClick={() => window.location.reload()}>
-              {translateAppParams("common.retry", "en")}
-            </Button>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Retry
+            </button>
           </div>
         </div>
       }

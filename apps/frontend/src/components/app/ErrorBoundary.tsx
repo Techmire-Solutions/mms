@@ -1,7 +1,8 @@
 import React, { Component, type ErrorInfo, type ReactNode } from "react";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { useTranslation } from "@/hooks/useTranslation";
+
+const WORK_SURFACE = "rounded-2xl border border-foreground/10 bg-card shadow-xs";
 
 const LazyErrorState = React.lazy(() =>
   import("@/components/app/ErrorState").then((m) => ({ default: m.ErrorState })),

@@ -13,7 +13,12 @@ import { isEntryPath } from "@/lib/config/routes";
 import { shouldShowUserNotRegisteredOverlay } from "@/lib/contexts/authErrorOverlay";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AppProviders } from "@/providers/AppProviders";
-import { NetworkStatusIndicator } from "@/components/app/NetworkStatusIndicator";
+
+const LazyNetworkStatusIndicator = React.lazy(() =>
+  import("@/components/app/NetworkStatusIndicator").then((m) => ({
+    default: m.NetworkStatusIndicator,
+  })),
+);
 
 const AuthenticatedApp = (): React.JSX.Element | null => {
   const isTenantHost = useIsTenantHost();
@@ -48,7 +53,9 @@ const AuthenticatedApp = (): React.JSX.Element | null => {
       <Suspense fallback={<RouteStatusFallback fullScreen />}>
         <HostRoutes />
       </Suspense>
-      <NetworkStatusIndicator />
+      <Suspense fallback={null}>
+        <LazyNetworkStatusIndicator />
+      </Suspense>
     </>
   );
 };

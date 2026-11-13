@@ -38,32 +38,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { AccessControlledModuleId, AppTranslationKey, ModuleAction } from "@mms/shared";
+import { TENANT_PATHS, type TenantPathId } from "@/lib/routing/tenantPaths";
 
-/** Literal path for every tenant app surface (module pages + app-level pages). */
-export const TENANT_PATHS = {
-  home: "/",
-  contacts: "/contacts",
-  students: "/students",
-  faculty: "/faculty",
-  enrollments: "/enrollments",
-  sessions: "/sessions",
-  attendance: "/attendance",
-  finance: "/finance",
-  hasanatCards: "/hasanat-cards",
-  examinations: "/examinations",
-  questionBank: "/question-bank",
-  workshops: "/workshops",
-  accounting: "/accounting",
-  obligations: "/obligations",
-  tasks: "/tasks",
-  messaging: "/messaging",
-  users: "/users",
-  profile: "/profile",
-  notifications: "/notifications",
-  settings: "/settings",
-} as const;
-
-export type TenantPathId = keyof typeof TENANT_PATHS;
+export { TENANT_PATHS, type TenantPathId };
 
 /**
  * Access classification for a tenant route:

@@ -889,11 +889,7 @@
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    body {
-      transition:
-        background-color 0.2s ease,
-        color 0.15s ease;
-    }
+    /* Only opacity and transform are composited by the GPU. Animating background-color or color causes non-composited animation penalties. */
   }
 
   @media (prefers-reduced-motion: reduce) {
