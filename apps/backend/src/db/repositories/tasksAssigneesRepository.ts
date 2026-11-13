@@ -7,6 +7,7 @@ import { and, eq, inArray, isNull } from "drizzle-orm";
 import type { TaskAssigneeRecord } from "@mms/shared";
 import { contacts, faculty, facultyEmployments, taskAssignees, tenantUsers } from "../schema.js";
 import type { TenantTransaction } from "../tenant-context.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 
 export async function fetchAssigneesByTaskIds(
   tx: TenantTransaction,
@@ -98,6 +99,17 @@ export async function syncTaskAssignees(
   }>,
   actorUserId?: string,
 ): Promise<void> {
+  const previousRows = await tx
+    .select({ userId: taskAssignees.userId })
+    .from(taskAssignees)
+    .where(
+      and(
+        eq(taskAssignees.workspaceSubdomain, subdomain),
+        eq(taskAssignees.taskId, taskId),
+        isNull(taskAssignees.deletedAt),
+      ),
+    );
+
   await tx
     .update(taskAssignees)
     .set({ deletedAt: new Date(), deletedBy: actorUserId ?? null })
@@ -109,16 +121,35 @@ export async function syncTaskAssignees(
       ),
     );
 
-  if (!assignees.length) return;
-  await tx.insert(taskAssignees).values(
-    assignees.map((a) => ({
-      id: crypto.randomUUID(),
+  if (assignees.length) {
+    await tx.insert(taskAssignees).values(
+      assignees.map((a) => ({
+        id: crypto.randomUUID(),
+        workspaceSubdomain: subdomain,
+        taskId,
+        facultyId: a.facultyId,
+        facultyAssignmentId: a.facultyAssignmentId ?? null,
+        userId: a.userId,
+        assignedByUserId: actorUserId ?? "system",
+      })),
+    );
+  }
+
+  const previousUserIds = previousRows.map((r) => r.userId);
+  const nextUserIds = assignees.map((a) => a.userId);
+  const changed =
+    previousUserIds.length !== nextUserIds.length ||
+    previousUserIds.some((id, i) => id !== nextUserIds[i]);
+
+  if (changed) {
+    await recordModernAuditEvent(tx, {
       workspaceSubdomain: subdomain,
-      taskId,
-      facultyId: a.facultyId,
-      facultyAssignmentId: a.facultyAssignmentId ?? null,
-      userId: a.userId,
-      assignedByUserId: actorUserId ?? "system",
-    })),
-  );
+      tableName: "task_assignees",
+      recordId: taskId,
+      actionType: "UPDATE",
+      realUserId: actorUserId,
+      oldState: { assignees: previousUserIds },
+      newState: { assignees: nextUserIds },
+    });
+  }
 }

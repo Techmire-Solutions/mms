@@ -4,7 +4,7 @@
 import Fastify from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import tasksRoutes from "../routes/tenant/tasksRoutes.js";
-import { ValidationError } from "../lib/httpErrors.js";
+import { ConflictError, ValidationError } from "../lib/httpErrors.js";
 
 const {
   canPerformTaskAction,
@@ -319,6 +319,113 @@ describe("Tasks assign route gates (inject)", () => {
           dueTo: "2026-10-31",
         }),
       );
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns task by id on GET /api/tasks/:id", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    findTaskById.mockResolvedValueOnce({ id: "task-1", title: "Task 1" });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/task-1",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toMatchObject({ id: "task-1", title: "Task 1" });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 404 on GET /api/tasks/:id when task does not exist", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    findTaskById.mockResolvedValueOnce(null);
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/missing-task",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toMatchObject({ type: "not_found" });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns metrics on GET /api/tasks/metrics", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    getTaskMetrics.mockResolvedValueOnce({ total: 10, todo: 4 });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/metrics",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({ total: 10, todo: 4 });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns tenant task settings on GET /api/tasks/settings", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    getTenantTaskSettings.mockResolvedValueOnce({
+      delegationScope: "descendants",
+      allowSelfAssignment: true,
+      notifyOnAssignment: true,
+      notifyOnStatusChange: true,
+    });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/settings",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toMatchObject({
+        delegationScope: "descendants",
+        allowSelfAssignment: true,
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("maps stale x-expected-updated-at ConflictError to 409 on PATCH /api/tasks/:id/status", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    updateTaskStatus.mockRejectedValueOnce(
+      new ConflictError("This task was changed by someone else. Reload it and try again."),
+    );
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "PATCH",
+        url: "/api/tasks/task-1/status",
+        headers: {
+          host: "demo.localhost",
+          "x-expected-updated-at": new Date(Date.now() - 60_000).toISOString(),
+        },
+        payload: { status: "in_progress" },
+      });
+      expect(response.statusCode).toBe(409);
+      expect(response.json()).toMatchObject({
+        type: "conflict",
+        message: "This task was changed by someone else. Reload it and try again.",
+      });
     } finally {
       await app.close();
     }
