@@ -14,24 +14,30 @@ process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-l
  * the reports chrome and the ledger explorer.
  */
 test.describe.serial("Finance & Accounting page states", { tag: "@local-only" }, () => {
-  const subdomain = `finpage${Date.now()}`;
-  const tenantOrigin = `http://${subdomain}.localhost:5173`;
-  const adminEmail = `admin@${subdomain}.com`;
-  const adminPassword = "Madrasa@1234";
-  const changedAdminPassword = "Madrasa@5678";
-
-  const credentials: TenantBootstrapCredentials = {
-    subdomain,
-    tenantOrigin,
-    adminEmail,
-    adminPassword,
-    changedAdminPassword,
-    platformEmail: `platform-${subdomain}@test.com`,
-    platformPassword: "Pa$$w0rd123",
+  /**
+   * Each test provisions its own workspace. `/api/auth/onboard` is single-use per subdomain,
+   * so a describe-scoped subdomain 409s the second serial test ("subdomain already taken"),
+   * and a retry would otherwise reuse the tenant the failed attempt already onboarded.
+   */
+  const credentialsFor = (label: string, retry: number): TenantBootstrapCredentials => {
+    const subdomain = `finpage-${label}-${Date.now()}-${retry}`;
+    return {
+      subdomain,
+      tenantOrigin: `http://${subdomain}.localhost:5173`,
+      adminEmail: `admin@${subdomain}.com`,
+      adminPassword: "Madrasa@1234",
+      changedAdminPassword: "Madrasa@5678",
+      platformEmail: `platform-${subdomain}@test.com`,
+      platformPassword: "Pa$$w0rd123",
+    };
   };
 
-  test("renders Finance Work, Reports and Setup tiers without crashing", async ({ page }) => {
+  test("renders Finance Work, Reports and Setup tiers without crashing", async ({
+    page,
+  }, testInfo) => {
     test.setTimeout(180_000);
+    const credentials = credentialsFor("tiers", testInfo.retry);
+    const { tenantOrigin } = credentials;
     await bootstrapAuthenticatedTenantViaApi(page, credentials);
     await expect(page.locator("h1")).toContainText("Assalamu Alaikum");
 
@@ -43,7 +49,10 @@ test.describe.serial("Finance & Accounting page states", { tag: "@local-only" },
       .or(page.getByRole("navigation", { name: "Section navigation" }))
       .first();
     await expect(tierNav).toBeVisible({ timeout: 15_000 });
-    await expect(tierNav.getByRole("tab", { name: /Work/i }).first()).toBeVisible();
+    // The Work tier is labelled with the module name — `useModuleTierTabs({ workLabelKey:
+    // "nav.finance" })` renders "Finance", exactly like "Accounting" and "Faculties" — so
+    // there is no tab reading "Work" to match.
+    await expect(tierNav.getByRole("tab", { name: /Finance/i }).first()).toBeVisible();
     await expect(tierNav.getByRole("tab", { name: /Reports/i }).first()).toBeVisible();
     await expect(tierNav.getByRole("tab", { name: /Setup/i }).first()).toBeVisible();
 
@@ -63,8 +72,10 @@ test.describe.serial("Finance & Accounting page states", { tag: "@local-only" },
 
   test("renders the Accounting ledger and reports surfaces for an empty workspace", async ({
     page,
-  }) => {
+  }, testInfo) => {
     test.setTimeout(180_000);
+    const credentials = credentialsFor("ledger", testInfo.retry);
+    const { tenantOrigin } = credentials;
     await bootstrapAuthenticatedTenantViaApi(page, credentials);
     await page.goto(`${tenantOrigin}/accounting`);
     await page.waitForLoadState("domcontentloaded");

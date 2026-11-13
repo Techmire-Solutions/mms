@@ -85,8 +85,11 @@ test.describe.serial("Workshops lifecycle E2E", { tag: "@local-only" }, () => {
 
     const drawer = page.getByRole("dialog");
     await expect(drawer).toBeVisible({ timeout: 15_000 });
-    await expect(drawer.getByText("Jane Doe")).toBeVisible();
-    await expect(drawer.getByText("Registered")).toBeVisible();
+    // The roster row renders the participant name and registration state as paragraphs. The
+    // same name also labels the per-participant check-in and score controls, so a bare text
+    // match is ambiguous — scope to the roster paragraphs.
+    await expect(drawer.getByRole("paragraph").filter({ hasText: "Jane Doe" })).toBeVisible();
+    await expect(drawer.getByRole("paragraph").filter({ hasText: "Registered" })).toBeVisible();
 
     // Cancel through the contract (the dialog itself is component-tested), then prove the page
     // reflects the new phase after a fresh read.
@@ -106,8 +109,10 @@ test.describe.serial("Workshops lifecycle E2E", { tag: "@local-only" }, () => {
     await page.reload();
     await expect(page.getByText(title).first()).toBeVisible({ timeout: 20_000 });
     await page.getByText(title).first().click();
-    await expect(page.getByRole("dialog").getByText("Cancelled")).toBeVisible({
-      timeout: 15_000,
-    });
+    // Once the workshop is cancelled the roster rows resolve to "Cancelled" too (the derived
+    // registration state), so pin the phase assertion to the drawer's Status definition.
+    await expect(
+      page.getByRole("dialog").getByRole("definition").filter({ hasText: "Cancelled" }),
+    ).toBeVisible({ timeout: 15_000 });
   });
 });
