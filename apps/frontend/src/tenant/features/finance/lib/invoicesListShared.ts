@@ -6,6 +6,8 @@ import type { Invoice } from "@/lib/data/financeData";
 import type { InvoiceMessageChannel } from "@/tenant/features/finance/components/InvoicesRowActions";
 
 export interface InvoicesListContentProps {
+  /** First page still loading: show rows, not the empty state. */
+  isLoading?: boolean;
   viewMode: WorkDirectoryViewMode;
   invoices: Invoice[];
   isColumnVisible: (key: string) => boolean;

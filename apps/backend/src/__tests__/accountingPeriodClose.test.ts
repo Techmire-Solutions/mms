@@ -100,9 +100,12 @@ describe("accountingPeriodClose", () => {
       retainedEarningsAccount: "acc-re",
     });
     mockReportRepo.aggregateAccountingReport.mockResolvedValue({
+      // The aggregate always returns both sides; the close verifies the year's
+      // ledger balances (Dr Cash 1000 / Cr Revenue 1000, Dr Expense 600 / Cr Cash 600).
       trialBalance: [
-        { id: "acc-rev", type: "Revenue", balance: 1000 },
-        { id: "acc-exp", type: "Expense", balance: 600 },
+        { id: "acc-cash", type: "Asset", totalDebit: 1000, totalCredit: 600, balance: 400 },
+        { id: "acc-rev", type: "Revenue", totalDebit: 0, totalCredit: 1000, balance: 1000 },
+        { id: "acc-exp", type: "Expense", totalDebit: 600, totalCredit: 0, balance: 600 },
       ],
     });
     mockAccountingRepo.findEntryIdBySource.mockResolvedValue(null);

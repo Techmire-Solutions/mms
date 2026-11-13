@@ -103,7 +103,7 @@ async function hydrate(
   }));
 }
 
-function selectRelationships(tx: TenantTransaction, subdomain: string, id?: string) {
+function selectRelationships(tx: TenantTransaction, subdomain: string, id?: string, limit = 200) {
   return tx
     .select(relationshipColumns)
     .from(accountingHedgeRelationships)
@@ -116,7 +116,7 @@ function selectRelationships(tx: TenantTransaction, subdomain: string, id?: stri
         : eq(accountingHedgeRelationships.workspaceSubdomain, subdomain),
     )
     .orderBy(desc(accountingHedgeRelationships.designationDate))
-    .limit(id ? 1 : 200);
+    .limit(id ? 1 : limit);
 }
 
 /** Hedge relationships with their valuation history, newest designation first (bounded to 200). */
@@ -125,6 +125,24 @@ export async function listHedgeRelationships(tenant: string): Promise<HedgeRelat
   return withTenantRead(subdomain, async (tx) =>
     hydrate(tx, subdomain, await selectRelationships(tx, subdomain)),
   );
+}
+
+/**
+ * One page of hedge relationships plus whether more exist. Fetches `limit + 1` so
+ * `truncated` is exact without a second count query.
+ */
+export async function listHedgeRelationshipsPage(
+  tenant: string,
+  limit: number,
+): Promise<{ hedges: HedgeRelationship[]; truncated: boolean }> {
+  const subdomain = tenantKey(tenant);
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await selectRelationships(tx, subdomain, undefined, limit + 1);
+    return {
+      hedges: await hydrate(tx, subdomain, rows.slice(0, limit)),
+      truncated: rows.length > limit,
+    };
+  });
 }
 
 /** Read-your-writes lookup inside the caller's transaction. */

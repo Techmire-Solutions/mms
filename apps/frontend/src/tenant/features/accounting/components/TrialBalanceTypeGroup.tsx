@@ -12,18 +12,10 @@ import {
   useWorkDirectoryViewMode,
   type WorkDirectoryViewMode,
 } from "@/hooks/useWorkDirectoryViewMode";
-import { type AppTranslationKey } from "@mms/shared";
+import { type AccountingTrialBalanceRow, type AppTranslationKey } from "@mms/shared";
 
 /** ReportMoneyCard tile (report) — not DirectoryEntityCard. */
-interface TrialBalanceRow {
-  id: string;
-  code: string;
-  name: string;
-  type: string;
-  subtype?: string;
-  totalDebit: number;
-  totalCredit: number;
-}
+type TrialBalanceRow = AccountingTrialBalanceRow;
 
 interface TrialBalanceTypeGroupProps {
   type: AccountType;

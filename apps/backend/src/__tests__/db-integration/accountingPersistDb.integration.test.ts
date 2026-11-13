@@ -1,14 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { readFileSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import {
-  initializeDatabaseConnection,
-  pingDatabase,
-  closeDatabase,
-  beginLongLivedTenantTransaction,
-} from "../../db/dbConnection.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
 import {
   workspaces,
   accountingAccounts,
@@ -19,29 +11,13 @@ import {
 } from "../../db/schema.js";
 import { bulkSaveEntries } from "../../db/repositories/accountingEntriesPersist.js";
 import type { JournalEntry } from "@mms/shared";
+import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TEST_SUBDOMAIN = "perf-parity-accounting";
 
 /** Backend root from this test file (src/__tests__/db-integration -> backend). */
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-function applyDatabaseUrlFromEnvFile(): void {
-  if (process.env.DATABASE_URL) return;
-  try {
-    const content = readFileSync(join(backendRoot, ".env"), "utf-8");
-    const match = content.match(/^DATABASE_URL\s*=\s*"?([^"\n]+)"?$/m);
-    if (match) process.env.DATABASE_URL = match[1].trim();
-  } catch {
-    // no .env present — loadServerConfig will use its test default
-  }
-}
-
-let dbAvailable = false;
-
 beforeAll(async () => {
-  applyDatabaseUrlFromEnvFile();
-  initializeDatabaseConnection();
-  dbAvailable = await pingDatabase();
-  if (!dbAvailable) return;
+  await requireDatabaseConnection();
 
   const preCleanupTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
   try {
@@ -82,14 +58,14 @@ beforeAll(async () => {
         workspaceSubdomain: TEST_SUBDOMAIN,
         code: "1000",
         name: "Cash",
-        type: "asset",
+        type: "Asset",
       },
       {
         id: "acc-2",
         workspaceSubdomain: TEST_SUBDOMAIN,
         code: "2000",
         name: "Revenue",
-        type: "revenue",
+        type: "Revenue",
       },
     ]);
     // Existing entry that the batch will update (with children to be replaced).
@@ -99,7 +75,9 @@ beforeAll(async () => {
       date: "2026-01-01",
       ref: "REF-OLD",
       description: "old description",
-      status: "posted",
+      // Draft on purpose: the draft replacement path is what this test proves.
+      // A posted entry's ledger lines are immutable (see the test below).
+      status: "draft",
       createdBy: "u1",
       fiscalYear: "FY2026",
       updatedAt: new Date(),
@@ -143,7 +121,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (dbAvailable) {
+  {
     const cleanupTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {
       await cleanupTx.tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
@@ -172,19 +150,14 @@ afterAll(async () => {
 });
 
 describe("bulkSaveEntries batched upsert parity", () => {
-  it("upserts entries and replaces children while preserving untouched rows", async (ctx) => {
-    if (!dbAvailable) {
-      ctx.skip();
-      return;
-    }
-
+  it("upserts entries and replaces children while preserving untouched rows", async () => {
     const batch: JournalEntry[] = [
       {
         id: "entry-existing",
         date: "2026-01-01",
         ref: "REF-NEW",
         description: "updated description",
-        status: "posted",
+        status: "draft",
         created_by: "u1",
         fiscal_year: "FY2026",
         tags: ["new-tag"],
@@ -265,5 +238,94 @@ describe("bulkSaveEntries batched upsert parity", () => {
       await verifyTx.rollback().catch(() => undefined);
       throw error;
     }
+  });
+
+  it("never rewrites the lines of a posted entry", async () => {
+    // A posted entry is immutable: the app layer rejects any content change, and
+    // the persist layer is told to leave its children alone. The row set must be
+    // byte-identical before and after the save.
+    const batch: JournalEntry[] = [
+      {
+        id: "entry-untouched",
+        date: "2026-01-02",
+        ref: "REF-UNTOUCHED",
+        description: "untouched",
+        status: "posted",
+        created_by: "u1",
+        fiscal_year: "FY2026",
+        tags: [],
+        attachments: [],
+        lines: [{ id: "posted-line", account_id: "acc-1", debit: 50, credit: 0, description: "p" }],
+      },
+    ];
+
+    const seedTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+    try {
+      await seedTx.tx.insert(accountingJournalLines).values({
+        id: "posted-line",
+        workspaceSubdomain: TEST_SUBDOMAIN,
+        entryId: "entry-untouched",
+        accountId: "acc-1",
+        debit: "50",
+        credit: "0",
+        description: "p",
+      });
+      await seedTx.tx.insert(accountingJournalLines).values({
+        id: "posted-line-2",
+        workspaceSubdomain: TEST_SUBDOMAIN,
+        entryId: "entry-untouched",
+        accountId: "acc-2",
+        debit: "0",
+        credit: "50",
+        description: "p2",
+      });
+      await seedTx.commit();
+    } catch (error) {
+      await seedTx.rollback().catch(() => undefined);
+      throw error;
+    }
+
+    await bulkSaveEntries(TEST_SUBDOMAIN, batch, {
+      preserveChildren: new Set(["entry-untouched"]),
+    });
+
+    const verifyTx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+    try {
+      const lines = await verifyTx.tx
+        .select()
+        .from(accountingJournalLines)
+        .where(
+          and(
+            eq(accountingJournalLines.workspaceSubdomain, TEST_SUBDOMAIN),
+            eq(accountingJournalLines.entryId, "entry-untouched"),
+          ),
+        );
+      expect(lines.map((line) => line.id).sort()).toEqual(["posted-line", "posted-line-2"]);
+      await verifyTx.commit();
+    } catch (error) {
+      await verifyTx.rollback().catch(() => undefined);
+      throw error;
+    }
+  });
+
+  it("rejects a line rewrite of a posted entry that skips preserveChildren", async () => {
+    // The database is the last line of defence: even a repository call that
+    // forgets the flag cannot delete a posted entry's ledger lines.
+    await expect(
+      bulkSaveEntries(TEST_SUBDOMAIN, [
+        {
+          id: "entry-untouched",
+          date: "2026-01-02",
+          ref: "REF-UNTOUCHED",
+          description: "untouched",
+          status: "posted",
+          created_by: "u1",
+          fiscal_year: "FY2026",
+          tags: [],
+          attachments: [],
+          lines: [],
+        },
+      ]),
+    ).rejects.toThrow();
   });
 });

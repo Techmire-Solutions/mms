@@ -11,6 +11,7 @@ import {
   integer,
   foreignKey,
   uniqueIndex,
+  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
@@ -87,6 +88,25 @@ export const financeInvoices = pgTable(
     index("finance_invoices_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
+    // `finance_invoices_workspace_created_active_idx` (workspace_subdomain,
+    // created_at DESC, id) is provisioned CONCURRENTLY at boot
+    // (`db/migrations/financeConcurrentIndexes.ts`, migration 0248) because
+    // finance_invoices is in the migration-index ratchet's large tables — a plain
+    // build would block writes. It is not declared here for the same reason as
+    // the attendance analytics indexes: the model must not claim a shape it
+    // cannot build in a migration.
+    check(
+      "finance_invoices_currency_chk",
+      sql`${table.currency} IS NULL OR ${table.currency} ~ '^[A-Z]{3}$'`,
+    ),
+    check(
+      "finance_invoices_billing_period_chk",
+      sql`${table.billingPeriod} IS NULL OR ${table.billingPeriod} ~ '^[0-9]{4}-[0-9]{2}$'`,
+    ),
+    check(
+      "finance_invoices_status_chk",
+      sql`${table.status} IN ('paid', 'pending', 'overdue', 'partial', 'cancelled')`,
+    ),
   ],
 );
 
@@ -133,6 +153,9 @@ export const financePayments = pgTable(
     index("finance_payments_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
+    // Default directory ordering lives in the concurrent boot provisioner for the
+    // same reason as the invoice index above (finance_payments is a large table).
+    check("finance_payments_amount_chk", sql`${table.amount} >= 0`),
   ],
 );
 

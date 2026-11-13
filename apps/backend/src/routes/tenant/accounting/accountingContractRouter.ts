@@ -1,7 +1,10 @@
 import type { FastifyPluginAsync } from "fastify";
-import { isQueryFlagTrue, type User, accountingContract } from "@mms/shared";
+import { isQueryFlagTrue, UNPAGINATED_LIST_CAP, type User, accountingContract } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
+import {
+  installContractErrorHandler,
+  standardRequestValidationErrorHandler,
+} from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canDeleteCollection } from "../../../services/rbacService.js";
 import { handleContractError } from "../../../lib/contractError.js";
@@ -11,6 +14,7 @@ import { accountingUseCases } from "../../../accounting/use-cases/accountingUseC
 const s = initServer();
 
 export const accountingContractRouter: FastifyPluginAsync = async (fastify) => {
+  installContractErrorHandler(fastify);
   const router = s.router(accountingContract, {
     listAccounts: async ({
       query,
@@ -41,12 +45,22 @@ export const accountingContractRouter: FastifyPluginAsync = async (fastify) => {
           );
           return { status: 200 as const, body: result };
         }
-        const accounts = await withTenant(
+        // Compatibility branch (account pickers need the whole chart): read one
+        // capped page instead of the unbounded collection and report truncation.
+        const page = await withTenant(
           String(request.tenant?.id),
-          () => accountingUseCases.loadAccounts({ includeDeleted }),
+          () =>
+            accountingUseCases.loadAccountsPage({
+              page: 1,
+              limit: UNPAGINATED_LIST_CAP,
+              includeDeleted,
+            }),
           { readOnly: true },
         );
-        return { status: 200 as const, body: { accounts } };
+        return {
+          status: 200 as const,
+          body: { accounts: page.accounts, truncated: page.hasMore },
+        };
       } catch (error: unknown) {
         return handleContractError(request, error, {
           status: 500,
@@ -83,12 +97,20 @@ export const accountingContractRouter: FastifyPluginAsync = async (fastify) => {
           );
           return { status: 200 as const, body: result };
         }
-        const entries = await withTenant(
+        const page = await withTenant(
           String(request.tenant?.id),
-          () => accountingUseCases.loadEntries({ includeDeleted }),
+          () =>
+            accountingUseCases.loadEntriesPage({
+              page: 1,
+              limit: UNPAGINATED_LIST_CAP,
+              includeDeleted,
+            }),
           { readOnly: true },
         );
-        return { status: 200 as const, body: { entries } };
+        return {
+          status: 200 as const,
+          body: { entries: page.entries, truncated: page.hasMore },
+        };
       } catch (error: unknown) {
         return handleContractError(request, error, {
           status: 500,
@@ -125,12 +147,20 @@ export const accountingContractRouter: FastifyPluginAsync = async (fastify) => {
           );
           return { status: 200 as const, body: result };
         }
-        const fiscalYears = await withTenant(
+        const page = await withTenant(
           String(request.tenant?.id),
-          () => accountingUseCases.loadFiscalYears({ includeDeleted }),
+          () =>
+            accountingUseCases.loadFiscalYearsPage({
+              page: 1,
+              limit: UNPAGINATED_LIST_CAP,
+              includeDeleted,
+            }),
           { readOnly: true },
         );
-        return { status: 200 as const, body: { fiscalYears } };
+        return {
+          status: 200 as const,
+          body: { fiscalYears: page.fiscalYears, truncated: page.hasMore },
+        };
       } catch (error: unknown) {
         return handleContractError(request, error, {
           status: 500,
@@ -142,5 +172,8 @@ export const accountingContractRouter: FastifyPluginAsync = async (fastify) => {
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    // The session routers already validate responses; finance/accounting did not,
+    // so their declared response schemas were compile-time only.
+    responseValidation: true,
   });
 };

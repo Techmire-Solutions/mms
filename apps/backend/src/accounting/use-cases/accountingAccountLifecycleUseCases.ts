@@ -24,8 +24,26 @@ export interface AccountingUseCasesDependencies {
   ) => Promise<Map<string, number>>;
 }
 
+/** True when two inclusive date ranges share at least one day. */
+function rangesOverlap(first: FiscalYear, second: FiscalYear): boolean {
+  return first.startDate <= second.endDate && second.startDate <= first.endDate;
+}
+
+/** First pair of non-deleted fiscal years whose ranges overlap, if any. */
+export function findOverlappingFiscalYearPair(
+  years: readonly FiscalYear[],
+): [FiscalYear, FiscalYear] | null {
+  const active = years.filter((year) => !year.deletedAt);
+  for (let first = 0; first < active.length; first += 1) {
+    for (let second = first + 1; second < active.length; second += 1) {
+      if (rangesOverlap(active[first], active[second])) return [active[first], active[second]];
+    }
+  }
+  return null;
+}
+
 export async function assertFiscalYearWritesAllowed(
-  repo: Pick<AccountingRepository, "findFiscalYearsByIds">,
+  repo: Pick<AccountingRepository, "findFiscalYearsByIds" | "listFiscalYearsByWorkspace">,
   incoming: readonly FiscalYear[],
 ): Promise<void> {
   const tenant = getRequestTenant();
@@ -66,6 +84,24 @@ export async function assertFiscalYearWritesAllowed(
       );
     }
   }
+
+  // A close sweeps the P&L of its own date range into retained earnings, so two
+  // overlapping years would absorb each other's surplus (the second close would
+  // see a zeroed P&L and close without a closing entry). The exclusion constraint
+  // backs this up; this guard exists to return a readable 422.
+  const storedYears = await repo.listFiscalYearsByWorkspace(tenant);
+  const incomingIds = new Set(incoming.map((year) => year.id));
+  const finalYears = [...storedYears.filter((year) => !incomingIds.has(year.id)), ...incoming];
+  const overlap = findOverlappingFiscalYearPair(finalYears);
+  if (overlap) {
+    const [first, second] = overlap;
+    throw Object.assign(
+      new Error(
+        `Fiscal years "${first.label}" (${first.startDate}..${first.endDate}) and "${second.label}" (${second.startDate}..${second.endDate}) overlap — each workspace's fiscal years must cover disjoint date ranges`,
+      ),
+      { statusCode: 422, type: "validation_error" },
+    );
+  }
 }
 
 export function upsertAccountsHelper(
@@ -81,7 +117,10 @@ export function upsertAccountsHelper(
 }
 
 export async function upsertFiscalYearsHelper(
-  repo: Pick<AccountingRepository, "bulkSaveFiscalYears" | "findFiscalYearsByIds">,
+  repo: Pick<
+    AccountingRepository,
+    "bulkSaveFiscalYears" | "findFiscalYearsByIds" | "listFiscalYearsByWorkspace"
+  >,
   fiscalYears: FiscalYear[],
 ) {
   const tenant = getRequestTenant();

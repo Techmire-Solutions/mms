@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import ExcelJS from "exceljs";
 import { streamTableToExcel, streamLedgerToS3 } from "../worker/processors/excel-export.js";
 import { resolveLocalArtifactPath } from "../config/storage.js";
 import { existsSync, statSync } from "node:fs";
@@ -110,5 +111,33 @@ describe("Streaming Excel Export Engine (Phase 6)", () => {
     const filePath = resolveLocalArtifactPath(result.key);
     expect(existsSync(filePath)).toBe(true);
     expect(heapDiffMb).toBeLessThan(120);
+  });
+
+  it("writes formula-looking strings as text, never as executable formulas", async () => {
+    const result = await streamTableToExcel({
+      tenantId: "tenant-test-stream",
+      filename: "formula-injection",
+      worksheetName: "Formula",
+      columns: [
+        { header: "Name", key: "name", width: 20 },
+        { header: "Amount", key: "amount", width: 20 },
+      ],
+      rowGenerator: (async function* () {
+        yield { name: "=SUM(A1:A9)", amount: "=1+1" };
+        yield { name: "-100.50", amount: 100 };
+      })(),
+    });
+
+    // The exporter passes strings to ExcelJS as string cells: no `{ formula }`
+    // object is ever constructed, so a user-supplied "=..." stays literal text.
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(resolveLocalArtifactPath(result.key));
+    const sheet = workbook.getWorksheet("Formula");
+    expect(sheet?.getCell("A2").value).toBe("=SUM(A1:A9)");
+    expect(sheet?.getCell("A2").type).toBe(ExcelJS.ValueType.String);
+    expect(sheet?.getCell("A2").formula).toBeUndefined();
+    expect(sheet?.getCell("B2").formula).toBeUndefined();
+    expect(sheet?.getCell("A3").value).toBe("-100.50");
+    expect(sheet?.getCell("B3").value).toBe(100);
   });
 });

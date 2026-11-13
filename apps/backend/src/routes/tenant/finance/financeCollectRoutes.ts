@@ -8,7 +8,11 @@ import {
   resourceIdParamsSchema,
   type User,
 } from "@mms/shared";
-import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import {
+  canManageFinance,
+  canReadCollection,
+  canWriteCollection,
+} from "../../../services/rbacService.js";
 import {
   sendForbidden,
   sendIfHttpDomainError,
@@ -74,7 +78,8 @@ export const financeCollectRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.post("/invoices/:id/cancel", async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
+    // Cancelling posts a reversing journal: privileged billing authority, not write.
+    if (!canManageFinance(user)) return sendForbidden(reply);
     const params = parseRequest(resourceIdParamsSchema, request.params);
     if (!params.ok) return replyValidationError(reply, params.message);
     try {
@@ -116,7 +121,8 @@ export const financeCollectRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.post("/credit-notes", async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
+    // A credit note IS the fee waiver: it must not follow ordinary payment authority.
+    if (!canManageFinance(user)) return sendForbidden(reply);
     const parsed = parseRequest(creditNoteInsertSchema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
     try {

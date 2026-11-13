@@ -158,7 +158,7 @@ export async function bulkSoftDeletePayments(
 export async function bulkRestorePayments(
   tenant: string,
   ids: string[],
-  _userId?: string,
+  userId?: string,
 ): Promise<{ succeeded: number; failed: number }> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
@@ -171,6 +171,8 @@ export async function bulkRestorePayments(
         deletedAt: null,
         deletedBy: null,
         deletionReason: null,
+        restoredAt: now,
+        restoredBy: userId || null,
         updatedAt: now,
       })
       .where(

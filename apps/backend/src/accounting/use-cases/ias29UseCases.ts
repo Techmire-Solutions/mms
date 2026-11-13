@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
+  AmountScaleError,
   MissingPriceIndexError,
   buildIas29JournalLines,
   buildReversalLines,
@@ -10,6 +11,7 @@ import {
   type PriceIndexPoint,
 } from "@mms/shared";
 import type { RecordModernAuditInput } from "../../services/auditTrailService.js";
+import { lockLedgerEvent } from "../ledgerPosting/ledgerEventLock.js";
 import type { AccountingHyperinflationStore } from "../repository/accountingHyperinflationRepositoryAdapter.js";
 import { nextCalendarDay } from "./fxRevaluationUseCases.js";
 
@@ -18,6 +20,7 @@ export interface Ias29Deps {
     AccountingHyperinflationStore,
     | "getCurrencySettings"
     | "accountExists"
+    | "findAccountsByIds"
     | "getHyperinflationSettings"
     | "saveHyperinflationSettings"
     | "listPriceIndices"
@@ -54,11 +57,25 @@ export async function updateHyperinflationSettings(
   actor: Actor,
   settings: HyperinflationSettings,
 ): Promise<HyperinflationSettings> {
-  if (
-    settings.netMonetaryAccountId &&
-    !(await deps.store.accountExists(actor.tenant, settings.netMonetaryAccountId))
-  ) {
-    throw unprocessable("The net monetary position account does not exist");
+  if (settings.netMonetaryAccountId) {
+    // The net monetary position gain/loss is presented in P&L (or equity); an
+    // Asset/Liability account as the plug would misstate both statements.
+    const [account] = await deps.store.findAccountsByIds(actor.tenant, [
+      settings.netMonetaryAccountId,
+    ]);
+    if (!account) {
+      throw unprocessable("The net monetary position account does not exist or is archived");
+    }
+    if (account.isActive === false) {
+      throw unprocessable(
+        `The net monetary position account ${account.code} ${account.name} is deactivated`,
+      );
+    }
+    if (!["Equity", "Revenue", "Expense"].includes(account.type)) {
+      throw unprocessable(
+        `The net monetary position account is type ${account.type}, expected Equity, Revenue or Expense`,
+      );
+    }
   }
   const previous = await deps.store.getHyperinflationSettings(actor.tenant);
   await deps.store.saveHyperinflationSettings(actor.tenant, settings, actor.userId);
@@ -123,6 +140,11 @@ export async function previewIas29Restatement(
     if (error instanceof MissingPriceIndexError) {
       throw unprocessable(`${error.message}; add those price index points first`);
     }
+    if (error instanceof AmountScaleError) {
+      throw unprocessable(
+        `Movement ${error.value} has more decimals than ${error.currency} allows — correct the posted amounts before restating`,
+      );
+    }
     throw error;
   }
 }
@@ -140,6 +162,8 @@ export async function postIas29Restatement(
   date: string,
 ): Promise<Ias29Run> {
   const { tenant } = actor;
+  // One restatement per date; serialise the read-then-insert (see lockLedgerEvent).
+  await lockLedgerEvent(tenant, `ias29:${date}`);
   if (await deps.store.findIas29RunId(tenant, date)) {
     const existing = (await deps.store.listIas29Runs(tenant)).find(
       (run) => run.restatementDate === date,

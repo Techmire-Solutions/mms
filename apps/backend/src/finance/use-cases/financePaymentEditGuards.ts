@@ -1,3 +1,4 @@
+import { exchangeRateStringsEqual } from "@mms/shared";
 import type { Payment, PaymentUpdate } from "@mms/shared";
 
 /** Fields whose persisted change desynchronises a payment from its posted journal. */
@@ -54,7 +55,7 @@ export function paymentLedgerSensitiveChanges(
   }
   if (
     incoming.exchangeRate !== undefined &&
-    Number(incoming.exchangeRate ?? 0) !== Number(existing.exchangeRate ?? 0)
+    !exchangeRateStringsEqual(incoming.exchangeRate, existing.exchangeRate)
   ) {
     changed.push("exchangeRate");
   }

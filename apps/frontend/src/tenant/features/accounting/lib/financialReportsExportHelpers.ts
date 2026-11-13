@@ -1,16 +1,9 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AccountingTrialBalanceRow, AppTranslationKey } from "@mms/shared";
 import type { ExportColumn } from "@/components/app/ExportToolbar";
 import { buildCashflowExportRows } from "./financialReportsCashflowExport";
 
-export interface TrialBalanceRow {
-  id: string;
-  code: string;
-  name: string;
-  type: string;
-  totalDebit: number;
-  totalCredit: number;
-  balance: number;
-}
+/** Shared trial-balance row (was declared here and cast at the model boundary). */
+export type TrialBalanceRow = AccountingTrialBalanceRow;
 
 export interface BuildFinancialReportExportRowsOptions {
   view: "income" | "balance" | "cashflow";

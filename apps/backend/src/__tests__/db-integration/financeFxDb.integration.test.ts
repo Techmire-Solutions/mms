@@ -89,7 +89,7 @@ describe("IAS 21 finance documents", () => {
       invoiceId: "inv-usd",
       amount: 114000,
       date: "2026-10-15",
-      method: "cash",
+      method: "Cash",
       note: "",
       currency: "PKR",
       exchangeRate: "285",

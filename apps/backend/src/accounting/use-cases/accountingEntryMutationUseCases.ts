@@ -2,14 +2,9 @@ import { randomUUID } from "node:crypto";
 import type { AccountingRepository } from "../repository/accountingRepository.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { withTenant } from "../../db/tenant-context.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError, HttpDomainError } from "../../lib/httpErrors.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
-import {
-  journalEntryListSchema,
-  dedupeTrimmedIds,
-  type JournalEntry,
-  type FiscalYear,
-} from "@mms/shared";
+import { journalEntryListSchema, type JournalEntry, type FiscalYear } from "@mms/shared";
 import { upsertWithBroadcast } from "../../services/tenantBulkService.js";
 import { assignVoucherRefs } from "./journalVoucherRefs.js";
 import {
@@ -18,6 +13,8 @@ import {
   assertJournalAccountsWritable,
   assertEntriesMutable,
   assertEntriesWritable,
+  assertPostingPeriodOpen,
+  postedEntryIds,
   loadStoredEntriesByIds,
   withServerOwnedSourceKeys,
   mapJournalEntryUniqueError,
@@ -25,8 +22,7 @@ import {
 } from "./accountingLedgerGuards.js";
 import type { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import { resolveEntriesFx } from "./journalEntryFx.js";
-import { lockFiscalYearForPosting } from "../ledgerPosting/fiscalYearPostingLock.js";
-import { resolveYearId } from "../ledgerPosting/ledgerPostingHelpers.js";
+import { lockFiscalYearsForEntries } from "../ledgerPosting/fiscalYearPostingLock.js";
 import { journalEntryAuditState, recordJournalEntryAudit } from "./accountingEntryAudit.js";
 
 type CrudService<T extends { id?: string | number }> = ReturnType<
@@ -72,20 +68,27 @@ export async function upsertEntriesHelper(
     );
     const withFx = await resolveEntriesFx(repo, tenant, sanitized);
     assertEntriesMutable(withFx, storedById);
-    // Lock the year(s) before the period check so a concurrent close cannot flip
-    // the year between the check and the write; re-read the years under the lock.
-    await lockFiscalYearForPosting(
-      tenant,
-      withFx.map((entry) => resolveYearId(fiscalYears, entry.date) ?? entry.fiscal_year_id),
-    );
+    // Lock every year the batch can land in (declared + date-derived) before the
+    // period checks, so a concurrent close cannot flip one between check and
+    // write; the years are re-read under the lock.
+    await lockFiscalYearsForEntries(tenant, withFx, fiscalYears);
     const lockedYears = await loadFiscalYears();
-    await assertEntriesWritable(tenant, withFx, storedById, lockedYears, repo.findAccountsByIds);
+    await assertEntriesWritable(
+      tenant,
+      withFx,
+      storedById,
+      lockedYears,
+      repo.findAccountsByIds,
+      repo.findClosedPostingPeriodForDate,
+    );
     const prepared = withFx.map((entry) => prepareJournalEntryForPersist(entry, lockedYears));
+    // Posted entries are immutable: keep their ledger rows out of the rewrite (0248).
+    const preserveChildren = postedEntryIds(prepared, storedById);
     try {
       const saved = await upsertWithBroadcast(
         journalEntryListSchema,
         prepared,
-        repo.bulkSaveEntries,
+        (tenant, list) => repo.bulkSaveEntries(tenant, list, { preserveChildren }),
         "accounting_entries",
         { skipValidation: true },
       );
@@ -145,14 +148,20 @@ export async function createJournalEntryHelper(
       }
       return existing;
     }
-    // Serialise with the fiscal-year close, then re-check the period against the
-    // years read under the lock (a close may have committed while we waited).
-    await lockFiscalYearForPosting(tenant, [prepared.fiscal_year_id]);
+    // Serialise with the fiscal-year close for every year the entry can land in
+    // (declared and date-derived), then re-resolve and re-check under the lock:
+    // a close may have committed while we waited, and the year list may have
+    // changed between the first read and the lock.
+    await lockFiscalYearsForEntries(tenant, [prepared], fiscalYears);
     const lockedYears = await loadFiscalYears();
-    assertJournalEntryPeriodOpen(prepared, lockedYears);
-    await assertJournalAccountsWritable(tenant, [prepared], repo.findAccountsByIds);
+    const finalEntry = prepareJournalEntryForPersist(withFx, lockedYears);
+    assertJournalEntryPeriodOpen(finalEntry, lockedYears);
+    await assertPostingPeriodOpen(finalEntry.date, (date) =>
+      repo.findClosedPostingPeriodForDate(tenant, date),
+    );
+    await assertJournalAccountsWritable(tenant, [finalEntry], repo.findAccountsByIds);
     try {
-      const created = await entryCrud.create(prepared);
+      const created = await entryCrud.create(finalEntry);
       await recordJournalEntryAudit(tenant, "CREATE", created);
       return created;
     } catch (error) {
@@ -193,12 +202,16 @@ export async function updateJournalEntryByIdHelper(
     const [withFx] = await resolveEntriesFx(repo, tenant, [sanitized]);
     assertEntriesMutable([withFx], storedById);
     const prepared = prepareJournalEntryForPersist(withFx, fiscalYears);
-    await lockFiscalYearForPosting(tenant, [prepared.fiscal_year_id]);
+    await lockFiscalYearsForEntries(tenant, [prepared], fiscalYears);
     const lockedYears = await loadFiscalYears();
-    assertJournalEntryPeriodOpen(prepared, lockedYears);
-    await assertJournalAccountsWritable(tenant, [prepared], repo.findAccountsByIds);
+    const finalEntry = prepareJournalEntryForPersist(withFx, lockedYears);
+    assertJournalEntryPeriodOpen(finalEntry, lockedYears);
+    await assertPostingPeriodOpen(finalEntry.date, (date) =>
+      repo.findClosedPostingPeriodForDate(tenant, date),
+    );
+    await assertJournalAccountsWritable(tenant, [finalEntry], repo.findAccountsByIds);
     try {
-      const updated = await entryCrud.updateById(id, prepared);
+      const updated = await entryCrud.updateById(id, finalEntry);
       if (updated) {
         await recordJournalEntryAudit(
           tenant,
@@ -230,7 +243,11 @@ export async function deleteJournalEntryByIdHelper(
     const existing = await repo.findEntryById(tenant, id);
     if (!existing || existing.deletedAt) return false;
     if (existing.status === "posted") {
-      throw new Error("Posted journal entries cannot be deleted");
+      throw new HttpDomainError(
+        422,
+        "validation_error",
+        "Posted journal entries cannot be deleted",
+      );
     }
     const archived = await entryCrud.deleteById(id, deletedBy, deletionReason);
     if (archived) {
@@ -240,57 +257,7 @@ export async function deleteJournalEntryByIdHelper(
   });
 }
 
-export async function restoreJournalEntryByIdHelper(
-  repo: AccountingRepository,
-  entryCrud: CrudService<JournalEntry>,
-  id: string,
-  userId?: string,
-): Promise<boolean> {
-  const tenant = getRequestTenant();
-  if (tenant && repo.findEntryById && repo.findEntryByRef) {
-    const trashed = await repo.findEntryById(tenant, id);
-    if (trashed?.ref?.trim()) {
-      const conflicting = await repo.findEntryByRef(tenant, trashed.ref.trim(), {
-        excludeId: id,
-      });
-      if (conflicting) {
-        throw new ConflictError(
-          `Cannot restore journal entry: reference "${trashed.ref}" is already used by an active entry`,
-        );
-      }
-    }
-  }
-  return entryCrud.restoreById(id, userId);
-}
-
-export async function bulkSoftDeleteJournalEntriesHelper(
-  repo: AccountingRepository,
-  deleteEntryFn: (id: string, deletedBy: string, deletionReason?: string) => Promise<boolean>,
-  ids: string[],
-  deletedBy: string,
-  deletionReason?: string,
-): Promise<{ succeeded: number; failed: number }> {
-  const cleanIds = dedupeTrimmedIds(ids);
-  if (cleanIds.length === 0) return { succeeded: 0, failed: 0 };
-  const tenant = getRequestTenant();
-  if (repo.bulkSoftDeleteEntries && tenant) {
-    const result = await repo.bulkSoftDeleteEntries(tenant, cleanIds, deletedBy, deletionReason);
-    if (result.succeeded > 0) {
-      const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
-      broadcastTenantUpdate(tenant, "collection", "accounting_entries");
-    }
-    return result;
-  }
-  let succeeded = 0;
-  let failed = 0;
-  for (const id of cleanIds) {
-    try {
-      const ok = await deleteEntryFn(id, deletedBy, deletionReason);
-      if (ok) succeeded += 1;
-      else failed += 1;
-    } catch {
-      failed += 1;
-    }
-  }
-  return { succeeded, failed };
-}
+export {
+  bulkSoftDeleteJournalEntriesHelper,
+  restoreJournalEntryByIdHelper,
+} from "./accountingEntryLifecycleUseCases.js";

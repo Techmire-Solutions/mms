@@ -39,6 +39,15 @@ export function FinanceGenerateInvoicesDialog({
       });
       if (result.created === 0) {
         notify.info(t("finance.generate.none", { skipped: result.skipped }));
+      } else if (result.unposted > 0) {
+        // The invoice exists but has no ledger entry: posting rules are missing or
+        // the posting was refused. Say so instead of reporting plain success.
+        notify.warning(
+          t("finance.generate.unposted", {
+            count: result.created,
+            unposted: result.unposted,
+          }),
+        );
       } else {
         notify.success(
           t("finance.generate.success", { count: result.created, skipped: result.skipped }),

@@ -2,6 +2,7 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import type {
   Account,
   AccountingEntriesListPageResult,
+  AccountingLedgerPage,
   AccountingListQuery,
   JournalEntry,
 } from "@mms/shared";
@@ -127,6 +128,65 @@ export async function fetchAllAccountingEntries(
   // Bounded: a ledger larger than this needs a server-side aggregate rather than
   // shipping every row to the browser.
   return collected;
+}
+
+/** Hard bound on the ledger export paging loop (each page is 100 lines). */
+const MAX_LEDGER_EXPORT_PAGES = 50;
+
+export interface AccountingLedgerExport {
+  lines: AccountingLedgerPage["lines"];
+  openingBalance: number;
+  totalDebit: number;
+  totalCredit: number;
+  closingBalance: number;
+  truncated: boolean;
+}
+
+/**
+ * Every line of one account's ledger, paged through the server report.
+ *
+ * The export must not silently stop at the first page (the browser aggregate bug):
+ * it pages until the server reports no more, and flags a ledger larger than the
+ * export cap so the caller can warn instead of presenting a partial CSV.
+ */
+export async function fetchAllAccountingLedgerLines(
+  accountId: string,
+  dateFrom?: string,
+  dateTo?: string,
+  signal?: AbortSignal,
+): Promise<AccountingLedgerExport> {
+  const lines: AccountingLedgerPage["lines"] = [];
+  let first: AccountingLedgerPage | undefined;
+  let truncated = true;
+  for (let page = 1; page <= MAX_LEDGER_EXPORT_PAGES; page += 1) {
+    const response = await apiContract.accounting.getLedger({
+      query: {
+        accountId,
+        ...(dateFrom ? { dateFrom } : {}),
+        ...(dateTo ? { dateTo } : {}),
+        page,
+        limit: LIST_PAGE_MAX_LIMIT,
+      },
+      signal,
+      fetchOptions: { signal },
+    });
+    assertContractOk(response, "Failed to fetch the account ledger");
+    const body = response.body as AccountingLedgerPage;
+    first ??= body;
+    lines.push(...body.lines);
+    if (!body.hasMore) {
+      truncated = false;
+      break;
+    }
+  }
+  return {
+    lines,
+    openingBalance: first?.openingBalance ?? 0,
+    totalDebit: first?.totalDebit ?? 0,
+    totalCredit: first?.totalCredit ?? 0,
+    closingBalance: first?.closingBalance ?? 0,
+    truncated,
+  };
 }
 
 /** Paged-through fetch of the whole chart of accounts, in a stable code order. */

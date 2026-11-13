@@ -13,6 +13,7 @@ function makeDeps() {
       },
     ]),
     upsertExchangeRates: vi.fn().mockResolvedValue([]),
+    findExchangeRatesByKeys: vi.fn().mockResolvedValue([]),
   } as unknown as AccountingFxRepository;
   return { fx, recordAudit: vi.fn() };
 }

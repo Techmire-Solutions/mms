@@ -17,5 +17,6 @@ export {
   useDashboardWidgetsReorderMutation,
   useDashboardSummaryQuery,
 } from "@/tenant/features/dashboard/hooks/useDashboardSetupConfig";
+export { invalidateDashboardDataQueries } from "@/lib/query/dashboardDataInvalidation";
 export { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
 export { percentChange } from "@/tenant/features/dashboard/hooks/dashboardMetricTrends";

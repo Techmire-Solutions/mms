@@ -1,4 +1,5 @@
 import { isJournalRefUnique, type JournalEntry } from "@/lib/data/accountingData";
+import { tryParseMoneyAmountNumber } from "@mms/shared";
 export { isJournalRefUnique };
 import { hasFieldValue } from "@/lib/formCompleteness";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -7,9 +8,20 @@ import type { DraftForm } from "./journalEntryFormTypes";
 export function parseJournalLineAmount(val: string | number | null | undefined): number {
   if (typeof val === "number") return Number.isFinite(val) ? val : 0;
   if (typeof val !== "string") return 0;
+  // Strict 2-dp parse: `Number()` accepted exponent notation and silently rounded
+  // 3+ decimals before the schema rejected the entry with a generic message.
+  return tryParseMoneyAmountNumber(val.replace(/,/g, "").trim()) ?? 0;
+}
+
+/** Field-level amount validation for the inline error under each voucher row. */
+export function journalLineAmountErrorKey(val: string | number): string | null {
+  if (typeof val === "number")
+    return Number.isFinite(val) ? null : "accounting.journal.form.errorAmountFormat";
   const cleaned = val.replace(/,/g, "").trim();
-  const num = Number(cleaned);
-  return Number.isFinite(num) ? num : 0;
+  if (!cleaned) return null;
+  return tryParseMoneyAmountNumber(cleaned) === null
+    ? "accounting.journal.form.errorAmountFormat"
+    : null;
 }
 
 export function calculateJournalEntryCompleteness(form: DraftForm, isBalanced: boolean): number {
@@ -46,6 +58,12 @@ export function validateJournalEntryForm(
   form.lines.forEach((journalLine, lineIndex) => {
     if (!journalLine.account_id) {
       validationErrors[`line${lineIndex}`] = t("accounting.journal.form.errorAccountRequired");
+      return;
+    }
+    const amountError =
+      journalLineAmountErrorKey(journalLine.debit) ?? journalLineAmountErrorKey(journalLine.credit);
+    if (amountError) {
+      validationErrors[`lineAmount${lineIndex}`] = t(amountError as never);
     }
   });
 

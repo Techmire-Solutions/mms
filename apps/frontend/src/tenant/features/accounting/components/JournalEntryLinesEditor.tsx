@@ -1,5 +1,6 @@
 import { AlertCircle, BookOpen, CheckCircle2 } from "lucide-react";
 import { type Account } from "@/lib/data/accountingData";
+import { moneyToCents } from "@mms/shared";
 import { CheckboxField } from "@/components/ui/checkbox";
 import { FieldErrorMessage } from "@/components/app/FormField";
 import { FormCollectionShell } from "@/components/app/FormPrimitives";
@@ -8,6 +9,7 @@ import { Table, TableBody, TableHeader } from "@/components/ui/table";
 import { MutedTableHeaderRow } from "@/components/reports/FinancialDebitCreditTableChrome";
 import { WorkBatchTableFooter } from "@/components/common/work/WorkBatchTableFooter";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { balanceToneClass } from "@/lib/ui/semanticTone";
 import type { DraftLine } from "../lib/journalEntryFormTypes";
@@ -63,7 +65,10 @@ export function JournalEntryLinesEditor({
   const { t } = useTranslation();
   const { viewMode: hookViewMode } = useWorkDirectoryViewMode();
   const viewMode = propViewMode ?? hookViewMode;
-  const accountMap = new Map(accounts.map((account) => [account.id, account]));
+  const accountMap = useMemo(
+    () => new Map(accounts.map((account) => [account.id, account])),
+    [accounts],
+  );
 
   return (
     <div className="space-y-4 text-start">
@@ -136,7 +141,7 @@ export function JournalEntryLinesEditor({
                     lineIndex={lineIndex}
                     account={accountMap.get(line.account_id)}
                     accountOptions={accountOptions}
-                    errorMessage={errors[`line${lineIndex}`]}
+                    errorMessage={errors[`line${lineIndex}`] ?? errors[`lineAmount${lineIndex}`]}
                     canRemove={lines.length > 2}
                     canAddAccount={canAddAccount}
                     onOpenAddAccount={
@@ -208,7 +213,9 @@ export function JournalEntryLinesEditor({
         {isBalanced
           ? t("accounting.journal.form.balanced")
           : t("accounting.journal.form.unbalanced", {
-              diff: formatCurrency(Math.abs(totalDebit - totalCredit)),
+              diff: formatCurrency(
+                Math.abs(moneyToCents(totalDebit) - moneyToCents(totalCredit)) / 100,
+              ),
             })}
       </div>
       <FieldErrorMessage message={errors.lines} />

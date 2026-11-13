@@ -9,6 +9,8 @@ import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
+import { chartDirection } from "@/lib/ui/chartDirection";
+import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface MonthlyFeeCollectionItem {
@@ -41,8 +43,11 @@ export const FinancialReportCharts = function FinancialReportCharts({
   selectedMonth,
   onToggleMonthFilter,
 }: FinancialReportChartsProps): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, isRtl } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
+  const dir = chartDirection(isRtl);
+  const noCollection = monthlyFeeCollection.length === 0;
+  const noDiscounts = discountUsageByType.length === 0;
 
   return (
     <>
@@ -50,6 +55,10 @@ export const FinancialReportCharts = function FinancialReportCharts({
         title={t("finance.report.chartTitle")}
         accentColor="primary"
         heightClass="h-chart-md"
+        empty={noCollection}
+        emptyNode={
+          <EmptyState variant="dashed" title={t("finance.report.noCollectionData")} compact />
+        }
       >
         <AreaChart
           data={monthlyFeeCollection}
@@ -66,9 +75,10 @@ export const FinancialReportCharts = function FinancialReportCharts({
             </linearGradient>
           </defs>
           <ChartGrid />
-          <XAxis dataKey="month" tick={chartAxisTick(11)} />
+          <XAxis dataKey="month" tick={chartAxisTick(11)} reversed={dir.xAxisReversed} />
           <YAxis
             tick={chartAxisTick(11)}
+            orientation={dir.yAxisOrientation}
             tickFormatter={(value: number) =>
               value === 0 ? formatCurrency(0) : `${formatCurrency(Math.round(value / 1000))}k`
             }
@@ -149,6 +159,10 @@ export const FinancialReportCharts = function FinancialReportCharts({
           title={t("finance.report.discountDistributionTitle")}
           accentColor="secondary"
           heightClass="h-chart-sm"
+          empty={noDiscounts}
+          emptyNode={
+            <EmptyState variant="dashed" title={t("finance.report.noDiscountData")} compact />
+          }
         >
           <PieChart>
             <Pie
@@ -179,7 +193,11 @@ export const FinancialReportCharts = function FinancialReportCharts({
                 );
               }}
             />
-            <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
+            <Legend
+              iconSize={10}
+              align={dir.legendAlign}
+              wrapperStyle={{ fontSize: 11, direction: dir.legendDirection }}
+            />
           </PieChart>
         </ReportChartCard>
       </div>

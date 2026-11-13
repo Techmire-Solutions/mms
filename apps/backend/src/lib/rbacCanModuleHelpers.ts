@@ -1,8 +1,10 @@
 import type { User } from "@mms/shared";
 import { userHasPermission } from "./userPermissionContext.js";
 import {
+  ACCOUNTING_MODULE_MANIFEST,
   CONTACTS_MODULE_MANIFEST,
   FACULTY_MODULE_MANIFEST,
+  FINANCE_MODULE_MANIFEST,
   MESSAGING_MODULE_MANIFEST,
   STUDENTS_MODULE_MANIFEST,
   WORKSHOPS_MODULE_MANIFEST,
@@ -74,4 +76,24 @@ export function canUseContactPicker(user: User): boolean {
     userHasPermission(user, FACULTY_MODULE_MANIFEST.permissions.read) ||
     userHasPermission(user, WORKSHOPS_MODULE_MANIFEST.permissions.read)
   );
+}
+
+/**
+ * Privileged billing authority: invoice cancel/void, credit notes (the fee-waiver
+ * path), fee structures and bulk status. Ordinary `finance.write` records
+ * payments and drafts; it must not be able to waive or erase a recognised charge.
+ */
+export function canManageFinance(user: User): boolean {
+  if (!user || !user.role) return false;
+  return userHasPermission(user, FINANCE_MODULE_MANIFEST.permissions.manage);
+}
+
+/**
+ * Privileged accounting authority: period close/reopen, fiscal-year close and
+ * voucher-numbering configuration. Ordinary `accounting.write` posts vouchers and
+ * runs revaluations.
+ */
+export function canManageAccounting(user: User): boolean {
+  if (!user || !user.role) return false;
+  return userHasPermission(user, ACCOUNTING_MODULE_MANIFEST.permissions.manage);
 }

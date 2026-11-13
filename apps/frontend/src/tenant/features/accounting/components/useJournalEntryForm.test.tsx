@@ -386,4 +386,70 @@ describe("useJournalEntryForm validation", () => {
     expect(controller!.errors.ref).toBeUndefined();
     expect(onSave).toHaveBeenCalledTimes(1);
   });
+
+  it("sums multi-line totals in exact cents", async () => {
+    await act(async () => {
+      root.render(<TestHarness onSave={vi.fn()} onController={(c) => (controller = c)} />);
+    });
+    await act(async () => {
+      controller!.setForm((current) => ({
+        ...current,
+        description: "Float-prone totals",
+        lines: [
+          { ...current.lines[0]!, account_id: "a-cash", debit: "0.10", credit: "" },
+          { ...current.lines[1]!, account_id: "a-income", debit: "0.20", credit: "" },
+          {
+            ...current.lines[1]!,
+            id: "l-extra",
+            account_id: "a-income",
+            debit: "",
+            credit: "0.30",
+          },
+        ],
+      }));
+    });
+
+    expect(controller!.totalDebit).toBe(0.3);
+    expect(controller!.totalCredit).toBe(0.3);
+    expect(controller!.isBalanced).toBe(true);
+  });
+
+  it("rejects an over-precision amount with an inline line error", async () => {
+    const onSave = vi.fn();
+    await act(async () => {
+      root.render(<TestHarness onSave={onSave} onController={(c) => (controller = c)} />);
+    });
+    await fillEntry("1.234", "1.23");
+
+    await act(async () => {
+      await controller!.saveEntry("draft");
+    });
+
+    expect(controller!.errors.lineAmount0).toBe("accounting.journal.form.errorAmountFormat");
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("posts only one voucher when saveEntry is called twice in the same tick", async () => {
+    let release: (() => void) | undefined;
+    const onSave = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        }),
+    );
+    await act(async () => {
+      root.render(<TestHarness onSave={onSave} onController={(c) => (controller = c)} />);
+    });
+    await fillEntry("100", "100");
+
+    await act(async () => {
+      const first = controller!.saveEntry("posted");
+      const second = controller!.saveEntry("posted");
+      await Promise.resolve();
+      release?.();
+      await Promise.all([first, second]);
+    });
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
 });

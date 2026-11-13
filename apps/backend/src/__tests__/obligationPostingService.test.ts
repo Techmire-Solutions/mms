@@ -33,6 +33,16 @@ vi.mock("../db/repositories/accountingFiscalYearsRepository.js", () => mockFisca
 vi.mock("../db/repositories/obligationWakalaRepository.js", () => mockWakalaRepo);
 vi.mock("../db/repositories/obligationDistributionsRepository.js", () => mockDistributionsRepo);
 vi.mock("../lib/livePush.js", () => ({ broadcastTenantUpdate: vi.fn() }));
+// Generated entries dated "today" take the workspace business day; stub it so this
+// suite stays a pure orchestration test (no DB connection).
+vi.mock("../lib/workspaceDay.js", () => ({
+  workspaceTodayIso: vi.fn().mockResolvedValue("2026-05-01"),
+}));
+// The posting guard reads the monthly lock; stub it so these stay pure
+// orchestration tests (no DB connection).
+vi.mock("../db/repositories/accountingPostingPeriodsRepository.js", () => ({
+  findClosedPostingPeriodForDate: vi.fn().mockResolvedValue(null),
+}));
 
 import {
   syncObligationJournal,

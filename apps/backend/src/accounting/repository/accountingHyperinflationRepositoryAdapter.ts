@@ -1,3 +1,4 @@
+import { findAccountsByIds } from "../../db/repositories/accountingAccountsRepository.js";
 import { getCurrencySettings } from "../../db/repositories/accountingCurrencySettingsRepository.js";
 import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import {
@@ -17,6 +18,7 @@ export const accountingHyperinflationRepository = {
   getCurrencySettings,
   listFiscalYearsByWorkspace,
   accountExists,
+  findAccountsByIds,
   getHyperinflationSettings,
   saveHyperinflationSettings,
   listPriceIndices,

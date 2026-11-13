@@ -168,7 +168,8 @@ describe("IAS 21 ledger persistence", () => {
     // Act
     await runMigration091();
     await runMigration091();
-    const [after] = await findEntryById(TENANT, "je-pkr").then((e) => e?.lines ?? []);
+    const lines = await findEntryById(TENANT, "je-pkr").then((e) => e?.lines ?? []);
+    const after = lines.find((l) => l.id === "l1");
 
     // Assert
     expect(after).toMatchObject({ txn_currency: "PKR", txn_debit: "500.50", exchange_rate: "1" });

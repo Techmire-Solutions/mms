@@ -30,17 +30,25 @@ export interface ExcelExportOptions {
   sourceHeaders?: string[];
 }
 
-const FORMULA_PREFIX_REGEX = /^[=+\-@\t\r]/;
+// Mirrors @mms/shared `escapeCsvCell`: OWASP triggers plus the whitespace-hidden
+// form, while a plain negative numeric string (-100.5) stays a number.
+const FORMULA_PREFIX_REGEX = /^[=+\-@|%\t\r]/;
+const WHITESPACE_FORMULA_PREFIX = /^\s+[=+\-@|%]/;
+const NEGATIVE_NUMERIC_STRING = /^-(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/;
 
 /**
  * Escapes potentially unsafe formula-injection characters for CSV/Excel cells.
+ *
+ * A leading `'` neutralises the formula; plain negative amounts are left numeric
+ * (prefixing them turned a -100.00 amount into a text cell in Excel).
  */
 export function sanitizeExportValue(value: unknown): ExportCell {
   if (value == null) return "";
   if (typeof value === "number" || typeof value === "boolean") return value;
 
   const str = String(value);
-  if (FORMULA_PREFIX_REGEX.test(str)) {
+  const looksLikeFormula = FORMULA_PREFIX_REGEX.test(str) || WHITESPACE_FORMULA_PREFIX.test(str);
+  if (looksLikeFormula && !NEGATIVE_NUMERIC_STRING.test(str.trim())) {
     return `'${str}`;
   }
   return str;

@@ -18,6 +18,7 @@ import { TemplateDocumentPreview } from "@/components/template-editor/TemplateDo
 import { printTemplateDocument } from "@/components/template-editor/templateDocumentPrint";
 import { DEFAULT_FINANCE_TEMPLATE, FINANCE_TEMPLATE_STORAGE_KEY } from "../lib/financeTemplateData";
 import { buildFinanceReceiptPayload } from "../lib/financeReceiptPayload";
+import { limitReceiptPrintBatch } from "../lib/receiptPrintBatch";
 import { useInvoiceReceiptActions } from "../hooks/useInvoiceReceiptActions";
 
 export interface InvoiceReceiptModalProps {
@@ -39,12 +40,24 @@ export const InvoiceReceiptModal = function InvoiceReceiptModal({
   );
 
   const size = getPageDimensions(template.pageSize, template.orientation);
-  const payloads = invoices.map((invoice) =>
+  const allPayloads = invoices.map((invoice) =>
     buildFinanceReceiptPayload(invoice, branding.madrasaName),
   );
+  // Both the offscreen print copy and the preview render one page per invoice, so
+  // an unbounded selection would build hundreds of pages in the DOM/spooler.
+  const batch = limitReceiptPrintBatch(allPayloads);
+  const payloads = batch.items;
   const title = invoices.length > 1 ? t("finance.printReceipts") : t("finance.printReceipt");
 
   const handlePrint = () => {
+    if (batch.capped) {
+      notify.warning(
+        t("finance.receipt.batchCapped", {
+          printed: batch.items.length,
+          total: allPayloads.length,
+        }),
+      );
+    }
     const printed = printTemplateDocument({
       previewElement: printRef.current,
       template,
@@ -120,6 +133,14 @@ export const InvoiceReceiptModal = function InvoiceReceiptModal({
         </div>
       </div>
 
+      {batch.capped && (
+        <p role="status" className="rounded-lg border border-warning/40 bg-warning/10 p-2 text-xs">
+          {t("finance.receipt.batchCapped", {
+            printed: batch.items.length,
+            total: allPayloads.length,
+          })}
+        </p>
+      )}
       <div
         role="region"
         tabIndex={0}

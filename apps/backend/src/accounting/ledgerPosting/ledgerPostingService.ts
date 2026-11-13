@@ -10,14 +10,15 @@ import {
   type OpeningBalance,
   type Payment,
 } from "@mms/shared";
-import { findEntryById, findEntryIdBySource } from "../../db/repositories/accountingRepository.js";
+import { findEntryById, listOpeningEntries } from "../../db/repositories/accountingRepository.js";
+import { findActiveReversalOf } from "../../db/repositories/accountingEntryReversalRepository.js";
 import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
 import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import {
   entryForSource,
   persistGeneratedEntries,
   persistGeneratedEntry,
-  postingDate,
+  postingDateForTenant,
   resolveYearId,
 } from "./ledgerPostingHelpers.js";
 import { stampLinesForDocument } from "./documentFxPosting.js";
@@ -44,7 +45,7 @@ export {
 export async function tryPostInvoiceJournal(tenant: string, invoice: Invoice): Promise<void> {
   if (invoice.status === "cancelled" || invoice.deletedAt) return;
   const accounts = await getPostingRules(tenant);
-  const date = postingDate(invoice.dueDate);
+  const date = await postingDateForTenant(tenant, invoice.dueDate);
   const lines = buildInvoicePostingLines({
     invoiceId: invoice.id,
     description: invoice.invoiceNumber ?? invoice.id,
@@ -88,7 +89,7 @@ export async function tryPostInvoiceJournals(
   const years = await listFiscalYearsByWorkspace(tenant);
   const entries: JournalEntry[] = [];
   for (const invoice of billable) {
-    const date = postingDate(invoice.dueDate);
+    const date = await postingDateForTenant(tenant, invoice.dueDate);
     const lines = buildInvoicePostingLines({
       invoiceId: invoice.id,
       description: invoice.invoiceNumber ?? invoice.id,
@@ -124,7 +125,7 @@ export async function tryPostPaymentJournal(
   invoice?: Pick<Invoice, "id" | "currency" | "exchangeRate">,
 ): Promise<void> {
   const accounts = await getPostingRules(tenant);
-  const date = postingDate(payment.date);
+  const date = await postingDateForTenant(tenant, payment.date);
   const { functionalCurrency } = await getCurrencySettings(tenant);
   const paymentCurrency = documentCurrency(payment, functionalCurrency);
   const invoiceCurrency = invoice ? documentCurrency(invoice, functionalCurrency) : paymentCurrency;
@@ -182,30 +183,35 @@ export async function tryPostOpeningJournal(
       type: "validation_error",
     });
   }
+  // Opening balances are edited over time. The first posting owns the source key
+  // `fiscalYearId`; after the user reverses it, the original row (and its unique
+  // source key) still exists, so a correction is posted as a revision
+  // (`fiscalYearId:r2`, `:r3`, …) instead of being permanently blocked.
+  const revisions = await listOpeningEntries(tenant, fiscalYearId);
+  const latest = revisions.at(-1);
+  if (latest) {
+    const reversed = await findActiveReversalOf(tenant, latest);
+    if (!reversed) {
+      const original = await findEntryById(tenant, latest.id);
+      if (openingLinesMatch(original?.lines, lines)) return null;
+      throw Object.assign(
+        new Error(
+          "Opening balances were already posted for this fiscal year — reverse that entry before posting revised balances",
+        ),
+        { statusCode: 422, type: "validation_error" },
+      );
+    }
+  }
+  const sourceId =
+    revisions.length === 0 ? fiscalYearId : `${fiscalYearId}:r${revisions.length + 1}`;
   const entry = entryForSource(
     "opening",
-    fiscalYearId,
+    sourceId,
     year.startDate,
     `Opening balances ${year.label}`,
     lines,
     fiscalYearId,
   );
-
-  // Opening balances are edited over time, but the source key allows only one
-  // entry per fiscal year. Rather than reporting success while silently ignoring
-  // the edit, distinguish "unchanged replay" from "the balances actually moved".
-  const existingId = await findEntryIdBySource(tenant, "opening", fiscalYearId);
-  if (existingId) {
-    const original = await findEntryById(tenant, existingId);
-    if (openingLinesMatch(original?.lines, lines)) return null;
-    throw Object.assign(
-      new Error(
-        "Opening balances were already posted for this fiscal year — reverse that entry before posting revised balances",
-      ),
-      { statusCode: 422, type: "validation_error" },
-    );
-  }
-
   return persistGeneratedEntry(tenant, entry, years);
 }
 
@@ -230,7 +236,7 @@ export async function tryPostLateFeeJournals(
   if (fees.length === 0) return;
   const accounts = await getPostingRules(tenant);
   const years = await listFiscalYearsByWorkspace(tenant);
-  const date = postingDate(undefined);
+  const date = await postingDateForTenant(tenant);
   const yearId = resolveYearId(years, date);
   for (const fee of fees) {
     const built = buildLateFeePostingLines({

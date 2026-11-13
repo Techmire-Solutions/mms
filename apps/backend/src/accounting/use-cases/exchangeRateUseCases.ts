@@ -97,6 +97,23 @@ export async function upsertExchangeRates(
         .join(", ")} was estimated`,
     );
   }
+  // Capture the rates being replaced before the upsert overwrites them: a rate
+  // change must show both sides in the immutable chain, not only the new value.
+  const before = await deps.fx.findExchangeRatesByKeys(
+    actor.tenant,
+    items.map((item) => ({
+      fromCurrency: item.fromCurrency,
+      toCurrency: item.toCurrency,
+      rateDate: item.rateDate,
+      rateType: item.rateType,
+    })),
+  );
+  const beforeByKey = new Map(
+    before.map((rate) => [
+      `${rate.fromCurrency}|${rate.toCurrency}|${rate.rateType}|${rate.rateDate}`,
+      rate,
+    ]),
+  );
   const saved = await deps.fx.upsertExchangeRates(actor.tenant, items, actor.userId);
   for (const rate of saved) {
     await deps.recordAudit({
@@ -105,6 +122,10 @@ export async function upsertExchangeRates(
       recordId: rate.id,
       actionType: "UPDATE",
       realUserId: actor.userId,
+      oldState:
+        beforeByKey.get(
+          `${rate.fromCurrency}|${rate.toCurrency}|${rate.rateType}|${rate.rateDate}`,
+        ) ?? undefined,
       newState: rate,
     });
   }

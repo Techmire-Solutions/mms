@@ -38,4 +38,12 @@ describe("financeBilling", () => {
       ]),
     ).toEqual({ baseFee: 150, discountAmt: 20, finalAmt: 130 });
   });
+
+  it("keeps the net total exact when the two sides are 2 dp floats", () => {
+    // `0.3 - 0.1` in binary floating point is 0.19999999999999998; the ledger
+    // would round it on write while the same request used the raw value to post.
+    const totals = invoiceTotalsFromLines([{ quantity: 1, amount: 0.3, discountAmt: 0.1 }]);
+    expect(totals).toEqual({ baseFee: 0.3, discountAmt: 0.1, finalAmt: 0.2 });
+    expect(String(totals.finalAmt)).toBe("0.2");
+  });
 });

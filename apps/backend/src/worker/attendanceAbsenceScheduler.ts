@@ -1,8 +1,12 @@
 import { sql } from "drizzle-orm";
-import { withGlobalTenant, withTenant } from "../db/tenant-context.js";
+import { withTenant } from "../db/tenant-context.js";
 import { logger } from "../lib/logger.js";
 import { LEADER_LOCK_ATTENDANCE_ABSENCE, tryAcquireLeaderLease } from "../lib/leaderElection.js";
 import { scanAbsenceStreaks } from "../attendance/use-cases/attendanceEscalationUseCases.js";
+import { listEnabledWorkspaces, withTimeout } from "./sweepSupport.js";
+
+/** Re-exported for the attendance sweep's own callers and tests. */
+export { listEnabledWorkspaces, withTimeout };
 
 /**
  * Hourly chronic-absence sweep (leader-only).
@@ -40,32 +44,6 @@ export interface AbsenceSweepSummary {
   durationMs: number;
   /** True when the sweep budget stopped the run before every workspace was visited. */
   deferred: number;
-}
-
-/** Enabled workspaces, for the leader-only sweep. */
-export async function listEnabledWorkspaces(): Promise<string[]> {
-  const result = await withGlobalTenant(async (tx) =>
-    tx.execute<{ subdomain: string }>(sql`
-      SELECT subdomain FROM workspaces WHERE enabled = true ORDER BY subdomain
-    `),
-  );
-  return (result.rows ?? []).map((row) => String(row.subdomain));
-}
-
-/** Rejects when `promise` does not settle within `ms`; the timer is always cleared. */
-export async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
-        timer.unref?.();
-      }),
-    ]);
-  } finally {
-    if (timer !== undefined) clearTimeout(timer);
-  }
 }
 
 /**

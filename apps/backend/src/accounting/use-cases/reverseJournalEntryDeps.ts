@@ -8,6 +8,7 @@ import {
   listFiscalYearsByWorkspace,
   saveEntry,
 } from "../../db/repositories/accountingRepository.js";
+import { findClosedPostingPeriodForDate } from "../../db/repositories/accountingPostingPeriodsRepository.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
 import type { ReverseJournalEntryDeps } from "./reverseJournalEntryUseCase.js";
@@ -19,6 +20,7 @@ export const reverseJournalEntryDeps: ReverseJournalEntryDeps = {
   findEntryById,
   findActiveReversalOf,
   listFiscalYears: (tenant) => listFiscalYearsByWorkspace(tenant),
+  findClosedPostingPeriodForDate,
   findAccountsByIds: (tenant, ids) => findAccountsByIds(tenant, ids),
   saveEntry,
   recordAudit: (input) => recordModernAuditEvent(input),

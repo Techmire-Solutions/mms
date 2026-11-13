@@ -4,7 +4,8 @@ import { invoiceRecordSchema, type Invoice } from "@mms/shared";
 import { closeDatabase } from "../../db/dbConnection.js";
 import { applyDrizzleMigrations } from "../../db/dbInit.js";
 import { withTenant } from "../../db/tenant-context.js";
-import { financeInvoices, workspaces } from "../../db/schema.js";
+import { accountingExchangeRates, financeInvoices, workspaces } from "../../db/schema.js";
+import { lookupExchangeRate } from "../../db/repositories/accountingExchangeRatesRepository.js";
 import { saveInvoice } from "../../db/repositories/financeInvoicesPersist.js";
 import { aggregateFinanceCommandMetrics } from "../../db/repositories/financeRepositoryList.js";
 import { ValidationError } from "../../lib/httpErrors.js";
@@ -119,5 +120,93 @@ describe("finance date columns after 0184 (real Postgres)", () => {
     // Assert — paid falls back from paid_date; outstanding is keyed by due_date
     expect(metrics.collectedThisMonth).toBe(300);
     expect(metrics.outstandingThisMonth).toBe(500);
+  });
+});
+
+describe("IAS 21 rate dates are real date columns after 0248", () => {
+  it("stores every rate_date as a date, not varchar", async () => {
+    const rows = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT table_name, data_type
+          FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND column_name = 'rate_date'
+           AND table_name IN (
+             'accounting_journal_lines', 'accounting_opening_balances',
+             'accounting_exchange_rates', 'fx_reference_rates'
+           )
+      `),
+    );
+    const byTable = new Map(
+      (rows.rows as Array<{ table_name: string; data_type: string }>).map((row) => [
+        row.table_name,
+        row.data_type,
+      ]),
+    );
+    expect(byTable.size).toBe(4);
+    for (const dataType of byTable.values()) expect(dataType).toBe("date");
+  });
+
+  it("orders the latest-on-or-before lookup chronologically, not lexicographically", async () => {
+    // `2026-9-9` used to sort AFTER `2026-10-01` as text, so the lookup could
+    // return the older September rate. The date type normalises it to the 9th.
+    await withTenant(TENANT, async (tx) => {
+      await tx
+        .delete(accountingExchangeRates)
+        .where(
+          and(
+            eq(accountingExchangeRates.workspaceSubdomain, TENANT),
+            eq(accountingExchangeRates.fromCurrency, "USD"),
+          ),
+        );
+      await tx.insert(accountingExchangeRates).values([
+        {
+          id: "rate-sep",
+          workspaceSubdomain: TENANT,
+          fromCurrency: "USD",
+          toCurrency: "PKR",
+          rateDate: "2026-9-9",
+          rateType: "SPOT",
+          rate: "278.5",
+          source: "manual",
+        },
+        {
+          id: "rate-oct",
+          workspaceSubdomain: TENANT,
+          fromCurrency: "USD",
+          toCurrency: "PKR",
+          rateDate: "2026-10-01",
+          rateType: "SPOT",
+          rate: "280.25",
+          source: "manual",
+        },
+      ]);
+    });
+
+    const lookup = await lookupExchangeRate(TENANT, {
+      fromCurrency: "USD",
+      toCurrency: "PKR",
+      rateType: "SPOT",
+      date: "2026-10-15",
+    });
+    expect(lookup?.rateDate).toBe("2026-10-01");
+    expect(lookup?.rate).toBe("280.25");
+  });
+
+  it("rejects a value that is not a calendar date", async () => {
+    await expect(
+      withTenant(TENANT, (tx) =>
+        tx.insert(accountingExchangeRates).values({
+          id: "rate-bad",
+          workspaceSubdomain: TENANT,
+          fromCurrency: "GBP",
+          toCurrency: "PKR",
+          rateDate: "not-a-date",
+          rateType: "SPOT",
+          rate: "1",
+          source: "manual",
+        }),
+      ),
+    ).rejects.toThrow();
   });
 });

@@ -16,6 +16,7 @@ function makeFx(rate: string | null = "285"): AccountingFxRepository {
     }),
     saveCurrencySettings: vi.fn(),
     listExchangeRates: vi.fn(),
+    findExchangeRatesByKeys: vi.fn().mockResolvedValue([]),
     upsertExchangeRates: vi.fn(),
     lookupExchangeRate: vi.fn().mockResolvedValue(
       rate

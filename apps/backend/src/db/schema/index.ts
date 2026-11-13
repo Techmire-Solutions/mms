@@ -17,6 +17,8 @@ export * from "./finance.js";
 export * from "./financeBilling.js";
 export * from "./financeCollect.js";
 export * from "./accounting.js";
+export * from "./accountingEntryChildren.js";
+export * from "./accountingModuleConfig.js";
 export * from "./accountingLedgerOps.js";
 export * from "./accountingVoucherNumbering.js";
 export * from "./accountingFx.js";

@@ -1,6 +1,11 @@
 import type { Permission } from "../auth/permissions.js";
 import { z } from "zod";
 import { JOURNAL_SOURCE_TYPES, moneyAmountSchema } from "./accountingLedgerInvariants.js";
+import {
+  ACCOUNTING_ACCOUNT_TYPES,
+  FISCAL_YEAR_STATUSES,
+  JOURNAL_ENTRY_STATUSES,
+} from "./accountingEnums.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import {
   currencyCodeSchema,
@@ -14,7 +19,7 @@ export const accountRecordSchema = z
     id: z.string(),
     code: z.string().trim().min(1, "accounting.coa.validation.codeRequired"),
     name: z.string().trim().min(1, "accounting.coa.validation.nameRequired"),
-    type: z.enum(["Asset", "Liability", "Equity", "Revenue", "Expense"]),
+    type: z.enum(ACCOUNTING_ACCOUNT_TYPES),
     subtype: z.string().default(""),
     description: z.string().default(""),
     isActive: z.boolean().default(true),
@@ -41,7 +46,7 @@ export const accountRecordInsertSchema = z
     id: z.string().optional(),
     code: z.string().trim().min(1, "accounting.coa.validation.codeRequired"),
     name: z.string().trim().min(1, "accounting.coa.validation.nameRequired"),
-    type: z.enum(["Asset", "Liability", "Equity", "Revenue", "Expense"]),
+    type: z.enum(ACCOUNTING_ACCOUNT_TYPES),
     subtype: z.string().optional().default(""),
     description: z.string().optional().default(""),
     isActive: z.boolean().optional().default(true),
@@ -88,7 +93,7 @@ export const journalEntryRecordSchema = z
     date: z.string(),
     ref: z.string().default(""),
     description: z.string().default(""),
-    status: z.enum(["posted", "draft"]).default("posted"),
+    status: z.enum(JOURNAL_ENTRY_STATUSES).default("posted"),
     created_by: z.string().default(""),
     createdBy: z.string().nullable().optional(),
     updatedBy: z.string().nullable().optional(),
@@ -119,7 +124,7 @@ export const journalEntryRecordInsertSchema = z
     date: isoDateSchema,
     ref: z.string().optional().default(""),
     description: z.string().optional().default(""),
-    status: z.enum(["posted", "draft"]).optional().default("posted"),
+    status: z.enum(JOURNAL_ENTRY_STATUSES).optional().default("posted"),
     created_by: z.string().optional().default(""),
     createdBy: z.string().nullable().optional(),
     updatedBy: z.string().nullable().optional(),
@@ -149,7 +154,7 @@ export const fiscalYearRecordSchema = z
     label: z.string(),
     startDate: isoDateSchema,
     endDate: isoDateSchema,
-    status: z.enum(["active", "closed", "upcoming"]).default("upcoming"),
+    status: z.enum(FISCAL_YEAR_STATUSES).default("upcoming"),
     closedAt: z.string().nullable().optional(),
     closedBy: z.string().nullable().optional(),
     deletedAt: z.string().nullable().optional(),
@@ -172,7 +177,7 @@ const fiscalYearRecordInsertBaseSchema = z
     label: z.string().min(1, "Label is required"),
     startDate: isoDateSchema,
     endDate: isoDateSchema,
-    status: z.enum(["active", "closed", "upcoming"]).optional().default("upcoming"),
+    status: z.enum(FISCAL_YEAR_STATUSES).optional().default("upcoming"),
     createdBy: z.string().nullable().optional(),
     updatedBy: z.string().nullable().optional(),
   })
@@ -221,6 +226,9 @@ export const ACCOUNTING_MODULE_MANIFEST = {
     read: "accounting.read",
     write: "accounting.write",
     delete: "accounting.delete",
+    // Period close/reopen, fiscal-year close and voucher-numbering changes are
+    // controller/admin authority, separate from posting a voucher.
+    manage: "accounting.manage",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
     export: "accounting.read",

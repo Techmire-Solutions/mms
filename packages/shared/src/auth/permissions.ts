@@ -51,9 +51,15 @@ export const ALL_PERMISSIONS = [
   "finance.read",
   "finance.write",
   "finance.delete",
+  // Privileged billing decisions (cancel/void, credit notes, fee schedules) are a
+  // separate capability from recording a payment or issuing a draft.
+  "finance.manage",
   "accounting.read",
   "accounting.write",
   "accounting.delete",
+  // Period close, fiscal-year close and voucher-numbering configuration: structural
+  // accounting authority, not ordinary voucher posting.
+  "accounting.manage",
   "obligations.read",
   "obligations.write",
   "obligations.delete",

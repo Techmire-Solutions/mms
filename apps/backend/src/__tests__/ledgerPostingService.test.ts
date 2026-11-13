@@ -1,10 +1,16 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { broadcastTenantUpdate } from "../lib/livePush.js";
 
 const mockAccountingRepo = vi.hoisted(() => ({
   bulkSaveEntries: vi.fn(),
   findEntryById: vi.fn(),
   findEntryIdBySource: vi.fn(),
+  listOpeningEntries: vi.fn(),
   saveEntry: vi.fn(),
+}));
+
+const mockReversalRepo = vi.hoisted(() => ({
+  findActiveReversalOf: vi.fn(),
 }));
 
 const mockLedgerOpsRepo = vi.hoisted(() => ({
@@ -16,8 +22,21 @@ const mockFiscalYearsRepo = vi.hoisted(() => ({
 }));
 
 vi.mock("../db/repositories/accountingRepository.js", () => mockAccountingRepo);
+vi.mock("../db/repositories/accountingEntryReversalRepository.js", () => mockReversalRepo);
 vi.mock("../db/repositories/accountingLedgerOpsRepository.js", () => mockLedgerOpsRepo);
 vi.mock("../db/repositories/accountingFiscalYearsRepository.js", () => mockFiscalYearsRepo);
+// The posting guard reads the monthly lock; stub it so these stay pure
+// orchestration tests (no DB connection).
+vi.mock("../db/repositories/accountingPostingPeriodsRepository.js", () => ({
+  findClosedPostingPeriodForDate: vi.fn().mockResolvedValue(null),
+}));
+
+// Generated entries dated "today" take the workspace business day; stub it so this
+// suite stays a pure orchestration test (no DB connection).
+vi.mock("../lib/workspaceDay.js", () => ({
+  workspaceTodayIso: vi.fn().mockResolvedValue("2026-05-01"),
+}));
+vi.mock("../lib/livePush.js", () => ({ broadcastTenantUpdate: vi.fn() }));
 vi.mock("../db/repositories/accountingCurrencySettingsRepository.js", () => ({
   getCurrencySettings: vi.fn().mockResolvedValue({
     functionalCurrency: "PKR",
@@ -85,6 +104,8 @@ describe("ledgerPostingService", () => {
     vi.clearAllMocks();
     mockFiscalYearsRepo.listFiscalYearsByWorkspace.mockResolvedValue(fiscalYears);
     mockAccountingRepo.findEntryIdBySource.mockResolvedValue(null);
+    mockAccountingRepo.listOpeningEntries.mockResolvedValue([]);
+    mockReversalRepo.findActiveReversalOf.mockResolvedValue(null);
     mockAccountingRepo.saveEntry.mockResolvedValue(undefined);
   });
 
@@ -314,6 +335,24 @@ describe("ledgerPostingService", () => {
     expectBalancedPostedEntry(entry);
   });
 
+  it("live-pushes the accounting collections after a generated posting", async () => {
+    await tryPostOpeningJournal("tenant-1", "fy-1", [
+      { id: "ob-1", accountId: "acc-cash", debit: 1000, credit: 0 },
+      { id: "ob-2", accountId: "acc-cap", debit: 0, credit: 1000 },
+    ] as any);
+
+    expect(broadcastTenantUpdate).toHaveBeenCalledWith(
+      "tenant-1",
+      "collection",
+      "accounting_entries",
+    );
+    expect(broadcastTenantUpdate).toHaveBeenCalledWith(
+      "tenant-1",
+      "collection",
+      "accounting_metrics",
+    );
+  });
+
   it("tryPostOpeningJournal throws 404 for unknown fiscal year", async () => {
     await expect(tryPostOpeningJournal("tenant-1", "fy-unknown", [])).rejects.toThrow(
       /Fiscal year not found/,
@@ -321,7 +360,9 @@ describe("ledgerPostingService", () => {
   });
 
   it("tryPostOpeningJournal replays unchanged balances idempotently", async () => {
-    mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-opening");
+    mockAccountingRepo.listOpeningEntries.mockResolvedValue([
+      { id: "je-opening", ref: "opening:fy-1" },
+    ]);
     mockAccountingRepo.findEntryById.mockResolvedValue({
       id: "je-opening",
       lines: [
@@ -339,7 +380,9 @@ describe("ledgerPostingService", () => {
   });
 
   it("tryPostOpeningJournal rejects revised balances that are already posted", async () => {
-    mockAccountingRepo.findEntryIdBySource.mockResolvedValue("je-opening");
+    mockAccountingRepo.listOpeningEntries.mockResolvedValue([
+      { id: "je-opening", ref: "opening:fy-1" },
+    ]);
     mockAccountingRepo.findEntryById.mockResolvedValue({
       id: "je-opening",
       lines: [
@@ -356,6 +399,31 @@ describe("ledgerPostingService", () => {
       /already posted for this fiscal year/,
     );
     expect(mockAccountingRepo.saveEntry).not.toHaveBeenCalled();
+  });
+
+  it("tryPostOpeningJournal posts a revision after the opening entry was reversed", async () => {
+    mockAccountingRepo.listOpeningEntries.mockResolvedValue([
+      { id: "je-opening", ref: "opening:fy-1" },
+    ]);
+    mockAccountingRepo.findEntryById.mockResolvedValue({
+      id: "je-opening",
+      lines: [
+        { id: "ob-0", account_id: "acc-cash", debit: 1000, credit: 0 },
+        { id: "ob-1", account_id: "acc-cap", debit: 0, credit: 1000 },
+      ],
+    });
+    mockReversalRepo.findActiveReversalOf.mockResolvedValue({
+      id: "je-rev",
+      ref: "REV-opening:fy-1",
+    });
+    const revised = [
+      { id: "ob-1", accountId: "acc-cash", debit: 2500, credit: 0 },
+      { id: "ob-2", accountId: "acc-cap", debit: 0, credit: 2500 },
+    ] as any;
+
+    await tryPostOpeningJournal("tenant-1", "fy-1", revised);
+
+    expect(lastSavedEntry()).toMatchObject({ source_type: "opening", source_id: "fy-1:r2" });
   });
 
   it("tryPostInvoiceReversalJournal swaps debit and credit on the original lines", async () => {

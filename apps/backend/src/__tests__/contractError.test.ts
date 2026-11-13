@@ -123,4 +123,24 @@ describe("handleContractError", () => {
     expect(result.status).toBe(400);
     expect(result.body).toMatchObject({ type: "constraint_violation" });
   });
+
+  it("maps a ledger-guard check violation to 422 with the reason intact", () => {
+    const { request } = fakeRequest();
+    const error = new Error("Failed query: update accounting_journal_lines", {
+      cause: Object.assign(
+        new Error("Line il-1 of posted journal entry je-1 is immutable — post a reversal instead"),
+        { code: "23514" },
+      ),
+    });
+
+    const result = handleContractError(request, error, fallback);
+
+    expect(result).toEqual({
+      status: 422,
+      body: {
+        type: "ledger_guard",
+        message: "Line il-1 of posted journal entry je-1 is immutable — post a reversal instead",
+      },
+    });
+  });
 });

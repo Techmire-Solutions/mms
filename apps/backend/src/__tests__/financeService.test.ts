@@ -108,9 +108,11 @@ describe("financeService createPayment", () => {
   });
 
   it("rejects overpayment without saving either record", async () => {
-    await expect(createPayment({ ...payment, amount: 61 })).rejects.toThrow(
-      "Payment amount exceeds the remaining invoice balance",
-    );
+    // A plain Error used to surface as a 500 through every route.
+    await expect(createPayment({ ...payment, amount: 61 })).rejects.toMatchObject({
+      statusCode: 422,
+      message: "Payment amount exceeds the remaining invoice balance",
+    });
     expect(mockSaveInvoice).not.toHaveBeenCalled();
     expect(mockSavePayment).not.toHaveBeenCalled();
   });

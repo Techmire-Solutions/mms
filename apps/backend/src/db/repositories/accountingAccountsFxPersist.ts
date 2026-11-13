@@ -12,7 +12,10 @@ const hasFxFields = (record: FxFields): boolean =>
 /** IAS 21 columns for a newly inserted account; omitted flags fall back to defaults. */
 export function accountFxInsertValues(record: Account) {
   return {
-    isMonetary: record.isMonetary ?? inferIsMonetaryAccount(record),
+    // An account locked to a foreign currency holds a monetary balance by
+    // definition; the name heuristic alone would exclude it from revaluation.
+    isMonetary:
+      record.isMonetary ?? (record.accountCurrency ? true : inferIsMonetaryAccount(record)),
     accountCurrency: record.accountCurrency ?? null,
     allowRevaluation: record.allowRevaluation ?? true,
   };

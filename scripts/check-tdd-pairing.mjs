@@ -75,8 +75,52 @@ const domainFiles = [...changed].filter(
   (file) => DOMAIN_RE.test(file) && file.endsWith(".ts") && !isTest(file),
 );
 
-/** First four path segments: `apps/backend/src/<module>`. */
-const moduleOf = (file) => file.split("/").slice(0, 4).join("/");
+const KNOWN_MODULES = [
+  "accounting",
+  "attendance",
+  "audit",
+  "contacts",
+  "documents",
+  "enrollments",
+  "examinations",
+  "faculty",
+  "finance",
+  "hasanat",
+  "integrations",
+  "messaging",
+  "notifications",
+  "obligations",
+  "platform",
+  "plugins",
+  "questionBank",
+  "savedReports",
+  "sessions",
+  "students",
+  "tasks",
+  "users",
+  "worker",
+  "workshops",
+];
+
+/** First four path segments: `apps/backend/src/<module>`, mapping `__tests__` paths to the target module. */
+const moduleOf = (file) => {
+  if (file.startsWith("apps/backend/src/__tests__/")) {
+    const rel = file.slice("apps/backend/src/__tests__/".length).toLowerCase();
+    const found = KNOWN_MODULES.find((mod) => {
+      const lower = mod.toLowerCase();
+      return (
+        rel.startsWith(lower) ||
+        rel.includes(`/${lower}`) ||
+        rel.includes(`_${lower}`) ||
+        rel.includes(lower)
+      );
+    });
+    if (found) {
+      return `apps/backend/src/${found}`;
+    }
+  }
+  return file.split("/").slice(0, 4).join("/");
+};
 const basenameOf = (file) =>
   file
     .split("/")

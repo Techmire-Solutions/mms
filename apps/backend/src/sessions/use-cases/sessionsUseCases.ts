@@ -209,6 +209,18 @@ export function createSessionsUseCases(
       const normalized = normalizeStoredSession(
         sessionRecordSchema.parse({ ...merged, id }),
       ) as SessionRecord;
+      // Enrollments carry their fee without a currency — it is implied by this
+      // session at billing time. Changing it would reinterpret every enrolled fee
+      // (e.g. PKR 5,000 becomes USD 5,000 in the next generated invoice).
+      if (normalized.currency !== before.currency) {
+        if (await repo.sessionHasEnrollments(tenant, id)) {
+          throw new HttpDomainError(
+            422,
+            "validation_error",
+            "This session has enrollments — create a session in the new currency instead of changing this one",
+          );
+        }
+      }
       const currentStatus = normalizeSessionStatus(before.status);
       const targetStatus =
         next.status !== undefined && next.status !== currentStatus ? next.status : undefined;

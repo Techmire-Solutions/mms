@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
-import { accountantToken, teacherToken } from "./helpers/tokens.js";
+import { accountantToken, adminToken, teacherToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -48,7 +48,7 @@ vi.mock("../finance/use-cases/financeUseCases.js", () => ({
     bulkSoftDeleteInvoices: (...args: unknown[]) => mockBulkDeleteInvoices(...args),
     bulkRestoreInvoices: (...args: unknown[]) => mockBulkRestoreInvoices(...args),
     getInvoiceById: vi.fn(),
-    bulkUpdateInvoicesStatus: vi.fn(),
+    bulkUpdateInvoicesStatus: vi.fn().mockResolvedValue({ succeeded: 1, failed: 0 }),
     loadPayments: vi.fn().mockResolvedValue([]),
     loadPaymentsPage: (...args: unknown[]) => mockLoadPaymentsPage(...args),
     createPayment: vi.fn(),
@@ -198,6 +198,37 @@ describe("finance REST routes integration", () => {
     });
     expect(restored.statusCode).toBe(200);
     expect(restored.json()).toEqual({ success: true, succeeded: 2, failed: 0 });
+    await app.close();
+  });
+
+  it("reserves bulk status changes for the manage capability", async () => {
+    // The status of a financial document is controller authority; recording payments
+    // (accountant) must not imply it.
+    const app = await buildApp();
+    const payload = { ids: ["inv-1"], status: "overdue" };
+    const accountant = await app.inject({
+      method: "POST",
+      url: "/api/finance/invoices/bulk-status",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${accountantToken(app)}`,
+        "content-type": "application/json",
+      },
+      payload,
+    });
+    expect(accountant.statusCode).toBe(403);
+
+    const admin = await app.inject({
+      method: "POST",
+      url: "/api/finance/invoices/bulk-status",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+      },
+      payload,
+    });
+    expect(admin.statusCode).toBe(200);
     await app.close();
   });
 

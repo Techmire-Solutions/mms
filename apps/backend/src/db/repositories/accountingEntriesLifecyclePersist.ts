@@ -199,7 +199,7 @@ export async function bulkSoftDeleteEntries(
 export async function bulkRestoreEntries(
   tenant: string,
   ids: string[],
-  _userId?: string,
+  userId?: string,
 ): Promise<{ succeeded: number; failed: number }> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
@@ -247,6 +247,10 @@ export async function bulkRestoreEntries(
           deletedAt: null,
           deletedBy: null,
           deletionReason: null,
+          // Restore attribution: the columns existed but were never written, so a
+          // restored ledger row carried no evidence of who brought it back.
+          restoredAt: now,
+          restoredBy: userId || null,
           updatedAt: now,
         })
         .where(

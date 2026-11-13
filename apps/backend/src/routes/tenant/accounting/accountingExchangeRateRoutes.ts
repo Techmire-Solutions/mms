@@ -2,6 +2,10 @@ import type { FastifyPluginAsync } from "fastify";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   accountingCurrencySettingsPutSchema,
+  accountingCurrencySettingsResponseSchema,
+  accountingExchangeabilityResponseSchema,
+  accountingExchangeRateLookupResponseSchema,
+  accountingExchangeRatesResponseSchema,
   currencyExchangeabilityPutSchema,
   exchangeRateListQuerySchema,
   exchangeRateLookupQuerySchema,
@@ -15,6 +19,7 @@ import {
   sendDatabaseError,
 } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
+import { sendValidated } from "../../../lib/validatedReply.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import {
   getCurrencySettings,
@@ -43,7 +48,7 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
     try {
       // Not readOnly: the first read creates the tenant's settings row.
       const settings = await withTenant(tenant, () => getCurrencySettings(deps, tenant));
-      return reply.send({ settings });
+      return sendValidated(reply, 200, accountingCurrencySettingsResponseSchema, { settings });
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
@@ -56,13 +61,13 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
     const user = request.user as User;
     if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(accountingCurrencySettingsPutSchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
     const tenant = String(request.tenant?.id);
     try {
       const settings = await withTenant(tenant, () =>
         updateCurrencySettings(deps, { tenant, userId: String(user.id) }, parsed.data),
       );
-      return reply.send({ settings });
+      return sendValidated(reply, 200, accountingCurrencySettingsResponseSchema, { settings });
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
@@ -79,7 +84,7 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
       const currencies = await withTenant(tenant, () => listExchangeability(deps, tenant), {
         readOnly: true,
       });
-      return reply.send({ currencies });
+      return sendValidated(reply, 200, accountingExchangeabilityResponseSchema, { currencies });
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
@@ -92,13 +97,13 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
     const user = request.user as User;
     if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(currencyExchangeabilityPutSchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
     const tenant = String(request.tenant?.id);
     try {
       const currencies = await withTenant(tenant, () =>
         updateExchangeability(deps, { tenant, userId: String(user.id) }, parsed.data),
       );
-      return reply.send({ currencies });
+      return sendValidated(reply, 200, accountingExchangeabilityResponseSchema, { currencies });
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
@@ -111,13 +116,13 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
     const user = request.user as User;
     if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(exchangeRateListQuerySchema, request.query ?? {});
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
     const tenant = String(request.tenant?.id);
     try {
       const rates = await withTenant(tenant, () => listExchangeRates(deps, tenant, parsed.data), {
         readOnly: true,
       });
-      return reply.send({ rates });
+      return sendValidated(reply, 200, accountingExchangeRatesResponseSchema, { rates });
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
@@ -130,13 +135,13 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
     const user = request.user as User;
     if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(exchangeRateLookupQuerySchema, request.query ?? {});
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
     const tenant = String(request.tenant?.id);
     try {
       const rate = await withTenant(tenant, () => lookupExchangeRate(deps, tenant, parsed.data), {
         readOnly: true,
       });
-      return reply.send({ rate });
+      return sendValidated(reply, 200, accountingExchangeRateLookupResponseSchema, { rate });
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
@@ -149,13 +154,13 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
     const user = request.user as User;
     if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(exchangeRatePutBodySchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
     const tenant = String(request.tenant?.id);
     try {
       const rates = await withTenant(tenant, () =>
         upsertExchangeRates(deps, { tenant, userId: String(user.id) }, parsed.data.rates),
       );
-      return reply.send({ rates });
+      return sendValidated(reply, 200, accountingExchangeRatesResponseSchema, { rates });
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??

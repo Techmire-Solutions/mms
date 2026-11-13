@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { eq, sql } from "drizzle-orm";
-import type { JournalEntry, JournalLine } from "@mms/shared";
+import { and, eq, sql } from "drizzle-orm";
+import { ias29RunSchema, type JournalEntry, type JournalLine } from "@mms/shared";
 import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
 import {
   accountingAccounts,
@@ -177,6 +177,41 @@ describe("IAS 29 hyperinflation restatement", () => {
     ]);
   });
 
+  it("refuses a month with activity but no price index and writes no run", async () => {
+    await withTenant(TENANT, (tx) =>
+      tx
+        .delete(accountingPriceIndices)
+        .where(
+          and(
+            eq(accountingPriceIndices.workspaceSubdomain, TENANT),
+            eq(accountingPriceIndices.indexDate, "2026-01-31"),
+          ),
+        ),
+    );
+
+    await expect(
+      withTenant(TENANT, () => previewIas29Restatement(ias29Deps, TENANT, "2026-12-31")),
+    ).rejects.toMatchObject({
+      statusCode: 422,
+      message: expect.stringContaining("price index"),
+    });
+    await expect(
+      withTenant(TENANT, () => postIas29Restatement(ias29Deps, actor, "2026-12-31")),
+    ).rejects.toMatchObject({ statusCode: 422 });
+
+    const runs = await withTenant(TENANT, (tx) =>
+      tx.$count(accountingIas29Runs, eq(accountingIas29Runs.workspaceSubdomain, TENANT)),
+    );
+    expect(runs).toBe(0);
+
+    // Restore the index point so later cases restate from the original base.
+    await withTenant(TENANT, () =>
+      savePriceIndices(ias29Deps, actor, [
+        { indexDate: "2026-01-31", value: "100", source: "CPI" },
+      ]),
+    );
+  });
+
   it("given a posted restatement, should book the loss, reverse it the next day and stay idempotent", async () => {
     // Arrange / Act
     const first = await withTenant(TENANT, () =>
@@ -206,5 +241,46 @@ describe("IAS 29 hyperinflation restatement", () => {
 
     // Assert
     expect(run.netMonetaryResult).toBe("-260.00");
+  });
+});
+
+describe("IAS 29 responses satisfy the route schema", () => {
+  it("posts a run that validates against the declared HTTP schema", async () => {
+    const run = await withTenant(TENANT, () =>
+      postIas29Restatement(ias29Deps, actor, "2027-01-31"),
+    );
+    expect(ias29RunSchema.safeParse(run).success).toBe(true);
+  });
+});
+
+describe("IAS 29 controls under concurrency and misconfiguration", () => {
+  it("rejects a net monetary position account that is not P&L or equity", async () => {
+    // `cash` is an Asset: the plug would land on the balance sheet instead of P&L.
+    await expect(
+      withTenant(TENANT, () =>
+        updateHyperinflationSettings(ias29Deps, actor, {
+          enabled: true,
+          netMonetaryAccountId: "cash",
+          appliesFrom: "2026-01-01",
+          indexName: "CPI",
+        }),
+      ),
+    ).rejects.toThrow(/expected Equity, Revenue or Expense/);
+  });
+
+  it("posts one restatement per date under concurrent submits", async () => {
+    const [first, second] = await Promise.all([
+      withTenant(TENANT, () => postIas29Restatement(ias29Deps, actor, "2027-02-28")),
+      withTenant(TENANT, () => postIas29Restatement(ias29Deps, actor, "2027-02-28")),
+    ]);
+
+    expect(second.id).toBe(first.id);
+    const runs = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT count(*)::int AS n FROM accounting_ias29_runs
+         WHERE workspace_subdomain = ${TENANT} AND restatement_date = '2027-02-28'
+      `),
+    );
+    expect(Number((runs.rows as Array<{ n: number }>)[0]?.n ?? 0)).toBe(1);
   });
 });

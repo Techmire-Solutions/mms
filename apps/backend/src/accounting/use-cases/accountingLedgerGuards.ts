@@ -65,6 +65,41 @@ export function assertJournalEntryPeriodOpen(
       `Cannot write journal entries dated inside a closed fiscal year${containing?.label ? ` (${containing.label})` : ""}`,
     );
   }
+
+  // Backdating before the configured calendar (or into a gap between years)
+  // escapes every closed-year check while still moving the books — refuse it.
+  // A date *after* the last configured year stays allowed: that is the normal
+  // "next year not created yet" invoice case, and nothing there can be closed.
+  const hasCalendar = fiscalYears.length > 0;
+  const latestEnd = hasCalendar
+    ? fiscalYears.reduce(
+        (latest, year) => (year.endDate > latest ? year.endDate : latest),
+        fiscalYears[0]!.endDate,
+      )
+    : "";
+  if (hasCalendar && !containing && entry.date <= latestEnd) {
+    throw ledgerError(
+      "Journal entry date falls outside every configured fiscal year — create the fiscal year first",
+    );
+  }
+}
+
+/**
+ * The monthly lock. A posting dated inside a closed posting period is refused.
+ *
+ * Periods are generated per fiscal year, so a workspace that has none (fresh
+ * install, no fiscal calendar yet) is unaffected — the same bootstrap rule the
+ * fiscal-year guard follows. The database re-checks this at commit (0249), so a
+ * repository or raw-SQL bypass cannot skip it.
+ */
+export async function assertPostingPeriodOpen(
+  entryDate: string,
+  findClosedPeriod: (date: string) => Promise<string | null>,
+): Promise<void> {
+  const closed = await findClosedPeriod(entryDate);
+  if (closed) {
+    throw ledgerError(`Posting period ${closed} is closed — post into an open period`);
+  }
 }
 
 export async function assertJournalAccountsWritable(
@@ -177,6 +212,22 @@ export function withServerOwnedSourceKeys(
   };
 }
 
+/**
+ * Ids of the entries in the batch whose stored status is `posted`. Their children
+ * are already what the batch carries (posted content is immutable), so the persist
+ * layer must not delete+reinsert those ledger rows.
+ */
+export function postedEntryIds(
+  entries: readonly JournalEntry[],
+  storedById: ReadonlyMap<string, JournalEntry>,
+): Set<string> {
+  return new Set(
+    entries
+      .filter((entry) => storedById.get(entry.id)?.status === "posted")
+      .map((entry) => entry.id),
+  );
+}
+
 export function assertEntriesMutable(
   entries: readonly JournalEntry[],
   storedById: ReadonlyMap<string, JournalEntry>,
@@ -199,13 +250,17 @@ export async function assertEntriesWritable(
   storedById: ReadonlyMap<string, JournalEntry>,
   fiscalYears: readonly FiscalYear[],
   findAccountsByIds: (tenant: string, ids: string[]) => Promise<Account[]>,
+  findClosedPeriodForDate: (tenant: string, date: string) => Promise<string | null>,
 ): Promise<void> {
   const targets = entries.filter((entry) => {
     const existing = storedById.get(entry.id);
     return !existing || journalEntryContentChanged(entry, existing);
   });
   if (targets.length === 0) return;
-  for (const entry of targets) assertJournalEntryPeriodOpen(entry, fiscalYears);
+  for (const entry of targets) {
+    assertJournalEntryPeriodOpen(entry, fiscalYears);
+    await assertPostingPeriodOpen(entry.date, (date) => findClosedPeriodForDate(tenant, date));
+  }
   await assertJournalAccountsWritable(tenant, targets, findAccountsByIds);
 }
 

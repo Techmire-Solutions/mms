@@ -1,4 +1,5 @@
 import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
+import { invalidateDashboardDataQueries } from "@/lib/query/dashboardDataInvalidation";
 import {
   ACCOUNTING_ACCOUNTS_QUERY_KEY,
   ACCOUNTING_ENTRIES_QUERY_KEY,
@@ -20,7 +21,7 @@ import { VOUCHER_NUMBERING_QUERY_KEY } from "@/tenant/features/accounting/hooks/
  * entry was saved, a period was closed or a reversal was posted. Setup and
  * voucher numbering are invalidated for the same reason.
  */
-export const invalidateAccountingQueries = createModuleQueryInvalidator({
+const invalidateAccountingModuleQueries = createModuleQueryInvalidator({
   list: ACCOUNTING_ENTRIES_QUERY_KEY,
   lists: [
     ACCOUNTING_ACCOUNTS_QUERY_KEY,
@@ -31,3 +32,11 @@ export const invalidateAccountingQueries = createModuleQueryInvalidator({
   metrics: ACCOUNTING_METRICS_QUERY_KEY,
   preferences: ACCOUNTING_PREFERENCES_QUERY_KEY,
 });
+
+/** Accounting writes (posting, reversal, close, seed) also refresh dashboard data. */
+export function invalidateAccountingQueries(
+  queryClient: Parameters<typeof invalidateAccountingModuleQueries>[0],
+): void {
+  invalidateAccountingModuleQueries(queryClient);
+  invalidateDashboardDataQueries(queryClient);
+}

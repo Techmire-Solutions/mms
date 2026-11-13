@@ -1,17 +1,20 @@
 import {
   dedupeTrimmedIds,
   getOutstandingAmountForInvoice,
+  moneyToCents,
   paymentRecordSchema,
   type Invoice,
   type Payment,
   type PaymentCreateInput,
 } from "@mms/shared";
 import { runInTransaction } from "../../db/database.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { HttpDomainError } from "../../lib/httpErrors.js";
 import { replacePaymentAllocations } from "../../db/repositories/financeBillingRepository.js";
 import { tryPostPaymentJournal } from "../../accounting/ledgerPosting/ledgerPostingService.js";
 import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
 import { resolvePaymentFx } from "./financeDocumentFx.js";
-import { recordPaymentAudit } from "./financeAuditEvents.js";
+import { invoiceAuditState, recordInvoiceAudit, recordPaymentAudit } from "./financeAuditEvents.js";
 import {
   createFinanceInvoiceMutationOperations,
   type FinanceInvoiceMutationDeps,
@@ -64,7 +67,26 @@ export function createFinanceMutationOperations({
           { statusCode: 422, type: "validation_error" },
         );
       }
-      const result = await repo.bulkUpdateInvoicesStatus(tenant, cleanIds, status);
+      // A status change on a financial document is an auditable event; the bulk SQL
+      // path used to mutate every row with no audit row at all.
+      const result = await withTenant(tenant, async () => {
+        const before = await repo.findInvoicesByIds(tenant, cleanIds, { includeDeleted: true });
+        const beforeStates = new Map(
+          before.map((invoice) => [invoice.id, invoiceAuditState(invoice)]),
+        );
+        const updated = await repo.bulkUpdateInvoicesStatus(tenant, cleanIds, status);
+        const after = await repo.findInvoicesByIds(tenant, cleanIds, { includeDeleted: true });
+        for (const invoice of after) {
+          await recordInvoiceAudit(
+            tenant,
+            "UPDATE",
+            invoice,
+            beforeStates.get(invoice.id) ?? null,
+            "status_changed",
+          );
+        }
+        return updated;
+      });
       const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
       broadcastTenantUpdate(tenant, "collection", "finance_invoices");
       broadcastTenantUpdate(tenant, "collection", "finance_metrics");
@@ -127,16 +149,23 @@ export function createFinanceMutationOperations({
 
         // Cross-currency payments settle the invoice in its own currency.
         const applied = normalizedPayment.invoiceAmount ?? normalizedPayment.amount;
-        const paidAmount = invoice.paidAmt ?? 0;
-        const remainingBalance = getOutstandingAmountForInvoice(invoice);
-        if (applied > remainingBalance) {
-          throw new Error("Payment amount exceeds the remaining invoice balance");
+        // Compare and accumulate in integer cents: `paidAmt + applied` over 2 dp
+        // floats can leave the stored balance a cent away from the allocations.
+        const appliedCents = moneyToCents(applied);
+        const paidCents = moneyToCents(invoice.paidAmt ?? 0);
+        const remainingCents = moneyToCents(getOutstandingAmountForInvoice(invoice));
+        if (appliedCents > remainingCents) {
+          throw new HttpDomainError(
+            422,
+            "validation_error",
+            "Payment amount exceeds the remaining invoice balance",
+          );
         }
 
-        const newPaid = paidAmount + applied;
+        const newPaid = (paidCents + appliedCents) / 100;
         await repo.saveInvoice(tenant, {
           ...invoice,
-          status: remainingBalance - applied <= 0 ? "paid" : "partial",
+          status: remainingCents - appliedCents <= 0 ? "paid" : "partial",
           paidAmt: newPaid,
           paidDate: normalizedPayment.date,
           method: normalizedPayment.method,

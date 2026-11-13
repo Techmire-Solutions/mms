@@ -282,7 +282,12 @@ describe("getModulePermissions", () => {
     ]);
 
     const financePerms = getModulePermissions("finance");
-    expect(financePerms).toEqual(["finance.read", "finance.write", "finance.delete"]);
+    expect(financePerms).toEqual([
+      "finance.read",
+      "finance.write",
+      "finance.delete",
+      "finance.manage",
+    ]);
 
     const messagingPerms = getModulePermissions("messaging");
     expect(messagingPerms).toEqual([

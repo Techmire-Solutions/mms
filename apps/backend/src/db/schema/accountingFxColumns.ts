@@ -1,9 +1,13 @@
-import { boolean, numeric, varchar } from "drizzle-orm/pg-core";
+import { boolean, date, numeric, varchar } from "drizzle-orm/pg-core";
 
 /**
  * IAS 21 dual-amount columns shared by ledger line tables. `txn_*` is the
  * document currency; `func_*` is the tenant's functional currency. Nullable
  * until the backfill has run (expand/contract), then tightened to NOT NULL.
+ *
+ * `rate_date` is a real `date` on purpose: a `varchar(10)` let `'2026-2-1'`
+ * sort *after* `'2026-12-01'`, which silently picked the wrong rate in the
+ * "latest on or before" lookup (migration 0248 converted it).
  */
 export const fxLineColumns = {
   txnCurrency: varchar("txn_currency", { length: 3 }),
@@ -11,7 +15,7 @@ export const fxLineColumns = {
   txnCredit: numeric("txn_credit", { precision: 19, scale: 4 }),
   exchangeRate: numeric("exchange_rate", { precision: 20, scale: 10 }),
   rateType: varchar("rate_type", { length: 16 }),
-  rateDate: varchar("rate_date", { length: 10 }),
+  rateDate: date("rate_date", { mode: "string" }),
   funcDebit: numeric("func_debit", { precision: 19, scale: 4 }),
   funcCredit: numeric("func_credit", { precision: 19, scale: 4 }),
 };

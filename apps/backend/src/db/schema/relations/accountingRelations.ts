@@ -5,9 +5,8 @@ import {
   accountingFiscalYears,
   accountingEntries,
   accountingJournalLines,
-  accountingEntryTags,
-  accountingEntryAttachments,
 } from "../accounting.js";
+import { accountingEntryTags, accountingEntryAttachments } from "../accountingEntryChildren.js";
 import {
   accountingPostingRules,
   accountingOpeningBalances,

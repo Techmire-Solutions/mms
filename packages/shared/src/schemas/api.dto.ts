@@ -67,7 +67,7 @@ export type BulkIdsBody = z.infer<typeof bulkIdsBodySchema>;
 export type BulkStringIdsBody = z.infer<typeof bulkStringIdsBodySchema>;
 
 /** Common route path parameter schemas */
-export const resourceIdParamsSchema = z.object({ id: z.string().min(1) }).strict();
+export const resourceIdParamsSchema = z.object({ id: z.string().min(1).max(128) }).strict();
 export const resourceNameParamsSchema = z.object({ name: z.string().min(1) }).strict();
 export const resourceKeyParamsSchema = z.object({ key: z.string().min(1) }).strict();
 export const subdomainParamsSchema = z.object({ subdomain: z.string().min(1) }).strict();

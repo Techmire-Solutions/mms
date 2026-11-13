@@ -1,25 +1,39 @@
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { findFiscalYearForDate, type FiscalYear, type JournalEntry } from "@mms/shared";
 import {
   bulkSaveEntries,
   findEntryIdBySource,
   saveEntry,
 } from "../../db/repositories/accountingRepository.js";
+import { findClosedPostingPeriodForDate } from "../../db/repositories/accountingPostingPeriodsRepository.js";
 import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import {
   assertJournalEntryPeriodOpen,
+  assertPostingPeriodOpen,
   prepareJournalEntryForPersist,
 } from "../use-cases/accountingLedgerGuards.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import { withTenant } from "../../db/tenant-context.js";
-import { lockFiscalYearForPosting } from "./fiscalYearPostingLock.js";
+import { lockFiscalYearsForEntries } from "./fiscalYearPostingLock.js";
 
-export function postingDate(value: string | undefined): string {
-  return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : new Date().toISOString().slice(0, 10);
+/**
+ * The calendar day a generated journal entry is booked on.
+ *
+ * An explicit document date (invoice due date, payment date, collection date) is
+ * used verbatim. A missing date means "today", and "today" is the workspace's
+ * business day — `new Date().toISOString()` is the UTC day, which is still
+ * yesterday for a UTC+5 tenant until 05:00 local, so a credit note raised in the
+ * morning used to post into the previous accounting day.
+ */
+export async function postingDateForTenant(tenant: string, value?: string | null): Promise<string> {
+  if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  return workspaceTodayIso(tenant);
 }
 
 /**
- * Locks the years a batch of entries will post into and returns the fiscal years
- * read *after* that lock, so a close that committed while we waited is visible.
+ * Locks every year a batch of entries can post into (declared + date-derived)
+ * and returns the fiscal years read *after* that lock, so a close that committed
+ * while we waited is visible.
  */
 async function lockedFiscalYears(
   tenant: string,
@@ -27,9 +41,18 @@ async function lockedFiscalYears(
   years?: readonly FiscalYear[],
 ): Promise<FiscalYear[]> {
   const known = years ?? (await listFiscalYearsByWorkspace(tenant));
-  const yearIds = entries.map((entry) => entry.fiscal_year_id ?? resolveYearId(known, entry.date));
-  await lockFiscalYearForPosting(tenant, yearIds);
+  await lockFiscalYearsForEntries(tenant, entries, known);
   return listFiscalYearsByWorkspace(tenant);
+}
+
+/** Re-checks the monthly lock under the fiscal-year lock (a close may have run). */
+async function assertPostingWindowOpen(
+  tenant: string,
+  entryDates: readonly string[],
+): Promise<void> {
+  for (const date of entryDates) {
+    await assertPostingPeriodOpen(date, (value) => findClosedPostingPeriodForDate(tenant, value));
+  }
 }
 
 /**
@@ -41,6 +64,24 @@ async function lockedFiscalYears(
  * the race and the posting already exists" — an expected outcome, not an error,
  * and it must not surface to the user as a 500.
  */
+/**
+ * Live-push the accounting collections after a generated posting.
+ *
+ * Finance-originated postings (invoice/payment/credit/reversal/opening/close/FX)
+ * only broadcast `finance_*` collections, so Accounting clients — and this tab
+ * after a payment if the socket is down — kept stale ledger/report caches. The
+ * broadcast is best-effort: a push failure must never fail a committed posting.
+ */
+async function broadcastLedgerWrite(tenant: string): Promise<void> {
+  try {
+    const { broadcastTenantUpdate } = await import("../../lib/livePush.js");
+    broadcastTenantUpdate(tenant, "collection", "accounting_entries");
+    broadcastTenantUpdate(tenant, "collection", "accounting_metrics");
+  } catch {
+    // Live push is advisory; the mutation's own invalidation still refreshes the actor.
+  }
+}
+
 export async function persistGeneratedEntry(
   tenant: string,
   entry: JournalEntry,
@@ -59,6 +100,7 @@ export async function persistGeneratedEntry(
     // The period check must run under the fiscal-year lock: a close may have
     // flipped the year to closed while this posting waited for it.
     assertJournalEntryPeriodOpen(entry, resolvedYears);
+    await assertPostingWindowOpen(tenant, [entry.date]);
     const prepared = prepareJournalEntryForPersist(entry, resolvedYears);
     try {
       await saveEntry(tenant, prepared);
@@ -66,6 +108,7 @@ export async function persistGeneratedEntry(
       if (isUniqueViolation(error)) return null;
       throw error;
     }
+    await broadcastLedgerWrite(tenant);
     return prepared;
   });
 }
@@ -96,11 +139,16 @@ export async function persistGeneratedEntries(
       if (!existingId) pending.push(entry);
     }
     if (pending.length === 0) return [];
+    await assertPostingWindowOpen(
+      tenant,
+      pending.map((entry) => entry.date),
+    );
     const prepared = pending.map((entry) => {
       assertJournalEntryPeriodOpen(entry, resolvedYears);
       return prepareJournalEntryForPersist(entry, resolvedYears);
     });
     await bulkSaveEntries(tenant, prepared);
+    await broadcastLedgerWrite(tenant);
     return prepared;
   });
 }

@@ -174,6 +174,16 @@ export const COLLECTION_DELETE_PERMISSION: Record<string, Permission> = {
   hasanat_batches: HASANAT_MODULE_MANIFEST.permissions.delete,
   hasanat_denoms: HASANAT_MODULE_MANIFEST.permissions.delete,
   hasanat_redemptions: HASANAT_MODULE_MANIFEST.permissions.delete,
+  // Finance/accounting archive was falling through to `canWriteCollection`, so a
+  // write-only role could archive invoices, payments, ledger entries, accounts and
+  // fiscal years. Delete is its own capability.
+  finance_invoices: FINANCE_MODULE_MANIFEST.permissions.delete,
+  finance_payments: FINANCE_MODULE_MANIFEST.permissions.delete,
+  accounting_entries: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
+  accounting_accounts: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
+  accounts: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
+  accounting_fiscal_years: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
+  fiscal_years: ACCOUNTING_MODULE_MANIFEST.permissions.delete,
 };
 
 // `global_settings`/`branding` keep entries here even though `dbObjectRoutes.ts` no

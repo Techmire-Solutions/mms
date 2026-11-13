@@ -2,9 +2,11 @@ import { type PAYMENT_METHODS } from "@/lib/data/financeData";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { type AppTranslationKey, todayISO, type PaymentCreateInput } from "@mms/shared";
 
+import type { FinancePaymentMethod } from "@mms/shared";
+
 export interface PaymentFormDraft {
   amount: string;
-  method: string;
+  method: FinancePaymentMethod;
   date: string;
   receivedByUserId: string;
   note: string;
@@ -76,5 +78,6 @@ export const PAYMENT_METHOD_LABEL_KEYS: Record<
   "Bank Transfer": "finance.paymentMethod.bank_transfer",
   Online: "finance.paymentMethod.online",
   Cheque: "finance.paymentMethod.cheque",
+  Card: "finance.paymentMethod.card",
   Other: "finance.paymentMethod.other",
 };

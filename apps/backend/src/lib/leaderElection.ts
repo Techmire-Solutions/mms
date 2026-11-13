@@ -12,6 +12,8 @@ export const LEADER_LOCK_FX_RATE_FEED = 918_273_644;
 export const LEADER_LOCK_CONTACT_ROLE_TAGS = 918_273_645;
 export const LEADER_LOCK_WAITLIST_OFFERS = 918_273_646;
 export const LEADER_LOCK_ATTENDANCE_ABSENCE = 918_273_647;
+/** Scheduled finance automation (overdue/reminders, billing, revaluation, IAS 29). */
+export const LEADER_LOCK_FINANCE_AUTOMATION = 918_273_648;
 
 export interface LeaderLease {
   /** True while this process still holds the session-level advisory lock. */

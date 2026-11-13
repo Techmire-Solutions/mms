@@ -17,6 +17,7 @@ function createFakeRepo(): SessionsRepository {
     findSessionByIdPrimary: vi.fn().mockResolvedValue(null),
     findSessionsByIds: vi.fn().mockResolvedValue([]),
     findSessionStatusesByIds: vi.fn().mockResolvedValue(new Map()),
+    sessionHasEnrollments: vi.fn().mockResolvedValue(false),
     findOverlappingSessions: vi.fn().mockResolvedValue([]),
     saveSession: vi.fn().mockResolvedValue("2026-01-02T00:00:00.000Z"),
     updateSessionDates: vi.fn().mockResolvedValue(true),
@@ -168,6 +169,63 @@ describe("sessions use-cases (DI with fake repository)", () => {
       expect.objectContaining({ id: "s1", name: "Renamed" }),
       expect.objectContaining({ expectedUpdatedAt: "2026-01-01T00:00:00.000Z" }),
     );
+  });
+
+  it("updateSessionById refuses a currency change while the session has enrollments", async () => {
+    // Enrollments carry their fee without a currency: it is implied by the session
+    // at billing time, so editing it would reinterpret every enrolled fee.
+    const repo = createFakeRepo();
+    vi.mocked(repo.findSessionById).mockResolvedValue(
+      SessionSchema.parse({
+        id: "s1",
+        name: "Hifz 2026",
+        status: "draft",
+        currency: "PKR",
+        version: 4,
+      }) as never,
+    );
+    vi.mocked(repo.sessionHasEnrollments).mockResolvedValue(true);
+    const useCases = createTestUseCases(repo);
+
+    await expect(
+      runWithTenant("demo", () =>
+        useCases.updateSessionById(
+          "s1",
+          { currency: "USD" },
+          { canOverrideLock: false, today: "2026-01-01" },
+          undefined,
+          4,
+        ),
+      ),
+    ).rejects.toThrow(/has enrollments/i);
+    expect(repo.saveSession).not.toHaveBeenCalled();
+  });
+
+  it("updateSessionById allows a currency change when the session has no enrollments", async () => {
+    const repo = createFakeRepo();
+    vi.mocked(repo.findSessionById).mockResolvedValue(
+      SessionSchema.parse({
+        id: "s1",
+        name: "Hifz 2026",
+        status: "draft",
+        currency: "PKR",
+        version: 4,
+      }) as never,
+    );
+    vi.mocked(repo.sessionHasEnrollments).mockResolvedValue(false);
+    const useCases = createTestUseCases(repo);
+
+    const result = await runWithTenant("demo", () =>
+      useCases.updateSessionById(
+        "s1",
+        { currency: "USD" },
+        { canOverrideLock: false, today: "2026-01-01" },
+        undefined,
+        4,
+      ),
+    );
+
+    expect(result?.currency).toBe("USD");
   });
 
   it("updateSessionById rejects a malformed OCC header before touching the repository", async () => {

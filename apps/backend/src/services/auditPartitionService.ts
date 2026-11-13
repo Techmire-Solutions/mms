@@ -27,6 +27,22 @@ import { logger } from "../lib/logger.js";
 /** How many months ahead of the current month to keep provisioned. */
 const DEFAULT_MONTHS_AHEAD = 12;
 
+/**
+ * Enable/force RLS on one audit partition and recreate the parent's tenant policy.
+ * Returned as separate statements because the extended query protocol rejects a
+ * multi-statement string.
+ */
+export function auditPartitionRlsStatements(name: string): string[] {
+  return [
+    `ALTER TABLE "${name}" ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
+    `DROP POLICY IF EXISTS tenant_isolation_policy ON "${name}"`,
+    `CREATE POLICY tenant_isolation_policy ON "${name}" FOR ALL USING (` +
+      `current_setting('app.rls_bypass', true) = 'on' ` +
+      `OR workspace_subdomain = current_setting('app.current_tenant', true))`,
+  ];
+}
+
 export interface EnsureAuditPartitionsResult {
   created: string[];
   existing: string[];
@@ -89,6 +105,13 @@ export async function ensureAuditTrailPartitions(options?: {
           `FOR VALUES FROM ('${from}') TO ('${to}')`,
       ),
     );
+    // PostgreSQL does not inherit the parent's row-level security or policies on a
+    // child partition, so a fresh month would be readable across tenants by any
+    // query that targets the partition directly. Apply the same policy as the
+    // parent (0250 backfills the partitions that predate this).
+    for (const statement of auditPartitionRlsStatements(name)) {
+      await db.execute(sql.raw(statement));
+    }
     created.push(name);
   }
 

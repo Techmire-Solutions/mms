@@ -1,14 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { readFileSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import {
-  initializeDatabaseConnection,
-  pingDatabase,
-  closeDatabase,
-  beginLongLivedTenantTransaction,
-} from "../../db/dbConnection.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
 import {
   workspaces,
   accountingAccounts,
@@ -19,23 +11,9 @@ import {
 } from "../../db/schema.js";
 import { listEntriesPage } from "../../db/repositories/accountingRepositoryListEntries.js";
 import { listAccountsPage } from "../../db/repositories/accountingRepositoryListPages.js";
+import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TEST_SUBDOMAIN = "list-filters-accounting";
-
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-
-function applyDatabaseUrlFromEnvFile(): void {
-  if (process.env.DATABASE_URL) return;
-  try {
-    const content = readFileSync(join(backendRoot, ".env"), "utf-8");
-    const match = content.match(/^DATABASE_URL\s*=\s*"?([^"\n]+)"?$/m);
-    if (match) process.env.DATABASE_URL = match[1].trim();
-  } catch {
-    // no .env present — loadServerConfig will use its test default
-  }
-}
-
-let dbAvailable = false;
 
 const ACCOUNTS = [
   { id: "f-cash", code: "1000", name: "Cash", type: "Asset", subtype: "Current", isActive: true },
@@ -100,10 +78,7 @@ async function purge(): Promise<void> {
 }
 
 beforeAll(async () => {
-  applyDatabaseUrlFromEnvFile();
-  initializeDatabaseConnection();
-  dbAvailable = await pingDatabase();
-  if (!dbAvailable) return;
+  await requireDatabaseConnection();
 
   await purge().catch(() => undefined);
 
@@ -171,7 +146,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (dbAvailable) await purge().catch(() => undefined);
+  await purge().catch(() => undefined);
   await closeDatabase().catch(() => undefined);
 });
 
@@ -183,7 +158,6 @@ async function entryIds(query: Parameters<typeof listEntriesPage>[1]): Promise<s
 
 describe("accounting list filters (real Postgres)", () => {
   it("filters journal entries by status", async () => {
-    if (!dbAvailable) return;
     expect(await entryIds({ status: "draft" })).toEqual(["f-e-jun-draft"]);
     expect(await entryIds({ status: "posted" })).toEqual([
       "f-e-dec-posted",
@@ -193,7 +167,6 @@ describe("accounting list filters (real Postgres)", () => {
   });
 
   it("filters journal entries by date range, inclusive of both ends", async () => {
-    if (!dbAvailable) return;
     expect(await entryIds({ dateFrom: "2026-06-01", dateTo: "2026-06-30" })).toEqual([
       "f-e-jun-draft",
       "f-e-jun-posted",
@@ -207,7 +180,6 @@ describe("accounting list filters (real Postgres)", () => {
   });
 
   it("filters journal entries to those carrying a line on one account", async () => {
-    if (!dbAvailable) return;
     // Only the fee entries have a line on the revenue account; the cash entries
     // do too because both legs of every seeded entry touch f-cash, so pair the
     // account filter with a date range to prove it narrows the set.
@@ -216,7 +188,6 @@ describe("accounting list filters (real Postgres)", () => {
   });
 
   it("filters journal entries by tag", async () => {
-    if (!dbAvailable) return;
     // The tag filter used to run in the browser only, so once the list pages on
     // the server it would have narrowed the loaded page instead of the journal.
     expect(await entryIds({ tag: "fee" })).toEqual(["f-e-jan-posted", "f-e-jun-posted"]);
@@ -225,7 +196,6 @@ describe("accounting list filters (real Postgres)", () => {
   });
 
   it("combines the tag filter with the other filters", async () => {
-    if (!dbAvailable) return;
     expect(await entryIds({ tag: "fee", status: "posted", dateFrom: "2026-06-01" })).toEqual([
       "f-e-jun-posted",
     ]);
@@ -233,7 +203,6 @@ describe("accounting list filters (real Postgres)", () => {
   });
 
   it("reports the filtered total, not the rows on the page", async () => {
-    if (!dbAvailable) return;
     // What the pager and the "shown" metric read instead of the loaded array.
     const page = await listEntriesPage(TEST_SUBDOMAIN, {
       page: 1,
@@ -248,7 +217,6 @@ describe("accounting list filters (real Postgres)", () => {
   });
 
   it("combines the filters", async () => {
-    if (!dbAvailable) return;
     expect(
       await entryIds({
         status: "posted",
@@ -260,7 +228,6 @@ describe("accounting list filters (real Postgres)", () => {
   });
 
   it("filters accounts by type", async () => {
-    if (!dbAvailable) return;
     const revenue = await listAccountsPage(TEST_SUBDOMAIN, {
       page: 1,
       limit: 100,
@@ -284,7 +251,6 @@ describe("accounting list filters (real Postgres)", () => {
   });
 
   it("still reports an unfiltered total for the pager", async () => {
-    if (!dbAvailable) return;
     const all = await listEntriesPage(TEST_SUBDOMAIN, { page: 1, limit: 2 });
     expect(all.total).toBe(ENTRIES.length);
     expect(all.hasMore).toBe(true);

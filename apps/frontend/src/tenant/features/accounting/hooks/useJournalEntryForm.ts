@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { Account, JournalEntry, FiscalYear } from "@/lib/data/accountingData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -22,6 +22,7 @@ import {
 } from "../lib/journalEntryFormValidation";
 import { applyEntryCurrency, draftLinesFromEntry } from "../lib/journalEntryCurrency";
 import { useJournalEntryCurrency } from "./useJournalEntryCurrency";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 
 const EMPTY_LINE = (): DraftLine => ({
   id: generateClientEntityId("l", "-"),
@@ -67,7 +68,9 @@ export function useJournalEntryForm({
           lines: draftLinesFromEntry(initial.lines, functionalCurrency),
         }
       : {
-          id: "",
+          // One id per form session: a validation retry or a second save must
+          // update the same draft, not create another voucher.
+          id: generateClientEntityId("je"),
           ref: "",
           date: todayISO(),
           description: "",
@@ -120,14 +123,18 @@ export function useJournalEntryForm({
   // Money is summed through integer cents (and converted once) so the totals
   // shown beside the lines are the same figures the ledger posts, with no float
   // artefacts such as 0.30000000000000004.
-  const totalDebit =
-    moneyToCents(
-      form.lines.reduce((sum, journalLine) => sum + parseJournalLineAmount(journalLine.debit), 0),
-    ) / 100;
-  const totalCredit =
-    moneyToCents(
-      form.lines.reduce((sum, journalLine) => sum + parseJournalLineAmount(journalLine.credit), 0),
-    ) / 100;
+  // Sum integer cents per line: summing parsed floats first let a long voucher
+  // drift before the single rounding (0.1 + 0.2 + … ≠ 0.3 in binary floats).
+  const totalDebitCents = form.lines.reduce(
+    (cents, journalLine) => cents + moneyToCents(parseJournalLineAmount(journalLine.debit)),
+    0,
+  );
+  const totalCreditCents = form.lines.reduce(
+    (cents, journalLine) => cents + moneyToCents(parseJournalLineAmount(journalLine.credit)),
+    0,
+  );
+  const totalDebit = totalDebitCents / 100;
+  const totalCredit = totalCreditCents / 100;
   /**
    * Balanced by the same rule the server enforces (`isJournalEntryBalanced`:
    * exact integer cents, at least two lines, each single-sided) instead of a
@@ -142,101 +149,124 @@ export function useJournalEntryForm({
 
   const completeness = calculateJournalEntryCompleteness(form, isBalanced);
 
-  const updateLine = (lineIndex: number, field: keyof DraftLine, fieldValue: string | number) => {
-    setForm((prev) => {
-      const lines = [...prev.lines];
-      lines[lineIndex] = { ...lines[lineIndex], [field]: fieldValue };
-      if (field === "debit" && fieldValue) lines[lineIndex].credit = "";
-      if (field === "credit" && fieldValue) lines[lineIndex].debit = "";
-      return { ...prev, lines };
-    });
-  };
+  const updateLine = useCallback(
+    (lineIndex: number, field: keyof DraftLine, fieldValue: string | number) => {
+      setForm((prev) => {
+        const lines = [...prev.lines];
+        lines[lineIndex] = { ...lines[lineIndex], [field]: fieldValue };
+        if (field === "debit" && fieldValue) lines[lineIndex].credit = "";
+        if (field === "credit" && fieldValue) lines[lineIndex].debit = "";
+        return { ...prev, lines };
+      });
+    },
+    [],
+  );
 
-  const addLine = () => {
-    const unbalance = Math.round((totalDebit - totalCredit) * 100) / 100;
+  const addLine = useCallback(() => {
+    const unbalanceCents = totalDebitCents - totalCreditCents;
     const newLine = EMPTY_LINE();
-    if (unbalance > 0) {
-      newLine.credit = unbalance.toFixed(2);
-    } else if (unbalance < 0) {
-      newLine.debit = Math.abs(unbalance).toFixed(2);
+    if (unbalanceCents > 0) {
+      newLine.credit = (unbalanceCents / 100).toFixed(2);
+    } else if (unbalanceCents < 0) {
+      newLine.debit = (Math.abs(unbalanceCents) / 100).toFixed(2);
     }
     setForm((prev) => ({ ...prev, lines: [...prev.lines, newLine] }));
-  };
-  const removeLine = (lineIndex: number) => {
-    if (form.lines.length <= 2) return;
-    setForm((prev) => ({
-      ...prev,
-      lines: prev.lines.filter((_, currentIndex) => currentIndex !== lineIndex),
-    }));
-  };
+  }, [totalDebitCents, totalCreditCents]);
 
-  const toggleTag = (tag: string) => {
+  const removeLine = useCallback((lineIndex: number) => {
+    setForm((prev) => {
+      if (prev.lines.length <= 2) return prev;
+      return {
+        ...prev,
+        lines: prev.lines.filter((_, currentIndex) => currentIndex !== lineIndex),
+      };
+    });
+  }, []);
+
+  const toggleTag = useCallback((tag: string) => {
     setForm((prev) => {
       const tags = prev.tags?.includes(tag)
         ? prev.tags.filter((existingTag) => existingTag !== tag)
         : [...(prev.tags || []), tag];
       return { ...prev, tags };
     });
-  };
+  }, []);
 
-  const saveEntry = async (saveAs?: "draft" | "posted") => {
-    const targetStatus = saveAs ?? form.status;
-    const validationErrors = validateJournalEntryForm(form, entries, targetStatus, isBalanced, t);
-    if (Object.keys(validationErrors).length) {
-      setErrors(validationErrors);
-      return;
-    }
-    if (fx.isForeign && !isValidExchangeRate(fx.rate)) {
-      setErrors({ exchangeRate: t("fx.field.rateMissing") });
-      return;
-    }
-    const trimmedRef = form.ref?.trim();
-    // Blank on create → the server assigns the next voucher number on save.
-    const journalReference = trimmedRef || (isEdit ? form.ref : "");
-    if (!isJournalRefUnique(journalReference, entries, form.id)) {
-      setErrors({ ref: t("accounting.journal.form.errorRefDuplicate") });
-      return;
-    }
-    const candidate = {
-      ...form,
-      id: isEdit ? form.id : generateClientEntityId("je"),
-      ref: journalReference,
-      status: targetStatus,
-      created_by: form.created_by || user?.name || "system",
-      lines: applyEntryCurrency(
-        form.lines.map((journalLine) => ({
-          ...journalLine,
-          debit: parseJournalLineAmount(journalLine.debit),
-          credit: parseJournalLineAmount(journalLine.credit),
+  const guard = useSubmitGuard();
+
+  const saveEntry = async (saveAs?: "draft" | "posted") =>
+    guard(async () => {
+      const targetStatus = saveAs ?? form.status;
+      const validationErrors = validateJournalEntryForm(form, entries, targetStatus, isBalanced, t);
+      if (Object.keys(validationErrors).length) {
+        setErrors(validationErrors);
+        return;
+      }
+      if (fx.isForeign && !isValidExchangeRate(fx.rate)) {
+        setErrors({ exchangeRate: t("fx.field.rateMissing") });
+        return;
+      }
+      const trimmedRef = form.ref?.trim();
+      // Blank on create → the server assigns the next voucher number on save.
+      const journalReference = trimmedRef || (isEdit ? form.ref : "");
+      if (!isJournalRefUnique(journalReference, entries, form.id)) {
+        setErrors({ ref: t("accounting.journal.form.errorRefDuplicate") });
+        return;
+      }
+      const candidate = {
+        ...form,
+        id: form.id || generateClientEntityId("je"),
+        ref: journalReference,
+        status: targetStatus,
+        created_by: form.created_by || user?.name || "system",
+        lines: applyEntryCurrency(
+          form.lines.map((journalLine) => ({
+            ...journalLine,
+            debit: parseJournalLineAmount(journalLine.debit),
+            credit: parseJournalLineAmount(journalLine.credit),
+          })),
+          fx.currency || functionalCurrency,
+          functionalCurrency || fx.currency,
+          fx.rate,
+        ),
+      };
+      const parsed = journalEntryRecordSchema.safeParse(candidate);
+      if (!parsed.success) {
+        setErrors({ schema: t("common.formPleaseFixErrors") });
+        return;
+      }
+      setSubmitting(true);
+      try {
+        const saved = await onSave(parsed.data);
+        if (!isEdit && saved?.ref)
+          notify.success(t("accounting.journal.form.voucherAssigned", { number: saved.ref }));
+      } catch (error) {
+        // The mutation layer already toasts the reason; surface it in the form too
+        // instead of letting the rejection escape as an unhandled promise.
+        setErrors({
+          submit:
+            error instanceof Error ? error.message : t("accounting.settings.saveEntriesFailed"),
+        });
+      } finally {
+        setSubmitting(false);
+      }
+    });
+
+  // Stable references: the memoized voucher rows compare `accountOptions` by
+  // identity, so rebuilding it every render would defeat the optimization.
+  const flattenedAccountOptions = useMemo(
+    () =>
+      accounts
+        .filter((account) => account.isActive !== false)
+        .toSorted((firstAccount, secondAccount) =>
+          firstAccount.code.localeCompare(secondAccount.code),
+        )
+        .map((account) => ({
+          value: account.id,
+          label: `${account.type}: ${account.code} – ${account.name}`,
         })),
-        fx.currency || functionalCurrency,
-        functionalCurrency || fx.currency,
-        fx.rate,
-      ),
-    };
-    const parsed = journalEntryRecordSchema.safeParse(candidate);
-    if (!parsed.success) {
-      setErrors({ schema: t("common.formPleaseFixErrors") });
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const saved = await onSave(parsed.data);
-      if (!isEdit && saved?.ref)
-        notify.success(t("accounting.journal.form.voucherAssigned", { number: saved.ref }));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const sortedAccounts = accounts
-    .filter((account) => account.isActive !== false)
-    .toSorted((firstAccount, secondAccount) => firstAccount.code.localeCompare(secondAccount.code));
-
-  const flattenedAccountOptions = sortedAccounts.map((account) => ({
-    value: account.id,
-    label: `${account.type}: ${account.code} – ${account.name}`,
-  }));
+    [accounts],
+  );
 
   const errorMessages = (() => Object.values(errors).filter(Boolean))();
 

@@ -2,22 +2,48 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import type { ZodType } from "zod";
 import { getRequestTenant } from "./tenantContext.js";
 
-type ParseResult<T> = { ok: true; data: T } | { ok: false; message: string };
+/** One field-level reason behind a rejected request body/query/params. */
+export interface ValidationIssue {
+  path: string;
+  message: string;
+}
+
+type ParseResult<T> =
+  { ok: true; data: T } | { ok: false; message: string; issues: ValidationIssue[] };
 
 export function parseRequest<T>(schema: ZodType<T>, value: unknown): ParseResult<T> {
   const parsed = schema.safeParse(value);
   if (!parsed.success) {
-    return { ok: false, message: parsed.error.message };
+    return {
+      ok: false,
+      message: parsed.error.message,
+      issues: parsed.error.issues.map((issue) => ({
+        path: issue.path.join(".") || "(root)",
+        message: issue.message,
+      })),
+    };
   }
   return { ok: true, data: parsed.data };
 }
 
+/**
+ * Sends the shared 400 envelope. Accepts either a plain message or the failed
+ * `parseRequest` result, so the response can carry `details.issues` (field-level
+ * reasons) instead of only Zod's concatenated message.
+ */
 export function replyValidationError(
   reply: FastifyReply,
-  message = "Invalid request",
+  failure: string | { message: string; issues?: ValidationIssue[] } = "Invalid request",
   extraFields?: Record<string, unknown>,
 ): ReturnType<FastifyReply["status"]> {
-  return reply.status(400).send({ type: "validation_error", message, ...extraFields });
+  const message = typeof failure === "string" ? failure : failure.message;
+  const issues = typeof failure === "string" ? undefined : failure.issues;
+  return reply.status(400).send({
+    type: "validation_error",
+    message,
+    ...(issues && issues.length > 0 ? { details: { issues } } : {}),
+    ...extraFields,
+  });
 }
 
 /**

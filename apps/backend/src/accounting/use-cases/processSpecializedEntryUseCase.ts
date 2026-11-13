@@ -1,5 +1,8 @@
 import crypto from "node:crypto";
 import {
+  FEE_ENTRY_TO_FINANCE_PAYMENT_METHOD,
+  JOURNAL_TAG_PAYROLL,
+  parseMoneyAmountNumber,
   type FeeEntryInput,
   type SalaryEntryInput,
   type SpecializedEntryInput,
@@ -27,7 +30,7 @@ function stableId(prefix: string, parts: readonly string[]): string {
 
 async function processFeeEntry(input: FeeEntryInput): Promise<SpecializedEntryResult> {
   const tenant = getRequestTenant() as string;
-  const amount = Number(input.amount);
+  const amount = parseMoneyAmountNumber(input.amount);
   const identity = [input.studentId, input.feePeriod, input.amount, input.date] as const;
 
   const invoice = await financeUseCases.createInvoice({
@@ -51,7 +54,7 @@ async function processFeeEntry(input: FeeEntryInput): Promise<SpecializedEntryRe
     studentName: input.studentName,
     amount,
     date: input.date,
-    method: input.paymentMethod,
+    method: FEE_ENTRY_TO_FINANCE_PAYMENT_METHOD[input.paymentMethod],
     note: input.note,
   });
 
@@ -75,7 +78,7 @@ async function processSalaryEntry(
   input: SalaryEntryInput,
   preparerName: string,
 ): Promise<SpecializedEntryResult> {
-  const amount = Number(input.amount);
+  const amount = parseMoneyAmountNumber(input.amount);
   const description = `Salary payment — staff ${input.staffId} (${input.payPeriod})`;
   const entry = await accountingUseCases.createJournalEntry({
     id: stableId("je", [input.staffId, input.payPeriod, input.amount, input.date]),
@@ -84,7 +87,7 @@ async function processSalaryEntry(
     description: input.note || description,
     status: "posted",
     created_by: preparerName,
-    tags: ["Payroll"],
+    tags: [JOURNAL_TAG_PAYROLL],
     attachments: [],
     fiscal_year: "",
     transaction_type: "salary",

@@ -1,14 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { readFileSync } from "node:fs";
-import { resolve, dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import {
-  initializeDatabaseConnection,
-  pingDatabase,
-  closeDatabase,
-  beginLongLivedTenantTransaction,
-} from "../../db/dbConnection.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
 import {
   workspaces,
   accountingAccounts,
@@ -19,6 +11,7 @@ import {
 } from "../../db/schema.js";
 import { bulkSaveEntries } from "../../db/repositories/accountingEntriesPersist.js";
 import type { JournalEntry } from "@mms/shared";
+import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 /**
  * A whole-list journal save re-sends every row it holds, including
@@ -29,20 +22,6 @@ import type { JournalEntry } from "@mms/shared";
  */
 const TEST_SUBDOMAIN = "softdelete-parity-accounting";
 
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
-
-function applyDatabaseUrlFromEnvFile(): void {
-  if (process.env.DATABASE_URL) return;
-  try {
-    const content = readFileSync(join(backendRoot, ".env"), "utf-8");
-    const match = content.match(/^DATABASE_URL\s*=\s*"?([^"\n]+)"?$/m);
-    if (match) process.env.DATABASE_URL = match[1].trim();
-  } catch {
-    // no .env present — loadServerConfig will use its test default
-  }
-}
-
-let dbAvailable = false;
 const trashedAt = new Date("2026-02-01T00:00:00.000Z");
 
 async function purgeWorkspace(): Promise<void> {
@@ -72,10 +51,7 @@ async function purgeWorkspace(): Promise<void> {
 }
 
 beforeAll(async () => {
-  applyDatabaseUrlFromEnvFile();
-  initializeDatabaseConnection();
-  dbAvailable = await pingDatabase();
-  if (!dbAvailable) return;
+  await requireDatabaseConnection();
 
   await purgeWorkspace();
 
@@ -93,14 +69,14 @@ beforeAll(async () => {
         workspaceSubdomain: TEST_SUBDOMAIN,
         code: "1000",
         name: "Cash",
-        type: "asset",
+        type: "Asset",
       },
       {
         id: "sd-acc-2",
         workspaceSubdomain: TEST_SUBDOMAIN,
         code: "4000",
         name: "Income",
-        type: "revenue",
+        type: "Revenue",
       },
     ]);
     await seedTx.tx.insert(accountingEntries).values([
@@ -138,17 +114,12 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (dbAvailable) await purgeWorkspace();
+  await purgeWorkspace();
   await closeDatabase();
 });
 
 describe("bulkSaveEntries soft-delete ownership", () => {
-  it("does not resurrect a trashed row and does not re-trash an active one", async (ctx) => {
-    if (!dbAvailable) {
-      ctx.skip();
-      return;
-    }
-
+  it("does not resurrect a trashed row and does not re-trash an active one", async () => {
     // A whole-list save from a session that still believes both rows are active.
     const batch: JournalEntry[] = [
       {

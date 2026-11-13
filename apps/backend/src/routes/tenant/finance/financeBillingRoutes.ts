@@ -6,7 +6,11 @@ import {
   resourceIdParamsSchema,
   type User,
 } from "@mms/shared";
-import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import {
+  canManageFinance,
+  canReadCollection,
+  canWriteCollection,
+} from "../../../services/rbacService.js";
 import {
   sendForbidden,
   sendIfHttpDomainError,
@@ -43,7 +47,8 @@ export const financeBillingRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.put("/fee-structures", async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
+    // Fee schedules set the amount every future invoice bills: pricing authority.
+    if (!canManageFinance(user)) return sendForbidden(reply);
     const parsed = parseRequest(feeStructureInsertSchema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
     try {
@@ -85,7 +90,7 @@ export const financeBillingRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.delete("/fee-structures/:id", async (request, reply) => {
     const user = request.user as User;
-    if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
+    if (!canManageFinance(user)) return sendForbidden(reply);
     const params = parseRequest(resourceIdParamsSchema, request.params);
     if (!params.ok) return replyValidationError(reply, params.message);
     try {
