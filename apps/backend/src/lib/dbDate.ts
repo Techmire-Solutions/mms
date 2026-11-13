@@ -1,4 +1,4 @@
-import { isValidIsoDate } from "@mms/shared";
+import { isValidIsoDate, todayISOInTimeZone } from "@mms/shared";
 import { ValidationError } from "./httpErrors.js";
 
 /**
@@ -15,16 +15,7 @@ export function todayInTimeZone(
   timeZone: string | null | undefined,
   now: Date = new Date(),
 ): string {
-  try {
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: timeZone || "UTC",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(now);
-  } catch {
-    return now.toISOString().slice(0, 10);
-  }
+  return todayISOInTimeZone(timeZone, now);
 }
 
 /**

@@ -13,6 +13,7 @@ import {
   getDateFormatPresets,
   formatDateToIso,
   todayISO,
+  todayISOInTimeZone,
   parseIsoDate,
   parseFlexibleIsoDate,
   parseIsoYear,
@@ -290,6 +291,21 @@ describe("dateFormatUtils", () => {
       const date = new Date(2026, 6, 21);
       expect(formatDateToIso(date)).toBe("2026-07-21");
       expect(todayISO()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it("resolves the workspace calendar day when the device clock is behind its timezone", () => {
+      // 20:51 UTC is already 01:51 on 14 Nov in a UTC+05:00 workspace (the default
+      // `Asia/Karachi`): the browser-local day would be 13 Nov and the attendance policy
+      // rejects it as a past day ("the marking cut-off has passed").
+      const now = new Date("2026-11-13T20:51:00.000Z");
+      expect(todayISOInTimeZone("Asia/Karachi", now)).toBe("2026-11-14");
+      expect(todayISOInTimeZone("UTC", now)).toBe("2026-11-13");
+    });
+
+    it("falls back to the UTC calendar day for an unknown timezone", () => {
+      const now = new Date("2026-11-13T20:51:00.000Z");
+      expect(todayISOInTimeZone("Not/AZone", now)).toBe("2026-11-13");
+      expect(todayISOInTimeZone(null, now)).toBe("2026-11-13");
     });
 
     it("extracts year portion via parseIsoYear", () => {

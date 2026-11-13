@@ -3,7 +3,7 @@ import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import { todayISO, ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { todayISOInTimeZone, ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
 import { useAttendanceRoster } from "@/tenant/features/attendance/hooks/useAttendance";
 import { useAttendancePageActions } from "@/tenant/features/attendance/hooks/useAttendancePageActions";
 import { useAttendanceColumnLayout } from "@/tenant/features/attendance/hooks/useAttendanceColumnLayout";
@@ -11,6 +11,7 @@ import { useAttendancePageTabs } from "@/tenant/features/attendance/hooks/useAtt
 import { ATTENDANCE_WORK_SEARCH_INPUT_ID } from "@/tenant/features/attendance/components/AttendanceListFilters";
 import { useViewerRole } from "@/tenant/hooks/useViewerRole";
 import { usePermissions, useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useWorkDrillDownListener } from "@/lib/query/useWorkDrillDownListener";
 import {
   ATTENDANCE_WORK_DRILLDOWN_EVENT,
@@ -18,27 +19,45 @@ import {
   type AttendanceWorkDrillDown,
 } from "@/tenant/features/attendance/hooks/attendanceWorkDrillDown";
 
-const DEFAULT_FILTERS = {
-  sessionId: "",
-  classId: "",
-  facultyId: "",
-  date: todayISO(),
-};
+interface AttendancePageFilters {
+  sessionId: string;
+  classId: string;
+  facultyId: string;
+  date: string;
+}
+
+/**
+ * Fresh filter defaults. The marking day comes from the *workspace* timezone because the server
+ * evaluates the cut-off, the day lock and "past day" rules there: a device clock in another zone
+ * (`todayISO()`) names yesterday for a UTC device in a UTC+05:00 workspace after 19:00Z, and the
+ * bulk save comes back 422 `attendance_override_reason_required`.
+ */
+function createDefaultFilters(timeZone: string | null | undefined): AttendancePageFilters {
+  return {
+    sessionId: "",
+    classId: "",
+    facultyId: "",
+    date: todayISOInTimeZone(timeZone),
+  };
+}
 
 export function useAttendancePageController() {
   const { t } = useTranslation();
+  const { timezone } = useGlobalSettings();
   const { canViewSetup } = useModulePermissions(ATTENDANCE_MODULE_MANIFEST);
   const { can } = usePermissions();
   const role = useViewerRole();
   const [activeTab, setActiveTab] = usePersistedTabState<string>("attendance_active_tab", "work");
   const [activeOpsTab, setActiveOpsTab] = useState("mark");
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState("charts");
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<AttendancePageFilters>(() =>
+    createDefaultFilters(timezone),
+  );
   const [showDeleted, setShowDeleted] = useDirectoryTrashState();
   const [shownCount, setShownCount] = useState(0);
   /** Set by the marking grid: unsaved roster edits block class/date/tier switches. */
   const [rosterDirty, setRosterDirty] = useState(false);
-  const [pendingFilters, setPendingFilters] = useState<typeof DEFAULT_FILTERS | null>(null);
+  const [pendingFilters, setPendingFilters] = useState<AttendancePageFilters | null>(null);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
   useWorkDrillDownListener<AttendanceWorkDrillDown>(
     ATTENDANCE_WORK_DRILLDOWN_EVENT,
@@ -62,9 +81,9 @@ export function useAttendancePageController() {
    * being applied immediately. Class/date/section are the roster-defining fields; a faculty-only
    * change does not lose edits.
    */
-  const requestFiltersChange = (next: typeof DEFAULT_FILTERS): void => {
-    const current = filters as typeof DEFAULT_FILTERS & { sectionId?: string };
-    const target = next as typeof DEFAULT_FILTERS & { sectionId?: string };
+  const requestFiltersChange = (next: AttendancePageFilters): void => {
+    const current = filters as AttendancePageFilters & { sectionId?: string };
+    const target = next as AttendancePageFilters & { sectionId?: string };
     const losesRoster =
       target.classId !== current.classId ||
       target.date !== current.date ||

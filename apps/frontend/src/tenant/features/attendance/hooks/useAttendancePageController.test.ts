@@ -72,6 +72,11 @@ vi.mock("@/hooks/useModuleShortcuts", () => ({
   useModuleShortcuts: vi.fn(),
 }));
 
+// The workspace timezone is UTC+05:00, so a device clock in UTC is one day behind after 19:00Z.
+vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
+  useGlobalSettings: () => ({ timezone: "Asia/Karachi" }),
+}));
+
 describe("useAttendancePageController Hook", () => {
   let container: HTMLDivElement | null = null;
 
@@ -104,5 +109,28 @@ describe("useAttendancePageController Hook", () => {
     expect(hookResult.effectiveTab).toBe("work");
     expect(hookResult.effectiveOpsTab).toBe("mark");
     expect(hookResult.role).toBe("admin");
+  });
+
+  it("defaults the marking day to the workspace timezone, not the device clock", async () => {
+    vi.useFakeTimers();
+    try {
+      // 20:51Z on 13 Nov is already 01:51 on 14 Nov in the UTC+05:00 workspace.
+      vi.setSystemTime(new Date("2026-11-13T20:51:00.000Z"));
+      let hookResult!: ReturnType<typeof useAttendancePageController>;
+
+      function TestComponent() {
+        hookResult = useAttendancePageController();
+        return null;
+      }
+
+      await act(async () => {
+        const root = createRoot(container!);
+        root.render(React.createElement(MemoryRouter, null, React.createElement(TestComponent)));
+      });
+
+      expect(hookResult.filters.date).toBe("2026-11-14");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

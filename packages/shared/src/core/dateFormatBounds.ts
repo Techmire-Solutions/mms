@@ -12,6 +12,26 @@ export function todayISO(): string {
 }
 
 /**
+ * Today's calendar day (`YYYY-MM-DD`) as seen in an IANA timezone, defaulting to UTC for an
+ * unknown zone. The server evaluates attendance cut-offs, day locks and "past day" rules in the
+ * workspace timezone, so a client whose device clock sits in another zone must resolve the day
+ * the same way — `todayISO()` would name yesterday for a UTC device in a UTC+05:00 workspace
+ * between 19:00Z and midnight, and the write would be rejected as a past day.
+ */
+export function todayISOInTimeZone(timeZone?: string | null, now: Date = new Date()): string {
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: timeZone || "UTC",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
+  } catch {
+    return now.toISOString().slice(0, 10);
+  }
+}
+
+/**
  * Parses a `YYYY-MM-DD` (or ISO datetime) storage string into a local Date at midnight.
  * Returns `undefined` when the string is missing or not a valid calendar day.
  */
