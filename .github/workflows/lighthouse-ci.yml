@@ -1,0 +1,82 @@
+name: Lighthouse CI Performance & Budgets
+
+on:
+  pull_request:
+    paths:
+      - "apps/frontend/**"
+      - "packages/shared/**"
+      - "packages/ui/**"
+      - "perf/**"
+      - "lighthouserc.cjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lighthouse-ci:
+    name: Lighthouse CI (Mobile)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-mms
+        with:
+          install: "true"
+          build-shared: "true"
+
+      - name: Build Frontend for Production
+        run: pnpm --filter mms-frontend build
+        env:
+          ANALYZE: "1"
+
+      - name: Run Lighthouse CI (Mobile - 3 runs)
+        id: lhci
+        run: |
+          npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.cjs
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Format Lighthouse PR Comment
+        if: always() && github.event_name == 'pull_request'
+        id: comment
+        run: |
+          node scripts/perf/format-lhci-comment.cjs
+
+      - name: Post PR Comment
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('lhci-comment.md')) {
+              const body = fs.readFileSync('lhci-comment.md', 'utf8');
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              const botComment = comments.find(c => c.body.includes('Lighthouse CI Performance Summary'));
+              if (botComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body,
+                });
+              }
+            }

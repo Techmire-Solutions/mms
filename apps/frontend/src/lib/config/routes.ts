@@ -1,4 +1,4 @@
-import { TENANT_PATHS, TENANT_APP_PATHS } from "@/lib/routing/moduleRegistry";
+import { TENANT_PATHS } from "@/lib/routing/tenantPaths";
 
 /**
  * Central route path registry — single source of truth for URLs across the app.
@@ -151,8 +151,27 @@ export function isNavPathActive(pathname: string, itemPath: string): boolean {
 /** Default post-login destination */
 export const DEFAULT_AUTH_REDIRECT = ROUTES.home;
 
-/** Tenant app module paths — not available on the apex host (from the registry). */
-export { TENANT_APP_PATHS };
+/** Tenant app module paths — not available on the apex host. */
+export const TENANT_APP_PATHS: readonly string[] = [
+  TENANT_PATHS.contacts,
+  TENANT_PATHS.faculty,
+  TENANT_PATHS.messaging,
+  TENANT_PATHS.tasks,
+  TENANT_PATHS.students,
+  TENANT_PATHS.sessions,
+  TENANT_PATHS.enrollments,
+  TENANT_PATHS.attendance,
+  TENANT_PATHS.hasanatCards,
+  TENANT_PATHS.examinations,
+  TENANT_PATHS.questionBank,
+  TENANT_PATHS.workshops,
+  TENANT_PATHS.finance,
+  TENANT_PATHS.accounting,
+  TENANT_PATHS.obligations,
+  TENANT_PATHS.users,
+  TENANT_PATHS.profile,
+  TENANT_PATHS.notifications,
+];
 
 export function isTenantAppPath(pathname: string): boolean {
   return TENANT_APP_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));

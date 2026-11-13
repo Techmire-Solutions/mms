@@ -170,15 +170,19 @@ export default defineConfig({
         level: 9,
       },
     }),
-    visualizer({
-      filename: path.resolve(rootDir, "dist/stats.html"),
-      title: "MMS Frontend Bundle Analysis",
-      template: "treemap",
-      projectRoot: rootDir,
-      gzipSize: true,
-      brotliSize: true,
-      open: false,
-    }) as PluginOption,
+    ...(process.env.ANALYZE === "1"
+      ? [
+          visualizer({
+            filename: path.resolve(rootDir, "dist/stats.html"),
+            title: "MMS Frontend Bundle Analysis",
+            template: "treemap",
+            projectRoot: rootDir,
+            gzipSize: true,
+            brotliSize: true,
+            open: false,
+          }) as PluginOption,
+        ]
+      : []),
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: false,

@@ -48,148 +48,209 @@
       </div>
     </noscript>
     <div id="root">
-      <div
-        class="mms-app-boot-skeleton"
-        style="
-          min-height: 100vh;
-          background-color: #fbf9f4;
-          font-family:
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            &quot;Segoe UI&quot;,
-            Roboto,
-            sans-serif;
-          display: flex;
-          flex-direction: column;
-        "
-      >
-        <!-- Lightweight Mobile Top Bar Placeholder -->
-        <div
-          style="
+      <div class="mms-app-boot-skeleton">
+        <!-- Critical Inline CSS for instant dark-mode / light-mode boot without white flash -->
+        <style>
+          :root {
+            --mms-boot-bg: #fbf9f4;
+            --mms-boot-card: #ffffff;
+            --mms-boot-border: rgba(0, 0, 0, 0.08);
+            --mms-boot-muted: rgba(0, 0, 0, 0.06);
+            --mms-boot-primary: #0f766e;
+          }
+          html.dark,
+          .dark {
+            --mms-boot-bg: #171410;
+            --mms-boot-card: #221e1a;
+            --mms-boot-border: rgba(255, 255, 255, 0.08);
+            --mms-boot-muted: rgba(255, 255, 255, 0.06);
+            --mms-boot-primary: #14b8a6;
+          }
+          body {
+            background-color: var(--mms-boot-bg);
+            margin: 0;
+            padding: 0;
+          }
+          .mms-app-boot-skeleton {
+            min-height: 100vh;
+            background-color: var(--mms-boot-bg);
+            font-family:
+              system-ui,
+              -apple-system,
+              BlinkMacSystemFont,
+              "Segoe UI",
+              Roboto,
+              sans-serif;
+            display: flex;
+            flex-direction: column;
+            color: inherit;
+          }
+          .mms-top-bar {
             height: 56px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid var(--mms-boot-border);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0 16px;
-            gap: 12px;
-          "
-        >
-          <div
-            style="
-              width: 24px;
-              height: 24px;
-              border-radius: 6px;
-              background-color: rgba(0, 0, 0, 0.06);
-            "
-          ></div>
-          <div
-            style="
-              width: 28px;
-              height: 28px;
-              border-radius: 6px;
-              background-color: rgba(15, 118, 110, 0.15);
-            "
-          ></div>
-          <div
-            style="
-              width: 110px;
-              height: 16px;
-              border-radius: 4px;
-              background-color: rgba(0, 0, 0, 0.08);
-            "
-          ></div>
-        </div>
-
-        <!-- Lightweight Body / Module Scaffold Placeholder -->
-        <div
-          style="
+            background-color: var(--mms-boot-card);
+            box-sizing: border-box;
+          }
+          .mms-main-content {
+            flex: 1;
             padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
             max-width: 1280px;
             margin: 0 auto;
             width: 100%;
             box-sizing: border-box;
-          "
-        >
-          <!-- Module Header Skeleton -->
-          <div
-            style="display: flex; align-items: center; justify-content: space-between; gap: 12px"
-          >
-            <div style="display: flex; align-items: center; gap: 12px">
-              <div
-                style="
-                  width: 36px;
-                  height: 36px;
-                  border-radius: 10px;
-                  background-color: rgba(15, 118, 110, 0.15);
-                "
-              ></div>
-              <div style="display: flex; flex-direction: column; gap: 6px">
-                <div
-                  style="
-                    width: 120px;
-                    height: 20px;
-                    border-radius: 4px;
-                    background-color: rgba(0, 0, 0, 0.1);
-                  "
-                ></div>
-                <div
-                  style="
-                    width: 180px;
-                    height: 14px;
-                    border-radius: 4px;
-                    background-color: rgba(0, 0, 0, 0.05);
-                  "
-                ></div>
-              </div>
-            </div>
-            <div
-              style="
-                width: 90px;
-                height: 36px;
-                border-radius: 8px;
-                background-color: rgba(0, 0, 0, 0.06);
-              "
-            ></div>
-          </div>
-
-          <!-- Spinner & status pulse -->
-          <div style="display: flex; align-items: center; justify-content: center; padding: 48px 0">
-            <div
-              class="mms-initial-spinner"
-              style="
-                width: 28px;
-                height: 28px;
-                border: 3px solid rgba(202, 138, 4, 0.2);
-                border-top-color: #ca8a04;
-                border-radius: 50%;
-                animation: mms-spin 0.8s linear infinite;
-              "
-            ></div>
-          </div>
-        </div>
-
-        <style>
-          @keyframes mms-spin {
-            to {
-              transform: rotate(360deg);
+          }
+          .mms-welcome-banner {
+            border-radius: 16px;
+            border: 1px solid var(--mms-boot-border);
+            background-color: var(--mms-boot-card);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+          }
+          .mms-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+          }
+          @media (min-width: 640px) {
+            .mms-cards-grid {
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 16px;
             }
           }
-          @media (prefers-reduced-motion: reduce) {
-            .mms-initial-spinner {
-              animation-duration: 6s !important;
+          @media (min-width: 1280px) {
+            .mms-cards-grid {
+              grid-template-columns: repeat(4, minmax(0, 1fr));
             }
           }
-          .dark .mms-app-boot-skeleton {
-            background-color: #171410 !important;
+          .mms-card-skeleton {
+            border-radius: 16px;
+            border: 1px solid var(--mms-boot-border);
+            background-color: var(--mms-boot-card);
+            padding: 20px;
+            min-height: 128px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
           }
-          .dark .mms-app-boot-skeleton > div:first-child {
-            border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+          .mms-shimmer-box {
+            background-color: var(--mms-boot-muted);
+            border-radius: 6px;
+          }
+          @media (prefers-reduced-motion: no-preference) {
+            .mms-pulse-anim {
+              animation: mms-fade-pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+          }
+          @keyframes mms-fade-pulse {
+            0%,
+            100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.55;
+            }
           }
         </style>
+
+        <!-- Top Header Skeleton matching 56px height & 44px min touch target -->
+        <header class="mms-top-bar" aria-hidden="true">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <div
+              class="mms-shimmer-box"
+              style="width: 36px; height: 36px; border-radius: 8px"
+            ></div>
+            <div class="mms-shimmer-box" style="width: 120px; height: 18px"></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <div
+              class="mms-shimmer-box"
+              style="width: 36px; height: 36px; border-radius: 8px"
+            ></div>
+            <div
+              class="mms-shimmer-box"
+              style="width: 36px; height: 36px; border-radius: 8px"
+            ></div>
+          </div>
+        </header>
+
+        <!-- Main Dashboard View Container matching final dimensions -->
+        <main class="mms-main-content mms-pulse-anim" aria-hidden="true">
+          <!-- Welcome Banner Skeleton -->
+          <div class="mms-welcome-banner">
+            <div
+              class="mms-shimmer-box"
+              style="width: 80px; height: 14px; background-color: rgba(15, 118, 110, 0.2)"
+            ></div>
+            <div class="mms-shimmer-box" style="width: 240px; height: 26px"></div>
+            <div class="mms-shimmer-box" style="width: 180px; height: 14px"></div>
+          </div>
+
+          <!-- 4 KPI Cards Grid matching final layout -->
+          <div class="mms-cards-grid">
+            <div class="mms-card-skeleton">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <div
+                  class="mms-shimmer-box"
+                  style="width: 36px; height: 36px; border-radius: 8px"
+                ></div>
+                <div class="mms-shimmer-box" style="width: 48px; height: 18px"></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div class="mms-shimmer-box" style="width: 80px; height: 24px"></div>
+                <div class="mms-shimmer-box" style="width: 110px; height: 12px"></div>
+              </div>
+            </div>
+            <div class="mms-card-skeleton">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <div
+                  class="mms-shimmer-box"
+                  style="width: 36px; height: 36px; border-radius: 8px"
+                ></div>
+                <div class="mms-shimmer-box" style="width: 48px; height: 18px"></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div class="mms-shimmer-box" style="width: 80px; height: 24px"></div>
+                <div class="mms-shimmer-box" style="width: 110px; height: 12px"></div>
+              </div>
+            </div>
+            <div class="mms-card-skeleton">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <div
+                  class="mms-shimmer-box"
+                  style="width: 36px; height: 36px; border-radius: 8px"
+                ></div>
+                <div class="mms-shimmer-box" style="width: 48px; height: 18px"></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div class="mms-shimmer-box" style="width: 80px; height: 24px"></div>
+                <div class="mms-shimmer-box" style="width: 110px; height: 12px"></div>
+              </div>
+            </div>
+            <div class="mms-card-skeleton">
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <div
+                  class="mms-shimmer-box"
+                  style="width: 36px; height: 36px; border-radius: 8px"
+                ></div>
+                <div class="mms-shimmer-box" style="width: 48px; height: 18px"></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div class="mms-shimmer-box" style="width: 80px; height: 24px"></div>
+                <div class="mms-shimmer-box" style="width: 110px; height: 12px"></div>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>

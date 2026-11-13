@@ -2,7 +2,6 @@ import type React from "react";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { registerAppNavigate, unregisterAppNavigate } from "@/lib/routing/appNavigate";
-import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
 import { revertSettingsPreviews } from "@/lib/settingsPreview";
 import { useScrollToTopOnNavigate } from "@/lib/routing/useScrollToTopOnNavigate";
 import { useTenant } from "@/lib/contexts/TenantContext";
@@ -46,7 +45,9 @@ export default function RouterBridge(): React.JSX.Element {
       }) ||
       workspaceMissing
     ) {
-      applyApexPlatformTheme("en");
+      void import("@/lib/branding/apexPlatformTheme").then(({ applyApexPlatformTheme }) => {
+        applyApexPlatformTheme("en");
+      });
       return;
     }
     void import("@/lib/brandingTheme").then(({ applyAppTheme }) => {

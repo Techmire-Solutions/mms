@@ -8,6 +8,7 @@ import { DashboardMetricsAlert } from "@/tenant/features/dashboard/components/Da
 import { WelcomeBanner } from "@/tenant/features/dashboard/components/WelcomeBanner";
 import { SetupIncompleteCallout } from "@/tenant/features/dashboard/components/SetupIncompleteCallout";
 import { DashboardWidgets } from "@/tenant/components/reports/pinnedWidgetsFacade";
+import { LazyDeferredView } from "@/components/app/LazyDeferredView";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { Button } from "@/components/ui/button";
@@ -222,15 +223,17 @@ export function DashboardPage() {
       </AnimatePresence>
 
       <ErrorBoundary>
-        <DashboardWidgets
-          widgets={primaryWidgets}
-          aggregateWidgets={aggregateWidgets}
-          onUnpin={handleUnpinWidget}
-          isEditMode={isEditMode}
-          onEditWidget={handleEditWidget}
-          onDeleteWidget={handleDeleteWidget}
-          showHeader={primaryWidgets.length > 0}
-        />
+        <LazyDeferredView minHeight={280}>
+          <DashboardWidgets
+            widgets={primaryWidgets}
+            aggregateWidgets={aggregateWidgets}
+            onUnpin={handleUnpinWidget}
+            isEditMode={isEditMode}
+            onEditWidget={handleEditWidget}
+            onDeleteWidget={handleDeleteWidget}
+            showHeader={primaryWidgets.length > 0}
+          />
+        </LazyDeferredView>
         {secondaryWidgets.length > 0 ? (
           // Desktop used to expand every secondary insight by default, which made
           // the dashboard 3,650 px tall with four empty analytics panels. The
@@ -251,15 +254,17 @@ export function DashboardPage() {
               </Button>
             </div>
             {showInsights ? (
-              <DashboardWidgets
-                widgets={secondaryWidgets}
-                aggregateWidgets={aggregateWidgets}
-                onUnpin={handleUnpinWidget}
-                isEditMode={isEditMode}
-                onEditWidget={handleEditWidget}
-                onDeleteWidget={handleDeleteWidget}
-                showHeader={false}
-              />
+              <LazyDeferredView minHeight={280}>
+                <DashboardWidgets
+                  widgets={secondaryWidgets}
+                  aggregateWidgets={aggregateWidgets}
+                  onUnpin={handleUnpinWidget}
+                  isEditMode={isEditMode}
+                  onEditWidget={handleEditWidget}
+                  onDeleteWidget={handleDeleteWidget}
+                  showHeader={false}
+                />
+              </LazyDeferredView>
             ) : null}
           </div>
         ) : null}
