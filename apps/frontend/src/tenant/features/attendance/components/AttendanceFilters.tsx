@@ -122,7 +122,7 @@ export function AttendanceFilters({
           }}
           aria-expanded={open}
           aria-controls="filters-panel"
-          className="flex min-w-0 flex-1 cursor-pointer select-none items-center justify-between gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="flex min-h-11 min-w-0 flex-1 cursor-pointer select-none items-center justify-between gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <div className="flex min-w-0 items-center gap-2">
             <Filter className="w-4 h-4 shrink-0 text-muted-foreground" aria-hidden="true" />
