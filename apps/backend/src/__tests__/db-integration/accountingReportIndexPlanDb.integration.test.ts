@@ -177,10 +177,14 @@ describe("report aggregations are index-backed at scale", () => {
     expect(
       plan.some(
         (node) =>
-          node["Relation Name"] === "accounting_entries" &&
-          (node["Node Type"] === "Index Scan" ||
-            node["Node Type"] === "Index Only Scan" ||
-            node["Node Type"] === "Bitmap Index Scan"),
+          (node["Relation Name"] === "accounting_entries" &&
+            ["Index Scan", "Index Only Scan", "Bitmap Index Scan", "Bitmap Heap Scan"].includes(
+              node["Node Type"],
+            )) ||
+          (node["Index Name"]?.startsWith("accounting_entries") &&
+            ["Index Scan", "Index Only Scan", "Bitmap Index Scan", "Bitmap Heap Scan"].includes(
+              node["Node Type"],
+            )),
       ),
     ).toBe(true);
   });
