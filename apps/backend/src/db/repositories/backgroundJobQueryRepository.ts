@@ -9,23 +9,67 @@ import { resolveEffectiveTenantUserId } from "./backgroundJobCleanupRepository.j
  * `rowToJobRecord` lives here so both the service and the entity-lock query share one mapper.
  */
 
-export function rowToJobRecord(row: typeof backgroundJobs.$inferSelect): BackgroundJobRecord {
+/**
+ * Safely converts a Date or date string to an ISO 8601 string, with resilient fallback.
+ */
+export function toSafeIsoString(
+  date: Date | string | null | undefined,
+  fallback = new Date().toISOString(),
+): string {
+  if (!date) return fallback;
+  if (date instanceof Date) {
+    return isNaN(date.getTime()) ? fallback : date.toISOString();
+  }
+  if (typeof date === "string") {
+    const parsed = new Date(date);
+    return isNaN(parsed.getTime()) ? date : parsed.toISOString();
+  }
+  return fallback;
+}
+
+export function rowToJobRecord(row: {
+  id: string;
+  moduleId: string;
+  kind: string;
+  status: string;
+  label: string;
+  hasDownload?: boolean | null;
+  progressCurrent?: number | null;
+  progressTotal?: number | null;
+  error?: string | null;
+  errors?: Array<{ row: number; reason: string }> | null;
+  createdAt: Date | string | null | undefined;
+  completedAt?: Date | string | null | undefined;
+  [key: string]: unknown;
+}): BackgroundJobRecord {
+  const safeCreatedAt = toSafeIsoString(row.createdAt);
   const record: BackgroundJobRecord = {
-    id: row.id,
-    moduleId: row.moduleId,
-    kind: row.kind,
-    status: row.status as BackgroundJobStatus,
-    label: row.label,
-    hasDownload: row.hasDownload,
-    createdAt: row.createdAt.toISOString(),
+    id: String(row.id),
+    moduleId: String(row.moduleId),
+    kind: String(row.kind),
+    status: (row.status as BackgroundJobStatus) || "pending",
+    label: String(row.label ?? ""),
+    hasDownload: Boolean(row.hasDownload),
+    createdAt: safeCreatedAt,
   };
 
-  if (row.progressCurrent !== null && row.progressTotal !== null) {
-    record.progress = { current: row.progressCurrent, total: row.progressTotal };
+  if (
+    row.progressCurrent !== null &&
+    row.progressCurrent !== undefined &&
+    row.progressTotal !== null &&
+    row.progressTotal !== undefined
+  ) {
+    record.progress = {
+      current: Number(row.progressCurrent),
+      total: Number(row.progressTotal),
+    };
   }
-  if (row.error) record.error = row.error;
-  if (row.errors) record.errors = row.errors;
-  if (row.completedAt) record.completedAt = row.completedAt.toISOString();
+  if (row.error) record.error = String(row.error);
+  if (row.errors && Array.isArray(row.errors)) record.errors = row.errors;
+  if (row.completedAt) {
+    const safeCompleted = toSafeIsoString(row.completedAt, "");
+    if (safeCompleted) record.completedAt = safeCompleted;
+  }
 
   return record;
 }
@@ -64,23 +108,17 @@ export async function findLiveBackgroundJob(
     const rows = await tx
       .select({
         id: backgroundJobs.id,
-        tenantId: backgroundJobs.tenantId,
-        userId: backgroundJobs.userId,
         moduleId: backgroundJobs.moduleId,
         kind: backgroundJobs.kind,
         status: backgroundJobs.status,
         label: backgroundJobs.label,
-        payload: backgroundJobs.payload,
         progressCurrent: backgroundJobs.progressCurrent,
         progressTotal: backgroundJobs.progressTotal,
-        artifactId: backgroundJobs.artifactId,
         hasDownload: backgroundJobs.hasDownload,
         error: backgroundJobs.error,
         errors: backgroundJobs.errors,
-        deadLetteredAt: backgroundJobs.deadLetteredAt,
         completedAt: backgroundJobs.completedAt,
         createdAt: backgroundJobs.createdAt,
-        updatedAt: backgroundJobs.updatedAt,
       })
       .from(backgroundJobs)
       .where(
