@@ -1,7 +1,21 @@
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import React, { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AttendanceFilters } from "./AttendanceFilters";
+import { AttendanceFilters, type AttendanceFilterState } from "./AttendanceFilters";
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+vi.mock("framer-motion", () => {
+  const comp = ({ children, ...props }: { children?: React.ReactNode }) => (
+    <div {...props}>{children}</div>
+  );
+  return {
+    m: new Proxy({}, { get: () => comp }),
+    motion: { div: comp },
+    AnimatePresence: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  };
+});
 
 vi.mock("@/hooks/useAcademicTerms", () => ({
   useAcademicTerms: () => ({
@@ -85,5 +99,72 @@ describe("AttendanceFilters Component", () => {
     expect(
       toggle!.querySelector("button, a[href], input, select, textarea, [role='button']"),
     ).toBeNull();
+  });
+
+  describe("collapsible header", () => {
+    let container: HTMLDivElement;
+    let root: Root;
+
+    function mount(onChange: (filters: AttendanceFilterState) => void): HTMLElement {
+      container = document.createElement("div");
+      document.body.appendChild(container);
+      root = createRoot(container);
+      act(() => {
+        root.render(
+          <AttendanceFilters
+            filters={{ sessionId: "", classId: "", facultyId: "", date: "2024-01-01" }}
+            onChange={onChange}
+          />,
+        );
+      });
+      const toggle = container.querySelector<HTMLElement>('[aria-controls="filters-panel"]');
+      expect(toggle).not.toBeNull();
+      return toggle!;
+    }
+
+    function pressKey(element: HTMLElement, key: string): void {
+      act(() => {
+        element.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+      });
+    }
+
+    afterEach(() => {
+      act(() => root.unmount());
+      container.remove();
+    });
+
+    it("collapses and expands on click and on Enter/Space, ignoring other keys", () => {
+      const toggle = mount(vi.fn());
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+
+      act(() => toggle.click());
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+
+      pressKey(toggle, "Enter");
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+
+      pressKey(toggle, " ");
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+
+      pressKey(toggle, "a");
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    });
+
+    it("clears every filter back to the workspace default day", () => {
+      const onChange = vi.fn();
+      mount(onChange);
+
+      const clearButton = Array.from(container.querySelectorAll("button")).find((button) =>
+        button.textContent?.includes("attendance.filters.clear"),
+      );
+      expect(clearButton).toBeDefined();
+      act(() => clearButton!.click());
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({ sessionId: "", classId: "", facultyId: "" }),
+      );
+      expect(onChange.mock.calls[0]![0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
   });
 });
