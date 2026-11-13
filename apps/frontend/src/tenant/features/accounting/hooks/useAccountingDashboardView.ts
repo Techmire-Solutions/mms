@@ -4,7 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import type { MetricItem } from "@/components/app/ModuleCommandMetricsGrid";
-import { useAccountingDashboardModel } from "@/tenant/features/accounting/hooks/useAccountingDashboardModel";
+import { formatMonthName, moneyToCents } from "@mms/shared";
 import {
   useAccountingMetrics,
   useAccountingReportAggregates,
@@ -28,30 +28,42 @@ export function useAccountingDashboardView(accounts: Account[], entries: Journal
   const { formatCurrency } = useAccountingCurrency();
   const { primary, secondary, charts } = useBrandPalette();
   const pieColors = charts;
-  const { data: serverMetrics } = useAccountingMetrics();
-  const { data: serverAggregates } = useAccountingReportAggregates();
+  const metricsQuery = useAccountingMetrics();
+  const aggregatesQuery = useAccountingReportAggregates();
+  const serverMetrics = metricsQuery.data;
+  const serverAggregates = aggregatesQuery.data;
+  // Until both server reads settle, the figures below would be zeros masquerading
+  // as real balances; the dashboard renders a skeleton/error state instead.
+  const isLoading = metricsQuery.isLoading || aggregatesQuery.isLoading;
+  const isError = metricsQuery.isError || aggregatesQuery.isError;
+  const refetch = () => {
+    void metricsQuery.refetch();
+    void aggregatesQuery.refetch();
+  };
 
-  const {
-    revenue: modelRevenue,
-    expenses: modelExpenses,
-    netSurplus: modelSurplus,
-    assets: modelAssets,
-    liabilities: modelLiabilities,
-    equity,
-    postedEntries,
-    draftEntries,
-    monthlyData,
-    recentEntries,
-  } = useAccountingDashboardModel(accounts, entries);
-
-  const revenue = serverMetrics?.revenue ?? modelRevenue;
-  const expenses = serverMetrics?.expenses ?? modelExpenses;
-  const netSurplus = serverMetrics?.surplus ?? modelSurplus;
-  const assets = serverMetrics?.assets ?? modelAssets;
-  const liabilities = serverMetrics?.liabilities ?? modelLiabilities;
-  const postedCount = serverMetrics?.posted ?? postedEntries.length;
-  const draftCount = serverMetrics?.draft ?? draftEntries.length;
+  /**
+   * Every money figure comes from the server: command metrics (totals + the
+   * six-month series) and report aggregates (cash flow, equity, expense rows).
+   * The browser used to recompute all of this from a paged-through copy of the
+   * whole ledger — up to 50 × 100 full vouchers — which is what this replaced.
+   * The only local list is the page of recent entries the snapshot renders.
+   */
+  const revenue = serverMetrics?.revenue ?? 0;
+  const expenses = serverMetrics?.expenses ?? 0;
+  const netSurplus = serverMetrics?.surplus ?? 0;
+  const assets = serverMetrics?.assets ?? 0;
+  const liabilities = serverMetrics?.liabilities ?? 0;
+  const equity = serverAggregates?.equity ?? 0;
+  const postedCount = serverMetrics?.posted ?? 0;
+  const draftCount = serverMetrics?.draft ?? 0;
   const netCashFlow = serverAggregates?.netCashFlow ?? 0;
+  const monthlyData = (serverMetrics?.monthly ?? []).map((series) => ({
+    ...series,
+    month: formatMonthName(`${series.month}-01`),
+  }));
+  const recentEntries = [...entries]
+    .sort((firstEntry, secondEntry) => secondEntry.date.localeCompare(firstEntry.date))
+    .slice(0, 5);
 
   const rawExpenseRows =
     serverAggregates?.incomeStatementTrialBalance ?? serverAggregates?.trialBalance ?? [];
@@ -87,8 +99,13 @@ export function useAccountingDashboardView(accounts: Account[], entries: Journal
     percentage: (item.value / maxBs) * 100,
   }));
 
-  const balanceDifference = Math.abs(assets - (liabilities + equity));
-  const isBalanced = balanceDifference < 1;
+  // Balance is exact integer cents, never a float tolerance: the old `< 1`
+  // threshold called a balance sheet off by 0.99 "balanced".
+  const balanceDifferenceCents = Math.abs(
+    moneyToCents(assets) - moneyToCents(liabilities) - moneyToCents(equity),
+  );
+  const balanceDifference = balanceDifferenceCents / 100;
+  const isBalanced = balanceDifferenceCents === 0;
 
   const metricItems: MetricItem[] = [
     {
@@ -165,5 +182,8 @@ export function useAccountingDashboardView(accounts: Account[], entries: Journal
     isBalanced,
     balanceDifference,
     recentEntries,
+    isLoading,
+    isError,
+    refetch,
   };
 }

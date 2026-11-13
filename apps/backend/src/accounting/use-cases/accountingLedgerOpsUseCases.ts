@@ -12,7 +12,10 @@ import {
   type PostingRulesUpdate,
 } from "@mms/shared";
 import { requireTenant } from "../../lib/tenantContext.js";
-import { findAccountsByIds } from "../../db/repositories/accountingAccountsRepository.js";
+import {
+  findAccountsByIds,
+  findSummaryAccountIds,
+} from "../../db/repositories/accountingAccountsRepository.js";
 import {
   getPostingRules,
   listBankStatements,
@@ -27,6 +30,7 @@ import { findActiveReversalOf } from "../../db/repositories/accountingEntryRever
 import { listOpeningEntries } from "../../db/repositories/accountingRepository.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { closeFiscalYearForTenant } from "./accountingPeriodClose.js";
+import { assertAccountIdsPostable } from "./accountingLedgerGuards.js";
 import { tryPostOpeningJournal } from "../ledgerPosting/ledgerPostingService.js";
 
 async function broadcast(tenant: string, collection: string): Promise<void> {
@@ -96,6 +100,19 @@ export async function assertPostingRuleAccountsValid(
       );
     }
   }
+  // A header/summary account aggregates its children; pointing a posting rule at one
+  // would double-count the balance it already rolls up.
+  const summaryIds = await findSummaryAccountIds(
+    tenant,
+    configured.map((row) => row.accountId),
+  );
+  for (const { field, accountId } of configured) {
+    if (!summaryIds.has(accountId)) continue;
+    const account = byId.get(accountId);
+    problems.push(
+      `${field}: ${account?.code ?? accountId} ${account?.name ?? ""} is a summary account with sub-accounts`,
+    );
+  }
   if (problems.length > 0) {
     throw Object.assign(new Error(`Invalid posting rules — ${problems.join("; ")}`), {
       statusCode: 422,
@@ -124,6 +141,7 @@ export async function loadOpeningBalances(fiscalYearId: string): Promise<Opening
 export async function upsertOpeningBalances(
   fiscalYearId: string,
   balances: OpeningBalanceInsert[],
+  reason?: string,
 ): Promise<OpeningBalance[]> {
   const tenant = requireTenant();
   // Editing opening balances after the year is closed (or after they were
@@ -154,13 +172,31 @@ export async function upsertOpeningBalances(
       { statusCode: 422, type: "validation_error" },
     );
   }
-  const parsed = openingBalancesReplaceSchema.parse({ fiscalYearId, balances });
+  const parsed = openingBalancesReplaceSchema.parse({ fiscalYearId, balances, reason });
+  // An opening balance parks an amount on an account; validate the account here so a
+  // typo or an archived/deactivated/summary account is refused at edit time instead
+  // of at posting time.
+  await assertAccountIdsPostable(
+    tenant,
+    parsed.balances.map((row) => row.accountId),
+    async (workspace, ids) => {
+      const [accounts, summaryIds] = await Promise.all([
+        findAccountsByIds(workspace, ids),
+        findSummaryAccountIds(workspace, ids),
+      ]);
+      return accounts.map((account) => ({
+        id: account.id,
+        isActive: account.isActive,
+        hasChildren: summaryIds.has(account.id),
+      }));
+    },
+  );
   const records = parsed.balances.map((row, index) => ({
     ...row,
     id: row.id ?? `ob-${index + 1}`,
     fiscalYearId,
   }));
-  await replaceOpeningBalances(tenant, fiscalYearId, records);
+  await replaceOpeningBalances(tenant, fiscalYearId, records, parsed.reason);
   await broadcast(tenant, "accounting_opening_balances");
   return records;
 }
@@ -231,7 +267,7 @@ export async function upsertBankStatement(input: unknown): Promise<BankStatement
 export async function matchBankStatementLine(input: unknown): Promise<void> {
   const tenant = requireTenant();
   const parsed = bankReconciliationMatchSchema.parse(input);
-  await matchBankReconciliation(tenant, parsed);
+  await matchBankReconciliation(tenant, parsed, parsed.reason);
   await broadcast(tenant, "accounting_bank_reconciliations");
 }
 

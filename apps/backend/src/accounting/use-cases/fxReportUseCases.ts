@@ -7,7 +7,10 @@ import {
 import type { FxRevaluationDeps } from "./fxRevaluationUseCases.js";
 import { lookupClosingRate } from "./fxRevaluationUseCases.js";
 
-export interface FxReportDeps extends Pick<FxRevaluationDeps, "fx" | "listBalances" | "listRuns"> {
+export interface FxReportDeps extends Pick<
+  FxRevaluationDeps,
+  "fx" | "listBalances" | "listRunsBetween"
+> {
   listRealized: (tenant: string, from: string, to: string) => Promise<FxReport["realized"]>;
 }
 
@@ -21,7 +24,7 @@ export async function buildFxReport(
   const [balances, realized, runs] = await Promise.all([
     deps.listBalances(tenant, query.asOf, functionalCurrency),
     deps.listRealized(tenant, query.from, query.asOf),
-    deps.listRuns(tenant),
+    deps.listRunsBetween(tenant, query.from, query.asOf),
   ]);
   const rates = new Map<string, string>();
   for (const currency of new Set(balances.map((balance) => balance.currency))) {
@@ -41,11 +44,9 @@ export async function buildFxReport(
       realized.map((row) => row.realized),
       functionalCurrency,
     ),
-    revaluations: runs
-      .filter((run) => run.revaluationDate >= query.from && run.revaluationDate <= query.asOf)
-      .map((run) => ({
-        revaluationDate: run.revaluationDate,
-        totalUnrealized: sumStoredAmounts([run.totalUnrealized], functionalCurrency),
-      })),
+    revaluations: runs.map((run) => ({
+      revaluationDate: run.revaluationDate,
+      totalUnrealized: sumStoredAmounts([run.totalUnrealized], functionalCurrency),
+    })),
   };
 }

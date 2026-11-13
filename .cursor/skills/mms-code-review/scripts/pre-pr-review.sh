@@ -40,6 +40,8 @@ gate "Staged secrets" pnpm run check:secrets
 gate "Rules & skills integrity" node scripts/verify-rules-integrity.mjs
 # Attendance contract coverage: every contract path must appear in an app.inject test.
 gate "Attendance route injection" node scripts/ci/check-attendance-route-injection.mjs --strict
+gate "Accounting route injection" pnpm run check:accounting-route-injection
+gate "Accounting route security matrix" pnpm run check:accounting-route-security
 gate "Examinations test matrix" pnpm run check:examinations-tests
 gate "Examinations route injection" pnpm run check:examinations-route-injection
 gate "Examinations scoring coverage" pnpm --filter @mms/shared run test:coverage:examinations

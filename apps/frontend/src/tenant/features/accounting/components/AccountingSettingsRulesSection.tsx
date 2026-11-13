@@ -6,7 +6,6 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
-import { Alert } from "@/components/app/Alert";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 
 export interface AccountingSettingsRulesSectionProps {
@@ -45,27 +44,14 @@ export function AccountingSettingsRulesSection({
             onChange={(checked) => upd("requireNarration", checked)}
           />
 
-          <div className="space-y-2 pt-1 border-t border-border/60">
-            <ToggleRow
-              label={t("accounting.settings.fields.allowEditPosted")}
-              description={t("accounting.settings.fields.allowEditPostedHint")}
-              value={Boolean(settingsDraft.allowEditPosted)}
-              onChange={(checked) => upd("allowEditPosted", checked)}
-            />
-            {settingsDraft.allowEditPosted && (
-              <Alert title={t("accounting.settings.fields.allowEditPostedWarning")} />
-            )}
-          </div>
-
-          <div className="pt-1 border-t border-border/60">
-            <ToggleRow
-              label={t("accounting.settings.fields.autoPostDrafts")}
-              description={t("accounting.settings.fields.autoPostDraftsHint")}
-              value={Boolean(settingsDraft.autoPostDrafts)}
-              onChange={(checked) => upd("autoPostDrafts", checked)}
-            />
-          </div>
-
+          {/*
+            "Allow editing posted entries" and "Auto-post drafts" were rendered
+            here but had no consumer anywhere in the app: posted vouchers are
+            immutable by design (the ledger guard rejects the edit and the row
+            action only offers Edit for drafts), and nothing auto-posts. Promising
+            a control with no effect is worse than not offering it; the persisted
+            fields stay in the schema for backward-compatible saves.
+          */}
           <ModuleSetupSaveFooter
             dirty={Boolean(isPrefsDirty)}
             saving={Boolean(saving)}

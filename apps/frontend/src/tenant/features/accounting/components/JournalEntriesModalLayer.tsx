@@ -10,6 +10,7 @@ import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { isVoucherPrintable } from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import { usePaymentVoucherPrint } from "@/tenant/features/accounting/hooks/usePaymentVoucherPrint";
+import { useJournalEntryDetail } from "@/tenant/features/accounting/hooks/useAccountingQueries";
 
 export type JournalModalMode = "new" | "edit" | "view" | null;
 
@@ -19,9 +20,10 @@ export interface JournalEntriesModalLayerProps {
   canDelete: boolean;
   selected: JournalEntry | null;
   accounts: Account[];
-  allEntries?: JournalEntry[];
   entries: JournalEntry[];
   fiscalYears: FiscalYear[];
+  decimalSeparator?: "period" | "comma";
+  requireNarration?: boolean;
   onSave: JournalEntrySave;
   onAccountsChange?: (
     updater: Account[] | ((prev: Account[]) => Account[]),
@@ -50,9 +52,10 @@ export function JournalEntriesModalLayer({
   canDelete,
   selected,
   accounts,
-  allEntries,
   entries,
   fiscalYears,
+  decimalSeparator,
+  requireNarration,
   onSave,
   onAccountsChange,
   onCloseModal,
@@ -73,15 +76,25 @@ export function JournalEntriesModalLayer({
   t,
 }: JournalEntriesModalLayerProps): React.JSX.Element {
   const printVoucher = usePaymentVoucherPrint(accounts);
+  // The register list ships headers only (`includeLines=false`); the drawer and the
+  // edit form read the full entry (lines/tags/attachments) by id when they open —
+  // editing the header row opened a blank voucher with Save disabled.
+  const detailResult = useJournalEntryDetail(
+    modal === "view" || modal === "edit" ? (selected?.id ?? null) : null,
+  );
+  const selectedWithLines =
+    detailResult.data && detailResult.data.id === selected?.id ? detailResult.data : selected;
   return (
     <>
       <AnimatePresence>
         {canWrite && (modal === "new" || modal === "edit") && (
           <JournalEntryForm
             accounts={accounts}
-            entries={allEntries && allEntries.length > 0 ? allEntries : entries}
-            initial={modal === "edit" ? selected : null}
+            entries={entries}
+            initial={modal === "edit" ? selectedWithLines : null}
             fiscalYears={fiscalYears}
+            decimalSeparator={decimalSeparator}
+            requireNarration={requireNarration}
             onSave={onSave}
             onAccountsChange={onAccountsChange}
             onClose={onCloseModal}
@@ -90,9 +103,9 @@ export function JournalEntriesModalLayer({
         {modal === "view" &&
           selected &&
           (() => {
-            const entry = selected;
+            const entry = selectedWithLines ?? selected;
             const reversedBy = entry.ref
-              ? (allEntries && allEntries.length > 0 ? allEntries : entries).find(
+              ? entries.find(
                   (candidate) =>
                     candidate.id !== entry.id &&
                     !candidate.deletedAt &&

@@ -1,11 +1,17 @@
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import { billingPeriodSchema } from "../core/billingPeriodSchema.js";
-
-/** Decimal money string, per MMS currency convention (never IEEE 754 floats). */
-const moneyDecimalStringSchema = z.string().regex(/^\d+(\.\d{1,2})?$/, "Enter a valid amount");
-
+import { nonNegativeMoneyDecimalAmountSchema } from "../money/moneySchemas.js";
 import type { FinancePaymentMethod } from "./accountingEnums.js";
+
+/**
+ * Fee/salary amounts arrive as decimal strings and are parsed server-side against
+ * the functional currency; the canonical decimal schema bounds the integer part and
+ * decimals so a body cannot carry a value the ledger columns could not store. The
+ * currency's own minor units are refined where the currency travels with the amount
+ * (`refineMoneyForCurrency`).
+ */
+const moneyDecimalStringSchema = nonNegativeMoneyDecimalAmountSchema;
 
 export const FEE_ENTRY_PAYMENT_METHODS = ["cash", "bank", "card", "online", "cheque"] as const;
 export type FeeEntryPaymentMethod = (typeof FEE_ENTRY_PAYMENT_METHODS)[number];

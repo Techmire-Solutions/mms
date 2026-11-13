@@ -8,12 +8,7 @@ import { WorkBatchTableFooter } from "@/components/common/work/WorkBatchTableFoo
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { moneyToCents, resolveDefaultFiscalYear, todayISO } from "@mms/shared";
-import {
-  ACCOUNT_TYPES,
-  type Account,
-  type JournalEntry,
-  type FiscalYear,
-} from "@/lib/data/accountingData";
+import { ACCOUNT_TYPES, type FiscalYear } from "@/lib/data/accountingData";
 import { useAccountingReportAggregates } from "@/tenant/features/accounting/hooks/useAccountingApi";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { AccountingDateFilterBar } from "./AccountingDateFilterBar";
@@ -26,14 +21,11 @@ import { exportTrialBalanceCsv } from "../lib/trialBalanceExport";
 
 interface TrialBalanceProps {
   /**
-   * Retained for call-site compatibility. The rows now come from the server's
-   * own trial balance, so the component no longer needs the client collections —
-   * and computing it here was the bug: it could only ever see the entries the
-   * page had loaded, so the totals (and the "Balanced" badge) described a slice
-   * of the ledger rather than the ledger.
+   * The rows come from the server's own trial balance aggregate. The component
+   * deliberately takes no client collections: computing them here was the bug —
+   * it could only ever see the entries the page had loaded, so the totals (and the
+   * "Balanced" badge) described a slice of the ledger rather than the ledger.
    */
-  accounts?: Account[];
-  entries?: JournalEntry[];
   fiscalYears?: FiscalYear[];
 }
 

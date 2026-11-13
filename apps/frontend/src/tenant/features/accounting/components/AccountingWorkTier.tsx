@@ -42,14 +42,8 @@ interface AccountingWorkTierProps {
   createAccountRequestKey?: number;
   accounts: Account[];
   accountsLoaded?: boolean;
+  /** The server-paginated journal register page (list + dashboard recents). */
   entries: JournalEntry[];
-  /**
-   * The complete journal, used by the whole-ledger views (Overview, General
-   * Ledger, Trial Balance). `entries` is a single page and would silently
-   * understate every aggregate; it stays the source for the paginated Journal
-   * list and for saves, so a save never re-uploads the entire journal.
-   */
-  aggregateEntries: JournalEntry[];
   settings: AccountingSettings;
   fiscalYears: FiscalYear[];
   /** Journal filter values, owned by the page that issues the server query. */
@@ -87,7 +81,6 @@ export function AccountingWorkTier({
   accounts,
   accountsLoaded,
   entries,
-  aggregateEntries,
   settings,
   fiscalYears,
   journalFilters,
@@ -131,7 +124,7 @@ export function AccountingWorkTier({
       {!listLoadFailed && activeSubTab === "overview" && (
         <AccountingDashboard
           accounts={accounts}
-          entries={aggregateEntries}
+          entries={entries}
           settings={settings}
           fiscalYears={fiscalYears}
         />
@@ -140,7 +133,6 @@ export function AccountingWorkTier({
       {!listLoadFailed && activeSubTab === "journal" && (
         <JournalEntries
           entries={entries}
-          allEntries={aggregateEntries.length > 0 ? aggregateEntries : undefined}
           accounts={accounts}
           settings={settings}
           fiscalYears={fiscalYears}
@@ -166,9 +158,7 @@ export function AccountingWorkTier({
 
       {!listLoadFailed && activeSubTab === "ledger" && <GeneralLedger accounts={accounts} />}
 
-      {!listLoadFailed && activeSubTab === "trial" && (
-        <TrialBalance accounts={accounts} entries={aggregateEntries} fiscalYears={fiscalYears} />
-      )}
+      {!listLoadFailed && activeSubTab === "trial" && <TrialBalance fiscalYears={fiscalYears} />}
 
       {!listLoadFailed && activeSubTab === "coa" && (
         <ChartOfAccounts

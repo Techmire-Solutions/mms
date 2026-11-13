@@ -1,45 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { moneyToCents } from "@mms/shared";
+import { isJournalEntryBalanced, moneyToCents } from "@mms/shared";
 import {
   centsToMoney,
-  computeFinancials,
-  computeLedger,
-  computeTrialBalance,
   hasReversalEntry,
   isJournalRefUnique,
-  type Account,
   type JournalEntry,
 } from "./accountingData";
-
-const accounts: Account[] = [
-  {
-    id: "a-cash",
-    code: "1000",
-    name: "Cash in Hand",
-    type: "Asset",
-    subtype: "Current Asset",
-    description: "",
-    isActive: true,
-  },
-  {
-    id: "a-income",
-    code: "4000",
-    name: "Tuition Income",
-    type: "Revenue",
-    subtype: "Operating Revenue",
-    description: "",
-    isActive: true,
-  },
-  {
-    id: "a-expense",
-    code: "5000",
-    name: "Wages",
-    type: "Expense",
-    subtype: "Operating Expense",
-    description: "",
-    isActive: true,
-  },
-];
 
 const balancedEntry = (overrides: Partial<JournalEntry> = {}): JournalEntry => ({
   id: "je-1",
@@ -60,49 +26,22 @@ const balancedEntry = (overrides: Partial<JournalEntry> = {}): JournalEntry => (
   ...overrides,
 });
 
-describe("computeLedger", () => {
-  it("returns cent-exact line money so a running balance never drifts", () => {
-    const lines = computeLedger("a-cash", [balancedEntry()]);
-    expect(lines).toHaveLength(2);
-    expect(lines.map((ledgerLine) => ledgerLine.debit)).toEqual([0.1, 0.2]);
-    const runningCents = lines.reduce(
-      (cents, ledgerLine) => cents + moneyToCents(ledgerLine.debit),
-      0,
-    );
-    expect(String(centsToMoney(runningCents))).toBe("0.3");
+describe("centsToMoney", () => {
+  it("round-trips cent-exact money so a running balance never drifts", () => {
+    // The ledger math itself is server-authoritative and covered by the shared
+    // `accountingLedgerInvariants`/report tests; this helper only converts back for
+    // display, so 0.1 + 0.2 must come back as exactly 0.3.
+    const cents = moneyToCents(0.1) + moneyToCents(0.2);
+    expect(String(centsToMoney(cents))).toBe("0.3");
   });
 
-  it("ignores draft entries", () => {
-    expect(computeLedger("a-cash", [balancedEntry({ status: "draft" })])).toHaveLength(0);
-  });
-});
-
-describe("computeTrialBalance", () => {
-  it("aggregates in integer cents", () => {
-    const rows = computeTrialBalance(accounts, [balancedEntry()]);
-    const cash = rows.find((row) => row.id === "a-cash");
-    const income = rows.find((row) => row.id === "a-income");
-    expect(cash?.totalDebit).toBe(0.3);
-    expect(cash?.balance).toBe(0.3);
-    expect(income?.totalCredit).toBe(0.3);
-    expect(income?.balance).toBe(0.3);
-  });
-
-  it("stays exactly balanced across an entry whose lines are float-hostile", () => {
-    const rows = computeTrialBalance(accounts, [balancedEntry()]);
-    const debitTotal = rows.reduce((sum, row) => sum + Math.round(row.totalDebit * 100), 0);
-    const creditTotal = rows.reduce((sum, row) => sum + Math.round(row.totalCredit * 100), 0);
-    expect(debitTotal).toBe(creditTotal);
-  });
-});
-
-describe("computeFinancials", () => {
-  it("reports cent-exact money figures", () => {
-    const financials = computeFinancials(accounts, [balancedEntry()]);
-    expect(financials.revenue).toBe(0.3);
-    expect(financials.assets).toBe(0.3);
-    expect(financials.cashInflow).toBe(0.3);
-    expect(financials.cashOutflow).toBe(0);
+  it("agrees with the shared balance rule on a float-hostile entry", () => {
+    const lines = [
+      { debit: moneyToCents(0.1), credit: 0 },
+      { debit: moneyToCents(0.2), credit: 0 },
+      { debit: 0, credit: moneyToCents(0.3) },
+    ].map((line) => ({ debit: centsToMoney(line.debit), credit: centsToMoney(line.credit) }));
+    expect(isJournalEntryBalanced(lines)).toBe(true);
   });
 });
 

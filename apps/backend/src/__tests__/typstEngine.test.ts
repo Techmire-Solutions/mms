@@ -56,7 +56,12 @@ describe("Typst BiDi Headless Document Engine (Phase 6)", () => {
   });
 
   it("locates valid Typst template paths and the bundled font directory", () => {
-    const templates: TypstTemplateType[] = ["report-card", "fee-receipt", "financial-ledger"];
+    const templates: TypstTemplateType[] = [
+      "report-card",
+      "fee-receipt",
+      "financial-ledger",
+      "trial-balance",
+    ];
     for (const t of templates) {
       const path = getTemplatePath(t);
       expect(path).toContain(`${t}.typ`);

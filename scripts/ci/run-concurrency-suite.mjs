@@ -29,6 +29,9 @@ const FILES = [
   "src/__tests__/db-integration/financePaymentConcurrencyDb.integration.test.ts",
   // Parallel fiscal-year close: exactly one closing entry, one closed year, one audit row.
   "src/__tests__/db-integration/accountingCloseConcurrencyDb.integration.test.ts",
+  // Posting-period reopen racing a fiscal-year close: a reopen that loses must
+  // never leave an open period inside a closed year.
+  "src/__tests__/db-integration/accountingPeriodReopenRaceDb.integration.test.ts",
   // Serialised FX revaluation and IAS 29 restatement runs (one per date).
   "src/__tests__/db-integration/accountingFxRevaluationDb.integration.test.ts",
   "src/__tests__/db-integration/accountingIas29Db.integration.test.ts",

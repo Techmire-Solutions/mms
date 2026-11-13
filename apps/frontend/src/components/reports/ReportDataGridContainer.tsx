@@ -17,6 +17,8 @@ export interface ReportDataGridContainerProps {
   moduleId?: string;
   filename?: string;
   hideExport?: boolean;
+  /** Hide the client PDF control (module renders PDFs server-side instead). */
+  hidePdf?: boolean;
   page?: number;
   total?: number;
   limit?: number;
@@ -48,6 +50,7 @@ export const ReportDataGridContainer = function ReportDataGridContainer({
   moduleId,
   filename,
   hideExport = false,
+  hidePdf = false,
   page,
   total,
   limit = 50,
@@ -81,6 +84,7 @@ export const ReportDataGridContainer = function ReportDataGridContainer({
           resolveRows={resolveRows}
           moduleId={moduleId}
           filename={filename}
+          hidePdf={hidePdf}
         />
       )}
 

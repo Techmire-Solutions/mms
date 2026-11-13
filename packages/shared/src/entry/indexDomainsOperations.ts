@@ -7,6 +7,8 @@
 // 9. Attendance, Finance, Accounting & Obligations
 // ---------------------------------------------------------------------------
 export * from "../finance/accountingDefaultChart.js";
+export * from "../finance/accountingAccountHierarchy.js";
+export * from "../finance/accountingErrorCodes.js";
 export * from "../finance/accountingFxAccounts.js";
 export * from "../finance/accountingFxLines.js";
 export * from "../finance/accountingEnums.js";
@@ -24,11 +26,13 @@ export * from "../finance/consolidationGroups.js";
 export * from "../finance/accountingJournalReversal.js";
 export * from "../finance/accountingJournalTemplates.js";
 export * from "../finance/accountingLedgerInvariants.js";
+export * from "../finance/accountingCurrencyBalance.js";
 export * from "../finance/accountingLedgerOps.js";
 export * from "../finance/accountingVoucherNumbering.js";
 export * from "../finance/accountingLedgerPosting.js";
 export * from "../finance/obligationPostingLogic.js";
 export * from "../finance/accountingListQuery.js";
+export * from "../finance/accountingRecordLists.js";
 export * from "../finance/accountingModuleManifest.js";
 export * from "../finance/accountingModuleSettings.js";
 export * from "../finance/accountingReportAggregates.js";

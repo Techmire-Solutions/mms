@@ -119,4 +119,83 @@ describe("resolveEntriesFx", () => {
     // Assert
     expect(resolved).toBe(original);
   });
+
+  it("resolves each rate type independently when one voucher mixes them", async () => {
+    // A cache keyed only by currency|date reused the first line's rate for the
+    // second, silently mis-stating its functional amount (the entry still balanced).
+    const lookupExchangeRate = vi.fn().mockImplementation(
+      async (
+        _tenant: string,
+        query: { rateType?: string },
+      ): Promise<{
+        fromCurrency: string;
+        toCurrency: string;
+        rate: string;
+        rateDate: string;
+        rateType: "SPOT" | "HISTORICAL";
+        source: "manual";
+      }> =>
+        query.rateType === "HISTORICAL"
+          ? {
+              fromCurrency: "USD",
+              toCurrency: "PKR",
+              rate: "275",
+              rateDate: "2026-09-30",
+              rateType: "HISTORICAL",
+              source: "manual" as const,
+            }
+          : {
+              fromCurrency: "USD",
+              toCurrency: "PKR",
+              rate: "285",
+              rateDate: "2026-09-30",
+              rateType: "SPOT",
+              source: "manual" as const,
+            },
+    );
+    const fx = makeFx({ lookupExchangeRate });
+    const entry = {
+      id: "je-mixed",
+      date: "2026-09-30",
+      ref: "MIX-1",
+      description: "",
+      status: "posted",
+      created_by: "u",
+      fiscal_year: "",
+      tags: [],
+      attachments: [],
+      lines: [
+        {
+          id: "l1",
+          account_id: "cash",
+          debit: 0,
+          credit: 0,
+          description: "",
+          txn_currency: "USD",
+          txn_debit: "10.00",
+          txn_credit: "0",
+          rate_type: "HISTORICAL",
+        },
+        {
+          id: "l2",
+          account_id: "equity",
+          debit: 0,
+          credit: 0,
+          description: "",
+          txn_currency: "USD",
+          txn_debit: "0",
+          txn_credit: "10.00",
+          rate_type: "SPOT",
+        },
+      ],
+    } as JournalEntry;
+
+    const [resolved] = await resolveEntriesFx(makeRepo(fx), "demo", [entry]);
+
+    expect(lookupExchangeRate).toHaveBeenCalledTimes(2);
+    expect(resolved.lines[0]?.exchange_rate).toBe("275");
+    expect(resolved.lines[1]?.exchange_rate).toBe("285");
+    expect(resolved.lines[0]?.debit).toBe(2750);
+    expect(resolved.lines[1]?.credit).toBe(2850);
+  });
 });

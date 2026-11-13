@@ -19,6 +19,8 @@ interface CashFlowStatementPanelProps {
   depreciationAdjustment: number;
   receivablesChange: number;
   payablesChange: number;
+  /** Residual of the remaining non-cash movements; makes the lines sum to the total. */
+  otherAdjustment?: number;
   /** Indirect-method subtotal (`netCashFlowIndirect`), server-computed. */
   netCashFlowIndirect: number;
   /** Direct-method net movement on cash/bank accounts within the window. */
@@ -42,6 +44,7 @@ export function CashFlowStatementPanel({
   depreciationAdjustment,
   receivablesChange,
   payablesChange,
+  otherAdjustment = 0,
   netCashFlowIndirect,
   netCashFlow,
   cashInflow,
@@ -56,6 +59,9 @@ export function CashFlowStatementPanel({
     { label: t("accounting.reports.cashflow.depreciation"), amount: depreciationAdjustment },
     { label: t("accounting.reports.cashflow.receivables"), amount: receivablesChange },
     { label: t("accounting.reports.cashflow.payables"), amount: payablesChange },
+    ...(Math.abs(otherAdjustment) >= 0.005
+      ? [{ label: t("accounting.reports.cashflow.otherAdjustments"), amount: otherAdjustment }]
+      : []),
   ];
   // Display-only difference of two server-computed figures.
   const reconciliationDifference = Math.abs(netCashFlowIndirect - netCashFlow);

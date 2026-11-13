@@ -12,6 +12,7 @@ import {
 } from "@mms/shared";
 import type { RecordModernAuditInput } from "../../services/auditTrailService.js";
 import { lockLedgerEvent } from "../ledgerPosting/ledgerEventLock.js";
+import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import type { AccountingHyperinflationStore } from "../repository/accountingHyperinflationRepositoryAdapter.js";
 import { nextCalendarDay } from "./fxRevaluationUseCases.js";
 
@@ -28,6 +29,7 @@ export interface Ias29Deps {
     | "listMonthlyMovements"
     | "listIas29Runs"
     | "findIas29RunId"
+    | "findIas29RunByDate"
     | "saveIas29Run"
   >;
   /** Idempotent per (source_type, source_id); null when it already exists. */
@@ -160,17 +162,20 @@ export async function postIas29Restatement(
   deps: Ias29Deps,
   actor: Actor,
   date: string,
+  options: { signal?: AbortSignal } = {},
 ): Promise<Ias29Run> {
   const { tenant } = actor;
+  const { signal } = options;
+  throwIfBackgroundJobAborted(signal);
   // One restatement per date; serialise the read-then-insert (see lockLedgerEvent).
   await lockLedgerEvent(tenant, `ias29:${date}`);
-  if (await deps.store.findIas29RunId(tenant, date)) {
-    const existing = (await deps.store.listIas29Runs(tenant)).find(
-      (run) => run.restatementDate === date,
-    );
-    if (existing) return existing;
-  }
+  // The list store is capped, so a run older than the cap could not answer this
+  // lookup and the re-post surfaced as a unique-violation 500 instead of a replay.
+  const existing = await deps.store.findIas29RunByDate(tenant, date);
+  if (existing) return existing;
+  throwIfBackgroundJobAborted(signal);
   const preview = await previewIas29Restatement(deps, tenant, date);
+  throwIfBackgroundJobAborted(signal);
   const settings = await deps.store.getHyperinflationSettings(tenant);
   let entryId: string | null = null;
   let reversalEntryId: string | null = null;
@@ -203,6 +208,8 @@ export async function postIas29Restatement(
     entryId = (await deps.postEntry(tenant, entry))?.id ?? entry.id;
     reversalEntryId = (await deps.postEntry(tenant, reversal))?.id ?? reversal.id;
   }
+  // Final boundary check before the run row + audit are written.
+  throwIfBackgroundJobAborted(signal);
   const run = {
     ...preview,
     id: `ias29-${randomUUID()}`,

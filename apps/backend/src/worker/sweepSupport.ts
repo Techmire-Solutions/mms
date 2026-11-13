@@ -21,14 +21,27 @@ export async function listEnabledWorkspaces(): Promise<string[]> {
   return (result.rows ?? []).map((row) => String(row.subdomain));
 }
 
-/** Rejects when `promise` does not settle within `ms`; the timer is always cleared. */
-export async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+/**
+ * Rejects when `promise` does not settle within `ms`; the timer is always cleared.
+ *
+ * `onTimeout` fires before the rejection so the caller can abort the work itself —
+ * a race alone would leave a timed-out workspace writing while the sweep moves on.
+ */
+export async function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  label: string,
+  onTimeout?: () => void,
+): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     return await Promise.race([
       promise,
       new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+        timer = setTimeout(() => {
+          onTimeout?.();
+          reject(new Error(`${label} timed out after ${ms}ms`));
+        }, ms);
         timer.unref?.();
       }),
     ]);

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { makeReversalResult } from "./helpers/accountingRouteFixtures.js";
-import { accountantToken, auditorToken, guardianToken } from "./helpers/tokens.js";
+import { accountantToken, adminToken, auditorToken, guardianToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -39,18 +39,20 @@ vi.mock("../accounting/use-cases/reverseJournalEntryUseCase.js", () => ({
   reverseJournalEntry: (...args: unknown[]) => mockReverse(...args),
 }));
 
-type Role = "accountant" | "auditor" | "guardian";
+type Role = "admin" | "accountant" | "auditor" | "guardian";
 
 async function reverse(role: Role | undefined, payload: Record<string, unknown>) {
   const app = await buildApp();
   const token =
-    role === "accountant"
-      ? accountantToken(app)
-      : role === "auditor"
-        ? auditorToken(app)
-        : role === "guardian"
-          ? guardianToken(app)
-          : undefined;
+    role === "admin"
+      ? adminToken(app)
+      : role === "accountant"
+        ? accountantToken(app)
+        : role === "auditor"
+          ? auditorToken(app)
+          : role === "guardian"
+            ? guardianToken(app)
+            : undefined;
   const res = await app.inject({
     method: "POST",
     url: "/api/accounting/entries/je-orig/reverse",
@@ -89,10 +91,18 @@ describe("POST /api/accounting/entries/:id/reverse", () => {
     expect(mockReverse).not.toHaveBeenCalled();
   });
 
+  it("refuses reversal to a write-only accountant (controller authority)", async () => {
+    // Posting is `write`; undoing a posted voucher is `manage`.
+    const res = await reverse("accountant", VALID);
+
+    expect(res.statusCode).toBe(403);
+    expect(mockReverse).not.toHaveBeenCalled();
+  });
+
   it("given a missing or blank reason, should reject the request without reversing", async () => {
     // Arrange / Act
-    const missing = await reverse("accountant", { date: "2026-10-08" });
-    const blank = await reverse("accountant", { date: "2026-10-08", reason: "   " });
+    const missing = await reverse("admin", { date: "2026-10-08" });
+    const blank = await reverse("admin", { date: "2026-10-08", reason: "   " });
 
     // Assert
     expect(missing.statusCode).toBe(400);
@@ -102,7 +112,7 @@ describe("POST /api/accounting/entries/:id/reverse", () => {
 
   it("given an unknown field such as deleteOriginal, should reject the request", async () => {
     // Arrange / Act
-    const res = await reverse("accountant", { ...VALID, deleteOriginal: true });
+    const res = await reverse("admin", { ...VALID, deleteOriginal: true });
 
     // Assert
     expect(res.statusCode).toBe(400);
@@ -111,7 +121,7 @@ describe("POST /api/accounting/entries/:id/reverse", () => {
 
   it("given a valid request, should reverse as the session user and return 201", async () => {
     // Arrange / Act
-    const res = await reverse("accountant", VALID);
+    const res = await reverse("admin", VALID);
 
     // Assert
     expect(res.statusCode).toBe(201);
@@ -135,7 +145,7 @@ describe("POST /api/accounting/entries/:id/reverse", () => {
     );
 
     // Act
-    const res = await reverse("accountant", VALID);
+    const res = await reverse("admin", VALID);
 
     // Assert
     expect(res.statusCode).toBe(409);

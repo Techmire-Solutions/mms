@@ -1,6 +1,7 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import {
+  hedgeDiscontinuationRequestSchema,
   hedgeReclassificationRequestSchema,
   hedgeRelationshipCreateSchema,
   hedgeSettlementRequestSchema,
@@ -54,6 +55,14 @@ export const accountingHedgesContract = c.router({
     body: hedgeSettlementRequestSchema,
     responses: { 201: ok, 403: errorResponse, 404: errorResponse, 422: errorResponse },
     summary: "Settle the forward in cash",
+  },
+  discontinueHedge: {
+    method: "POST",
+    path: "/api/accounting/hedges/:id/discontinue",
+    pathParams: idParams,
+    body: hedgeDiscontinuationRequestSchema,
+    responses: { 201: ok, 403: errorResponse, 404: errorResponse, 422: errorResponse },
+    summary: "Stop hedge accounting prospectively (IFRS 9.6.5.6)",
   },
   reclassifyHedge: {
     method: "POST",

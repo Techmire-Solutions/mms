@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import {
   DEFAULT_HYPERINFLATION_SETTINGS,
   type HyperinflationSettings,
@@ -61,7 +61,7 @@ export async function saveHyperinflationSettings(
   );
 }
 
-/** True when `accountId` is an active account of the workspace. */
+/** Active-account check used before restating. */
 export async function accountExists(tenant: string, accountId: string): Promise<boolean> {
   const subdomain = tenantKey(tenant);
   return withTenantRead(subdomain, async (tx) => {
@@ -95,7 +95,7 @@ export async function listPriceIndices(tenant: string): Promise<PriceIndexPoint[
   });
 }
 
-/** Upsert index points by date; points not in the payload are kept. */
+/** Upsert index points by date (missing dates are kept). */
 export async function upsertPriceIndices(
   tenant: string,
   points: readonly PriceIndexPoint[],
@@ -120,12 +120,7 @@ export async function upsertPriceIndices(
   );
 }
 
-/**
- * Net functional movement per account × calendar month up to `date` (posted,
- * active entries). Earlier IAS 29 postings are excluded: each is reversed the
- * next day, and restating them again at a different month's index would leave
- * a residue.
- */
+/** Net functional movement per account × month up to `date`; reversed restatements excluded. */
 export async function listMonthlyMovements(
   tenant: string,
   date: string,
@@ -177,16 +172,22 @@ const runColumns = {
   createdBy: accountingIas29Runs.createdBy,
 };
 
-/** Posted restatements, newest first (bounded to `limit`). */
-export async function listIas29Runs(tenant: string, limit = 24): Promise<Ias29Run[]> {
+/** Posted restatements, newest first (limit for the list, window for reports). */
+async function loadIas29Runs(
+  tenant: string,
+  options: { limit?: number; from?: string; to?: string },
+): Promise<Ias29Run[]> {
   const subdomain = tenantKey(tenant);
   return withTenantRead(subdomain, async (tx) => {
+    const conditions = [eq(accountingIas29Runs.workspaceSubdomain, subdomain)];
+    if (options.from) conditions.push(gte(accountingIas29Runs.restatementDate, options.from));
+    if (options.to) conditions.push(lte(accountingIas29Runs.restatementDate, options.to));
     const rows = await tx
       .select(runColumns)
       .from(accountingIas29Runs)
-      .where(eq(accountingIas29Runs.workspaceSubdomain, subdomain))
+      .where(and(...conditions))
       .orderBy(desc(accountingIas29Runs.restatementDate))
-      .limit(limit);
+      .limit(options.limit ?? 24);
     if (rows.length === 0) return [];
     const lines = await tx
       .select({
@@ -235,6 +236,19 @@ export async function listIas29Runs(tenant: string, limit = 24): Promise<Ias29Ru
     }));
   });
 }
+
+export function listIas29Runs(tenant: string, limit = 24): Promise<Ias29Run[]> {
+  return loadIas29Runs(tenant, { limit });
+}
+
+export const listIas29RunsBetween = (tenant: string, from: string, to: string) =>
+  loadIas29Runs(tenant, { from, to });
+
+/** One run by date, with its lines (the idempotent re-post path). */
+export const findIas29RunByDate = async (tenant: string, date: string) =>
+  (await loadIas29Runs(tenant, { from: date, to: date })).find(
+    (run) => run.restatementDate === date,
+  ) ?? null;
 
 export async function findIas29RunId(tenant: string, date: string): Promise<string | null> {
   const subdomain = tenantKey(tenant);

@@ -6,6 +6,8 @@ import {
   computeHedgeValuation,
 } from "./accountingHedges.js";
 import { hedgeRelationshipCreateSchema } from "./accountingHedgeSchemas.js";
+import { convertMoney } from "../money/fxConvert.js";
+import { parseMoney } from "../money/money.js";
 
 const terms = (overrides: Partial<Parameters<typeof computeHedgeValuation>[0]> = {}) => ({
   hedgeType: "cash_flow" as const,
@@ -92,6 +94,25 @@ describe("computeHedgeValuation", () => {
       ineffective: "5000.00",
       hedgedChange: "0.00",
     });
+  });
+});
+
+describe("single-rounding fair value", () => {
+  it("converts the rate difference once instead of each side separately", () => {
+    // Arrange: 100.05 USD × (283.5 − 282.25) = 125.0625 PKR → 125.06 half-up.
+    const valuation = computeHedgeValuation(
+      terms({ notional: "100.05", contractRate: "282.25", designationRate: "282.25" }),
+      "283.5",
+      "PKR",
+    );
+
+    // Assert: the exact single-rounded value…
+    expect(valuation.instrumentValue).toBe("125.06");
+    // …while converting both rates and subtracting the rounded results loses a cent.
+    const notional = parseMoney("100.05", "USD");
+    const doubleRounded =
+      convertMoney(notional, "283.5", "PKR").minor - convertMoney(notional, "282.25", "PKR").minor;
+    expect(doubleRounded).toBe(12507n);
   });
 });
 

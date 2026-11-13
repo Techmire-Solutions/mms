@@ -432,8 +432,22 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
     });
 
     it("throws ValidationError (400) when archiving account with active journal lines", async () => {
+      // The guard now locks the account rows on the primary and counts only posted,
+      // active-entry lines (it used to count every line on the read replica), so the
+      // fake transaction has to serve both chains.
+      // One `where` chain serves two shapes: awaited directly (the COA audit
+      // before-state read) and chained with `.for()` / `.groupBy()` (the guards).
+      const whereResult = Object.assign(Promise.resolve([] as unknown[]), {
+        for: vi.fn().mockResolvedValue([{ id: "acc-1" }]),
+        groupBy: vi.fn().mockResolvedValue([{ accountId: "acc-1", count: 5 }]),
+      });
       const fakeTx = {
-        $count: vi.fn().mockResolvedValue(5),
+        select: vi.fn(() => ({
+          from: vi.fn(() => ({
+            where: vi.fn(() => whereResult),
+            innerJoin: vi.fn(() => ({ where: vi.fn(() => whereResult) })),
+          })),
+        })),
         update: vi.fn(),
       };
 
@@ -442,7 +456,7 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
       await expect(bulkSoftDeleteAccounts("demo", ["acc-1"])).rejects.toThrow(ValidationError);
 
       await expect(bulkSoftDeleteAccounts("demo", ["acc-1"])).rejects.toThrow(
-        "Cannot archive account with active journal lines (5 active line(s) exist)",
+        "Cannot archive account acc-1 with active journal lines (5 posted line(s) exist)",
       );
     });
   });

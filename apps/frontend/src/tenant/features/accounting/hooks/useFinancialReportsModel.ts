@@ -90,7 +90,7 @@ export function useFinancialReportsModel() {
         cashOutflow: 0,
         tb: [],
         balanceSheetTb: [],
-        cashFlowAdjustments: { depreciation: 0, receivables: 0, payables: 0 },
+        cashFlowAdjustments: { depreciation: 0, receivables: 0, payables: 0, other: 0 },
       };
 
   const getRowsByAccountType = (type: string) =>
@@ -101,6 +101,7 @@ export function useFinancialReportsModel() {
   const depreciationAdjustment = metrics.cashFlowAdjustments.depreciation;
   const receivablesChange = metrics.cashFlowAdjustments.receivables;
   const payablesChange = metrics.cashFlowAdjustments.payables;
+  const otherAdjustment = metrics.cashFlowAdjustments.other;
 
   const exportColumns = getFinancialReportExportColumns(t);
   // FX and aging export from their own panels (different columns/data source).
@@ -144,6 +145,7 @@ export function useFinancialReportsModel() {
     exportColumns,
     exportRows,
     activeFiscalYear,
+    otherAdjustment,
     refetchAggregates: aggregatesResult.refetch,
     refetchFiscalYears: fiscalYearsResult.refetch,
   };

@@ -20,7 +20,7 @@ import { USERS_MODULE_MANIFEST } from "../auth/usersModuleManifest.js";
 
 /** Action a request or UI entry point performs inside a module. */
 export type ModulePermissionAction =
-  "read" | "write" | "manage" | "delete" | "export" | "setupWrite";
+  "read" | "write" | "manage" | "delete" | "export" | "setupWrite" | "post";
 /**
  * `availability` checks grant + enablement only, for routes whose handler owns a
  * finer permission rule (self-service edits, personal preferences).
@@ -66,6 +66,8 @@ interface ModulePermissionSource {
     readonly write?: Permission;
     readonly delete?: Permission;
     readonly manage?: Permission;
+    /** Draft ⇄ posted boundary for modules with an approval step (accounting). */
+    readonly post?: Permission;
     readonly export?: Permission;
     readonly setupWrite: Permission;
   };
@@ -127,6 +129,9 @@ export function getModuleActionPermission(
       return write;
     case "manage":
       return p.manage ?? write;
+    case "post":
+      // Modules without a posting step fall back to write (no approval boundary).
+      return p.post ?? write;
     case "delete":
       return p.delete ?? write;
     case "export":

@@ -269,3 +269,29 @@ describe("journal voucher counters (Postgres)", () => {
     expect(new Set(all)).toEqual(new Set(["JE-0001", "JE-0002", "JE-0003", "JE-0004"]));
   });
 });
+
+/**
+ * 0253: the allocation collision probe filters `ref = ANY(candidates)` with no
+ * `deleted_at` predicate, so the partial unique ref index cannot serve it. Without
+ * a plain `(workspace_subdomain, ref)` index every journal save scanned the whole
+ * tenant journal at this point (the seed scan was fixed in 0248; this probe was not).
+ */
+describe("voucher allocation probe is index-backed (0253)", () => {
+  it("can resolve a ref lookup through accounting_entries_workspace_ref_idx", async () => {
+    // The probe's own plan is cost-dependent on a tiny suite table (any
+    // workspace-leading index is equally cheap), so this asserts usability: with no
+    // other access path on `ref` and seq scans disabled, the planner must use it.
+    // The shape assertion lives in `accountingPostedLedgerGuardsDb`.
+    const rows = await withTenant(tenant, async (tx) => {
+      await tx.execute(sql`SET LOCAL enable_seqscan = off`);
+      return tx.execute(sql`
+        EXPLAIN SELECT ref FROM accounting_entries
+         WHERE ref = ANY(ARRAY['JE-0001', 'JE-0002']::varchar[])
+      `);
+    });
+    const plan = (rows.rows as Array<Record<string, string>>)
+      .map((row) => Object.values(row).join(" "))
+      .join("\n");
+    expect(plan).toContain("accounting_entries_workspace_ref_idx");
+  });
+});

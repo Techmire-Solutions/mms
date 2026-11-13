@@ -82,6 +82,17 @@ const BASELINE = {
   "financePersistSoftDeleteDb.integration.test.ts": 2,
   "financeSecurityDb.integration.test.ts": 8,
   "fiscalYearOverlapDb.integration.test.ts": 5,
+  // Accounting suites that were missing from the manifest: tenant/RLS edges, the
+  // schema/ledger-control contracts, CSV import, precision, reopen races and the
+  // audit-atomicity suite. They may only shrink with a reviewed baseline update.
+  "accountingAccountsSchemaDb.integration.test.ts": 22,
+  "accountingAuditAtomicityDb.integration.test.ts": 9,
+  "accountingCsvImportDb.integration.test.ts": 3,
+  "accountingLedgerControlDb.integration.test.ts": 12,
+  "accountingMetricsPrecisionDb.integration.test.ts": 1,
+  "accountingPeriodReopenRaceDb.integration.test.ts": 2,
+  "accountingRlsCoverageDb.integration.test.ts": 3,
+  "accountingTenantIsolationDb.integration.test.ts": 5,
 };
 
 const update = process.argv.includes("--update");
@@ -101,7 +112,18 @@ if (update) {
   process.exit(0);
 }
 
-let failed = false;
+// A new accounting DB suite must be listed here, otherwise its cases could be
+// deleted (or skipped) without moving any floor.
+const ACCOUNTING_PREFIX = "accounting";
+const unlistedAccounting = fs
+  .readdirSync(ROOT)
+  .filter((name) => name.startsWith(ACCOUNTING_PREFIX) && name.endsWith(".integration.test.ts"))
+  .filter((name) => !(name in BASELINE));
+let failed = unlistedAccounting.length > 0;
+for (const name of unlistedAccounting) {
+  console.error(`✗ ${name}: accounting DB suite is not in the manifest baseline.`);
+}
+
 for (const [name, floor] of Object.entries(BASELINE)) {
   const actual = counts[name];
   if (actual < floor) {
@@ -113,5 +135,5 @@ for (const [name, floor] of Object.entries(BASELINE)) {
 }
 if (failed) process.exit(1);
 console.log(
-  `✅ Enrollment DB test manifest held (${Object.values(counts).reduce((a, b) => a + b, 0)} cases).`,
+  `✅ DB test manifest held (${Object.keys(counts).length} suites, ${Object.values(counts).reduce((a, b) => a + b, 0)} cases).`,
 );

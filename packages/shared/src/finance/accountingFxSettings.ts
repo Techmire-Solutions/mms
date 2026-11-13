@@ -54,6 +54,16 @@ export const exchangeRateRecordSchema = z
 
 export type ExchangeRateRecord = z.infer<typeof exchangeRateRecordSchema>;
 
+/**
+ * Natural key of a stored rate. Upserts, before-state capture and lookups all
+ * address a rate by this tuple; declare it once instead of re-inlining the four
+ * fields in every repository signature.
+ */
+export type ExchangeRateKey = Pick<
+  ExchangeRateRecord,
+  "fromCurrency" | "toCurrency" | "rateDate" | "rateType"
+>;
+
 export const exchangeRatePutItemSchema = z
   .object({
     fromCurrency: currencyCodeSchema,

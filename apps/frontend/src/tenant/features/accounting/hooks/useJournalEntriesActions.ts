@@ -15,6 +15,8 @@ import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardC
 import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { isVoucherPrintable } from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import { usePaymentVoucherPrint } from "@/tenant/features/accounting/hooks/usePaymentVoucherPrint";
+import { apiContract } from "@/lib/api";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export interface UseJournalEntriesActionsOptions {
   entries: JournalEntry[];
@@ -66,11 +68,17 @@ export function useJournalEntriesActions({
   setSimpleModal,
 }: UseJournalEntriesActionsOptions) {
   const printVoucher = usePaymentVoucherPrint(accounts);
+  const fetchEntry = async (id: string): Promise<JournalEntry> => {
+    const response = await apiContract.accounting.getEntry({ params: { id } });
+    assertContractOk(response, "Failed to load the journal entry");
+    return response.body as JournalEntry;
+  };
   const actionDeps = {
     entries,
     showDeleted,
     t,
     onChange,
+    fetchEntry,
     onDelete,
     onRestore,
     onBulkDelete,

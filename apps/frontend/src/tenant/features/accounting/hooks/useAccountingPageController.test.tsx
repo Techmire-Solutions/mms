@@ -49,7 +49,6 @@ vi.mock("@/hooks/useCurrency", () => ({
 vi.mock("./useAccountingApi", () => ({
   useAccountingFiscalYearsPaginated: () => ({ data: [] }),
   useAllAccountingAccounts: () => ({ data: [] }),
-  useAllAccountingEntries: () => ({ data: [] }),
 }));
 
 vi.mock("./accountingListFetch", () => ({

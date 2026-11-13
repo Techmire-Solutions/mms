@@ -23,6 +23,8 @@ interface JournalEntryFormProps {
   onClose: () => void;
   initial?: JournalEntry | null;
   fiscalYears: FiscalYear[];
+  decimalSeparator?: "period" | "comma";
+  requireNarration?: boolean;
   onAccountsChange?: (
     updater: Account[] | ((prev: Account[]) => Account[]),
   ) => Promise<void> | void;
@@ -35,6 +37,8 @@ export function JournalEntryForm({
   onClose,
   initial,
   fiscalYears,
+  decimalSeparator,
+  requireNarration,
   onAccountsChange,
 }: JournalEntryFormProps) {
   const { formatCurrency } = useAccountingCurrency();
@@ -58,7 +62,15 @@ export function JournalEntryForm({
     saveEntry,
     flattenedAccountOptions,
     errorMessages,
-  } = useJournalEntryForm({ accounts, entries, onSave, initial, fiscalYears });
+  } = useJournalEntryForm({
+    accounts,
+    entries,
+    onSave,
+    initial,
+    fiscalYears,
+    decimalSeparator,
+    requireNarration,
+  });
   const journalTemplates = useJournalTemplates(accounts);
   const lineAssist = useJournalLineAssist({
     form,
@@ -68,15 +80,31 @@ export function JournalEntryForm({
     templates: journalTemplates.templates,
   });
 
-  const accountQuickCreate = useAccountQuickCreate({
-    accounts,
-    onAccountsChange,
-    onSelectAccount: (target, accountId) => {
+  const selectQuickCreatedAccount = React.useCallback(
+    (
+      target: { kind: "line"; lineIndex: number } | { kind: "field"; field: string },
+      accountId: string,
+    ) => {
       if (target.kind === "line") {
         updateLine(target.lineIndex, "account_id", accountId);
       }
     },
+    [updateLine],
+  );
+
+  const accountQuickCreate = useAccountQuickCreate({
+    accounts,
+    onAccountsChange,
+    onSelectAccount: selectQuickCreatedAccount,
   });
+
+  // Stable per-render identity keeps the memoized voucher rows memoized: an
+  // inline closure here re-rendered every row on every keystroke.
+  const openCreateAccount = accountQuickCreate.openCreate;
+  const openAddAccount = React.useCallback(
+    (lineIndex: number) => openCreateAccount({ kind: "line", lineIndex }),
+    [openCreateAccount],
+  );
 
   return (
     <>
@@ -163,9 +191,7 @@ export function JournalEntryForm({
                 : undefined
             }
             canAddAccount={accountQuickCreate.canAdd}
-            onOpenAddAccount={(lineIndex) =>
-              accountQuickCreate.openCreate({ kind: "line", lineIndex })
-            }
+            onOpenAddAccount={openAddAccount}
           />
         </form>
       </FormModal>

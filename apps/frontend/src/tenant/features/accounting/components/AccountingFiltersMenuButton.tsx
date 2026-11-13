@@ -5,6 +5,7 @@ import {
   ModuleFilterRadioGroup,
 } from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
+import { JOURNAL_ENTRY_STATUSES, type AppTranslationKey } from "@mms/shared";
 import { JOURNAL_TAGS } from "@/lib/data/accountingData";
 import { getJournalTagLabel } from "@/tenant/features/accounting/lib/journalEntriesListShared";
 
@@ -40,8 +41,11 @@ export function AccountingFiltersMenuButton({
         label={t("accounting.journal.dashboard.allStatus")}
         options={[
           { value: "all", label: t("accounting.journal.dashboard.allStatus") },
-          { value: "posted", label: t("accounting.journal.status.posted") },
-          { value: "draft", label: t("accounting.journal.status.draft") },
+          // Derived from the shared stored-status enum: a new status needs no UI edit.
+          ...JOURNAL_ENTRY_STATUSES.map((status) => ({
+            value: status,
+            label: t(`accounting.journal.status.${status}` as AppTranslationKey),
+          })),
         ]}
         value={statusFilter}
         onValueChange={onChangeStatus}

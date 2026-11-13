@@ -7,6 +7,11 @@ import {
   accountingEntryAttachments,
 } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import {
+  applyUpdatedTokens,
+  assertEntriesFresh,
+  readStoredUpdatedTokens,
+} from "./accountingEntryOcc.js";
 import { lockJournalEntries } from "./accountingEntryLocks.js";
 import { entryInsertValues } from "./accountingEntriesLifecyclePersist.js";
 import { ensureCurrencySettingsInTx } from "./accountingCurrencySettingsRepository.js";
@@ -103,18 +108,21 @@ export async function saveEntry(tenant: string, record: JournalEntry): Promise<v
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
     await lockJournalEntries(subdomain, [record.id]);
+    await assertEntriesFresh(tx, subdomain, [record]);
+    const now = new Date();
     // Children first: see clearEntryChildren. A promotion to `posted` must not
     // reach the line delete with the parent already flipped.
     await clearEntryChildren(tx, subdomain, [record.id]);
     await tx
       .insert(accountingEntries)
-      .values(entryInsertValues(subdomain, record))
+      .values(entryInsertValues(subdomain, record, now))
       .onConflictDoUpdate({
         target: [accountingEntries.workspaceSubdomain, accountingEntries.id],
-        set: entryUpdateSetValues(record),
+        set: entryUpdateSetValues(record, now),
       });
 
     await insertEntryChildren(tx, subdomain, record);
+    applyUpdatedTokens(await readStoredUpdatedTokens(tx, subdomain, [record]), [record]);
   });
 }
 
@@ -128,7 +136,7 @@ export async function saveEntry(tenant: string, record: JournalEntry): Promise<v
  * now changes only through {@link bulkSoftDeleteEntries} /
  * {@link bulkRestoreEntries}.
  */
-function entryUpdateSetValues(record: JournalEntry) {
+function entryUpdateSetValues(record: JournalEntry, now?: Date) {
   const {
     id: _id,
     workspaceSubdomain: _subdomain,
@@ -136,14 +144,14 @@ function entryUpdateSetValues(record: JournalEntry) {
     deletedBy: _deletedBy,
     deletionReason: _deletionReason,
     ...setFields
-  } = entryInsertValues("", record);
+  } = entryInsertValues("", record, now);
   return setFields;
 }
 
 export async function bulkSaveEntries(
   tenant: string,
   records: JournalEntry[],
-  options?: { preserveChildren?: ReadonlySet<string> },
+  options?: { preserveChildren?: ReadonlySet<string>; changedIds?: ReadonlySet<string> },
 ): Promise<void> {
   if (records.length === 0) return;
   const subdomain = tenant.trim().toLowerCase();
@@ -164,6 +172,11 @@ export async function bulkSaveEntries(
 
   await withTenant(subdomain, async (tx) => {
     await lockJournalEntries(subdomain, entryIds);
+    const changed = options?.changedIds
+      ? uniqueRecords.filter((record) => options.changedIds!.has(record.id))
+      : uniqueRecords;
+    await assertEntriesFresh(tx, subdomain, changed);
+    const now = new Date();
     // Children of the mutable entries are cleared while their parents still hold
     // their stored status; the upsert then flips statuses and the lines are
     // re-inserted (inserts are allowed on posted entries — the rewrite is not).
@@ -175,7 +188,7 @@ export async function bulkSaveEntries(
     // used to un-delete rows another session had trashed. Trash/restore own them.
     await tx
       .insert(accountingEntries)
-      .values(uniqueRecords.map((record) => entryInsertValues(subdomain, record)))
+      .values(uniqueRecords.map((record) => entryInsertValues(subdomain, record, now)))
       .onConflictDoUpdate({
         target: [accountingEntries.workspaceSubdomain, accountingEntries.id],
         set: {
@@ -233,5 +246,8 @@ export async function bulkSaveEntries(
     if (allAttachments.length > 0) {
       await tx.insert(accountingEntryAttachments).values(allAttachments);
     }
+    const tokens = await readStoredUpdatedTokens(tx, subdomain, uniqueRecords);
+    applyUpdatedTokens(tokens, uniqueRecords);
+    applyUpdatedTokens(tokens, records);
   });
 }

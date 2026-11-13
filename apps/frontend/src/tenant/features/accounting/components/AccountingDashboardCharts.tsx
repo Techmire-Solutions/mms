@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/app/EmptyState";
 import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
+import { isRtlLanguage } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ExpenseBreakdownItem } from "../hooks/useAccountingDashboardView";
 
@@ -26,7 +27,11 @@ export function AccountingDashboardCharts({
   pieColors,
   formatCurrency,
 }: AccountingDashboardChartsProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  // Charts follow the page direction: in ar/ur/fa the time axis and legend read
+  // right-to-left like the surrounding text, instead of always left-to-right.
+  const isRtl = isRtlLanguage(language);
+  const legendItems = isRtl ? [...expenseBreakdown].reverse() : expenseBreakdown;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -47,7 +52,7 @@ export function AccountingDashboardCharts({
               <SafeResponsiveContainer height={200}>
                 <BarChart data={monthlyData} barGap={4}>
                   <ChartGrid />
-                  <XAxis dataKey="month" tick={chartAxisTick(11)} />
+                  <XAxis dataKey="month" tick={chartAxisTick(11)} reversed={isRtl} />
                   <YAxis
                     tick={chartAxisTick(11)}
                     tickFormatter={(val) =>
@@ -140,7 +145,7 @@ export function AccountingDashboardCharts({
               </SafeResponsiveContainer>
             </div>
             <div className="space-y-1 mt-2">
-              {expenseBreakdown.map((item, index) => (
+              {legendItems.map((item, index) => (
                 <div
                   key={index}
                   className="flex min-w-0 items-center gap-2 text-xs"

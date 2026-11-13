@@ -86,6 +86,8 @@ apps/frontend/scripts/ui-audit-report.json
 # 8. Tool, Agent & Model Overrides
 .claude/settings.local.json
 .claude/worktrees/
+# In-checkout git worktrees (e.g. perf/A-B runs) — never repo content
+.worktrees/
 .commandcode/
 .wwebjs_auth/
 .wwebjs_cache/

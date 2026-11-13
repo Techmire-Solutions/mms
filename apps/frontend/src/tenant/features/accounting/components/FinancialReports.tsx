@@ -1,5 +1,7 @@
 import React from "react";
+import { FileText } from "lucide-react";
 import { SubTabBar } from "@/components/app/SubTabBar";
+import { Button } from "@/components/ui/button";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +15,7 @@ import { PinnedWidgets } from "@/tenant/components/reports";
 import { FxReportPanel } from "./FxReportPanel";
 import { ReceivablesAgingPanel } from "./ReceivablesAgingPanel";
 import { useFinancialReportsModel } from "../hooks/useFinancialReportsModel";
+import { useAccountingReportPdfExport } from "../hooks/useAccountingReportPdfExport";
 import { todayISO } from "@mms/shared";
 
 /**
@@ -38,9 +41,11 @@ export function FinancialReports(): React.JSX.Element {
     exportColumns,
     exportRows,
     activeFiscalYear,
+    otherAdjustment,
     refetchAggregates,
     refetchFiscalYears,
   } = useFinancialReportsModel();
+  const { queuePdf, isQueuing: isQueuingPdf } = useAccountingReportPdfExport();
 
   const reportViews = [
     { key: "income" as const, label: t("accounting.reports.views.income") },
@@ -99,47 +104,66 @@ export function FinancialReports(): React.JSX.Element {
         ) : view === "fx" ? (
           <FxReportPanel dateFrom={dateFrom} dateTo={dateTo} />
         ) : (
-          <ReportDataGridContainer
-            title={t("accounting.reports.export.label", { view })}
-            filename={`${view}_report`}
-            moduleId="accounting"
-            columns={exportColumns}
-            rows={exportRows}
-          >
-            {view === "income" && (
-              <IncomeStatementPanel
-                revenueRows={getRowsByAccountType("Revenue")}
-                expenseRows={getRowsByAccountType("Expense")}
-                revenue={metrics.revenue}
-                expenses={metrics.expenses}
-                netSurplus={metrics.netSurplus}
-              />
-            )}
+          <div className="space-y-3">
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-h-11"
+                disabled={isQueuingPdf}
+                onClick={() => {
+                  void queuePdf({ kind: "trial-balance", dateFrom, dateTo });
+                }}
+              >
+                <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+                {t("accounting.reports.pdfAction")}
+              </Button>
+            </div>
+            <ReportDataGridContainer
+              title={t("accounting.reports.export.label", { view })}
+              filename={`${view}_report`}
+              moduleId="accounting"
+              columns={exportColumns}
+              rows={exportRows}
+              hidePdf
+            >
+              {view === "income" && (
+                <IncomeStatementPanel
+                  revenueRows={getRowsByAccountType("Revenue")}
+                  expenseRows={getRowsByAccountType("Expense")}
+                  revenue={metrics.revenue}
+                  expenses={metrics.expenses}
+                  netSurplus={metrics.netSurplus}
+                />
+              )}
 
-            {view === "balance" && (
-              <BalanceSheetPanel
-                assetRows={getBalanceSheetRowsByAccountType("Asset")}
-                liabilityRows={getBalanceSheetRowsByAccountType("Liability")}
-                equityRows={getBalanceSheetRowsByAccountType("Equity")}
-                assets={metrics.assets}
-                liabilities={metrics.liabilities}
-                equity={metrics.equity}
-              />
-            )}
+              {view === "balance" && (
+                <BalanceSheetPanel
+                  assetRows={getBalanceSheetRowsByAccountType("Asset")}
+                  liabilityRows={getBalanceSheetRowsByAccountType("Liability")}
+                  equityRows={getBalanceSheetRowsByAccountType("Equity")}
+                  assets={metrics.assets}
+                  liabilities={metrics.liabilities}
+                  equity={metrics.equity}
+                />
+              )}
 
-            {view === "cashflow" && (
-              <CashFlowStatementPanel
-                netSurplus={metrics.netSurplus}
-                depreciationAdjustment={metrics.cashFlowAdjustments.depreciation}
-                receivablesChange={metrics.cashFlowAdjustments.receivables}
-                payablesChange={metrics.cashFlowAdjustments.payables}
-                netCashFlowIndirect={metrics.netCashFlowIndirect}
-                netCashFlow={metrics.netCashFlow}
-                cashInflow={metrics.cashInflow}
-                cashOutflow={metrics.cashOutflow}
-              />
-            )}
-          </ReportDataGridContainer>
+              {view === "cashflow" && (
+                <CashFlowStatementPanel
+                  netSurplus={metrics.netSurplus}
+                  depreciationAdjustment={metrics.cashFlowAdjustments.depreciation}
+                  receivablesChange={metrics.cashFlowAdjustments.receivables}
+                  payablesChange={metrics.cashFlowAdjustments.payables}
+                  otherAdjustment={otherAdjustment}
+                  netCashFlowIndirect={metrics.netCashFlowIndirect}
+                  netCashFlow={metrics.netCashFlow}
+                  cashInflow={metrics.cashInflow}
+                  cashOutflow={metrics.cashOutflow}
+                />
+              )}
+            </ReportDataGridContainer>
+          </div>
         )}
       </div>
 

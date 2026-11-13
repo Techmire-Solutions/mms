@@ -34,6 +34,11 @@ export const accountingEntryTags = pgTable(
       foreignColumns: [accountingEntries.workspaceSubdomain, accountingEntries.id],
     }).onDelete("cascade"),
     index("accounting_entry_tags_workspace_entry_idx").on(table.workspaceSubdomain, table.entryId),
+    // `accounting_entry_tags_workspace_tag_idx` — (workspace_subdomain, tag) INCLUDE
+    // (entry_id), for the tag filter in `buildEntryListConditions`. Not declared here
+    // on purpose: drizzle-orm 0.45 cannot express INCLUDE, so the model would claim a
+    // shape it cannot build. Created by migration 0253 and, being absent from the
+    // snapshot, never dropped by a later generate (the 0248 covering-index precedent).
   ],
 );
 

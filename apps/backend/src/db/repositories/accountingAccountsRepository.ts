@@ -1,7 +1,8 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { dedupeTrimmedIds, type Account } from "@mms/shared";
-import { accountingAccounts, accountingEntries, accountingJournalLines } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { accountingAccounts } from "../schema.js";
+import { withTenant, withTenantRead } from "../tenant-context.js";
+import { postedLineCountsByAccount } from "./accountingAccountLedgerLines.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import {
@@ -14,6 +15,34 @@ import {
 
 type AccountRow = typeof accountingAccounts.$inferSelect;
 
+/**
+ * The COA projection every reader selects. One definition so a new column cannot
+ * be added to the table but forgotten in one of the three queries (which is
+ * exactly how `parent_account_id` would have gone missing from the list view).
+ */
+export const accountSelectColumns = {
+  id: accountingAccounts.id,
+  workspaceSubdomain: accountingAccounts.workspaceSubdomain,
+  code: accountingAccounts.code,
+  name: accountingAccounts.name,
+  type: accountingAccounts.type,
+  subtype: accountingAccounts.subtype,
+  description: accountingAccounts.description,
+  isActive: accountingAccounts.isActive,
+  parentAccountId: accountingAccounts.parentAccountId,
+  isMonetary: accountingAccounts.isMonetary,
+  accountCurrency: accountingAccounts.accountCurrency,
+  allowRevaluation: accountingAccounts.allowRevaluation,
+  deletedAt: accountingAccounts.deletedAt,
+  deletedBy: accountingAccounts.deletedBy,
+  deletionReason: accountingAccounts.deletionReason,
+  restoredAt: accountingAccounts.restoredAt,
+  restoredBy: accountingAccounts.restoredBy,
+  deletedWithCascade: accountingAccounts.deletedWithCascade,
+  createdAt: accountingAccounts.createdAt,
+  updatedAt: accountingAccounts.updatedAt,
+};
+
 export function accountRowToRecord(row: AccountRow): Account {
   return {
     id: row.id,
@@ -23,6 +52,7 @@ export function accountRowToRecord(row: AccountRow): Account {
     subtype: row.subtype,
     description: row.description,
     isActive: row.isActive,
+    parentId: row.parentAccountId ?? null,
     isMonetary: row.isMonetary,
     accountCurrency: row.accountCurrency,
     allowRevaluation: row.allowRevaluation,
@@ -40,27 +70,7 @@ export async function listAccountsByWorkspace(
     const conditions = buildTenantSoftDeleteConditions(accountingAccounts, subdomain, filter);
 
     const rows = await tx
-      .select({
-        id: accountingAccounts.id,
-        workspaceSubdomain: accountingAccounts.workspaceSubdomain,
-        code: accountingAccounts.code,
-        name: accountingAccounts.name,
-        type: accountingAccounts.type,
-        subtype: accountingAccounts.subtype,
-        description: accountingAccounts.description,
-        isActive: accountingAccounts.isActive,
-        isMonetary: accountingAccounts.isMonetary,
-        accountCurrency: accountingAccounts.accountCurrency,
-        allowRevaluation: accountingAccounts.allowRevaluation,
-        deletedAt: accountingAccounts.deletedAt,
-        deletedBy: accountingAccounts.deletedBy,
-        deletionReason: accountingAccounts.deletionReason,
-        restoredAt: accountingAccounts.restoredAt,
-        restoredBy: accountingAccounts.restoredBy,
-        deletedWithCascade: accountingAccounts.deletedWithCascade,
-        createdAt: accountingAccounts.createdAt,
-        updatedAt: accountingAccounts.updatedAt,
-      })
+      .select(accountSelectColumns)
       .from(accountingAccounts)
       .where(and(...conditions));
     return rows.map(accountRowToRecord);
@@ -73,27 +83,7 @@ export async function findAccountById(tenant: string, id: string): Promise<Accou
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
-      .select({
-        id: accountingAccounts.id,
-        workspaceSubdomain: accountingAccounts.workspaceSubdomain,
-        code: accountingAccounts.code,
-        name: accountingAccounts.name,
-        type: accountingAccounts.type,
-        subtype: accountingAccounts.subtype,
-        description: accountingAccounts.description,
-        isActive: accountingAccounts.isActive,
-        isMonetary: accountingAccounts.isMonetary,
-        accountCurrency: accountingAccounts.accountCurrency,
-        allowRevaluation: accountingAccounts.allowRevaluation,
-        deletedAt: accountingAccounts.deletedAt,
-        deletedBy: accountingAccounts.deletedBy,
-        deletionReason: accountingAccounts.deletionReason,
-        restoredAt: accountingAccounts.restoredAt,
-        restoredBy: accountingAccounts.restoredBy,
-        deletedWithCascade: accountingAccounts.deletedWithCascade,
-        createdAt: accountingAccounts.createdAt,
-        updatedAt: accountingAccounts.updatedAt,
-      })
+      .select(accountSelectColumns)
       .from(accountingAccounts)
       .where(
         and(
@@ -123,30 +113,112 @@ export async function findAccountsByIds(
     ];
 
     const rows = await tx
-      .select({
-        id: accountingAccounts.id,
-        workspaceSubdomain: accountingAccounts.workspaceSubdomain,
-        code: accountingAccounts.code,
-        name: accountingAccounts.name,
-        type: accountingAccounts.type,
-        subtype: accountingAccounts.subtype,
-        description: accountingAccounts.description,
-        isActive: accountingAccounts.isActive,
-        isMonetary: accountingAccounts.isMonetary,
-        accountCurrency: accountingAccounts.accountCurrency,
-        allowRevaluation: accountingAccounts.allowRevaluation,
-        deletedAt: accountingAccounts.deletedAt,
-        deletedBy: accountingAccounts.deletedBy,
-        deletionReason: accountingAccounts.deletionReason,
-        restoredAt: accountingAccounts.restoredAt,
-        restoredBy: accountingAccounts.restoredBy,
-        deletedWithCascade: accountingAccounts.deletedWithCascade,
-        createdAt: accountingAccounts.createdAt,
-        updatedAt: accountingAccounts.updatedAt,
-      })
+      .select(accountSelectColumns)
       .from(accountingAccounts)
       .where(and(...conditions));
     return rows.map(accountRowToRecord);
+  });
+}
+
+/**
+ * Active, posted ledger lines per account — the count an archive must respect.
+ * Delegates to `accountingAccountGuards`, which owns the predicate and runs it on
+ * the primary inside the caller's transaction (it used to read the replica, where
+ * lag could hide a just-posted line).
+ */
+export async function countActiveJournalLinesForAccount(
+  tenant: string,
+  accountId: string,
+): Promise<number> {
+  const cleanId = accountId?.trim();
+  if (!cleanId) return 0;
+  const counts = await countActiveJournalLinesForAccounts(tenant, [cleanId]);
+  return counts.get(cleanId) ?? 0;
+}
+
+export async function countActiveJournalLinesForAccounts(
+  tenant: string,
+  accountIds: string[],
+): Promise<Map<string, number>> {
+  const subdomain = tenant.trim().toLowerCase();
+  const cleanIds = dedupeTrimmedIds(accountIds);
+  if (cleanIds.length === 0) return new Map();
+  return withTenant(subdomain, (tx) => postedLineCountsByAccount(tx, subdomain, cleanIds));
+}
+
+/** The account fields a posting guard needs; `hasChildren` marks a summary account. */
+export interface PostableAccountLookup {
+  id: string;
+  isActive: boolean;
+  hasChildren: boolean;
+  /** IAS 21 account-level currency lock; every line on it must use this currency. */
+  accountCurrency: string | null;
+}
+
+/** True when another active account is nested under this one (a header/summary row). */
+const hasActiveChildren = (table: typeof accountingAccounts) =>
+  sql<boolean>`exists (
+    select 1 from ${accountingAccounts} child
+     where child.workspace_subdomain = ${table.workspaceSubdomain}
+       and child.parent_account_id = ${table.id}
+       and child.deleted_at is null
+  )`;
+
+/**
+ * Accounts a journal line may target, locked `FOR SHARE` on the primary.
+ *
+ * The lock is what closes deactivate/archive-versus-post: account archival takes
+ * `FOR UPDATE`, so it waits for an in-flight posting, and the posting's own read
+ * waits for a committed archive and then re-evaluates the `deleted_at IS NULL`
+ * predicate. A read-only check in another transaction is insufficient (see
+ * `mms-finance-accounting` ledger controls), which is what the previous
+ * `findAccountsByIds` lookup was.
+ */
+export async function lockPostableAccounts(
+  tenant: string,
+  ids: string[],
+): Promise<PostableAccountLookup[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  const cleanIds = dedupeTrimmedIds(ids);
+  if (cleanIds.length === 0) return [];
+  return withTenant(subdomain, async (tx) => {
+    const rows = await tx
+      .select({
+        id: accountingAccounts.id,
+        isActive: accountingAccounts.isActive,
+        accountCurrency: accountingAccounts.accountCurrency,
+        hasChildren: hasActiveChildren(accountingAccounts),
+      })
+      .from(accountingAccounts)
+      .where(
+        and(
+          eq(accountingAccounts.workspaceSubdomain, subdomain),
+          inArray(accountingAccounts.id, cleanIds),
+          isNull(accountingAccounts.deletedAt),
+        ),
+      )
+      .for("share");
+    return rows.map((row) => ({ ...row, hasChildren: Boolean(row.hasChildren) }));
+  });
+}
+
+/** Ids (from `ids`) that currently host active children — i.e. summary accounts. */
+export async function findSummaryAccountIds(tenant: string, ids: string[]): Promise<Set<string>> {
+  const subdomain = tenant.trim().toLowerCase();
+  const cleanIds = dedupeTrimmedIds(ids);
+  if (cleanIds.length === 0) return new Set();
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: accountingAccounts.id, hasChildren: hasActiveChildren(accountingAccounts) })
+      .from(accountingAccounts)
+      .where(
+        and(
+          eq(accountingAccounts.workspaceSubdomain, subdomain),
+          inArray(accountingAccounts.id, cleanIds),
+          isNull(accountingAccounts.deletedAt),
+        ),
+      );
+    return new Set(rows.filter((row) => row.hasChildren).map((row) => row.id));
   });
 }
 
@@ -157,75 +229,3 @@ export {
   bulkSoftDeleteAccounts,
   bulkRestoreAccounts,
 };
-
-export async function countActiveJournalLinesForAccount(
-  tenant: string,
-  accountId: string,
-): Promise<number> {
-  const subdomain = tenant.trim().toLowerCase();
-  const cleanAccountId = accountId?.trim();
-  if (!cleanAccountId) return 0;
-  return withTenantRead(subdomain, async (tx) => {
-    const result = await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(accountingJournalLines)
-      .innerJoin(
-        accountingEntries,
-        and(
-          eq(accountingJournalLines.workspaceSubdomain, accountingEntries.workspaceSubdomain),
-          eq(accountingJournalLines.entryId, accountingEntries.id),
-        ),
-      )
-      .where(
-        and(
-          eq(accountingJournalLines.workspaceSubdomain, subdomain),
-          eq(accountingJournalLines.accountId, cleanAccountId),
-          isNull(accountingEntries.deletedAt),
-          // Posted only: drafts are not in the ledger, so an account referenced
-          // solely by an unbalanced draft must stay archivable. Drafts that
-          // reference an archived account are rejected when they are posted.
-          eq(accountingEntries.status, "posted"),
-        ),
-      );
-    return Number(result[0]?.count ?? 0);
-  });
-}
-
-export async function countActiveJournalLinesForAccounts(
-  tenant: string,
-  accountIds: string[],
-): Promise<Map<string, number>> {
-  const subdomain = tenant.trim().toLowerCase();
-  const cleanIds = dedupeTrimmedIds(accountIds);
-  const map = new Map<string, number>();
-  if (cleanIds.length === 0) return map;
-  return withTenantRead(subdomain, async (tx) => {
-    const rows = await tx
-      .select({
-        accountId: accountingJournalLines.accountId,
-        count: sql<number>`count(*)::int`,
-      })
-      .from(accountingJournalLines)
-      .innerJoin(
-        accountingEntries,
-        and(
-          eq(accountingJournalLines.workspaceSubdomain, accountingEntries.workspaceSubdomain),
-          eq(accountingJournalLines.entryId, accountingEntries.id),
-        ),
-      )
-      .where(
-        and(
-          eq(accountingJournalLines.workspaceSubdomain, subdomain),
-          inArray(accountingJournalLines.accountId, cleanIds),
-          isNull(accountingEntries.deletedAt),
-          // Posted only — see countActiveJournalLinesForAccount.
-          eq(accountingEntries.status, "posted"),
-        ),
-      )
-      .groupBy(accountingJournalLines.accountId);
-    for (const r of rows) {
-      map.set(r.accountId, Number(r.count));
-    }
-    return map;
-  });
-}

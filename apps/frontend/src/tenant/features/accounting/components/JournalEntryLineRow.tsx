@@ -20,7 +20,7 @@ interface JournalEntryLineRowProps {
   errorMessage?: string;
   canRemove: boolean;
   canAddAccount?: boolean;
-  onOpenAddAccount?: () => void;
+  onOpenAddAccount?: (lineIndex: number) => void;
   onUpdateLine: (lineIndex: number, field: keyof DraftLine, fieldValue: string | number) => void;
   onRemoveLine: (lineIndex: number) => void;
   /** Side a template locked this line to; the other amount box is disabled. */
@@ -60,7 +60,7 @@ export const JournalEntryLineRow = memo(function JournalEntryLineRow({
           options={accountOptions}
           searchable
           canAdd={canAddAccount}
-          onOpenAdd={onOpenAddAccount}
+          onOpenAdd={onOpenAddAccount ? () => onOpenAddAccount(lineIndex) : undefined}
           addAriaLabel={t("accounting.coa.addAccount")}
         />
         {account && (
@@ -133,14 +133,21 @@ export const JournalEntryLineRow = memo(function JournalEntryLineRow({
       </TableCell>
     </TableRow>
   );
-}, areRowPropsEqual);
+}, areJournalEntryLineRowPropsEqual);
 
 /**
  * A voucher row only needs to re-render when its own line, account, options or
  * error/lock flags change. Without this, one keystroke re-rendered every row of a
  * long voucher (and the mobile list), which is what made 50-line entries sluggish.
+ *
+ * Exported so the memo contract is pinned by a test: every prop the parent passes
+ * must keep its identity between keystrokes (the quick-create callback included),
+ * or this comparator returns false and the row re-renders.
  */
-function areRowPropsEqual(prev: JournalEntryLineRowProps, next: JournalEntryLineRowProps): boolean {
+export function areJournalEntryLineRowPropsEqual(
+  prev: JournalEntryLineRowProps,
+  next: JournalEntryLineRowProps,
+): boolean {
   return (
     prev.line === next.line &&
     prev.lineIndex === next.lineIndex &&

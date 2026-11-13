@@ -68,6 +68,8 @@ export function AccountRowActions({
 
 export interface AccountRecordProps {
   account: Account;
+  /** True when the account carries sub-accounts (header/summary account). */
+  isHeaderAccount?: boolean;
   balanceConfig: Record<string, StatusBadgeConfigItem>;
   canWrite: boolean;
   isColumnVisible: (key: string) => boolean;
@@ -79,6 +81,7 @@ export interface AccountRecordProps {
 /** Work/setup entity card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
 export function AccountMobileCard({
   account,
+  isHeaderAccount = false,
   balanceConfig,
   canWrite,
   isColumnVisible,
@@ -104,6 +107,18 @@ export function AccountMobileCard({
             {isColumnVisible("name") && (
               <h4 className="m-0 mt-0.5 text-sm font-semibold text-foreground">
                 {account.name}
+                {isHeaderAccount && (
+                  <Badge
+                    as="span"
+                    pill
+                    tone="info"
+                    className="ms-2 px-1.5"
+                    title={t("accounting.coa.headerHint")}
+                    data-account-kind="header"
+                  >
+                    {t("accounting.coa.headerAccount")}
+                  </Badge>
+                )}
                 {account.isActive === false && (
                   <Badge as="span" pill tone="muted" className="ms-2 px-1.5">
                     {t("accounting.coa.inactive")}

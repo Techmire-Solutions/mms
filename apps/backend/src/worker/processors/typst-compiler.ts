@@ -62,7 +62,8 @@ async function acquireTypstSlot(): Promise<() => void> {
   });
 }
 
-export type TypstTemplateType = "report-card" | "fee-receipt" | "financial-ledger";
+export type TypstTemplateType =
+  "report-card" | "fee-receipt" | "financial-ledger" | "trial-balance";
 
 export interface TypstRenderOptions {
   template: TypstTemplateType;

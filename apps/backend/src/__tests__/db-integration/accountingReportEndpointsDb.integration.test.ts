@@ -306,3 +306,38 @@ describe("receivables aging", () => {
     });
   });
 });
+
+describe("aging pagination", () => {
+  it("pages students and reports the total so the remainder is reachable", async () => {
+    // A second student with an open invoice makes the first page partial.
+    await withTenant(TENANT, async (tx) => {
+      await tx.insert(financeInvoices).values({
+        id: `inv-second-${SUFFIX}`,
+        workspaceSubdomain: TENANT,
+        studentId: `stu-two-${SUFFIX}`,
+        studentName: "Bilal Student",
+        class: "Hifz",
+        session: "2026",
+        dueDate: "2026-06-01",
+        finalAmt: "200",
+        status: "pending",
+      });
+    });
+
+    const first = await runWithTenant(TENANT, () =>
+      loadReceivablesAging({ asOf: "2026-06-30", page: 1, limit: 1 }),
+    );
+    const second = await runWithTenant(TENANT, () =>
+      loadReceivablesAging({ asOf: "2026-06-30", page: 2, limit: 1 }),
+    );
+
+    // Assert: the page is a slice, the flag is actionable, and the totals still
+    // cover every student (not just the page).
+    expect(first.rows).toHaveLength(1);
+    expect(first).toMatchObject({ page: 1, limit: 1, totalStudents: 2, hasMore: true });
+    expect(second).toMatchObject({ page: 2, limit: 1, totalStudents: 2, hasMore: false });
+    expect(second.rows).toHaveLength(1);
+    expect(second.rows[0]!.studentId).not.toBe(first.rows[0]!.studentId);
+    expect(second.totals.total).toBe(first.totals.total);
+  });
+});

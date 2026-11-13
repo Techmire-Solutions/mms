@@ -26,11 +26,17 @@ import {
   previewHedgeValuation,
 } from "../../accounting/use-cases/hedgeUseCases.js";
 import {
+  discontinueHedge,
   reclassifyHedgeReserve,
   settleHedge,
 } from "../../accounting/use-cases/hedgeSettlementUseCases.js";
 import { hedgeDeps } from "../../accounting/use-cases/hedgeDeps.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
+import {
+  expectRejectedWith,
+  installAuditFailure,
+  removeAuditFailure,
+} from "./auditFailureProbe.js";
 
 const TENANT = "fx-ifrs9-hedge";
 const actor = { tenant: TENANT, userId: "u1" };
@@ -305,6 +311,43 @@ describe("hedge designation and postings are guarded", () => {
     ).rejects.toMatchObject({ statusCode: 422 });
   });
 
+  it("rolls back the valuation entry and record when the audit append fails", async () => {
+    const hedge = await withTenant(TENANT, () =>
+      createHedgeRelationship(hedgeDeps, actor, {
+        ...designation,
+        name: "Audit failure valuation hedge",
+        designationDate: "2026-11-01",
+        maturityDate: "2027-06-30",
+      }),
+    );
+    const valuationDate = "2027-02-28";
+
+    await installAuditFailure(TENANT);
+    try {
+      await expectRejectedWith(
+        withTenant(TENANT, () => postHedgeValuation(hedgeDeps, actor, hedge.id, valuationDate)),
+        /audit append forced to fail/,
+      );
+    } finally {
+      await removeAuditFailure(TENANT);
+    }
+
+    const surviving = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT
+          (SELECT count(*)::int FROM accounting_hedge_valuations
+            WHERE workspace_subdomain = ${TENANT}
+              AND relationship_id = ${hedge.id}
+              AND valuation_date = ${valuationDate}) AS valuations,
+          (SELECT count(*)::int FROM accounting_entries
+            WHERE workspace_subdomain = ${TENANT}
+              AND source_type = 'hedge_val'
+              AND source_id = ${hedgeRecordId(hedge.id, "valuation", valuationDate)}) AS entries
+      `),
+    );
+    expect(surviving.rows[0]).toMatchObject({ valuations: 0, entries: 0 });
+  });
+
   it("posts one valuation per hedge and date even under concurrent submits", async () => {
     const hedge = await withTenant(TENANT, () =>
       createHedgeRelationship(hedgeDeps, actor, {
@@ -348,5 +391,132 @@ describe("hedge designation and postings are guarded", () => {
       `),
     );
     expect(Number((entries.rows as Array<{ n: number }>)[0]?.n ?? 0)).toBe(1);
+  });
+});
+
+describe("fair value hedge and discontinuation (IFRS 9.6.5)", () => {
+  const create = (name: string, overrides: Partial<HedgeRelationshipCreate> = {}) =>
+    withTenant(TENANT, () =>
+      createHedgeRelationship(hedgeDeps, actor, { ...designation, name, ...overrides }),
+    );
+
+  it("values a fair value hedge entirely through profit or loss", async () => {
+    // Arrange
+    const hedge = await create("Fair value hedge", {
+      hedgeType: "fair_value",
+      reserveAccountId: null,
+    });
+
+    // Act
+    const valued = await withTenant(TENANT, () =>
+      postHedgeValuation(hedgeDeps, actor, hedge.id, "2026-11-30"),
+    );
+    const record = valued.valuations.find((entry) => entry.kind === "valuation")!;
+    const posted = await findEntryById(TENANT, record.entryId as string);
+    const reversal = await findEntryById(TENANT, record.reversalEntryId as string);
+
+    // Assert: the whole 7,000 change is P&L, with no reserve line at all.
+    expect(record).toMatchObject({ effective: "0", ineffective: "7000" });
+    expect(posted?.lines.map((line) => line.account_id).sort()).toEqual(["deriv", "hpl"]);
+    expect(posted?.lines.some((line) => line.account_id === "cfhr")).toBe(false);
+    expect(reversal?.date).toBe("2026-12-01");
+  });
+
+  it("discontinues without a next-day reversal and keeps the reserve reclassifiable", async () => {
+    // Arrange
+    const hedge = await create("Discontinued hedge");
+    await withTenant(TENANT, () => postHedgeValuation(hedgeDeps, actor, hedge.id, "2026-11-30"));
+
+    // Act
+    const discontinued = await withTenant(TENANT, () =>
+      discontinueHedge(hedgeDeps, actor, hedge.id, {
+        date: "2026-12-15",
+        reason: "Forecast purchase cancelled",
+      }),
+    );
+    const record = discontinued.valuations.find((entry) => entry.kind === "discontinuation")!;
+    const posted = await findEntryById(TENANT, record.entryId as string);
+    const reclassified = await withTenant(TENANT, () =>
+      reclassifyHedgeReserve(hedgeDeps, actor, hedge.id, {
+        date: "2026-12-31",
+        targetAccountId: "cost",
+      }),
+    );
+
+    // Assert: no reversal is created (the fair value stays on the books) and the
+    // cumulative effective part remains available to reclassify.
+    expect(discontinued.status).toBe("discontinued");
+    expect(record.reversalEntryId).toBeNull();
+    expect(posted?.date).toBe("2026-12-15");
+    expect(Number(discontinued.settledReserve)).toBeGreaterThan(0);
+    expect(reclassified.status).toBe("reclassified");
+  });
+
+  it("refuses a discontinuation on or before the last valuation date", async () => {
+    const hedge = await create("Early discontinuation");
+    await withTenant(TENANT, () => postHedgeValuation(hedgeDeps, actor, hedge.id, "2026-11-30"));
+
+    await expect(
+      withTenant(TENANT, () =>
+        discontinueHedge(hedgeDeps, actor, hedge.id, {
+          date: "2026-11-30",
+          reason: "Too early",
+        }),
+      ),
+    ).rejects.toMatchObject({ statusCode: 422 });
+  });
+
+  it("refuses a second discontinuation and any valuation afterwards", async () => {
+    const hedge = await create("Discontinue twice");
+    await withTenant(TENANT, () => postHedgeValuation(hedgeDeps, actor, hedge.id, "2026-11-30"));
+    await withTenant(TENANT, () =>
+      discontinueHedge(hedgeDeps, actor, hedge.id, {
+        date: "2026-12-15",
+        reason: "No longer qualifies",
+      }),
+    );
+
+    await expect(
+      withTenant(TENANT, () =>
+        discontinueHedge(hedgeDeps, actor, hedge.id, {
+          date: "2026-12-20",
+          reason: "Again",
+        }),
+      ),
+    ).rejects.toMatchObject({ statusCode: 422 });
+    await expect(
+      withTenant(TENANT, () => postHedgeValuation(hedgeDeps, actor, hedge.id, "2026-12-20")),
+    ).rejects.toMatchObject({ statusCode: 422 });
+  });
+
+  it("refuses settlement and reclassification accounts with the wrong role", async () => {
+    // The FK proves the account exists; the role proves the statement it lands on.
+    const hedge = await create("Role guard hedge");
+
+    await expect(
+      withTenant(TENANT, () =>
+        settleHedge(hedgeDeps, actor, hedge.id, {
+          settlementDate: "2027-01-31",
+          settlementRate: "292",
+          cashAccountId: "hpl",
+        }),
+      ),
+    ).rejects.toThrow(/cashAccountId: .*expected Asset/);
+
+    const settled = await withTenant(TENANT, () =>
+      settleHedge(hedgeDeps, actor, hedge.id, {
+        settlementDate: "2027-01-31",
+        settlementRate: "292",
+        cashAccountId: "cash",
+      }),
+    );
+    await expect(
+      withTenant(TENANT, () =>
+        reclassifyHedgeReserve(hedgeDeps, actor, settled.id, {
+          date: "2027-02-15",
+          targetAccountId: "cfhr",
+        }),
+      ),
+    ).rejects.toThrow(/reclassificationAccountId: .*expected Revenue or Expense/);
   });
 });

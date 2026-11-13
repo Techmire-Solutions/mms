@@ -1,19 +1,8 @@
 import { and, eq } from "drizzle-orm";
-import type {
-  BankReconciliationMatch,
-  BankStatement,
-  OpeningBalance,
-  PostingRules,
-} from "@mms/shared";
-import {
-  accountingBankReconciliations,
-  accountingBankStatementLines,
-  accountingBankStatements,
-  accountingOpeningBalances,
-  accountingPostingRules,
-} from "../schema.js";
+import type { OpeningBalance, PostingRules } from "@mms/shared";
+import { accountingOpeningBalances, accountingPostingRules } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
-import { requireDbDateValue } from "../../lib/dbDate.js";
+import { auditOpeningBalancesReplaced, auditPostingRulesSaved } from "./accountingEntityAudit.js";
 import { ensureCurrencySettingsInTx } from "./accountingCurrencySettingsRepository.js";
 
 export async function getPostingRules(tenant: string): Promise<PostingRules> {
@@ -69,6 +58,9 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
       .map((field) => [field, rules[field] ?? null]),
   );
   await withTenant(subdomain, async (tx) => {
+    // Before-state read joins this transaction, so the diff and the write commit
+    // (or roll back) together with the audit row below.
+    const previous = await getPostingRules(tenant);
     await tx
       .insert(accountingPostingRules)
       .values({
@@ -93,6 +85,7 @@ export async function savePostingRules(tenant: string, rules: PostingRules): Pro
           updatedAt: new Date(),
         },
       });
+    await auditPostingRulesSaved(tx, subdomain, previous, rules);
   });
 }
 
@@ -131,9 +124,11 @@ export async function replaceOpeningBalances(
   tenant: string,
   fiscalYearId: string,
   balances: OpeningBalance[],
+  reason?: string,
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
+    const previous = await listOpeningBalances(tenant, fiscalYearId);
     await tx
       .delete(accountingOpeningBalances)
       .where(
@@ -142,7 +137,10 @@ export async function replaceOpeningBalances(
           eq(accountingOpeningBalances.fiscalYearId, fiscalYearId),
         ),
       );
-    if (balances.length === 0) return;
+    if (balances.length === 0) {
+      await auditOpeningBalancesReplaced(tx, subdomain, fiscalYearId, previous, [], reason);
+      return;
+    }
     const { functionalCurrency } = await ensureCurrencySettingsInTx(tx, subdomain);
     await tx.insert(accountingOpeningBalances).values(
       balances.map((row) => {
@@ -165,132 +163,13 @@ export async function replaceOpeningBalances(
         };
       }),
     );
+    await auditOpeningBalancesReplaced(tx, subdomain, fiscalYearId, previous, balances, reason);
   });
 }
 
-export async function listBankStatements(tenant: string): Promise<BankStatement[]> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenantRead(subdomain, async (tx) => {
-    const [statements, lines] = await Promise.all([
-      tx
-        .select({
-          id: accountingBankStatements.id,
-          accountId: accountingBankStatements.accountId,
-          periodStart: accountingBankStatements.periodStart,
-          periodEnd: accountingBankStatements.periodEnd,
-          openingBalance: accountingBankStatements.openingBalance,
-          closingBalance: accountingBankStatements.closingBalance,
-          createdAt: accountingBankStatements.createdAt,
-          updatedAt: accountingBankStatements.updatedAt,
-        })
-        .from(accountingBankStatements)
-        .where(eq(accountingBankStatements.workspaceSubdomain, subdomain)),
-      tx
-        .select({
-          id: accountingBankStatementLines.id,
-          statementId: accountingBankStatementLines.statementId,
-          date: accountingBankStatementLines.date,
-          description: accountingBankStatementLines.description,
-          amount: accountingBankStatementLines.amount,
-        })
-        .from(accountingBankStatementLines)
-        .where(eq(accountingBankStatementLines.workspaceSubdomain, subdomain)),
-    ]);
-    return statements.map((statement) => ({
-      id: statement.id,
-      accountId: statement.accountId,
-      periodStart: requireDbDateValue(statement.periodStart, "periodStart"),
-      periodEnd: requireDbDateValue(statement.periodEnd, "periodEnd"),
-      openingBalance: Number(statement.openingBalance),
-      closingBalance: Number(statement.closingBalance),
-      createdAt: statement.createdAt.toISOString(),
-      updatedAt: statement.updatedAt.toISOString(),
-      lines: lines
-        .filter((line) => line.statementId === statement.id)
-        .map((line) => ({
-          id: line.id,
-          date: requireDbDateValue(line.date, "date"),
-          description: line.description,
-          amount: Number(line.amount),
-        })),
-    }));
-  });
-}
-
-export async function saveBankStatement(tenant: string, record: BankStatement): Promise<void> {
-  const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx
-      .insert(accountingBankStatements)
-      .values({
-        id: record.id,
-        workspaceSubdomain: subdomain,
-        accountId: record.accountId,
-        periodStart: requireDbDateValue(record.periodStart, "periodStart"),
-        periodEnd: requireDbDateValue(record.periodEnd, "periodEnd"),
-        openingBalance: String(record.openingBalance ?? 0),
-        closingBalance: String(record.closingBalance ?? 0),
-        updatedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: [accountingBankStatements.workspaceSubdomain, accountingBankStatements.id],
-        set: {
-          accountId: record.accountId,
-          periodStart: requireDbDateValue(record.periodStart, "periodStart"),
-          periodEnd: requireDbDateValue(record.periodEnd, "periodEnd"),
-          openingBalance: String(record.openingBalance ?? 0),
-          closingBalance: String(record.closingBalance ?? 0),
-          updatedAt: new Date(),
-        },
-      });
-    await tx
-      .delete(accountingBankStatementLines)
-      .where(
-        and(
-          eq(accountingBankStatementLines.workspaceSubdomain, subdomain),
-          eq(accountingBankStatementLines.statementId, record.id),
-        ),
-      );
-    if (record.lines.length > 0) {
-      await tx.insert(accountingBankStatementLines).values(
-        record.lines.map((line) => ({
-          id: line.id,
-          workspaceSubdomain: subdomain,
-          statementId: record.id,
-          date: requireDbDateValue(line.date, "date"),
-          description: line.description ?? "",
-          amount: String(line.amount ?? 0),
-        })),
-      );
-    }
-  });
-}
-
-export async function matchBankReconciliation(
-  tenant: string,
-  match: BankReconciliationMatch,
-): Promise<void> {
-  const subdomain = tenant.trim().toLowerCase();
-  await withTenant(subdomain, async (tx) => {
-    await tx
-      .insert(accountingBankReconciliations)
-      .values({
-        workspaceSubdomain: subdomain,
-        statementLineId: match.statementLineId,
-        journalEntryId: match.journalEntryId,
-        journalLineId: match.journalLineId,
-        matchedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: [
-          accountingBankReconciliations.workspaceSubdomain,
-          accountingBankReconciliations.statementLineId,
-        ],
-        set: {
-          journalEntryId: match.journalEntryId,
-          journalLineId: match.journalLineId,
-          matchedAt: new Date(),
-        },
-      });
-  });
-}
+/** Bank statements and reconciliation live in their own module (300-line ceiling). */
+export {
+  listBankStatements,
+  matchBankReconciliation,
+  saveBankStatement,
+} from "./accountingBankingRepository.js";

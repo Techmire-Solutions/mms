@@ -42,10 +42,13 @@ export async function closePostingPeriod(
 ): Promise<PostingPeriod> {
   const tenant = requireTenant();
   const closed = await withTenant(tenant, async (tx) => {
+    const initial = await accountingRepository.findPostingPeriodById(tenant, periodId);
+    if (!initial) throw periodError("Posting period not found", 404);
+    await lockFiscalYearForPosting(tenant, [initial.fiscalYearId]);
+    // Re-read under the lock: another session may have closed it meanwhile.
     const period = await accountingRepository.findPostingPeriodById(tenant, periodId);
     if (!period) throw periodError("Posting period not found", 404);
     if (period.status === "closed") throw periodError("Posting period is already closed", 422);
-    await lockFiscalYearForPosting(tenant, [period.fiscalYearId]);
     const result = await accountingRepository.setPostingPeriodStatus(
       tenant,
       periodId,
@@ -85,13 +88,19 @@ export async function reopenPostingPeriod(
 ): Promise<PostingPeriod> {
   const tenant = requireTenant();
   const reopened = await withTenant(tenant, async (tx) => {
+    const initial = await accountingRepository.findPostingPeriodById(tenant, periodId);
+    if (!initial) throw periodError("Posting period not found", 404);
+    // Lock FIRST, then read the state the decision uses. Reading the year before the
+    // lock let a close commit while the reopen waited, leaving an open period behind
+    // in a closed fiscal year (the advisory lock is shared with every posting and
+    // with the close).
+    await lockFiscalYearForPosting(tenant, [initial.fiscalYearId]);
     const period = await accountingRepository.findPostingPeriodById(tenant, periodId);
     if (!period) throw periodError("Posting period not found", 404);
     const year = await accountingRepository.findFiscalYearById(tenant, period.fiscalYearId);
     if (year?.status === "closed") {
       throw periodError("Cannot reopen a posting period of a closed fiscal year", 422);
     }
-    await lockFiscalYearForPosting(tenant, [period.fiscalYearId]);
     const result = await accountingRepository.setPostingPeriodStatus(
       tenant,
       periodId,

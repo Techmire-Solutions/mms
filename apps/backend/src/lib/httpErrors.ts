@@ -52,11 +52,13 @@ function defaultTypeForStatus(statusCode: number): string {
 /** Reads the optional structured context off an error, in the contract's envelope shape. */
 export function errorEnvelopeExtras(
   error: unknown,
-): Pick<ErrorEnvelopeBody, "violations" | "details"> {
+): Pick<ErrorEnvelopeBody, "code" | "violations" | "details"> {
   if (typeof error !== "object" || error === null) return {};
   const violations = (error as { violations?: unknown }).violations;
   const details = (error as { details?: unknown }).details;
+  const code = (error as { code?: unknown }).code;
   return {
+    ...(typeof code === "string" && code ? { code } : {}),
     ...(Array.isArray(violations) ? { violations: violations.map((value) => String(value)) } : {}),
     ...(typeof details === "object" && details !== null
       ? { details: details as Record<string, unknown> }
@@ -105,7 +107,9 @@ export function sendDatabaseError(
   const mapped = mapDatabaseErrorCode(code);
   if (mapped) {
     logger.warn({ err: cause, code }, message);
-    return reply.status(mapped.status).send({ type: mapped.type, message });
+    return reply
+      .status(mapped.status)
+      .send({ type: mapped.type, message: mapped.message ?? message });
   }
   if (cause !== undefined) {
     // Log full cause server-side only — never echo DB internals to the client.
@@ -163,8 +167,16 @@ export class HttpDomainError extends Error {
 }
 
 export class ConflictError extends HttpDomainError {
-  constructor(message = "Conflict", type: string = "conflict", details?: Record<string, unknown>) {
+  constructor(
+    message = "Conflict",
+    type: string = "conflict",
+    details?: Record<string, unknown>,
+    code?: string,
+  ) {
     super(409, type, message, details ? { details } : undefined);
+    // Attached structurally: subclasses declare their own `code`, so the base
+    // cannot own the member without forcing `override` on all of them.
+    if (code) Object.assign(this, { code });
   }
 }
 
@@ -173,8 +185,14 @@ export class ConflictError extends HttpDomainError {
  * card, value mismatch). State conflicts stay 409; payload shape problems stay 400.
  */
 export class PolicyViolationError extends HttpDomainError {
-  constructor(message: string, type = "policy_violation", details?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    type = "policy_violation",
+    details?: Record<string, unknown>,
+    code?: string,
+  ) {
     super(422, type, message, details ? { details } : undefined);
+    if (code) Object.assign(this, { code });
   }
 }
 
@@ -216,14 +234,16 @@ export class RollNumberConflictError extends ConflictError {
 }
 
 export class ValidationError extends HttpDomainError {
-  constructor(message = "Validation error") {
+  constructor(message = "Validation error", code?: string) {
     super(400, "validation_error", message);
+    if (code) Object.assign(this, { code });
   }
 }
 
 export class NotFoundError extends HttpDomainError {
-  constructor(message = "Resource not found") {
+  constructor(message = "Resource not found", code?: string) {
     super(404, "not_found", message);
+    if (code) Object.assign(this, { code });
   }
 }
 

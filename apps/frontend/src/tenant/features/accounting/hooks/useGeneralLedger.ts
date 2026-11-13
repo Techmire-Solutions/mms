@@ -18,8 +18,8 @@ export const LEDGER_PAGE_SIZE = 100;
 /**
  * General Ledger state, backed by the server aggregate.
  *
- * The browser aggregate (`fetchAllAccountingEntries`) silently stopped at 5,000
- * entries and still showed a balanced-looking closing figure; the server returns
+ * The old browser aggregate silently stopped at 5,000 entries and still showed a
+ * balanced-looking closing figure; the server returns
  * the opening balance, the page's running balances and the whole-window totals, so
  * paging can never understate the account's position.
  */

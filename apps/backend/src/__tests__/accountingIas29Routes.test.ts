@@ -113,9 +113,18 @@ describe("IAS 29 routes", () => {
     expect(mockPost).not.toHaveBeenCalled();
   });
 
-  it("given an accountant and a valid date, should post as the session user", async () => {
-    // Arrange / Act
+  it("refuses an ordinary writer an IAS 29 restatement (controller authority)", async () => {
     const res = await call("accountant", "POST", "/api/accounting/ias29-restatements", {
+      restatementDate: "2026-11-30",
+    });
+
+    expect(res.statusCode).toBe(403);
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it("given an admin and a valid date, should post as the session user", async () => {
+    // Arrange / Act
+    const res = await call("admin", "POST", "/api/accounting/ias29-restatements", {
       restatementDate: "2026-12-31",
     });
 

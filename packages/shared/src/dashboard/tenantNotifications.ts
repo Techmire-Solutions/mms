@@ -7,6 +7,8 @@ export const TENANT_NOTIFICATION_KINDS = [
   "attendance_chronic_absence",
   /** Scheduled finance sweep found invoices past their due date. */
   "finance_invoices_overdue",
+  /** Scheduled accounting sweep (month-end revaluation / IAS 29) failed and needs a human. */
+  "accounting_automation_failed",
 ] as const;
 export type TenantNotificationKind = (typeof TENANT_NOTIFICATION_KINDS)[number];
 

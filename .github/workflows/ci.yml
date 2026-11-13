@@ -217,6 +217,15 @@ jobs:
       - name: Examinations scoring coverage
         run: pnpm --filter @mms/shared run test:coverage:examinations
 
+      # Accounting route-injection/security parity with examinations. These do not
+      # need Postgres: the matrix suite only asserts 401/403 denials, which the
+      # module gate answers before any handler or repository runs.
+      - name: Accounting route injection
+        run: pnpm run check:accounting-route-injection
+
+      - name: Accounting route security matrix
+        run: pnpm run check:accounting-route-security
+
       # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
       # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
       # A full-repo scan costs 45-57 s per run; PRs check only the files they
@@ -798,6 +807,10 @@ jobs:
 
       - name: Finance/accounting coverage ratchet
         run: node scripts/ci/check-finance-coverage.mjs --coverage apps/backend/coverage-finance-db
+
+      # Accounting-only floor: the finance slice can mask an accounting regression.
+      - name: Accounting coverage
+        run: pnpm run check:accounting-coverage
 
       - name: Shuffle enrollment DB files before execution
         run: >

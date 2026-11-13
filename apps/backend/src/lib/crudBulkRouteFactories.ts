@@ -10,6 +10,7 @@ import {
 } from "./httpErrors.js";
 import { isUniqueViolation } from "./pgErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
+import { sendValidated } from "./validatedReply.js";
 import { bulkIdsBodySchema } from "@mms/shared";
 import {
   handleBulkListGet,
@@ -47,6 +48,7 @@ export function registerBulkRoutes<T>(
     responseKey,
     errorMessagePrefix,
     customGetRoute,
+    responseSchema,
   } = options;
 
   if (!customGetRoute && loadFn) {
@@ -70,7 +72,10 @@ export function registerBulkRoutes<T>(
     try {
       const data = beforeSave ? await beforeSave(user, parsed.data, request) : parsed.data;
       const updated = await saveFn(data);
-      return reply.send({ [responseKey]: updated });
+      const payload = { [responseKey]: updated };
+      return responseSchema
+        ? sendValidated(reply, 200, responseSchema, payload)
+        : reply.send(payload);
     } catch (error: unknown) {
       const mapped = sendIfHttpDomainError(reply, error);
       if (mapped) return mapped;
@@ -90,6 +95,7 @@ export function registerSoftDeletableBulkTrashRoutes(
   const path = options.path ?? "/";
   const bulkDeletePath = path === "/" ? "/bulk-delete" : `${path}/bulk-delete`;
   const bulkRestorePath = path === "/" ? "/bulk-restore" : `${path}/bulk-restore`;
+  const bulkResponseSchema = options.bulkResponseSchema;
   const bulkBodySchema = options.bulkBodySchema ?? bulkIdsBodySchema;
   const canDelete =
     options.canDelete ?? ((user: User) => canDeleteCollection(user, options.collection));
@@ -108,7 +114,10 @@ export function registerSoftDeletableBulkTrashRoutes(
       const reason = captureReason ? parsed.data.deletionReason : undefined;
       const result = await options.bulkDeleteFn(ids, String(user.id), reason);
       await options.onAfterBulkDelete?.(user, result, reason);
-      return reply.send({ success: true, ...result });
+      const payload = { success: true as const, ...result };
+      return bulkResponseSchema
+        ? sendValidated(reply, 200, bulkResponseSchema, payload)
+        : reply.send(payload);
     } catch (error: unknown) {
       const mapped = options.mapDeleteError?.(error);
       if (mapped) return reply.status(mapped.statusCode).send(mapped.body);
@@ -127,7 +136,10 @@ export function registerSoftDeletableBulkTrashRoutes(
       const ids = parsed.data.ids.map(String);
       const result = await options.bulkRestoreFn(ids, String(user.id));
       await options.onAfterBulkRestore?.(user, result);
-      return reply.send({ success: true, ...result });
+      const payload = { success: true as const, ...result };
+      return bulkResponseSchema
+        ? sendValidated(reply, 200, bulkResponseSchema, payload)
+        : reply.send(payload);
     } catch (error: unknown) {
       if (isUniqueViolation(error)) {
         return sendConflict(reply, "A record with this unique identifier already exists");
@@ -174,6 +186,8 @@ export function registerSoftDeletableBulkRoutes<T>(
     customGetRoute,
     customBulkTrashRoutes,
     captureDeletionReason,
+    responseSchema,
+    bulkResponseSchema,
   } = options;
 
   const canDelete = options.canDelete ?? ((user: User) => canDeleteCollection(user, collection));
@@ -187,11 +201,13 @@ export function registerSoftDeletableBulkRoutes<T>(
     listQuerySchema: options.listQuerySchema,
     defaultPageSize: options.defaultPageSize,
     saveFn,
+    beforeSave: options.beforeSave,
     canSave: options.canSave,
     responseKey,
     errorMessagePrefix,
     customGetRoute,
     canDelete,
+    responseSchema,
   });
 
   // Static bulk paths before /:id to avoid parametric capture.
@@ -209,6 +225,7 @@ export function registerSoftDeletableBulkRoutes<T>(
       mapRestoreError,
       onAfterBulkDelete: options.onAfterBulkDelete,
       onAfterBulkRestore: options.onAfterBulkRestore,
+      bulkResponseSchema,
     });
   }
 

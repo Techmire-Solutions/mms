@@ -49,6 +49,16 @@ export function getJournalEntryLineTotals(entry: JournalEntry): {
   totalDebit: number;
   totalCredit: number;
 } {
+  // The register list ships header-only rows (`includeLines=false`) with the
+  // server's totals. Summing `lines` there produced 0.00 for every row, footer,
+  // CSV, dashboard snapshot and reverse dialog, so the projected totals win
+  // whenever there are no line sets to sum.
+  if (
+    entry.lines.length === 0 &&
+    (entry.debitTotal !== undefined || entry.creditTotal !== undefined)
+  ) {
+    return { totalDebit: entry.debitTotal ?? 0, totalCredit: entry.creditTotal ?? 0 };
+  }
   let debitCents = 0;
   let creditCents = 0;
   for (const journalLine of entry.lines) {

@@ -14,6 +14,9 @@ interface GeneralLedgerAccountSummaryProps {
   totalCredit: number;
   balance: number;
   onExport: () => void;
+  /** Streams the whole register server-side (the grid export only holds the page). */
+  onExportFull: () => void;
+  isExportingFull?: boolean;
 }
 
 export function GeneralLedgerAccountSummary({
@@ -22,6 +25,8 @@ export function GeneralLedgerAccountSummary({
   totalCredit,
   balance,
   onExport,
+  onExportFull,
+  isExportingFull = false,
 }: GeneralLedgerAccountSummaryProps): React.JSX.Element {
   const { t } = useTranslation();
   const { formatCurrency } = useAccountingCurrency();
@@ -86,7 +91,7 @@ export function GeneralLedgerAccountSummary({
         </div>
       </Card>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
         <Button
           type="button"
           variant="outline"
@@ -94,6 +99,16 @@ export function GeneralLedgerAccountSummary({
           className="flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors"
         >
           <Download className="w-3.5 h-3.5" aria-hidden="true" /> {t("accounting.ledger.exportCsv")}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onExportFull}
+          disabled={isExportingFull}
+          className="flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50"
+        >
+          <Download className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+          {t("accounting.ledger.exportFull")}
         </Button>
       </div>
     </>

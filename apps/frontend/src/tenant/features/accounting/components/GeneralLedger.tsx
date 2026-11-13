@@ -11,6 +11,7 @@ import {
 } from "@/tenant/features/accounting/hooks/useGeneralLedger";
 import { fetchAllAccountingLedgerLines } from "@/tenant/features/accounting/hooks/accountingListFetch";
 import { exportGeneralLedgerCsv } from "@/tenant/features/accounting/lib/generalLedgerExport";
+import { useAccountingLedgerExport } from "@/tenant/features/accounting/hooks/useAccountingLedgerExport";
 import { GeneralLedgerFilters } from "@/tenant/features/accounting/components/GeneralLedgerFilters";
 import { GeneralLedgerAccountSummary } from "@/tenant/features/accounting/components/GeneralLedgerAccountSummary";
 import { GeneralLedgerEntries } from "@/tenant/features/accounting/components/GeneralLedgerEntries";
@@ -27,6 +28,7 @@ interface GeneralLedgerProps {
 export function GeneralLedger({ accounts }: GeneralLedgerProps) {
   const { t } = useTranslation();
   const ledger = useGeneralLedger(accounts);
+  const { queueLedgerExport, isQueuing: isQueuingFullExport } = useAccountingLedgerExport();
   const pageCount = Math.max(1, Math.ceil(ledger.total / ledger.pageSize));
 
   const exportCSV = async () => {
@@ -77,6 +79,15 @@ export function GeneralLedger({ accounts }: GeneralLedgerProps) {
             totalCredit={ledger.totalCredit}
             balance={ledger.balance}
             onExport={exportCSV}
+            isExportingFull={isQueuingFullExport}
+            onExportFull={() => {
+              if (!ledger.activeAccount) return;
+              void queueLedgerExport({
+                accountId: ledger.activeAccount.id,
+                dateFrom: ledger.dateFrom || undefined,
+                dateTo: ledger.dateTo || undefined,
+              });
+            }}
           />
           {ledger.isError ? (
             <EmptyState variant="dashed" title={t("accounting.ledger.loadFailed")} compact />

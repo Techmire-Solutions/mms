@@ -9,11 +9,14 @@ vi.mock("../services/auditTrailService.js", () => ({
 }));
 
 function createFakeRepo(): AccountingRepository {
-  return {
+  const repo: AccountingRepository = {
     lockJournalEntries: vi.fn().mockResolvedValue(undefined),
     listAccountsByWorkspace: vi.fn().mockResolvedValue([]),
     findAccountById: vi.fn().mockResolvedValue(null),
     findAccountsByIds: vi.fn().mockResolvedValue([]),
+    // The posting guard reads through the locking variant; delegate to the same mock
+    // so a test controls postability in one place.
+    lockPostableAccounts: vi.fn(),
     findClosedPostingPeriodForDate: vi.fn().mockResolvedValue(null),
     listPostingPeriods: vi.fn().mockResolvedValue([]),
     findPostingPeriodById: vi.fn().mockResolvedValue(null),
@@ -78,6 +81,15 @@ function createFakeRepo(): AccountingRepository {
     }),
     aggregateAccountingReport: vi.fn().mockResolvedValue({}),
   };
+  vi.mocked(repo.lockPostableAccounts).mockImplementation(async (tenant, ids) =>
+    (await repo.findAccountsByIds(tenant, ids)).map((account) => ({
+      id: account.id,
+      isActive: account.isActive,
+      accountCurrency: (account as { accountCurrency?: string | null }).accountCurrency ?? null,
+      hasChildren: (account as { hasChildren?: boolean }).hasChildren === true,
+    })),
+  );
+  return repo;
 }
 
 describe("accounting use-cases (DI with fake repository)", () => {
@@ -464,7 +476,7 @@ describe("accounting write guards", () => {
 
     await expect(
       runWithTenant("demo", () => useCases.upsertEntries([postedEntry({ id: "je_new" }) as any])),
-    ).rejects.toThrow(/unknown, archived or deactivated accounts: acc_income/);
+    ).rejects.toThrow(/cannot be posted to: acc_income/);
     expect(repo.bulkSaveEntries).not.toHaveBeenCalled();
   });
 
@@ -483,7 +495,7 @@ describe("accounting write guards", () => {
       runWithTenant("demo", () =>
         useCases.upsertEntries([postedEntry({ id: "je_inactive" }) as any]),
       ),
-    ).rejects.toThrow(/unknown, archived or deactivated accounts: acc_income/);
+    ).rejects.toThrow(/cannot be posted to: acc_income/);
     expect(repo.bulkSaveEntries).not.toHaveBeenCalled();
   });
 

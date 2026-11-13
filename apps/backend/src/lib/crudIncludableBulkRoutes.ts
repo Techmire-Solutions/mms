@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ZodType } from "zod";
 
 import type { User } from "@mms/shared";
@@ -6,6 +6,7 @@ import { canWriteCollection } from "./rbacCanHelpers.js";
 import { sendForbidden, sendDatabaseError, sendIfHttpDomainError } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
 import { handleBulkListGet } from "./crudBulkRouteHelpers.js";
+import { sendValidated } from "./validatedReply.js";
 
 export interface IncludableBulkRoutesOptions<T> {
   path: string;
@@ -18,12 +19,16 @@ export interface IncludableBulkRoutesOptions<T> {
   /** Fallback page size when the client omits `limit` (schema path). */
   defaultPageSize?: number;
   saveFn: (data: T) => Promise<unknown>;
+  /** Authorization / server-field stamping before save (e.g. a posting-authority gate). */
+  beforeSave?: (user: User, data: T, request: FastifyRequest) => Promise<T>;
   /** Authority for the bulk PUT; defaults to `canWriteCollection`. */
   canSave?: (user: User) => boolean;
   responseKey: string;
   errorMessagePrefix: string;
   customGetRoute?: boolean;
   canDelete?: (user: User) => boolean;
+  /** Declared shape of the `PUT …/bulk` response (see BulkRoutesOptions). */
+  responseSchema?: ZodType;
 }
 
 /**
@@ -43,11 +48,13 @@ export function registerIncludableBulkRoutes<T>(
     listQuerySchema,
     defaultPageSize,
     saveFn,
+    beforeSave,
     canSave,
     responseKey,
     errorMessagePrefix,
     customGetRoute,
     canDelete,
+    responseSchema,
   } = options;
 
   const bulkPath = path === "/" ? "/bulk" : `${path}/bulk`;
@@ -74,8 +81,12 @@ export function registerIncludableBulkRoutes<T>(
     const parsed = parseRequest(schema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
     try {
-      const updated = await saveFn(parsed.data);
-      return reply.send({ [responseKey]: updated });
+      const data = beforeSave ? await beforeSave(user, parsed.data, request) : parsed.data;
+      const updated = await saveFn(data);
+      const payload = { [responseKey]: updated };
+      return responseSchema
+        ? sendValidated(reply, 200, responseSchema, payload)
+        : reply.send(payload);
     } catch (error: unknown) {
       const mapped = sendIfHttpDomainError(reply, error);
       if (mapped) return mapped;

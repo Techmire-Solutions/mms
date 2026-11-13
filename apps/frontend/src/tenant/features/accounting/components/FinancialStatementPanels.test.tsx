@@ -35,6 +35,40 @@ const assetRows = [
   },
 ];
 
+describe("BalanceSheetPanel balance tolerance", () => {
+  it("reports a sub-unit difference instead of calling the sheet balanced", () => {
+    // The old `< 1` tolerance called a sheet off by 0.50 "balanced".
+    const html = renderToStaticMarkup(
+      <BalanceSheetPanel
+        assetRows={[]}
+        liabilityRows={[]}
+        equityRows={[]}
+        assets={100}
+        liabilities={60}
+        equity={39.5}
+      />,
+    );
+
+    expect(html).not.toContain("accounting.reports.balanceSheetBalanced");
+    expect(html).toContain("accounting.reports.balanceSheetDifference");
+  });
+
+  it("still calls an exactly-balanced sheet balanced", () => {
+    const html = renderToStaticMarkup(
+      <BalanceSheetPanel
+        assetRows={[]}
+        liabilityRows={[]}
+        equityRows={[]}
+        assets={100}
+        liabilities={60}
+        equity={40}
+      />,
+    );
+
+    expect(html).toContain("accounting.reports.balanceSheetBalanced");
+  });
+});
+
 describe("BalanceSheetPanel", () => {
   it("renders cumulative as-of rows and the server-computed equity total", () => {
     const html = renderToStaticMarkup(

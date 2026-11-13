@@ -288,6 +288,11 @@ export async function replaceFiscalYearsForWorkspace(
       await tx
         .insert(accountingFiscalYears)
         .values(uniqueRecords.map((r) => toFiscalYearRow(r, subdomain)));
+      // Posting periods are derived from the years (they are not part of the restore
+      // snapshot) and the `DELETE` above cascaded the previous ones away. Without this
+      // a restored workspace has no monthly locks at all: every closed month of an
+      // open year silently reopens and the database loses its closed-period backstop.
+      await syncPostingPeriods(tx, subdomain, uniqueRecords);
     }
   });
 }

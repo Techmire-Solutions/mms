@@ -3,9 +3,16 @@ import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import {
   ACCOUNTING_MODULE_MANIFEST,
+  accountArchiveResponseSchema,
   accountListSchema,
-  journalEntryListSchema,
+  accountingBulkResultResponseSchema,
+  accountRestoreResponseSchema,
+  accountsBulkArchiveResponseSchema,
+  accountsBulkUpsertResponseSchema,
+  entriesBulkUpsertResponseSchema,
   fiscalYearListSchema,
+  fiscalYearsBulkUpsertResponseSchema,
+  journalEntryWriteListSchema,
   bulkIdsBodySchema,
   resourceIdParamsSchema,
   softDeleteBodySchema,
@@ -14,6 +21,7 @@ import {
 import { canDeleteCollection } from "../../services/rbacService.js";
 import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from "../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
+import { sendValidated } from "../../lib/validatedReply.js";
 import {
   registerBulkRoutes,
   registerIncludableBulkRoutes,
@@ -22,9 +30,11 @@ import {
 } from "../../lib/crudRouter.js";
 
 import { accountingUseCases } from "../../accounting/use-cases/accountingUseCases.js";
+import { assertEntriesPostable } from "../../accounting/use-cases/accountingPostingGuard.js";
 import { accountingSetupConfigRoutes } from "./accountingSetupConfigRoutes.js";
 import { accountingContractRouter } from "./accounting/accountingContractRouter.js";
 import { accountingReportRoutes } from "./accounting/accountingReportRoutes.js";
+import { accountingBankingRoutes } from "./accounting/accountingBankingRoutes.js";
 import { accountingLedgerOpsRoutes } from "./accounting/accountingLedgerOpsRoutes.js";
 import { accountingExchangeRateRoutes } from "./accounting/accountingExchangeRateRoutes.js";
 import { accountingFxRevaluationRoutes } from "./accounting/accountingFxRevaluationRoutes.js";
@@ -62,6 +72,7 @@ export default async function accountingRoutes(
         saveFn: accountingUseCases.upsertAccounts,
         responseKey: "accounts",
         errorMessagePrefix: "accounts",
+        responseSchema: accountsBulkUpsertResponseSchema,
 
         customGetRoute: true,
       });
@@ -79,16 +90,19 @@ export default async function accountingRoutes(
         const user = request.user as User;
         if (!canDeleteCollection(user, ACCOUNTING_ACCOUNTS_COLLECTION)) return sendForbidden(reply);
         const params = parseRequest(resourceIdParamsSchema, request.params);
-        if (!params.ok) return replyValidationError(reply, params.message);
+        if (!params.ok) return replyValidationError(reply, params);
         const body = parseRequest(softDeleteBodySchema, request.body ?? {});
-        if (!body.ok) return replyValidationError(reply, body.message);
+        if (!body.ok) return replyValidationError(reply, body);
         try {
           const archived = await accountingUseCases.deleteAccountById(
             params.data.id,
             String(user.id),
             body.data.deletionReason,
           );
-          return reply.send({ success: true, archived });
+          return sendValidated(reply, 200, accountArchiveResponseSchema, {
+            success: true,
+            archived,
+          });
         } catch (error) {
           return (
             sendIfHttpDomainError(reply, error) ??
@@ -101,13 +115,16 @@ export default async function accountingRoutes(
         const user = request.user as User;
         if (!canDeleteCollection(user, ACCOUNTING_ACCOUNTS_COLLECTION)) return sendForbidden(reply);
         const params = parseRequest(resourceIdParamsSchema, request.params);
-        if (!params.ok) return replyValidationError(reply, params.message);
+        if (!params.ok) return replyValidationError(reply, params);
         try {
           const restored = await accountingUseCases.restoreAccountById(
             params.data.id,
             String(user.id),
           );
-          return reply.send({ success: true, restored });
+          return sendValidated(reply, 200, accountRestoreResponseSchema, {
+            success: true,
+            restored,
+          });
         } catch (error) {
           return (
             sendIfHttpDomainError(reply, error) ??
@@ -120,14 +137,17 @@ export default async function accountingRoutes(
         const user = request.user as User;
         if (!canDeleteCollection(user, ACCOUNTING_ACCOUNTS_COLLECTION)) return sendForbidden(reply);
         const body = parseRequest(bulkIdsBodySchema, request.body);
-        if (!body.ok) return replyValidationError(reply, body.message);
+        if (!body.ok) return replyValidationError(reply, body);
         try {
           const result = await accountingUseCases.bulkSoftDeleteAccounts(
             body.data.ids.map(String),
             String(user.id),
             body.data.deletionReason,
           );
-          return reply.send({ success: true, ...result });
+          return sendValidated(reply, 200, accountsBulkArchiveResponseSchema, {
+            success: true,
+            ...result,
+          });
         } catch (error) {
           return (
             sendIfHttpDomainError(reply, error) ??
@@ -139,7 +159,7 @@ export default async function accountingRoutes(
       registerSoftDeletableBulkRoutes(sub, {
         path: "/entries",
         collection: ACCOUNTING_ENTRIES_COLLECTION,
-        schema: journalEntryListSchema,
+        schema: journalEntryWriteListSchema,
         loadFn: accountingUseCases.loadEntries,
         saveFn: accountingUseCases.upsertEntries,
         deleteFn: accountingUseCases.deleteJournalEntryById,
@@ -149,14 +169,20 @@ export default async function accountingRoutes(
         responseKey: "entries",
         errorMessagePrefix: "entries",
         nameSingular: "Journal entry",
+        responseSchema: entriesBulkUpsertResponseSchema,
+        bulkResponseSchema: accountingBulkResultResponseSchema,
 
-        customGetRoute: true,
-        mapDeleteError: (error) => {
-          if (error instanceof Error && error.message.includes("Posted")) {
-            return { statusCode: 400, body: { error: error.message } };
-          }
-          return null;
+        // Drafts need `accounting.write`; making a voucher final needs
+        // `accounting.post` (Junior vs Senior Accountant).
+        beforeSave: async (user, entries) => {
+          await assertEntriesPostable(user, entries, (id) => accountingUseCases.loadEntryById(id));
+          return entries;
         },
+
+        // Posted-entry refusal is a domain 422 with `code: accounting.voucher.posted`
+        // (see the delete use case); the old message-sniffing mapper turned it into
+        // `400 { error }`, breaking the shared envelope.
+        customGetRoute: true,
       });
 
       registerBulkRoutes(sub, {
@@ -166,6 +192,7 @@ export default async function accountingRoutes(
         saveFn: accountingUseCases.upsertFiscalYears,
         responseKey: "fiscalYears",
         errorMessagePrefix: "fiscal years",
+        responseSchema: fiscalYearsBulkUpsertResponseSchema,
         customGetRoute: true,
       });
 
@@ -177,6 +204,7 @@ export default async function accountingRoutes(
 
       await sub.register(accountingReportRoutes);
       await sub.register(accountingLedgerOpsRoutes);
+      await sub.register(accountingBankingRoutes);
       await sub.register(accountingExchangeRateRoutes);
       await sub.register(accountingFxRevaluationRoutes);
       await sub.register(accountingIas29Routes);

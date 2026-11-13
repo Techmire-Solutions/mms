@@ -2,24 +2,36 @@ import { z } from "zod";
 import { baseListQueryFields } from "../core/apiSchemas.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import type { Account, JournalEntry, FiscalYear } from "./accountingModuleManifest.js";
-import { ACCOUNTING_ACCOUNT_TYPES, JOURNAL_ENTRY_STATUSES } from "./accountingEnums.js";
+import {
+  ACCOUNTING_ACCOUNT_TYPES,
+  JOURNAL_ENTRY_STATUSES,
+  type AccountingAccountType,
+  type JournalEntryStatus,
+} from "./accountingEnums.js";
 
 export interface AccountingListQuery {
   page?: number;
   limit?: number;
   search?: string;
-  /** Journal-entry status filter (`posted` | `draft`). */
-  status?: string;
+  /** Journal-entry status filter; the UI's `all` sentinel is converted to `undefined`. */
+  status?: JournalEntryStatus;
   dateFrom?: string;
   dateTo?: string;
   /** Restrict journal entries to those with a line on this account. */
   accountId?: string;
   /** Restrict journal entries to those carrying this tag. */
   tag?: string;
-  accountType?: string;
+  accountType?: AccountingAccountType;
   sortField?: string;
   sortDir?: "asc" | "desc" | "";
   includeDeleted?: boolean;
+  /**
+   * Journal register projection. `false` returns header fields plus the
+   * `lineCount`/`debitTotal`/`creditTotal` summary and an empty `lines` array,
+   * so a dense voucher no longer ships every line to the list (the drawer fetches
+   * the full entry by id). Defaults to `true`.
+   */
+  includeLines?: boolean;
 }
 
 /**
@@ -45,8 +57,11 @@ export const accountingEntriesListQuerySchema = z
     accountId: z.string().max(64).optional(),
     // 64 is the `accounting_entry_tags.tag` column width.
     tag: z.string().max(64).optional(),
+    includeLines: z.union([z.boolean(), z.enum(["true", "false"])]).optional(),
   })
-  .passthrough();
+  // Strict: a misspelled filter (`stat=posted`) used to be accepted and then
+  // ignored, returning unfiltered data under a filtered-looking UI.
+  .strict();
 
 /** Query schema for the paginated chart-of-accounts list. */
 export const accountingAccountsListQuerySchema = z
@@ -54,7 +69,15 @@ export const accountingAccountsListQuerySchema = z
     ...baseListQueryFields,
     accountType: z.enum(ACCOUNTING_ACCOUNT_TYPES).optional(),
   })
-  .passthrough();
+  .strict();
+
+/**
+ * Query schema for the paginated fiscal-year list.
+ *
+ * Its own strict schema instead of changing the global `baseListQuerySchema`,
+ * which every module shares — only Accounting opts into rejecting unknown keys.
+ */
+export const accountingFiscalYearsListQuerySchema = z.object(baseListQueryFields).strict();
 
 export type AccountingEntriesListQuery = z.infer<typeof accountingEntriesListQuerySchema>;
 export type AccountingAccountsListQuery = z.infer<typeof accountingAccountsListQuerySchema>;

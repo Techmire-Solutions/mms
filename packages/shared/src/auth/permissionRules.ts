@@ -82,6 +82,8 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   "accounting.read": { module: "accounting", requiredActions: ["read"] },
   "accounting.write": { module: "accounting", requiredActions: ["create", "update"] },
   "accounting.delete": { module: "accounting", requiredActions: ["delete"] },
+  // Posting is its own action so draft-only roles are expressible.
+  "accounting.post": { module: "accounting", requiredActions: ["post"] },
   // Period close, fiscal-year close and voucher-numbering configuration are
   // controller/admin authority, not ordinary voucher posting.
   "accounting.manage": { module: "accounting", requiredActions: ["manage"] },

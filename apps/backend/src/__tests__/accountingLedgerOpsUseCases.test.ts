@@ -25,6 +25,9 @@ const mockWs = vi.hoisted(() => ({
 
 const mockAccountsRepo = vi.hoisted(() => ({
   findAccountsByIds: vi.fn(),
+  // Summary/header accounts (those with children) cannot receive postings or be
+  // configured as a posting-rule destination.
+  findSummaryAccountIds: vi.fn(),
 }));
 
 // Opening balances may only be edited while the year is open and unposted.
@@ -85,6 +88,13 @@ describe("accountingLedgerOpsUseCases", () => {
     guards.listOpeningEntries.mockResolvedValue([]);
     guards.findActiveReversalOf.mockResolvedValue(null);
     guards.recordModernAuditEvent.mockResolvedValue(undefined);
+    mockAccountsRepo.findSummaryAccountIds.mockResolvedValue(new Set());
+    // Opening balances may only park amounts on accounts that can carry postings.
+    mockAccountsRepo.findAccountsByIds.mockResolvedValue([
+      { id: "acc-1", isActive: true },
+      { id: "acc-cash", isActive: true },
+      { id: "acc-income", isActive: true },
+    ]);
   });
 
   it("throws when tenant is missing", async () => {
@@ -153,6 +163,20 @@ describe("accountingLedgerOpsUseCases", () => {
       expect(mockRepo.savePostingRules).not.toHaveBeenCalled();
     });
 
+    it("rejects a posting rule pointing at a summary account", async () => {
+      // A header aggregates its children, so posting into it would count the same
+      // balance twice.
+      mockAccountsRepo.findAccountsByIds.mockResolvedValue([
+        { id: "acc-income", type: "Revenue", code: "4000", name: "Fees", isActive: true },
+      ]);
+      mockAccountsRepo.findSummaryAccountIds.mockResolvedValue(new Set(["acc-income"]));
+
+      await expect(
+        runWithTenant("t-1", () => upsertPostingRules({ incomeAccountId: "acc-income" })),
+      ).rejects.toThrow(/summary account with sub-accounts/);
+      expect(mockRepo.savePostingRules).not.toHaveBeenCalled();
+    });
+
     it("skips the account lookup when no accounts are configured", async () => {
       mockRepo.savePostingRules.mockResolvedValue(undefined);
 
@@ -185,12 +209,40 @@ describe("accountingLedgerOpsUseCases", () => {
 
       expect(res).toHaveLength(1);
       expect(res[0]?.id).toBe("ob-1");
-      expect(mockRepo.replaceOpeningBalances).toHaveBeenCalledWith("t-1", "fy-1", res);
+      expect(mockRepo.replaceOpeningBalances).toHaveBeenCalledWith("t-1", "fy-1", res, undefined);
       expect(mockWs.broadcastTenantUpdate).toHaveBeenCalledWith(
         "t-1",
         "collection",
         "accounting_opening_balances",
       );
+    });
+
+    it("refuses an opening balance on an archived or deactivated account", async () => {
+      // Account ids come from the client; parking an amount on an archived account used
+      // to succeed and failed only at posting time (or never).
+      mockAccountsRepo.findAccountsByIds.mockResolvedValue([]);
+
+      await expect(
+        runWithTenant("t-1", () =>
+          upsertOpeningBalances("fy-1", [
+            { fiscalYearId: "fy-1", accountId: "acc-1", debit: 50, credit: 0 } as any,
+          ]),
+        ),
+      ).rejects.toThrow(/cannot be posted to: acc-1/);
+      expect(mockRepo.replaceOpeningBalances).not.toHaveBeenCalled();
+    });
+
+    it("refuses an opening balance on a summary account", async () => {
+      mockAccountsRepo.findSummaryAccountIds.mockResolvedValue(new Set(["acc-1"]));
+
+      await expect(
+        runWithTenant("t-1", () =>
+          upsertOpeningBalances("fy-1", [
+            { fiscalYearId: "fy-1", accountId: "acc-1", debit: 50, credit: 0 } as any,
+          ]),
+        ),
+      ).rejects.toThrow(/summary account with sub-accounts/);
+      expect(mockRepo.replaceOpeningBalances).not.toHaveBeenCalled();
     });
 
     it("refuses to edit opening balances of a closed fiscal year", async () => {
@@ -354,11 +406,15 @@ describe("accountingLedgerOpsUseCases", () => {
         }),
       );
 
-      expect(mockRepo.matchBankReconciliation).toHaveBeenCalledWith("t-1", {
-        statementLineId: "bsl-1",
-        journalEntryId: "je-1",
-        journalLineId: "jel-1",
-      });
+      expect(mockRepo.matchBankReconciliation).toHaveBeenCalledWith(
+        "t-1",
+        {
+          statementLineId: "bsl-1",
+          journalEntryId: "je-1",
+          journalLineId: "jel-1",
+        },
+        undefined,
+      );
       expect(mockWs.broadcastTenantUpdate).toHaveBeenCalledWith(
         "t-1",
         "collection",

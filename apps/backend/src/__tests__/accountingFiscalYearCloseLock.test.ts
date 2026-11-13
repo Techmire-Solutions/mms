@@ -52,6 +52,19 @@ vi.mock("../db/repositories/accountingFxRevaluationRepository.js", () => ({
   listForeignMonetaryBalances: vi.fn().mockResolvedValue([]),
   hasFxRevaluationBetween: vi.fn().mockResolvedValue(false),
 }));
+// 0255 close preconditions: no active hedge, IAS 29 disabled.
+vi.mock("../db/repositories/accountingHedgesRepository.js", () => ({
+  listHedgeRelationships: vi.fn().mockResolvedValue([]),
+}));
+vi.mock("../db/repositories/accountingHyperinflationRepository.js", () => ({
+  getHyperinflationSettings: vi.fn().mockResolvedValue({
+    enabled: false,
+    netMonetaryAccountId: null,
+    appliesFrom: null,
+    indexName: "",
+  }),
+  findIas29RunId: vi.fn().mockResolvedValue(null),
+}));
 
 import { closeFiscalYearForTenant } from "../accounting/use-cases/accountingPeriodClose.js";
 

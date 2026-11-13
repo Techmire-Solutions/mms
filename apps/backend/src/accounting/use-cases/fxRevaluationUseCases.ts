@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
+  ACCOUNTING_ERROR_CODES,
   AmountScaleError,
   MissingClosingRatesError,
   buildFxRevaluationJournalLines,
@@ -14,6 +15,7 @@ import {
 } from "@mms/shared";
 import type { RecordModernAuditInput } from "../../services/auditTrailService.js";
 import { lockLedgerEvent } from "../ledgerPosting/ledgerEventLock.js";
+import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import type { AccountingFxRepository } from "../repository/accountingFxRepository.js";
 
 export interface FxRevaluationDeps {
@@ -24,7 +26,11 @@ export interface FxRevaluationDeps {
     functional: string,
   ) => Promise<ForeignMonetaryBalance[]>;
   listRuns: (tenant: string) => Promise<FxRevaluationRun[]>;
+  /** Runs inside `[from, to]`, uncapped: a capped list cannot answer a period query. */
+  listRunsBetween: (tenant: string, from: string, to: string) => Promise<FxRevaluationRun[]>;
   findRunId: (tenant: string, date: string) => Promise<string | null>;
+  /** The stored run for `date` (with lines), used by the idempotent re-post path. */
+  findRunByDate: (tenant: string, date: string) => Promise<FxRevaluationRun | null>;
   saveRun: (
     tenant: string,
     run: Omit<FxRevaluationRun, "status" | "createdAt">,
@@ -44,8 +50,12 @@ export interface FxRevaluationDeps {
   recordAudit: (input: RecordModernAuditInput) => Promise<unknown>;
 }
 
-function validationError(message: string): Error {
-  return Object.assign(new Error(message), { statusCode: 422, type: "validation_error" });
+function validationError(message: string, code?: string): Error {
+  return Object.assign(new Error(message), {
+    statusCode: 422,
+    type: "validation_error",
+    ...(code ? { code } : {}),
+  });
 }
 
 /** The calendar day after `date` (YYYY-MM-DD, UTC arithmetic on a date-only value). */
@@ -112,6 +122,7 @@ export async function previewFxRevaluation(
     if (error instanceof MissingClosingRatesError) {
       throw validationError(
         `${error.message} on or before ${date}; add a CLOSING or SPOT rate first`,
+        ACCOUNTING_ERROR_CODES.fxNoRate,
       );
     }
     if (error instanceof AmountScaleError) {
@@ -143,16 +154,22 @@ export async function postFxRevaluation(
   deps: FxRevaluationDeps,
   actor: { tenant: string; userId: string | null },
   date: string,
+  options: { signal?: AbortSignal } = {},
 ): Promise<FxRevaluationRun> {
   const { tenant } = actor;
+  const { signal } = options;
+  // A shutdown/deadline abort before any write leaves the ledger untouched.
+  throwIfBackgroundJobAborted(signal);
   // One run per date: serialise the read-then-insert so a concurrent submit waits
   // and then returns the stored run instead of aborting on the unique index.
   await lockLedgerEvent(tenant, `fx_reval:${date}`);
-  if (await deps.findRunId(tenant, date)) {
-    const existing = (await deps.listRuns(tenant)).find((run) => run.revaluationDate === date);
-    if (existing) return existing;
-  }
+  const existing = await deps.findRunByDate(tenant, date);
+  if (existing) return existing;
+  throwIfBackgroundJobAborted(signal);
   const preview = await previewFxRevaluation(deps, tenant, date);
+  // Re-check before the first write: an abort here rolls the caller's transaction
+  // back, releasing the advisory lock and the entry/run rows together.
+  throwIfBackgroundJobAborted(signal);
   let entryId: string | null = null;
   let reversalEntryId: string | null = null;
   if (preview.lines.length > 0) {
@@ -186,6 +203,7 @@ export async function postFxRevaluation(
     entryId = (await deps.postEntry(tenant, entry))?.id ?? entry.id;
     reversalEntryId = (await deps.postEntry(tenant, reversal))?.id ?? reversal.id;
   }
+  throwIfBackgroundJobAborted(signal);
   const run = {
     id: `fxr-${randomUUID()}`,
     revaluationDate: date,

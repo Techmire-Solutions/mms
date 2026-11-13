@@ -1,9 +1,12 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import {
   ACCOUNTING_MODULE_MANIFEST,
+  accountingLedgerPageSchema,
   accountingLedgerQuerySchema,
+  accountingReportAggregatesSchema,
   accountingReportQuerySchema,
   receivablesAgingQuerySchema,
+  receivablesAgingSchema,
   type User,
 } from "@mms/shared";
 import { canReadCollection } from "../../../services/rbacService.js";
@@ -18,6 +21,7 @@ import {
   sendIfHttpDomainError,
 } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
+import { sendValidated } from "../../../lib/validatedReply.js";
 
 const COLLECTION = ACCOUNTING_MODULE_MANIFEST.collectionKey;
 
@@ -30,10 +34,10 @@ export async function accountingReportRoutes(
     const user = request.user as User;
     if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(accountingReportQuerySchema, request.query);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
     try {
       const aggregates = await accountingUseCases.loadAccountingReportAggregates(parsed.data);
-      return reply.send(aggregates);
+      return sendValidated(reply, 200, accountingReportAggregatesSchema, aggregates);
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
@@ -50,9 +54,14 @@ export async function accountingReportRoutes(
     const user = request.user as User;
     if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(accountingLedgerQuerySchema, request.query);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
     try {
-      return reply.send(await loadAccountLedger(parsed.data));
+      return sendValidated(
+        reply,
+        200,
+        accountingLedgerPageSchema,
+        await loadAccountLedger(parsed.data),
+      );
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??
@@ -66,9 +75,14 @@ export async function accountingReportRoutes(
     const user = request.user as User;
     if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
     const parsed = parseRequest(receivablesAgingQuerySchema, request.query);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
     try {
-      return reply.send(await loadReceivablesAging(parsed.data));
+      return sendValidated(
+        reply,
+        200,
+        receivablesAgingSchema,
+        await loadReceivablesAging(parsed.data),
+      );
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??

@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import type { ForeignMonetaryBalance, FxRevaluationLine, FxRevaluationRun } from "@mms/shared";
 import {
   accountingAccounts,
@@ -69,19 +69,32 @@ const runColumns = {
   createdBy: accountingFxRevaluationRuns.createdBy,
 };
 
-/** Posted runs, newest first, with their lines (bounded to `limit` runs). */
-export async function listFxRevaluationRuns(
+/**
+ * Posted runs, newest first, with their lines.
+ *
+ * `limit` bounds the workspace list screen; a report must pass a date window
+ * instead, because a capped list cannot answer "which runs fall in this period"
+ * once the tenant has posted more runs than the cap.
+ */
+async function loadFxRevaluationRuns(
   tenant: string,
-  limit = 24,
+  options: { limit?: number; from?: string; to?: string },
 ): Promise<FxRevaluationRun[]> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
+    const conditions = [eq(accountingFxRevaluationRuns.workspaceSubdomain, subdomain)];
+    if (options.from) {
+      conditions.push(gte(accountingFxRevaluationRuns.revaluationDate, options.from));
+    }
+    if (options.to) {
+      conditions.push(lte(accountingFxRevaluationRuns.revaluationDate, options.to));
+    }
     const runs = await tx
       .select(runColumns)
       .from(accountingFxRevaluationRuns)
-      .where(eq(accountingFxRevaluationRuns.workspaceSubdomain, subdomain))
+      .where(and(...conditions))
       .orderBy(desc(accountingFxRevaluationRuns.revaluationDate))
-      .limit(limit);
+      .limit(options.limit ?? 24);
     if (runs.length === 0) return [];
     const lines = await tx
       .select({
@@ -141,6 +154,29 @@ export async function listFxRevaluationRuns(
         })),
     }));
   });
+}
+
+/** The workspace list screen: the newest `limit` runs. */
+export function listFxRevaluationRuns(tenant: string, limit = 24): Promise<FxRevaluationRun[]> {
+  return loadFxRevaluationRuns(tenant, { limit });
+}
+
+/** Every run inside `[from, to]` — what the FX report discloses, with no cap. */
+export function listFxRevaluationRunsBetween(
+  tenant: string,
+  from: string,
+  to: string,
+): Promise<FxRevaluationRun[]> {
+  return loadFxRevaluationRuns(tenant, { from, to });
+}
+
+/** One posted run by date, with its lines (the idempotent re-post path). */
+export async function findFxRevaluationRunByDate(
+  tenant: string,
+  date: string,
+): Promise<FxRevaluationRun | null> {
+  const runs = await loadFxRevaluationRuns(tenant, { from: date, to: date });
+  return runs.find((run) => run.revaluationDate === date) ?? null;
 }
 
 export async function findFxRevaluationRunId(tenant: string, date: string): Promise<string | null> {

@@ -7,6 +7,7 @@ import {
 import { accountingFiscalYears } from "../schema.js";
 import type { TenantTransaction } from "../tenant-context.js";
 import { getAccountingModulePreferences } from "./accountingModulePreferencesRepository.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 const MONTHS = [
   "january",
@@ -64,7 +65,9 @@ export async function resolveVoucherPeriod(
   config: VoucherNumberingUpdate,
   date: string | undefined,
 ): Promise<VoucherPeriod> {
-  const today = new Date().toISOString().slice(0, 10);
+  // The workspace's business day, not the UTC day: a Karachi tenant at 02:00 local
+  // still reports the previous UTC date, which previewed the wrong rollover year.
+  const today = await workspaceTodayIso(subdomain);
   const voucherDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : today;
   const calendarYear = voucherCalendarYear(voucherDate, new Date().getFullYear());
   if (config.rolloverPolicy === "never") return { periodYear: 0, printYear: calendarYear };

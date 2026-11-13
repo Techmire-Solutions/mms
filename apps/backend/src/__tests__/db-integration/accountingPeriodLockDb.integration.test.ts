@@ -212,36 +212,41 @@ describe("posting periods are a real monthly lock (Postgres)", () => {
     );
   });
 
-  it("allows the year-end closing entry into the period it closes", async () => {
-    // The close writes its closing entry (source_type "closing") in the same
-    // transaction that marks the periods closed, so it is the one posting that
-    // must be exempt from the period backstop. `source_type` is server-owned, so a
-    // client cannot claim it.
-    await withTenant(TENANT, async (tx) => {
-      await tx.insert(accountingEntries).values({
-        id: "raw-closing",
-        workspaceSubdomain: TENANT,
-        date: "2026-05-31",
-        ref: "CLOSING-FY-LOCK",
-        description: "Close FY",
-        status: "posted",
-        createdBy: "system",
-        fiscalYear: "",
-        sourceType: "closing",
-        sourceId: "fy-lock",
-      });
-      await tx.insert(accountingJournalLines).values(
-        balancedLines("closing").map((line) => ({
-          id: line.id,
+  it("refuses a hand-labelled 'closing' entry that is not the registered closure", async () => {
+    // 0254 narrowed the exemption: the source type alone no longer skips the period
+    // lock, only the registered closing entry of the year being closed does (a year
+    // that is closed, ending on the entry date). Here `fy-lock` is open, so the row is
+    // just a normal posting inside a closed period. The legitimate close — which writes
+    // its entry in the same transaction that closes the periods — is proven end to end
+    // by `accountingCloseConcurrencyDb` (exactly one closing entry per race).
+    await expectGuardFailure(
+      withTenant(TENANT, async (tx) => {
+        await tx.insert(accountingEntries).values({
+          id: "raw-closing",
           workspaceSubdomain: TENANT,
-          entryId: "raw-closing",
-          accountId: line.account_id,
-          debit: String(line.debit),
-          credit: String(line.credit),
-          description: "",
-        })),
-      );
-    });
+          date: "2026-05-31",
+          ref: "CLOSING-FY-LOCK",
+          description: "Close FY",
+          status: "posted",
+          createdBy: "system",
+          fiscalYear: "",
+          sourceType: "closing",
+          sourceId: "fy-lock",
+        });
+        await tx.insert(accountingJournalLines).values(
+          balancedLines("closing").map((line) => ({
+            id: line.id,
+            workspaceSubdomain: TENANT,
+            entryId: "raw-closing",
+            accountId: line.account_id,
+            debit: String(line.debit),
+            credit: String(line.credit),
+            description: "",
+          })),
+        );
+      }),
+      /closed posting period/i,
+    );
   });
 
   it("requires reopening the period before it accepts backdated postings again", async () => {

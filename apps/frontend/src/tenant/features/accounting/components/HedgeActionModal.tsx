@@ -20,7 +20,10 @@ interface HedgeActionModalProps {
   onSave: (input: HedgeActionInput) => Promise<void>;
 }
 
-/** Cash settlement of the forward, or reclassification of the settled reserve into profit or loss. */
+/**
+ * Cash settlement of the forward, reclassification of the reserve into profit or
+ * loss, or discontinuation of the hedge prospectively (IFRS 9.6.5.6).
+ */
 export function HedgeActionModal({
   action,
   hedge,
@@ -34,9 +37,13 @@ export function HedgeActionModal({
     date: todayISO(),
     rate: "",
     accountId: "",
+    reason: "",
   });
   const settle = action === "settle";
-  const complete = input.date && input.accountId && (!settle || input.rate.trim());
+  const discontinue = action === "discontinue";
+  const complete = discontinue
+    ? Boolean(input.date && input.reason.trim().length >= 3)
+    : Boolean(input.date && input.accountId && (!settle || input.rate.trim()));
   const submit = () => {
     if (complete) void onSave({ ...input, rate: input.rate.trim() });
   };
@@ -46,13 +53,21 @@ export function HedgeActionModal({
       open
       onClose={onClose}
       title={t(
-        settle ? "accounting.settings.hedges.settle" : "accounting.settings.hedges.reclassify",
+        settle
+          ? "accounting.settings.hedges.settle"
+          : discontinue
+            ? "accounting.settings.hedges.discontinue"
+            : "accounting.settings.hedges.reclassify",
       )}
       subtitle={hedge.name}
       icon={HandCoins}
       cancelLabel={t("common.cancel")}
       saveLabel={t(
-        settle ? "accounting.settings.hedges.settle" : "accounting.settings.hedges.reclassify",
+        settle
+          ? "accounting.settings.hedges.settle"
+          : discontinue
+            ? "accounting.settings.hedges.discontinue"
+            : "accounting.settings.hedges.reclassify",
       )}
       onSave={submit}
       saving={saving}
@@ -71,7 +86,9 @@ export function HedgeActionModal({
           {t(
             settle
               ? "accounting.settings.hedges.settleHint"
-              : "accounting.settings.hedges.reclassifyHint",
+              : discontinue
+                ? "accounting.settings.hedges.discontinueHint"
+                : "accounting.settings.hedges.reclassifyHint",
           )}
         </p>
         <Field id="hedge-action-date" label={t("accounting.settings.hedges.actionDate")} required>
@@ -99,28 +116,43 @@ export function HedgeActionModal({
             />
           </Field>
         )}
-        <Field
-          id="hedge-action-account"
-          label={t(
-            settle
-              ? "accounting.settings.hedges.cashAccount"
-              : "accounting.settings.hedges.targetAccount",
-          )}
-          required
-        >
-          <FormSelect
+        {discontinue && (
+          <Field id="hedge-action-reason" label={t("accounting.settings.hedges.reason")} required>
+            <Input
+              id="hedge-action-reason"
+              name="reason"
+              value={input.reason}
+              placeholder={t("accounting.settings.hedges.reasonPlaceholder")}
+              onChange={(event) =>
+                setInput((current) => ({ ...current, reason: event.target.value }))
+              }
+            />
+          </Field>
+        )}
+        {!discontinue && (
+          <Field
             id="hedge-action-account"
-            name="accountId"
-            value={input.accountId}
-            onChange={(accountId) => setInput((current) => ({ ...current, accountId }))}
-            placeholder={t("accounting.journal.form.selectAccount")}
-            options={
+            label={t(
               settle
-                ? accountOptions(accounts, "Asset")
-                : accountOptions(accounts, ["Asset", "Expense", "Revenue"])
-            }
-          />
-        </Field>
+                ? "accounting.settings.hedges.cashAccount"
+                : "accounting.settings.hedges.targetAccount",
+            )}
+            required
+          >
+            <FormSelect
+              id="hedge-action-account"
+              name="accountId"
+              value={input.accountId}
+              onChange={(accountId) => setInput((current) => ({ ...current, accountId }))}
+              placeholder={t("accounting.journal.form.selectAccount")}
+              options={
+                settle
+                  ? accountOptions(accounts, "Asset")
+                  : accountOptions(accounts, ["Asset", "Expense", "Revenue"])
+              }
+            />
+          </Field>
+        )}
       </form>
     </FormModal>
   );

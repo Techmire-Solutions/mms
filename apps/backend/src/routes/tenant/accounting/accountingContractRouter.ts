@@ -10,12 +10,46 @@ import { canReadCollection, canDeleteCollection } from "../../../services/rbacSe
 import { handleContractError } from "../../../lib/contractError.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import { accountingUseCases } from "../../../accounting/use-cases/accountingUseCases.js";
+import { accountingReportDocumentHandlers } from "./accountingReportDocumentHandlers.js";
 
 const s = initServer();
 
 export const accountingContractRouter: FastifyPluginAsync = async (fastify) => {
   installContractErrorHandler(fastify);
   const router = s.router(accountingContract, {
+    getEntry: async ({
+      params,
+      request,
+    }: ContractRouteArgs<(typeof accountingContract)["getEntry"]>): Promise<
+      ContractRouteResponse<(typeof accountingContract)["getEntry"]>
+    > => {
+      const user = request.user as User;
+      if (!canReadCollection(user, "accounting_entries")) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Insufficient permissions" },
+        };
+      }
+      try {
+        const entry = await withTenant(
+          String(request.tenant?.id),
+          () => accountingUseCases.loadEntryById(params.id),
+          { readOnly: true },
+        );
+        if (!entry) {
+          return {
+            status: 404 as const,
+            body: { type: "not_found", message: "Journal entry not found" },
+          };
+        }
+        return { status: 200 as const, body: entry };
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "database_error", message: "Failed to load the journal entry" },
+        });
+      }
+    },
     listAccounts: async ({
       query,
       request,
@@ -92,7 +126,14 @@ export const accountingContractRouter: FastifyPluginAsync = async (fastify) => {
         if (query?.page !== undefined) {
           const result = await withTenant(
             String(request.tenant?.id),
-            () => accountingUseCases.loadEntriesPage({ ...query, includeDeleted }),
+            () =>
+              accountingUseCases.loadEntriesPage({
+                ...query,
+                includeDeleted,
+                // The wire carries `true`/`"true"`; the loader takes a boolean.
+                includeLines:
+                  isQueryFlagTrue(query?.includeLines) || query?.includeLines === undefined,
+              }),
             { readOnly: true },
           );
           return { status: 200 as const, body: result };
@@ -168,6 +209,7 @@ export const accountingContractRouter: FastifyPluginAsync = async (fastify) => {
         });
       }
     },
+    ...accountingReportDocumentHandlers,
   } as unknown as RouterImplementation<typeof accountingContract>);
 
   await fastify.register(s.plugin(router), {

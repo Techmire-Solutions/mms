@@ -7,6 +7,7 @@ import {
   accountingExchangeRateLookupResponseSchema,
   accountingExchangeRatesResponseSchema,
   currencyExchangeabilityPutSchema,
+  emptyQuerySchema,
   exchangeRateListQuerySchema,
   exchangeRateLookupQuerySchema,
   exchangeRatePutBodySchema,
@@ -44,6 +45,8 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
   fastify.get("/currency-settings", async (request, reply) => {
     const user = request.user as User;
     if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
+    const query = parseRequest(emptyQuerySchema, request.query ?? {});
+    if (!query.ok) return replyValidationError(reply, query);
     const tenant = String(request.tenant?.id);
     try {
       // Not readOnly: the first read creates the tenant's settings row.
@@ -79,6 +82,8 @@ export const accountingExchangeRateRoutes: FastifyPluginAsync = async (fastify) 
   fastify.get("/currency-exchangeability", async (request, reply) => {
     const user = request.user as User;
     if (!canReadCollection(user, COLLECTION)) return sendForbidden(reply);
+    const query = parseRequest(emptyQuerySchema, request.query ?? {});
+    if (!query.ok) return replyValidationError(reply, query);
     const tenant = String(request.tenant?.id);
     try {
       const currencies = await withTenant(tenant, () => listExchangeability(deps, tenant), {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { monthKeySchema } from "../core/monthKeySchema.js";
 
 export const obligationsCommandMetricsSnapshotSchema = z
   .object({
@@ -29,6 +30,23 @@ export const accountingCommandMetricsSnapshotSchema = z
     surplus: z.number(),
     assets: z.number(),
     liabilities: z.number(),
+    /**
+     * Revenue and expense per calendar month, oldest first (last six months with
+     * posted activity). The dashboard chart used to be computed in the browser
+     * from every journal entry, which meant paging the whole ledger down; this is
+     * the server-side equivalent.
+     */
+    monthly: z
+      .array(
+        z
+          .object({
+            month: monthKeySchema,
+            revenue: z.number(),
+            expenses: z.number(),
+          })
+          .strict(),
+      )
+      .default([]),
   })
   .strict();
 

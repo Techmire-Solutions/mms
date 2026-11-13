@@ -204,12 +204,18 @@ export function parseNaturalLanguage(text: string): QuickActionType | null {
 }
 
 export function extractAmountFromNaturalLanguage(text: string): string | null {
-  const tokens = text.split(/\s+/);
-  for (const token of tokens) {
-    const cleaned = token.replace(/^[$€£Rs.\s]+/, "").replace(/,/g, "");
-    if (/^\d+(?:\.\d{1,2})?$/.test(cleaned) && Number(cleaned) > 0) {
-      return cleaned;
-    }
+  // Commas are accepted only as valid thousands groups ("1,234.56"); a bare
+  // "1234,56" is refused instead of being stripped to 123456 (a 100× posting).
+  for (const token of text.split(/\s+/)) {
+    const cleaned = token.replace(/^[$€£Rs.\s]+/, "");
+    const grouped = /^\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?$/;
+    const plain = /^\d+(?:\.\d{1,2})?$/;
+    const normalized = grouped.test(cleaned)
+      ? cleaned.replace(/,/g, "")
+      : plain.test(cleaned)
+        ? cleaned
+        : null;
+    if (normalized !== null && Number(normalized) > 0) return normalized;
   }
   return null;
 }

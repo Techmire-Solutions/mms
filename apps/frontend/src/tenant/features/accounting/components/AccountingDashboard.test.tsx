@@ -23,6 +23,12 @@ const mockMetrics = vi.hoisted(() => ({
     activeAccounts: 8,
     inactiveAccounts: 1,
     postedVolume: 80000,
+    // The chart series is server-side now (command metrics); the component no
+    // longer recomputes it from the journal page.
+    monthly: [
+      { month: "2026-08", revenue: 50000, expenses: 30000 },
+      { month: "2026-09", revenue: 5000, expenses: 2500 },
+    ],
   } as Record<string, unknown> | undefined,
 }));
 
@@ -163,6 +169,12 @@ describe("AccountingDashboard Component", () => {
       liabilities: 40000,
       posted: 12,
       draft: 2,
+      // The chart series is server-side now; without it the chart shows its
+      // empty state regardless of the journal page.
+      monthly: [
+        { month: "2026-08", revenue: 50000, expenses: 30000 },
+        { month: "2026-09", revenue: 5000, expenses: 2500 },
+      ],
     };
     mockAggregates.data = {
       netCashFlow: 15000,

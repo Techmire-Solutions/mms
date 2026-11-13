@@ -43,7 +43,6 @@ export function JournalEntries(props: JournalEntriesWithQueryProps) {
         modeTabs={controller.modeTabs}
         journalSubTabs={controller.journalSubTabs}
         entries={entries}
-        allEntries={props.allEntries}
         accounts={accounts}
         fiscalYears={fiscalYears}
         canWrite={controller.canWrite}
@@ -69,10 +68,10 @@ export function JournalEntries(props: JournalEntriesWithQueryProps) {
       mode={controller.mode}
       modeTabs={controller.modeTabs}
       entries={entries}
-      allEntries={props.allEntries}
       filteredEntries={controller.filtered}
       accounts={accounts}
       fiscalYears={fiscalYears}
+      settings={props.settings}
       selectedIds={controller.selectedIds}
       allVisibleSelected={controller.allVisibleSelected}
       someVisibleSelected={controller.someVisibleSelected}

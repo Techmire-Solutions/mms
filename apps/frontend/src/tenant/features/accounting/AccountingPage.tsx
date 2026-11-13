@@ -54,11 +54,9 @@ export default function Accounting() {
     createAccountRequestKey,
     accounts,
     journalEntries,
-    aggregateEntries,
     fiscalYears,
     accountsResult,
     entriesResult,
-    aggregateEntriesResult,
     journalTotal,
     filteredCount,
     setFilteredCount,
@@ -127,7 +125,6 @@ export default function Accounting() {
                       accounts={accounts}
                       accountsLoaded={accountsResult.isSuccess}
                       entries={journalEntries}
-                      aggregateEntries={aggregateEntries}
                       fiscalYears={fiscalYears}
                       settings={settings}
                       activeSubTab={activeSubTab}
@@ -155,7 +152,6 @@ export default function Accounting() {
                       onRetry={() => {
                         void accountsResult.refetch();
                         void entriesResult.refetch();
-                        void aggregateEntriesResult.refetch();
                       }}
                       onAccountsChange={setAccounts}
                       onEntriesChange={setEntries}

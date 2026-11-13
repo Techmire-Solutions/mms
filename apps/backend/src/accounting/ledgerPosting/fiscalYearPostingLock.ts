@@ -41,7 +41,11 @@ export async function lockFiscalYearForPosting(
   await withTenant(subdomain, async (tx) => {
     if (typeof tx.execute !== "function") return;
     for (const yearId of ids) {
-      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`fy:${subdomain}:${yearId}`}))`);
+      // `hashtextextended` (64-bit) rather than `hashtext` (32-bit): the same family
+      // the entry locks use, so unrelated years do not collide into one lock key.
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${`fy:${subdomain}:${yearId}`}, 0))`,
+      );
     }
   });
 }

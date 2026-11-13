@@ -1,35 +1,62 @@
 import {
   dedupeTrimmedIds,
   findFiscalYearForDate,
+  journalCurrencyImbalances,
+  formatJournalCurrencyImbalance,
   isFiscalYearClosed,
   isJournalEntryBalanced,
   isValidIsoDate,
   moneyToCents,
   resolveFiscalYearRef,
-  type Account,
   type FiscalYear,
   type JournalEntry,
 } from "@mms/shared";
 import { ConflictError } from "../../lib/httpErrors.js";
+import { ACCOUNTING_ERROR_CODES } from "@mms/shared";
+import { ledgerError } from "./accountingLedgerErrors.js";
+
+export { ledgerError, type AccountingLedgerHttpError } from "./accountingLedgerErrors.js";
+import {
+  assertJournalAccountsWritable,
+  type PostableAccountLoader,
+} from "./accountingAccountPostability.js";
+
+export {
+  assertAccountIdsPostable,
+  assertJournalAccountsWritable,
+  type PostableAccountLike,
+  type PostableAccountLoader,
+} from "./accountingAccountPostability.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import type { AccountingRepository } from "../repository/accountingRepository.js";
 
-export type AccountingLedgerHttpError = Error & {
-  statusCode: number;
-  type: "validation_error";
-};
+/**
+ * `accounting_journal_lines.debit/credit` are `numeric(14,2)`: at most
+ * 999,999,999,999.99. The shared DTO accepts up to safe integer cents (~9e13), so an
+ * amount in between used to reach PostgreSQL and fail with `22003 numeric field
+ * overflow` — a 500 for what is a payload problem. This is the 422 boundary. The
+ * column is deliberately not widened: the functional currency contract is two
+ * decimals until the DTOs move to decimal strings.
+ */
+export const MAX_LEDGER_AMOUNT_CENTS = 99_999_999_999_999;
 
-function ledgerError(message: string): AccountingLedgerHttpError {
-  const error = new Error(message) as AccountingLedgerHttpError;
-  error.statusCode = 422;
-  error.type = "validation_error";
-  return error;
+function assertLedgerAmountsFitColumns(entry: JournalEntry): void {
+  for (const line of entry.lines ?? []) {
+    for (const amount of [line.debit ?? 0, line.credit ?? 0]) {
+      if (!Number.isFinite(amount) || Math.abs(amount) * 100 > MAX_LEDGER_AMOUNT_CENTS) {
+        throw ledgerError(
+          `Journal line amount ${amount} exceeds the two-decimal ledger maximum (999,999,999,999.99)`,
+        );
+      }
+    }
+  }
 }
 
 export function prepareJournalEntryForPersist(
   entry: JournalEntry,
   fiscalYears: readonly FiscalYear[],
 ): JournalEntry {
+  assertLedgerAmountsFitColumns(entry);
   if (!isValidIsoDate(entry.date ?? "")) {
     throw ledgerError("Journal entry date must be a real calendar date in YYYY-MM-DD format");
   }
@@ -39,7 +66,24 @@ export function prepareJournalEntryForPersist(
   const resolved = declared ?? containing;
 
   if (entry.status === "posted" && !isJournalEntryBalanced(entry.lines ?? [])) {
-    throw ledgerError("Posted journal entries must have matching debit and credit totals");
+    throw ledgerError(
+      "Posted journal entries must have matching debit and credit totals",
+      ACCOUNTING_ERROR_CODES.voucherUnbalanced,
+    );
+  }
+  if (entry.status === "posted") {
+    // A voucher written in one foreign currency has a second condition beyond the
+    // functional pair: its document-currency legs must balance too. Mixed-currency
+    // settlement entries are excluded by the helper (their legs differ on purpose).
+    const imbalances = journalCurrencyImbalances(entry.lines ?? []);
+    if (imbalances.length > 0) {
+      throw ledgerError(
+        `Posted journal entry does not balance in its transaction currency: ${imbalances
+          .map(formatJournalCurrencyImbalance)
+          .join("; ")}`,
+        ACCOUNTING_ERROR_CODES.voucherUnbalanced,
+      );
+    }
   }
 
   return {
@@ -56,13 +100,17 @@ export function assertJournalEntryPeriodOpen(
 ): void {
   const declared = resolveFiscalYearRef(fiscalYears, entry.fiscal_year_id ?? entry.fiscal_year);
   if (isFiscalYearClosed(declared)) {
-    throw ledgerError("Cannot mutate journal entries in a closed fiscal year");
+    throw ledgerError(
+      "Cannot mutate journal entries in a closed fiscal year",
+      ACCOUNTING_ERROR_CODES.yearClosed,
+    );
   }
 
   const containing = findFiscalYearForDate(fiscalYears, entry.date);
   if (isFiscalYearClosed(containing)) {
     throw ledgerError(
       `Cannot write journal entries dated inside a closed fiscal year${containing?.label ? ` (${containing.label})` : ""}`,
+      ACCOUNTING_ERROR_CODES.yearClosed,
     );
   }
 
@@ -98,29 +146,9 @@ export async function assertPostingPeriodOpen(
 ): Promise<void> {
   const closed = await findClosedPeriod(entryDate);
   if (closed) {
-    throw ledgerError(`Posting period ${closed} is closed — post into an open period`);
-  }
-}
-
-export async function assertJournalAccountsWritable(
-  tenant: string,
-  entries: readonly JournalEntry[],
-  findAccountsByIds: (tenant: string, ids: string[]) => Promise<Account[]>,
-): Promise<void> {
-  const accountIds = dedupeTrimmedIds(
-    entries.flatMap((entry) => (entry.lines ?? []).map((line) => line.account_id)),
-  );
-  if (accountIds.length === 0) return;
-  const byId = new Map(
-    (await findAccountsByIds(tenant, accountIds)).map((account) => [account.id, account]),
-  );
-  const blocked = accountIds.filter((id) => {
-    const account = byId.get(id);
-    return !account || account.isActive === false;
-  });
-  if (blocked.length > 0) {
     throw ledgerError(
-      `Journal lines reference unknown, archived or deactivated accounts: ${blocked.join(", ")}`,
+      `Posting period ${closed} is closed — post into an open period`,
+      ACCOUNTING_ERROR_CODES.periodClosed,
     );
   }
 }
@@ -200,6 +228,11 @@ export async function loadStoredEntriesByIds(
   return new Map(stored.map((entry) => [entry.id, entry]));
 }
 
+/**
+ * Forces the fields an ordinary save may not set: source identity, the reversal
+ * pointer, and the preparer attribution. `created_by` is server-owned on update so a
+ * posted voucher cannot be re-attributed by an edit (the database freezes it too).
+ */
 export function withServerOwnedSourceKeys(
   entry: JournalEntry,
   stored: JournalEntry | undefined,
@@ -209,6 +242,7 @@ export function withServerOwnedSourceKeys(
     source_type: stored ? stored.source_type : "manual",
     source_id: stored ? stored.source_id : undefined,
     reversed_ref: stored ? stored.reversed_ref : undefined,
+    created_by: stored ? stored.created_by : (entry.created_by ?? ""),
   };
 }
 
@@ -236,9 +270,9 @@ export function assertEntriesMutable(
     const existing = storedById.get(incoming.id);
     if (!existing || existing.status !== "posted") continue;
     if (journalEntryContentChanged(incoming, existing)) {
-      throw Object.assign(
-        new Error("Posted journal entries are immutable — reverse them instead of editing"),
-        { statusCode: 422, type: "validation_error" },
+      throw ledgerError(
+        "Posted journal entries are immutable — reverse them instead of editing",
+        ACCOUNTING_ERROR_CODES.voucherPosted,
       );
     }
   }
@@ -249,7 +283,7 @@ export async function assertEntriesWritable(
   entries: readonly JournalEntry[],
   storedById: ReadonlyMap<string, JournalEntry>,
   fiscalYears: readonly FiscalYear[],
-  findAccountsByIds: (tenant: string, ids: string[]) => Promise<Account[]>,
+  loadPostableAccounts: PostableAccountLoader,
   findClosedPeriodForDate: (tenant: string, date: string) => Promise<string | null>,
 ): Promise<void> {
   const targets = entries.filter((entry) => {
@@ -261,7 +295,5 @@ export async function assertEntriesWritable(
     assertJournalEntryPeriodOpen(entry, fiscalYears);
     await assertPostingPeriodOpen(entry.date, (date) => findClosedPeriodForDate(tenant, date));
   }
-  await assertJournalAccountsWritable(tenant, targets, findAccountsByIds);
+  await assertJournalAccountsWritable(tenant, targets, loadPostableAccounts);
 }
-
-export { ledgerError };

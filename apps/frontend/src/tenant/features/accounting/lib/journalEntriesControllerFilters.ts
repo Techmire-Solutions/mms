@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import type { AccountingListQuery } from "@mms/shared";
+import type { AccountingListQuery, JournalEntryStatus } from "@mms/shared";
 import { moneyToCents } from "@mms/shared";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { JournalEntry } from "@/lib/data/accountingData";
@@ -8,7 +8,7 @@ import { getJournalEntryLineTotals } from "@/tenant/features/accounting/lib/jour
 /** Journal Work filter values. Owned by the page that issues the server query. */
 export interface JournalEntryFilterState {
   search: string;
-  statusFilter: string;
+  statusFilter: JournalEntryStatus | typeof JOURNAL_FILTER_ALL;
   tagFilter: string;
   dateFrom: string;
   dateTo: string;

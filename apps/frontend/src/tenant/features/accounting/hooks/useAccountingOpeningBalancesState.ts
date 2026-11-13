@@ -61,7 +61,14 @@ export function useAccountingOpeningBalancesState({
   }
 
   const balances = useMemo(() => openingQuery.data ?? [], [openingQuery.data]);
+  /** Rows fetched for the selected year; `placeholderData` keeps the previous one. */
   const rowsReady = openingQuery.isSuccess && !openingQuery.isPlaceholderData;
+  // A row with no amount is not an opening balance: the server drops zero lines
+  // and then rejects the "balanced" 0 = 0 journal, so Post must stay disabled.
+  const nonZeroBalances = useMemo(
+    () => balances.filter((row) => moneyToCents(row.debit) !== 0 || moneyToCents(row.credit) !== 0),
+    [balances],
+  );
 
   const accountById = useMemo(
     () => new Map(accounts.map((account) => [account.id, account])),
@@ -81,13 +88,14 @@ export function useAccountingOpeningBalancesState({
       creditCents,
       singleSided,
       balanced: debitCents === creditCents,
-      postable: balances.length > 0 && singleSided && debitCents === creditCents,
+      postable:
+        nonZeroBalances.length > 0 && singleSided && debitCents === creditCents && debitCents > 0,
     };
-  }, [balances]);
+  }, [balances, nonZeroBalances]);
 
   const postBlockedReason = !rowsReady
     ? null
-    : balances.length === 0
+    : nonZeroBalances.length === 0
       ? t("accounting.settings.opening.postBlockedEmpty")
       : !totals.singleSided
         ? t("accounting.settings.opening.postBlockedSingleSided")

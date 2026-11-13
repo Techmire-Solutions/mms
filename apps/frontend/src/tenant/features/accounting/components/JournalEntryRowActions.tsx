@@ -45,6 +45,9 @@ export function JournalEntryRowActions({
   const { t } = useTranslation();
   const isDraft = entry.status === "draft";
   const isPosted = entry.status === "posted";
+  // A reversed voucher keeps `status: "posted"`; the list projects the active
+  // reversal so the action disappears instead of failing with a 409 after click.
+  const isReversed = Boolean(entry.active_reversal_entry_id);
 
   return (
     <ModuleRowActionsMenu
@@ -76,7 +79,7 @@ export function JournalEntryRowActions({
                 {t("accounting.journal.actions.post")}
               </DropdownMenuItem>
             ) : null}
-            {canWrite && isPosted ? (
+            {canWrite && isPosted && !isReversed ? (
               <DropdownMenuItem onClick={() => onReverse(entry)}>
                 <RotateCcw className="w-3.5 h-3.5 me-2 text-warning" />{" "}
                 {t("accounting.journal.actions.reverse")}

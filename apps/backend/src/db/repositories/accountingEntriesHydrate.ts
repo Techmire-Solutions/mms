@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, ne } from "drizzle-orm";
+import { and, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import type { JournalEntry } from "@mms/shared";
 import {
   accountingEntries,
@@ -14,7 +14,37 @@ import {
   type JournalLineFxRow,
 } from "./accountingJournalLineFx.js";
 
-export type EntryRow = typeof accountingEntries.$inferSelect;
+export type EntryRow = typeof accountingEntries.$inferSelect & {
+  /** Correlated projection: id of the active reversal of this entry, if any. */
+  activeReversalEntryId?: string | null;
+};
+
+/**
+ * Correlated subquery: the active reversal of the row being selected.
+ *
+ * Matches the backend reversal lookup (`findActiveReversalOf`): a non-deleted
+ * `reversal` entry whose `source_id` is the original id or whose `reversed_ref`
+ * is the original ref. Projected so the journal list can hide an already-reversed
+ * voucher without loading every reversal entry into the page.
+ */
+export function activeReversalEntryIdSql() {
+  // The identifiers are literal on purpose: inside the subquery an unqualified
+  // column name would bind to the inner alias `r`, so the outer table must be
+  // named explicitly (`"accounting_entries"."id"`). The select always reads from
+  // the unaliased `accounting_entries` table.
+  return sql<string | null>`(
+    SELECT r.id
+      FROM accounting_entries r
+     WHERE r.workspace_subdomain = "accounting_entries"."workspace_subdomain"
+       AND r.deleted_at IS NULL
+       AND r.source_type = 'reversal'
+       AND (
+         r.source_id = "accounting_entries"."id"
+         OR ("accounting_entries"."ref" <> '' AND r.reversed_ref = "accounting_entries"."ref")
+       )
+     LIMIT 1
+  )`;
+}
 
 export type JournalLineRow = Pick<
   typeof accountingJournalLines.$inferSelect,
@@ -26,6 +56,7 @@ export type JournalLineRow = Pick<
 } & JournalLineFxRow;
 
 export const accountingEntrySelectFields = {
+  activeReversalEntryId: activeReversalEntryIdSql(),
   id: accountingEntries.id,
   workspaceSubdomain: accountingEntries.workspaceSubdomain,
   date: accountingEntries.date,
@@ -83,6 +114,7 @@ export function entryRowToRecord(
   if (row.sourceId) entry.source_id = row.sourceId;
   if (row.transactionType) entry.transaction_type = row.transactionType;
   if (row.reversedRef) entry.reversed_ref = row.reversedRef;
+  if (row.activeReversalEntryId) entry.active_reversal_entry_id = row.activeReversalEntryId;
 
   return entry;
 }

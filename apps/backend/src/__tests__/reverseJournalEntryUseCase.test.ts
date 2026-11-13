@@ -134,10 +134,10 @@ function createHarness(
       return hit ? { id: hit.id, ref: hit.ref } : null;
     },
     listFiscalYears: async () => options.years ?? [FY2026_OPEN],
-    findAccountsByIds: async (_tenant, ids) =>
-      (options.accounts ?? [account("office"), account("cash")]).filter((row) =>
-        ids.includes(row.id),
-      ),
+    lockPostableAccounts: async (_tenant, ids) =>
+      (options.accounts ?? [account("office"), account("cash")])
+        .filter((row) => ids.includes(row.id))
+        .map((row) => ({ id: row.id, isActive: row.isActive, hasChildren: false })),
     saveEntry: async (_tenant, entry) => {
       // Let a concurrent request interleave here, as a real DB round-trip would.
       await new Promise((resolve) => setImmediate(resolve));
@@ -395,7 +395,7 @@ describe("reverseJournalEntry", () => {
     // Assert
     await expect(attempt).rejects.toMatchObject({
       statusCode: 422,
-      message: expect.stringMatching(/deactivated accounts: office/),
+      message: expect.stringMatching(/office \(deactivated\)/),
     });
   });
 

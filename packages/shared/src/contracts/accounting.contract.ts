@@ -1,10 +1,11 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { baseListQuerySchema } from "../core/apiSchemas.js";
+import { accountingErrorEnvelopeSchema } from "../finance/accountingErrorCodes.js";
 import { journalTemplatesSchema } from "../finance/accountingJournalTemplates.js";
 import {
   accountingAccountsListQuerySchema,
   accountingEntriesListQuerySchema,
+  accountingFiscalYearsListQuerySchema,
 } from "../finance/accountingListQuery.js";
 import {
   accountRecordSchema,
@@ -21,14 +22,17 @@ import {
   receivablesAgingQuerySchema,
   receivablesAgingSchema,
 } from "../finance/accountingReportEndpoints.js";
+import { accountingReportDocumentContract } from "./accountingReportDocuments.contract.js";
 import {
   accountingFieldConfigPutBodySchema,
   accountingPreferencesPutBodySchema,
 } from "../finance/accountingSetupConfigTypes.js";
 
 const c = initContract();
-const errorResponse = z.object({ type: z.string(), message: z.string() }).passthrough();
+const errorResponse = accountingErrorEnvelopeSchema;
+
 const ok = z.unknown();
+const idParams = z.object({ id: z.string() });
 
 const paginationFields = {
   total: z.number(),
@@ -80,15 +84,8 @@ export const accountingPreferencesResponseSchema = z.object({
   journalTemplates: journalTemplatesSchema.optional(),
 });
 
-/**
- * These three operations are served by the shared CRUD bulk route
- * (`registerIncludableBulkRoutes` → `PUT {path}/bulk`), whose handler is
- * **additive upsert**, not a destructive replace: rows missing from the payload
- * are left untouched, and removals must go through the explicit
- * delete/bulk-delete operations. They were previously named `replace*`, which
- * contradicted the handler they actually resolve to.
- */
 export const accountingContract = c.router({
+  ...accountingReportDocumentContract,
   listAccounts: {
     method: "GET",
     path: "/api/accounting/accounts",
@@ -127,7 +124,7 @@ export const accountingContract = c.router({
   listFiscalYears: {
     method: "GET",
     path: "/api/accounting/fiscal-years",
-    query: baseListQuerySchema,
+    query: accountingFiscalYearsListQuerySchema,
     responses: {
       200: z.union([
         z.object({
@@ -140,6 +137,17 @@ export const accountingContract = c.router({
       500: ok,
     },
     summary: "List fiscal years",
+  },
+  getEntry: {
+    method: "GET",
+    path: "/api/accounting/entries/:id",
+    pathParams: idParams,
+    responses: {
+      200: journalEntryRecordSchema,
+      403: ok,
+      404: errorResponse,
+    },
+    summary: "Read one journal entry with its lines (drawer detail)",
   },
   upsertAccounts: {
     method: "PUT",

@@ -85,17 +85,37 @@ describe("journalEntriesControllerActions", () => {
   });
 
   describe("createJournalPostHandler", () => {
-    it("marks the matching entry status as posted", async () => {
+    it("fetches the lines of a header-only register row before posting it", async () => {
       let state = [mockEntry1, mockEntry2];
       const onChange = vi.fn(async (updater: (prev: JournalEntry[]) => JournalEntry[]) => {
         state = updater(state);
       });
+      // The register list ships no lines; posting the row directly sent an empty
+      // voucher and the server rejected every draft.
+      const headerOnly: JournalEntry = { ...mockEntry1, lines: [] };
+      const fetchEntry = vi.fn(async () => mockEntry1);
 
-      const handler = createJournalPostHandler({ onChange });
-      await handler(mockEntry1);
+      const handler = createJournalPostHandler({ onChange, fetchEntry });
+      await handler(headerOnly);
 
-      expect(state.find((e) => e.id === "entry-1")?.status).toBe("posted");
+      expect(fetchEntry).toHaveBeenCalledWith("entry-1");
+      const posted = state.find((e) => e.id === "entry-1");
+      expect(posted?.status).toBe("posted");
+      expect(posted?.lines).toHaveLength(2);
       expect(state.find((e) => e.id === "entry-2")?.status).toBe("posted");
+    });
+
+    it("posts directly when the row already carries its lines", async () => {
+      let state = [mockEntry1];
+      const onChange = vi.fn(async (updater: (prev: JournalEntry[]) => JournalEntry[]) => {
+        state = updater(state);
+      });
+      const fetchEntry = vi.fn(async () => mockEntry1);
+
+      await createJournalPostHandler({ onChange, fetchEntry })(mockEntry1);
+
+      expect(fetchEntry).not.toHaveBeenCalled();
+      expect(state[0]?.status).toBe("posted");
     });
   });
 

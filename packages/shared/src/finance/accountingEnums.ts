@@ -20,12 +20,46 @@ export const ACCOUNTING_ACCOUNT_TYPES = [
 
 export type AccountingAccountType = (typeof ACCOUNTING_ACCOUNT_TYPES)[number];
 
+/**
+ * The subtype vocabulary offered for each account type.
+ *
+ * This is the UI list **and** the seed's source of truth: `DEFAULT_CHART_OF_ACCOUNTS`
+ * uses several caption-style values (`Current Assets`, `Cost of Sales`, `Other
+ * Income`, …) that predate the singular entries, so both spellings stay here — a
+ * pinned test (`accountingDefaultChart.test.ts`) rejects any chart subtype missing
+ * from this list, which is what caught the previous drift.
+ */
 export const ACCOUNT_SUBTYPES: Record<AccountingAccountType, string[]> = {
-  Asset: ["Current Asset", "Fixed Asset", "Contra Asset", "Other Asset"],
-  Liability: ["Current Liability", "Long-term Liability", "Other Liability"],
-  Equity: ["Owner's Equity", "Retained Earnings", "Other Equity"],
-  Revenue: ["Operating Revenue", "Non-operating Revenue", "Other Revenue"],
-  Expense: ["Operating Expense", "Administrative Expense", "Financial Expense", "Other Expense"],
+  Asset: [
+    "Current Asset",
+    "Fixed Asset",
+    "Contra Asset",
+    "Other Asset",
+    // Capitalised captions used by the seeded default chart.
+    "Current Assets",
+    "Fixed Assets",
+    "Cash & Bank",
+  ],
+  Liability: [
+    "Current Liability",
+    "Long-term Liability",
+    "Other Liability",
+    "Current Liabilities",
+    "Long-Term Liabilities",
+  ],
+  Equity: ["Owner's Equity", "Retained Earnings", "Other Equity", "Equity"],
+  Revenue: ["Operating Revenue", "Non-operating Revenue", "Other Revenue", "Other Income"],
+  Expense: [
+    "Operating Expense",
+    "Administrative Expense",
+    "Financial Expense",
+    "Other Expense",
+    // Seeded default-chart expense families.
+    "Cost of Sales",
+    "Operating Expenses",
+    "Other Expenses",
+    "Tax & Exceptional",
+  ],
 };
 
 /** The side an account's balance grows on. Asset/Expense are debit-normal. */
@@ -73,6 +107,10 @@ export function accountTypeFromDb(value: string): AccountingAccountType {
  */
 export const JOURNAL_ENTRY_STATUSES = ["draft", "posted"] as const;
 export type JournalEntryStatus = (typeof JOURNAL_ENTRY_STATUSES)[number];
+
+export function isJournalEntryStatus(value: string): value is JournalEntryStatus {
+  return (JOURNAL_ENTRY_STATUSES as readonly string[]).includes(value);
+}
 
 /**
  * Lifecycle view over the stored status: a posted entry with an active reversal is

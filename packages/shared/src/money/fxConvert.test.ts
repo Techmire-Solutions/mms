@@ -7,6 +7,7 @@ import {
   invertExchangeRate,
   isValidExchangeRate,
   previewConvertedAmount,
+  rateDifference,
 } from "./fxConvert.js";
 import { moneyToDecimalString, parseMoney, subtractMoney } from "./money.js";
 import { currencyCodeSchema, exchangeRateValueSchema, moneyValueSchema } from "./moneySchemas.js";
@@ -116,5 +117,20 @@ describe("exchangeRateStringsEqual", () => {
     expect(exchangeRateStringsEqual("1.0000000001", "1")).toBe(false);
     expect(exchangeRateStringsEqual("278.5", "278.5000000001")).toBe(false);
     expect(exchangeRateStringsEqual("-1.5", "1.5")).toBe(false);
+  });
+});
+
+describe("rateDifference", () => {
+  it("returns a signed, canonical difference of two rates", () => {
+    expect(rateDifference("283.5", "282.25")).toBe("1.25");
+    expect(rateDifference("282.25", "283.5")).toBe("-1.25");
+    expect(rateDifference("280", "280")).toBe("0");
+    expect(rateDifference("280.1234567891", "280")).toBe("0.1234567891");
+  });
+
+  it("keeps the ten-decimal scale instead of drifting through a float", () => {
+    // 0.1 + 0.2 style: the string arithmetic stays exact at the rate scale.
+    expect(rateDifference("0.3", "0.1")).toBe("0.2");
+    expect(rateDifference("1.0000000001", "1")).toBe("0.0000000001");
   });
 });

@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useDeferredValue } from "react";
+import React, { useState, useEffect, useDeferredValue, useMemo } from "react";
 import { Landmark } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
+import { summaryAccountIds } from "@mms/shared";
 import { ACCOUNT_TYPE_META, type Account, type AccountType } from "@/lib/data/accountingData";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
 import { ChartOfAccountsListFilters } from "@/tenant/features/accounting/components/ChartOfAccountsListFilters";
@@ -84,6 +85,10 @@ export function ChartOfAccounts({
       .sort((firstAccount, secondAccount) =>
         firstAccount.code.localeCompare(secondAccount.code),
       ))();
+
+  // Header/summary accounts (those with children) are flagged in the list: the
+  // journal pickers exclude them because the server refuses a line on a parent.
+  const summaryIds = useMemo(() => summaryAccountIds(accounts), [accounts]);
 
   useEffect(() => {
     onFilteredCountChange?.(filtered.length);
@@ -213,6 +218,7 @@ export function ChartOfAccounts({
         <ChartOfAccountsListDesktopTable
           accounts={accounts}
           filteredAccounts={filtered}
+          summaryIds={summaryIds}
           balanceConfig={balanceConfig}
           canWrite={canWrite}
           isColumnVisible={columnVisible}

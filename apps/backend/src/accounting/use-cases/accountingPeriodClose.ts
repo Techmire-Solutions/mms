@@ -12,22 +12,69 @@ import {
 } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import { aggregateAccountingReport } from "../../db/repositories/accountingRepositoryReport.js";
 import { getAccountingPreferencesService } from "../../services/accountingPreferencesService.js";
-import { prepareJournalEntryForPersist } from "./accountingLedgerGuards.js";
-import { findAccountById } from "../../db/repositories/accountingAccountsRepository.js";
+import {
+  assertJournalAccountsWritable,
+  prepareJournalEntryForPersist,
+} from "./accountingLedgerGuards.js";
+import {
+  findAccountById,
+  lockPostableAccounts,
+} from "../../db/repositories/accountingAccountsRepository.js";
 import { getCurrencySettings } from "../../db/repositories/accountingCurrencySettingsRepository.js";
 import {
   hasFxRevaluationBetween,
   listForeignMonetaryBalances,
 } from "../../db/repositories/accountingFxRevaluationRepository.js";
+import { listHedgeRelationships } from "../../db/repositories/accountingHedgesRepository.js";
+import {
+  findIas29RunId,
+  getHyperinflationSettings,
+} from "../../db/repositories/accountingHyperinflationRepository.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { ACCOUNTING_ERROR_CODES } from "@mms/shared";
 import { lockFiscalYearForPosting } from "../ledgerPosting/fiscalYearPostingLock.js";
+import { ledgerError } from "./accountingLedgerErrors.js";
 
-function ledgerError(
-  message: string,
-  statusCode = 422,
-): Error & { statusCode: number; type: string } {
-  return Object.assign(new Error(message), { statusCode, type: "validation_error" });
+/**
+ * IFRS 9: a hedge's fair value and OCI reserve are only on the books on their
+ * valuation date — every valuation is reversed the next day — so a year closed
+ * without a closing-date valuation reports no hedge position at all.
+ */
+async function assertYearEndHedgesValued(tenant: string, endDate: string): Promise<void> {
+  const hedges = await listHedgeRelationships(tenant);
+  const missing = hedges.filter(
+    (hedge) =>
+      hedge.status === "active" &&
+      hedge.designationDate <= endDate &&
+      endDate <= hedge.maturityDate &&
+      !hedge.valuations.some(
+        (record) => record.kind === "valuation" && record.valuationDate === endDate,
+      ),
+  );
+  if (missing.length > 0) {
+    throw ledgerError(
+      `Post the year-end hedge valuation for ${endDate} first: ${missing
+        .map((hedge) => hedge.name)
+        .join(", ")}`,
+      ACCOUNTING_ERROR_CODES.yearCloseBlocked,
+    );
+  }
+}
+
+/**
+ * IAS 29: the restatement is reversed the next day like a valuation, so the
+ * closing-date restatement must exist before the year closes.
+ */
+async function assertYearEndRestated(tenant: string, endDate: string): Promise<void> {
+  const settings = await getHyperinflationSettings(tenant);
+  if (!settings.enabled) return;
+  if (settings.appliesFrom && endDate < settings.appliesFrom) return;
+  if (await findIas29RunId(tenant, endDate)) return;
+  throw ledgerError(
+    `Post the IAS 29 restatement for ${endDate} before closing: the functional currency is hyperinflationary`,
+    ACCOUNTING_ERROR_CODES.yearCloseBlocked,
+  );
 }
 
 /**
@@ -60,7 +107,8 @@ export async function closeFiscalYearForTenant(
         statusCode: 404,
         type: "not_found",
       });
-    if (year.status === "closed") throw ledgerError("Fiscal year is already closed");
+    if (year.status === "closed")
+      throw ledgerError("Fiscal year is already closed", ACCOUNTING_ERROR_CODES.yearClosed);
     await lockFiscalYearForPosting(tenant, [year.id]);
     const years = await listFiscalYearsByWorkspace(tenant);
 
@@ -72,10 +120,18 @@ export async function closeFiscalYearForTenant(
     }
     const account = await findAccountById(tenant, retainedEarnings);
     if (!account || account.deletedAt || !account.isActive || account.type !== "Equity") {
-      throw ledgerError("Retained earnings must reference an active Equity account");
+      throw ledgerError(
+        "Retained earnings must reference an active Equity account",
+        ACCOUNTING_ERROR_CODES.accountNotPostable,
+      );
     }
 
     await assertYearEndRevalued(tenant, year.endDate);
+    // Same rule for the other two standards whose postings are auto-reversed: the
+    // year must close with the hedge fair value/OCI reserve and the IAS 29
+    // restatement actually on the books.
+    await assertYearEndHedgesValued(tenant, year.endDate);
+    await assertYearEndRestated(tenant, year.endDate);
 
     const report = await aggregateAccountingReport(tenant, {
       dateFrom: year.startDate,
@@ -127,6 +183,10 @@ export async function closeFiscalYearForTenant(
           source_id: fiscalYearId,
           lines,
         };
+        // The close writes ledger rows directly; run the same postability guard the
+        // manual paths use so a deactivated/archived/summary P&L account (legacy
+        // data) cannot be closed into.
+        await assertJournalAccountsWritable(tenant, [entry], lockPostableAccounts);
         await saveEntry(tenant, prepareJournalEntryForPersist(entry, years));
         closingEntryId = entry.id;
       } else {

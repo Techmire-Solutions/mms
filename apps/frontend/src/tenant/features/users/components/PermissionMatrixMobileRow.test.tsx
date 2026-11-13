@@ -27,7 +27,8 @@ describe("PermissionMatrixMobileRow", () => {
   it("renders module title, actions, and count pill", () => {
     const html = renderToStaticMarkup(<PermissionMatrixMobileRow {...defaultProps} />);
     expect(html).toContain("nav.students");
-    expect(html).toContain("2/5");
+    // create + read out of the shared PERMISSION_ACTIONS vocabulary (now includes post).
+    expect(html).toContain("2/6");
     expect(html).toContain("users.permission.read");
     expect(html).toContain("users.permission.create");
     expect(html).toContain("users.permission.update");

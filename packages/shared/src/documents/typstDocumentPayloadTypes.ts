@@ -95,3 +95,49 @@ export const typstFinancialLedgerPayloadSchema = z
   .strict();
 
 export type TypstFinancialLedgerPayload = z.infer<typeof typstFinancialLedgerPayloadSchema>;
+
+export const typstTrialBalanceRowSchema = z
+  .object({
+    code: z.string(),
+    name: z.string(),
+    debit: z.string(),
+    credit: z.string(),
+    balance: z.string(),
+  })
+  .strict();
+
+export type TypstTrialBalanceRow = z.infer<typeof typstTrialBalanceRowSchema>;
+
+export const typstTrialBalanceSectionSchema = z
+  .object({
+    /** Localized section heading (Assets, Liabilities, …). */
+    title: z.string(),
+    rows: z.array(typstTrialBalanceRowSchema),
+    totalDebit: z.string(),
+    totalCredit: z.string(),
+  })
+  .strict();
+
+export type TypstTrialBalanceSection = z.infer<typeof typstTrialBalanceSectionSchema>;
+
+/**
+ * Trial Balance PDF payload. `direction`/`lang` are part of the document data (the
+ * template reads them the same way the ledger template does), so an Arabic/Urdu/
+ * Farsi statement is shaped and laid out RTL by Typst instead of the browser.
+ */
+export const typstTrialBalancePayloadSchema = z
+  .object({
+    institution: z.string(),
+    period: z.string(),
+    currency: z.string(),
+    lang: z.enum(["ar", "ur", "fa", "en"]).default("en"),
+    direction: z.enum(["rtl", "ltr"]).default("ltr"),
+    sections: z.array(typstTrialBalanceSectionSchema),
+    totalDebit: z.string(),
+    totalCredit: z.string(),
+    preparedBy: z.string().default(""),
+    generatedAt: z.string().default(""),
+  })
+  .strict();
+
+export type TypstTrialBalancePayload = z.infer<typeof typstTrialBalancePayloadSchema>;

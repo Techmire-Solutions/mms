@@ -6,6 +6,8 @@ import { mapConstraintError } from "./httpErrors.js";
 interface ContractErrorBody {
   type: string;
   message: string;
+  /** Stable programmatic discriminator carried by domain errors. */
+  code?: string;
   /** Per-row failures for a rejected batch (`attendance_batch_rejected`). */
   errors?: Array<{
     index: number;
@@ -118,11 +120,13 @@ export function handleContractError(
       ...(typeof sectionId === "string" ? { sectionId } : {}),
       ...(typeof seatsLeft === "number" ? { seatsLeft } : {}),
     };
+    const code = (error as { code?: unknown }).code;
     return {
       status: statusCode,
       body: {
         type: typeof type === "string" && type ? type : "error",
         message: error instanceof Error ? error.message : fallback.body.message,
+        ...(typeof code === "string" && code ? { code } : {}),
         ...(Array.isArray(violations)
           ? { violations: violations.map((value) => String(value)) }
           : {}),

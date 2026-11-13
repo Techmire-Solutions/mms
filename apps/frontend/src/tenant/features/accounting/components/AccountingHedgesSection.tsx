@@ -134,19 +134,29 @@ export function AccountingHedgesSection({
                 >
                   {t("accounting.settings.hedges.settle")}
                 </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="min-h-11"
+                  onClick={() => panel.setPending({ action: "discontinue", hedge })}
+                >
+                  {t("accounting.settings.hedges.discontinue")}
+                </Button>
               </>
             )}
-            {hedge.status === "settled" && hedge.hedgeType === "cash_flow" && (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="min-h-11"
-                onClick={() => panel.setPending({ action: "reclassify", hedge })}
-              >
-                {t("accounting.settings.hedges.reclassify")}
-              </Button>
-            )}
+            {(hedge.status === "settled" || hedge.status === "discontinued") &&
+              hedge.hedgeType === "cash_flow" && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="min-h-11"
+                  onClick={() => panel.setPending({ action: "reclassify", hedge })}
+                >
+                  {t("accounting.settings.hedges.reclassify")}
+                </Button>
+              )}
           </div>
         ) : null,
     },

@@ -8,12 +8,15 @@ export interface ExportToolbarCompactProps {
   compactFormat: "excel" | "pdf";
   onCompactFormatChange: (format: "excel" | "pdf") => void;
   onExport: () => void;
+  /** Hide the PDF format option (accounting statements use the server PDF). */
+  hidePdf?: boolean;
 }
 
 export function ExportToolbarCompact({
   compactFormat,
   onCompactFormatChange,
   onExport,
+  hidePdf = false,
 }: ExportToolbarCompactProps): React.JSX.Element {
   const { t } = useTranslation();
   const toolbarRef = useRovingToolbar<HTMLDivElement>();
@@ -36,16 +39,18 @@ export function ExportToolbarCompact({
           <FileSpreadsheet className="w-3 h-3" aria-hidden="true" />
           {t("reports.export.excel")}
         </Button>
-        <Button
-          type="button"
-          data-toolbar-item
-          aria-pressed={compactFormat === "pdf"}
-          onClick={() => onCompactFormatChange("pdf")}
-          className={`flex min-h-11 items-center gap-1 h-auto px-2.5 py-2 rounded-e-lg shadow-none border-s border-border font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${compactFormat === "pdf" ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-card text-muted-foreground hover:bg-muted"}`}
-        >
-          <FileText className="w-3 h-3" aria-hidden="true" />
-          {t("reports.export.pdf")}
-        </Button>
+        {hidePdf ? null : (
+          <Button
+            type="button"
+            data-toolbar-item
+            aria-pressed={compactFormat === "pdf"}
+            onClick={() => onCompactFormatChange("pdf")}
+            className={`flex min-h-11 items-center gap-1 h-auto px-2.5 py-2 rounded-e-lg shadow-none border-s border-border font-bold transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${compactFormat === "pdf" ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-card text-muted-foreground hover:bg-muted"}`}
+          >
+            <FileText className="w-3 h-3" aria-hidden="true" />
+            {t("reports.export.pdf")}
+          </Button>
+        )}
       </div>
       <Button
         type="button"

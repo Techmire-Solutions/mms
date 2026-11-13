@@ -1,3 +1,4 @@
+import type { PostableAccountLookup } from "../../db/repositories/accountingAccountsRepository.js";
 import type { PostingPeriod } from "@mms/shared";
 import type {
   Account,
@@ -36,6 +37,12 @@ export interface AccountingRepository {
     ids: string[],
     options?: { deleted?: "active" | "deleted" | "all"; includeDeleted?: boolean },
   ): Promise<Account[]>;
+  /**
+   * Read + `FOR SHARE` the accounts a journal line is about to target, including
+   * whether each hosts sub-accounts (a summary/header row). Posting guards use this
+   * instead of a plain read so an archival cannot commit underneath the posting.
+   */
+  lockPostableAccounts(tenant: string, ids: string[]): Promise<PostableAccountLookup[]>;
   saveAccount(tenant: string, record: Account): Promise<void>;
   bulkSaveAccounts(tenant: string, records: Account[]): Promise<void>;
   replaceAccountsForWorkspace(tenant: string, records: Account[]): Promise<void>;
@@ -106,11 +113,18 @@ export interface AccountingRepository {
    * is immutable (posted entries are only ever sent unchanged), so the child
    * delete+reinsert would be a no-op that still touches the ledger rows — and
    * the database rejects any such write (0248 journal-line immutability).
+   *
+   * `changedIds` restricts the optimistic-concurrency check to the rows the save
+   * actually modifies: a whole-list save re-sends untouched entries, and their
+   * `updatedAt` must not block an unrelated edit.
    */
   bulkSaveEntries(
     tenant: string,
     records: JournalEntry[],
-    options?: { preserveChildren?: ReadonlySet<string> },
+    options?: {
+      preserveChildren?: ReadonlySet<string>;
+      changedIds?: ReadonlySet<string>;
+    },
   ): Promise<void>;
   replaceEntriesForWorkspace(tenant: string, records: JournalEntry[]): Promise<void>;
   listEntriesPage(

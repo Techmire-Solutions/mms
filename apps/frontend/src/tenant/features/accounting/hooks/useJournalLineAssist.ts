@@ -2,7 +2,10 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { generateClientEntityId, type JournalTemplate } from "@mms/shared";
 import type { DraftForm, DraftLine } from "../lib/journalEntryFormTypes";
 
-export type JournalAmountSide = "debit" | "credit";
+import type { NormalBalance } from "@mms/shared";
+
+/** Debit/credit is the shared normal-balance vocabulary, not a local union. */
+export type JournalAmountSide = NormalBalance;
 
 interface TemplateLock {
   templateName: string;

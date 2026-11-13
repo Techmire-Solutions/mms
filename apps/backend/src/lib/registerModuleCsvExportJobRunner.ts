@@ -19,6 +19,8 @@ export type ModuleCsvExportJobPayload = {
 
 export type RegisterModuleCsvExportJobRunnerOptions = {
   moduleId: string;
+  /** Background job kind suffix; defaults to `export` (e.g. `export-ledger`). */
+  kind?: string;
   entityNounPlural: string;
   buildExport: (
     query: Record<string, unknown>,
@@ -120,40 +122,43 @@ async function streamCsvToStorage(
 export function registerModuleCsvExportJobRunner(
   options: RegisterModuleCsvExportJobRunnerOptions,
 ): void {
-  registerBackgroundJobRunner(`${options.moduleId}:export`, async (payload, ctx) => {
-    const exportPayload = payload as ModuleCsvExportJobPayload;
-    throwIfBackgroundJobAborted(ctx.signal);
-    await ctx.updateProgress(0, 1);
-    throwIfBackgroundJobAborted(ctx.signal);
-
-    let count: number;
-    if (options.generateStreamChunks) {
-      const result = await streamCsvToStorage(ctx, exportPayload, options);
-      count = result.count;
-    } else {
-      const rawFallback = exportPayload.filename?.trim() || "export.csv";
-      const targetFilename = buildTenantExportFilename(ctx.tenant, rawFallback);
-      const result = await options.buildExport(
-        (exportPayload.query ?? {}) as Record<string, unknown>,
-        {
-          columns: exportPayload.columns,
-          filename: targetFilename,
-          viewerRole: exportPayload.viewerRole,
-          allowDeleted: exportPayload.allowDeleted === true,
-        },
-        ctx.tenant,
-        ctx.signal,
-      );
+  registerBackgroundJobRunner(
+    `${options.moduleId}:${options.kind ?? "export"}`,
+    async (payload, ctx) => {
+      const exportPayload = payload as ModuleCsvExportJobPayload;
       throwIfBackgroundJobAborted(ctx.signal);
-      count = result.count;
-      await saveExportArtifact(ctx.userId, ctx.jobId, result.csv, result.filename);
-    }
+      await ctx.updateProgress(0, 1);
+      throwIfBackgroundJobAborted(ctx.signal);
 
-    throwIfBackgroundJobAborted(ctx.signal);
-    await ctx.complete({
-      label: exportPayload.label ?? `Exported ${count} ${options.entityNounPlural}`,
-      progress: { current: count, total: count },
-      hasDownload: true,
-    });
-  });
+      let count: number;
+      if (options.generateStreamChunks) {
+        const result = await streamCsvToStorage(ctx, exportPayload, options);
+        count = result.count;
+      } else {
+        const rawFallback = exportPayload.filename?.trim() || "export.csv";
+        const targetFilename = buildTenantExportFilename(ctx.tenant, rawFallback);
+        const result = await options.buildExport(
+          (exportPayload.query ?? {}) as Record<string, unknown>,
+          {
+            columns: exportPayload.columns,
+            filename: targetFilename,
+            viewerRole: exportPayload.viewerRole,
+            allowDeleted: exportPayload.allowDeleted === true,
+          },
+          ctx.tenant,
+          ctx.signal,
+        );
+        throwIfBackgroundJobAborted(ctx.signal);
+        count = result.count;
+        await saveExportArtifact(ctx.userId, ctx.jobId, result.csv, result.filename);
+      }
+
+      throwIfBackgroundJobAborted(ctx.signal);
+      await ctx.complete({
+        label: exportPayload.label ?? `Exported ${count} ${options.entityNounPlural}`,
+        progress: { current: count, total: count },
+        hasDownload: true,
+      });
+    },
+  );
 }

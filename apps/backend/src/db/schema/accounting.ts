@@ -15,42 +15,18 @@ import {
 import { desc, sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
 import { softDeleteColumns } from "./softDeleteSchema.js";
-import { fxAccountColumns, fxLineColumns } from "./accountingFxColumns.js";
+import { fxLineColumns } from "./accountingFxColumns.js";
+import { accountingAccounts } from "./accountingAccounts.js";
 
-export const accountingAccounts = pgTable(
-  "accounting_accounts",
-  {
-    id: text("id").notNull(),
-    workspaceSubdomain: text("workspace_subdomain")
-      .notNull()
-      .references(() => workspaces.subdomain, { onDelete: "cascade" }),
-    code: varchar("code", { length: 50 }).notNull(),
-    name: varchar("name", { length: 150 }).notNull(),
-    type: varchar("type", { length: 50 }).notNull(),
-    subtype: varchar("subtype", { length: 100 }).notNull().default(""),
-    description: text("description").notNull().default(""),
-    isActive: boolean("is_active").notNull().default(true),
-    ...fxAccountColumns,
-    ...softDeleteColumns,
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
-  },
-  (table) => [
-    primaryKey({ columns: [table.workspaceSubdomain, table.id] }),
-    index("accounting_accounts_workspace_code_idx").on(table.workspaceSubdomain, table.code),
-    index("accounting_accounts_workspace_type_idx").on(table.workspaceSubdomain, table.type),
-    index("accounting_accounts_workspace_deleted_idx").on(
-      table.workspaceSubdomain,
-      table.deletedAt,
-    ),
-    index("accounting_accounts_workspace_active_idx")
-      .on(table.workspaceSubdomain)
-      .where(sql`${table.deletedAt} is null`),
-    index("accounting_accounts_workspace_deleted_records_idx")
-      .on(table.workspaceSubdomain, table.deletedAt)
-      .where(sql`${table.deletedAt} is not null`),
-  ],
-);
+/**
+ * Chart of accounts lives in `accountingAccounts.ts` (300-line ceiling); it is
+ * re-exported here so every existing `./accounting.js` import keeps working.
+ */
+export {
+  accountingAccounts,
+  type AccountingAccountRow,
+  type InsertAccountingAccountRow,
+} from "./accountingAccounts.js";
 
 export const accountingFiscalYears = pgTable(
   "accounting_fiscal_years",
@@ -85,6 +61,15 @@ export const accountingFiscalYears = pgTable(
     index("accounting_fiscal_years_workspace_deleted_records_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
+    /** Directory default ordering (`created_at DESC, id`) for the active list. */
+    index("accounting_fiscal_years_workspace_created_active_idx")
+      .on(table.workspaceSubdomain, sql`${table.createdAt} desc`, table.id)
+      .where(sql`${table.deletedAt} is null`),
+    /** Pinned to `@mms/shared` `FISCAL_YEAR_STATUSES` (0252 + parity test). */
+    check(
+      "accounting_fiscal_years_status_chk",
+      sql`${table.status} IN ('active', 'closed', 'upcoming')`,
+    ),
   ],
 );
 
@@ -113,6 +98,11 @@ export const accountingPostingPeriods = pgTable(
       foreignColumns: [accountingFiscalYears.workspaceSubdomain, accountingFiscalYears.id],
     }).onDelete("cascade"),
     check("accounting_posting_periods_range_chk", sql`${table.startDate} <= ${table.endDate}`),
+    /**
+     * The period lock is `status = 'closed'` (0249 balance guard), so the column
+     * cannot be free text. Pinned to `@mms/shared` `POSTING_PERIOD_STATUSES`.
+     */
+    check("accounting_posting_periods_status_check", sql`${table.status} IN ('open', 'closed')`),
     uniqueIndex("accounting_posting_periods_year_start_uidx").on(
       table.workspaceSubdomain,
       table.fiscalYearId,
@@ -192,6 +182,16 @@ export const accountingEntries = pgTable(
     index("accounting_entries_workspace_status_date_active_idx")
       .on(table.workspaceSubdomain, table.status, desc(table.date))
       .where(sql`${table.deletedAt} is null`),
+    /** Journal date range without a status filter (`buildEntryListConditions`). */
+    index("accounting_entries_workspace_date_active_idx")
+      .on(table.workspaceSubdomain, table.date, table.id)
+      .where(sql`${table.deletedAt} is null`),
+    /**
+     * Voucher allocation probes `ref = ANY(candidates)` with no `deleted_at`
+     * predicate, so the partial unique ref index cannot serve it — without this
+     * every journal save scanned the tenant's entries.
+     */
+    index("accounting_entries_workspace_ref_idx").on(table.workspaceSubdomain, table.ref),
     check("accounting_entries_status_chk", sql`${table.status} IN ('posted', 'draft')`),
     /**
      * Legal source types are single-sourced in
@@ -251,6 +251,30 @@ export const accountingJournalLines = pgTable(
       "accounting_journal_lines_func_sign_chk",
       sql`coalesce(${table.funcDebit}, 0) >= 0 AND coalesce(${table.funcCredit}, 0) >= 0`,
     ),
+    /** 0092's rules for the functional pair; NOT VALID on legacy rows only. */
+    check("accounting_journal_lines_nonneg_chk", sql`${table.debit} >= 0 AND ${table.credit} >= 0`),
+    check(
+      "accounting_journal_lines_single_side_chk",
+      sql`${table.debit} = 0 OR ${table.credit} = 0`,
+    ),
+    /** The ledger mirrors the functional pair (0249); a writer cannot make them disagree. */
+    check(
+      "accounting_journal_lines_func_debit_mirror_chk",
+      sql`${table.funcDebit} IS NULL OR ${table.funcDebit} = ${table.debit}`,
+    ),
+    check(
+      "accounting_journal_lines_func_credit_mirror_chk",
+      sql`${table.funcCredit} IS NULL OR ${table.funcCredit} = ${table.credit}`,
+    ),
+    /**
+     * IAS 21 transaction rate. Both rate tables require a positive rate
+     * (`accounting_exchange_rates_positive`, `fx_reference_rates_positive`); a
+     * line could previously store zero or a negative multiplier.
+     */
+    check(
+      "accounting_journal_lines_rate_positive_chk",
+      sql`${table.exchangeRate} IS NULL OR ${table.exchangeRate} > 0`,
+    ),
   ],
 );
 
@@ -258,8 +282,6 @@ export const accountingJournalLines = pgTable(
 /*                         ROW INFER TYPES                                   */
 /* ========================================================================= */
 
-export type AccountingAccountRow = typeof accountingAccounts.$inferSelect;
-export type InsertAccountingAccountRow = typeof accountingAccounts.$inferInsert;
 export type AccountingFiscalYearRow = typeof accountingFiscalYears.$inferSelect;
 export type InsertAccountingFiscalYearRow = typeof accountingFiscalYears.$inferInsert;
 export type AccountingPostingPeriodRow = typeof accountingPostingPeriods.$inferSelect;

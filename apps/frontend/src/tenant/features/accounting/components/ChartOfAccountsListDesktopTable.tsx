@@ -9,6 +9,8 @@ import { AccountTypeGroup } from "@/tenant/features/accounting/components/ChartO
 export interface ChartOfAccountsListDesktopTableProps {
   accounts: Account[];
   filteredAccounts: Account[];
+  /** Ids of accounts that carry sub-accounts (header/summary accounts). */
+  summaryIds: ReadonlySet<string>;
   balanceConfig: Record<string, StatusBadgeConfigItem>;
   canWrite: boolean;
   isColumnVisible: (key: string) => boolean;
@@ -23,6 +25,7 @@ export interface ChartOfAccountsListDesktopTableProps {
 export function ChartOfAccountsListDesktopTable({
   accounts,
   filteredAccounts,
+  summaryIds,
   balanceConfig,
   canWrite,
   isColumnVisible,
@@ -47,6 +50,7 @@ export function ChartOfAccountsListDesktopTable({
             key={type}
             type={type}
             accountTypeRows={accountTypeRows}
+            summaryIds={summaryIds}
             balanceConfig={balanceConfig}
             canWrite={canWrite}
             isColumnVisible={isColumnVisible}

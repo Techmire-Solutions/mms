@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   FINANCE_MODULE_MANIFEST,
+  specializedEntryResponseSchema,
   specializedEntrySchema,
   type User,
 } from "@mms/shared";
@@ -12,6 +13,7 @@ import {
   sendDatabaseError,
 } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
+import { sendValidated } from "../../../lib/validatedReply.js";
 import { processSpecializedEntryUseCase } from "../../../accounting/use-cases/processSpecializedEntryUseCase.js";
 
 /**
@@ -27,11 +29,11 @@ export const accountingSpecializedEntryRoutes: FastifyPluginAsync = async (fasti
     if (!canWriteAccounting || !canWriteFinance) return sendForbidden(reply);
 
     const parsed = parseRequest(specializedEntrySchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    if (!parsed.ok) return replyValidationError(reply, parsed);
 
     try {
       const result = await processSpecializedEntryUseCase(parsed.data, { name: user.name });
-      return reply.status(201).send(result);
+      return sendValidated(reply, 201, specializedEntryResponseSchema, result);
     } catch (error) {
       return (
         sendIfHttpDomainError(reply, error) ??

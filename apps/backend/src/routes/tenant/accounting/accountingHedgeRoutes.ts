@@ -2,6 +2,7 @@ import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodType } from "zod";
 import {
   ACCOUNTING_MODULE_MANIFEST,
+  hedgeDiscontinuationRequestSchema,
   hedgeListQuerySchema,
   hedgeReclassificationRequestSchema,
   hedgeRelationshipCreateSchema,
@@ -24,6 +25,7 @@ import { sendValidated } from "../../../lib/validatedReply.js";
 import { withTenant } from "../../../db/tenant-context.js";
 import {
   createHedgeRelationship,
+  discontinueHedge,
   postHedgeValuation,
   previewHedgeValuation,
   reclassifyHedgeReserve,
@@ -85,7 +87,10 @@ function handleWrite<T>(
   };
 }
 
-/** IFRS 9 FX forward hedges: designate, value (with auto-reversal), settle and reclassify. */
+/**
+ * IFRS 9 FX forward hedges: designate, value (with auto-reversal), settle,
+ * discontinue prospectively (6.5.6) and reclassify the OCI reserve.
+ */
 export const accountingHedgeRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get("/hedges", async (request, reply) => {
     const user = request.user as User;
@@ -171,6 +176,19 @@ export const accountingHedgeRoutes: FastifyPluginAsync = async (fastify) => {
       201,
       async ({ tenant, userId, id, body }) => ({
         hedge: await settleHedge(deps, { tenant, userId }, id, body),
+      }),
+    ),
+  );
+
+  fastify.post(
+    "/hedges/:id/discontinue",
+    handleWrite(
+      hedgeDiscontinuationRequestSchema,
+      hedgeRelationshipResponseSchema,
+      "Failed to discontinue the hedge",
+      201,
+      async ({ tenant, userId, id, body }) => ({
+        hedge: await discontinueHedge(deps, { tenant, userId }, id, body),
       }),
     ),
   );

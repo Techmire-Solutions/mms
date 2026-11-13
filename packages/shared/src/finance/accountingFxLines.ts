@@ -128,7 +128,9 @@ export function resolveJournalFxLines(
   return [
     ...resolved,
     {
-      id: "fx-rounding",
+      // Never a bare "fx-rounding": a client line may already own that id, and the
+      // line primary key would then reject the whole save with a misleading 409.
+      id: `fx-rounding-${resolved.length + 1}`,
       account_id: ctx.roundingAccountId,
       debit: residue < 0n ? Number(value) : 0,
       credit: residue > 0n ? Number(value) : 0,

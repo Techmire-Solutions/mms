@@ -329,3 +329,71 @@ describe("bulkSaveEntries batched upsert parity", () => {
     ).rejects.toThrow();
   });
 });
+
+/**
+ * 0253 optimistic concurrency. A stale `updatedAt` token must not overwrite a
+ * newer draft: the compare runs under `FOR UPDATE`, so the writer that waited
+ * sees the committed row instead of replacing it. The token the save hands back
+ * is what the client must send next.
+ */
+describe("optimistic concurrency on journal saves", () => {
+  const draft = (overrides: Partial<JournalEntry> = {}): JournalEntry => ({
+    id: "entry-existing",
+    date: "2026-01-01",
+    ref: "REF-NEW",
+    description: "occ",
+    status: "draft",
+    created_by: "u1",
+    fiscal_year: "FY2026",
+    tags: [],
+    attachments: [],
+    lines: [],
+    ...overrides,
+  });
+
+  async function readStoredUpdatedAt(id: string): Promise<string> {
+    const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+    try {
+      const [row] = await tx.tx
+        .select()
+        .from(accountingEntries)
+        .where(eq(accountingEntries.id, id));
+      await tx.commit();
+      return (row?.updatedAt ?? new Date(0)).toISOString();
+    } catch (error) {
+      await tx.rollback().catch(() => undefined);
+      throw error;
+    }
+  }
+
+  it("rejects a changed draft whose updatedAt token is stale", async () => {
+    await expect(
+      bulkSaveEntries(TEST_SUBDOMAIN, [
+        draft({ description: "stale write", updatedAt: "2026-01-01T00:00:00.000Z" }),
+      ]),
+    ).rejects.toMatchObject({ statusCode: 409, type: "stale_write" });
+  });
+
+  it("accepts the current token and hands back the token the next save needs", async () => {
+    const current = await readStoredUpdatedAt("entry-existing");
+    const record = draft({ description: "fresh write", updatedAt: current });
+    await bulkSaveEntries(TEST_SUBDOMAIN, [record]);
+
+    expect(new Date(record.updatedAt as string).getTime()).toBeGreaterThanOrEqual(
+      new Date(current).getTime(),
+    );
+    // The stamped token must be accepted immediately: a client that saves twice
+    // without refetching uses it.
+    await expect(
+      bulkSaveEntries(TEST_SUBDOMAIN, [{ ...record, description: "second write" }]),
+    ).resolves.toBeUndefined();
+  });
+
+  it("accepts a batch that carries no tokens (system postings, conditional CAS)", async () => {
+    await expect(
+      bulkSaveEntries(TEST_SUBDOMAIN, [
+        draft({ description: "system write", updatedAt: undefined }),
+      ]),
+    ).resolves.toBeUndefined();
+  });
+});

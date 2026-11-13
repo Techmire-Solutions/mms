@@ -1,6 +1,8 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
+  moneyToCents,
+  roundMoneyAmount,
   type AccountingCommandMetricsSnapshot,
 } from "@mms/shared";
 import { accountingAccounts, accountingEntries, accountingJournalLines } from "../schema.js";
@@ -59,13 +61,20 @@ export async function aggregateAccountingCommandMetrics(
     // Lines of posted active entries, LEFT JOINed to active accounts. Missing /
     // soft-deleted accounts contribute 0 to balances (acc.type is null) but
     // their lines still count toward postedVolume.
+    //
+    // The sums stay `numeric` and cross the boundary as exact decimal text, converted
+    // once through `roundMoneyAmount`. The previous `::float8` shape ran the aggregate
+    // through a lossy double before `Number(...)`: the dashboard's money then depended
+    // on IEEE rounding rather than on the column type, and `surplus` was a float
+    // subtraction instead of the exact difference. This is the same boundary rule
+    // `accountingRepositoryReport` already follows for the trial balance.
     const [balanceRow] = await tx
       .select({
-        postedVolume: sql<number>`coalesce(sum(${accountingJournalLines.debit}), 0)::float8`,
-        assets: sql<number>`coalesce(sum(case when ${accountingAccounts.type} = 'Asset' then ${accountingJournalLines.debit} - ${accountingJournalLines.credit} else 0 end), 0)::float8`,
-        liabilities: sql<number>`coalesce(sum(case when ${accountingAccounts.type} = 'Liability' then ${accountingJournalLines.credit} - ${accountingJournalLines.debit} else 0 end), 0)::float8`,
-        revenue: sql<number>`coalesce(sum(case when ${accountingAccounts.type} = 'Revenue' then ${accountingJournalLines.credit} - ${accountingJournalLines.debit} else 0 end), 0)::float8`,
-        expenses: sql<number>`coalesce(sum(case when ${accountingAccounts.type} = 'Expense' then ${accountingJournalLines.debit} - ${accountingJournalLines.credit} else 0 end), 0)::float8`,
+        postedVolume: sql<string>`coalesce(sum(${accountingJournalLines.debit}), 0)::numeric::text`,
+        assets: sql<string>`coalesce(sum(case when ${accountingAccounts.type} = 'Asset' then ${accountingJournalLines.debit} - ${accountingJournalLines.credit} else 0 end), 0)::numeric::text`,
+        liabilities: sql<string>`coalesce(sum(case when ${accountingAccounts.type} = 'Liability' then ${accountingJournalLines.credit} - ${accountingJournalLines.debit} else 0 end), 0)::numeric::text`,
+        revenue: sql<string>`coalesce(sum(case when ${accountingAccounts.type} = 'Revenue' then ${accountingJournalLines.credit} - ${accountingJournalLines.debit} else 0 end), 0)::numeric::text`,
+        expenses: sql<string>`coalesce(sum(case when ${accountingAccounts.type} = 'Expense' then ${accountingJournalLines.debit} - ${accountingJournalLines.credit} else 0 end), 0)::numeric::text`,
       })
       .from(accountingJournalLines)
       .innerJoin(
@@ -87,8 +96,42 @@ export async function aggregateAccountingCommandMetrics(
       )
       .where(eq(accountingJournalLines.workspaceSubdomain, subdomain));
 
-    const revenue = Number(balanceRow?.revenue ?? 0);
-    const expenses = Number(balanceRow?.expenses ?? 0);
+    /**
+     * Six-month revenue/expense series for the dashboard chart. Same filters as
+     * the balance aggregate (posted, non-deleted, active accounts) so a month's
+     * figures reconcile with the totals above.
+     */
+    const monthlyRows = await tx
+      .select({
+        month: sql<string>`to_char(${accountingEntries.date}, 'YYYY-MM')`,
+        revenue: sql<string>`coalesce(sum(case when ${accountingAccounts.type} = 'Revenue' then ${accountingJournalLines.credit} - ${accountingJournalLines.debit} else 0 end), 0)::numeric::text`,
+        expenses: sql<string>`coalesce(sum(case when ${accountingAccounts.type} = 'Expense' then ${accountingJournalLines.debit} - ${accountingJournalLines.credit} else 0 end), 0)::numeric::text`,
+      })
+      .from(accountingJournalLines)
+      .innerJoin(
+        accountingEntries,
+        and(
+          eq(accountingJournalLines.workspaceSubdomain, accountingEntries.workspaceSubdomain),
+          eq(accountingJournalLines.entryId, accountingEntries.id),
+          isNull(accountingEntries.deletedAt),
+          eq(accountingEntries.status, "posted"),
+        ),
+      )
+      .leftJoin(
+        accountingAccounts,
+        and(
+          eq(accountingJournalLines.workspaceSubdomain, accountingAccounts.workspaceSubdomain),
+          eq(accountingJournalLines.accountId, accountingAccounts.id),
+          isNull(accountingAccounts.deletedAt),
+        ),
+      )
+      .where(eq(accountingJournalLines.workspaceSubdomain, subdomain))
+      .groupBy(sql`to_char(${accountingEntries.date}, 'YYYY-MM')`)
+      .orderBy(sql`to_char(${accountingEntries.date}, 'YYYY-MM') desc`)
+      .limit(6);
+
+    const revenue = roundMoneyAmount(balanceRow?.revenue ?? "0");
+    const expenses = roundMoneyAmount(balanceRow?.expenses ?? "0");
 
     return {
       totalEntries: Number(entryRow?.totalEntries ?? 0),
@@ -97,12 +140,20 @@ export async function aggregateAccountingCommandMetrics(
       activeAccounts: Number(accountRow?.activeAccounts ?? 0),
       inactiveAccounts: Number(accountRow?.inactiveAccounts ?? 0),
       newThisPeriod: Number(entryRow?.newThisPeriod ?? 0),
-      postedVolume: Number(balanceRow?.postedVolume ?? 0),
+      postedVolume: roundMoneyAmount(balanceRow?.postedVolume ?? "0"),
       revenue,
       expenses,
-      surplus: revenue - expenses,
-      assets: Number(balanceRow?.assets ?? 0),
-      liabilities: Number(balanceRow?.liabilities ?? 0),
+      // Exact difference in integer cents: the reported surplus must equal
+      // revenue − expenses to the last cent, not to float precision.
+      surplus: (moneyToCents(revenue) - moneyToCents(expenses)) / 100,
+      assets: roundMoneyAmount(balanceRow?.assets ?? "0"),
+      liabilities: roundMoneyAmount(balanceRow?.liabilities ?? "0"),
+      // Oldest first for the chart's x-axis.
+      monthly: [...monthlyRows].reverse().map((row) => ({
+        month: row.month,
+        revenue: roundMoneyAmount(row.revenue),
+        expenses: roundMoneyAmount(row.expenses),
+      })),
     };
   });
 }

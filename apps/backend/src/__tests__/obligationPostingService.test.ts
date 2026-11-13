@@ -1,6 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockAccountingRepo = vi.hoisted(() => ({
+  // The generated-posting path now runs the same postability guard as the manual
+  // paths; these suites stub the lookup so they stay pure orchestration tests.
+  lockPostableAccounts: vi.fn(async (_tenant: string, ids: string[]) =>
+    ids.map((id) => ({ id, isActive: true, hasChildren: false })),
+  ),
   findEntryById: vi.fn(),
   findEntryIdBySource: vi.fn(),
   saveEntry: vi.fn(),
@@ -27,6 +32,10 @@ const mockDistributionsRepo = vi.hoisted(() => ({
 }));
 
 vi.mock("../db/repositories/accountingRepository.js", () => mockAccountingRepo);
+// Generated postings now append an audit row in the same transaction.
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("../db/repositories/accountingLedgerOpsRepository.js", () => mockLedgerOpsRepo);
 vi.mock("../db/repositories/accountingAccountsRepository.js", () => mockAccountsRepo);
 vi.mock("../db/repositories/accountingFiscalYearsRepository.js", () => mockFiscalYearsRepo);

@@ -1,25 +1,45 @@
 import { isJournalRefUnique, type JournalEntry } from "@/lib/data/accountingData";
-import { tryParseMoneyAmountNumber } from "@mms/shared";
+import type { JournalEntryStatus } from "@mms/shared";
+import {
+  hasAtMostTwoDecimals,
+  parseMoneyInput,
+  type MoneySeparator,
+} from "../hooks/accountingMoneyParsers";
 export { isJournalRefUnique };
 import { hasFieldValue } from "@/lib/formCompleteness";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { DraftForm } from "./journalEntryFormTypes";
 
-export function parseJournalLineAmount(val: string | number | null | undefined): number {
+/**
+ * Strict, separator-aware parse of one voucher amount.
+ *
+ * Deleting commas (the old behaviour) turned a comma-decimal `"1234,56"` into
+ * `123456` — a 100× posting to an append-only ledger that no row error caught.
+ * `parseMoneyInput` accepts grouping only in valid thousands groups for the
+ * workspace separator, so the natural comma form reads correctly and anything
+ * ambiguous is refused instead of rescaled.
+ */
+export function parseJournalLineAmount(
+  val: string | number | null | undefined,
+  decimalSeparator: MoneySeparator = "period",
+): number {
   if (typeof val === "number") return Number.isFinite(val) ? val : 0;
-  if (typeof val !== "string") return 0;
-  // Strict 2-dp parse: `Number()` accepted exponent notation and silently rounded
-  // 3+ decimals before the schema rejected the entry with a generic message.
-  return tryParseMoneyAmountNumber(val.replace(/,/g, "").trim()) ?? 0;
+  if (typeof val !== "string" || !val.trim()) return 0;
+  const parsed = parseMoneyInput(val, decimalSeparator);
+  if (parsed === null || !hasAtMostTwoDecimals(parsed)) return 0;
+  return parsed;
 }
 
 /** Field-level amount validation for the inline error under each voucher row. */
-export function journalLineAmountErrorKey(val: string | number): string | null {
+export function journalLineAmountErrorKey(
+  val: string | number,
+  decimalSeparator: MoneySeparator = "period",
+): string | null {
   if (typeof val === "number")
     return Number.isFinite(val) ? null : "accounting.journal.form.errorAmountFormat";
-  const cleaned = val.replace(/,/g, "").trim();
-  if (!cleaned) return null;
-  return tryParseMoneyAmountNumber(cleaned) === null
+  if (!val.trim()) return null;
+  const parsed = parseMoneyInput(val, decimalSeparator);
+  return parsed === null || !hasAtMostTwoDecimals(parsed)
     ? "accounting.journal.form.errorAmountFormat"
     : null;
 }
@@ -37,13 +57,17 @@ export function calculateJournalEntryCompleteness(form: DraftForm, isBalanced: b
 export function validateJournalEntryForm(
   form: DraftForm,
   entries: JournalEntry[],
-  targetStatus: "draft" | "posted",
+  targetStatus: JournalEntryStatus,
   isBalanced: boolean,
   t: TranslationFunction,
+  decimalSeparator: MoneySeparator = "period",
+  requireNarration = true,
 ): Record<string, string> {
   const validationErrors: Record<string, string> = {};
   if (!form.date) validationErrors.date = t("accounting.journal.form.errorDate");
-  if (!form.description.trim())
+  // Setup → Rules can switch narration off; the backend has no such requirement,
+  // so the flag is the only gate and the form must honour it.
+  if (requireNarration && !form.description.trim())
     validationErrors.description = t("accounting.journal.form.errorNarration");
   const trimmedRef = form.ref?.trim();
   if (trimmedRef && !isJournalRefUnique(trimmedRef, entries, form.id)) {
@@ -61,7 +85,8 @@ export function validateJournalEntryForm(
       return;
     }
     const amountError =
-      journalLineAmountErrorKey(journalLine.debit) ?? journalLineAmountErrorKey(journalLine.credit);
+      journalLineAmountErrorKey(journalLine.debit, decimalSeparator) ??
+      journalLineAmountErrorKey(journalLine.credit, decimalSeparator);
     if (amountError) {
       validationErrors[`lineAmount${lineIndex}`] = t(amountError as never);
     }

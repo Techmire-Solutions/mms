@@ -10,8 +10,8 @@
  * value hedge the whole change goes to profit or loss (the hedged monetary
  * item is remeasured by the IAS 21 revaluation).
  */
-import { convertMoney } from "../money/fxConvert.js";
-import { moneyToDecimalString, parseMoney, subtractMoney, type Money } from "../money/money.js";
+import { convertMoney, rateDifference } from "../money/fxConvert.js";
+import { moneyToDecimalString, parseMoney } from "../money/money.js";
 import { normalizeStoredAmount } from "./accountingFxRevaluation.js";
 import type { JournalLine } from "./accountingModuleManifest.js";
 import type { HedgeRelationship } from "./accountingHedgeSchemas.js";
@@ -45,10 +45,20 @@ export function computeHedgeValuation(
     normalizeStoredAmount(terms.notional, terms.currency),
     terms.currency,
   );
-  const at = (value: string): Money => convertMoney(notional, value, functionalCurrency);
+  /**
+   * `notional × (value − reference)` converted once. Converting each rate and
+   * subtracting the rounded results drifts by up to one functional minor unit.
+   */
+  const atRateDelta = (value: string, reference: string): bigint => {
+    const delta = rateDifference(value, reference);
+    if (delta === "0") return 0n;
+    const negative = delta.startsWith("-");
+    const converted = convertMoney(notional, negative ? delta.slice(1) : delta, functionalCurrency);
+    return negative ? -converted.minor : converted.minor;
+  };
   const sign = terms.direction === "buy" ? 1n : -1n;
-  const instrument = sign * subtractMoney(at(rate), at(terms.contractRate)).minor;
-  const hypothetical = sign * subtractMoney(at(rate), at(terms.designationRate)).minor;
+  const instrument = sign * atRateDelta(rate, terms.contractRate);
+  const hypothetical = sign * atRateDelta(rate, terms.designationRate);
   let effective = 0n;
   // Only offsetting movements are effective; the reserve is capped at the hedged change.
   if (
