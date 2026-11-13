@@ -17,7 +17,11 @@ import { withTenant } from "../../db/tenant-context.js";
 import { createFinanceLifecycleOperations } from "./financeRecordLifecycle.js";
 import { createFinanceMutationOperations } from "./financeMutationOperations.js";
 import { paymentAuditState, recordPaymentAudit } from "./financeAuditEvents.js";
-import { assertPaymentLedgerFieldsUnchanged } from "./financePaymentEditGuards.js";
+import {
+  assertPaymentLedgerFieldsUnchanged,
+  paymentLedgerSensitiveChanges,
+} from "./financePaymentEditGuards.js";
+import { reconcilePaymentEditDeltas } from "./financePaymentArchiveDeltas.js";
 
 const EMPTY_FINANCE_METRICS: FinanceCommandMetricsSnapshot = {
   totalInvoices: 0,
@@ -172,13 +176,49 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
         : undefined;
 
       return withTenant(tenant, async () => {
+        // An unposted payment still moved invoice.paidAmt when it was created, so a
+        // financial edit has to reconcile the invoice even without a ledger row.
+        if (!postingId) {
+          const changed = paymentLedgerSensitiveChanges(existing, record);
+          const isForeign = Boolean(existing.exchangeRate) && existing.exchangeRate !== "1";
+          if (changed.length > 0 && (changed.includes("amount") || changed.includes("invoiceId"))) {
+            if (isForeign) {
+              throw Object.assign(
+                new Error(
+                  "A foreign-currency payment's amount cannot be edited — archive it and re-enter the payment",
+                ),
+                { statusCode: 422, type: "validation_error" },
+              );
+            }
+            const after: Payment = {
+              ...existing,
+              ...(record.amount !== undefined
+                ? { amount: record.amount, invoiceAmount: record.amount }
+                : {}),
+              ...(record.invoiceId !== undefined ? { invoiceId: record.invoiceId } : {}),
+            };
+            await reconcilePaymentEditDeltas(repo, tenant, existing, after);
+          } else if (changed.length > 0) {
+            const after: Payment = {
+              ...existing,
+              ...(record.amount !== undefined ? { amount: record.amount } : {}),
+            };
+            await reconcilePaymentEditDeltas(repo, tenant, existing, after);
+          }
+        }
         const updated = await paymentCrud.updateById(cleanId, {
           ...rest,
           ...(allocations ? { allocations } : {}),
         });
-        if (updated) {
-          await recordPaymentAudit(tenant, updated, "UPDATE", paymentAuditState(existing));
+        if (!updated) {
+          // The reconciliation above already moved the invoice balance; roll the
+          // whole transaction back rather than commit an orphan adjustment.
+          throw Object.assign(new Error("Payment not found"), {
+            statusCode: 404,
+            type: "not_found",
+          });
         }
+        await recordPaymentAudit(tenant, updated, "UPDATE", paymentAuditState(existing));
         return updated;
       });
     },

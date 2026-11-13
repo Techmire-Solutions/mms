@@ -54,14 +54,13 @@ export async function loadFinanceReportAggregatesSql(
     // Monthly fee collections
     const monthlyResult = await tx.execute(sql`
       SELECT
-        to_char(left(NULLIF(trim(fi.due_date), ''), 10)::date, 'YYYY-MM') AS "monthKey",
+        to_char(fi.due_date, 'YYYY-MM') AS "monthKey",
         COALESCE(SUM(${collected}), 0)::float8 AS "collected",
         COALESCE(SUM(GREATEST(0, COALESCE(fi.final_amt, 0) - ${collected})), 0)::float8 AS "outstanding",
         COALESCE(SUM(COALESCE(fi.final_amt, 0)), 0)::float8 AS "total"
       FROM finance_invoices fi
       WHERE ${activeInvoiceWhere(subdomain, "fi")}
-        AND NULLIF(trim(fi.due_date), '') IS NOT NULL
-        AND NULLIF(trim(fi.due_date), '') ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+        AND fi.due_date IS NOT NULL
       GROUP BY 1
       ORDER BY 1 ASC
     `);
@@ -182,14 +181,13 @@ export async function loadFinanceReportAggregatesSql(
       const collected = collectedAmountSql("fi");
       const monthResult = await tx.execute(sql`
         SELECT
-          to_char(left(NULLIF(trim(fi.due_date), ''), 10)::date, 'YYYY-MM') AS "monthKey",
+          to_char(fi.due_date, 'YYYY-MM') AS "monthKey",
           COALESCE(SUM(${collected}), 0)::float8 AS collected
         FROM finance_invoices fi
         WHERE ${activeInvoiceWhere(subdomain, "fi")}
-          AND NULLIF(trim(fi.due_date), '') IS NOT NULL
-          AND NULLIF(trim(fi.due_date), '') ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-          AND left(NULLIF(trim(fi.due_date), ''), 10) >= ${from}
-          AND left(NULLIF(trim(fi.due_date), ''), 10) <= ${to}
+          AND fi.due_date IS NOT NULL
+          AND fi.due_date >= ${from}::date
+          AND fi.due_date <= ${to}::date
         GROUP BY 1
         ORDER BY 1 ASC
       `);

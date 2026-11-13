@@ -4203,6 +4203,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "finance.detail.breakdown": "جزئیات شهریه",
   "finance.detail.discount": "تخفیف ({type} – {value}%)",
   "finance.detail.due": "سررسید: {date}",
+  "finance.detail.lastPayment": "آخرین پرداخت در {date} از طریق {method}",
   "finance.detail.paidVia": "پرداخت در {date} از طریق {method}",
   "finance.detail.status": "وضعیت فاکتور: {status}",
   "finance.detail.title": "فاکتور {id}",

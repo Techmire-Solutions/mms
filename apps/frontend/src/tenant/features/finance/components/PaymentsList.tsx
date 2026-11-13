@@ -3,7 +3,7 @@ import { type Payment } from "@/lib/data/financeData";
 import { PAYMENT_METHOD_BADGE, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
-import { type AppTranslationKey } from "@mms/shared";
+import { moneyToCents, type AppTranslationKey } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 import {
@@ -69,7 +69,9 @@ export function PaymentsList({
   const { formatCurrency } = useFinanceCurrency();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [confirmBulkOpen, setConfirmBulkOpen] = useState(false);
-  const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
+  // Integer cents: a float sum of 2-dp payments can display 0.30000000000000004.
+  const totalPaid =
+    payments.reduce((cents, payment) => cents + moneyToCents(payment.amount), 0) / 100;
 
   const paymentsByMethod = payments.reduce<Record<string, { amount: number; count: number }>>(
     (amountByMethod, payment) => {

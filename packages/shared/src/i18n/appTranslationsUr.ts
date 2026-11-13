@@ -4184,6 +4184,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "finance.detail.breakdown": "فیس کی تفصیل",
   "finance.detail.discount": "رعایت ({type} – {value}%)",
   "finance.detail.due": "واجب: {date}",
+  "finance.detail.lastPayment": "{date} کو {method} کے ذریعے آخری ادائیگی",
   "finance.detail.paidVia": "{date} کو {method} کے ذریعے ادا ہوا",
   "finance.detail.status": "انوائس کی حیثیت: {status}",
   "finance.detail.title": "انوائس {id}",

@@ -1,6 +1,6 @@
 import {
+  formatDateToIso,
   moneyToCents,
-  todayISO,
   tryParseMoneyAmountNumber,
   formatInvoiceNumber,
   type FinanceSettings,
@@ -31,6 +31,8 @@ export function nextInvoiceId(
 export function createInitialDraft(dueDays: string): InvoiceDraft {
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + Math.max(0, Number.parseInt(dueDays, 10) || 0));
+  // Format the local calendar day: `toISOString()` is UTC, so in a UTC+ zone the
+  // default due date landed one day before the intended local date.
   return {
     studentId: "",
     studentName: "",
@@ -39,7 +41,7 @@ export function createInitialDraft(dueDays: string): InvoiceDraft {
     baseFee: "",
     discountType: "",
     discountValue: "0",
-    dueDate: dueDate.toISOString().slice(0, 10) || todayISO(),
+    dueDate: formatDateToIso(dueDate),
     feeStructureId: "",
   };
 }

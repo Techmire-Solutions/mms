@@ -1,4 +1,4 @@
-import { moneyToCents } from "@mms/shared";
+import { getOutstandingAmountForInvoice, moneyToCents } from "@mms/shared";
 import type { Invoice, Payment } from "@mms/shared";
 import type { FinanceRepository } from "../repository/financeRepository.js";
 
@@ -60,6 +60,54 @@ export async function applyPaymentDeltas(
     if (invoice.status === "cancelled") continue;
     const delta = deltaByInvoice.get(invoice.id);
     if (!delta) continue;
+    await repo.saveInvoice(tenant, applyCollectedDelta(invoice, delta));
+  }
+}
+
+/**
+ * Re-derives the invoice balance after an edit to an **unposted** payment.
+ *
+ * `createPayment` always moves `invoice.paidAmt`, with or without posting rules;
+ * editing the amount/invoice of a payment that has no ledger row must therefore
+ * reverse the old applied amount and apply the new one, under the same invoice
+ * lock, or the subledger drifts from the sum of its payments.
+ */
+export async function reconcilePaymentEditDeltas(
+  repo: DeltaRepo,
+  tenant: string,
+  before: Payment,
+  after: Payment,
+): Promise<void> {
+  const invoiceIds = [...new Set([before.invoiceId, after.invoiceId])];
+  const invoices = await repo.findInvoicesByIds(tenant, invoiceIds, {
+    includeDeleted: true,
+    forUpdate: true,
+  });
+  const byId = new Map(invoices.map((invoice) => [invoice.id, invoice]));
+  const deltaByInvoice = new Map<string, number>();
+  const add = (invoiceId: string, delta: number) =>
+    deltaByInvoice.set(invoiceId, (deltaByInvoice.get(invoiceId) ?? 0) + delta);
+
+  add(before.invoiceId, -(before.invoiceAmount ?? before.amount));
+  add(after.invoiceId, after.invoiceAmount ?? after.amount);
+
+  for (const [invoiceId, delta] of deltaByInvoice) {
+    if (!delta) continue;
+    const invoice = byId.get(invoiceId);
+    if (!invoice) continue;
+    if (invoice.status === "cancelled") {
+      throw Object.assign(new Error("Cannot move a payment to or from a cancelled invoice"), {
+        statusCode: 422,
+        type: "validation_error",
+      });
+    }
+    const remainingCents = moneyToCents(getOutstandingAmountForInvoice(invoice));
+    if (delta > remainingCents) {
+      throw Object.assign(new Error("Payment amount exceeds the remaining invoice balance"), {
+        statusCode: 422,
+        type: "validation_error",
+      });
+    }
     await repo.saveInvoice(tenant, applyCollectedDelta(invoice, delta));
   }
 }

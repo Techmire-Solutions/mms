@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getOutstandingAmountForInvoice } from "./financeInvoiceAmounts.js";
+import {
+  getCollectedAmountForMonth,
+  getOutstandingAmountForInvoice,
+  getOutstandingAmountForMonth,
+} from "./financeInvoiceAmounts.js";
 import type { Invoice } from "./financeInvoiceTypes.js";
 
 const invoice = (overrides: Partial<Invoice>): Invoice =>
@@ -34,5 +38,17 @@ describe("getOutstandingAmountForInvoice", () => {
   it("treats paid and cancelled invoices as settled", () => {
     expect(getOutstandingAmountForInvoice(invoice({ finalAmt: 100, status: "paid" }))).toBe(0);
     expect(getOutstandingAmountForInvoice(invoice({ finalAmt: 100, status: "cancelled" }))).toBe(0);
+  });
+});
+
+describe("monthly collected/outstanding totals", () => {
+  it("sums 2-dp invoices in integer cents", () => {
+    const may = [
+      invoice({ id: "a", status: "paid", finalAmt: 0.1, paidDate: "2026-05-10" }),
+      invoice({ id: "b", status: "paid", finalAmt: 0.2, paidDate: "2026-05-11" }),
+      invoice({ id: "c", status: "partial", finalAmt: 10, paidAmt: 0.3, dueDate: "2026-05-12" }),
+    ];
+    expect(getCollectedAmountForMonth(may, 2026, 4)).toBe(0.6);
+    expect(getOutstandingAmountForMonth(may, 2026, 4)).toBe(9.7);
   });
 });

@@ -4217,6 +4217,7 @@ export const APP_TRANSLATIONS_EN = {
   "finance.detail.breakdown": "Fee Breakdown",
   "finance.detail.discount": "Discount ({type} – {value}%)",
   "finance.detail.due": "Due: {date}",
+  "finance.detail.lastPayment": "Last payment on {date} via {method}",
   "finance.detail.paidVia": "Paid on {date} via {method}",
   "finance.detail.status": "Invoice status: {status}",
   "finance.detail.title": "Invoice {id}",
