@@ -14,6 +14,10 @@ import {
   signedMoneyAmountSchema,
   tryParseMoneyAmountNumber,
 } from "./accountingLedgerInvariants.js";
+import {
+  formatJournalCurrencyImbalance,
+  journalCurrencyImbalances,
+} from "./accountingCurrencyBalance.js";
 
 describe("accountingLedgerInvariants", () => {
   it("rounds money to cents without float drift", () => {
@@ -206,5 +210,65 @@ describe("exact money parsing", () => {
 
   it("rejects a value beyond exact integer cents", () => {
     expect(() => parseMoneyAmountNumber("999999999999999.99")).toThrow(/exact integer cents/);
+  });
+});
+
+describe("single-currency voucher balance (IAS 21 transaction amounts)", () => {
+  const line = (txn_currency: string, txn_debit: string | null, txn_credit: string | null) => ({
+    txn_currency,
+    txn_debit,
+    txn_credit,
+  });
+
+  it("accepts a foreign voucher whose document legs balance", () => {
+    const lines = [line("USD", "100.00", "0.00"), line("USD", "0.00", "100.00")];
+    expect(journalCurrencyImbalances(lines)).toEqual([]);
+  });
+
+  it("reports a foreign voucher whose document legs do not balance", () => {
+    // Rates differ per line, so the functional totals can net out while the document
+    // itself is short by 80 USD — the shape that used to pass silently.
+    const lines = [
+      line("USD", "100.00", "0.00"),
+      line("USD", "0.00", "100.00"),
+      line("USD", "0.00", "80.00"),
+    ];
+    const imbalances = journalCurrencyImbalances(lines);
+    expect(imbalances).toHaveLength(1);
+    expect(imbalances[0]).toMatchObject({
+      currency: "USD",
+      debit: "100.00",
+      credit: "180.00",
+      difference: "-80.00",
+    });
+    expect(formatJournalCurrencyImbalance(imbalances[0]!)).toContain("USD");
+  });
+
+  it("skips a mixed-currency settlement entry (legs differ by design)", () => {
+    // A USD receivable retired against PKR cash: a per-currency balance does not apply.
+    const lines = [
+      line("USD", "0.00", "1000.00"),
+      line("PKR", "285000.00", "0.00"),
+      line("PKR", "0.00", "500.00"),
+    ];
+    expect(journalCurrencyImbalances(lines)).toEqual([]);
+  });
+
+  it("skips a currency with a missing leg instead of reporting a false imbalance", () => {
+    expect(
+      journalCurrencyImbalances([line("USD", "100.00", null), line("USD", "0.00", null)]),
+    ).toEqual([]);
+  });
+
+  it("also applies to a functional-currency-only voucher", () => {
+    expect(
+      journalCurrencyImbalances([line("PKR", "10.00", "0.00"), line("PKR", "0.00", "9.00")]),
+    ).toHaveLength(1);
+  });
+
+  it("keeps a four-decimal currency exact", () => {
+    // CLF carries four minor units, so the difference survives at that scale.
+    const lines = [line("CLF", "1.0001", "0.0000"), line("CLF", "0.0000", "1.0000")];
+    expect(journalCurrencyImbalances(lines)[0]?.difference).toBe("0.0001");
   });
 });

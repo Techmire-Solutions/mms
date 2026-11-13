@@ -1772,6 +1772,41 @@
       "when": 1797591600000,
       "tag": "0252_finance_enum_checks",
       "breakpoints": true
+    },
+    {
+      "idx": 253,
+      "version": "7",
+      "when": 1797678000000,
+      "tag": "0253_accounting_schema_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 254,
+      "version": "7",
+      "when": 1797764400000,
+      "tag": "0254_accounting_ledger_control_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 255,
+      "version": "7",
+      "when": 1797850800000,
+      "tag": "0255_hedge_discontinuation_and_currency_lock",
+      "breakpoints": true
+    },
+    {
+      "idx": 256,
+      "version": "7",
+      "when": 1797850800060,
+      "tag": "0256_accounting_rls_gap",
+      "breakpoints": true
+    },
+    {
+      "idx": 257,
+      "version": "7",
+      "when": 1797850800120,
+      "tag": "0257_notification_kinds_finance_accounting",
+      "breakpoints": true
     }
   ]
 }

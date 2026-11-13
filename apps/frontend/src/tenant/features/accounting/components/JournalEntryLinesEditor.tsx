@@ -144,9 +144,7 @@ export function JournalEntryLinesEditor({
                     errorMessage={errors[`line${lineIndex}`] ?? errors[`lineAmount${lineIndex}`]}
                     canRemove={lines.length > 2}
                     canAddAccount={canAddAccount}
-                    onOpenAddAccount={
-                      onOpenAddAccount ? () => onOpenAddAccount(lineIndex) : undefined
-                    }
+                    onOpenAddAccount={onOpenAddAccount}
                     onUpdateLine={onUpdateLine}
                     onRemoveLine={onRemoveLine}
                     lockedSide={lockedSideFor?.(line.id)}

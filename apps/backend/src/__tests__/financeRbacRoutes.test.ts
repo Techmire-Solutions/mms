@@ -120,7 +120,14 @@ async function send(
   return res;
 }
 
-const PERIOD = { id: "pp-1", fiscalYearId: "fy-1", status: "open" };
+const PERIOD = {
+  id: "pp-1",
+  fiscalYearId: "fy-1",
+  label: "2026-01",
+  startDate: "2026-01-01",
+  endDate: "2026-01-31",
+  status: "open",
+};
 
 describe("privileged finance/accounting routes require the manage capability", () => {
   beforeEach(() => {
@@ -129,7 +136,15 @@ describe("privileged finance/accounting routes require the manage capability", (
     mockCredit.mockResolvedValue({ id: "cn-1", invoiceId: "inv-1", amount: 10, reason: "waiver" });
     mockUpsertFee.mockResolvedValue({ id: "fs-1" });
     mockRemoveFee.mockResolvedValue(undefined);
-    mockCloseFiscalYear.mockResolvedValue({ id: "fy-1", status: "closed" });
+    // The response is schema-validated now: a partial fiscal year would be a
+    // `contract_violation` 500 instead of the close result.
+    mockCloseFiscalYear.mockResolvedValue({
+      id: "fy-1",
+      label: "2025-2026",
+      startDate: "2025-07-01",
+      endDate: "2026-06-30",
+      status: "closed",
+    });
     mockClosePeriod.mockResolvedValue({ ...PERIOD, status: "closed" });
     mockReopenPeriod.mockResolvedValue(PERIOD);
     mockLoadNumbering.mockResolvedValue(NUMBERING);

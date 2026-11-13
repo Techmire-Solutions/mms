@@ -6,6 +6,7 @@ import {
   DEFAULT_CHART_SECTIONS,
 } from "./accountingDefaultChart.js";
 import { accountRecordInsertSchema } from "./accountingModuleManifest.js";
+import { ACCOUNTING_ACCOUNT_TYPES, ACCOUNT_SUBTYPES } from "./accountingEnums.js";
 
 describe("DEFAULT_CHART_OF_ACCOUNTS", () => {
   it("has unique 5-digit codes", () => {
@@ -37,6 +38,20 @@ describe("DEFAULT_CHART_OF_ACCOUNTS", () => {
     const tenBlock = DEFAULT_CHART_OF_ACCOUNTS.filter((account) => account.code.startsWith("10"));
     for (const account of tenBlock)
       expect(`${account.name} ${account.subtype}`).toMatch(/cash|bank/i);
+  });
+
+  it("keeps every account type and subtype inside the canonical registry", () => {
+    // The seeded chart and the UI subtype picker are the same vocabulary: a chart
+    // value missing from ACCOUNT_SUBTYPES used to seed accounts the picker could
+    // not represent.
+    for (const account of DEFAULT_CHART_OF_ACCOUNTS) {
+      expect(ACCOUNTING_ACCOUNT_TYPES, account.code).toContain(account.type);
+      if (account.subtype) {
+        expect(ACCOUNT_SUBTYPES[account.type], `${account.code}:${account.subtype}`).toContain(
+          account.subtype,
+        );
+      }
+    }
   });
 
   it("passes the account insert contract", () => {

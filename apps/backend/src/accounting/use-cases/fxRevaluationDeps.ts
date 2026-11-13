@@ -14,7 +14,9 @@ export const fxRevaluationDeps: FxRevaluationDeps = {
   fx: accountingFxRepository,
   listBalances: store.listForeignMonetaryBalances,
   listRuns: (tenant) => store.listFxRevaluationRuns(tenant),
+  listRunsBetween: store.listFxRevaluationRunsBetween,
   findRunId: store.findFxRevaluationRunId,
+  findRunByDate: store.findFxRevaluationRunByDate,
   saveRun: store.saveFxRevaluationRun,
   getPostingRules: store.getPostingRules,
   postEntry: (tenant, entry) => persistGeneratedEntry(tenant, entry),
@@ -35,6 +37,6 @@ export const fxRevaluationDeps: FxRevaluationDeps = {
 export const fxReportDeps: FxReportDeps = {
   fx: fxRevaluationDeps.fx,
   listBalances: fxRevaluationDeps.listBalances,
-  listRuns: fxRevaluationDeps.listRuns,
+  listRunsBetween: fxRevaluationDeps.listRunsBetween,
   listRealized: store.listRealizedFxByCurrency,
 };

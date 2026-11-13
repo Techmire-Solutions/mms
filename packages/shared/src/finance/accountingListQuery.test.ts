@@ -3,6 +3,7 @@ import { ACCOUNTING_ACCOUNT_TYPES, ACCOUNT_SUBTYPES } from "./accountingEnums.js
 import {
   accountingAccountsListQuerySchema,
   accountingEntriesListQuerySchema,
+  accountingFiscalYearsListQuerySchema,
 } from "./accountingListQuery.js";
 
 /**
@@ -80,5 +81,34 @@ describe("accounting list query schemas", () => {
         expect(subtype.trim().length).toBeGreaterThan(0);
       }
     }
+  });
+});
+
+describe("strict list queries and the register projection", () => {
+  it("rejects an unknown filter instead of returning unfiltered data", () => {
+    // `stat=posted` (typo) used to pass validation and then be ignored, so the
+    // table showed a filtered-looking heading over every entry.
+    expect(accountingEntriesListQuerySchema.safeParse({ stat: "posted" }).success).toBe(false);
+    expect(accountingAccountsListQuerySchema.safeParse({ accounttype: "Asset" }).success).toBe(
+      false,
+    );
+    expect(accountingFiscalYearsListQuerySchema.safeParse({ includeDeleted: "true" }).success).toBe(
+      true,
+    );
+    expect(accountingFiscalYearsListQuerySchema.safeParse({ status: "open" }).success).toBe(false);
+  });
+
+  it("coerces the journal register projection flag", () => {
+    expect(accountingEntriesListQuerySchema.parse({ includeLines: "false" }).includeLines).toBe(
+      "false",
+    );
+    expect(accountingEntriesListQuerySchema.parse({ includeLines: true }).includeLines).toBe(true);
+  });
+
+  it("bounds the fiscal-year list page like the other accounting lists", () => {
+    expect(accountingFiscalYearsListQuerySchema.safeParse({ limit: 101 }).success).toBe(false);
+    expect(accountingFiscalYearsListQuerySchema.safeParse({ limit: 100, page: 2 }).success).toBe(
+      true,
+    );
   });
 });

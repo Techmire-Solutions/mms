@@ -23,6 +23,11 @@ import {
 } from "../../accounting/use-cases/ias29UseCases.js";
 import { ias29Deps } from "../../accounting/use-cases/ias29Deps.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
+import {
+  expectRejectedWith,
+  installAuditFailure,
+  removeAuditFailure,
+} from "./auditFailureProbe.js";
 
 const TENANT = "fx-ias29-restate";
 const actor = { tenant: TENANT, userId: "u1" };
@@ -266,6 +271,30 @@ describe("IAS 29 controls under concurrency and misconfiguration", () => {
         }),
       ),
     ).rejects.toThrow(/expected Equity, Revenue or Expense/);
+  });
+
+  it("rolls back the restatement run and its entry pair when the audit append fails", async () => {
+    await installAuditFailure(TENANT);
+    try {
+      await expectRejectedWith(
+        withTenant(TENANT, () => postIas29Restatement(ias29Deps, actor, "2027-03-31")),
+        /audit append forced to fail/,
+      );
+    } finally {
+      await removeAuditFailure(TENANT);
+    }
+
+    const surviving = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT
+          (SELECT count(*)::int FROM accounting_entries
+            WHERE workspace_subdomain = ${TENANT} AND source_id = '2027-03-31'
+              AND source_type IN ('ias29_restate', 'ias29_reversal')) AS entries,
+          (SELECT count(*)::int FROM accounting_ias29_runs
+            WHERE workspace_subdomain = ${TENANT} AND restatement_date = '2027-03-31') AS runs
+      `),
+    );
+    expect(surviving.rows[0]).toMatchObject({ entries: 0, runs: 0 });
   });
 
   it("posts one restatement per date under concurrent submits", async () => {

@@ -3,16 +3,20 @@ import { findFiscalYearForDate, type FiscalYear, type JournalEntry } from "@mms/
 import {
   bulkSaveEntries,
   findEntryIdBySource,
+  lockPostableAccounts,
   saveEntry,
 } from "../../db/repositories/accountingRepository.js";
+import { recordJournalEntryAudit } from "../use-cases/accountingEntryAudit.js";
 import { findClosedPostingPeriodForDate } from "../../db/repositories/accountingPostingPeriodsRepository.js";
 import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import {
+  assertJournalAccountsWritable,
   assertJournalEntryPeriodOpen,
   assertPostingPeriodOpen,
+  mapJournalEntryUniqueError,
   prepareJournalEntryForPersist,
 } from "../use-cases/accountingLedgerGuards.js";
-import { isUniqueViolation } from "../../lib/pgErrors.js";
+import { isUniqueViolation, uniqueViolationConstraint } from "../../lib/pgErrors.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { lockFiscalYearsForEntries } from "./fiscalYearPostingLock.js";
 
@@ -35,6 +39,26 @@ export async function postingDateForTenant(tenant: string, value?: string | null
  * and returns the fiscal years read *after* that lock, so a close that committed
  * while we waited is visible.
  */
+/**
+ * True only for the idempotent replay conflicts: the voucher's source key
+ * `(source_type, source_id)` or the entry primary key means the exact posting
+ * already exists. A ref collision is a different voucher claiming the same
+ * human reference and must surface as a 409 (see `mapJournalEntryUniqueError`).
+ */
+export function isIdempotentGeneratedEntryConflict(error: unknown): boolean {
+  if (!isUniqueViolation(error)) return false;
+  const constraint = uniqueViolationConstraint(error) ?? "";
+  // An unidentifiable 23505 keeps the historical "already posted" treatment (the
+  // driver may hide the constraint); an identified source/pkey conflict is the
+  // replay case, and an identified ref conflict is a real 409.
+  if (!constraint) return true;
+  return (
+    constraint.includes("_source_uidx") ||
+    constraint.includes("_pkey") ||
+    constraint.includes("_id_uidx")
+  );
+}
+
 async function lockedFiscalYears(
   tenant: string,
   entries: readonly JournalEntry[],
@@ -101,13 +125,22 @@ export async function persistGeneratedEntry(
     // flipped the year to closed while this posting waited for it.
     assertJournalEntryPeriodOpen(entry, resolvedYears);
     await assertPostingWindowOpen(tenant, [entry.date]);
+    // System postings used to skip this: an invoice, payment, opening or closing
+    // entry could target an archived/deactivated account — or a summary account —
+    // while only the manual paths were checked.
+    await assertJournalAccountsWritable(tenant, [entry], lockPostableAccounts);
     const prepared = prepareJournalEntryForPersist(entry, resolvedYears);
     try {
       await saveEntry(tenant, prepared);
     } catch (error) {
-      if (isUniqueViolation(error)) return null;
+      if (isIdempotentGeneratedEntryConflict(error)) return null;
+      if (isUniqueViolation(error)) mapJournalEntryUniqueError(error);
       throw error;
     }
+    // Every generated voucher (invoice/payment/closing/reversal postings from the
+    // other modules) joins the audit chain with the write: previously only manual
+    // vouchers were audited, so the ledger could change without an attributed row.
+    await recordJournalEntryAudit(tenant, "CREATE", prepared);
     await broadcastLedgerWrite(tenant);
     return prepared;
   });
@@ -143,6 +176,7 @@ export async function persistGeneratedEntries(
       tenant,
       pending.map((entry) => entry.date),
     );
+    await assertJournalAccountsWritable(tenant, pending, lockPostableAccounts);
     const prepared = pending.map((entry) => {
       assertJournalEntryPeriodOpen(entry, resolvedYears);
       return prepareJournalEntryForPersist(entry, resolvedYears);

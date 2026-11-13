@@ -19,11 +19,7 @@ import {
   type JournalEntry,
   type FiscalYear,
 } from "@mms/shared";
-import {
-  useAccountingFiscalYearsPaginated,
-  useAllAccountingAccounts,
-  useAllAccountingEntries,
-} from "./useAccountingApi";
+import { useAccountingFiscalYearsPaginated, useAllAccountingAccounts } from "./useAccountingApi";
 import { useAccountingEntriesPage } from "./accountingListFetch";
 import { useJournalEntriesListQueryState } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import { useAccountingPageActions } from "@/tenant/features/accounting/hooks/useAccountingPageActions";
@@ -62,13 +58,6 @@ export function useAccountingPageController() {
   const entriesResult = useAccountingEntriesPage(journalList.query);
   const fiscalYearsResult = useAccountingFiscalYearsPaginated({ page: 1, limit: 100 });
 
-  const aggregateSubTab =
-    activeTab === "work" &&
-    (activeSubTab === "overview" || activeSubTab === "ledger" || activeSubTab === "trial");
-  const aggregateEntriesResult = useAllAccountingEntries(
-    { includeDeleted: false },
-    { enabled: aggregateSubTab },
-  );
   const accountsEnvelope = accountsResult.data as {
     body?: { accounts?: Account[] };
     accounts?: Account[];
@@ -82,7 +71,12 @@ export function useAccountingPageController() {
     : (accountsEnvelope?.body?.accounts ?? accountsEnvelope?.accounts ?? []);
   const journalEntries: JournalEntry[] = entriesResult.data?.entries ?? [];
   const journalTotal = entriesResult.data?.total ?? 0;
-  const aggregateEntries: JournalEntry[] = aggregateEntriesResult.data ?? [];
+  /**
+   * The Overview dashboard and the register render this server-paginated page; the
+   * whole-ledger figures come from the server metrics and report aggregates. There
+   * is deliberately no "all entries" collection: the old whole-ledger fetch (up to
+   * 50 × 100 full vouchers) is gone, and a page cannot stand in for the ledger.
+   */
   const fiscalYears: FiscalYear[] =
     fiscalYearsEnvelope?.body?.fiscalYears ?? fiscalYearsEnvelope?.fiscalYears ?? [];
   const { settings } = useAccountingConfig();
@@ -141,10 +135,7 @@ export function useAccountingPageController() {
   });
 
   const activeFiscalYear = resolveDefaultFiscalYear(fiscalYears, todayISO()) ?? undefined;
-  const listLoadFailed =
-    accountsResult.isError ||
-    entriesResult.isError ||
-    (aggregateSubTab && aggregateEntriesResult.isError);
+  const listLoadFailed = accountsResult.isError || entriesResult.isError;
 
   return {
     t,
@@ -162,11 +153,9 @@ export function useAccountingPageController() {
     createAccountRequestKey,
     accounts,
     journalEntries,
-    aggregateEntries,
     fiscalYears,
     accountsResult,
     entriesResult,
-    aggregateEntriesResult,
     journalTotal,
     filteredCount,
     setFilteredCount: setJournalFilteredCount,

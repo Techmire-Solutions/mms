@@ -4,6 +4,12 @@ import { pgErrorMessage, pgErrorCode } from "./pgErrors.js";
 export interface ErrorEnvelopeBody {
   type: string;
   message: string;
+  /**
+   * Stable programmatic discriminator for domain rejections whose coarse `type`
+   * cannot separate them (the six different Accounting 422s all report
+   * `validation_error`). Additive: clients that ignore it are unaffected.
+   */
+  code?: string;
   /** Machine-readable reasons carried by domain errors (e.g. blocked transitions). */
   violations?: string[];
   /** Structured context (blocked students, transition endpoints, OCC token). */
@@ -19,6 +25,8 @@ export interface ErrorEnvelopeBody {
 export interface DatabaseConstraintResponse {
   status: number;
   type: string;
+  /** Client-facing message for statuses whose meaning is not obvious (409/503). */
+  message?: string;
 }
 
 const PG_CONSTRAINT_RESPONSES: Record<string, DatabaseConstraintResponse> = {
@@ -35,6 +43,20 @@ const PG_CONSTRAINT_RESPONSES: Record<string, DatabaseConstraintResponse> = {
   "22008": { status: 400, type: "invalid_value" },
   // Exclusion violation (fiscal-year non-overlap, migration 0251).
   "23P01": { status: 409, type: "conflict" },
+  // Advisory/row lock wait exceeded the path's `lock_timeout`: a concurrent ledger
+  // operation holds the lock, so the caller should retry rather than see a 500.
+  "55P03": {
+    status: 409,
+    type: "lock_timeout",
+    message: "Another ledger operation holds the lock; retry in a moment",
+  },
+  // `statement_timeout` cancelled the statement (long aggregation / month-end
+  // revaluation). Retryable and not a server fault.
+  "57014": {
+    status: 503,
+    type: "query_cancelled",
+    message: "The operation exceeded its database time budget; retry",
+  },
 };
 
 /**

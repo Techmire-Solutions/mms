@@ -196,4 +196,5 @@ export const EMPTY_ACCOUNTING_METRICS: AccountingCommandMetricsSnapshot = {
   surplus: 0,
   assets: 0,
   liabilities: 0,
+  monthly: [],
 };

@@ -71,26 +71,50 @@ export const hedgeRelationshipCreateSchema = hedgeRelationshipFieldsSchema
 
 export type HedgeRelationshipCreate = z.infer<typeof hedgeRelationshipCreateSchema>;
 
-export interface HedgeValuationRecord {
-  valuationDate: string;
-  kind: "valuation" | "settlement" | "reclassification";
-  rate: string;
-  instrumentValue: string;
-  hedgedChange: string;
-  effective: string;
-  ineffective: string;
-  entryId: string | null;
-  reversalEntryId: string | null;
-}
+/**
+ * The computed effectiveness split, shared by the preview and the stored record.
+ *
+ * The record schemas live here (next to the designation fields they extend) so the
+ * HTTP types are inferred from them; a manual interface mirroring the schema used to
+ * drift silently because `sendValidated` accepts an `unknown` payload.
+ */
+export const hedgeValuationFiguresSchema = z
+  .object({
+    rate: exchangeRateValueSchema,
+    instrumentValue: moneyDecimalAmountSchema,
+    hedgedChange: moneyDecimalAmountSchema,
+    effective: moneyDecimalAmountSchema,
+    ineffective: moneyDecimalAmountSchema,
+  })
+  .strict();
 
-export interface HedgeRelationship extends HedgeRelationshipCreate {
-  id: string;
-  status: HedgeStatus;
-  /** Reserve balance left in OCI by the settlement, until it is reclassified. */
-  settledReserve: string;
-  valuations: HedgeValuationRecord[];
-  createdAt?: string;
-}
+/** One valuation, settlement or reclassification recorded against a hedge. */
+export const hedgeValuationRecordSchema = hedgeValuationFiguresSchema
+  .extend({
+    valuationDate: isoDateSchema,
+    kind: z.enum(["valuation", "settlement", "reclassification", "discontinuation"]),
+    entryId: z.string().nullable(),
+    reversalEntryId: z.string().nullable(),
+  })
+  .strict();
+
+export type HedgeValuationRecord = z.infer<typeof hedgeValuationRecordSchema>;
+
+/** `POST /api/accounting/hedges` and the mutation endpoints' `hedge` payload. */
+export const hedgeRelationshipRecordSchema = hedgeRelationshipFieldsSchema
+  .extend({
+    id: z.string().min(1),
+    status: z.enum(HEDGE_STATUSES),
+    hedgeType: z.enum(HEDGE_TYPES),
+    direction: z.enum(HEDGE_DIRECTIONS),
+    /** Reserve left in OCI by the settlement, until it is reclassified. */
+    settledReserve: moneyDecimalAmountSchema,
+    valuations: z.array(hedgeValuationRecordSchema),
+    createdAt: z.string().optional(),
+  })
+  .strict();
+
+export type HedgeRelationship = z.infer<typeof hedgeRelationshipRecordSchema>;
 
 /**
  * Query of `GET /api/accounting/hedges`. The list was previously unpaged (the
@@ -114,6 +138,20 @@ export const hedgeSettlementRequestSchema = z
     cashAccountId: accountId,
   })
   .strict();
+
+/**
+ * Body of `POST /api/accounting/hedges/:id/discontinue` — IFRS 9.6.5.6: hedge
+ * accounting stops prospectively, the cumulative effective amount stays in OCI until
+ * it is reclassified.
+ */
+export const hedgeDiscontinuationRequestSchema = z
+  .object({
+    date: isoDateSchema,
+    reason: z.string().trim().min(3).max(500),
+  })
+  .strict();
+
+export type HedgeDiscontinuationRequest = z.infer<typeof hedgeDiscontinuationRequestSchema>;
 
 /** Body of `POST /api/accounting/hedges/:id/reclassify`. */
 export const hedgeReclassificationRequestSchema = z

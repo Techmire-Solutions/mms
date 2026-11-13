@@ -6,6 +6,8 @@ import type {
   FiscalYear,
 } from "@/lib/data/accountingData";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
+import { ErrorState } from "@/components/app/ErrorState";
+import { TableSkeleton } from "@shared/ui";
 import { useAccountingDashboardView } from "../hooks/useAccountingDashboardView";
 import { AccountingDashboardCharts } from "./AccountingDashboardCharts";
 import { AccountingDashboardSnapshots } from "./AccountingDashboardSnapshots";
@@ -40,7 +42,38 @@ export function AccountingDashboard({
     isBalanced,
     balanceDifference,
     recentEntries,
+    isLoading,
+    isError,
+    refetch,
   } = useAccountingDashboardView(accounts, entries);
+
+  if (isError) {
+    return (
+      <section aria-label={t("accounting.dashboard.aria")}>
+        <ErrorState
+          title={t("accounting.dashboard.loadFailed")}
+          description={t("accounting.dashboard.loadFailedHint")}
+          onRetry={refetch}
+        />
+      </section>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <section aria-label={t("accounting.dashboard.aria")} className="space-y-5" aria-busy="true">
+        <TableSkeleton rows={2} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 rounded-2xl border border-border/60 bg-card p-5">
+            <TableSkeleton rows={6} />
+          </div>
+          <div className="rounded-2xl border border-border/60 bg-card p-5">
+            <TableSkeleton rows={6} />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section aria-label={t("accounting.dashboard.aria")} className="space-y-5">

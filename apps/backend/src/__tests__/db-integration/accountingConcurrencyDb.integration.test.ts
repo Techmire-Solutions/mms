@@ -249,6 +249,48 @@ describe("accounting concurrent writes (Postgres)", () => {
     expect(Number(row.net)).toBe(0);
   });
 
+  it("does not deadlock when two batches lock the same entries in opposite order", async () => {
+    // `lockJournalEntries` sorts the advisory keys in SQL. Without that, a batch
+    // saving [A,B] and a batch saving [B,A] would acquire the same two locks in
+    // opposite order and Postgres would abort one with 40P01.
+    const useCases = createAccountingUseCases();
+    const entryWith = (id: string, ref: string): JournalEntry => ({
+      ...draft,
+      id,
+      ref,
+      status: "posted",
+      description: `Opposite order ${id}`,
+    });
+
+    const forward = runWithTenant(TENANT_REF(), () =>
+      useCases.upsertEntries([entryWith("order-a", "ORD-A"), entryWith("order-b", "ORD-B")]),
+    );
+    const reverse = runWithTenant(TENANT_REF(), () =>
+      useCases.upsertEntries([entryWith("order-c", "ORD-C"), entryWith("order-d", "ORD-D")]),
+    );
+    const results = await Promise.allSettled([forward, reverse]);
+
+    for (const result of results) {
+      // A regression surfaces as the Postgres deadlock code, not "flaky".
+      if (result.status === "rejected") throw result.reason;
+    }
+
+    const stored = await withTenant(TENANT_REF(), (tx) =>
+      tx.execute(sql`
+        SELECT count(*)::int AS entries,
+               COALESCE((SELECT SUM(debit) - SUM(credit)
+                           FROM accounting_journal_lines
+                          WHERE workspace_subdomain = ${TENANT_REF()}), 0)::numeric AS net
+          FROM accounting_entries
+         WHERE workspace_subdomain = ${TENANT_REF()}
+           AND id IN ('order-a', 'order-b', 'order-c', 'order-d')
+      `),
+    );
+    const row = stored.rows[0] as { entries: number; net: string };
+    expect(row.entries).toBe(4);
+    expect(Number(row.net)).toBe(0);
+  });
+
   it("reverses a posted entry exactly once when two reversals race", async () => {
     const useCases = createAccountingUseCases();
     await withTenant(TENANT_REF(), (tx) =>

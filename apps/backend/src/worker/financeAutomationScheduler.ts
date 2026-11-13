@@ -4,16 +4,16 @@ import { logger } from "../lib/logger.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { LEADER_LOCK_FINANCE_AUTOMATION, tryAcquireLeaderLease } from "../lib/leaderElection.js";
 import { loadFinanceModulePreferences } from "../services/financePreferencesService.js";
-import { createJobDeadline, runWithJobDeadline } from "../services/backgroundJobDeadline.js";
 import { getWorkspaceTimezone } from "../lib/workspaceTimezone.js";
 import { listEnabledWorkspaces, withTimeout } from "./sweepSupport.js";
 import {
   generateDueInvoices,
+  isAbortLike,
   restateMonthEnd,
   revalueMonthEnd,
   runOverdueMarking,
-  type AutomationStepResult,
 } from "./financeAutomationRuns.js";
+import { accountingStep, financeStep } from "./financeAutomationSteps.js";
 
 /**
  * Scheduled finance automation (leader-only sweep).
@@ -94,21 +94,12 @@ async function loadPreferences(tenant: string): Promise<FinanceModulePreferences
   return { ...DEFAULT_FINANCE_SETTINGS, ...(loaded ?? {}) };
 }
 
-/** Runs one step under the shared deadline (per-kind budget + shutdown signal). */
-async function step(kind: string, work: () => Promise<AutomationStepResult>) {
-  const deadline = createJobDeadline("finance", kind);
-  try {
-    return await runWithJobDeadline(deadline, work);
-  } finally {
-    deadline.dispose();
-  }
-}
-
 /** Runs the due steps for one workspace; exported for tests. */
 export async function runWorkspaceAutomation(
   tenant: string,
   now: Date,
   shouldContinue: () => boolean = () => true,
+  signal?: AbortSignal,
 ): Promise<WorkspaceResult> {
   const result: WorkspaceResult = {
     overdueMarked: 0,
@@ -121,30 +112,53 @@ export async function runWorkspaceAutomation(
   const localHour = hourInTimeZone(timeZone, now);
   const prefs = await loadPreferences(tenant);
 
-  if (localHour === OVERDUE_HOUR && shouldContinue()) {
-    const overdue = await step("automation-overdue", () =>
-      runOverdueMarking(tenant, localDate, prefs),
+  // `>=` (not `===`): a tick deferred by the sweep budget or a shutdown retries on
+  // the next hourly tick of the same local date. Every step is idempotent, so the
+  // catch-up window costs nothing but closes the "missed the one-shot hour" gap.
+  if (localHour >= OVERDUE_HOUR && shouldContinue()) {
+    const overdue = await financeStep(
+      "automation-overdue",
+      () => runOverdueMarking(tenant, localDate, prefs),
+      signal,
     );
-    if (overdue.ran) result.overdueMarked += 1;
-    logger.info({ tenant, localDate, ...overdue }, "[FinanceAutomation] Overdue step");
+    if (overdue?.ran) result.overdueMarked += 1;
+    if (overdue?.detail) {
+      logger.info({ tenant, localDate, ...overdue }, "[FinanceAutomation] Overdue step");
+    }
   }
 
-  if (localHour === BOUNDARY_HOUR && shouldContinue()) {
-    const billing = await step("automation-generate", () =>
-      generateDueInvoices(tenant, localDate, prefs),
+  if (localHour >= BOUNDARY_HOUR && shouldContinue()) {
+    const billing = await financeStep(
+      "automation-generate",
+      () => generateDueInvoices(tenant, localDate, prefs),
+      signal,
     );
-    if (billing.ran) result.invoicesCreated += 1;
-    if (billing.detail)
+    if (billing?.ran) result.invoicesCreated += 1;
+    if (billing?.detail)
       logger.info({ tenant, localDate, ...billing }, "[FinanceAutomation] Billing step");
 
-    const revaluation = await step("automation-revalue", () => revalueMonthEnd(tenant, localDate));
-    if (revaluation.ran) result.revaluations += 1;
-    if (revaluation.detail)
+    const revaluation = await accountingStep(
+      tenant,
+      localDate,
+      "automation-revalue",
+      (deadlineSignal) => revalueMonthEnd(tenant, localDate, deadlineSignal),
+      shouldContinue,
+      signal,
+    );
+    if (revaluation?.ran) result.revaluations += 1;
+    if (revaluation?.detail)
       logger.info({ tenant, localDate, ...revaluation }, "[FinanceAutomation] Revaluation step");
 
-    const restatement = await step("automation-ias29", () => restateMonthEnd(tenant, localDate));
-    if (restatement.ran) result.restatements += 1;
-    if (restatement.detail)
+    const restatement = await accountingStep(
+      tenant,
+      localDate,
+      "automation-ias29",
+      (deadlineSignal) => restateMonthEnd(tenant, localDate, deadlineSignal),
+      shouldContinue,
+      signal,
+    );
+    if (restatement?.ran) result.restatements += 1;
+    if (restatement?.detail)
       logger.info({ tenant, localDate, ...restatement }, "[FinanceAutomation] IAS 29 step");
   }
 
@@ -193,11 +207,16 @@ export async function runFinanceAutomationSweep(
       );
       break;
     }
+    // Per-workspace abort: a workspace that exceeds its budget is cancelled (its
+    // transaction rolls back and releases locks) instead of being abandoned while it
+    // keeps writing. A timeout is a deferral, not a failure — the next tick retries.
+    const controller = new AbortController();
     try {
       const result = await withTimeout(
-        runWorkspaceAutomation(workspace, now, shouldContinue),
+        runWorkspaceAutomation(workspace, now, shouldContinue, controller.signal),
         WORKSPACE_TIMEOUT_MS,
         `finance automation ${workspace}`,
+        () => controller.abort(),
       );
       summary.scanned += 1;
       summary.overdueMarked += result.overdueMarked;
@@ -205,6 +224,11 @@ export async function runFinanceAutomationSweep(
       summary.revaluations += result.revaluations;
       summary.restatements += result.restatements;
     } catch (error) {
+      if (isAbortLike(error) || controller.signal.aborted) {
+        summary.deferred += 1;
+        logger.warn({ workspace, err: error }, "[FinanceAutomation] Workspace deferred (aborted)");
+        continue;
+      }
       // One tenant's configuration must never stop the sweep for the rest — but it
       // must be visible in the summary and the log.
       const reason = error instanceof Error ? error.message : String(error);

@@ -8,7 +8,15 @@ import {
 } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { entryRowToRecord, type JournalLineRow } from "./accountingRepository.js";
+import { activeReversalEntryIdSql } from "./accountingEntriesHydrate.js";
 import { buildEntryListConditions, buildEntryOrderBy } from "./accountingRepositoryListQuery.js";
+
+interface LineSummaryRow {
+  entryId: string;
+  lineCount: number;
+  debitTotal: string;
+  creditTotal: string;
+}
 
 export async function listEntriesPage(
   tenant: string,
@@ -19,6 +27,13 @@ export async function listEntriesPage(
   const limit = Math.min(Math.max(1, query.limit ?? 12), 500);
   const isCursorPaging = Boolean(query.afterId?.trim());
   const offset = isCursorPaging ? 0 : (page - 1) * limit;
+  /**
+   * Register projection: the list rows render header totals, not voucher lines,
+   * so a dense voucher no longer ships its whole line set to the page. The
+   * drawer reads the full entry by id. Tags/attachments stay: they are rendered
+   * as row chips and are tiny compared with the lines.
+   */
+  const includeLines = query.includeLines !== false;
 
   return withTenantRead(subdomain, async (tx) => {
     const baseConditions = buildEntryListConditions(subdomain, query);
@@ -56,6 +71,7 @@ export async function listEntriesPage(
         sourceId: accountingEntries.sourceId,
         transactionType: accountingEntries.transactionType,
         reversedRef: accountingEntries.reversedRef,
+        activeReversalEntryId: activeReversalEntryIdSql(),
         simpleMode: accountingEntries.simpleMode,
         deletedAt: accountingEntries.deletedAt,
         deletedBy: accountingEntries.deletedBy,
@@ -83,23 +99,26 @@ export async function listEntriesPage(
     }
 
     const entryIds = rows.map((r) => r.id);
-    const [allLines, allTags, allAttachments] = await Promise.all([
-      tx
-        .select({
-          id: accountingJournalLines.id,
-          entryId: accountingJournalLines.entryId,
-          accountId: accountingJournalLines.accountId,
-          debit: accountingJournalLines.debit,
-          credit: accountingJournalLines.credit,
-          description: accountingJournalLines.description,
-        })
-        .from(accountingJournalLines)
-        .where(
-          and(
-            eq(accountingJournalLines.workspaceSubdomain, subdomain),
-            inArray(accountingJournalLines.entryId, entryIds),
-          ),
-        ),
+    const lineRows = includeLines
+      ? tx
+          .select({
+            id: accountingJournalLines.id,
+            entryId: accountingJournalLines.entryId,
+            accountId: accountingJournalLines.accountId,
+            debit: accountingJournalLines.debit,
+            credit: accountingJournalLines.credit,
+            description: accountingJournalLines.description,
+          })
+          .from(accountingJournalLines)
+          .where(
+            and(
+              eq(accountingJournalLines.workspaceSubdomain, subdomain),
+              inArray(accountingJournalLines.entryId, entryIds),
+            ),
+          )
+      : Promise.resolve([] as Array<{ entryId: string } & JournalLineRow>);
+    const [allLines, allTags, allAttachments, lineSummaries] = await Promise.all([
+      lineRows,
       tx
         .select({
           entryId: accountingEntryTags.entryId,
@@ -124,7 +143,29 @@ export async function listEntriesPage(
             inArray(accountingEntryAttachments.entryId, entryIds),
           ),
         ),
+      /**
+       * Header totals for the projected list: one grouped aggregate over the
+       * page's line rows instead of shipping every line.
+       */
+      includeLines
+        ? Promise.resolve([] as LineSummaryRow[])
+        : tx
+            .select({
+              entryId: accountingJournalLines.entryId,
+              lineCount: sql<number>`count(*)::int`,
+              debitTotal: sql<string>`coalesce(sum(${accountingJournalLines.debit}), 0)`,
+              creditTotal: sql<string>`coalesce(sum(${accountingJournalLines.credit}), 0)`,
+            })
+            .from(accountingJournalLines)
+            .where(
+              and(
+                eq(accountingJournalLines.workspaceSubdomain, subdomain),
+                inArray(accountingJournalLines.entryId, entryIds),
+              ),
+            )
+            .groupBy(accountingJournalLines.entryId),
     ]);
+    const summariesByEntry = new Map(lineSummaries.map((row) => [row.entryId, row]));
 
     const linesByEntry = new Map<string, JournalLineRow[]>();
     for (let i = 0; i < allLines.length; i++) {
@@ -159,14 +200,22 @@ export async function listEntriesPage(
       }
     }
 
-    const items = rows.map((r) =>
-      entryRowToRecord(
+    const items = rows.map((r) => {
+      const record = entryRowToRecord(
         r,
         linesByEntry.get(r.id) ?? [],
         tagsByEntry.get(r.id) ?? [],
         attachmentsByEntry.get(r.id) ?? [],
-      ),
-    );
+      );
+      const summary = summariesByEntry.get(r.id);
+      if (!summary) return record;
+      return {
+        ...record,
+        lineCount: Number(summary.lineCount),
+        debitTotal: Math.round(Number(summary.debitTotal) * 100) / 100,
+        creditTotal: Math.round(Number(summary.creditTotal) * 100) / 100,
+      };
+    });
 
     return {
       entries: items,

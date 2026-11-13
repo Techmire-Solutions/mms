@@ -64,6 +64,8 @@ export const openingBalancesReplaceSchema = z
   .object({
     fiscalYearId: z.string().min(1),
     balances: z.array(openingBalanceInsertSchema).max(500),
+    /** Justification recorded on the audit chain (e.g. "migration from Tally"). */
+    reason: z.string().trim().max(500).optional(),
   })
   .strict();
 
@@ -118,6 +120,8 @@ export const bankReconciliationMatchSchema = z
     statementLineId: z.string().min(1),
     journalEntryId: z.string().min(1),
     journalLineId: z.string().min(1),
+    /** Justification recorded on the audit chain (why this match is correct). */
+    reason: z.string().trim().max(500).optional(),
   })
   .strict();
 

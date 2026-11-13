@@ -56,6 +56,11 @@ const STORED_NOTIFICATION_COPY: Record<
     type: "fee",
     target: { kind: "invoices", statuses: ["overdue"] },
   },
+  accounting_automation_failed: {
+    titleKey: "notifications.accountingAutomationFailedTitle",
+    descKey: "notifications.accountingAutomationFailedDesc",
+    type: "fee",
+  },
 };
 
 export function toStoredNotificationItem(

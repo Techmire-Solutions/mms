@@ -61,6 +61,20 @@ const moneyCentsChecks = [
 ] as const;
 
 /**
+ * The Accounting money policy, in one place:
+ *
+ * - **Functional amounts** (journal `debit`/`credit`, balances, report figures,
+ *   aging buckets, opening balances, bank-reconciliation amounts) travel as 2-dp
+ *   numbers guarded by {@link moneyAmountSchema}/{@link signedMoneyAmountSchema}:
+ *   they reject more than two decimals and any value whose cent count exceeds
+ *   `Number.MAX_SAFE_INTEGER`, so no silent float rounding can reach the ledger.
+ * - **FX, hedge and statement amounts** (transaction currency, rates, fair values,
+ *   printing payloads) travel as decimal strings (`moneyDecimalAmountSchema` /
+ *   `exchangeRateValueSchema`) because they can carry storage-scale precision.
+ *
+ * Do not mix the two in one DTO: a number here means "exact to the cent", a string
+ * there means "decimal text whose scale is the column's".
+ *
  * Non-negative money with at most two decimal places and safe integer cents, so
  * ledger arithmetic can round-trip without silent precision loss.
  */

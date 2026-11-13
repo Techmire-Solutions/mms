@@ -24,6 +24,13 @@ export type AppDb = TenantTransaction;
 export interface WithTenantOptions {
   readOnly?: boolean;
   statementTimeoutMs?: number;
+  /** Advisory-lock wait budget; a contended ledger lock fails fast (SQLSTATE 55P03). */
+  lockTimeoutMs?: number;
+  /**
+   * Snapshot isolation for multi-statement reads that must agree with each other
+   * (a report page plus its opening/closing balances). Omitted = PostgreSQL default.
+   */
+  isolation?: "read committed" | "repeatable read";
   /**
    * Explicit opt-in for genuine platform/global work — platform-admin routes,
    * migrations, the worker, seeding.
@@ -93,6 +100,7 @@ export async function withTenant<T>(
     // context. Idempotent when the tenant matches; correct when it differs.
     await applyTenantTransactionGuards(active as unknown as AppDb, resolvedTenantId, {
       statementTimeoutMs: options.statementTimeoutMs,
+      lockTimeoutMs: options.lockTimeoutMs,
     });
     try {
       return await callback(active as unknown as TenantTransaction);
@@ -171,6 +179,7 @@ export async function withTenant<T>(
             // Single source of truth for tenant RLS GUCs + statement/idle budgets.
             await applyTenantTransactionGuards(tx as unknown as AppDb, resolvedTenantId, {
               statementTimeoutMs: options.statementTimeoutMs,
+              lockTimeoutMs: options.lockTimeoutMs,
             });
 
             // Register this transaction as the active one for the callback's async
@@ -182,7 +191,12 @@ export async function withTenant<T>(
               ),
             );
           },
-          options.readOnly ? { accessMode: "read only" } : undefined,
+          options.readOnly || options.isolation
+            ? {
+                ...(options.readOnly ? { accessMode: "read only" as const } : {}),
+                ...(options.isolation ? { isolationLevel: options.isolation } : {}),
+              }
+            : undefined,
         );
       } catch (error) {
         discardCommitScope(commitScope);
@@ -202,17 +216,25 @@ export async function withTenant<T>(
 export function withTenantRead<T>(
   tenantId: string,
   callback: (tx: TenantTransaction) => Promise<T>,
-  options?: { statementTimeoutMs?: number },
+  options?: { statementTimeoutMs?: number; isolation?: "read committed" | "repeatable read" },
 ): Promise<T>;
 export function withTenantRead<T>(
   tenantId: string | null | undefined,
   callback: (tx: TenantTransaction) => Promise<T>,
-  options: { statementTimeoutMs?: number; allowGlobal: boolean },
+  options: {
+    statementTimeoutMs?: number;
+    isolation?: "read committed" | "repeatable read";
+    allowGlobal: boolean;
+  },
 ): Promise<T>;
 export async function withTenantRead<T>(
   tenantId: string | null | undefined,
   callback: (tx: TenantTransaction) => Promise<T>,
-  options: { statementTimeoutMs?: number; allowGlobal?: boolean } = {},
+  options: {
+    statementTimeoutMs?: number;
+    isolation?: "read committed" | "repeatable read";
+    allowGlobal?: boolean;
+  } = {},
 ): Promise<T> {
   // Mirrors `withTenant`'s overloads, so a nullable tenant here also requires an
   // explicit `allowGlobal` rather than failing at runtime.

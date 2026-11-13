@@ -44,6 +44,7 @@ vi.mock("@/tenant/features/accounting/hooks/useHedges", () => ({
   usePostHedgeValuation: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useSettleHedge: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useReclassifyHedge: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDiscontinueHedge: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 describe("AccountingHedgesSection", () => {
@@ -55,6 +56,9 @@ describe("AccountingHedgesSection", () => {
     expect(html).toContain("Hedge active");
     expect(html).toContain("accounting.settings.hedges.value");
     expect(html).toContain("accounting.settings.hedges.settle");
+    // IFRS 9.6.5.6: an active hedge can be discontinued, and a settled or
+    // discontinued cash flow hedge can reclassify its reserve.
+    expect(html).toContain("accounting.settings.hedges.discontinue");
     expect(html).toContain("accounting.settings.hedges.reclassify");
   });
 

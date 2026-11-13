@@ -5,8 +5,10 @@
  */
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+
 import { convertMoney } from "../money/fxConvert.js";
 import { moneyToDecimalString, parseMoney } from "../money/money.js";
+import { exchangeRateValueSchema, moneyDecimalAmountSchema } from "../money/moneySchemas.js";
 import { normalizeStoredAmount, type ForeignMonetaryBalance } from "./accountingFxRevaluation.js";
 
 /** Query of `GET /api/accounting/fx-report`. */
@@ -100,3 +102,41 @@ export function summarizeFxExposure(
       };
     });
 }
+
+/** One currency's open exposure; a currency without a closing rate is unvalued, not 1. */
+export const fxExposureRowSchema = z
+  .object({
+    currency: z.string(),
+    openTxn: moneyDecimalAmountSchema,
+    carryingFunc: moneyDecimalAmountSchema,
+    closingRate: exchangeRateValueSchema.nullable(),
+    revaluedFunc: moneyDecimalAmountSchema.nullable(),
+    unrealized: moneyDecimalAmountSchema.nullable(),
+  })
+  .strict();
+
+/** Realized FX booked on payments in the window, per currency. */
+export const fxRealizedRowSchema = z
+  .object({
+    currency: z.string(),
+    realized: moneyDecimalAmountSchema,
+    payments: z.number().int().min(0),
+  })
+  .strict();
+
+/** Response of `GET /api/accounting/fx-report`. */
+export const fxReportSchema = z
+  .object({
+    from: isoDateSchema,
+    asOf: isoDateSchema,
+    functionalCurrency: z.string(),
+    exposure: z.array(fxExposureRowSchema),
+    realized: z.array(fxRealizedRowSchema),
+    totalRealized: moneyDecimalAmountSchema,
+    revaluations: z.array(
+      z
+        .object({ revaluationDate: isoDateSchema, totalUnrealized: moneyDecimalAmountSchema })
+        .strict(),
+    ),
+  })
+  .strict();

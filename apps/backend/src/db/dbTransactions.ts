@@ -18,6 +18,8 @@ export type DbClient = NodePgDatabase<typeof schema>;
 
 export interface TransactionOptions extends TenantScopeOptions {
   statementTimeoutMs?: number;
+  /** Advisory-lock wait budget (see `WithTenantOptions.lockTimeoutMs`). */
+  lockTimeoutMs?: number;
   /** Overrides `idle_in_transaction_session_timeout`; long snapshot streams pass a larger budget. */
   idleTimeoutMs?: number;
   /** Long-lived snapshot streams use `repeatable read`; default is the connection default. */

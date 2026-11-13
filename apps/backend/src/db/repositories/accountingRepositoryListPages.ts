@@ -30,6 +30,7 @@ export async function listAccountsPage(
         subtype: accountingAccounts.subtype,
         description: accountingAccounts.description,
         isActive: accountingAccounts.isActive,
+        parentAccountId: accountingAccounts.parentAccountId,
         isMonetary: accountingAccounts.isMonetary,
         accountCurrency: accountingAccounts.accountCurrency,
         allowRevaluation: accountingAccounts.allowRevaluation,

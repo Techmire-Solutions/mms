@@ -1,6 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockAccountingRepo = vi.hoisted(() => ({
+  // The generated-posting path now runs the same postability guard as the manual
+  // paths; these suites stub the lookup so they stay pure orchestration tests.
+  lockPostableAccounts: vi.fn(async (_tenant: string, ids: string[]) =>
+    ids.map((id) => ({ id, isActive: true, hasChildren: false })),
+  ),
   findEntryById: vi.fn(),
   findEntryIdBySource: vi.fn(),
   saveEntry: vi.fn(),

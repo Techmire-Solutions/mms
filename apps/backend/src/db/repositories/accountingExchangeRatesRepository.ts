@@ -9,6 +9,7 @@ import {
   type ExchangeRateLookupQuery,
   type ExchangeRateLookupResult,
   type ExchangeRatePutItem,
+  type ExchangeRateKey,
   type ExchangeRateRecord,
   type ExchangeRateType,
 } from "@mms/shared";
@@ -85,12 +86,7 @@ export async function listExchangeRates(
  */
 export async function findExchangeRatesByKeys(
   tenant: string,
-  keys: readonly {
-    fromCurrency: string;
-    toCurrency: string;
-    rateDate: string;
-    rateType: ExchangeRateType;
-  }[],
+  keys: readonly ExchangeRateKey[],
 ): Promise<ExchangeRateRecord[]> {
   if (keys.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();

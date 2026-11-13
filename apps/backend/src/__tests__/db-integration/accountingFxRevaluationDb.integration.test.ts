@@ -25,6 +25,11 @@ import {
 import { fxReportDeps, fxRevaluationDeps } from "../../accounting/use-cases/fxRevaluationDeps.js";
 import { buildFxReport } from "../../accounting/use-cases/fxReportUseCases.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
+import {
+  expectRejectedWith,
+  installAuditFailure,
+  removeAuditFailure,
+} from "./auditFailureProbe.js";
 
 const TENANT = "fx-ias21-reval";
 
@@ -58,6 +63,21 @@ async function cleanup(): Promise<void> {
     await commit();
   } catch (error) {
     await rollback().catch(() => undefined);
+    throw error;
+  }
+}
+
+/** Drops the rollback probe; a helper keeps the `throw` out of a `finally` block. */
+async function dropFxRunProbe(): Promise<void> {
+  const drop = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+  try {
+    await drop.tx.execute(
+      sql.raw(`DROP TRIGGER IF EXISTS probe_fx_run_fail ON accounting_fx_revaluation_runs`),
+    );
+    await drop.tx.execute(sql.raw(`DROP FUNCTION IF EXISTS probe_fx_run_fail()`));
+    await drop.commit();
+  } catch (error) {
+    await drop.rollback().catch(() => undefined);
     throw error;
   }
 }
@@ -228,6 +248,116 @@ describe("IAS 21 period-end revaluation", () => {
 
     // Assert: after the reversal the USD AR is back at 280,000, so at 283 the gain is 3,000 again.
     expect(nextMonth.lines[0]).toMatchObject({ carryingFunc: "280000.00", unrealized: "3000.00" });
+  });
+
+  it("rolls the posted pair back when the run row cannot be written", async () => {
+    // Arrange: a probe makes the run insert fail *inside* the posting transaction.
+    await upsertExchangeRates(
+      TENANT,
+      [
+        {
+          fromCurrency: "USD",
+          toCurrency: "PKR",
+          rateDate: "2026-12-31",
+          rateType: "CLOSING",
+          rate: "290",
+        },
+      ],
+      null,
+    );
+    const ddl = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+    try {
+      await ddl.tx.execute(
+        sql.raw(`
+        CREATE OR REPLACE FUNCTION probe_fx_run_fail() RETURNS trigger AS $$
+        BEGIN
+          RAISE EXCEPTION 'probe: fx run insert forced to fail';
+        END $$ LANGUAGE plpgsql
+      `),
+      );
+      await ddl.tx.execute(
+        sql.raw(`
+        CREATE TRIGGER probe_fx_run_fail BEFORE INSERT ON accounting_fx_revaluation_runs
+        FOR EACH ROW WHEN (NEW.workspace_subdomain = 'fx-ias21-reval')
+        EXECUTE FUNCTION probe_fx_run_fail()
+      `),
+      );
+      await ddl.commit();
+    } catch (error) {
+      await ddl.rollback().catch(() => undefined);
+      throw error;
+    }
+
+    try {
+      // Act: the entry + reversal insert first, then the run insert fails. Drizzle
+      // wraps the driver error, so the probe message is matched across the chain.
+      let failure: unknown;
+      try {
+        await withTenant(TENANT, () =>
+          postFxRevaluation(fxRevaluationDeps, { tenant: TENANT, userId: "u1" }, "2026-12-31"),
+        );
+      } catch (error) {
+        failure = error;
+      }
+      const chain = [
+        (failure as { message?: string } | undefined)?.message ?? "",
+        (failure as { cause?: { message?: string } } | undefined)?.cause?.message ?? "",
+      ].join(" ");
+      expect(chain).toMatch(/probe: fx run insert forced to fail/);
+    } finally {
+      await dropFxRunProbe();
+    }
+
+    // Assert: one transaction means no entry, no reversal and no run survived.
+    const surviving = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT
+          (SELECT count(*)::int FROM accounting_entries
+            WHERE workspace_subdomain = ${TENANT} AND source_id = '2026-12-31'
+              AND source_type IN ('fx_reval', 'fx_reval_reversal')) AS entries,
+          (SELECT count(*)::int FROM accounting_fx_revaluation_runs
+            WHERE workspace_subdomain = ${TENANT} AND revaluation_date = '2026-12-31') AS runs
+      `),
+    );
+    expect(surviving.rows[0]).toMatchObject({ entries: 0, runs: 0 });
+  });
+
+  it("rolls back the revaluation run and its entry pair when the audit append fails", async () => {
+    // A ledger mutation is only committed together with its audit row: the appender
+    // joins the caller's transaction. Force it to fail and require zero survivors.
+    await installAuditFailure(TENANT);
+    try {
+      await expectRejectedWith(
+        withTenant(TENANT, () =>
+          postFxRevaluation(fxRevaluationDeps, { tenant: TENANT, userId: "u1" }, "2027-01-31"),
+        ),
+        /audit append forced to fail/,
+      );
+    } finally {
+      await removeAuditFailure(TENANT);
+    }
+
+    const surviving = await withTenant(TENANT, (tx) =>
+      tx.execute(sql`
+        SELECT
+          (SELECT count(*)::int FROM accounting_entries
+            WHERE workspace_subdomain = ${TENANT} AND source_id = '2027-01-31'
+              AND source_type IN ('fx_reval', 'fx_reval_reversal')) AS entries,
+          (SELECT count(*)::int FROM accounting_fx_revaluation_runs
+            WHERE workspace_subdomain = ${TENANT} AND revaluation_date = '2027-01-31') AS runs
+      `),
+    );
+    expect(surviving.rows[0]).toMatchObject({ entries: 0, runs: 0 });
+  });
+
+  it("posts the pair once the run row can be written again", async () => {
+    const run = await withTenant(TENANT, () =>
+      postFxRevaluation(fxRevaluationDeps, { tenant: TENANT, userId: "u1" }, "2026-12-31"),
+    );
+    expect(run.entryId).toBeTruthy();
+    expect(run.reversalEntryId).toBeTruthy();
+    const posted = await findEntryById(TENANT, run.entryId as string);
+    expect(posted?.date).toBe("2026-12-31");
   });
 
   it("given the posted revaluation, should report USD exposure at the closing rate and the run in the period", async () => {

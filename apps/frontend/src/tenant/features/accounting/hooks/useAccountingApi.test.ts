@@ -11,11 +11,7 @@ const apiContractMock = vi.hoisted(() => ({
 vi.mock("@/lib/api", () => ({ apiContract: apiContractMock }));
 vi.mock("@/lib/contexts/AuthContext", () => ({ useAuth: () => ({ isAuthenticated: true }) }));
 
-import {
-  fetchAccountingEntriesPage,
-  fetchAllAccountingAccounts,
-  fetchAllAccountingEntries,
-} from "./accountingListFetch";
+import { fetchAccountingEntriesPage, fetchAllAccountingAccounts } from "./accountingListFetch";
 
 /** A 200 contract envelope. */
 const ok = (body: unknown) => ({ status: 200, body, headers: new Headers() });
@@ -36,35 +32,28 @@ function accountsQuery(index: number): Record<string, unknown> {
   >;
 }
 
-describe("fetchAllAccountingEntries", () => {
+describe("register projection", () => {
   beforeEach(() => {
     apiContractMock.accounting.listEntries.mockReset();
   });
 
-  it("pages through until hasMore is false, so aggregates see the whole journal", async () => {
-    // A single capped page silently understated every client aggregate: the Trial
-    // Balance summed the 100 most recently created entries and still reported
-    // itself balanced.
-    apiContractMock.accounting.listEntries
-      .mockResolvedValueOnce(ok({ entries: [{ id: "e1" }, { id: "e2" }], hasMore: true }))
-      .mockResolvedValueOnce(ok({ entries: [{ id: "e3" }], hasMore: false }));
-
-    const entries = await fetchAllAccountingEntries({});
-
-    expect(entries.map((entry) => entry.id)).toEqual(["e1", "e2", "e3"]);
-    expect(apiContractMock.accounting.listEntries).toHaveBeenCalledTimes(2);
-    expect(entriesQuery(0).page).toBe(1);
-    expect(entriesQuery(1).page).toBe(2);
-    // The REST contract caps `limit` at 100; asking for more is a 400, not a clamp.
-    expect(entriesQuery(0).limit).toBe(100);
-  });
-
-  it("forwards every journal filter it is given", async () => {
+  it("asks for headers only, so a dense page ships no line sets", async () => {
     apiContractMock.accounting.listEntries.mockResolvedValueOnce(
-      ok({ entries: [], hasMore: false }),
+      ok({ entries: [], total: 0, page: 1, limit: 100, hasMore: false }),
     );
 
-    await fetchAllAccountingEntries({
+    await fetchAccountingEntriesPage({ page: 1 });
+
+    // Full vouchers: Cashbook/print/the wizard consume the line sets.
+    expect(entriesQuery(0).includeLines).toBeUndefined();
+  });
+
+  it("forward every journal filter it is given", async () => {
+    apiContractMock.accounting.listEntries.mockResolvedValueOnce(
+      ok({ entries: [], total: 0, page: 1, limit: 100, hasMore: false }),
+    );
+
+    await fetchAccountingEntriesPage({
       search: "INV-1",
       status: "posted",
       dateFrom: "2026-01-01",
@@ -78,24 +67,6 @@ describe("fetchAllAccountingEntries", () => {
     expect(query.dateFrom).toBe("2026-01-01");
     expect(query.dateTo).toBe("2026-12-31");
     expect(query.accountId).toBe("acc-1");
-  });
-
-  it("stops when a page comes back empty even if hasMore is set", async () => {
-    apiContractMock.accounting.listEntries
-      .mockResolvedValueOnce(ok({ entries: [{ id: "e1" }], hasMore: true }))
-      .mockResolvedValueOnce(ok({ entries: [], hasMore: true }));
-
-    const entries = await fetchAllAccountingEntries({});
-
-    expect(entries).toHaveLength(1);
-    expect(apiContractMock.accounting.listEntries).toHaveBeenCalledTimes(2);
-  });
-
-  it("treats a missing entries array as the end of the list", async () => {
-    apiContractMock.accounting.listEntries.mockResolvedValueOnce(ok({ hasMore: true }));
-
-    await expect(fetchAllAccountingEntries({})).resolves.toEqual([]);
-    expect(apiContractMock.accounting.listEntries).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -170,6 +141,7 @@ describe("fetchAccountingEntriesPage", () => {
     // The pager reads the server's total, not the length of the page.
     expect(page.total).toBe(340);
     expect(page.hasMore).toBe(true);
+    expect(query.includeLines).toBeUndefined();
   });
 
   it("sends the trash flag and never asks beyond the contract page ceiling", async () => {

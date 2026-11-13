@@ -12,6 +12,7 @@ export {
 } from "./rbacCanObjectHelpers.js";
 export {
   canManageAccounting,
+  canPostAccounting,
   canManageFinance,
   canReadContacts,
   canWriteContacts,

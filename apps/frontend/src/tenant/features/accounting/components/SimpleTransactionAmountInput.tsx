@@ -32,9 +32,13 @@ export function SimpleTransactionAmountInput({
 
   const handleIncrement = (inc: number) => {
     onBlur();
-    const current = parseMoneyInput(amount) ?? 0;
-    const next = current + inc;
-    onChange(next % 1 === 0 ? String(next) : next.toFixed(2));
+    // Integer cents: incrementing the parsed float produced values such as
+    // 9.999999999999998 for a "10.00" step, which then rendered as "10.00" from a
+    // different code path than a typed "10".
+    const currentCents = Math.round((parseMoneyInput(amount) ?? 0) * 100);
+    const nextCents = currentCents + Math.round(inc * 100);
+    const next = nextCents / 100;
+    onChange(nextCents % 100 === 0 ? String(next) : next.toFixed(2));
   };
 
   const errorMessage = showAmountRequired

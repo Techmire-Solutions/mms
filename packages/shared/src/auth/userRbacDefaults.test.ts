@@ -75,7 +75,8 @@ describe("userRbacDefaults", () => {
 
     it("counts granted actions and evaluates completeness", () => {
       const full = createFullPermissionMap(["students", "finance"]);
-      expect(countGrantedActions(full)).toBe(10);
+      // One action per entry in PERMISSION_ACTIONS (create/read/update/manage/delete/post).
+      expect(countGrantedActions(full)).toBe(PERMISSION_ACTIONS.length * 2);
       expect(isFullPermissionMap(full, ["students", "finance"])).toBe(true);
       expect(isFullPermissionMap(full, ["students", "finance", "teachers"])).toBe(false);
 

@@ -1,14 +1,18 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import {
-  accountTypeFromDb,
-  isDebitNormalAccountType,
   moneyToCents,
-  type AccountingAccountType,
   type AccountingReportAggregates,
   type LedgerPostingAccounts,
 } from "@mms/shared";
-import { accountingAccounts, accountingEntries, accountingJournalLines } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { accountingEntries, accountingJournalLines } from "../schema.js";
+import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import {
+  buildCashFlowFigures,
+  isCashAccount,
+  toReportRow,
+  type CashEntryMovement,
+  type ReportAccountRow,
+} from "./accountingReportCashFlow.js";
 
 export interface AccountingReportQuery {
   dateFrom?: string;
@@ -19,65 +23,6 @@ export interface AccountingReportQuery {
    * in rather than hard-coded as chart-of-accounts codes.
    */
   postingRules?: Partial<LedgerPostingAccounts>;
-}
-
-interface TrialBalanceRow {
-  id: string;
-  code: string;
-  name: string;
-  type: AccountingAccountType;
-  subtype: string;
-  totalDebit: number;
-  totalCredit: number;
-  balance: number;
-}
-
-/**
- * Accounts that look like cash/bank but are explicitly NOT, so a code-prefix
- * heuristic cannot pull them into the cash-flow statement.
- */
-const NON_CASH_ASSET_RE = /receiv|prepaid|accumulated|contra|deposit|advance/i;
-
-/**
- * Cash/bank classification.
- *
- * Two rules compose, deliberately asymmetrically:
- *
- * - A configured `cashAccountId` is always cash, even when its code and name do
- *   not look like it. It is **additive** with the heuristic below, because a
- *   workspace may bank in several accounts while the posting rule holds only one,
- *   and gross cash flow should not under-report.
- * - Otherwise an Asset account is cash when its subtype/name says so, or when it
- *   sits in the conventional `10xx` block — minus the non-cash asset carve-outs
- *   above, which previously leaked receivables, prepaids and accumulated
- *   depreciation into cash flow.
- */
-function isCashAccount(
-  row: { id: string; type: string; code: string; name: string; subtype: string },
-  configuredCashAccountId?: string | null,
-): boolean {
-  // An explicitly configured cash/bank account wins outright, even when its code
-  // or name would not match the conventional heuristic.
-  if (configuredCashAccountId && row.id === configuredCashAccountId) return true;
-  if (row.type !== "Asset") return false;
-  const haystack = `${row.name} ${row.subtype}`.toLowerCase();
-  if (NON_CASH_ASSET_RE.test(haystack)) return false;
-  return row.code.startsWith("10") || haystack.includes("cash") || haystack.includes("bank");
-}
-
-/** Accounts-receivable accounts, used only when no AR account is configured. */
-function isReceivableAccount(row: { type: string; name: string; subtype: string }): boolean {
-  return row.type === "Asset" && /receiv/i.test(`${row.name} ${row.subtype}`);
-}
-
-/** Current-liability payable accounts for the working-capital adjustment. */
-function isPayableAccount(row: { type: string; name: string; subtype: string }): boolean {
-  return row.type === "Liability" && /payab/i.test(`${row.name} ${row.subtype}`);
-}
-
-/** Non-cash expense add-backs. */
-function isDepreciationAccount(row: { type: string; name: string; subtype: string }): boolean {
-  return row.type === "Expense" && /depreciat|amorti/i.test(`${row.name} ${row.subtype}`);
 }
 
 /**
@@ -114,156 +59,102 @@ export async function aggregateAccountingReport(
      * INNER join rather than the ON clause of a LEFT JOIN: the previous shape
      * retained every journal line with NULL entry columns and summed draft,
      * deleted and out-of-period rows.
+     *
+     * The three report sets are computed in **one** pass with conditional
+     * aggregates instead of three separate scans:
+     * - as-of: every posted line up to `dateTo` (stock figures);
+     * - range: lines inside `[dateFrom, dateTo]` (Trial Balance rows);
+     * - flow: the range excluding closing journals (Income Statement + cash flow).
      */
-    const buildTrialBalance = async (
-      rangeStart: string | undefined,
-      rangeEnd: string | undefined,
-      excludeClosing = false,
-    ): Promise<TrialBalanceRow[]> => {
-      const entryDateFilter = and(
-        rangeStart ? sql`${accountingEntries.date} >= ${rangeStart}` : undefined,
-        rangeEnd ? sql`${accountingEntries.date} <= ${rangeEnd}` : undefined,
-      );
+    const asOfFilter = dateTo ? sql`pl.entry_date <= ${dateTo}` : sql`true`;
+    const rangeFilter = sql`${dateFrom ? sql`pl.entry_date >= ${dateFrom}` : sql`true`} AND ${asOfFilter}`;
+    const notClosing = sql`pl.source_type IS DISTINCT FROM 'closing'`;
 
-      const postedLines = tx
-        .select({
-          workspaceSubdomain: accountingJournalLines.workspaceSubdomain,
-          accountId: accountingJournalLines.accountId,
-          debit: accountingJournalLines.debit,
-          credit: accountingJournalLines.credit,
-        })
-        .from(accountingJournalLines)
-        .innerJoin(
-          accountingEntries,
-          and(
-            eq(accountingJournalLines.workspaceSubdomain, accountingEntries.workspaceSubdomain),
-            eq(accountingJournalLines.entryId, accountingEntries.id),
-            isNull(accountingEntries.deletedAt),
-            eq(accountingEntries.status, "posted"),
-            excludeClosing
-              ? sql`${accountingEntries.sourceType} IS DISTINCT FROM 'closing'`
-              : undefined,
-            entryDateFilter,
-          ),
-        )
-        .as("posted_lines");
+    // One pass for all three windows via conditional aggregates. Raw SQL because
+    // three FILTER predicates over the same derived table are clearer to read (and
+    // to verify against EXPLAIN) than three separate aggregate queries.
+    const result = await tx.execute(sql`
+      SELECT a.id,
+             a.code,
+             a.name,
+             a.type,
+             a.subtype,
+             coalesce(sum(pl.debit) FILTER (WHERE ${asOfFilter}), 0)::numeric::text AS as_of_debit,
+             coalesce(sum(pl.credit) FILTER (WHERE ${asOfFilter}), 0)::numeric::text AS as_of_credit,
+             coalesce(sum(pl.debit) FILTER (WHERE ${rangeFilter}), 0)::numeric::text AS range_debit,
+             coalesce(sum(pl.credit) FILTER (WHERE ${rangeFilter}), 0)::numeric::text AS range_credit,
+             coalesce(sum(pl.debit) FILTER (WHERE ${rangeFilter} AND ${notClosing}), 0)::numeric::text AS flow_debit,
+             coalesce(sum(pl.credit) FILTER (WHERE ${rangeFilter} AND ${notClosing}), 0)::numeric::text AS flow_credit
+        FROM accounting_accounts a
+        LEFT JOIN (
+          SELECT l.workspace_subdomain,
+                 l.account_id,
+                 l.debit,
+                 l.credit,
+                 e.date AS entry_date,
+                 e.source_type
+            FROM accounting_journal_lines l
+            JOIN accounting_entries e
+              ON e.workspace_subdomain = l.workspace_subdomain
+             AND e.id = l.entry_id
+           WHERE e.status = 'posted'
+             AND e.deleted_at IS NULL
+        ) pl
+          ON pl.workspace_subdomain = a.workspace_subdomain
+         AND pl.account_id = a.id
+       WHERE a.workspace_subdomain = ${subdomain}
+         AND a.deleted_at IS NULL
+       GROUP BY a.id, a.code, a.name, a.type, a.subtype
+       ORDER BY a.code
+    `);
+    const rows = result.rows as Array<{
+      id: string;
+      code: string;
+      name: string;
+      type: string;
+      subtype: string;
+      as_of_debit: string;
+      as_of_credit: string;
+      range_debit: string;
+      range_credit: string;
+      flow_debit: string;
+      flow_credit: string;
+    }>;
 
-      const rows = await tx
-        .select({
-          id: accountingAccounts.id,
-          code: accountingAccounts.code,
-          name: accountingAccounts.name,
-          type: accountingAccounts.type,
-          subtype: accountingAccounts.subtype,
-          // Exact decimal text, converted once at the boundary: a float8 sum
-          // re-introduces binary rounding into a figure the ledger (and the
-          // year-end closing entry) is supposed to balance on.
-          totalDebit: sql<string>`coalesce(sum(${postedLines.debit}), 0)::numeric::text`,
-          totalCredit: sql<string>`coalesce(sum(${postedLines.credit}), 0)::numeric::text`,
-        })
-        .from(accountingAccounts)
-        .leftJoin(
-          postedLines,
-          and(
-            eq(postedLines.workspaceSubdomain, accountingAccounts.workspaceSubdomain),
-            eq(postedLines.accountId, accountingAccounts.id),
-          ),
-        )
-        .where(
-          and(
-            eq(accountingAccounts.workspaceSubdomain, subdomain),
-            isNull(accountingAccounts.deletedAt),
-          ),
-        )
-        .groupBy(
-          accountingAccounts.id,
-          accountingAccounts.code,
-          accountingAccounts.name,
-          accountingAccounts.type,
-          accountingAccounts.subtype,
-        )
-        .orderBy(accountingAccounts.code);
-
-      return rows.map((r) => {
-        const totalDebit = Number(r.totalDebit);
-        const totalCredit = Number(r.totalCredit);
-        const totalDebitCents = moneyToCents(totalDebit);
-        const totalCreditCents = moneyToCents(totalCredit);
-        // Balance in integer cents: a float subtraction here would feed a
-        // rounding error into every report total below.
-        const balanceCents = isDebitNormalAccountType(r.type)
-          ? totalDebitCents - totalCreditCents
-          : totalCreditCents - totalDebitCents;
-        return {
-          id: r.id,
-          code: r.code,
-          name: r.name,
-          type: accountTypeFromDb(r.type),
-          subtype: r.subtype,
-          totalDebit,
-          totalCredit,
-          balance: balanceCents / 100,
-        };
-      });
-    };
-
-    const rangeRows = await buildTrialBalance(dateFrom, dateTo);
-    const flowRows = await buildTrialBalance(dateFrom, dateTo, true);
-    // Cumulative stock figures: everything through dateTo, deliberately ignoring
-    // dateFrom so prior-period assets/equity still appear.
-    const asOfRows = dateFrom ? await buildTrialBalance(undefined, dateTo) : rangeRows;
-
-    // Every report total is accumulated in integer cents and converted once, so a
-    // float sum of 2-dp balances cannot produce 0.30000000000000004 — the reason
-    // the aggregate schemas could not enforce a 2-dp money type.
-    const sumCentsByType = (rows: readonly TrialBalanceRow[], type: string): number =>
-      rows.reduce(
-        (total, row) => (row.type === type ? total + moneyToCents(row.balance) : total),
-        0,
-      );
-
-    const revenueCents = sumCentsByType(flowRows, "Revenue");
-    const expensesCents = sumCentsByType(flowRows, "Expense");
-    const netSurplusCents = revenueCents - expensesCents;
-    const assetsCents = sumCentsByType(asOfRows, "Asset");
-    const liabilitiesCents = sumCentsByType(asOfRows, "Liability");
-    const equityAccountsCents = sumCentsByType(asOfRows, "Equity");
-    const asOfSurplusCents =
-      sumCentsByType(asOfRows, "Revenue") - sumCentsByType(asOfRows, "Expense");
-
-    let cashInflowCents = 0;
-    let cashOutflowCents = 0;
-    let receivableMovementCents = 0;
-    let payableMovementCents = 0;
-    let depreciationCents = 0;
-
-    for (const row of flowRows) {
-      const debitCents = moneyToCents(row.totalDebit);
-      const creditCents = moneyToCents(row.totalCredit);
-      if (isCashAccount(row, postingRules.cashAccountId)) {
-        cashInflowCents += debitCents;
-        cashOutflowCents += creditCents;
+    const asOfRows: ReportAccountRow[] = [];
+    const rangeRows: ReportAccountRow[] = [];
+    const flowRows: ReportAccountRow[] = [];
+    for (const row of rows) {
+      asOfRows.push(toReportRow(row, Number(row.as_of_debit), Number(row.as_of_credit)));
+      if (dateFrom) {
+        rangeRows.push(toReportRow(row, Number(row.range_debit), Number(row.range_credit)));
+      } else {
+        // Without a start date the range set is the as-of set.
+        rangeRows.push(toReportRow(row, Number(row.as_of_debit), Number(row.as_of_credit)));
       }
-      // A configured AR account is authoritative and EXCLUSIVE: unlike cash there
-      // is exactly one receivable, so the name heuristic must not add further
-      // accounts to the working-capital adjustment.
-      const isConfiguredAr =
-        Boolean(postingRules.arAccountId) && row.id === postingRules.arAccountId;
-      if (isConfiguredAr || (!postingRules.arAccountId && isReceivableAccount(row))) {
-        receivableMovementCents += debitCents - creditCents;
-      }
-      if (isPayableAccount(row)) {
-        payableMovementCents += creditCents - debitCents;
-      }
-      if (isDepreciationAccount(row)) {
-        depreciationCents += debitCents - creditCents;
-      }
+      // The flow set always excludes closing journals.
+      flowRows.push(toReportRow(row, Number(row.flow_debit), Number(row.flow_credit)));
     }
 
-    const netCashFlowCents = cashInflowCents - cashOutflowCents;
-    const receivablesAdjustmentCents = -receivableMovementCents;
-    const netCashFlowIndirectCents =
-      netSurplusCents + depreciationCents + receivablesAdjustmentCents + payableMovementCents;
+    const centsByType = (list: readonly ReportAccountRow[], type: string): number =>
+      list.reduce((total, row) => (row.type === type ? total + row.balanceCents : total), 0);
+
+    const revenueCents = centsByType(flowRows, "Revenue");
+    const expensesCents = centsByType(flowRows, "Expense");
+    const netSurplusCents = revenueCents - expensesCents;
+    const assetsCents = centsByType(asOfRows, "Asset");
+    const liabilitiesCents = centsByType(asOfRows, "Liability");
+    const equityAccountsCents = centsByType(asOfRows, "Equity");
+    const asOfSurplusCents = centsByType(asOfRows, "Revenue") - centsByType(asOfRows, "Expense");
+
+    const cashMovements = await loadCashEntryMovements(
+      tx,
+      subdomain,
+      flowRows.filter((row) => isCashAccount(row, postingRules.cashAccountId)).map((row) => row.id),
+      dateFrom,
+      dateTo,
+    );
+    const cash = buildCashFlowFigures(flowRows, cashMovements, netSurplusCents, postingRules);
     const centsToAmount = (cents: number): number => cents / 100;
 
     return {
@@ -277,22 +168,86 @@ export async function aggregateAccountingReport(
       // closing entry IS inside the window the P&L accounts net to zero and this
       // term correctly contributes nothing.
       equity: centsToAmount(equityAccountsCents + asOfSurplusCents),
-      cashInflow: centsToAmount(cashInflowCents),
-      cashOutflow: centsToAmount(cashOutflowCents),
-      netCashFlow: centsToAmount(netCashFlowCents),
-      netCashFlowIndirect: centsToAmount(netCashFlowIndirectCents),
+      cashInflow: centsToAmount(cash.cashInflowCents),
+      cashOutflow: centsToAmount(cash.cashOutflowCents),
+      netCashFlow: centsToAmount(cash.netCashFlowCents),
+      netCashFlowIndirect: centsToAmount(cash.netCashFlowIndirectCents),
       cashFlowAdjustments: {
-        depreciation: centsToAmount(depreciationCents),
+        depreciation: centsToAmount(cash.adjustments.depreciationCents),
         // A receivable increase consumes cash, so the working-capital adjustment
         // is the negated movement; a payable increase releases cash.
-        receivables: centsToAmount(receivablesAdjustmentCents),
-        payables: centsToAmount(payableMovementCents),
+        receivables: centsToAmount(cash.adjustments.receivablesCents),
+        payables: centsToAmount(cash.adjustments.payablesCents),
+        other: centsToAmount(cash.adjustments.otherCents),
       },
-      trialBalance: rangeRows,
-      incomeStatementTrialBalance: flowRows,
-      balanceSheetTrialBalance: asOfRows.filter(
-        (row) => row.type === "Asset" || row.type === "Liability" || row.type === "Equity",
-      ),
+      trialBalance: rangeRows.map(toTrialBalanceRow),
+      incomeStatementTrialBalance: flowRows.map(toTrialBalanceRow),
+      balanceSheetTrialBalance: asOfRows
+        .filter((row) => row.type === "Asset" || row.type === "Liability" || row.type === "Equity")
+        .map(toTrialBalanceRow),
     };
   });
+}
+
+/** Trial-balance DTO row from the cents-integer representation. */
+function toTrialBalanceRow(row: ReportAccountRow) {
+  return {
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    type: row.type,
+    subtype: row.subtype,
+    totalDebit: row.totalDebitCents / 100,
+    totalCredit: row.totalCreditCents / 100,
+    balance: row.balanceCents / 100,
+  };
+}
+
+/**
+ * Cash debit/credit per entry for the window, restricted to the classified cash
+ * accounts. Grouping by entry is what removes internal transfers from the gross
+ * figures (`buildCashFlowFigures` splits the net leg).
+ */
+async function loadCashEntryMovements(
+  tx: TenantTransaction,
+  subdomain: string,
+  cashAccountIds: readonly string[],
+  dateFrom: string | undefined,
+  dateTo: string | undefined,
+): Promise<CashEntryMovement[]> {
+  if (cashAccountIds.length === 0) return [];
+  const dateFilter = and(
+    dateFrom ? sql`${accountingEntries.date} >= ${dateFrom}` : undefined,
+    dateTo ? sql`${accountingEntries.date} <= ${dateTo}` : undefined,
+  );
+  const result = await tx
+    .select({
+      entryId: accountingJournalLines.entryId,
+      cashDebit: sql<string>`coalesce(sum(${accountingJournalLines.debit}), 0)::numeric::text`,
+      cashCredit: sql<string>`coalesce(sum(${accountingJournalLines.credit}), 0)::numeric::text`,
+    })
+    .from(accountingJournalLines)
+    .innerJoin(
+      accountingEntries,
+      and(
+        eq(accountingJournalLines.workspaceSubdomain, accountingEntries.workspaceSubdomain),
+        eq(accountingJournalLines.entryId, accountingEntries.id),
+        isNull(accountingEntries.deletedAt),
+        eq(accountingEntries.status, "posted"),
+        sql`${accountingEntries.sourceType} IS DISTINCT FROM 'closing'`,
+        dateFilter,
+      ),
+    )
+    .where(
+      and(
+        eq(accountingJournalLines.workspaceSubdomain, subdomain),
+        inArray(accountingJournalLines.accountId, [...cashAccountIds]),
+      ),
+    )
+    .groupBy(accountingJournalLines.entryId);
+  return result.map((row) => ({
+    entryId: row.entryId,
+    cashDebitCents: moneyToCents(Number(row.cashDebit)),
+    cashCreditCents: moneyToCents(Number(row.cashCredit)),
+  }));
 }

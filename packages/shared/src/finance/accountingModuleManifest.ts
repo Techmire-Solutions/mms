@@ -23,6 +23,13 @@ export const accountRecordSchema = z
     subtype: z.string().default(""),
     description: z.string().default(""),
     isActive: z.boolean().default(true),
+    /**
+     * COA parent (`accounting_accounts.parent_account_id`). Root accounts leave it
+     * null; the backend rejects self-parenting, cycles and depth > 8
+     * (`accountingAccountHierarchy.ts`), and the 0253 trigger enforces the same at
+     * the database.
+     */
+    parentId: z.string().nullable().optional(),
     /** IAS 21 monetary item (retranslated at closing rate); omitted = keep stored value. */
     isMonetary: z.boolean().optional(),
     /** Locks the account to one currency (e.g. a USD bank account); null = any. */
@@ -50,6 +57,8 @@ export const accountRecordInsertSchema = z
     subtype: z.string().optional().default(""),
     description: z.string().optional().default(""),
     isActive: z.boolean().optional().default(true),
+    /** COA parent; omitted = root account. Validated against the stored tree. */
+    parentId: z.string().nullable().optional(),
     /** IAS 21 monetary item (retranslated at closing rate); omitted = keep stored value. */
     isMonetary: z.boolean().optional(),
     /** Locks the account to one currency (e.g. a USD bank account); null = any. */
@@ -64,9 +73,8 @@ export const accountRecordUpdateSchema = accountRecordInsertSchema.partial().str
 
 export type Account = z.infer<typeof accountRecordSchema>;
 export type AccountInsert = z.infer<typeof accountRecordInsertSchema>;
-export type AccountUpdate = z.infer<typeof accountRecordUpdateSchema>;
-export const accountListSchema = z.array(accountRecordSchema);
 
+export type AccountUpdate = z.infer<typeof accountRecordUpdateSchema>;
 export const journalLineRecordSchema = z
   .object({
     id: z.string(),
@@ -103,7 +111,13 @@ export const journalEntryRecordSchema = z
     fiscal_year_id: z.string().optional(),
     source_type: z.enum(JOURNAL_SOURCE_TYPES).optional(),
     source_id: z.string().optional(),
+    /** Projected id of this voucher's active reversal (it stays `status: "posted"`). */
+    active_reversal_entry_id: z.string().nullable().optional(),
     lines: z.array(journalLineRecordSchema).default([]),
+    /** Register projection (`includeLines=false`): server-computed header totals. */
+    lineCount: z.number().int().min(0).optional(),
+    debitTotal: moneyAmountSchema.optional(),
+    creditTotal: moneyAmountSchema.optional(),
     transaction_type: z.string().optional(),
     reversed_ref: z.string().nullable().optional(),
     simple_mode: z.boolean().optional(),
@@ -134,6 +148,8 @@ export const journalEntryRecordInsertSchema = z
     fiscal_year_id: z.string().optional(),
     source_type: z.enum(JOURNAL_SOURCE_TYPES).optional(),
     source_id: z.string().optional(),
+    /** Projected id of this voucher's active reversal (it stays `status: "posted"`). */
+    active_reversal_entry_id: z.string().nullable().optional(),
     lines: z.array(journalLineRecordSchema).optional().default([]),
     transaction_type: z.string().nullable().optional(),
     reversed_ref: z.string().nullable().optional(),
@@ -143,10 +159,10 @@ export const journalEntryRecordInsertSchema = z
 
 export const journalEntryRecordUpdateSchema = journalEntryRecordInsertSchema.partial().strict();
 
-export type JournalEntry = z.infer<typeof journalEntryRecordSchema>;
 export type JournalEntryInsert = z.infer<typeof journalEntryRecordInsertSchema>;
 export type JournalEntryUpdate = z.infer<typeof journalEntryRecordUpdateSchema>;
-export const journalEntryListSchema = z.array(journalEntryRecordSchema);
+
+export type JournalEntry = z.infer<typeof journalEntryRecordSchema>;
 
 export const fiscalYearRecordSchema = z
   .object({
@@ -196,10 +212,10 @@ export const fiscalYearRecordUpdateSchema = fiscalYearRecordInsertBaseSchema
     message: "End date must be on or after start date",
   });
 
-export type FiscalYear = z.infer<typeof fiscalYearRecordSchema>;
 export type FiscalYearInsert = z.infer<typeof fiscalYearRecordInsertSchema>;
 export type FiscalYearUpdate = z.infer<typeof fiscalYearRecordUpdateSchema>;
-export const fiscalYearListSchema = z.array(fiscalYearRecordSchema);
+
+export type FiscalYear = z.infer<typeof fiscalYearRecordSchema>;
 
 /** Accounting module manifest — aligns with globle1 universal module architecture. */
 export const ACCOUNTING_MODULE_MANIFEST = {
@@ -225,6 +241,8 @@ export const ACCOUNTING_MODULE_MANIFEST = {
   permissions: {
     read: "accounting.read",
     write: "accounting.write",
+    // Draft ⇄ posted boundary: a writer may draft, a poster makes it final.
+    post: "accounting.post",
     delete: "accounting.delete",
     // Period close/reopen, fiscal-year close and voucher-numbering changes are
     // controller/admin authority, separate from posting a voucher.

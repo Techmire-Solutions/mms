@@ -84,8 +84,17 @@ export function useAccountingPageActions({
     updater: JournalEntry[] | ((prev: JournalEntry[]) => JournalEntry[]),
   ): Promise<JournalEntry[]> => {
     const nextJournalEntries = typeof updater === "function" ? updater(journalEntries) : updater;
+    // The register ships header-only rows. Re-sending the whole page made the
+    // backend replace every sibling draft's lines with an empty set (a save of one
+    // voucher silently emptied the other drafts on the page), so only entries whose
+    // object identity changed — the ones an updater actually rebuilt — are sent.
+    const previousById = new Map(journalEntries.map((entry) => [entry.id, entry]));
+    const changedEntries = nextJournalEntries.filter(
+      (entry) => previousById.get(entry.id) !== entry,
+    );
+    if (changedEntries.length === 0) return nextJournalEntries;
     try {
-      const result: unknown = await upsertEntries.mutateAsync(nextJournalEntries);
+      const result: unknown = await upsertEntries.mutateAsync(changedEntries);
       const saved = journalEntryListSchema.safeParse(
         result &&
           typeof result === "object" &&

@@ -19,6 +19,12 @@ export interface BulkRoutesOptions<T> {
   errorMessagePrefix: string;
   /** When true, omits registering the GET endpoint (e.g. handled by @ts-rest contract router). */
   customGetRoute?: boolean;
+  /**
+   * Declared shape of the `PUT …/bulk` response. Modules that declare it get the
+   * same `contract_violation` protection as the hand-written routes; omitting it
+   * keeps the historical unvalidated send.
+   */
+  responseSchema?: ZodType;
 }
 
 export type SoftDeleteRouteErrorMapper = (
@@ -36,6 +42,8 @@ export interface SoftDeletableBulkRoutesOptions<T> {
   /** Fallback page size when the client omits `limit` (schema path). */
   defaultPageSize?: number;
   saveFn: (data: T) => Promise<unknown>;
+  /** Authorization / server-field stamping before save (e.g. a posting-authority gate). */
+  beforeSave?: (user: User, data: T, request: FastifyRequest) => Promise<T>;
   /**
    * Authority for the bulk PUT. Defaults to `canWriteCollection`; module routes whose upsert also
    * creates/edits a controller-owned definition (e.g. examinations) pass a stronger predicate.
@@ -53,6 +61,10 @@ export interface SoftDeletableBulkRoutesOptions<T> {
   responseKey: string;
   errorMessagePrefix: string;
   nameSingular: string;
+  /** Declared shape of the bulk upsert response (see {@link BulkRoutesOptions}). */
+  responseSchema?: ZodType;
+  /** Declared shape of the `{ success, succeeded, failed }` bulk delete/restore responses. */
+  bulkResponseSchema?: ZodType;
   /** Defaults to {@link bulkIdsBodySchema}; use string-only schemas when needed. */
   bulkBodySchema?: ZodType<{ ids: Array<string | number>; deletionReason?: string }>;
   /** Map domain delete failures (e.g. posted entries, self-delete) to stable HTTP responses. */
@@ -98,6 +110,8 @@ export type SoftDeletableBulkTrashRoutesOptions = {
     deletionReason?: string,
   ) => Promise<void>;
   onAfterBulkRestore?: (user: User, result: { succeeded: number; failed: number }) => Promise<void>;
+  /** Declared shape of the `{ success, succeeded, failed }` bulk delete/restore responses. */
+  bulkResponseSchema?: ZodType;
 };
 
 export type BulkListLoadContext = {

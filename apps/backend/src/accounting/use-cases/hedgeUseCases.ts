@@ -12,6 +12,8 @@ import {
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import type { RecordModernAuditInput } from "../../services/auditTrailService.js";
 import { lockLedgerEvent } from "../ledgerPosting/ledgerEventLock.js";
+import { assertHedgeAccounts } from "./hedgeAccountRoles.js";
+import { notFound, unprocessable } from "./hedgeErrors.js";
 import type { AccountingFxRepository } from "../repository/accountingFxRepository.js";
 import type { AccountingHedgesStore } from "../repository/accountingHedgesRepositoryAdapter.js";
 import { lookupClosingRate, nextCalendarDay } from "./fxRevaluationUseCases.js";
@@ -39,9 +41,7 @@ export interface Actor {
   userId: string | null;
 }
 
-export function unprocessable(message: string): Error {
-  return Object.assign(new Error(message), { statusCode: 422, type: "validation_error" });
-}
+export { notFound, unprocessable } from "./hedgeErrors.js";
 
 /** A stored amount that cannot be represented in its currency is a 422, not a 500. */
 export function valuationOrThrow(
@@ -59,13 +59,6 @@ export function valuationOrThrow(
     }
     throw error;
   }
-}
-
-export function notFound(): Error {
-  return Object.assign(new Error("Hedge relationship not found"), {
-    statusCode: 404,
-    type: "not_found",
-  });
 }
 
 /**
@@ -98,51 +91,6 @@ export async function insertOnce(run: () => Promise<void>): Promise<boolean> {
   } catch (error) {
     if (isUniqueViolation(error)) return false;
     throw error;
-  }
-}
-
-type HedgeAccountField = "instrumentAccountId" | "reserveAccountId" | "pnlAccountId";
-
-const HEDGE_ACCOUNT_ROLES: Record<HedgeAccountField, readonly string[]> = {
-  instrumentAccountId: ["Asset", "Liability"],
-  reserveAccountId: ["Equity"],
-  pnlAccountId: ["Revenue", "Expense"],
-};
-
-/**
- * Each account has a role: the derivative/cash instrument is an Asset/Liability,
- * the cash flow hedge reserve is Equity and the ineffective part is P&L. The FK
- * only proves the account exists, so a Revenue account could be designated as
- * the reserve and every valuation would post to the wrong statement.
- */
-async function assertHedgeAccounts(
-  deps: Pick<HedgeDeps, "store">,
-  tenant: string,
-  hedge: HedgeRelationshipCreate,
-): Promise<void> {
-  const fields = Object.keys(HEDGE_ACCOUNT_ROLES) as HedgeAccountField[];
-  const ids = fields
-    .map((field) => hedge[field])
-    .filter((id): id is string => typeof id === "string" && id.length > 0);
-  const byId = new Map((await deps.store.findAccountsByIds(tenant, ids)).map((a) => [a.id, a]));
-  const problems: string[] = [];
-  for (const field of fields) {
-    const accountId = hedge[field];
-    if (typeof accountId !== "string" || !accountId) continue;
-    const allowed = HEDGE_ACCOUNT_ROLES[field];
-    const account = byId.get(accountId);
-    if (!account) {
-      problems.push(`${field}: unknown or archived account "${accountId}"`);
-    } else if (account.isActive === false) {
-      problems.push(`${field}: ${account.code} ${account.name} is deactivated`);
-    } else if (!allowed.includes(account.type)) {
-      problems.push(
-        `${field}: ${account.code} ${account.name} is type ${account.type}, expected ${allowed.join(" or ")}`,
-      );
-    }
-  }
-  if (problems.length > 0) {
-    throw unprocessable(`Invalid hedge accounts — ${problems.join("; ")}`);
   }
 }
 
@@ -182,7 +130,7 @@ export async function createHedgeRelationship(
   const { functionalCurrency } = await deps.fx.getCurrencySettings(actor.tenant);
   if (hedge.currency === functionalCurrency)
     throw unprocessable("A hedged currency must differ from the functional currency");
-  await assertHedgeAccounts(deps, actor.tenant, hedge);
+  await assertHedgeAccounts(deps.store, actor.tenant, hedge);
   const id = `hedge-${randomUUID()}`;
   await deps.store.insertHedgeRelationship(actor.tenant, id, hedge, actor.userId);
   await audit(deps, actor, id, "CREATE", hedge);
@@ -268,4 +216,9 @@ export async function postHedgeValuation(
   return load(deps, actor.tenant, id);
 }
 
-export { reclassifyHedgeReserve, settleHedge } from "./hedgeSettlementUseCases.js";
+export {
+  discontinueHedge,
+  reclassifyHedgeReserve,
+  settleHedge,
+} from "./hedgeSettlementUseCases.js";
+export { HEDGE_ACCOUNT_ROLES, assertHedgeAccountRole } from "./hedgeAccountRoles.js";

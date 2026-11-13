@@ -57,7 +57,7 @@ export const accountingHedgeRelationships = pgTable(
   ],
 );
 
-/** Each posted valuation, settlement or reserve reclassification of a hedge relationship. */
+/** Each posted valuation, settlement, reserve reclassification or discontinuation of a hedge relationship. */
 export const accountingHedgeValuations = pgTable(
   "accounting_hedge_valuations",
   {
@@ -95,7 +95,7 @@ export const accountingHedgeValuations = pgTable(
     ),
     check(
       "accounting_hedge_valuations_kind",
-      sql`${table.kind} IN ('valuation', 'settlement', 'reclassification')`,
+      sql`${table.kind} IN ('valuation', 'settlement', 'reclassification', 'discontinuation')`,
     ),
   ],
 );

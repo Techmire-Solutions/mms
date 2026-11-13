@@ -23,7 +23,14 @@ const mockReportRepo = vi.hoisted(() => ({
 const mockPrefs = vi.hoisted(() => ({
   getAccountingPreferencesService: vi.fn(),
 }));
-const mockAccounts = vi.hoisted(() => ({ findAccountById: vi.fn() }));
+const mockAccounts = vi.hoisted(() => ({
+  findAccountById: vi.fn(),
+  // The close now runs the same postability guard as the manual paths: the closing
+  // lines must target active, non-summary accounts.
+  lockPostableAccounts: vi.fn(async (_tenant: string, ids: string[]) =>
+    ids.map((id) => ({ id, isActive: true, hasChildren: false })),
+  ),
+}));
 vi.mock("../db/repositories/accountingAccountsRepository.js", () => mockAccounts);
 
 vi.mock("../db/repositories/accountingRepository.js", () => mockAccountingRepo);
@@ -36,6 +43,16 @@ const mockFxReval = vi.hoisted(() => ({
   hasFxRevaluationBetween: vi.fn().mockResolvedValue(false),
 }));
 vi.mock("../db/repositories/accountingFxRevaluationRepository.js", () => mockFxReval);
+
+const mockHedgesRepo = vi.hoisted(() => ({
+  listHedgeRelationships: vi.fn().mockResolvedValue([]),
+}));
+const mockHyperRepo = vi.hoisted(() => ({
+  getHyperinflationSettings: vi.fn(),
+  findIas29RunId: vi.fn().mockResolvedValue(null),
+}));
+vi.mock("../db/repositories/accountingHedgesRepository.js", () => mockHedgesRepo);
+vi.mock("../db/repositories/accountingHyperinflationRepository.js", () => mockHyperRepo);
 vi.mock("../db/repositories/accountingCurrencySettingsRepository.js", () => ({
   getCurrencySettings: vi.fn().mockResolvedValue({
     functionalCurrency: "PKR",
@@ -58,6 +75,16 @@ const OPEN_YEAR = {
 describe("accountingPeriodClose", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 0255 close preconditions: no active hedge and IAS 29 disabled unless a test
+    // says otherwise, so the existing cases keep closing.
+    mockHedgesRepo.listHedgeRelationships.mockResolvedValue([]);
+    mockHyperRepo.getHyperinflationSettings.mockResolvedValue({
+      enabled: false,
+      netMonetaryAccountId: null,
+      appliesFrom: null,
+      indexName: "",
+    });
+    mockHyperRepo.findIas29RunId.mockResolvedValue(null);
     mockAccounts.findAccountById.mockResolvedValue({
       id: "acc-re",
       type: "Equity",
@@ -186,5 +213,120 @@ describe("accountingPeriodClose", () => {
       "2025-12-31",
       "2025-12-31",
     );
+  });
+});
+
+describe("year-end preconditions for hedges and IAS 29 (0255)", () => {
+  const balancedReport = {
+    trialBalance: [
+      { id: "acc-cash", type: "Asset", totalDebit: 1000, totalCredit: 600, balance: 400 },
+      { id: "acc-rev", type: "Revenue", totalDebit: 0, totalCredit: 1000, balance: 1000 },
+      { id: "acc-exp", type: "Expense", totalDebit: 600, totalCredit: 0, balance: 600 },
+    ],
+  };
+  const hedge = (overrides: Record<string, unknown> = {}) => ({
+    id: "hedge-1",
+    name: "USD import hedge",
+    status: "active" as const,
+    designationDate: "2025-07-01",
+    maturityDate: "2026-06-30",
+    valuations: [] as Array<{ kind: string; valuationDate: string }>,
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    mockFiscalYearsRepo.findFiscalYearByIdForUpdate.mockResolvedValue(OPEN_YEAR);
+    mockPrefs.getAccountingPreferencesService.mockResolvedValue({
+      retainedEarningsAccount: "acc-re",
+    });
+    mockReportRepo.aggregateAccountingReport.mockResolvedValue(balancedReport);
+    mockAccountingRepo.findEntryIdBySource.mockResolvedValue(null);
+    mockAccountingRepo.saveEntry.mockResolvedValue(undefined);
+    mockFiscalYearsRepo.saveFiscalYear.mockResolvedValue(undefined);
+  });
+
+  it("refuses to close while an in-range hedge has no closing-date valuation", async () => {
+    mockHedgesRepo.listHedgeRelationships.mockResolvedValue([
+      hedge({ valuations: [{ kind: "valuation", valuationDate: "2025-11-30" }] }),
+    ]);
+
+    await expect(closeFiscalYearForTenant("t-1", "fy-1", "admin")).rejects.toThrow(
+      /year-end hedge valuation for 2025-12-31 first: USD import hedge/,
+    );
+    expect(mockFiscalYearsRepo.saveFiscalYear).not.toHaveBeenCalled();
+  });
+
+  it("closes once the closing-date hedge valuation exists", async () => {
+    mockHedgesRepo.listHedgeRelationships.mockResolvedValue([
+      hedge({ valuations: [{ kind: "valuation", valuationDate: "2025-12-31" }] }),
+    ]);
+
+    const result = await closeFiscalYearForTenant("t-1", "fy-1", "admin");
+
+    expect(result.status).toBe("closed");
+  });
+
+  it("ignores a hedge that matured before the closing date", async () => {
+    mockHedgesRepo.listHedgeRelationships.mockResolvedValue([
+      hedge({ maturityDate: "2025-06-30" }),
+    ]);
+
+    await expect(closeFiscalYearForTenant("t-1", "fy-1", "admin")).resolves.toMatchObject({
+      status: "closed",
+    });
+  });
+
+  it("ignores a settled or discontinued hedge (its fair value stays on the books)", async () => {
+    mockHedgesRepo.listHedgeRelationships.mockResolvedValue([
+      hedge({ status: "settled" }),
+      hedge({ id: "hedge-2", status: "discontinued" }),
+    ]);
+
+    await expect(closeFiscalYearForTenant("t-1", "fy-1", "admin")).resolves.toMatchObject({
+      status: "closed",
+    });
+  });
+
+  it("refuses to close an enabled hyperinflationary year without its restatement", async () => {
+    mockHyperRepo.getHyperinflationSettings.mockResolvedValue({
+      enabled: true,
+      netMonetaryAccountId: "acc-nmp",
+      appliesFrom: "2025-01-01",
+      indexName: "CPI",
+    });
+    mockHyperRepo.findIas29RunId.mockResolvedValue(null);
+
+    await expect(closeFiscalYearForTenant("t-1", "fy-1", "admin")).rejects.toThrow(
+      /IAS 29 restatement for 2025-12-31/,
+    );
+    expect(mockFiscalYearsRepo.saveFiscalYear).not.toHaveBeenCalled();
+  });
+
+  it("closes an enabled hyperinflationary year once the restatement is posted", async () => {
+    mockHyperRepo.getHyperinflationSettings.mockResolvedValue({
+      enabled: true,
+      netMonetaryAccountId: "acc-nmp",
+      appliesFrom: "2025-01-01",
+      indexName: "CPI",
+    });
+    mockHyperRepo.findIas29RunId.mockResolvedValue("ias29-run-1");
+
+    await expect(closeFiscalYearForTenant("t-1", "fy-1", "admin")).resolves.toMatchObject({
+      status: "closed",
+    });
+  });
+
+  it("does not require a restatement before the hyperinflationary period starts", async () => {
+    mockHyperRepo.getHyperinflationSettings.mockResolvedValue({
+      enabled: true,
+      netMonetaryAccountId: "acc-nmp",
+      appliesFrom: "2026-01-01",
+      indexName: "CPI",
+    });
+
+    await expect(closeFiscalYearForTenant("t-1", "fy-1", "admin")).resolves.toMatchObject({
+      status: "closed",
+    });
+    expect(mockHyperRepo.findIas29RunId).not.toHaveBeenCalled();
   });
 });

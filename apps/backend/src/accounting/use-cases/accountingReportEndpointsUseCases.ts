@@ -4,14 +4,12 @@ import type {
   ReceivablesAging,
   ReceivablesAgingQuery,
 } from "@mms/shared";
-import { LIST_PAGE_MAX_LIMIT } from "@mms/shared";
+import { LIST_PAGE_MAX_LIMIT, RECEIVABLES_AGING_DEFAULT_LIMIT } from "@mms/shared";
 import { NotFoundError } from "../../lib/httpErrors.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { accountingReportEndpointsRepository } from "../repository/accountingReportEndpointsRepository.js";
 
 const DEFAULT_PAGE_SIZE = 100;
-/** One page of AR aging rows; totals always cover every open invoice. */
-const AGING_PAGE_SIZE = 500;
 
 /** Converts an integer amount of cents to the two-decimal number the DTOs carry. */
 function centsToAmount(cents: number): number {
@@ -36,27 +34,20 @@ export async function loadAccountLedger(
   const page = query.page ?? 1;
   const limit = Math.min(query.limit ?? DEFAULT_PAGE_SIZE, LIST_PAGE_MAX_LIMIT);
 
-  const account = await accountingReportEndpointsRepository.findLedgerAccount(
+  // One snapshot: opening, movement and the page must agree even while another
+  // request posts to this account between statements.
+  const snapshot = await accountingReportEndpointsRepository.loadLedgerSnapshot(
     tenant,
     query.accountId,
-  );
-  if (!account) throw new NotFoundError("Account not found");
-
-  const [openingCents, movement, pageResult] = await Promise.all([
-    accountingReportEndpointsRepository.sumLedgerOpeningCents(tenant, account.id, query.dateFrom),
-    accountingReportEndpointsRepository.sumLedgerMovementCents(
-      tenant,
-      account.id,
-      query.dateFrom,
-      query.dateTo,
-    ),
-    accountingReportEndpointsRepository.listLedgerLinesPage(tenant, account.id, {
+    {
       dateFrom: query.dateFrom,
       dateTo: query.dateTo,
       offset: (page - 1) * limit,
       limit,
-    }),
-  ]);
+    },
+  );
+  if (!snapshot) throw new NotFoundError("Account not found");
+  const { account, openingCents, movement, page: pageResult } = snapshot;
 
   return {
     account: {
@@ -99,12 +90,15 @@ export async function loadReceivablesAging(
   query: ReceivablesAgingQuery,
 ): Promise<ReceivablesAging> {
   const tenant = requireTenant();
+  // Totals always cover every open invoice; the rows are one page of students.
+  const page = query.page ?? 1;
+  const limit = query.limit ?? RECEIVABLES_AGING_DEFAULT_LIMIT;
   const { rows, totals } = await accountingReportEndpointsRepository.listReceivablesAging(
     tenant,
     query.asOf,
-    AGING_PAGE_SIZE,
+    { offset: (page - 1) * limit, limit },
   );
-  const visible = rows.slice(0, AGING_PAGE_SIZE);
+  const visible = rows.slice(0, limit);
   return {
     asOf: query.asOf,
     rows: visible.map((row) => ({
@@ -130,6 +124,8 @@ export async function loadReceivablesAging(
       invoiceCount: totals.invoiceCount,
     },
     totalStudents: totals.totalStudents,
-    hasMore: rows.length > AGING_PAGE_SIZE,
+    page,
+    limit,
+    hasMore: page * limit < totals.totalStudents,
   };
 }

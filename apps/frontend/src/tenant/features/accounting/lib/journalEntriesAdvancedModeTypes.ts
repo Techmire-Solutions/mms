@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { JournalReversalRequest } from "@mms/shared";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
+import type { AccountingSettings } from "@mms/shared";
 import type { JournalEntriesListPaging } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import type { JournalModalMode } from "@/tenant/features/accounting/components/JournalEntriesModalLayer";
 import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
@@ -13,10 +14,11 @@ export interface JournalEntriesAdvancedModeProps {
   mode: JournalMode;
   modeTabs: Array<{ key: JournalMode; label: string }>;
   entries: JournalEntry[];
-  allEntries?: JournalEntry[];
   filteredEntries: JournalEntry[];
   accounts: Account[];
   fiscalYears: FiscalYear[];
+  /** Setup preferences the voucher form reads (decimal separator, narration rule). */
+  settings?: AccountingSettings;
   selectedIds: string[];
   allVisibleSelected: boolean;
   someVisibleSelected: boolean;

@@ -22,6 +22,11 @@ export interface ExportToolbarProps {
   variant?: "default" | "compact";
   /** When set, Excel/PDF resolve rows at click time (full filtered export). */
   resolveRows?: () => Promise<Record<string, unknown>[]>;
+  /**
+   * Hide the client-side PDF control. Accounting statements use the server Typst
+   * renderer instead, so RTL scripts are shaped and laid out correctly.
+   */
+  hidePdf?: boolean;
 }
 
 export function ExportToolbar({
@@ -36,6 +41,7 @@ export function ExportToolbar({
   headers,
   variant,
   resolveRows,
+  hidePdf = false,
 }: ExportToolbarProps): React.JSX.Element {
   const { t } = useTranslation();
   const toolbarRef = useRovingToolbar<HTMLDivElement>();
@@ -118,6 +124,7 @@ export function ExportToolbar({
         onExport={() => {
           void (compactFormat === "excel" ? handleExcelExport() : handlePdfExport());
         }}
+        hidePdf={hidePdf}
       />
     );
   }
@@ -171,34 +178,36 @@ export function ExportToolbar({
           {t("reports.export.excel")}
         </Button>
 
-        <div className="flex min-h-11 rounded-lg border border-border bg-card">
-          <Button
-            onClick={() => {
-              void handlePdfExport();
-            }}
-            disabled={!canExport || exporting}
-            variant="ghost"
-            data-toolbar-item
-            className="flex min-h-11 items-center gap-1.5 px-3 py-2 border-e border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 rounded-s-lg cursor-pointer disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            type="button"
-            aria-busy={exporting}
-          >
-            <FileText className="w-3.5 h-3.5" aria-hidden="true" />
-            {t("reports.export.pdf")}
-          </Button>
-          <Button
-            onClick={() => setShowPdfSettings(!showPdfSettings)}
-            variant="ghost"
-            data-toolbar-item
-            aria-expanded={showPdfSettings}
-            aria-controls={showPdfSettings ? `${settingsIdPrefix}-pdf-settings` : undefined}
-            className={`min-h-11 min-w-11 px-2 py-2 hover:bg-muted transition-colors rounded-e-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${showPdfSettings ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
-            title={t("reports.export.settings")}
-            type="button"
-          >
-            <SettingsIcon className="w-3.5 h-3.5" aria-hidden="true" />
-          </Button>
-        </div>
+        {hidePdf ? null : (
+          <div className="flex min-h-11 rounded-lg border border-border bg-card">
+            <Button
+              onClick={() => {
+                void handlePdfExport();
+              }}
+              disabled={!canExport || exporting}
+              variant="ghost"
+              data-toolbar-item
+              className="flex min-h-11 items-center gap-1.5 px-3 py-2 border-e border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 rounded-s-lg cursor-pointer disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              type="button"
+              aria-busy={exporting}
+            >
+              <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+              {t("reports.export.pdf")}
+            </Button>
+            <Button
+              onClick={() => setShowPdfSettings(!showPdfSettings)}
+              variant="ghost"
+              data-toolbar-item
+              aria-expanded={showPdfSettings}
+              aria-controls={showPdfSettings ? `${settingsIdPrefix}-pdf-settings` : undefined}
+              className={`min-h-11 min-w-11 px-2 py-2 hover:bg-muted transition-colors rounded-e-lg cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${showPdfSettings ? "text-primary bg-primary/5" : "text-muted-foreground"}`}
+              title={t("reports.export.settings")}
+              type="button"
+            >
+              <SettingsIcon className="w-3.5 h-3.5" aria-hidden="true" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -116,9 +116,10 @@ export function JournalEntriesAdvancedMode(props: JournalEntriesAdvancedModeProp
         canDelete={props.canDelete}
         selected={props.selected}
         accounts={props.accounts}
-        allEntries={props.allEntries}
         entries={props.entries}
         fiscalYears={props.fiscalYears}
+        decimalSeparator={props.settings?.decimalSeparator}
+        requireNarration={props.settings?.requireNarration}
         onSave={props.onSave}
         onAccountsChange={props.onAccountsChange}
         onCloseModal={props.onCloseModal}

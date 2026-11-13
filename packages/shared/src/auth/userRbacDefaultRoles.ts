@@ -152,7 +152,7 @@ export const DEFAULT_WORKSPACE_ROLES: readonly WorkspaceRole[] = [
     permissions: {
       dashboard: ["read"],
       finance: ["create", "read", "update", "delete"],
-      accounting: ["create", "read", "update", "delete"],
+      accounting: ["create", "read", "update", "delete", "post"],
       obligations: ["create", "read", "update", "delete"],
       students: ["read"],
       enrollments: ["read"],

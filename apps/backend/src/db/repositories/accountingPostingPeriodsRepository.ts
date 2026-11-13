@@ -1,5 +1,5 @@
 import { and, asc, eq, gte, lte, sql } from "drizzle-orm";
-import type { FiscalYear, PostingPeriod } from "@mms/shared";
+import type { FiscalYear, PostingPeriod, PostingPeriodStatus } from "@mms/shared";
 import { accountingPostingPeriods } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 
@@ -9,7 +9,8 @@ export interface PostingPeriodSeed {
   label: string;
   startDate: string;
   endDate: string;
-  status: "open" | "closed";
+  /** The period lock is `status = 'closed'`; the set is pinned by 0253's CHECK. */
+  status: PostingPeriodStatus;
 }
 
 /** Generates calendar-month posting periods with inclusive ISO day boundaries. */
@@ -139,6 +140,11 @@ export async function findPostingPeriodById(
  * Label of the closed period covering `date`, or null. This is the read the
  * posting guard makes: a workspace with no periods (or no period covering the
  * date) has no monthly lock, so posting keeps working (bootstrap rule).
+ *
+ * Runs on the PRIMARY: every caller is a write path deciding whether it may post, and
+ * a lock check served from a lagging replica could admit a posting into a period a
+ * colleague closed a moment ago. (Inside a transaction `withTenantRead` would have
+ * joined it, but the guard must not depend on that coincidence.)
  */
 export async function findClosedPostingPeriodForDate(
   tenant: string,
@@ -146,7 +152,7 @@ export async function findClosedPostingPeriodForDate(
 ): Promise<string | null> {
   const subdomain = tenant.trim().toLowerCase();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
-  return withTenantRead(subdomain, async (tx) => {
+  return withTenant(subdomain, async (tx) => {
     const [row] = await tx
       .select({ label: accountingPostingPeriods.label })
       .from(accountingPostingPeriods)

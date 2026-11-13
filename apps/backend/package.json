@@ -37,6 +37,8 @@
     "audit:date-columns": "tsx src/scripts/audit-date-columns.ts",
     "audit:finance-date-columns": "tsx src/scripts/audit-finance-date-columns.ts",
     "audit:ledger-balance": "tsx src/scripts/audit-ledger-balance.ts",
+    "audit:ledger-currency-balance": "tsx src/scripts/audit-ledger-currency-balance.ts",
+    "audit:accounting-batch-runs": "tsx src/scripts/audit-accounting-batch-runs.ts",
     "audit:academic-contract": "tsx src/scripts/audit-academic-contract.ts",
     "backfill:attendance-sections": "tsx src/scripts/backfill-attendance-sections.ts",
     "backfill:date-columns": "tsx src/scripts/backfill-date-columns.ts",
@@ -47,7 +49,8 @@
     "test:db:coverage:attendance": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/attendance/**' --coverage.include='src/db/repositories/attendance*' --coverage.include='src/routes/tenant/attendance/**' --coverage.reportsDirectory=coverage-attendance-db --coverage.reporter=json",
     "test:db:concurrency": "node ../../scripts/ci/run-concurrency-suite.mjs",
     "test:db:coverage:examinations": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/db/repositories/examination*' --coverage.include='src/examinations/domain/**' --coverage.reportsDirectory=coverage-examinations-db --coverage.reporter=json-summary --coverage.reporter=text-summary",
-    "test:db:coverage:finance": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/finance/**' --coverage.include='src/accounting/**' --coverage.include='src/db/repositories/finance*' --coverage.include='src/db/repositories/accounting*' --coverage.include='src/routes/tenant/finance*' --coverage.include='src/routes/tenant/finance/**' --coverage.include='src/routes/tenant/accounting/**' --coverage.reportsDirectory=coverage-finance-db --coverage.reporter=json"
+    "test:db:coverage:finance": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/finance/**' --coverage.include='src/accounting/**' --coverage.include='src/db/repositories/finance*' --coverage.include='src/db/repositories/accounting*' --coverage.include='src/routes/tenant/finance*' --coverage.include='src/routes/tenant/finance/**' --coverage.include='src/routes/tenant/accounting/**' --coverage.reportsDirectory=coverage-finance-db --coverage.reporter=json",
+    "test:db:coverage:accounting": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/accounting/**' --coverage.include='src/db/repositories/accounting*' --coverage.include='src/routes/tenant/accounting/**' --coverage.reportsDirectory=coverage-accounting-db --coverage.reporter=json"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",

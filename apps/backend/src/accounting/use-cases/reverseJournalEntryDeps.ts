@@ -3,9 +3,9 @@ import { withTenant } from "../../db/tenant-context.js";
 import { lockJournalEntries } from "../../db/repositories/accountingEntryLocks.js";
 import { findActiveReversalOf } from "../../db/repositories/accountingEntryReversalRepository.js";
 import {
-  findAccountsByIds,
   findEntryById,
   listFiscalYearsByWorkspace,
+  lockPostableAccounts,
   saveEntry,
 } from "../../db/repositories/accountingRepository.js";
 import { findClosedPostingPeriodForDate } from "../../db/repositories/accountingPostingPeriodsRepository.js";
@@ -21,7 +21,7 @@ export const reverseJournalEntryDeps: ReverseJournalEntryDeps = {
   findActiveReversalOf,
   listFiscalYears: (tenant) => listFiscalYearsByWorkspace(tenant),
   findClosedPostingPeriodForDate,
-  findAccountsByIds: (tenant, ids) => findAccountsByIds(tenant, ids),
+  lockPostableAccounts,
   saveEntry,
   recordAudit: (input) => recordModernAuditEvent(input),
   broadcast: (tenant) =>

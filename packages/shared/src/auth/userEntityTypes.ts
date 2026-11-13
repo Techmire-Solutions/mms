@@ -10,7 +10,7 @@ export const USER_STATUS_VALUES = [
 ] as const satisfies readonly UserStatus[];
 
 /** CRUD actions granted per module in the roles matrix. */
-export type PermissionAction = "create" | "read" | "update" | "manage" | "delete";
+export type PermissionAction = "create" | "read" | "update" | "manage" | "delete" | "post";
 
 export const PERMISSION_ACTIONS: readonly PermissionAction[] = [
   "create",
@@ -18,6 +18,12 @@ export const PERMISSION_ACTIONS: readonly PermissionAction[] = [
   "update",
   "manage",
   "delete",
+  /**
+   * Not a CRUD verb: posting turns a draft into an immutable ledger record, so it
+   * is a separate grant from `create`/`update` (a Junior Accountant drafts, a
+   * Senior Accountant posts). Only modules with an approval step expose it.
+   */
+  "post",
 ] as const;
 
 /** Map of module id → permitted actions. */

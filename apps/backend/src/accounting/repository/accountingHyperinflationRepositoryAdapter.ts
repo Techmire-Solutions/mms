@@ -3,6 +3,7 @@ import { getCurrencySettings } from "../../db/repositories/accountingCurrencySet
 import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import {
   accountExists,
+  findIas29RunByDate,
   findIas29RunId,
   getHyperinflationSettings,
   listIas29Runs,
@@ -25,6 +26,7 @@ export const accountingHyperinflationRepository = {
   upsertPriceIndices,
   listMonthlyMovements,
   listIas29Runs: (tenant: string) => listIas29Runs(tenant),
+  findIas29RunByDate,
   findIas29RunId,
   saveIas29Run,
 };

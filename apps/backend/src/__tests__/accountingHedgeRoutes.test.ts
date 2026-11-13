@@ -40,8 +40,11 @@ vi.mock("../db/tenant-context.js", async (importOriginal) => {
 
 const mockCreate = vi.fn();
 const mockSettle = vi.fn();
+const mockDiscontinue = vi.fn();
 const mockListPage = vi.fn();
 const mockPreview = vi.fn();
+const mockValuation = vi.fn();
+const mockReclassify = vi.fn();
 
 vi.mock("../accounting/use-cases/hedgeDeps.js", () => ({
   hedgeDeps: {
@@ -51,9 +54,10 @@ vi.mock("../accounting/use-cases/hedgeDeps.js", () => ({
 
 vi.mock("../accounting/use-cases/hedgeUseCases.js", () => ({
   createHedgeRelationship: (...args: unknown[]) => mockCreate(...args),
-  postHedgeValuation: vi.fn(),
+  postHedgeValuation: (...args: unknown[]) => mockValuation(...args),
   previewHedgeValuation: (...args: unknown[]) => mockPreview(...args),
-  reclassifyHedgeReserve: vi.fn(),
+  reclassifyHedgeReserve: (...args: unknown[]) => mockReclassify(...args),
+  discontinueHedge: (...args: unknown[]) => mockDiscontinue(...args),
   settleHedge: (...args: unknown[]) => mockSettle(...args),
 }));
 
@@ -118,9 +122,34 @@ describe("hedge routes", () => {
     mockSettle
       .mockReset()
       .mockResolvedValue(makeHedgeRelationship({ status: "settled", settledReserve: "7000" }));
+    mockDiscontinue
+      .mockReset()
+      .mockResolvedValue(makeHedgeRelationship({ status: "discontinued", settledReserve: "7000" }));
     mockListPage
       .mockReset()
       .mockResolvedValue({ hedges: [makeHedgeRelationship()], truncated: false });
+    mockValuation.mockReset().mockResolvedValue(
+      makeHedgeRelationship({
+        id: "h-1",
+        status: "active",
+        valuations: [
+          {
+            valuationDate: "2026-11-30",
+            kind: "valuation",
+            rate: "290",
+            instrumentValue: "7000",
+            hedgedChange: "5000",
+            effective: "5000",
+            ineffective: "2000",
+            entryId: "je-1",
+            reversalEntryId: "je-2",
+          },
+        ],
+      }),
+    );
+    mockReclassify
+      .mockReset()
+      .mockResolvedValue(makeHedgeRelationship({ status: "discontinued", settledReserve: "0" }));
     mockPreview.mockReset().mockResolvedValue({
       valuationDate: "2026-11-30",
       kind: "valuation",
@@ -239,5 +268,81 @@ describe("hedge routes", () => {
       }),
     });
     expect(mockPreview).toHaveBeenCalledWith(expect.anything(), "demo", "hedge-1", "2026-11-30");
+  });
+});
+
+describe("hedge discontinuation (IFRS 9.6.5.6)", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+  });
+
+  it("discontinues an active hedge for the session user", async () => {
+    const res = await call("accountant", "/api/accounting/hedges/hedge-1/discontinue", {
+      date: "2026-12-31",
+      reason: "Forecast purchase cancelled",
+    });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.json().hedge.status).toBe("discontinued");
+    expect(mockDiscontinue).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ tenant: "demo" }),
+      "hedge-1",
+      { date: "2026-12-31", reason: "Forecast purchase cancelled" },
+    );
+  });
+
+  it("refuses the write for a role without accounting write permission", async () => {
+    const res = await call("guardian", "/api/accounting/hedges/hedge-1/discontinue", {
+      date: "2026-12-31",
+      reason: "Forecast purchase cancelled",
+    });
+
+    expect(res.statusCode).toBe(403);
+    expect(mockDiscontinue).not.toHaveBeenCalled();
+  });
+
+  it("rejects a missing reason before the use case runs", async () => {
+    const res = await call("accountant", "/api/accounting/hedges/hedge-1/discontinue", {
+      date: "2026-12-31",
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(mockDiscontinue).not.toHaveBeenCalled();
+  });
+
+  it("posts a valuation through the guarded write route and hides it from read-only roles", async () => {
+    const denied = await call("auditor", "/api/accounting/hedges/h-1/valuations", {
+      valuationDate: "2026-11-30",
+    });
+    const posted = await call("accountant", "/api/accounting/hedges/h-1/valuations", {
+      valuationDate: "2026-11-30",
+    });
+
+    expect(denied.statusCode).toBe(403);
+    expect(mockValuation).toHaveBeenCalledTimes(1);
+    expect(mockValuation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ tenant: "demo" }),
+      "h-1",
+      "2026-11-30",
+    );
+    expect(posted.statusCode).toBe(201);
+    expect(posted.json()).toMatchObject({ hedge: { id: "h-1" } });
+  });
+
+  it("reclassifies a hedge reserve through the guarded write route", async () => {
+    const denied = await call("guardian", "/api/accounting/hedges/h-1/reclassify", {
+      date: "2026-12-01",
+      targetAccountId: "hpl",
+    });
+    const posted = await call("accountant", "/api/accounting/hedges/h-1/reclassify", {
+      date: "2026-12-01",
+      targetAccountId: "hpl",
+    });
+
+    expect(denied.statusCode).toBe(403);
+    expect(mockReclassify).toHaveBeenCalledTimes(1);
+    expect(posted.statusCode).toBe(201);
   });
 });

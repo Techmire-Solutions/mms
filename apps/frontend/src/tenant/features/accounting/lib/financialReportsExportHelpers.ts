@@ -150,7 +150,8 @@ export function buildFinancialReportExportRows({
       account: t("accounting.reports.totalLiabilities"),
       amount: formatCurrency(liabilities),
     });
-    getRowsByAccountType("Equity").forEach((row) =>
+    const equityRows = getRowsByAccountType("Equity");
+    equityRows.forEach((row) =>
       rows.push({
         section: t("accounting.reports.equity"),
         code: row.code,
@@ -158,6 +159,21 @@ export function buildFinancialReportExportRows({
         amount: formatCurrency(row.totalCredit - row.totalDebit),
       }),
     );
+    // The total is the as-of server figure and includes unclosed P&L; show it as a
+    // line so the exported rows add up to the exported total.
+    const rowsEquity = equityRows.reduce(
+      (total, row) => total + (row.totalCredit - row.totalDebit),
+      0,
+    );
+    const unclosedSurplus = Math.round((equity - rowsEquity) * 100) / 100;
+    if (Math.abs(unclosedSurplus) >= 0.005) {
+      rows.push({
+        section: t("accounting.reports.equity"),
+        code: "",
+        account: t("accounting.reports.unclosedSurplus"),
+        amount: formatCurrency(unclosedSurplus),
+      });
+    }
     rows.push({
       section: "",
       code: "",

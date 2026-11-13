@@ -129,12 +129,16 @@ export function useJournalEntriesTrashReversal({
      * Reverse is refused for an entry that already has a reversal: repeated
      * clicks used to accumulate competing correction entries that could both be
      * posted later, silently reversing the same figure twice.
+     *
+     * The list projects `active_reversal_entry_id`, so the answer is correct even
+     * when the reversal sits on another page; the page scan stays as a fallback
+     * for cached payloads produced before the projection existed.
      */
     if (!isManuallyReversibleJournalSource(entry.source_type)) {
       notify.warning(t("accounting.journal.alerts.notReversible", { ref: entry.ref }));
       return;
     }
-    if (hasReversalEntry(entry, entries)) {
+    if (entry.active_reversal_entry_id || hasReversalEntry(entry, entries)) {
       notify.warning(t("accounting.journal.alerts.alreadyReversed", { ref: entry.ref }));
       return;
     }

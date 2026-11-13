@@ -20,7 +20,8 @@ import {
 } from "../../db/repositories/accountingExchangeRatesRepository.js";
 import { getCurrencySettings } from "../../db/repositories/accountingCurrencySettingsRepository.js";
 import { runMigration091 } from "../../db/migrations/091_backfill_functional_currency.js";
-import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { persistGeneratedEntry } from "../../accounting/ledgerPosting/ledgerPostingHelpers.js";
+import { extractPgErrorCode, requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = "fx-ias21-a";
 const OTHER = "fx-ias21-b";
@@ -69,6 +70,16 @@ beforeAll(async () => {
   await tx.insert(accountingAccounts).values([
     { id: "ar", workspaceSubdomain: TENANT, code: "1100", name: "Fee Receivable", type: "Asset" },
     { id: "inc", workspaceSubdomain: TENANT, code: "4000", name: "Fee Income", type: "Revenue" },
+    // IAS 21 account-level lock: USD documents may not post here.
+    {
+      id: "pkr-only",
+      workspaceSubdomain: TENANT,
+      code: "1020",
+      name: "PKR bank",
+      type: "Asset",
+      accountCurrency: "PKR",
+      isMonetary: true,
+    },
   ]);
   await commit();
 });
@@ -237,5 +248,80 @@ describe("exchange rate lookup", () => {
 
     // Assert
     expect(result).toBeNull();
+  });
+});
+
+describe("account currency lock and functional currency immutability", () => {
+  const generated = (id: string, txnCurrency: string): JournalEntry =>
+    baseEntry(id, [
+      {
+        id: `${id}-l1`,
+        account_id: "pkr-only",
+        debit: 100,
+        credit: 0,
+        description: "",
+        txn_currency: txnCurrency,
+        txn_debit: "100.00",
+        txn_credit: "0.00",
+        exchange_rate: txnCurrency === "PKR" ? "1" : "280",
+      },
+      {
+        id: `${id}-l2`,
+        account_id: "inc",
+        debit: 0,
+        credit: 100,
+        description: "",
+        txn_currency: txnCurrency,
+        txn_debit: "0.00",
+        txn_credit: "100.00",
+        exchange_rate: txnCurrency === "PKR" ? "1" : "280",
+      },
+    ]);
+
+  it("refuses a generated posting whose currency the account does not accept", async () => {
+    // The manual journal path enforced this through `resolveEntriesFx`; generated
+    // postings (invoices, payments, opening/closing entries) never did.
+    await expect(persistGeneratedEntry(TENANT, generated("gen-usd-locked", "USD"))).rejects.toThrow(
+      /pkr-only \(only accepts PKR lines, got USD\)/,
+    );
+  });
+
+  it("allows a generated posting in the account's own currency", async () => {
+    await expect(
+      persistGeneratedEntry(TENANT, generated("gen-pkr-locked", "PKR")),
+    ).resolves.toBeTruthy();
+  });
+
+  it("refuses a functional-currency change once anything is posted, at the database", async () => {
+    // The use case refused this; the repository (restore, scripts, a future route)
+    // did not. 0255 enforces it on the row itself.
+    const { tx, rollback } = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+    const error = await tx
+      .update(accountingCurrencySettings)
+      .set({ functionalCurrency: "USD" })
+      .where(eq(accountingCurrencySettings.workspaceSubdomain, TENANT))
+      .then(() => undefined)
+      .catch((err: unknown) => err);
+    await rollback().catch(() => undefined);
+
+    expect(extractPgErrorCode(error)).toBe("23514");
+    expect((await getCurrencySettings(TENANT)).functionalCurrency).toBe("PKR");
+  });
+
+  it("keeps the maintenance escape the restore and purge paths use", async () => {
+    const { tx, commit } = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+    await tx.execute(sql`SET LOCAL app.allow_ledger_maintenance = 'true'`);
+    await tx
+      .update(accountingCurrencySettings)
+      .set({ functionalCurrency: "USD" })
+      .where(eq(accountingCurrencySettings.workspaceSubdomain, TENANT));
+    // Revert inside the same transaction so later suites keep PKR.
+    await tx
+      .update(accountingCurrencySettings)
+      .set({ functionalCurrency: "PKR" })
+      .where(eq(accountingCurrencySettings.workspaceSubdomain, TENANT));
+    await commit();
+
+    expect((await getCurrencySettings(TENANT)).functionalCurrency).toBe("PKR");
   });
 });

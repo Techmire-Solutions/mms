@@ -1,4 +1,4 @@
-import type React from "react";
+import { useState, type ReactElement } from "react";
 import type { ReceivablesAging, ReceivablesAgingRow } from "@mms/shared";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -23,10 +23,11 @@ const BUCKETS = ["current", "d1_30", "d31_60", "d61_90", "d90_plus"] as const;
  * selected report date. Computed server-side over the whole open AR ledger, so the
  * totals are not a page slice.
  */
-export function ReceivablesAgingPanel({ asOf }: ReceivablesAgingPanelProps): React.JSX.Element {
+export function ReceivablesAgingPanel({ asOf }: ReceivablesAgingPanelProps): ReactElement {
   const { t } = useTranslation();
   const { formatCurrency } = useAccountingCurrency();
-  const report = useReceivablesAging(asOf);
+  const [page, setPage] = useState(1);
+  const report = useReceivablesAging(asOf, page);
   const data: ReceivablesAging | undefined = report.data;
 
   if (report.isError) {
@@ -109,12 +110,37 @@ export function ReceivablesAgingPanel({ asOf }: ReceivablesAgingPanelProps): Rea
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">
           {t("accounting.reports.aging.asOf", { date: asOf })}
-          {data.hasMore ? ` — ${t("accounting.reports.aging.capped", { count: rows.length })}` : ""}
+          {` — ${t("accounting.reports.aging.pageInfo", {
+            from: rows.length === 0 ? 0 : (data.page - 1) * data.limit + 1,
+            to: (data.page - 1) * data.limit + rows.length,
+            total: data.totalStudents,
+          })}`}
         </p>
         <Button size="sm" variant="outline" onClick={exportCsv} disabled={rows.length === 0}>
           {t("accounting.reports.aging.exportLabel")}
         </Button>
       </div>
+
+      {data.page > 1 || data.hasMore ? (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={data.page <= 1 || report.isFetching}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+          >
+            {t("common.previous")}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!data.hasMore || report.isFetching}
+            onClick={() => setPage((current) => current + 1)}
+          >
+            {t("common.next")}
+          </Button>
+        </div>
+      ) : null}
 
       {rows.length === 0 ? (
         <EmptyState variant="dashed" title={t("accounting.reports.aging.empty")} compact />

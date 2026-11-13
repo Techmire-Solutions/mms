@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { FiscalYear, JournalEntry } from "@mms/shared";
 import {
+  assertJournalAccountsWritable,
   assertJournalEntryPeriodOpen,
   prepareJournalEntryForPersist,
   journalEntryContentChanged,
+  withServerOwnedSourceKeys,
 } from "../accounting/use-cases/accountingLedgerGuards.js";
 
 const years: FiscalYear[] = [
@@ -199,5 +201,240 @@ describe("journalEntryContentChanged (IAS 21)", () => {
 
     // Assert
     expect(changed).toBe(false);
+  });
+});
+
+describe("ledger amount fits numeric(14,2)", () => {
+  it("rejects an amount the column cannot store as a 422, not a driver overflow", () => {
+    // 1e12 is one cent past `numeric(14,2)` (max 999,999,999,999.99). The shared DTO
+    // accepts it (safe integer cents), so this is the layer that has to say no.
+    const tooLarge = entry({
+      lines: [
+        { id: "l1", account_id: "a1", debit: 1_000_000_000_000, credit: 0, description: "" },
+        { id: "l2", account_id: "a2", debit: 0, credit: 1_000_000_000_000, description: "" },
+      ],
+    });
+    expect(() => prepareJournalEntryForPersist(tooLarge, years)).toThrowError(
+      /two-decimal ledger maximum/,
+    );
+    try {
+      prepareJournalEntryForPersist(tooLarge, years);
+    } catch (error) {
+      expect((error as { statusCode?: number }).statusCode).toBe(422);
+    }
+  });
+
+  it("accepts the largest storable amount", () => {
+    const atLimit = entry({
+      lines: [
+        { id: "l1", account_id: "a1", debit: 999_999_999_999.99, credit: 0, description: "" },
+        { id: "l2", account_id: "a2", debit: 0, credit: 999_999_999_999.99, description: "" },
+      ],
+    });
+    expect(() => prepareJournalEntryForPersist(atLimit, years)).not.toThrow();
+  });
+});
+
+describe("transaction-currency double entry", () => {
+  const line = (txn_currency: string, txn_debit: string, txn_credit: string) => ({
+    txn_currency,
+    txn_debit,
+    txn_credit,
+  });
+
+  it("rejects a single-currency voucher whose document legs do not balance", () => {
+    // The functional totals net out (the entry "balances" in PKR) while the USD
+    // document is short by 80 — the shape that used to pass silently.
+    const imbalanced = entry({
+      lines: [
+        {
+          id: "l1",
+          account_id: "a1",
+          debit: 28000,
+          credit: 0,
+          description: "",
+          ...line("USD", "100.00", "0.00"),
+        },
+        {
+          id: "l2",
+          account_id: "a2",
+          debit: 0,
+          credit: 20000,
+          description: "",
+          ...line("USD", "0.00", "100.00"),
+        },
+        {
+          id: "l3",
+          account_id: "a3",
+          debit: 0,
+          credit: 8000,
+          description: "",
+          ...line("USD", "0.00", "80.00"),
+        },
+      ],
+    });
+
+    expect(() => prepareJournalEntryForPersist(imbalanced, years)).toThrowError(
+      /does not balance in its transaction currency: USD/,
+    );
+  });
+
+  it("accepts a balanced foreign voucher", () => {
+    const balanced = entry({
+      lines: [
+        {
+          id: "l1",
+          account_id: "a1",
+          debit: 28000,
+          credit: 0,
+          description: "",
+          ...line("USD", "100.00", "0.00"),
+        },
+        {
+          id: "l2",
+          account_id: "a2",
+          debit: 0,
+          credit: 28000,
+          description: "",
+          ...line("USD", "0.00", "100.00"),
+        },
+      ],
+    });
+
+    expect(() => prepareJournalEntryForPersist(balanced, years)).not.toThrow();
+  });
+
+  it("accepts a mixed-currency settlement voucher (legs differ by design)", () => {
+    // Retire a USD receivable against PKR cash and book the realised gain: the USD and
+    // PKR legs are not per-currency balanced, and they must not be required to be.
+    const settlement = entry({
+      lines: [
+        {
+          id: "l1",
+          account_id: "a1",
+          debit: 0,
+          credit: 28000,
+          description: "",
+          ...line("USD", "0.00", "1000.00"),
+        },
+        {
+          id: "l2",
+          account_id: "a2",
+          debit: 28500,
+          credit: 0,
+          description: "",
+          ...line("PKR", "28500.00", "0.00"),
+        },
+        {
+          id: "l3",
+          account_id: "a3",
+          debit: 0,
+          credit: 500,
+          description: "",
+          ...line("PKR", "0.00", "500.00"),
+        },
+      ],
+    });
+
+    expect(() => prepareJournalEntryForPersist(settlement, years)).not.toThrow();
+  });
+
+  it("leaves an unbalanced draft alone (drafts are not in the ledger yet)", () => {
+    const draft = entry({
+      status: "draft",
+      lines: [
+        {
+          id: "l1",
+          account_id: "a1",
+          debit: 100,
+          credit: 0,
+          description: "",
+          ...line("USD", "100.00", "0.00"),
+        },
+      ],
+    });
+
+    expect(() => prepareJournalEntryForPersist(draft, years)).not.toThrow();
+  });
+});
+
+describe("account postability", () => {
+  const lines = (accountId: string) => [
+    { id: "l1", account_id: accountId, debit: 10, credit: 0, description: "" },
+    { id: "l2", account_id: "a2", debit: 0, credit: 10, description: "" },
+  ];
+
+  it("rejects a header/summary account (one that has sub-accounts)", async () => {
+    await expect(
+      assertJournalAccountsWritable("t-1", [entry({ lines: lines("parent") })], async () => [
+        { id: "parent", isActive: true, hasChildren: true },
+        { id: "a2", isActive: true, hasChildren: false },
+      ]),
+    ).rejects.toThrow(/parent \(summary account with sub-accounts\)/);
+  });
+
+  it("accepts a leaf account and reports every unpostable id at once", async () => {
+    await expect(
+      assertJournalAccountsWritable("t-1", [entry({ lines: lines("leaf") })], async () => [
+        { id: "leaf", isActive: true, hasChildren: false },
+        { id: "a2", isActive: true, hasChildren: false },
+      ]),
+    ).resolves.toBeUndefined();
+
+    await expect(
+      assertJournalAccountsWritable("t-1", [entry({ lines: lines("gone") })], async () => []),
+    ).rejects.toThrow(/gone \(unknown or archived\)/);
+  });
+});
+
+describe("account currency restriction (every posting path)", () => {
+  const accounts = [
+    { id: "pkr-only", isActive: true, hasChildren: false, accountCurrency: "PKR" },
+    { id: "usd-bank", isActive: true, hasChildren: false, accountCurrency: "USD" },
+    { id: "any", isActive: true, hasChildren: false, accountCurrency: null },
+  ];
+  const line = (accountId: string, txn_currency?: string) => ({
+    id: `l-${accountId}`,
+    account_id: accountId,
+    debit: 10,
+    credit: 0,
+    description: "",
+    ...(txn_currency ? { txn_currency } : {}),
+  });
+  const posted = (...lines: ReturnType<typeof line>[]) => entry({ lines });
+
+  it("rejects a foreign line on an account locked to another currency", async () => {
+    // The manual resolver caught this; generated postings (invoices, payments,
+    // openings) never ran it, so the guard has to check the line itself.
+    await expect(
+      assertJournalAccountsWritable("t-1", [posted(line("pkr-only", "USD"))], async () => accounts),
+    ).rejects.toThrow(/pkr-only \(only accepts PKR lines, got USD\)/);
+  });
+
+  it("accepts a line in the account's currency and an unlocked account", async () => {
+    await expect(
+      assertJournalAccountsWritable(
+        "t-1",
+        [posted(line("usd-bank", "USD"), line("any", "EUR"))],
+        async () => accounts,
+      ),
+    ).resolves.toBeUndefined();
+  });
+
+  it("does not judge a line that carries no transaction currency", async () => {
+    // The resolver treats it as functional; the guard cannot tell, so it stays out.
+    await expect(
+      assertJournalAccountsWritable("t-1", [posted(line("pkr-only"))], async () => accounts),
+    ).resolves.toBeUndefined();
+  });
+});
+
+describe("server-owned attribution", () => {
+  it("keeps the stored preparer when an edit resends a different one", () => {
+    const stored = entry({ created_by: "original" });
+    const incoming = entry({ created_by: "someone-else" });
+    expect(withServerOwnedSourceKeys(incoming, stored).created_by).toBe("original");
+    // A brand-new entry keeps the preparer the caller supplied.
+    expect(withServerOwnedSourceKeys(incoming, undefined).created_by).toBe("someone-else");
   });
 });

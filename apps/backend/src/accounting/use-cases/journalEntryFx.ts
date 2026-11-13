@@ -9,7 +9,9 @@ import {
 import type { AccountingRepository } from "../repository/accountingRepository.js";
 import { ledgerError } from "./accountingLedgerGuards.js";
 
-const rateKey = (currency: string, date: string) => `${currency}|${date}`;
+/** A booking rate is type-specific: HISTORICAL and SPOT on one day differ. */
+const rateKey = (currency: string, date: string, rateType: string) =>
+  `${currency}|${date}|${rateType}`;
 
 /**
  * Resolve IAS 21 amounts for entries about to be saved: default each foreign
@@ -39,7 +41,8 @@ export async function resolveEntriesFx(
       }
       if (line.exchange_rate) continue;
       const date = line.rate_date ?? entry.date;
-      const key = rateKey(currency, date);
+      const rateType = line.rate_type ?? "SPOT";
+      const key = rateKey(currency, date, rateType);
       if (rates.has(key)) continue;
       const found = await fx.lookupExchangeRate(tenant, {
         fromCurrency: currency,
@@ -67,7 +70,11 @@ export async function resolveEntriesFx(
         ? {
             ...line,
             exchange_rate: rates.get(
-              rateKey(line.txn_currency as string, line.rate_date ?? entry.date),
+              rateKey(
+                line.txn_currency as string,
+                line.rate_date ?? entry.date,
+                line.rate_type ?? "SPOT",
+              ),
             ),
           }
         : line,

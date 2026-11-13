@@ -7,7 +7,7 @@ import {
   type User,
   type WorkspaceRole,
 } from "@mms/shared";
-import { canManageAccounting, canManageFinance } from "../lib/rbacCanHelpers.js";
+import { canManageAccounting, canManageFinance, canPostAccounting } from "../lib/rbacCanHelpers.js";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -162,5 +162,62 @@ describe("handler-level manage helpers", () => {
     expect(canManageAccounting(user("admin"))).toBe(true);
     expect(canManageAccounting(user("accountant"))).toBe(false);
     expect(canManageAccounting(user("auditor"))).toBe(false);
+  });
+});
+
+describe("draft vs post (Junior vs Senior Accountant)", () => {
+  const junior: WorkspaceRole = {
+    id: "junior_accountant_c1",
+    labelKey: "nav.accounting",
+    descriptionKey: "nav.accounting",
+    isSystem: false,
+    badgeVariant: "primary",
+    // Drafts only: create/update a voucher, but no posting authority.
+    permissions: { accounting: ["read", "create", "update"] },
+  };
+  const senior: WorkspaceRole = {
+    id: "senior_accountant_c1",
+    labelKey: "nav.accounting",
+    descriptionKey: "nav.accounting",
+    isSystem: false,
+    badgeVariant: "primary",
+    permissions: { accounting: ["read", "create", "update", "post"] },
+  };
+  const can = (role: WorkspaceRole) => (permission: Parameters<typeof roleHasPermission>[1]) =>
+    roleHasPermission(role.id, permission, [role]);
+
+  it("keeps a junior role able to draft but not post", () => {
+    const juniorCan = can(junior);
+    expect(juniorCan(ACCOUNTING_MODULE_MANIFEST.permissions.write)).toBe(true);
+    expect(juniorCan(ACCOUNTING_MODULE_MANIFEST.permissions.post)).toBe(false);
+    expect(juniorCan(ACCOUNTING_MODULE_MANIFEST.permissions.manage)).toBe(false);
+  });
+
+  it("grants a senior role the post capability without controller authority", () => {
+    const seniorCan = can(senior);
+    expect(seniorCan(ACCOUNTING_MODULE_MANIFEST.permissions.post)).toBe(true);
+    expect(seniorCan(ACCOUNTING_MODULE_MANIFEST.permissions.manage)).toBe(false);
+  });
+
+  it("maps the `post` module action to accounting.post only", () => {
+    for (const [roleId, roleList, expected] of [
+      [junior.id, [junior], false],
+      [senior.id, [senior], true],
+    ] as const) {
+      const decision = evaluateModuleAccess({
+        moduleId: "accounting",
+        availability: { accounting: { granted: true, enabled: true } },
+        action: "post",
+        can: (permission) => roleHasPermission(roleId, permission, [...roleList]),
+      });
+      expect(decision.allowed).toBe(expected);
+    }
+  });
+
+  it("canPostAccounting separates the built-in roles", () => {
+    expect(canPostAccounting(user("admin"))).toBe(true);
+    expect(canPostAccounting(user("accountant"))).toBe(true);
+    expect(canPostAccounting(user("auditor"))).toBe(false);
+    expect(canPostAccounting(user("guardian"))).toBe(false);
   });
 });

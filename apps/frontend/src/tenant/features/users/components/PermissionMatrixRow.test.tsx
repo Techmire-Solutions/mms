@@ -34,7 +34,8 @@ describe("PermissionMatrixRow", () => {
       </table>,
     );
     expect(html).toContain("nav.students");
-    expect(html).toContain("2/5");
+    // create + read out of the shared PERMISSION_ACTIONS vocabulary (now includes post).
+    expect(html).toContain("2/6");
   });
 
   it("renders indented cell when inGroup is true", () => {

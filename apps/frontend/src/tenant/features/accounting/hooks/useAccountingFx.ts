@@ -65,6 +65,19 @@ export function useAccountingExchangeRates(query: ExchangeRateListQuery = {}, en
   });
 }
 
+/**
+ * Everything a rate change can affect: the rate list/lookup, the FX report (which
+ * converts open balances at the as-of closing rate) and the module report caches.
+ */
+export function invalidateExchangeRateQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+): void {
+  void queryClient.invalidateQueries({ queryKey: RATES_KEY });
+  void queryClient.invalidateQueries({ queryKey: LOOKUP_KEY });
+  void queryClient.invalidateQueries({ queryKey: FX_KEY });
+  invalidateAccountingQueries(queryClient);
+}
+
 /** Money mutation: no optimistic update; lists and lookups refetch after the save. */
 export function useSaveAccountingExchangeRates() {
   const queryClient = useQueryClient();
@@ -74,10 +87,7 @@ export function useSaveAccountingExchangeRates() {
       assertContractOk(response, "Failed to save exchange rates");
       return (response.body as { rates: ExchangeRateRecord[] }).rates;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: RATES_KEY });
-      void queryClient.invalidateQueries({ queryKey: LOOKUP_KEY });
-    },
+    onSuccess: () => invalidateExchangeRateQueries(queryClient),
   });
 }
 

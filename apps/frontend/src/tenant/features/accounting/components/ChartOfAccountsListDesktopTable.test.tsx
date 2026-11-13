@@ -26,6 +26,7 @@ const mockAccounts: Account[] = [
 const baseProps = {
   accounts: mockAccounts,
   filteredAccounts: mockAccounts,
+  summaryIds: new Set<string>(),
   balanceConfig: {
     debit: { label: "Dr", cls: "badge-debit" },
     credit: { label: "Cr", cls: "badge-credit" },
@@ -38,6 +39,19 @@ const baseProps = {
 };
 
 describe("ChartOfAccountsListDesktopTable", () => {
+  it("marks a header/summary account with a badge", () => {
+    const html = renderToStaticMarkup(
+      <ChartOfAccountsListDesktopTable
+        {...baseProps}
+        summaryIds={new Set(["acc-1"])}
+        viewMode="table"
+      />,
+    );
+
+    expect(html).toContain('data-account-kind="header"');
+    expect(html).toContain("accounting.coa.headerAccount");
+  });
+
   it("renders card view when viewMode is cards", () => {
     const html = renderToStaticMarkup(
       <ChartOfAccountsListDesktopTable {...baseProps} viewMode="cards" />,

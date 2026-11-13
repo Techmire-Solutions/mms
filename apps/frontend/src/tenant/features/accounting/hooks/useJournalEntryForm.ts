@@ -21,6 +21,7 @@ import {
   isJournalRefUnique,
 } from "../lib/journalEntryFormValidation";
 import { applyEntryCurrency, draftLinesFromEntry } from "../lib/journalEntryCurrency";
+import { accountOptions } from "../lib/accountOptions";
 import { useJournalEntryCurrency } from "./useJournalEntryCurrency";
 import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 
@@ -38,6 +39,9 @@ interface UseJournalEntryFormOptions {
   onSave: JournalEntrySave;
   initial?: JournalEntry | null;
   fiscalYears: FiscalYear[];
+  /** Setup prefs: decimal separator, and whether narration is required. */
+  decimalSeparator?: "period" | "comma";
+  requireNarration?: boolean;
 }
 
 export function useJournalEntryForm({
@@ -46,6 +50,8 @@ export function useJournalEntryForm({
   onSave,
   initial,
   fiscalYears,
+  decimalSeparator = "period",
+  requireNarration = true,
 }: UseJournalEntryFormOptions) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -113,37 +119,31 @@ export function useJournalEntryForm({
     setErrors({});
   }
 
-  // The date field lives on the draft; keep the currency hook's date in step.
   const [prevFormDate, setPrevFormDate] = useState(entryDate);
   if (prevFormDate !== form.date) {
     setPrevFormDate(form.date);
     setEntryDate(form.date);
   }
 
-  // Money is summed through integer cents (and converted once) so the totals
-  // shown beside the lines are the same figures the ledger posts, with no float
-  // artefacts such as 0.30000000000000004.
-  // Sum integer cents per line: summing parsed floats first let a long voucher
-  // drift before the single rounding (0.1 + 0.2 + … ≠ 0.3 in binary floats).
+  // Money is summed through integer cents (and converted once): summing parsed
+  // floats first let a long voucher drift before the single rounding.
   const totalDebitCents = form.lines.reduce(
-    (cents, journalLine) => cents + moneyToCents(parseJournalLineAmount(journalLine.debit)),
+    (cents, journalLine) =>
+      cents + moneyToCents(parseJournalLineAmount(journalLine.debit, decimalSeparator)),
     0,
   );
   const totalCreditCents = form.lines.reduce(
-    (cents, journalLine) => cents + moneyToCents(parseJournalLineAmount(journalLine.credit)),
+    (cents, journalLine) =>
+      cents + moneyToCents(parseJournalLineAmount(journalLine.credit, decimalSeparator)),
     0,
   );
   const totalDebit = totalDebitCents / 100;
   const totalCredit = totalCreditCents / 100;
-  /**
-   * Balanced by the same rule the server enforces (`isJournalEntryBalanced`:
-   * exact integer cents, at least two lines, each single-sided) instead of a
-   * second, weaker float comparison with a 0.01 tolerance.
-   */
+  // Balanced by the server's own rule (`isJournalEntryBalanced`, exact cents).
   const isBalanced = isJournalEntryBalanced(
     form.lines.map((journalLine) => ({
-      debit: parseJournalLineAmount(journalLine.debit),
-      credit: parseJournalLineAmount(journalLine.credit),
+      debit: parseJournalLineAmount(journalLine.debit, decimalSeparator),
+      credit: parseJournalLineAmount(journalLine.credit, decimalSeparator),
     })),
   );
 
@@ -197,7 +197,15 @@ export function useJournalEntryForm({
   const saveEntry = async (saveAs?: "draft" | "posted") =>
     guard(async () => {
       const targetStatus = saveAs ?? form.status;
-      const validationErrors = validateJournalEntryForm(form, entries, targetStatus, isBalanced, t);
+      const validationErrors = validateJournalEntryForm(
+        form,
+        entries,
+        targetStatus,
+        isBalanced,
+        t,
+        decimalSeparator,
+        requireNarration,
+      );
       if (Object.keys(validationErrors).length) {
         setErrors(validationErrors);
         return;
@@ -222,8 +230,8 @@ export function useJournalEntryForm({
         lines: applyEntryCurrency(
           form.lines.map((journalLine) => ({
             ...journalLine,
-            debit: parseJournalLineAmount(journalLine.debit),
-            credit: parseJournalLineAmount(journalLine.credit),
+            debit: parseJournalLineAmount(journalLine.debit, decimalSeparator),
+            credit: parseJournalLineAmount(journalLine.credit, decimalSeparator),
           })),
           fx.currency || functionalCurrency,
           functionalCurrency || fx.currency,
@@ -254,17 +262,12 @@ export function useJournalEntryForm({
 
   // Stable references: the memoized voucher rows compare `accountOptions` by
   // identity, so rebuilding it every render would defeat the optimization.
+  //
+  // `accountOptions` is the shared picker helper: it drops header/summary accounts
+  // (the server refuses a line on an account that has children), so the picker can
+  // no longer offer an account whose save would fail with the summary-account guard.
   const flattenedAccountOptions = useMemo(
-    () =>
-      accounts
-        .filter((account) => account.isActive !== false)
-        .toSorted((firstAccount, secondAccount) =>
-          firstAccount.code.localeCompare(secondAccount.code),
-        )
-        .map((account) => ({
-          value: account.id,
-          label: `${account.type}: ${account.code} – ${account.name}`,
-        })),
+    () => accountOptions(accounts).map(({ value, label }) => ({ value, label })),
     [accounts],
   );
 

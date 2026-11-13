@@ -10,6 +10,10 @@ import {
   accountingEntryAttachments,
 } from "../../db/schema.js";
 import { bulkSaveEntries } from "../../db/repositories/accountingEntriesPersist.js";
+import {
+  bulkRestoreAccounts,
+  bulkSaveAccounts,
+} from "../../db/repositories/accountingAccountsPersist.js";
 import type { JournalEntry } from "@mms/shared";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
@@ -207,6 +211,101 @@ describe("bulkSaveEntries soft-delete ownership", () => {
       await verifyTx.commit();
     } catch (error) {
       await verifyTx.rollback().catch(() => undefined);
+      throw error;
+    }
+  });
+});
+
+/**
+ * The same ownership rule for the chart of accounts. The finance side was fixed
+ * first; the COA kept writing `deleted_at` from the payload, so a whole-list
+ * settings save could quietly resurrect an archived account (or archive an active
+ * one) and never recorded who restored it.
+ */
+describe("bulkSaveAccounts soft-delete ownership", () => {
+  const trashedAccount = {
+    id: "sd-coa-trashed",
+    code: "9100",
+    name: "Archived elsewhere",
+    type: "Asset" as const,
+    subtype: "",
+    description: "",
+    isActive: true,
+    deletedAt: trashedAt.toISOString(),
+    deletedBy: "other-session",
+    deletionReason: "merged",
+  };
+  const activeAccount = {
+    id: "sd-coa-active",
+    code: "9200",
+    name: "Active",
+    type: "Asset" as const,
+    subtype: "",
+    description: "",
+    isActive: true,
+  };
+
+  it("does not resurrect a trashed account and does not re-trash an active one", async () => {
+    // Seed both through the insert path (which legitimately carries the sextuple).
+    await bulkSaveAccounts(TEST_SUBDOMAIN, [trashedAccount, activeAccount]);
+
+    await bulkSaveAccounts(TEST_SUBDOMAIN, [
+      {
+        ...trashedAccount,
+        name: "Renamed while trashed",
+        deletedAt: null,
+        deletedBy: null,
+        deletionReason: null,
+      },
+      {
+        ...activeAccount,
+        name: "Renamed while active",
+        deletedAt: trashedAt.toISOString(),
+        deletedBy: "other-session",
+        deletionReason: "oops",
+      },
+    ]);
+
+    const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+    try {
+      const rows = await tx.tx
+        .select()
+        .from(accountingAccounts)
+        .where(eq(accountingAccounts.workspaceSubdomain, TEST_SUBDOMAIN));
+      const byId = new Map(rows.map((row) => [row.id, row]));
+
+      const trashed = byId.get("sd-coa-trashed");
+      expect(trashed?.name).toBe("Renamed while trashed");
+      expect(trashed?.deletedAt).not.toBeNull();
+      expect(trashed?.deletedBy).toBe("other-session");
+      expect(trashed?.deletionReason).toBe("merged");
+
+      const active = byId.get("sd-coa-active");
+      expect(active?.name).toBe("Renamed while active");
+      expect(active?.deletedAt).toBeNull();
+      await tx.commit();
+    } catch (error) {
+      await tx.rollback().catch(() => undefined);
+      throw error;
+    }
+  });
+
+  it("writes restore attribution when an account is restored", async () => {
+    const result = await bulkRestoreAccounts(TEST_SUBDOMAIN, ["sd-coa-trashed"], "restorer-1");
+    expect(result.succeeded).toBe(1);
+
+    const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+    try {
+      const [row] = await tx.tx
+        .select()
+        .from(accountingAccounts)
+        .where(eq(accountingAccounts.id, "sd-coa-trashed"));
+      expect(row?.deletedAt).toBeNull();
+      expect(row?.restoredBy).toBe("restorer-1");
+      expect(row?.restoredAt).toBeTruthy();
+      await tx.commit();
+    } catch (error) {
+      await tx.rollback().catch(() => undefined);
       throw error;
     }
   });

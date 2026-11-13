@@ -19,7 +19,6 @@ export type JournalEntrySave = (
 
 export interface JournalEntriesProps {
   entries: JournalEntry[];
-  allEntries?: JournalEntry[];
   accounts: Account[];
   settings: AccountingSettings;
   fiscalYears: FiscalYear[];

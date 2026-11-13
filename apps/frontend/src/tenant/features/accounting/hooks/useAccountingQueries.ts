@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { fetchAllAccountingAccounts, fetchAllAccountingEntries } from "./accountingListFetch";
+import { fetchAllAccountingAccounts } from "./accountingListFetch";
 import type {
   AccountingLedgerPage,
   AccountingListQuery,
@@ -14,6 +14,7 @@ import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMe
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { apiContract, tsrClient } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
+import { assertContractOk } from "@/lib/apiContractError";
 import type { AccountingCommandMetricsSnapshot } from "@mms/shared";
 import {
   ACCOUNTING_METRICS_QUERY_KEY,
@@ -88,37 +89,6 @@ export function useAccountingEntriesPaginated(
     },
     enabled,
     placeholderData: keepPreviousData,
-  });
-}
-
-/**
- * Every entry matching `query`, not just the first page.
- *
- * `computeTrialBalance` / `computeFinancials` / `computeLedger` are whole-ledger
- * aggregates, so a single capped page understates them silently.
- */
-export function useAllAccountingEntries(
-  query: AccountingListQuery,
-  options?: { enabled?: boolean },
-) {
-  const { isAuthenticated } = useAuth();
-  const enabled = (options?.enabled ?? true) && isAuthenticated;
-
-  return useQuery({
-    queryKey: [
-      ...ACCOUNTING_ENTRIES_QUERY_KEY,
-      "all",
-      {
-        search: query.search,
-        status: query.status,
-        dateFrom: query.dateFrom,
-        dateTo: query.dateTo,
-        accountId: query.accountId,
-        includeDeleted: query.includeDeleted,
-      },
-    ],
-    queryFn: ({ signal }): Promise<JournalEntry[]> => fetchAllAccountingEntries(query, signal),
-    enabled,
   });
 }
 
@@ -255,15 +225,41 @@ export function useAccountingLedger(
   });
 }
 
+/**
+ * One journal entry with its lines.
+ *
+ * The drawer fetches the selected entry by id rather than relying on the row
+ * payload; the register ships full vouchers because Cashbook/print/the wizard need
+ * the lines, but the detail path stays the source for a freshly edited voucher.
+ */
+export function useJournalEntryDetail(entryId: string | null, options?: { enabled?: boolean }) {
+  const { isAuthenticated } = useAuth();
+  const enabled = (options?.enabled ?? true) && isAuthenticated && Boolean(entryId);
+  return useQuery({
+    queryKey: [...ACCOUNTING_ENTRIES_QUERY_KEY, "detail", entryId] as const,
+    queryFn: async ({ signal }): Promise<JournalEntry> => {
+      const response = await apiContract.accounting.getEntry({
+        params: { id: entryId as string },
+        signal,
+        fetchOptions: { signal },
+      });
+      assertContractOk(response, "Failed to load the journal entry");
+      return response.body as JournalEntry;
+    },
+    enabled,
+    staleTime: 15_000,
+  });
+}
+
 /** Student receivables aging as of a date (server buckets, exact totals). */
-export function useReceivablesAging(asOf: string, options?: { enabled?: boolean }) {
+export function useReceivablesAging(asOf: string, page = 1, options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = (options?.enabled ?? true) && isAuthenticated && Boolean(asOf);
   return useQuery({
-    queryKey: [...ACCOUNTING_AGING_QUERY_KEY, asOf] as const,
+    queryKey: [...ACCOUNTING_AGING_QUERY_KEY, asOf, page] as const,
     queryFn: async ({ signal }): Promise<ReceivablesAging> => {
       const response = await apiContract.accounting.getReceivablesAging({
-        query: { asOf },
+        query: { asOf, page },
         signal,
         fetchOptions: { signal },
       });

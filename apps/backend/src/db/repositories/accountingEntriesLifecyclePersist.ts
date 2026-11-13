@@ -31,6 +31,7 @@ import { journalLineFxInsertValues } from "./accountingJournalLineFx.js";
 export function entryInsertValues(
   subdomain: string,
   record: JournalEntry,
+  now: Date = new Date(),
 ): typeof accountingEntries.$inferInsert {
   return {
     id: record.id,
@@ -50,7 +51,7 @@ export function entryInsertValues(
     deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
     deletedBy: record.deletedBy ?? null,
     deletionReason: record.deletionReason ?? null,
-    updatedAt: new Date(),
+    updatedAt: now,
   };
 }
 

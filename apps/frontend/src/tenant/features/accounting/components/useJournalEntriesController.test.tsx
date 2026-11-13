@@ -99,7 +99,7 @@ describe("useJournalEntriesController", () => {
     onFilteredCountChange: vi.fn(),
     filters: {
       search: "",
-      statusFilter: "",
+      statusFilter: "all" as const,
       tagFilter: "",
       dateFrom: "",
       dateTo: "",

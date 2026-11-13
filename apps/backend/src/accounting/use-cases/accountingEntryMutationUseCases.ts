@@ -3,6 +3,7 @@ import type { AccountingRepository } from "../repository/accountingRepository.js
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { ConflictError, HttpDomainError } from "../../lib/httpErrors.js";
+import { ACCOUNTING_ERROR_CODES } from "@mms/shared";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import { journalEntryListSchema, type JournalEntry, type FiscalYear } from "@mms/shared";
 import { upsertWithBroadcast } from "../../services/tenantBulkService.js";
@@ -78,17 +79,27 @@ export async function upsertEntriesHelper(
       withFx,
       storedById,
       lockedYears,
-      repo.findAccountsByIds,
+      repo.lockPostableAccounts,
       repo.findClosedPostingPeriodForDate,
     );
     const prepared = withFx.map((entry) => prepareJournalEntryForPersist(entry, lockedYears));
     // Posted entries are immutable: keep their ledger rows out of the rewrite (0248).
     const preserveChildren = postedEntryIds(prepared, storedById);
+    // Optimistic concurrency only for the rows this save changes: the whole-list
+    // payload carries every entry, and an untouched stale row must not block it.
+    const changedIds = new Set(
+      prepared
+        .filter((entry) => {
+          const stored = storedById.get(entry.id);
+          return stored ? journalEntryContentChanged(entry, stored) : false;
+        })
+        .map((entry) => entry.id),
+    );
     try {
       const saved = await upsertWithBroadcast(
         journalEntryListSchema,
         prepared,
-        (tenant, list) => repo.bulkSaveEntries(tenant, list, { preserveChildren }),
+        (tenant, list) => repo.bulkSaveEntries(tenant, list, { preserveChildren, changedIds }),
         "accounting_entries",
         { skipValidation: true },
       );
@@ -159,7 +170,7 @@ export async function createJournalEntryHelper(
     await assertPostingPeriodOpen(finalEntry.date, (date) =>
       repo.findClosedPostingPeriodForDate(tenant, date),
     );
-    await assertJournalAccountsWritable(tenant, [finalEntry], repo.findAccountsByIds);
+    await assertJournalAccountsWritable(tenant, [finalEntry], repo.lockPostableAccounts);
     try {
       const created = await entryCrud.create(finalEntry);
       await recordJournalEntryAudit(tenant, "CREATE", created);
@@ -209,7 +220,7 @@ export async function updateJournalEntryByIdHelper(
     await assertPostingPeriodOpen(finalEntry.date, (date) =>
       repo.findClosedPostingPeriodForDate(tenant, date),
     );
-    await assertJournalAccountsWritable(tenant, [finalEntry], repo.findAccountsByIds);
+    await assertJournalAccountsWritable(tenant, [finalEntry], repo.lockPostableAccounts);
     try {
       const updated = await entryCrud.updateById(id, finalEntry);
       if (updated) {
@@ -243,10 +254,9 @@ export async function deleteJournalEntryByIdHelper(
     const existing = await repo.findEntryById(tenant, id);
     if (!existing || existing.deletedAt) return false;
     if (existing.status === "posted") {
-      throw new HttpDomainError(
-        422,
-        "validation_error",
-        "Posted journal entries cannot be deleted",
+      throw Object.assign(
+        new HttpDomainError(422, "validation_error", "Posted journal entries cannot be deleted"),
+        { code: ACCOUNTING_ERROR_CODES.voucherPosted },
       );
     }
     const archived = await entryCrud.deleteById(id, deletedBy, deletionReason);

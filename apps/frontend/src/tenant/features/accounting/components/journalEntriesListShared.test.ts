@@ -31,6 +31,31 @@ const line = (account_id: string, debit: number, credit: number) => ({
   description: "",
 });
 
+describe("getJournalEntryLineTotals with projected register rows", () => {
+  it("falls back to the server header totals when the page ships no lines", () => {
+    // The register could ship header-only rows; every row, footer and CSV then
+    // rendered 0.00 because only `lines` were summed.
+    const projected = {
+      ...entry([]),
+      lineCount: 2,
+      debitTotal: 150,
+      creditTotal: 150,
+    } as JournalEntry;
+
+    expect(getJournalEntryLineTotals(projected)).toEqual({ totalDebit: 150, totalCredit: 150 });
+  });
+
+  it("prefers the line sets when a row carries them", () => {
+    const withLines = {
+      ...entry([line("a-cash", 10, 0), line("a-income", 0, 10)]),
+      debitTotal: 999,
+      creditTotal: 999,
+    } as JournalEntry;
+
+    expect(getJournalEntryLineTotals(withLines)).toEqual({ totalDebit: 10, totalCredit: 10 });
+  });
+});
+
 describe("getJournalEntryLineTotals", () => {
   it("rounds float-hostile line sums to exact money for the CSV export", () => {
     const totals = getJournalEntryLineTotals(

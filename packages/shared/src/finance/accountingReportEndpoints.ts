@@ -70,8 +70,25 @@ export const accountingLedgerPageSchema = z
 
 export type AccountingLedgerPage = z.infer<typeof accountingLedgerPageSchema>;
 
-/** Query of `GET /api/accounting/receivables-aging`. */
-export const receivablesAgingQuerySchema = z.object({ asOf: isoDateSchema }).strict();
+/** Rows per aging page when the client does not ask for a size. */
+export const RECEIVABLES_AGING_DEFAULT_LIMIT = 100;
+/** Hard ceiling: each row is one student with open invoices. */
+export const RECEIVABLES_AGING_MAX_LIMIT = 500;
+
+/**
+ * Query of `GET /api/accounting/receivables-aging`.
+ *
+ * It used to take `asOf` only while the loader capped the result at 500 rows and
+ * still reported `hasMore`, so the remainder of a large aging report was
+ * unreachable. `page`/`limit` make the flag actionable.
+ */
+export const receivablesAgingQuerySchema = z
+  .object({
+    asOf: isoDateSchema,
+    page: z.coerce.number().int().min(1).optional(),
+    limit: z.coerce.number().int().min(1).max(RECEIVABLES_AGING_MAX_LIMIT).optional(),
+  })
+  .strict();
 
 export type ReceivablesAgingQuery = z.infer<typeof receivablesAgingQuerySchema>;
 
@@ -105,9 +122,55 @@ export const receivablesAgingSchema = z
       invoiceCount: z.number().int().min(0),
     }),
     totalStudents: z.number().int().min(0),
+    page: z.number().int().min(1),
+    limit: z.number().int().min(1),
     hasMore: z.boolean(),
   })
   .strict();
 
 export type ReceivablesAgingRow = z.infer<typeof receivablesAgingRowSchema>;
 export type ReceivablesAging = z.infer<typeof receivablesAgingSchema>;
+
+/** Report kinds the server can render as a BiDi-correct Typst PDF. */
+export const ACCOUNTING_REPORT_PDF_KINDS = ["trial-balance", "general-ledger"] as const;
+export type AccountingReportPdfKind = (typeof ACCOUNTING_REPORT_PDF_KINDS)[number];
+
+export const accountingReportPdfBodySchema = z
+  .object({
+    kind: z.enum(ACCOUNTING_REPORT_PDF_KINDS),
+    dateFrom: isoDateSchema.optional(),
+    dateTo: isoDateSchema.optional(),
+    /** Required for `general-ledger`; ignored for the trial balance. */
+    accountId: z.string().trim().min(1).optional(),
+    lang: z.enum(["ar", "ur", "fa", "en"]).optional(),
+    direction: z.enum(["rtl", "ltr"]).optional(),
+    filename: z.string().trim().max(120).optional(),
+  })
+  .strict()
+  .refine((body) => body.kind !== "general-ledger" || Boolean(body.accountId), {
+    message: "accounting.validation.accountRequired",
+    path: ["accountId"],
+  })
+  .refine((body) => !body.dateFrom || !body.dateTo || body.dateFrom <= body.dateTo, {
+    message: "accounting.validation.reportRange",
+    path: ["dateTo"],
+  });
+
+export type AccountingReportPdfBody = z.infer<typeof accountingReportPdfBodySchema>;
+
+/** Streamed journal-register (General Ledger) export request. */
+export const accountingLedgerExportBodySchema = z
+  .object({
+    accountId: z.string().trim().min(1),
+    dateFrom: isoDateSchema.optional(),
+    dateTo: isoDateSchema.optional(),
+    lang: z.enum(["ar", "ur", "fa", "en"]).optional(),
+    filename: z.string().trim().max(120).optional(),
+  })
+  .strict()
+  .refine((body) => !body.dateFrom || !body.dateTo || body.dateFrom <= body.dateTo, {
+    message: "accounting.validation.reportRange",
+    path: ["dateTo"],
+  });
+
+export type AccountingLedgerExportBody = z.infer<typeof accountingLedgerExportBodySchema>;

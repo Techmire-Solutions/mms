@@ -20,6 +20,8 @@ import {
 export interface AccountTypeGroupProps {
   type: AccountType;
   accountTypeRows: Account[];
+  /** Ids of accounts that carry sub-accounts (header/summary accounts). */
+  summaryIds: ReadonlySet<string>;
   balanceConfig: Record<string, StatusBadgeConfigItem>;
   canWrite: boolean;
   isColumnVisible: (key: string) => boolean;
@@ -34,6 +36,7 @@ export interface AccountTypeGroupProps {
 export function AccountTypeGroup({
   type,
   accountTypeRows,
+  summaryIds,
   balanceConfig,
   canWrite,
   isColumnVisible,
@@ -69,6 +72,19 @@ export function AccountTypeGroup({
         render: (account) => (
           <>
             <span className="font-semibold text-foreground">{account.name}</span>
+            {summaryIds.has(account.id) && (
+              <Badge
+                as="span"
+                pill
+                tone="info"
+                className="ms-2 px-1.5"
+                title={t("accounting.coa.headerHint")}
+                aria-label={t("accounting.coa.headerAccount")}
+                data-account-kind="header"
+              >
+                {t("accounting.coa.headerAccount")}
+              </Badge>
+            )}
             {account.isActive === false && (
               <Badge as="span" pill tone="muted" className="ms-2 px-1.5">
                 {t("accounting.coa.inactive")}
@@ -129,7 +145,7 @@ export function AccountTypeGroup({
     }
 
     return cols;
-  }, [isColumnVisible, t, getColumnWidth, balanceConfig]);
+  }, [isColumnVisible, t, getColumnWidth, balanceConfig, summaryIds]);
 
   return (
     <article className={`${WORK_SURFACE} overflow-hidden`}>
@@ -168,6 +184,7 @@ export function AccountTypeGroup({
               <AccountMobileCard
                 key={account.id}
                 account={account}
+                isHeaderAccount={summaryIds.has(account.id)}
                 balanceConfig={balanceConfig}
                 canWrite={canWrite}
                 isColumnVisible={isColumnVisible}

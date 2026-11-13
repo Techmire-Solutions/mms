@@ -4,17 +4,19 @@ import type {
   AccountingEntriesListPageResult,
   AccountingLedgerPage,
   AccountingListQuery,
-  JournalEntry,
 } from "@mms/shared";
-import { ACCOUNTING_MODULE_MANIFEST, LIST_PAGE_MAX_LIMIT } from "@mms/shared";
+import { LIST_PAGE_MAX_LIMIT } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { assertContractOk } from "@/lib/apiContractError";
+// Imported from the keys module (no cycle): the register page must share the exact
+// prefix the post-write invalidation targets.
+import { ACCOUNTING_ENTRIES_LIST_PREFIX } from "./accountingQueryKeys";
 
 /**
- * Hard bound on the sequential paging loop used by the whole-ledger aggregates.
- * Each page is `LIST_PAGE_MAX_LIMIT` rows, which is what the REST contract
- * accepts — asking for more is a 400, not a clamp.
+ * Hard bound on the sequential paging loops that remain (whole chart of accounts,
+ * ledger export). The journal-entry equivalent was removed with the server report
+ * aggregates: the Overview/Journal tabs no longer page the whole ledger down.
  */
 const MAX_AGGREGATE_PAGES = 50;
 
@@ -41,6 +43,12 @@ export function buildAccountingEntriesPageParams(
   if (query.sortField) params.sortField = query.sortField;
   if (query.sortDir) params.sortDir = query.sortDir;
   if (query.includeDeleted) params.includeDeleted = true;
+  // Full vouchers: the register's own consumers (Cashbook classification, the
+  // simple wizard's balance hint, the voucher Print action) need the line sets, and
+  // the drawer/edit/post paths read them too. The header-only projection shipped no
+  // lines and every derived figure read 0.00, so it is not requested here; a
+  // per-view opt-in remains available through `query.includeLines === false`.
+  if (query.includeLines === false) params.includeLines = "false";
   return params;
 }
 
@@ -70,17 +78,6 @@ export async function fetchAccountingEntriesPage(
   };
 }
 
-/**
- * Mirrors `ACCOUNTING_ENTRIES_QUERY_KEY` from `useAccountingApi` — importing it
- * here would create an import cycle, and an identical prefix is what keeps the
- * existing post-write invalidation refreshing this page.
- */
-const ACCOUNTING_ENTRIES_LIST_QUERY_KEY = [
-  ACCOUNTING_MODULE_MANIFEST.moduleId,
-  "entries",
-  "list",
-] as const;
-
 /** Server-driven page of the Journal list: filters, order and page live in the query. */
 export function useAccountingEntriesPage(
   query: AccountingListQuery,
@@ -91,43 +88,12 @@ export function useAccountingEntriesPage(
   const params = JSON.stringify(buildAccountingEntriesPageParams(query));
 
   return useQuery({
-    queryKey: [...ACCOUNTING_ENTRIES_LIST_QUERY_KEY, "page", params],
+    queryKey: [...ACCOUNTING_ENTRIES_LIST_PREFIX, "page", params],
     queryFn: ({ signal }): Promise<AccountingEntriesListPageResult> =>
       fetchAccountingEntriesPage(query, signal),
     enabled,
     placeholderData: keepPreviousData,
   });
-}
-
-/**
- * Paged-through fetch of every journal entry matching `query`.
- *
- * `computeTrialBalance` / `computeFinancials` / `computeLedger` are whole-ledger
- * aggregates, so a single capped page understates them silently with no error —
- * the page-1-of-100 fetch summed the 100 most recently *created* entries while
- * the balance badge still read "Balanced". Each request stays bounded at the
- * contract's maximum page size and stops as soon as the server reports no more.
- */
-export async function fetchAllAccountingEntries(
-  query: AccountingListQuery,
-  signal?: AbortSignal,
-): Promise<JournalEntry[]> {
-  const collected: JournalEntry[] = [];
-  for (let page = 1; page <= MAX_AGGREGATE_PAGES; page += 1) {
-    const response = await apiContract.accounting.listEntries({
-      query: buildAccountingEntriesPageParams({ ...query, page, limit: LIST_PAGE_MAX_LIMIT }),
-      signal,
-      fetchOptions: { signal },
-    });
-    assertContractOk(response, "Failed to fetch accounting entries");
-    const body = response.body as { entries?: JournalEntry[]; hasMore?: boolean };
-    const batch = body.entries ?? [];
-    collected.push(...batch);
-    if (!body.hasMore || batch.length === 0) return collected;
-  }
-  // Bounded: a ledger larger than this needs a server-side aggregate rather than
-  // shipping every row to the browser.
-  return collected;
 }
 
 /** Hard bound on the ledger export paging loop (each page is 100 lines). */

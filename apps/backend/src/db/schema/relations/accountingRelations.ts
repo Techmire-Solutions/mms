@@ -25,6 +25,13 @@ export const accountingAccountsRelations = relations(accountingAccounts, ({ one,
     references: [workspaces.subdomain],
   }),
   lines: many(accountingJournalLines),
+  /** COA branch: `parentAccountId` → same-workspace account (composite self-FK). */
+  parent: one(accountingAccounts, {
+    fields: [accountingAccounts.parentAccountId],
+    references: [accountingAccounts.id],
+    relationName: "accounting_account_hierarchy",
+  }),
+  children: many(accountingAccounts, { relationName: "accounting_account_hierarchy" }),
 }));
 
 export const accountingFiscalYearsRelations = relations(accountingFiscalYears, ({ one, many }) => ({

@@ -8,6 +8,10 @@ dist/
 *.tsbuildinfo
 .turbo/
 
+# Git worktrees created inside the checkout (VCS internals, not repo content)
+.worktrees/
+**/.worktrees/
+
 # Generated / test artifacts
 coverage/
 **/coverage/

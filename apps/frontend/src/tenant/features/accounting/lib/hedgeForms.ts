@@ -35,11 +35,15 @@ export function hedgeDesignationToRecord(draft: HedgeDesignationDraft): HedgeRel
   };
 }
 
-export type HedgeAction = "settle" | "reclassify";
+export type HedgeAction = "settle" | "reclassify" | "discontinue";
 
-/** Settlement (date, rate, cash account) or reclassification (date, target account) input. */
+/**
+ * Settlement (date, rate, cash account), reclassification (date, target account) or
+ * discontinuation (date, reason) input.
+ */
 export interface HedgeActionInput {
   date: string;
   rate: string;
   accountId: string;
+  reason: string;
 }

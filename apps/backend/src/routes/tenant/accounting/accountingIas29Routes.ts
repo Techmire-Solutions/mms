@@ -12,7 +12,11 @@ import {
   priceIndicesResponseSchema,
   type User,
 } from "@mms/shared";
-import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
+import {
+  canManageAccounting,
+  canReadCollection,
+  canWriteCollection,
+} from "../../../services/rbacService.js";
 import {
   sendForbidden,
   sendIfHttpDomainError,
@@ -149,26 +153,31 @@ export const accountingIas29Routes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  fastify.post("/ias29-restatements", async (request, reply) => {
-    const user = request.user as User;
-    if (!canWriteCollection(user, COLLECTION)) return sendForbidden(reply);
-    const parsed = parseRequest(ias29RequestSchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed);
-    const tenant = String(request.tenant?.id);
-    return respond(
-      reply,
-      "Failed to post IAS 29 restatement",
-      () =>
-        withTenant(tenant, () =>
-          postIas29Restatement(
-            deps,
-            { tenant, userId: String(user.id) },
-            parsed.data.restatementDate,
+  fastify.post(
+    "/ias29-restatements",
+    // Restating the ledger under IAS 29 is a period-end control, not routine posting.
+    { config: { moduleAction: "manage" } },
+    async (request, reply) => {
+      const user = request.user as User;
+      if (!canManageAccounting(user)) return sendForbidden(reply);
+      const parsed = parseRequest(ias29RequestSchema, request.body);
+      if (!parsed.ok) return replyValidationError(reply, parsed);
+      const tenant = String(request.tenant?.id);
+      return respond(
+        reply,
+        "Failed to post IAS 29 restatement",
+        () =>
+          withTenant(tenant, () =>
+            postIas29Restatement(
+              deps,
+              { tenant, userId: String(user.id) },
+              parsed.data.restatementDate,
+            ),
           ),
-        ),
-      ias29RunResponseSchema,
-      (run) => ({ run }),
-      201,
-    );
-  });
+        ias29RunResponseSchema,
+        (run) => ({ run }),
+        201,
+      );
+    },
+  );
 };

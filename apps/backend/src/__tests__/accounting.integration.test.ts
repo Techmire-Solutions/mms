@@ -88,6 +88,12 @@ vi.mock("../accounting/use-cases/accountingUseCases.js", () => ({
   },
 }));
 
+const mockAssertEntriesPostable = vi.hoisted(() => vi.fn());
+
+vi.mock("../accounting/use-cases/accountingPostingGuard.js", () => ({
+  assertEntriesPostable: (...args: unknown[]) => mockAssertEntriesPostable(...args),
+}));
+
 const mockSeedDefaultChart = vi.fn();
 
 vi.mock("../accounting/use-cases/seedDefaultChartOfAccounts.js", () => ({
@@ -335,6 +341,78 @@ describe("accounting REST routes", () => {
     await app.close();
   });
 
+  it("rejects an unbalanced posted voucher at the write boundary", async () => {
+    const app = await buildApp();
+    const unbalanced: JournalEntry = {
+      ...sampleEntry,
+      lines: [
+        { id: "l1", account_id: "acc-1", debit: 100, credit: 0, description: "" },
+        { id: "l2", account_id: "acc-2", debit: 0, credit: 90, description: "" },
+      ],
+    };
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/accounting/entries/bulk",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${accountantToken(app)}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify([unbalanced]),
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json()).toMatchObject({ type: "validation_error" });
+    expect(JSON.stringify(res.json())).toContain("accounting.voucher.unbalanced");
+    // The schema rejection happens before the route can save anything.
+    expect(mockUpsertEntries).not.toHaveBeenCalled();
+    await app.close();
+  });
+
+  it("runs the draft/post gate before saving and surfaces its refusal", async () => {
+    // The gate's own rules are unit-tested in accountingPostingGuard.test.ts; here we
+    // pin the route wiring: `beforeSave` receives the session user + payload, and its
+    // refusal is answered with the stable code without reaching the save.
+    mockAssertEntriesPostable.mockRejectedValueOnce(
+      Object.assign(new Error("posting authority required"), {
+        statusCode: 403,
+        type: "forbidden",
+        code: "accounting.post.required",
+      }),
+    );
+    const app = await buildApp();
+    const headers = {
+      host: "demo.localhost",
+      authorization: `Bearer ${accountantToken(app)}`,
+      "content-type": "application/json",
+    };
+
+    const refused = await app.inject({
+      method: "PUT",
+      url: "/api/accounting/entries/bulk",
+      headers,
+      body: JSON.stringify([sampleEntry]),
+    });
+    expect(refused.statusCode).toBe(403);
+    expect(refused.json()).toMatchObject({ code: "accounting.post.required" });
+    expect(mockUpsertEntries).not.toHaveBeenCalled();
+    expect(mockAssertEntriesPostable).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "u-accountant" }),
+      [sampleEntry],
+      expect.any(Function),
+    );
+
+    mockUpsertEntries.mockResolvedValue([sampleEntry]);
+    const allowed = await app.inject({
+      method: "PUT",
+      url: "/api/accounting/entries/bulk",
+      headers,
+      body: JSON.stringify([sampleEntry]),
+    });
+    expect(allowed.statusCode).toBe(200);
+    await app.close();
+  });
+
   it("GET /api/accounting/fiscal-years loads fiscal years", async () => {
     const app = await buildApp();
     const res = await app.inject({
@@ -448,6 +526,46 @@ describe("accounting REST routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(mockRestoreJournalEntryById).toHaveBeenCalledWith("je-1", "u-accountant");
+    await app.close();
+  });
+
+  it("POST /api/accounting/entries/bulk-delete archives the requested vouchers", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/accounting/entries/bulk-delete",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${accountantToken(app)}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ ids: ["je-1", "je-2"] }),
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockBulkSoftDeleteJournalEntries).toHaveBeenCalledWith(
+      ["je-1", "je-2"],
+      "u-accountant",
+      undefined,
+    );
+    await app.close();
+  });
+
+  it("POST /api/accounting/entries/bulk-restore restores the requested vouchers", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/accounting/entries/bulk-restore",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${accountantToken(app)}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ ids: ["je-1"] }),
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(mockBulkRestoreJournalEntries).toHaveBeenCalled();
     await app.close();
   });
 

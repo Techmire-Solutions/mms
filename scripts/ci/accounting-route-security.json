@@ -1,0 +1,250 @@
+{
+  "DELETE /api/accounting/entries/:id": {
+    "action": "delete",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "GET /api/accounting/accounts": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/bank-statements": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/currency-exchangeability": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/currency-settings": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/entries": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/entries/:id": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/exchange-rates": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/exchange-rates/lookup": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/field-config": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/fiscal-years": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/fx-report": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/fx-revaluations": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/hedges": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/hyperinflation-settings": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/ias29-restatements": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/ledger": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/opening-balances": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/posting-periods": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/posting-rules": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/preferences": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/price-indices": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/receivables-aging": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/report-aggregates": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "GET /api/accounting/voucher-numbering": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "POST /api/accounting/accounts/seed-default": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/bank-reconciliations": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/entries/:id/restore": {
+    "action": "delete",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/entries/:id/reverse": {
+    "action": "manage",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "POST /api/accounting/entries/bulk-delete": {
+    "action": "delete",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/entries/bulk-restore": {
+    "action": "delete",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/fiscal-years/:id/close": {
+    "action": "manage",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "POST /api/accounting/fx-revaluations": {
+    "action": "manage",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "POST /api/accounting/fx-revaluations/preview": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "POST /api/accounting/hedges": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/hedges/:id/discontinue": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/hedges/:id/reclassify": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/hedges/:id/settle": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/hedges/:id/valuations": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "POST /api/accounting/hedges/:id/valuations/preview": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "POST /api/accounting/ias29-restatements": {
+    "action": "manage",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "POST /api/accounting/ias29-restatements/preview": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "POST /api/accounting/opening-balances/:fiscalYearId/post": {
+    "action": "manage",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "POST /api/accounting/posting-periods/:id/close": {
+    "action": "manage",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "POST /api/accounting/posting-periods/:id/reopen": {
+    "action": "manage",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "POST /api/accounting/reports/ledger/export": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "POST /api/accounting/reports/pdf": {
+    "action": "read",
+    "deniedRoles": ["guardian"]
+  },
+  "POST /api/accounting/specialized-entries": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/accounting/accounts/bulk": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/accounting/bank-statements": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/accounting/currency-exchangeability": {
+    "action": "setupWrite",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "PUT /api/accounting/currency-settings": {
+    "action": "setupWrite",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "PUT /api/accounting/entries/bulk": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/accounting/exchange-rates": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/accounting/field-config": {
+    "action": "setupWrite",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "PUT /api/accounting/fiscal-years/bulk": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/accounting/hyperinflation-settings": {
+    "action": "setupWrite",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "PUT /api/accounting/opening-balances": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/accounting/posting-rules": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/accounting/preferences": {
+    "action": "setupWrite",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  },
+  "PUT /api/accounting/price-indices": {
+    "action": "write",
+    "deniedRoles": ["auditor", "guardian"]
+  },
+  "PUT /api/accounting/voucher-numbering": {
+    "action": "manage",
+    "deniedRoles": ["accountant", "auditor", "guardian"]
+  }
+}

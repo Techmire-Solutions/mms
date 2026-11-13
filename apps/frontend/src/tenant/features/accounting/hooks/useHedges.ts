@@ -72,6 +72,17 @@ export function useSettleHedge() {
   );
 }
 
+export function useDiscontinueHedge() {
+  return useHedgeMutation<{ id: string; date: string; reason: string }>(async ({ id, ...body }) => {
+    const response = await apiContract.accountingHedges.discontinueHedge({
+      params: { id },
+      body,
+    });
+    assertContractOk(response, "Failed to discontinue the hedge");
+    return hedgeOf(response);
+  });
+}
+
 export function useReclassifyHedge() {
   return useHedgeMutation(
     async ({ id, ...body }: { id: string; date: string; targetAccountId: string }) => {

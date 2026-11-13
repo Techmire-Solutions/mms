@@ -146,14 +146,17 @@ export function AccountingOpeningSection({
 
       <FormCollectionShell
         className="mt-3"
-        isEmpty={balances.length === 0}
+        // While the selected year's request is in flight (or failed), `balances`
+        // still holds the previous year's placeholder rows — listing them under
+        // the new year mislabels one year's figures as another's.
+        isEmpty={!rowsReady || balances.length === 0}
         allowAdd={canEdit}
         addLabel={t("accounting.settings.opening.add")}
         onAdd={() => void handleAdd()}
         addDisabled={!canEdit || !fiscalYearId || !accountId || !rowsReady || savePending}
         listKey="opening-balances"
       >
-        {balances.map((row, index) => (
+        {(rowsReady ? balances : []).map((row, index) => (
           <FormListFieldCard
             key={row.id}
             id={row.id}
@@ -178,7 +181,9 @@ export function AccountingOpeningSection({
       </FormCollectionShell>
 
       <p className="m-0 mt-3 text-xs text-muted-foreground">
-        {t("accounting.settings.opening.count", { count: String(balances.length) })}
+        {t("accounting.settings.opening.count", {
+          count: String(rowsReady ? balances.length : 0),
+        })}
       </p>
       {rowsReady && (
         <p className="m-0 mt-1 text-xs text-muted-foreground">

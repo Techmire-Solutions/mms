@@ -11,6 +11,7 @@ import { ACCOUNTING_MODULE_MANIFEST, FINANCE_MODULE_MANIFEST } from "@mms/shared
 import { apiContract, tsrClient } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { invalidateAccountingQueries } from "./invalidateAccountingQueries";
+import { invalidateDashboardDataQueries } from "@/lib/query/dashboardDataInvalidation";
 
 export function useAccountingMutations() {
   const queryClient = useQueryClient();
@@ -79,6 +80,23 @@ export function useAccountingMutations() {
 }
 
 /**
+ * Caches a fee/salary posting touches: both module prefixes, the accounting
+ * report/metric keys inside them, and the dashboard widget keys that live outside
+ * every module prefix (the previous broad-prefix-only invalidation missed those).
+ */
+export function invalidateSpecializedEntryQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+): void {
+  void queryClient.invalidateQueries({ queryKey: [ACCOUNTING_MODULE_MANIFEST.moduleId] });
+  // The finance module prefix covers every finance-owned key (invoices, payments,
+  // fee structures, metrics, preferences); Accounting must not import Finance code
+  // (features are isolated), so the prefix + the shared dashboard keys suffice.
+  void queryClient.invalidateQueries({ queryKey: [FINANCE_MODULE_MANIFEST.moduleId] });
+  invalidateAccountingQueries(queryClient);
+  invalidateDashboardDataQueries(queryClient);
+}
+
+/**
  * Fee/Salary quick-action mutation — bridges Finance and Accounting in one
  * backend transaction; both modules' cached data are invalidated on success.
  */
@@ -98,9 +116,6 @@ export function useProcessSpecializedEntryMutation() {
       }
       return response.body as SpecializedEntryResult;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [ACCOUNTING_MODULE_MANIFEST.moduleId] });
-      void queryClient.invalidateQueries({ queryKey: [FINANCE_MODULE_MANIFEST.moduleId] });
-    },
+    onSuccess: () => invalidateSpecializedEntryQueries(queryClient),
   });
 }

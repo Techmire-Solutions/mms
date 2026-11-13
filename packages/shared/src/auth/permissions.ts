@@ -56,6 +56,9 @@ export const ALL_PERMISSIONS = [
   "finance.manage",
   "accounting.read",
   "accounting.write",
+  // Posting a voucher (immutability boundary). A writer can create/edit drafts;
+  // this grant is what a Senior Accountant holds to make one final.
+  "accounting.post",
   "accounting.delete",
   // Period close, fiscal-year close and voucher-numbering configuration: structural
   // accounting authority, not ordinary voucher posting.

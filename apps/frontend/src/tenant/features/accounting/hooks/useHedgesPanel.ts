@@ -5,6 +5,7 @@ import { notify } from "@/lib/notify";
 import type { HedgeAction, HedgeActionInput } from "@/tenant/features/accounting/lib/hedgeForms";
 import {
   useCreateHedge,
+  useDiscontinueHedge,
   useHedges,
   usePostHedgeValuation,
   useReclassifyHedge,
@@ -21,6 +22,7 @@ export function useHedgesPanel() {
   const value = usePostHedgeValuation();
   const settle = useSettleHedge();
   const reclassify = useReclassifyHedge();
+  const discontinue = useDiscontinueHedge();
   const [designating, setDesignating] = useState(false);
   const [valuationDate, setValuationDate] = useState(todayISO());
   const [pending, setPending] = useState<{ action: HedgeAction; hedge: HedgeRelationship } | null>(
@@ -54,6 +56,12 @@ export function useHedgesPanel() {
           settlementRate: input.rate,
           cashAccountId: input.accountId,
         });
+      } else if (pending.action === "discontinue") {
+        await discontinue.mutateAsync({
+          id: pending.hedge.id,
+          date: input.date,
+          reason: input.reason.trim(),
+        });
       } else {
         await reclassify.mutateAsync({
           id: pending.hedge.id,
@@ -82,7 +90,7 @@ export function useHedgesPanel() {
     handleValue,
     pending,
     setPending,
-    acting: settle.isPending || reclassify.isPending,
+    acting: settle.isPending || reclassify.isPending || discontinue.isPending,
     handleAction,
   };
 }

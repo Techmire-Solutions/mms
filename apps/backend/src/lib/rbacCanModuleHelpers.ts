@@ -97,3 +97,13 @@ export function canManageAccounting(user: User): boolean {
   if (!user || !user.role) return false;
   return userHasPermission(user, ACCOUNTING_MODULE_MANIFEST.permissions.manage);
 }
+
+/**
+ * Posting authority (draft → posted). Separate from `accounting.write`: a Junior
+ * Accountant drafts, a Senior Accountant posts, and only the poster makes the
+ * voucher immutable.
+ */
+export function canPostAccounting(user: User): boolean {
+  if (!user || !user.role) return false;
+  return userHasPermission(user, ACCOUNTING_MODULE_MANIFEST.permissions.post);
+}

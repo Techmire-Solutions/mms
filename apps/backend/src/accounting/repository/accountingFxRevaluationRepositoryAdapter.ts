@@ -1,10 +1,12 @@
 import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
 import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import {
+  findFxRevaluationRunByDate,
   findFxRevaluationRunId,
   hasFxRevaluationBetween,
   listForeignMonetaryBalances,
   listFxRevaluationRuns,
+  listFxRevaluationRunsBetween,
   saveFxRevaluationRun,
 } from "../../db/repositories/accountingFxRevaluationRepository.js";
 import { listRealizedFxByCurrency } from "../../db/repositories/accountingFxReportRepository.js";
@@ -13,7 +15,9 @@ import { listRealizedFxByCurrency } from "../../db/repositories/accountingFxRepo
 export const accountingFxRevaluationRepository = {
   listForeignMonetaryBalances,
   listFxRevaluationRuns,
+  listFxRevaluationRunsBetween,
   findFxRevaluationRunId,
+  findFxRevaluationRunByDate,
   hasFxRevaluationBetween,
   saveFxRevaluationRun,
   getPostingRules,

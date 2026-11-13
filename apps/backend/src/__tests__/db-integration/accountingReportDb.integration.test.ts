@@ -293,6 +293,67 @@ describe("aggregateAccountingReport (real Postgres)", () => {
     expect(report.cashFlowAdjustments.receivables).toBe(100);
   });
 
+  it("does not count an internal cash transfer as gross cash flow", async () => {
+    // A second cash account plus a bank→cash transfer inside the window: both legs
+    // are cash, so gross inflow/outflow must not move; the net already cancels.
+    const before = await aggregateAccountingReport(TEST_SUBDOMAIN, WINDOW);
+    const tx = await beginLongLivedTenantTransaction(TEST_SUBDOMAIN);
+    try {
+      await tx.tx.insert(accountingAccounts).values({
+        id: "acc-bank",
+        workspaceSubdomain: TEST_SUBDOMAIN,
+        code: "1010",
+        name: "Bank",
+        type: "Asset",
+        subtype: "Current",
+        description: "",
+        isActive: true,
+      });
+      await tx.tx.insert(accountingEntries).values({
+        id: "e-transfer",
+        workspaceSubdomain: TEST_SUBDOMAIN,
+        date: "2026-06-01",
+        ref: "e-transfer",
+        description: "Cash deposit",
+        status: "posted",
+        createdBy: "u1",
+        fiscalYear: "",
+      });
+      await tx.tx.insert(accountingJournalLines).values([
+        {
+          id: "e-transfer-l0",
+          workspaceSubdomain: TEST_SUBDOMAIN,
+          entryId: "e-transfer",
+          accountId: "acc-bank",
+          debit: "100",
+          credit: "0",
+          description: "",
+        },
+        {
+          id: "e-transfer-l1",
+          workspaceSubdomain: TEST_SUBDOMAIN,
+          entryId: "e-transfer",
+          accountId: "acc-cash",
+          debit: "0",
+          credit: "100",
+          description: "",
+        },
+      ]);
+      await tx.commit();
+    } catch (error) {
+      await tx.rollback().catch(() => undefined);
+      throw error;
+    }
+
+    const after = await aggregateAccountingReport(TEST_SUBDOMAIN, WINDOW);
+
+    // Gross figures are untouched; the net is unchanged and still reconciles.
+    expect(after.cashInflow).toBe(before.cashInflow);
+    expect(after.cashOutflow).toBe(before.cashOutflow);
+    expect(after.netCashFlow).toBe(before.netCashFlow);
+    expect(after.netCashFlowIndirect).toBe(after.netCashFlow);
+  });
+
   it("ignores drafts, deleted rows and out-of-window entries", async () => {
     const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
     try {

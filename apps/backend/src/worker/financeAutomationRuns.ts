@@ -2,6 +2,8 @@ import { withTenant } from "../db/tenant-context.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { logger } from "../lib/logger.js";
 import { notificationsUseCases } from "../notifications/use-cases/notificationsUseCases.js";
+import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { FINANCE_AUTOMATION_REVALUE_TIMEOUT_MS } from "./queues/queueConfig.js";
 import { fxRevaluationDeps } from "../accounting/use-cases/fxRevaluationDeps.js";
 import { ias29Deps } from "../accounting/use-cases/ias29Deps.js";
 import { postFxRevaluation } from "../accounting/use-cases/fxRevaluationUseCases.js";
@@ -42,9 +44,63 @@ export function isLastDayOfMonth(localDate: string): boolean {
 }
 
 /** A domain rejection (422/409) means "this workspace cannot do it now" — skip, do not fail the sweep. */
-function isSkippable(error: unknown): boolean {
+export function isSkippable(error: unknown): boolean {
   const status = (error as { statusCode?: unknown } | null)?.statusCode;
   return status === 422 || status === 409;
+}
+
+/**
+ * Shutdown/deadline aborts are a deferral, not a failure: the work was interrupted
+ * on purpose and the next hourly tick (same local date) retries it.
+ */
+export function isAbortLike(error: unknown): boolean {
+  const name = (error as { name?: unknown } | null)?.name;
+  return name === "AbortError" || name === "JobDeadlineExceededError";
+}
+
+export type AccountingAutomationKind = "automation-revalue" | "automation-ias29";
+
+/**
+ * Durable record of an automated accounting failure.
+ *
+ * The month-end sweep is not a BullMQ job (no DLQ row, no `background_jobs` entry,
+ * and `FINANCE_AUTOMATION_ENABLED` is off by default). A failure recorded only in
+ * `summary.failed` would be invisible until the year-end close later refuses, so the
+ * failure goes on the audit chain (projected onto the table the success path writes)
+ * and raises one deduped in-app notification — the hourly catch-up cannot spam it.
+ */
+export async function recordAutomationFailure(
+  tenant: string,
+  localDate: string,
+  kind: AccountingAutomationKind,
+  reason: string,
+): Promise<void> {
+  const tableName =
+    kind === "automation-revalue" ? "accounting_fx_revaluation_runs" : "accounting_ias29_runs";
+  await recordModernAuditEvent({
+    workspaceSubdomain: tenant,
+    tableName,
+    recordId: `automation:${localDate}`,
+    actionType: "UPDATE",
+    realUserId: "system",
+    newState: {
+      tag: "accounting.automation.failed",
+      kind,
+      localDate,
+      reason: reason.slice(0, 1000),
+    },
+  }).catch((error: unknown) => {
+    logger.error({ err: error, tenant, kind }, "Failed to audit an automation failure");
+  });
+  await notificationsUseCases.notify(tenant, {
+    kind: "accounting_automation_failed",
+    audiencePermission: "accounting.read",
+    entityType: tableName,
+    entityId: `automation:${localDate}:${kind}`,
+    subjectLabel: `Automation failed on ${localDate}`,
+    contextLabel: reason.slice(0, 500),
+    dedupeKey: `accounting-automation:${tenant}:${localDate}:${kind}`,
+  });
 }
 
 /**
@@ -107,17 +163,31 @@ export async function generateDueInvoices(
   }
 }
 
-/** Posts the period-end revaluation on the last local day of the month (one run per date). */
+/**
+ * Posts the period-end revaluation on the last local day of the month (one run per date).
+ *
+ * The post runs inside **one** tenant transaction (the use case and its deps assume
+ * it: the advisory lock must be held until commit, and entry + reversal + run +
+ * audit must commit together). A statement budget slightly under the step deadline
+ * lets PostgreSQL cancel and roll back before the sweep abandons the work.
+ */
 export async function revalueMonthEnd(
   tenant: string,
   localDate: string,
+  signal?: AbortSignal,
 ): Promise<AutomationStepResult> {
   if (!isLastDayOfMonth(localDate)) {
     return { ran: false, detail: "not the last day of the month" };
   }
   try {
-    const run = await runWithTenant(tenant, () =>
-      postFxRevaluation(fxRevaluationDeps, { tenant, userId: "system" }, localDate),
+    const run = await withTenant(
+      tenant,
+      () =>
+        postFxRevaluation(fxRevaluationDeps, { tenant, userId: "system" }, localDate, { signal }),
+      {
+        statementTimeoutMs: Math.max(FINANCE_AUTOMATION_REVALUE_TIMEOUT_MS - 30_000, 30_000),
+        lockTimeoutMs: 10_000,
+      },
     );
     return {
       ran: run.lines.length > 0,
@@ -126,6 +196,7 @@ export async function revalueMonthEnd(
   } catch (error) {
     // A missing rate or an unset unrealized-FX account is a configuration gap; the
     // next close attempt must surface it, but the nightly sweep must not crash.
+    if (isAbortLike(error)) throw error;
     if (isSkippable(error)) {
       logger.warn({ tenant, localDate, err: (error as Error).message }, "FX revaluation skipped");
       return { ran: false, detail: String((error as Error).message) };
@@ -135,9 +206,11 @@ export async function revalueMonthEnd(
 }
 
 /** Posts the IAS 29 restatement on the last local day of the month when enabled (one run per date). */
+/** Posts the IAS 29 restatement in one transaction (see `revalueMonthEnd`). */
 export async function restateMonthEnd(
   tenant: string,
   localDate: string,
+  signal?: AbortSignal,
 ): Promise<AutomationStepResult> {
   if (!isLastDayOfMonth(localDate)) {
     return { ran: false, detail: "not the last day of the month" };
@@ -150,11 +223,17 @@ export async function restateMonthEnd(
     return { ran: false, detail: "before the hyperinflation applies-from date" };
   }
   try {
-    const run = await runWithTenant(tenant, () =>
-      postIas29Restatement(ias29Deps, { tenant, userId: "system" }, localDate),
+    const run = await withTenant(
+      tenant,
+      () => postIas29Restatement(ias29Deps, { tenant, userId: "system" }, localDate, { signal }),
+      {
+        statementTimeoutMs: Math.max(FINANCE_AUTOMATION_REVALUE_TIMEOUT_MS - 30_000, 30_000),
+        lockTimeoutMs: 10_000,
+      },
     );
     return { ran: true, detail: `${run.lines.length} restated line(s)` };
   } catch (error) {
+    if (isAbortLike(error)) throw error;
     if (isSkippable(error)) {
       logger.warn(
         { tenant, localDate, err: (error as Error).message },

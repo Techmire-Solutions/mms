@@ -10,6 +10,7 @@ import type {
   ExchangeRateRecord,
 } from "@mms/shared";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { ACCOUNTING_ERROR_CODES } from "@mms/shared";
 import type { RecordModernAuditInput } from "../../services/auditTrailService.js";
 import type { AccountingFxRepository } from "../repository/accountingFxRepository.js";
 
@@ -95,6 +96,7 @@ export async function upsertExchangeRates(
       `Rates for non-exchangeable currencies are estimates: describe how ${unexplained
         .map((item) => `${item.fromCurrency}→${item.toCurrency}`)
         .join(", ")} was estimated`,
+      ACCOUNTING_ERROR_CODES.fxLackOfExchangeability,
     );
   }
   // Capture the rates being replaced before the upsert overwrites them: a rate

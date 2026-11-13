@@ -76,4 +76,35 @@ export const FINANCE_ACCOUNTING_MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteA
     action: "manage",
     onlyModules: ["accounting"],
   },
+  // Reversing an immutable voucher, restating under IAS 29 and posting a period-end
+  // revaluation/opening balance are controller-level too: each one writes or undoes
+  // a posted ledger entry. Left to the method default they resolved as `write`, so
+  // the module gate could not tell them apart from drafting a voucher.
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/accounting\/entries\/:id\/reverse$/,
+    action: "manage",
+    onlyModules: ["accounting"],
+  },
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/accounting\/(ias29-restatements|fx-revaluations)$/,
+    action: "manage",
+    onlyModules: ["accounting"],
+  },
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/accounting\/opening-balances\/:fiscalYearId\/post$/,
+    action: "manage",
+    onlyModules: ["accounting"],
+  },
+  // Reading a report is `read`, even when it is requested with a POST because it
+  // enqueues a PDF/CSV job: a viewer/auditor may download the statements they can
+  // already see, while the handlers still refuse anything without `accounting.read`.
+  {
+    methods: ["POST"],
+    pattern: /^\/api\/accounting\/reports\/(pdf|ledger\/export)$/,
+    action: "read",
+    onlyModules: ["accounting"],
+  },
 ];

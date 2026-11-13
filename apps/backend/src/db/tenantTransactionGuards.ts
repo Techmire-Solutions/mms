@@ -18,9 +18,14 @@ type AppDb = NodePgDatabase<typeof schema>;
 export async function applyTenantTransactionGuards(
   tx: AppDb,
   workspaceSubdomain: string | null | undefined,
-  options?: { statementTimeoutMs?: number; idleTimeoutMs?: number },
+  options?: { statementTimeoutMs?: number; idleTimeoutMs?: number; lockTimeoutMs?: number },
 ): Promise<void> {
   const userId = getRequestUserId() ?? "";
+  // Advisory-lock waits are otherwise bounded only by `statement_timeout`, which
+  // turns a contended ledger lock into a generic cancellation. A path that can
+  // contend (month-end revaluation, fiscal-year close) sets a tighter budget so
+  // it fails fast with SQLSTATE 55P03 and answers 409 instead.
+  const lockTimeout = options?.lockTimeoutMs !== undefined ? String(options.lockTimeoutMs) : null;
 
   if (workspaceSubdomain && workspaceSubdomain.trim()) {
     const tenant = workspaceSubdomain.trim().toLowerCase();
@@ -35,6 +40,7 @@ export async function applyTenantTransactionGuards(
         set_config('app.rls_bypass', 'off', true),
         set_config('statement_timeout', ${String(statementTimeout)}, true),
         set_config('idle_in_transaction_session_timeout', ${String(idleTimeout)}, true),
+        ${lockTimeout ? sql`set_config('lock_timeout', ${lockTimeout}, true),` : sql``}
         set_config('app.current_user_id', ${userId}, true)`,
     );
   } else {
@@ -48,6 +54,7 @@ export async function applyTenantTransactionGuards(
         set_config('app.current_tenant_id', '', true),
         set_config('statement_timeout', ${String(statementTimeout)}, true),
         set_config('idle_in_transaction_session_timeout', ${String(idleTimeout)}, true),
+        ${lockTimeout ? sql`set_config('lock_timeout', ${lockTimeout}, true),` : sql``}
         set_config('app.current_user_id', ${userId}, true)`,
     );
   }

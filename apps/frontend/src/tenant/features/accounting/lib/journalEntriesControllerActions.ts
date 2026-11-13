@@ -12,6 +12,8 @@ export interface JournalEntryActionDeps {
   onChange: (
     updater: (prev: JournalEntry[]) => JournalEntry[],
   ) => void | JournalEntry[] | Promise<void | JournalEntry[]>;
+  /** Loads one entry with its lines (the register rows carry headers only). */
+  fetchEntry: (id: string) => Promise<JournalEntry>;
   onDelete?: (id: string) => void | Promise<void>;
   onRestore?: (id: string) => void | Promise<void>;
   onBulkDelete?: (ids: string[]) => void | Promise<void>;
@@ -47,11 +49,19 @@ export function createJournalSaveHandler(
   };
 }
 
-export function createJournalPostHandler(deps: Pick<JournalEntryActionDeps, "onChange">) {
+export function createJournalPostHandler(
+  deps: Pick<JournalEntryActionDeps, "onChange" | "fetchEntry">,
+) {
   return async (entry: JournalEntry) => {
+    // The register row has no lines (`includeLines=false`), so posting it directly
+    // sent an empty voucher and the server refused every draft. Post the stored
+    // entry with its lines, keeping the row's own metadata for the update.
+    const full = entry.lines.length > 0 ? entry : await deps.fetchEntry(entry.id);
     await deps.onChange((prev) =>
       prev.map((journalEntry) =>
-        journalEntry.id === entry.id ? { ...journalEntry, status: "posted" } : journalEntry,
+        journalEntry.id === entry.id
+          ? { ...full, status: "posted", ref: entry.ref || full.ref }
+          : journalEntry,
       ),
     );
   };

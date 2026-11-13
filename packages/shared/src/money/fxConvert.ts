@@ -45,6 +45,30 @@ function formatScaledRate(value: bigint): string {
   return fraction ? `${whole}.${fraction}` : whole;
 }
 
+/**
+ * `a − b` for two positive exchange rates, signed, canonical at
+ * {@link EXCHANGE_RATE_SCALE} decimals.
+ *
+ * Needed wherever a **difference of rates** is the economic quantity: a forward's
+ * fair value is `notional × (market − contract)`, and converting the two rates
+ * separately and subtracting the rounded results (the previous approach) leaves the
+ * value up to one functional minor unit away from the exact one. Converting the
+ * delta once keeps a single rounding step.
+ */
+export function rateDifference(a: string, b: string): string {
+  const left = parseRate(a);
+  const right = parseRate(b);
+  const scale = Math.max(left.scale, right.scale);
+  const delta =
+    left.numerator * pow10(scale - left.scale) - right.numerator * pow10(scale - right.scale);
+  const scaled = delta * pow10(EXCHANGE_RATE_SCALE - scale);
+  const negative = scaled < 0n;
+  const digits = (negative ? -scaled : scaled).toString().padStart(EXCHANGE_RATE_SCALE + 1, "0");
+  const whole = digits.slice(0, digits.length - EXCHANGE_RATE_SCALE);
+  const fraction = digits.slice(digits.length - EXCHANGE_RATE_SCALE).replace(/0+$/, "");
+  return `${negative ? "-" : ""}${whole}${fraction ? `.${fraction}` : ""}`;
+}
+
 /** True when `rate` is a positive decimal string with at most 10 decimals. */
 export function isValidExchangeRate(rate: string): boolean {
   try {

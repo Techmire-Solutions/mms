@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
 import {
+  ACCOUNTING_ERROR_CODES,
   JOURNAL_TAG_PRIOR_PERIOD,
   JOURNAL_TAG_REVERSAL,
   NON_REVERSIBLE_JOURNAL_SOURCES,
   buildReversalLines,
   isPriorPeriodJournalReversal,
   validateJournalReversalDate,
-  type Account,
   type FiscalYear,
   type JournalEntry,
   type JournalReversalDateIssue,
@@ -21,6 +21,7 @@ import {
   assertPostingPeriodOpen,
   ledgerError,
   prepareJournalEntryForPersist,
+  type PostableAccountLoader,
 } from "./accountingLedgerGuards.js";
 import { lockFiscalYearForPosting } from "../ledgerPosting/fiscalYearPostingLock.js";
 
@@ -35,7 +36,8 @@ export interface ReverseJournalEntryDeps {
   listFiscalYears: (tenant: string) => Promise<FiscalYear[]>;
   /** Label of the closed posting period covering `date`, or null (monthly lock). */
   findClosedPostingPeriodForDate: (tenant: string, date: string) => Promise<string | null>;
-  findAccountsByIds: (tenant: string, ids: string[]) => Promise<Account[]>;
+  /** Locked `FOR SHARE` read: rejects archived/deactivated/summary accounts. */
+  lockPostableAccounts: PostableAccountLoader;
   saveEntry: (tenant: string, entry: JournalEntry) => Promise<void>;
   /** Must write inside the same transaction so the audit row commits or rolls back with the reversal. */
   recordAudit: (input: RecordModernAuditInput) => Promise<unknown>;
@@ -136,10 +138,15 @@ export async function reverseJournalEntry(
     if (original.status !== "posted") {
       throw ledgerError(
         "Only posted journal entries can be reversed — edit or discard the draft instead",
+        ACCOUNTING_ERROR_CODES.reversalNotAllowed,
       );
     }
-    if (isNonReversibleSource(original.source_type))
-      throw ledgerError(SOURCE_REFUSALS[original.source_type]);
+    if (isNonReversibleSource(original.source_type)) {
+      throw ledgerError(
+        SOURCE_REFUSALS[original.source_type],
+        ACCOUNTING_ERROR_CODES.reversalNotAllowed,
+      );
+    }
     if (!original.lines?.length) throw ledgerError("Journal entry has no lines to reverse");
 
     const existing = await deps.findActiveReversalOf(tenant, {
@@ -149,6 +156,9 @@ export async function reverseJournalEntry(
     if (existing) {
       throw new ConflictError(
         `Journal ${original.ref || original.id} is already reversed by ${existing.ref || existing.id}`,
+        "conflict",
+        undefined,
+        ACCOUNTING_ERROR_CODES.voucherAlreadyReversed,
       );
     }
 
@@ -170,7 +180,7 @@ export async function reverseJournalEntry(
     await assertPostingPeriodOpen(entry.date, (date) =>
       deps.findClosedPostingPeriodForDate(tenant, date),
     );
-    await assertJournalAccountsWritable(tenant, [entry], deps.findAccountsByIds);
+    await assertJournalAccountsWritable(tenant, [entry], deps.lockPostableAccounts);
 
     try {
       await deps.saveEntry(tenant, entry);
@@ -178,6 +188,9 @@ export async function reverseJournalEntry(
       if (isUniqueViolation(error)) {
         throw new ConflictError(
           `Journal ${original.ref || original.id} is already reversed, or reference ${entry.ref} is in use`,
+          "conflict",
+          undefined,
+          ACCOUNTING_ERROR_CODES.voucherAlreadyReversed,
         );
       }
       throw error;

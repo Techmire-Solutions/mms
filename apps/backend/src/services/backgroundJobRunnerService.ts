@@ -67,6 +67,7 @@ import { registerWorkshopImportJobRunner } from "../workshops/jobs/workshopImpor
 import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
 import { registerStudentsBulkJobRunners } from "../students/studentsBulkStatusService.js";
 import { registerDocumentAndFinanceJobRunners } from "./backgroundJobDocumentFinanceRunners.js";
+import { registerAccountingBackgroundJobRunners } from "./backgroundJobAccountingRunners.js";
 export type {
   ContactsExportJobPayload,
   ContactsVcfExportJobPayload,
@@ -289,6 +290,9 @@ export function registerDefaultBackgroundJobRunners(): void {
 
   // Headless BiDi Document Engine & Streaming Excel exports
   registerDocumentAndFinanceJobRunners();
+  // Accounting has no journal-entry CSV import (a flat file cannot be a balanced
+  // voucher); the chart-of-accounts import is the module's queued transfer path.
+  registerAccountingBackgroundJobRunners();
 
   // Multi-channel campaign dispatch worker
   registerMessagingCampaignJobRunner();

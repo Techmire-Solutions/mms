@@ -7,6 +7,7 @@ import type {
   ExchangeRateLookupQuery,
   ExchangeRateLookupResult,
   ExchangeRatePutItem,
+  ExchangeRateKey,
   ExchangeRateRecord,
 } from "@mms/shared";
 
@@ -22,12 +23,7 @@ export interface AccountingFxRepository {
   /** Stored rates at exactly the given keys (before-state capture for the audit chain). */
   findExchangeRatesByKeys(
     tenant: string,
-    keys: readonly {
-      fromCurrency: string;
-      toCurrency: string;
-      rateDate: string;
-      rateType: import("@mms/shared").ExchangeRateType;
-    }[],
+    keys: readonly ExchangeRateKey[],
   ): Promise<ExchangeRateRecord[]>;
   upsertExchangeRates(
     tenant: string,

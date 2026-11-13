@@ -54,9 +54,11 @@ export function installContractErrorHandler(fastify: FastifyInstance): void {
     const violations = (error as { violations?: unknown }).violations;
     const message = error instanceof Error ? error.message : "Error";
     if (typeof statusCode === "number" && statusCode >= 400 && statusCode < 500) {
+      const code = (error as { code?: unknown }).code;
       return reply.status(statusCode).send({
         type: typeof type === "string" && type ? type : "error",
         message,
+        ...(typeof code === "string" && code ? { code } : {}),
         ...(Array.isArray(violations) ? { violations: violations.map(String) } : {}),
       });
     }
