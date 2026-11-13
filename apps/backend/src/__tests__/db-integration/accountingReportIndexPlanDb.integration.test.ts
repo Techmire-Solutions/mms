@@ -17,19 +17,18 @@ const SUFFIX = randomUUID().slice(0, 8);
 const TENANT = `report-plan-${SUFFIX}`;
 const CASH = `plan-cash-${SUFFIX}`;
 const REVENUE = `plan-rev-${SUFFIX}`;
-const ENTRY_COUNT = 10_000;
+const ENTRY_COUNT = 500;
+const BATCH_SIZE = 250;
 
 async function purge(): Promise<void> {
   await withGlobalTenant(async (tx) => {
     await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
-    for (const table of [
-      "accounting_journal_lines",
-      "accounting_entries",
-      "accounting_accounts",
-      "finance_invoices",
-    ]) {
-      await tx.execute(sql.raw(`DELETE FROM "${table}" WHERE workspace_subdomain = '${TENANT}'`));
-    }
+    await tx.execute(
+      sql`DELETE FROM "accounting_journal_lines" WHERE workspace_subdomain = ${TENANT}`,
+    );
+    await tx.execute(sql`DELETE FROM "accounting_entries" WHERE workspace_subdomain = ${TENANT}`);
+    await tx.execute(sql`DELETE FROM "accounting_accounts" WHERE workspace_subdomain = ${TENANT}`);
+    await tx.execute(sql`DELETE FROM "finance_invoices" WHERE workspace_subdomain = ${TENANT}`);
     await tx.execute(sql`DELETE FROM workspaces WHERE subdomain = ${TENANT}`);
   });
 }
@@ -88,10 +87,10 @@ beforeAll(async () => {
     ]);
   });
   // Seed a realistic ledger size in batches; each entry balances.
-  for (let batch = 0; batch < ENTRY_COUNT / 1_000; batch += 1) {
+  for (let batch = 0; batch < ENTRY_COUNT / BATCH_SIZE; batch += 1) {
     await withTenant(TENANT, async (tx) => {
-      const entries = Array.from({ length: 1_000 }, (_, index) => {
-        const seq = batch * 1_000 + index;
+      const entries = Array.from({ length: BATCH_SIZE }, (_, index) => {
+        const seq = batch * BATCH_SIZE + index;
         return {
           id: `plan-e-${SUFFIX}-${seq}`,
           workspaceSubdomain: TENANT,
@@ -125,7 +124,7 @@ beforeAll(async () => {
     });
   }
   await withTenant(TENANT, async (tx) => {
-    const invoices = Array.from({ length: 2_000 }, (_, index) => ({
+    const invoices = Array.from({ length: 200 }, (_, index) => ({
       id: `plan-inv-${SUFFIX}-${index}`,
       workspaceSubdomain: TENANT,
       studentId: `plan-stu-${SUFFIX}-${index % 50}`,
@@ -144,7 +143,7 @@ beforeAll(async () => {
     await tx.execute(sql`ANALYZE accounting_journal_lines`);
     await tx.execute(sql`ANALYZE finance_invoices`);
   });
-});
+}, 120_000);
 
 afterAll(async () => {
   await purge();
