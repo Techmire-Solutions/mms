@@ -55,23 +55,17 @@ export async function listUserBackgroundJobs(userId: string): Promise<Background
     const rows = await tx
       .select({
         id: backgroundJobs.id,
-        tenantId: backgroundJobs.tenantId,
-        userId: backgroundJobs.userId,
         moduleId: backgroundJobs.moduleId,
         kind: backgroundJobs.kind,
         status: backgroundJobs.status,
         label: backgroundJobs.label,
-        payload: backgroundJobs.payload,
         progressCurrent: backgroundJobs.progressCurrent,
         progressTotal: backgroundJobs.progressTotal,
-        artifactId: backgroundJobs.artifactId,
         hasDownload: backgroundJobs.hasDownload,
         error: backgroundJobs.error,
         errors: backgroundJobs.errors,
-        deadLetteredAt: backgroundJobs.deadLetteredAt,
         completedAt: backgroundJobs.completedAt,
         createdAt: backgroundJobs.createdAt,
-        updatedAt: backgroundJobs.updatedAt,
       })
       .from(backgroundJobs)
       .where(
@@ -83,7 +77,15 @@ export async function listUserBackgroundJobs(userId: string): Promise<Background
       .orderBy(desc(backgroundJobs.createdAt))
       .limit(BACKGROUND_JOBS_MAX_PER_USER);
 
-    return rows.map(rowToJobRecord);
+    const validJobs: BackgroundJobRecord[] = [];
+    for (const row of rows) {
+      try {
+        validJobs.push(rowToJobRecord(row));
+      } catch {
+        /* skip corrupted row */
+      }
+    }
+    return validJobs;
   });
 }
 
@@ -219,23 +221,17 @@ export async function getUserBackgroundJob(
     const rows = await tx
       .select({
         id: backgroundJobs.id,
-        tenantId: backgroundJobs.tenantId,
-        userId: backgroundJobs.userId,
         moduleId: backgroundJobs.moduleId,
         kind: backgroundJobs.kind,
         status: backgroundJobs.status,
         label: backgroundJobs.label,
-        payload: backgroundJobs.payload,
         progressCurrent: backgroundJobs.progressCurrent,
         progressTotal: backgroundJobs.progressTotal,
-        artifactId: backgroundJobs.artifactId,
         hasDownload: backgroundJobs.hasDownload,
         error: backgroundJobs.error,
         errors: backgroundJobs.errors,
-        deadLetteredAt: backgroundJobs.deadLetteredAt,
         completedAt: backgroundJobs.completedAt,
         createdAt: backgroundJobs.createdAt,
-        updatedAt: backgroundJobs.updatedAt,
       })
       .from(backgroundJobs)
       .where(
@@ -248,7 +244,12 @@ export async function getUserBackgroundJob(
       .limit(1);
 
     const row = rows[0];
-    return row ? rowToJobRecord(row) : null;
+    if (!row) return null;
+    try {
+      return rowToJobRecord(row);
+    } catch {
+      return null;
+    }
   });
 }
 

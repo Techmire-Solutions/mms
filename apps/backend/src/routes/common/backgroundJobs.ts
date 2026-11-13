@@ -32,8 +32,9 @@ export default async function backgroundJobRoutes(
     try {
       const jobs = await listUserBackgroundJobs(String(user.id));
       return reply.send({ jobs });
-    } catch {
-      return sendDatabaseError(reply, "Failed to list background jobs");
+    } catch (err) {
+      request.log.error(err, "Failed to list background jobs");
+      return sendDatabaseError(reply, "Failed to list background jobs", err);
     }
   });
 
@@ -45,8 +46,9 @@ export default async function backgroundJobRoutes(
     let job: Awaited<ReturnType<typeof getUserBackgroundJob>>;
     try {
       job = await getUserBackgroundJob(String(user.id), params.data.id);
-    } catch {
-      return sendDatabaseError(reply, "Failed to download export");
+    } catch (err) {
+      request.log.error(err, "Failed to load background job for download");
+      return sendDatabaseError(reply, "Failed to download export", err);
     }
     if (!job) return sendNotFound(reply, "Export file not found or expired");
     if (!(await enforceModuleAccess(request, reply, job.moduleId, "export"))) return;
@@ -76,8 +78,9 @@ export default async function backgroundJobRoutes(
       reply.header("Content-Type", contentType);
       reply.header("Content-Disposition", buildContentDisposition(artifact.filename));
       return reply.send(stream);
-    } catch {
-      return sendDatabaseError(reply, "Failed to download export");
+    } catch (err) {
+      request.log.error(err, "Failed to stream export artifact");
+      return sendDatabaseError(reply, "Failed to download export", err);
     }
   });
 
@@ -91,8 +94,9 @@ export default async function backgroundJobRoutes(
         return sendNotFound(reply, "Job not found");
       }
       return reply.send({ job });
-    } catch {
-      return sendDatabaseError(reply, "Failed to load background job");
+    } catch (err) {
+      request.log.error(err, "Failed to load background job");
+      return sendDatabaseError(reply, "Failed to load background job", err);
     }
   });
 
@@ -111,8 +115,9 @@ export default async function backgroundJobRoutes(
       if (!owned) return sendNotFound(reply, "Job not found");
       const job = await upsertUserBackgroundJob(String(user.id), parsed.data);
       return reply.send({ job });
-    } catch {
-      return sendDatabaseError(reply, "Failed to save background job");
+    } catch (err) {
+      request.log.error(err, "Failed to save background job");
+      return sendDatabaseError(reply, "Failed to save background job", err);
     }
   });
 
@@ -127,8 +132,9 @@ export default async function backgroundJobRoutes(
       }
       await deleteExportArtifact(ownerId, params.data.id);
       return reply.send({ success: true });
-    } catch {
-      return sendDatabaseError(reply, "Failed to dismiss background job");
+    } catch (err) {
+      request.log.error(err, "Failed to dismiss background job");
+      return sendDatabaseError(reply, "Failed to dismiss background job", err);
     }
   });
 
@@ -138,8 +144,9 @@ export default async function backgroundJobRoutes(
       const removedIds = await clearFinishedUserBackgroundJobs(String(user.id));
       await deleteExportArtifacts(String(user.id), removedIds);
       return reply.send({ success: true, removed: removedIds.length });
-    } catch {
-      return sendDatabaseError(reply, "Failed to clear background jobs");
+    } catch (err) {
+      request.log.error(err, "Failed to clear background jobs");
+      return sendDatabaseError(reply, "Failed to clear background jobs", err);
     }
   });
 }
