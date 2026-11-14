@@ -53,6 +53,11 @@ export interface ObligationsSetupTierProps {
   onChangeReps: (reps: MujtahidRep[]) => Promise<void>;
   onChangeWakala: (wakalaTypes: WakalaType[]) => Promise<void>;
   onChangeDistributions: (distributions: ObligationDistribution[]) => Promise<void>;
+  /** Optional atomic save (wakala + rules in one transaction); the pair above is the fallback. */
+  onSaveWakalaAggregate?: (input: {
+    wakalaTypes: WakalaType[];
+    distributions: ObligationDistribution[];
+  }) => Promise<void>;
 }
 
 export function ObligationsSetupTier({
@@ -70,6 +75,7 @@ export function ObligationsSetupTier({
   onChangeReps,
   onChangeWakala,
   onChangeDistributions,
+  onSaveWakalaAggregate,
 }: ObligationsSetupTierProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -111,6 +117,7 @@ export function ObligationsSetupTier({
                   mujtahids={mujtahids}
                   onChangeWakala={onChangeWakala}
                   onChangeDistributions={onChangeDistributions}
+                  onSaveAggregate={onSaveWakalaAggregate}
                   onChangeMujtahids={onChangeMujtahids}
                   onChangeReps={onChangeReps}
                   onChangeTypes={onChangeTypes}

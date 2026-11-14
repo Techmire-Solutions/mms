@@ -1,12 +1,19 @@
 import type { Permission } from "../auth/permissions.js";
 import { z } from "zod";
+import { isoDateSchema } from "../core/isoDateSchema.js";
+import { moneyNumberAmountSchema } from "../money/moneySchemas.js";
+import {
+  obligationDesignatedForSchema,
+  obligationDistributionTypeSchema,
+  obligationPaymentModeSchema,
+} from "./obligationsEnums.js";
 
 export const obligationTypeRecordSchema = z
   .object({
     id: z.string(),
     name: z.string().min(1),
     quantity_based: z.boolean(),
-    designated_for: z.enum(["Syed", "Non-Syed", "Both", "None"]),
+    designated_for: obligationDesignatedForSchema,
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
   })
@@ -20,7 +27,7 @@ export const obligationTypeInsertSchema = z
     id: z.string().optional(),
     name: z.string().min(1),
     quantity_based: z.boolean().default(false),
-    designated_for: z.enum(["Syed", "Non-Syed", "Both", "None"]).default("Both"),
+    designated_for: obligationDesignatedForSchema.default("Both"),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
   })
@@ -115,7 +122,7 @@ export const obligationDistributionRecordSchema = z
     name: z.string().min(1),
     percentage: z.number().min(0).max(100),
     wakala_type_id: z.string(),
-    type: z.enum(["Liability", "Income"]),
+    type: obligationDistributionTypeSchema,
     account_id: z.string().nullable().optional(),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
@@ -131,7 +138,7 @@ export const obligationDistributionInsertSchema = z
     name: z.string().min(1),
     percentage: z.number().min(0).max(100),
     wakala_type_id: z.string().min(1),
-    type: z.enum(["Liability", "Income"]),
+    type: obligationDistributionTypeSchema,
     account_id: z.string().nullable().optional(),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
@@ -142,19 +149,63 @@ export type ObligationDistributionInsert = z.infer<typeof obligationDistribution
 export const obligationDistributionUpdateSchema = obligationDistributionInsertSchema.partial();
 export type ObligationDistributionUpdate = z.infer<typeof obligationDistributionUpdateSchema>;
 
+/**
+ * A wakala and its distribution rules, replaced as one aggregate.
+ *
+ * They are a single unit of meaning — a wakala with no rules posts 100 % to the default income
+ * account — so the API accepts them together and writes them in one transaction.
+ */
+export const wakalaAggregateBodySchema = z
+  .object({
+    wakalaTypes: z.array(wakalaTypeRecordSchema),
+    distributions: z.array(obligationDistributionRecordSchema),
+  })
+  .strict();
+
+export type WakalaAggregateBody = z.infer<typeof wakalaAggregateBodySchema>;
+
+/**
+ * Query for the collections directory.
+ *
+ * Deliberately **not** `baseListQuerySchema`: that schema is a passthrough, so `page`, `search`,
+ * `sortField` and any invented key (`?studentId=`, `?overdue=`) were accepted by the route and then
+ * dropped by the use case — a client could paginate or filter and silently receive the whole list.
+ * This schema declares exactly what the endpoint honours; anything else is a 400.
+ *
+ * `limit` defaults to the repository's cap (`OBLIGATIONS_COLLECTIONS_MAX_LIMIT`), which is also its
+ * ceiling, so the browser-filtered directory behaves exactly as before while an explicit caller can
+ * page. A keyset envelope that removes the cap is tracked in the API audit (D1).
+ */
+export const OBLIGATIONS_COLLECTIONS_MAX_LIMIT = 2000;
+
+export const obligationsCollectionsQuerySchema = z
+  .object({
+    includeDeleted: z.union([z.boolean(), z.enum(["true", "false"])]).optional(),
+    limit: z.coerce.number().int().min(1).max(OBLIGATIONS_COLLECTIONS_MAX_LIMIT).optional(),
+    offset: z.coerce.number().int().min(0).optional(),
+  })
+  .strict();
+
+export type ObligationsCollectionsQuery = z.infer<typeof obligationsCollectionsQuerySchema>;
+
 export const obligationCollectionRecordSchema = z
   .object({
     id: z.string(),
     receipt_no: z.string(),
-    received_date: z.string(),
+    received_date: isoDateSchema,
     sender_id: z.string(),
     reference_id: z.string().nullable().optional(),
-    amount: z.number().min(0),
+    amount: moneyNumberAmountSchema,
     currency_id: z.string(),
-    payment_mode: z.enum(["Cash", "Online"]),
+    payment_mode: obligationPaymentModeSchema,
     obligation_type_id: z.string(),
     mujtahid_representative_id: z.string(),
     received_by: z.string(),
+    /**
+     * OCC token (0258). Omitted by legacy payloads so they keep the last-write-wins path;
+     * a save that carries a stale token writes nothing and answers 409.
+     */
+    version: z.number().int().positive().optional(),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
     deletedAt: z.string().nullable().optional(),
@@ -173,15 +224,16 @@ export const obligationCollectionInsertSchema = z
   .object({
     id: z.string().optional(),
     receipt_no: z.string().min(1),
-    received_date: z.string().min(1),
+    received_date: isoDateSchema,
     sender_id: z.string().min(1),
     reference_id: z.string().nullable().optional(),
-    amount: z.number().min(0),
+    amount: moneyNumberAmountSchema,
     currency_id: z.string().min(1),
-    payment_mode: z.enum(["Cash", "Online"]),
+    payment_mode: obligationPaymentModeSchema,
     obligation_type_id: z.string().min(1),
     mujtahid_representative_id: z.string().min(1),
     received_by: z.string().min(1),
+    version: z.number().int().positive().optional(),
     created_at: z.string().optional(),
     updated_at: z.string().optional(),
   })
@@ -219,7 +271,9 @@ export const OBLIGATIONS_MODULE_MANIFEST = {
     workExcludesDeleted: true,
     reportsIncludeDeleted: false,
     exportsIncludeDeleted: false,
-    captureDeletionReason: false,
+    // A receipt is a financial document: the archive route must collect a justification, and the
+    // audit row carries it as `newState.reason` (security audit A2).
+    captureDeletionReason: true,
     retentionDays: null,
   },
   permissions: {

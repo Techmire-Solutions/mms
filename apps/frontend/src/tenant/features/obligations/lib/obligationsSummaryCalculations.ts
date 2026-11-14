@@ -1,4 +1,4 @@
-import { formatMonthYear } from "@mms/shared";
+import { allocateWakalaSplits, formatMonthYear, moneyToCents } from "@mms/shared";
 import type {
   ObligationCollection,
   ObligationDistribution,
@@ -14,6 +14,27 @@ import type {
 } from "../components/ObligationsSummaryChartsSection";
 import type { WakalaSummaryEntry } from "../components/ObligationsWakalaSummarySection";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+
+/** Cents → a 2-dp amount, the exact representation every total in this module uses. */
+function centsToAmount(cents: number): number {
+  return Math.round(cents) / 100;
+}
+
+/**
+ * Sums 2-dp amounts in integer cents.
+ *
+ * A plain `reduce((sum, c) => sum + c.amount, 0)` accumulates float error (`50000.1 + 50000.2`
+ * is not `100000.3`), which then feeds the breakdown percentages and section totals. Every total in
+ * this module goes through cents; the summary model was the one place that did not (frontend audit).
+ */
+export function sumAmounts(values: readonly number[]): number {
+  let cents = 0;
+  for (const value of values) {
+    if (!Number.isFinite(value)) continue;
+    cents += Math.round(value * 100);
+  }
+  return centsToAmount(cents);
+}
 
 export function buildWakalaSummary(
   filtered: ObligationCollection[],
@@ -60,7 +81,9 @@ export function buildWakalaSummary(
       };
     }
     wakalaSummaryByKey[key].count++;
-    wakalaSummaryByKey[key].total += collection.amount;
+    wakalaSummaryByKey[key].total = centsToAmount(
+      moneyToCents(wakalaSummaryByKey[key].total) + moneyToCents(collection.amount),
+    );
   });
   return Object.values(wakalaSummaryByKey).sort((a, b) => b.total - a.total);
 }
@@ -94,31 +117,45 @@ export function buildRepSummary(
         byType: {},
       };
     }
-    const amount = collection.amount;
+    const amountCents = moneyToCents(collection.amount);
     repSummaryByKey[key].count++;
-    repSummaryByKey[key].total += amount;
+    repSummaryByKey[key].total = centsToAmount(
+      moneyToCents(repSummaryByKey[key].total) + amountCents,
+    );
     const wakalaType = wakalaTypes.find(
       (candidateWakalaType) =>
         candidateWakalaType.mujtahid_representative_id === collection.mujtahid_representative_id &&
         candidateWakalaType.obligation_type_id === collection.obligation_type_id,
     );
     if (wakalaType) {
-      const liabilityDistributions = distributions.filter(
-        (distribution) =>
-          distribution.wakala_type_id === wakalaType.id && distribution.type === "Liability",
+      // Same allocation the ledger posts (obligationSplitAllocation), so the dues figure on
+      // screen and the liability actually posted cannot diverge.
+      const rules = distributions.filter(
+        (distribution) => distribution.wakala_type_id === wakalaType.id,
       );
-      const totalLiabilityPct = liabilityDistributions.reduce(
-        (sum, distribution) => sum + distribution.percentage,
+      const allocated = allocateWakalaSplits(
+        amountCents,
+        rules.map((distribution) => distribution.percentage),
+      );
+      const liabilityCents = rules.reduce(
+        (sum, distribution, index) =>
+          distribution.type === "Liability" ? sum + (allocated[index] ?? 0) : sum,
         0,
       );
-      repSummaryByKey[key].due += amount * (totalLiabilityPct / 100);
+      repSummaryByKey[key].due = centsToAmount(
+        moneyToCents(repSummaryByKey[key].due) + liabilityCents,
+      );
     } else {
-      repSummaryByKey[key].due += amount;
+      repSummaryByKey[key].due = centsToAmount(
+        moneyToCents(repSummaryByKey[key].due) + amountCents,
+      );
     }
     const typeName =
       obligationTypes.find((obligationType) => obligationType.id === collection.obligation_type_id)
         ?.name ?? t("obligations.summary.other");
-    repSummaryByKey[key].byType[typeName] = (repSummaryByKey[key].byType[typeName] ?? 0) + amount;
+    repSummaryByKey[key].byType[typeName] = centsToAmount(
+      moneyToCents(repSummaryByKey[key].byType[typeName] ?? 0) + amountCents,
+    );
   });
   return Object.values(repSummaryByKey).sort((a, b) => b.total - a.total);
 }
@@ -134,7 +171,9 @@ export function buildTypeBreakdown(
       obligationTypes.find((obligationType) => obligationType.id === collection.obligation_type_id)
         ?.name ?? t("obligations.summary.other");
     if (!typeBreakdownByName[name]) typeBreakdownByName[name] = { name, total: 0, count: 0 };
-    typeBreakdownByName[name].total += collection.amount;
+    typeBreakdownByName[name].total = centsToAmount(
+      moneyToCents(typeBreakdownByName[name].total) + moneyToCents(collection.amount),
+    );
     typeBreakdownByName[name].count++;
   });
   return Object.values(typeBreakdownByName).sort((a, b) => b.total - a.total);
@@ -148,7 +187,9 @@ export function buildMonthlyTrend(
   filtered.forEach((collection) => {
     const month = collection.received_date?.slice(0, 7) ?? t("obligations.summary.unknown");
     if (!monthlyTrendByMonth[month]) monthlyTrendByMonth[month] = { month, total: 0, count: 0 };
-    monthlyTrendByMonth[month].total += collection.amount;
+    monthlyTrendByMonth[month].total = centsToAmount(
+      moneyToCents(monthlyTrendByMonth[month].total) + moneyToCents(collection.amount),
+    );
     monthlyTrendByMonth[month].count++;
   });
   return Object.values(monthlyTrendByMonth)

@@ -15,7 +15,7 @@ import { OBLIGATIONS_MODULE_MANIFEST } from "../obligations/obligationsModuleMan
 import { QUESTION_BANK_MODULE_MANIFEST } from "../examinations/questionBankModuleManifest.js";
 import { SESSIONS_MODULE_MANIFEST } from "../sessions/sessionsModuleManifest.js";
 import { STUDENTS_MODULE_MANIFEST } from "../students/studentsModuleManifest.js";
-import { TASKS_MODULE_MANIFEST } from "../obligations/tasksModuleManifest.js";
+import { TASKS_MODULE_MANIFEST } from "../tasks/tasksModuleManifest.js";
 import { USERS_MODULE_MANIFEST } from "../auth/usersModuleManifest.js";
 
 /** Action a request or UI entry point performs inside a module. */

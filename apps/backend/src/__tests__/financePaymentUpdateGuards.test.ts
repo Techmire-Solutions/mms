@@ -109,6 +109,34 @@ describe("finance payment update guards", () => {
     expect(repo.savePayment).not.toHaveBeenCalled();
   });
 
+  it("rejects an allocation edit that does not add up to the payment", async () => {
+    // The edit path is the second writer of the allocation rows; without the same check as
+    // `createPayment` it could store a split that disagrees with the settled amount (audit S3).
+    const repo = repoWithPayment(null);
+
+    await expect(
+      runWithTenant("demo", () =>
+        createFinanceUseCases(repo).updatePaymentById("pay-1", {
+          allocations: [{ id: "pa-1", invoiceId: "inv-1", amount: 40 }],
+        }),
+      ),
+    ).rejects.toThrow(/must add up/);
+    expect(repo.savePayment).not.toHaveBeenCalled();
+  });
+
+  it("rejects an allocation edit that moves the split to another invoice", async () => {
+    const repo = repoWithPayment(null);
+
+    await expect(
+      runWithTenant("demo", () =>
+        createFinanceUseCases(repo).updatePaymentById("pay-1", {
+          allocations: [{ id: "pa-1", invoiceId: "inv-2", amount: 100 }],
+        }),
+      ),
+    ).rejects.toThrow(/one invoice/);
+    expect(repo.savePayment).not.toHaveBeenCalled();
+  });
+
   it("allows a metadata edit on a posted payment and audits the old state", async () => {
     const repo = repoWithPayment("je-payment");
 

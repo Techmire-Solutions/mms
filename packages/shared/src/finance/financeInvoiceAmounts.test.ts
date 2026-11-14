@@ -35,6 +35,20 @@ describe("getOutstandingAmountForInvoice", () => {
     expect(getOutstandingAmountForInvoice(invoice({ finalAmt: 100, paidAmt: 100.01 }))).toBe(0);
   });
 
+  it("counts a late fee that nothing has paid — the completion gate depends on it", () => {
+    // The session-completion certificate gate computes dues in SQL and must mirror this rule
+    // exactly; it previously omitted `late_fee_amt`, so an enrollment owing only a late fee
+    // passed the gate with zero dues (audit W5).
+    const row = invoice({
+      finalAmt: 100,
+      paidAmt: 100,
+      lateFeeAmt: 10,
+      creditedAmt: 0,
+      status: "partial",
+    });
+    expect(getOutstandingAmountForInvoice(row)).toBe(10);
+  });
+
   it("treats paid and cancelled invoices as settled", () => {
     expect(getOutstandingAmountForInvoice(invoice({ finalAmt: 100, status: "paid" }))).toBe(0);
     expect(getOutstandingAmountForInvoice(invoice({ finalAmt: 100, status: "cancelled" }))).toBe(0);

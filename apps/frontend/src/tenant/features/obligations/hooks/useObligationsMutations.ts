@@ -84,6 +84,24 @@ export function useObligationsMutations() {
     },
   };
 
+  /**
+   * Wakala + its distribution rules in one transaction. Saving the halves separately left a
+   * window where the wakala had no rules and a receipt posted 100 % to income.
+   */
+  const _replaceWakalaAggregate = tsrClient.obligations.replaceWakalaAggregate.useMutation({
+    onSuccess: () => invalidateObligationsQueries(queryClient),
+  });
+  const replaceWakalaAggregate = {
+    ..._replaceWakalaAggregate,
+    mutateAsync: async (input: {
+      wakalaTypes: import("@mms/shared").WakalaType[];
+      distributions: import("@mms/shared").ObligationDistribution[];
+    }) => {
+      const res = await _replaceWakalaAggregate.mutateAsync({ body: input });
+      return contractBodyOrThrow(res, "Failed to save the wakala and its distributions");
+    },
+  };
+
   const _deleteCollection = tsrClient.obligations.deleteCollection.useMutation({
     onSuccess: () => invalidateCollections(),
   });
@@ -135,6 +153,7 @@ export function useObligationsMutations() {
     replaceWakala,
     replaceDistributions,
     replaceCollections,
+    replaceWakalaAggregate,
     deleteCollection,
     restoreCollection,
     bulkDeleteCollections,

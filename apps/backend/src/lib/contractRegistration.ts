@@ -36,12 +36,32 @@ export function standardRequestValidationErrorHandler(
  * `responseValidation: true` so a handler whose body drifted from its declared
  * schema fails loudly here instead of shipping a malformed payload.
  */
+/**
+ * True for a ts-rest response-validation failure.
+ *
+ * `instanceof` alone is not enough: the plugin resolves `@ts-rest/core` through a different module
+ * format from this file, so the class identity differs and the router fell through to a generic
+ * `server_error` 500 — losing the `contract_violation` signal the handler exists to produce.
+ * `ResponseValidationError` also does not set `name`, so the only stable markers are its message
+ * prefix and the `appRoute`/`cause` pair the class attaches.
+ */
+function isResponseValidationError(error: unknown): boolean {
+  if (error instanceof ResponseValidationError) return true;
+  if (typeof error !== "object" || error === null) return false;
+  if ((error as { name?: unknown }).name === "ResponseValidationError") return true;
+  const message = (error as { message?: unknown }).message;
+  if (typeof message === "string" && message.startsWith("[ts-rest] Response validation failed")) {
+    return true;
+  }
+  return "appRoute" in error && "cause" in error;
+}
+
 export function installContractErrorHandler(fastify: FastifyInstance): void {
   fastify.setErrorHandler((error, request, reply) => {
     if (error instanceof RequestValidationError) {
       return standardRequestValidationErrorHandler(error, request, reply);
     }
-    if (error instanceof ResponseValidationError) {
+    if (isResponseValidationError(error)) {
       request.log.error({ err: error, url: request.url }, "Response failed its API contract");
       return reply.status(500).send({
         type: "contract_violation",

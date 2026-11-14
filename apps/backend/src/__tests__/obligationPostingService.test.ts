@@ -265,6 +265,11 @@ describe("obligationPostingService", () => {
     expect(saved[1].source_type).toBe("obligation");
     expect(saved[1].source_id).not.toBe(originalSourceId);
     expect(saved[1].lines[0].debit).toBe(1200);
+    // Date semantics (documented, previously untested): the correction's reversal posts on the
+    // workspace business day, while the replacement keeps the receipt's own date — so editing a
+    // receipt never moves the corrected entry into a different period than the receipt itself.
+    expect(saved[0].date).toBe("2026-05-01");
+    expect(saved[1].date).toBe(collection.received_date);
   });
 
   it("given an archived collection, should reverse its posting when archiving", async () => {

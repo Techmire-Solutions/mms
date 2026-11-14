@@ -9,12 +9,17 @@ import {
   wakalaTypeListSchema,
   obligationDistributionListSchema,
   obligationCollectionListSchema,
+  wakalaAggregateBodySchema,
+  type User,
 } from "@mms/shared";
 import {
   registerBulkRoutes,
   registerMetricsRoute,
   registerSoftDeletableBulkRoutes,
 } from "../../lib/crudRouter.js";
+import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
+import { sendDatabaseError, sendForbidden, sendIfHttpDomainError } from "../../lib/httpErrors.js";
+import { canWriteCollection } from "../../services/rbacService.js";
 
 import { obligationContractRouter } from "./obligations/obligationContractRouter.js";
 import { obligationReportRoutes } from "./obligations/obligationReportRoutes.js";
@@ -83,6 +88,24 @@ export default async function obligationsRoutes(
         responseKey: "distributions",
         errorMessagePrefix: "obligation distributions",
         customGetRoute: true,
+      });
+
+      // Wakala + its distribution rules in one transaction (the split halves below stay for
+      // back-compat, but each of them commits on its own and leaves a rule-less wakala in between).
+      sub.put("/wakala-aggregate/bulk", async (request, reply) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, OBLIGATIONS_COLLECTION)) return sendForbidden(reply);
+        const parsed = parseRequest(wakalaAggregateBodySchema, request.body);
+        if (!parsed.ok) return replyValidationError(reply, parsed.message);
+        try {
+          const saved = await obligationsUseCases.replaceWakalaAggregate(parsed.data);
+          return reply.send(saved);
+        } catch (error: unknown) {
+          return (
+            sendIfHttpDomainError(reply, error) ??
+            sendDatabaseError(reply, "Failed to save the wakala and its distributions", error)
+          );
+        }
       });
 
       registerSoftDeletableBulkRoutes(sub, {

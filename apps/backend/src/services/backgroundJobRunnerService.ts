@@ -1,6 +1,7 @@
 import { registerAttendanceJobRunners } from "./backgroundJobAttendanceRunners.js";
 import { registerExaminationsJobRunners } from "./backgroundJobExaminationsRunners.js";
 import { registerHasanatJobRunners } from "./backgroundJobHasanatRunners.js";
+import { registerObligationsJobRunners } from "./backgroundJobObligationsRunners.js";
 import { randomUUID } from "node:crypto";
 import {
   CONTACTS_MODULE_MANIFEST,
@@ -84,15 +85,15 @@ export function registerDefaultBackgroundJobRunners(): void {
   const studentsModuleId = STUDENTS_MODULE_MANIFEST.moduleId;
   const sessionsModuleId = SESSIONS_MODULE_MANIFEST.moduleId;
   registerAttendanceJobRunners();
-  // Hasanat jobs run in the worker, so the shared registry registers them here.
+  // Hasanat/obligations jobs run in the worker, so the shared registry registers them here.
   registerHasanatJobRunners();
+  registerObligationsJobRunners();
   registerSessionRolloverJobRunner();
   registerSessionImportJobRunner();
   registerSessionsBulkJobRunners();
   registerStudentsBulkJobRunners();
   registerEnrollmentsImportJobRunner();
   registerWorkshopImportJobRunner();
-
   registerModuleCsvExportJobRunner({
     moduleId: contactsModuleId,
     entityNounPlural: "contacts",
@@ -113,7 +114,6 @@ export function registerDefaultBackgroundJobRunners(): void {
   });
 
   registerContactsVcfExportJobRunner();
-
   registerBackgroundJobRunner(`${contactsModuleId}:duplicate-scan`, async (_payload, ctx) => {
     const result = await runContactsDuplicateScan(async (processed, total) => {
       await ctx.updateProgress(processed, total);

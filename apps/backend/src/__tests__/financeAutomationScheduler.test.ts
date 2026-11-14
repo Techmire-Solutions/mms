@@ -95,6 +95,16 @@ describe("finance automation calendar helpers", () => {
     expect(hourInTimeZone("UTC", instant)).toBe(1);
     expect(hourInTimeZone("Asia/Karachi", instant)).toBe(6);
   });
+
+  it("reports local midnight as hour 0, never 24", () => {
+    // `hourCycle: "h23"` — with `hour12: false` some ICU builds format midnight as "24", which
+    // would make a `localHour === 0` gate silently never fire (sweep audit W3).
+    const midnightUtc = new Date("2026-06-15T00:00:00Z");
+    expect(hourInTimeZone("UTC", midnightUtc)).toBe(0);
+    // 23:30 UTC is 04:30 next day in Karachi — still a plain 0-23 value.
+    expect(hourInTimeZone("Asia/Karachi", new Date("2026-06-14T19:00:00Z"))).toBe(0);
+    expect(hourInTimeZone("UTC", new Date("2026-06-15T23:00:00Z"))).toBe(23);
+  });
 });
 
 describe("finance automation sweep", () => {

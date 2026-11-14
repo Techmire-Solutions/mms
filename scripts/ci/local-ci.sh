@@ -177,6 +177,8 @@ if [[ "$FULL" -eq 1 ]]; then
   pnpm build && note_ran "build"
   pnpm run check:bundle && note_ran "check:bundle"
   pnpm run check:examinations-tests && note_ran "check:examinations-tests"
+  pnpm run check:obligations-tests && note_ran "check:obligations-tests"
+  pnpm run check:obligations-route-injection && note_ran "check:obligations-route-injection"
   pnpm run check:examinations-route-injection && note_ran "check:examinations-route-injection"
   pnpm run check:examinations-route-security && note_ran "check:examinations-route-security"
 fi

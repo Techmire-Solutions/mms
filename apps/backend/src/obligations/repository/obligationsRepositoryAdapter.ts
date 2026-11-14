@@ -25,6 +25,7 @@ import {
   saveWakalaType,
   bulkSaveWakalaTypes,
   replaceWakalaTypesForWorkspace,
+  replaceWakalaAggregateForWorkspace,
   listObligationDistributionsByWorkspace,
   findObligationDistributionById,
   findObligationDistributionsByIds,
@@ -40,6 +41,7 @@ import {
   bulkSoftDeleteObligationCollections,
   bulkRestoreObligationCollections,
 } from "../../db/repositories/obligationRepository.js";
+import { countCatalogueDependents } from "../../db/repositories/obligationCatalogueDependentsRepository.js";
 import { aggregateObligationsCommandMetrics } from "../../db/repositories/obligationRepositoryMetrics.js";
 import { aggregateObligationsReport } from "../../db/repositories/obligationRepositoryReport.js";
 import {
@@ -82,6 +84,8 @@ export const obligationsRepository: ObligationsRepository = {
   saveWakalaType,
   bulkSaveWakalaTypes,
   replaceWakalaTypesForWorkspace,
+  replaceWakalaAggregateForWorkspace,
+  countCatalogueDependents,
   listLedgerAccountIds,
   listObligationDistributionsByWorkspace,
   findObligationDistributionById,

@@ -151,7 +151,7 @@ export function DistributionFormModal({
               if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
                 setForm({
                   ...form,
-                  percentage: val === "" ? ("" as unknown as number) : parseFloat(val) || 0,
+                  percentage: val === "" ? ("" as unknown as number) : Number(val) || 0,
                 });
               }
             }}

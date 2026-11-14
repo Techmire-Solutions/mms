@@ -61,6 +61,23 @@ describe("payment archive deltas", () => {
     });
   });
 
+  it("keeps a fully credited invoice settled when its payment is archived", () => {
+    // The invoice was waived (credited in full, no cash owed). Archiving a payment that once
+    // touched it must not revive it as `pending`: nothing is collectible, yet the directory and
+    // the overdue sweep would treat the row as open (audit W4).
+    const waived = invoice({ finalAmt: 100, paidAmt: 100, creditedAmt: 100, status: "paid" });
+    expect(applyCollectedDelta(waived, -100)).toMatchObject({
+      paidAmt: 0,
+      status: "paid",
+    });
+    // …and a partially credited invoice still reopens, because it does owe money.
+    const partialCredit = invoice({ finalAmt: 100, paidAmt: 100, creditedAmt: 40, status: "paid" });
+    expect(applyCollectedDelta(partialCredit, -100)).toMatchObject({
+      paidAmt: 0,
+      status: "pending",
+    });
+  });
+
   it("uses invoiceAmount, not cash amount, for cross-currency settlements", async () => {
     const repo = repoWith([invoice({ paidAmt: 100, status: "paid" })]);
 

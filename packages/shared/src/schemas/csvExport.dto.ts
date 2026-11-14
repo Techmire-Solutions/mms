@@ -87,7 +87,7 @@ import { facultyListQuerySchema } from "../faculty/facultyListQuery.js";
 import { sessionsListQuerySchema } from "../sessions/sessionsListQuery.js";
 import { enrollmentsListQuerySchema } from "../enrollments/enrollmentsListQuery.js";
 import { usersListQuerySchema } from "../auth/usersListQuery.js";
-import { taskListQuerySchema } from "../obligations/tasksModuleManifest.js";
+import { taskListQuerySchema } from "../tasks/tasksModuleManifest.js";
 
 export const contactsCsvExportBodySchema = csvExportBodySchema(contactsListQuerySchema);
 export const studentsCsvExportBodySchema = csvExportBodySchema(studentsListQuerySchema);

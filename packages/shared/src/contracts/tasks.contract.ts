@@ -8,7 +8,7 @@ import {
   taskStatusUpdateSchema,
   tasksBulkStatusBodySchema,
   taskUpdateSchema,
-} from "../obligations/tasksModuleManifest.js";
+} from "../tasks/tasksModuleManifest.js";
 
 const c = initContract();
 

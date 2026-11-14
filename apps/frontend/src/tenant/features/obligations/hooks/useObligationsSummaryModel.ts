@@ -17,6 +17,7 @@ import {
   buildRepSummary,
   buildTypeBreakdown,
   buildMonthlyTrend,
+  sumAmounts,
 } from "../lib/obligationsSummaryCalculations";
 
 export interface ObligationsSummaryFilterState {
@@ -85,7 +86,9 @@ export function useObligationsSummaryModel(
       return true;
     }))();
 
-  const totalAmount = filtered.reduce((sum, collection) => sum + collection.amount, 0);
+  // Integer cents, like every other total in the module: a float reduce drifts by fractions of a
+  // paisa and then disagrees with the sections that use cents (frontend audit).
+  const totalAmount = sumAmounts(filtered.map((collection) => collection.amount));
   const totalRecords = filtered.length;
   const uniqueReps = new Set(filtered.map((collection) => collection.mujtahid_representative_id))
     .size;

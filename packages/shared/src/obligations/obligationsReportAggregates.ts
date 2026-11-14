@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isoDateSchema } from "../core/isoDateSchema.js";
 import { monthKeySchema } from "../core/monthKeySchema.js";
 
 // ---------------------------------------------------------------------------
@@ -57,12 +58,17 @@ export type ObligationsWakalaSummaryItem = z.infer<typeof obligationsWakalaSumma
 export type ObligationsRepSummaryItem = z.infer<typeof obligationsRepSummaryItemSchema>;
 export type ObligationsReportAggregates = z.infer<typeof obligationsReportAggregatesSchema>;
 
-/** Optional date-range query params for GET /obligations/report-aggregates. */
+/**
+ * Optional date-range query params for GET /obligations/report-aggregates.
+ *
+ * The dates are cast to `::date` in SQL, so a loose string here reached PostgreSQL and came back
+ * as a `22007` — a 500 for what is a malformed request. `isoDateSchema` makes it a 400 at the edge.
+ */
 export const obligationsReportQuerySchema = z.object({
-  dateFrom: z.string().max(32).optional(),
-  dateTo: z.string().max(32).optional(),
-  typeId: z.string().max(64).optional(),
-  repId: z.string().max(64).optional(),
+  dateFrom: isoDateSchema.optional(),
+  dateTo: isoDateSchema.optional(),
+  typeId: z.string().trim().min(1).max(64).optional(),
+  repId: z.string().trim().min(1).max(64).optional(),
 });
 
 export type ObligationsReportQuery = z.infer<typeof obligationsReportQuerySchema>;

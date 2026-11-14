@@ -7,7 +7,7 @@
 - [`tasksReadRoutes.ts`](../apps/backend/src/routes/tenant/tasksReadRoutes.ts)
 - [`tasksSoftDeleteRoutes.ts`](../apps/backend/src/routes/tenant/tasksSoftDeleteRoutes.ts)
 - [`tasksExportRoutes.ts`](../apps/backend/src/routes/tenant/tasksExportRoutes.ts)
-- [`tasksModuleManifest.ts`](../packages/shared/src/obligations/tasksModuleManifest.ts)
+- [`tasksModuleManifest.ts`](../packages/shared/src/tasks/tasksModuleManifest.ts)
 - [`tasks.contract.ts`](../packages/shared/src/contracts/tasks.contract.ts)
 - [`tasksRepository.ts`](../apps/backend/src/db/repositories/tasksRepository.ts)
 - [`tasksBulkRepository.ts`](../apps/backend/src/db/repositories/tasksBulkRepository.ts)

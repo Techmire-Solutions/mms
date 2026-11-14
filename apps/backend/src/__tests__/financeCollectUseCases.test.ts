@@ -51,6 +51,18 @@ vi.mock("../db/repositories/financeCollectRepository.js", () => mockRepo);
 vi.mock("../accounting/ledgerPosting/ledgerPostingService.js", () => mockLedgerPosting);
 vi.mock("../services/financePreferencesService.js", () => mockPrefs);
 vi.mock("../services/contactService.js", () => mockContacts);
+// The sweep day is now resolved in the workspace zone; stub it so this stays a pure orchestration
+// test (the zone behaviour itself is covered by financeCollectTimeZone.test.ts).
+vi.mock("../lib/workspaceDay.js", () => ({
+  // Preserve the pre-change semantics for these fixtures (server-local day); the workspace-zone
+  // behaviour is asserted by financeCollectTimeZone.test.ts.
+  workspaceTodayIso: vi.fn(async () => {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${now.getFullYear()}-${month}-${day}`;
+  }),
+}));
 vi.mock("../finance/use-cases/financeUseCases.js", () => mockFinanceUseCases);
 vi.mock("../lib/livePush.js", () => mockWs);
 

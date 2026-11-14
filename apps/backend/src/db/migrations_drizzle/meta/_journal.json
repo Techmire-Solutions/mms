@@ -1807,6 +1807,20 @@
       "when": 1797850800120,
       "tag": "0257_notification_kinds_finance_accounting",
       "breakpoints": true
+    },
+    {
+      "idx": 258,
+      "version": "7",
+      "when": 1797850800180,
+      "tag": "0258_obligations_schema_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 259,
+      "version": "7",
+      "when": 1797850800240,
+      "tag": "0259_obligations_rls_policy_dedup",
+      "breakpoints": true
     }
   ]
 }

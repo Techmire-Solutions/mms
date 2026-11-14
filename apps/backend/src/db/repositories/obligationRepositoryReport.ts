@@ -1,5 +1,5 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import type { ObligationsReportAggregates } from "@mms/shared";
+import { roundMoneyAmount, type ObligationsReportAggregates } from "@mms/shared";
 import { obligationCollections, obligationTypes, mujtahidReps } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 
@@ -39,7 +39,7 @@ export async function aggregateObligationsReport(
     const [totalsRow] = await tx
       .select({
         total: sql<number>`count(*)::int`,
-        totalAmount: sql<number>`coalesce(sum(${obligationCollections.amount}), 0)::float8`,
+        totalAmount: sql<string>`coalesce(sum(${obligationCollections.amount}), 0)::numeric::text`,
         uniqueReps: sql<number>`count(distinct ${obligationCollections.mujtahidRepresentativeId})::int`,
       })
       .from(obligationCollections)
@@ -51,7 +51,7 @@ export async function aggregateObligationsReport(
         typeId: obligationCollections.obligationTypeId,
         typeName: obligationTypes.name,
         count: sql<number>`count(*)::int`,
-        amount: sql<number>`coalesce(sum(${obligationCollections.amount}), 0)::float8`,
+        amount: sql<string>`coalesce(sum(${obligationCollections.amount}), 0)::numeric::text`,
       })
       .from(obligationCollections)
       .leftJoin(
@@ -69,7 +69,7 @@ export async function aggregateObligationsReport(
       .select({
         monthKey: sql<string>`to_char((${obligationCollections.receivedDate})::date, 'YYYY-MM')`,
         count: sql<number>`count(*)::int`,
-        amount: sql<number>`coalesce(sum(${obligationCollections.amount}), 0)::float8`,
+        amount: sql<string>`coalesce(sum(${obligationCollections.amount}), 0)::numeric::text`,
       })
       .from(obligationCollections)
       .where(
@@ -88,7 +88,7 @@ export async function aggregateObligationsReport(
         repId: obligationCollections.mujtahidRepresentativeId,
         repName: mujtahidReps.name,
         count: sql<number>`count(*)::int`,
-        amount: sql<number>`coalesce(sum(${obligationCollections.amount}), 0)::float8`,
+        amount: sql<string>`coalesce(sum(${obligationCollections.amount}), 0)::numeric::text`,
       })
       .from(obligationCollections)
       .leftJoin(
@@ -108,20 +108,20 @@ export async function aggregateObligationsReport(
         monthlyTrend.push({
           monthKey: r.monthKey,
           count: Number(r.count),
-          amount: Number(r.amount),
+          amount: roundMoneyAmount(r.amount),
         });
       }
     }
 
     return {
       totalCollections: Number(totalsRow?.total ?? 0),
-      totalAmount: Number(totalsRow?.totalAmount ?? 0),
+      totalAmount: roundMoneyAmount(totalsRow?.totalAmount ?? "0"),
       uniqueReps: Number(totalsRow?.uniqueReps ?? 0),
       typeBreakdown: typeBreakdownRows.map((r) => ({
         typeId: r.typeId ?? "",
         typeName: r.typeName ?? r.typeId ?? "",
         count: Number(r.count),
-        amount: Number(r.amount),
+        amount: roundMoneyAmount(r.amount),
       })),
       monthlyTrend,
       // wakalaSummary requires joining via distributions — omitted at tier-1;
@@ -131,7 +131,7 @@ export async function aggregateObligationsReport(
         repId: r.repId ?? "",
         repName: r.repName ?? r.repId ?? "",
         count: Number(r.count),
-        amount: Number(r.amount),
+        amount: roundMoneyAmount(r.amount),
       })),
     };
   });

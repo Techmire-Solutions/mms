@@ -1,4 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue({}),
+}));
+vi.mock("../services/outboxEventService.js", () => ({
+  emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { createObligationsUseCases } from "../obligations/use-cases/obligationsUseCases.js";
 import type { ObligationsRepository } from "../obligations/repository/obligationsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
@@ -26,12 +33,19 @@ function createFakeRepo(): ObligationsRepository {
     bulkSaveMujtahidReps: vi.fn().mockResolvedValue(undefined),
     replaceMujtahidRepsForWorkspace: vi.fn().mockResolvedValue(undefined),
 
-    listWakalaTypesByWorkspace: vi.fn().mockResolvedValue([]),
+    // A receipt is only postable when its type/representative pair has a wakala (write guard).
+    listWakalaTypesByWorkspace: vi
+      .fn()
+      .mockResolvedValue([
+        { id: "wt-1", mujtahid_representative_id: "rep-1", obligation_type_id: "type-1" },
+      ]),
     findWakalaTypeById: vi.fn().mockResolvedValue(null),
     findWakalaTypesByIds: vi.fn().mockResolvedValue([]),
     saveWakalaType: vi.fn().mockResolvedValue(undefined),
     bulkSaveWakalaTypes: vi.fn().mockResolvedValue(undefined),
     replaceWakalaTypesForWorkspace: vi.fn().mockResolvedValue(undefined),
+    replaceWakalaAggregateForWorkspace: vi.fn().mockResolvedValue(undefined),
+    countCatalogueDependents: vi.fn().mockResolvedValue({ wakalaTypes: 0, distributions: 0 }),
 
     listObligationDistributionsByWorkspace: vi.fn().mockResolvedValue([]),
     listLedgerAccountIds: vi.fn().mockResolvedValue([]),
@@ -411,5 +425,157 @@ describe("obligations use-cases (DI with fake repository)", () => {
     expect(singleCollection).toBeNull();
     expect(collectionList).toEqual([]);
     expect(repo.aggregateObligationsCommandMetrics).not.toHaveBeenCalled();
+  });
+});
+
+describe("obligations domain guards (use cases)", () => {
+  const receipt = {
+    id: "oc-guard",
+    receipt_no: "REC-GUARD",
+    received_date: "2026-09-01",
+    sender_id: "c-1",
+    reference_id: null,
+    amount: 100,
+    currency_id: "PKR",
+    payment_mode: "Cash" as const,
+    obligation_type_id: "type-1",
+    mujtahid_representative_id: "rep-1",
+    received_by: "u-1",
+  };
+
+  it("rejects a receipt whose type/representative pair has no wakala, before writing", async () => {
+    const repo = createFakeRepo();
+    (repo.listWakalaTypesByWorkspace as any).mockResolvedValue([
+      { id: "wt-other", mujtahid_representative_id: "rep-9", obligation_type_id: "type-1" },
+    ]);
+    const useCases = createObligationsUseCases(repo);
+
+    await expect(
+      runWithTenant("demo", () => useCases.upsertObligationCollections([receipt])),
+    ).rejects.toThrow(/no wakala is configured/i);
+    expect(repo.bulkSaveObligationCollections).not.toHaveBeenCalled();
+  });
+
+  it("accepts a receipt whose pair has a wakala", async () => {
+    const repo = createFakeRepo();
+    const useCases = createObligationsUseCases(repo);
+
+    await expect(
+      runWithTenant("demo", () => useCases.upsertObligationCollections([receipt])),
+    ).resolves.toEqual([receipt]);
+  });
+
+  it("refuses a mujtahid replace that would cascade-delete wakalas and rules", async () => {
+    const repo = createFakeRepo();
+    (repo.listMujtahidsByWorkspace as any).mockResolvedValue([
+      { id: "m-1", name: "Kept" },
+      { id: "m-2", name: "Doomed" },
+    ]);
+    (repo.countCatalogueDependents as any).mockResolvedValue({ wakalaTypes: 1, distributions: 2 });
+    const useCases = createObligationsUseCases(repo);
+
+    await expect(
+      runWithTenant("demo", () => useCases.replaceMujtahids([{ id: "m-1", name: "Kept" }])),
+    ).rejects.toThrow(/1 wakala type\(s\) and 2 distribution rule\(s\)/);
+    expect(repo.countCatalogueDependents).toHaveBeenCalledWith("demo", "mujtahid", ["m-2"]);
+    expect(repo.replaceMujtahidsForWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("allows a mujtahid replace whose deleted rows have no dependents", async () => {
+    const repo = createFakeRepo();
+    (repo.listMujtahidsByWorkspace as any).mockResolvedValue([{ id: "m-1", name: "Kept" }]);
+    const useCases = createObligationsUseCases(repo);
+
+    await expect(
+      runWithTenant("demo", () => useCases.replaceMujtahids([{ id: "m-1", name: "Kept" }])),
+    ).resolves.toEqual([{ id: "m-1", name: "Kept" }]);
+    expect(repo.countCatalogueDependents).not.toHaveBeenCalled();
+  });
+
+  it("validates the account mapping on the bulk-upsert path too", async () => {
+    const repo = createFakeRepo();
+    (repo.listLedgerAccountIds as any).mockResolvedValue(["acc-1"]);
+    const useCases = createObligationsUseCases(repo);
+    const distribution = {
+      id: "od-1",
+      name: "Sahm Imam",
+      percentage: 100,
+      wakala_type_id: "wt-1",
+      type: "Income" as const,
+      account_id: "acc-missing",
+    };
+
+    await expect(
+      runWithTenant("demo", () => useCases.upsertObligationDistributions([distribution])),
+    ).rejects.toThrow(/not found in the chart of accounts/i);
+    expect(repo.bulkSaveObligationDistributions).not.toHaveBeenCalled();
+  });
+
+  it("rejects an incomplete split rule set on the aggregate write", async () => {
+    const repo = createFakeRepo();
+    (repo.listLedgerAccountIds as any).mockResolvedValue(["acc-1"]);
+    const useCases = createObligationsUseCases(repo);
+
+    await expect(
+      runWithTenant("demo", () =>
+        useCases.replaceWakalaAggregate({
+          wakalaTypes: [
+            { id: "wt-1", mujtahid_representative_id: "rep-1", obligation_type_id: "type-1" },
+          ],
+          distributions: [
+            {
+              id: "od-1",
+              name: "Sahm Imam",
+              percentage: 60,
+              wakala_type_id: "wt-1",
+              type: "Income",
+              account_id: "acc-1",
+            },
+          ],
+        }),
+      ),
+    ).rejects.toThrow(/total 60\.00%, expected 100%/i);
+    expect(repo.replaceWakalaAggregateForWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("writes a complete wakala aggregate in one repository call", async () => {
+    const repo = createFakeRepo();
+    (repo.listLedgerAccountIds as any).mockResolvedValue(["acc-1"]);
+    const useCases = createObligationsUseCases(repo);
+    const wakalaTypes = [
+      { id: "wt-1", mujtahid_representative_id: "rep-1", obligation_type_id: "type-1" },
+    ];
+    const distributions = [
+      {
+        id: "od-1",
+        name: "Sahm Imam",
+        percentage: 60,
+        wakala_type_id: "wt-1",
+        type: "Income" as const,
+        account_id: "acc-1",
+      },
+      {
+        id: "od-2",
+        name: "Sahm Sadat",
+        percentage: 40,
+        wakala_type_id: "wt-1",
+        type: "Liability" as const,
+        account_id: "acc-1",
+      },
+    ];
+
+    const saved = await runWithTenant("demo", () =>
+      useCases.replaceWakalaAggregate({ wakalaTypes, distributions }),
+    );
+
+    expect(saved).toEqual({ wakalaTypes, distributions });
+    expect(repo.replaceWakalaAggregateForWorkspace).toHaveBeenCalledWith(
+      "demo",
+      wakalaTypes,
+      distributions,
+    );
+    // The half-writes must not run: the aggregate is one transaction.
+    expect(repo.replaceWakalaTypesForWorkspace).not.toHaveBeenCalled();
+    expect(repo.replaceObligationDistributionsForWorkspace).not.toHaveBeenCalled();
   });
 });

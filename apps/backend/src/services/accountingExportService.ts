@@ -59,9 +59,11 @@ function csvChunks<T>(
     const batchSize = Math.min(Math.max(1, chunkSize), PAGE_SIZE);
     for (let start = 0; start < entities.length; start += batchSize) {
       const batch = entities.slice(start, start + batchSize);
-      yield buildCsvContent(
-        batch.map((entity) => columns.map((column) => extract(entity, column.id))),
-      ) + "\n";
+      yield (
+        buildCsvContent(
+          batch.map((entity) => columns.map((column) => extract(entity, column.id))),
+        ) + "\n"
+      );
     }
   })();
 }

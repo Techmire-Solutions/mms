@@ -151,6 +151,31 @@ describe("obligationPostingLogic", () => {
     expect(sumCr).toBe(100);
   });
 
+  it("given a sub-cent split across four equal rules, should still post a balanced entry", () => {
+    // 4 x 25% of 0.02: rounding each line independently gave 4 cents of credits against a
+    // 2-cent debit, and the residual pushed the largest line to -1 — which was then dropped,
+    // unbalancing (and silently skipping) the entire posting. Largest-remainder allocation must
+    // hand the two available cents to two lines and post nothing below zero.
+    const input: ObligationPostingInput = {
+      ...baseInput,
+      amount: 0.02,
+      distributions: [
+        { id: "d1", name: "Q1", percentage: 25, type: "Income", accountId: "acc-1" },
+        { id: "d2", name: "Q2", percentage: 25, type: "Income", accountId: "acc-2" },
+        { id: "d3", name: "Q3", percentage: 25, type: "Income", accountId: "acc-3" },
+        { id: "d4", name: "Q4", percentage: 25, type: "Income", accountId: "acc-liab" },
+      ],
+    };
+
+    const lines = buildObligationPostingLines(input);
+    expect(lines).not.toBeNull();
+    expect(lines!.every((line) => line.credit >= 0 && line.debit >= 0)).toBe(true);
+    const sumDr = lines!.reduce((acc, l) => acc + l.debit, 0);
+    const sumCr = lines!.reduce((acc, l) => acc + l.credit, 0);
+    expect(Math.round(sumDr * 100)).toBe(2);
+    expect(Math.round(sumCr * 100)).toBe(2);
+  });
+
   it("returns null if amount <= 0 or no receiving account exists", () => {
     expect(buildObligationPostingLines({ ...baseInput, amount: 0 })).toBeNull();
     expect(

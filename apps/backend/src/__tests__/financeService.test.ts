@@ -144,6 +144,53 @@ describe("financeService createPayment", () => {
     expect(mockRecordModernAuditEvent).not.toHaveBeenCalled();
   });
 
+  it("rejects allocations that do not add up to the amount applied", async () => {
+    // A 100.00 payment carrying a 500.00 allocation used to be stored without complaint, and
+    // nothing in the product reads the allocation table to notice (audit S3).
+    await expect(
+      createPayment({
+        ...payment,
+        amount: 60,
+        allocations: [{ id: "a1", invoiceId: invoice.id, amount: 500 }],
+      }),
+    ).rejects.toMatchObject({
+      statusCode: 422,
+      message: expect.stringContaining("must add up"),
+    });
+    expect(mockSaveInvoice).not.toHaveBeenCalled();
+    expect(mockSavePayment).not.toHaveBeenCalled();
+  });
+
+  it("rejects an allocation that targets another invoice", async () => {
+    // Only the payment's own invoice has its balance updated, so a second invoice's allocation
+    // would be a phantom settlement.
+    await expect(
+      createPayment({
+        ...payment,
+        amount: 60,
+        allocations: [{ id: "a1", invoiceId: "inv-other", amount: 60 }],
+      }),
+    ).rejects.toMatchObject({
+      statusCode: 422,
+      message: expect.stringContaining("one invoice"),
+    });
+    expect(mockSavePayment).not.toHaveBeenCalled();
+  });
+
+  it("accepts a split that matches the applied amount on the payment's invoice", async () => {
+    await expect(
+      createPayment({
+        ...payment,
+        amount: 60,
+        allocations: [
+          { id: "a1", invoiceId: invoice.id, amount: 35.5 },
+          { id: "a2", invoiceId: invoice.id, amount: 24.5 },
+        ],
+      }),
+    ).resolves.toBeDefined();
+    expect(mockSaveInvoice).toHaveBeenCalled();
+  });
+
   it("returns an existing payment without double-counting it", async () => {
     mockFindPaymentById.mockResolvedValue(payment);
     await expect(createPayment(payment)).resolves.toEqual(payment);

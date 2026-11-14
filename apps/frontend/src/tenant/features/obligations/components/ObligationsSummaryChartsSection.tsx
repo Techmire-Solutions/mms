@@ -1,5 +1,6 @@
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { useTranslation } from "@/hooks/useTranslation";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Bar, BarChart, Cell, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
 import { chartAxisTick, chartTooltipStyle } from "@/components/app/ChartGrid";
 
@@ -35,7 +36,17 @@ export function ObligationsSummaryChartsSection({
 }: ObligationsSummaryChartsSectionProps) {
   const { t } = useTranslation();
 
-  if (filteredCount === 0) return null;
+  if (filteredCount === 0) {
+    // Returning null left a silent blank band above the sections that do explain themselves.
+    return (
+      <EmptyState
+        variant="dashed"
+        title={t("obligations.summary.emptyFiltered")}
+        compact
+        role="status"
+      />
+    );
+  }
 
   return (
     <section

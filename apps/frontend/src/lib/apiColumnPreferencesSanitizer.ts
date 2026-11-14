@@ -26,8 +26,12 @@ function coerceEnabled(raw: unknown): boolean {
   return raw === "true" || raw === 1 || raw === "1";
 }
 
+/** A non-negative integer column order, or the fallback for anything malformed. */
 function coerceOrder(raw: unknown, fallback: number): number {
-  const num = typeof raw === "number" ? raw : parseFloat(String(raw));
+  // Not money: an integer column order. `Number` on the trimmed text (not `parseFloat`) so
+  // "3abc" is rejected instead of silently becoming 3 — and so the money-safety scan root this
+  // file now sits in stays clean without an exemption.
+  const num = typeof raw === "number" ? raw : Number(String(raw).trim());
   const floored = Math.floor(num);
   return Number.isSafeInteger(floored) && floored >= 0 ? floored : fallback;
 }

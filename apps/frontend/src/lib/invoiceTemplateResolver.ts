@@ -1,4 +1,10 @@
-import { DEFAULT_CURRENCY_CODE, formatAmountInWords, formatDate, formatMoney } from "@mms/shared";
+import {
+  DEFAULT_CURRENCY_CODE,
+  formatAmountInWords,
+  formatDate,
+  formatMoney,
+  toMoneyNumber,
+} from "@mms/shared";
 import type {
   FieldLookupInfo,
   IndexedFieldLookups,
@@ -123,16 +129,16 @@ export function resolveField(
     case "representative":
       return String(findItem(reps, collection.mujtahid_representative_id)?.name || "");
     case "amount": {
-      if (collection.amount == null || collection.amount === "") return "";
-      const num = Number(collection.amount);
-      if (!Number.isFinite(num)) return "";
+      // `toMoneyNumber` parses the value exactly (integer cents, no float parse) so a partially
+      // typed draft can never print `NaN` or a rounded figure (audit S5).
+      const num = toMoneyNumber(collection.amount);
+      if (num === null) return "";
       const currencyCode = resolveCurrencyCode(currencies, collection.currency_id);
       return formatMoney(num, currencyCode);
     }
     case "amount_in_words": {
-      if (collection.amount == null || collection.amount === "") return "";
-      const num = Number(collection.amount);
-      if (!Number.isFinite(num)) return "";
+      const num = toMoneyNumber(collection.amount);
+      if (num === null) return "";
       const currencyCode = resolveCurrencyCode(currencies, collection.currency_id);
       return formatAmountInWords(num, currencyCode);
     }

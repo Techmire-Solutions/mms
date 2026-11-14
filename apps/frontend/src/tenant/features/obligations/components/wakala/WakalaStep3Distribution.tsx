@@ -138,7 +138,7 @@ export function WakalaStep3Distribution({
                   onChange={(e) => {
                     const val = e.target.value;
                     if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
-                      const num = parseFloat(val) || 0;
+                      const num = Number(val) || 0;
                       if (num <= 100) {
                         onUpdateRow(row.id, {
                           percentage: val === "" ? ("" as unknown as number) : num,
