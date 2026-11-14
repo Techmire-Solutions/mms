@@ -79,6 +79,7 @@ export function useObligationsPageController() {
     replaceReps,
     replaceWakala,
     replaceDistributions,
+    replaceWakalaAggregate,
     replaceCollections,
     deleteCollection,
     restoreCollection,
@@ -105,7 +106,6 @@ export function useObligationsPageController() {
     runSetupSave,
   } = useObligationsPageActions({
     t,
-    collections,
     replaceCollections,
     deleteCollection,
     restoreCollection,
@@ -115,6 +115,9 @@ export function useObligationsPageController() {
     setShowForm,
     openComposer,
     canWriteMessaging,
+    refetchCollections: () => {
+      void collectionsResult.refetch();
+    },
   });
 
   // The collections list reports its own filtered count; until it does, fall back to the
@@ -144,6 +147,9 @@ export function useObligationsPageController() {
     ? activeConfigTab
     : "wakala";
   const listLoadFailed = collectionsResult.isError;
+  // Distinguishes "still fetching" from "no receipts yet": without it the Work tier renders an
+  // empty table during the first load (frontend audit F5).
+  const listLoading = collectionsResult.isLoading;
 
   return {
     t,
@@ -177,6 +183,7 @@ export function useObligationsPageController() {
     distributions,
     collections,
     listLoadFailed,
+    listLoading,
     handleMessageCollections,
     handleSaveCollection,
     handleDelete,
@@ -189,6 +196,7 @@ export function useObligationsPageController() {
     replaceReps,
     replaceWakala,
     replaceDistributions,
+    replaceWakalaAggregate,
     setActiveConfigTab,
     collectionSelection,
     refetchCollections: () => {

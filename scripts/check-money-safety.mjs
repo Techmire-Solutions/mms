@@ -21,8 +21,12 @@ const SCAN_DIRS = [
   "apps/backend/src/accounting",
   "apps/backend/src/db/repositories",
   "apps/frontend/src/lib/data",
+  // The template/receipt renderers format money for print; they were outside every scan root
+  // (audit S5).
+  "apps/frontend/src/lib",
   "apps/frontend/src/tenant/features/finance",
   "apps/frontend/src/tenant/features/accounting",
+  "apps/frontend/src/tenant/features/obligations",
 ];
 const SOURCE_EXT = /\.(ts|tsx)$/;
 const SKIP = /(?:^|\/)(?:__tests__|dist|node_modules)\/|\.(?:test|spec)\.(?:ts|tsx)$/;

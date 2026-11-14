@@ -32,7 +32,13 @@ export {
   saveWakalaType,
   bulkSaveWakalaTypes,
   replaceWakalaTypesForWorkspace,
+  replaceWakalaAggregateForWorkspace,
 } from "./obligationWakalaRepository.js";
+export {
+  countCatalogueDependents,
+  type CatalogueDependents,
+  type CatalogueKind,
+} from "./obligationCatalogueDependentsRepository.js";
 export {
   obligationDistributionRowToRecord,
   listObligationDistributionsByWorkspace,

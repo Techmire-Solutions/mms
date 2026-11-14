@@ -21,10 +21,20 @@ export function applyCollectedDelta(invoice: Invoice, delta: number): Invoice {
   // per archive/restore cycle and flip the derived status.
   const paidCents = Math.max(0, moneyToCents(invoice.paidAmt ?? 0) + moneyToCents(delta));
   const dueCents = moneyToCents(invoiceTotalDue(invoice));
+  // A fully credited invoice is settled by the waiver, not by cash: archiving the payment that
+  // once touched it must not revive it as `pending` (nothing is owed, yet the directory and the
+  // overdue sweep would treat it as collectible). `invoiceTotalDue` already nets the credit out.
+  const settledByCredit = dueCents <= 0 && moneyToCents(invoice.creditedAmt ?? 0) > 0;
   return {
     ...invoice,
     paidAmt: paidCents / 100,
-    status: paidCents <= 0 ? "pending" : paidCents >= dueCents ? "paid" : "partial",
+    status: settledByCredit
+      ? "paid"
+      : paidCents <= 0
+        ? "pending"
+        : paidCents >= dueCents
+          ? "paid"
+          : "partial",
   };
 }
 

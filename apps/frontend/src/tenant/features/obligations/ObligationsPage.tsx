@@ -88,6 +88,7 @@ export default function Obligations() {
                   reps={c.reps}
                   mujtahids={c.mujtahids}
                   listLoadFailed={c.listLoadFailed}
+                  listLoading={c.listLoading}
                   canWrite={c.canWrite}
                   canDelete={c.canDelete}
                   showDeleted={c.showDeleted}
@@ -132,6 +133,11 @@ export default function Obligations() {
                   onChangeWakala={(next) => c.runSetupSave(() => c.replaceWakala.mutateAsync(next))}
                   onChangeDistributions={(next) =>
                     c.runSetupSave(() => c.replaceDistributions.mutateAsync(next))
+                  }
+                  onSaveWakalaAggregate={
+                    c.canEditSetup
+                      ? (input) => c.runSetupSave(() => c.replaceWakalaAggregate.mutateAsync(input))
+                      : undefined
                   }
                 />
               </Suspense>

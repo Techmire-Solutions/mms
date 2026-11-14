@@ -73,14 +73,20 @@ interface WorkspaceResult {
   restatements: number;
 }
 
-/** Hour of day (0-23) in an IANA timezone; unknown zones fall back to UTC. */
+/**
+ * Hour of day (0-23) in an IANA timezone; unknown zones fall back to UTC.
+ *
+ * `hourCycle: "h23"` is deliberate: with `hour12: false` ICU may render midnight as `"24"` on some
+ * platforms, which would make a `localHour === 0` check silently never fire. Every gate here is
+ * `>=` today, but the pin keeps a future exact-hour rule safe.
+ */
 export function hourInTimeZone(timeZone: string, now: Date): number {
   try {
     return Number(
       new Intl.DateTimeFormat("en-GB", {
         timeZone: timeZone || "UTC",
         hour: "2-digit",
-        hour12: false,
+        hourCycle: "h23",
       }).format(now),
     );
   } catch {

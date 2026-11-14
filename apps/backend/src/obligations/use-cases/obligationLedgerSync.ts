@@ -11,25 +11,40 @@ import {
   tryPostObligationJournal,
   tryPostObligationRestoreJournal,
 } from "../../accounting/ledgerPosting/obligationPostingService.js";
+import { withTenant } from "../../db/tenant-context.js";
+import { auditCollectionsDeleted, auditCollectionsRestored } from "./obligationAuditTrail.js";
 import { logger } from "../../lib/logger.js";
 
 /**
- * Runs a ledger posting without failing the collection write it follows.
+ * How a posting failure is treated.
  *
- * Posting happens after the record is saved, so a posting failure must not
- * roll back or reject a save the user already completed. It is logged rather
- * than swallowed, because an unposted receipt is a bookkeeping gap somebody
- * has to find.
+ * - `strict` — the lifecycle transitions (archive / restore): any failure aborts both the posting
+ *   and the row write. An archived receipt whose reversal never posted is a silent bookkeeping gap.
+ * - `policy` — create / save: a **domain rejection** (4xx: closed fiscal year, archived account,
+ *   unbalanced entry) aborts the write, because a receipt the ledger refuses must not be recorded
+ *   as if it had been. An infrastructure failure (5xx) is logged and the write stands: a temporary
+ *   ledger outage must not block recording money that was actually received, and the audit row
+ *   added alongside the write makes the gap attributable.
  */
+type PostingFailureMode = "strict" | "policy";
+
+function isDomainRejection(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const statusCode = (error as { statusCode?: unknown }).statusCode;
+  return typeof statusCode === "number" && statusCode >= 400 && statusCode < 500;
+}
+
 async function runLedgerPosting(
   action: string,
   tenant: string,
   collectionId: string,
   posting: () => Promise<void>,
+  mode: PostingFailureMode,
 ): Promise<void> {
   try {
     await posting();
   } catch (error: unknown) {
+    if (mode === "strict" || isDomainRejection(error)) throw error;
     logger.error({ err: error, tenant, collectionId, action }, "Obligation ledger posting failed");
   }
 }
@@ -52,8 +67,12 @@ export async function postCreatedCollection(
   tenant: string,
   collection: ObligationCollection,
 ): Promise<void> {
-  await runLedgerPosting("create", tenant, collection.id, () =>
-    tryPostObligationJournal(tenant, collection),
+  await runLedgerPosting(
+    "create",
+    tenant,
+    collection.id,
+    () => tryPostObligationJournal(tenant, collection),
+    "policy",
   );
 }
 
@@ -63,8 +82,12 @@ export async function postSavedCollection(
   collection: ObligationCollection,
   previous: ObligationCollection | null,
 ): Promise<void> {
-  await runLedgerPosting("save", tenant, collection.id, () =>
-    syncObligationJournal(tenant, collection, previous),
+  await runLedgerPosting(
+    "save",
+    tenant,
+    collection.id,
+    () => syncObligationJournal(tenant, collection, previous),
+    "policy",
   );
 }
 
@@ -73,12 +96,17 @@ export async function postArchivedCollections(
   repo: ObligationsRepository,
   tenant: string,
   ids: readonly string[],
+  options: { strict?: boolean } = {},
 ): Promise<void> {
   const archived = await loadCollectionsById(repo, tenant, ids);
   for (const collection of archived.values()) {
     if (!collection.deletedAt) continue;
-    await runLedgerPosting("archive", tenant, collection.id, () =>
-      tryPostObligationArchiveJournal(tenant, collection),
+    await runLedgerPosting(
+      "archive",
+      tenant,
+      collection.id,
+      () => tryPostObligationArchiveJournal(tenant, collection),
+      options.strict ? "strict" : "policy",
     );
   }
 }
@@ -92,10 +120,15 @@ export async function postArchivedCollections(
 export async function postRestoredCollections(
   tenant: string,
   restored: readonly { collection: ObligationCollection; archivedAt: string }[],
+  options: { strict?: boolean } = {},
 ): Promise<void> {
   for (const { collection, archivedAt } of restored) {
-    await runLedgerPosting("restore", tenant, collection.id, () =>
-      tryPostObligationRestoreJournal(tenant, collection, archivedAt),
+    await runLedgerPosting(
+      "restore",
+      tenant,
+      collection.id,
+      () => tryPostObligationRestoreJournal(tenant, collection, archivedAt),
+      options.strict ? "strict" : "policy",
     );
   }
 }
@@ -112,4 +145,53 @@ export async function snapshotArchivedCollections(
     if (collection.deletedAt) snapshot.push({ collection, archivedAt: collection.deletedAt });
   }
   return snapshot;
+}
+
+/**
+ * Archives collections and reverses their postings in **one** transaction.
+ *
+ * The two steps used to be separate transactions with the posting failure swallowed to a log
+ * line: the row left every active view while the journal entry that says the money was received
+ * stayed on the books, and nothing recorded the gap. `withTenant` joins the ambient transaction,
+ * so the nested write and the posting below commit or roll back together.
+ */
+export async function archiveCollectionsWithLedger<T>(
+  repo: ObligationsRepository,
+  tenant: string,
+  ids: readonly string[],
+  run: () => Promise<T>,
+  audit?: { deletedBy: string; reason?: string },
+): Promise<T> {
+  return withTenant(tenant, async () => {
+    const result = await run();
+    // Same transaction as the archive: the DELETE row (with its reason) and the
+    // `entity.soft_deleted` outbox event cannot be lost while the row disappears from every view.
+    if (audit) {
+      const archived = await loadCollectionsById(repo, tenant, ids);
+      await auditCollectionsDeleted(
+        tenant,
+        [...archived.values()].filter((row) => row.deletedAt),
+        audit,
+      );
+    }
+    await postArchivedCollections(repo, tenant, ids, { strict: true });
+    return result;
+  });
+}
+
+/** Restores collections and re-applies their postings in one transaction (see above). */
+export async function restoreCollectionsWithLedger<T>(
+  repo: ObligationsRepository,
+  tenant: string,
+  ids: readonly string[],
+  run: (archived: { collection: ObligationCollection; archivedAt: string }[]) => Promise<T>,
+  audit?: { restoredBy: string | null },
+): Promise<T> {
+  return withTenant(tenant, async () => {
+    const archived = await snapshotArchivedCollections(repo, tenant, ids);
+    const result = await run(archived);
+    if (audit) await auditCollectionsRestored(tenant, archived, audit.restoredBy);
+    await postRestoredCollections(tenant, archived, { strict: true });
+    return result;
+  });
 }

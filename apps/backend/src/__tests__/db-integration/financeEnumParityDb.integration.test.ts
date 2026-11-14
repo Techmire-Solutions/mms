@@ -105,7 +105,11 @@ describe("DB constraints match the shared enums", () => {
            AND numeric_scale = 2
            AND table_name IN (
              'finance_invoices','finance_payments','finance_invoice_lines',
-             'accounting_journal_lines','accounting_entries'
+             'accounting_journal_lines','accounting_entries',
+             -- Obligation money also crosses the boundary through Number() (its repository is
+             -- in check:money-safety's db-adapter allow-list), so its 2-dp columns must obey the
+             -- same exact-cents bound.
+             'obligation_collections','obligation_distributions'
            )
       `);
       return result.rows as Array<{

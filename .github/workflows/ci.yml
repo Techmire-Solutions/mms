@@ -208,6 +208,12 @@ jobs:
       - name: Examinations test matrix
         run: pnpm run check:examinations-tests
 
+      - name: Obligations test matrix
+        run: pnpm run check:obligations-tests
+
+      - name: Obligations route injection
+        run: pnpm run check:obligations-route-injection
+
       - name: Examinations route injection
         run: pnpm run check:examinations-route-injection
 

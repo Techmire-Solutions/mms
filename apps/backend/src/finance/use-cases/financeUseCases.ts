@@ -22,6 +22,7 @@ import {
   paymentLedgerSensitiveChanges,
 } from "./financePaymentEditGuards.js";
 import { reconcilePaymentEditDeltas } from "./financePaymentArchiveDeltas.js";
+import { assertPaymentEditAllocationsValid } from "./financePaymentAllocationGuards.js";
 
 const EMPTY_FINANCE_METRICS: FinanceCommandMetricsSnapshot = {
   totalInvoices: 0,
@@ -174,6 +175,9 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
             id: alloc.id ?? `pa-${index + 1}`,
           })) as Payment["allocations"])
         : undefined;
+
+      // An edit is the second writer of the allocation rows, so it enforces the same invariants.
+      if (allocations) assertPaymentEditAllocationsValid(existing, record, allocations);
 
       return withTenant(tenant, async () => {
         // An unposted payment still moved invoice.paidAmt when it was created, so a

@@ -7,23 +7,44 @@ import {
   normalizeObligationsModulePreferences,
 } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
+import {
+  installContractErrorHandler,
+  standardRequestValidationErrorHandler,
+} from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canDeleteCollection } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
 import { obligationsUseCases } from "../../../obligations/use-cases/obligationsUseCases.js";
 import {
   getObligationPreferencesService,
   updateObligationPreferencesService,
 } from "../../../services/obligationPreferencesService.js";
-import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
-import { findObligationJournalEntry } from "../../../accounting/ledgerPosting/obligationVoucherLookup.js";
+import { mapDomainError } from "../../../lib/httpErrors.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
-const auditObligations = createCollectionAuditHelper("obligation_collections");
 const s = initServer();
 
+/**
+ * Maps a use-case failure to its declared ts-rest response.
+ *
+ * These handlers used to flatten every failure into `500 database_error`, so a domain rejection
+ * (`ValidationError`, `ConflictError`) reached the client as a server fault and was not even
+ * logged. Domain errors now keep their status and `type`; anything unmapped stays a 500 with the
+ * message the caller expects.
+ */
+function obligationsError(
+  error: unknown,
+  fallbackMessage: string,
+): { status: number; body: { type: string; message: string } } {
+  const mapped = mapDomainError(error);
+  if (mapped) return { status: mapped.status, body: mapped.body };
+  return { status: 500, body: { type: "database_error", message: fallbackMessage } };
+}
+
 export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
+  // The ts-rest adapter installs its own error handler; without this wrapper an escaped domain
+  // error or a response that drifted from its declared schema would not be mapped or logged.
+  installContractErrorHandler(fastify);
+
   const router = s.router(obligationContract, {
     listCollections: async ({
       query,
@@ -46,17 +67,13 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
-        const result = await withTenant(
-          String(request.tenant?.id),
-          () => obligationsUseCases.loadObligationCollections({ ...query, includeDeleted }),
-          { readOnly: true },
+        const result = await obligationsUseCases.runObligationsRead(() =>
+          obligationsUseCases.loadObligationCollections({ ...query, includeDeleted }),
         );
         return { status: 200 as const, body: result };
-      } catch {
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to list collections" },
-        };
+      } catch (error: unknown) {
+        request.log.warn({ err: error }, "obligations: listCollections failed");
+        return obligationsError(error, "Failed to list collections");
       }
     },
     listTypes: async ({
@@ -72,17 +89,13 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
-        const result = await withTenant(
-          String(request.tenant?.id),
-          () => obligationsUseCases.loadObligationTypes(),
-          { readOnly: true },
+        const result = await obligationsUseCases.runObligationsRead(() =>
+          obligationsUseCases.loadObligationTypes(),
         );
         return { status: 200 as const, body: result };
-      } catch {
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to list obligation types" },
-        };
+      } catch (error: unknown) {
+        request.log.warn({ err: error }, "obligations: Failed to list obligation types");
+        return obligationsError(error, "Failed to list obligation types");
       }
     },
     listMujtahids: async ({
@@ -98,17 +111,13 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
-        const result = await withTenant(
-          String(request.tenant?.id),
-          () => obligationsUseCases.loadMujtahids(),
-          { readOnly: true },
+        const result = await obligationsUseCases.runObligationsRead(() =>
+          obligationsUseCases.loadMujtahids(),
         );
         return { status: 200 as const, body: result };
-      } catch {
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to list mujtahids" },
-        };
+      } catch (error: unknown) {
+        request.log.warn({ err: error }, "obligations: Failed to list mujtahids");
+        return obligationsError(error, "Failed to list mujtahids");
       }
     },
     listDistributions: async ({
@@ -124,17 +133,13 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
-        const result = await withTenant(
-          String(request.tenant?.id),
-          () => obligationsUseCases.loadObligationDistributions(),
-          { readOnly: true },
+        const result = await obligationsUseCases.runObligationsRead(() =>
+          obligationsUseCases.loadObligationDistributions(),
         );
         return { status: 200 as const, body: result };
-      } catch {
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to list distributions" },
-        };
+      } catch (error: unknown) {
+        request.log.warn({ err: error }, "obligations: Failed to list distributions");
+        return obligationsError(error, "Failed to list distributions");
       }
     },
     getPreferences: async ({
@@ -153,11 +158,9 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
         const raw = await getObligationPreferencesService();
         const preferences = normalizeObligationsModulePreferences(raw);
         return { status: 200 as const, body: { preferences } };
-      } catch {
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to load preferences" },
-        };
+      } catch (error: unknown) {
+        request.log.warn({ err: error }, "obligations: Failed to load preferences");
+        return obligationsError(error, "Failed to load preferences");
       }
     },
     updatePreferences: async ({
@@ -175,19 +178,12 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
       }
       try {
         const normalized = normalizeObligationsModulePreferences(body);
-        const saved = await updateObligationPreferencesService(normalized);
-        await auditObligations(
-          user,
-          "UPDATE_OBLIGATIONS_PREFERENCES",
-          "Updated obligations module preferences",
-          "preferences",
-        );
+        // The service owns the save *and* its audit row; the controller no longer writes one.
+        const saved = await updateObligationPreferencesService(normalized, user);
         return { status: 200 as const, body: { success: true, preferences: saved } };
-      } catch {
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to update preferences" },
-        };
+      } catch (error: unknown) {
+        request.log.warn({ err: error }, "obligations: Failed to update preferences");
+        return obligationsError(error, "Failed to update preferences");
       }
     },
     getCollectionVoucher: async ({
@@ -204,7 +200,7 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
-        const result = await findObligationJournalEntry(String(request.tenant?.id), params.id);
+        const result = await obligationsUseCases.loadObligationCollectionVoucher(params.id);
         if (!result) {
           return {
             status: 404 as const,
@@ -218,16 +214,17 @@ export const obligationContractRouter: FastifyPluginAsync = async (fastify) => {
             accounts: result.accounts as unknown as Record<string, unknown>[],
           },
         };
-      } catch {
-        return {
-          status: 500 as const,
-          body: { type: "database_error", message: "Failed to load obligation voucher" },
-        };
+      } catch (error: unknown) {
+        request.log.warn({ err: error }, "obligations: Failed to load obligation voucher");
+        return obligationsError(error, "Failed to load obligation voucher");
       }
     },
   } as unknown as RouterImplementation<typeof obligationContract>);
 
   await fastify.register(s.plugin(router), {
     requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    // A handler body that no longer matches its declared schema must fail loudly here rather than
+    // ship a payload the client cannot rely on. Matches accounting/workshops/sessions/questionBank.
+    responseValidation: true,
   });
 };

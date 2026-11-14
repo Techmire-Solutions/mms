@@ -2,7 +2,11 @@ import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { OBLIGATIONS_MODULE_MANIFEST, obligationsReportQuerySchema, type User } from "@mms/shared";
 import { canReadCollection } from "../../../services/rbacService.js";
 import { obligationsUseCases } from "../../../obligations/use-cases/obligationsUseCases.js";
-import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
+import {
+  sendDatabaseError,
+  sendForbidden,
+  sendIfHttpDomainError,
+} from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 
 const COLLECTION = OBLIGATIONS_MODULE_MANIFEST.collectionKey;
@@ -25,8 +29,12 @@ export async function obligationReportRoutes(
         repId: parsed.data.repId?.trim() || undefined,
       });
       return reply.send(aggregates);
-    } catch {
-      return sendDatabaseError(reply, "Failed to load obligations report aggregates");
+    } catch (error: unknown) {
+      // Keep the module's error contract: a typed domain rejection is not a database failure.
+      return (
+        sendIfHttpDomainError(reply, error) ??
+        sendDatabaseError(reply, "Failed to load obligations report aggregates", error)
+      );
     }
   });
 }

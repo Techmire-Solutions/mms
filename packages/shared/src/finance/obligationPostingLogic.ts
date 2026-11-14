@@ -4,6 +4,7 @@
  */
 
 import { isJournalEntryBalanced, moneyToCents } from "./accountingLedgerInvariants.js";
+import { allocateWakalaSplits } from "./obligationSplitAllocation.js";
 import type { JournalLine } from "./accountingModuleManifest.js";
 
 export interface ObligationDistributionRule {
@@ -125,10 +126,7 @@ export function buildObligationPostingLines(input: ObligationPostingInput): Jour
     return isJournalEntryBalanced(lines) ? lines : null;
   }
 
-  // Calculate proportional split in cents to avoid floating-point drift
-  const totalPercentage = distributions.reduce((sum, d) => sum + (Number(d.percentage) || 0), 0);
-  const effectiveTotalPct = totalPercentage > 0 ? totalPercentage : 100;
-
+  // One allocation rule, shared with the frontend summary (obligationSplitAllocation).
   const distCentsList: {
     rule: ObligationDistributionRule;
     cents: number;
@@ -144,22 +142,15 @@ export function buildObligationPostingLines(input: ObligationPostingInput): Jour
     // exists in the chart, must not be silently redirected elsewhere.
     if (!targetAccountId || !knownAccountIds.has(targetAccountId)) return null;
 
-    const pct = Math.max(0, Number(dist.percentage) || 0);
-    const lineCents = Math.round((totalCents * pct) / effectiveTotalPct);
-    distCentsList.push({ rule: dist, cents: lineCents, targetAccountId });
+    distCentsList.push({ rule: dist, cents: 0, targetAccountId });
   }
 
-  // Reconcile penny rounding discrepancy onto the largest line
-  const allocatedCents = distCentsList.reduce((sum, d) => sum + d.cents, 0);
-  const diffCents = totalCents - allocatedCents;
-  if (diffCents !== 0 && distCentsList.length > 0) {
-    let maxIdx = 0;
-    for (let i = 1; i < distCentsList.length; i++) {
-      if (distCentsList[i].cents > distCentsList[maxIdx].cents) {
-        maxIdx = i;
-      }
-    }
-    distCentsList[maxIdx].cents += diffCents;
+  const allocatedCents = allocateWakalaSplits(
+    totalCents,
+    distributions.map((dist) => dist.percentage),
+  );
+  for (let i = 0; i < distCentsList.length; i += 1) {
+    distCentsList[i]!.cents = allocatedCents[i] ?? 0;
   }
 
   for (let i = 0; i < distCentsList.length; i++) {

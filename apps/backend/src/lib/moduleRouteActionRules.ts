@@ -261,5 +261,23 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "read",
   },
 
+  // Obligations: trash/restore are `obligations.delete` operations, and the handlers already
+  // require it. Left to the HTTP-method default (POST/DELETE → `write`), a custom role granted
+  // only `obligations.delete` was 403'd at the module gate — the same mismatch the students /
+  // enrollments / examinations / workshops / faculty rules above fix.
+  {
+    methods: ["DELETE"],
+    pattern: /^\/api\/obligations\/collections\/[^/]+$/,
+    action: "delete",
+    onlyModules: ["obligations"],
+  },
+  {
+    methods: ["POST"],
+    pattern:
+      /^\/api\/obligations\/collections\/(bulk-delete|bulk-restore)$|^\/api\/obligations\/collections\/[^/]+\/restore$/,
+    action: "delete",
+    onlyModules: ["obligations"],
+  },
+
   ...FINANCE_ACCOUNTING_MODULE_ROUTE_ACTION_RULES,
 ];

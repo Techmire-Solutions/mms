@@ -1,5 +1,6 @@
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ObligationCollectionsList } from "@/tenant/features/obligations/components/ObligationCollectionsList";
@@ -17,6 +18,7 @@ interface ObligationsWorkTierProps {
   reps: MujtahidRep[];
   mujtahids: Mujtahid[];
   listLoadFailed: boolean;
+  listLoading?: boolean;
   canWrite: boolean;
   canDelete: boolean;
   showDeleted: boolean;
@@ -45,6 +47,7 @@ export function ObligationsWorkTier({
   reps,
   mujtahids,
   listLoadFailed,
+  listLoading = false,
   canWrite,
   canDelete,
   showDeleted,
@@ -67,6 +70,16 @@ export function ObligationsWorkTier({
   onClearSelection,
 }: ObligationsWorkTierProps) {
   const { t } = useTranslation();
+
+  if (listLoading) {
+    return (
+      <div className="space-y-3" aria-busy="true" aria-label={t("common.loading")}>
+        {Array.from({ length: 5 }, (_unused, index) => (
+          <Skeleton key={index} className="h-row-xl w-full rounded-xl" />
+        ))}
+      </div>
+    );
+  }
 
   if (listLoadFailed) {
     return (

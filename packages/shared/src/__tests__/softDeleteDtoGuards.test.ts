@@ -446,7 +446,13 @@ describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
       { name: "finance", manifest: FINANCE_MODULE_MANIFEST, expectedReasonCapture: false },
       { name: "accounting", manifest: ACCOUNTING_MODULE_MANIFEST, expectedReasonCapture: false },
       { name: "hasanat", manifest: HASANAT_MODULE_MANIFEST, expectedReasonCapture: false },
-      { name: "obligations", manifest: OBLIGATIONS_MODULE_MANIFEST, expectedReasonCapture: false },
+      {
+        // A receipt is a financial document: archiving one must record the operator's reason, and
+        // it lands on the audit row as `newState.reason` (security audit A2).
+        name: "obligations",
+        manifest: OBLIGATIONS_MODULE_MANIFEST,
+        expectedReasonCapture: true,
+      },
       {
         // An archived exam removes marks from every report, so the operator's reason is captured
         // and lands on the audit row.

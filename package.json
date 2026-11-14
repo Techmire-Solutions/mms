@@ -44,6 +44,8 @@
     "ci:local:full": "bash scripts/ci/local-ci.sh --full",
     "prepare": "node -e \"try{require('node:child_process').execSync('git config core.hooksPath .githooks',{stdio:'ignore'})}catch{}\"",
     "check:examinations-tests": "node scripts/check-examinations-test-matrix.mjs",
+    "check:obligations-tests": "node scripts/check-obligations-test-matrix.mjs",
+    "check:obligations-route-injection": "node scripts/ci/check-obligations-route-injection.mjs",
     "check:accounting-route-injection": "node scripts/ci/check-accounting-route-injection.mjs",
     "check:accounting-route-security": "node scripts/ci/check-accounting-route-security.mjs",
     "check:accounting-coverage": "node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db",
@@ -54,8 +56,8 @@
   },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.9.10",
-    "turbo": "^2.11.10",
+    "prettier": "^3.10.1",
+    "turbo": "^2.11.11",
     "typescript": "~7.0.2",
     "typescript-v6": "npm:typescript@~6.0.3"
   }

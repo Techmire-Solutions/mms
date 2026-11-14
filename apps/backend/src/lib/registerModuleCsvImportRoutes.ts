@@ -44,6 +44,12 @@ export function registerModuleCsvImportRoutes(
     const user = request.user as User;
     if (!options.canWrite(user)) return sendForbidden(reply);
 
+    // Validate the document before the capability check: a malformed body is a 400 whatever this
+    // deployment can run, and answering 503 first hid a wrong blueprint behind "not available"
+    // (the obligations import schema described the tasks document — audit T5).
+    const parsed = parseRequest(options.bodySchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+
     // Never accept rows we cannot process: the attendance import contract is still the legacy
     // name-based shape with no runner, so this route answers 503 instead of enqueueing a doomed job.
     if (!hasBackgroundJobRunner(`${options.moduleId}:import`)) {
@@ -52,9 +58,6 @@ export function registerModuleCsvImportRoutes(
         "CSV import is not available for this module on this deployment",
       );
     }
-
-    const parsed = parseRequest(options.bodySchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
 
     const tenant = getRequestTenant();
     if (!tenant) return sendForbidden(reply);

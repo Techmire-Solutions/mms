@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { isoDateSchema } from "../core/isoDateSchema.js";
+import { nonNegativeMoneyDecimalAmountSchema } from "../money/moneySchemas.js";
 import { csvImportBodySchema } from "./csvImport.dto.js";
 
 export const attendanceImportRowSchema = z
@@ -68,18 +70,43 @@ export const hasanatImportRowSchema = z
 export const hasanatImportBodySchema = csvImportBodySchema(hasanatImportRowSchema);
 export type HasanatImportBody = z.infer<typeof hasanatImportBodySchema>;
 
+/**
+ * One obligation **receipt** row — the document the import dialog actually asks for.
+ *
+ * This schema used to be a copy of the tasks blueprint: `title`, `status` and `dueDate` (an
+ * obligation receipt has none of those), no receipt fields required, and `.passthrough()` so a real
+ * row passed unvalidated. The dialog builds its columns from `obligationsTransferSchema` (the SSOT),
+ * so the two disagreed and the endpoint validated the wrong document (audit T5).
+ *
+ * The field set and its requiredness now mirror the SSOT transfer schema exactly, so a file the
+ * dialog generates is a file this schema accepts — and the invented fields are rejected as unknown
+ * keys instead of being silently carried.
+ */
 export const obligationsImportRowSchema = z
   .object({
-    title: z.string().trim().max(200).optional(),
-    representative: z.string().trim().max(200).optional(),
-    donorName: z.string().trim().max(200).optional(),
-    amount: z.union([z.string(), z.number()]).optional(),
-    currency: z.string().trim().max(10).optional(),
-    status: z.string().trim().max(50).optional(),
-    dueDate: z.string().trim().max(50).optional(),
-    notes: z.string().trim().max(2000).optional(),
+    receiptNo: z.string().trim().min(1).max(100),
+    receivedDate: isoDateSchema,
+    donorName: z.string().trim().min(1).max(200),
+    representative: z.string().trim().min(1).max(200),
+    // A decimal string at the column's scale (numeric(12,2)). A JS number would reintroduce float
+    // rounding before the value ever reaches the database, so the string form is required and the
+    // scale is bounded to two decimals (`check:money-safety`).
+    amount: z.preprocess(
+      // A spreadsheet/JSON parser may hand us a number; stringify before validation so the value is
+      // judged as written. A float that is not exactly representable ("0.30000000000000004") is
+      // then rejected by the scale rule rather than rounded into a cent nobody entered.
+      (value) => (typeof value === "number" ? String(value) : value),
+      nonNegativeMoneyDecimalAmountSchema.refine(
+        (value) => /^-?\d{1,12}(\.\d{1,2})?$/.test(value),
+        { message: "obligations.import.amountScale" },
+      ),
+    ),
+    currency: z.string().trim().min(3).max(10).optional(),
+    // The receipt DTO's own enum — anything else cannot be stored.
+    paymentMode: z.enum(["Cash", "Online"]).optional(),
+    reference: z.string().trim().max(200).optional(),
   })
-  .passthrough();
+  .strict();
 
 export const obligationsImportBodySchema = csvImportBodySchema(obligationsImportRowSchema);
 export type ObligationsImportBody = z.infer<typeof obligationsImportBodySchema>;

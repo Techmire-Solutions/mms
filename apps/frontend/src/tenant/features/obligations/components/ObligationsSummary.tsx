@@ -15,7 +15,7 @@ import {
   useObligationsDistributionsCollection,
   useObligationsReportAggregates,
 } from "@/tenant/features/obligations/hooks/useObligationsApi";
-import { formatMoney } from "@mms/shared";
+import { formatMoney, OBLIGATIONS_COLLECTIONS_MAX_LIMIT } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -69,8 +69,18 @@ export function ObligationsSummary() {
     repsQuery.isError ||
     mujtahidsQuery.isError ||
     wakalaQuery.isError ||
-    distQuery.isError ||
-    aggregatesQuery.isError;
+    distQuery.isError;
+
+  // The aggregate is only the unfiltered headline. If it fails, the charts (all client-side) stay
+  // and the headline falls back to the client sum instead of blanking the whole tab.
+  const aggregatesFailed = aggregatesQuery.isError;
+  const serverTotals = model.hasFilters ? undefined : aggregatesQuery.data;
+  const headlineRecords = serverTotals?.totalCollections ?? model.totalRecords;
+  const headlineAmount = serverTotals?.totalAmount ?? model.totalAmount;
+  const truncated = collections.length >= OBLIGATIONS_COLLECTIONS_MAX_LIMIT;
+  // The charts are computed from the list, so waiting for it is the honest loading condition: the
+  // tab used to render zeroed KPIs and no charts while the first fetch was in flight (audit F5).
+  const summaryLoading = collectionsQuery.isLoading;
 
   if (isError) {
     return (
@@ -114,19 +124,27 @@ export function ObligationsSummary() {
         onClearFilters={model.clearFilters}
       />
 
-      <section aria-label={model.t("obligations.summary.kpi.aria")}>
+      {summaryLoading ? (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-busy="true">
+          {Array.from({ length: 4 }, (_unused, index) => (
+            <Skeleton key={index} className="h-20 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : null}
+
+      <section aria-label={model.t("obligations.summary.kpi.aria")} hidden={summaryLoading}>
         <ModuleCommandMetricsGrid
           items={[
             {
               icon: Receipt,
               label: model.t("obligations.summary.kpi.totalCollections"),
-              value: model.totalRecords,
+              value: headlineRecords,
               accent: "primary",
             },
             {
               icon: TrendingUp,
               label: model.t("obligations.summary.kpi.totalAmountReceived"),
-              value: formatCurrency(model.totalAmount),
+              value: formatCurrency(headlineAmount),
               accent: "success",
             },
             {
@@ -144,6 +162,17 @@ export function ObligationsSummary() {
           ]}
         />
       </section>
+
+      {truncated && model.hasFilters ? (
+        <p role="status" className="text-xs text-muted-foreground">
+          {model.t("obligations.summary.truncated")}
+        </p>
+      ) : null}
+      {aggregatesFailed ? (
+        <p role="status" className="text-xs text-muted-foreground">
+          {model.t("obligations.summary.aggregatesUnavailable")}
+        </p>
+      ) : null}
 
       <Suspense fallback={<Skeleton className="h-chart-md w-full rounded-xl" />}>
         <ObligationsSummaryChartsSection

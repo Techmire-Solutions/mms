@@ -5,6 +5,7 @@ import {
   paymentRecordSchema,
   type Invoice,
   type Payment,
+  type PaymentAllocation,
   type PaymentCreateInput,
 } from "@mms/shared";
 import { runInTransaction } from "../../db/database.js";
@@ -14,6 +15,7 @@ import { replacePaymentAllocations } from "../../db/repositories/financeBillingR
 import { tryPostPaymentJournal } from "../../accounting/ledgerPosting/ledgerPostingService.js";
 import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
 import { resolvePaymentFx } from "./financeDocumentFx.js";
+import { assertPaymentAllocationsValid } from "./financePaymentAllocationGuards.js";
 import { invoiceAuditState, recordInvoiceAudit, recordPaymentAudit } from "./financeAuditEvents.js";
 import {
   createFinanceInvoiceMutationOperations,
@@ -98,27 +100,32 @@ export function createFinanceMutationOperations({
       const resolvedId = String(record.id ?? `pay-${Date.now()}`);
       const normalizedPayment = paymentRecordSchema.parse({ ...record, id: resolvedId }) as Payment;
 
-      // Allocations and the ledger posting live in the same transaction as the
-      // payment and balance update: a posting failure must roll the whole
-      // payment back rather than leaving cash booked without a journal.
-      const settlePayment = async (payment: Payment, invoice?: Invoice) => {
-        const allocations = (record.allocations ?? []).map((allocation, index) => ({
+      // The rows the payment settles. An empty request means "the payment's own invoice, for the
+      // full applied amount", which is also the only shape the balance path can honour.
+      const resolveAllocations = (payment: Payment): PaymentAllocation[] => {
+        const supplied = (record.allocations ?? []).map((allocation, index) => ({
           ...allocation,
           id: allocation.id ?? `alloc-${index + 1}`,
         }));
-        await replacePaymentAllocations(
-          tenant,
-          payment.id,
-          allocations.length > 0
-            ? allocations
-            : [
-                {
-                  id: `alloc-${payment.id}`,
-                  invoiceId: payment.invoiceId,
-                  amount: payment.invoiceAmount ?? payment.amount,
-                },
-              ],
-        );
+        if (supplied.length > 0) return supplied;
+        return [
+          {
+            id: `alloc-${payment.id}`,
+            invoiceId: payment.invoiceId,
+            amount: payment.invoiceAmount ?? payment.amount,
+          },
+        ];
+      };
+
+      // Allocations and the ledger posting live in the same transaction as the
+      // payment and balance update: a posting failure must roll the whole
+      // payment back rather than leaving cash booked without a journal.
+      const settlePayment = async (
+        payment: Payment,
+        allocations: readonly PaymentAllocation[],
+        invoice?: Invoice,
+      ) => {
+        await replacePaymentAllocations(tenant, payment.id, [...allocations]);
         await tryPostPaymentJournal(tenant, payment, invoice);
       };
 
@@ -126,7 +133,9 @@ export function createFinanceMutationOperations({
         const existingPayment = await repo.findPaymentById(tenant, resolvedId);
         if (existingPayment) {
           // Replay: re-affirm allocations and posting idempotently, keep the row.
-          await settlePayment(existingPayment);
+          const replayAllocations = resolveAllocations(existingPayment);
+          assertPaymentAllocationsValid(existingPayment, replayAllocations);
+          await settlePayment(existingPayment, replayAllocations);
           return existingPayment;
         }
 
@@ -151,6 +160,11 @@ export function createFinanceMutationOperations({
         const applied = normalizedPayment.invoiceAmount ?? normalizedPayment.amount;
         // Compare and accumulate in integer cents: `paidAmt + applied` over 2 dp
         // floats can leave the stored balance a cent away from the allocations.
+        // Validate before anything is written: an allocation that disagrees with the payment is a
+        // payload problem, not a reason to roll back a half-applied settlement.
+        const allocations = resolveAllocations(normalizedPayment);
+        assertPaymentAllocationsValid(normalizedPayment, allocations);
+
         const appliedCents = moneyToCents(applied);
         const paidCents = moneyToCents(invoice.paidAmt ?? 0);
         const remainingCents = moneyToCents(getOutstandingAmountForInvoice(invoice));
@@ -171,7 +185,7 @@ export function createFinanceMutationOperations({
           method: normalizedPayment.method,
         });
         await repo.savePayment(tenant, normalizedPayment);
-        await settlePayment(normalizedPayment, invoice);
+        await settlePayment(normalizedPayment, allocations, invoice);
         await recordPaymentAudit(tenant, normalizedPayment);
         return normalizedPayment;
       });

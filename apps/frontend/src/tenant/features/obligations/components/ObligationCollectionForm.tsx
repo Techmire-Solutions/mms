@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Receipt } from "lucide-react";
 import {
   generateReceiptNo,
@@ -79,6 +79,9 @@ export function ObligationCollectionForm({
     Partial<Record<keyof ObligationCollectionFormState, AppTranslationKey>>
   >({});
   const [submitting, setSubmitting] = useState(false);
+  // `submitting` drives the button label but only applies on the next render, so two clicks in the
+  // same tick both passed `!submitting` and could create the receipt twice. The ref is the lock.
+  const inFlightRef = useRef(false);
   const [previousObligationTypeId, setPreviousObligationTypeId] = useState(form.obligation_type_id);
 
   const catalogCreate = useObligationCollectionCatalogQuickCreate({
@@ -127,10 +130,13 @@ export function ObligationCollectionForm({
       setErrors(validationErrors);
       return;
     }
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setSubmitting(true);
     try {
       await onSave(toObligationCollectionPayload(form));
     } finally {
+      inFlightRef.current = false;
       setSubmitting(false);
     }
   };
@@ -164,7 +170,7 @@ export function ObligationCollectionForm({
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            if (Object.keys(validationErrors).length === 0 && !submitting) {
+            if (Object.keys(validationErrors).length === 0 && !submitting && !inFlightRef.current) {
               void handleSave();
             }
           }}

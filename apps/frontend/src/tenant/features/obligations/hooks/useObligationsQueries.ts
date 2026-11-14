@@ -3,6 +3,7 @@
  * query hooks, and contract mutations.
  */
 import { apiContract, tsrClient } from "@/lib/api";
+import type { ObligationsCollectionsQuery } from "@mms/shared";
 import { queryOptions, useQueryClient } from "@tanstack/react-query";
 import { invalidateObligationsQueries } from "@/tenant/features/obligations/hooks/invalidateObligationsQueries";
 import {
@@ -15,12 +16,13 @@ import {
 } from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
 import { assertContractOk } from "@/lib/apiContractError";
 
-export function obligationsCollectionsListQueryOptions(query: Record<string, unknown> = {}) {
+/** The endpoint only honours `includeDeleted`/`limit`/`offset`; the type now enforces that. */
+export function obligationsCollectionsListQueryOptions(query: ObligationsCollectionsQuery = {}) {
   return queryOptions({
     queryKey: [...OBLIGATIONS_COLLECTIONS_QUERY_KEY, "contract", query] as const,
     queryFn: async ({ signal }) => {
       const response = await apiContract.obligations.listCollections({
-        query: query as Record<string, string>,
+        query: query as Record<string, string | number | boolean | undefined>,
         signal,
         fetchOptions: { signal },
       });
@@ -32,7 +34,10 @@ export function obligationsCollectionsListQueryOptions(query: Record<string, unk
   });
 }
 
-export function useObligationsContractCollections(query: Record<string, unknown>, enabled = true) {
+export function useObligationsContractCollections(
+  query: ObligationsCollectionsQuery,
+  enabled = true,
+) {
   return tsrClient.obligations.listCollections.useQuery({
     queryKey: [...OBLIGATIONS_COLLECTIONS_QUERY_KEY, "contract", query],
     queryData: { query },

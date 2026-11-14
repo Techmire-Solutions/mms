@@ -118,7 +118,11 @@ export async function runOverdueMarking(
   if (!prefs.overdueReminder && !prefs.feeReminders) {
     return { ran: false, detail: "reminders disabled by preferences" };
   }
-  const result = await runWithTenant(tenant, () => collectOverdueInvoices({ applyLateFee: false }));
+  // Pass the scheduler's tenant-zone day explicitly: the transition and the alert below must name
+  // the same calendar day, and re-deriving it would leave the two able to disagree.
+  const result = await runWithTenant(tenant, () =>
+    collectOverdueInvoices({ applyLateFee: false }, { today: localDate }),
+  );
   if (result.markedOverdue > 0) {
     await notificationsUseCases.notify(tenant, {
       kind: "finance_invoices_overdue",

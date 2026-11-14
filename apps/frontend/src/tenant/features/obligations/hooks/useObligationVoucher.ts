@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
 import type { Account, JournalEntry } from "@/lib/data/accountingData";
+import { OBLIGATIONS_VOUCHER_QUERY_KEY } from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
 
 export interface ObligationVoucherResult {
   entry: JournalEntry;
@@ -9,7 +10,7 @@ export interface ObligationVoucherResult {
 
 export function useObligationVoucher(collectionId: string | null | undefined) {
   return useQuery<ObligationVoucherResult | null>({
-    queryKey: ["obligation-voucher", collectionId],
+    queryKey: [...OBLIGATIONS_VOUCHER_QUERY_KEY, collectionId],
     queryFn: async () => {
       if (!collectionId) return null;
       const res = await apiContract.obligations.getCollectionVoucher({

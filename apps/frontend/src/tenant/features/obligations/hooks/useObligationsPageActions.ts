@@ -2,6 +2,7 @@ import type { ObligationCollection } from "@mms/shared";
 import { toMessagingRecipient } from "@mms/shared";
 import { notify } from "@/lib/notify";
 import { apiErrorMessage } from "@/lib/apiErrorMessage";
+import { isConflictError } from "@/lib/apiContractError";
 import {
   NotifiedObligationsMutationError,
   type useObligationsMutations,
@@ -12,7 +13,6 @@ import type { UseMessageComposerStateResult } from "@/hooks/useMessageComposerSt
 
 interface UseObligationsPageActionsParams {
   t: TranslationFunction;
-  collections: ObligationCollection[];
   replaceCollections: ReturnType<typeof useObligationsMutations>["replaceCollections"];
   deleteCollection: ReturnType<typeof useObligationsMutations>["deleteCollection"];
   restoreCollection: ReturnType<typeof useObligationsMutations>["restoreCollection"];
@@ -22,11 +22,12 @@ interface UseObligationsPageActionsParams {
   setShowForm: (show: boolean) => void;
   openComposer: UseMessageComposerStateResult["openComposer"];
   canWriteMessaging: boolean;
+  /** Reloads the directory after a conflict, so the user can see what changed. */
+  refetchCollections: () => void;
 }
 
 export function useObligationsPageActions({
   t,
-  collections,
   replaceCollections,
   deleteCollection,
   restoreCollection,
@@ -36,6 +37,7 @@ export function useObligationsPageActions({
   setShowForm,
   openComposer,
   canWriteMessaging,
+  refetchCollections,
 }: UseObligationsPageActionsParams) {
   const notifySaveFailure = (error: unknown) => {
     if (error instanceof NotifiedObligationsMutationError) return;
@@ -72,14 +74,33 @@ export function useObligationsPageActions({
 
   const handleSaveCollection = async (collectionPayload: ObligationCollection) => {
     try {
-      const existingCollection = collections.find((c) => c.id === collectionPayload.id);
-      await replaceCollections.mutateAsync(
-        existingCollection
-          ? collections.map((c) => (c.id === collectionPayload.id ? collectionPayload : c))
-          : [collectionPayload, ...collections],
-      );
+      // Send **one** record: the endpoint upserts by `(workspace, id)` and bumps `version` for
+      // every row in the payload, so the previously-sent whole directory made one create stale
+      // every other receipt (spurious 409s for other sessions) and shipped up to 2 000 rows per
+      // save. The contract is named `replaceCollections`, but the server never deletes — sending
+      // the directory would be data loss the day that name is honoured.
+      await replaceCollections.mutateAsync([collectionPayload]);
       setShowForm(false);
     } catch (error: unknown) {
+      // Two different 409s reach this catch, and they need different copy:
+      //  - `stale_write`: the OCC token lost a race → refresh and offer the current version.
+      //  - `conflict`: the unique receipt-number index rejected a duplicate → the number must
+      //    change; refreshing would not help. Receipt numbers are generated client-side from the
+      //    loaded list, so a collision is the expected failure, not a race.
+      const conflictType = (error as { type?: unknown } | null)?.type;
+      if (conflictType === "stale_write") {
+        refetchCollections();
+        notify.error(t("obligations.saveConflict"), {
+          description: apiErrorMessage(error, t("errors.state.generic")),
+        });
+        throw error;
+      }
+      if (isConflictError(error) && conflictType === "conflict") {
+        notify.error(t("obligations.saveDuplicateReceipt"), {
+          description: apiErrorMessage(error, t("errors.state.generic")),
+        });
+        throw error;
+      }
       notifySaveFailure(error);
       throw error;
     }

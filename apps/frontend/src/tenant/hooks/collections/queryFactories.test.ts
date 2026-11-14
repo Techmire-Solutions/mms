@@ -176,9 +176,11 @@ describe("TanStack Query v5 Query Options Factories (P8)", () => {
       expect(typeof obligationsFacade.obligationsCollectionsListQueryOptions).toBe("function");
       expect(typeof obligationsFacade.obligationsCommandMetricsQueryOptions).toBe("function");
 
+      // `page` is no longer part of the query: the endpoint honours only
+      // `includeDeleted`/`limit`/`offset`, so an ignored filter is a type error now.
       const listOptions = obligationsFacade.obligationsCollectionsListQueryOptions({
-        page: 1,
         limit: 25,
+        offset: 50,
       });
       expect(listOptions.queryKey).toBeDefined();
       expect(typeof listOptions.queryFn).toBe("function");

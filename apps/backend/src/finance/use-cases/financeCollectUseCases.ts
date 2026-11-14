@@ -8,7 +8,6 @@ import {
   getOutstandingAmountForInvoice,
   invoiceOpenBalance,
   isInvoiceDueForReminder,
-  todayISO,
   toMessagingRecipient,
   wasRemindedRecently,
   type CollectInvoicesBody,
@@ -19,6 +18,7 @@ import {
   type RemindInvoicesBody,
   type RemindInvoicesResult,
 } from "@mms/shared";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { tryParseMoneyAmountNumber } from "@mms/shared";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
@@ -64,11 +64,16 @@ function domainError(message: string, statusCode: number, type: string): Error {
  */
 export async function collectOverdueInvoices(
   input: CollectInvoicesBody = {},
+  options: { today?: string } = {},
 ): Promise<CollectInvoicesResult> {
   const tenant = requireTenant();
   const body = input;
+  // The sweep day is the *workspace's* calendar day, not the server's: a due date is a local
+  // promise, and the automation scheduler already reports the same day in its alert dedupe key.
+  // `todayISO()` (server-local) made a UTC+14 workspace flip a day early and a UTC-11 one a day
+  // late, and could pair a "1 marked" transition with a different date's alert key.
+  const today = options.today ?? (await workspaceTodayIso(tenant));
   const result = await withTenant(tenant, async () => {
-    const today = todayISO();
     const prefs = await loadFinanceModulePreferences();
     const lateFeePercent =
       tryParseMoneyAmountNumber(prefs?.lateFeePercent ?? DEFAULT_FINANCE_SETTINGS.lateFeePercent) ??
@@ -122,6 +127,7 @@ export async function collectOverdueInvoices(
 
 export async function remindOpenInvoices(
   input: RemindInvoicesBody = {},
+  options: { today?: string } = {},
 ): Promise<RemindInvoicesResult> {
   const tenant = requireTenant();
   const body = input;
@@ -132,7 +138,8 @@ export async function remindOpenInvoices(
   const reminderDays =
     Number.parseInt(prefs?.reminderDaysBefore ?? DEFAULT_FINANCE_SETTINGS.reminderDaysBefore, 10) ||
     0;
-  const today = todayISO();
+  // Same rule as the overdue sweep: the reminder window is measured in the workspace's days.
+  const today = options.today ?? (await workspaceTodayIso(tenant));
   const invoices = body.invoiceIds?.length
     ? await listInvoicesByIds(tenant, body.invoiceIds)
     : await listOpenInvoicesForCollect(tenant);

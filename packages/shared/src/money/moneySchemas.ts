@@ -28,6 +28,26 @@ export const nonNegativeMoneyDecimalAmountSchema = moneyDecimalAmountSchema.refi
   { message: "accounting.validation.moneyNonNegative" },
 );
 
+/**
+ * A non-negative **number** amount that is exactly representable in integer cents.
+ *
+ * Legacy DTOs still carry money as a JS number (the DB adapters convert at the boundary).
+ * Such a value must round-trip through integer cents exactly: more than two decimals is
+ * silently rounded by a `numeric(p,2)` column, and beyond 2^53 cents `Number` drops a cent.
+ * Use this instead of a bare `z.number().min(0)` until the DTO moves to
+ * {@link nonNegativeMoneyDecimalAmountSchema}.
+ */
+export const moneyNumberAmountSchema = z
+  .number()
+  .finite()
+  .min(0)
+  .refine((value) => Math.abs(value - Math.round(value * 100) / 100) < 1e-9, {
+    message: "accounting.validation.moneyScale",
+  })
+  .refine((value) => Number.isSafeInteger(Math.round(value * 100)), {
+    message: "accounting.validation.moneyDecimal",
+  });
+
 /** A positive exchange rate string with at most ten decimals (`numeric(20,10)`). */
 export const exchangeRateValueSchema = z
   .string()
@@ -42,6 +62,37 @@ export const moneyValueSchema = z
   .superRefine((value, ctx) =>
     refineMoneyForCurrency(value.amount, value.currency, ctx, ["amount"]),
   );
+
+/**
+ * Converts a money value to a display number **without a float parse**.
+ *
+ * Accepts a finite number, or a decimal string with at most two fraction digits; both are taken
+ * apart digit by digit and reassembled as integer cents before dividing, so `"0.1"` and `"0.2"`
+ * can never produce `0.30000000000000004`. Returns `null` for anything else (`""`, `"abc"`,
+ * `"1.005"`, `NaN`, `Infinity`, or cents beyond 2^53 where a number cannot represent them).
+ *
+ * Display-only: persistence must keep the exact decimal string / integer cents.
+ */
+export function toMoneyNumber(value: unknown): number | null {
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return null;
+    // Re-assemble through cents so a float like 1.005 is refused rather than silently rounded.
+    const cents = Math.round(value * 100);
+    return Math.abs(cents) <= Number.MAX_SAFE_INTEGER && Math.abs(cents / 100 - value) < 1e-9
+      ? cents / 100
+      : null;
+  }
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  const match = /^(-?)(\d{1,15})(?:\.(\d{1,2}))?$/.exec(trimmed);
+  if (!match) return null;
+  const sign = match[1] === "-" ? -1 : 1;
+  const whole = Number.parseInt(match[2] ?? "0", 10);
+  const fraction = (match[3] ?? "").padEnd(2, "0");
+  const cents = whole * 100 + Number.parseInt(fraction, 10);
+  if (Math.abs(cents) > Number.MAX_SAFE_INTEGER) return null;
+  return (sign * cents) / 100;
+}
 
 /**
  * Adds an issue when `amount` carries more decimals than `currency` allows

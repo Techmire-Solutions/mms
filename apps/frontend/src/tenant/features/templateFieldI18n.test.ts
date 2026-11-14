@@ -13,6 +13,9 @@ import {
   HASANAT_PRESETS,
 } from "@/tenant/features/hasanat/lib/hasanatTemplateData";
 import { AVAILABLE_STUDENT_CARD_FIELDS } from "@/tenant/features/students/lib/studentCardTemplateStore";
+import { AVAILABLE_FIELDS as OBLIGATION_RECEIPT_FIELDS } from "@/lib/invoiceTemplateFields";
+import { INVOICE_TEMPLATE_FIELD_KEY_PREFIX } from "@/lib/invoiceTemplateTypes";
+import { getAvailablePresets as getObligationReceiptPresets } from "@/lib/invoiceTemplatePresets";
 
 const enKeys = new Set(Object.keys(APP_TRANSLATIONS_EN));
 
@@ -50,6 +53,19 @@ const surfaces: Surface[] = [
     name: "student-card",
     fields: AVAILABLE_STUDENT_CARD_FIELDS,
     keyForField: (field) => `students.cardTemplate.field.${field}`,
+  },
+  {
+    // The receipt layout the Obligations module prints. It was absent here, so a new token added
+    // without a label key would have shipped untranslated with nothing failing (audit T2).
+    // Presets already carry the full translation key in `nameKey`.
+    name: "obligations-receipt",
+    fields: OBLIGATION_RECEIPT_FIELDS,
+    presets: getObligationReceiptPresets(),
+    keyForField: (field) => `${INVOICE_TEMPLATE_FIELD_KEY_PREFIX}${field}`,
+    keyForPreset: (presetKey) => {
+      const preset = getObligationReceiptPresets().find((entry) => entry.key === presetKey);
+      return preset?.nameKey ?? presetKey;
+    },
   },
 ];
 

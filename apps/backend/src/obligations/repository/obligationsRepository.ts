@@ -9,6 +9,7 @@ import type {
   ObligationsReportAggregates,
   ObligationsReportQuery,
 } from "@mms/shared";
+import type { CatalogueDependents } from "../../db/repositories/obligationCatalogueDependentsRepository.js";
 
 /**
  * Sole storage gateway for the obligations module (types, mujtahids, reps,
@@ -51,6 +52,26 @@ export interface ObligationsRepository {
   saveWakalaType(tenant: string, record: WakalaType): Promise<void>;
   bulkSaveWakalaTypes(tenant: string, records: WakalaType[]): Promise<void>;
   replaceWakalaTypesForWorkspace(tenant: string, records: WakalaType[]): Promise<void>;
+
+  /**
+   * Replaces a wakala and its distribution rules in one transaction: the pair is one aggregate,
+   * and saving them through two endpoints left a wakala with no rules in between.
+   */
+  replaceWakalaAggregateForWorkspace(
+    tenant: string,
+    wakalaTypes: WakalaType[],
+    distributions: ObligationDistribution[],
+  ): Promise<void>;
+
+  /**
+   * Counts the catalogue rows a delete of `kind`/`ids` would cascade to, so the use case can
+   * refuse the write instead of silently destroying the split rules.
+   */
+  countCatalogueDependents(
+    tenant: string,
+    kind: "mujtahid" | "representative" | "wakala" | "obligationType",
+    ids: string[],
+  ): Promise<CatalogueDependents>;
 
   // Distributions
   listObligationDistributionsByWorkspace(tenant: string): Promise<ObligationDistribution[]>;

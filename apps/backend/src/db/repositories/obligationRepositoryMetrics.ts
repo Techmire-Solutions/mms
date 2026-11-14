@@ -1,6 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
+  roundMoneyAmount,
   type ObligationsCommandMetricsSnapshot,
 } from "@mms/shared";
 import { obligationCollections, obligationTypes } from "../schema.js";
@@ -36,7 +37,7 @@ export async function aggregateObligationsCommandMetrics(
     const [row] = await tx
       .select({
         total: sql<number>`count(*)::int`,
-        totalAmount: sql<number>`coalesce(sum(${obligationCollections.amount}), 0)::float8`,
+        totalAmount: sql<string>`coalesce(sum(${obligationCollections.amount}), 0)::numeric::text`,
         cash: sql<number>`count(*) FILTER (WHERE ${obligationCollections.paymentMode} = 'Cash')::int`,
         online: sql<number>`count(*) FILTER (WHERE ${obligationCollections.paymentMode} = 'Online')::int`,
         newThisPeriod: sql<number>`count(*) FILTER (WHERE
@@ -53,7 +54,7 @@ export async function aggregateObligationsCommandMetrics(
 
     return {
       total: Number(row?.total ?? 0),
-      totalAmount: Number(row?.totalAmount ?? 0),
+      totalAmount: roundMoneyAmount(row?.totalAmount ?? "0"),
       cash: Number(row?.cash ?? 0),
       online: Number(row?.online ?? 0),
       newThisPeriod: Number(row?.newThisPeriod ?? 0),

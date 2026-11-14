@@ -38,6 +38,30 @@ describe("resolveModuleRouteAction", () => {
     );
   });
 
+  it("classifies obligations trash/restore as delete, not write", () => {
+    // The handlers require `obligations.delete`; leaving these to the method default (`write`)
+    // 403'd a custom role granted only the delete permission (security audit R1).
+    expect(
+      resolveModuleRouteAction("DELETE", "/api/obligations/collections/:id", "obligations"),
+    ).toBe("delete");
+    expect(
+      resolveModuleRouteAction("POST", "/api/obligations/collections/:id/restore", "obligations"),
+    ).toBe("delete");
+    expect(
+      resolveModuleRouteAction("POST", "/api/obligations/collections/bulk-delete", "obligations"),
+    ).toBe("delete");
+    expect(
+      resolveModuleRouteAction("POST", "/api/obligations/collections/bulk-restore", "obligations"),
+    ).toBe("delete");
+    // Recording, edits and catalogue writes stay `write`.
+    expect(
+      resolveModuleRouteAction("PUT", "/api/obligations/collections/bulk", "obligations"),
+    ).toBe("write");
+    expect(resolveModuleRouteAction("PUT", "/api/obligations/types/bulk", "obligations")).toBe(
+      "write",
+    );
+  });
+
   it("classifies POST endpoints that only read or export", () => {
     expect(resolveModuleRouteAction("POST", "/api/students/widget-aggregates", "students")).toBe(
       "read",

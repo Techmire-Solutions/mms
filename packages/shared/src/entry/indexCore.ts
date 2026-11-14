@@ -130,7 +130,7 @@ export * from "../core/sequenceNumberingUtils.js";
 export * from "../obligations/obligationsModuleSettings.js";
 export * from "../obligations/obligationsSetupConfigTypes.js";
 export * from "../obligations/obligationsReceiptNumberingUtils.js";
-export * from "../obligations/tasksModuleManifest.js";
+export * from "../tasks/tasksModuleManifest.js";
 export * from "../core/clientEntityIdUtils.js";
 export * from "../auth/industryTypes.js";
 export * from "../auth/industryProfiles.js";

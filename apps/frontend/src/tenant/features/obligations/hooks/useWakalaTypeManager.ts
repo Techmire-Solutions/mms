@@ -21,6 +21,7 @@ export function useWakalaTypeManager({
   mujtahids,
   onChangeWakala,
   onChangeDistributions,
+  onSaveAggregate,
 }: WakalaTypeManagerProps) {
   const { t } = useTranslation();
   const [modal, setModal] = useState<ModalState | null>(null);
@@ -45,7 +46,7 @@ export function useWakalaTypeManager({
   );
   const totalPct = (wakalaTypeId: string) =>
     getDistributions(wakalaTypeId).reduce(
-      (sum, distribution) => sum + parseFloat(String(distribution.percentage ?? 0)),
+      (sum, distribution) => sum + (Number(distribution.percentage) || 0),
       0,
     );
 
@@ -56,26 +57,35 @@ export function useWakalaTypeManager({
     initialDistributions?: Partial<ObligationDistribution>[],
   ) => {
     let wakalaId = form.id;
-    if (modal?.mode === "add") {
-      wakalaId = generateId("wt");
-      await onChangeWakala([...wakalaTypes, { ...form, id: wakalaId } as WakalaType]);
-    } else if (modal?.mode === "edit") {
-      await onChangeWakala(
-        wakalaTypes.map((wakalaType) =>
-          wakalaType.id === form.id ? (form as WakalaType) : wakalaType,
-        ),
-      );
-    }
-    if (initialDistributions && initialDistributions.length > 0 && wakalaId) {
-      const distsToAdd = initialDistributions.map((d) => ({
-        name: d.name || "",
-        percentage: Number(d.percentage || 0),
-        type: d.type || "Income",
-        id: generateId("od"),
-        wakala_type_id: wakalaId,
-        account_id: d.account_id ?? null,
-      })) as ObligationDistribution[];
-      await onChangeDistributions([...distributions, ...distsToAdd]);
+    const nextWakalaTypes =
+      modal?.mode === "add"
+        ? (() => {
+            wakalaId = generateId("wt");
+            return [...wakalaTypes, { ...form, id: wakalaId } as WakalaType];
+          })()
+        : wakalaTypes.map((wakalaType) =>
+            wakalaType.id === form.id ? (form as WakalaType) : wakalaType,
+          );
+
+    const distsToAdd = (initialDistributions ?? []).map(
+      (d) =>
+        ({
+          name: d.name || "",
+          percentage: Number(d.percentage || 0),
+          type: d.type || "Income",
+          id: generateId("od"),
+          wakala_type_id: wakalaId,
+          account_id: d.account_id ?? null,
+        }) as ObligationDistribution,
+    );
+    const nextDistributions = distsToAdd.length ? [...distributions, ...distsToAdd] : distributions;
+
+    if (onSaveAggregate) {
+      // One request: the wakala and its rules cannot land in separate transactions.
+      await onSaveAggregate({ wakalaTypes: nextWakalaTypes, distributions: nextDistributions });
+    } else {
+      await onChangeWakala(nextWakalaTypes);
+      if (distsToAdd.length > 0) await onChangeDistributions(nextDistributions);
     }
     setModal(null);
   };
@@ -83,10 +93,16 @@ export function useWakalaTypeManager({
   const handleConfirmDeleteWakala = async () => {
     if (!deleteWakalaTargetId) return;
     const targetId = deleteWakalaTargetId;
-    await onChangeWakala(wakalaTypes.filter((wakalaType) => wakalaType.id !== targetId));
-    await onChangeDistributions(
-      distributions.filter((distribution) => distribution.wakala_type_id !== targetId),
+    const nextWakalaTypes = wakalaTypes.filter((wakalaType) => wakalaType.id !== targetId);
+    const nextDistributions = distributions.filter(
+      (distribution) => distribution.wakala_type_id !== targetId,
     );
+    if (onSaveAggregate) {
+      await onSaveAggregate({ wakalaTypes: nextWakalaTypes, distributions: nextDistributions });
+    } else {
+      await onChangeWakala(nextWakalaTypes);
+      await onChangeDistributions(nextDistributions);
+    }
     setDeleteWakalaTargetId(null);
   };
 
@@ -95,9 +111,9 @@ export function useWakalaTypeManager({
     const otherDistributions = existing.filter((distribution) => distribution.id !== form.id);
     const newTotal =
       otherDistributions.reduce(
-        (sum, distribution) => sum + parseFloat(String(distribution.percentage ?? 0)),
+        (sum, distribution) => sum + (Number(distribution.percentage) || 0),
         0,
-      ) + parseFloat(String(form.percentage ?? 0));
+      ) + (Number(form.percentage) || 0);
     if (newTotal > 100) {
       notify.error(t("obligations.wakala.pctExceed", { pct: newTotal }));
       return;

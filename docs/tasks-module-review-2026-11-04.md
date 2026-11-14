@@ -2,7 +2,7 @@
 
 First dedicated review of the Tasks domain at `main` HEAD `60245210a` (working tree clean at review time).
 
-**Scope.** `packages/shared/src/obligations/tasksModuleManifest.ts`, `contracts/tasks.contract.ts`,
+**Scope.** `packages/shared/src/tasks/tasksModuleManifest.ts`, `contracts/tasks.contract.ts`,
 `obligations/tasksSecurity.test.ts`; `apps/backend/src/routes/tenant/tasks{Routes,ExportRoutes,SoftDeleteRoutes}.ts`,
 `apps/backend/src/tasks/**`, `services/task*.ts`, `db/repositories/task*.ts` + `taskRecipientRepository.ts`,
 `db/schema/tasksTables.ts` + `taskSettingsTables.ts`, migrations `0134`–`0137`/`0161`;

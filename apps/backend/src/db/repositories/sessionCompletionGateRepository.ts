@@ -112,8 +112,14 @@ export async function loadCompletionGates(
            AND (x.status <> 'completed' OR x.results_finalized_at IS NULL)
       ) unfinalized ON true
       LEFT JOIN LATERAL (
-        SELECT COALESCE(SUM(GREATEST(0, fi.final_amt - COALESCE(fi.paid_amt, 0) - fi.credited_amt)), 0)
-               AS "amount"
+        -- Every component of the canonical open balance (getOutstandingAmountForInvoice adds the
+        -- late fee), so leaving late_fee_amt out here let an enrollment owing only late fees pass
+        -- the certificate gate with zero dues.
+        SELECT COALESCE(
+                 SUM(GREATEST(0, fi.final_amt + COALESCE(fi.late_fee_amt, 0)
+                                - COALESCE(fi.paid_amt, 0) - COALESCE(fi.credited_amt, 0))),
+                 0
+               ) AS "amount"
           FROM finance_invoices fi
          WHERE fi.workspace_subdomain = e.workspace_subdomain
            AND fi.enrollment_id = e.id
