@@ -54,11 +54,9 @@ export async function selectOptionByMatchingText(
   select: Locator,
   text: string | RegExp,
 ): Promise<void> {
-  const optValue = await select
-    .locator("option")
-    .filter({ hasText: text })
-    .first()
-    .getAttribute("value");
+  const opt = select.locator("option").filter({ hasText: text }).first();
+  await opt.waitFor({ state: "attached", timeout: 15_000 }).catch(() => undefined);
+  const optValue = await opt.getAttribute("value");
   if (!optValue) throw new Error(`Could not find option matching "${String(text)}"`);
   await select.selectOption(optValue);
 }
