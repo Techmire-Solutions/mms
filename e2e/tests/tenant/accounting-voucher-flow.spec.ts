@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { bootstrapAuthenticatedTenantViaApi } from "../../helpers/tenantApiBootstrap.js";
 import type { TenantBootstrapCredentials } from "../../helpers/tenantBootstrap.js";
+import { selectOptionByMatchingText } from "../../helpers/tenantOperations.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
 process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long";
@@ -81,27 +82,30 @@ test.describe.serial("Accounting voucher write flow", { tag: "@local-only" }, ()
     /** Pick a seeded account in a line row by typing its code. */
     const pickAccount = async (lineNumber: number, code: string) => {
       const select = dialog.getByLabel(new RegExp(`Account for line ${lineNumber}`, "i")).first();
-      await select.click();
-      await select.fill(code);
-      await page
-        .getByRole("option", { name: new RegExp(code) })
-        .first()
-        .click();
+      await selectOptionByMatchingText(select, code);
     };
 
     await pickAccount(1, "10100");
     await pickAccount(2, "41000");
 
+    await dialog.locator("#journal-entry-description").fill("Test journal voucher");
+
+    const mirrorCheckbox = dialog.getByRole("checkbox", { name: /Copy amount to the other line/i });
+    if (await mirrorCheckbox.isChecked()) {
+      await mirrorCheckbox.uncheck();
+    }
+
     await dialog.getByLabel(/Debit amount for line 1/i).fill("100");
     await dialog.getByLabel(/Credit amount for line 2/i).fill("90");
 
     // Unbalanced posted voucher: the client rule refuses before any request.
-    await dialog.getByRole("button", { name: /Post Entry/i }).click();
-    await expect(dialog.getByText(/Debits must equal Credits/i)).toBeVisible({ timeout: 10_000 });
+    await expect(dialog.getByRole("button", { name: /Post Entry/i })).toBeDisabled();
+    await expect(dialog.getByRole("status")).toContainText(/Out of balance/i);
     await expect(dialog).toBeVisible();
 
     // Balance it and post for real.
     await dialog.getByLabel(/Credit amount for line 2/i).fill("100");
+    await expect(dialog.getByRole("button", { name: /Post Entry/i })).toBeEnabled();
     await dialog.getByRole("button", { name: /Post Entry/i }).click();
     await expect(dialog).toBeHidden({ timeout: 20_000 });
 
