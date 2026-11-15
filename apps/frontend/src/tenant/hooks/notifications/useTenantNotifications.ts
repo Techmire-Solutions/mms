@@ -1,6 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
+import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
 import { resolveDashboardRole } from "@/lib/dashboardRole";
 import {
   useDashboardData,
@@ -27,12 +28,18 @@ export interface TenantNotification extends DashboardNotificationItem {
 export function useTenantNotifications() {
   const { t } = useTranslation();
   const { can } = usePermissions();
+  const { effectiveModules } = useModuleAccess();
   const { formatCurrency } = useFinanceCurrency();
   const { data: preferences } = useDashboardPreferencesQuery();
   const dashboardRole = resolveDashboardRole(can);
+  // The shell renders on every page, so it must obey the same module gate as the dashboard:
+  // without `effectiveModules`/`can` the fallback metrics request every role-permitted module,
+  // including modules disabled for this workspace (e.g. finance → 403 on /api/finance/metrics).
   const { financeMetrics, attendanceMetrics, studentMetricsInactive } = useDashboardData(
     [],
     dashboardRole,
+    effectiveModules,
+    can,
   );
   const { isRead, markRead, markAllRead } = useNotificationReadState();
   const stored = useStoredNotifications();
