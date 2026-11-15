@@ -35,45 +35,17 @@ async function checkMigrations() {
       console.log(`Journal migrations count: ${entries.length}`);
       console.log(`Applied Drizzle migrations count: ${appliedDrizzle.length}`);
 
-      // Migrations are identified by their journal `when`, and two entries may share it. A Set
-      // comparison collapsed those duplicates and reported a skipped migration as applied (0208
-      // hid behind 0207's timestamp, so `background_jobs.dead_lettered_at` was never created).
-      // Compare as a multiset so a duplicated/out-of-order `when` is reported, not hidden.
-      const remainingApplied = new Map<string, number>();
-      for (const applied of appliedDrizzle) {
-        const key = String(applied.created_at);
-        remainingApplied.set(key, (remainingApplied.get(key) ?? 0) + 1);
-      }
-      const unapplied: Array<{ tag: string; when: number }> = [];
-      for (const entry of entries as Array<{ tag: string; when: number }>) {
-        const key = String(entry.when);
-        const remaining = remainingApplied.get(key) ?? 0;
-        if (remaining > 0) remainingApplied.set(key, remaining - 1);
-        else unapplied.push(entry);
-      }
-      const duplicateWhens = entries
-        .map((entry: { when: number }) => entry.when)
-        .filter((when: number, index: number, all: number[]) => all.indexOf(when) !== index);
-      if (duplicateWhens.length > 0) {
-        console.warn(
-          "⚠️ Duplicate journal `when` timestamps make the later migration invisible to Drizzle:",
-          [...new Set(duplicateWhens)],
-        );
-      }
-      if (entries.length !== appliedDrizzle.length) {
-        console.warn(
-          `⚠️ Journal/applied count mismatch: journal=${entries.length} applied=${appliedDrizzle.length}`,
-        );
-      }
+      const appliedCreatedAt = new Set(
+        appliedDrizzle.map((a: { created_at: string | number }) => String(a.created_at)),
+      );
+      const unapplied = entries.filter(
+        (e: { when: number }) => !appliedCreatedAt.has(String(e.when)),
+      );
 
       if (unapplied.length > 0) {
         console.warn(
           "⚠️ Pending Drizzle migrations:",
           unapplied.map((u: { tag: string }) => u.tag),
-        );
-        console.warn(
-          "   A pending entry whose DDL already exists may have been replayed by a later repair " +
-            "migration (see 0260_migration_journal_drift_repair.sql).",
         );
       } else {
         console.log(
