@@ -45,14 +45,11 @@ beforeEach(() => {
 });
 
 describe("attendance job runners", () => {
-  it("registers the export and absence-scan runners", () => {
+  it("registers the export, import, and absence-scan runners", () => {
     registerAttendanceJobRunners();
     expect(hasBackgroundJobRunner("attendance:export")).toBe(true);
+    expect(hasBackgroundJobRunner("attendance:import")).toBe(true);
+    expect(hasBackgroundJobRunner("attendance-calendar:import")).toBe(true);
     expect(hasBackgroundJobRunner("attendance:absence-scan")).toBe(true);
-  });
-
-  it("does not register an import runner (the import contract is still legacy)", () => {
-    registerAttendanceJobRunners();
-    expect(hasBackgroundJobRunner("attendance:import")).toBe(false);
   });
 });

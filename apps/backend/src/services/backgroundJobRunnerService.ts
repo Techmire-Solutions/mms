@@ -2,7 +2,6 @@ import { registerAttendanceJobRunners } from "./backgroundJobAttendanceRunners.j
 import { registerExaminationsJobRunners } from "./backgroundJobExaminationsRunners.js";
 import { registerHasanatJobRunners } from "./backgroundJobHasanatRunners.js";
 import { registerObligationsJobRunners } from "./backgroundJobObligationsRunners.js";
-import { randomUUID } from "node:crypto";
 import {
   CONTACTS_MODULE_MANIFEST,
   ENROLLMENTS_MODULE_MANIFEST,
@@ -30,6 +29,8 @@ import {
   buildStudentsCsvExport,
   generateStudentsCsvStreamChunks,
 } from "./studentsExportService.js";
+import { registerWorkshopsExportJobRunner } from "./backgroundJobWorkshopsRunners.js";
+import { registerFinanceJobRunners } from "./backgroundJobFinanceRunners.js";
 import type { SessionsExportQueryInput } from "./sessionsExportService.js";
 import {
   buildSessionsCsvExport,
@@ -57,15 +58,15 @@ import { registerEnrollmentsImportJobRunner } from "../enrollments/enrollmentsIm
 import { registerSessionImportJobRunner } from "../sessions/use-cases/sessionImportJob.js";
 import { registerSessionsBulkJobRunners } from "./backgroundJobSessionsBulkRunners.js";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
-import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
 import { registerContactsVcfExportJobRunner } from "../lib/registerContactsVcfExportJobRunner.js";
-import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
+import { registerMessagingImportJobRunner } from "./backgroundJobMessagingRunners.js";
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";
 import { registerTasksBackgroundJobRunners } from "./backgroundJobTasksRunners.js";
 import { registerQuestionBankBackgroundJobRunners } from "./backgroundJobQuestionBankRunners.js";
 import { registerWorkshopImportJobRunner } from "../workshops/jobs/workshopImportJob.js";
 import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
+import { registerUsersImportJobRunner } from "./backgroundJobUsersRunners.js";
 import { registerStudentsBulkJobRunners } from "../students/studentsBulkStatusService.js";
 import { registerDocumentAndFinanceJobRunners } from "./backgroundJobDocumentFinanceRunners.js";
 import { registerAccountingBackgroundJobRunners } from "./backgroundJobAccountingRunners.js";
@@ -94,6 +95,8 @@ export function registerDefaultBackgroundJobRunners(): void {
   registerStudentsBulkJobRunners();
   registerEnrollmentsImportJobRunner();
   registerWorkshopImportJobRunner();
+  registerWorkshopsExportJobRunner();
+  registerFinanceJobRunners();
   registerModuleCsvExportJobRunner({
     moduleId: contactsModuleId,
     entityNounPlural: "contacts",
@@ -158,6 +161,7 @@ export function registerDefaultBackgroundJobRunners(): void {
   });
 
   registerStudentsImportJobRunner();
+  registerUsersImportJobRunner();
 
   registerModuleCsvExportJobRunner({
     moduleId: sessionsModuleId,
@@ -235,58 +239,7 @@ export function registerDefaultBackgroundJobRunners(): void {
       }),
   });
 
-  registerModuleCsvImportJobRunner<{
-    title?: string;
-    message?: string;
-    channel?: string;
-    notes?: string;
-  }>({
-    moduleId: messagingModuleId,
-    entityNounPlural: "templates",
-    importBatch: async (rows, ctx) => {
-      let imported = 0;
-      let failed = 0;
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        const title = row.title?.trim();
-        const body = row.message?.trim();
-        if (!title || !body) {
-          failed++;
-          continue;
-        }
-        const channel = (
-          ["sms", "whatsapp", "email", "all"].includes(row.channel?.toLowerCase() || "")
-            ? row.channel?.toLowerCase()
-            : "all"
-        ) as "sms" | "whatsapp" | "email" | "all";
-        const category = (
-          ["general", "academic", "financial", "attendance", "emergency"].includes(
-            row.notes?.toLowerCase() || "",
-          )
-            ? row.notes?.toLowerCase()
-            : "general"
-        ) as "general" | "academic" | "financial" | "attendance" | "emergency";
-
-        try {
-          await messagingUseCases.saveMessageTemplate(ctx.tenant, {
-            id: `custom_${randomUUID()}`,
-            label: title,
-            body,
-            channel,
-            category,
-            updatedAt: new Date().toISOString(),
-          });
-          imported++;
-        } catch {
-          failed++;
-        }
-        if ((i + 1) % 10 === 0) {
-          await ctx.updateProgress(i + 1, rows.length);
-        }
-      }
-      return { imported, failed, total: rows.length };
-    },
-  });
+  registerMessagingImportJobRunner();
 
   // Headless BiDi Document Engine & Streaming Excel exports
   registerDocumentAndFinanceJobRunners();

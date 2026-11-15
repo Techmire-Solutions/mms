@@ -2,9 +2,14 @@ import type { FastifyPluginAsync } from "fastify";
 import type { Contact, User } from "@mms/shared";
 import { CONTACTS_MODULE_MANIFEST, getDisplayName } from "@mms/shared";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
-import { sendDatabaseError, sendNotFound } from "../../../lib/httpErrors.js";
+import {
+  sendDatabaseError,
+  sendNotFound,
+  sendServiceUnavailable,
+} from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { canReadContacts, canDeleteContacts } from "../../../services/rbacService.js";
+import { hasBackgroundJobRunner } from "../../../services/backgroundJobWorkerService.js";
 import { contactUseCases } from "../../../contacts/use-cases/contactUseCases.js";
 import {
   buildContactMergeBodySchema,
@@ -49,6 +54,14 @@ export const contactAuditExportRoutes: FastifyPluginAsync = async (fastify) => {
 
     const parsed = parseRequest(contactsImportBodySchema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed.message);
+
+    // Fail closed: never enqueue a job the worker cannot run (mirrors the shared registrar).
+    if (!hasBackgroundJobRunner(`${CONTACTS_MODULE_MANIFEST.moduleId}:import`)) {
+      return sendServiceUnavailable(
+        reply,
+        "CSV import is not available for contacts on this deployment",
+      );
+    }
 
     const label = parsed.data.label?.trim() || "Importing contacts…";
     const job = await enqueueContactBackgroundJob({

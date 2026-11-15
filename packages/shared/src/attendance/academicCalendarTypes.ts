@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { isoDateSchema as isoDate } from "../core/isoDateSchema.js";
 import { deepSanitizeStrings } from "../schemas/sanitize.js";
+import { csvImportBodySchema } from "../schemas/csvImport.dto.js";
 
 /** Academic calendar exceptions (Attendance → Setup → Calendar). */
 export const ACADEMIC_CALENDAR_EVENT_KINDS = [
@@ -118,3 +119,12 @@ export const academicCalendarImportBodySchema = z.preprocess(
     .strict(),
 );
 export type AcademicCalendarImportBody = z.infer<typeof academicCalendarImportBodySchema>;
+
+/**
+ * Standard queued CSV import enqueue body (POST `/api/attendance/calendar/import`).
+ * Same row shape as the legacy sync body, minus the inline `dryRun` flag — dry-run is the
+ * standard import dialog's client-side preflight concern.
+ */
+export const academicCalendarCsvImportBodySchema = csvImportBodySchema(
+  academicCalendarImportRowSchema,
+);

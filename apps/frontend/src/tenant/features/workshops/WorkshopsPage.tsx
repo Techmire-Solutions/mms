@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Plus, Presentation } from "lucide-react";
+import { Download, Plus, Presentation } from "lucide-react";
 import {
   WORKSHOPS_MODULE_MANIFEST,
+  workshopsTransferSchema,
   type WorkshopEvent,
   type WorkshopEventCreate,
   type WorkshopStatus,
@@ -18,6 +19,7 @@ import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { notify } from "@/lib/notify";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import {
   useCreateWorkshop,
   useDeleteWorkshop,
@@ -47,6 +49,13 @@ export default function WorkshopsPage(): React.JSX.Element {
     useWorkSelection<string>();
   const { canRead, canWrite, canManage, canDelete, canViewSetup, canEditSetup } =
     useModulePermissions(WORKSHOPS_MODULE_MANIFEST);
+  const { handleExport, isExporting } = useGenericModuleExport({
+    path: "/api/workshops/export/csv",
+    filename: "workshops.csv",
+    auditPath: "/api/workshops/export-audit",
+    columns: workshopsTransferSchema.exportColumns,
+    canExport: canRead && !viewingDeleted,
+  });
   // Setup defaults prefill a new workshop's completion criteria.
   const { data: preferences } = useWorkshopPreferences({ enabled: canWrite });
 
@@ -140,11 +149,24 @@ export default function WorkshopsPage(): React.JSX.Element {
       headerTitle={t("nav.workshops")}
       headerSubtitle={t("page.workshops.subtitle")}
       headerActions={
-        canWrite && !viewingDeleted ? (
-          <Button variant="primary" icon={Plus} onClick={openCreate}>
-            {t("workshops.create")}
-          </Button>
-        ) : null
+        <div className="flex items-center gap-2">
+          {canRead && !viewingDeleted ? (
+            <Button
+              variant="ghost"
+              icon={Download}
+              onClick={() => void handleExport()}
+              loading={isExporting}
+              disabled={isExporting}
+            >
+              {t("common.export")}
+            </Button>
+          ) : null}
+          {canWrite && !viewingDeleted ? (
+            <Button variant="primary" icon={Plus} onClick={openCreate}>
+              {t("workshops.create")}
+            </Button>
+          ) : null}
+        </div>
       }
       metricsStrip={
         <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-muted-foreground">

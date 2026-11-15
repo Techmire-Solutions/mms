@@ -21,6 +21,7 @@ export interface ObligationTransferEntity {
   receivedDate: string;
   donorName?: string;
   representative: string;
+  obligationType?: string;
   amount: string | number;
   currency?: string;
   paymentMode?: string;
@@ -63,6 +64,14 @@ export const obligationsTransferSchema: ModuleTransferSchema<ObligationTransferE
         required: true,
         sample: "Sayyid Ja'far",
         extract: (o) => o.representative || "",
+      },
+      {
+        key: "obligationType",
+        label: "Obligation Type",
+        aliases: ["type", "obligation_type", "category"],
+        required: true,
+        sample: "Zakat",
+        extract: (o) => o.obligationType || "",
       },
       {
         key: "amount",
