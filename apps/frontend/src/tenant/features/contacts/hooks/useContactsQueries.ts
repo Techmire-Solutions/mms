@@ -7,6 +7,7 @@
 import { apiContract, tsrClient } from "@/lib/api";
 import {
   infiniteQueryOptions,
+  keepPreviousData,
   queryOptions,
   useInfiniteQuery,
   useQueryClient,
@@ -135,6 +136,7 @@ export function useContactPickerSearch(query: ContactPickerSearchQuery, enabled 
     queryData: { query: query as Record<string, unknown> },
     enabled,
     staleTime: 15_000,
+    placeholderData: keepPreviousData,
   });
 }
 
