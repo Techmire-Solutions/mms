@@ -18,6 +18,7 @@ vi.mock("../services/backgroundJobWorkerService.js", () => ({
 
 vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: vi.fn(),
+  getRequestAuditContext: () => null,
 }));
 
 vi.mock("../services/auditTrailService.js", () => ({

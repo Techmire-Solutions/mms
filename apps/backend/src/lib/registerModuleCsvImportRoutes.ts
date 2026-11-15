@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeAny } from "zod";
 import type { User } from "@mms/shared";
-import { getRequestTenant } from "./tenantContext.js";
+import { getRequestAuditContext, getRequestTenant } from "./tenantContext.js";
 import { sendForbidden, sendServiceUnavailable } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
 import {
@@ -70,6 +70,7 @@ export function registerModuleCsvImportRoutes(
 
     const label = data.label?.trim() || options.defaultLabel;
     const userId = String(user.id);
+    const correlationId = getRequestAuditContext()?.correlationId;
     const idempotencyKey =
       data.idempotencyKey ??
       buildDeterministicJobKey({
@@ -87,6 +88,7 @@ export function registerModuleCsvImportRoutes(
         label,
         viewerRole: user.role,
         language: (request.headers?.["accept-language"] as string | undefined) || "en",
+        correlationId,
       };
       if (existing.status === "failed") {
         return reply
@@ -133,6 +135,7 @@ export function registerModuleCsvImportRoutes(
           label,
           viewerRole: user.role,
           language: (request.headers?.["accept-language"] as string | undefined) || "en",
+          correlationId,
         },
       );
     } catch (err) {

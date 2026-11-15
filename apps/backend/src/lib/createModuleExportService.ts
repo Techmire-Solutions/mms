@@ -40,6 +40,18 @@ function tooManyRowsError(): Error & { statusCode: number; type: string } {
   return error;
 }
 
+/**
+ * The module manifest is the SSOT for soft-delete export policy. `exportsIncludeDeleted:
+ * false` forbids archived rows in exports regardless of the caller's trash permission
+ * (`mms-reports.md` §7 · `docs/soft-delete.md` §5 & §7.6).
+ */
+function effectiveAllowDeleted(
+  manifest: { softDelete?: { exportsIncludeDeleted?: boolean } },
+  allowDeleted: boolean | undefined,
+): boolean {
+  return allowDeleted === true && manifest.softDelete?.exportsIncludeDeleted !== false;
+}
+
 export function createModuleExportService<
   TRow,
   TQuery,
@@ -50,7 +62,10 @@ export function createModuleExportService<
     query: TQuery,
     exportOptions: ModuleExportOptions & { columns?: TCol[] },
   ): AsyncGenerator<string, { count: number; filename: string }, undefined> {
-    const normalized = options.normalizeQuery(query, exportOptions.allowDeleted === true);
+    const normalized = options.normalizeQuery(
+      query,
+      effectiveAllowDeleted(options.manifest, exportOptions.allowDeleted),
+    );
     const includeIds = normalized.includeIds?.map(String).filter(Boolean);
     const prepared = await options.prepareExport(exportOptions);
     const rawFilename = exportOptions.filename?.trim() || options.manifest.defaultExportFilename;
@@ -77,7 +92,10 @@ export function createModuleExportService<
     query: TQuery,
     exportOptions: ModuleExportOptions & { columns?: TCol[] },
   ): Promise<TRow[]> {
-    const normalized = options.normalizeQuery(query, exportOptions.allowDeleted === true);
+    const normalized = options.normalizeQuery(
+      query,
+      effectiveAllowDeleted(options.manifest, exportOptions.allowDeleted),
+    );
     const includeIds = normalized.includeIds?.map(String).filter(Boolean);
     const allRows: TRow[] = [];
 

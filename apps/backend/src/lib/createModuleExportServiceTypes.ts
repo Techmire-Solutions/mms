@@ -10,6 +10,8 @@ export type ModuleCsvExportColumn = { id?: string; label: string };
 export type ModuleCsvExportManifestBits = {
   defaultExportFilename: string;
   exportChunkSize: number;
+  /** Soft-delete policy; `exportsIncludeDeleted: false` forbids archived rows in exports. */
+  softDelete?: { exportsIncludeDeleted?: boolean };
 };
 
 export type ModuleExportQueryInput<TQuery> = Omit<TQuery, "includeDeleted"> & {

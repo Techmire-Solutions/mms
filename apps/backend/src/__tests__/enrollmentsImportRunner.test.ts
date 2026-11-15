@@ -6,7 +6,11 @@ vi.mock("../services/backgroundJobService.js", () => ({
 }));
 vi.mock("../services/backgroundJobPatch.js", () => ({ patchJob: vi.fn().mockResolvedValue({}) }));
 vi.mock("../lib/backgroundJobModuleAccess.js", () => ({
-  getBackgroundJobModuleDenial: vi.fn().mockResolvedValue(null),
+  resolveBackgroundJobAccessContext: vi.fn().mockResolvedValue({
+    denial: null,
+    viewerRole: null,
+    allowDeleted: undefined,
+  }),
 }));
 vi.mock("../worker/pubsub/jobPubSub.js", () => ({ publishJobEvent: vi.fn() }));
 

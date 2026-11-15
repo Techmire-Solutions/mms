@@ -48,7 +48,8 @@ export function registerModuleCsvImportJobRunner<TRow = unknown>(
       tenant: ctx.tenant,
       userId: ctx.userId,
       jobId: ctx.jobId,
-      viewerRole: importPayload.viewerRole,
+      // Re-scope to the current role (resolved at execution); the enqueue snapshot is stale.
+      viewerRole: ctx.viewerRole ?? importPayload.viewerRole,
       signal: ctx.signal,
       updateProgress: (current, tot) => ctx.updateProgress(current, tot),
     });
