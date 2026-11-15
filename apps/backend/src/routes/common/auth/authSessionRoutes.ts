@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import {
   isOnboardingAvailable,
   establishSession,
@@ -11,6 +11,7 @@ import { getRequestTenant, runWithTenant } from "../../../lib/tenantContext.js";
 import {
   ACCESS_COOKIE,
   clearAuthCookies,
+  hasTenantAccessToken,
   REFRESH_COOKIE,
   setAuthCookies,
 } from "../../../services/auth/authCookieService.js";
@@ -39,10 +40,57 @@ import { getWorkspaceInstitutionSetupStatus } from "../../../services/workspaceS
 import { AUTH_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
 import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
 
+/**
+ * Sends the authenticated tenant user. Shared by strict `GET /me` and soft `GET /session` so the
+ * probe cannot bypass the deleted-user / deleted-faculty tombstone checks.
+ */
+async function sendTenantSessionUser(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const user = request.user as User & { deletedAt?: unknown; deleted_at?: unknown };
+  if (user.deletedAt || user.deleted_at) {
+    sendUnauthorized(reply, "Session revoked");
+    return;
+  }
+  if (user.id) {
+    try {
+      // Scope the session check to the caller's workspace — an id-only lookup
+      // runs with RLS bypassed and could resolve another tenant's user.
+      const sessionTenant = getRequestTenant() ?? user.workspaceSubdomain;
+      const userRow = sessionTenant
+        ? await usersUseCases.loadTenantUserRowById(sessionTenant, String(user.id))
+        : null;
+      if (userRow?.deletedAt) {
+        sendUnauthorized(reply, "Session revoked");
+        return;
+      }
+      // Tombstone probe by linked user id: a hydrated faculty load returns
+      // null when the linked contact is unreadable, which would keep a deleted
+      // teacher signed in. Not gated on the role name — composite
+      // designation roles are not `faculty`/`teacher`.
+      if (await facultyUseCases.isFacultyProfileDeletedForUser(String(user.id))) {
+        sendUnauthorized(reply, "Session revoked");
+        return;
+      }
+    } catch {
+      // Fall through for tests without DB context
+    }
+  }
+  reply.send({ user: request.user as User, isAuthenticated: true });
+}
+
+/**
+ * Pre-handler for the optional boot probe. With no presented access token there is nothing to
+ * validate, so answer `200 { user: null }` and short-circuit `authenticateTenant`; otherwise let
+ * the strict pipeline run unchanged (an invalid/revoked presented token still 401s).
+ */
+async function softTenantSessionProbe(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  if (hasTenantAccessToken(request)) return;
+  await reply.status(200).send({ user: null, isAuthenticated: false });
+}
+
 /** Session lifecycle, UI state, refresh, onboarding status, and handoff routes. */
 export const authSessionRoutes: FastifyPluginAsync = async (fastify) => {
   // Brute-force / abuse ceiling for the unauthenticated session endpoints.
-  // (`/me` and `/me/ui-state` are intentionally excluded — the SPA calls them
+  // (`/me`, `/me/ui-state` and `/session` are intentionally excluded — the SPA calls them
   // on every load and they must not share the 10/min auth budget.)
   const authLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
 
@@ -92,38 +140,16 @@ export const authSessionRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.send({ success: true });
   });
 
-  fastify.get("/me", { preHandler: authenticateTenant }, async (request, reply) => {
-    const user = request.user as User & { deletedAt?: unknown; deleted_at?: unknown };
-    if (user.deletedAt || user.deleted_at) {
-      return sendUnauthorized(reply, "Session revoked");
-    }
-    if (user.id) {
-      try {
-        // Scope the session check to the caller's workspace — an id-only lookup
-        // runs with RLS bypassed and could resolve another tenant's user.
-        const sessionTenant = getRequestTenant() ?? user.workspaceSubdomain;
-        const userRow = sessionTenant
-          ? await usersUseCases.loadTenantUserRowById(sessionTenant, String(user.id))
-          : null;
-        if (userRow?.deletedAt) {
-          return sendUnauthorized(reply, "Session revoked");
-        }
-        // Tombstone probe by linked user id: a hydrated faculty load returns
-        // null when the linked contact is unreadable, which would keep a deleted
-        // teacher signed in. Not gated on the role name — composite
-        // designation roles are not `faculty`/`teacher`.
-        if (await facultyUseCases.isFacultyProfileDeletedForUser(String(user.id))) {
-          return sendUnauthorized(reply, "Session revoked");
-        }
-      } catch {
-        // Fall through for tests without DB context
-      }
-    }
-    return reply.send({
-      user: request.user as User,
-      isAuthenticated: true,
-    });
-  });
+  fastify.get("/me", { preHandler: authenticateTenant }, sendTenantSessionUser);
+
+  // Optional boot probe (mirrors GET /api/platform/auth/me): a visitor with no session cookie must
+  // not receive a 401 the browser logs as a console error on `/login`. A presented token still
+  // goes through the unchanged strict pipeline.
+  fastify.get(
+    "/session",
+    { preHandler: [softTenantSessionProbe, authenticateTenant] },
+    sendTenantSessionUser,
+  );
 
   fastify.get(
     "/institution-setup-status",
