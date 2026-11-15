@@ -15,9 +15,11 @@
 --     older than the maximum already applied when it landed), so its CHECK constraint was
 --     skipped the same way.
 --
--- Both journal entries now carry unique, monotonically increasing timestamps, and this migration
--- replays their effects idempotently so already-drifted databases converge. A fresh database runs
--- 0208/0217 first and this migration is a no-op.
+-- The historical journal entries are frozen (forward-only: an applied migration may never be
+-- rewritten), so this migration replays their effects idempotently and already-drifted databases
+-- converge on the next boot. The two rows stay absent from `drizzle.__drizzle_migrations` by
+-- design — their effects are what matters, and `checkMigrations.ts` reports them as replayed by a
+-- later repair migration. A fresh database runs 0208/0217 first and this migration is a no-op.
 --
 -- Idempotent and lock-safe: `ADD COLUMN IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, and a
 -- duplicate-tolerant ADD CONSTRAINT / VALIDATE pair.

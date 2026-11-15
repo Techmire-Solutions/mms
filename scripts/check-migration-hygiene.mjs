@@ -146,10 +146,12 @@ const missingSnapshots = Math.max(0, journalEntries - (highestSnapshotIndex + 1)
 
 // --- 4. Journal chronology & file alignment --------------------------------
 // Drizzle records each migration's `when` in `drizzle.__drizzle_migrations` and only applies
-// entries whose `when` is greater than the highest recorded value. A duplicated `when` therefore
-// makes the second migration permanently invisible on every existing database (0208/0217 shipped
-// that way and silently skipped their DDL — the dead-letter column and the enrollment CHECK).
-// A non-increasing or duplicate `when` is never valid, and a journal entry without its SQL file
+// entries whose `when` is greater than the highest recorded value. A duplicated or non-increasing
+// `when` therefore makes the later migration permanently invisible on every existing database
+// (0208/0217 shipped that way and silently skipped their DDL — the dead-letter column and the
+// enrollment CHECK). Those two historical entries are frozen by check:migrations-forward-only and
+// are replayed by 0260_migration_journal_drift_repair; every NEW entry must be strictly greater
+// than its predecessor and must not reuse an earlier `when`. A journal entry without its SQL file
 // (or vice versa) means one side was forgotten.
 const journalIntegrity = [];
 if (!fs.existsSync(journalPath)) {
@@ -158,27 +160,25 @@ if (!fs.existsSync(journalPath)) {
   const journal = JSON.parse(fs.readFileSync(journalPath, "utf8"));
   const entries = Array.isArray(journal.entries) ? journal.entries : [];
   const journalTags = new Set();
-  const whenOwners = new Map();
+  // Existing entries are immutable (forward-only). Validate only what the change set appends.
+  const journalRel = "apps/backend/src/db/migrations_drizzle/meta/_journal.json";
+  let frozenEntryCount = null;
+  try {
+    const baseJournal = JSON.parse(
+      execFileSync("git", ["show", `${baseRef}:${journalRel}`], {
+        cwd: rootDir,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }),
+    );
+    frozenEntryCount = Array.isArray(baseJournal.entries) ? baseJournal.entries.length : 0;
+  } catch {
+    journalIntegrity.push(`cannot read ${journalRel} at base ${baseRef}`);
+  }
   for (let index = 0; index < entries.length; index += 1) {
     const entry = entries[index];
-    const previous = entries[index - 1];
     if (entry.idx !== index) {
       journalIntegrity.push(`entry #${index} declares idx ${entry.idx}`);
-    }
-    if (typeof entry.when !== "number" || !Number.isFinite(entry.when)) {
-      journalIntegrity.push(`${entry.tag ?? `entry #${index}`} has an invalid when`);
-    } else {
-      if (previous && entry.when <= previous.when) {
-        journalIntegrity.push(
-          `${entry.tag} when ${entry.when} does not increase past ${previous.tag} when ${previous.when}`,
-        );
-      }
-      const owner = whenOwners.get(entry.when);
-      if (owner) {
-        journalIntegrity.push(`${entry.tag} reuses when ${entry.when} from ${owner}`);
-      } else {
-        whenOwners.set(entry.when, entry.tag);
-      }
     }
     if (!entry.tag) {
       journalIntegrity.push(`entry #${index} has no tag`);
@@ -187,6 +187,25 @@ if (!fs.existsSync(journalPath)) {
     journalTags.add(entry.tag);
     if (!fs.existsSync(path.join(migrationsDir, `${entry.tag}.sql`))) {
       journalIntegrity.push(`${entry.tag} has no ${entry.tag}.sql`);
+    }
+  }
+  if (frozenEntryCount !== null) {
+    for (let index = frozenEntryCount; index < entries.length; index += 1) {
+      const entry = entries[index];
+      const previous = entries[index - 1];
+      if (typeof entry.when !== "number" || !Number.isFinite(entry.when)) {
+        journalIntegrity.push(`${entry.tag} has an invalid when`);
+        continue;
+      }
+      if (previous && entry.when <= previous.when) {
+        journalIntegrity.push(
+          `${entry.tag} when ${entry.when} does not increase past ${previous.tag} when ${previous.when}`,
+        );
+      }
+      const reuse = entries.slice(0, index).find((earlier) => earlier.when === entry.when);
+      if (reuse) {
+        journalIntegrity.push(`${entry.tag} reuses when ${entry.when} from ${reuse.tag}`);
+      }
     }
   }
   for (const file of sqlFiles) {
@@ -246,7 +265,7 @@ if (regressions > 0) {
       "  - New timestamp columns must be `timestamp with time zone`\n" +
       "  - Do not add migrations without regenerating the Drizzle snapshot\n" +
       "    (see docs/open-items.md — the 0133→0196 chain is pending regeneration).\n" +
-      "  - Journal `when` values must be unique and strictly increasing, with a SQL file per entry.",
+      "  - Journal `when` values appended by this change must increase on the previous entry and must not reuse an earlier value.",
   );
 }
 
