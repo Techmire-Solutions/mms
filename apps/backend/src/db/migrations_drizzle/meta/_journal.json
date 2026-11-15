@@ -1461,7 +1461,7 @@
     {
       "idx": 208,
       "version": "7",
-      "when": 1794211200000,
+      "when": 1794211200001,
       "tag": "0208_background_job_dead_letters",
       "breakpoints": true
     },
@@ -1524,7 +1524,7 @@
     {
       "idx": 217,
       "version": "7",
-      "when": 1762617600000,
+      "when": 1794733200001,
       "tag": "0217_enrollment_payment_status_check",
       "breakpoints": true
     },
@@ -1820,6 +1820,13 @@
       "version": "7",
       "when": 1797850800240,
       "tag": "0259_obligations_rls_policy_dedup",
+      "breakpoints": true
+    },
+    {
+      "idx": 260,
+      "version": "7",
+      "when": 1797850800300,
+      "tag": "0260_migration_journal_drift_repair",
       "breakpoints": true
     }
   ]
