@@ -17,6 +17,7 @@ import {
   FormSelectWithQuickCreate,
 } from "@/components/app/FormPrimitives";
 import { QuestionSourceInput } from "@/tenant/features/question-bank/components/QuestionSourceInput";
+import { useStableRowList } from "@/lib/forms/useStableRowList";
 
 type TranslateFn = (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 
@@ -28,10 +29,11 @@ interface QuestionSourcesCitationsSectionProps {
   t: TranslateFn;
   canAddBook?: boolean;
   onOpenAddBook?: (citationIndex: number) => void;
-  onUpdateCitation: (index: number, patch: Partial<QuestionBookCitation>) => void;
-  onUpdateCitationField: (index: number, key: keyof QuestionSourceReference, value: string) => void;
-  onAddCitation: () => void;
-  onRemoveCitation: (index: number) => void;
+  onCitationsChange: (citations: QuestionBookCitation[]) => void;
+}
+
+function serializeCitations(citations: readonly QuestionBookCitation[]): string {
+  return JSON.stringify(citations);
 }
 
 export function QuestionSourcesCitationsSection({
@@ -42,12 +44,17 @@ export function QuestionSourcesCitationsSection({
   t,
   canAddBook = false,
   onOpenAddBook,
-  onUpdateCitation,
-  onUpdateCitationField,
-  onAddCitation,
-  onRemoveCitation,
+  onCitationsChange,
 }: QuestionSourcesCitationsSectionProps): React.JSX.Element {
   const sourceBooksById = new Map(sourceBooks.map((sourceBook) => [sourceBook.id, sourceBook]));
+  const entries = citationEntries.length > 0 ? citationEntries : [{ bookId: "", citation: {} }];
+
+  const { rows, append, removeAt, updateAt } = useStableRowList<QuestionBookCitation>({
+    values: entries,
+    onChange: onCitationsChange,
+    createValue: () => ({ bookId: "", citation: {} }),
+    serialize: serializeCitations,
+  });
 
   if (sourceBooks.length === 0 && !canAddBook) {
     return (
@@ -65,29 +72,32 @@ export function QuestionSourcesCitationsSection({
       <p className="text-xs text-muted-foreground">{t("questionBank.citationsForQuestionHint")}</p>
       <FormCollectionShell
         addLabel={t("questionBank.addBookCitation")}
-        onAdd={onAddCitation}
+        onAdd={append}
         listKey="qb-citations"
       >
-        {citationEntries.map((entry, index) => {
+        {rows.map((row, index) => {
+          const entry = row.value;
           const book = sourceBooksById.get(entry.bookId);
           const citationFieldIds = book ? getBookCitationFieldIds(book) : [];
 
           return (
             <FormListFieldCard
-              key={index}
-              id={`qb-citation-${index}`}
+              key={row.id}
+              id={`qb-citation-${row.id}`}
               index={index}
               label={t("questionBank.citationEntry", { n: index + 1 })}
               removeLabel={t("questionBank.removeCitation")}
-              canRemove={citationEntries.length > 1 && Boolean(entry.bookId)}
-              onRemove={() => onRemoveCitation(index)}
+              canRemove={rows.length > 1}
+              onRemove={() => removeAt(index)}
             >
-              <Field id={`qb-citation-book-${index}`} label={t("questionBank.selectSourceBook")}>
+              <Field id={`qb-citation-book-${row.id}`} label={t("questionBank.selectSourceBook")}>
                 <FormSelectWithQuickCreate
-                  id={`qb-citation-book-${index}`}
+                  id={`qb-citation-book-${row.id}`}
                   className={FORM_INPUT}
                   value={entry.bookId}
-                  onChange={(val) => onUpdateCitation(index, { bookId: val, citation: {} })}
+                  onChange={(val) =>
+                    updateAt(index, (current) => ({ ...current, bookId: val, citation: {} }))
+                  }
                   placeholder={t("questionBank.selectSourceBook")}
                   options={sourceBooks.map((b) => ({ value: b.id, label: b.name }))}
                   canAdd={canAddBook}
@@ -108,9 +118,17 @@ export function QuestionSourcesCitationsSection({
                         key={field.id}
                         field={field}
                         value={value}
-                        onChange={(next) => onUpdateCitationField(index, key, next)}
+                        onChange={(next) =>
+                          updateAt(index, (current) => ({
+                            ...current,
+                            citation: {
+                              ...current.citation,
+                              [key]: next,
+                            } as Partial<QuestionSourceReference>,
+                          }))
+                        }
                         label={fieldLabel(fieldId, field.label)}
-                        inputId={`qb-citation-${index}-${fieldId}`}
+                        inputId={`qb-citation-${row.id}-${fieldId}`}
                       />
                     );
                   })}

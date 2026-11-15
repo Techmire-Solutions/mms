@@ -9,6 +9,8 @@ import {
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useAcademicCalendarEvents } from "@/tenant/features/attendance/hooks/useAcademicCalendar";
@@ -59,6 +61,14 @@ export function CalendarCopyFromSessionDialog({
   const sessions = useSessionsCollection();
   const [sourceId, setSourceId] = useState("");
   const [targetId, setTargetId] = useState("");
+  const [copyError, setCopyError] = useState<string | null>(null);
+
+  // A cancelled copy must not leave the previous pair selected on reopen.
+  useIdentityReset(String(open), () => {
+    setSourceId("");
+    setTargetId("");
+    setCopyError(null);
+  });
 
   const datedSessions = useMemo(
     () => sessions.filter((session) => session.startDate && session.endDate),
@@ -89,12 +99,17 @@ export function CalendarCopyFromSessionDialog({
     copyable.length > 0;
 
   const handleCopy = async () => {
-    if (!canCopy || !target || shift === null) return;
-    const copied = await onCopy(copyable.map((event) => shiftEvent(event, target.id, shift)));
-    if (copied) {
-      setSourceId("");
-      setTargetId("");
-      onClose();
+    if (!canCopy || !target || shift === null || isPending) return;
+    setCopyError(null);
+    try {
+      const copied = await onCopy(copyable.map((event) => shiftEvent(event, target.id, shift)));
+      if (copied) {
+        setSourceId("");
+        setTargetId("");
+        onClose();
+      }
+    } catch (error) {
+      setCopyError(mapApiFormError(error).message ?? t("common.formPleaseFixErrors"));
     }
   };
 
@@ -117,44 +132,55 @@ export function CalendarCopyFromSessionDialog({
       saveLabel={t("attendance.calendar.copyAction")}
       saving={isPending || sourceEvents.isFetching}
       saveDisabled={isPending || !canCopy}
+      error={copyError ?? undefined}
       onSave={() => void handleCopy()}
+      formId="calendar-copy-form"
     >
-      <div className="space-y-4 py-1 text-start">
-        {datedSessions.length < 2 ? (
-          <p className="text-sm text-muted-foreground">
-            {t("attendance.calendar.copyNeedsTwoSessions")}
+      <form
+        id="calendar-copy-form"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleCopy();
+        }}
+      >
+        <div className="space-y-4 py-1 text-start">
+          {datedSessions.length < 2 ? (
+            <p className="text-sm text-muted-foreground">
+              {t("attendance.calendar.copyNeedsTwoSessions")}
+            </p>
+          ) : null}
+          <Field label={t("attendance.calendar.copySource")} id="calendar-copy-source" required>
+            <FormSelect
+              id="calendar-copy-source"
+              name="sourceSessionId"
+              value={sourceId}
+              disabled={isPending}
+              onChange={setSourceId}
+              options={options.filter((option) => option.value !== targetId)}
+              placeholder={t("attendance.calendar.copySelectSession")}
+            />
+          </Field>
+          <Field label={t("attendance.calendar.copyTarget")} id="calendar-copy-target" required>
+            <FormSelect
+              id="calendar-copy-target"
+              name="targetSessionId"
+              value={targetId}
+              disabled={isPending}
+              onChange={setTargetId}
+              options={options.filter((option) => option.value !== sourceId)}
+              placeholder={t("attendance.calendar.copySelectSession")}
+            />
+          </Field>
+          <p aria-live="polite" className="text-xs text-muted-foreground">
+            {!source
+              ? t("attendance.calendar.copySelectSourceHint")
+              : sourceEvents.isPending
+                ? t("common.loading")
+                : t("attendance.calendar.copyPreview", { count: String(copyable.length) })}
           </p>
-        ) : null}
-        <Field label={t("attendance.calendar.copySource")} id="calendar-copy-source" required>
-          <FormSelect
-            id="calendar-copy-source"
-            name="sourceSessionId"
-            value={sourceId}
-            disabled={isPending}
-            onChange={setSourceId}
-            options={options.filter((option) => option.value !== targetId)}
-            placeholder={t("attendance.calendar.copySelectSession")}
-          />
-        </Field>
-        <Field label={t("attendance.calendar.copyTarget")} id="calendar-copy-target" required>
-          <FormSelect
-            id="calendar-copy-target"
-            name="targetSessionId"
-            value={targetId}
-            disabled={isPending}
-            onChange={setTargetId}
-            options={options.filter((option) => option.value !== sourceId)}
-            placeholder={t("attendance.calendar.copySelectSession")}
-          />
-        </Field>
-        <p aria-live="polite" className="text-xs text-muted-foreground">
-          {!source
-            ? t("attendance.calendar.copySelectSourceHint")
-            : sourceEvents.isPending
-              ? t("common.loading")
-              : t("attendance.calendar.copyPreview", { count: String(copyable.length) })}
-        </p>
-      </div>
+        </div>
+      </form>
     </FormModal>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   excludeFacultyManagedRoles,
   filterRbacModulesForSettings,
+  normalizePermissionMap,
   workspaceRoleLabel,
   type WorkspaceRole,
 } from "@mms/shared";
@@ -62,10 +63,18 @@ export function useRolesPermissionsController() {
       notify.error(t("users.errors.cannotModifySuperAdmin"));
       return;
     }
+    const normalizedRole: WorkspaceRole = {
+      ...role,
+      customLabel: role.customLabel?.trim(),
+      customDescription: role.customDescription?.trim(),
+      permissions: normalizePermissionMap(role.permissions),
+    };
     const existingRole = roles.find((workspaceRole) => workspaceRole.id === role.id);
     const updatedRoles = existingRole
-      ? roles.map((workspaceRole) => (workspaceRole.id === role.id ? role : workspaceRole))
-      : [...roles, role];
+      ? roles.map((workspaceRole) =>
+          workspaceRole.id === role.id ? normalizedRole : workspaceRole,
+        )
+      : [...roles, normalizedRole];
     try {
       await updateSettingsAsync({ ...settings, workspaceRoles: updatedRoles });
       setRoles(excludeFacultyManagedRoles(updatedRoles));
@@ -79,23 +88,31 @@ export function useRolesPermissionsController() {
         });
       } else {
         notify.success(t("users.permissions.roleSaved"), {
-          description: t("users.permissions.roleSavedDesc", { name: workspaceRoleLabel(role, t) }),
+          description: t("users.permissions.roleSavedDesc", {
+            name: workspaceRoleLabel(normalizedRole, t),
+          }),
         });
       }
     } catch (error) {
       notify.error(t("settings.serverSaveFailed"), {
         description: error instanceof Error ? error.message : String(error),
       });
+      // The modal also renders the failure; swallowing it made the form look
+      // successfully saved while the settings update had failed.
+      throw error;
     }
   };
 
-  const handleSave = (role: WorkspaceRole): void => {
-    void commitRole(role, "role");
+  const handleSave = async (role: WorkspaceRole): Promise<void> => {
+    await commitRole(role, "role");
   };
 
   const savePermissionDraft = (): void => {
     if (!displayRole || !permDraft || !canManageDisplayRole) return;
-    void commitRole({ ...displayRole, permissions: structuredClone(permDraft) }, "permissions");
+    void commitRole(
+      { ...displayRole, permissions: structuredClone(permDraft) },
+      "permissions",
+    ).catch(() => undefined);
   };
 
   const requestSelectRole = (next: WorkspaceRole): void => {

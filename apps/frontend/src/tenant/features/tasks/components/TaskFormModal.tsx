@@ -75,94 +75,104 @@ export function TaskFormModal({
       saving={saving}
       isDirty={isDirty}
       onSave={handleSubmit}
+      formId="task-form"
     >
-      <div className="space-y-4 py-2">
-        <Field id="task-title" label={t("tasks.title")} required>
-          <Input
-            id="task-title"
-            name="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={t("tasks.titlePlaceholder")}
-          />
-        </Field>
+      <form
+        id="task-form"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit();
+        }}
+      >
+        <div className="space-y-4 py-2">
+          <Field id="task-title" label={t("tasks.title")} required>
+            <Input
+              id="task-title"
+              name="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t("tasks.titlePlaceholder")}
+            />
+          </Field>
 
-        <Field id="task-description" label={t("tasks.description")}>
-          <Textarea
-            id="task-description"
-            name="description"
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={t("tasks.descriptionPlaceholder")}
-          />
-        </Field>
+          <Field id="task-description" label={t("tasks.description")}>
+            <Textarea
+              id="task-description"
+              name="description"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t("tasks.descriptionPlaceholder")}
+            />
+          </Field>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field id="task-priority" label={t("tasks.priority")}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field id="task-priority" label={t("tasks.priority")}>
+              <FormSelect
+                id="task-priority"
+                name="priority"
+                value={priority}
+                onChange={(v) => setPriority(v as TaskPriority)}
+                options={TASK_PRIORITIES.map((p) => ({
+                  value: p,
+                  label: t(`tasks.priority.${p}` as AppTranslationKey),
+                }))}
+              />
+            </Field>
+
+            <Field id="task-status" label={t("tasks.status")}>
+              <FormSelect
+                id="task-status"
+                name="status"
+                value={status}
+                onChange={(v) => setStatus(v as TaskStatus)}
+                options={statusOptions.map((s) => ({
+                  value: s,
+                  label: t(`tasks.status.${s}` as AppTranslationKey),
+                }))}
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field id="task-start-date" label={t("tasks.startDate")}>
+              <DatePicker
+                id="task-start-date"
+                name="startDate"
+                value={startDate}
+                onChange={(v) => setStartDate(v || null)}
+              />
+            </Field>
+
+            <Field id="task-due-at" label={t("tasks.dueAt")}>
+              <DateTimePicker
+                id="task-due-at"
+                name="dueAt"
+                value={dueAt}
+                onChange={(v) => setDueAt(v)}
+              />
+            </Field>
+          </div>
+
+          <Field id="task-parent" label={t("tasks.parentTask")}>
             <FormSelect
-              id="task-priority"
-              name="priority"
-              value={priority}
-              onChange={(v) => setPriority(v as TaskPriority)}
-              options={TASK_PRIORITIES.map((p) => ({
-                value: p,
-                label: t(`tasks.priority.${p}` as AppTranslationKey),
-              }))}
+              id="task-parent"
+              name="parentTaskId"
+              value={parentTaskId ?? ""}
+              onChange={(v) => setParentTaskId(v || null)}
+              options={[{ value: "", label: t("tasks.parentTaskNone") }, ...parentOptions]}
             />
           </Field>
 
-          <Field id="task-status" label={t("tasks.status")}>
-            <FormSelect
-              id="task-status"
-              name="status"
-              value={status}
-              onChange={(v) => setStatus(v as TaskStatus)}
-              options={statusOptions.map((s) => ({
-                value: s,
-                label: t(`tasks.status.${s}` as AppTranslationKey),
-              }))}
-            />
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field id="task-start-date" label={t("tasks.startDate")}>
-            <DatePicker
-              id="task-start-date"
-              name="startDate"
-              value={startDate}
-              onChange={(v) => setStartDate(v || null)}
-            />
-          </Field>
-
-          <Field id="task-due-at" label={t("tasks.dueAt")}>
-            <DateTimePicker
-              id="task-due-at"
-              name="dueAt"
-              value={dueAt}
-              onChange={(v) => setDueAt(v)}
-            />
-          </Field>
-        </div>
-
-        <Field id="task-parent" label={t("tasks.parentTask")}>
-          <FormSelect
-            id="task-parent"
-            name="parentTaskId"
-            value={parentTaskId ?? ""}
-            onChange={(v) => setParentTaskId(v || null)}
-            options={[{ value: "", label: t("tasks.parentTaskNone") }, ...parentOptions]}
+          <TaskFormAssigneePicker
+            eligibleList={eligibleList}
+            selectedAssignees={selectedAssignees}
+            onAddAssignee={handleAddAssignee}
+            onRemoveAssignee={handleRemoveAssignee}
           />
-        </Field>
-
-        <TaskFormAssigneePicker
-          eligibleList={eligibleList}
-          selectedAssignees={selectedAssignees}
-          onAddAssignee={handleAddAssignee}
-          onRemoveAssignee={handleRemoveAssignee}
-        />
-      </div>
+        </div>
+      </form>
     </FormModal>
   );
 }

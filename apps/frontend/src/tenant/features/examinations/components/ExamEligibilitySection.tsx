@@ -8,6 +8,7 @@ import { EXAMINATIONS_ELIGIBILITY_QUERY_KEY } from "../hooks/examinationsQueryKe
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Field } from "@/components/app/FormPrimitives";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
@@ -134,21 +135,21 @@ export function ExamEligibilitySection({
           )}
           {canManage && isPublished && reopening && (
             <div className="space-y-2">
-              <label
-                htmlFor="exam-unpublish-reason"
-                className="block text-sm font-medium text-foreground"
-              >
-                {t("examinations.eligibility.unpublishReason")}
-              </label>
-              <Input
+              <Field
                 id="exam-unpublish-reason"
-                name="unpublishReason"
-                value={reason}
-                onChange={(event) => setReason(event.target.value)}
-                placeholder={t("examinations.eligibility.unpublishReasonPlaceholder")}
-                className={cn(FORM_INPUT_COMPACT, "w-full")}
-                maxLength={500}
-              />
+                label={t("examinations.eligibility.unpublishReason")}
+                hint={t("examinations.eligibility.unpublishReasonPlaceholder")}
+              >
+                <Input
+                  id="exam-unpublish-reason"
+                  name="unpublishReason"
+                  value={reason}
+                  onChange={(event) => setReason(event.target.value)}
+                  placeholder={t("examinations.eligibility.unpublishReasonPlaceholder")}
+                  className={cn(FORM_INPUT_COMPACT, "w-full")}
+                  maxLength={500}
+                />
+              </Field>
               <div className="flex flex-wrap items-center gap-2">
                 <Button
                   type="button"

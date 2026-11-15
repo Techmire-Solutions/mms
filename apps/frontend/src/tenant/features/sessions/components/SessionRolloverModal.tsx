@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useEffect, useRef } from "react";
 import { CopyPlus } from "lucide-react";
 import type { AppTranslationKey, Session } from "@mms/shared";
@@ -84,7 +85,11 @@ export function SessionRolloverModal({
         promote ? t("sessions.rollover.startPromote") : t("sessions.rollover.startDuplicate")
       }
       saving={isPending}
-      error={[previewError, startError].filter((value): value is string => Boolean(value))}
+      error={[
+        previewError,
+        startError,
+        form.validationError ? translateValidationMessage(form.validationError, t) : null,
+      ].filter((value): value is string => Boolean(value))}
       saveDisabled={isPending || !form.valid || (promote && form.preview === null)}
       isDirty={form.isDirty}
       discardUnsavedTitle={t("settings.unsavedChanges")}

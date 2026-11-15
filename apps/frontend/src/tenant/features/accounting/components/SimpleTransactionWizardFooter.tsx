@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -64,10 +64,9 @@ export function SimpleTransactionWizardFooter({
                 void onSave("draft");
               }}
               disabled={!canProceed || isSubmitting}
+              loading={submittingStatus === "draft"}
+              loadingText={t("accounting.journal.dashboard.wizard.saveDraft")}
             >
-              {submittingStatus === "draft" && (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              )}
               {t("accounting.journal.dashboard.wizard.saveDraft")}
             </Button>
             <Button
@@ -77,10 +76,9 @@ export function SimpleTransactionWizardFooter({
                 void onSave("posted", true);
               }}
               disabled={!canProceed || isSubmitting}
+              loading={submittingStatus === "posted_and_new"}
+              loadingText={t("accounting.journal.dashboard.wizard.postAndNew")}
             >
-              {submittingStatus === "posted_and_new" && (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              )}
               {t("accounting.journal.dashboard.wizard.postAndNew")}
             </Button>
             <Button
@@ -89,13 +87,11 @@ export function SimpleTransactionWizardFooter({
                 void onSave("posted");
               }}
               disabled={!canProceed || isSubmitting}
+              loading={submittingStatus === "posted"}
+              loadingText={t("accounting.journal.dashboard.wizard.postTransaction")}
               title={t("accounting.journal.dashboard.wizard.postTransactionHint")}
             >
-              {submittingStatus === "posted" ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : (
-                <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-              )}
+              <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               {t("accounting.journal.dashboard.wizard.postTransaction")}
             </Button>
           </>

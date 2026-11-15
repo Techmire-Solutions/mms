@@ -108,6 +108,13 @@ export function useOnboardingWizardController() {
     }
   };
 
+  const handleBack = (): void => {
+    // A failed step's error must not follow the user back to an earlier step.
+    setSubmitError(null);
+    setShowSignInLink(false);
+    setStep((value) => Math.max(1, value - 1));
+  };
+
   const handleNext = (): void => {
     const stepError = validateCurrentStep();
     if (stepError) {
@@ -137,6 +144,7 @@ export function useOnboardingWizardController() {
     currentStep,
     isLastStep,
     handleNext,
+    handleBack,
     showSignInLink,
   };
 }

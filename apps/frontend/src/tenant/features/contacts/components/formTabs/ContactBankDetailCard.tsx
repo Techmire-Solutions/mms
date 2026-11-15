@@ -70,6 +70,10 @@ export function ContactBankDetailCard({
               onChange={(val) => updateBankDetail(idx, { bankName: val })}
               onUpdateOptions={onUpdateBankNameOptions}
               className={TYPE_SELECT_WIDTH}
+              aria-invalid={Boolean(bankNameError)}
+              aria-describedby={
+                bankNameError ? `bank-name-error-${formInstanceId}-${idx}` : undefined
+              }
               placeholder={t("contacts.fields.bankNamePlaceholder")}
             />
           </FormCardTypeSelect>
@@ -79,7 +83,10 @@ export function ContactBankDetailCard({
       removeLabel={t("contacts.form.removeBankDetail", { index: idx + 1 })}
     >
       <div className="grid grid-cols-1 gap-4 w-full">
-        <FieldErrorMessage message={bankNameError} />
+        <FieldErrorMessage
+          id={`bank-name-error-${formInstanceId}-${idx}`}
+          message={bankNameError}
+        />
 
         {showAccountTitle && (
           <Field

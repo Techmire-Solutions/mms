@@ -1,7 +1,12 @@
+import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { Tag } from "lucide-react";
-import { isReservedSystemTagName } from "@mms/shared";
+import {
+  CONTACTS_BULK_TAG_MAX_CONTACTS,
+  CONTACTS_BULK_TAG_MAX_TAGS,
+  isReservedSystemTagName,
+} from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
@@ -9,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { FORM_INPUT } from "@/components/ui/formStyles";
-import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 
 export type BulkTagMode = "add" | "remove";
 
@@ -23,12 +29,16 @@ export interface ContactsBulkTagModalProps {
 
 /** Parses the comma-separated input into unique tag names. */
 function parseTags(value: string): string[] {
-  const seen = new Set<string>();
+  // De-duplicate case-insensitively (the server treats tag names as one tag
+  // namespace) while preserving the first typed casing.
+  const seen = new Map<string, string>();
   for (const raw of value.split(",")) {
     const tag = raw.trim();
-    if (tag) seen.add(tag);
+    if (!tag) continue;
+    const key = tag.toLowerCase();
+    if (!seen.has(key)) seen.set(key, tag);
   }
-  return [...seen];
+  return [...seen.values()];
 }
 
 export function ContactsBulkTagModal({
@@ -42,6 +52,9 @@ export function ContactsBulkTagModal({
   const { tags: availableTags } = useContactConfig();
   const [tagInput, setTagInput] = useState("");
   const [mode, setMode] = useState<BulkTagMode>("add");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const guard = useSubmitGuard();
 
   // Cancel/Esc close the modal without saving — never reopen with the previous
   // half-typed value or the previous mode. Adjusted during render (the same
@@ -80,18 +93,40 @@ export function ContactsBulkTagModal({
 
   const handleSave = async () => {
     const tags = parsedTags;
+    if (selectedCount > CONTACTS_BULK_TAG_MAX_CONTACTS) {
+      setFormError(t("contacts.bulkTagTooManyContacts", { max: CONTACTS_BULK_TAG_MAX_CONTACTS }));
+      return;
+    }
+    if (tags.length > CONTACTS_BULK_TAG_MAX_TAGS) {
+      setFormError(t("contacts.bulkTagTooManyTags", { max: CONTACTS_BULK_TAG_MAX_TAGS }));
+      return;
+    }
     if (tags.some((value) => isReservedSystemTagName(value))) {
-      notify.error(t("contacts.tags.reserved"));
+      setFormError(t("contacts.tags.reserved"));
       return;
     }
     if (tags.length === 0) return;
-    await onConfirm(tags, mode);
-    setTagInput("");
-    setMode("add");
-    onClose();
+    await guard(async () => {
+      setSubmitting(true);
+      setFormError(null);
+      try {
+        await onConfirm(tags, mode);
+        setTagInput("");
+        setMode("add");
+        onClose();
+      } catch (error) {
+        setFormError(
+          mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+            t("common.formPleaseFixErrors"),
+        );
+      } finally {
+        setSubmitting(false);
+      }
+    });
   };
 
   const isRemove = mode === "remove";
+  const saving = isPending || submitting;
 
   return (
     <FormModal
@@ -103,8 +138,10 @@ export function ContactsBulkTagModal({
       cancelLabel={t("common.cancel")}
       saveLabel={isRemove ? t("contacts.bulkTagModeRemove") : t("contacts.bulkTagAdd")}
       onSave={handleSave}
-      saving={isPending}
-      saveDisabled={isPending || tagInput.trim().length === 0}
+      saving={saving}
+      saveDisabled={saving || tagInput.trim().length === 0}
+      error={formError ?? undefined}
+      isDirty={Boolean(tagInput.trim()) || mode !== "add"}
       formId="bulk-tag-form"
     >
       <form
@@ -112,7 +149,7 @@ export function ContactsBulkTagModal({
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          if (!isPending && tagInput.trim().length > 0) void handleSave();
+          if (!saving && tagInput.trim().length > 0) void handleSave();
         }}
         className="space-y-4 text-start"
       >

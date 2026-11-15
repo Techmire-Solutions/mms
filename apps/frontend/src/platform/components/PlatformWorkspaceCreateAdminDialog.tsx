@@ -1,11 +1,17 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useId, useState } from "react";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import {
+  workspaceCreateAdminUserBodySchema,
+  type PlatformWorkspaceRow as PlatformWorkspaceRowData,
+} from "@mms/shared";
 import { UserPlus, User, Mail } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { Field, FieldErrorMessage, Input, LeadingIconInput } from "@shared/ui";
 import { WorkspaceSummary } from "@/platform/components/workspace/WorkspaceSummary";
 import { WorkspacePasswordField } from "@/platform/components/workspace/WorkspacePasswordField";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { CreateAdminResultCard } from "@/platform/components/workspace/CreateAdminResultCard";
 
 interface PlatformWorkspaceCreateAdminDialogProps {
@@ -40,9 +46,19 @@ export function PlatformWorkspaceCreateAdminDialog({
   } | null>(null);
   const [error, setError] = useState("");
 
+  useIdentityReset(`${open}:${workspace?.subdomain ?? "none"}`, () => {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setCurrentPassword("");
+    setResult(null);
+    setError("");
+  });
+
   if (!workspace) return null;
 
   const handleCreate = async () => {
+    if (createPending) return;
     if (!name.trim()) {
       setError(t("platform.validationEnterName"));
       return;
@@ -60,16 +76,21 @@ export function PlatformWorkspaceCreateAdminDialog({
       return;
     }
     setError("");
+    const parsed = workspaceCreateAdminUserBodySchema.safeParse({
+      name: name.trim(),
+      email: email.trim(),
+      password: password || undefined,
+      currentPassword,
+    });
+    if (!parsed.success) {
+      setError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+      return;
+    }
     try {
-      const res = await onConfirm(workspace.subdomain, {
-        name: name.trim(),
-        email: email.trim(),
-        password: password || undefined,
-        currentPassword,
-      });
+      const res = await onConfirm(workspace.subdomain, parsed.data);
       setResult(res);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("platform.loadFailed"));
+      setError(getPlatformErrorMessage(err, t, undefined, "platform.loadFailed"));
     }
   };
 
@@ -84,13 +105,7 @@ export function PlatformWorkspaceCreateAdminDialog({
     onOpenChange(false);
   };
 
-  const fieldError =
-    error === t("platform.validationEnterName") ||
-    error === t("platform.validationEnterValidEmail") ||
-    error === t("platform.validationPasswordLength") ||
-    error === t("platform.validationConfirmPlatformPassword")
-      ? undefined
-      : error || undefined;
+  const fieldError = error || undefined;
 
   return (
     <FormModal
@@ -122,7 +137,7 @@ export function PlatformWorkspaceCreateAdminDialog({
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            void handleCreate();
+            if (!createPending) void handleCreate();
           }}
           className="space-y-3"
         >

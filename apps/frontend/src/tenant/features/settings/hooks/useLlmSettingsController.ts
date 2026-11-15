@@ -81,6 +81,7 @@ export function useLlmSettingsController() {
       selectedProviderDefaultModel: modal.selectedProviderDefaultModel,
       modalTestResult: modal.modalTestResult,
       modalTesting: modal.modalTesting,
+      modalError: modal.modalError,
       setModalOpen: modal.setModalOpen,
       handleSaveModalConfig: modal.handleSaveModalConfig,
       handleModalTestConnection: modal.handleModalTestConnection,

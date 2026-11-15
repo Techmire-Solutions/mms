@@ -1,3 +1,7 @@
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@/lib/forms/translateValidationMessage";
 import React, { useMemo, useState } from "react";
 import { CalendarRange } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
@@ -7,10 +11,11 @@ import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { billingPeriodFromDate, todayISO } from "@mms/shared";
+import { billingPeriodFromDate, generateInvoicesBodySchema, todayISO } from "@mms/shared";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useFinanceInvoiceGeneration } from "@/tenant/features/finance/hooks/useFinanceInvoiceGeneration";
 import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 
 export function FinanceGenerateInvoicesDialog({
   open,
@@ -26,6 +31,7 @@ export function FinanceGenerateInvoicesDialog({
   const [period, setPeriod] = useState(() => billingPeriodFromDate(todayISO()));
   const [sessionId, setSessionId] = useState("");
   const [classId, setClassId] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
   const classes = useMemo(
     () => sessions.find((session) => session.id === sessionId)?.classes ?? [],
@@ -34,12 +40,18 @@ export function FinanceGenerateInvoicesDialog({
 
   const handleGenerate = (): Promise<void> =>
     guard(async () => {
+      setFormError(null);
+      const parsed = generateInvoicesBodySchema.safeParse({
+        billingPeriod: period,
+        ...(sessionId ? { sessionId } : {}),
+        ...(classId ? { classId } : {}),
+      });
+      if (!parsed.success) {
+        setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+        return;
+      }
       try {
-        const result = await generate.mutateAsync({
-          billingPeriod: period,
-          ...(sessionId ? { sessionId } : {}),
-          ...(classId ? { classId } : {}),
-        });
+        const result = await generate.mutateAsync(parsed.data);
         if (result.created === 0) {
           notify.info(t("finance.generate.none", { skipped: result.skipped }));
         } else if (result.unposted > 0) {
@@ -58,9 +70,10 @@ export function FinanceGenerateInvoicesDialog({
         }
         onClose();
       } catch (error) {
-        notify.error(t("finance.generate.failed"), {
-          description: error instanceof Error ? error.message : String(error),
-        });
+        setFormError(
+          mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+            t("finance.generate.failed"),
+        );
       }
     });
 
@@ -75,6 +88,7 @@ export function FinanceGenerateInvoicesDialog({
       saveLabel={t("finance.generate.submit")}
       onSave={handleGenerate}
       saving={generate.isPending}
+      error={formError ?? undefined}
       saveDisabled={!period || generate.isPending}
       formId="generate-invoices-form"
     >

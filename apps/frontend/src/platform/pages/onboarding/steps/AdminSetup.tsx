@@ -12,7 +12,6 @@ export interface AdminSetupData {
   lastName?: string;
   email?: string;
   password?: string;
-  confirmPassword?: string;
   agreedTerms?: boolean;
 }
 

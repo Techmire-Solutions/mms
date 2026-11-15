@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { generateClientEntityId } from "@mms/shared";
+import { generateClientEntityId, obligationDistributionInsertSchema } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import type { Mujtahid, MujtahidRep, ObligationType } from "@/lib/data/obligationsData";
 import type { InitialDistRow, WakalaFormModalProps } from "./wakalaFormModalTypes";
 
@@ -23,10 +24,23 @@ export function useWakalaFormModalState(props: WakalaFormModalProps) {
   const [selectedRepId, setSelectedRepId] = useState(initial.mujtahid_representative_id || "");
   const [selectedObTypeId, setSelectedObTypeId] = useState(initial.obligation_type_id || "");
 
-  const [initialDistributions, setInitialDistributions] = useState<InitialDistRow[]>([]);
+  const [initialDistributions, setInitialDistributions] = useState<InitialDistRow[]>(
+    () => props.initialDistributions ?? [],
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  // Editing wakala A then wakala B (or add → edit) must not keep A's selections/splits.
+  useIdentityReset(String(initial.id ?? "new"), () => {
+    setStep(1);
+    setSelectedMujtahidId(existingRep?.mujtahid_id || "");
+    setSelectedRepId(initial.mujtahid_representative_id || "");
+    setSelectedObTypeId(initial.obligation_type_id || "");
+    setInitialDistributions(props.initialDistributions ?? []);
+    setErrors({});
+    setSubmitError("");
+  });
 
   const [isAddMujtahidOpen, setIsAddMujtahidOpen] = useState(false);
   const [isAddRepOpen, setIsAddRepOpen] = useState(false);
@@ -58,8 +72,30 @@ export function useWakalaFormModalState(props: WakalaFormModalProps) {
   };
 
   const validateStep3 = (): boolean => {
+    if (
+      initialDistributions.some((row) => row.percentage === null || row.percentage === undefined)
+    ) {
+      setErrors({ dist: t("obligations.wakala.pctInvalid") });
+      return false;
+    }
     if (totalPercentage > 100) {
       setErrors({ dist: t("obligations.wakala.pctExceed", { pct: totalPercentage }) });
+      return false;
+    }
+    // Same row contract the aggregate endpoint validates; the parent supplies the
+    // real wakala id, so a stable placeholder is enough for the shape check.
+    const invalidRow = initialDistributions.some(
+      (row) =>
+        !obligationDistributionInsertSchema.safeParse({
+          name: row.name,
+          percentage: Number(row.percentage ?? 0),
+          wakala_type_id: String(initial.id ?? "pending-wakala"),
+          type: row.type,
+          account_id: row.account_id ?? null,
+        }).success,
+    );
+    if (invalidRow) {
+      setErrors({ dist: t("common.formPleaseFixErrors") });
       return false;
     }
     return true;
@@ -76,7 +112,12 @@ export function useWakalaFormModalState(props: WakalaFormModalProps) {
           mujtahid_representative_id: selectedRepId,
           obligation_type_id: selectedObTypeId,
         },
-        initialDistributions.length > 0 ? initialDistributions : undefined,
+        initialDistributions.length > 0
+          ? initialDistributions.map((row) => ({
+              ...row,
+              percentage: Number(row.percentage ?? 0),
+            }))
+          : undefined,
       );
     } catch (err: unknown) {
       setSubmitError(err instanceof Error ? err.message : t("obligations.saveFailed"));
@@ -134,7 +175,7 @@ export function useWakalaFormModalState(props: WakalaFormModalProps) {
   const addDistributionRow = () => {
     setInitialDistributions((prev) => [
       ...prev,
-      { id: generateClientEntityId("dist"), name: "", percentage: 0, type: "Income" },
+      { id: generateClientEntityId("dist"), name: "", percentage: null, type: "Income" },
     ]);
   };
 

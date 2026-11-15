@@ -23,6 +23,7 @@ interface MessagingSetupTemplateFormProps {
   templateCategorySelectOptions: Array<{ value: string; label: string }>;
   channelSelectOptions: Array<{ value: string; label: string }>;
   errors?: Record<string, string>;
+  error?: string | null;
   saving?: boolean;
   saveDisabled?: boolean;
   isDirty?: boolean;
@@ -45,6 +46,7 @@ export function MessagingSetupTemplateForm({
   templateCategorySelectOptions,
   channelSelectOptions,
   errors = {},
+  error,
   saving = false,
   saveDisabled = false,
   isDirty = false,
@@ -79,6 +81,7 @@ export function MessagingSetupTemplateForm({
       onSave={trySave}
       saving={saving}
       saveDisabled={saveDisabled}
+      error={error ?? undefined}
       isDirty={isDirty}
       discardUnsavedTitle={t("settings.unsavedChanges")}
       discardUnsavedDescription={t("messaging.setup.discardUnsavedTemplateConfirm")}
@@ -101,6 +104,7 @@ export function MessagingSetupTemplateForm({
             value={label}
             onChange={(event) => onLabelChange(event.target.value)}
             placeholder={t("messaging.templateLabelPlaceholder")}
+            maxLength={200}
             required
             className={cn(errors.label && FORM_INPUT_ERROR)}
           />

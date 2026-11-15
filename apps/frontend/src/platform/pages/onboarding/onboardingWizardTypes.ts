@@ -14,7 +14,6 @@ export interface OnboardingData {
   lastName: string;
   email: string;
   password?: string;
-  confirmPassword?: string;
   /** Platform operator password for step-up on create. */
   currentPassword: string;
   agreedTerms: boolean;
@@ -100,7 +99,6 @@ export const ONBOARDING_INITIAL_DATA: OnboardingData = {
   lastName: "",
   email: "",
   password: "",
-  confirmPassword: "",
   currentPassword: "",
   agreedTerms: false,
   modules: SYSTEM_MODULES.map((m) => m.id),

@@ -16,6 +16,7 @@ export function PlatformEmailIntegrationPanel(): React.JSX.Element {
     saving,
     testing,
     form,
+    formError,
     smtpPassword,
     setSmtpPassword,
     selectedPreset,
@@ -36,7 +37,7 @@ export function PlatformEmailIntegrationPanel(): React.JSX.Element {
       statusConnectedText={t("email.statusConnected")}
       statusNotConnectedText={t("email.statusNotConnected")}
       loading={loading}
-      lastError={form.lastError}
+      lastError={formError ?? form.lastError}
       saving={saving}
       testing={testing}
       saveLabel={t("email.saveConnection")}

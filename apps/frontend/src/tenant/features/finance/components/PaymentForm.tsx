@@ -1,3 +1,7 @@
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { ReceiptText } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
@@ -14,13 +18,14 @@ import {
   isValidExchangeRate,
   type PaymentCreateInput,
   paymentRecordInsertSchema,
-  type AppTranslationKey,
 } from "@mms/shared";
 import { DocumentCurrencyFields } from "@/components/app/DocumentCurrencyFields";
 import { useDocumentCurrency } from "@/tenant/hooks/useDocumentCurrency";
 import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import { invoiceAmountInPaymentCurrency } from "@/tenant/features/finance/lib/paymentCurrency";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";
 import {
   PAYMENT_METHOD_LABEL_KEYS,
@@ -49,9 +54,17 @@ export function PaymentForm({
 
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
   const [paymentDraft, setPaymentDraft] = useState(() =>
     buildInitialPaymentDraft(invoiceBalance, authUser?.id || ""),
   );
+
+  // A different invoice (or a reopen) must not inherit the previous amount/date.
+  useIdentityReset(`${open ? "open" : "closed"}:${invoice?.id ?? "none"}`, () => {
+    setPaymentDraft(buildInitialPaymentDraft(invoiceBalance, authUser?.id || ""));
+    setErrors({});
+    setFormError(null);
+  });
 
   // IAS 21: pay in the invoice currency or the functional currency (cross-currency settlement).
   const fx = useDocumentCurrency({
@@ -83,6 +96,7 @@ export function PaymentForm({
 
   const updateDraft = (patch: Partial<typeof paymentDraft>) => {
     setPaymentDraft((prev) => ({ ...prev, ...patch }));
+    setFormError(null);
     const patchedKeys = Object.keys(patch);
     setErrors((prev) => {
       let changed = false;
@@ -130,7 +144,7 @@ export function PaymentForm({
       if (!parsed.success) {
         setErrors((prev) => ({
           ...prev,
-          ...mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey)),
+          ...mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
         }));
         notify.error(t("finance.fixErrors"));
         return;
@@ -138,13 +152,18 @@ export function PaymentForm({
 
       setSaving(true);
       try {
-        await onSave(payload);
+        await onSave(parsed.data);
         notify.success(t("finance.paymentSaved"));
         onClose();
       } catch (err: unknown) {
-        if (!(err instanceof NotifiedMutationError)) {
+        const mapped = mapApiFormError(err, (message) => translateApiMessage(message, t));
+        if (mapped.fieldErrors) {
+          setErrors((prev) => ({ ...prev, ...mapped.fieldErrors }));
+        }
+        setFormError(mapped.message ?? t("finance.paymentSaveFailed"));
+        if (!mapped.fieldErrors && !(err instanceof NotifiedMutationError)) {
           notify.error(t("finance.paymentSaveFailed"), {
-            description: err instanceof Error ? err.message : String(err),
+            description: mapped.message ?? (err instanceof Error ? err.message : String(err)),
           });
         }
       } finally {
@@ -187,7 +206,7 @@ export function PaymentForm({
         (balance > 0 && (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) > balance) ||
         !paymentDraft.date
       }
-      error={Object.values(errors)[0]}
+      error={formError ?? Object.values(errors).filter(Boolean)}
       footerStart={footerStart || undefined}
       formId="payment-form"
     >

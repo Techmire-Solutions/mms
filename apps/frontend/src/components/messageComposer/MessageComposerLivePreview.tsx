@@ -2,6 +2,7 @@ import { AnimatePresence, m } from "framer-motion";
 import { CheckCheck, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { calculateSmsSegments, formatDateTime, personalizeMessage } from "@mms/shared";
 import { Button } from "@/components/ui/button";
+import { FormSelect } from "@/components/app/FormSelect";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -61,18 +62,18 @@ export function MessageComposerLivePreview({
           <div className="flex shrink-0 items-center gap-2">
             {isBulk && (
               <div className="flex items-center gap-1.5 text-xs">
-                <select
+                <FormSelect
+                  id="messaging-preview-recipient"
+                  name="previewRecipient"
                   aria-label={t("messaging.selectRecipients")}
-                  value={previewIndex}
-                  onChange={(e) => onPreviewIndexChange(Number(e.target.value))}
-                  className="h-7 max-w-36 truncate rounded-md border border-border/60 bg-background/80 px-1.5 text-xs font-medium text-foreground focus:outline-hidden focus:ring-1 focus:ring-primary"
-                >
-                  {eligibleRecipients.map((r, i) => (
-                    <option key={r.id || `${r.name}-${i}`} value={i}>
-                      {i + 1}. {r.name}
-                    </option>
-                  ))}
-                </select>
+                  value={String(previewIndex)}
+                  onChange={(value) => onPreviewIndexChange(Number(value))}
+                  className="h-11 min-h-11 max-w-36 truncate rounded-md border border-border/60 bg-background/80 px-1.5 text-xs font-medium text-foreground"
+                  options={eligibleRecipients.map((recipient, index) => ({
+                    value: String(index),
+                    label: `${index + 1}. ${recipient.name}`,
+                  }))}
+                />
                 <div className="flex items-center">
                   <Button
                     type="button"

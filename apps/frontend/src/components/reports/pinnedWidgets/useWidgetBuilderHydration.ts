@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 
@@ -65,7 +65,7 @@ export function useWidgetBuilderHydration({
   setTrendType,
   setBuilderRole,
 }: UseWidgetBuilderHydrationOptions): void {
-  useEffect(() => {
+  useIdentityReset(editWidgetConfig ? `edit:${editWidgetConfig.id}` : "new", () => {
     if (editWidgetConfig) {
       setWidgetType(editWidgetConfig.widgetType || "kpi");
       setBuilderTitle(editWidgetConfig.title);
@@ -122,35 +122,5 @@ export function useWidgetBuilderHydration({
       setTrendType("database");
       setBuilderRole("admin");
     }
-  }, [
-    editWidgetConfig,
-    initialCollection,
-    t,
-    setWidgetType,
-    setBuilderTitle,
-    setBuilderCollection,
-    setBuilderOperation,
-    setBuilderTargetField,
-    setBuilderFilterField,
-    setBuilderFilterOperator,
-    setBuilderFilterValue,
-    setBuilderColor,
-    setThresholdEnabled,
-    setThresholdCondition,
-    setThresholdValue,
-    setThresholdColor,
-    setSwitchActionType,
-    setSwitchStateKey,
-    setSwitchCollection,
-    setSwitchRecordId,
-    setSwitchField,
-    setSwitchLabelOn,
-    setSwitchLabelOff,
-    setBuilderIcon,
-    setSubTextType,
-    setFixedSubText,
-    setTrend,
-    setTrendType,
-    setBuilderRole,
-  ]);
+  });
 }

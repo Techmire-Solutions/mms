@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { ClipboardCheck } from "lucide-react";
 import {
@@ -42,12 +43,12 @@ export function AdmissionsDecisionModal({
   const ineligible = applications.filter((app) => app.eligibilityReasons.length > 0).length;
   const reasonRequired = decision === "reject";
   const trimmedReason = reason.trim();
+  // Match `registrationReviewSchema`: reject requires a non-empty trimmed
+  // reason (max 500 is enforced by the textarea + shared optionalText(max)).
   const reasonError =
-    attempted && reasonRequired && trimmedReason.length < 3
+    attempted && reasonRequired && trimmedReason.length === 0
       ? t("enrollments.admissions.rejectReasonRequired")
-      : attempted && trimmedReason.length > 500
-        ? t("enrollments.admissions.reasonTooLong")
-        : undefined;
+      : undefined;
 
   // Clear the previous decision's reason/match choice on each (re)open (render-phase reset).
   const [prevOpen, setPrevOpen] = useState(open);
@@ -60,6 +61,23 @@ export function AdmissionsDecisionModal({
       setFormError(null);
     }
   }
+
+  const handleSave = async (): Promise<void> => {
+    setAttempted(true);
+    const parsed = registrationReviewSchema.safeParse({
+      ids: applications.map((app) => app.id),
+      decision,
+      reason: trimmedReason || null,
+      existingStudentId: decision === "approve" && useMatch ? matchedStudentId : null,
+    });
+    if (!parsed.success) {
+      setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+      return;
+    }
+    const done = await onConfirm(parsed.data);
+    if (done) onClose();
+    else setFormError(t("enrollments.toast.saveFailed"));
+  };
 
   return (
     <FormModal
@@ -83,59 +101,52 @@ export function AdmissionsDecisionModal({
       discardUnsavedDescription={t("enrollments.admissions.discardDescription")}
       discardConfirmLabel={t("common.yes")}
       discardCancelLabel={t("common.cancel")}
-      onSave={() =>
-        void (async () => {
-          setAttempted(true);
-          const parsed = registrationReviewSchema.safeParse({
-            ids: applications.map((app) => app.id),
-            decision,
-            reason: trimmedReason || null,
-            existingStudentId: decision === "approve" && useMatch ? matchedStudentId : null,
-          });
-          if (!parsed.success) {
-            setFormError(parsed.error.issues[0]?.message ?? t("enrollments.toast.saveFailed"));
-            return;
-          }
-          const done = await onConfirm(parsed.data);
-          if (done) onClose();
-          else setFormError(t("enrollments.toast.saveFailed"));
-        })()
-      }
+      onSave={handleSave}
+      formId="admissions-decision-form"
     >
-      <div className="space-y-3 py-1 text-start">
-        {decision === "approve" && ineligible > 0 ? (
-          <Alert title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })} />
-        ) : null}
-        {decision === "approve" && matchedStudentId ? (
-          <ToggleRow
-            label={t("enrollments.admissions.useMatch")}
-            description={t("enrollments.admissions.useMatchHint")}
-            value={useMatch}
-            onChange={setUseMatch}
-          />
-        ) : null}
-        {decision === "approve" ? (
-          <p className="text-pretty text-sm text-muted-foreground">
-            {t("enrollments.admissions.approveHint")}
-          </p>
-        ) : null}
-        <Field
-          id="admissions-reason"
-          label={t("enrollments.admissions.reason")}
-          required={reasonRequired}
-          error={reasonError}
-        >
-          <Textarea
+      <form
+        id="admissions-decision-form"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSave();
+        }}
+      >
+        <div className="space-y-3 py-1 text-start">
+          {decision === "approve" && ineligible > 0 ? (
+            <Alert title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })} />
+          ) : null}
+          {decision === "approve" && matchedStudentId ? (
+            <ToggleRow
+              label={t("enrollments.admissions.useMatch")}
+              description={t("enrollments.admissions.useMatchHint")}
+              value={useMatch}
+              onChange={setUseMatch}
+            />
+          ) : null}
+          {decision === "approve" ? (
+            <p className="text-pretty text-sm text-muted-foreground">
+              {t("enrollments.admissions.approveHint")}
+            </p>
+          ) : null}
+          <Field
             id="admissions-reason"
-            name="reason"
-            rows={3}
-            maxLength={500}
-            value={reason}
-            disabled={isPending}
-            onChange={(event) => setReason(event.target.value)}
-          />
-        </Field>
-      </div>
+            label={t("enrollments.admissions.reason")}
+            required={reasonRequired}
+            error={reasonError}
+          >
+            <Textarea
+              id="admissions-reason"
+              name="reason"
+              rows={3}
+              maxLength={500}
+              value={reason}
+              disabled={isPending}
+              onChange={(event) => setReason(event.target.value)}
+            />
+          </Field>
+        </div>
+      </form>
     </FormModal>
   );
 }

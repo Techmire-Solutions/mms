@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle2, Loader2, Save } from "lucide-react";
+import { CheckCircle2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +39,13 @@ export const FormModalFooter = function FormModalFooter({
     >
       {footerStart ? <div className="min-w-0 sm:flex-1">{footerStart}</div> : null}
       <div className="w-full sm:w-auto sm:ms-auto flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2.5">
-        <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          disabled={saving}
+          className="w-full sm:w-auto"
+        >
           {cancelLabel}
         </Button>
         <Button
@@ -54,17 +60,14 @@ export const FormModalFooter = function FormModalFooter({
                 }
           }
           disabled={saving || saveDisabled || saved}
+          loading={saving}
+          loadingText={saveLabel}
           className="w-full sm:w-auto min-w-filter-sm"
         >
           {saved ? (
             <>
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
               {savedLabel ?? saveLabel}
-            </>
-          ) : saving ? (
-            <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-              {saveLabel}
             </>
           ) : (
             <>

@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import {
+  buildContactWriteSchema,
   buildDynamicContactSchema,
-  contactWriteSchema,
+  collectContactWriteExtraFieldKeys,
   formatZodIssues,
   type FieldConfig,
   type ValidationError,
@@ -41,6 +42,7 @@ export function useContactValidation(): (contactDraft: unknown) => ValidationErr
       fields,
       ...(formTabs ? { formTabs } : {}),
     };
+    const writeSchema = buildContactWriteSchema(collectContactWriteExtraFieldKeys(fieldConfig));
     const dynamicSchema = buildDynamicContactSchema(
       fieldConfig,
       new Set(enabledTabs),
@@ -52,7 +54,7 @@ export function useContactValidation(): (contactDraft: unknown) => ValidationErr
 
     return (contactDraft: unknown): ValidationError[] => {
       const errors: ValidationError[] = [];
-      const parsedBase = contactWriteSchema.safeParse(contactDraft);
+      const parsedBase = writeSchema.safeParse(contactDraft);
       if (!parsedBase.success) {
         errors.push(...formatZodIssues(parsedBase.error, contactDraft, fields, language));
       }

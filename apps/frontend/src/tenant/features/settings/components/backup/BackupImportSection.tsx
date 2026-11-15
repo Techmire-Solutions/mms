@@ -1,6 +1,7 @@
 import React from "react";
 import { AlertTriangle, Upload, FileJson } from "lucide-react";
 import { SectionCard } from "@/components/app/SectionCard";
+import { Label } from "@/components/ui/label";
 import { SettingsCallout } from "@/components/app/SettingsShell";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
@@ -28,7 +29,7 @@ const BackupImportSection = function BackupImportSection({
       subtitle={t("backup.restoreFileDesc")}
       icon={Upload}
     >
-      <label
+      <Label
         htmlFor="workspace-backup"
         tabIndex={0}
         role="button"
@@ -54,7 +55,7 @@ const BackupImportSection = function BackupImportSection({
           onFileSelected(event.dataTransfer?.files?.[0]);
         }}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed py-8 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          "mb-0 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed py-8 text-inherit normal-case tracking-normal transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           dragActive
             ? "border-primary bg-primary/5 shadow-inner"
             : "border-border bg-card/60 hover:border-primary/50 hover:bg-muted/30 shadow-sm",
@@ -106,7 +107,7 @@ const BackupImportSection = function BackupImportSection({
             event.target.value = "";
           }}
         />
-      </label>
+      </Label>
 
       <div className="mt-4">
         <SettingsCallout variant="warning">

@@ -26,6 +26,14 @@ vi.mock("@/tenant/features/accounting/hooks/useJournalEntryCurrency", () => ({
   }),
 }));
 
+vi.mock("@/tenant/features/accounting/hooks/useAccountingLedgerOps", () => ({
+  usePostingPeriods: () => ({ data: [] }),
+}));
+
+vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
+  useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
+}));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     language: "en",

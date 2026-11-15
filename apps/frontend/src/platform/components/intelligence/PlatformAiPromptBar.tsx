@@ -47,7 +47,7 @@ export function PlatformAiPromptBar({
       {quickPrompts.length > 0 ? (
         <div
           role="region"
-          aria-label="AI quick suggestions"
+          aria-label={t("platform.ai.quickSuggestions")}
           className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none"
         >
           {quickPrompts.map((suggestion) => (

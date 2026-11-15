@@ -6,6 +6,7 @@ import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { DISTRIBUTION_TYPES, type ObligationDistribution } from "@/lib/data/obligationsData";
 import { type DistributionType } from "@/tenant/features/obligations/components/WakalaTypeManager";
 import { useDistributionAccountOptions } from "@/tenant/features/obligations/hooks/useDistributionAccountOptions";
@@ -24,7 +25,9 @@ export function DistributionFormModal({
   title,
 }: DistributionFormModalProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [form, setForm] = useState({ ...initial });
+  const [form, setForm] = useState<
+    Omit<Partial<ObligationDistribution>, "percentage"> & { percentage?: number | null }
+  >({ ...initial });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -54,9 +57,9 @@ export function DistributionFormModal({
     setSubmitError("");
     setSaving(true);
     try {
-      await onSave({ ...form, percentage: Number(form.percentage) });
+      await onSave({ ...form, percentage: Number(form.percentage ?? 0) });
     } catch (err: unknown) {
-      setSubmitError(err instanceof Error ? err.message : t("obligations.saveFailed"));
+      setSubmitError(mapApiFormError(err).message ?? t("obligations.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -72,7 +75,7 @@ export function DistributionFormModal({
       saveLabel={t("common.save")}
       onSave={handleSave}
       saving={saving}
-      saveDisabled={saving || !form.name?.trim() || !form.percentage}
+      saveDisabled={saving || !form.name?.trim()}
       error={submitError || undefined}
       formId="distribution-form-modal"
     >
@@ -81,7 +84,7 @@ export function DistributionFormModal({
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          if (!saving && form.name?.trim() && form.percentage) void handleSave();
+          if (!saving && form.name?.trim()) void handleSave();
         }}
         className="space-y-4 text-start"
       >
@@ -151,7 +154,7 @@ export function DistributionFormModal({
               if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
                 setForm({
                   ...form,
-                  percentage: val === "" ? ("" as unknown as number) : Number(val) || 0,
+                  percentage: val === "" ? null : Number(val) || 0,
                 });
               }
             }}

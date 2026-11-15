@@ -1,6 +1,6 @@
 import type React from "react";
 import { Building2 } from "lucide-react";
-import { Checkbox, Input } from "@shared/ui";
+import { CheckboxField, Input } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormListFieldCard } from "@/components/app/FormListFieldCard";
 import { FormSelect } from "@/components/app/FormSelect";
@@ -66,17 +66,15 @@ export function ConsolidationMemberRow({
             className="text-end font-mono"
           />
         </Field>
-        <label
-          htmlFor={`${id}-parent`}
-          className="flex min-h-11 items-center gap-2 text-sm sm:col-span-2"
-        >
-          <Checkbox
+        <div className="sm:col-span-2">
+          <CheckboxField
             id={`${id}-parent`}
+            name={`members.${index}.isParent`}
             checked={member.isParent}
             onCheckedChange={(checked) => onChange({ isParent: checked })}
+            label={t("platform.consolidation.isParent")}
           />
-          {t("platform.consolidation.isParent")}
-        </label>
+        </div>
         {RATE_FIELDS.map(({ field, labelKey }) => (
           <Field
             key={field}

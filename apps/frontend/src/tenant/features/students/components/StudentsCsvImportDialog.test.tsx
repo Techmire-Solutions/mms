@@ -20,6 +20,17 @@ vi.mock("@/hooks/useTranslation", async () => {
   return { useTranslation: useTranslationEnMock() };
 });
 
+const mockInvalidateStudents = vi.hoisted(() => vi.fn());
+
+vi.mock("@/tenant/features/students/hooks/invalidateStudentsQueries", () => ({
+  invalidateStudentsQueries: mockInvalidateStudents,
+}));
+
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
+  return { ...actual, useQueryClient: () => ({ invalidateQueries: vi.fn() }) };
+});
+
 const mockStartServerImport = vi.fn().mockResolvedValue({
   id: "job-students-1",
   label: "Imported 1 student",
@@ -119,6 +130,7 @@ describe("StudentsCsvImportDialog", () => {
       importBtn?.click();
     });
 
+    expect(mockInvalidateStudents).toHaveBeenCalledTimes(1);
     expect(mockStartServerImport).toHaveBeenCalledWith(
       expect.objectContaining({
         path: "/api/students/import",

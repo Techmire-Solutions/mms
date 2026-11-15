@@ -99,7 +99,11 @@ export function ExaminationFormFields({
             />
           </Field>
 
-          <Field id="exam-total" label={t("examinations.form.fields.totalMarks")}>
+          <Field
+            id="exam-total"
+            label={t("examinations.form.fields.totalMarks")}
+            error={errors.totalMarks}
+          >
             <div className="relative flex items-center group/input">
               <Trophy className="absolute start-3.5 w-4 h-4 text-muted-foreground/60 group-focus-within/input:text-primary transition-colors pointer-events-none" />
               <Input

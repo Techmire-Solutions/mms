@@ -5,6 +5,7 @@ import {
 } from "@/components/common/SessionClassSectionSelect";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import { FORM_INPUT, WORK_SURFACE } from "@/components/ui/formStyles";
 import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
@@ -17,18 +18,29 @@ import {
 interface PaperDetailsFormProps {
   config: PaperConfig;
   onChange: <Field extends keyof PaperConfig>(field: Field, value: PaperConfig[Field]) => void;
+  /** Write-schema issues for the fields this panel owns. */
+  errors?: Record<string, string>;
 }
 
-export function PaperDetailsForm({ config, onChange }: PaperDetailsFormProps): React.ReactElement {
+export function PaperDetailsForm({
+  config,
+  onChange,
+  errors = {},
+}: PaperDetailsFormProps): React.ReactElement {
   const { t } = useTranslation();
   const sessions = useSessionsCollection();
   const [sessionId, setSessionId] = useState(() => sessionIdForClass(sessions, config.classId));
+
+  // Loading a saved paper (or picking another class) must re-derive its session.
+  useIdentityReset(`${config.classId ?? ""}:${sessions.length}`, () => {
+    setSessionId(sessionIdForClass(sessions, config.classId));
+  });
 
   return (
     <section className={`${WORK_SURFACE} p-3 sm:p-4`}>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
         <div className="sm:col-span-2">
-          <Field id="paper-name" label={t("questionBank.paperName")}>
+          <Field id="paper-name" label={t("questionBank.paperName")} required error={errors.name}>
             <Input
               id="paper-name"
               name="name"
@@ -71,7 +83,12 @@ export function PaperDetailsForm({ config, onChange }: PaperDetailsFormProps): R
           </Field>
         </div>
         <div>
-          <Field id="paper-duration" label={t("questionBank.durationMin")}>
+          <Field
+            id="paper-duration"
+            label={t("questionBank.durationMin")}
+            required
+            error={errors.duration}
+          >
             <Input
               id="paper-duration"
               name="duration"
@@ -86,7 +103,11 @@ export function PaperDetailsForm({ config, onChange }: PaperDetailsFormProps): R
           </Field>
         </div>
         <div>
-          <Field id="paper-marks" label={t("questionBank.paperTotalMarks")}>
+          <Field
+            id="paper-marks"
+            label={t("questionBank.paperTotalMarks")}
+            error={errors.totalMarks}
+          >
             <Input
               id="paper-marks"
               name="totalMarks"

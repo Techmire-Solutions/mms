@@ -72,7 +72,7 @@ export function SpecializedEntrySalaryFields({
                 id="specialized-entry-pay-period"
                 name="payPeriod"
                 className={FORM_INPUT}
-                placeholder="YYYY-MM"
+                placeholder={t("accounting.entry.periodPlaceholder")}
                 value={field.value}
                 onChange={(event) => field.onChange(event.target.value)}
               />

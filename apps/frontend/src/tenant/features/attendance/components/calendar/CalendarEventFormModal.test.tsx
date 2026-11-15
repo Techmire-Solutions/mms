@@ -60,6 +60,6 @@ describe("CalendarEventFormModal", () => {
     await act(async () => saveButton().click());
 
     expect(onSave).not.toHaveBeenCalled();
-    expect(document.body.textContent).toContain("Title is required");
+    expect(document.body.textContent).toContain("validation.required");
   });
 });

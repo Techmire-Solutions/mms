@@ -1,6 +1,8 @@
 import React from "react";
 import { studentsTransferSchema, type StudentTransferEntity } from "@mms/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
+import { invalidateStudentsQueries } from "@/tenant/features/students/hooks/invalidateStudentsQueries";
 
 export interface StudentsCsvImportDialogProps {
   open: boolean;
@@ -14,6 +16,7 @@ export function StudentsCsvImportDialog({
   onClose,
   canWrite,
 }: StudentsCsvImportDialogProps): React.JSX.Element | null {
+  const queryClient = useQueryClient();
   return (
     <StandardModuleCsvImportDialog<StudentTransferEntity>
       open={open}
@@ -21,6 +24,7 @@ export function StudentsCsvImportDialog({
       canWrite={canWrite}
       apiPath="/api/students/import"
       schema={studentsTransferSchema}
+      onSuccess={() => invalidateStudentsQueries(queryClient)}
       navKey="nav.students"
     />
   );

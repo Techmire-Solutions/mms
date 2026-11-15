@@ -44,16 +44,18 @@ export default function GlobalSettings(): React.JSX.Element {
       saved={saved}
       footerSticky
       footer={
-        <SettingsFormActions
-          saveLabel={t("global.saveSettings")}
-          savingLabel={t("global.saving")}
-          onSave={handleSaveGlobal}
-          onDiscard={handleDiscardGlobal}
-          discardLabel={t("theme.discardChanges")}
-          dirty={isGlobalDirty}
-          saving={saving}
-          saved={saved}
-        />
+        canWriteGlobal ? (
+          <SettingsFormActions
+            saveLabel={t("global.saveSettings")}
+            savingLabel={t("global.saving")}
+            onSave={handleSaveGlobal}
+            onDiscard={handleDiscardGlobal}
+            discardLabel={t("theme.discardChanges")}
+            dirty={isGlobalDirty}
+            saving={saving}
+            saved={saved}
+          />
+        ) : undefined
       }
     >
       <SectionCard

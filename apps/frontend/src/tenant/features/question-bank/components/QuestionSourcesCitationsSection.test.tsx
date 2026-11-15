@@ -14,10 +14,7 @@ describe("QuestionSourcesCitationsSection", () => {
         t={(key) => key}
         canAddBook
         onOpenAddBook={vi.fn()}
-        onUpdateCitation={vi.fn()}
-        onUpdateCitationField={vi.fn()}
-        onAddCitation={vi.fn()}
-        onRemoveCitation={vi.fn()}
+        onCitationsChange={vi.fn()}
       />,
     );
     expect(html).toContain('aria-label="questionBank.addSourceBook"');
@@ -31,10 +28,7 @@ describe("QuestionSourcesCitationsSection", () => {
         fieldById={new Map()}
         fieldLabel={(id) => id}
         t={(key) => key}
-        onUpdateCitation={vi.fn()}
-        onUpdateCitationField={vi.fn()}
-        onAddCitation={vi.fn()}
-        onRemoveCitation={vi.fn()}
+        onCitationsChange={vi.fn()}
       />,
     );
     expect(html).not.toContain('aria-label="questionBank.addSourceBook"');

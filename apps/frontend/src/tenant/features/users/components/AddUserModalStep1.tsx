@@ -16,7 +16,7 @@ import { PersonIdentityMeta } from "@/components/app/PersonIdentityMeta";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
+import { Field } from "@/components/app/FormPrimitives";
 import type { AddUserStepProps } from "../lib/addUserModalTypes";
 
 export function Step1({ form, setForm, errors }: AddUserStepProps): JSX.Element {
@@ -65,8 +65,9 @@ export function Step1({ form, setForm, errors }: AddUserStepProps): JSX.Element 
           onChange={handleContactChange}
           searchPlaceholder={t("users.addSearchPlaceholder")}
           emptyTitle={t("users.addNoContacts")}
+          error={Boolean(errors.contactId)}
+          errorMessage={errors.contactId}
         />
-        <FieldErrorMessage message={errors.contactId} />
       </div>
 
       {form.contactId && form.name ? (

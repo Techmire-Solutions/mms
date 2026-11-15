@@ -1,9 +1,14 @@
 import React from "react";
 import type { ChangeEvent } from "react";
 import { SectionCard } from "@/components/app/SectionCard";
-import type { Contact } from "@mms/shared";
+import {
+  listEnabledCustomContactFormFields,
+  type Contact,
+  type FieldDefinition,
+} from "@mms/shared";
 import { ContactBasicAvatarSection } from "@/tenant/features/contacts/components/formTabs/ContactBasicAvatarSection";
 import { ContactBasicIdentityFields } from "@/tenant/features/contacts/components/formTabs/ContactBasicIdentityFields";
+import { RegistryCustomFieldsGrid } from "@/components/app/RegistryCustomFieldsGrid";
 
 export interface ContactBasicTabProps {
   contactDraft: Partial<Contact>;
@@ -19,6 +24,8 @@ export interface ContactBasicTabProps {
   tags?: string[];
   onUpdateTags?: (tags: string[]) => void;
   lockGender: boolean;
+  /** Tenant field registry; its `basic` custom fields render below the identity block. */
+  fields?: Record<string, FieldDefinition[]>;
   handleAvatarChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onAvatarFileSelect?: (file: File) => void;
 }
@@ -38,6 +45,7 @@ export function ContactBasicTab({
   tags,
   onUpdateTags,
   lockGender,
+  fields,
   handleAvatarChange,
   onAvatarFileSelect,
 }: ContactBasicTabProps): React.JSX.Element {
@@ -69,6 +77,25 @@ export function ContactBasicTab({
           onUpdateTags={onUpdateTags}
           lockGender={lockGender}
         />
+
+        {(() => {
+          const customFields = listEnabledCustomContactFormFields(fields ?? {}, "basic");
+          if (customFields.length === 0) return null;
+          const customErrors: Record<string, string> = {};
+          for (const field of customFields) {
+            const message = getFieldError(field.key);
+            if (message) customErrors[field.key] = message;
+          }
+          return (
+            <RegistryCustomFieldsGrid
+              fields={customFields}
+              values={contactDraft as Record<string, unknown>}
+              errors={customErrors}
+              idPrefix="contact-custom-field"
+              onChange={(key, value) => updateDraft({ [key]: value } as Partial<Contact>)}
+            />
+          );
+        })()}
       </div>
     </SectionCard>
   );

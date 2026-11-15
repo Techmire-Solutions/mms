@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { SectionLabel } from "@/components/app/SectionLabel";
 import { Badge } from "@/components/ui/badge";
@@ -37,10 +38,7 @@ export function WidgetBuilderCardRoleOptions({
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-1">
-      <label htmlFor="builder-role" className={`${FORM_LABEL} block`}>
-        {t("reports.widgets.builder.dashboardRole")}
-      </label>
+    <Field id="builder-role" label={t("reports.widgets.builder.dashboardRole")}>
       <FormSelect
         id="builder-role"
         value={builderRole}
@@ -51,7 +49,7 @@ export function WidgetBuilderCardRoleOptions({
           { value: "accountant", label: t("reports.widgets.builder.roleAccountant") },
         ]}
       />
-    </div>
+    </Field>
   );
 }
 
@@ -69,10 +67,7 @@ export function WidgetBuilderCardTextOptions({
 
   return (
     <>
-      <div className="space-y-1">
-        <label htmlFor="subtext-style" className={`${FORM_LABEL} block`}>
-          {t("reports.widgets.builder.subtextStyle")}
-        </label>
+      <Field id="subtext-style" label={t("reports.widgets.builder.subtextStyle")}>
         <FormSelect
           id="subtext-style"
           value={subTextType}
@@ -82,13 +77,10 @@ export function WidgetBuilderCardTextOptions({
             { value: "fixed", label: t("reports.widgets.builder.subtextFixed") },
           ]}
         />
-      </div>
+      </Field>
 
       {subTextType === "fixed" && (
-        <div className="space-y-1">
-          <label htmlFor="fixed-subtitle" className={`${FORM_LABEL} block`}>
-            {t("reports.widgets.builder.fixedSubtitle")}
-          </label>
+        <Field id="fixed-subtitle" label={t("reports.widgets.builder.fixedSubtitle")}>
           <Input
             id="fixed-subtitle"
             type="text"
@@ -97,7 +89,7 @@ export function WidgetBuilderCardTextOptions({
             placeholder={t("reports.widgets.builder.placeholderSubtitle")}
             className={FORM_INPUT_BUILDER}
           />
-        </div>
+        </Field>
       )}
 
       <div className="space-y-1 col-span-1 sm:col-span-2 border-t border-border/40 pt-3">

@@ -7,6 +7,7 @@ import {
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import {
   fetchEmailIntegration,
   saveEmailIntegration,
@@ -20,6 +21,7 @@ export function useEmailIntegrationPanel() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [form, setForm] = useState<EmailIntegrationConfig>(DEFAULT_EMAIL_INTEGRATION);
   const [smtpPassword, setSmtpPassword] = useState("");
 
@@ -48,6 +50,7 @@ export function useEmailIntegrationPanel() {
   };
 
   const handleSave = async (): Promise<void> => {
+    setActionError(null);
     setSaving(true);
     try {
       const saved = await saveEmailIntegration({
@@ -59,15 +62,16 @@ export function useEmailIntegrationPanel() {
       void queryClient.invalidateQueries({ queryKey: ["email-integration"] });
       notify.success(t("email.saveSuccess"), { description: t("email.saveSuccessDesc") });
     } catch (error) {
-      notify.error(t("email.saveFailed"), {
-        description: error instanceof Error ? error.message : undefined,
-      });
+      const mapped = mapApiFormError(error);
+      setActionError(mapped.message ?? t("email.saveFailed"));
+      notify.error(t("email.saveFailed"), { description: mapped.message });
     } finally {
       setSaving(false);
     }
   };
 
   const handleTest = async (): Promise<void> => {
+    setActionError(null);
     setTesting(true);
     try {
       if (smtpPassword.trim()) {
@@ -80,9 +84,9 @@ export function useEmailIntegrationPanel() {
       void queryClient.invalidateQueries({ queryKey: ["email-integration"] });
       notify.success(t("email.testSuccess"), { description: t("email.testSuccessDesc") });
     } catch (error) {
-      notify.error(t("email.testFailed"), {
-        description: error instanceof Error ? error.message : undefined,
-      });
+      const mapped = mapApiFormError(error);
+      setActionError(mapped.message ?? t("email.testFailed"));
+      notify.error(t("email.testFailed"), { description: mapped.message });
     } finally {
       setTesting(false);
     }
@@ -94,6 +98,7 @@ export function useEmailIntegrationPanel() {
     loading,
     saving,
     testing,
+    actionError,
     form,
     smtpPassword,
     setSmtpPassword,

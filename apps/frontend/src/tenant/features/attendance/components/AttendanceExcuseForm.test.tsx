@@ -65,6 +65,34 @@ describe("AttendanceExcuseForm", () => {
     return button as HTMLButtonElement;
   }
 
+  it("keeps the modal open and shows a validation error when the student is missing", async () => {
+    const onClose = vi.fn();
+    await act(async () => {
+      root.render(<AttendanceExcuseForm open={true} onClose={onClose} />);
+    });
+
+    await act(async () => saveButton().click());
+
+    expect(mocks.submit).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(document.body.textContent).toContain("validation.required");
+  });
+
+  it("resets and closes an untouched form through cancel", async () => {
+    const onClose = vi.fn();
+    await act(async () => {
+      root.render(<AttendanceExcuseForm open={true} onClose={onClose} />);
+    });
+
+    const cancel = [...document.querySelectorAll("button")].find((button) =>
+      button.textContent?.includes("common.cancel"),
+    );
+    expect(cancel).toBeInstanceOf(HTMLButtonElement);
+    await act(async () => cancel?.click());
+
+    expect(onClose).toHaveBeenCalled();
+  });
+
   it("renders the searched student picker, type select, date range and certificate control", async () => {
     await renderForm();
 

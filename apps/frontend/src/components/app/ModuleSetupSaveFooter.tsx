@@ -1,4 +1,4 @@
-import { Loader2, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/app/Alert";
 import { cn } from "@/lib/utils";
@@ -66,18 +66,14 @@ export function ModuleSetupSaveFooter({
             void onSave();
           }}
           disabled={saving || !dirty || disabled}
-          aria-busy={saving}
+          loading={saving}
+          loadingText={saveLabel}
           className={cn(
             saved ? "bg-success hover:bg-success/90 text-success-foreground ms-auto" : "ms-auto",
             buttonClassName,
           )}
         >
-          {saving ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
-          ) : (
-            <Save className="w-3.5 h-3.5" aria-hidden="true" />
-          )}{" "}
-          {saved ? savedLabel : saveLabel}
+          <Save className="w-3.5 h-3.5" aria-hidden="true" /> {saved ? savedLabel : saveLabel}
         </Button>
       </footer>
     </>

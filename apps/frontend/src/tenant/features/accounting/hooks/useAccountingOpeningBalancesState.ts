@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { generateClientEntityId, type Account, type FiscalYear, moneyToCents } from "@mms/shared";
+import {
+  generateClientEntityId,
+  moneyAmountSchema,
+  moneyToCents,
+  type Account,
+  type FiscalYear,
+} from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {
@@ -13,7 +19,9 @@ import {
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
 
 function isPostableMoneyAmount(value: number | null): value is number {
-  return value !== null && value >= 0 && hasAtMostTwoDecimals(value);
+  if (value === null) return false;
+  if (!hasAtMostTwoDecimals(value)) return false;
+  return moneyAmountSchema.safeParse(value).success;
 }
 
 export function useAccountingOpeningBalancesState({
@@ -122,6 +130,10 @@ export function useAccountingOpeningBalancesState({
     }
     if (debitValue > 0 && creditValue > 0) {
       setFormError(t("accounting.settings.opening.singleSidedError"));
+      return;
+    }
+    if (debitValue === 0 && creditValue === 0) {
+      setFormError(t("accounting.settings.opening.zeroAmountError"));
       return;
     }
     setFormError(null);

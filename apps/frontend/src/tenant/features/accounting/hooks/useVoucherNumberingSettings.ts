@@ -7,6 +7,7 @@ import {
   type SequenceNumberingConfig,
   type VoucherNumbering,
   type VoucherNumberingUpdate,
+  voucherNumberingUpdateSchema,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
@@ -47,6 +48,7 @@ export function useVoucherNumberingSettings() {
   const [draft, setDraft] = useState<VoucherNumberingUpdate>(() =>
     loaded ? pickFormat(loaded) : DEFAULT_VOUCHER_NUMBERING,
   );
+  const [error, setError] = useState<string | null>(null);
 
   // Re-seed the draft when a new server config arrives, during render.
   const loadedKey = loaded ? JSON.stringify(pickFormat(loaded)) : "";
@@ -80,6 +82,7 @@ export function useVoucherNumberingSettings() {
 
   /** The shared card edits a looser shape; keep the stored format valid as it changes. */
   const handleCardChange = (next: SequenceNumberingConfig) => {
+    setError(null);
     const restarts = next.rolloverPolicy !== "never";
     setDraft({
       autoGenerate: next.autoGenerate,
@@ -94,7 +97,12 @@ export function useVoucherNumberingSettings() {
   };
 
   const handleSave = async (): Promise<void> => {
-    if (!prefixValid) return;
+    const parsed = voucherNumberingUpdateSchema.safeParse(draft);
+    if (!prefixValid || !parsed.success) {
+      setError(t("accounting.settings.voucher.invalid"));
+      return;
+    }
+    setError(null);
     try {
       await save.mutateAsync(draft);
       notify.success(t("accounting.settings.voucher.saved"));
@@ -109,6 +117,7 @@ export function useVoucherNumberingSettings() {
     cardConfig,
     handleCardChange,
     prefixValid,
+    error,
     formatChanged: !!stored && !sameCounter,
     dirty,
     isSaving: save.isPending,

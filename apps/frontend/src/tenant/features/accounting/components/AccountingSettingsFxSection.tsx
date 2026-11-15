@@ -24,6 +24,7 @@ export function AccountingSettingsFxSection({
 }: AccountingSettingsFxSectionProps): React.JSX.Element {
   const { t } = useTranslation();
   const fx = useAccountingFxSettingsDraft();
+  const fieldErrors = fx.fieldErrors ?? {};
   const readOnly = !canEditSetup;
 
   return (
@@ -54,6 +55,7 @@ export function AccountingSettingsFxSection({
               id="accounting-functional-currency"
               label={t("accounting.settings.fx.functionalCurrency")}
               hint={t("accounting.settings.fx.functionalCurrencyHint")}
+              error={fieldErrors.functionalCurrency}
             >
               <FormSelect
                 id="accounting-functional-currency"
@@ -71,6 +73,7 @@ export function AccountingSettingsFxSection({
               id="accounting-presentation-currency"
               label={t("accounting.settings.fx.presentationCurrency")}
               hint={t("accounting.settings.fx.presentationCurrencyHint")}
+              error={fieldErrors.presentationCurrency}
             >
               <FormSelect
                 id="accounting-presentation-currency"
@@ -89,6 +92,7 @@ export function AccountingSettingsFxSection({
                 id="accounting-enabled-currencies"
                 label={t("accounting.settings.fx.enabledCurrencies")}
                 hint={t("accounting.settings.fx.enabledCurrenciesHint")}
+                error={fieldErrors.enabledCurrencies}
               >
                 {readOnly ? (
                   <p id="accounting-enabled-currencies" className="m-0 font-mono text-sm">

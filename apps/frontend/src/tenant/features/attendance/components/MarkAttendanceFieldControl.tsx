@@ -1,6 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/app/DatePicker";
 import { TimePicker } from "@/components/app/TimePicker";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -40,9 +41,9 @@ export function MarkAttendanceFieldControl({
     const value = field.id === "timeIn" ? row.timeIn : row.timeOut;
     return (
       <>
-        <label htmlFor={inputId} className="sr-only">
+        <Label htmlFor={inputId} className="sr-only">
           {field.label}
-        </label>
+        </Label>
         <TimePicker
           id={inputId}
           name={field.id}
@@ -58,9 +59,9 @@ export function MarkAttendanceFieldControl({
   if (field.id === "notes") {
     return (
       <>
-        <label htmlFor={inputId} className="sr-only">
+        <Label htmlFor={inputId} className="sr-only">
           {field.label}
-        </label>
+        </Label>
         <Input
           id={inputId}
           name={field.id}
@@ -95,9 +96,9 @@ export function MarkAttendanceFieldControl({
   if (field.type === "boolean") {
     return (
       <div className="flex min-h-11 min-w-11 items-center justify-center">
-        <label htmlFor={inputId} className="sr-only">
+        <Label htmlFor={inputId} className="sr-only">
           {field.label}
-        </label>
+        </Label>
         <Checkbox
           id={inputId}
           name={field.id}
@@ -112,9 +113,9 @@ export function MarkAttendanceFieldControl({
   if (field.type === "date") {
     return (
       <>
-        <label htmlFor={inputId} className="sr-only">
+        <Label htmlFor={inputId} className="sr-only">
           {field.label}
-        </label>
+        </Label>
         <DatePicker
           id={inputId}
           name={field.id}
@@ -129,9 +130,9 @@ export function MarkAttendanceFieldControl({
 
   return (
     <>
-      <label htmlFor={inputId} className="sr-only">
+      <Label htmlFor={inputId} className="sr-only">
         {field.label}
-      </label>
+      </Label>
       <Input
         id={inputId}
         name={field.id}

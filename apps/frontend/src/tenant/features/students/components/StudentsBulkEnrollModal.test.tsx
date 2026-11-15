@@ -15,8 +15,9 @@ vi.mock("@/hooks/useTranslation", () => ({
 vi.mock("@/tenant/hooks/collections/sessions", () => ({
   useSessions: () => ({ isLoading: false }),
   useSessionsCollection: () => [
-    { id: "ses-1", name: "Morning Hifz", type: "academic" },
-    { id: "ses-2", name: "Evening Tajweed", type: "short_course" },
+    { id: "ses-1", name: "Morning Hifz", type: "academic", status: "open" },
+    { id: "ses-2", name: "Evening Tajweed", type: "short_course", status: "open" },
+    { id: "ses-3", name: "Archived Session", type: "academic", status: "archived" },
   ],
 }));
 
@@ -52,6 +53,7 @@ describe("StudentsBulkEnrollModal Component", () => {
     expect(html).toContain("Enrolling 5 students");
     expect(html).toContain("Morning Hifz");
     expect(html).toContain("Evening Tajweed");
+    expect(html).not.toContain("Archived Session");
     expect(html).toContain("students.bulkEnrollModeEnroll");
     expect(html).toContain("students.bulkEnrollModeCancel");
     expect(html).toContain("Class");

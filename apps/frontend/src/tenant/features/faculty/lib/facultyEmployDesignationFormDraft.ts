@@ -9,12 +9,13 @@ import {
 
 export function newEmployDesignationFormRow(
   partial?: Partial<FacultyEmployDesignationFormRow>,
+  today = todayISO(),
 ): FacultyEmployDesignationFormRow {
   return {
     clientId: partial?.clientId ?? `fed-${crypto.randomUUID()}`,
     employDesignationId: partial?.employDesignationId ?? null,
     designationId: partial?.designationId ?? "",
-    designationStartDate: partial?.designationStartDate ?? todayISO(),
+    designationStartDate: partial?.designationStartDate ?? today,
     designationEndDate: partial?.designationEndDate ?? null,
     employDesignationStatus: resolveFacultyProfileStatus(
       partial?.employDesignationStatus ?? DEFAULT_FACULTY_PROFILE_STATUS,
@@ -25,32 +26,39 @@ export function newEmployDesignationFormRow(
 /** Build form rows from persisted faculty mirrors (single or `employDesignations`). */
 export function employDesignationRowsFromFaculty(
   faculty?: Partial<FacultyMember> | null,
+  today = todayISO(),
 ): FacultyEmployDesignationFormRow[] {
   const nested = faculty?.employDesignations;
   if (Array.isArray(nested) && nested.length > 0) {
     return nested.map((row) =>
-      newEmployDesignationFormRow({
-        clientId: `fed-${row.employDesignationId ?? row.designationId ?? crypto.randomUUID()}`,
-        employDesignationId: row.employDesignationId ?? null,
-        designationId: row.designationId ?? "",
-        designationStartDate: row.designationStartDate ?? todayISO(),
-        designationEndDate: row.designationEndDate ?? null,
-        employDesignationStatus: row.employDesignationStatus,
-      }),
+      newEmployDesignationFormRow(
+        {
+          clientId: `fed-${row.employDesignationId ?? row.designationId ?? crypto.randomUUID()}`,
+          employDesignationId: row.employDesignationId ?? null,
+          designationId: row.designationId ?? "",
+          designationStartDate: row.designationStartDate ?? today,
+          designationEndDate: row.designationEndDate ?? null,
+          employDesignationStatus: row.employDesignationStatus,
+        },
+        today,
+      ),
     );
   }
   if (faculty?.designationId) {
     return [
-      newEmployDesignationFormRow({
-        clientId: `fed-${faculty.employDesignationId ?? faculty.designationId}`,
-        employDesignationId: faculty.employDesignationId ?? null,
-        designationId: String(faculty.designationId),
-        designationStartDate: faculty.designationStartDate ?? todayISO(),
-        designationEndDate: faculty.designationEndDate ?? null,
-        employDesignationStatus: resolveFacultyProfileStatus(
-          faculty.employDesignationStatus ?? faculty.profileStatus,
-        ),
-      }),
+      newEmployDesignationFormRow(
+        {
+          clientId: `fed-${faculty.employDesignationId ?? faculty.designationId}`,
+          employDesignationId: faculty.employDesignationId ?? null,
+          designationId: String(faculty.designationId),
+          designationStartDate: faculty.designationStartDate ?? today,
+          designationEndDate: faculty.designationEndDate ?? null,
+          employDesignationStatus: resolveFacultyProfileStatus(
+            faculty.employDesignationStatus ?? faculty.profileStatus,
+          ),
+        },
+        today,
+      ),
     ];
   }
   return [];

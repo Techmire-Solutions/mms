@@ -1,14 +1,18 @@
+import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { Combine, Split, XCircle, type LucideIcon } from "lucide-react";
 import {
   enrollmentHoldsSeat,
-  todayISO,
+  sectionCloseBodySchema,
+  sectionMergeBodySchema,
+  sectionSplitBodySchema,
   type AppTranslationKey,
   type SectionCloseBody,
   type SectionMergeBody,
   type SectionSplitBody,
   type SessionClassSection,
 } from "@mms/shared";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
@@ -18,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
 import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -70,7 +75,7 @@ export interface SectionOperationModalProps {
 export function SectionOperationModal(props: SectionOperationModalProps): React.JSX.Element {
   const { kind, classId, section, siblings, isPending, onDismiss } = props;
   const { t } = useTranslation();
-  const today = todayISO();
+  const today = useWorkspaceToday();
   const config = KINDS[kind ?? "merge"];
   const roster = useEnrollmentsCollection({ enabled: kind === "split", classId }).filter(
     (enrollment) => enrollment.sectionId === section.id && enrollmentHoldsSeat(enrollment.status),
@@ -119,22 +124,45 @@ export function SectionOperationModal(props: SectionOperationModalProps): React.
     try {
       const saved =
         kind === "merge"
-          ? await props.onMerge({ ...common, targetSectionId: targetId })
-          : kind === "split"
-            ? await props.onSplit({
+          ? (() => {
+              const parsed = sectionMergeBodySchema.safeParse({
                 ...common,
-                name: name.trim(),
-                capacity: capacityNumber,
-                enrollmentIds: chosen,
-              })
-            : await props.onCloseSection(common);
-      if (saved) {
+                targetSectionId: targetId,
+              });
+              if (!parsed.success) return null;
+              return props.onMerge(parsed.data);
+            })()
+          : kind === "split"
+            ? (() => {
+                const parsed = sectionSplitBodySchema.safeParse({
+                  ...common,
+                  name: name.trim(),
+                  capacity: capacityNumber,
+                  enrollmentIds: chosen,
+                });
+                if (!parsed.success) return null;
+                return props.onSplit(parsed.data);
+              })()
+            : (() => {
+                const parsed = sectionCloseBodySchema.safeParse(common);
+                if (!parsed.success) return null;
+                return props.onCloseSection(parsed.data);
+              })();
+      if (saved === null) {
+        setServerError(t("common.formPleaseFixErrors"));
+        return;
+      }
+      const resolved = await saved;
+      if (resolved) {
         onDismiss();
       } else {
         setServerError(t("sessions.staff.failed"));
       }
-    } catch {
-      setServerError(t("sessions.staff.failed"));
+    } catch (error) {
+      setServerError(
+        mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+          t("sessions.staff.failed"),
+      );
     }
   };
 

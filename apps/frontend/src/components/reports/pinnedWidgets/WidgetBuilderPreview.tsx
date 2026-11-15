@@ -16,6 +16,8 @@ interface WidgetBuilderPreviewProps {
   onCancelEdit: () => void;
   onSave: () => void;
   canSave: boolean;
+  saving?: boolean;
+  error?: string | null;
   isEditing: boolean;
   onSwitchToggle: () => void;
   renderWidget: (widget: CustomWidget, isCompact: boolean) => React.ReactNode;
@@ -29,6 +31,8 @@ export function WidgetBuilderPreview({
   onCancelEdit,
   onSave,
   canSave,
+  saving = false,
+  error,
   isEditing,
   onSwitchToggle: _onSwitchToggle,
   renderWidget,
@@ -75,18 +79,25 @@ export function WidgetBuilderPreview({
         </div>
       </div>
 
+      {error ? (
+        <p role="alert" className="text-xs font-semibold text-destructive text-pretty">
+          {error}
+        </p>
+      ) : null}
+
       <div className="flex items-center gap-2">
         <Button
           type="button"
           variant="outline"
           onClick={onCancelEdit}
+          disabled={saving}
           className="flex-1 h-auto py-2.5 rounded-xl border border-border bg-card/50 hover:bg-muted text-foreground font-black text-xs uppercase tracking-wider shadow-none"
         >
           {t("reports.widgets.builder.cancel")}
         </Button>
         <Button
           type="button"
-          disabled={!canSave}
+          disabled={!canSave || saving}
           onClick={onSave}
           className="flex-2 h-auto py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-black text-xs uppercase tracking-wider disabled:opacity-40 shadow-lg hover:shadow-primary/20 shadow-primary/10"
         >

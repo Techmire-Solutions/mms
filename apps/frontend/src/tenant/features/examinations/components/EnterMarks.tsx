@@ -1,7 +1,9 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Save, CheckCircle2, Loader2, Lock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { examinationsMarksTransferSchema } from "@mms/shared";
+import { parseMarksSavePayload } from "../lib/enterMarksSavePayload";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 import { EnterMarksTransferActions } from "./EnterMarksTransferActions";
 import { type Exam, type ExamResult } from "@/lib/data/examinationData";
@@ -127,7 +129,12 @@ export function EnterMarks({
         notify.info(t("examinations.enterMarks.nothingToSave"));
         return;
       }
-      await onSaveResults(exam.id, newResults);
+      const parsed = parseMarksSavePayload(newResults);
+      if (!parsed.ok) {
+        setSaveError(translateValidationMessage(parsed.message, t));
+        return;
+      }
+      await onSaveResults(exam.id, parsed.data);
       setSeed((previous) => {
         const next = new Map(previous);
         for (const result of newResults) {

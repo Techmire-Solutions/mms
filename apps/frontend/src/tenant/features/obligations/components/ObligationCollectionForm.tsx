@@ -1,3 +1,4 @@
+import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
 import { useRef, useState } from "react";
 import { Receipt } from "lucide-react";
 import {
@@ -11,6 +12,7 @@ import {
 import { todayISO, type AppTranslationKey } from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { calculateKeyedUnitsCompleteness } from "@/lib/formCompleteness";
 import {
@@ -79,6 +81,7 @@ export function ObligationCollectionForm({
     Partial<Record<keyof ObligationCollectionFormState, AppTranslationKey>>
   >({});
   const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   // `submitting` drives the button label but only applies on the next render, so two clicks in the
   // same tick both passed `!submitting` and could create the receipt twice. The ref is the lock.
   const inFlightRef = useRef(false);
@@ -133,8 +136,14 @@ export function ObligationCollectionForm({
     if (inFlightRef.current) return;
     inFlightRef.current = true;
     setSubmitting(true);
+    setServerError(null);
     try {
       await onSave(toObligationCollectionPayload(form));
+    } catch (error) {
+      setServerError(
+        mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+          t("common.formPleaseFixErrors"),
+      );
     } finally {
       inFlightRef.current = false;
       setSubmitting(false);
@@ -145,7 +154,10 @@ export function ObligationCollectionForm({
   const selectedMujtahid = selectedRep
     ? resolveMujtahidForRep(selectedRep.id, reps, mujtahids)
     : null;
-  const errorMessages = Object.values(errors).map((key) => t(key));
+  const errorMessages = [
+    ...Object.values(errors).map((key) => t(key)),
+    ...(serverError ? [serverError] : []),
+  ];
   const validationErrors = validateObligationCollectionForm(form);
 
   return (

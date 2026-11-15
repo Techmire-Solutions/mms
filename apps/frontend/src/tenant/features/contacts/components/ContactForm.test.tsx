@@ -22,6 +22,8 @@ vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
 vi.mock("@/lib/contexts/ContactConfigContext", () => ({
   useContactConfig: () => ({
     enabledTabIds: new Set(["basic", "phones", "emails", "addresses"]),
+    isTabFieldEnabled: () => true,
+    isTabFieldRequired: () => false,
   }),
 }));
 

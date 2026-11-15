@@ -1,6 +1,7 @@
 import React from "react";
 import { Paperclip, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface AttendanceExcuseAttachmentFieldProps {
@@ -12,6 +13,7 @@ export interface AttendanceExcuseAttachmentFieldProps {
 }
 
 const FILE_INPUT_ID = "attendance-excuse-file";
+const FILE_ERROR_ID = "attendance-excuse-file-error";
 
 /** Certificate attach/remove control for the excuse form. */
 export function AttendanceExcuseAttachmentField({
@@ -24,14 +26,22 @@ export function AttendanceExcuseAttachmentField({
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" aria-busy={uploading || undefined}>
       <input
         id={FILE_INPUT_ID}
         type="file"
         accept="application/pdf,image/jpeg,image/png,image/webp"
         className="hidden"
         aria-label={t("attendance.excuses.attach")}
-        onChange={(event) => onUpload(event.target.files?.[0])}
+        aria-invalid={Boolean(error) || undefined}
+        aria-describedby={error ? FILE_ERROR_ID : undefined}
+        disabled={uploading}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          onUpload(file);
+          // Allow picking the same file again after a failed upload.
+          event.currentTarget.value = "";
+        }}
       />
       <div className="flex flex-wrap items-center gap-2">
         <Button
@@ -55,6 +65,7 @@ export function AttendanceExcuseAttachmentField({
             size="sm"
             variant="ghost"
             className="min-h-11 text-destructive"
+            disabled={uploading}
             onClick={onRemove}
           >
             <Trash2 className="me-1 h-4 w-4" aria-hidden="true" />
@@ -62,11 +73,7 @@ export function AttendanceExcuseAttachmentField({
           </Button>
         )}
       </div>
-      {error && (
-        <span className="text-xs font-medium text-destructive" role="alert">
-          {error}
-        </span>
-      )}
+      <FieldErrorMessage id={FILE_ERROR_ID} message={error} />
     </div>
   );
 }

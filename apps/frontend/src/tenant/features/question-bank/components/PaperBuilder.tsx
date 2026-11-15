@@ -1,7 +1,8 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Badge } from "@/components/ui/badge";
+import { Alert } from "@/components/app/Alert";
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import { type QuestionBankQuestion as Question, type QuestionBankTest } from "@mms/shared";
 import { usePaperBuilderState } from "@/tenant/features/question-bank/hooks/usePaperBuilderState";
@@ -20,6 +21,8 @@ interface PaperBuilderProps {
   /** Enables the answer-key/sheet views; false for a caller who cannot see the key. */
   canViewAnswers?: boolean;
   onSaveTest: (test: QuestionBankTest) => Promise<void>;
+  /** Lets the hosting FormModal block dismissal while the paper is saving. */
+  onSavingChange?: (saving: boolean) => void;
 }
 
 export type PaperBuilderTab = "details" | "saved" | "sections" | "questions" | "preview";
@@ -34,12 +37,17 @@ export function PaperBuilder({
   showHeader = true,
   canViewAnswers = false,
   onSaveTest,
+  onSavingChange,
 }: PaperBuilderProps): React.ReactElement {
   const { t } = useTranslation();
   const qbConfig = useQuestionBankConfig(questions);
   const printRef = useRef<HTMLDivElement>(null);
   const [activePaperId, setActivePaperId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    onSavingChange?.(saving);
+  }, [onSavingChange, saving]);
   const {
     activeSection,
     addQuestionToActiveSection,
@@ -78,6 +86,8 @@ export function PaperBuilder({
     handlePrintPaper,
     handleSave,
     handleOpenPaper,
+    saveError,
+    fieldErrors,
   } = usePaperBuilderHandlers({
     questions,
     tests,
@@ -98,6 +108,9 @@ export function PaperBuilder({
       className="space-y-3 sm:space-y-4"
       aria-labelledby={showHeader ? "paper-generator-title" : undefined}
     >
+      {saveError ? (
+        <Alert tone="destructive" density="compact" role="alert" description={saveError} />
+      ) : null}
       {showHeader || saved ? (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           {showHeader && (
@@ -120,7 +133,7 @@ export function PaperBuilder({
       ) : null}
 
       {(!activeTab || activeTab === "details") && (
-        <PaperDetailsForm config={config} onChange={updateConfig} />
+        <PaperDetailsForm config={config} onChange={updateConfig} errors={fieldErrors} />
       )}
 
       {(!activeTab || activeTab === "saved") && (

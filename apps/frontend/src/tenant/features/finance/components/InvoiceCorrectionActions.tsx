@@ -1,3 +1,4 @@
+import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { Ban, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { tryParseMoneyAmountNumber } from "@mms/shared";
 import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import {
   canCancelInvoice,
   canCreditInvoice,
@@ -40,6 +43,14 @@ export function InvoiceCorrectionActions({
   const [cancelOpen, setCancelOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+  // Reopening the credit action (or switching invoice) must start from a blank
+  // amount/reason instead of the previous submission's values.
+  useIdentityReset(`${invoice.id}:${creditOpen ? "open" : "closed"}`, () => {
+    setAmount("");
+    setReason("");
+    setFormError(null);
+  });
   const openBalance = getOutstandingAmountForInvoice(invoice);
   const creditAmt = tryParseMoneyAmountNumber(amount) ?? 0;
   const showCredit = canManage && openBalance > 0 && canCreditInvoice(invoice, openBalance);
@@ -68,10 +79,15 @@ export function InvoiceCorrectionActions({
       setCreditOpen(false);
       setAmount("");
       setReason("");
+      setFormError(null);
     } catch (error) {
-      notify.error(t("finance.collect.creditFailed"), {
-        description: error instanceof Error ? error.message : String(error),
-      });
+      const mapped = mapApiFormError(error, (message) => translateApiMessage(message, t));
+      setFormError(mapped.message ?? t("finance.collect.creditFailed"));
+      if (!mapped.fieldErrors) {
+        notify.error(t("finance.collect.creditFailed"), {
+          description: mapped.message ?? (error instanceof Error ? error.message : String(error)),
+        });
+      }
     }
   };
 
@@ -115,6 +131,7 @@ export function InvoiceCorrectionActions({
         saveLabel={t("finance.collect.creditSubmit")}
         onSave={() => void handleCredit()}
         saving={credit.isPending}
+        error={formError ?? undefined}
         saveDisabled={!canCreditInvoice(invoice, creditAmt)}
         formId="invoice-credit-form"
       >

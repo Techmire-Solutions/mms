@@ -7,6 +7,10 @@ import type { Account, FiscalYear, HedgeRelationship } from "@mms/shared";
 // The setup guide has its own spec; keep these suites on their sections.
 vi.mock("./FxSetupGuide", () => ({ FxSetupGuide: () => null }));
 
+vi.mock("./AccountingPostingPeriodsSection", () => ({
+  AccountingPostingPeriodsSection: () => <div>Posting periods</div>,
+}));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));

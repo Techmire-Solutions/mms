@@ -1,4 +1,6 @@
 import React from "react";
+import { isContactCustomCollectionTab } from "@mms/shared";
+import { ContactCustomCollectionTab } from "@/tenant/features/contacts/components/ContactCustomCollectionTab";
 import { ContactPhonesTab } from "@/tenant/features/contacts/components/formTabs/ContactPhonesTab";
 import { ContactEmailsTab } from "@/tenant/features/contacts/components/formTabs/ContactEmailsTab";
 import { ContactAddressesTab } from "@/tenant/features/contacts/components/formTabs/ContactAddressesTab";
@@ -101,6 +103,8 @@ export function ContactFormNestedTabsDispatcher({
     case "bankDetails":
       return <ContactBankDetailsTab {...listBase} />;
     default:
-      return null;
+      return isContactCustomCollectionTab(normalizedTab) ? (
+        <ContactCustomCollectionTab tabId={normalizedTab} draft={draft} />
+      ) : null;
   }
 }

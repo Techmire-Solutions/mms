@@ -106,13 +106,17 @@ export function AccountingSettingsCurrencySection({
           />
         </Field>
 
-        <Field id="accounting-decimal-places" label={t("accounting.settings.fields.decimalPlaces")}>
+        <Field
+          id="accounting-decimal-places"
+          label={t("accounting.settings.fields.decimalPlaces")}
+          hint={t("accounting.settings.fields.decimalPlacesHint")}
+        >
           <FormSelect
             id="accounting-decimal-places"
             name="decimalPlaces"
             value={String(settingsDraft.decimalPlaces ?? 2)}
             onChange={(decimalPlacesValue) => upd("decimalPlaces", parseInt(decimalPlacesValue))}
-            options={[0, 1, 2, 3].map((placeCount) => String(placeCount))}
+            options={[0, 1, 2, 3, 4].map((placeCount) => String(placeCount))}
             className="w-full sm:w-32"
           />
         </Field>

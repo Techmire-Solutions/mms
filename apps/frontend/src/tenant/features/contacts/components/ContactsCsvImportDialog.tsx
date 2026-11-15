@@ -1,4 +1,6 @@
 import React, { useCallback } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { BackgroundJobRecord, Contact } from "@mms/shared";
 import { CONTACTS_IMPORT_MAX_BATCH, contactsTransferSchema } from "@mms/shared";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
@@ -8,6 +10,7 @@ import type {
 } from "@/lib/backgroundJobs/useModuleCsvImportActions";
 import { chunkContactsForImport } from "@/lib/contacts/contactsImportBatching";
 import { startServerContactsImport } from "@/lib/backgroundJobs/startServerContactsImport";
+import { useInvalidateContactsQueries } from "@/tenant/features/contacts/hooks/useContactMutations";
 
 export interface ContactsCsvImportDialogProps {
   open: boolean;
@@ -41,6 +44,7 @@ function toContactImportRow(row: Contact): Contact {
 async function submitContactRows(
   rows: Contact[],
   onProgress: (progress: ModuleCsvImportProgress) => void,
+  t: TranslationFunction,
 ): Promise<BackgroundJobRecord> {
   const total = rows.length;
   const batches = chunkContactsForImport(rows.map(toContactImportRow), CONTACTS_IMPORT_MAX_BATCH);
@@ -53,7 +57,7 @@ async function submitContactRows(
     try {
       const job = await startServerContactsImport({
         contacts: batch,
-        label: `Importing ${total} contacts`,
+        label: t("contacts.import.importing", { count: total }),
         // Overall counts across batches: the job reports its own batch progress.
         onProgress: (jobState) => {
           onProgress({ current: imported + (jobState.progress?.current ?? 0), total });
@@ -71,15 +75,15 @@ async function submitContactRows(
   }
 
   if (!lastJob) {
-    throw lastError instanceof Error ? lastError : new Error("Contacts import failed");
+    throw lastError instanceof Error ? lastError : new Error(t("contacts.import.failed"));
   }
 
   return {
     ...lastJob,
     label:
       failed > 0
-        ? `Imported ${imported} of ${total} contacts (${failed} failed)`
-        : `Imported ${imported} of ${total} contacts`,
+        ? t("contacts.import.importedWithFailures", { imported, total, failed })
+        : t("contacts.import.imported", { imported, total }),
     progress: { current: imported, total },
   };
 }
@@ -90,9 +94,11 @@ export function ContactsCsvImportDialog({
   onClose,
   canWrite,
 }: ContactsCsvImportDialogProps): React.JSX.Element | null {
+  const { t } = useTranslation();
+  const invalidateContacts = useInvalidateContactsQueries();
   const submitRows = useCallback<ModuleCsvImportSubmitRows<Contact>>(
-    (rows, onProgress) => submitContactRows(rows, onProgress),
-    [],
+    (rows, onProgress) => submitContactRows(rows, onProgress, t),
+    [t],
   );
 
   return (
@@ -103,6 +109,7 @@ export function ContactsCsvImportDialog({
       apiPath="/api/contacts/import"
       schema={contactsTransferSchema}
       submitRows={submitRows}
+      onSuccess={invalidateContacts}
       navKey="nav.contacts"
     />
   );

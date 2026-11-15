@@ -1,3 +1,4 @@
+import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
 import { useRef, useState } from "react";
 import {
   workshopEventCreateSchema,
@@ -7,6 +8,7 @@ import {
   type WorkshopPreferences,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 
 const VALIDATION_KEYS: readonly AppTranslationKey[] = [
   "workshops.validation.titleRequired",
@@ -127,7 +129,10 @@ export function useWorkshopFormController({
       await onSave(parsed.data);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("workshops.saveFailed"));
+      setError(
+        mapApiFormError(err, (message) => translateApiMessage(message, t)).message ??
+          t("workshops.saveFailed"),
+      );
     } finally {
       submitLock.current = false;
       setSaving(false);

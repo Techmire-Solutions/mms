@@ -10,6 +10,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useApplyLogoColors } from "@/tenant/hooks/useApplyLogoColors";
 import { useThemeSettingsDraft } from "@/tenant/features/settings/hooks/useThemeSettingsDraft";
 import { useSettingsTab } from "@/lib/contexts/SettingsTabContext";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
+import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { SettingsFormActions } from "@/components/app/SettingsFormActions";
@@ -27,6 +29,8 @@ import { Badge } from "@/components/ui/badge";
 export default function ThemeSettings(): React.JSX.Element {
   const { t } = useTranslation();
   const { setActiveTab } = useSettingsTab();
+  const { can } = usePermissions();
+  const canWriteTheme = can("settings.branding.write");
 
   const {
     data,
@@ -62,6 +66,8 @@ export default function ThemeSettings(): React.JSX.Element {
   });
 
   const footerPreview = data.footerText.trim() || defaultFooterPreview;
+
+  if (!canWriteTheme) return <SettingsAdminOnlyNotice />;
 
   return (
     <SettingsPanel

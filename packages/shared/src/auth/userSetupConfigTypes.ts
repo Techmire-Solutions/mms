@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizePersistedWorkspaceRole } from "./userRbacRoleWrite.js";
 import type { FieldDefinition, TabDefinition } from "../contacts/contactTypes.js";
 import { DEFAULT_USERS_SETTINGS, type UsersSettings } from "./usersModuleSettings.js";
 import {
@@ -124,13 +125,16 @@ export function normalizeWorkspaceRoles(
   actorRole?: string,
 ): WorkspaceRole[] | undefined {
   if (!Array.isArray(raw)) return undefined;
-  let roles = raw.filter(
-    (role): role is WorkspaceRole =>
-      !!role &&
-      typeof role === "object" &&
-      !Array.isArray(role) &&
-      typeof (role as { id?: unknown }).id === "string",
-  );
+  let roles = raw
+    .filter(
+      (role): role is WorkspaceRole =>
+        !!role &&
+        typeof role === "object" &&
+        !Array.isArray(role) &&
+        typeof (role as { id?: unknown }).id === "string" &&
+        (role as { id: string }).id.trim().length > 0,
+    )
+    .map((role) => normalizePersistedWorkspaceRole(role));
   if (roles.length === 0) return undefined;
 
   // When actor is not Super Admin, preserve Super Admin role definition and full permissions

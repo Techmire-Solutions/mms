@@ -37,6 +37,21 @@ describe("validateClassDraft", () => {
     expect(result.tab).toBe("fees");
   });
 
+  it("rejects empty, duplicate, and invalid sections", () => {
+    const invalid = {
+      ...validClass(),
+      sections: [
+        { id: "sec-a", name: "A", capacity: 30, room: "", status: "active" },
+        { id: "sec-b", name: "a", capacity: -1, room: "x".repeat(101), status: "active" },
+      ],
+    };
+    const result = validateClassDraft(invalid as never, t);
+    expect(result.errors["section.sec-b.name"]).toBe("common.formPleaseFixErrors");
+    expect(result.errors["section.sec-b.capacity"]).toBe("common.formPleaseFixErrors");
+    expect(result.errors["section.sec-b.room"]).toBe("common.formPleaseFixErrors");
+    expect(result.tab).toBe("sections");
+  });
+
   it("rejects invalid timetable periods", () => {
     const invalid = {
       ...validClass(),

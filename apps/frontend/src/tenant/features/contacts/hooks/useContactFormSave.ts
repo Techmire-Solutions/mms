@@ -40,7 +40,7 @@ export function useContactFormSave({
   onBaselineReset?: (contact: Contact) => void;
 }) {
   const { t } = useTranslation();
-  const { fields, fieldConfigVersion } = useContactConfig();
+  const { fields, isTabFieldRequired, fieldConfigVersion } = useContactConfig();
   const { language } = useGlobalSettings();
   const validate = useContactValidation();
   const [saving, setSaving] = useState(false);
@@ -60,6 +60,7 @@ export function useContactFormSave({
         cleanedDraft,
         fields,
         language,
+        isFieldRequired: isTabFieldRequired,
         validateBase: validate,
         t,
       });
@@ -176,6 +177,7 @@ export function useContactFormSave({
       onBaselineReset,
       fields,
       fieldConfigVersion,
+      isTabFieldRequired,
       language,
       validate,
       t,

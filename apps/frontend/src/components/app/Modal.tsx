@@ -23,6 +23,8 @@ export interface ModalProps<K extends string = string> {
   footer?: React.ReactNode;
   priority?: boolean;
   dismissible?: boolean;
+  /** Announces an in-flight save to assistive tech (`aria-busy`) and blocks dismissal. */
+  busy?: boolean;
   children: React.ReactNode;
   // Consolidated FormModal capabilities
   progress?: number;
@@ -75,6 +77,7 @@ export function Modal<K extends string = string>({
   footer,
   priority = false,
   dismissible = true,
+  busy = false,
   children,
   progress,
   progressLabel,
@@ -107,6 +110,28 @@ export function Modal<K extends string = string>({
     if (!error) return [];
     return (Array.isArray(error) ? error : [error]).filter(Boolean);
   })();
+
+  const handlePanelKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (
+      event.key !== "Enter" ||
+      event.defaultPrevented ||
+      event.nativeEvent.isComposing ||
+      formId ||
+      !onSave ||
+      saving ||
+      saveDisabled
+    ) {
+      return;
+    }
+    const target = event.target as HTMLElement;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (["checkbox", "radio", "file", "button", "submit", "reset"].includes(target.type)) {
+      return;
+    }
+    if (target.closest('[role="listbox"], [role="menu"], [aria-expanded="true"]')) return;
+    event.preventDefault();
+    void onSave();
+  };
 
   const resolvedFooter = (() => {
     if (footer !== undefined) return footer;
@@ -147,6 +172,8 @@ export function Modal<K extends string = string>({
           transition={{ duration: reducedMotion ? 0 : 0.18, ease: "easeOut" }}
           role="dialog"
           aria-modal="true"
+          onKeyDown={handlePanelKeyDown}
+          aria-busy={busy || undefined}
           aria-labelledby={title ? titleId : undefined}
           data-print-unclamp
           className={cn(

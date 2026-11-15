@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useStudentCardTemplate } from "../lib/studentCardTemplateStore";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import {
   StudentIdCardPrintControlsBar,
   type StudentCardPrintMode,
@@ -44,6 +45,15 @@ export function StudentIdCardModal({
   const [showCutGuides, setShowCutGuides] = useState(true);
   const { canEditSetup } = useModulePermissions(STUDENTS_MODULE_MANIFEST);
   const { template } = useStudentCardTemplate();
+
+  // A different print batch must not inherit flips/guides/editor state.
+  useIdentityReset(items.map((item) => String(item.student.id)).join(","), () => {
+    setShowEditor(false);
+    setPrintMode("front");
+    setGlobalFlipped(false);
+    setFlippedCards({});
+    setShowCutGuides(true);
+  });
 
   if (!open || items.length === 0) return null;
 

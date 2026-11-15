@@ -85,12 +85,14 @@ vi.mock("@/components/app/FormPrimitives", () => ({
 
 let capturedPickerProps: {
   label: string;
+  errorMessage?: string;
   onChange: (id: string | number | null, contact?: unknown) => void;
 } | null = null;
 
 vi.mock("@/components/contactLink/ContactPicker", () => ({
   default: (props: {
     label: string;
+    errorMessage?: string;
     onChange: (id: string | number | null, contact?: unknown) => void;
   }) => {
     capturedPickerProps = props;
@@ -139,6 +141,26 @@ describe("ContactRelationshipTab Component", () => {
     expect(html).toContain("Dependent");
     expect(html).toContain("Brother");
     expect(html).toContain("contacts.form.linkContact");
+  });
+
+  it("passes the relationship error to the picker so it is programmatically associated", () => {
+    renderToStaticMarkup(
+      <ContactRelationshipTab
+        contactDraft={{ relationshipContacts: [{ contactId: "", relationship: "Parent" }] }}
+        formInstanceId="inst-1"
+        getLocalId={() => "loc-1"}
+        isFieldEnabled={() => true}
+        isFieldRequired={() => true}
+        getListItemError={() => "contacts.validation.required"}
+        fields={{}}
+        addSubListItem={vi.fn()}
+        ensureSubListItem={vi.fn()}
+        updateSubListItem={vi.fn()}
+        removeSubListItem={vi.fn()}
+      />,
+    );
+
+    expect(capturedPickerProps?.errorMessage).toBe("contacts.validation.required");
   });
 
   it("updates contactId, name, and phone when a contact is selected in ContactPicker", () => {

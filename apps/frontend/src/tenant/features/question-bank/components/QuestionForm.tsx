@@ -1,3 +1,7 @@
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@/lib/forms/translateValidationMessage";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
@@ -9,18 +13,20 @@ import {
   normalizeAppLanguage,
   questionBankQuestionWriteSchema,
   type AppLanguageCode,
-  type AppTranslationKey,
   type QuestionCategory,
   type QuestionDifficulty,
   type QuestionBankQuestion as Question,
   type QuestionSourceBook,
 } from "@mms/shared";
 import { createZodFormResolver } from "@/lib/forms/createZodFormResolver";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import { QuestionFormClassificationSection } from "@/tenant/features/question-bank/components/QuestionFormClassificationSection";
 import { QuestionFormContentSection } from "@/tenant/features/question-bank/components/QuestionFormContentSection";
 import { QuestionFormFooterSummary } from "@/tenant/features/question-bank/components/QuestionFormFooterSummary";
 import { QuestionFormSourcesSection } from "@/tenant/features/question-bank/components/QuestionFormSourcesSection";
+import { sanitizeQuestionDraft } from "@/tenant/features/question-bank/lib/questionFormPayload";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 
 import type { QuestionFormDraft, QuestionFormProps } from "../lib/questionFormTypes";
 
@@ -53,37 +59,51 @@ export function QuestionForm({
   const { settings, categories, sourceBooks, updateSettingsAsync } =
     useQuestionBankConfig(questions);
   const [saving, setSaving] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   // Shared validation contract: same resolver + ValidationError shape as the other forms.
   const resolver = useMemo(
     () =>
       createZodFormResolver(questionBankQuestionWriteSchema, {
-        resolveMessage: (message) => t(message as AppTranslationKey),
+        resolveMessage: (message) => translateValidationMessage(message, t),
       }) as unknown as Resolver<QuestionFormValues>,
     [t],
   );
 
   const [defaultValues] = useState(() => buildQuestionValues(question, language));
-  const { watch, setValue, handleSubmit, reset, formState } = useForm<QuestionFormValues>({
-    resolver,
-    defaultValues,
-    mode: "onSubmit",
-  });
+  const { watch, setValue, setError, clearErrors, handleSubmit, reset, formState } =
+    useForm<QuestionFormValues>({
+      resolver,
+      defaultValues,
+      mode: "onSubmit",
+    });
 
-  // Re-sync the draft when editing another question record / when the language changes.
+  // Re-sync the draft when editing another question record or reopening. The app
+  // language is not part of the identity: switching locale must not discard edits.
   useEffect(() => {
     if (!open) return;
     reset(buildQuestionValues(question, language));
-  }, [open, question, language, reset]);
+    setServerError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- locale is intentionally excluded
+  }, [open, question, reset]);
 
   const questionDraft = watch();
 
   const errors = useMemo(() => {
     const map: Record<string, string> = {};
-    for (const [key, value] of Object.entries(formState.errors)) {
-      const message = (value as { message?: unknown } | undefined)?.message;
-      if (typeof message === "string") map[key] = message;
-    }
+    const collect = (source: unknown, prefix = ""): void => {
+      if (!source || typeof source !== "object") return;
+      for (const [key, value] of Object.entries(source as Record<string, unknown>)) {
+        const field = prefix ? `${prefix}.${key}` : key;
+        if (value && typeof value === "object" && "message" in value) {
+          const message = (value as { message?: unknown }).message;
+          if (typeof message === "string") map[field] = message;
+          continue;
+        }
+        collect(value, field);
+      }
+    };
+    collect(formState.errors);
     return map;
   }, [formState.errors]);
 
@@ -125,15 +145,30 @@ export function QuestionForm({
   };
 
   const onValid = async (data: QuestionFormValues) => {
+    setServerError(null);
+    const sanitized = sanitizeQuestionDraft(data);
+    const parsed = questionBankQuestionWriteSchema.safeParse(sanitized);
+    if (!parsed.success) {
+      const fieldErrors = mapZodFormErrors(parsed.error, (message) =>
+        translateValidationMessage(message, t),
+      );
+      for (const [path, message] of Object.entries(fieldErrors)) {
+        setError(path as Parameters<typeof setError>[0], { type: "server", message });
+      }
+      setServerError(t("common.formPleaseFixErrors"));
+      return;
+    }
+    clearErrors();
     setSaving(true);
     try {
-      await onSave(data as Question);
+      await onSave(parsed.data as Question);
       notify.success(question ? t("questionBank.updated") : t("questionBank.saved"));
       onClose();
     } catch (err: unknown) {
-      notify.error(t("questionBank.saveFailed"), {
-        description: err instanceof Error ? err.message : String(err),
-      });
+      setServerError(
+        mapApiFormError(err, (message) => translateApiMessage(message, t)).message ??
+          t("questionBank.saveFailed"),
+      );
     } finally {
       setSaving(false);
     }
@@ -151,12 +186,12 @@ export function QuestionForm({
       title={question ? t("questionBank.editQuestion") : t("questionBank.addQuestion")}
       subtitle={t("questionBank.form.subtitle")}
       icon={BookOpen}
-      lang={language}
       dir={getLanguageDirection(language)}
       cancelLabel={t("questionBank.cancel")}
       saveLabel={t("questionBank.saveQuestion")}
       onSave={handleSave}
       saving={saving}
+      error={[...Object.values(errors), ...(serverError ? [serverError] : [])]}
       saveDisabled={!questionDraft.text?.trim() || questionDraft.categoryIds.length === 0}
       footerStart={footerStart}
       formId="question-form"

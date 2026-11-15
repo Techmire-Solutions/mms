@@ -14,6 +14,7 @@ export interface InstitutionSetupFieldErrors {
   tagline?: string;
   email?: string;
   phone?: string;
+  website?: string;
   addressLine1?: string;
   city?: string;
   country?: string;
@@ -117,7 +118,7 @@ export function InstitutionSetupFormSections({
                 className={FORM_INPUT}
                 value={data.website}
                 onChange={(e) => updateField("website", e.target.value)}
-                placeholder="https://www.yourmadrasa.org"
+                placeholder={t("branding.websitePlaceholder")}
               />
             </Field>
           </div>

@@ -20,6 +20,7 @@ export function usePlatformEmailIntegrationPanel() {
   const [testing, setTesting] = useState(false);
   const [form, setForm] = useState<EmailIntegrationConfig>(DEFAULT_EMAIL_INTEGRATION);
   const [smtpPassword, setSmtpPassword] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
   const load = useCallback(async (): Promise<void> => {
     try {
@@ -44,7 +45,33 @@ export function usePlatformEmailIntegrationPanel() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const validate = (): string | null => {
+    if (!form.providerId?.trim()) return t("email.provider");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.fromAddress?.trim() ?? "")) {
+      return t("email.invalidFromAddress");
+    }
+    if (!form.smtpUsername?.trim()) return t("email.invalidUsername");
+    if (!form.hasCredentials && !smtpPassword.trim()) return t("email.invalidPassword");
+    if (isCustom) {
+      if (!form.smtpHost?.trim()) return t("email.invalidHost");
+      if (
+        !Number.isInteger(form.smtpPort) ||
+        (form.smtpPort ?? 0) < 1 ||
+        (form.smtpPort ?? 0) > 65535
+      ) {
+        return t("email.invalidPort");
+      }
+    }
+    return null;
+  };
+
   const handleSave = async (): Promise<void> => {
+    const validationError = validate();
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+    setFormError(null);
     setSaving(true);
     try {
       const saved = await savePlatformEmailIntegration({
@@ -64,6 +91,12 @@ export function usePlatformEmailIntegrationPanel() {
   };
 
   const handleTest = async (): Promise<void> => {
+    const validationError = validate();
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+    setFormError(null);
     setTesting(true);
     try {
       if (smtpPassword.trim()) {
@@ -93,6 +126,7 @@ export function usePlatformEmailIntegrationPanel() {
     saving,
     testing,
     form,
+    formError,
     smtpPassword,
     setSmtpPassword,
     selectedPreset,

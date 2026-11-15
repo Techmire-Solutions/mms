@@ -6,6 +6,7 @@ import type {
   FiscalYear,
   OpeningBalance,
   OpeningBalanceInsert,
+  PostingPeriod,
   PostingRules,
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
@@ -16,6 +17,7 @@ const RULES_KEY = ["accounting", "posting-rules"] as const;
 export { RULES_KEY as ACCOUNTING_POSTING_RULES_QUERY_KEY };
 const OPENING_KEY = ["accounting", "opening-balances"] as const;
 const BANK_KEY = ["accounting", "bank-statements"] as const;
+const POSTING_PERIODS_KEY = ["accounting", "posting-periods"] as const;
 
 export {
   hasAtMostTwoDecimals,
@@ -158,6 +160,57 @@ export function usePostOpeningBalances() {
     },
     onSuccess: () => invalidateAccountingQueries(queryClient),
   });
+}
+
+/** Monthly posting periods for one fiscal year (close/reopen controls live in Period End). */
+export function usePostingPeriods(fiscalYearId: string | undefined) {
+  return useQuery({
+    queryKey: [...POSTING_PERIODS_KEY, fiscalYearId ?? "all"],
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.accountingLedger.listPostingPeriods({
+        query: fiscalYearId ? { fiscalYearId } : {},
+        signal,
+        fetchOptions: { signal },
+      });
+      assertContractOk(response, "Failed to load posting periods");
+      return (response.body as { periods: PostingPeriod[] }).periods;
+    },
+    enabled: Boolean(fiscalYearId),
+  });
+}
+
+function usePostingPeriodMutation(
+  kind: "close" | "reopen",
+): ReturnType<typeof useMutation<PostingPeriod, Error, { id: string; reason?: string }>> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, reason }) => {
+      const response =
+        kind === "close"
+          ? await apiContract.accountingLedger.closePostingPeriod({
+              params: { id },
+              body: reason ? { reason } : {},
+            })
+          : await apiContract.accountingLedger.reopenPostingPeriod({
+              params: { id },
+              body: reason ? { reason } : {},
+            });
+      assertContractOk(response, `Failed to ${kind} posting period`);
+      return (response.body as { period: PostingPeriod }).period;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: POSTING_PERIODS_KEY });
+      invalidateAccountingQueries(queryClient);
+    },
+  });
+}
+
+export function useClosePostingPeriod() {
+  return usePostingPeriodMutation("close");
+}
+
+export function useReopenPostingPeriod() {
+  return usePostingPeriodMutation("reopen");
 }
 
 export function useBankStatements(enabled = true) {

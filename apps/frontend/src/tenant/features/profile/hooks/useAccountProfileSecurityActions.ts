@@ -8,13 +8,16 @@ import {
   changePasswordBodySchema,
   requestLoginEmailChangeBodySchema,
   confirmLoginEmailChangeBodySchema,
+  validatePasswordPolicy,
 } from "@mms/shared";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { tsrClient } from "@/lib/api";
 import { apiContractError, assertContractOk } from "@/lib/apiContractError";
 
 export function useAccountProfileSecurityActions() {
   const { t } = useTranslation();
   const { checkUserAuth } = useAuth();
+  const globalSettings = useGlobalSettings();
   const queryClient = useQueryClient();
   const { refetch } = useTenantProfile();
 
@@ -122,6 +125,15 @@ export function useAccountProfileSecurityActions() {
       });
       if (!checked.success) {
         notify.error(t("common.formPleaseFixErrors"));
+        return;
+      }
+      const policy = validatePasswordPolicy(newPassword, globalSettings.passwordPolicy);
+      if (!policy.valid) {
+        notify.error(
+          policy.errorKey
+            ? t(policy.errorKey)
+            : (policy.message ?? t("common.formPleaseFixErrors")),
+        );
         return;
       }
       const { status } = await changePasswordMutation.mutateAsync({

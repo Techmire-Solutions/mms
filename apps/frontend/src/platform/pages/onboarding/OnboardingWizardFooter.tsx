@@ -81,16 +81,11 @@ export function OnboardingWizardFooter({
             onNext();
           }}
           loading={loading}
+          loadingText={isLastStep ? t("onboarding.createWorkspace") : t("onboarding.continue")}
           className="px-5 font-semibold shadow-md shadow-primary/10"
         >
-          {loading ? (
-            t("common.loading")
-          ) : (
-            <>
-              {isLastStep ? t("onboarding.createWorkspace") : t("onboarding.continue")}
-              <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
-            </>
-          )}
+          {isLastStep ? t("onboarding.createWorkspace") : t("onboarding.continue")}
+          <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
         </Button>
       </div>
     </>

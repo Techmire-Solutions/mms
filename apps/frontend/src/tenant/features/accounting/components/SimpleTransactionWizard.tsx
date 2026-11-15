@@ -62,6 +62,8 @@ export function SimpleTransactionWizard({
     setAmountTouched,
     submittingStatus,
     isSubmitting,
+    submitError,
+    voucherAutoGenerate,
     form,
     setForm,
     stepSubtitle,
@@ -100,6 +102,7 @@ export function SimpleTransactionWizard({
         size="lg"
         panelClassName="max-h-modal-xl"
         hideFooter
+        error={submitError ?? undefined}
         headerExtra={
           <SimpleTransactionWizardSteps
             currentStep={step}
@@ -142,6 +145,7 @@ export function SimpleTransactionWizard({
                   accounts={accounts}
                   currencySymbol={activeCurrency.symbol}
                   fiscalYears={fiscalYears}
+                  voucherAutoGenerate={voucherAutoGenerate}
                   entries={entries}
                   formatCurrency={formatCurrency}
                   amountTouched={amountTouched}

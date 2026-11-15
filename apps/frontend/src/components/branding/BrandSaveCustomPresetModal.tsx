@@ -1,8 +1,7 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Modal } from "@/components/app/Modal";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 interface BrandSaveCustomPresetModalProps {
@@ -27,35 +26,19 @@ export function BrandSaveCustomPresetModal({
   t,
 }: BrandSaveCustomPresetModalProps) {
   return (
-    <Modal
+    <FormModal
       open={open}
       onClose={onClose}
       title={t("theme.saveCustomPresetTitle")}
       subtitle={t("theme.saveCustomPresetDesc")}
       size="sm"
-      footer={
-        <div className="flex items-center justify-end gap-2 w-full">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="min-h-10 px-3 text-xs text-muted-foreground hover:text-foreground"
-          >
-            {t("common.cancel")}
-          </Button>
-          <Button
-            type="submit"
-            form="brand-save-custom-preset-form"
-            variant="default"
-            size="sm"
-            disabled={!presetNameDraft.trim()}
-            className="min-h-10 px-4 text-xs font-semibold"
-          >
-            {t("common.save")}
-          </Button>
-        </div>
-      }
+      formId="brand-save-custom-preset-form"
+      cancelLabel={t("common.cancel")}
+      saveLabel={t("common.save")}
+      saveDisabled={!presetNameDraft.trim()}
+      onSave={() => {
+        if (presetNameDraft.trim()) onSave();
+      }}
     >
       <form
         id="brand-save-custom-preset-form"
@@ -69,12 +52,14 @@ export function BrandSaveCustomPresetModal({
         <div className="flex items-center gap-3 p-3 rounded-xl border border-border/80 bg-muted/30">
           <div className="flex items-center -space-x-2 rtl:space-x-reverse">
             <span
-              className="h-8 w-8 rounded-md border-2 border-background shadow-xs shrink-0"
+              className="size-8 rounded-md border-2 border-background shadow-xs shrink-0"
+              aria-hidden="true"
               style={{ backgroundColor: primaryColor }}
               aria-label={primaryColor}
             />
             <span
-              className="h-8 w-8 rounded-md border-2 border-background shadow-xs shrink-0"
+              className="size-8 rounded-md border-2 border-background shadow-xs shrink-0"
+              aria-hidden="true"
               style={{ backgroundColor: secondaryColor }}
               aria-label={secondaryColor}
             />
@@ -89,8 +74,7 @@ export function BrandSaveCustomPresetModal({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="preset-name-input">{t("theme.presetNameLabel")}</Label>
+        <Field id="preset-name-input" label={t("theme.presetNameLabel")} required>
           <Input
             id="preset-name-input"
             value={presetNameDraft}
@@ -99,8 +83,8 @@ export function BrandSaveCustomPresetModal({
             autoFocus
             className="min-h-11 h-11 text-xs"
           />
-        </div>
+        </Field>
       </form>
-    </Modal>
+    </FormModal>
   );
 }

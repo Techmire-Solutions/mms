@@ -1,8 +1,8 @@
-import { type Account, type PostingRules } from "@mms/shared";
+import { postingRulesUpdateSchema, type Account, type PostingRules } from "@mms/shared";
 import { BookOpen } from "lucide-react";
 import { FormSelect } from "@/components/app/FormSelect";
 import { accountOptions } from "@/tenant/features/accounting/lib/accountOptions";
-import { Field } from "@/components/app/FormPrimitives";
+import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
@@ -54,6 +54,7 @@ export function AccountingSettingsPostingSection({
   const { data: loaded } = useAccountingPostingRules();
   const save = useSaveAccountingPostingRules();
   const [draft, setDraft] = useState<PostingDraft>(() => postingDraftFrom(loaded));
+  const [error, setError] = useState<string | null>(null);
 
   // Adopt the server rules whenever new ones arrive, during render rather than
   // in an effect that would render the stale draft once more.
@@ -65,6 +66,21 @@ export function AccountingSettingsPostingSection({
   }
 
   const handleSave = async (): Promise<void> => {
+    const body = {
+      arAccountId: draft.arAccountId || null,
+      cashAccountId: draft.cashAccountId || null,
+      incomeAccountId: draft.incomeAccountId || null,
+      discountAccountId: draft.discountAccountId || null,
+      fxRealizedAccountId: draft.fxRealizedAccountId || null,
+      fxUnrealizedAccountId: draft.fxUnrealizedAccountId || null,
+      fxRoundingAccountId: draft.fxRoundingAccountId || null,
+      ctaAccountId: draft.ctaAccountId || null,
+    };
+    if (!postingRulesUpdateSchema.safeParse(body).success) {
+      setError(t("accounting.settings.posting.invalid"));
+      return;
+    }
+    setError(null);
     try {
       await save.mutateAsync({
         arAccountId: draft.arAccountId || null,
@@ -157,6 +173,7 @@ export function AccountingSettingsPostingSection({
         onChange={(field, value) => setDraft((current) => ({ ...current, [field]: value }))}
         accountOptions={accountOptions}
       />
+      <FieldErrorMessage message={error ?? undefined} className="mt-3" />
       <Button
         type="button"
         className="mt-4 min-h-11"

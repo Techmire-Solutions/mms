@@ -1,3 +1,7 @@
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@/lib/forms/translateValidationMessage";
 import React, { useMemo, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -12,6 +16,9 @@ import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { accountRecordSchema, generateClientEntityId, type AppTranslationKey } from "@mms/shared";
 import { createZodFormResolver } from "@/lib/forms/createZodFormResolver";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import { AccountModalFields } from "@/tenant/features/accounting/components/AccountModalFields";
 
 interface AccountModalProps {
@@ -30,41 +37,51 @@ const ACCOUNT_FIELD_LABEL_KEYS: Partial<Record<string, AppTranslationKey>> = {
   description: "accounting.coa.fields.description",
 };
 
+function buildAccountDefaults(initial: Account | null): Account {
+  return {
+    ...(initial ?? {}),
+    // `||`, not `??`: the add flow passes `id: ""`, and the bulk upsert drops id-less rows.
+    id: initial?.id || generateClientEntityId("a"),
+    code: initial?.code ?? "",
+    name: initial?.name ?? "",
+    type: initial?.type ?? "Asset",
+    subtype: initial?.subtype ?? "",
+    description: initial?.description ?? "",
+    isActive: initial?.isActive ?? true,
+  } as Account;
+}
+
 export function AccountModal({ initial, onSave, onClose, existingCodes }: AccountModalProps) {
   const { t } = useTranslation();
   const isEdit = !!initial?.id;
   const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const guard = useSubmitGuard();
   const { fields, orderedFields, isFieldEnabled } = useAccountingConfig();
 
-  const [defaultValues] = useState<Account>(
-    () =>
-      ({
-        ...(initial ?? {}),
-        // `||`, not `??`: the add flow passes `id: ""`, and the bulk upsert drops id-less rows.
-        id: initial?.id || generateClientEntityId("a"),
-        code: initial?.code ?? "",
-        name: initial?.name ?? "",
-        type: initial?.type ?? "Asset",
-        subtype: initial?.subtype ?? "",
-        description: initial?.description ?? "",
-        isActive: initial?.isActive ?? true,
-      }) as Account,
-  );
+  const [defaultValues] = useState<Account>(() => buildAccountDefaults(initial));
 
   // Shared validation contract: the resolver emits the same ValidationError[] shape as the
   // hand-rolled forms; field messages are already translated via `resolveMessage`.
   const resolver = useMemo(
     () =>
       createZodFormResolver(accountRecordSchema, {
-        resolveMessage: (message) => t(message as AppTranslationKey),
+        resolveMessage: (message) => translateValidationMessage(message, t),
       }),
     [t],
   );
 
-  const { watch, setValue, setError, handleSubmit, formState } = useForm<Account>({
+  const { watch, setValue, setError, handleSubmit, formState, reset } = useForm<Account>({
     resolver,
     defaultValues,
     mode: "onSubmit",
+  });
+
+  // Switching the edited account (or edit → create) while the modal stays mounted
+  // must not keep the previous record's values.
+  useIdentityReset(String(initial?.id ?? "new"), () => {
+    reset(buildAccountDefaults(initial));
+    setServerError(null);
   });
 
   const form = watch();
@@ -90,6 +107,7 @@ export function AccountModal({ initial, onSave, onClose, existingCodes }: Accoun
   };
 
   const onValid = async (data: Account) => {
+    setServerError(null);
     let hasExtraError = false;
 
     if (!isEdit && existingCodes.includes(data.code.trim())) {
@@ -112,16 +130,29 @@ export function AccountModal({ initial, onSave, onClose, existingCodes }: Accoun
     }
     if (hasExtraError) return;
 
-    setSubmitting(true);
-    try {
-      await onSave(data);
-    } finally {
-      setSubmitting(false);
-    }
+    await guard(async () => {
+      setSubmitting(true);
+      try {
+        await onSave(data);
+      } catch (error) {
+        const mapped = mapApiFormError(error, (message) => translateApiMessage(message, t));
+        if (mapped.fieldErrors) {
+          for (const [field, message] of Object.entries(mapped.fieldErrors)) {
+            setError(field as keyof Account, { type: "manual", message });
+          }
+        }
+        setServerError(mapped.message ?? t("common.formPleaseFixErrors"));
+      } finally {
+        setSubmitting(false);
+      }
+    });
   };
 
   const saveAccount = () => handleSubmit(onValid)();
-  const errorMessages = Object.values(errors).filter(Boolean);
+  const errorMessages = [
+    ...Object.values(errors).filter(Boolean),
+    ...(serverError ? [serverError] : []),
+  ];
 
   return (
     <FormModal

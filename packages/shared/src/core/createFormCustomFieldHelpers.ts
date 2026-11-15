@@ -68,3 +68,23 @@ export function createFormCustomFieldHelpers(
 
   return { listSystemFormFieldKeys, listEnabledCustomFormFields, isSystemFormField };
 }
+
+/**
+ * Seeds Setup `defaultValue` for enabled scalar custom fields onto a create draft.
+ * Existing values always win; edit drafts are returned untouched when `onlyOnCreate`.
+ */
+export function applyScalarCustomFieldDefaults<T extends Record<string, unknown>>(
+  draft: T,
+  customFields: ReadonlyArray<FieldDefinition>,
+  { onlyOnCreate = true }: { onlyOnCreate?: boolean } = {},
+): T {
+  if (onlyOnCreate && draft.id != null && String(draft.id).length > 0) return draft;
+
+  const next: Record<string, unknown> = { ...draft };
+  for (const field of customFields) {
+    if (Object.hasOwn(next, field.key)) continue;
+    if (field.defaultValue === undefined || field.defaultValue === null) continue;
+    next[field.key] = field.defaultValue;
+  }
+  return next as T;
+}

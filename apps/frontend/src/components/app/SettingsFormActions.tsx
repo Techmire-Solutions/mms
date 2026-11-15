@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader2, RotateCcw, Save } from "lucide-react";
+import { RotateCcw, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -96,13 +96,11 @@ export function SettingsFormActions({
         type="button"
         onClick={onSave}
         disabled={saveDisabled || !dirty || saving}
+        loading={saving}
+        loadingText={saveText}
         className="min-h-11 gap-2 px-5 py-2.5 ms-auto font-semibold shadow-xs"
       >
-        {saving ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-        ) : (
-          <Save className="h-3.5 w-3.5" aria-hidden />
-        )}
+        <Save className="h-3.5 w-3.5" aria-hidden />
         <span>{saveText}</span>
       </Button>
     </div>

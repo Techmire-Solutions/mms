@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ActivityLogRow } from "./ActivityLogRow";
 import type { PlatformActivityLogItem } from "@/platform/hooks/usePlatformActivityLogs";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface PlatformActivityLogsTimelineProps {
   logs: PlatformActivityLogItem[];
@@ -12,6 +13,7 @@ export function PlatformActivityLogsTimeline({
   logs,
   onInspect,
 }: PlatformActivityLogsTimelineProps): React.JSX.Element {
+  const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isVirtualized = logs.length > 30;
 
@@ -39,7 +41,7 @@ export function PlatformActivityLogsTimeline({
       className="relative max-h-[70vh] overflow-y-auto ms-4 ps-6 pt-2"
       tabIndex={0}
       role="region"
-      aria-label="Activity logs timeline"
+      aria-label={t("platform.activityLogs.timeline")}
     >
       <div className="absolute start-0 top-0 bottom-0 w-0.5 bg-border/60" aria-hidden />
       <div

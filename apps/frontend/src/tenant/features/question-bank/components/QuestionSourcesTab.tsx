@@ -8,7 +8,6 @@ import {
   type QuestionBookCitation,
   type QuestionSourceBook,
   type QuestionSourceFieldId,
-  type QuestionSourceReference,
 } from "@mms/shared";
 import { QuestionSourceBooksSection } from "@/tenant/features/question-bank/components/QuestionSourceBooksSection";
 import { QuestionSourcesCitationsSection } from "@/tenant/features/question-bank/components/QuestionSourcesCitationsSection";
@@ -101,7 +100,12 @@ export function QuestionSourcesTab({
       await onPersistBook(payload);
     }
     if (pendingCitationIndex !== null && !editingBookId) {
-      updCitation(pendingCitationIndex, { bookId: payload.id, citation: {} });
+      const target = citationEntries.length > 0 ? citationEntries : [{ bookId: "", citation: {} }];
+      onCitationsChange(
+        target.map((entry, index) =>
+          index === pendingCitationIndex ? { ...entry, bookId: payload.id, citation: {} } : entry,
+        ),
+      );
     }
     onBooksUpdated?.();
     setShowBookForm(false);
@@ -116,36 +120,6 @@ export function QuestionSourcesTab({
     }
     onBooksUpdated?.();
     onCitationsChange(citations.filter((entry) => entry.bookId !== bookId));
-  };
-
-  const updCitation = (index: number, patch: Partial<QuestionBookCitation>): void => {
-    const updatedCitations = citationEntries.map((entry, entryIndex) =>
-      entryIndex === index ? { ...entry, ...patch } : entry,
-    );
-    onCitationsChange(updatedCitations.filter((entry) => entry.bookId));
-  };
-
-  const updCitationField = (
-    index: number,
-    key: keyof QuestionSourceReference,
-    value: string,
-  ): void => {
-    const entry = citationEntries[index];
-    updCitation(index, {
-      citation: { ...entry.citation, [key]: value },
-    });
-  };
-
-  const addCitation = (): void => {
-    onCitationsChange([
-      ...citationEntries.filter((citationEntry) => citationEntry.bookId),
-      { bookId: "", citation: {} },
-    ]);
-  };
-
-  const removeCitation = (index: number): void => {
-    const updatedCitations = citationEntries.filter((_, entryIndex) => entryIndex !== index);
-    onCitationsChange(updatedCitations.filter((entry) => entry.bookId));
   };
 
   if (availableFieldIds.length === 0) {
@@ -185,10 +159,7 @@ export function QuestionSourcesTab({
         t={t}
         canAddBook={Boolean(onPersistBook)}
         onOpenAddBook={(citationIndex) => startNewBook(citationIndex)}
-        onUpdateCitation={updCitation}
-        onUpdateCitationField={updCitationField}
-        onAddCitation={addCitation}
-        onRemoveCitation={removeCitation}
+        onCitationsChange={onCitationsChange}
       />
     </div>
   );

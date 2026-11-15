@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { QuestionBankQuestion } from "@mms/shared";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -120,7 +121,7 @@ export function QuestionMediaSection({
             onChange={setTarget}
             options={[{ value: "stem", label: t("questionBank.mediaStem") }, ...optionTargets]}
           />
-          <label className="inline-flex min-h-10 cursor-pointer items-center rounded-lg border border-border px-3 text-sm">
+          <Label className="mb-0 inline-flex min-h-10 cursor-pointer items-center rounded-lg border border-border px-3 text-sm font-normal normal-case tracking-normal">
             {busy ? t("common.loading") : t("questionBank.mediaUpload")}
             <input
               type="file"
@@ -134,7 +135,7 @@ export function QuestionMediaSection({
                 event.target.value = "";
               }}
             />
-          </label>
+          </Label>
         </div>
       )}
     </div>

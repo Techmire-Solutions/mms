@@ -20,7 +20,7 @@ import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { FormModal } from "@/components/app/FormModal";
 import { Form } from "@/components/ui/form";
 import { firstZodFieldError } from "@/lib/forms/translateZodError";
-import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { InviteUserFormFields } from "@/tenant/features/users/components/InviteUserFormFields";
 
 export interface InviteUserModalProps {
@@ -42,6 +42,7 @@ export function InviteUserModal({
     [workspaceRoles, authUser?.role],
   );
   const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const excludeIds = (() => existingContactIds.map(String))();
 
@@ -62,8 +63,16 @@ export function InviteUserModal({
   );
 
   const handleSave = form.handleSubmit(async (values) => {
+    if (!assignableRoles.some((role) => role.id === values.role)) {
+      form.setError("role", { type: "manual", message: t("users.addErrorRole") });
+      return;
+    }
     const contact = selectedContact;
-    if (!contact) return;
+    if (!contact) {
+      form.setError("contactId", { type: "manual", message: "users.addErrorContact" });
+      return;
+    }
+    setServerError(null);
     const name = toTitleCase(contact.name.trim()) as string;
     const email = (getPrimaryEmail(contact) || "").toLowerCase();
     const phone = getPrimaryPhone(contact) || "";
@@ -88,9 +97,13 @@ export function InviteUserModal({
       await onInvite(user);
       onClose();
     } catch (error: unknown) {
-      notify.error(t("errors.module.title"), {
-        description: error instanceof Error ? error.message : t("errors.module.description"),
-      });
+      const mapped = mapApiFormError(error);
+      if (mapped.fieldErrors) {
+        for (const [field, message] of Object.entries(mapped.fieldErrors)) {
+          form.setError(field as keyof InviteWorkspaceUserInput, { type: "manual", message });
+        }
+      }
+      setServerError(mapped.message ?? t("errors.module.description"));
     } finally {
       setSubmitting(false);
     }
@@ -103,7 +116,7 @@ export function InviteUserModal({
       title={t("users.inviteTitle")}
       subtitle={t("users.inviteSubtitle")}
       icon={UserPlus}
-      error={firstZodFieldError(form.formState.errors, t) || undefined}
+      error={serverError ?? firstZodFieldError(form.formState.errors, t) ?? undefined}
       cancelLabel={t("users.cancel")}
       saveLabel={t("users.inviteSubmit")}
       onSave={async () => {

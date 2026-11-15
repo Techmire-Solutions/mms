@@ -3,7 +3,7 @@ import { Award, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/app/DatePicker";
 import { FormSelect } from "@/components/app/FormSelect";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { Field } from "@/components/app/FormField";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -73,21 +73,15 @@ export function ClassDetailScholarshipTab({
       >
         <div className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex min-h-11 items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/30">
-              <Checkbox
+            <div className="rounded-lg border border-border/60 p-3 hover:bg-muted/30">
+              <CheckboxField
                 id="scholarship-orphan"
+                name="orphan"
                 checked={Boolean(eligibility?.orphan)}
                 onCheckedChange={(checked) => onUpdateEligibility({ orphan: checked })}
-                className="h-4 w-4"
+                label={t("sessions.classes.detail.scholarship.orphan")}
+                description={t("sessions.classes.detail.scholarship.orphanHint")}
               />
-              <label htmlFor="scholarship-orphan" className="cursor-pointer">
-                <p className="text-xs font-medium text-foreground">
-                  {t("sessions.classes.detail.scholarship.orphan")}
-                </p>
-                <p className="text-3xs text-muted-foreground">
-                  {t("sessions.classes.detail.scholarship.orphanHint")}
-                </p>
-              </label>
             </div>
 
             <Field id="residence-type" label={t("sessions.classes.detail.scholarship.residence")}>

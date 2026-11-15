@@ -1,8 +1,10 @@
 import {
+  applyFacultyScalarCustomFieldDefaults,
   DEFAULT_FACULTY_USER_ROLE,
   resolveFacultyProfileStatus,
   resolveFacultyStatus,
   type FacultyMember,
+  type FieldDefinition,
   todayISO,
 } from "@mms/shared";
 import { createModuleFormDraft } from "@/lib/forms/createModuleFormDraft";
@@ -44,40 +46,47 @@ const FACULTY_FORM_VOLATILE_KEYS = [
 
 const { getInitialDraft, draftSnapshot } = createModuleFormDraft<FacultyMember>({
   volatileKeys: FACULTY_FORM_VOLATILE_KEYS,
-  getDefaults: (faculty, defaultSpecialization) => ({
-    contactId: faculty?.contactId ?? "",
-    employeeId: faculty?.employeeId ?? "",
-    specialization: faculty?.specialization ?? (defaultSpecialization as string),
-    designation: faculty?.designation ?? "",
-    designationId: faculty?.designationId ?? "",
-    designationStartDate: faculty?.designationStartDate ?? todayISO(),
-    designationEndDate: faculty?.designationEndDate ?? null,
-    parentDesignationId: faculty?.parentDesignationId ?? null,
-    designationAssignableRoles: faculty?.designationAssignableRoles ?? [],
-    department: faculty?.department ?? "",
-    departmentId: faculty?.departmentId ?? "",
-    status: resolveFacultyStatus(faculty?.status),
-    profileStatus: resolveFacultyProfileStatus(
-      faculty?.employDesignationStatus ?? faculty?.profileStatus,
-    ),
-    employDesignationStatus: resolveFacultyProfileStatus(
-      faculty?.employDesignationStatus ?? faculty?.profileStatus,
-    ),
-    employDesignationId: faculty?.employDesignationId ?? null,
-    employDesignations: employDesignationRowsToWritePayload(
-      employDesignationRowsFromFaculty(faculty),
-    ),
-    employmentStartDate: faculty?.employmentStartDate ?? faculty?.joinDate ?? todayISO(),
-    employmentEndDate: faculty?.employmentEndDate ?? null,
-    qualification: faculty?.qualification ?? "",
-    notes: faculty?.notes ?? "",
-    userId: faculty?.userId ?? null,
-  }),
+  getDefaults: (faculty, defaultSpecialization, todayArg) => {
+    const today = typeof todayArg === "string" && todayArg ? todayArg : todayISO();
+    return {
+      contactId: faculty?.contactId ?? "",
+      employeeId: faculty?.employeeId ?? "",
+      specialization: faculty?.specialization ?? (defaultSpecialization as string),
+      designation: faculty?.designation ?? "",
+      designationId: faculty?.designationId ?? "",
+      designationStartDate: faculty?.designationStartDate ?? today,
+      designationEndDate: faculty?.designationEndDate ?? null,
+      parentDesignationId: faculty?.parentDesignationId ?? null,
+      designationAssignableRoles: faculty?.designationAssignableRoles ?? [],
+      department: faculty?.department ?? "",
+      departmentId: faculty?.departmentId ?? "",
+      status: resolveFacultyStatus(faculty?.status),
+      profileStatus: resolveFacultyProfileStatus(
+        faculty?.employDesignationStatus ?? faculty?.profileStatus,
+      ),
+      employDesignationStatus: resolveFacultyProfileStatus(
+        faculty?.employDesignationStatus ?? faculty?.profileStatus,
+      ),
+      employDesignationId: faculty?.employDesignationId ?? null,
+      employDesignations: employDesignationRowsToWritePayload(
+        employDesignationRowsFromFaculty(faculty, today),
+      ),
+      employmentStartDate: faculty?.employmentStartDate ?? faculty?.joinDate ?? today,
+      employmentEndDate: faculty?.employmentEndDate ?? null,
+      qualification: faculty?.qualification ?? "",
+      notes: faculty?.notes ?? "",
+      userId: faculty?.userId ?? null,
+    };
+  },
 });
 
 export interface GetInitialFacultyDraftOptions {
   faculty?: FacultyMember;
   defaultSpecialization: string;
+  /** Setup fields — seeds enabled custom-field defaults on create. */
+  fields?: Record<string, FieldDefinition[]>;
+  /** Workspace-local today, used for new effective dates. */
+  today?: string;
 }
 
 /** Draft for FormModal — form-owned fields; strip hydrated chrome. */
@@ -95,8 +104,16 @@ export function getInitialFacultyDraft(
   const defaultSpecialization = isOptions
     ? (facultyOrOptions as GetInitialFacultyDraftOptions).defaultSpecialization
     : (defaultSpecializationOrUndefined ?? "");
+  const fields = isOptions ? (facultyOrOptions as GetInitialFacultyDraftOptions).fields : undefined;
+  const today = isOptions ? (facultyOrOptions as GetInitialFacultyDraftOptions).today : undefined;
 
-  return getInitialDraft(faculty, defaultSpecialization);
+  const draft = getInitialDraft(faculty, defaultSpecialization, today);
+  return fields
+    ? (applyFacultyScalarCustomFieldDefaults(
+        draft as Record<string, unknown>,
+        fields,
+      ) as Partial<FacultyMember>)
+    : draft;
 }
 
 export function facultyDraftSnapshot(draft: Partial<FacultyMember>): string {

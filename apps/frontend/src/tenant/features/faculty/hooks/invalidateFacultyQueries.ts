@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
 import { CONTACTS_QUERY_KEY } from "@/tenant/hooks/collections/contacts";
 import {
+  FACULTY_DETAIL_QUERY_KEY,
   FACULTY_METRICS_QUERY_KEY,
   FACULTY_QUERY_KEY,
   FACULTY_WIDGET_AGGREGATES_QUERY_KEY,
@@ -11,6 +12,8 @@ import { FACULTY_LOOKUPS_QUERY_KEY } from "@/tenant/features/faculty/hooks/useFa
 
 const invalidateModuleQueries = createModuleQueryInvalidator({
   list: FACULTY_QUERY_KEY,
+  // Detail-scoped caches (designation assignments) do not nest under the list key.
+  lists: [FACULTY_DETAIL_QUERY_KEY],
   metrics: FACULTY_METRICS_QUERY_KEY,
   widgetAggregates: FACULTY_WIDGET_AGGREGATES_QUERY_KEY,
   preferences: FACULTY_PREFERENCES_QUERY_KEY,

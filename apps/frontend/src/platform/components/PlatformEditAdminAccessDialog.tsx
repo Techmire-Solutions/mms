@@ -1,7 +1,11 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { Shield } from "lucide-react";
 import type { PlatformAdminPermissions, PlatformUserProfile } from "@mms/shared";
-import { normalizePlatformAdminPermissions } from "@mms/shared";
+import {
+  normalizePlatformAdminPermissions,
+  platformUpdateAdminPermissionsBodySchema,
+} from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
 import { Field, Input } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -38,17 +42,28 @@ export function PlatformEditAdminAccessDialog({
     }
   }
 
+  const initialPermissions = normalizePlatformAdminPermissions(admin.permissions);
+  const isDirty = JSON.stringify(permissions) !== JSON.stringify(initialPermissions);
+
   const handleSave = async (): Promise<void> => {
     setError(null);
     if (!password.trim()) {
       setError(t("platform.validationConfirmPlatformPassword"));
       return;
     }
+    const parsed = platformUpdateAdminPermissionsBodySchema.safeParse({
+      permissions,
+      password,
+    });
+    if (!parsed.success) {
+      setError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+      return;
+    }
     try {
       await updatePermissions.mutateAsync({
         adminId: admin.id,
-        permissions,
-        password,
+        permissions: parsed.data.permissions,
+        password: parsed.data.password,
       });
       onOpenChange(false);
     } catch (err) {
@@ -69,8 +84,8 @@ export function PlatformEditAdminAccessDialog({
       saveLabel={t("platform.editAdminAccessSave")}
       onSave={handleSave}
       saving={updatePermissions.isPending}
+      isDirty={isDirty}
       dir="ltr"
-      lang="en"
       formId="platform-edit-admin-access-form"
     >
       <form

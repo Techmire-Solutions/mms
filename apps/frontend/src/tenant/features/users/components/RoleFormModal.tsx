@@ -1,17 +1,22 @@
 import { useState } from "react";
 import type React from "react";
 import {
+  normalizePermissionMap,
   PERMISSION_ACTIONS,
+  serializeWorkspaceRoleWrite,
+  workspaceRoleWriteSchema,
   type PermissionAction,
   type PermissionMap,
   type RbacModuleDef,
   type WorkspaceRole,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { PermissionMatrix } from "@/tenant/features/users/components/PermissionMatrix";
 
 interface RoleFormBaseline {
@@ -25,7 +30,8 @@ interface RoleFormModalProps {
   title: string;
   role?: WorkspaceRole | null;
   visibleModules: readonly RbacModuleDef[];
-  onSave: (role: WorkspaceRole) => void;
+  existingRoles?: readonly WorkspaceRole[];
+  onSave: (role: WorkspaceRole) => void | Promise<void>;
   onClose: () => void;
 }
 
@@ -33,7 +39,7 @@ function roleBaseline(role?: WorkspaceRole | null): RoleFormBaseline {
   return {
     name: role?.customLabel ?? "",
     desc: role?.customDescription ?? "",
-    perms: role?.permissions ? structuredClone(role.permissions) : {},
+    perms: normalizePermissionMap(role?.permissions),
   };
 }
 
@@ -42,18 +48,20 @@ export function RoleFormModal({
   title,
   role,
   visibleModules,
+  existingRoles = [],
   onSave,
   onClose,
 }: RoleFormModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const [name, setName] = useState(role?.customLabel ?? "");
   const [desc, setDesc] = useState(role?.customDescription ?? "");
-  const [perms, setPerms] = useState<PermissionMap>(
-    role?.permissions ? structuredClone(role.permissions) : {},
+  const [perms, setPerms] = useState<PermissionMap>(() =>
+    normalizePermissionMap(role?.permissions),
   );
   const [baseline, setBaseline] = useState<RoleFormBaseline>(() => roleBaseline(role));
   const [error, setError] = useState("");
-  const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
 
   // Adjust state during render: a new role target (or a re-open) resets the whole form.
   const [prevFormSource, setPrevFormSource] = useState({ role, open });
@@ -65,16 +73,23 @@ export function RoleFormModal({
     setPerms(next.perms);
     setBaseline(next);
     setError("");
-    setDiscardConfirmOpen(false);
+    setFieldErrors({});
   }
 
   const formDirty = (() => {
     return (
       name !== baseline.name ||
       desc !== baseline.desc ||
-      JSON.stringify(perms) !== JSON.stringify(baseline.perms)
+      JSON.stringify(normalizePermissionMap(perms)) !== JSON.stringify(baseline.perms)
     );
   })();
+
+  const duplicateName = existingRoles.some(
+    (candidate) =>
+      candidate.id !== role?.id &&
+      !candidate.isSystem &&
+      (candidate.customLabel ?? "").trim().toLowerCase() === name.trim().toLowerCase(),
+  );
 
   const togglePerm = (moduleId: string, action: PermissionAction): void => {
     setPerms((previousPermissions) => {
@@ -94,108 +109,121 @@ export function RoleFormModal({
     setPerms((prev) => ({ ...prev, [moduleId]: [] }));
   };
 
-  const handleSave = (): void => {
-    if (!name.trim()) {
-      setError(t("users.permissions.errorNameRequired"));
-      return;
-    }
-    onSave({
+  const handleSave = async (): Promise<void> => {
+    if (saving) return;
+    const parsed = workspaceRoleWriteSchema.safeParse({
       id: role?.id ?? `role_${crypto.randomUUID()}`,
-      labelKey: "users.role.custom",
-      descriptionKey: "users.role.customDesc",
-      customLabel: name.trim(),
-      customDescription: desc.trim(),
-      permissions: perms,
-      isSystem: false,
-      badgeVariant: "primary",
+      name: name.trim(),
+      description: desc.trim(),
+      permissions: normalizePermissionMap(perms),
     });
-  };
-
-  const requestClose = (): void => {
-    if (!formDirty) {
-      onClose();
+    if (!parsed.success) {
+      setFieldErrors(
+        mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
+      );
+      setError(t("common.formPleaseFixErrors"));
       return;
     }
-    setDiscardConfirmOpen(true);
+    if (duplicateName) {
+      setFieldErrors({ name: t("users.permissions.errorNameDuplicate") });
+      setError(t("common.formPleaseFixErrors"));
+      return;
+    }
+    setError("");
+    setFieldErrors({});
+    setSaving(true);
+    try {
+      await onSave(serializeWorkspaceRoleWrite(parsed.data, role));
+    } catch (saveError) {
+      setError(mapApiFormError(saveError).message ?? t("settings.serverSaveFailed"));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <>
-      <FormModal
-        open={open}
-        onClose={requestClose}
-        title={title}
-        size="xl"
-        tall
-        cancelLabel={t("users.cancel")}
-        saveLabel={t("users.permissions.saveRole")}
-        onSave={handleSave}
-        saveDisabled={!formDirty || !name.trim()}
-        error={error || undefined}
-        formId="role-form"
-      >
-        <form
-          id="role-form"
-          noValidate
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (formDirty && name.trim()) handleSave();
-          }}
-          className="space-y-5"
-        >
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Field
-              id="role-name"
-              label={t("users.permissions.fieldName")}
-              required
-              error={error || undefined}
-            >
-              <Input
-                id="role-name"
-                name="name"
-                value={name}
-                onChange={(event) => {
-                  setName(event.target.value);
-                  if (error) setError("");
-                }}
-                placeholder={t("users.permissions.fieldNamePlaceholder")}
-              />
-            </Field>
-            <Field id="role-desc" label={t("users.permissions.fieldDescription")}>
-              <Input
-                id="role-desc"
-                name="description"
-                value={desc}
-                onChange={(event) => setDesc(event.target.value)}
-                placeholder={t("users.permissions.fieldDescriptionPlaceholder")}
-              />
-            </Field>
-          </div>
-
-          <PermissionMatrix
-            modules={visibleModules}
-            perms={perms}
-            readOnly={false}
-            onToggle={togglePerm}
-            onSelectAll={selectAll}
-            onClearAll={clearAll}
-          />
-        </form>
-      </FormModal>
-
-      <ConfirmAlertDialog
-        open={discardConfirmOpen}
-        onOpenChange={setDiscardConfirmOpen}
-        title={t("settings.unsavedChanges")}
-        description={t("users.permissions.discardUnsavedRoleFormConfirm")}
-        confirmLabel={t("common.yes")}
-        cancelLabel={t("common.cancel")}
-        destructive
-        onConfirm={() => {
-          setDiscardConfirmOpen(false);
-          onClose();
+    <FormModal
+      open={open}
+      onClose={onClose}
+      title={title}
+      size="xl"
+      tall
+      cancelLabel={t("users.cancel")}
+      saveLabel={t("users.permissions.saveRole")}
+      onSave={handleSave}
+      saving={saving}
+      saveDisabled={saving || !formDirty || !name.trim()}
+      error={error || undefined}
+      isDirty={formDirty}
+      formId="role-form"
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("users.permissions.discardUnsavedRoleFormConfirm")}
+      discardConfirmLabel={t("common.yes")}
+      discardCancelLabel={t("common.cancel")}
+    >
+      <form
+        id="role-form"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!saving && formDirty && name.trim()) void handleSave();
         }}
-      />
-    </>
+        className="space-y-5"
+      >
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field
+            id="role-name"
+            label={t("users.permissions.fieldName")}
+            required
+            error={
+              duplicateName
+                ? t("users.permissions.errorNameDuplicate")
+                : fieldErrors.name || undefined
+            }
+          >
+            <Input
+              id="role-name"
+              name="name"
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value);
+                if (error) setError("");
+                if (fieldErrors.name) {
+                  setFieldErrors((current) => ({ ...current, name: "" }));
+                }
+              }}
+              placeholder={t("users.permissions.fieldNamePlaceholder")}
+            />
+          </Field>
+          <Field
+            id="role-desc"
+            label={t("users.permissions.fieldDescription")}
+            error={fieldErrors.description || undefined}
+          >
+            <Input
+              id="role-desc"
+              name="description"
+              value={desc}
+              onChange={(event) => {
+                setDesc(event.target.value);
+                if (fieldErrors.description) {
+                  setFieldErrors((current) => ({ ...current, description: "" }));
+                }
+              }}
+              placeholder={t("users.permissions.fieldDescriptionPlaceholder")}
+            />
+          </Field>
+        </div>
+
+        <PermissionMatrix
+          modules={visibleModules}
+          perms={perms}
+          readOnly={false}
+          onToggle={togglePerm}
+          onSelectAll={selectAll}
+          onClearAll={clearAll}
+        />
+      </form>
+    </FormModal>
   );
 }

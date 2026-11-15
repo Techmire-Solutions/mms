@@ -5,6 +5,7 @@ import type {
   PlatformUserProfile,
 } from "@mms/shared";
 import { apiContract } from "@/lib/api";
+import { assertContractOk } from "@/lib/apiContractError";
 import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -84,6 +85,7 @@ export function useUpdatePlatformAdminPermissions() {
         params: { adminId },
         body: { permissions, password },
       });
+      assertContractOk(res, "Failed to update admin permissions");
       return res.body as { user: PlatformUserProfile };
     },
     onMutate: async ({ adminId, permissions }) => {
@@ -119,4 +121,3 @@ export {
   useDeletePlatformAdmin,
   useVerifyPlatformAdminEmail,
 } from "./usePlatformAdminLifecycle";
-import { assertContractOk } from "@/lib/apiContractError";

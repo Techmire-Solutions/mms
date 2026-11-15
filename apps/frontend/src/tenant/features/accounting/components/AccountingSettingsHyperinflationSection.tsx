@@ -3,7 +3,7 @@ import { TrendingUp } from "lucide-react";
 import { type Account } from "@mms/shared";
 import { DatePicker } from "@/components/app/DatePicker";
 import { ErrorState } from "@/components/app/ErrorState";
-import { Field } from "@/components/app/FormPrimitives";
+import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,7 @@ export function AccountingSettingsHyperinflationSection({
           </Field>
         </div>
       )}
+      <FieldErrorMessage message={panel.settingsFormError ?? undefined} className="mt-3" />
       {canEditSetup && (
         <div className="mt-3 flex justify-end">
           <Button

@@ -38,6 +38,7 @@ export function useExchangeabilityDraft() {
     query.data ? query.data.map(toRow) : [],
   );
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Adopt freshly loaded rows during render rather than in an effect.
   const loadedRowsKey = query.data
@@ -68,6 +69,18 @@ export function useExchangeabilityDraft() {
         })),
     });
     if (!parsed.success) {
+      const mapped: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const [root, index, field] = issue.path;
+        if (root === "currencies" && typeof index === "number" && typeof field === "string") {
+          mapped[`${index}.${field}`] = t(
+            (issue.message.startsWith("accounting.")
+              ? issue.message
+              : "common.formPleaseFixErrors") as AppTranslationKey,
+          );
+        }
+      }
+      setFieldErrors(mapped);
       const message = parsed.error.issues[0]?.message ?? "";
       setError(
         t(
@@ -78,6 +91,7 @@ export function useExchangeabilityDraft() {
       );
       return;
     }
+    setFieldErrors({});
     setError(null);
     try {
       await save.mutateAsync(parsed.data);
@@ -92,6 +106,7 @@ export function useExchangeabilityDraft() {
   return {
     rows,
     error,
+    fieldErrors,
     saving: save.isPending,
     isError: query.isError,
     refetch: query.refetch,

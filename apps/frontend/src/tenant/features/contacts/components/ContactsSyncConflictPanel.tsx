@@ -12,20 +12,25 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { fetchContactById } from "@/tenant/features/contacts/hooks/useContacts";
 import { useContactsSyncOutbox } from "@/tenant/features/contacts/hooks/useContactsSyncOutbox";
 import { Modal } from "@/components/app/Modal";
+import { Alert } from "@/components/app/Alert";
 import { Button } from "@/components/ui/button";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { ContactsSyncConflictRow } from "@/tenant/features/contacts/components/ContactsSyncConflictRow";
 
 export interface ContactsSyncConflictPanelProps {
   open: boolean;
   onClose: () => void;
+  /** Write permission for resolving conflicts; retry/merge actions stay read-only when false. */
+  canWrite?: boolean;
 }
 
 /** Review panel for offline sync conflicts. */
 export function ContactsSyncConflictPanel({
   open,
   onClose,
+  canWrite = true,
 }: ContactsSyncConflictPanelProps): React.JSX.Element {
   const { t } = useTranslation();
   const { flush, refreshCounts } = useContactsSyncOutbox();
@@ -41,6 +46,7 @@ export function ContactsSyncConflictPanel({
   }
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [dismissTargetId, setDismissTargetId] = useState<string | null>(null);
+  const [retryError, setRetryError] = useState<string | null>(null);
 
   const refreshList = useCallback(() => {
     setConflicts(getContactsSyncConflicts());
@@ -61,6 +67,7 @@ export function ContactsSyncConflictPanel({
 
   const handleRetryAll = async () => {
     setRetryingId("__all__");
+    setRetryError(null);
     try {
       // Rebase stale-token entries onto the current server record and skip entries
       // that already exhausted the retry budget, then flush the rebuilt queue.
@@ -75,6 +82,8 @@ export function ContactsSyncConflictPanel({
       if (needsReview > 0) {
         notify.warning(t("contacts.sync.conflictRetryReview", { count: needsReview }));
       }
+    } catch (error) {
+      setRetryError(mapApiFormError(error).message ?? t("settings.serverSaveFailed"));
     } finally {
       setRetryingId(null);
     }
@@ -108,7 +117,7 @@ export function ContactsSyncConflictPanel({
               <Button
                 type="button"
                 onClick={() => void handleRetryAll()}
-                disabled={retryingId != null}
+                disabled={retryingId != null || !canWrite}
                 className="min-h-11 px-4 text-sm font-semibold gap-2"
               >
                 {retryingId != null && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -120,6 +129,9 @@ export function ContactsSyncConflictPanel({
       >
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">{t("contacts.sync.conflictReviewDesc")}</p>
+          {retryError ? (
+            <Alert tone="destructive" density="compact" role="alert" description={retryError} />
+          ) : null}
           {rows.length === 0 ? (
             <p className="text-sm text-foreground">{t("contacts.sync.conflictReviewEmpty")}</p>
           ) : (

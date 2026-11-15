@@ -3,11 +3,12 @@ import { DESIGNATED_FOR_OPTIONS } from "@/lib/data/obligationsData";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
 import { CheckboxField } from "@/components/ui/checkbox";
-import type { AppTranslationKey } from "@mms/shared";
+import { obligationTypeInsertSchema } from "@mms/shared";
 import type { ObligationType } from "@/lib/data/obligationsData";
 import {
   DESIGNATED_LABEL_KEYS,
@@ -29,7 +30,7 @@ export function ObligationTypeFormModal({
 }: ObligationTypeFormModalProps) {
   const { t } = useTranslation();
   const [form, setForm] = useState({ ...initial });
-  const [errors, setErrors] = useState<Partial<Record<"name", AppTranslationKey>>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -39,9 +40,14 @@ export function ObligationTypeFormModal({
       label: t(DESIGNATED_LABEL_KEYS[option as DesignatedFor]),
     })))();
 
-  const validate = (): Partial<Record<"name", AppTranslationKey>> => {
-    const nextErrors: Partial<Record<"name", AppTranslationKey>> = {};
-    if (!form.name?.trim()) nextErrors.name = "obligations.types.nameRequired";
+  const validate = (): Record<string, string> => {
+    const nextErrors: Record<string, string> = {};
+    if (!form.name?.trim()) nextErrors.name = t("obligations.types.nameRequired");
+    if (!form.designated_for) {
+      nextErrors.designated_for = t("common.fieldRequired", {
+        field: t("obligations.types.colDesignated"),
+      });
+    }
     return nextErrors;
   };
 
@@ -52,11 +58,26 @@ export function ObligationTypeFormModal({
       return;
     }
     setSubmitError("");
+    const parsed = obligationTypeInsertSchema.safeParse({
+      ...(form.id ? { id: String(form.id) } : {}),
+      name: form.name?.trim() ?? "",
+      quantity_based: Boolean(form.quantity_based),
+      designated_for: form.designated_for,
+    });
+    if (!parsed.success) {
+      setErrors(
+        Object.fromEntries(
+          parsed.error.issues.map((issue) => [String(issue.path[0] ?? "name"), issue.message]),
+        ),
+      );
+      setSubmitError(t("common.formPleaseFixErrors"));
+      return;
+    }
     setSaving(true);
     try {
-      await onSave(form);
+      await onSave({ ...form, ...parsed.data });
     } catch (err: unknown) {
-      setSubmitError(err instanceof Error ? err.message : t("obligations.saveFailed"));
+      setSubmitError(mapApiFormError(err).message ?? t("obligations.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -84,12 +105,7 @@ export function ObligationTypeFormModal({
         }}
         className="space-y-4"
       >
-        <Field
-          id="type-name"
-          label={t("obligations.types.colName")}
-          required
-          error={errors.name ? t(errors.name) : undefined}
-        >
+        <Field id="type-name" label={t("obligations.types.colName")} required error={errors.name}>
           <Input
             id="type-name"
             name="name"
@@ -107,12 +123,22 @@ export function ObligationTypeFormModal({
             className={FORM_INPUT}
           />
         </Field>
-        <Field id="type-designated" label={t("obligations.types.colDesignated")} required>
+        <Field
+          id="type-designated"
+          label={t("obligations.types.colDesignated")}
+          required
+          error={errors.designated_for}
+        >
           <FormSelect
             id="type-designated"
             name="designated_for"
             value={form.designated_for || ""}
-            onChange={(val) => setForm({ ...form, designated_for: val as DesignatedFor })}
+            onChange={(val) => {
+              setForm({ ...form, designated_for: val as DesignatedFor });
+              if (errors.designated_for) {
+                setErrors((prev) => ({ ...prev, designated_for: "" }));
+              }
+            }}
             options={designatedOptions}
           />
         </Field>

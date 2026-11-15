@@ -130,6 +130,17 @@ export function WakalaTypeManager(props: WakalaTypeManagerProps) {
               : t("obligations.wakala.editTitle")
           }
           initial={modal.data}
+          initialDistributions={
+            modal.mode === "edit" && typeof modal.data.id === "string"
+              ? getDistributions(modal.data.id).map((distribution) => ({
+                  id: distribution.id,
+                  name: distribution.name,
+                  percentage: distribution.percentage,
+                  type: distribution.type as "Income" | "Liability",
+                  account_id: distribution.account_id,
+                }))
+              : undefined
+          }
           reps={reps}
           mujtahids={mujtahids}
           obligationTypes={obligationTypes}

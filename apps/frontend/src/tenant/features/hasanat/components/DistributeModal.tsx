@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useRef, useState } from "react";
 import { Star } from "lucide-react";
 
@@ -176,7 +177,9 @@ export function DistributeModal({
       clientRequestId: requestId,
     });
     if (!parsed.success) {
-      const fieldErrors = mapZodFormErrors(parsed.error, (message) => message);
+      const fieldErrors = mapZodFormErrors(parsed.error, (message) =>
+        translateValidationMessage(message, t),
+      );
       // Map contract paths onto the field ids this form renders.
       const recipientError = fieldErrors.recipientStudentId ?? fieldErrors.recipientFacultyId;
       setErrors({

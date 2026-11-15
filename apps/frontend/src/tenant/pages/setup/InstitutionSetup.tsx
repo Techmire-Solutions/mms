@@ -49,6 +49,15 @@ export default function InstitutionSetup(): React.JSX.Element {
     if (!data.city.trim()) nextErrors.city = reqKey;
     if (!data.country.trim()) nextErrors.country = reqKey;
     if (!data.postalCode.trim()) nextErrors.postalCode = reqKey;
+    if (data.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) {
+      nextErrors.email = t("institutionSetup.invalidEmail");
+    }
+    if (data.phone.trim() && !/^[+()\-\s\d]{6,24}$/.test(data.phone.trim())) {
+      nextErrors.phone = t("institutionSetup.invalidPhone");
+    }
+    if (data.website.trim() && !/^https?:\/\/[^\s.]+\.[^\s]+$/.test(data.website.trim())) {
+      nextErrors.website = t("institutionSetup.invalidWebsite");
+    }
 
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;

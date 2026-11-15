@@ -11,6 +11,8 @@ import {
   useWorkspaceModules,
 } from "@/platform/hooks/usePlatformWorkspaces";
 import { resolveModuleIcon } from "@/lib/config/moduleIcons";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import { LayoutDashboard, AlertTriangle } from "lucide-react";
 
 interface PlatformWorkspaceModulesDialogProps {
@@ -29,14 +31,13 @@ export function PlatformWorkspaceModulesDialog({
   const { mutateAsync: updateModules, isPending } = useUpdateWorkspaceModules();
 
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
-  // Re-seed the selection during render when the dialog opens or the query resolves.
-  const [prevModules, setPrevModules] = useState({ currentModules, open });
-  if (prevModules.currentModules !== currentModules || prevModules.open !== open) {
-    setPrevModules({ currentModules, open });
-    if (currentModules) {
-      setSelectedModules(currentModules);
-    }
-  }
+  const [formError, setFormError] = useState<string | null>(null);
+  // Seed only when the dialog opens or the query first resolves — a background
+  // refetch of `currentModules` must not wipe the user's unsaved toggles.
+  useIdentityReset(`${open}:${currentModules === undefined ? "pending" : "ready"}`, () => {
+    if (open && currentModules) setSelectedModules(currentModules);
+    setFormError(null);
+  });
 
   const toggleModule = (moduleId: string, checked: boolean) => {
     setSelectedModules((prev) => {
@@ -60,8 +61,8 @@ export function PlatformWorkspaceModulesDialog({
     try {
       await updateModules({ subdomain: workspace.subdomain, modules: selectedModules });
       onOpenChange(false);
-    } catch {
-      // Error is handled in the mutation
+    } catch (error) {
+      setFormError(mapApiFormError(error).message ?? t("platform.loadFailed"));
     }
   };
 
@@ -95,8 +96,8 @@ export function PlatformWorkspaceModulesDialog({
       onSave={handleSave}
       saving={isPending}
       saveDisabled={isPending || isLoading}
+      error={formError ?? undefined}
       dir="ltr"
-      lang="en"
       formId="platform-workspace-modules-form"
     >
       <form

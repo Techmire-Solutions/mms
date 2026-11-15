@@ -20,6 +20,7 @@ interface StepTransactionFormProps {
   accounts: Account[];
   currencySymbol: string;
   fiscalYears?: FiscalYear[];
+  voucherAutoGenerate?: boolean;
   entries?: readonly JournalEntry[];
   formatCurrency?: (amount: number | string | null | undefined) => string;
   idPrefix?: string;
@@ -38,6 +39,7 @@ export function StepTransactionForm({
   accounts,
   currencySymbol,
   fiscalYears,
+  voucherAutoGenerate,
   entries,
   formatCurrency,
   idPrefix,
@@ -132,6 +134,7 @@ export function StepTransactionForm({
           refValue={form.ref}
           date={form.date}
           isDuplicateRef={isDuplicateRef}
+          required={voucherAutoGenerate === false}
           onChange={(val) => setForm((prev) => ({ ...prev, ref: val }))}
           onProceed={onProceed}
         />

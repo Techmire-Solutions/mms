@@ -139,7 +139,12 @@ export function validateQuestionByType(input: QuestionInvariantInput): QuestionI
       const rights = splitQuestionCompoundAnswer(answer);
       const duplicateRight = findDuplicate(rights);
       if (duplicateRight !== null) push(["answer"], "duplicate_options");
-      if (options.length === 0 || rights.length !== options.length) {
+      if (
+        options.length === 0 ||
+        rights.length !== options.length ||
+        options.some((left) => left === "") ||
+        rights.some((right) => right === "")
+      ) {
         push(["answer"], "matching_incomplete");
       }
       break;

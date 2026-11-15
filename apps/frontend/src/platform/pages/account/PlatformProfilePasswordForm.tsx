@@ -60,6 +60,8 @@ export function PlatformProfilePasswordForm(): React.JSX.Element {
               id="platform-current-password"
               name="currentPassword"
               label={t("platform.profileCurrentPassword")}
+              aria-invalid={Boolean(passwordError)}
+              aria-describedby={passwordError ? "platform-password-error" : undefined}
               autoComplete="current-password"
               required
               value={currentPassword}

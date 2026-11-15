@@ -52,10 +52,15 @@ export function PlatformTwoFactorStep({
           ariaLabel={t("auth.twoFactorTitle")}
           disabled={isSubmitting}
           hasError={Boolean(codeError || error)}
+          aria-describedby={codeError ? "platform-otp-error" : undefined}
         />
 
         {codeError ? (
-          <FieldErrorMessage message={codeError} className="justify-center text-center" />
+          <FieldErrorMessage
+            id="platform-otp-error"
+            message={codeError}
+            className="justify-center text-center"
+          />
         ) : null}
 
         <AuthSubmitButton

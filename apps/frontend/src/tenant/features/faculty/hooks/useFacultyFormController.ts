@@ -25,6 +25,7 @@ import {
 import { DUPLICATE_ERROR_KEYS } from "@/tenant/features/faculty/lib/facultyFormValidation";
 import type { FacultyStatusOption } from "@/tenant/features/faculty/components/FacultyFormSections";
 import { useFacultyAssignableRolesSync } from "@/tenant/features/faculty/hooks/useFacultyFormSync";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { useFacultyDraftState } from "@/tenant/features/faculty/hooks/useFacultyDraftState";
 import { useFacultyFormSaveActions } from "@/tenant/features/faculty/hooks/useFacultyFormSaveActions";
 
@@ -66,6 +67,7 @@ export function useFacultyFormController({
   const statusOptions = facultyStatusOptions(t, statusValues) as FacultyStatusOption[];
   const statusConfig = useFacultyStatusConfig();
   const formInstanceId = String(currentFaculty?.id ?? "new");
+  const today = useWorkspaceToday();
 
   const {
     facultyDraft,
@@ -85,6 +87,7 @@ export function useFacultyFormController({
     autoGenerateId,
     idPrefix,
     settings,
+    today,
   });
 
   const enabledTabs = useMemo(() => new Set(resolveFacultyEnabledTabIds(settings)), [settings]);

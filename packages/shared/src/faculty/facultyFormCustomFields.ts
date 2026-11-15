@@ -5,7 +5,10 @@
 import { INITIAL_FACULTY_FIELD_SEED } from "../settings/moduleFieldSetupPersons.js";
 import type { FieldDefinition } from "../contacts/contactFieldSchemaTypes.js";
 import { getFlatFieldsConfig } from "../settings/moduleFieldConfigUtils.js";
-import { createFormCustomFieldHelpers } from "../core/createFormCustomFieldHelpers.js";
+import {
+  applyScalarCustomFieldDefaults,
+  createFormCustomFieldHelpers,
+} from "../core/createFormCustomFieldHelpers.js";
 import { applyFacultyFieldProductLocks } from "./facultyFormFieldMigration.js";
 
 const helpers = createFormCustomFieldHelpers(INITIAL_FACULTY_FIELD_SEED);
@@ -116,4 +119,17 @@ export function findFacultyTabField(
   fieldKey: string,
 ): FieldDefinition | undefined {
   return (fields[tabId] ?? []).find((field) => field.key === fieldKey);
+}
+
+/**
+ * Seeds Setup `defaultValue` for enabled faculty custom fields on a create draft.
+ * Edit drafts and values already present on the draft are left untouched.
+ */
+export function applyFacultyScalarCustomFieldDefaults<T extends Record<string, unknown>>(
+  draft: T,
+  fields: Record<string, FieldDefinition[]> | undefined,
+): T {
+  if (!fields || typeof fields !== "object") return draft;
+  if (draft.id != null && String(draft.id).length > 0) return draft;
+  return applyScalarCustomFieldDefaults(draft, listEnabledCustomFacultyFormFields(fields));
 }

@@ -6,6 +6,8 @@ import {
   type ExchangeRateType,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { notify } from "@/lib/notify";
 import {
   useAccountingExchangeRates,
@@ -35,6 +37,7 @@ export function useExchangeRateDraft(functionalCurrency: string, enabledCurrenci
     overrideReason: "",
   });
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const fromCurrency = draft.fromCurrency || enabledCurrencies[0] || "";
   const toCurrency = draft.toCurrency || functionalCurrency;
@@ -55,13 +58,18 @@ export function useExchangeRateDraft(functionalCurrency: string, enabledCurrenci
       overrideReason: draft.overrideReason.trim() || undefined,
     });
     if (!parsed.success) {
+      setFieldErrors(
+        mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
+      );
       setError(t("accounting.settings.fx.rates.invalid"));
       return;
     }
     if (existing && !draft.overrideReason.trim()) {
+      setFieldErrors({ overrideReason: t("accounting.settings.fx.rates.overrideReasonRequired") });
       setError(t("accounting.settings.fx.rates.overrideReasonRequired"));
       return;
     }
+    setFieldErrors({});
     setError(null);
     try {
       await save.mutateAsync([parsed.data]);
@@ -76,8 +84,13 @@ export function useExchangeRateDraft(functionalCurrency: string, enabledCurrenci
 
   return {
     draft: { ...draft, fromCurrency, toCurrency },
-    setDraft,
+    setDraft: (updater: React.SetStateAction<ExchangeRateDraft>) => {
+      setFieldErrors({});
+      setError(null);
+      setDraft(updater);
+    },
     error,
+    fieldErrors,
     overriding: Boolean(existing),
     rates: rates.data ?? [],
     isLoading: rates.isPending,

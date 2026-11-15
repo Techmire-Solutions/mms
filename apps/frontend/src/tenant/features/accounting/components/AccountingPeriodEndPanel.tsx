@@ -8,6 +8,7 @@ import { AccountingFxRevaluationSection } from "./AccountingFxRevaluationSection
 import { AccountingIas29Panel } from "./AccountingIas29Panel";
 import { AccountingHedgesSection } from "./AccountingHedgesSection";
 import { AccountingOpeningSection } from "./AccountingOpeningSection";
+import { AccountingPostingPeriodsSection } from "./AccountingPostingPeriodsSection";
 import { FxSetupGuide } from "./FxSetupGuide";
 
 export interface AccountingPeriodEndPanelProps {
@@ -44,6 +45,8 @@ export function AccountingPeriodEndPanel({
       </p>
 
       <FxSetupGuide />
+
+      <AccountingPostingPeriodsSection fiscalYears={fiscalYears} />
 
       <AccountingSettingsExchangeRatesSection
         functionalCurrency={functionalCurrency}

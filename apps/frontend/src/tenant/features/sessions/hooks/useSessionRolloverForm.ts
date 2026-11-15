@@ -3,6 +3,7 @@ import {
   addIsoDays,
   defaultPromotionClassMap,
   isoDayOffset,
+  sessionRolloverBodySchema,
   type PromotionOutcome,
   type PromotionPreviewRow,
   type Session,
@@ -52,7 +53,10 @@ export function useSessionRolloverForm(session: Session, initialMode: RolloverMo
         : [],
   };
   const datesValid = Boolean(dates.startDate && dates.endDate && dates.endDate >= dates.startDate);
-  const valid = name.trim().length > 0 && datesValid;
+  // The same contract the rollover preview/start endpoints enforce.
+  const parsedBody = sessionRolloverBodySchema.safeParse(body);
+  const valid = parsedBody.success;
+  const validationError = parsedBody.success ? null : (parsedBody.error.issues[0]?.message ?? null);
   // Dirty tracking covers everything the server sees, not only the target name.
   const initialBodyRef = useRef<string | null>(null);
   const bodySignature = JSON.stringify(body);
@@ -81,6 +85,7 @@ export function useSessionRolloverForm(session: Session, initialMode: RolloverMo
       setPreview(null);
     },
     datesValid,
+    validationError,
     copy,
     toggleCopy: (key: RolloverCopyKey, checked: boolean) => {
       setCopy((current) => ({ ...current, [key]: checked }));

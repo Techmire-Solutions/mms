@@ -22,7 +22,7 @@ interface UseWidgetBuilderStateOptions {
   category?: string;
   mode?: "dashboard" | "kpi";
   initialWidgetType?: CustomWidget["widgetType"];
-  onSaveWidget: (widget: CustomWidget) => void;
+  onSaveWidget: (widget: CustomWidget) => void | Promise<void>;
 }
 
 export function useWidgetBuilderState({
@@ -34,6 +34,8 @@ export function useWidgetBuilderState({
   onSaveWidget,
 }: UseWidgetBuilderStateOptions) {
   const { t } = useTranslation();
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [widgetType, setWidgetType] = useState<CustomWidget["widgetType"]>(() => {
     if (editWidgetConfig) return editWidgetConfig.widgetType || "kpi";
@@ -146,12 +148,11 @@ export function useWidgetBuilderState({
     setBuilderTargetField,
     setBuilderFilterField,
   });
-
   const previewWidget = (() =>
     buildWidgetBuilderPreview(
       editWidgetConfig,
       category,
-      builderTitle,
+      builderTitle.trim(),
       builderCollection,
       widgetType,
       builderOperation,
@@ -179,41 +180,51 @@ export function useWidgetBuilderState({
       builderRole,
       t("reports.widgets.customLiveWidget"),
     ))() as CustomWidget;
-
-  const handleSaveWidget = () => {
-    onSaveWidget(
-      buildWidgetSavePayload(
-        editWidgetConfig,
-        category,
-        mode,
-        builderTitle,
-        builderCollection,
-        widgetType,
-        builderOperation,
-        builderTargetField,
-        builderFilterField,
-        builderFilterOperator,
-        builderFilterValue,
-        builderColor,
-        thresholdEnabled,
-        thresholdCondition,
-        thresholdValue,
-        thresholdColor,
-        switchActionType,
-        switchStateKey,
-        switchCollection,
-        switchRecordId,
-        switchField,
-        switchLabelOn,
-        switchLabelOff,
-        builderIcon,
-        subTextType,
-        fixedSubText,
-        trend,
-        trendType,
-        builderRole,
-      ),
+  const handleSaveWidget = async (): Promise<void> => {
+    if (saving) return;
+    setSaveError(null);
+    if (!builderTitle.trim()) return setSaveError(t("reports.widgets.builder.labelTitle"));
+    if (["sum", "avg"].includes(builderOperation) && !builderTargetField)
+      return setSaveError(t("reports.widgets.builder.targetField"));
+    const widget = buildWidgetSavePayload(
+      editWidgetConfig,
+      category,
+      mode,
+      builderTitle,
+      builderCollection,
+      widgetType,
+      builderOperation,
+      builderTargetField,
+      builderFilterField,
+      builderFilterOperator,
+      builderFilterValue,
+      builderColor,
+      thresholdEnabled,
+      thresholdCondition,
+      thresholdValue,
+      thresholdColor,
+      switchActionType,
+      switchStateKey,
+      switchCollection,
+      switchRecordId,
+      switchField,
+      switchLabelOn,
+      switchLabelOff,
+      builderIcon,
+      subTextType,
+      fixedSubText,
+      trend,
+      trendType,
+      builderRole,
     );
+    setSaving(true);
+    try {
+      await onSaveWidget(widget);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : t("settings.serverSaveFailed"));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return {
@@ -224,7 +235,9 @@ export function useWidgetBuilderState({
     setScalerSize,
     previewWidget,
     handleSaveWidget,
-    canSave: Boolean(builderTitle),
+    canSave: Boolean(builderTitle.trim()) && !saving,
+    saving,
+    saveError,
     dbRecordsList,
     titleState: { builderTitle, setBuilderTitle },
     metricState: {

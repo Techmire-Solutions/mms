@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SECTION_STUDENT_ROLES, todayISO, type SectionStudentRoleKind } from "@mms/shared";
+import { SECTION_STUDENT_ROLES, type SectionStudentRoleKind } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/app/DatePicker";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -7,6 +7,7 @@ import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { notify } from "@/lib/notify";
 import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
 import {
   useSectionStaffMutations,
@@ -25,6 +26,7 @@ export function SectionStudentRolesPanel({
   classId,
 }: SectionStudentRolesPanelProps): React.JSX.Element {
   const { t } = useTranslation();
+  const today = useWorkspaceToday();
   const roles = useSectionStudentRoles(sectionId);
   const { addRole, endRole } = useSectionStaffMutations(sectionId);
   const enrolled = useEnrollmentsCollection({ classId }).filter(
@@ -35,7 +37,7 @@ export function SectionStudentRolesPanel({
   );
   const [enrollmentId, setEnrollmentId] = useState("");
   const [role, setRole] = useState<SectionStudentRoleKind>("monitor");
-  const [startOn, setStartOn] = useState(todayISO());
+  const [startOn, setStartOn] = useState(today);
   const [attempted, setAttempted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const roleLabel = (value: string) =>

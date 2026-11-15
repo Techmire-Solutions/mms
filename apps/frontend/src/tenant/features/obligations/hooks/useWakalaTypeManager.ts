@@ -71,14 +71,19 @@ export function useWakalaTypeManager({
       (d) =>
         ({
           name: d.name || "",
-          percentage: Number(d.percentage || 0),
+          percentage: Number(d.percentage ?? 0),
           type: d.type || "Income",
           id: generateId("od"),
           wakala_type_id: wakalaId,
           account_id: d.account_id ?? null,
         }) as ObligationDistribution,
     );
-    const nextDistributions = distsToAdd.length ? [...distributions, ...distsToAdd] : distributions;
+    // Replace this wakala's previous rules with the submitted set; appending would
+    // duplicate every hydrated row on edit.
+    const otherDistributions = distributions.filter(
+      (distribution) => distribution.wakala_type_id !== wakalaId,
+    );
+    const nextDistributions = [...otherDistributions, ...distsToAdd];
 
     if (onSaveAggregate) {
       // One request: the wakala and its rules cannot land in separate transactions.

@@ -10,7 +10,7 @@ export default function OnboardingWizard(): React.JSX.Element {
   const {
     t,
     step,
-    setStep,
+    handleBack,
     data,
     setData,
     loading,
@@ -50,7 +50,7 @@ export default function OnboardingWizard(): React.JSX.Element {
         showSignInLink={showSignInLink}
         conflictSubdomain={data.subdomain}
         isLastStep={isLastStep}
-        onBack={() => setStep((value) => value - 1)}
+        onBack={handleBack}
         onNext={handleNext}
       />
     </WizardLayout>

@@ -3,6 +3,7 @@ import type { PublicRegistrationView } from "@mms/shared";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/app/DatePicker";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -167,7 +168,9 @@ export function RegistrationFormFields({
       </div>
       {/* Honeypot: off-screen and skipped by keyboard / assistive tech; bots that fill it are rejected. */}
       <div aria-hidden="true" className="sr-only">
-        <label htmlFor="apply-website">Website</label>
+        <Label htmlFor="apply-website" className="sr-only">
+          Website
+        </Label>
         <Input
           id="apply-website"
           name="website"

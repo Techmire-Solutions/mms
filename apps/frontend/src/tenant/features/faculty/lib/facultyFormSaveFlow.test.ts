@@ -63,6 +63,7 @@ function input(overrides: Partial<FacultySaveFlowInput> = {}): FacultySaveFlowIn
     onSave: vi.fn(async () => undefined),
     onClose: vi.fn(),
     setErrors: vi.fn(),
+    setServerError: vi.fn(),
     setSaving: vi.fn(),
     setPendingSaveData: vi.fn(),
     setTypedDuplicateReason: vi.fn(),

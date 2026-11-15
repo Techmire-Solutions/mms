@@ -2,6 +2,7 @@ import React from "react";
 import { UserCheck } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormSelect } from "@/components/app/FormSelect";
+import { Field } from "@/components/app/FormPrimitives";
 import { Badge } from "@/components/ui/badge";
 import type { EligibleAssigneeItem } from "../hooks/useTasksApi";
 
@@ -28,24 +29,23 @@ export function TaskFormAssigneePicker({
 
   return (
     <div>
-      <label htmlFor={pickerId} className="block text-sm font-medium text-foreground mb-1">
-        {t("tasks.assignees")}
-      </label>
-      <FormSelect
-        id={pickerId}
-        value=""
-        onChange={(facultyId) => {
-          if (facultyId) onAddAssignee(facultyId);
-        }}
-        placeholder={t("tasks.addAssignee")}
-        searchable
-        options={eligibleList
-          .filter((item) => !selectedAssignees.some((a) => a.facultyId === item.facultyId))
-          .map((f) => ({
-            value: f.facultyId,
-            label: `${f.name}${f.departmentName ? ` (${f.departmentName})` : ""}${f.isSelf ? ` • ${t("tasks.assigneeSelf")}` : ""}`,
-          }))}
-      />
+      <Field id={pickerId} label={t("tasks.assignees")}>
+        <FormSelect
+          id={pickerId}
+          value=""
+          onChange={(facultyId) => {
+            if (facultyId) onAddAssignee(facultyId);
+          }}
+          placeholder={t("tasks.addAssignee")}
+          searchable
+          options={eligibleList
+            .filter((item) => !selectedAssignees.some((a) => a.facultyId === item.facultyId))
+            .map((f) => ({
+              value: f.facultyId,
+              label: `${f.name}${f.departmentName ? ` (${f.departmentName})` : ""}${f.isSelf ? ` • ${t("tasks.assigneeSelf")}` : ""}`,
+            }))}
+        />
+      </Field>
 
       {selectedAssignees.length > 0 ? (
         <div className="flex flex-wrap gap-1.5 mt-2">

@@ -1,6 +1,11 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { Mail, User, UserPlus, ShieldPlus } from "lucide-react";
-import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, type PlatformAdminPermissions } from "@mms/shared";
+import {
+  DEFAULT_PLATFORM_ADMIN_PERMISSIONS,
+  platformCreateAdminBodySchema,
+  type PlatformAdminPermissions,
+} from "@mms/shared";
 import { Button, PasswordInput, LeadingIconInput, Field, SectionCard } from "@shared/ui";
 import { FormModal } from "@/components/app/FormModal";
 import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
@@ -50,6 +55,7 @@ export function PlatformAddAdminForm({
   };
 
   const handleSave = async (): Promise<void> => {
+    if (addAdmin.isPending) return;
     setSubmitError(null);
 
     const validationError = getPlatformRegisterError(name, email, password, t);
@@ -63,13 +69,18 @@ export function PlatformAddAdminForm({
     }
 
     try {
-      await addAdmin.mutateAsync({
+      const parsed = platformCreateAdminBodySchema.safeParse({
         name: name.trim(),
         email: email.trim().toLowerCase(),
         password,
         currentPassword,
         permissions,
       });
+      if (!parsed.success) {
+        setSubmitError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+        return;
+      }
+      await addAdmin.mutateAsync(parsed.data);
       handleOpenChange(false);
     } catch (err) {
       setSubmitError(getPlatformErrorMessage(err, t));
@@ -99,7 +110,6 @@ export function PlatformAddAdminForm({
         onSave={handleSave}
         saving={addAdmin.isPending}
         dir="ltr"
-        lang="en"
         formId="platform-add-admin-form"
       >
         <form
@@ -107,7 +117,7 @@ export function PlatformAddAdminForm({
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            void handleSave();
+            if (!addAdmin.isPending) void handleSave();
           }}
           className="space-y-4 text-start"
         >

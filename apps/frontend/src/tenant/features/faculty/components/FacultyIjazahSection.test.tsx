@@ -29,7 +29,7 @@ describe("FacultyIjazahSection", () => {
     expect(html).toContain("Shatibiyyah in Seven Qira&#x27;at");
     expect(html).toContain("faculty.ijazah.discipline.quran");
     expect(html).toContain("Al-Azhar University");
-    expect(html).toContain("(2020)");
+    expect(html).toContain('value="2020"');
   });
 
   it("renders empty state message when ijazahs list is empty", () => {

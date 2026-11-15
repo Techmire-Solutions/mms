@@ -177,8 +177,8 @@ describe("useZodDraftForm", () => {
     });
     const fin = await refresh(mount);
 
-    expect(fin.result.errors.name).toBe("Session name is invalid");
-    expect(fin.result.serverError).toBe("Validation failed");
+    expect(fin.result.errors.name).toBe("msg:Session name is invalid");
+    expect(fin.result.serverError).toBe("msg:Validation failed");
     expect(fin.result.validationErrors).toEqual(
       expect.arrayContaining([expect.objectContaining({ fieldId: "name" })]),
     );

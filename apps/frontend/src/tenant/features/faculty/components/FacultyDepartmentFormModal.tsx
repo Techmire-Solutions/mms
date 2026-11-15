@@ -1,8 +1,10 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useMemo, useState } from "react";
 import { Building2 } from "lucide-react";
 import {
   FACULTY_DEPARTMENT_DESCRIPTION_MAX,
   FACULTY_DEPARTMENT_NAME_MAX,
+  facultyDepartmentWriteSchema,
   isDuplicateFacultyDepartmentName,
   type FacultyCatalogStatus,
   type FacultyDepartmentEntity,
@@ -14,6 +16,8 @@ import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import type { FacultyDepartmentFormPayload } from "../hooks/useFacultyDepartmentsController";
 
 export interface FacultyDepartmentFormModalProps {
@@ -47,6 +51,8 @@ function FacultyDepartmentFormContent({
   const [name, setName] = useState(() => department?.name ?? "");
   const [description, setDescription] = useState(() => department?.description ?? "");
   const [status, setStatus] = useState<FacultyCatalogStatus>(() => department?.status ?? "active");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
 
   const statusOptions = useMemo(
     () => [
@@ -71,13 +77,27 @@ function FacultyDepartmentFormContent({
 
   const handleSubmit = async () => {
     if (!trimmedName || duplicateName) return;
-    const saved = await onSave({
-      id: department?.id,
+    setErrors({});
+    setFormError(null);
+    const parsed = facultyDepartmentWriteSchema.safeParse({
+      ...(department?.id ? { id: department.id } : {}),
       name: trimmedName,
       description: description.trim() || null,
       status,
     });
-    if (saved) onClose();
+    if (!parsed.success) {
+      setErrors(
+        mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
+      );
+      setFormError(t("common.formPleaseFixErrors"));
+      return;
+    }
+    try {
+      const saved = await onSave(parsed.data);
+      if (saved) onClose();
+    } catch (error) {
+      setFormError(mapApiFormError(error).message ?? t("common.formPleaseFixErrors"));
+    }
   };
 
   return (
@@ -94,57 +114,79 @@ function FacultyDepartmentFormContent({
       }
       saving={isPending}
       saveDisabled={isPending || !trimmedName || duplicateName}
+      error={formError ?? undefined}
       isDirty={isDirty}
       discardUnsavedTitle={t("faculty.form.discardUnsavedTitle")}
       discardUnsavedDescription={t("faculty.form.discardUnsavedDescription")}
       discardConfirmLabel={t("faculty.form.discardChanges")}
       discardCancelLabel={t("faculty.form.keepEditing")}
       onSave={() => void handleSubmit()}
+      formId="faculty-department-form"
     >
-      <div className="space-y-4 py-1 text-start">
-        <Field
-          label={t("faculty.setup.departmentName")}
-          id="department-form-name"
-          required
-          error={duplicateName ? t("faculty.setup.departmentNameDuplicate") : undefined}
-        >
-          <Input
+      <form
+        id="faculty-department-form"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit();
+        }}
+      >
+        <div className="space-y-4 py-1 text-start">
+          <Field
+            label={t("faculty.setup.departmentName")}
             id="department-form-name"
-            name="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t("faculty.setup.departmentNamePlaceholder")}
-            className={FORM_INPUT}
-            maxLength={FACULTY_DEPARTMENT_NAME_MAX}
-            disabled={isPending}
-            aria-invalid={duplicateName || undefined}
-          />
-        </Field>
+            required
+            error={
+              duplicateName
+                ? t("faculty.setup.departmentNameDuplicate")
+                : (errors.name ?? undefined)
+            }
+          >
+            <Input
+              id="department-form-name"
+              name="name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors((prev) => ({ ...prev, name: "" }));
+              }}
+              placeholder={t("faculty.setup.departmentNamePlaceholder")}
+              className={FORM_INPUT}
+              maxLength={FACULTY_DEPARTMENT_NAME_MAX}
+              disabled={isPending}
+              aria-invalid={duplicateName || undefined}
+            />
+          </Field>
 
-        <Field label={t("faculty.setup.departmentDescription")} id="department-form-description">
-          <Textarea
+          <Field
+            label={t("faculty.setup.departmentDescription")}
             id="department-form-description"
-            name="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={t("faculty.setup.departmentDescriptionPlaceholder")}
-            maxLength={FACULTY_DEPARTMENT_DESCRIPTION_MAX}
-            rows={3}
-            disabled={isPending}
-          />
-        </Field>
+            error={errors.description ?? undefined}
+          >
+            <Textarea
+              id="department-form-description"
+              name="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t("faculty.setup.departmentDescriptionPlaceholder")}
+              maxLength={FACULTY_DEPARTMENT_DESCRIPTION_MAX}
+              rows={3}
+              disabled={isPending}
+            />
+          </Field>
 
-        <Field label={t("common.status")} id="department-form-status" required>
-          <FormSelect
-            id="department-form-status"
-            name="status"
-            value={status}
-            onChange={(val) => setStatus(val === "inactive" ? "inactive" : "active")}
-            options={statusOptions}
-            disabled={isPending}
-          />
-        </Field>
-      </div>
+          <Field label={t("common.status")} id="department-form-status" required>
+            <FormSelect
+              id="department-form-status"
+              name="status"
+              value={status}
+              onChange={(val) => setStatus(val === "inactive" ? "inactive" : "active")}
+              options={statusOptions}
+              disabled={isPending}
+            />
+          </Field>
+        </div>
+      </form>
     </FormModal>
   );
 }

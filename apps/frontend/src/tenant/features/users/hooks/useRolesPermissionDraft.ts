@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  normalizePermissionMap,
   PERMISSION_ACTIONS,
   type PermissionAction,
   type PermissionMap,
@@ -15,7 +16,7 @@ export function useRolesPermissionDraft(displayRole: WorkspaceRole | null) {
     if (permDraft !== null) setPermDraft(null);
     if (permDraftRoleId !== null) setPermDraftRoleId(null);
   } else if (displayRole.id !== permDraftRoleId) {
-    setPermDraft(structuredClone(displayRole.permissions));
+    setPermDraft(normalizePermissionMap(displayRole.permissions));
     setPermDraftRoleId(displayRole.id);
   }
 
@@ -51,7 +52,7 @@ export function useRolesPermissionDraft(displayRole: WorkspaceRole | null) {
 
   const resetPermDraft = (): void => {
     if (displayRole) {
-      setPermDraft(structuredClone(displayRole.permissions));
+      setPermDraft(normalizePermissionMap(displayRole.permissions));
     }
   };
 

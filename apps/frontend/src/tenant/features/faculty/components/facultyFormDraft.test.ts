@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { extractEmployeeId, resolveInitialUserAccountRole } from "../lib/facultyFormDraft";
+import {
+  extractEmployeeId,
+  getInitialFacultyDraft,
+  resolveInitialUserAccountRole,
+} from "../lib/facultyFormDraft";
 
 describe("extractEmployeeId", () => {
   it("returns trimmed string when input is a string", () => {
@@ -41,5 +45,34 @@ describe("resolveInitialUserAccountRole", () => {
   it("falls back to the module default when no account is linked", () => {
     expect(resolveInitialUserAccountRole(undefined, undefined)).toBe("staff");
     expect(resolveInitialUserAccountRole("", null)).toBe("staff");
+  });
+});
+
+describe("faculty custom field defaults", () => {
+  const fields = {
+    contact: [
+      {
+        key: "badge",
+        label: "Badge",
+        type: "text" as const,
+        enabled: true,
+        order: 1,
+        defaultValue: "A-1",
+      },
+    ],
+  };
+
+  it("seeds enabled custom defaults on create", () => {
+    const draft = getInitialFacultyDraft({ defaultSpecialization: "", fields });
+    expect(draft.badge).toBe("A-1");
+  });
+
+  it("does not overwrite custom values on edit", () => {
+    const draft = getInitialFacultyDraft({
+      faculty: { id: "faculty-1", badge: "B-2" } as never,
+      defaultSpecialization: "",
+      fields,
+    });
+    expect(draft.badge).toBe("B-2");
   });
 });

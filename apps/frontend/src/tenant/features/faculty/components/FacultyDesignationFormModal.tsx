@@ -1,13 +1,17 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useMemo, useState } from "react";
 import { Award } from "lucide-react";
 import {
   collectDesignationDescendantIds,
+  facultyDesignationWriteSchema,
   type FacultyCatalogStatus,
   type FacultyDepartmentEntity,
   type FacultyDesignationDefinition,
 } from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import type { FacultyDesignationFormPayload } from "../hooks/useFacultyDesignationsController";
 import { FacultyDesignationFormFields } from "./FacultyDesignationFormFields";
 
@@ -63,6 +67,8 @@ function FacultyDesignationFormContent({
   const [assignableRoles, setAssignableRoles] = useState<string[]>(
     () => designation?.assignableRoles ?? [],
   );
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
 
   const departmentOptions = useMemo(
     () =>
@@ -123,15 +129,32 @@ function FacultyDesignationFormContent({
 
   const handleSubmit = async () => {
     if (!trimmedName || !departmentId || duplicateName) return;
-    const saved = await onSave({
-      id: designation?.id,
+    setFieldErrors({});
+    setFormError(null);
+    const parsed = facultyDesignationWriteSchema.safeParse({
+      // The write schema requires an id; create validates against a temporary one
+      // and sends `undefined` so the server mints it.
+      id: designation?.id ?? `new-${crypto.randomUUID()}`,
       departmentId,
       name: trimmedName,
       parentDesignationId: parentDesignationId || null,
       status,
       assignableRoles,
     });
-    if (saved) onClose();
+    if (!parsed.success) {
+      setFieldErrors(
+        mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
+      );
+      setFormError(t("common.formPleaseFixErrors"));
+      return;
+    }
+    try {
+      // Keep `id` explicit (undefined on create) — the CatalogDraft payload expects the key.
+      const saved = await onSave({ ...parsed.data, id: designation?.id });
+      if (saved) onClose();
+    } catch (error) {
+      setFormError(mapApiFormError(error).message ?? t("common.formPleaseFixErrors"));
+    }
   };
 
   return (
@@ -150,31 +173,46 @@ function FacultyDesignationFormContent({
       saveLabel={designation ? t("common.save") : t("faculty.designations.addDesignation")}
       saving={isPending}
       saveDisabled={isPending || !trimmedName || !departmentId || duplicateName}
+      error={formError ?? undefined}
       isDirty={isDirty}
       discardUnsavedTitle={t("faculty.form.discardUnsavedTitle")}
       discardUnsavedDescription={t("faculty.form.discardUnsavedDescription")}
       discardConfirmLabel={t("faculty.form.discardChanges")}
       discardCancelLabel={t("faculty.form.keepEditing")}
       onSave={() => void handleSubmit()}
+      formId="faculty-designation-form"
     >
-      <FacultyDesignationFormFields
-        departmentId={departmentId}
-        name={name}
-        parentDesignationId={parentDesignationId}
-        status={status}
-        assignableRoles={assignableRoles}
-        departmentOptions={departmentOptions}
-        parentOptions={parentOptions}
-        statusOptions={statusOptions}
-        isPending={isPending}
-        nameError={duplicateName ? t("faculty.designations.nameDuplicate") : undefined}
-        onDepartmentChange={handleDepartmentChange}
-        onNameChange={setName}
-        onParentChange={setParentDesignationId}
-        onStatusChange={(val) => setStatus(val === "inactive" ? "inactive" : "active")}
-        onAssignableRolesChange={setAssignableRoles}
-        onOpenCreateDepartment={onOpenCreateDepartment}
-      />
+      <form
+        id="faculty-designation-form"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSubmit();
+        }}
+      >
+        <FacultyDesignationFormFields
+          departmentId={departmentId}
+          name={name}
+          parentDesignationId={parentDesignationId}
+          status={status}
+          assignableRoles={assignableRoles}
+          departmentOptions={departmentOptions}
+          parentOptions={parentOptions}
+          statusOptions={statusOptions}
+          isPending={isPending}
+          nameError={
+            duplicateName
+              ? t("faculty.designations.nameDuplicate")
+              : (fieldErrors.name ?? undefined)
+          }
+          onDepartmentChange={handleDepartmentChange}
+          onNameChange={setName}
+          onParentChange={setParentDesignationId}
+          onStatusChange={(val) => setStatus(val === "inactive" ? "inactive" : "active")}
+          onAssignableRolesChange={setAssignableRoles}
+          onOpenCreateDepartment={onOpenCreateDepartment}
+        />
+      </form>
     </FormModal>
   );
 }

@@ -1,9 +1,9 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { Paperclip } from "lucide-react";
 import {
   ATTENDANCE_LEAVE_TYPES,
   attendanceLeaveInsertSchema,
-  todayISO,
   type AppTranslationKey,
   type AttendanceLeaveInsert,
 } from "@mms/shared";
@@ -15,9 +15,9 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
-import { deleteAttachmentFile, uploadAttachmentFile } from "@/lib/attachmentUpload";
-import { notify } from "@/lib/notify";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { useAttendanceExcuses } from "@/tenant/features/attendance/hooks/useAttendanceLifecycle";
+import { useExcuseAttachment } from "@/tenant/features/attendance/hooks/useExcuseAttachment";
 import {
   serverFormError,
   validateAttendanceDraft,
@@ -40,10 +40,8 @@ interface ExcuseDraft {
   documentRef: string | null;
 }
 
-function emptyDraft(): ExcuseDraft {
-  // `todayISO()` is workspace-local; the old `toISOString()` slice defaulted to yesterday for a
-  // UTC+5 school during the first five hours of the day.
-  const today = todayISO();
+function emptyDraft(today: string): ExcuseDraft {
+  // Seeded from the workspace timezone by the caller, never the device clock.
   return {
     studentId: "",
     fromDate: today,
@@ -67,11 +65,11 @@ export function AttendanceExcuseForm({
   onClose,
 }: AttendanceExcuseFormProps): React.JSX.Element {
   const { t } = useTranslation();
+  const today = useWorkspaceToday();
   const excuses = useAttendanceExcuses();
-  const [draft, setDraft] = useState<ExcuseDraft>(emptyDraft);
+  const [draft, setDraft] = useState<ExcuseDraft>(() => emptyDraft(today));
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
-  const [uploading, setUploading] = useState(false);
   const [touched, setTouched] = useState(false);
 
   const update = <K extends keyof ExcuseDraft>(key: K, value: ExcuseDraft[K]): void => {
@@ -81,50 +79,32 @@ export function AttendanceExcuseForm({
     if (formError) setFormError("");
   };
 
+  const attachment = useExcuseAttachment({
+    value: draft.documentRef,
+    onChange: (url) => update("documentRef", url),
+  });
+
   const isDirty =
     draft.studentId.length > 0 ||
     draft.reason.trim().length > 0 ||
     draft.notes.trim().length > 0 ||
     draft.documentRef !== null ||
     draft.leaveType !== "medical" ||
-    draft.fromDate !== todayISO() ||
-    draft.toDate !== todayISO();
+    draft.fromDate !== today ||
+    draft.toDate !== today;
 
   const reset = (): void => {
-    setDraft(emptyDraft());
+    setDraft(emptyDraft(today));
     setFieldErrors({});
     setFormError("");
     setTouched(false);
   };
 
   const close = (): void => {
+    // A cancelled draft owns no record: drop the certificates it uploaded.
+    attachment.cleanup();
     reset();
     onClose();
-  };
-
-  const upload = async (file: File | undefined): Promise<void> => {
-    if (!file) return;
-    setUploading(true);
-    try {
-      const result = await uploadAttachmentFile(file, "attendance_excuse");
-      setDraft((current) => ({ ...current, documentRef: result.url }));
-      notify.success(t("attendance.excuses.attached"));
-    } catch {
-      notify.error(t("attendance.excuses.attachFailed"));
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const removeAttachment = async (): Promise<void> => {
-    const url = draft.documentRef;
-    setDraft((current) => ({ ...current, documentRef: null }));
-    if (!url) return;
-    try {
-      await deleteAttachmentFile(url);
-    } catch {
-      // The reference is already gone from the draft; a leftover file is not user-blocking.
-    }
   };
 
   const submit = (): void => {
@@ -138,7 +118,7 @@ export function AttendanceExcuseForm({
       ...(draft.documentRef ? { documentRef: draft.documentRef } : {}),
     };
     const validation = validateAttendanceDraft(attendanceLeaveInsertSchema, candidate, (message) =>
-      t(message as AppTranslationKey),
+      translateValidationMessage(message, t),
     );
     if (!validation.ok) {
       setFieldErrors(validation.fieldErrors);
@@ -150,11 +130,14 @@ export function AttendanceExcuseForm({
       { body: validation.data! },
       {
         onSuccess: () => {
+          attachment.cleanup(validation.data?.documentRef ?? null);
           reset();
           onClose();
         },
         onError: (error: unknown) => {
-          const mapped = serverFormError(error, (message) => t(message as AppTranslationKey));
+          const mapped = serverFormError(error, (message) =>
+            translateValidationMessage(message, t),
+          );
           setFieldErrors(mapped.fieldErrors);
           setFormError(mapped.message || t("attendance.excuses.submitFailed"));
         },
@@ -172,8 +155,8 @@ export function AttendanceExcuseForm({
       size="md"
       cancelLabel={t("common.cancel")}
       saveLabel={t("attendance.excuses.submit")}
-      saving={excuses.submit.isPending || uploading}
-      saveDisabled={excuses.submit.isPending || uploading}
+      saving={excuses.submit.isPending || attachment.uploading}
+      saveDisabled={excuses.submit.isPending || attachment.uploading}
       error={touched ? formError || undefined : undefined}
       isDirty={isDirty}
       discardUnsavedTitle={t("settings.unsavedChanges")}
@@ -274,9 +257,9 @@ export function AttendanceExcuseForm({
         </Field>
         <AttendanceExcuseAttachmentField
           documentRef={draft.documentRef}
-          uploading={uploading}
-          onUpload={(file) => void upload(file)}
-          onRemove={() => void removeAttachment()}
+          uploading={attachment.uploading}
+          onUpload={(file) => void attachment.upload(file)}
+          onRemove={attachment.remove}
           error={fieldErrors.documentRef}
         />
       </div>

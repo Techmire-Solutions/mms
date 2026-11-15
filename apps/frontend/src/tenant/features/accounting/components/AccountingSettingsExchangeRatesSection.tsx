@@ -34,6 +34,7 @@ export function AccountingSettingsExchangeRatesSection({
 }: AccountingSettingsExchangeRatesSectionProps): React.JSX.Element {
   const { t } = useTranslation();
   const rates = useExchangeRateDraft(functionalCurrency, enabledCurrencies);
+  const fieldErrors = rates.fieldErrors ?? {};
   const currencyOptions = [functionalCurrency, ...enabledCurrencies]
     .filter(Boolean)
     .map((code) => ({ value: code, label: code }));
@@ -94,7 +95,11 @@ export function AccountingSettingsExchangeRatesSection({
       </p>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <Field id="fx-rate-from" label={t("accounting.settings.fx.rates.from")}>
+        <Field
+          id="fx-rate-from"
+          label={t("accounting.settings.fx.rates.from")}
+          error={fieldErrors.fromCurrency}
+        >
           <FormSelect
             id="fx-rate-from"
             name="fromCurrency"
@@ -103,7 +108,11 @@ export function AccountingSettingsExchangeRatesSection({
             options={currencyOptions}
           />
         </Field>
-        <Field id="fx-rate-to" label={t("accounting.settings.fx.rates.to")}>
+        <Field
+          id="fx-rate-to"
+          label={t("accounting.settings.fx.rates.to")}
+          error={fieldErrors.toCurrency}
+        >
           <FormSelect
             id="fx-rate-to"
             name="toCurrency"
@@ -131,7 +140,11 @@ export function AccountingSettingsExchangeRatesSection({
             options={typeOptions}
           />
         </Field>
-        <Field id="fx-rate-value" label={t("accounting.settings.fx.rates.rate")}>
+        <Field
+          id="fx-rate-value"
+          label={t("accounting.settings.fx.rates.rate")}
+          error={fieldErrors.rate}
+        >
           <Input
             id="fx-rate-value"
             name="rate"
@@ -148,6 +161,7 @@ export function AccountingSettingsExchangeRatesSection({
           id="fx-rate-reason"
           label={t("accounting.settings.fx.rates.reason")}
           required={rates.overriding}
+          error={fieldErrors.overrideReason}
         >
           <Input
             id="fx-rate-reason"
