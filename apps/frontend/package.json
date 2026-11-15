@@ -54,7 +54,7 @@
     "react-router-dom": "catalog:",
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.7.0",
-    "victory-vendor": "37.4.1",
+    "victory-vendor": "38.0.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "catalog:",
     "zustand": "^5.1.0"
