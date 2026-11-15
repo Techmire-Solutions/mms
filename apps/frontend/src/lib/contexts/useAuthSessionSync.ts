@@ -15,6 +15,7 @@ import {
   clearPersistedAuthUser,
   clearUserScopedCachesOnLogout,
   getPersistedAuthUser,
+  hasSessionIndicator,
   readUserIdFromStoredAuth,
 } from "@/lib/contexts/authContextHelpers";
 
@@ -40,6 +41,18 @@ export function useAuthSessionSync({
   const checkUserAuth = useCallback(
     async (signal?: AbortSignal): Promise<void> => {
       if (isCurrentHostApex()) {
+        setUser(null);
+        setIsAuthenticated(false);
+        setAuthChecked(true);
+        setIsLoadingAuth(false);
+        return;
+      }
+
+      const isEntry =
+        typeof window !== "undefined" && isEntryPath(window.location.pathname, { isApex: false });
+      const hasSession = Boolean(hasSessionIndicator() || getPersistedAuthUser());
+
+      if (isEntry && !hasSession) {
         setUser(null);
         setIsAuthenticated(false);
         setAuthChecked(true);

@@ -347,4 +347,73 @@ describe("AuthContext", () => {
     expect(capturedAuth.authChecked).toBe(true);
     act(() => root.unmount());
   });
+
+  it("skips /api/auth/me on entry routes when no user or session indicator exists", async () => {
+    window.history.pushState({}, "", "/login");
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
+    function Consumer() {
+      capturedAuth = useAuth();
+      return <div>{capturedAuth.user?.name ?? "Guest"}</div>;
+    }
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <AuthProvider>
+          <Consumer />
+        </AuthProvider>,
+      );
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    const authMeCalls = vi.mocked(apiJson).mock.calls.filter(([url]) => url === "/api/auth/me");
+    expect(authMeCalls).toHaveLength(0);
+    expect(capturedAuth.isAuthenticated).toBe(false);
+    expect(capturedAuth.authChecked).toBe(true);
+    expect(capturedAuth.isLoadingAuth).toBe(false);
+
+    act(() => {
+      root.unmount();
+    });
+    window.history.pushState({}, "", "/");
+  });
+
+  it("calls /api/auth/me on entry routes when session indicator cookie is present", async () => {
+    document.cookie = "csrf_token=valid-csrf-token; path=/";
+    window.history.pushState({}, "", "/login");
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
+    function Consumer() {
+      capturedAuth = useAuth();
+      return <div>{capturedAuth.user?.name ?? "Guest"}</div>;
+    }
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <AuthProvider>
+          <Consumer />
+        </AuthProvider>,
+      );
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    const authMeCalls = vi.mocked(apiJson).mock.calls.filter(([url]) => url === "/api/auth/me");
+    expect(authMeCalls).toHaveLength(1);
+    expect(capturedAuth.isAuthenticated).toBe(true);
+    expect(capturedAuth.user).toEqual(mockUser);
+
+    act(() => {
+      root.unmount();
+    });
+    document.cookie = "csrf_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    window.history.pushState({}, "", "/");
+  });
 });
