@@ -11,6 +11,8 @@ export interface ContactFormFooterStartProps {
   collectionCounts: FormDraft["collectionCounts"];
   /** Editing an unchanged contact: explain why Save is disabled. */
   noChanges?: boolean;
+  /** Setup Fields may disable the first-name control; then it must not explain a disabled Save. */
+  requireFirstName?: boolean;
   t: (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 }
 
@@ -18,9 +20,10 @@ export function ContactFormFooterStart({
   contactDraft,
   collectionCounts,
   noChanges = false,
+  requireFirstName = true,
   t,
 }: ContactFormFooterStartProps): React.JSX.Element {
-  if (!contactDraft.firstName?.trim()) {
+  if (requireFirstName && !contactDraft.firstName?.trim()) {
     return <FormFooterErrorChip>{t("contacts.form.firstNameRequired")}</FormFooterErrorChip>;
   }
 

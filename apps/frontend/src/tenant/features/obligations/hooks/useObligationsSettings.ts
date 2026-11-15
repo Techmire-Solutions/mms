@@ -34,6 +34,9 @@ export function saveObligationsSettings(settings: ObligationsSettings): void {
 export interface UseObligationsSettingsReturn {
   settings: ObligationsSettings;
   updateSettings: (next: ObligationsSettings) => void;
+  /** Awaits the server write before updating the local cache (setup footers). */
+  updateSettingsAsync: (next: ObligationsSettings) => Promise<void>;
+  saving: boolean;
   resetSettings: () => void;
 }
 
@@ -49,10 +52,24 @@ export function useObligationsSettings(): UseObligationsSettingsReturn {
     [mutation],
   );
 
+  const updateSettingsAsync = useCallback(
+    async (next: ObligationsSettings) => {
+      await mutation.mutateAsync(next);
+      saveObligationsSettings(next);
+    },
+    [mutation],
+  );
+
   const resetSettings = useCallback(() => {
     saveObligationsSettings(DEFAULT_OBLIGATIONS_SETTINGS);
     mutation.mutate(DEFAULT_OBLIGATIONS_SETTINGS);
   }, [mutation]);
 
-  return { settings, updateSettings, resetSettings };
+  return {
+    settings,
+    updateSettings,
+    updateSettingsAsync,
+    saving: mutation.isPending,
+    resetSettings,
+  };
 }

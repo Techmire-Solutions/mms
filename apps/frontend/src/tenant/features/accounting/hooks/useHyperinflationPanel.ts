@@ -1,6 +1,8 @@
 import { useState } from "react";
 import {
   DEFAULT_HYPERINFLATION_SETTINGS,
+  hyperinflationSettingsSchema,
+  priceIndexPointSchema,
   todayISO,
   type HyperinflationSettings,
   type Ias29Run,
@@ -31,9 +33,11 @@ export function useHyperinflationPanel() {
   const post = usePostIas29();
 
   const [draft, setDraft] = useState<HyperinflationSettings | null>(null);
+  const [settingsFormError, setSettingsFormError] = useState<string | null>(null);
   const current = draft ?? settings.data ?? DEFAULT_HYPERINFLATION_SETTINGS;
   const [indexDate, setIndexDate] = useState(todayISO());
   const [indexValue, setIndexValue] = useState("");
+  const [indexError, setIndexError] = useState<string | null>(null);
   const [restatementDate, setRestatementDate] = useState(todayISO());
   const [previewRun, setPreviewRun] = useState<Ias29Run | null>(null);
 
@@ -43,8 +47,13 @@ export function useHyperinflationPanel() {
   ) => setDraft({ ...current, [field]: value });
 
   const handleSaveSettings = async (): Promise<void> => {
+    const { updatedAt: _updatedAt, ...body } = current;
+    if (!hyperinflationSettingsSchema.safeParse(body).success) {
+      setSettingsFormError(t("accounting.settings.ias29.invalidSettings"));
+      return;
+    }
+    setSettingsFormError(null);
     try {
-      const { updatedAt: _updatedAt, ...body } = current;
       await saveSettings.mutateAsync(body);
       setDraft(null);
       notify.success(t("accounting.settings.ias29.saved"));
@@ -54,10 +63,15 @@ export function useHyperinflationPanel() {
   };
 
   const handleAddIndex = async (): Promise<void> => {
+    const point = { indexDate, value: indexValue.trim(), source: current.indexName };
+    const parsed = priceIndexPointSchema.safeParse(point);
+    if (!parsed.success) {
+      setIndexError(t("accounting.settings.ias29.invalidIndex"));
+      return;
+    }
+    setIndexError(null);
     try {
-      await saveIndices.mutateAsync([
-        { indexDate, value: indexValue.trim(), source: current.indexName },
-      ]);
+      await saveIndices.mutateAsync([parsed.data]);
       setIndexValue("");
       notify.success(t("accounting.settings.ias29.indexSaved"));
     } catch (error) {
@@ -89,6 +103,7 @@ export function useHyperinflationPanel() {
   return {
     settings: current,
     settingsError: settings.isError,
+    settingsFormError,
     refetchSettings: settings.refetch,
     settingsDirty: draft !== null,
     savingSettings: saveSettings.isPending,
@@ -97,9 +112,16 @@ export function useHyperinflationPanel() {
     indices: indices.data ?? [],
     indicesLoading: indices.isPending,
     indexDate,
-    setIndexDate,
+    setIndexDate: (date: string) => {
+      setIndexDate(date);
+      setIndexError(null);
+    },
     indexValue,
-    setIndexValue,
+    setIndexValue: (value: string) => {
+      setIndexValue(value);
+      setIndexError(null);
+    },
+    indexError,
     savingIndex: saveIndices.isPending,
     handleAddIndex,
     restatementDate,

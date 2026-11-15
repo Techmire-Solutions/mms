@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import type React from "react";
 import { ShieldCheck } from "lucide-react";
 import {
@@ -58,7 +59,7 @@ export function HedgeDesignationModal({
     {
       schema: hedgeRelationshipCreateSchema,
       toRecord: hedgeDesignationToRecord,
-      resolveMessage: (message) => t(message as AppTranslationKey),
+      resolveMessage: (message) => translateValidationMessage(message, t),
       saveFailedMessage: "accounting.settings.hedges.createFailed",
     },
   );

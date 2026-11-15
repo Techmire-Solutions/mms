@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { PasswordInput } from "@/components/app/PasswordInput";
 import { SettingsCallout } from "@/components/app/SettingsShell";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 
 export interface BackupCredentialsModalProps {
   open: boolean;
@@ -14,7 +15,7 @@ export interface BackupCredentialsModalProps {
   emailReadOnly?: boolean;
   loading?: boolean;
   onClose: () => void;
-  onSubmit: (password: string, email: string) => void;
+  onSubmit: (password: string, email: string) => void | Promise<void>;
 }
 
 export default function BackupCredentialsModal({
@@ -29,6 +30,8 @@ export default function BackupCredentialsModal({
   const { t } = useTranslation();
   const [email, setEmail] = useState(adminEmail);
   const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Adjust state during render: opening the modal (or a new admin email) re-seeds the form.
   const [prevSeed, setPrevSeed] = useState({ open, adminEmail });
@@ -39,6 +42,30 @@ export default function BackupCredentialsModal({
       setPassword("");
     }
   }
+
+  const submit = async (): Promise<void> => {
+    if (loading || submitting) return;
+    setFormError(null);
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setFormError(t("platform.validationEnterValidEmail"));
+      return;
+    }
+    if (!password.trim()) {
+      setFormError(t("common.fieldRequired", { field: t("backup.adminPasswordLabel") }));
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await onSubmit(password, email.trim());
+    } catch (error) {
+      setFormError(
+        mapApiFormError(error).message ??
+          (mode === "export" ? t("backup.createFailed") : t("backup.decryptFailed")),
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const title = mode === "export" ? t("backup.encryptExportTitle") : t("backup.decryptTitle");
   const subtitle = mode === "export" ? t("backup.encryptExportDesc") : t("backup.decryptDesc");
@@ -61,8 +88,9 @@ export default function BackupCredentialsModal({
             ? t("backup.createButton")
             : t("backup.decryptAction")
       }
-      onSave={() => onSubmit(password, email)}
-      saving={loading}
+      onSave={submit}
+      saving={loading || submitting}
+      error={formError ?? undefined}
       saveDisabled={!password.trim() || !email.trim()}
       formId="backup-credentials-form"
     >
@@ -72,7 +100,7 @@ export default function BackupCredentialsModal({
         onSubmit={(event) => {
           event.preventDefault();
           if (password.trim() && email.trim() && !loading) {
-            onSubmit(password, email);
+            void submit();
           }
         }}
         className="space-y-4"

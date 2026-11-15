@@ -9,7 +9,7 @@ import type {
 export interface InitialDistRow {
   id: string;
   name: string;
-  percentage: number;
+  percentage: number | null;
   type: "Income" | "Liability";
   account_id?: string | null;
 }
@@ -17,6 +17,8 @@ export interface InitialDistRow {
 export interface WakalaFormModalProps {
   title: string;
   initial: Partial<WakalaType>;
+  /** Existing split rules when editing; the modal re-hydrates them instead of starting empty. */
+  initialDistributions?: InitialDistRow[];
   reps: MujtahidRep[];
   mujtahids: Mujtahid[];
   obligationTypes: ObligationType[];

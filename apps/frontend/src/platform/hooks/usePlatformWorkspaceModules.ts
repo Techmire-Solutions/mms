@@ -5,7 +5,12 @@ import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions"
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
-import { PLATFORM_QUERY_KEYS } from "@/platform/lib/platformQueryKeys";
+import {
+  PLATFORM_QUERY_KEYS,
+  PLATFORM_WORKSPACES_QUERY_KEY,
+  PLATFORM_WORKSPACE_METRICS_QUERY_KEY,
+  WORKSPACE_REGISTRY_QUERY_KEY,
+} from "@/platform/lib/platformQueryKeys";
 
 export function useWorkspaceModules(
   subdomain: string,
@@ -71,6 +76,10 @@ export function useUpdateWorkspaceModules() {
         PLATFORM_QUERY_KEYS.workspaceModules(variables.subdomain),
         response.modules,
       );
+      // Enabling/disabling modules changes the workspace row capabilities and metrics.
+      void queryClient.invalidateQueries({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: PLATFORM_WORKSPACE_METRICS_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: WORKSPACE_REGISTRY_QUERY_KEY });
       notify.success(t("module.system.saved"));
     },
     onError: (error) => {

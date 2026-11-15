@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { ISO_4217_CURRENCIES, isSupportedFunctionalCurrency } from "@mms/shared";
+import {
+  ISO_4217_CURRENCIES,
+  accountingCurrencySettingsPutSchema,
+  isSupportedFunctionalCurrency,
+} from "@mms/shared";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {
@@ -43,6 +49,7 @@ export function useAccountingFxSettingsDraft() {
   );
 
   const [draft, setDraft] = useState<FxSettingsDraft>(() => loaded);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   // Adopt freshly loaded settings during render rather than in an effect.
   const loadedKey = [
     loaded.functionalCurrency,
@@ -70,6 +77,21 @@ export function useAccountingFxSettingsDraft() {
   );
 
   const handleSave = async (): Promise<void> => {
+    const body = {
+      ...draft,
+      enabledCurrencies: draft.enabledCurrencies.filter(
+        (code) => code !== draft.functionalCurrency,
+      ),
+    };
+    const parsed = accountingCurrencySettingsPutSchema.safeParse(body);
+    if (!parsed.success) {
+      setFieldErrors(
+        mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
+      );
+      notify.error(t("accounting.settings.fx.saveFailed"));
+      return;
+    }
+    setFieldErrors({});
     try {
       await save.mutateAsync({
         ...draft,
@@ -87,7 +109,11 @@ export function useAccountingFxSettingsDraft() {
 
   return {
     draft,
-    setDraft,
+    setDraft: (updater: React.SetStateAction<FxSettingsDraft>) => {
+      setFieldErrors({});
+      setDraft(updater);
+    },
+    fieldErrors,
     locked: query.data?.locked ?? false,
     isLoading: query.isPending,
     isError: query.isError,

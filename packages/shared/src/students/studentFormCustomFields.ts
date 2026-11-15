@@ -3,7 +3,10 @@
  * @description Helpers for Students form custom (non-seed) fields and default value application.
  */
 import { INITIAL_STUDENT_FIELD_SEED } from "../settings/moduleFieldSetupPersons.js";
-import { createFormCustomFieldHelpers } from "../core/createFormCustomFieldHelpers.js";
+import {
+  applyScalarCustomFieldDefaults,
+  createFormCustomFieldHelpers,
+} from "../core/createFormCustomFieldHelpers.js";
 import type { Student } from "./studentTypes.js";
 import type { FieldDefinition } from "../contacts/contactFieldSchemaTypes.js";
 import { getFlatFieldsConfig } from "../settings/moduleFieldConfigUtils.js";
@@ -90,15 +93,12 @@ export function applyStudentScalarCustomFieldDefaults(
   if (!fields || typeof fields !== "object") return draft;
   if (draft.id != null && String(draft.id).length > 0) return draft;
 
-  const next: Record<string, unknown> = { ...draft };
   const customFields = [
     ...listEnabledCustomStudentFormFields(fields, "basic"),
     ...listEnabledCustomStudentFormFields(fields, "registration"),
   ];
-  for (const field of customFields) {
-    if (Object.hasOwn(next, field.key)) continue;
-    if (field.defaultValue === undefined || field.defaultValue === null) continue;
-    next[field.key] = field.defaultValue;
-  }
-  return next as Partial<Student>;
+  return applyScalarCustomFieldDefaults(
+    draft as Record<string, unknown>,
+    customFields,
+  ) as Partial<Student>;
 }

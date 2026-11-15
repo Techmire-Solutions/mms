@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Contact } from "@mms/shared";
+import { buildContactWriteSchema, cleanContactDraft, type Contact } from "@mms/shared";
 import {
   buildInitialContactDraft,
   buildOptionDefaults,
@@ -116,6 +116,39 @@ describe("buildInitialContactDraft", () => {
       { platform: "LinkedIn", url: "https://linkedin.com/in/fatima" },
     ]);
     expect(draft.relationshipContacts).toEqual([{ relationship: "Guardian", contactId: "c_999" }]);
+  });
+
+  it("keeps a full hydrated edit record acceptable to the strict write schema", () => {
+    const draft = buildInitialContactDraft({
+      contact: {
+        id: "c-1",
+        firstName: "Aisha",
+        activities: [{ id: "a-1", type: "note", content: "Called", date: "2026-01-01" }],
+        attachments: [
+          {
+            id: "f-1",
+            name: "id.pdf",
+            type: "application/pdf",
+            size: 10,
+            url: "tenants/t/attachments/id.pdf",
+            date: "2026-01-01",
+          },
+        ],
+        tags: ["Donor"],
+        systemTags: ["Student"],
+        favoriteColor: "green",
+      } as unknown as Contact,
+      initialDraft: undefined,
+      defaultCity: "",
+      defaultProvince: "",
+      defaultCountry: "",
+      optionDefaults,
+      socialPlatforms: ["Facebook"],
+      relationshipOptions: ["Parent"],
+    });
+
+    const parsed = buildContactWriteSchema(["favoriteColor"]).safeParse(cleanContactDraft(draft));
+    expect(parsed.success).toBe(true);
   });
 
   it("does not apply scalar defaults when editing an existing contact", () => {

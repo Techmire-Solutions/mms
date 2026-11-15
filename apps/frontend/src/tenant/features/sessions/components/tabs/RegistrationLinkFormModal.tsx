@@ -1,6 +1,8 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { Link2 } from "lucide-react";
 import type { RegistrationLink, RegistrationLinkWrite, Session } from "@mms/shared";
+import { registrationLinkWriteSchema } from "@mms/shared";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { FORM_INPUT } from "@/components/ui/formStyles";
@@ -9,6 +11,7 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { ToggleRow } from "@shared/ui";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { dateInTimeZone, endOfDayInstant, startOfDayInstant } from "@/lib/date/zonedDay";
@@ -44,6 +47,7 @@ export function RegistrationLinkFormModal({
   const [isActive, setIsActive] = useState(true);
   const [classIds, setClassIds] = useState<string[]>([]);
   const [baseline, setBaseline] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   // Reset the form from the edited link on every (re)open — render-phase reset, no effect.
   const [prevForm, setPrevForm] = useState<{
@@ -67,6 +71,7 @@ export function RegistrationLinkFormModal({
       setRequiresReview(nextReview);
       setIsActive(nextActive);
       setClassIds(nextClasses);
+      setLocalError(null);
       setBaseline(
         JSON.stringify({
           title: nextTitle,
@@ -116,10 +121,11 @@ export function RegistrationLinkFormModal({
       discardUnsavedDescription={t("sessions.registration.discardDescription")}
       discardConfirmLabel={t("common.yes")}
       discardCancelLabel={t("common.cancel")}
-      error={serverError ?? undefined}
+      error={localError ?? serverError ?? undefined}
       onSave={() =>
         void (async () => {
-          const saved = await onSave({
+          setLocalError(null);
+          const payload: RegistrationLinkWrite = {
             title: title.trim() || null,
             isActive,
             requiresReview,
@@ -127,8 +133,18 @@ export function RegistrationLinkFormModal({
             classIds,
             opensAt: startOfDayInstant(opensOn, timezone),
             closesAt: endOfDayInstant(closesOn, timezone),
-          });
-          if (saved) onClose();
+          };
+          const parsed = registrationLinkWriteSchema.safeParse(payload);
+          if (!parsed.success) {
+            setLocalError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+            return;
+          }
+          try {
+            const saved = await onSave(parsed.data);
+            if (saved) onClose();
+          } catch (error) {
+            setLocalError(mapApiFormError(error).message ?? t("common.formPleaseFixErrors"));
+          }
         })()
       }
     >

@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
@@ -161,15 +163,64 @@ export function EditUserModalFields({
               name={cf.id}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor={`custom-field-${cf.id}`}>{cf.label}</FormLabel>
+                  <FormLabel htmlFor={`custom-field-${cf.id}`}>
+                    {cf.label}
+                    {cf.required ? <span aria-hidden> *</span> : null}
+                  </FormLabel>
                   <FormControl>
-                    <Input
-                      id={`custom-field-${cf.id}`}
-                      name={field.name}
-                      value={String(field.value ?? "")}
-                      onChange={field.onChange}
-                      placeholder={cf.placeholder || cf.label}
-                    />
+                    {cf.type === "textarea" ? (
+                      <Textarea
+                        id={`custom-field-${cf.id}`}
+                        name={field.name}
+                        value={String(field.value ?? "")}
+                        onChange={field.onChange}
+                        placeholder={cf.placeholder || cf.label}
+                        rows={2}
+                      />
+                    ) : cf.type === "select" ? (
+                      <FormSelect
+                        id={`custom-field-${cf.id}`}
+                        name={field.name}
+                        value={String(field.value ?? "")}
+                        onChange={field.onChange}
+                        placeholder={cf.placeholder || cf.label}
+                        options={(cf.options ?? []).map((option) => ({
+                          value: option,
+                          label: option,
+                        }))}
+                      />
+                    ) : cf.type === "boolean" ? (
+                      <div className="flex min-h-11 items-center gap-2">
+                        <Label htmlFor={`custom-field-${cf.id}`} className="sr-only">
+                          {cf.label}
+                        </Label>
+                        <Checkbox
+                          id={`custom-field-${cf.id}`}
+                          checked={Boolean(field.value)}
+                          onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                        />
+                      </div>
+                    ) : (
+                      <Input
+                        id={`custom-field-${cf.id}`}
+                        name={field.name}
+                        type={
+                          cf.type === "date"
+                            ? "date"
+                            : cf.type === "email"
+                              ? "email"
+                              : cf.type === "url"
+                                ? "url"
+                                : "text"
+                        }
+                        {...(cf.type === "number"
+                          ? { inputMode: "decimal" as const, min: cf.min, max: cf.max }
+                          : {})}
+                        value={String(field.value ?? "")}
+                        onChange={field.onChange}
+                        placeholder={cf.placeholder || cf.label}
+                      />
+                    )}
                   </FormControl>
                   <TranslatedFormMessage
                     messageKey={form.formState.errors[cf.id]?.message as string}

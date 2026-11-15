@@ -73,6 +73,9 @@ export function useHedgesPanel() {
       notify.success(t("accounting.settings.hedges.actionDone"));
     } catch (error) {
       notify.error(t("accounting.settings.hedges.actionFailed"), { description: errorText(error) });
+      // The action modal must own the inline field/form error; swallowing here
+      // left the form open with only a toast and no actionable message.
+      throw error;
     }
   };
 

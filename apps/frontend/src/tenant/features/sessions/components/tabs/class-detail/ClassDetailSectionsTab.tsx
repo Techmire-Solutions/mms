@@ -22,6 +22,7 @@ interface ClassDetailSectionsTabProps {
   /** Sections already persisted (staff can only be managed for saved sections). */
   savedSectionIds: ReadonlySet<string>;
   allFaculty: FacultyMember[];
+  errors?: Record<string, string>;
   onChange: (sections: SessionClassSection[]) => void;
 }
 
@@ -40,6 +41,7 @@ export function ClassDetailSectionsTab({
   sections,
   savedSectionIds,
   allFaculty,
+  errors = {},
   onChange,
 }: ClassDetailSectionsTabProps): React.JSX.Element {
   const { t } = useTranslation();
@@ -95,6 +97,7 @@ export function ClassDetailSectionsTab({
                   id={`section-name-${section.id}`}
                   label={t("sessions.sections.name")}
                   required
+                  error={errors[`section.${section.id}.name`]}
                 >
                   <Input
                     id={`section-name-${section.id}`}
@@ -106,6 +109,7 @@ export function ClassDetailSectionsTab({
                 <Field
                   id={`section-capacity-${section.id}`}
                   label={t("sessions.sections.capacity")}
+                  error={errors[`section.${section.id}.capacity`]}
                 >
                   <Input
                     id={`section-capacity-${section.id}`}
@@ -118,7 +122,11 @@ export function ClassDetailSectionsTab({
                     }
                   />
                 </Field>
-                <Field id={`section-room-${section.id}`} label={t("sessions.sections.room")}>
+                <Field
+                  id={`section-room-${section.id}`}
+                  label={t("sessions.sections.room")}
+                  error={errors[`section.${section.id}.room`]}
+                >
                   <Input
                     id={`section-room-${section.id}`}
                     value={section.room ?? ""}

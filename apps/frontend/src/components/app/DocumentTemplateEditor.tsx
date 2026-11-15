@@ -34,6 +34,7 @@ export function DocumentTemplateEditor<TPayload>({
   templateKey,
   defaultTemplate,
   savedMessage,
+  canSave: canSaveProp,
   ...editorProps
 }: DocumentTemplateEditorProps<TPayload>): React.JSX.Element {
   const { t } = useTranslation();
@@ -64,7 +65,7 @@ export function DocumentTemplateEditor<TPayload>({
       key={`${templateKey}-${conflict.reloadNonce}`}
       template={template}
       defaultTemplate={defaultTemplate}
-      canSave={!conflict.blocked}
+      canSave={(canSaveProp ?? true) && !conflict.blocked}
       topBanner={
         conflict.blocked ? (
           <TemplateSaveConflictBanner onReload={conflict.reload} t={t} />

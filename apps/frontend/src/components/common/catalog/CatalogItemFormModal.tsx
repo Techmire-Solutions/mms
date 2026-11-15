@@ -47,6 +47,7 @@ export function CatalogItemFormModal({
   const [status, setStatus] = useState<AcademicCatalogStatus>(
     open ? (entry?.status ?? "active") : "active",
   );
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Re-seed the draft when the modal opens for another row. Adjusted during
   // render (React's documented prop-change pattern) so no frame paints the
@@ -63,6 +64,7 @@ export function CatalogItemFormModal({
       setCode(entry?.code ?? "");
       setShortName(entry?.shortName ?? "");
       setStatus(entry?.status ?? "active");
+      setFormError(null);
     }
   }
 
@@ -81,13 +83,21 @@ export function CatalogItemFormModal({
 
   const handleSave = async () => {
     if (!key || duplicate) return;
-    const saved = await onSave({
-      name: name.trim(),
-      code: code.trim() || null,
-      shortName: shortName.trim() || null,
-      status,
-    });
-    if (saved) onClose();
+    setFormError(null);
+    try {
+      const saved = await onSave({
+        name: name.trim(),
+        code: code.trim() || null,
+        shortName: shortName.trim() || null,
+        status,
+      });
+      if (saved) onClose();
+      else setFormError(t("academicCatalog.saveFailed", { item }));
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : t("academicCatalog.saveFailed", { item }),
+      );
+    }
   };
 
   return (
@@ -103,6 +113,7 @@ export function CatalogItemFormModal({
       saving={isPending}
       saveDisabled={isPending || !key || duplicate}
       isDirty={isDirty}
+      error={formError ?? undefined}
       discardUnsavedTitle={t("settings.unsavedChanges")}
       discardUnsavedDescription={t("academicCatalog.discardDescription")}
       discardConfirmLabel={t("common.yes")}

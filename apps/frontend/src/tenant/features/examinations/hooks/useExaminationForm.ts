@@ -12,6 +12,7 @@ import {
   type ExamFormField,
 } from "../lib/examFormValidation";
 import { isNotifiedMutationError } from "@/lib/notifiedMutationError";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 
 export interface UseExaminationFormOptions {
   open: boolean;
@@ -114,7 +115,8 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
       );
       onClose();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
+      const mapped = mapApiFormError(err);
+      const message = mapped.message ?? t("examinations.form.toast.saveFailed");
       // The controller already surfaced a toast for API failures; show the detail inline only.
       if (!isNotifiedMutationError(err)) {
         notify.error(t("examinations.form.toast.saveFailed"), { description: message });

@@ -11,6 +11,7 @@ import {
 import { useLlmModelFetch } from "./useLlmModelFetch";
 
 import { computeNextLlmConfigs, testLlmConnectivity } from "../lib/llmSettingsModalHelpers";
+import { validateLlmConfigInput } from "../lib/llmConfigValidation";
 
 interface UseLlmSettingsModalOptions {
   configs: LlmConfig[];
@@ -18,6 +19,13 @@ interface UseLlmSettingsModalOptions {
 }
 
 export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions) {
+  const clearErrorOn =
+    <T>(setter: (value: T) => void) =>
+    (value: T): void => {
+      setModalError(null);
+      setter(value);
+    };
+
   const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<LlmConfig | null>(null);
@@ -33,6 +41,7 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
   const [formTopP, setFormTopP] = useState(0.9);
   const [modalTesting, setModalTesting] = useState(false);
   const [modalTestResult, setModalTestResult] = useState<LlmTestResult | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const {
     fetchedModels,
@@ -47,7 +56,7 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     formModel,
     modalOpen,
     editingConfig,
-    setFormModel,
+    setFormModel: clearErrorOn(setFormModel),
   });
 
   const resetFormForAdd = () => {
@@ -63,6 +72,7 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     setFormTopP(0.9);
     setModalTestResult(null);
     setShowCustomModelInput(false);
+    setModalError(null);
   };
 
   const openAddModal = () => {
@@ -85,10 +95,33 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     setModalTestResult(null);
     clearFetchedModels();
     setShowCustomModelInput(false);
+    setModalError(null);
     setModalOpen(true);
   };
 
+  const validateDraft = (): string | null =>
+    validateLlmConfigInput(
+      {
+        name: formName,
+        provider: formProvider,
+        model: formModel,
+        baseUrl: formBaseUrl,
+        apiKey: formApiKey,
+        maxTokens: formMaxTokens,
+        temperature: formTemperature,
+        topP: formTopP,
+        editingExisting: Boolean(editingConfig),
+      },
+      t,
+    );
+
   const handleModalTestConnection = async () => {
+    const validationError = validateDraft();
+    if (validationError) {
+      setModalError(validationError);
+      return;
+    }
+    setModalError(null);
     setModalTesting(true);
     setModalTestResult(null);
 
@@ -118,7 +151,12 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
   };
 
   const handleSaveModalConfig = () => {
-    if (!formName.trim()) return;
+    const validationError = validateDraft();
+    if (validationError) {
+      setModalError(validationError);
+      return;
+    }
+    setModalError(null);
 
     const targetModel = resolveLlmModel(formModel, formProvider);
     const targetApiKey =
@@ -148,23 +186,23 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     modalOpen,
     editingConfig,
     formName,
-    setFormName,
+    setFormName: clearErrorOn(setFormName),
     formProvider,
-    setFormProvider,
+    setFormProvider: clearErrorOn(setFormProvider),
     formModel,
-    setFormModel,
+    setFormModel: clearErrorOn(setFormModel),
     formBaseUrl,
-    setFormBaseUrl,
+    setFormBaseUrl: clearErrorOn(setFormBaseUrl),
     formApiKey,
-    setFormApiKey,
+    setFormApiKey: clearErrorOn(setFormApiKey),
     formIsDefaultText,
-    setFormIsDefaultText,
+    setFormIsDefaultText: clearErrorOn(setFormIsDefaultText),
     formTemperature,
-    setFormTemperature,
+    setFormTemperature: clearErrorOn(setFormTemperature),
     formMaxTokens,
-    setFormMaxTokens,
+    setFormMaxTokens: clearErrorOn(setFormMaxTokens),
     formTopP,
-    setFormTopP,
+    setFormTopP: clearErrorOn(setFormTopP),
     fetchedModels,
     fetchingModels,
     showCustomModelInput,
@@ -172,6 +210,7 @@ export function useLlmSettingsModal({ configs, upd }: UseLlmSettingsModalOptions
     selectedProviderDefaultModel: selectedProviderMeta?.defaultModel,
     modalTestResult,
     modalTesting,
+    modalError,
     setModalOpen,
     openAddModal,
     openEditModal,

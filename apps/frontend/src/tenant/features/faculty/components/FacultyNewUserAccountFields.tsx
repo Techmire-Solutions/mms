@@ -3,6 +3,7 @@ import { AlertCircle, Shield } from "lucide-react";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/app/PasswordInput";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -120,9 +121,12 @@ export function FacultyNewUserAccountFields({
             }
             className="cursor-pointer"
           />
-          <label htmlFor="faculty-user-force-reset" className="cursor-pointer select-none">
+          <Label
+            htmlFor="faculty-user-force-reset"
+            className="mb-0 cursor-pointer text-xs font-medium normal-case tracking-normal text-foreground select-none"
+          >
             {t("users.addForceReset")}
-          </label>
+          </Label>
         </div>
       ) : null}
     </div>

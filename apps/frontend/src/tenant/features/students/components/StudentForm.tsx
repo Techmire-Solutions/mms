@@ -72,7 +72,6 @@ export const StudentForm = function StudentForm({
         icon={GraduationCap}
         tall
         priority={priority}
-        lang={form.language}
         dir={form.dir}
         cancelLabel={form.t("common.cancel")}
         saveLabel={

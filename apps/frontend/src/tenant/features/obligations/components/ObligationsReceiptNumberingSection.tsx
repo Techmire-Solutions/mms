@@ -13,7 +13,7 @@ import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 
 export function ObligationsReceiptNumberingSection(): React.JSX.Element {
   const { t } = useTranslation();
-  const { settings, updateSettings } = useObligationsSettings();
+  const { settings, updateSettingsAsync, saving } = useObligationsSettings();
   const [draft, setDraft] = useState<ObligationsSettings>(() => settings);
   const [saved, setSaved] = useState(false);
   const [previousSettings, setPreviousSettings] = useState(settings);
@@ -45,11 +45,17 @@ export function ObligationsReceiptNumberingSection(): React.JSX.Element {
     setSaved(false);
   }, []);
 
-  const handleSave = useCallback(() => {
-    updateSettings(draft);
-    setSaved(true);
-    notify.success(t("settings.savedBadge"));
-  }, [draft, updateSettings, t]);
+  const handleSave = useCallback(async () => {
+    try {
+      await updateSettingsAsync(draft);
+      setSaved(true);
+      notify.success(t("settings.savedBadge"));
+    } catch (error) {
+      notify.error(t("settings.serverSaveFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }, [draft, updateSettingsAsync, t]);
 
   return (
     <ModuleSetupContent>
@@ -63,7 +69,7 @@ export function ObligationsReceiptNumberingSection(): React.JSX.Element {
         footer={
           <ModuleSetupSaveFooter
             dirty={isDirty}
-            saving={false}
+            saving={saving}
             saved={saved}
             saveLabel={t("common.save")}
             savedLabel={t("settings.savedBadge")}

@@ -1,3 +1,5 @@
+import { useTranslation } from "@/hooks/useTranslation";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -48,6 +50,7 @@ export type SubmitOutcome =
 
 /** Draft, instant eligibility feedback (same shared rule the server enforces) and submission. */
 export function useRegistrationForm(slug: string, view: PublicRegistrationView | undefined) {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState<RegistrationFormDraft>(EMPTY);
   const [outcome, setOutcome] = useState<SubmitOutcome>({ kind: "idle" });
   const [errors, setErrors] = useState<Partial<Record<keyof RegistrationFormDraft, string>>>({});
@@ -115,14 +118,17 @@ export function useRegistrationForm(slug: string, view: PublicRegistrationView |
         for (const issue of parsed.error.issues) {
           const field = issue.path[0];
           if (typeof field === "string" && !(field in fieldErrors)) {
-            fieldErrors[field as keyof RegistrationFormDraft] = issue.message;
+            fieldErrors[field as keyof RegistrationFormDraft] = translateValidationMessage(
+              issue.message,
+              t,
+            );
           }
         }
         setErrors(fieldErrors);
         setOutcome({
           kind: "error",
           reasons: [],
-          message: parsed.error.issues[0]?.message ?? "",
+          message: translateValidationMessage(parsed.error.issues[0]?.message, t),
           type: "validation_error",
         });
         return;

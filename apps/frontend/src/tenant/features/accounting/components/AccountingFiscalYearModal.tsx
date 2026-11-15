@@ -63,7 +63,7 @@ export function AccountingFiscalYearModal({
     if (!form.startDate)
       validationErrors.startDate = t("accounting.settings.fy.validation.startDate");
     if (!form.endDate) validationErrors.endDate = t("accounting.settings.fy.validation.endDate");
-    if (form.startDate && form.endDate && form.startDate >= form.endDate)
+    if (form.startDate && form.endDate && form.startDate > form.endDate)
       validationErrors.endDate = t("accounting.settings.fy.validation.endAfterStart");
     return validationErrors;
   };

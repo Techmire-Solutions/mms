@@ -101,6 +101,14 @@ export function AccountProfilePasswordCard({
                 id={`${id}-confirm-password`}
                 name="confirmPassword"
                 label={t("account.confirmPassword")}
+                aria-invalid={Boolean(
+                  newPassword && confirmPassword && newPassword !== confirmPassword,
+                )}
+                aria-describedby={
+                  newPassword && confirmPassword && newPassword !== confirmPassword
+                    ? `${id}-confirm-password-error`
+                    : undefined
+                }
                 value={confirmPassword}
                 onChange={(event) => onConfirmPasswordChange(event.target.value)}
                 required
@@ -113,7 +121,10 @@ export function AccountProfilePasswordCard({
                 </p>
               ) : null}
               {newPassword && confirmPassword && newPassword !== confirmPassword ? (
-                <FieldErrorMessage message={t("account.passwordMismatch")} />
+                <FieldErrorMessage
+                  id={`${id}-confirm-password-error`}
+                  message={t("account.passwordMismatch")}
+                />
               ) : null}
             </div>
             <FormSubmitActions

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   formatFacultyDisplayName,
   SECTION_STAFF_ROLES,
-  todayISO,
   type FacultyMember,
   type SectionStaffAssignment,
   type SectionStaffRole,
@@ -16,6 +15,7 @@ import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatal
 import { notify } from "@/lib/notify";
 import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import {
   useSectionStaff,
   useSectionStaffMutations,
@@ -33,12 +33,13 @@ export function SectionStaffPanel({
   allFaculty,
 }: SectionStaffPanelProps): React.JSX.Element {
   const { t } = useTranslation();
+  const today = useWorkspaceToday();
   const staff = useSectionStaff(sectionId);
   const { assign, end } = useSectionStaffMutations(sectionId);
   const [facultyId, setFacultyId] = useState("");
   const [role, setRole] = useState<SectionStaffRole>("class_teacher");
   const [subjectId, setSubjectId] = useState("");
-  const [startOn, setStartOn] = useState(todayISO());
+  const [startOn, setStartOn] = useState(today);
   const [reason, setReason] = useState("");
   const [attempted, setAttempted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -53,6 +54,16 @@ export function SectionStaffPanel({
     setFormError(null);
     if (!facultyId || !startOn || (role === "subject_teacher" && !subjectId)) {
       setFormError(t("common.formPleaseFixErrors"));
+      return;
+    }
+    const duplicate = current.some(
+      (row) =>
+        row.facultyId === facultyId &&
+        row.role === role &&
+        (role !== "subject_teacher" || row.subjectId === (subjectId || null)),
+    );
+    if (duplicate) {
+      setFormError(t("sessions.staff.duplicate"));
       return;
     }
     try {

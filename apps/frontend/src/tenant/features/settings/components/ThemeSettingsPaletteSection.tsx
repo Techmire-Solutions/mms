@@ -55,19 +55,21 @@ export function ThemeSettingsPaletteSection({
             key={`${hex}-${idx}`}
             className="flex items-center gap-1.5 p-1 pe-2 rounded-lg border border-border/80 bg-card shadow-2xs transition-all hover:border-primary/40"
           >
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => {
                 void navigator.clipboard?.writeText(hex);
                 notify.success(t("theme.copiedHex", { hex }));
               }}
               title={t("theme.copiedHex", { hex })}
-              className="h-7 w-7 touch-target-coarse rounded-md border border-foreground/20 shadow-2xs shrink-0 cursor-pointer hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group relative"
+              className="group relative h-7 w-7 min-h-7 min-w-7 touch-target-coarse shrink-0 rounded-md border border-foreground/20 shadow-2xs transition-transform hover:scale-110 active:scale-95"
               style={{ backgroundColor: hex }}
               aria-label={hex}
             >
-              <Copy className="h-3 w-3 text-primary-foreground/0 group-hover:text-primary-foreground/90 drop-shadow-sm transition-colors" />
-            </button>
+              <Copy className="h-3 w-3 text-primary-foreground/0 drop-shadow-sm transition-colors group-hover:text-primary-foreground/90" />
+            </Button>
             <span className="font-mono text-2xs text-muted-foreground font-semibold px-0.5">
               {hex}
             </span>

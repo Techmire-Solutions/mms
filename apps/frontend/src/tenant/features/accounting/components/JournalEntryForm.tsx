@@ -62,6 +62,9 @@ export function JournalEntryForm({
     saveEntry,
     flattenedAccountOptions,
     errorMessages,
+    voucherAutoGenerate,
+    postingPeriodsLoading,
+    voucherNumberingLoading,
   } = useJournalEntryForm({
     accounts,
     entries,
@@ -126,8 +129,15 @@ export function JournalEntryForm({
           await saveEntry("posted");
         }}
         saving={submitting}
-        saveDisabled={!isBalanced || submitting}
+        saveDisabled={
+          !isBalanced ||
+          submitting ||
+          (postingPeriodsLoading && Boolean(form.fiscal_year_id)) ||
+          (voucherNumberingLoading && !form.ref?.trim()) ||
+          (voucherAutoGenerate === false && !form.ref?.trim())
+        }
         error={errorMessages}
+        formId="journal-entry-form"
         footerStart={
           <Button
             type="button"
@@ -141,13 +151,22 @@ export function JournalEntryForm({
           </Button>
         }
       >
-        <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
+        <form
+          id="journal-entry-form"
+          className="space-y-3"
+          noValidate
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!submitting && isBalanced) void saveEntry("posted");
+          }}
+        >
           <JournalEntryFormDetailsSection
             t={t}
             form={form}
             setForm={setForm}
             errors={errors}
             fiscalYears={fiscalYears}
+            voucherAutoGenerate={voucherAutoGenerate}
           />
 
           <JournalEntryCurrencyFields

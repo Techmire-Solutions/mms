@@ -27,6 +27,12 @@ vi.mock("@/lib/backgroundJobs/startServerContactsImport", () => ({
   startServerContactsImport: (...args: unknown[]) => mockStartServerImport(...args),
 }));
 
+const mockInvalidateContacts = vi.hoisted(() => vi.fn());
+
+vi.mock("@/tenant/features/contacts/hooks/useContactMutations", () => ({
+  useInvalidateContactsQueries: () => mockInvalidateContacts,
+}));
+
 interface ContactsImportRequest {
   contacts: Contact[];
   label: string;
@@ -165,6 +171,7 @@ describe("ContactsCsvImportDialog", () => {
     expect(request).not.toHaveProperty("rows");
     expect(request).not.toHaveProperty("body");
     expect(document.body.textContent).toContain("Imported 2 of 2 contacts");
+    expect(mockInvalidateContacts).toHaveBeenCalledTimes(1);
   });
 
   it("chunks a 501-row file into 500 + 1 contacts batches", async () => {

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { type AttendanceSettings } from "@mms/shared";
+import { attendancePreferencesPutBodySchema, type AttendanceSettings } from "@mms/shared";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 
@@ -48,6 +49,17 @@ export function useAttendanceSetupSaveActions({
 
   const handleSave = async (): Promise<void> => {
     if (!isPrefsDirty || saving) return;
+    const parsed = attendancePreferencesPutBodySchema.safeParse(settingsDraft);
+    if (!parsed.success) {
+      notify.error(t("attendance.settings.invalid"), {
+        description: translateValidationMessage(parsed.error.issues[0]?.message, t),
+      });
+      return;
+    }
+    if (settingsDraft.workingDays.length === 0) {
+      notify.error(t("attendance.settings.workingDaysRequired"));
+      return;
+    }
     setSaving(true);
     try {
       await saveSettingsAsync();

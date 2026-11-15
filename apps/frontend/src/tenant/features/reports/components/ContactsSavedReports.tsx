@@ -1,3 +1,7 @@
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import type {
@@ -5,7 +9,11 @@ import type {
   ContactsSavedReportShareScope,
   ContactsWorkDrillDown,
 } from "@mms/shared";
-import { formatDate, validateContactsSavedReportDrillDown } from "@mms/shared";
+import {
+  contactsSavedReportCreateSchema,
+  formatDate,
+  validateContactsSavedReportDrillDown,
+} from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
@@ -15,6 +23,7 @@ import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useContactsSavedReportsSource } from "@/tenant/hooks/collections/contacts";
 import { applyContactsWorkDrillDown } from "@/lib/contacts/contactsWorkDrillDown";
 import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { ContactsSavedReportsEditor } from "@/tenant/features/reports/components/ContactsSavedReportsEditor";
 import { ContactsSavedReportsList } from "@/components/reports/ContactsSavedReportsList";
 
@@ -43,6 +52,7 @@ export default function ContactsSavedReports({
   const [shareScope, setShareScope] = useState<ContactsSavedReportShareScope>("private");
   const [sharedWithUserIds, setSharedWithUserIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const searchLabel = t("contacts.savedReports.searchLabel");
 
@@ -57,6 +67,7 @@ export default function ContactsSavedReports({
     setSearch(suggestedDrillDown.search ?? "");
     setShareScope("private");
     setSharedWithUserIds([]);
+    setSaveError(null);
     setSaveOpen(true);
   };
 
@@ -70,19 +81,29 @@ export default function ContactsSavedReports({
     const drillDown: ContactsWorkDrillDown = {
       ...(search.trim() ? { search: search.trim() } : {}),
     };
+    const payload = {
+      name: trimmedName,
+      drillDown,
+      shareScope,
+      ...(shareScope === "roles" && role ? { sharedWithRoles: [role] } : {}),
+      ...(shareScope === "users" ? { sharedWithUserIds } : {}),
+    };
+    const parsed = contactsSavedReportCreateSchema.safeParse(payload);
+    if (!parsed.success) {
+      setSaveError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+      return;
+    }
     setSaving(true);
+    setSaveError(null);
     try {
-      await createReport({
-        name: trimmedName,
-        drillDown,
-        shareScope,
-        ...(shareScope === "roles" && role ? { sharedWithRoles: [role] } : {}),
-        ...(shareScope === "users" ? { sharedWithUserIds } : {}),
-      });
+      await createReport(parsed.data);
       notify.success(t("contacts.savedReports.saveSuccess"));
       setSaveOpen(false);
-    } catch {
-      notify.error(t("settings.serverSaveFailed"));
+    } catch (error) {
+      setSaveError(
+        mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+          t("settings.serverSaveFailed"),
+      );
     } finally {
       setSaving(false);
     }
@@ -178,6 +199,7 @@ export default function ContactsSavedReports({
         shareScopeOptions={shareScopeOptions}
         sharedWithUserIds={sharedWithUserIds}
         saving={saving}
+        error={saveError}
         searchLabel={searchLabel}
         shareLabel={shareLabel}
         onClose={() => setSaveOpen(false)}

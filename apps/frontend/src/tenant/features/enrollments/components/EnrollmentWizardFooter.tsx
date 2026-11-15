@@ -67,7 +67,7 @@ export function EnrollmentWizardFooter({
               onNext();
             }}
             disabled={!canNext}
-            className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-11 h-auto"
+            className="min-h-11 gap-1.5 px-5 font-semibold"
           >
             {t("common.next")} <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
           </Button>
@@ -80,7 +80,9 @@ export function EnrollmentWizardFooter({
               void onSubmit();
             }}
             disabled={!canConfirm || submitting}
-            className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-11 h-auto"
+            loading={submitting}
+            loadingText={t("common.saving")}
+            className="min-h-11 gap-1.5 px-5 font-semibold"
           >
             <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> {t("enrollments.new")}
           </Button>

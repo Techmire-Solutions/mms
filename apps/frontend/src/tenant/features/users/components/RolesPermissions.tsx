@@ -141,6 +141,7 @@ export function RolesPermissions({
         title={editTitle}
         role={editing === "new" ? null : editing}
         visibleModules={visibleModules}
+        existingRoles={roles}
         onSave={handleSave}
       />
 

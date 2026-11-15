@@ -48,6 +48,9 @@ export function GoogleContactsConnectStep({
             <Field id="authCode" label={t("contacts.sync.pasteAuthCode")}>
               <Input
                 id="authCode"
+                name="googleAuthCode"
+                aria-invalid={Boolean(error) || undefined}
+                aria-describedby={error ? "google-auth-code-error" : undefined}
                 value={authCode}
                 onChange={(event) => onAuthCodeChange(event.target.value)}
                 placeholder={t("contacts.sync.pasteAuthCodePlaceholder")}
@@ -72,7 +75,11 @@ export function GoogleContactsConnectStep({
         </Alert>
       )}
 
-      <FieldErrorMessage message={!showAuthCode ? error : undefined} className={FORM_ERROR_BOX} />
+      <FieldErrorMessage
+        id="google-auth-code-error"
+        message={error || undefined}
+        className={FORM_ERROR_BOX}
+      />
     </div>
   );
 }

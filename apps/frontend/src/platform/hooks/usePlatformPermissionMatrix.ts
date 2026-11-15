@@ -5,6 +5,8 @@ import {
   type PlatformAdminPermissions,
   type PlatformUserProfile,
 } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { usePlatformPermissions } from "./usePlatformPermissions";
 import { usePlatformAdmins, useUpdatePlatformAdminPermissions } from "./usePlatformAdmins";
 
@@ -14,6 +16,7 @@ export type PendingPermissionToggle = {
 };
 
 export function usePlatformPermissionMatrix() {
+  const { t } = useTranslation();
   const { isSuperUser, platformUser: currentUser } = usePlatformPermissions();
   const query = usePlatformAdmins();
   const { data: admins, isLoading } = query;
@@ -59,9 +62,9 @@ export function usePlatformPermissionMatrix() {
   };
 
   const confirmStepUp = async (): Promise<void> => {
-    if (!pendingToggle) return;
+    if (!pendingToggle || updatePermissions.isPending) return;
     if (!stepUpPassword.trim()) {
-      setStepUpError("platform.validationConfirmPlatformPassword");
+      setStepUpError(t("platform.validationConfirmPlatformPassword"));
       return;
     }
     try {
@@ -72,7 +75,7 @@ export function usePlatformPermissionMatrix() {
       });
       cancelStepUp();
     } catch (err) {
-      setStepUpError(err instanceof Error ? err.message : "platform.loadFailed");
+      setStepUpError(getPlatformErrorMessage(err, t, undefined, "platform.loadFailed"));
     }
   };
 

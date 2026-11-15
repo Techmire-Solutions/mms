@@ -7,6 +7,7 @@ import {
 import {
   type FacultyMember,
   type FacultySettings,
+  type FieldDefinition,
   getContactQualification,
   getContactSpecialization,
 } from "@mms/shared";
@@ -24,6 +25,8 @@ export interface UseFacultyDraftStateInput {
   autoGenerateId: boolean;
   idPrefix: string;
   settings: FacultySettings;
+  /** Workspace-local today for new effective dates. */
+  today?: string;
 }
 
 export function useFacultyDraftState({
@@ -32,26 +35,53 @@ export function useFacultyDraftState({
   autoGenerateId,
   idPrefix,
   settings,
+  today,
 }: UseFacultyDraftStateInput) {
   const [facultyDraft, setFacultyDraft] = useState<Partial<FacultyMember>>(() =>
-    getInitialFacultyDraft({ faculty, defaultSpecialization }),
+    getInitialFacultyDraft({
+      faculty,
+      defaultSpecialization,
+      fields: settings.fields as Record<string, FieldDefinition[]> | undefined,
+      today,
+    }),
   );
   const [baselineSnapshot, setBaselineSnapshot] = useState(() =>
-    facultyDraftSnapshot(getInitialFacultyDraft({ faculty, defaultSpecialization })),
+    facultyDraftSnapshot(
+      getInitialFacultyDraft({
+        faculty,
+        defaultSpecialization,
+        fields: settings.fields as Record<string, FieldDefinition[]> | undefined,
+        today,
+      }),
+    ),
   );
   const [userAccountDraft, setUserAccountDraft] = useState<FacultyUserAccountDraft>(
     DEFAULT_USER_ACCOUNT_DRAFT,
   );
-  const [prevFaculty, setPrevFaculty] = useState(faculty);
+  const [prevFacultyId, setPrevFacultyId] = useState(faculty?.id ?? null);
   const [prevDefaultSpec, setPrevDefaultSpec] = useState(defaultSpecialization);
 
-  if (prevFaculty !== faculty || prevDefaultSpec !== defaultSpecialization) {
-    setPrevFaculty(faculty);
+  const facultyId = faculty?.id ?? null;
+  if (prevFacultyId !== facultyId) {
+    // Record identity changed (edit A → create, or edit A → edit B): full re-seed.
+    setPrevFacultyId(facultyId);
     setPrevDefaultSpec(defaultSpecialization);
-    const nextDraft = getInitialFacultyDraft({ faculty, defaultSpecialization });
+    const nextDraft = getInitialFacultyDraft({
+      faculty,
+      defaultSpecialization,
+      fields: settings.fields as Record<string, FieldDefinition[]> | undefined,
+      today,
+    });
     setFacultyDraft(nextDraft);
     setBaselineSnapshot(facultyDraftSnapshot(nextDraft));
     setUserAccountDraft(DEFAULT_USER_ACCOUNT_DRAFT);
+  } else if (prevDefaultSpec !== defaultSpecialization) {
+    // Async Setup defaults arrived: fill the field only while the draft is
+    // untouched, never overwrite what the user already typed.
+    setPrevDefaultSpec(defaultSpecialization);
+    setFacultyDraft((prev) =>
+      prev.specialization ? prev : { ...prev, specialization: defaultSpecialization },
+    );
   }
 
   const updateDraft = useCallback((patch: Partial<FacultyMember>) => {

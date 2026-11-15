@@ -25,6 +25,8 @@ interface EditableSelectProps {
   className?: string;
   id?: string;
   name?: string;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
 }
 
 const INPUT_CLASS = cn("h-auto min-w-0 flex-1", FORM_INPUT_COMPACT);
@@ -41,6 +43,8 @@ export function EditableSelect({
   className = "w-28",
   id,
   name,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
 }: EditableSelectProps): React.JSX.Element {
   const { t } = useTranslation();
   const [customValue, setCustomValue] = useState("");
@@ -90,6 +94,8 @@ export function EditableSelect({
       className={className}
       id={id}
       name={name}
+      aria-invalid={ariaInvalid}
+      aria-describedby={ariaDescribedBy}
       onOpenChange={(open) => {
         if (!open) setCustomValue("");
       }}

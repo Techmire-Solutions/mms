@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
+import { FormErrorBanner } from "@/components/app/FormErrorBanner";
 import { Input } from "@shared/ui";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { z } from "zod";
 
-const templateItemSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  code: z.string().min(1, "Code is required"),
-  notes: z.string().optional(),
-}).strict();
+const templateItemSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    code: z.string().min(1, "Code is required"),
+    notes: z.string().optional(),
+  })
+  .strict();
 
 type TemplateItemFormData = z.infer<typeof templateItemSchema>;
 
@@ -26,7 +30,8 @@ interface TemplateFormModalProps {
  * 1. Strict Zod schema validation on submit.
  * 2. `mapZodFormErrors` error transformation.
  * 3. Draft preservation and reset on opener switch.
- * 4. React 19 ref-as-prop and accessible form controls.
+ * 4. `Field` label/required/hint/error chrome, `FormErrorBanner` summary,
+ *    and the default `FormModalFooter` (Cancel start, primary submit end).
  */
 export function TemplateFormModal({
   open,
@@ -69,6 +74,8 @@ export function TemplateFormModal({
     }
   };
 
+  const formErrors = errors.form ? [errors.form] : [];
+
   return (
     <FormModal
       open={open}
@@ -80,36 +87,38 @@ export function TemplateFormModal({
       saveOnTabChange={false}
     >
       <div className="space-y-4">
-        {errors.form && (
-          <div className="p-3 text-sm text-rose-600 bg-rose-50 dark:bg-rose-950/50 rounded border border-rose-200 dark:border-rose-800">
-            {errors.form}
-          </div>
-        )}
+        <FormErrorBanner errors={formErrors} />
 
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="template-item-name">
-            Name
-          </label>
+        <Field id="template-item-name" label="Name" required error={errors.name}>
           <Input
             id="template-item-name"
             value={draft.name}
             onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-            aria-invalid={Boolean(errors.name)}
           />
-          {errors.name && <p className="text-xs text-rose-500 mt-1">{errors.name}</p>}
-        </div>
+        </Field>
 
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="template-item-code">
-            Code
-          </label>
+        <Field
+          id="template-item-code"
+          label="Code"
+          required
+          hint="Unique short code shown in lists."
+          error={errors.code}
+        >
           <Input
             id="template-item-code"
             value={draft.code}
             onChange={(e) => setDraft((d) => ({ ...d, code: e.target.value }))}
-            aria-invalid={Boolean(errors.code)}
           />
-          {errors.code && <p className="text-xs text-rose-500 mt-1">{errors.code}</p>}
+        </Field>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field id="template-item-notes" label="Notes">
+            <Input
+              id="template-item-notes"
+              value={draft.notes ?? ""}
+              onChange={(e) => setDraft((d) => ({ ...d, notes: e.target.value }))}
+            />
+          </Field>
         </div>
       </div>
     </FormModal>

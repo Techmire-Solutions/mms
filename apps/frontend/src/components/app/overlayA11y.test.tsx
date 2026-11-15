@@ -117,6 +117,66 @@ describe("Overlay Primitives Accessibility (WCAG 2.2 / WAI-ARIA)", () => {
     });
   });
 
+  describe("FormModal keyboard submission", () => {
+    it("submits a single-field form on Enter and ignores Enter in a textarea", async () => {
+      const onSave = vi.fn();
+      await act(async () => {
+        root.render(
+          <FormModal open={true} onClose={() => {}} onSave={onSave} title="Enter fallback">
+            <input id="enter-name" aria-label="Name" />
+            <textarea id="enter-notes" aria-label="Notes" />
+          </FormModal>,
+        );
+      });
+
+      await act(async () => {
+        document
+          .querySelector("#enter-notes")
+          ?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      });
+      expect(onSave).not.toHaveBeenCalled();
+
+      await act(async () => {
+        document
+          .querySelector("#enter-name")
+          ?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      });
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+
+    it("wires a formId so Enter submission reaches the owning form", async () => {
+      const onSave = vi.fn();
+      await act(async () => {
+        root.render(
+          <FormModal
+            open={true}
+            onClose={() => {}}
+            onSave={onSave}
+            formId="enter-submit-form"
+            title="Enter submit"
+          >
+            <form
+              id="enter-submit-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                onSave();
+              }}
+            >
+              <input id="enter-submit-name" aria-label="Name" />
+            </form>
+          </FormModal>,
+        );
+      });
+
+      const form = document.querySelector<HTMLFormElement>("#enter-submit-form");
+      expect(form).not.toBeNull();
+      await act(async () => {
+        form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      });
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe("DetailDrawerShell primitive", () => {
     it("renders role='dialog' with aria-modal='true' and accessible titleId", async () => {
       await act(async () => {

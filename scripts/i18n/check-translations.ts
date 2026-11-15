@@ -31,7 +31,7 @@ const ur = extractTranslations(path.join(sharedSrc, "i18n", "appTranslationsUr.t
 const fa = extractTranslations(path.join(sharedSrc, "i18n", "appTranslationsFa.ts"));
 
 function isInvariantValue(key: string, value: string): boolean {
-  if (value === "—" || value === "%") return true;
+  if (value === "—" || value === "%" || value === "YYYY-MM") return true;
   if (value.endsWith(".csv") || value.endsWith(".vcf")) return true;
   if (/^https?:\/\//.test(value)) return true;
   if (/^[\d\s+\-•#]+$/.test(value)) return true;
@@ -42,6 +42,10 @@ function isInvariantValue(key: string, value: string): boolean {
     return true;
   }
   if (/^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_.-]+$/.test(value)) return true;
+  // Comma-separated hostname examples (TLS SAN placeholder) are machine-format copy.
+  if (/^[a-z0-9.*-]+(?:\.[a-z0-9.*-]+)+(?:,\s*[a-z0-9.*-]+(?:\.[a-z0-9.*-]+)+)+$/i.test(value)) {
+    return true;
+  }
   if (
     [
       "WhatsApp",

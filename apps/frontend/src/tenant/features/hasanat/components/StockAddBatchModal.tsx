@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useRef, useState } from "react";
 import { Package } from "lucide-react";
 import { type Denomination, type StockBatch } from "@/lib/data/hasanatData";
@@ -102,7 +103,9 @@ export function StockAddBatchModal({
       note: data.note ?? "",
     });
     if (!parsed.success) {
-      setErrors(mapZodFormErrors(parsed.error, (message) => message));
+      setErrors(
+        mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
+      );
       setSubmitError(t("common.formPleaseFixErrors"));
       return;
     }

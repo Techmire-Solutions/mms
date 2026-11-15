@@ -6,10 +6,12 @@ import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormModal } from "@/components/app/FormModal";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/app/FormPrimitives";
 import { Button } from "@/components/ui/button";
 import { notify } from "@/lib/notify";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import {
+  genericSavedReportCreateSchema,
   type GenericSavedReport,
   type GenericSavedReportCategory,
   type GenericSavedReportCreateInput,
@@ -48,10 +50,25 @@ export default function SavedReports({
   const [saveOpen, setSaveOpen] = useState(false);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [nameError, setNameError] = useState<string | undefined>();
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleSave = async () => {
+    if (saving) return;
     const trimmedName = name.trim();
-    if (!trimmedName) return;
+    const parsed = genericSavedReportCreateSchema.safeParse({
+      name: trimmedName,
+      category,
+      filters,
+    });
+    if (!parsed.success) {
+      const message = translateValidationMessage(parsed.error.issues[0]?.message, t);
+      setNameError(message);
+      setFormError(message);
+      return;
+    }
+    setNameError(undefined);
+    setFormError(null);
 
     setSaving(true);
     try {
@@ -63,7 +80,10 @@ export default function SavedReports({
       notify.success(t("reports.saved.saveSuccess"));
       setName("");
       setSaveOpen(false);
-    } catch {
+      setNameError(undefined);
+      setFormError(null);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : t("reports.saved.saveDialogTitle"));
       notify.error(t("reports.saved.saveDialogTitle"));
     } finally {
       setSaving(false);
@@ -143,14 +163,20 @@ export default function SavedReports({
 
       <FormModal
         open={saveOpen}
-        onClose={() => setSaveOpen(false)}
+        onClose={() => {
+          setSaveOpen(false);
+          setNameError(undefined);
+          setFormError(null);
+        }}
         title={t("reports.saved.saveDialogTitle")}
         size="sm"
         cancelLabel={t("common.cancel")}
         saveLabel={t("reports.saved.save")}
         onSave={() => void handleSave()}
         saving={saving}
-        saveDisabled={!name.trim()}
+        saveDisabled={saving || !name.trim() || Boolean(nameError)}
+        error={formError ?? undefined}
+        isDirty={name.trim().length > 0}
         formId="save-report-modal-form"
       >
         <form
@@ -162,15 +188,25 @@ export default function SavedReports({
           }}
           className="space-y-4"
         >
-          <div className="space-y-1.5">
-            <Label htmlFor="saved-report-name">{t("reports.saved.nameLabel")}</Label>
+          <Field
+            id="saved-report-name"
+            label={t("reports.saved.nameLabel")}
+            required
+            error={nameError}
+          >
             <Input
               id="saved-report-name"
+              name="name"
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              maxLength={200}
+              onChange={(event) => {
+                setName(event.target.value);
+                if (nameError) setNameError(undefined);
+                if (formError) setFormError(null);
+              }}
               placeholder={t("reports.saved.namePlaceholder")}
             />
-          </div>
+          </Field>
         </form>
       </FormModal>
     </div>

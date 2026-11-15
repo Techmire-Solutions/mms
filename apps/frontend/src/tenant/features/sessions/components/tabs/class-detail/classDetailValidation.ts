@@ -18,6 +18,28 @@ export function validateClassDraft(
   if ((draft.maxStudents ?? 0) < (draft.enrolled ?? 0)) {
     next.maxStudents = t("common.formPleaseFixErrors");
   }
+  const sectionNames = new Set<string>();
+  for (const section of draft.sections ?? []) {
+    const name = section.name?.trim() ?? "";
+    const nameKey = name.toUpperCase();
+    if (!name || sectionNames.has(nameKey)) {
+      next[`section.${section.id}.name`] = t("common.formPleaseFixErrors");
+      tab = "sections";
+    }
+    if (name) sectionNames.add(nameKey);
+    if (
+      !Number.isInteger(Number(section.capacity)) ||
+      Number(section.capacity) < 0 ||
+      Number(section.capacity) > 100_000
+    ) {
+      next[`section.${section.id}.capacity`] = t("common.formPleaseFixErrors");
+      tab = "sections";
+    }
+    if ((section.room ?? "").length > 100) {
+      next[`section.${section.id}.room`] = t("common.formPleaseFixErrors");
+      tab = "sections";
+    }
+  }
   for (const schedule of draft.schedules ?? []) {
     if (schedule.startDate && !isValidIsoDate(schedule.startDate)) {
       next[`schedule.${schedule.id}.startDate`] = t("common.formPleaseFixErrors");

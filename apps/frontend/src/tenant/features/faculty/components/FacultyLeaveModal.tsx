@@ -1,6 +1,10 @@
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { UserCheck } from "lucide-react";
-import { Modal } from "@/components/app/Modal";
+import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,13 +12,15 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { apiErrorMessage } from "@/lib/apiErrorMessage";
-import { isConflictError } from "@/lib/apiContractError";
-import type {
-  FacultyLeaveDetails,
-  FacultyLeaveCategory,
-  FacultyMember,
-  FacultyRecord,
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
+import {
+  facultyLeaveDetailsSchema,
+  type FacultyLeaveDetails,
+  type FacultyLeaveCategory,
+  type FacultyMember,
+  type FacultyRecord,
 } from "@mms/shared";
 import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
 
@@ -32,6 +38,7 @@ function FacultyLeaveModalContent({
   onSave,
 }: FacultyLeaveModalProps): React.JSX.Element {
   const { t, dir } = useTranslation();
+  const today = useWorkspaceToday();
   const currentLeave = faculty.leaveDetails;
 
   const [isOnLeave, setIsOnLeave] = useState<boolean>(Boolean(currentLeave?.isOnLeave));
@@ -45,6 +52,11 @@ function FacultyLeaveModalContent({
   );
   const [reason, setReason] = useState<string>(currentLeave?.reason ?? "");
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const { isDirty } = useDirtySnapshot(
+    { isOnLeave, category, startDate, endDate, substituteFacultyId, reason },
+    `${faculty.id}:${open}`,
+  );
 
   const { data: facultyResponse } = useFacultyContractList({ limit: 100 });
   const rawFacultyList: FacultyRecord[] =
@@ -77,8 +89,9 @@ function FacultyLeaveModalContent({
   ];
 
   const handleSave = async () => {
-    if (isOnLeave && startDate && endDate && endDate < startDate) {
-      notify.error(t("faculty.leave.invalidDateRange"));
+    setFormError(null);
+    if (isOnLeave && (!startDate || !endDate || endDate < startDate)) {
+      setFormError(t("faculty.leave.invalidDateRange"));
       return;
     }
     try {
@@ -100,23 +113,27 @@ function FacultyLeaveModalContent({
         reason: isOnLeave && reason ? reason.trim() : null,
       };
 
-      await onSave({ leaveDetails: nextLeaveDetails });
+      const parsed = facultyLeaveDetailsSchema.safeParse(nextLeaveDetails);
+      if (!parsed.success) {
+        setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+        return;
+      }
+
+      await onSave({ leaveDetails: parsed.data });
       notify.success(t("faculty.leave.saved"));
       onClose();
     } catch (error) {
-      if (isConflictError(error)) {
-        const description = apiErrorMessage(error, "");
-        notify.error(t("faculty.toast.conflict"), description ? { description } : undefined);
-      } else {
-        notify.error(t("faculty.toast.saveFailed"));
-      }
+      setFormError(
+        mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+          t("faculty.toast.saveFailed"),
+      );
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <Modal
+    <FormModal
       open={open}
       onClose={onClose}
       title={t("faculty.leave.title")}
@@ -128,8 +145,10 @@ function FacultyLeaveModalContent({
       saveLabel={t("common.save")}
       saving={saving}
       onSave={handleSave}
+      isDirty={isDirty}
+      error={formError ?? undefined}
     >
-      <div className="space-y-4 py-2 text-start">
+      <div className="space-y-3 py-2 text-start">
         <div className="flex items-center justify-between p-3.5 rounded-lg border border-border bg-muted/40">
           <div>
             <p id="leave-status-label" className="font-semibold text-sm text-foreground">
@@ -141,7 +160,11 @@ function FacultyLeaveModalContent({
           </div>
           <Switch
             checked={isOnLeave}
-            onCheckedChange={setIsOnLeave}
+            onCheckedChange={(checked) => {
+              setIsOnLeave(checked);
+              if (checked && !startDate) setStartDate(today);
+              if (checked && !endDate) setEndDate(today);
+            }}
             aria-labelledby="leave-status-label"
           />
         </div>
@@ -198,7 +221,7 @@ function FacultyLeaveModalContent({
           </div>
         )}
       </div>
-    </Modal>
+    </FormModal>
   );
 }
 

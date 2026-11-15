@@ -47,10 +47,11 @@ export function useGoogleContactsSync({ canWrite = false }: { canWrite?: boolean
     setPrevServerConfig(serverConfig);
     if (serverConfig) {
       setConfig((current) => ({ ...current, clientId: serverConfig.clientId }));
-      setForm((current) => ({
-        ...current,
-        clientId: serverConfig.clientId || current.clientId,
-      }));
+      // Keep an in-progress credentials draft: a background refetch must not
+      // replace the client id the user is editing.
+      setForm((current) =>
+        current.clientId ? current : { ...current, clientId: serverConfig.clientId || "" },
+      );
     }
   }
 

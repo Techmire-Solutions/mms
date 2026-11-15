@@ -204,6 +204,7 @@ export function ClassDetailModal({
             sections={classDraft.sections ?? []}
             savedSectionIds={new Set((sessionClass?.sections ?? []).map((section) => section.id))}
             allFaculty={allFaculty}
+            errors={errors}
             onChange={(sections) => updateDraft("sections", sections)}
           />
         ) : (

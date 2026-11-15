@@ -14,6 +14,7 @@ export interface ContactsSyncConflictRowProps {
   title: string;
   onRequestDismiss: (id: string) => void;
   onResolved: () => void;
+  canWrite?: boolean;
 }
 
 export function ContactsSyncConflictRow({
@@ -21,6 +22,7 @@ export function ContactsSyncConflictRow({
   title,
   onRequestDismiss,
   onResolved,
+  canWrite = true,
 }: ContactsSyncConflictRowProps): React.JSX.Element {
   const { t } = useTranslation();
   const {
@@ -85,6 +87,7 @@ export function ContactsSyncConflictRow({
             onApplyMerge={() => void handleApplyMerge()}
             onKeepMine={() => void handleKeepMine()}
             onUseServer={handleUseServer}
+            canWrite={canWrite}
             t={t}
           />
         ) : null}

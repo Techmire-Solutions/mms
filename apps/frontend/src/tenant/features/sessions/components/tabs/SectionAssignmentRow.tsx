@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { formatDate, todayISO } from "@mms/shared";
+import { formatDate } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/app/DatePicker";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 
 export interface SectionAssignmentRowProps {
   assignment: {
@@ -31,8 +32,9 @@ export function SectionAssignmentRow({
   onEnd,
 }: SectionAssignmentRowProps): React.JSX.Element {
   const { t } = useTranslation();
+  const today = useWorkspaceToday();
   const [ending, setEnding] = useState(false);
-  const [endOn, setEndOn] = useState(todayISO());
+  const [endOn, setEndOn] = useState(today);
   const label = roleLabel
     ? roleLabel(assignment.role)
     : t(

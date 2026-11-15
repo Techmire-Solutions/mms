@@ -43,6 +43,7 @@ export const MessagingSetupTier = function MessagingSetupTier({
     channel,
     setChannel,
     errors,
+    serverError,
     isFormDirty,
     saving,
     saveDisabled,
@@ -121,6 +122,7 @@ export const MessagingSetupTier = function MessagingSetupTier({
                 templateCategorySelectOptions={templateCategorySelectOptions}
                 channelSelectOptions={channelSelectOptions}
                 errors={errors}
+                error={serverError}
                 saving={saving}
                 saveDisabled={saveDisabled}
                 isDirty={isFormDirty}

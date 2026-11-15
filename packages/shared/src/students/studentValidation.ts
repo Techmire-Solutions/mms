@@ -71,6 +71,10 @@ export function buildDynamicStudentSchema(
 ): z.ZodTypeAny {
   const schemaObject: Record<string, z.ZodTypeAny> = {
     id: z.union([z.string(), z.number()]).optional(),
+    // Read projection round-trip: the API emits a nested map alongside the
+    // flattened custom keys. Accepted here like the wire DTO; the server drops
+    // it during normalization and the form strips it from the editable draft.
+    customFields: z.record(z.string(), z.unknown()).optional(),
     _blueprintId: z.union([z.string(), z.number()]).optional(),
     contactId: z.union([z.string(), z.number()]).nullish(),
     fatherContactId: z.union([z.string(), z.number()]).nullish(),
@@ -182,7 +186,15 @@ export function formatStudentZodIssues(
   fields: Record<string, FieldDefinition[]>,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
-  error.issues.forEach((issue) => {
+  const expandedIssues = error.issues.flatMap((issue) => {
+    // `.strict()` reports unknown keys as one root issue. Expand it so the form
+    // can focus the offending field (matches the server's `issuesFromZod`).
+    if (issue.code === "unrecognized_keys" && issue.keys && issue.keys.length > 0) {
+      return issue.keys.map((key) => ({ ...issue, path: [key] }));
+    }
+    return [issue];
+  });
+  expandedIssues.forEach((issue) => {
     const path = issue.path;
     const message = issue.message;
     const fieldId = path[0] as string;

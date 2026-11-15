@@ -26,6 +26,10 @@ vi.mock("@/tenant/features/accounting/hooks/useJournalTemplates", () => ({
   }),
 }));
 
+vi.mock("@/tenant/features/accounting/hooks/useAccountingLedgerOps", () => ({
+  usePostingPeriods: () => ({ data: [] }),
+}));
+
 vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("@/tenant/features/accounting/hooks/useVoucherNumbering")>();
@@ -96,14 +100,17 @@ vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     open,
     headerExtra,
+    error,
     children,
   }: {
     open?: boolean;
     headerExtra?: React.ReactNode;
+    error?: string | readonly string[];
     children?: React.ReactNode;
   }) =>
     open ? (
       <div data-testid="wizard-modal">
+        {error ? <div role="alert">{Array.isArray(error) ? error.join(" ") : error}</div> : null}
         {headerExtra}
         {children}
       </div>
@@ -326,9 +333,7 @@ describe("SimpleTransactionWizard", () => {
     });
 
     expect(onSave).not.toHaveBeenCalled();
-    expect(notify.error).toHaveBeenCalledWith(
-      "accounting.journal.dashboard.wizard.errorSameAccount",
-    );
+    expect(container.textContent).toContain("accounting.journal.dashboard.wizard.errorSameAccount");
   });
 
   it("posts an adjustment once a real counter-account is chosen", async () => {
@@ -508,7 +513,7 @@ describe("SimpleTransactionWizard", () => {
     expect(onSave.mock.calls[0]![0].lines[0]!.debit).toBe(75);
   });
 
-  it("surfaces an error notification if onSave rejects", async () => {
+  it("surfaces a mapped error in the banner if onSave rejects", async () => {
     onSave.mockRejectedValueOnce(new Error("Network Failure"));
     await renderWizard(true, feeCollection);
     await act(async () => {
@@ -521,7 +526,8 @@ describe("SimpleTransactionWizard", () => {
       findButton(container, "accounting.journal.dashboard.wizard.postTransaction").click();
     });
 
-    expect(notify.error).toHaveBeenCalledWith("Network Failure");
+    expect(container.textContent).toContain("Network Failure");
+    expect(onSave).toHaveBeenCalledTimes(1);
   });
 
   it("posts and resets form for another transaction when Post & Record Another is clicked", async () => {

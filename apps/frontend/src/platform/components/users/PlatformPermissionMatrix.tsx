@@ -153,7 +153,7 @@ export function PlatformPermissionMatrix(): React.JSX.Element {
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            void confirmStepUp();
+            if (!busy) void confirmStepUp();
           }}
         >
           <Field id="matrix-step-up" label={t("platform.confirmPlatformPassword")} required>

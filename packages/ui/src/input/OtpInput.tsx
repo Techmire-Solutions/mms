@@ -12,6 +12,8 @@ export interface OtpInputProps {
   length?: number;
   idPrefix?: string;
   isRtl?: boolean;
+  /** Links the group error/description to every digit input. */
+  "aria-describedby"?: string;
   /** Whether the first OTP input digit should be automatically focused. Defaults to false. */
   autoFocus?: boolean;
 }
@@ -29,6 +31,7 @@ export function OtpInput({
   length = 6,
   idPrefix = "otp",
   isRtl = false,
+  "aria-describedby": ariaDescribedBy,
   autoFocus = false,
 }: OtpInputProps): React.JSX.Element {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
@@ -134,6 +137,7 @@ export function OtpInput({
             )}
             aria-label={label}
             aria-invalid={hasError || undefined}
+            aria-describedby={ariaDescribedBy}
             autoFocus={autoFocus && index === 0}
           />
         );

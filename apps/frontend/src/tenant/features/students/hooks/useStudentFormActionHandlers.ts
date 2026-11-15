@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useCallback, useRef } from "react";
 import type {
   Contact,
@@ -106,6 +107,7 @@ export function useStudentFormActionHandlers({
           requiredTabs: new Set(settings.requiredTabs || []),
           fields: (settings.fields ?? {}) as Record<string, FieldDefinition[]>,
           language,
+          resolveMessage: (message) => translateValidationMessage(message, t),
         },
         blueprintVersion: settings.version,
         formInstanceId,

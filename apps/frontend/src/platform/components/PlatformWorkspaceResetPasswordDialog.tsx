@@ -3,6 +3,8 @@ import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shar
 import { KeyRound } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { WorkspaceSummary } from "@/platform/components/workspace/WorkspaceSummary";
 import { WorkspacePasswordField } from "@/platform/components/workspace/WorkspacePasswordField";
 import { CredentialsResultCard, Field, Input } from "@shared/ui";
@@ -31,9 +33,19 @@ export function PlatformWorkspaceResetPasswordDialog({
   const [result, setResult] = useState<{ newPassword: string; adminEmail: string } | null>(null);
   const [error, setError] = useState("");
 
+  // A different workspace target (or a reopen) must not reuse the previous
+  // credentials or the previous generated password.
+  useIdentityReset(`${open}:${workspace?.subdomain ?? "none"}`, () => {
+    setPassword("");
+    setCurrentPassword("");
+    setResult(null);
+    setError("");
+  });
+
   if (!workspace) return null;
 
   const handleReset = async () => {
+    if (resetPending) return;
     if (!currentPassword.trim()) {
       setError(t("platform.validationConfirmPlatformPassword"));
       return;
@@ -50,7 +62,7 @@ export function PlatformWorkspaceResetPasswordDialog({
       });
       setResult(res);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("platform.loadFailed"));
+      setError(getPlatformErrorMessage(err, t, undefined, "platform.loadFailed"));
     }
   };
 
@@ -74,15 +86,7 @@ export function PlatformWorkspaceResetPasswordDialog({
       })}
       icon={KeyRound}
       size="md"
-      error={
-        result
-          ? undefined
-          : error &&
-              error !== t("platform.validationPasswordLength") &&
-              error !== t("platform.validationConfirmPlatformPassword")
-            ? error
-            : undefined
-      }
+      error={result ? undefined : error || undefined}
       cancelLabel={result ? undefined : t("common.cancel")}
       saveLabel={result ? t("common.close") : t("platform.resetPasswordBtn")}
       onSave={result ? handleClose : handleReset}

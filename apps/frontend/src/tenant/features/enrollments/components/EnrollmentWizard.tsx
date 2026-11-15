@@ -1,6 +1,9 @@
-import React, { useMemo, useState } from "react";
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@/lib/forms/translateValidationMessage";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
-import { User, BookOpen, CheckCircle2, Layers, DollarSign, ClipboardCheck } from "lucide-react";
 import {
   StepIndicator,
   type Step,
@@ -16,7 +19,9 @@ import {
 import { Step5FeeCalculation } from "@/tenant/features/enrollments/components/wizard/Step5FeeCalculation";
 import { Step6Confirmation } from "@/tenant/features/enrollments/components/wizard/Step6Confirmation";
 import { suggestClass, runFullEligibility, type CalculatedFee } from "@/lib/data/enrollmentData";
-import { enrollmentRecordInsertSchema, type EnrollmentInsert } from "@mms/shared";
+import { type EnrollmentInsert } from "@mms/shared";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { parseEnrollmentInsertPayload } from "@/tenant/features/enrollments/lib/enrollmentWizardParse";
 import { type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
 import { useSessions } from "@/tenant/hooks/collections/sessions";
@@ -27,8 +32,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { buildEnrollmentPayload } from "@/tenant/features/enrollments/lib/enrollmentWizardBuildPayload";
 import { EnrollmentWizardSuccess } from "@/tenant/features/enrollments/components/EnrollmentWizardSuccess";
 import { EnrollmentWizardFooter } from "@/tenant/features/enrollments/components/EnrollmentWizardFooter";
-import { isCapacityFull } from "@/tenant/features/enrollments/lib/enrollmentCapacity";
-
+import { enrollmentWizardSteps } from "@/tenant/features/enrollments/lib/enrollmentWizardSteps";
+import { canProceedEnrollmentStep } from "@/tenant/features/enrollments/lib/enrollmentWizardCanProceed";
 export interface EnrollmentWizardProps {
   onComplete: (enrollment: EnrollmentInsert) => void | Promise<void>;
   onCancel: () => void;
@@ -69,20 +74,20 @@ export const EnrollmentWizard = function EnrollmentWizard({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [direction, setDirection] = useState<number>(1);
+  const successCloseTimerRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (successCloseTimerRef.current !== null) {
+        window.clearTimeout(successCloseTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const { fields } = useEnrollmentConfig();
 
-  const steps: Step[] = useMemo(
-    () => [
-      { id: "student", label: t("enrollments.columns.student"), icon: User },
-      { id: "session", label: t("enrollments.columns.session"), icon: BookOpen },
-      { id: "eligibility", label: t("enrollments.eligibility"), icon: CheckCircle2 },
-      { id: "class", label: t("enrollments.columns.class"), icon: Layers },
-      { id: "fee", label: t("enrollments.columns.finalFee"), icon: DollarSign },
-      { id: "confirm", label: t("enrollments.new"), icon: ClipboardCheck },
-    ],
-    [t],
-  );
+  const steps: Step[] = useMemo(() => enrollmentWizardSteps(t), [t]);
   const notesRequired = Boolean(fields.notes?.required);
   const dirty = Boolean(
     student ||
@@ -104,23 +109,16 @@ export const EnrollmentWizard = function EnrollmentWizard({
     () => (student && session ? runFullEligibility(student, session, suggested, []) : []),
     [student, session, suggested],
   );
-  const canNext = (): boolean => {
-    if (step === 0) return !!student;
-    if (step === 1) return !!session;
-    if (step === 2) return eligibilityChecks.every((check) => check.status !== "fail");
-    if (step === 3) {
-      if (!classInfo) return false;
-      const sections = classInfo.sections ?? [];
-      if (sections.length > 0) {
-        const selectedSection = sections.find((section) => section.id === placement.sectionId);
-        if (!selectedSection) return false;
-        if (isCapacityFull(selectedSection.enrolled, selectedSection.capacity)) return false;
-      }
-      return true;
-    }
-    if (step === 4) return !!feeResult;
-    return true;
-  };
+  const canNext = (): boolean =>
+    canProceedEnrollmentStep({
+      step,
+      hasStudent: Boolean(student),
+      hasSession: Boolean(session),
+      eligibilityPassed: eligibilityChecks.every((check) => check.status !== "fail"),
+      classInfo,
+      placement,
+      feeReady: Boolean(feeResult),
+    });
 
   const notesError = notesRequired && attempted && !notes.trim();
   const canConfirm = (): boolean => !notesError;
@@ -152,9 +150,11 @@ export const EnrollmentWizard = function EnrollmentWizard({
       notes,
       placement,
     });
-    const parsed = enrollmentRecordInsertSchema.safeParse(payload);
-    if (!parsed.success) {
-      setSubmitError(parsed.error.issues[0]?.message ?? t("enrollments.toast.saveFailed"));
+    const parsed = parseEnrollmentInsertPayload(payload, (message) =>
+      translateValidationMessage(message, t),
+    );
+    if (!parsed.ok) {
+      setSubmitError(parsed.message || t("enrollments.toast.saveFailed"));
       return;
     }
 
@@ -163,10 +163,13 @@ export const EnrollmentWizard = function EnrollmentWizard({
       setSubmitError(null);
       await onComplete(parsed.data);
       setDone(true);
-      window.setTimeout(() => onCancel(), 900);
+      successCloseTimerRef.current = window.setTimeout(() => onCancel(), 900);
     } catch (error) {
-      // Keep the wizard open and show the reason inline as well as in the parent toast.
-      setSubmitError(error instanceof Error ? error.message : t("enrollments.toast.saveFailed"));
+      // Keep the wizard open and show the mapped reason inline as well as in the parent toast.
+      setSubmitError(
+        mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+          t("enrollments.toast.saveFailed"),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -192,13 +195,11 @@ export const EnrollmentWizard = function EnrollmentWizard({
   if (done) {
     return <EnrollmentWizardSuccess t={t} student={student} session={session} />;
   }
-
   return (
     <article className="space-y-6" aria-label={t("enrollments.wizard.formAria")}>
       <div className="overflow-x-auto pb-1">
         <StepIndicator steps={steps} current={step} />
       </div>
-
       <form
         id="enrollment-wizard-form"
         noValidate
@@ -271,7 +272,6 @@ export const EnrollmentWizard = function EnrollmentWizard({
           </m.div>
         </AnimatePresence>
       </form>
-
       {submitError ? (
         <Alert
           tone="destructive"
@@ -280,7 +280,6 @@ export const EnrollmentWizard = function EnrollmentWizard({
           description={submitError}
         />
       ) : null}
-
       <EnrollmentWizardFooter
         t={t}
         step={step}

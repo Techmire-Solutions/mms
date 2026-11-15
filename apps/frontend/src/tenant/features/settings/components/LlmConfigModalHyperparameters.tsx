@@ -60,8 +60,8 @@ export function LlmConfigModalHyperparameters({
               inputMode="numeric"
               min={1}
               max={16384}
-              value={formMaxTokens}
-              onChange={(event) => setFormMaxTokens(parseInt(event.target.value, 10) || 2048)}
+              value={Number.isFinite(formMaxTokens) ? formMaxTokens : ""}
+              onChange={(event) => setFormMaxTokens(Number(event.target.value))}
             />
             <p className="text-xs text-muted-foreground">{t("settings.llmModalMaxTokensDesc")}</p>
           </div>

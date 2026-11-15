@@ -1,8 +1,13 @@
-import type { RefObject } from "react";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
+import { useState, type RefObject } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
-import { type QuestionBankQuestion as Question, type QuestionBankTest } from "@mms/shared";
+import {
+  questionBankTestInsertSchema,
+  type QuestionBankQuestion as Question,
+  type QuestionBankTest,
+} from "@mms/shared";
 import {
   ALL_FILTER,
   createPaperDraftFromTest,
@@ -43,6 +48,8 @@ export function usePaperBuilderHandlers({
   loadPaperDraft,
 }: UsePaperBuilderHandlersOptions) {
   const { t, language, dir } = useTranslation();
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const qbConfig = useQuestionBankConfig(questions);
 
   const categoryById = (() =>
@@ -78,6 +85,8 @@ export function usePaperBuilderHandlers({
     caughtError instanceof Error ? caughtError.message : undefined;
 
   const handleSave = async () => {
+    setSaveError(null);
+    setFieldErrors({});
     const paperSections = normalizePaperSections(sections);
     const questionIds = getPaperQuestionIds(paperSections);
     if (questionIds.length === 0 || saving) return;
@@ -101,6 +110,33 @@ export function usePaperBuilderHandlers({
       ...(instructions ? { instructions } : {}),
       sections: paperSections,
     } satisfies QuestionBankTest;
+    // The same write contract the papers endpoint enforces. `createdAt` is a local
+    // projection, not part of the insert body.
+    const validation = questionBankTestInsertSchema.safeParse({
+      id: savedPaper.id,
+      name: savedPaper.name,
+      categoryId: null,
+      questionIds: savedPaper.questionIds,
+      difficulty: "mixed",
+      duration: savedPaper.duration,
+      ...(examClass ? { examClass } : {}),
+      classId: savedPaper.classId,
+      ...(config.totalMarks > 0 ? { totalMarks: config.totalMarks } : {}),
+      ...(instructions ? { instructions } : {}),
+      sections: paperSections,
+    });
+    if (!validation.success) {
+      const mapped: Record<string, string> = {};
+      for (const issue of validation.error.issues) {
+        const key = String(issue.path[0] ?? "");
+        if (key === "name" || key === "duration" || key === "totalMarks") {
+          mapped[key] ??= issue.message;
+        }
+      }
+      setFieldErrors(mapped);
+      setSaveError(translateValidationMessage(validation.error.issues[0]?.message, t));
+      return;
+    }
     setSaving(true);
     try {
       await onSaveTest(savedPaper);
@@ -110,7 +146,7 @@ export function usePaperBuilderHandlers({
         description: t("questionBank.testCreatedDesc"),
       });
     } catch (caughtError: unknown) {
-      notify.error(t("questionBank.paperSaveFailed"), { description: describeError(caughtError) });
+      setSaveError(describeError(caughtError) ?? t("questionBank.paperSaveFailed"));
     } finally {
       setSaving(false);
     }
@@ -132,5 +168,7 @@ export function usePaperBuilderHandlers({
     handlePrintPaper,
     handleSave,
     handleOpenPaper,
+    saveError,
+    fieldErrors,
   };
 }

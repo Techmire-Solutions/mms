@@ -1,6 +1,6 @@
 import React from "react";
 import { AnimatePresence, m } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2, UserPlus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, UserPlus, X } from "lucide-react";
 import type { SystemUser } from "@mms/shared";
 import { FormModal } from "@/components/app/FormModal";
 import { Button } from "@/components/ui/button";
@@ -28,12 +28,13 @@ export function AddUserModal({
     submitting,
     success,
     errors,
+    formError,
     form,
     setForm,
     handleNext,
     handleBack,
     handleSubmit,
-  } = useAddUserModalForm({ onAdd, onClose, existingEmails });
+  } = useAddUserModalForm({ onAdd, existingEmails });
 
   return (
     <FormModal
@@ -44,9 +45,18 @@ export function AddUserModal({
       icon={UserPlus}
       size="lg"
       hideFooter
+      saving={submitting}
+      error={formError ?? undefined}
     >
       {success ? (
-        <AddUserSuccessView form={form} t={t} />
+        <>
+          <AddUserSuccessView form={form} t={t} />
+          <div className="mt-6 flex justify-end">
+            <Button type="button" className="min-h-11" onClick={onClose}>
+              {t("common.close")}
+            </Button>
+          </div>
+        </>
       ) : (
         <>
           <StepIndicator step={step} />
@@ -55,6 +65,7 @@ export function AddUserModal({
             noValidate
             onSubmit={(event) => {
               event.preventDefault();
+              if (submitting) return;
               if (step < 3) {
                 handleNext();
               } else {
@@ -122,13 +133,11 @@ export function AddUserModal({
                   void handleSubmit();
                 }}
                 disabled={submitting}
+                loading={submitting}
+                loadingText={t("users.addCreating")}
               >
-                {submitting ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <UserPlus className="h-3.5 w-3.5" />
-                )}
-                {submitting ? t("users.addCreating") : t("users.addCreate")}
+                <UserPlus className="h-3.5 w-3.5" />
+                {t("users.addCreate")}
               </Button>
             )}
           </div>

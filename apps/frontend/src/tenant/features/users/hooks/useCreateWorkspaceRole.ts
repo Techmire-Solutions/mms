@@ -3,7 +3,12 @@
  * @description Append a WorkspaceRole to Users preferences (Roles & Permissions catalog).
  */
 import { useCallback } from "react";
-import { filterRbacModulesForSettings, workspaceRoleLabel, type WorkspaceRole } from "@mms/shared";
+import {
+  filterRbacModulesForSettings,
+  normalizePermissionMap,
+  workspaceRoleLabel,
+  type WorkspaceRole,
+} from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
@@ -33,16 +38,24 @@ export function useCreateWorkspaceRole(): UseCreateWorkspaceRoleResult {
         notify.error(t("users.errors.cannotModifySuperAdmin"));
         return null;
       }
+      const normalizedRole: WorkspaceRole = {
+        ...role,
+        customLabel: role.customLabel?.trim(),
+        customDescription: role.customDescription?.trim(),
+        permissions: normalizePermissionMap(role.permissions),
+      };
       const existing = loadedRoles.find((row) => row.id === role.id);
       const updatedRoles = existing
-        ? loadedRoles.map((row) => (row.id === role.id ? role : row))
-        : [...loadedRoles, role];
+        ? loadedRoles.map((row) => (row.id === role.id ? normalizedRole : row))
+        : [...loadedRoles, normalizedRole];
       try {
         await updateSettingsAsync({ ...settings, workspaceRoles: updatedRoles });
         notify.success(t("users.permissions.roleSaved"), {
-          description: t("users.permissions.roleSavedDesc", { name: workspaceRoleLabel(role, t) }),
+          description: t("users.permissions.roleSavedDesc", {
+            name: workspaceRoleLabel(normalizedRole, t),
+          }),
         });
-        return role;
+        return normalizedRole;
       } catch (error) {
         notify.error(t("settings.serverSaveFailed"), {
           description: error instanceof Error ? error.message : String(error),

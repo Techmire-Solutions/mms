@@ -3,7 +3,7 @@ import { AnimatePresence, m } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { getPasswordPolicyHintKey } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { CheckboxField } from "@/components/ui/checkbox";
 import { Input as UiInput } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
@@ -133,41 +133,30 @@ export function Step3({ form, setForm, errors }: AddUserStepProps): JSX.Element 
               </div>
             </Field>
 
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="add-user-force-reset"
-                checked={form.forceReset !== false}
-                onCheckedChange={(checked) =>
-                  setForm((previousForm) => ({ ...previousForm, forceReset: !!checked }))
-                }
-                className="cursor-pointer"
-              />
-              <label
-                htmlFor="add-user-force-reset"
-                className="cursor-pointer text-xs font-medium text-foreground select-none"
-              >
-                {t("users.addForceReset")}
-              </label>
-            </div>
+            <CheckboxField
+              id="add-user-force-reset"
+              name="forceReset"
+              checked={form.forceReset !== false}
+              onCheckedChange={(checked) =>
+                setForm((previousForm) => ({ ...previousForm, forceReset: !!checked }))
+              }
+              label={t("users.addForceReset")}
+            />
           </m.div>
         )}
       </AnimatePresence>
 
-      <div className="flex items-center gap-2 p-3 rounded-xl border border-border hover:bg-muted/50 transition-colors">
-        <Checkbox
+      <div className="rounded-xl border border-border p-3 transition-colors hover:bg-muted/50">
+        <CheckboxField
           id="add-user-2fa"
+          name="twoFactorEnabled"
           checked={!!form.twoFactorEnabled}
           onCheckedChange={(checked) =>
             setForm((previousForm) => ({ ...previousForm, twoFactorEnabled: !!checked }))
           }
-          className="cursor-pointer"
+          label={t("users.add2faTitle")}
+          description={t("users.add2faDesc")}
         />
-        <label htmlFor="add-user-2fa" className="cursor-pointer flex-1">
-          <span className="text-xs font-semibold text-foreground block">
-            {t("users.add2faTitle")}
-          </span>
-          <p className="text-xs text-muted-foreground">{t("users.add2faDesc")}</p>
-        </label>
       </div>
     </div>
   );

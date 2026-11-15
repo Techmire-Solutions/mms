@@ -16,6 +16,8 @@ interface JournalEntryFormDetailsSectionProps {
   setForm: React.Dispatch<React.SetStateAction<DraftForm>>;
   errors: Record<string, string>;
   fiscalYears: FiscalYear[];
+  /** False when Setup → voucher numbering is manual: the reference becomes required. */
+  voucherAutoGenerate?: boolean;
 }
 
 export function JournalEntryFormDetailsSection({
@@ -24,6 +26,7 @@ export function JournalEntryFormDetailsSection({
   setForm,
   errors,
   fiscalYears,
+  voucherAutoGenerate,
 }: JournalEntryFormDetailsSectionProps): React.JSX.Element {
   return (
     <SectionCard
@@ -78,9 +81,15 @@ export function JournalEntryFormDetailsSection({
           label={
             <>
               {t("accounting.journal.dashboard.wizard.refNo")}{" "}
-              <span className="normal-case font-normal text-foreground">
-                {t("accounting.journal.dashboard.wizard.optional")}
-              </span>
+              {voucherAutoGenerate === false ? (
+                <span className="text-destructive" aria-hidden="true">
+                  *
+                </span>
+              ) : (
+                <span className="normal-case font-normal text-foreground">
+                  {t("accounting.journal.dashboard.wizard.optional")}
+                </span>
+              )}
             </>
           }
           error={errors.ref}

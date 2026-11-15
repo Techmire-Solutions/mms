@@ -1,5 +1,14 @@
 import { isJournalRefUnique, type JournalEntry } from "@/lib/data/accountingData";
-import type { JournalEntryStatus } from "@mms/shared";
+import {
+  findFiscalYearForDate,
+  isFiscalYearClosed,
+  isValidIsoDate,
+  moneyAmountSchema,
+  resolveFiscalYearRef,
+  type FiscalYear,
+  type JournalEntryStatus,
+  type PostingPeriod,
+} from "@mms/shared";
 import {
   hasAtMostTwoDecimals,
   parseMoneyInput,
@@ -35,13 +44,82 @@ export function journalLineAmountErrorKey(
   val: string | number,
   decimalSeparator: MoneySeparator = "period",
 ): string | null {
-  if (typeof val === "number")
-    return Number.isFinite(val) ? null : "accounting.journal.form.errorAmountFormat";
+  if (typeof val === "number") {
+    return moneyAmountSchema.safeParse(val).success
+      ? null
+      : "accounting.journal.form.errorAmountFormat";
+  }
   if (!val.trim()) return null;
   const parsed = parseMoneyInput(val, decimalSeparator);
-  return parsed === null || !hasAtMostTwoDecimals(parsed)
+  return parsed === null || !moneyAmountSchema.safeParse(parsed).success
     ? "accounting.journal.form.errorAmountFormat"
     : null;
+}
+
+export interface JournalPostingGuardOptions {
+  fiscalYears: readonly FiscalYear[];
+  /** Monthly periods for the selected fiscal year; empty = no period lock configured. */
+  postingPeriods?: readonly PostingPeriod[];
+  /** Set false when Setup → voucher numbering is manual. */
+  voucherAutoGenerate?: boolean;
+}
+
+/**
+ * Form-layer mirror of the backend's period/date and manual-numbering guards.
+ *
+ * The backend remains authoritative; this prevents a guaranteed API rejection and
+ * focuses the exact field. Dates after the latest configured fiscal year stay
+ * allowed (the "next year not created yet" invoice case), while backdated dates
+ * and gaps before that end are refused, matching `assertJournalEntryPeriodOpen`.
+ */
+export function validateJournalPostingGuards(
+  form: DraftForm,
+  options: JournalPostingGuardOptions,
+  t: TranslationFunction,
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const date = form.date?.trim() ?? "";
+  if (!date || !isValidIsoDate(date)) return errors;
+
+  const declared = resolveFiscalYearRef(
+    options.fiscalYears,
+    form.fiscal_year_id || form.fiscal_year,
+  );
+  if (isFiscalYearClosed(declared)) {
+    errors.fiscal_year_id = t("accounting.journal.form.errorClosedFiscalYear");
+  }
+
+  const containing = findFiscalYearForDate(options.fiscalYears, date);
+  if (isFiscalYearClosed(containing)) {
+    errors.date = t("accounting.journal.form.errorClosedFiscalYear");
+    return errors;
+  }
+
+  if (options.fiscalYears.length > 0 && !containing) {
+    const latestEnd = options.fiscalYears.reduce(
+      (latest, year) => (year.endDate > latest ? year.endDate : latest),
+      options.fiscalYears[0]!.endDate,
+    );
+    if (date <= latestEnd) {
+      errors.date = t("accounting.journal.form.errorOutsideFiscalYear");
+      return errors;
+    }
+  }
+
+  const closedPeriod = (options.postingPeriods ?? []).find(
+    (period) => period.status === "closed" && period.startDate <= date && date <= period.endDate,
+  );
+  if (closedPeriod) {
+    errors.date = t("accounting.journal.form.errorClosedPostingPeriod", {
+      period: closedPeriod.label,
+    });
+  }
+
+  if (options.voucherAutoGenerate === false && !form.ref?.trim()) {
+    errors.ref = t("accounting.journal.form.refRequiredManual");
+  }
+
+  return errors;
 }
 
 export function calculateJournalEntryCompleteness(form: DraftForm, isBalanced: boolean): number {
@@ -84,11 +162,19 @@ export function validateJournalEntryForm(
       validationErrors[`line${lineIndex}`] = t("accounting.journal.form.errorAccountRequired");
       return;
     }
-    const amountError =
-      journalLineAmountErrorKey(journalLine.debit, decimalSeparator) ??
-      journalLineAmountErrorKey(journalLine.credit, decimalSeparator);
+    const debitError = journalLineAmountErrorKey(journalLine.debit, decimalSeparator);
+    const creditError = journalLineAmountErrorKey(journalLine.credit, decimalSeparator);
+    const amountError = debitError ?? creditError;
     if (amountError) {
       validationErrors[`lineAmount${lineIndex}`] = t(amountError as never);
+    } else if (
+      targetStatus === "posted" &&
+      parseJournalLineAmount(journalLine.debit, decimalSeparator) > 0 &&
+      parseJournalLineAmount(journalLine.credit, decimalSeparator) > 0
+    ) {
+      validationErrors[`lineAmount${lineIndex}`] = t(
+        "accounting.journal.form.errorSingleSided" as never,
+      );
     }
   });
 

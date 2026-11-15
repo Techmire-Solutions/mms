@@ -141,7 +141,7 @@ export function WakalaStep3Distribution({
                       const num = Number(val) || 0;
                       if (num <= 100) {
                         onUpdateRow(row.id, {
-                          percentage: val === "" ? ("" as unknown as number) : num,
+                          percentage: val === "" ? null : num,
                         });
                       }
                     }

@@ -7,6 +7,7 @@ import {
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import {
   fetchSmsIntegration,
   saveSmsIntegration,
@@ -20,6 +21,7 @@ export function useSmsIntegrationPanel() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [form, setForm] = useState<SmsIntegrationConfig>(DEFAULT_SMS_INTEGRATION);
   const [accountSecret, setAccountSecret] = useState("");
   const [testPhone, setTestPhone] = useState("");
@@ -53,6 +55,7 @@ export function useSmsIntegrationPanel() {
   };
 
   const handleSave = async (): Promise<void> => {
+    setActionError(null);
     setSaving(true);
     try {
       const effectiveBaseUrl =
@@ -67,9 +70,9 @@ export function useSmsIntegrationPanel() {
       void queryClient.invalidateQueries({ queryKey: ["sms-integration"] });
       notify.success(t("sms.saveSuccess"), { description: t("sms.saveSuccessDesc") });
     } catch (error) {
-      notify.error(t("sms.saveFailed"), {
-        description: error instanceof Error ? error.message : undefined,
-      });
+      const mapped = mapApiFormError(error);
+      setActionError(mapped.message ?? t("sms.saveFailed"));
+      notify.error(t("sms.saveFailed"), { description: mapped.message });
     } finally {
       setSaving(false);
     }
@@ -98,9 +101,9 @@ export function useSmsIntegrationPanel() {
       void queryClient.invalidateQueries({ queryKey: ["sms-integration"] });
       notify.success(t("sms.testSuccess"), { description: t("sms.testSuccessDesc") });
     } catch (error) {
-      notify.error(t("sms.testFailed"), {
-        description: error instanceof Error ? error.message : undefined,
-      });
+      const mapped = mapApiFormError(error);
+      setActionError(mapped.message ?? t("sms.testFailed"));
+      notify.error(t("sms.testFailed"), { description: mapped.message });
     } finally {
       setTesting(false);
     }
@@ -112,6 +115,7 @@ export function useSmsIntegrationPanel() {
     loading,
     saving,
     testing,
+    actionError,
     form,
     accountSecret,
     setAccountSecret,

@@ -8,6 +8,8 @@ import {
   type StudentDuplicateReason,
   type AppTranslationKey,
   buildDynamicStudentSchema,
+  buildStudentWriteSchema,
+  collectStudentWriteExtraFieldKeys,
   formatStudentZodIssues,
   type ValidationError,
   type FieldDefinition,
@@ -31,6 +33,8 @@ export interface StudentValidationContext {
   linkedGenderRaw: string;
   linkedDob: string;
   linkedContact?: Contact | null;
+  /** Localizes wire-DTO (base schema) messages; blueprint messages are already localized. */
+  resolveMessage?: (message: string) => string;
 }
 
 export function validateStudentDraft(
@@ -55,9 +59,40 @@ export function validateStudentDraft(
 
   const errors: ValidationError[] = [];
 
+  // Layer 1 — the tenant-aware wire DTO the API validates first (strict
+  // allowlist, column-width bounds, numeric/string types). This mirrors
+  // `validateStudentWrite` before the dynamic blueprint is applied.
+  const baseSchema = buildStudentWriteSchema(collectStudentWriteExtraFieldKeys(context.settings));
+  const baseResult = baseSchema.safeParse(validationDraft);
+  if (!baseResult.success) {
+    const resolve = context.resolveMessage ?? ((message: string) => message);
+    errors.push(
+      ...formatStudentZodIssues(baseResult.error, validationDraft, context.fields).map((issue) => ({
+        ...issue,
+        message: resolve(issue.message),
+      })),
+    );
+  }
+
+  // Layer 2 — the tenant Setup blueprint (required tabs/fields and field types).
   const parseResult = schema.safeParse(validationDraft);
   if (!parseResult.success) {
-    errors.push(...formatStudentZodIssues(parseResult.error, validationDraft, context.fields));
+    const seen = new Set(
+      errors.map(
+        (issue) => `${issue.tabId}|${issue.fieldId}|${issue.index ?? ""}|${issue.message}`,
+      ),
+    );
+    for (const issue of formatStudentZodIssues(
+      parseResult.error,
+      validationDraft,
+      context.fields,
+    )) {
+      const key = `${issue.tabId}|${issue.fieldId}|${issue.index ?? ""}|${issue.message}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        errors.push(issue);
+      }
+    }
   }
 
   return errors.length > 0 ? errors : null;

@@ -17,6 +17,7 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
     loading,
     saving,
     testing,
+    actionError,
     form,
     accountSecret,
     setAccountSecret,
@@ -39,7 +40,7 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
       statusConnectedText={t("whatsapp.statusConnected")}
       statusNotConnectedText={t("whatsapp.statusNotConnected")}
       loading={loading}
-      lastError={form.lastError}
+      lastError={actionError ?? form.lastError}
       saving={saving}
       testing={testing}
       saveLabel={t("whatsapp.saveConnection")}

@@ -79,7 +79,11 @@ export function AccountingIas29Panel({
                 onChange={panel.setIndexDate}
               />
             </Field>
-            <Field id="ias29-index-value" label={t("accounting.settings.ias29.indexValue")}>
+            <Field
+              id="ias29-index-value"
+              label={t("accounting.settings.ias29.indexValue")}
+              error={panel.indexError ?? undefined}
+            >
               <Input
                 id="ias29-index-value"
                 name="indexValue"

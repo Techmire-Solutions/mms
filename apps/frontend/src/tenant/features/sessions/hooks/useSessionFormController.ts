@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
@@ -10,7 +11,6 @@ import {
   SessionSchema,
   isSessionStructureLocked,
   normalizeSessionStatus,
-  type AppTranslationKey,
   type SessionLifecycleState,
 } from "@mms/shared";
 import { useAcademicCatalogItems } from "@/hooks/useAcademicCatalog";
@@ -85,7 +85,7 @@ export function useSessionFormController({
       faculty: draft.faculty || session?.faculty || [],
       classes: draft.classes || session?.classes || [],
     }),
-    resolveMessage: (message) => t(message as AppTranslationKey),
+    resolveMessage: (message) => translateValidationMessage(message, t),
     snapshot: sessionFormDraftSnapshot,
     earlyRules: (draft) => {
       const newErrors: Record<string, string> = {};

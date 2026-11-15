@@ -1,6 +1,7 @@
 import React from "react";
 import { Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { TimePicker } from "@/components/app/TimePicker";
 import { cn } from "@/lib/utils";
 import type { AttendanceSettings } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
@@ -55,12 +56,11 @@ export function AttendanceTimingRulesSection({
           hint={t("attendance.settings.cutoffTimeDesc")}
         >
           <div className="flex items-center gap-2">
-            <Input
+            <TimePicker
               id="setting-cutoff-time"
               name="cutoffTime"
-              type="time"
               value={settingsDraft.cutoffTime || ""}
-              onChange={(event) => upd("cutoffTime", event.target.value)}
+              onChange={(value) => upd("cutoffTime", value)}
               className={cn(FORM_INPUT, "w-32 text-center")}
             />
           </div>
@@ -76,7 +76,7 @@ export function AttendanceTimingRulesSection({
               <Input
                 id="setting-late-threshold"
                 name="lateThresholdMins"
-                type="number"
+                type="text"
                 inputMode="numeric"
                 min={0}
                 max={240}
@@ -101,7 +101,7 @@ export function AttendanceTimingRulesSection({
               <Input
                 id="setting-auto-absent"
                 name="autoAbsentAfterMins"
-                type="number"
+                type="text"
                 inputMode="numeric"
                 min={0}
                 max={240}

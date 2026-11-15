@@ -6,7 +6,7 @@
 #                      exits non-zero only when MMS_A11Y_STRICT=1 (heuristics
 #                      produce false positives by design; they are a nudge, not a gate).
 #   full             — runs the real axe gate:
-#                      `pnpm --filter e2e-tests exec playwright test tests/a11y-shell.spec.ts`
+#                      `pnpm --filter e2e-tests exec playwright test tests/a11y/a11y-shell.spec.ts`
 #                      and propagates its exit code (serious/critical violations fail).
 #
 # Usage: bash smoke-a11y.sh [static|full]
@@ -20,7 +20,7 @@ SRC_GLOBS=("apps/frontend/src/components" "apps/frontend/src/tenant/features" "a
 
 if [[ "$MODE" == "full" ]]; then
   echo "🔍 Running axe gate (Playwright)…"
-  pnpm --filter e2e-tests exec playwright test tests/a11y-shell.spec.ts
+  pnpm --filter e2e-tests exec playwright test tests/a11y/a11y-shell.spec.ts
   exit $?
 fi
 

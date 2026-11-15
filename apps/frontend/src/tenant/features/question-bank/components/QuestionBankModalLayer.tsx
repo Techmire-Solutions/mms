@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ClipboardList, FileText, Library, Plus } from "lucide-react";
 import { FormModal, type FormModalTab } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -42,6 +43,7 @@ export function QuestionBankModalLayer({
   onSaveQuestion,
 }: QuestionBankModalLayerProps) {
   const { t } = useTranslation();
+  const [paperSaving, setPaperSaving] = useState(false);
   const paperBuilderTabs: FormModalTab<PaperBuilderTab>[] = [
     { key: "details", label: t("questionBank.paperDetails"), icon: FileText },
     { key: "saved", label: t("questionBank.savedPapers"), icon: Library },
@@ -60,6 +62,7 @@ export function QuestionBankModalLayer({
           subtitle={t("questionBank.manualPaperGeneratorSubtitle")}
           icon={FileText}
           size="xl"
+          saving={paperSaving}
           hideFooter
           tabs={paperBuilderTabs}
           activeTab={paperBuilderTab}
@@ -74,6 +77,7 @@ export function QuestionBankModalLayer({
             showHeader={false}
             canViewAnswers={canWrite}
             onSaveTest={onSaveTest}
+            onSavingChange={setPaperSaving}
           />
         </FormModal>
       )}

@@ -17,6 +17,7 @@ import {
 import { ContactIdentityMeta } from "@/tenant/features/contacts/components/ContactIdentityMeta";
 import { genderAvatarGradient } from "@/lib/ui/semanticTone";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
@@ -149,7 +150,7 @@ export function ContactBasicAvatarSection({
             </div>
           )}
 
-          <label
+          <Label
             htmlFor={avatarInputId}
             className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-foreground/40 text-background opacity-0 group-hover:opacity-100 focus-within:opacity-100 backdrop-blur-subtle transition-opacity duration-300"
           >
@@ -166,18 +167,18 @@ export function ContactBasicAvatarSection({
               onChange={handleAvatarChange}
               aria-label={t("account.changePhoto")}
             />
-          </label>
+          </Label>
         </div>
 
         {/* Change Photo Badge */}
-        <label
+        <Label
           htmlFor={avatarInputId}
           className="absolute -bottom-1 -end-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-md border-2 border-card hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-transform before:absolute before:-inset-2 before:content-['']"
           title={t("account.changePhoto")}
         >
           <span className="sr-only">{t("account.changePhoto")}</span>
           <Camera className="h-3.5 w-3.5" aria-hidden />
-        </label>
+        </Label>
 
         {/* Remove Photo Action */}
         {contactDraft.avatar ? (

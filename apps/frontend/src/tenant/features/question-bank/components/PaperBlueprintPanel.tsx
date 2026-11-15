@@ -7,7 +7,13 @@ import {
   type QuestionBankTest,
 } from "@mms/shared";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/app/FormPrimitives";
+import {
+  Field,
+  FieldErrorMessage,
+  FormCollectionShell,
+  FormListFieldCard,
+} from "@/components/app/FormPrimitives";
+import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT, WORK_SURFACE } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -20,7 +26,9 @@ import { PaperBlueprintPreview } from "@/tenant/features/question-bank/component
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import { useQuestionBankMutations } from "@/tenant/features/question-bank/hooks/useQuestionBankMutations";
 
-type BlueprintRow = BlueprintRowValue;
+interface BlueprintRow extends BlueprintRowValue {
+  id: string;
+}
 
 interface AssembleResult {
   selectedCount: number;
@@ -28,7 +36,18 @@ interface AssembleResult {
   deficits: Array<{ bucketIndex: number; requestedCount: number; selectedCount: number }>;
 }
 
-const EMPTY_ROW: BlueprintRow = { categoryId: "", difficulty: "", type: "", count: "5" };
+function createBlueprintRow(): BlueprintRow {
+  return {
+    id:
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `bp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    categoryId: "",
+    difficulty: "",
+    type: "",
+    count: "5",
+  };
+}
 const MAX_BUCKETS = BLUEPRINT_LIMITS.maxBuckets;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -60,7 +79,7 @@ export function PaperBlueprintPanel({
   const { assemblePaper } = useQuestionBankMutations();
   const [paperId, setPaperId] = useState("");
   const [recencyDays, setRecencyDays] = useState("0");
-  const [rows, setRows] = useState<BlueprintRow[]>([{ ...EMPTY_ROW }]);
+  const [rows, setRows] = useState<BlueprintRow[]>(() => [createBlueprintRow()]);
   const [result, setResult] = useState<AssembleResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -131,8 +150,8 @@ export function PaperBlueprintPanel({
         (!row.type || candidate.type === row.type),
     ).length;
 
-  const updateRow = (index: number, patch: Partial<BlueprintRow>): void => {
-    setRows((current) => current.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  const updateRow = (id: string, patch: Partial<BlueprintRow>): void => {
+    setRows((current) => current.map((row) => (row.id === id ? { ...row, ...patch } : row)));
   };
 
   const assemble = async (): Promise<void> => {
@@ -179,11 +198,11 @@ export function PaperBlueprintPanel({
           />
         </Field>
         <Field id="qb-blueprint-recency" label={t("questionBank.blueprintRecency")}>
-          <input
+          <Input
             id="qb-blueprint-recency"
             name="blueprintRecency"
-            aria-label={t("questionBank.blueprintRecency")}
             type="number"
+            inputMode="numeric"
             min={0}
             max={365}
             className={FORM_INPUT}
@@ -193,48 +212,49 @@ export function PaperBlueprintPanel({
         </Field>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <FormCollectionShell
+        addLabel={t("common.add")}
+        onAdd={() => setRows((current) => [...current, createBlueprintRow()])}
+        addDisabled={rows.length >= MAX_BUCKETS}
+        listKey="qb-blueprint-rows"
+      >
         {rows.map((row, index) => (
-          <BlueprintRowCard
-            key={index}
-            row={row}
+          <FormListFieldCard
+            key={row.id}
+            id={row.id}
             index={index}
-            categories={categories}
-            availableCount={availableFor(row)}
-            onUpdate={(patch) => updateRow(index, patch)}
-            onRemove={
-              rows.length > 1
-                ? () => setRows((current) => current.filter((_, i) => i !== index))
-                : undefined
-            }
-          />
+            label={t("questionBank.blueprintRow", { n: index + 1 })}
+            removeLabel={t("common.delete")}
+            canRemove={rows.length > 1}
+            onRemove={() => setRows((current) => current.filter((item) => item.id !== row.id))}
+          >
+            <BlueprintRowCard
+              row={row}
+              rowId={row.id}
+              index={index}
+              categories={categories}
+              availableCount={availableFor(row)}
+              onUpdate={(patch) => updateRow(row.id, patch)}
+            />
+          </FormListFieldCard>
         ))}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={rows.length >= MAX_BUCKETS}
-            onClick={() => setRows((current) => [...current, { ...EMPTY_ROW }])}
-          >
-            {t("common.add")}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            disabled={!canWrite || !paperId || invalidRows || assemblePaper.isPending}
-            onClick={() => void assemble()}
-          >
-            {assemblePaper.isPending
-              ? t("questionBank.blueprintAssembling")
-              : t("questionBank.blueprintAssemble")}
-          </Button>
-        </div>
+      </FormCollectionShell>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          size="sm"
+          disabled={!canWrite || !paperId || invalidRows || assemblePaper.isPending}
+          onClick={() => void assemble()}
+        >
+          {assemblePaper.isPending
+            ? t("questionBank.blueprintAssembling")
+            : t("questionBank.blueprintAssemble")}
+        </Button>
       </div>
 
-      {invalidRows && (
-        <p className="m-0 text-xs text-destructive">{t("questionBank.blueprintInvalidCount")}</p>
-      )}
+      <FieldErrorMessage
+        message={invalidRows ? t("questionBank.blueprintInvalidCount") : undefined}
+      />
       {error && (
         <p role="alert" className="m-0 text-xs text-destructive">
           {t("questionBank.blueprintAssembleFailed")}: {error}

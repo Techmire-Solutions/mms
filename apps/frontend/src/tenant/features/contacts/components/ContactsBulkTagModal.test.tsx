@@ -10,17 +10,20 @@ vi.mock("@/components/app/FormModal", () => ({
     title,
     children,
     saveLabel,
+    error,
     onSave,
   }: {
     open: boolean;
     title: string;
     children: React.ReactNode;
     saveLabel?: string;
+    error?: string | readonly string[];
     onSave?: () => Promise<void> | void;
   }) =>
     open ? (
       <div data-testid="modal">
         <h2>{title}</h2>
+        {error ? <div role="alert">{Array.isArray(error) ? error.join(" ") : error}</div> : null}
         <div>{children}</div>
         <button type="button" onClick={() => void onSave?.()}>
           {saveLabel}
@@ -45,6 +48,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string | number>) => {
       if (params?.count !== undefined) return `${key}:${params.count}`;
+      if (params?.max !== undefined) return `${key}:${params.max}`;
       return key;
     },
   }),
@@ -70,7 +74,6 @@ describe("ContactsBulkTagModal Component", () => {
   });
 
   it("rejects reserved system tag names without confirming", async () => {
-    const { notify } = await import("@/lib/notify");
     const onConfirm = vi.fn();
     const onClose = vi.fn();
     const container = document.createElement("div");
@@ -111,7 +114,7 @@ describe("ContactsBulkTagModal Component", () => {
         saveButton?.click();
       });
 
-      expect(notify.error).toHaveBeenCalledWith("contacts.tags.reserved");
+      expect(container.textContent).toContain("contacts.tags.reserved");
       expect(onConfirm).not.toHaveBeenCalled();
       expect(onClose).not.toHaveBeenCalled();
       expect(container.textContent).toContain("contacts.bulkTagTitle");
@@ -207,6 +210,93 @@ describe("ContactsBulkTagModal mode and reset behaviour", () => {
       });
 
       expect(container.querySelector<HTMLInputElement>("#bulk-tag-input")?.value ?? "").toBe("");
+    } finally {
+      await act(async () => root.unmount());
+      container.remove();
+    }
+  });
+});
+
+describe("ContactsBulkTagModal server caps", () => {
+  it("shows an inline error for more than 100 tags and never calls the API", async () => {
+    const onConfirm = vi.fn();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    try {
+      await act(async () => {
+        root.render(
+          <ContactsBulkTagModal
+            open={true}
+            onClose={vi.fn()}
+            selectedCount={2}
+            onConfirm={onConfirm}
+          />,
+        );
+      });
+
+      const input = container.querySelector<HTMLInputElement>("#bulk-tag-input");
+      if (!input) throw new Error("tag input missing");
+      const tags = Array.from({ length: 101 }, (_, index) => `tag${index}`).join(", ");
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      await act(async () => {
+        nativeSetter?.call(input, tags);
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+
+      const saveButton = Array.from(container.querySelectorAll("button")).find(
+        (button) => button.textContent === "contacts.bulkTagAdd",
+      );
+      await act(async () => saveButton?.click());
+
+      expect(container.textContent).toContain("contacts.bulkTagTooManyTags:100");
+      expect(onConfirm).not.toHaveBeenCalled();
+    } finally {
+      await act(async () => root.unmount());
+      container.remove();
+    }
+  });
+
+  it("shows an inline error above 500 selected contacts", async () => {
+    const onConfirm = vi.fn();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    try {
+      await act(async () => {
+        root.render(
+          <ContactsBulkTagModal
+            open={true}
+            onClose={vi.fn()}
+            selectedCount={501}
+            onConfirm={onConfirm}
+          />,
+        );
+      });
+
+      const input = container.querySelector<HTMLInputElement>("#bulk-tag-input");
+      if (!input) throw new Error("tag input missing");
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      await act(async () => {
+        nativeSetter?.call(input, "VIP");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+
+      const saveButton = Array.from(container.querySelectorAll("button")).find(
+        (button) => button.textContent === "contacts.bulkTagAdd",
+      );
+      await act(async () => saveButton?.click());
+
+      expect(container.textContent).toContain("contacts.bulkTagTooManyContacts:500");
+      expect(onConfirm).not.toHaveBeenCalled();
     } finally {
       await act(async () => root.unmount());
       container.remove();

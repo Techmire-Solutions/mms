@@ -14,8 +14,16 @@ export function AccountingSettingsNumberingSection({
   canEdit,
 }: AccountingSettingsNumberingSectionProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { cardConfig, handleCardChange, prefixValid, formatChanged, dirty, isSaving, handleSave } =
-    useVoucherNumberingSettings();
+  const {
+    cardConfig,
+    handleCardChange,
+    prefixValid,
+    formatChanged,
+    dirty,
+    isSaving,
+    error,
+    handleSave,
+  } = useVoucherNumberingSettings();
 
   return (
     <div className="space-y-2">
@@ -35,7 +43,9 @@ export function AccountingSettingsNumberingSection({
       />
       <FieldErrorMessage
         id="accounting-voucher-prefix-error"
-        message={prefixValid ? undefined : t("accounting.settings.voucher.prefixInvalid")}
+        message={
+          prefixValid ? (error ?? undefined) : t("accounting.settings.voucher.prefixInvalid")
+        }
       />
       <p className="m-0 text-xs text-muted-foreground">{t("accounting.settings.voucher.hint")}</p>
       {formatChanged && (

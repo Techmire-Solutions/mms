@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CalendarDays, CopyPlus, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
-import { formatDate, todayISO, type AcademicCalendarEvent } from "@mms/shared";
+import { formatDate, type AcademicCalendarEvent } from "@mms/shared";
 import {
   DataTable,
   DataTableRowActions,
@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import {
   useAcademicCalendarActions,
@@ -34,9 +35,10 @@ export function AcademicCalendarManager({
   canDelete = false,
 }: AcademicCalendarManagerProps): React.JSX.Element {
   const { t } = useTranslation();
+  const today = useWorkspaceToday();
   const { settings } = useAttendanceConfig();
   const [view, setView] = useState<CalendarView>("month");
-  const [month, setMonth] = useState(() => `${todayISO().slice(0, 7)}-01`);
+  const [month, setMonth] = useState(() => `${today.slice(0, 7)}-01`);
   const [showDeleted, setShowDeleted] = useState(false);
   const [editing, setEditing] = useState<AcademicCalendarEvent | null>(null);
   const [initialDate, setInitialDate] = useState("");

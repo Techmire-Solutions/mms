@@ -9,6 +9,7 @@ interface SimpleTransactionRefFieldProps {
   refValue: string;
   date: string;
   isDuplicateRef: boolean;
+  required?: boolean;
   onChange: (val: string) => void;
   onProceed?: () => void;
 }
@@ -18,6 +19,7 @@ export function SimpleTransactionRefField({
   refValue,
   date,
   isDuplicateRef,
+  required = false,
   onChange,
   onProceed,
 }: SimpleTransactionRefFieldProps) {
@@ -31,7 +33,14 @@ export function SimpleTransactionRefField({
         isDuplicateRef ? t("accounting.journal.dashboard.wizard.errorRefDuplicate") : undefined
       }
       errorId={isDuplicateRef ? `${prefix}-ref-error` : undefined}
-      hint={refValue.trim() ? t("accounting.journal.dashboard.wizard.optional") : undefined}
+      required={required}
+      hint={
+        required
+          ? t("accounting.journal.form.refRequiredManual")
+          : refValue.trim()
+            ? t("accounting.journal.dashboard.wizard.optional")
+            : undefined
+      }
     >
       <Input
         id={`${prefix}-ref`}

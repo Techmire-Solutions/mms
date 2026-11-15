@@ -7,6 +7,7 @@ import {
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import {
   fetchWhatsappIntegration,
   saveWhatsappIntegration,
@@ -20,6 +21,7 @@ export function useWhatsAppIntegrationPanel() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [form, setForm] = useState<WhatsappIntegrationConfig>(DEFAULT_WHATSAPP_INTEGRATION);
   const [accountSecret, setAccountSecret] = useState("");
   const [testPhone, setTestPhone] = useState("");
@@ -53,6 +55,7 @@ export function useWhatsAppIntegrationPanel() {
   };
 
   const handleSave = async (): Promise<void> => {
+    setActionError(null);
     setSaving(true);
     try {
       const effectiveBaseUrl =
@@ -67,9 +70,9 @@ export function useWhatsAppIntegrationPanel() {
       void queryClient.invalidateQueries({ queryKey: ["whatsapp-integration"] });
       notify.success(t("whatsapp.saveSuccess"), { description: t("whatsapp.saveSuccessDesc") });
     } catch (error) {
-      notify.error(t("whatsapp.saveFailed"), {
-        description: error instanceof Error ? error.message : undefined,
-      });
+      const mapped = mapApiFormError(error);
+      setActionError(mapped.message ?? t("whatsapp.saveFailed"));
+      notify.error(t("whatsapp.saveFailed"), { description: mapped.message });
     } finally {
       setSaving(false);
     }
@@ -98,9 +101,9 @@ export function useWhatsAppIntegrationPanel() {
       void queryClient.invalidateQueries({ queryKey: ["whatsapp-integration"] });
       notify.success(t("whatsapp.testSuccess"), { description: t("whatsapp.testSuccessDesc") });
     } catch (error) {
-      notify.error(t("whatsapp.testFailed"), {
-        description: error instanceof Error ? error.message : undefined,
-      });
+      const mapped = mapApiFormError(error);
+      setActionError(mapped.message ?? t("whatsapp.testFailed"));
+      notify.error(t("whatsapp.testFailed"), { description: mapped.message });
     } finally {
       setTesting(false);
     }
@@ -112,6 +115,7 @@ export function useWhatsAppIntegrationPanel() {
     loading,
     saving,
     testing,
+    actionError,
     form,
     accountSecret,
     setAccountSecret,

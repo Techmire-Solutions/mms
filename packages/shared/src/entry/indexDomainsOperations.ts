@@ -140,6 +140,7 @@ export * from "../messaging/smsUtils.js";
 export * from "../auth/userEntityTypes.js";
 export * from "../auth/userRbacDefaults.js";
 export * from "../auth/userRbacModuleRegistry.js";
+export * from "../auth/userRbacRoleWrite.js";
 export * from "../auth/userRbacPermissionNav.js";
 export * from "../auth/userRbacRegistry.js";
 export * from "../auth/userRoleUtils.js";

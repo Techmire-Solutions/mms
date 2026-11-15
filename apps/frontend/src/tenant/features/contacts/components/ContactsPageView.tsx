@@ -90,6 +90,7 @@ export function ContactsPageView({
 
           <ContactsSyncConflictPanel
             open={conflictPanelOpen}
+            canWrite={canWrite}
             onClose={() => setConflictPanelOpen(false)}
           />
         </>

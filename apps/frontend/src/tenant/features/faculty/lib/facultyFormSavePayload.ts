@@ -1,14 +1,26 @@
-import { type FacultyMember, getPrimaryEmail, normalizeStoredFaculty } from "@mms/shared";
+import {
+  type FacultyMember,
+  type FieldDefinition,
+  getPrimaryEmail,
+  listEnabledCustomFacultyFormFields,
+  normalizeStoredFaculty,
+} from "@mms/shared";
 import { notify } from "@/lib/notify";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { extractEmployeeId } from "@/tenant/features/faculty/lib/facultyFormDraft";
 import type { FacultySaveFlowInput } from "@/tenant/features/faculty/lib/facultyFormSaveFlow";
+import { sanitizeFacultyIjazahs } from "@/tenant/features/faculty/lib/facultyIjazahPayload";
 
 export interface FacultySavePayloadInput {
   facultyDraft?: Partial<FacultyMember>;
   faculty?: FacultyMember;
   autoGenerateId: boolean;
   nextEmployeeId?: string;
+  /**
+   * Setup Fields map. Enabled custom fields live in `faculty.custom_data` on the
+   * wire and are keyed by `field.key`, so they must be copied explicitly.
+   */
+  fields?: Record<string, readonly FieldDefinition[]>;
 }
 
 /** Persisted faculty row keys (Faculty Management model) — never the read projections. */
@@ -28,9 +40,10 @@ const FACULTY_PERSIST_KEYS = [
   "designationEndDate",
   "employmentStartDate",
   "employmentEndDate",
-  // Not a typed column: the server persists unknown wire keys in `faculty.custom_data`,
-  // so the allowlist is the only thing that decides whether the control can save.
+  // Not a typed column: the server persists unknown wire keys in `faculty.custom_data`.
+  // Enabled Setup custom fields are merged below from the field registry.
   "employmentContractType",
+  "ijazahs",
   "notes",
 ] as const;
 
@@ -58,8 +71,20 @@ export function buildFacultySavePayload(input: FacultySavePayloadInput): Partial
 
   const base = pickDraftKeys(draft, FACULTY_PERSIST_KEYS);
 
+  // Custom Setup Fields are not part of the static allowlist. They are validated
+  // by the dynamic schema and persisted into `faculty.custom_data`, so dropping
+  // them here silently discarded every custom value the user had entered.
+  const customValues: Record<string, unknown> = {};
+  const draftRecord = draft as Record<string, unknown>;
+  for (const field of listEnabledCustomFacultyFormFields(input.fields ?? {})) {
+    const value = draftRecord[field.key];
+    if (value !== undefined) customValues[field.key] = value;
+  }
+
   const payload: Record<string, unknown> = {
+    ...customValues,
     ...base,
+    ...(draft.ijazahs ? { ijazahs: sanitizeFacultyIjazahs(draft.ijazahs) } : {}),
     employeeId: resolvedEmployeeId,
     contactId: String(draft.contactId || ""),
     designationId: draft.designationId ? String(draft.designationId) : null,

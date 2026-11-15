@@ -44,6 +44,8 @@ export interface ContactsSyncConflictDiffBodyProps {
   onApplyMerge: () => void;
   onKeepMine: () => void;
   onUseServer: () => void;
+  /** False hides write actions (backend still authorizes every request). */
+  canWrite?: boolean;
   t: TranslationFunction;
   viewMode?: WorkDirectoryViewMode;
 }
@@ -59,6 +61,7 @@ export function ContactsSyncConflictDiffBody({
   onApplyMerge,
   onKeepMine,
   onUseServer,
+  canWrite = true,
   t,
   viewMode: propViewMode,
 }: ContactsSyncConflictDiffBodyProps): React.JSX.Element {
@@ -193,14 +196,26 @@ export function ContactsSyncConflictDiffBody({
 
       <div className="flex flex-wrap gap-2 pt-1">
         {local && (
-          <Button type="button" size="sm" disabled={applying} onClick={onApplyMerge}>
+          <Button type="button" size="sm" disabled={applying || !canWrite} onClick={onApplyMerge}>
             {t("contacts.sync.conflictApplyMerge")}
           </Button>
         )}
-        <Button type="button" variant="outline" size="sm" disabled={applying} onClick={onKeepMine}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={applying || !canWrite}
+          onClick={onKeepMine}
+        >
           {t("contacts.sync.conflictKeepLocal")}
         </Button>
-        <Button type="button" variant="outline" size="sm" disabled={applying} onClick={onUseServer}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={applying || !canWrite}
+          onClick={onUseServer}
+        >
           {t("contacts.sync.conflictUseServer")}
         </Button>
       </div>

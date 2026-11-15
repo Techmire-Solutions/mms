@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { type AccountingSettings } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { notify } from "@/lib/notify";
-import { ACCOUNTING_PREFERENCES_KEYS } from "@/tenant/features/accounting/hooks/accountingSetupConfigApi";
+import { accountingPreferencesPutBodySchema, type AccountingSettings } from "@mms/shared";
+import {
+  ACCOUNTING_PREFERENCES_KEYS,
+  toAccountingPreferencesPayload,
+} from "@/tenant/features/accounting/hooks/accountingSetupConfigApi";
 
 /**
  * Best-available message for a failed accounting write.
@@ -52,6 +55,15 @@ export function useAccountingSetupSaveActions({
     // defaults over real preferences — including `retainedEarningsAccount`,
     // which period close requires. Refuse instead of overwriting silently.
     if (!prefsReady) return;
+    const parsed = accountingPreferencesPutBodySchema.safeParse(
+      toAccountingPreferencesPayload(settingsDraft),
+    );
+    if (!parsed.success) {
+      notify.error(t("accounting.settings.saveFailed"), {
+        description: t("accounting.settings.invalidPreferences"),
+      });
+      return;
+    }
     setSaving(true);
     try {
       // Awaits the real PUT /api/accounting/preferences; a rejection is what

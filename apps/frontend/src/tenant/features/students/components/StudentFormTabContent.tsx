@@ -6,6 +6,7 @@ import {
   type StudentFieldErrorGetter,
   type StudentStatusSelectOption,
 } from "@/tenant/features/students/components/StudentFormSections";
+import { StudentCustomFieldsSection } from "./StudentCustomFieldsSection";
 import { EntityNotesFormSection } from "@/components/app/EntityNotesFormSection";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveStudentFieldLabel } from "@/tenant/features/students/components/StudentFormSectionShared";
@@ -108,6 +109,13 @@ export const StudentFormTabContent = function StudentFormTabContent({
         onGrNumberChange={onGrNumberChange}
         onDraftChange={onDraftChange}
       />
+      <StudentCustomFieldsSection
+        fields={fields}
+        draft={studentDraft}
+        getFieldError={getFieldError}
+        onDraftChange={onDraftChange}
+      />
+
       {isFieldEnabled("notes") ? (
         <EntityNotesFormSection
           title={t("students.form.notesSection")}

@@ -1,7 +1,9 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { AlertCircle } from "lucide-react";
 import {
   DEFAULT_MESSAGING_PREFERENCES,
+  messagingPreferencesSchema,
   type MessagingPreferences,
   type MessageChannel,
   type MessagingSmsDispatchMode,
@@ -40,8 +42,11 @@ export function MessagingSetupPreferences({
 
   if (query.data && query.data !== prevData) {
     setPrevData(query.data);
-    setDraft(query.data);
-    setDirty(false);
+    // A background refetch must not discard what the user is editing.
+    if (!dirty) {
+      setDraft(query.data);
+      setDirty(false);
+    }
   }
 
   const update = <K extends keyof MessagingPreferences>(key: K, value: MessagingPreferences[K]) => {
@@ -52,8 +57,15 @@ export function MessagingSetupPreferences({
 
   const handleSave = async (): Promise<void> => {
     if (!canWrite) return;
+    const parsed = messagingPreferencesSchema.safeParse(draft);
+    if (!parsed.success) {
+      notify.error(t("messaging.preferences.saveFailed"), {
+        description: translateValidationMessage(parsed.error.issues[0]?.message, t),
+      });
+      return;
+    }
     try {
-      await mutation.mutateAsync(draft);
+      await mutation.mutateAsync(parsed.data);
       setDirty(false);
       setSaved(true);
       notify.success(t("messaging.preferences.saveSuccess"));

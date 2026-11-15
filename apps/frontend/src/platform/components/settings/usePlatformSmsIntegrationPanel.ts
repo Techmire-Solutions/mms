@@ -21,6 +21,7 @@ export function usePlatformSmsIntegrationPanel() {
   const [form, setForm] = useState<SmsIntegrationConfig>(DEFAULT_SMS_INTEGRATION);
   const [accountSecret, setAccountSecret] = useState("");
   const [testPhone, setTestPhone] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
   const load = useCallback(async (): Promise<void> => {
     try {
@@ -44,7 +45,36 @@ export function usePlatformSmsIntegrationPanel() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const validate = (phone?: string): string | null => {
+    if (!form.providerId) return t("sms.invalidProvider");
+    if (!["msg91", "infobip", "logiqueues"].includes(form.providerId) && !form.accountId.trim()) {
+      return t("sms.invalidAccountId");
+    }
+    if (form.providerId !== "logiqueues" && !form.senderId.trim()) {
+      return t("sms.invalidSenderId");
+    }
+    if (!form.hasCredentials && !accountSecret.trim()) return t("sms.invalidSecret");
+    if (selectedPreset.requiresBaseUrl) {
+      if (!form.apiBaseUrl?.trim()) return t("sms.invalidBaseUrl");
+      try {
+        new URL(form.apiBaseUrl.trim());
+      } catch {
+        return t("sms.invalidBaseUrl");
+      }
+    }
+    if (phone !== undefined && !/^\+?\d{7,15}$/.test(phone.trim())) {
+      return t("sms.invalidTestPhone");
+    }
+    return null;
+  };
+
   const handleSave = async (): Promise<void> => {
+    const validationError = validate();
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+    setFormError(null);
     setSaving(true);
     try {
       const saved = await savePlatformSmsIntegration({
@@ -64,7 +94,12 @@ export function usePlatformSmsIntegrationPanel() {
   };
 
   const handleTest = async (): Promise<void> => {
-    if (!testPhone.trim()) return;
+    const validationError = validate(testPhone);
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+    setFormError(null);
     setTesting(true);
     try {
       if (accountSecret.trim()) {
@@ -94,6 +129,7 @@ export function usePlatformSmsIntegrationPanel() {
     saving,
     testing,
     form,
+    formError,
     accountSecret,
     setAccountSecret,
     testPhone,

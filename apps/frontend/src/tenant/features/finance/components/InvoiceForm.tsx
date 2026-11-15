@@ -1,3 +1,7 @@
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { ReceiptText } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
@@ -9,13 +13,13 @@ import {
   isValidExchangeRate,
   previewConvertedAmount,
   type InvoiceCreateInput,
-  type AppTranslationKey,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { useFinanceConfig } from "@/hooks/useStandardModuleConfig";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { InvoiceFormFieldsSection } from "@/tenant/features/finance/components/InvoiceFormFieldsSection";
 import { InvoiceFormSummarySection } from "@/tenant/features/finance/components/InvoiceFormSummarySection";
 import {
@@ -163,7 +167,7 @@ export const InvoiceForm = function InvoiceForm({
       if (!parsed.success) {
         setErrors((prev) => ({
           ...prev,
-          ...mapZodFormErrors(parsed.error, (message) => t(message as AppTranslationKey)),
+          ...mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
         }));
         setSubmitError(t("finance.fixErrors"));
         return;
@@ -171,13 +175,18 @@ export const InvoiceForm = function InvoiceForm({
 
       setSubmitting(true);
       try {
-        await onSave(payload);
+        await onSave(parsed.data);
         notify.success(t("finance.invoiceSaved"));
         resetAndClose();
       } catch (error: unknown) {
-        if (!(error instanceof NotifiedMutationError)) {
+        const mapped = mapApiFormError(error, (message) => translateApiMessage(message, t));
+        if (mapped.fieldErrors) {
+          setErrors((prev) => ({ ...prev, ...mapped.fieldErrors }));
+        }
+        setSubmitError(mapped.message ?? t("finance.invoiceSaveFailed"));
+        if (!mapped.fieldErrors && !(error instanceof NotifiedMutationError)) {
           notify.error(t("finance.invoiceSaveFailed"), {
-            description: error instanceof Error ? error.message : String(error),
+            description: mapped.message ?? (error instanceof Error ? error.message : String(error)),
           });
         }
       } finally {

@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { CalendarPlus } from "lucide-react";
 import {
@@ -6,7 +7,6 @@ import {
   type AcademicCalendarEvent,
   type AcademicCalendarEventKind,
   type AcademicCalendarEventWrite,
-  type AppTranslationKey,
 } from "@mms/shared";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
@@ -88,10 +88,27 @@ export function CalendarEventFormModal({
     (scope.scope !== "workspace" && !scope.sessionId) ||
     ((scope.scope === "class" || scope.scope === "section") && !scope.classId) ||
     (scope.scope === "section" && !scope.sectionId);
-  const isDirty =
-    Boolean(title.trim() || notes.trim()) ||
-    (entry !== null &&
-      (title !== entry.title || startOn !== entry.startOn || endOn !== entry.endOn));
+  const isDirty = entry
+    ? title !== entry.title ||
+      kind !== entry.kind ||
+      startOn !== entry.startOn ||
+      endOn !== entry.endOn ||
+      scope.scope !== entry.scope ||
+      scope.sessionId !== (entry.sessionId ?? "") ||
+      scope.classId !== (entry.classId ?? "") ||
+      scope.sectionId !== (entry.sectionId ?? "") ||
+      notes !== (entry.notes ?? "")
+    : Boolean(
+        title.trim() ||
+        notes.trim() ||
+        kind !== "holiday" ||
+        scope.scope !== "workspace" ||
+        scope.sessionId ||
+        scope.classId ||
+        scope.sectionId ||
+        startOn !== initialDate ||
+        endOn !== initialDate,
+      );
 
   const handleSave = async () => {
     const candidate = {
@@ -108,7 +125,7 @@ export function CalendarEventFormModal({
     const validation = validateAttendanceDraft(
       academicCalendarEventWriteSchema,
       candidate,
-      (message) => t(message as AppTranslationKey),
+      (message) => translateValidationMessage(message, t),
     );
     if (!validation.ok) {
       setFieldErrors(validation.fieldErrors);

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Contact, FacultyMember } from "@mms/shared";
+import type { Contact, FacultyMember, FieldDefinition } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {
   buildFacultySavePayload,
@@ -31,6 +31,36 @@ describe("facultyFormSavePayload", () => {
       expect(payload.contactId).toBe("cnt-1");
     });
 
+    it("persists sanitized ijazah rows instead of dropping the collection", () => {
+      const payload = buildFacultySavePayload({
+        facultyDraft: {
+          contactId: "cnt-1",
+          ijazahs: [
+            {
+              id: "ijz-1",
+              title: "  Hafs ",
+              field: "quran",
+              grantingAuthority: " Sheikh ",
+              year: "  ",
+            },
+            { id: "ijz-2", title: " ", field: "quran", grantingAuthority: "" },
+          ],
+        },
+        autoGenerateId: false,
+      });
+
+      expect(payload.ijazahs).toEqual([
+        {
+          id: "ijz-1",
+          title: "Hafs",
+          field: "quran",
+          grantingAuthority: "Sheikh",
+          year: undefined,
+          sanadChain: undefined,
+        },
+      ]);
+    });
+
     it("keeps the employment contract type so the control can persist", () => {
       // The backend stores unknown wire keys in `custom_data`; the draft allowlist
       // was the only reason this visible control never saved.
@@ -43,6 +73,48 @@ describe("facultyFormSavePayload", () => {
       });
 
       expect(payload.employmentContractType).toBe("salaried");
+    });
+
+    it("carries enabled Setup custom fields into the payload", () => {
+      const customField: FieldDefinition = {
+        key: "customTribalAffiliation",
+        label: "Tribal affiliation",
+        type: "text",
+        enabled: true,
+        order: 1,
+      };
+
+      const payload = buildFacultySavePayload({
+        facultyDraft: {
+          contactId: "cnt-1",
+          customTribalAffiliation: "Ansari",
+        } as Partial<FacultyMember>,
+        autoGenerateId: false,
+        fields: { identity: [customField] },
+      });
+
+      expect(payload).toMatchObject({ customTribalAffiliation: "Ansari" });
+    });
+
+    it("omits disabled custom fields", () => {
+      const customField: FieldDefinition = {
+        key: "customTribalAffiliation",
+        label: "Tribal affiliation",
+        type: "text",
+        enabled: false,
+        order: 1,
+      };
+
+      const payload = buildFacultySavePayload({
+        facultyDraft: {
+          contactId: "cnt-1",
+          customTribalAffiliation: "Ansari",
+        } as Partial<FacultyMember>,
+        autoGenerateId: false,
+        fields: { identity: [customField] },
+      });
+
+      expect(payload).not.toHaveProperty("customTribalAffiliation");
     });
 
     it("uses nextEmployeeId when autoGenerateId is true and creating new faculty member", () => {
@@ -115,6 +187,7 @@ describe("facultyFormSavePayload", () => {
       onSave: vi.fn(),
       onClose: vi.fn(),
       setErrors: vi.fn(),
+      setServerError: vi.fn(),
       setSaving: vi.fn(),
       setPendingSaveData: vi.fn(),
       setTypedDuplicateReason: vi.fn(),

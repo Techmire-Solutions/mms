@@ -19,6 +19,7 @@ import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { FormModal } from "@/components/app/FormModal";
 import { useUsersConfig } from "@/hooks/useStandardModuleConfig";
+import { validateUserCustomFields } from "@/tenant/features/users/lib/userCustomFieldValidation";
 import { Form } from "@/components/ui/form";
 import { firstZodFieldError } from "@/lib/forms/translateZodError";
 import { notify } from "@/lib/notify";
@@ -31,7 +32,7 @@ export interface EditUserModalProps {
 }
 
 export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): React.JSX.Element {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { user: authUser } = useAuth();
   const workspaceRoles = useWorkspaceRoles();
   const { customFields } = useUsersConfig();
@@ -98,8 +99,23 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
   );
 
   const handleSave = form.handleSubmit(async (values) => {
+    if (!assignableRoles.some((role) => role.id === values.role)) {
+      form.setError("role", { type: "manual", message: t("users.addErrorRole") });
+      return;
+    }
     const contact = selectedContact;
     if (!contact && watchedContactId) return;
+
+    const customErrors = validateUserCustomFields(customFields, values, language);
+    if (Object.keys(customErrors).length > 0) {
+      for (const [key, message] of Object.entries(customErrors)) {
+        form.setError(key as Parameters<typeof form.setError>[0], {
+          type: "manual",
+          message,
+        });
+      }
+      return;
+    }
 
     const name = contact ? (toTitleCase(contact.name.trim()) as string) : user.name;
     const email = contact ? (getPrimaryEmail(contact) || "").toLowerCase() : user.email;

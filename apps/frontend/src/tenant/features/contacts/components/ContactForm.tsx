@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState, useMemo, useId } from "react"
 import { User } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import type { Contact } from "@mms/shared";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import { useContactFormDraft } from "@/tenant/features/contacts/hooks/useContactFormDraft";
@@ -46,9 +45,9 @@ export function ContactForm({
   priority = false,
 }: ContactFormProps): React.JSX.Element {
   const { t, dir } = useTranslation();
-  const { language } = useGlobalSettings();
   const formDomId = `contact-form-${useId().replace(/:/g, "")}`;
-  const { enabledTabIds } = useContactConfig();
+  const { enabledTabIds, isTabFieldEnabled, formTabs } = useContactConfig();
+  const firstNameRequired = isTabFieldEnabled("basic", "firstName");
   const [tab, setTab] = useState("basic");
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
@@ -104,9 +103,10 @@ export function ContactForm({
         enabledTabIds,
         collectionCounts: draft.collectionCounts,
         tabErrorCounts,
+        formTabs,
         t,
       }),
-    [draft.collectionCounts, tabErrorCounts, enabledTabIds, t],
+    [draft.collectionCounts, tabErrorCounts, enabledTabIds, formTabs, t],
   );
 
   const activeTab = visibleTabs.some((tabItem) => tabItem.key === tab)
@@ -151,7 +151,6 @@ export function ContactForm({
       activeTab={activeTab}
       onTabChange={setTab}
       tabPanelIdPrefix={`${formDomId}-tab`}
-      lang={language}
       dir={dir}
       cancelLabel={t("common.cancel")}
       saveLabel={t("contacts.form.saveContact")}
@@ -160,7 +159,7 @@ export function ContactForm({
       saving={draft.saving}
       saveDisabled={
         draft.lookupsLoading ||
-        !draft.contactDraft.firstName?.trim() ||
+        (firstNameRequired && !draft.contactDraft.firstName?.trim()) ||
         (Boolean(contact) && !draft.isDirty)
       }
       discardUnsavedTitle={t("contacts.form.discardUnsavedTitle")}
@@ -172,6 +171,7 @@ export function ContactForm({
           contactDraft={draft.contactDraft}
           collectionCounts={draft.collectionCounts}
           noChanges={Boolean(contact) && !draft.isDirty}
+          requireFirstName={firstNameRequired}
           t={t}
         />
       }
@@ -184,7 +184,7 @@ export function ContactForm({
           e.preventDefault();
           if (
             !draft.lookupsLoading &&
-            draft.contactDraft.firstName?.trim() &&
+            (!firstNameRequired || draft.contactDraft.firstName?.trim()) &&
             !(Boolean(contact) && !draft.isDirty)
           ) {
             void draft.handleSave();

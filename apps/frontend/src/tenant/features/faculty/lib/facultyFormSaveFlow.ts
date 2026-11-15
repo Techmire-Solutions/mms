@@ -1,5 +1,7 @@
 import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import {
+  type AppTranslationKey,
   type FacultySettings,
   type FacultyMember,
   type FacultyDuplicateReason,
@@ -46,6 +48,7 @@ export interface FacultySaveFlowInput {
   keepOpen?: boolean;
   onBaselineReset?: (payload: Partial<FacultyMember>) => void;
   setErrors: (errors: Record<string, string>) => void;
+  setServerError: (message: string | null) => void;
   setSaving: (saving: boolean) => void;
   setPendingSaveData: (data: Partial<FacultyMember> | null) => void;
   setTypedDuplicateReason: (reason: FacultyDuplicateReason | null) => void;
@@ -58,6 +61,7 @@ export interface FacultySaveFlowInput {
 /** Validate + persist faculty form draft; surfaces field errors and toasts on failure. */
 export async function runFacultySaveFlow(input: FacultySaveFlowInput): Promise<boolean> {
   input.setErrors({});
+  input.setServerError(null);
   const payload = buildFacultySavePayload(input);
 
   const validationErrors: ValidationError[] | null = validateFacultyDraft(
@@ -143,13 +147,22 @@ export async function runFacultySaveFlow(input: FacultySaveFlowInput): Promise<b
     return true;
   } catch (err: unknown) {
     if (isEmployeeIdConflictError(err)) {
-      input.setErrors({ employeeId: input.t(DUPLICATE_ERROR_KEYS.employeeId) });
+      const message = input.t(DUPLICATE_ERROR_KEYS.employeeId);
+      input.setErrors({ employeeId: message });
+      input.setServerError(message);
       focusFacultyValidationField(input.formInstanceId, "employeeId");
-      notify.error(input.t(DUPLICATE_ERROR_KEYS.employeeId));
+      notify.error(message);
       return false;
     }
 
-    notifyFacultySaveFailed(input.t, err, "faculty.form_save");
+    const mapped = mapApiFormError(err, (message) => input.t(message as AppTranslationKey));
+    if (mapped.fieldErrors) {
+      input.setErrors(mapped.fieldErrors);
+      input.setServerError(mapped.message ?? input.t("common.formPleaseFixErrors"));
+    } else {
+      input.setServerError(mapped.message ?? input.t("faculty.toast.saveFailed"));
+      notifyFacultySaveFailed(input.t, err, "faculty.form_save");
+    }
     return false;
   } finally {
     input.setSaving(false);

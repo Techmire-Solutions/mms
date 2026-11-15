@@ -12,7 +12,12 @@ import {
   FolderKanban,
   Landmark,
 } from "lucide-react";
-import { DEFAULT_FORM_TABS, type ValidationError } from "@mms/shared";
+import {
+  canViewContactTab,
+  DEFAULT_FORM_TABS,
+  type TabDefinition,
+  type ValidationError,
+} from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export const SYSTEM_TAB_ICONS: Record<string, ComponentType> = {
@@ -45,11 +50,16 @@ export function buildContactFormVisibleTabs({
   enabledTabIds,
   collectionCounts,
   tabErrorCounts,
+  formTabs,
+  viewerRole,
   t,
 }: {
   enabledTabIds: Set<string>;
   collectionCounts: Record<string, number>;
   tabErrorCounts: Record<string, number>;
+  /** Tenant tab registry (order/labels/enablement). Falls back to the static seed. */
+  formTabs?: TabDefinition[];
+  viewerRole?: string;
   t: TranslationFunction;
 }) {
   const countMap: Record<string, number> = {
@@ -65,19 +75,33 @@ export function buildContactFormVisibleTabs({
     bankDetails: collectionCounts.filledBankDetails,
   };
 
-  return DEFAULT_FORM_TABS.filter((sys) => enabledTabIds.has(sys.key)).map((sys) => {
-    const count = countMap[sys.key];
-    const errorCount = tabErrorCounts[sys.key];
-    const hasErrors = Boolean(errorCount && errorCount > 0);
-    const label = sys.labelKey ? t(sys.labelKey) : sys.label || sys.key;
-    return {
-      key: sys.key,
-      icon: SYSTEM_TAB_ICONS[sys.key] ?? FolderKanban,
-      label,
-      badge: hasErrors ? errorCount : count && count > 0 ? count : undefined,
-      tone: hasErrors ? ("destructive" as const) : undefined,
-    };
-  });
+  const canonicalTabs: TabDefinition[] =
+    formTabs && formTabs.length > 0
+      ? [...formTabs].sort((left, right) => left.order - right.order)
+      : DEFAULT_FORM_TABS.map((tab, index) => ({
+          ...tab,
+          enabled: true,
+          order: index,
+          isSystem: true,
+        }));
+
+  return canonicalTabs
+    .filter((tab) => tab.enabled !== false)
+    .filter((tab) => enabledTabIds.has(tab.key))
+    .filter((tab) => !viewerRole || canViewContactTab(viewerRole, tab))
+    .map((tab) => {
+      const count = countMap[tab.key] ?? collectionCounts[tab.key];
+      const errorCount = tabErrorCounts[tab.key];
+      const hasErrors = Boolean(errorCount && errorCount > 0);
+      const label = tab.labelKey ? t(tab.labelKey) : tab.label || tab.key;
+      return {
+        key: tab.key,
+        icon: SYSTEM_TAB_ICONS[tab.key] ?? FolderKanban,
+        label,
+        badge: hasErrors ? errorCount : count && count > 0 ? count : undefined,
+        tone: hasErrors ? ("destructive" as const) : undefined,
+      };
+    });
 }
 
 export interface ContactValidationSummaryItem {

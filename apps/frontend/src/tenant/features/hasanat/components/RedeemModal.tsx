@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useRef, useState } from "react";
 import { Gift } from "lucide-react";
 import { type Redemption, type Distribution } from "@/lib/data/hasanatData";
@@ -117,7 +118,9 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
     if (Object.keys(earlyErrors).length > 0 || !parsed.success) {
       setErrors({
         ...earlyErrors,
-        ...(parsed.success ? {} : mapZodFormErrors(parsed.error, (message) => message)),
+        ...(parsed.success
+          ? {}
+          : mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t))),
       });
       setSubmitError(t("common.formPleaseFixErrors"));
       return;

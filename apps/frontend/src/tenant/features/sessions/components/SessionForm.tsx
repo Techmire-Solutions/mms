@@ -26,7 +26,6 @@ export const SessionForm = function SessionForm({
 }: SessionFormProps): React.JSX.Element {
   const {
     t,
-    language,
     defaultCurrency,
     saving,
     errors,
@@ -62,7 +61,6 @@ export const SessionForm = function SessionForm({
       title={session ? t("sessions.form.editTitle") : t("sessions.form.addTitle")}
       subtitle={t("sessions.form.subtitle")}
       icon={Calendar}
-      lang={language}
       cancelLabel={t("common.cancel")}
       saveLabel={session ? t("sessions.action.update") : t("sessions.action.create")}
       onSave={handleSave}

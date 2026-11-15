@@ -84,6 +84,7 @@ interface ContactsSavedReportsEditorProps {
   shareScopeOptions: ContactsSavedReportShareScope[];
   sharedWithUserIds: string[];
   saving: boolean;
+  error?: string | null;
   searchLabel: string;
   shareLabel: (scope: ContactsSavedReportShareScope | undefined) => string;
   onClose: () => void;
@@ -102,6 +103,7 @@ export function ContactsSavedReportsEditor({
   shareScopeOptions,
   sharedWithUserIds,
   saving,
+  error,
   searchLabel,
   shareLabel,
   onClose,
@@ -112,6 +114,9 @@ export function ContactsSavedReportsEditor({
   onSave,
 }: ContactsSavedReportsEditorProps): React.JSX.Element {
   const { t } = useTranslation();
+  const nameValid = name.trim().length > 0 && name.trim().length <= 200;
+  const usersValid = shareScope !== "users" || sharedWithUserIds.length > 0;
+  const nameError = name.trim().length > 200 ? t("common.maxLength", { max: 200 }) : undefined;
 
   return (
     <FormModal
@@ -123,7 +128,9 @@ export function ContactsSavedReportsEditor({
       saveLabel={t("contacts.savedReports.save")}
       onSave={onSave}
       saving={saving}
-      saveDisabled={!name.trim() || (shareScope === "users" && sharedWithUserIds.length === 0)}
+      saveDisabled={saving || !nameValid || !usersValid}
+      error={nameError ?? error ?? undefined}
+      isDirty={Boolean(name.trim() || search.trim() || sharedWithUserIds.length)}
       formId="contacts-saved-reports-form"
     >
       <form
@@ -131,7 +138,7 @@ export function ContactsSavedReportsEditor({
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
-          if (name.trim() && !(shareScope === "users" && sharedWithUserIds.length === 0)) {
+          if (nameValid && usersValid && !saving) {
             onSave();
           }
         }}
@@ -143,6 +150,7 @@ export function ContactsSavedReportsEditor({
             name="name"
             className={FORM_INPUT}
             value={name}
+            maxLength={200}
             onChange={(event) => onNameChange(event.target.value)}
             placeholder={t("contacts.savedReports.namePlaceholder")}
             required

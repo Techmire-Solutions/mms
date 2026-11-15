@@ -1,13 +1,24 @@
+import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
 import type React from "react";
 import { useState } from "react";
 import { HandCoins } from "lucide-react";
-import { todayISO, type Account, type HedgeRelationship } from "@mms/shared";
+import {
+  hedgeDiscontinuationRequestSchema,
+  hedgeReclassificationRequestSchema,
+  hedgeSettlementRequestSchema,
+  todayISO,
+  type Account,
+  type HedgeRelationship,
+} from "@mms/shared";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { DatePicker } from "@/components/app/DatePicker";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import { accountOptions } from "@/tenant/features/accounting/lib/accountOptions";
 import type { HedgeAction, HedgeActionInput } from "@/tenant/features/accounting/lib/hedgeForms";
 
@@ -39,13 +50,64 @@ export function HedgeActionModal({
     accountId: "",
     reason: "",
   });
+  const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  useIdentityReset(`${action}:${hedge.id}`, () => {
+    setInput({ date: todayISO(), rate: "", accountId: "", reason: "" });
+    setFormError(null);
+    setFieldErrors({});
+  });
   const settle = action === "settle";
   const discontinue = action === "discontinue";
   const complete = discontinue
     ? Boolean(input.date && input.reason.trim().length >= 3)
     : Boolean(input.date && input.accountId && (!settle || input.rate.trim()));
-  const submit = () => {
-    if (complete) void onSave({ ...input, rate: input.rate.trim() });
+  const submit = async () => {
+    if (!complete || saving) return;
+    setFormError(null);
+    setFieldErrors({});
+    const rate = input.rate.trim();
+    const candidate = settle
+      ? {
+          settlementDate: input.date,
+          settlementRate: rate,
+          cashAccountId: input.accountId,
+        }
+      : discontinue
+        ? { date: input.date, reason: input.reason.trim() }
+        : { date: input.date, targetAccountId: input.accountId };
+    const schema = settle
+      ? hedgeSettlementRequestSchema
+      : discontinue
+        ? hedgeDiscontinuationRequestSchema
+        : hedgeReclassificationRequestSchema;
+    const parsed = schema.safeParse(candidate);
+    if (!parsed.success) {
+      const mapped: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const path = issue.path[0];
+        const field =
+          path === "settlementDate"
+            ? "date"
+            : path === "settlementRate"
+              ? "rate"
+              : path === "cashAccountId" || path === "targetAccountId"
+                ? "accountId"
+                : String(path ?? "form");
+        mapped[field] = translateValidationMessage(issue.message, t);
+      }
+      setFieldErrors(mapped);
+      setFormError(t("common.formPleaseFixErrors"));
+      return;
+    }
+    try {
+      await onSave({ ...input, rate });
+    } catch (error) {
+      setFormError(
+        mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+          t("common.formPleaseFixErrors"),
+      );
+    }
   };
 
   return (
@@ -71,6 +133,8 @@ export function HedgeActionModal({
       )}
       onSave={submit}
       saving={saving}
+      saveDisabled={!complete}
+      error={formError ?? undefined}
       formId="hedge-action-form"
     >
       <form
@@ -78,7 +142,7 @@ export function HedgeActionModal({
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          submit();
+          void submit();
         }}
         className="space-y-3"
       >
@@ -91,7 +155,12 @@ export function HedgeActionModal({
                 : "accounting.settings.hedges.reclassifyHint",
           )}
         </p>
-        <Field id="hedge-action-date" label={t("accounting.settings.hedges.actionDate")} required>
+        <Field
+          id="hedge-action-date"
+          label={t("accounting.settings.hedges.actionDate")}
+          required
+          error={fieldErrors.date}
+        >
           <DatePicker
             id="hedge-action-date"
             name="date"
@@ -104,6 +173,7 @@ export function HedgeActionModal({
             id="hedge-action-rate"
             label={t("accounting.settings.hedges.settlementRate")}
             required
+            error={fieldErrors.rate}
           >
             <Input
               id="hedge-action-rate"
@@ -117,7 +187,12 @@ export function HedgeActionModal({
           </Field>
         )}
         {discontinue && (
-          <Field id="hedge-action-reason" label={t("accounting.settings.hedges.reason")} required>
+          <Field
+            id="hedge-action-reason"
+            label={t("accounting.settings.hedges.reason")}
+            required
+            error={fieldErrors.reason}
+          >
             <Input
               id="hedge-action-reason"
               name="reason"
@@ -138,6 +213,7 @@ export function HedgeActionModal({
                 : "accounting.settings.hedges.targetAccount",
             )}
             required
+            error={fieldErrors.accountId}
           >
             <FormSelect
               id="hedge-action-account"

@@ -183,6 +183,15 @@ export function useMessageComposerModel(props: UseMessageComposerModelProps) {
       setStep("compose");
       return;
     }
+    if (!message.trim() || (isEmail && !subject.trim())) {
+      const error = t("common.fieldRequired", {
+        field: t(isEmail && !subject.trim() ? "messaging.subject" : "messaging.messageBody"),
+      });
+      if (!message.trim()) setBodyError(error);
+      else setSubjectError(error);
+      notify.error(error);
+      return;
+    }
     const unknownTokens = findUnknownTokens(channel, subject, message);
     if (unknownTokens.length > 0) {
       const errorMsg = t("messaging.unknownTokens", {

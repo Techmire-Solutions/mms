@@ -63,6 +63,7 @@ export function useFacultyFormSaveActions({
   const currentFaculty = faculty;
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [pendingSaveData, setPendingSaveData] = useState<Partial<FacultyMember> | null>(null);
   const [typedDuplicateReason, setTypedDuplicateReason] = useState<FacultyDuplicateReason | null>(
     null,
@@ -82,8 +83,9 @@ export function useFacultyFormSaveActions({
     const messages = Object.values(errors).filter(Boolean);
     const reasonMessage = typedDuplicateReason ? t(DUPLICATE_ERROR_KEYS[typedDuplicateReason]) : "";
     if (reasonMessage) messages.push(reasonMessage);
+    if (serverError) messages.push(serverError);
     return messages.length > 0 ? [...new Set(messages)] : undefined;
-  }, [errors, typedDuplicateReason, t]);
+  }, [errors, serverError, typedDuplicateReason, t]);
 
   const handleSave = async (options?: { keepOpen?: boolean }): Promise<boolean> => {
     return await runFacultySaveFlow({
@@ -103,6 +105,7 @@ export function useFacultyFormSaveActions({
       keepOpen: options?.keepOpen,
       onBaselineReset: (payload) => setBaselineSnapshot(facultyDraftSnapshot(payload)),
       setErrors,
+      setServerError,
       setSaving,
       setPendingSaveData,
       setTypedDuplicateReason,
@@ -134,6 +137,7 @@ export function useFacultyFormSaveActions({
     saving,
     errors,
     setErrors,
+    serverError,
     handleSave,
     confirmDuplicateSave,
     validationErrorSummary,

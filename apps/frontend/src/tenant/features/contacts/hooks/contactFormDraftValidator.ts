@@ -11,6 +11,8 @@ export interface ValidateContactDraftOptions {
   cleanedDraft: Partial<Contact>;
   fields: Record<string, FieldDefinition[]> | null | undefined;
   language: string;
+  /** Setup Fields predicate — a disabled/optional field must not block save. */
+  isFieldRequired: (tabId: string, fieldId: string) => boolean;
   validateBase: (draft: Partial<Contact>) => ValidationError[];
   t: TranslationFunction;
 }
@@ -19,12 +21,13 @@ export function validateContactDraftErrors({
   cleanedDraft,
   fields,
   language,
+  isFieldRequired,
   validateBase,
   t,
 }: ValidateContactDraftOptions): ValidationError[] {
   const formErrors = validateBase(cleanedDraft);
 
-  if (!cleanedDraft.gender || !cleanedDraft.gender.trim()) {
+  if (isFieldRequired("basic", "gender") && (!cleanedDraft.gender || !cleanedDraft.gender.trim())) {
     formErrors.push({
       fieldId: "gender",
       tabId: "basic",

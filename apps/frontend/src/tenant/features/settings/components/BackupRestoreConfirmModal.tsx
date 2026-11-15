@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { AlertTriangle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { formatDateTime, type WorkspaceBackupSummary } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Modal } from "@/components/app/Modal";
+import { FormModal } from "@/components/app/FormModal";
+import { Field } from "@/components/app/FormPrimitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { SettingsCallout } from "@/components/app/SettingsShell";
 import { compareBackupSubdomains } from "../hooks/backupRestoreUtils";
 import { PasswordInput } from "@/components/app/PasswordInput";
@@ -64,35 +64,19 @@ const BackupRestoreConfirmModal = function BackupRestoreConfirmModal({
   const exportedLabel = (() => formatExportedAt(summary?.exportedAt ?? null))();
 
   return (
-    <Modal
+    <FormModal
       open={open}
       onClose={onClose}
       title={t("backup.confirmRestoreTitle")}
       subtitle={t("backup.confirmRestoreDesc")}
       icon={AlertTriangle}
       size="md"
-      footer={
-        <div className="flex flex-wrap justify-end gap-2.5">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={busy}
-            className="min-h-11 px-4"
-          >
-            {t("backup.confirmCancel")}
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={!phraseOk || !workspaceMatches || !safetyReady || busy}
-            onClick={onConfirm}
-            className="min-h-11 px-5 shadow-sm"
-          >
-            {restoring ? t("backup.restoring") : t("backup.confirmRestoreAction")}
-          </Button>
-        </div>
-      }
+      saving={busy}
+      saveVariant="destructive"
+      cancelLabel={t("backup.confirmCancel")}
+      saveLabel={restoring ? t("backup.restoring") : t("backup.confirmRestoreAction")}
+      saveDisabled={!phraseOk || !workspaceMatches || !safetyReady || busy}
+      onSave={onConfirm}
     >
       <div className="space-y-4">
         <SettingsCallout variant="warning">
@@ -124,21 +108,28 @@ const BackupRestoreConfirmModal = function BackupRestoreConfirmModal({
           </p>
           <p className="text-xs leading-relaxed text-muted-foreground">{t("backup.stepUpNote")}</p>
 
-          <Label htmlFor="backup-restore-password">{t("backup.adminPasswordLabel")}</Label>
-          <PasswordInput
-            id="backup-restore-password"
-            name="backup-restore-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && password && workspaceMatches && !busy && !safetyReady) {
-                event.preventDefault();
-                onCreateSafetyBackup(password);
-              }
-            }}
-            autoComplete="current-password"
-            disabled={busy || safetyReady}
-          />
+          <Field id="backup-restore-password" label={t("backup.adminPasswordLabel")}>
+            <PasswordInput
+              id="backup-restore-password"
+              name="backup-restore-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              onKeyDown={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  password &&
+                  workspaceMatches &&
+                  !busy &&
+                  !safetyReady
+                ) {
+                  event.preventDefault();
+                  onCreateSafetyBackup(password);
+                }
+              }}
+              autoComplete="current-password"
+              disabled={busy || safetyReady}
+            />
+          </Field>
 
           {safetyReady ? (
             <p className="flex items-center gap-2 pt-1 text-xs font-semibold text-success">
@@ -151,9 +142,11 @@ const BackupRestoreConfirmModal = function BackupRestoreConfirmModal({
               variant="outline"
               className="mt-1 min-h-11 w-full font-semibold"
               disabled={!password || !workspaceMatches || busy}
+              loading={safetyStep}
+              loadingText={t("backup.safetyBackupCreating")}
               onClick={() => onCreateSafetyBackup(password)}
             >
-              {safetyStep ? t("backup.safetyBackupCreating") : t("backup.safetyBackupAction")}
+              {t("backup.safetyBackupAction")}
             </Button>
           )}
         </div>
@@ -163,21 +156,24 @@ const BackupRestoreConfirmModal = function BackupRestoreConfirmModal({
           {!safetyReady ? (
             <p className="text-xs text-warning">{t("backup.safetyBackupRequired")}</p>
           ) : null}
-          <Label htmlFor="backup-confirm-phrase">
-            {t("backup.confirmTypeLabel", { phrase: confirmPhrase })}
-          </Label>
-          <Input
+          <Field
             id="backup-confirm-phrase"
-            name="backup-confirm-phrase"
-            value={typed}
-            onChange={(event) => setTyped(event.target.value)}
-            placeholder={t("backup.confirmTypePlaceholder")}
-            autoComplete="off"
-            disabled={busy || !safetyReady}
-          />
+            label={t("backup.confirmTypeLabel", { phrase: confirmPhrase })}
+            required
+          >
+            <Input
+              id="backup-confirm-phrase"
+              name="backup-confirm-phrase"
+              value={typed}
+              onChange={(event) => setTyped(event.target.value)}
+              placeholder={t("backup.confirmTypePlaceholder")}
+              autoComplete="off"
+              disabled={busy || !safetyReady}
+            />
+          </Field>
         </div>
       </div>
-    </Modal>
+    </FormModal>
   );
 };
 

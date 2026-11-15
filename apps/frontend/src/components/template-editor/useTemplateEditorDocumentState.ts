@@ -10,6 +10,7 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
+  documentTemplateSchema,
   getPageDimensions,
   type DocumentTemplate,
   type TemplateElement,
@@ -137,9 +138,17 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
 
   const handleSave = useCallback(async () => {
     if (!onSave) return;
+    // The persisted layout must satisfy the same contract the template API validates.
+    const parsed = documentTemplateSchema.safeParse(template);
+    if (!parsed.success) {
+      notify.error(t("templateEditor.saveFailed"), {
+        description: parsed.error.issues[0]?.message,
+      });
+      return;
+    }
     setSaving(true);
     try {
-      await onSave(template);
+      await onSave(parsed.data as DocumentTemplate<TPayload>);
       dispatch({ type: "mark-saved" });
       setSaved(true);
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);

@@ -2,6 +2,7 @@ import React from "react";
 import { GripVertical, Eye, EyeOff } from "lucide-react";
 import type { ModuleColumnCustomizerListProps } from "@/components/app/moduleColumnCustomizerTypes";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export type { ModuleColumnCustomizerListProps };
 
@@ -23,12 +24,13 @@ export const ModuleColumnCustomizerList = function ModuleColumnCustomizerList({
   hasNonFixedVisible = false,
   isSearching = false,
 }: ModuleColumnCustomizerListProps): React.JSX.Element {
+  const { t } = useTranslation();
   const totalCount = visibleColumns.length + hiddenColumns.length;
 
   if (isSearching && totalCount === 0) {
     return (
       <div className="py-6 text-center text-xs text-muted-foreground">
-        {labels.noMatches || "No columns match"}
+        {labels.noMatches || t("common.noColumnsMatch")}
       </div>
     );
   }
@@ -85,7 +87,7 @@ export const ModuleColumnCustomizerList = function ModuleColumnCustomizerList({
                   type="button"
                   tabIndex={0}
                   aria-label={`${col.label}: reorder`}
-                  title="Press Alt+ArrowUp or Alt+ArrowDown to reorder"
+                  title={t("common.reorderKeyboardHint")}
                   onKeyDown={(event) => {
                     if (
                       (event.key === "ArrowUp" || event.key === "Up") &&

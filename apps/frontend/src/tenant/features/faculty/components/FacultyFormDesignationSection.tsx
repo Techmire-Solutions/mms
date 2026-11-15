@@ -19,6 +19,7 @@ import {
   pickPrimaryEmployDesignationRow,
 } from "../lib/facultyEmployDesignationFormDraft";
 import { useFacultyFormCatalogQuickCreate } from "../hooks/useFacultyFormCatalogQuickCreate";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 
 export interface FacultyFormDesignationSectionProps {
   faculty?: FacultyMember;
@@ -34,9 +35,12 @@ export interface FacultyFormDesignationSectionProps {
   onDraftChange: (patch: Partial<FacultyMember>) => void;
 }
 
-function resolveFormRows(draft: Partial<FacultyMember>): FacultyEmployDesignationFormRow[] {
-  const rows = employDesignationRowsFromFaculty(draft);
-  return rows.length > 0 ? rows : [newEmployDesignationFormRow()];
+function resolveFormRows(
+  draft: Partial<FacultyMember>,
+  today: string,
+): FacultyEmployDesignationFormRow[] {
+  const rows = employDesignationRowsFromFaculty(draft, today);
+  return rows.length > 0 ? rows : [newEmployDesignationFormRow(undefined, today)];
 }
 
 /** Employ Designation collection — one card per tenure row for this contact's employment. */
@@ -54,6 +58,7 @@ export function FacultyFormDesignationSection(
     onDraftChange,
   } = props;
   const { t } = useTranslation();
+  const today = useWorkspaceToday();
   const catalogCreate = useFacultyFormCatalogQuickCreate();
 
   const showAny =
@@ -65,7 +70,7 @@ export function FacultyFormDesignationSection(
     isFieldEnabled("profileStatus");
 
   const rows = useMemo(
-    () => (showAny ? resolveFormRows(facultyDraft) : []),
+    () => (showAny ? resolveFormRows(facultyDraft, today) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the specific draft fields the resolver reads; depending on the whole `facultyDraft` object (new each render) would recompute this on every keystroke.
     [
       showAny,
@@ -114,10 +119,10 @@ export function FacultyFormDesignationSection(
     });
   };
 
-  const handleAdd = () => commitRows([...rows, newEmployDesignationFormRow()]);
+  const handleAdd = () => commitRows([...rows, newEmployDesignationFormRow(undefined, today)]);
   const handleRemove = (clientId: string) => {
     const next = rows.filter((row) => row.clientId !== clientId);
-    commitRows(next.length > 0 ? next : [newEmployDesignationFormRow()]);
+    commitRows(next.length > 0 ? next : [newEmployDesignationFormRow(undefined, today)]);
   };
 
   const applyDesignation = (designation: FacultyDesignationDefinition | undefined) => {

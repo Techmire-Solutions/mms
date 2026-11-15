@@ -3,6 +3,7 @@ import {
   type FieldDefinition,
   todayISO,
   applyStudentScalarCustomFieldDefaults,
+  STUDENT_WRITE_SYSTEM_KEYS,
 } from "@mms/shared";
 
 const STUDENT_FORM_VOLATILE_KEYS = new Set([
@@ -52,6 +53,17 @@ export function getInitialStudentDraft(
 
   const { student, fields } = options;
 
+  // The API row is a read projection: it may carry the nested `customFields`
+  // map plus legacy/read-only columns that are not part of the write DTO.
+  // Copy only keys this form can persist (system keys + enabled Setup fields);
+  // the rest would fail the strict client/server schema on an unchanged save.
+  const editableKeys = new Set<string>(STUDENT_WRITE_SYSTEM_KEYS);
+  for (const tabFields of Object.values(fields ?? {})) {
+    for (const field of tabFields) {
+      if (field.enabled !== false) editableKeys.add(field.key);
+    }
+  }
+
   let draft: Partial<Student> = {
     contactId: student?.contactId ?? "",
     status: student?.status ?? "active",
@@ -67,6 +79,7 @@ export function getInitialStudentDraft(
     for (const [key, value] of Object.entries(student)) {
       if (value === undefined) continue;
       if (STUDENT_FORM_VOLATILE_KEYS.has(key)) continue;
+      if (!editableKeys.has(key)) continue;
       if (key in draft) continue;
       (draft as Record<string, unknown>)[key] = value;
     }

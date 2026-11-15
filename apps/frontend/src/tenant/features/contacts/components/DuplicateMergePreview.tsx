@@ -1,7 +1,10 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import type React from "react";
 import { useMemo, useState } from "react";
 import { AlertTriangle, GitMerge, Loader2 } from "lucide-react";
 import {
+  buildContactWriteSchema,
+  collectContactWriteExtraFieldKeys,
   mergeContacts,
   getDisplayName,
   normalizeContactTagName,
@@ -83,7 +86,8 @@ export function MergePreview({
   onConfirm,
   confirming,
 }: MergePreviewProps): React.JSX.Element {
-  const { prefs } = useContactConfig();
+  const { prefs, fields: fieldConfig, enabledTabIds, fieldConfigVersion } = useContactConfig();
+  const [mergeError, setMergeError] = useState<string | null>(null);
   const { t } = useTranslation();
   const colors = getDuplicateThemeColors(prefs);
   const emptyDash = t("contacts.table.emptyDash");
@@ -107,6 +111,24 @@ export function MergePreview({
     return [...byName.values()];
   }, [keep, other]);
 
+  const handleConfirm = (): void => {
+    const schema = buildContactWriteSchema(
+      collectContactWriteExtraFieldKeys({
+        version: fieldConfigVersion ?? 1,
+        enabledTabs: [...(enabledTabIds ?? [])],
+        requiredTabs: [],
+        fields: fieldConfig,
+      }),
+    );
+    const parsed = schema.safeParse(customMerged);
+    if (!parsed.success) {
+      setMergeError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+      return;
+    }
+    setMergeError(null);
+    onConfirm(parsed.data as Contact);
+  };
+
   return (
     <Modal
       open={true}
@@ -115,6 +137,7 @@ export function MergePreview({
       icon={GitMerge}
       priority
       size="lg"
+      error={mergeError ?? undefined}
       footer={
         <>
           <Button
@@ -127,7 +150,7 @@ export function MergePreview({
           </Button>
           <Button
             type="button"
-            onClick={() => onConfirm(customMerged)}
+            onClick={handleConfirm}
             disabled={confirming}
             className="flex items-center gap-2 px-5 min-h-11 font-semibold"
           >

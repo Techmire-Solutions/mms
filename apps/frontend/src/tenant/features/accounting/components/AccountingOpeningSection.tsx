@@ -2,6 +2,7 @@ import React from "react";
 import { formatMoney, type Account, type FiscalYear } from "@mms/shared";
 import { Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/app/Alert";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import {
@@ -139,9 +140,13 @@ export function AccountingOpeningSection({
       )}
 
       {isError && (
-        <p role="alert" className="m-0 mt-3 text-xs text-destructive">
-          {t("accounting.settings.opening.loadFailed")}
-        </p>
+        <Alert
+          tone="destructive"
+          density="compact"
+          role="alert"
+          description={t("accounting.settings.opening.loadFailed")}
+          className="mt-3"
+        />
       )}
 
       <FormCollectionShell

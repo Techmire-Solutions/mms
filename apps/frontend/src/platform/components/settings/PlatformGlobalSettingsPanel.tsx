@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Globe, Save } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { Field } from "@/components/app/FormPrimitives";
+import { Alert } from "@/components/app/Alert";
 import {
   usePlatformSettingsQuery,
   useUpdatePlatformSettings,
@@ -14,7 +17,6 @@ import {
   Button,
   Input,
   ToggleRow,
-  Label,
   ErrorState,
   CardSkeleton,
 } from "@shared/ui";
@@ -27,11 +29,21 @@ export function PlatformGlobalSettingsPanel(): React.JSX.Element {
   const [syncTls, setSyncTls] = useState(true);
   const [tlsExtraSans, setTlsExtraSans] = useState("");
   const [certbotEmail, setCertbotEmail] = useState("");
-  // Re-seed the editable form during render whenever the query data changes.
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [prevSettings, setPrevSettings] = useState(settings);
+
+  const isDirty =
+    Boolean(settings) &&
+    (syncTls !== (settings?.syncTlsOnCreate ?? true) ||
+      tlsExtraSans !== (settings?.tlsExtraSans ?? "") ||
+      certbotEmail !== (settings?.certbotEmail ?? ""));
+
+  // Re-seed only while the draft is pristine: a background refetch must not
+  // overwrite unsaved TLS/email edits.
   if (settings !== prevSettings) {
     setPrevSettings(settings);
-    if (settings) {
+    if (settings && !isDirty) {
       setSyncTls(settings.syncTlsOnCreate ?? true);
       setTlsExtraSans(settings.tlsExtraSans ?? "");
       setCertbotEmail(settings.certbotEmail ?? "");
@@ -50,13 +62,36 @@ export function PlatformGlobalSettingsPanel(): React.JSX.Element {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    updateSettings.mutate({
-      syncTlsOnCreate: syncTls,
-      tlsExtraSans,
-      certbotEmail,
-    });
+    if (saving) return;
+    setFormError(null);
+    const email = certbotEmail.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setFormError(t("platform.validationEnterValidEmail"));
+      return;
+    }
+    const sans = tlsExtraSans
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    const invalidSan = sans.find((value) => !/^[a-z0-9.*-]+$/i.test(value));
+    if (invalidSan) {
+      setFormError(t("platform.settings.tlsExtraSansHint"));
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateSettings.mutateAsync({
+        syncTlsOnCreate: syncTls,
+        tlsExtraSans: sans.join(", "),
+        certbotEmail: email,
+      });
+    } catch (error) {
+      setFormError(getPlatformErrorMessage(error, t, undefined, "platform.loadFailed"));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -78,51 +113,54 @@ export function PlatformGlobalSettingsPanel(): React.JSX.Element {
             label={t("platform.settings.syncTlsLabel")}
             description={t("platform.settings.syncTlsDesc")}
             checked={syncTls}
+            disabled={saving}
             onCheckedChange={setSyncTls}
             ariaLabel={t("platform.settings.syncTlsAria")}
           />
 
-          <div className="space-y-1.5">
-            <Label htmlFor="certbot-email" className="text-xs font-medium text-foreground">
-              {t("platform.settings.certbotEmailLabel")}
-            </Label>
+          <Field
+            id="certbot-email"
+            label={t("platform.settings.certbotEmailLabel")}
+            hint={t("platform.settings.certbotEmailHint")}
+          >
             <Input
               id="certbot-email"
               type="email"
               value={certbotEmail}
+              disabled={saving}
               onChange={(e) => setCertbotEmail(e.target.value)}
-              placeholder="admin@example.com"
+              placeholder={t("platform.settings.certbotEmailPlaceholder")}
               className="h-10 rounded-xl"
             />
-            <p className="text-3xs text-muted-foreground">
-              {t("platform.settings.certbotEmailHint")}
-            </p>
-          </div>
+          </Field>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="tls-extra-sans" className="text-xs font-medium text-foreground">
-              {t("platform.settings.tlsExtraSansLabel")}
-            </Label>
+          <Field
+            id="tls-extra-sans"
+            label={t("platform.settings.tlsExtraSansLabel")}
+            hint={t("platform.settings.tlsExtraSansHint")}
+          >
             <Input
               id="tls-extra-sans"
               value={tlsExtraSans}
+              disabled={saving}
               onChange={(e) => setTlsExtraSans(e.target.value)}
-              placeholder="apex.example.com, admin.example.com"
+              placeholder={t("platform.settings.tlsExtraSansPlaceholder")}
               className="h-10 rounded-xl font-mono text-xs"
             />
-            <p className="text-3xs text-muted-foreground">
-              {t("platform.settings.tlsExtraSansHint")}
-            </p>
-          </div>
+          </Field>
+
+          {formError ? (
+            <Alert tone="destructive" density="compact" role="alert" description={formError} />
+          ) : null}
 
           <div className="pt-2">
             <Button
               type="submit"
-              disabled={updateSettings.isPending}
+              disabled={saving}
               className="min-h-11 rounded-xl px-5 font-semibold cursor-pointer"
             >
               <Save className="w-4 h-4 me-2" />
-              {updateSettings.isPending ? t("common.loading") : t("common.save")}
+              {saving ? t("common.loading") : t("common.save")}
             </Button>
           </div>
         </CardContent>

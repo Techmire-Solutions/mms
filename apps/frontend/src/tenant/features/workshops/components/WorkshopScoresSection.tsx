@@ -3,6 +3,7 @@ import type { WorkshopDetail } from "@mms/shared";
 import { Field } from "@/components/app/FormPrimitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { useSaveWorkshopScores } from "../hooks/useWorkshopsApi";
@@ -126,12 +127,12 @@ function WorkshopScoresSectionInner({
               const inputId = `workshop-score-${participant.id}`;
               return (
                 <li key={participant.id} className="flex items-center gap-3 px-3 py-2">
-                  <label
+                  <Label
                     htmlFor={inputId}
-                    className="min-w-0 flex-1 truncate text-sm text-foreground"
+                    className="mb-0 min-w-0 flex-1 truncate text-sm font-normal normal-case tracking-normal text-foreground"
                   >
                     {participant.contactName || participant.contactId}
-                  </label>
+                  </Label>
                   <Input
                     id={inputId}
                     name={inputId}

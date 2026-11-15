@@ -1,6 +1,14 @@
-import { useState, useMemo, useCallback } from "react";
-import { type TaskRecord, type TaskInsert, type TaskPriority, type TaskStatus } from "@mms/shared";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
+import { useState, useMemo, useCallback, useRef } from "react";
+import {
+  taskInsertSchema,
+  type TaskRecord,
+  type TaskInsert,
+  type TaskPriority,
+  type TaskStatus,
+} from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useEligibleTaskAssignees, useTasks } from "@/tenant/hooks/collections/tasks";
 import type { SelectedAssignee } from "../components/TaskFormAssigneePicker";
 import { buildTaskFormPayload, validateTaskDates } from "../lib/taskFormPayload";
@@ -28,6 +36,7 @@ export function useTaskFormController({
   saving = false,
 }: UseTaskFormControllerProps) {
   const { t } = useTranslation();
+  const inFlightRef = useRef(false);
   const [title, setTitle] = useState(() => initialData?.title ?? "");
   const [description, setDescription] = useState(() => initialData?.description ?? "");
   const [priority, setPriority] = useState<TaskPriority>(() => initialData?.priority ?? "medium");
@@ -122,7 +131,7 @@ export function useTaskFormController({
   };
 
   const handleSubmit = async () => {
-    if (saving) return;
+    if (saving || inFlightRef.current) return;
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
       setError(t("tasks.titleRequired"));
@@ -146,11 +155,21 @@ export function useTaskFormController({
       initialData,
     });
 
+    // Same write contract the API enforces — no cast of a partial draft.
+    const parsed = taskInsertSchema.safeParse(payload);
+    if (!parsed.success) {
+      setError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+      return;
+    }
+
+    inFlightRef.current = true;
     try {
-      await onSave(payload);
+      await onSave(parsed.data);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("tasks.saveFailed"));
+      setError(mapApiFormError(err).message ?? t("tasks.saveFailed"));
+    } finally {
+      inFlightRef.current = false;
     }
   };
 

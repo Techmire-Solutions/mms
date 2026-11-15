@@ -141,6 +141,17 @@ export function useMarkAttendancePersistence({
     const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
     const errors: Array<{ studentId?: string; message: string }> = [];
     for (const row of rows) {
+      if (row.timeIn && !HHMM.test(row.timeIn)) {
+        errors.push({ studentId: row.studentId, message: `${row.name}: invalid time-in` });
+        continue;
+      }
+      if (row.timeOut && !row.timeIn) {
+        errors.push({
+          studentId: row.studentId,
+          message: `${row.name}: a time-out needs a time-in`,
+        });
+        continue;
+      }
       if (row.status === "late" || row.status === "half_day") {
         if (!HHMM.test(row.timeIn)) {
           errors.push({

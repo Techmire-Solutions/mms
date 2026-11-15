@@ -13,16 +13,23 @@ import { prepareAvatarPreview } from "@/lib/contacts/avatarPreview";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { imageUploadErrorDetail, imageUploadErrorKey } from "@/lib/imageUploadErrors";
-import { REMOVED_FORM_FIELD_KEYS, type Contact, type ValidationError } from "@mms/shared";
+import {
+  isContactCustomCollectionTab,
+  REMOVED_FORM_FIELD_KEYS,
+  type Contact,
+  type FieldDefinition,
+  type ValidationError,
+} from "@mms/shared";
 
 export function useContactFormDraftHelpers({
-  formInstanceId,
+  formInstanceId: _formInstanceId,
   defaultCountryCode,
   validationErrors,
   contactDraft,
   setContactDraft,
   isTabFieldEnabled,
   isTabFieldRequired,
+  fields,
 }: {
   formInstanceId: string;
   defaultCountryCode: string;
@@ -31,6 +38,7 @@ export function useContactFormDraftHelpers({
   setContactDraft: Dispatch<SetStateAction<Partial<Contact>>>;
   isTabFieldEnabled?: (tabId: string, fieldId: string) => boolean;
   isTabFieldRequired?: (tabId: string, fieldId: string) => boolean;
+  fields?: Record<string, FieldDefinition[]>;
 }) {
   const { t } = useTranslation();
   const [cropSrc, setCropSrcState] = useState<string | null>(null);
@@ -51,11 +59,6 @@ export function useContactFormDraftHelpers({
       cropPreviewCleanupRef.current = null;
     },
     [],
-  );
-
-  const getLocalId = useCallback(
-    (tabName: string, idx: number): string => `${formInstanceId}-${tabName}-${idx}`,
-    [formInstanceId],
   );
 
   const collectionCounts = useMemo(() => {
@@ -86,7 +89,14 @@ export function useContactFormDraftHelpers({
     const filledBankDetails = (contactDraft.bankDetails || []).filter((b) =>
       (b.accountNumber || b.bankName || b.accountTitle || "").trim(),
     ).length;
+    const customCollectionCounts: Record<string, number> = {};
+    for (const tabId of Object.keys(fields ?? {})) {
+      if (!isContactCustomCollectionTab(tabId)) continue;
+      const rows = (contactDraft as Record<string, unknown>)[tabId];
+      customCollectionCounts[tabId] = Array.isArray(rows) ? rows.length : 0;
+    }
     return {
+      ...customCollectionCounts,
       filledPhones,
       filledEmails,
       filledAddresses,
@@ -97,7 +107,7 @@ export function useContactFormDraftHelpers({
       filledRelationships,
       filledBankDetails,
     };
-  }, [contactDraft]);
+  }, [contactDraft, fields]);
 
   const isFieldEnabled = useCallback(
     (tabId: string, fieldId: string) => {
@@ -207,7 +217,6 @@ export function useContactFormDraftHelpers({
     cropSrc,
     setCropSrc,
     collectionCounts,
-    getLocalId,
     isFieldEnabled,
     isFieldRequired,
     getFieldError,

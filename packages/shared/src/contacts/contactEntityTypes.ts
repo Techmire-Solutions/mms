@@ -246,6 +246,10 @@ export function getContactTags(
 }
 
 /** Payload schema for bulk tagging contact records. */
+/** Caps mirrored by the Contacts bulk-tag modal (server rejects beyond these). */
+export const CONTACTS_BULK_TAG_MAX_TAGS = 100;
+export const CONTACTS_BULK_TAG_MAX_CONTACTS = 500;
+
 export const contactsBulkTagBodySchema = z
   .object({
     // Same ceiling as `bulkIdsBodySchema`: one request may not force an unbounded
@@ -253,9 +257,12 @@ export const contactsBulkTagBodySchema = z
     ids: z
       .array(z.string().min(1))
       .min(1, "At least one contact ID is required")
-      .max(500, "At most 500 contacts can be tagged at once"),
-    addTags: z.array(z.string().trim().min(1)).max(100).optional(),
-    removeTags: z.array(z.string().trim().min(1)).max(100).optional(),
+      .max(
+        CONTACTS_BULK_TAG_MAX_CONTACTS,
+        `At most ${CONTACTS_BULK_TAG_MAX_CONTACTS} contacts can be tagged at once`,
+      ),
+    addTags: z.array(z.string().trim().min(1)).max(CONTACTS_BULK_TAG_MAX_TAGS).optional(),
+    removeTags: z.array(z.string().trim().min(1)).max(CONTACTS_BULK_TAG_MAX_TAGS).optional(),
   })
   .strict()
   .refine((data) => (data.addTags?.length ?? 0) > 0 || (data.removeTags?.length ?? 0) > 0, {

@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MODULE_ACCESS_QUERY_KEY } from "@/lib/query/moduleAccessQuery";
-import { mergeGlobalSettings, normalizeEnabledModules, type GlobalSettings } from "@mms/shared";
+import {
+  mergeGlobalSettings,
+  normalizeEnabledModules,
+  normalizePasswordPolicy,
+  normalizeSessionTimeout,
+  parseSessionTimeoutMinutes,
+  type GlobalSettings,
+} from "@mms/shared";
 import { applyDocumentLanguage } from "@/lib/documentLanguage";
 import { getGlobalSettings, saveGlobalSettingsAsync } from "@/lib/db";
 import { clearGlobalSettingsPreview, previewGlobalSettings } from "@/lib/settingsPreview";
@@ -41,6 +48,16 @@ export interface UseGlobalSettingsDraftResult {
 
 function loadPersistedGlobal(): GlobalSettings {
   return mergeGlobalSettings(getGlobalSettings());
+}
+
+function isValidTimeZone(timeZone: string): boolean {
+  if (!timeZone) return false;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function useGlobalSettingsDraft(): UseGlobalSettingsDraftResult {
@@ -86,6 +103,18 @@ export function useGlobalSettingsDraft(): UseGlobalSettingsDraftResult {
   };
 
   const handleSaveGlobal = async (toast?: UseGlobalSettingsDraftSaveToast): Promise<boolean> => {
+    if (!isValidTimeZone(data.timezone)) {
+      notify.error(t("global.invalidTimezone"));
+      return false;
+    }
+    if (!parseSessionTimeoutMinutes(normalizeSessionTimeout(data.sessionTimeout))) {
+      notify.error(t("global.invalidSessionTimeout"));
+      return false;
+    }
+    if (!["basic", "medium", "strong"].includes(normalizePasswordPolicy(data.passwordPolicy))) {
+      notify.error(t("global.invalidPasswordPolicy"));
+      return false;
+    }
     setSaving(true);
     try {
       const persisted = mergeGlobalSettingsDraft(data);

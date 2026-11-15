@@ -5,6 +5,7 @@ import { FormCollectionShell, FormListFieldCard } from "@/components/app/FormPri
 import { Input } from "@/components/ui/input";
 import { joinQuestionCompoundAnswer, type AppTranslationKey } from "@mms/shared";
 import { FORM_INPUT } from "@/components/ui/formStyles";
+import { useStableRowList } from "@/lib/forms/useStableRowList";
 
 type TranslateFn = (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 
@@ -23,39 +24,33 @@ export function QuestionOrderingFields({
 }: QuestionOrderingFieldsProps): React.JSX.Element {
   const items = options.length > 0 ? options : ["", ""];
 
-  const syncItems = (nextItems: string[]): void => {
-    onOptionsChange(nextItems);
-    onAnswerChange(joinQuestionCompoundAnswer(nextItems));
-  };
-
-  const moveItem = (index: number, direction: -1 | 1): void => {
-    const target = index + direction;
-    if (target < 0 || target >= items.length) return;
-    const reorderedItems = [...items];
-    [reorderedItems[index], reorderedItems[target]] = [
-      reorderedItems[target],
-      reorderedItems[index],
-    ];
-    syncItems(reorderedItems);
-  };
+  const { rows, append, removeAt, move, updateAt } = useStableRowList<string>({
+    values: items,
+    onChange: (nextItems) => {
+      onOptionsChange(nextItems);
+      onAnswerChange(joinQuestionCompoundAnswer(nextItems));
+    },
+    createValue: () => "",
+    serialize: (nextItems) => nextItems.join("\u0000"),
+  });
 
   return (
     <div className="sm:col-span-2">
       <FormCollectionShell
         title={t("questionBank.orderingItems")}
         addLabel={t("questionBank.addOrderingItem")}
-        onAdd={() => syncItems([...items, ""])}
+        onAdd={append}
         listKey="qb-ordering"
       >
-        {items.map((item, index) => (
+        {rows.map((row, index) => (
           <FormListFieldCard
-            key={index}
-            id={`ordering-item-${index}`}
+            key={row.id}
+            id={`ordering-item-${row.id}`}
             index={index}
             label={t("questionBank.orderingItemN", { n: index + 1 })}
             removeLabel={t("questionBank.removeMatchingPair", { n: index + 1 })}
-            canRemove={items.length > 2}
-            onRemove={() => syncItems(items.filter((_, i) => i !== index))}
+            canRemove={rows.length > 2}
+            onRemove={() => removeAt(index)}
             headerExtras={
               <div className="flex flex-shrink-0 gap-0.5">
                 <Button
@@ -63,7 +58,7 @@ export function QuestionOrderingFields({
                   variant="outline"
                   size="icon"
                   disabled={index === 0}
-                  onClick={() => moveItem(index, -1)}
+                  onClick={() => move(index, index - 1)}
                   className="rounded border border-border text-muted-foreground hover:bg-muted disabled:opacity-40"
                   aria-label={t("questionBank.moveOrderingUp", { n: index + 1 })}
                 >
@@ -73,8 +68,8 @@ export function QuestionOrderingFields({
                   type="button"
                   variant="outline"
                   size="icon"
-                  disabled={index === items.length - 1}
-                  onClick={() => moveItem(index, 1)}
+                  disabled={index === rows.length - 1}
+                  onClick={() => move(index, index + 1)}
                   className="rounded border border-border text-muted-foreground hover:bg-muted disabled:opacity-40"
                   aria-label={t("questionBank.moveOrderingDown", { n: index + 1 })}
                 >
@@ -84,17 +79,13 @@ export function QuestionOrderingFields({
             }
           >
             <Input
-              id={`ordering-item-${index}`}
-              name={`ordering-item-${index}`}
+              id={`ordering-item-${row.id}`}
+              name={`ordering-item-${row.id}`}
               className={FORM_INPUT}
-              value={item}
+              value={row.value}
               placeholder={t("questionBank.orderingItemN", { n: index + 1 })}
               aria-label={t("questionBank.orderingItemN", { n: index + 1 })}
-              onChange={(event) => {
-                const updatedItems = [...items];
-                updatedItems[index] = event.target.value;
-                syncItems(updatedItems);
-              }}
+              onChange={(event) => updateAt(index, () => event.target.value)}
             />
           </FormListFieldCard>
         ))}

@@ -18,6 +18,10 @@ vi.mock("framer-motion", () => {
   };
 });
 
+vi.mock("@/lib/contexts/AuthContext", () => ({
+  useAuth: () => ({ user: { role: "admin" } }),
+}));
+
 vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
   useGlobalSettings: () => ({
     passwordPolicy: "strong",
@@ -28,6 +32,7 @@ vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
 vi.mock("@/hooks/useStandardModuleConfig", () => ({
   useUsersConfig: () => ({
     customFields: [],
+    settings: { workspaceRoles: [] },
   }),
 }));
 
@@ -250,6 +255,16 @@ describe("AddUserModal", () => {
         role: "teacher",
       }),
     );
+
+    // The created-account summary stays mounted; Done closes the modal.
+    expect(onClose).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("users.addSuccessTitle");
+    const doneBtn = Array.from(container.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("common.close"),
+    );
+    act(() => {
+      doneBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
     expect(onClose).toHaveBeenCalled();
 
     act(() => {

@@ -25,7 +25,6 @@ export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.
   const {
     t,
     dir,
-    language,
     saving,
     errors,
     facultyDraft,
@@ -83,7 +82,6 @@ export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.
         size="xl"
         tall
         priority={priority}
-        lang={language}
         dir={dir}
         tabs={visibleTabs}
         activeTab={activeTab}
@@ -124,10 +122,13 @@ export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            if (!(
-              (requireContactLink && !facultyDraft.contactId) ||
-              (Boolean(faculty?.id) && !isDirty)
-            )) {
+            if (
+              !saving &&
+              !(
+                (requireContactLink && !facultyDraft.contactId) ||
+                (Boolean(faculty?.id) && !isDirty)
+              )
+            ) {
               void onSaveWithTabFocus();
             }
           }}

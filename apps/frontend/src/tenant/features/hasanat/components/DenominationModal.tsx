@@ -1,3 +1,4 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useRef, useState } from "react";
 import { CreditCard } from "lucide-react";
 import { type Denomination } from "@/lib/data/hasanatData";
@@ -12,6 +13,7 @@ import {
 } from "@/lib/ui/denominationColors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { CheckboxField } from "@/components/ui/checkbox";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -110,7 +112,9 @@ export function DenominationModal({
     if (Object.keys(earlyErrors).length > 0 || !parsed.success) {
       setErrors({
         ...earlyErrors,
-        ...(parsed.success ? {} : mapZodFormErrors(parsed.error, (message) => message)),
+        ...(parsed.success
+          ? {}
+          : mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t))),
       });
       setSubmitError(t("common.formPleaseFixErrors"));
       return;
@@ -247,9 +251,9 @@ export function DenominationModal({
                 style={{ background: color }}
               />
             ))}
-            <label className="sr-only" htmlFor="custom-color">
+            <Label className="sr-only" htmlFor="custom-color">
               {t("hasanat.denominations.customColor")}
-            </label>
+            </Label>
             <Input
               id="custom-color"
               name="customColor"

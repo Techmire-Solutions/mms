@@ -11,7 +11,7 @@ interface WidgetBuilderProps {
   initialCollection: CustomWidget["collection"];
   editWidgetConfig: CustomWidget | null;
   onCancelEdit: () => void;
-  onSaveWidget: (widget: CustomWidget) => void;
+  onSaveWidget: (widget: CustomWidget) => void | Promise<void>;
   category?: string;
   mode?: "dashboard" | "kpi";
   initialWidgetType?: CustomWidget["widgetType"];
@@ -37,6 +37,8 @@ export function WidgetBuilder({
     previewWidget,
     handleSaveWidget,
     canSave,
+    saving,
+    saveError,
     dbRecordsList,
     titleState,
     metricState,
@@ -79,6 +81,8 @@ export function WidgetBuilder({
           onCancelEdit={onCancelEdit}
           onSave={handleSaveWidget}
           canSave={canSave}
+          saving={saving}
+          error={saveError}
           isEditing={Boolean(editWidgetConfig)}
           onSwitchToggle={() => {}}
           renderWidget={renderWidget}

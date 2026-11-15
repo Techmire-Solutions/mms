@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Modal, type ModalProps } from "@/components/app/Modal";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { useFormModalLayout } from "@/components/app/useFormModalLayout";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { SubTab } from "@/components/app/SubTabBar";
 
 export type { SubTab as FormModalTab };
@@ -9,7 +10,6 @@ export type { SubTab as FormModalTab };
 export interface FormModalProps<K extends string = string> extends ModalProps<K> {
   tall?: boolean;
   tabPanelIdPrefix?: string;
-  lang?: string;
   showBuilderToggle?: boolean;
   builderMode?: boolean;
   onBuilderModeChange?: (active: boolean) => void;
@@ -43,8 +43,8 @@ export function FormModal<K extends string = string>({
   activeTab,
   onTabChange,
   tabPanelIdPrefix: _tabPanelIdPrefix,
-  lang: _lang,
   dir,
+  dismissible = true,
   cancelLabel,
   saveLabel,
   onSave,
@@ -68,7 +68,16 @@ export function FormModal<K extends string = string>({
   discardCancelLabel,
   children,
 }: FormModalProps<K>): React.JSX.Element | null {
+  const { t } = useTranslation();
   const [discardOpen, setDiscardOpen] = useState(false);
+
+  // A dirty form always asks before discarding, even when the caller only passed
+  // `isDirty`. Callers can still override the copy/actions.
+  const discardTitle = discardUnsavedTitle ?? (isDirty ? t("settings.unsavedChanges") : undefined);
+  const discardDescription =
+    discardUnsavedDescription ?? (isDirty ? t("common.discardUnsavedDescription") : "");
+  const discardConfirm = discardConfirmLabel ?? t("common.yes");
+  const discardCancel = discardCancelLabel ?? t("common.cancel");
 
   const handleTabChange = async (nextTab: K) => {
     if (nextTab === activeTab) return;
@@ -84,7 +93,7 @@ export function FormModal<K extends string = string>({
   };
 
   const requestClose = () => {
-    if (isDirty && discardUnsavedTitle) {
+    if (isDirty && discardTitle) {
       setDiscardOpen(true);
       return;
     }
@@ -119,6 +128,8 @@ export function FormModal<K extends string = string>({
         headerActions={headerActions}
         panelClassName={panelClassName}
         priority={priority}
+        dismissible={dismissible && !saving}
+        busy={saving}
         error={error}
         onSelectError={onSelectError}
         tabs={tabs}
@@ -139,14 +150,14 @@ export function FormModal<K extends string = string>({
       >
         {children}
       </Modal>
-      {discardUnsavedTitle ? (
+      {discardTitle ? (
         <ConfirmAlertDialog
           open={discardOpen}
           onOpenChange={setDiscardOpen}
-          title={discardUnsavedTitle}
-          description={discardUnsavedDescription ?? ""}
-          confirmLabel={discardConfirmLabel}
-          cancelLabel={discardCancelLabel}
+          title={discardTitle}
+          description={discardDescription}
+          confirmLabel={discardConfirm}
+          cancelLabel={discardCancel}
           destructive
           onConfirm={onClose}
         />

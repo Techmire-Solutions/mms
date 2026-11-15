@@ -77,18 +77,18 @@ export function useContactFormDraft({
   );
 
   const {
+    getLocalId,
     addSubListItem,
     ensureSubListItem,
     updateSubListItem,
     removeSubListItem,
     setPrimarySubListItem,
-  } = useContactFormSubLists(setContactDraft);
+  } = useContactFormSubLists(contactDraft, setContactDraft, formInstanceId);
 
   const {
     cropSrc,
     setCropSrc,
     collectionCounts,
-    getLocalId,
     isFieldEnabled,
     isFieldRequired,
     getFieldError,
@@ -105,6 +105,7 @@ export function useContactFormDraft({
     setContactDraft,
     isTabFieldEnabled: config.isTabFieldEnabled,
     isTabFieldRequired: config.isTabFieldRequired,
+    fields: config.fields,
   });
 
   useContactDraftReset({

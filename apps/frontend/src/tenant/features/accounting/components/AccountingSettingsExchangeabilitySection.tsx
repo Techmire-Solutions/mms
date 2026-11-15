@@ -91,6 +91,7 @@ export function AccountingSettingsExchangeabilitySection({
                       label={t("accounting.settings.fx.exchangeability.method")}
                       hint={t("accounting.settings.fx.exchangeability.methodHint")}
                       required
+                      error={draft.fieldErrors[`${index}.estimationMethod`]}
                     >
                       <Textarea
                         id={`${id}-method`}
@@ -107,6 +108,7 @@ export function AccountingSettingsExchangeabilitySection({
                     <Field
                       id={`${id}-reason`}
                       label={t("accounting.settings.fx.exchangeability.reason")}
+                      error={draft.fieldErrors[`${index}.reason`]}
                     >
                       <Textarea
                         id={`${id}-reason`}

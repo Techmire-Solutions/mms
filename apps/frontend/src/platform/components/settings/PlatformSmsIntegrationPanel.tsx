@@ -13,6 +13,7 @@ export function PlatformSmsIntegrationPanel(): React.JSX.Element {
     saving,
     testing,
     form,
+    formError,
     accountSecret,
     setAccountSecret,
     testPhone,
@@ -34,7 +35,7 @@ export function PlatformSmsIntegrationPanel(): React.JSX.Element {
       statusConnectedText={t("sms.statusConnected")}
       statusNotConnectedText={t("sms.statusNotConnected")}
       loading={loading}
-      lastError={form.lastError}
+      lastError={formError ?? form.lastError}
       saving={saving}
       testing={testing}
       testDisabled={!testPhone.trim()}

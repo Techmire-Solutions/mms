@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ValidationError } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {
+  buildContactFormVisibleTabs,
   buildContactValidationErrorItems,
   buildContactValidationErrorSummary,
 } from "./contactFormTabUtils";
@@ -43,5 +44,40 @@ describe("buildContactValidationErrorSummary", () => {
       "First name is required",
       "Phone is required",
     ]);
+  });
+});
+
+describe("buildContactFormVisibleTabs", () => {
+  const formTabs = [
+    { key: "basic", label: "Basic", enabled: true, order: 2, isSystem: true },
+    { key: "hobbies", label: "Hobbies", enabled: true, order: 1 },
+    { key: "disabled", label: "Disabled", enabled: false, order: 3 },
+  ];
+
+  it("uses the tenant tab order/labels and includes custom tabs", () => {
+    const tabs = buildContactFormVisibleTabs({
+      enabledTabIds: new Set(["basic", "hobbies", "disabled"]),
+      collectionCounts: { hobbies: 2 },
+      tabErrorCounts: {},
+      formTabs,
+      t,
+    });
+
+    expect(tabs.map((tab) => tab.key)).toEqual(["hobbies", "basic"]);
+    expect(tabs[0]?.label).toBe("Hobbies");
+    expect(tabs[0]?.badge).toBe(2);
+  });
+
+  it("filters permission-restricted custom tabs", () => {
+    const tabs = buildContactFormVisibleTabs({
+      enabledTabIds: new Set(["basic", "hobbies"]),
+      collectionCounts: {},
+      tabErrorCounts: {},
+      formTabs: [formTabs[0]!, { ...formTabs[1]!, permissions: ["contacts.hobbies.view"] }],
+      viewerRole: "staff",
+      t,
+    });
+
+    expect(tabs.map((tab) => tab.key)).toEqual(["basic"]);
   });
 });

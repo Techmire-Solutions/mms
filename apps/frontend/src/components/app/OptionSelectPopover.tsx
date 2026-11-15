@@ -23,6 +23,8 @@ export interface OptionSelectPopoverProps {
   id?: string;
   name?: string;
   onOpenChange?: (open: boolean) => void;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
   /** Rendered below the option list; `close` dismisses the popover. */
   footer?: (api: { close: () => void }) => ReactNode;
 }
@@ -40,6 +42,8 @@ export function OptionSelectPopover({
   id,
   name,
   onOpenChange,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
   footer,
 }: OptionSelectPopoverProps): React.JSX.Element {
   const { t } = useTranslation();
@@ -98,9 +102,14 @@ export function OptionSelectPopover({
       renderTrigger={({ open, triggerProps }) => (
         <button
           type="button"
+          role="combobox"
           {...triggerProps}
+          aria-controls={triggerProps["aria-controls"]}
+          aria-expanded={triggerProps["aria-expanded"]}
           name={name}
           aria-label={value ? `${resolvedPlaceholder}: ${value}` : resolvedPlaceholder}
+          aria-invalid={ariaInvalid || undefined}
+          aria-describedby={ariaDescribedBy}
           className={cn(
             "min-h-11 flex items-center justify-between gap-2 px-3.5 py-2.5 text-sm rounded-lg border border-border bg-background text-foreground hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-all text-start cursor-pointer",
             className,

@@ -33,6 +33,7 @@ interface LlmConfigModalProps {
   selectedProviderDefaultModel?: string;
   modalTestResult: LlmTestResult | null;
   modalTesting: boolean;
+  modalError?: string | null;
   setModalOpen: (open: boolean) => void;
   handleSaveModalConfig: () => void;
   handleModalTestConnection: () => Promise<void>;
@@ -68,12 +69,25 @@ export function LlmConfigModal({
   selectedProviderDefaultModel,
   modalTestResult,
   modalTesting,
+  modalError,
   setModalOpen,
   handleSaveModalConfig,
   handleModalTestConnection,
   formatLlmSpeed,
   t,
 }: LlmConfigModalProps): React.JSX.Element | null {
+  const isDirty = editingConfig
+    ? formName !== editingConfig.name ||
+      formProvider !== editingConfig.provider ||
+      formModel !== editingConfig.model ||
+      formBaseUrl !== (editingConfig.baseUrl ?? "") ||
+      formIsDefaultText !== editingConfig.isDefaultText ||
+      formTemperature !== (editingConfig.temperature ?? 0.7) ||
+      formMaxTokens !== (editingConfig.maxTokens ?? 2048) ||
+      formTopP !== (editingConfig.topP ?? 0.9) ||
+      formApiKey.trim() !== ""
+    : formName.trim() !== "" || formBaseUrl.trim() !== "" || formApiKey.trim() !== "";
+
   return (
     <FormModal
       open={modalOpen}
@@ -87,6 +101,8 @@ export function LlmConfigModal({
       saveLabel={t("settings.llmModalApplyChanges")}
       onSave={handleSaveModalConfig}
       saveDisabled={!formName.trim()}
+      error={modalError ?? undefined}
+      isDirty={isDirty}
       formId="llm-config-modal-form"
     >
       <form

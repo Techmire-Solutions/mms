@@ -1,6 +1,8 @@
 import React from "react";
 import { Bell } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { Alert } from "@/components/app/Alert";
 import {
   usePlatformSettingsQuery,
   useUpdatePlatformSettings,
@@ -21,8 +23,18 @@ import { PlatformSmsIntegrationPanel } from "@/platform/components/settings/Plat
 
 export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
   const { t } = useTranslation();
+  const [error, setError] = React.useState<string | null>(null);
   const { data: settings, isLoading } = usePlatformSettingsQuery();
   const updateSettings = useUpdatePlatformSettings();
+
+  const save = async (patch: Parameters<typeof updateSettings.mutateAsync>[0]): Promise<void> => {
+    setError(null);
+    try {
+      await updateSettings.mutateAsync(patch);
+    } catch (err) {
+      setError(getPlatformErrorMessage(err, t, undefined, "platform.loadFailed"));
+    }
+  };
 
   if (isLoading) return <CardSkeleton count={2} />;
 
@@ -95,7 +107,8 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
             label={t("global.emailNotifications")}
             description={t("global.emailNotificationsDesc")}
             checked={emailOn}
-            onCheckedChange={(checked) => updateSettings.mutate({ emailNotifications: checked })}
+            disabled={updateSettings.isPending}
+            onCheckedChange={(checked) => void save({ emailNotifications: checked })}
           />
 
           <ToggleRow
@@ -104,7 +117,8 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
             label={t("global.smsNotifications")}
             description={t("global.smsNotificationsDesc")}
             checked={smsOn}
-            onCheckedChange={(checked) => updateSettings.mutate({ smsNotifications: checked })}
+            disabled={updateSettings.isPending}
+            onCheckedChange={(checked) => void save({ smsNotifications: checked })}
           />
 
           <ToggleRow
@@ -113,10 +127,15 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
             label={t("global.whatsAppNotifications")}
             description={t("global.whatsAppNotificationsDesc")}
             checked={whatsAppOn}
-            onCheckedChange={(checked) => updateSettings.mutate({ whatsAppNotifications: checked })}
+            disabled={updateSettings.isPending}
+            onCheckedChange={(checked) => void save({ whatsAppNotifications: checked })}
           />
         </CardContent>
       </Card>
+
+      {error ? (
+        <Alert tone="destructive" density="compact" role="alert" description={error} />
+      ) : null}
 
       {emailOn ? <PlatformEmailIntegrationPanel /> : null}
       {smsOn ? <PlatformSmsIntegrationPanel /> : null}

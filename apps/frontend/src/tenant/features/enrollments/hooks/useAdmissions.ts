@@ -11,6 +11,7 @@ import {
   reviewApplicationsMutationOptions,
 } from "@/lib/query/registrationQueries";
 import { invalidateEnrollmentImpacts } from "@/lib/query/enrollmentImpactInvalidation";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 
 export function useAdmissionsList(query: RegistrationApplicationListQuery) {
   const { isAuthenticated } = useAuth();
@@ -47,7 +48,7 @@ export function useAdmissionsReview() {
           failed: result.failures.length,
         }),
         {
-          description: result.failures[0]?.message,
+          description: translateValidationMessage(result.failures[0]?.message, t),
         },
       );
       return false;

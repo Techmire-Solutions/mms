@@ -4,7 +4,6 @@ import { AnimatePresence } from "framer-motion";
 import { getDisplayName, getPrimaryPhone } from "@mms/shared";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import {
-  FieldErrorMessage,
   FormCardTypeSelect,
   FormSelect,
   TYPE_SELECT_WIDTH,
@@ -156,8 +155,8 @@ export function ContactRelationshipTab({
                         id={`cf-${formInstanceId}-relationship-contact-${idx}`}
                         name={`cf-${formInstanceId}-relationship-contact-${idx}`}
                         error={Boolean(pickerError)}
+                        errorMessage={pickerError}
                       />
-                      <FieldErrorMessage message={pickerError} />
                     </div>
                   ) : null}
                 </div>

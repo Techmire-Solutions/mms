@@ -1,5 +1,8 @@
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useState } from "react";
 import {
+  createWorkspaceUserSchema,
+  filterAssignableRoles,
   getInitials,
   toTitleCase,
   todayISO,
@@ -9,23 +12,33 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUsersConfig } from "@/hooks/useStandardModuleConfig";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { validateUserCustomFields } from "../lib/userCustomFieldValidation";
 import type { AddUserFormState } from "../lib/addUserModalTypes";
 
 export interface UseAddUserModalFormProps {
   onAdd: (user: SystemUser) => void | Promise<void>;
-  onClose: () => void;
   existingEmails: string[];
 }
 
-export function useAddUserModalForm({ onAdd, onClose, existingEmails }: UseAddUserModalFormProps) {
-  const { t } = useTranslation();
+export function useAddUserModalForm({ onAdd, existingEmails }: UseAddUserModalFormProps) {
+  const { t, language } = useTranslation();
+  const { user: authUser } = useAuth();
+  const workspaceRoles = useWorkspaceRoles();
+  const assignableRoles = filterAssignableRoles(workspaceRoles, authUser?.role);
+  const today = useWorkspaceToday();
   const { customFields } = useUsersConfig();
   const globalSettings = useGlobalSettings();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [form, setForm] = useState<AddUserFormState>({
     contactId: null,
@@ -46,21 +59,29 @@ export function useAddUserModalForm({ onAdd, onClose, existingEmails }: UseAddUs
     const validationErrors: Record<string, string> = {};
     if (step === 1) {
       if (!form.contactId) validationErrors.contactId = t("users.addErrorContact");
-      else if (!form.email.trim()) validationErrors.contactId = t("users.addErrorContactEmail");
+      else if (!form.email.trim()) validationErrors.email = t("users.addErrorContactEmail");
       else if (existingEmails.includes(form.email.toLowerCase()))
-        validationErrors.contactId = t("users.addErrorContactExists");
+        validationErrors.email = t("users.addErrorContactExists");
     }
     if (step === 2) {
       if (!form.role) validationErrors.role = t("users.addErrorRole");
-
-      for (const customField of customFields) {
-        if (customField.required) {
-          const fieldValue = form[customField.id];
-          if (fieldValue === undefined || fieldValue === null || fieldValue === "") {
-            validationErrors.role = t("users.addErrorFieldRequired", { label: customField.label });
-          }
+      else if (!assignableRoles.some((role) => role.id === form.role)) {
+        validationErrors.role = t("users.addErrorRole");
+      }
+      if (form.temporaryRole) {
+        if (!form.roleExpiry) validationErrors.roleExpiry = t("users.addErrorRoleExpiry");
+        else if (form.roleExpiry < today) {
+          validationErrors.roleExpiry = t("users.addErrorRoleExpiryPast");
         }
       }
+      Object.assign(
+        validationErrors,
+        validateUserCustomFields(
+          customFields,
+          form as unknown as Record<string, unknown>,
+          language,
+        ),
+      );
     }
     if (step === 3 && form.setupMethod === "password") {
       if (!form.password) {
@@ -90,7 +111,40 @@ export function useAddUserModalForm({ onAdd, onClose, existingEmails }: UseAddUs
 
   const handleSubmit = async (): Promise<void> => {
     if (!validate()) return;
+
+    if (!assignableRoles.some((role) => role.id === form.role)) {
+      setErrors({ role: t("users.addErrorRole") });
+      setFormError(t("common.formPleaseFixErrors"));
+      return;
+    }
+    if (form.temporaryRole && (!form.roleExpiry || form.roleExpiry < today)) {
+      setErrors({ roleExpiry: t("users.addErrorRoleExpiry") });
+      setFormError(t("common.formPleaseFixErrors"));
+      return;
+    }
+    // The same write contract the users API enforces. The step checks above stay
+    // for per-step UX; this is the final gate.
+    const parsed = createWorkspaceUserSchema.safeParse({
+      contactId: form.contactId,
+      role: form.role,
+      status: form.status,
+      temporaryRole: form.temporaryRole,
+      roleExpiry: form.roleExpiry,
+      setupMethod: form.setupMethod,
+      password: form.setupMethod === "password" ? form.password : undefined,
+      forceReset: form.forceReset,
+      twoFactorEnabled: form.twoFactorEnabled,
+    });
+    if (!parsed.success) {
+      setErrors(
+        mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
+      );
+      setFormError(t("common.formPleaseFixErrors"));
+      return;
+    }
+
     setSubmitting(true);
+    setFormError(null);
     const newUser = {
       id: `u${crypto.randomUUID()}`,
       contactId: form.contactId!,
@@ -127,12 +181,18 @@ export function useAddUserModalForm({ onAdd, onClose, existingEmails }: UseAddUs
     };
     try {
       await onAdd(newUser);
+      // Keep the modal mounted so the created-account summary is actually visible;
+      // the Done action closes it.
       setSuccess(true);
-      onClose();
     } catch (error: unknown) {
-      notify.error(t("errors.module.title"), {
-        description: error instanceof Error ? error.message : t("errors.module.description"),
-      });
+      const mapped = mapApiFormError(error);
+      if (mapped.fieldErrors) setErrors((prev) => ({ ...prev, ...mapped.fieldErrors }));
+      setFormError(mapped.message ?? t("errors.module.description"));
+      if (!mapped.fieldErrors) {
+        notify.error(t("errors.module.title"), {
+          description: mapped.message,
+        });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -144,6 +204,7 @@ export function useAddUserModalForm({ onAdd, onClose, existingEmails }: UseAddUs
     submitting,
     success,
     errors,
+    formError,
     form,
     setForm,
     handleNext,

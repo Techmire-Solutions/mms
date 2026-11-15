@@ -1,3 +1,4 @@
+import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
 import { useState } from "react";
 import {
   findUnknownPersonalizationTokens,
@@ -10,6 +11,7 @@ import { notify } from "@/lib/notify";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { formatUnknownTokensLabel } from "@/components/messageComposer/messageComposerTokenErrors";
 import { useMessagingMutations } from "@/hooks/useMessaging";
 
@@ -33,6 +35,7 @@ export function useMessagingTemplateEditor() {
   const [category, setCategory] = useState<MessageCategory>("general");
   const [channel, setChannel] = useState<TemplateChannel>("all");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [baseline, setBaseline] = useState<Baseline>(EMPTY);
 
   const isFormDirty =
@@ -41,11 +44,14 @@ export function useMessagingTemplateEditor() {
       body !== baseline.body ||
       category !== baseline.category ||
       channel !== baseline.channel);
-  const saveDisabled =
-    !label.trim() ||
-    !body.trim() ||
-    findUnknownPersonalizationTokens(body).length > 0 ||
-    saveTemplate.isPending;
+  const draftValidation = messageTemplateInputSchema.safeParse({
+    id: editingId ?? undefined,
+    label: label.trim(),
+    body: body.trim(),
+    category,
+    channel,
+  });
+  const saveDisabled = !draftValidation.success || saveTemplate.isPending;
 
   const applyFields = (next: Baseline, id: string | null): void => {
     setEditingId(id);
@@ -55,6 +61,7 @@ export function useMessagingTemplateEditor() {
     setChannel(next.channel);
     setBaseline(next);
     setErrors({});
+    setServerError(null);
   };
 
   const resetForm = (): void => {
@@ -91,6 +98,7 @@ export function useMessagingTemplateEditor() {
 
   const save = async (): Promise<void> => {
     if (!user) return;
+    setServerError(null);
     const parsed = messageTemplateInputSchema.safeParse({
       id: editingId ?? undefined,
       label: label.trim(),
@@ -118,8 +126,12 @@ export function useMessagingTemplateEditor() {
       await saveTemplate.mutateAsync({ body: parsed.data });
       notify.success(t("messaging.templateSaved"));
       resetForm();
-    } catch {
-      /* Mutation hook reports the failure. */
+    } catch (error) {
+      const mapped = mapApiFormError(error, (message) => translateApiMessage(message, t));
+      if (mapped.fieldErrors) {
+        setErrors((prev) => ({ ...prev, ...mapped.fieldErrors }));
+      }
+      setServerError(mapped.message ?? t("common.formPleaseFixErrors"));
     }
   };
 
@@ -145,15 +157,21 @@ export function useMessagingTemplateEditor() {
       );
       return;
     }
-    try {
-      await saveTemplate.mutateAsync({
-        body: {
-          label: `${template.label} (${t("messaging.tagCustom")})`,
-          body: template.body,
-          category: template.category || "general",
-          channel: template.channel || "all",
-        },
+    const duplicateBody = {
+      label: `${template.label} (${t("messaging.tagCustom")})`,
+      body: template.body,
+      category: template.category || "general",
+      channel: template.channel || "all",
+    };
+    const duplicateValidation = messageTemplateInputSchema.safeParse(duplicateBody);
+    if (!duplicateValidation.success) {
+      notify.error(t("messaging.templateValidateFailed"), {
+        description: duplicateValidation.error.issues[0]?.message,
       });
+      return;
+    }
+    try {
+      await saveTemplate.mutateAsync({ body: duplicateValidation.data });
       notify.success(t("messaging.duplicateSuccess"));
     } catch {
       /* Mutation hook reports the failure. */
@@ -175,6 +193,7 @@ export function useMessagingTemplateEditor() {
     channel,
     setChannel,
     errors,
+    serverError,
     isFormDirty,
     saving: saveTemplate.isPending,
     saveDisabled,

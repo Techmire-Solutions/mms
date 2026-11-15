@@ -17,6 +17,7 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
     loading,
     saving,
     testing,
+    actionError,
     form,
     accountSecret,
     setAccountSecret,
@@ -39,7 +40,7 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
       statusConnectedText={t("sms.statusConnected")}
       statusNotConnectedText={t("sms.statusNotConnected")}
       loading={loading}
-      lastError={form.lastError}
+      lastError={actionError ?? form.lastError}
       saving={saving}
       testing={testing}
       saveLabel={t("sms.saveConnection")}

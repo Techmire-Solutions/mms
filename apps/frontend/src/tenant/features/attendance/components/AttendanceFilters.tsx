@@ -202,10 +202,7 @@ export function AttendanceFilters({
               />
 
               {/* Faculty */}
-              <Field
-                id="filter-faculty"
-                label={t("attendance.filters.faculty") || t("nav.faculty")}
-              >
+              <Field id="filter-faculty" label={t("attendance.filters.faculty")}>
                 <FormSelect
                   id="filter-faculty"
                   name="facultyId"
