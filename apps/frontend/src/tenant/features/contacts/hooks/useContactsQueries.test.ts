@@ -192,7 +192,11 @@ describe("useContactsQueries", () => {
       root.render(React.createElement(TestComponent));
     });
 
-    expect(pickerSearchOpts).toBeDefined();
+    expect(pickerSearchOpts).toMatchObject({
+      queryData: { query: { search: "test" } },
+      enabled: true,
+      staleTime: 15_000,
+    });
     createMutation?.config?.onSuccess?.();
     updateMutation?.config?.onSuccess?.();
     deleteMutation?.config?.onSuccess?.();
