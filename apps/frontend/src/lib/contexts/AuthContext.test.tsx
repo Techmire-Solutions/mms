@@ -5,6 +5,7 @@ import { AuthProvider, useAuth, useOptionalAuth } from "./AuthContext";
 import { queryClientInstance } from "@/lib/queryClient";
 import { appNavigate } from "@/lib/routing/appNavigate";
 import { apiFetch, apiJson } from "@/lib/apiClient";
+import { AUTH_PATHS } from "@/lib/apiClientHelpers";
 import { AUTH_USER_STORAGE_KEY } from "./authContextHelpers";
 import type { User } from "@mms/shared";
 
@@ -58,6 +59,8 @@ describe("AuthContext", () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    window.history.pushState({}, "", "/");
+    document.cookie = "csrf_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     vi.clearAllMocks();
     vi.mocked(apiFetch).mockResolvedValue({
       ok: true,
@@ -213,7 +216,7 @@ describe("AuthContext", () => {
     });
   });
 
-  it("does not repeatedly call /api/auth/me on re-renders when a user is already persisted", async () => {
+  it("does not repeatedly call the session probe on re-renders when a user is already persisted", async () => {
     localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(mockUser));
     function Consumer() {
       const { user } = useAuth();
@@ -235,9 +238,11 @@ describe("AuthContext", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
-    // Should only call /api/auth/me once on initial mount
-    const authMeCalls = vi.mocked(apiJson).mock.calls.filter(([url]) => url === "/api/auth/me");
-    expect(authMeCalls.length).toBe(1);
+    // Should only call the soft session probe once on initial mount
+    const sessionProbeCalls = vi
+      .mocked(apiJson)
+      .mock.calls.filter(([url]) => url === AUTH_PATHS.session);
+    expect(sessionProbeCalls.length).toBe(1);
 
     act(() => {
       root.unmount();
@@ -281,7 +286,7 @@ describe("AuthContext", () => {
     });
   });
 
-  it("recovers a cookie session from /api/auth/me when no user is persisted", async () => {
+  it("recovers a cookie session from the soft probe when no user is persisted", async () => {
     let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
     function Consumer() {
       capturedAuth = useAuth();
@@ -302,8 +307,10 @@ describe("AuthContext", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
-    const authMeCalls = vi.mocked(apiJson).mock.calls.filter(([url]) => url === "/api/auth/me");
-    expect(authMeCalls.length).toBe(1);
+    const sessionProbeCalls = vi
+      .mocked(apiJson)
+      .mock.calls.filter(([url]) => url === AUTH_PATHS.session);
+    expect(sessionProbeCalls.length).toBe(1);
     expect(capturedAuth.isAuthenticated).toBe(true);
     expect(capturedAuth.user).toEqual(mockUser);
     expect(capturedAuth.isLoadingAuth).toBe(false);
@@ -348,7 +355,7 @@ describe("AuthContext", () => {
     act(() => root.unmount());
   });
 
-  it("skips /api/auth/me on entry routes when no user or session indicator exists", async () => {
+  it("skips the session probe on entry routes when no user or session indicator exists", async () => {
     window.history.pushState({}, "", "/login");
     let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
     function Consumer() {
@@ -370,8 +377,10 @@ describe("AuthContext", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
-    const authMeCalls = vi.mocked(apiJson).mock.calls.filter(([url]) => url === "/api/auth/me");
-    expect(authMeCalls).toHaveLength(0);
+    const bootCalls = vi
+      .mocked(apiJson)
+      .mock.calls.filter(([url]) => url === AUTH_PATHS.session || url === AUTH_PATHS.me);
+    expect(bootCalls).toHaveLength(0);
     expect(capturedAuth.isAuthenticated).toBe(false);
     expect(capturedAuth.authChecked).toBe(true);
     expect(capturedAuth.isLoadingAuth).toBe(false);
@@ -382,7 +391,7 @@ describe("AuthContext", () => {
     window.history.pushState({}, "", "/");
   });
 
-  it("calls /api/auth/me on entry routes when session indicator cookie is present", async () => {
+  it("soft-probes /api/auth/session on entry routes when a session indicator cookie is present", async () => {
     document.cookie = "csrf_token=valid-csrf-token; path=/";
     window.history.pushState({}, "", "/login");
     let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
@@ -405,8 +414,12 @@ describe("AuthContext", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
-    const authMeCalls = vi.mocked(apiJson).mock.calls.filter(([url]) => url === "/api/auth/me");
-    expect(authMeCalls).toHaveLength(1);
+    const sessionCalls = vi
+      .mocked(apiJson)
+      .mock.calls.filter(([url]) => url === AUTH_PATHS.session);
+    const authMeCalls = vi.mocked(apiJson).mock.calls.filter(([url]) => url === AUTH_PATHS.me);
+    expect(sessionCalls).toHaveLength(1);
+    expect(authMeCalls).toHaveLength(0);
     expect(capturedAuth.isAuthenticated).toBe(true);
     expect(capturedAuth.user).toEqual(mockUser);
 
@@ -414,6 +427,173 @@ describe("AuthContext", () => {
       root.unmount();
     });
     document.cookie = "csrf_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    window.history.pushState({}, "", "/");
+  });
+
+  it("stays a guest without refreshing when the login page soft-probe finds no session", async () => {
+    document.cookie = "csrf_token=stale-csrf-token; path=/";
+    window.history.pushState({}, "", "/login");
+    vi.mocked(apiJson).mockResolvedValue({ user: null });
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
+    function Consumer() {
+      capturedAuth = useAuth();
+      return <div>{capturedAuth.user?.name ?? "Guest"}</div>;
+    }
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <AuthProvider>
+          <Consumer />
+        </AuthProvider>,
+      );
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    const sessionCalls = vi
+      .mocked(apiJson)
+      .mock.calls.filter(([url]) => url === AUTH_PATHS.session);
+    const refreshCalls = vi
+      .mocked(apiJson)
+      .mock.calls.filter(([url]) => url === AUTH_PATHS.refresh);
+    expect(sessionCalls).toHaveLength(1);
+    // No persisted identity and an entry route: a stale csrf cookie must not trigger a request
+    // that can only 401 (the reported login-page console error).
+    expect(refreshCalls).toHaveLength(0);
+    expect(capturedAuth.isAuthenticated).toBe(false);
+    expect(capturedAuth.user).toBeNull();
+    expect(capturedAuth.authChecked).toBe(true);
+
+    act(() => {
+      root.unmount();
+    });
+    document.cookie = "csrf_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    window.history.pushState({}, "", "/");
+  });
+
+  it("restores an expired access session by refreshing before treating it as dead", async () => {
+    localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(mockUser));
+    document.cookie = "csrf_token=valid-csrf-token; path=/";
+    vi.mocked(apiJson).mockImplementation((url: string) =>
+      url === AUTH_PATHS.refresh
+        ? Promise.resolve({ user: mockUser })
+        : Promise.resolve({ user: null }),
+    );
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
+    function Consumer() {
+      capturedAuth = useAuth();
+      return <div>{capturedAuth.user?.name ?? "Guest"}</div>;
+    }
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <AuthProvider>
+          <Consumer />
+        </AuthProvider>,
+      );
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(
+      vi.mocked(apiJson).mock.calls.filter(([url]) => url === AUTH_PATHS.session),
+    ).toHaveLength(1);
+    expect(
+      vi.mocked(apiJson).mock.calls.filter(([url]) => url === AUTH_PATHS.refresh),
+    ).toHaveLength(1);
+    expect(capturedAuth.isAuthenticated).toBe(true);
+    expect(capturedAuth.user).toEqual(mockUser);
+    expect(localStorage.getItem(AUTH_USER_STORAGE_KEY)).not.toBeNull();
+
+    act(() => {
+      root.unmount();
+    });
+    document.cookie = "csrf_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    window.history.pushState({}, "", "/");
+  });
+
+  it("clears identity and cache when the refresh attempt rejects a dead session", async () => {
+    localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(mockUser));
+    document.cookie = "csrf_token=valid-csrf-token; path=/";
+    vi.mocked(apiJson).mockImplementation((url: string) =>
+      url === AUTH_PATHS.refresh
+        ? Promise.reject({ status: 401, message: "Invalid refresh token" })
+        : Promise.resolve({ user: null }),
+    );
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
+    function Consumer() {
+      capturedAuth = useAuth();
+      return <div>{capturedAuth.user?.name ?? "Guest"}</div>;
+    }
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <AuthProvider>
+          <Consumer />
+        </AuthProvider>,
+      );
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(queryClientInstance.clear).toHaveBeenCalled();
+    expect(localStorage.getItem(AUTH_USER_STORAGE_KEY)).toBeNull();
+    expect(capturedAuth.isAuthenticated).toBe(false);
+    expect(capturedAuth.user).toBeNull();
+    expect(capturedAuth.authChecked).toBe(true);
+
+    act(() => {
+      root.unmount();
+    });
+    document.cookie = "csrf_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    window.history.pushState({}, "", "/");
+  });
+
+  it("treats a soft-probe null with no refresh cookie as a dead session", async () => {
+    localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(mockUser));
+    vi.mocked(apiJson).mockResolvedValue({ user: null });
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
+    function Consumer() {
+      capturedAuth = useAuth();
+      return <div>{capturedAuth.user?.name ?? "Guest"}</div>;
+    }
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <AuthProvider>
+          <Consumer />
+        </AuthProvider>,
+      );
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(
+      vi.mocked(apiJson).mock.calls.filter(([url]) => url === AUTH_PATHS.refresh),
+    ).toHaveLength(0);
+    expect(queryClientInstance.clear).toHaveBeenCalled();
+    expect(localStorage.getItem(AUTH_USER_STORAGE_KEY)).toBeNull();
+    expect(capturedAuth.isAuthenticated).toBe(false);
+
+    act(() => {
+      root.unmount();
+    });
     window.history.pushState({}, "", "/");
   });
 });

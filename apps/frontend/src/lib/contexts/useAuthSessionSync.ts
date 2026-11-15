@@ -50,9 +50,10 @@ export function useAuthSessionSync({
 
       const isEntry =
         typeof window !== "undefined" && isEntryPath(window.location.pathname, { isApex: false });
-      const hasSession = Boolean(hasSessionIndicator() || getPersistedAuthUser());
+      const persistedUser = getPersistedAuthUser();
+      const hasSessionIndicatorCookie = hasSessionIndicator();
 
-      if (isEntry && !hasSession) {
+      if (isEntry && !persistedUser && !hasSessionIndicatorCookie) {
         setUser(null);
         setIsAuthenticated(false);
         setAuthChecked(true);
@@ -66,22 +67,75 @@ export function useAuthSessionSync({
       setAuthChecked(false);
       setAuthError(null);
 
+      const clearRejectedSession = (): void => {
+        // The session is genuinely gone: drop the tenant cache and identity.
+        queryClientInstance.clear();
+        clearPersistedAuthUser();
+        setUser(null);
+        setIsAuthenticated(false);
+      };
+
+      /**
+       * A missing access cookie (15-minute TTL) is not a dead session while the refresh cookie
+       * (7-day TTL) is still valid. The boot probe is deliberately excluded from `apiClient`'s
+       * generic refresh so it cannot loop; recovery is decided here.
+       */
+      const refreshAndApply = async (): Promise<void> => {
+        try {
+          const refreshed = await apiJson<{ user: User }>(AUTH_PATHS.refresh, {
+            method: "POST",
+            signal,
+          });
+          if (!isCurrent()) return;
+          await applyAuthSession(refreshed.user);
+        } catch (refreshError) {
+          if (!isCurrent()) return;
+          if (
+            isApiError(refreshError) &&
+            (refreshError.status === 401 || refreshError.status === 403)
+          ) {
+            clearRejectedSession();
+            return;
+          }
+          // Network error, timeout or 5xx — not an invalid session. Keep the persisted identity
+          // and (unlike the rejected path) the offline Query cache.
+          const fallback = getPersistedAuthUser();
+          setUser(fallback);
+          setIsAuthenticated(Boolean(fallback));
+          if (!fallback) {
+            setAuthError(buildConnectionAuthError(refreshError));
+          }
+        }
+      };
+
       try {
-        const authResponse = await apiJson<{ user: User }>(AUTH_PATHS.me, { signal });
+        const probe = await apiJson<{ user: User | null }>(AUTH_PATHS.session, { signal });
         if (!isCurrent()) return;
-        await applyAuthSession(authResponse.user);
+        if (probe.user) {
+          await applyAuthSession(probe.user);
+          return;
+        }
+
+        // No access session. On an entry route without a persisted identity the visitor is a
+        // guest: refresh only when a returning identity (or a protected route) could be restored,
+        // so a stale `csrf_token` never turns a login-page visit into a 401.
+        const canRefresh = hasSessionIndicatorCookie && (persistedUser !== null || !isEntry);
+        if (canRefresh) {
+          await refreshAndApply();
+          return;
+        }
+        if (persistedUser) clearRejectedSession();
       } catch (error) {
         if (!isCurrent()) return;
-        setAuthChecked(true);
-        setIsLoadingAuth(false);
-
-        const sessionRejected = isApiError(error) && (error.status === 401 || error.status === 403);
-        if (sessionRejected) {
-          // The session is genuinely gone: drop the tenant cache and identity.
-          queryClientInstance.clear();
-          clearPersistedAuthUser();
-          setUser(null);
-          setIsAuthenticated(false);
+        if (isApiError(error) && (error.status === 401 || error.status === 403)) {
+          // An access token was presented but is invalid/revoked. Recover through the refresh
+          // cookie when one can exist, otherwise drop the identity.
+          const canRefresh = hasSessionIndicatorCookie && (persistedUser !== null || !isEntry);
+          if (canRefresh) {
+            await refreshAndApply();
+          } else {
+            clearRejectedSession();
+          }
           return;
         }
 
@@ -90,10 +144,10 @@ export function useAuthSessionSync({
         // offline cache (`gcTime: 24h`), so a network blip on boot logged the
         // user out AND destroyed the data the cache exists to provide. Fall back
         // to the last persisted identity instead.
-        const persistedUser = getPersistedAuthUser();
-        setUser(persistedUser);
-        setIsAuthenticated(Boolean(persistedUser));
-        if (!persistedUser) {
+        const fallback = getPersistedAuthUser();
+        setUser(fallback);
+        setIsAuthenticated(Boolean(fallback));
+        if (!fallback) {
           setAuthError(buildConnectionAuthError(error));
         }
       } finally {
