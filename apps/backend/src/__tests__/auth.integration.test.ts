@@ -307,6 +307,51 @@ describe("auth routes", () => {
     await app.close();
   });
 
+  it("GET /api/auth/session soft-probes a visitor with no session as 200/null", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/auth/session",
+      headers: { host: "demo.localhost" },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual({ user: null, isAuthenticated: false });
+    await app.close();
+  });
+
+  it("GET /api/auth/session returns the authenticated user when a token is presented", async () => {
+    const app = await buildApp();
+    const token = signTenantToken(app, { role: "admin", workspaceSubdomain: "demo" });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/auth/session",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${token}`,
+      },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({
+      isAuthenticated: true,
+      user: { id: "u-admin", role: "admin" },
+    });
+    await app.close();
+  });
+
+  it("GET /api/auth/session keeps the strict 401 for an invalid presented token", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/auth/session",
+      headers: {
+        host: "demo.localhost",
+        authorization: "Bearer not-a-valid-token",
+      },
+    });
+    expect(res.statusCode).toBe(401);
+    await app.close();
+  });
+
   it("GET /api/auth/institution-setup-status returns workspace-wide completion", async () => {
     mockGetWorkspaceInstitutionSetupStatus.mockResolvedValueOnce(true);
     const app = await buildApp();

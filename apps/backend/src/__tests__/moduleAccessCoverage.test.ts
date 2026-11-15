@@ -108,6 +108,7 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
       "/api/auth/logout",
       "/api/auth/onboard",
       "/api/auth/refresh",
+      "/api/auth/session",
       "/api/auth/session/extend",
       "/api/auth/verify-password",
     ],

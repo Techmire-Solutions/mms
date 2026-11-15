@@ -10,6 +10,7 @@ const skipWebServer = isProduction || Boolean(process.env.NO_WEB_SERVER);
 /** Specs that mutate shared state and are restricted to local single-run environments. */
 const LOCAL_ONLY_SPECS = [
   "**/contacts-import-export.spec.ts",
+  "**/login-session-probe.spec.ts",
   "**/platform-onboarding.spec.ts",
   "**/responsive-authenticated.spec.ts",
   "**/template-editor.spec.ts",
@@ -21,6 +22,7 @@ const LOCAL_ONLY_SPECS = [
 
 /** Heavy mutation/seed flows excluded when running against production environments. */
 const PRODUCTION_IGNORED_SPECS = [
+  "**/login-session-probe.spec.ts",
   "**/platform-onboarding.spec.ts",
   "**/tenant-operations-flow.spec.ts",
   "**/tenant-academic-flow.spec.ts",

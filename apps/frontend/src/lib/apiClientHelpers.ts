@@ -6,6 +6,7 @@ export { sanitizeColumnPreferencesBody };
 /** Tenant auth endpoint paths — SSOT for AuthContext.tsx, twoFactor.ts, and the session interceptor. */
 export const AUTH_PATHS = {
   me: "/api/auth/me",
+  session: "/api/auth/session",
   login: "/api/auth/login",
   logout: "/api/auth/logout",
   refresh: "/api/auth/refresh",
@@ -45,6 +46,7 @@ const REFRESH_PATH = AUTH_PATHS.refresh;
 const TENANT_SESSION_EXCLUDED_PATHS: Set<string> = new Set([
   AUTH_PATHS.login,
   AUTH_PATHS.me,
+  AUTH_PATHS.session,
   AUTH_PATHS.onboard,
   AUTH_PATHS.handoff,
   AUTH_PATHS.twoFactorVerify,

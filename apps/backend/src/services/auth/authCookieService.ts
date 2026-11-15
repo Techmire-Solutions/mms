@@ -43,6 +43,17 @@ export function attachAccessTokenFromCookie(request: FastifyRequest): void {
   }
 }
 
+/**
+ * True when the request presents a tenant access token (Authorization header or `mms_access` cookie).
+ *
+ * The optional `/api/auth/session` probe uses this to decide whether the strict
+ * `authenticateTenant` pipeline must run: with no token there is nothing to validate, so it can
+ * answer `200 { user: null }` instead of a 401 the browser would log on the login page.
+ */
+export function hasTenantAccessToken(request: FastifyRequest): boolean {
+  return extractBearerToken(request) !== null;
+}
+
 export function setCsrfCookie(reply: FastifyReply, token?: string): string {
   const csrfToken = token || generateCsrfToken();
   const base = secureCookieBase();
