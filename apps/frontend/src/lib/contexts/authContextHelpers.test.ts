@@ -5,7 +5,9 @@ import {
   buildConnectionAuthError,
   clearPersistedAuthUser,
   clearUserScopedCachesOnLogout,
+  clearSessionIndicator,
   getPersistedAuthUser,
+  hasSessionIndicator,
   persistAuthUser,
   readUserIdFromStoredAuth,
 } from "./authContextHelpers";
@@ -138,5 +140,27 @@ describe("readUserIdFromStoredAuth", () => {
     expect(readUserIdFromStoredAuth("not-json")).toBeUndefined();
     expect(readUserIdFromStoredAuth(JSON.stringify({ id: "" }))).toBeUndefined();
     expect(readUserIdFromStoredAuth(JSON.stringify({ name: "no id" }))).toBeUndefined();
+  });
+});
+
+describe("hasSessionIndicator & clearSessionIndicator", () => {
+  beforeEach(() => {
+    clearSessionIndicator();
+  });
+
+  it("returns false when csrf_token cookie is absent", () => {
+    expect(hasSessionIndicator()).toBe(false);
+  });
+
+  it("returns true when csrf_token cookie is present", () => {
+    document.cookie = "csrf_token=test-csrf-token; path=/";
+    expect(hasSessionIndicator()).toBe(true);
+  });
+
+  it("clears csrf_token cookie when clearSessionIndicator is called", () => {
+    document.cookie = "csrf_token=test-csrf-token; path=/";
+    expect(hasSessionIndicator()).toBe(true);
+    clearSessionIndicator();
+    expect(hasSessionIndicator()).toBe(false);
   });
 });

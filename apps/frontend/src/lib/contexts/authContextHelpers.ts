@@ -147,4 +147,21 @@ export function persistAuthUser(authUser: User): void {
 
 export function clearPersistedAuthUser(): void {
   localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+  clearSessionIndicator();
+}
+
+/**
+ * Fast client-side probe for an active session indicator cookie (`csrf_token`).
+ * Since `mms_access` is HttpOnly, `csrf_token` (non-HttpOnly companion cookie set on
+ * login/refresh and cleared on logout) tells the client whether an active session cookie might exist.
+ */
+export function hasSessionIndicator(): boolean {
+  if (typeof document === "undefined") return false;
+  return /(?:^|;\s*)csrf_token=/.test(document.cookie);
+}
+
+export function clearSessionIndicator(): void {
+  if (typeof document !== "undefined") {
+    document.cookie = "csrf_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  }
 }
