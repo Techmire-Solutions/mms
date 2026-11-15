@@ -1,11 +1,12 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { todayISO, type SessionClassSection } from "@mms/shared";
+import { type SessionClassSection } from "@mms/shared";
 import { SectionOperationModal, type SectionOperationModalProps } from "./SectionOperationModal";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+vi.mock("@/hooks/useWorkspaceToday", () => ({ useWorkspaceToday: () => "2026-04-15" }));
 vi.mock("@/hooks/useTranslation", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/components/app/DatePicker", () => ({
   DatePicker: ({ id, value }: { id: string; value: string }) => (
@@ -170,7 +171,7 @@ describe("SectionOperationModal", () => {
       name: "C",
       capacity: 30,
       enrollmentIds: ["e1"],
-      effectiveOn: todayISO(),
+      effectiveOn: "2026-04-15",
       reason: "Too many in A",
     });
     expect(handlers.onDismiss).toHaveBeenCalledTimes(1);
