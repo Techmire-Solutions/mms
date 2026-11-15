@@ -133,6 +133,14 @@ const MODULE_TRANSFER_COVERAGE: ModuleTransferCoverageRecord[] = [
     formSurfaces: ["Daily Attendance Register", "Excuse Notes", "Session Timetable"],
   },
   {
+    moduleId: "attendance-calendar",
+    moduleTitle: "Academic Calendar",
+    entityNounPlural: "academic calendar events",
+    status: "implemented",
+    migrationPriority: "P3",
+    formSurfaces: ["Calendar Event"],
+  },
+  {
     moduleId: "examinations",
     moduleTitle: "Examinations",
     entityNounPlural: "examinations",
@@ -171,6 +179,14 @@ const MODULE_TRANSFER_COVERAGE: ModuleTransferCoverageRecord[] = [
     status: "implemented",
     migrationPriority: "P3",
     formSurfaces: ["Message Composer", "Campaign Builder", "Template Variables"],
+  },
+  {
+    moduleId: "workshops",
+    moduleTitle: "Workshops",
+    entityNounPlural: "workshops",
+    status: "implemented",
+    migrationPriority: "P3",
+    formSurfaces: ["Workshop Details"],
   },
 ];
 

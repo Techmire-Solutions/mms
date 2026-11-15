@@ -1,6 +1,6 @@
 import type { BackgroundJobRecord } from "@mms/shared";
-import { bindRequestUserId, runWithTenant } from "../lib/tenantContext.js";
-import { getBackgroundJobModuleDenial } from "../lib/backgroundJobModuleAccess.js";
+import { bindRequestAuditContext, bindRequestUserId, runWithTenant } from "../lib/tenantContext.js";
+import { resolveBackgroundJobAccessContext } from "../lib/backgroundJobModuleAccess.js";
 
 import { patchJob } from "./backgroundJobPatch.js";
 import { markJobPermanentlyFailed } from "./backgroundJobTerminalState.js";
@@ -18,6 +18,10 @@ export interface BackgroundJobRunContext {
   attempt?: number;
   /** Configured attempt ceiling (BullMQ `opts.attempts`). */
   maxAttempts?: number;
+  /** Current role resolved at execution (field visibility); null when unresolved. */
+  viewerRole?: string | null;
+  /** Whether the current role may view soft-deleted rows (delete/trash permission). */
+  allowDeleted?: boolean;
   updateProgress: (current: number, total: number) => Promise<void>;
   complete: (patch?: Partial<BackgroundJobRecord>) => Promise<void>;
   fail: (error: string) => Promise<void>;
@@ -123,12 +127,15 @@ export async function executeJob(
   }
 
   // Permanent denial: fail without throwing so BullMQ does not retry.
-  const denial = await getBackgroundJobModuleDenial(tenant, userId, moduleId, kind);
-  if (denial) {
-    await runContext.fail(`Module access denied (${denial})`);
+  const access = await resolveBackgroundJobAccessContext(tenant, userId, moduleId, kind);
+  if (access.denial) {
+    await runContext.fail(`Module access denied (${access.denial})`);
     deadline.dispose();
     return;
   }
+  // Re-scope data at execution: role + delete permission may have changed since enqueue.
+  runContext.viewerRole = access.viewerRole;
+  runContext.allowDeleted = access.allowDeleted;
 
   // Persist the transition out of `pending` before the runner starts. Retries
   // of a previous attempt also re-enter here after a stalled-job recovery.
@@ -149,6 +156,10 @@ export async function executeJob(
       runWithTenant(tenant, async () => {
         // Audit rows / `app.current_user_id` must attribute the job to its initiator, not "system".
         bindRequestUserId(userId);
+        // Propagate the enqueue-time W3C traceparent so execution-time audit rows keep the
+        // initiating correlation_id instead of falling back to a random span.
+        const correlationId = (payload as { correlationId?: string } | null)?.correlationId;
+        if (correlationId) bindRequestAuditContext({ correlationId });
         await runner(payload, runContext);
       }),
     );

@@ -6,6 +6,7 @@ import { registerMetricsRoute } from "../../../lib/crudRouter.js";
 import { workshopsUseCases } from "../../../workshops/use-cases/workshopsUseCases.js";
 import { workshopsContractRouter } from "./workshopsContractRouter.js";
 import { workshopsCompletionRouter } from "./workshopsCompletionRouter.js";
+import { workshopsExportRoutes } from "./workshopsExportRoutes.js";
 
 /** Workshops module routes: command-centre metrics plus the ts-rest contract. */
 export default async function workshopsRoutes(
@@ -31,4 +32,5 @@ export default async function workshopsRoutes(
 
   await fastify.register(workshopsCompletionRouter);
   await fastify.register(workshopsContractRouter);
+  await fastify.register(workshopsExportRoutes, { prefix: WORKSHOPS_MODULE_MANIFEST.restBasePath });
 }

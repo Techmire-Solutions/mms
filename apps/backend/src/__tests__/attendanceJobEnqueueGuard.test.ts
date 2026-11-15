@@ -26,7 +26,10 @@ vi.mock("../services/auditTrailService.js", () => ({
   recordModernAuditEvent: vi.fn(),
   mapActionStringToAuditType: () => "UPDATE",
 }));
-vi.mock("../lib/tenantContext.js", () => ({ getRequestTenant: () => "demo" }));
+vi.mock("../lib/tenantContext.js", () => ({
+  getRequestTenant: () => "demo",
+  getRequestAuditContext: () => null,
+}));
 
 const { registerModuleCsvExportRoutes } = await import("../lib/registerModuleCsvExportRoutes.js");
 const { registerModuleCsvImportRoutes } = await import("../lib/registerModuleCsvImportRoutes.js");

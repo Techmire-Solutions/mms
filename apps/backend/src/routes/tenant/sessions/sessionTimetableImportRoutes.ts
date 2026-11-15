@@ -8,10 +8,15 @@ import {
 } from "@mms/shared";
 import { canWriteCollection } from "../../../services/rbacService.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
+import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
+import { getRequestTenant } from "../../../lib/tenantContext.js";
+import {
+  recordModernAuditEvent,
+  mapActionStringToAuditType,
+} from "../../../services/auditTrailService.js";
 import { sessionsUseCases } from "../../../sessions/use-cases/sessionsUseCases.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
-const MAX_ROWS = 500;
 
 function stableId(sessionId: string, rowIndex: number, suffix: string): string {
   return createHash("sha256")
@@ -51,16 +56,8 @@ export const sessionTimetableImportRoutes: FastifyPluginAsync = async (fastify) 
       return reply.status(403).send({ type: "forbidden", message: "Insufficient permissions" });
     if (!userHasPermission(user as never, SESSIONS_MODULE_MANIFEST.permissions.manage))
       return reply.status(403).send({ type: "forbidden", message: "Insufficient permissions" });
-    const parsed = sessionTimetableImportBodySchema.safeParse(request.body);
-    if (!parsed.success)
-      return reply.status(400).send({
-        type: "validation_error",
-        message: parsed.error.issues[0]?.message ?? "Invalid rows",
-      });
-    if (parsed.data.rows.length > MAX_ROWS)
-      return reply
-        .status(400)
-        .send({ type: "validation_error", message: `At most ${MAX_ROWS} rows` });
+    const parsed = parseRequest(sessionTimetableImportBodySchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
 
     const { id } = request.params as { id: string };
     const [session] = await sessionsUseCases.loadSessionsByIds([id]);
@@ -168,6 +165,20 @@ export const sessionTimetableImportRoutes: FastifyPluginAsync = async (fastify) 
     );
     if (!updated)
       return reply.status(404).send({ type: "not_found", message: "Session not found" });
+    await recordModernAuditEvent({
+      workspaceSubdomain: getRequestTenant() ?? "unknown",
+      tableName: "sessions",
+      recordId: session.id,
+      actionType: mapActionStringToAuditType("session.timetable.import"),
+      realUserId: String(user?.id ?? ""),
+      newState: {
+        action: "session.timetable.import",
+        sessionId: session.id,
+        imported,
+        failed: errors.length,
+        total: parsed.data.rows.length,
+      },
+    });
     return reply.status(200).send({
       imported,
       failed: errors.length,

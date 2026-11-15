@@ -21,6 +21,8 @@ import {
   generateAttendanceCsvStreamChunks,
 } from "./attendanceExportService.js";
 import { scanAbsenceStreaks } from "../attendance/use-cases/attendanceEscalationUseCases.js";
+import { registerAcademicCalendarImportJobRunner } from "../attendance/use-cases/academicCalendarImportJob.js";
+import { registerAttendanceImportJobRunner } from "../attendance/use-cases/attendanceImportJob.js";
 import { logger } from "../lib/logger.js";
 
 /**
@@ -43,6 +45,9 @@ export function registerAttendanceJobRunners(): void {
     buildExport: buildAttendanceCsvExport as never,
     generateStreamChunks: generateAttendanceCsvStreamChunks as never,
   });
+
+  registerAcademicCalendarImportJobRunner();
+  registerAttendanceImportJobRunner();
 
   /**
    * Register / monthly matrix export.

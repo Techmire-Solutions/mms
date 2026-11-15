@@ -126,24 +126,31 @@ export function registerModuleCsvExportJobRunner(
     `${options.moduleId}:${options.kind ?? "export"}`,
     async (payload, ctx) => {
       const exportPayload = payload as ModuleCsvExportJobPayload;
+      // Re-scope to the current role/delete permission (resolved at execution) — never
+      // trust the enqueue-time snapshot when the role may have changed while queued.
+      const resolvedPayload: ModuleCsvExportJobPayload = {
+        ...exportPayload,
+        viewerRole: ctx.viewerRole ?? exportPayload.viewerRole,
+        allowDeleted: ctx.allowDeleted ?? exportPayload.allowDeleted === true,
+      };
       throwIfBackgroundJobAborted(ctx.signal);
       await ctx.updateProgress(0, 1);
       throwIfBackgroundJobAborted(ctx.signal);
 
       let count: number;
       if (options.generateStreamChunks) {
-        const result = await streamCsvToStorage(ctx, exportPayload, options);
+        const result = await streamCsvToStorage(ctx, resolvedPayload, options);
         count = result.count;
       } else {
-        const rawFallback = exportPayload.filename?.trim() || "export.csv";
+        const rawFallback = resolvedPayload.filename?.trim() || "export.csv";
         const targetFilename = buildTenantExportFilename(ctx.tenant, rawFallback);
         const result = await options.buildExport(
-          (exportPayload.query ?? {}) as Record<string, unknown>,
+          (resolvedPayload.query ?? {}) as Record<string, unknown>,
           {
-            columns: exportPayload.columns,
+            columns: resolvedPayload.columns,
             filename: targetFilename,
-            viewerRole: exportPayload.viewerRole,
-            allowDeleted: exportPayload.allowDeleted === true,
+            viewerRole: resolvedPayload.viewerRole,
+            allowDeleted: resolvedPayload.allowDeleted === true,
           },
           ctx.tenant,
           ctx.signal,

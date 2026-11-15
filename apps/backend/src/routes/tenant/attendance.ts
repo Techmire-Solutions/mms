@@ -55,5 +55,7 @@ export default async function attendanceRoutes(
   await fastify.register(attendanceContractRouter);
   await fastify.register(academicCalendarRouter);
   await fastify.register(academicCalendarExportRoutes, { prefix: "/api/attendance" });
-  await fastify.register(academicCalendarImportRoutes, { prefix: "/api/attendance" });
+  // `registerModuleCsvImportRoutes` registers POST `/import`, so mount at the calendar prefix to
+  // keep the URL `/api/attendance/calendar/import` and avoid colliding with the daily `/import`.
+  await fastify.register(academicCalendarImportRoutes, { prefix: "/api/attendance/calendar" });
 }

@@ -98,7 +98,7 @@ describe("contactsExportService", () => {
     );
   });
 
-  it("keeps includeDeleted when allowDeleted is true", async () => {
+  it("excludes archived rows even when allowDeleted is true (manifest exportsIncludeDeleted: false)", async () => {
     mockLoadContactsPage.mockResolvedValueOnce({
       contacts: [],
       total: 0,
@@ -113,7 +113,7 @@ describe("contactsExportService", () => {
     );
 
     expect(mockLoadContactsPage).toHaveBeenCalledWith(
-      expect.objectContaining({ includeDeleted: true }),
+      expect.not.objectContaining({ includeDeleted: true }),
     );
   });
 

@@ -1,4 +1,4 @@
-import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
+import { buildBackgroundJobId, buildDeterministicJobKey } from "../../../lib/backgroundJobIds.js";
 import type { FastifyReply } from "fastify";
 import {
   type BackgroundJobRecord,
@@ -77,7 +77,16 @@ export async function enqueueContactBackgroundJob(options: {
   }
 
   const userId = String(options.user.id);
-  const jobId = buildBackgroundJobId(tenant, userId, options.idempotencyKey);
+  // A client key wins; otherwise hash the payload so a double submit / HTTP retry of the same
+  // body reuses the existing job instead of enqueuing a second one (no random-UUID fallback).
+  const idempotencyKey =
+    options.idempotencyKey ??
+    buildDeterministicJobKey({
+      moduleId: options.moduleId,
+      kind: options.kind,
+      payload: options.payload ?? {},
+    });
+  const jobId = buildBackgroundJobId(tenant, userId, idempotencyKey);
   const existing = await getUserBackgroundJob(userId, jobId);
   if (existing) return existing;
 

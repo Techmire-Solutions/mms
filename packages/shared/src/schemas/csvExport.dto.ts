@@ -108,3 +108,4 @@ export const examinationsCsvExportBodySchema = csvExportBodySchema(emptyListQuer
 export const hasanatCsvExportBodySchema = csvExportBodySchema(emptyListQuerySchema);
 export const obligationsCsvExportBodySchema = csvExportBodySchema(emptyListQuerySchema);
 export const tasksCsvExportBodySchema = csvExportBodySchema(taskListQuerySchema);
+export const workshopsCsvExportBodySchema = csvExportBodySchema(emptyListQuerySchema);

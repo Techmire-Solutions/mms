@@ -8,6 +8,7 @@ import {
 import { buildContentDisposition } from "../../../lib/contentDisposition.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { getWorkspaceTimezone } from "../../../lib/workspaceTimezone.js";
+import { parseRequest } from "../../../lib/zodRequest.js";
 import { canReadCollection } from "../../../services/rbacService.js";
 import { sessionsUseCases } from "../../../sessions/use-cases/sessionsUseCases.js";
 import {
@@ -16,11 +17,6 @@ import {
 } from "../../../sessions/use-cases/sessionTimetableExport.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
-
-function parseQuery(query: unknown) {
-  const parsed = sessionsTimetableExportQuerySchema.safeParse(query ?? {});
-  return parsed.success ? { ok: true as const, data: parsed.data } : { ok: false as const };
-}
 
 /** Direct (streamed) class-timetable downloads for a session. */
 export const sessionCalendarExportRoutes: FastifyPluginAsync = async (fastify) => {
@@ -39,9 +35,9 @@ export const sessionCalendarExportRoutes: FastifyPluginAsync = async (fastify) =
     const tenant = getRequestTenant();
     if (!tenant) return reply.status(403).send({ type: "forbidden", message: "Tenant required" });
     const { id } = request.params as { id: string };
-    const query = parseQuery(request.query);
+    const query = parseRequest(sessionsTimetableExportQuerySchema, request.query ?? {});
     if (!query.ok)
-      return reply.status(400).send({ type: "validation_error", message: "Invalid export query" });
+      return reply.status(400).send({ type: "validation_error", message: query.message });
     const [session] = await sessionsUseCases.loadSessionsByIds([id]);
     if (!session)
       return reply.status(404).send({ type: "not_found", message: "Session not found" });

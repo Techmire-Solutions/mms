@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeAny } from "zod";
 import type { User } from "@mms/shared";
 import { isSystemMetadataKey, moduleExportAuditBodySchema } from "@mms/shared";
-import { getRequestTenant } from "./tenantContext.js";
+import { getRequestAuditContext, getRequestTenant } from "./tenantContext.js";
 import { enqueueCsvExportJob, normalizeExportQuery } from "./csvExportEnqueue.js";
 import { sendForbidden, sendServiceUnavailable } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
@@ -97,6 +97,7 @@ export function registerModuleCsvExportRoutes(
         viewerRole: user.role,
         allowDeleted,
         idempotencyKey: data.idempotencyKey,
+        correlationId: getRequestAuditContext()?.correlationId,
       });
     } catch (err) {
       if (err instanceof BackgroundJobLimitError) {

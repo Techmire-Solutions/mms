@@ -33,6 +33,8 @@ export type EnqueueCsvExportJobInput = {
   viewerRole: string;
   allowDeleted: boolean;
   idempotencyKey?: string;
+  /** W3C traceparent to propagate into execution-time audit rows. */
+  correlationId?: string;
 };
 
 /**
@@ -63,6 +65,7 @@ export async function enqueueCsvExportJob(
       filename: input.filename,
       allowDeleted: input.allowDeleted,
       viewerRole: input.viewerRole,
+      correlationId: input.correlationId,
     };
     if (existing.status === "failed") {
       // A terminal failure cleared the stored payload; re-run with the payload we already hold.
@@ -105,5 +108,6 @@ export async function enqueueCsvExportJob(
     label: input.label,
     viewerRole: input.viewerRole,
     allowDeleted: input.allowDeleted,
+    correlationId: input.correlationId,
   });
 }

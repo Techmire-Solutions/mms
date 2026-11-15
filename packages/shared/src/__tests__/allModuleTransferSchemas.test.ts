@@ -8,7 +8,7 @@ import {
 describe("All Module Transfer Schemas (Monorepo Symmetry & Whitelist)", () => {
   it("provides an implemented, registered schema for every cataloged module", () => {
     const coverage = getAllModuleTransferCoverage();
-    expect(coverage).toHaveLength(15);
+    expect(coverage).toHaveLength(17);
     for (const record of coverage) {
       expect(record.status).toBe("implemented");
       const schema = getModuleTransferSchema(record.moduleId);
@@ -160,9 +160,9 @@ describe("All Module Transfer Schemas (Monorepo Symmetry & Whitelist)", () => {
     });
   });
 
-  it("guarantees bidirectional export-to-import roundtrip across all 15 module schemas", () => {
+  it("guarantees bidirectional export-to-import roundtrip across all 17 module schemas", () => {
     const coverage = getAllModuleTransferCoverage();
-    expect(coverage).toHaveLength(15);
+    expect(coverage).toHaveLength(17);
     for (const record of coverage) {
       const schema = getModuleTransferSchema(record.moduleId);
       expect(schema).toBeDefined();

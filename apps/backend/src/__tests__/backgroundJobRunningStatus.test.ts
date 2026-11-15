@@ -38,9 +38,14 @@ vi.mock("../db/tenant-context.js", () => ({
 vi.mock("../lib/tenantContext.js", () => ({
   runWithTenant: (_tenant: string, callback: () => Promise<unknown>) => callback(),
   bindRequestUserId: () => undefined,
+  bindRequestAuditContext: () => undefined,
 }));
 vi.mock("../lib/backgroundJobModuleAccess.js", () => ({
-  getBackgroundJobModuleDenial: vi.fn().mockResolvedValue(null),
+  resolveBackgroundJobAccessContext: vi.fn().mockResolvedValue({
+    denial: null,
+    viewerRole: null,
+    allowDeleted: undefined,
+  }),
 }));
 vi.mock("../worker/pubsub/jobPubSub.js", () => ({
   publishJobEvent: vi.fn().mockResolvedValue(undefined),

@@ -8,6 +8,7 @@ import {
 import { buildContentDisposition } from "../../../lib/contentDisposition.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { getWorkspaceTimezone } from "../../../lib/workspaceTimezone.js";
+import { parseRequest } from "../../../lib/zodRequest.js";
 import { canReadCollection } from "../../../services/rbacService.js";
 import { academicCalendarUseCases } from "../../../attendance/use-cases/academicCalendarUseCases.js";
 import {
@@ -19,12 +20,20 @@ const COLLECTION = ATTENDANCE_MODULE_MANIFEST.collectionKey;
 const MAX_RANGE_DAYS = 366;
 
 function parseQuery(query: unknown) {
-  const parsed = academicCalendarExportQuerySchema.safeParse(query ?? {});
-  if (!parsed.success) return { ok: false as const };
+  const parsed = parseRequest(academicCalendarExportQuerySchema, query ?? {});
+  if (!parsed.ok) return { ok: false as const, message: parsed.message };
   const from = Date.parse(`${parsed.data.from}T00:00:00.000Z`);
   const to = Date.parse(`${parsed.data.to}T00:00:00.000Z`);
-  if (!Number.isFinite(from) || !Number.isFinite(to) || from > to) return { ok: false as const };
-  if ((to - from) / 86_400_000 + 1 > MAX_RANGE_DAYS) return { ok: false as const };
+  if (
+    !Number.isFinite(from) ||
+    !Number.isFinite(to) ||
+    from > to ||
+    (to - from) / 86_400_000 + 1 > MAX_RANGE_DAYS
+  )
+    return {
+      ok: false as const,
+      message: "from/to are required and the range must be at most 366 days",
+    };
   return { ok: true as const, data: parsed.data };
 }
 
@@ -46,10 +55,7 @@ export const academicCalendarExportRoutes: FastifyPluginAsync = async (fastify) 
     if (!tenant) return reply.status(403).send({ type: "forbidden", message: "Tenant required" });
     const query = parseQuery(request.query);
     if (!query.ok)
-      return reply.status(400).send({
-        type: "validation_error",
-        message: "from/to are required and the range must be at most 366 days",
-      });
+      return reply.status(400).send({ type: "validation_error", message: query.message });
 
     const events = (
       await academicCalendarUseCases.list(tenant, {

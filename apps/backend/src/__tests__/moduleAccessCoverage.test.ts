@@ -370,7 +370,24 @@ const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
   "POST /api/sessions/:id/restore": "delete",
   "POST /api/sessions/bulk-delete": "delete",
   "POST /api/sessions/bulk-restore": "delete",
+  // Examinations deviates from the import/export defaults deliberately: the CSV import is a
+  // controller action (delete-level — it can reshape scoring frames) and the CSV export is a
+  // read (its handler enforces canRead). See moduleRouteActionRulesExaminations.ts.
+  "POST /api/examinations/import": "delete",
+  "POST /api/examinations/export/csv": "read",
 };
+
+/**
+ * Default action implied by the URL suffix, mirroring the `/import` (POST → `write`) and
+ * `/export/csv` (→ `export`) route-action rules. Without this a module could stamp `/import`
+ * as `read` (or `/export/csv` as `write`) and the suite would stay green. Explicit pins in
+ * `EXPECTED_MODULE_ROUTE_ACTIONS` still win (e.g. messaging `/export/csv` → `write`).
+ */
+function defaultImportExportAction(url: string): ModuleAction | undefined {
+  if (url.endsWith("/import")) return "write";
+  if (url.endsWith("/export/csv")) return "export";
+  return undefined;
+}
 
 describe("module access coverage", () => {
   it("classifies every route and gates every module-owned route", async () => {
@@ -397,7 +414,8 @@ describe("module access coverage", () => {
           if (access?.moduleId !== expected || !access.action || !guarded) {
             ungated.push(`${key} → stamped ${access?.moduleId ?? "none"}, guard ${guarded}`);
           }
-          const expectedAction = EXPECTED_MODULE_ROUTE_ACTIONS[key];
+          const expectedAction =
+            EXPECTED_MODULE_ROUTE_ACTIONS[key] ?? defaultImportExportAction(url);
           if (expectedAction) {
             seenActions.add(key);
             if (access?.action !== expectedAction) {
