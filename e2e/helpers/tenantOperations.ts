@@ -265,19 +265,26 @@ export async function registerStudentJaneDoe(page: Page): Promise<void> {
       .isVisible({ timeout: 2000 })
       .catch(() => false);
     if (!alreadyLinked) {
-      await editJaneDialog.getByRole("button", { name: /^Relationship$/i }).click();
-      // Fill John Doe in the last (newly added) contact picker row
+      const existingPickers = editJaneDialog.getByRole("combobox", { name: /Link contact/i });
+      if ((await existingPickers.count()) === 0) {
+        const addRelBtn = editJaneDialog.getByRole("button", { name: /^Relationship$/i });
+        if (await addRelBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await addRelBtn.click();
+        }
+      }
+      // Fill John Doe in the contact picker row
       const relContactPicker = editJaneDialog
         .getByRole("combobox", { name: /Link contact/i })
         .last();
+      await relContactPicker.click();
       await relContactPicker.fill("John Doe");
       const johnRelOption = page.getByRole("option", { name: /John Doe/ }).first();
       await expect(johnRelOption).toBeVisible({ timeout: 15_000 });
-      await johnRelOption.click({ force: true });
+      await johnRelOption.click();
     }
 
     // After John Doe is linked, ensure the "Relationship type" is set to "Parent".
-    await expect(editJaneDialog.getByText("John Doe").first()).toBeVisible({ timeout: 10_000 });
+    await expect(editJaneDialog.getByText("John Doe").first()).toBeVisible({ timeout: 15_000 });
 
     // Ensure relationship type is set to Parent (supports native <select> and custom dropdown buttons)
     const relSelects = editJaneDialog.locator('select[id*="-relationship-type-"]');
@@ -1217,6 +1224,10 @@ export async function createUserFromContact(page: Page): Promise<void> {
       throw new Error(
         `User create failed: HTTP ${userResponse.status()} ${await userResponse.text()}`,
       );
+    }
+    const successCloseBtn = userDialog.getByRole("button", { name: /Close/i }).last();
+    if (await successCloseBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await successCloseBtn.click();
     }
     await expect(userDialog).toBeHidden({ timeout: 20_000 });
     await expect(
