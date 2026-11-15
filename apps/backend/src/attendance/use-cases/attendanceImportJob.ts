@@ -4,7 +4,7 @@ import { registerModuleCsvImportJobRunner } from "../../lib/registerModuleCsvImp
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { attendanceUseCases } from "./attendanceUseCases.js";
 import { sessionsUseCases } from "../../sessions/use-cases/sessionsUseCases.js";
-import { findStudentsByNames } from "../../db/repositories/hasanatBatchRepository.js";
+import { findStudentsByNames } from "../../hasanat/repository/hasanatRepositoryAdapter.js";
 import { resolveCurrentTenantRole } from "../../lib/currentTenantRole.js";
 
 /** `attendance:import` — resolves the schema's names to ids and bulk-marks daily attendance. */

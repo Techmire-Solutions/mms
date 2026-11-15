@@ -10,9 +10,9 @@ import {
 import { contactsTransferSchema } from "../contacts/contactsTransferSchema.js";
 
 describe("moduleTransferRegistry (Coverage & Catalog)", () => {
-  it("catalogs all 15 form-containing modules across the workspace", () => {
+  it("catalogs all 17 form-containing modules across the workspace", () => {
     const coverage = getAllModuleTransferCoverage();
-    expect(coverage.length).toBe(15);
+    expect(coverage.length).toBe(17);
 
     const moduleIds = coverage.map((c) => c.moduleId);
     // P1 Core
@@ -35,6 +35,8 @@ describe("moduleTransferRegistry (Coverage & Catalog)", () => {
     expect(moduleIds).toContain("obligations");
     expect(moduleIds).toContain("tasks");
     expect(moduleIds).toContain("messaging");
+    expect(moduleIds).toContain("attendance-calendar");
+    expect(moduleIds).toContain("workshops");
   });
 
   it("marks contacts as implemented with active schema", () => {
@@ -50,7 +52,7 @@ describe("moduleTransferRegistry (Coverage & Catalog)", () => {
     expect(record?.formSurfaces.length).toBeGreaterThan(0);
   });
 
-  it("correctly tracks all 15 modules as implemented with active schemas", () => {
+  it("correctly tracks all 17 modules as implemented with active schemas", () => {
     const studentRecord = getModuleTransferCoverage("students");
     expect(studentRecord).toBeDefined();
     expect(studentRecord?.status).toBe("implemented");
@@ -64,10 +66,10 @@ describe("moduleTransferRegistry (Coverage & Catalog)", () => {
     expect(attendanceRecord?.migrationPriority).toBe("P3");
     expect(isModuleTransferImplemented("attendance")).toBe(true);
 
-    // Verify all 15 modules are implemented
+    // Verify all 17 modules are implemented
     const allCoverage = getAllModuleTransferCoverage();
     const implementedCount = allCoverage.filter((c) => c.status === "implemented").length;
-    expect(implementedCount).toBe(15);
+    expect(implementedCount).toBe(17);
   });
 
   it("allows registering a dynamic transfer schema and updates coverage status", () => {

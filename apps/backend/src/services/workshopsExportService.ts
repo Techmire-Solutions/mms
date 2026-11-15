@@ -5,7 +5,7 @@
 import { buildTenantExportFilename, type ExportColumn, type WorkshopEvent } from "@mms/shared";
 import { workshopsTransferSchema } from "@mms/shared";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
-import { listWorkshopsPage } from "../db/repositories/workshopEventsRepository.js";
+import { workshopsRepository } from "../workshops/repository/workshopsRepositoryAdapter.js";
 
 export type WorkshopsExportQuery = Record<string, unknown>;
 
@@ -36,7 +36,7 @@ export async function buildWorkshopsCsvExport(
   let page = 1;
   for (;;) {
     throwIfBackgroundJobAborted(signal);
-    const result = await listWorkshopsPage(tenant ?? "", {
+    const result = await workshopsRepository.listWorkshopsPage(tenant ?? "", {
       page,
       limit: 500,
       search: typeof query.search === "string" ? query.search : "",

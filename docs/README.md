@@ -14,6 +14,7 @@ Project-wide entry points live at the repo root:
 - [faculty.md](./faculty.md) — Faculty module engineering spec (production gold standard).
 - [automatic-role-tagging.md](./automatic-role-tagging.md) — Student/Faculty role-to-contact tag projection: sources, archival, read-only enforcement, backfill, and the hourly date sweep.
 - [engineering/data-transfer-import-export.md](./engineering/data-transfer-import-export.md) — import/export framework.
+- [centralised-import-export-system.md](./centralised-import-export-system.md) — centralized import/export engine architecture, cross-cutting invariants, and per-module schema/route/runner coverage.
 - [a11y-baseline.md](./a11y-baseline.md) — executable axe/WCAG gate baseline.
 - [frontend-performance-baseline.md](./frontend-performance-baseline.md) — render-hygiene + React Compiler baseline.
 - [dependencies-notes.md](./dependencies-notes.md) — dependency/tooling operational notes.

@@ -3,7 +3,7 @@ import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImport
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { financeUseCases } from "../finance/use-cases/financeUseCases.js";
-import { findStudentsByNames } from "../db/repositories/hasanatBatchRepository.js";
+import { findStudentsByNames } from "../hasanat/repository/hasanatRepositoryAdapter.js";
 import { buildFinanceCsvExport } from "./financeExportService.js";
 
 /** Registers both finance grid runners (invoice CSV export + import). */
