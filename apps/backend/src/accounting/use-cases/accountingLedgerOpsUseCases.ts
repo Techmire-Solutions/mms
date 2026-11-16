@@ -28,6 +28,7 @@ import {
 import { findFiscalYearById } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import { findActiveReversalOf } from "../../db/repositories/accountingEntryReversalRepository.js";
 import { listOpeningEntries } from "../../db/repositories/accountingRepository.js";
+import { bankStatementContentHash } from "../../db/repositories/accountingBankStatementIdentity.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { closeFiscalYearForTenant } from "./accountingPeriodClose.js";
 import { assertAccountIdsPostable } from "./accountingLedgerGuards.js";
@@ -253,7 +254,7 @@ export async function upsertBankStatement(input: unknown): Promise<BankStatement
   const parsed = bankStatementInsertSchema.parse(input);
   const record = bankStatementRecordSchema.parse({
     ...parsed,
-    id: parsed.id || `bs-${Date.now()}`,
+    id: parsed.id || `bs-${bankStatementContentHash(parsed).slice(0, 16)}`,
     lines: (parsed.lines ?? []).map((line, index) => ({
       ...line,
       id: line.id ?? `bsl-${index + 1}`,

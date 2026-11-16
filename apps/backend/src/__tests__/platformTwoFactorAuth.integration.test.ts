@@ -108,6 +108,20 @@ describe("platform 2FA login flow (PLATFORM_REQUIRE_2FA)", () => {
     expect(mocks.resendChallenge).toHaveBeenCalledWith("challenge-abc");
   });
 
+  it("returns 404 challenge_not_found when the challenge is missing or expired", async () => {
+    mocks.resendChallenge.mockReturnValueOnce({ ok: false });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/platform/auth/2fa/resend",
+      payload: { challengeId: "challenge-missing" },
+    });
+    expect(res.statusCode).toBe(404);
+    expect(res.json()).toEqual({
+      type: "challenge_not_found",
+      message: "Challenge not found or expired",
+    });
+  });
+
   it("issues a session directly when 2FA is not required", async () => {
     mocks.isTwoFactorRequired.mockReturnValueOnce(false);
     const res = await app.inject({

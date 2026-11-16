@@ -3,7 +3,6 @@ import { and, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm";
 import {
   ESTIMATED_RATE_SOURCE,
   coerceExchangeRateSource,
-  crossExchangeRate,
   invertExchangeRate,
   type ExchangeRateListQuery,
   type ExchangeRateLookupQuery,
@@ -16,6 +15,7 @@ import {
 import { accountingExchangeRates, fxReferenceRates } from "../schema.js";
 import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { canonicalStoredRate } from "./repositoryFxMappers.js";
+import { resolveFeedCrossRate } from "./accountingExchangeRatesFeed.js";
 import { nonExchangeableSinceInTx } from "./accountingCurrencyExchangeabilityRepository.js";
 
 /** True when `currency` is assessed as not exchangeable on `date` (IAS 21, 2025 amendment). */
@@ -195,13 +195,16 @@ async function feedRate(tx: TenantTransaction, query: ExchangeRateLookupQuery) {
   if (!FEED_RATE_TYPES.includes(query.rateType)) return null;
   const { fromCurrency: from, toCurrency: to } = query;
   const rows = await tx
-    .selectDistinctOn([fxReferenceRates.provider, fxReferenceRates.quoteCurrency], {
-      provider: fxReferenceRates.provider,
-      base: fxReferenceRates.baseCurrency,
-      quote: fxReferenceRates.quoteCurrency,
-      rate: fxReferenceRates.rate,
-      rateDate: fxReferenceRates.rateDate,
-    })
+    .selectDistinctOn(
+      [fxReferenceRates.provider, fxReferenceRates.baseCurrency, fxReferenceRates.quoteCurrency],
+      {
+        provider: fxReferenceRates.provider,
+        base: fxReferenceRates.baseCurrency,
+        quote: fxReferenceRates.quoteCurrency,
+        rate: fxReferenceRates.rate,
+        rateDate: fxReferenceRates.rateDate,
+      },
+    )
     .from(fxReferenceRates)
     .where(
       and(
@@ -211,30 +214,12 @@ async function feedRate(tx: TenantTransaction, query: ExchangeRateLookupQuery) {
     )
     .orderBy(
       fxReferenceRates.provider,
+      fxReferenceRates.baseCurrency,
       fxReferenceRates.quoteCurrency,
       desc(fxReferenceRates.rateDate),
     );
 
-  for (const provider of new Set(rows.map((row) => row.provider))) {
-    const quotes = rows.filter((row) => row.provider === provider);
-    const base = quotes[0].base;
-    const quoteOf = (code: string) =>
-      code === base
-        ? { rate: "1", rateDate: query.date }
-        : (quotes.find((row) => row.quote === code) ?? null);
-    const fromQuote = quoteOf(from);
-    const toQuote = quoteOf(to);
-    if (!fromQuote || !toQuote) continue;
-    return {
-      rate: crossExchangeRate(
-        canonicalStoredRate(fromQuote.rate),
-        canonicalStoredRate(toQuote.rate),
-      ),
-      rateDate: fromQuote.rateDate < toQuote.rateDate ? fromQuote.rateDate : toQuote.rateDate,
-      source: `feed:${provider}`,
-    };
-  }
-  return null;
+  return resolveFeedCrossRate(from, to, rows, query.date);
 }
 
 /**

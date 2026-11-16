@@ -198,4 +198,39 @@ describe("financeService createPayment", () => {
     expect(mockSaveInvoice).not.toHaveBeenCalled();
     expect(mockSavePayment).not.toHaveBeenCalled();
   });
+
+  it("rejects a replay whose amount changed", async () => {
+    mockFindPaymentById.mockResolvedValue(payment);
+    await expect(createPayment({ ...payment, amount: 59 })).rejects.toMatchObject({
+      statusCode: 409,
+    });
+    expect(mockSaveInvoice).not.toHaveBeenCalled();
+    expect(mockSavePayment).not.toHaveBeenCalled();
+  });
+
+  it("rejects a replay whose invoice changed", async () => {
+    mockFindPaymentById.mockResolvedValue(payment);
+    await expect(createPayment({ ...payment, invoiceId: "inv-other" })).rejects.toMatchObject({
+      statusCode: 409,
+    });
+    expect(mockSaveInvoice).not.toHaveBeenCalled();
+    expect(mockSavePayment).not.toHaveBeenCalled();
+  });
+
+  it("rejects a replay whose date changed", async () => {
+    mockFindPaymentById.mockResolvedValue(payment);
+    await expect(createPayment({ ...payment, date: "2026-07-28" })).rejects.toMatchObject({
+      statusCode: 409,
+    });
+    expect(mockSaveInvoice).not.toHaveBeenCalled();
+    expect(mockSavePayment).not.toHaveBeenCalled();
+  });
+
+  it("mints distinct ids for payments created without an explicit id", async () => {
+    mockFindPaymentById.mockResolvedValue(null);
+    const { id: _ignored, ...noId } = payment;
+    void _ignored;
+    const [a, b] = await Promise.all([createPayment(noId), createPayment(noId)]);
+    expect(a.id).not.toBe(b.id);
+  });
 });

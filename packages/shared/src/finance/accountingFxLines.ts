@@ -6,6 +6,7 @@
 import { convertMoney } from "../money/fxConvert.js";
 import { currencyMinorUnits } from "../money/iso4217.js";
 import { moneyFromMinor, moneyToDecimalString, parseMoney, type Money } from "../money/money.js";
+import { functionalAmountMagnitude } from "./accountingLedgerInvariants.js";
 import type { JournalLine } from "./accountingModuleManifest.js";
 
 /** Raised when a foreign-currency line has no rate; posting must never assume 1. */
@@ -46,7 +47,8 @@ export function isSupportedFunctionalCurrency(code: string): boolean {
   return currencyMinorUnits(code) <= 2;
 }
 
-const toFunctionalNumber = (money: Money): number => Number(moneyToDecimalString(money));
+const toFunctionalNumber = (money: Money): number =>
+  functionalAmountMagnitude(moneyToDecimalString(money));
 
 const functionalFromNumber = (value: number, currency: string): Money =>
   parseMoney(value.toFixed(currencyMinorUnits(currency)), currency);
@@ -132,8 +134,8 @@ export function resolveJournalFxLines(
       // line primary key would then reject the whole save with a misleading 409.
       id: `fx-rounding-${resolved.length + 1}`,
       account_id: ctx.roundingAccountId,
-      debit: residue < 0n ? Number(value) : 0,
-      credit: residue > 0n ? Number(value) : 0,
+      debit: residue < 0n ? functionalAmountMagnitude(value) : 0,
+      credit: residue > 0n ? functionalAmountMagnitude(value) : 0,
       description: "FX rounding",
       txn_currency: functional,
       txn_debit: residue < 0n ? value : moneyToDecimalString(moneyFromMinor(0n, functional)),

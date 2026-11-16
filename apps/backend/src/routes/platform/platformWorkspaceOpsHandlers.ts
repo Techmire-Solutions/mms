@@ -61,7 +61,10 @@ export async function handlePatchWorkspace({
   });
 
   const row = await getPlatformWorkspaceSummary(updated.subdomain);
-  return { status: 200 as const, body: { workspace: row ?? undefined } };
+  if (!row) {
+    return { status: 404 as const, body: { type: "not_found", message: "Workspace not found" } };
+  }
+  return { status: 200 as const, body: { workspace: row } };
 }
 
 export async function handleGetWorkspaceModules({
@@ -69,6 +72,10 @@ export async function handleGetWorkspaceModules({
 }: ContractRouteArgs<(typeof platformWorkspacesContract)["getWorkspaceModules"]>): Promise<
   ContractRouteResponse<(typeof platformWorkspacesContract)["getWorkspaceModules"]>
 > {
+  const summary = await getPlatformWorkspaceSummary(params.subdomain);
+  if (!summary) {
+    return { status: 404 as const, body: { type: "not_found", message: "Workspace not found" } };
+  }
   const modules = await getWorkspaceGrantedModules(params.subdomain);
   return { status: 200 as const, body: { modules } };
 }
@@ -81,6 +88,10 @@ export async function handleUpdateWorkspaceModules({
   ContractRouteResponse<(typeof platformWorkspacesContract)["updateWorkspaceModules"]>
 > {
   const { platformUser } = request as PlatformAuthenticatedRequest;
+  const summary = await getPlatformWorkspaceSummary(params.subdomain);
+  if (!summary) {
+    return { status: 404 as const, body: { type: "not_found", message: "Workspace not found" } };
+  }
   const result = await updateWorkspaceModules(params.subdomain, body.modules);
 
   await insertPlatformActivityLog({

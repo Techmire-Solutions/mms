@@ -672,6 +672,24 @@ describe("platform auth routes", () => {
     await app.close();
   });
 
+  it("POST /api/platform/auth/setup/register returns 409 when a superuser already exists", async () => {
+    mockHasPlatformUsers.mockResolvedValue(true);
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/platform/auth/setup/register",
+      headers: { host: "localhost" },
+      payload: {
+        name: "Second Admin",
+        email: "second@example.com",
+        password: "SecurePass1",
+      },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toMatchObject({ type: "setup_not_needed" });
+    await app.close();
+  });
+
   it("POST /api/platform/auth/login rejects tenant subdomain host", async () => {
     const app = await buildApp();
     const res = await app.inject({

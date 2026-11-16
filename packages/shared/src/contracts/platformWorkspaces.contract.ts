@@ -89,6 +89,7 @@ export const platformWorkspacesRoutes = {
       400: platformErrorSchema,
       401: platformErrorSchema,
       403: platformErrorSchema,
+      404: platformErrorSchema,
     },
     summary: "Update enabled modules for workspace",
   },

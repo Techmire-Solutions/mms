@@ -86,7 +86,7 @@ export function PlatformSidebarFooter({
             variant="ghost"
             icon={collapsed ? ChevronRight : ChevronLeft}
             onClick={onToggleCollapsed}
-            className="h-11 w-11 min-w-11 shrink-0 rounded-lg p-0 text-sidebar-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors cursor-pointer shadow-none [&_svg]:rtl:rotate-180"
+            className="h-11 w-11 min-w-11 shrink-0 rounded-lg p-0 text-sidebar-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors cursor-pointer shadow-none"
             title={collapsed ? t("nav.expand") : t("nav.collapse")}
             aria-label={collapsed ? t("nav.expand") : t("nav.collapse")}
             aria-expanded={!collapsed}

@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { PlatformUserProfile } from "@mms/shared";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 
 export interface PlatformAdminActionButtonsProps {
   admin: PlatformUserProfile;
@@ -21,6 +22,7 @@ export function PlatformAdminActionButtons({
   onVerifyEmail,
 }: PlatformAdminActionButtonsProps): React.JSX.Element | null {
   const { t } = useTranslation();
+  const { isSuperUser } = usePlatformPermissions();
 
   if (admin.role !== "admin") {
     return null;
@@ -42,21 +44,25 @@ export function PlatformAdminActionButtons({
         </Button>
       ) : null}
 
-      <Button variant="outline" size="sm" onClick={() => onEditAccess(admin)}>
-        {t("platform.editAdminAccess")}
-      </Button>
+      {isSuperUser ? (
+        <>
+          <Button variant="outline" size="sm" onClick={() => onEditAccess(admin)}>
+            {t("platform.editAdminAccess")}
+          </Button>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onToggleStatus(admin, isDisabled ? "enable" : "disable")}
-      >
-        {t(isDisabled ? "platform.enableAdmin" : "platform.disableAdmin")}
-      </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onToggleStatus(admin, isDisabled ? "enable" : "disable")}
+          >
+            {t(isDisabled ? "platform.enableAdmin" : "platform.disableAdmin")}
+          </Button>
 
-      <Button variant="destructive" size="sm" onClick={() => onDelete(admin)}>
-        {t("platform.deleteAdmin")}
-      </Button>
+          <Button variant="destructive" size="sm" onClick={() => onDelete(admin)}>
+            {t("platform.deleteAdmin")}
+          </Button>
+        </>
+      ) : null}
     </div>
   );
 }

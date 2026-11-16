@@ -38,6 +38,8 @@ metadata:
 
 1. **Author Schema**: Add/edit `apps/backend/src/db/schema/[entity].ts` and export from `schema.ts`.
 2. **Generate Migration**: Run `pnpm --filter mms-backend exec drizzle-kit generate` (requires `DATABASE_URL`). If generation is blocked by a malformed historical snapshot, stop and report; a hand-authored migration is a reviewed exception only (copy the previous snapshot, append the journal entry, document the reason in the PR). Never squash or alter existing committed migrations.
+
+   > **Applied SQL is immutable; snapshot metadata is repairable.** `meta/*_snapshot.json` is drizzle-kit's diff input, not applied DDL, so repairing a malformed serialization (e.g. a missing `name`/`schema`, a `null` `prevId`, duplicate snapshot ids) is a *metadata repair*, not a retcon of history that has already run on a database. The `check-migrations-forward-only` ratchet exempts snapshots for this reason; `.sql` files and the hand-written TS data migrations remain byte-identical, and `_journal.json` remains append-only.
 3. **Commit Parity**: Always commit SQL migration + `_journal.json` + meta snapshot in the exact same change.
 4. **Expand/Contract Workflow**: Add nullable column → deploy & backfill → apply NOT NULL/CHECK constraint. Drop old columns only after dual-read window.
 5. **Attach RLS Policies**: Tenant tables must include `tenant_isolation_policy` and `platform_superadmin_policy` (`mms-data-layer.mdc` §1).

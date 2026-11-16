@@ -31,6 +31,7 @@ const PLATFORM_AUTH_ERROR_KEYS = {
   session_revoked: "platform.sessionRevoked",
   database_error: "platform.databaseError",
   not_found: "platform.resourceNotFound",
+  challenge_not_found: "platform.resourceNotFound",
 } as const satisfies Record<PlatformApiErrorType, AppTranslationKey>;
 
 const HTTP_STATUS_FALLBACK_KEYS: Partial<Record<number, AppTranslationKey>> = {

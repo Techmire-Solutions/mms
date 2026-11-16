@@ -102,7 +102,7 @@ export const obligationCollections = pgTable(
      * which is dropped concurrently once this one is confirmed present.
      */
     index("obligation_collections_workspace_date_active_idx")
-      .on(table.workspaceSubdomain, table.receivedDate.desc())
+      .on(table.workspaceSubdomain, table.receivedDate.desc().nullsFirst())
       .where(sql`${table.deletedAt} is null`),
     // Kept for per-contact lookups and, critically, for the referential probe behind the new
     // `obligation_collections_sender_fk` RESTRICT on a contact purge.

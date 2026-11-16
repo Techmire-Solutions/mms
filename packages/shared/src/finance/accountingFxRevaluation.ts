@@ -9,6 +9,7 @@ import { convertMoney } from "../money/fxConvert.js";
 import { currencyMinorUnits } from "../money/iso4217.js";
 import { moneyToDecimalString, parseMoney, subtractMoney } from "../money/money.js";
 import { exchangeRateValueSchema } from "../money/moneySchemas.js";
+import { functionalAmountMagnitude } from "./accountingLedgerInvariants.js";
 import type { JournalLine } from "./accountingModuleManifest.js";
 
 /** Open foreign balance of one monetary account in one currency, as of a date. */
@@ -162,7 +163,7 @@ export function buildFxRevaluationJournalLines(
   lines.forEach((line, index) => {
     const amount = parseMoney(line.unrealized, functionalCurrency);
     net += amount.minor;
-    const magnitude = Number(
+    const magnitude = functionalAmountMagnitude(
       moneyToDecimalString({ ...amount, minor: amount.minor < 0n ? -amount.minor : amount.minor }),
     );
     const zero = moneyToDecimalString(parseMoney("0", line.currency));
@@ -181,7 +182,7 @@ export function buildFxRevaluationJournalLines(
     });
   });
   if (net !== 0n) {
-    const magnitude = Number(
+    const magnitude = functionalAmountMagnitude(
       moneyToDecimalString({ minor: net < 0n ? -net : net, currency: functionalCurrency }),
     );
     journal.push({

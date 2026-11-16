@@ -96,7 +96,7 @@ export async function handlePlatform2FAResend(
   const result = await resendPlatformTwoFactorChallenge(parsed.data.challengeId);
   if (!result.ok) {
     return reply.status(404).send({
-      type: "invalid_credentials",
+      type: "challenge_not_found",
       message: "Challenge not found or expired",
     });
   }

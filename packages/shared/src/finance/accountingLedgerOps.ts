@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
-import { moneyAmountSchema, signedMoneyAmountSchema } from "./accountingLedgerInvariants.js";
+import {
+  moneyAmountSchema,
+  moneyToCents,
+  signedMoneyAmountSchema,
+} from "./accountingLedgerInvariants.js";
 import { POSTING_PERIOD_STATUSES } from "./accountingEnums.js";
 
 export const postingRulesRecordSchema = z
@@ -93,11 +97,28 @@ export const bankStatementRecordSchema = z
     periodEnd: isoDateSchema,
     openingBalance: signedMoneyAmountSchema.default(0),
     closingBalance: signedMoneyAmountSchema.default(0),
+    /** Statement currency (ISO 4217); NULL means the account's/functional currency. */
+    currency: z
+      .string()
+      .regex(/^[A-Z]{3}$/)
+      .optional(),
     lines: z.array(bankStatementLineRecordSchema).default([]),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
   })
   .strict();
+
+/** Opening balance plus the signed line movements must equal the closing balance. */
+const bankStatementBalances = (input: {
+  openingBalance?: number;
+  closingBalance?: number;
+  lines?: Array<{ amount: number }>;
+}): boolean => {
+  const movement = (input.lines ?? []).reduce((sum, line) => sum + moneyToCents(line.amount), 0);
+  return (
+    moneyToCents(input.openingBalance ?? 0) + movement === moneyToCents(input.closingBalance ?? 0)
+  );
+};
 
 export const bankStatementInsertSchema = z
   .object({
@@ -107,9 +128,18 @@ export const bankStatementInsertSchema = z
     periodEnd: isoDateSchema,
     openingBalance: signedMoneyAmountSchema.optional().default(0),
     closingBalance: signedMoneyAmountSchema.optional().default(0),
+    /** Statement currency (ISO 4217); NULL means the account's/functional currency. */
+    currency: z
+      .string()
+      .regex(/^[A-Z]{3}$/)
+      .optional(),
     lines: z.array(bankStatementLineInsertSchema).optional().default([]),
   })
-  .strict();
+  .strict()
+  .refine(bankStatementBalances, {
+    message: "accounting.bankStatements.balancesMismatch",
+    path: ["closingBalance"],
+  });
 
 export type BankStatement = z.infer<typeof bankStatementRecordSchema>;
 export type BankStatementInsert = z.infer<typeof bankStatementInsertSchema>;

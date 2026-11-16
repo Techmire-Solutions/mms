@@ -74,10 +74,15 @@ function ledgerSensitiveInvoiceChanges(existing: Invoice, incoming: Partial<Invo
   ) {
     changed.push("creditedAmt");
   }
+  // A status write is ledger-sensitive when it moves the invoice into OR out of
+  // a settled state (`paid`/`cancelled`): both zero the subledger balance, so
+  // reversing the transition without a linked reversal would desynchronise the
+  // invoice from its posted journal.
   if (
     incoming.status !== undefined &&
     incoming.status !== existing.status &&
-    LEDGER_AFFECTING_INVOICE_STATUSES.has(incoming.status)
+    (LEDGER_AFFECTING_INVOICE_STATUSES.has(incoming.status) ||
+      LEDGER_AFFECTING_INVOICE_STATUSES.has(existing.status))
   ) {
     changed.push("status");
   }
@@ -102,8 +107,10 @@ async function assertInvoiceLedgerFieldsEditable(
   const ledgerEntryId = await repo.findLedgerPostingIdBySource(tenant, "invoice", invoiceId);
   if (!ledgerEntryId) return;
 
-  const guidance =
-    incoming.status === "cancelled"
+  const existingSettled = LEDGER_AFFECTING_INVOICE_STATUSES.has(existing.status);
+  const guidance = existingSettled
+    ? "reopen it with a reversal or adjusting entry instead of resetting its status"
+    : incoming.status === "cancelled"
       ? "cancel it through the cancel-invoice action so the ledger reversal is posted"
       : incoming.status === "paid"
         ? "record a payment so the collection and ledger are posted"

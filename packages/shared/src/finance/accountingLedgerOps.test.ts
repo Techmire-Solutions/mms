@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  bankStatementInsertSchema,
   openingBalanceInsertSchema,
   openingBalancesReplaceSchema,
   postingRulesUpdateSchema,
@@ -61,5 +62,42 @@ describe("invoicesBulkStatusSchema", () => {
 
   it("requires at least one invoice id", () => {
     expect(invoicesBulkStatusSchema.safeParse({ ids: [], status: "overdue" }).success).toBe(false);
+  });
+});
+
+describe("bankStatementInsertSchema", () => {
+  it("rejects a statement whose opening + movements do not equal the closing balance", () => {
+    const balanced = {
+      accountId: "bank-1",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+      openingBalance: 100,
+      closingBalance: 130,
+      lines: [
+        { date: "2026-01-05", description: "deposit", amount: 50 },
+        { date: "2026-01-10", description: "withdrawal", amount: -20 },
+      ],
+    };
+
+    expect(bankStatementInsertSchema.safeParse(balanced).success).toBe(true);
+    expect(bankStatementInsertSchema.safeParse({ ...balanced, closingBalance: 140 }).success).toBe(
+      false,
+    );
+  });
+
+  it("requires opening to equal closing when there are no lines", () => {
+    const base = {
+      accountId: "bank-1",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+      openingBalance: 100,
+      closingBalance: 100,
+      lines: [],
+    };
+
+    expect(bankStatementInsertSchema.safeParse(base).success).toBe(true);
+    expect(bankStatementInsertSchema.safeParse({ ...base, closingBalance: 101 }).success).toBe(
+      false,
+    );
   });
 });

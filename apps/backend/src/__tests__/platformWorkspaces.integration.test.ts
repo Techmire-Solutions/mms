@@ -155,6 +155,28 @@ describe("platformWorkspaces REST API integration routes", () => {
     expect(body.inactive).toBe(0);
   });
 
+  it("returns 404 for workspace modules when the subdomain does not exist", async () => {
+    const token = signPlatformToken();
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/platform/workspaces/missing/modules",
+      cookies: { mms_platform_access: token },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it("returns 404 when updating modules for a non-existent workspace", async () => {
+    const token = signPlatformToken();
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/api/platform/workspaces/missing/modules",
+      headers: { origin: "http://localhost" },
+      payload: { modules: ["students"] },
+      cookies: { mms_platform_access: token },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
   it("filters and pages workspaces via list query params", async () => {
     const token = signPlatformToken();
     const res = await app.inject({

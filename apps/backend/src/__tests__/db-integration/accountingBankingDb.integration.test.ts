@@ -9,7 +9,10 @@ import {
   accountingBankStatements,
   accountingBankStatementLines,
 } from "../../db/schema.js";
-import { matchBankReconciliation } from "../../db/repositories/accountingBankingRepository.js";
+import {
+  matchBankReconciliation,
+  saveBankStatement,
+} from "../../db/repositories/accountingBankingRepository.js";
 import { requireDatabaseConnection, uniqueTenant } from "./dbTestSupport.js";
 
 /**
@@ -140,5 +143,25 @@ describe("bank reconciliation matching", () => {
       statusCode: 409,
       type: "journal_line_already_matched",
     });
+  });
+
+  it("rejects re-importing a reconciled statement with changed content", async () => {
+    // `bsl-1` is matched by the first test, so re-saving `bs-1` with a different
+    // closing balance must refuse rather than delete-and-reinsert its lines and
+    // orphan the match row.
+    await expect(
+      saveBankStatement(TEST_SUBDOMAIN, {
+        id: "bs-1",
+        accountId: "acc-bank",
+        periodStart: "2026-11-01",
+        periodEnd: "2026-11-30",
+        openingBalance: 0,
+        closingBalance: 200,
+        lines: [
+          { id: "bsl-1", date: "2026-11-05", description: "Deposit", amount: 100 },
+          { id: "bsl-2", date: "2026-11-06", description: "Withdrawal", amount: -100 },
+        ],
+      }),
+    ).rejects.toMatchObject({ statusCode: 409, type: "bank_statement_reconciled" });
   });
 });

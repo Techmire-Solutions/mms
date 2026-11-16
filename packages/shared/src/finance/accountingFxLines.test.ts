@@ -90,6 +90,12 @@ describe("resolveJournalFxLines", () => {
 
     expect(() => resolveJournalFxLines([line], ctx)).toThrow(JournalFxLineError);
   });
+
+  it("refuses a conversion whose functional amount exceeds the ledger column bound", () => {
+    const line = usd("big", "ar", "debit", "9999999999", "1000");
+
+    expect(() => resolveJournalFxLines([line], ctx)).toThrow(/exceeds the ledger column bound/);
+  });
 });
 
 describe("buildReversalLines", () => {

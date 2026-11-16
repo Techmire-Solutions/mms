@@ -9,6 +9,7 @@ import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import { divideRounded, moneyToDecimalString, parseMoney } from "../money/money.js";
 import { normalizeStoredAmount } from "./accountingFxRevaluation.js";
+import { functionalAmountMagnitude } from "./accountingLedgerInvariants.js";
 import type { JournalLine } from "./accountingModuleManifest.js";
 
 const INDEX_SCALE = 6;
@@ -178,7 +179,7 @@ export function buildIas29JournalLines(
   netMonetaryAccountId: string,
   functionalCurrency: string,
 ): JournalLine[] {
-  const magnitude = (value: string) => Number(value.replace("-", ""));
+  const magnitude = (value: string) => functionalAmountMagnitude(value.replace("-", ""));
   const journal: JournalLine[] = restatement.lines.map((line, index) => ({
     id: `ias29-${index + 1}`,
     account_id: line.accountId,

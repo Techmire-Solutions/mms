@@ -7,6 +7,7 @@ import {
   type User,
 } from "@mms/shared";
 import { canWriteCollection } from "../../../services/rbacService.js";
+import { canPostAccounting } from "../../../lib/rbacCanModuleHelpers.js";
 import {
   sendForbidden,
   sendIfHttpDomainError,
@@ -30,6 +31,13 @@ export const accountingSpecializedEntryRoutes: FastifyPluginAsync = async (fasti
 
     const parsed = parseRequest(specializedEntrySchema, request.body);
     if (!parsed.ok) return replyValidationError(reply, parsed);
+
+    // A salary quick action writes an immutable `posted` voucher straight to the
+    // ledger, so it requires `accounting.post` on top of `accounting.write` (the
+    // fee path posts through the finance pipeline and is unaffected).
+    if (parsed.data.type === "salary" && !canPostAccounting(user)) {
+      return sendForbidden(reply);
+    }
 
     try {
       const result = await processSpecializedEntryUseCase(parsed.data, { name: user.name });

@@ -3,6 +3,7 @@ import {
   getOutstandingAmountForInvoice,
   moneyToCents,
   paymentRecordSchema,
+  uuidv7,
   type Invoice,
   type Payment,
   type PaymentAllocation,
@@ -39,6 +40,26 @@ async function assertRealizedFxPostable(tenant: string, realizedFx: number | und
       { statusCode: 422, type: "validation_error" },
     );
   }
+}
+
+/**
+ * The economic content that must match for a same-id `createPayment` retry to be
+ * an idempotent replay rather than a conflicting payload. Currency/exchange rate
+ * are server-resolved from the invoice + date (both compared here), so they are
+ * deliberately excluded.
+ */
+function paymentReplayMatches(existing: Payment, incoming: Payment): boolean {
+  if (
+    existing.invoiceId !== incoming.invoiceId ||
+    existing.date !== incoming.date ||
+    moneyToCents(existing.amount) !== moneyToCents(incoming.amount) ||
+    (existing.method ?? "") !== (incoming.method ?? "")
+  ) {
+    return false;
+  }
+  const existingApplied = existing.invoiceAmount ?? existing.amount;
+  const incomingApplied = incoming.invoiceAmount ?? incoming.amount;
+  return moneyToCents(existingApplied) === moneyToCents(incomingApplied);
 }
 
 export type FinanceMutationOperationsDeps = FinanceInvoiceMutationDeps;
@@ -97,7 +118,7 @@ export function createFinanceMutationOperations({
 
     createPayment: async (record: PaymentCreateInput): Promise<Payment> => {
       const tenant = requireTenant();
-      const resolvedId = String(record.id ?? `pay-${Date.now()}`);
+      const resolvedId = String(record.id ?? `pay-${uuidv7()}`);
       const normalizedPayment = paymentRecordSchema.parse({ ...record, id: resolvedId }) as Payment;
 
       // The rows the payment settles. An empty request means "the payment's own invoice, for the
@@ -132,6 +153,11 @@ export function createFinanceMutationOperations({
       const savedPayment = await runInTransaction(async () => {
         const existingPayment = await repo.findPaymentById(tenant, resolvedId);
         if (existingPayment) {
+          // A same-id retry is idempotent only for an equivalent payload; changed
+          // economic content must conflict instead of silently returning the old row.
+          if (!paymentReplayMatches(existingPayment, normalizedPayment)) {
+            throw new HttpDomainError(409, "conflict", "payment id already exists");
+          }
           // Replay: re-affirm allocations and posting idempotently, keep the row.
           const replayAllocations = resolveAllocations(existingPayment);
           assertPaymentAllocationsValid(existingPayment, replayAllocations);

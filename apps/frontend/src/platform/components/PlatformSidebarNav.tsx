@@ -33,7 +33,7 @@ export function PlatformSidebarNav({
   reducedMotion,
   closeMobileSidebar,
 }: PlatformSidebarNavProps): React.JSX.Element {
-  const { t, dir } = useTranslation();
+  const { t } = useTranslation();
   const location = useLocation();
 
   const navSections: AppNavSection[] = sections.map(({ section, items }) => {
@@ -62,7 +62,7 @@ export function PlatformSidebarNav({
       isMobile={isMobile}
       reducedMotion={reducedMotion}
       collapsedTooltips
-      dir={dir}
+      dir="ltr"
       layoutId="platform-sidebar-indicator"
       centerIconWhenCollapsed
       activeShadow

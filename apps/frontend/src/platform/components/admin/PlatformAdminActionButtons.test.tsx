@@ -11,6 +11,11 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+let mockIsSuperUser = true;
+vi.mock("@/platform/hooks/usePlatformPermissions", () => ({
+  usePlatformPermissions: () => ({ isSuperUser: mockIsSuperUser }),
+}));
+
 const mockAdminUser: PlatformUserProfile = {
   id: "admin-1",
   name: "Standard Admin",
@@ -33,7 +38,8 @@ const mockSuperUser: PlatformUserProfile = {
 };
 
 describe("PlatformAdminActionButtons Component", () => {
-  it("renders action buttons for admin role", () => {
+  it("renders action buttons for admin role when the actor is a super-user", () => {
+    mockIsSuperUser = true;
     const html = renderToStaticMarkup(
       <PlatformAdminActionButtons
         admin={mockAdminUser}
@@ -50,7 +56,26 @@ describe("PlatformAdminActionButtons Component", () => {
     expect(html).toContain("users.actionVerifyEmail");
   });
 
+  it("hides management actions from a non-super-user operator (verify email only)", () => {
+    mockIsSuperUser = false;
+    const html = renderToStaticMarkup(
+      <PlatformAdminActionButtons
+        admin={mockAdminUser}
+        onEditAccess={vi.fn()}
+        onToggleStatus={vi.fn()}
+        onDelete={vi.fn()}
+        onVerifyEmail={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("users.actionVerifyEmail");
+    expect(html).not.toContain("platform.editAdminAccess");
+    expect(html).not.toContain("platform.disableAdmin");
+    expect(html).not.toContain("platform.deleteAdmin");
+  });
+
   it("returns null for super_user role to protect super admin account", () => {
+    mockIsSuperUser = true;
     const html = renderToStaticMarkup(
       <PlatformAdminActionButtons
         admin={mockSuperUser}

@@ -12,6 +12,7 @@
  */
 import { convertMoney, rateDifference } from "../money/fxConvert.js";
 import { moneyToDecimalString, parseMoney } from "../money/money.js";
+import { functionalAmountMagnitude } from "./accountingLedgerInvariants.js";
 import { normalizeStoredAmount } from "./accountingFxRevaluation.js";
 import type { JournalLine } from "./accountingModuleManifest.js";
 import type { HedgeRelationship } from "./accountingHedgeSchemas.js";
@@ -88,7 +89,7 @@ interface HedgeAccounts {
   pnlAccountId: string;
 }
 
-const magnitude = (value: string) => Number(value.replace("-", ""));
+const magnitude = (value: string) => functionalAmountMagnitude(value.replace("-", ""));
 
 function side(
   id: string,

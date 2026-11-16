@@ -117,7 +117,7 @@ export function PlatformUsersReportsTier(): React.JSX.Element {
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
-              Role & Security Governance
+              {t("platform.reports.roleSecurityGovernance")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
@@ -160,24 +160,24 @@ export function PlatformUsersReportsTier(): React.JSX.Element {
 
             <div className="pt-2 border-t border-border/50 space-y-2.5">
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>Email Verification Rate</span>
+                <span>{t("platform.reports.emailVerificationRate")}</span>
                 <span className="font-medium font-mono text-foreground">
                   {verifiedPct}% ({verified}/{total})
                 </span>
               </div>
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>Session Auto-Expiry</span>
+                <span>{t("platform.reports.sessionAutoExpiry")}</span>
                 <span className="font-medium font-mono text-foreground">
                   {PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES} min
                 </span>
               </div>
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>Step-Up Authentication</span>
+                <span>{t("platform.reports.stepUpAuth")}</span>
                 <Badge
                   variant="outline"
                   className="text-3xs text-success border-success/30 bg-success/5"
                 >
-                  Enforced
+                  {t("platform.reports.enforced")}
                 </Badge>
               </div>
             </div>

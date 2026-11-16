@@ -33,6 +33,10 @@ vi.mock("@/hooks/useWorkDirectoryViewMode", () => ({
   }),
 }));
 
+vi.mock("@/platform/hooks/usePlatformPermissions", () => ({
+  usePlatformPermissions: () => ({ isSuperUser: true }),
+}));
+
 vi.mock("@/platform/hooks/usePlatformAdmins", () => ({
   useVerifyPlatformAdminEmail: () => ({
     mutate: vi.fn(),
