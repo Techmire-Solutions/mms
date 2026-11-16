@@ -31,13 +31,13 @@ closing balance sign handling, aging bucket boundaries, 2-dp/safe-cents money DT
 | F6 | P3 | **Settings toggles promised unimplemented behaviour.** `requireNarration` was ignored by the voucher form; `allowEditPosted` and `autoPostDrafts` had no consumer anywhere (posted vouchers are immutable by design). | The form honours `requireNarration`; the two phantom toggles are removed from Setup → Rules (schema fields kept for backward-compatible saves). |
 
 ## Known limitations left deliberately
-1. **Simple wizard balance hint** still sums the current register page. With full vouchers restored it is
-   correct for the loaded page, but not ledger-wide; a server-side account-balance read is the right fix
-   and needs its own design (per-account ledger query/caching).
-2. **Hedge settlement/reclassification require `accounting.write`, while FX/IAS 29 postings require
+1. **Hedge settlement/reclassification require `accounting.write`, while FX/IAS 29 postings require
    `accounting.manage`.** Both write posted ledger entries, so the split is a policy decision, not a
    mechanical bug; changing it silently would revoke an existing accountant workflow. Recorded here for
    product sign-off.
+2. The simple-transaction wizard's low-balance warning is now server-computed from the account's ledger
+   closing balance; the per-account `(₨ x)` picker suffix was removed because no authoritative balance
+   source existed for every option.
 
 ## Verification
 ```bash

@@ -147,7 +147,6 @@ export function SimpleTransactionWizard({
                   fiscalYears={fiscalYears}
                   voucherAutoGenerate={voucherAutoGenerate}
                   entries={entries}
-                  formatCurrency={formatCurrency}
                   amountTouched={amountTouched}
                   onAmountTouched={() => setAmountTouched(true)}
                   onChangeType={() => setStep(1)}
@@ -165,9 +164,9 @@ export function SimpleTransactionWizard({
                   type={selectedType}
                   form={form}
                   accounts={accounts}
+                  formatCurrency={formatCurrency}
                   showAdvanced={showAdvanced}
                   setShowAdvanced={setShowAdvanced}
-                  formatCurrency={formatCurrency}
                   onEditDetails={() => setStep(2)}
                 />
               )}

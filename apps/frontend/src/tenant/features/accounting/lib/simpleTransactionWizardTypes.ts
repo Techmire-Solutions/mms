@@ -57,7 +57,6 @@ export {
   isUsableWizardAccount,
   isLiquidAsset,
   wizardCashAccounts,
-  calculateAccountBalanceCents,
   wizardAccountOptions,
   wizardCategoryAccountOptions,
   resolveSimpleTransactionAccounts,

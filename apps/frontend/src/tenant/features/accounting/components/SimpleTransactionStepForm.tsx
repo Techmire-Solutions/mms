@@ -22,7 +22,6 @@ interface StepTransactionFormProps {
   fiscalYears?: FiscalYear[];
   voucherAutoGenerate?: boolean;
   entries?: readonly JournalEntry[];
-  formatCurrency?: (amount: number | string | null | undefined) => string;
   idPrefix?: string;
   amountTouched?: boolean;
   onAmountTouched?: () => void;
@@ -41,7 +40,6 @@ export function StepTransactionForm({
   fiscalYears,
   voucherAutoGenerate,
   entries,
-  formatCurrency,
   idPrefix,
   amountTouched: amountTouchedProp,
   onAmountTouched,
@@ -71,7 +69,6 @@ export function StepTransactionForm({
     currencySymbol,
     fiscalYears,
     entries,
-    formatCurrency,
     idPrefix,
     amountTouchedProp,
     onAmountTouched,
