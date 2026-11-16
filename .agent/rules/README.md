@@ -46,7 +46,7 @@ Project rules for the Madrasa Management System. Antigravity loads `.md` files f
 | `mms-ui-ux-design.md` | UI primitives, design tokens, tabs, notifications, a11y (RTL / WCAG), and **§4 responsiveness** (FormModal chrome → `mms-form-architecture.md`) |
 | `mms-document-templates.md` | Printable document-template engine: server-authoritative layouts, CAS/409 conflict UX, one editor/renderer/print path, localized field/preset catalogs |
 | `mms-module-architecture.md` | Universal module manifest schemas, **§0 surface triad** (directory / DetailSheet / FormModal), three-tier tab layout, Work/Reports/Setup scopes, soft-delete, **gold-standard parity (§7)**, background jobs |
-| `mms-form-architecture.md` | Static FormModal forms, **control decision table**, collection chrome (`FormCollectionShell` / `FormListFieldCard` / `FormCardTypeSelect`), write Zod `.strict()`, React 19 defaults, decimal-as-string, local multipart uploads |
+| `mms-form-architecture.md` | Static FormModal forms, **control decision table**, collection chrome (`FormCollectionShell` / `FormListFieldCard` / `FormCardTypeSelect`), draft lifecycle (identity reset, dirty guard, guarded submit, server-error mapping), write Zod `.strict()`, React 19 defaults, decimal-as-string, local multipart uploads, and the **form inventory/lifecycle ratchet** (`/form-audit`) |
 | `mms-hooks.md` | Custom React hooks (Query recipes, page controllers / action handlers, Work layout) |
 | `mms-fields.md` | Field and tab registry, system vs custom fields, tab enablement SSOT |
 | `mms-settings-i18n.md` | Settings hierarchy, preview, navigation, translations, `formatDate` / `formatMoney` |
@@ -88,6 +88,7 @@ in the enforcement registry below are how the norm is actually held.
 | Field/tab registry and guards | `mms-fields.md` | `mms-fields-registry` |
 | Forms, FormModal, write schemas, uploads | `mms-form-architecture.md` | `mms-form-architecture` · `ui-ux-pro-max` |
 | Form collection rows / catalog quick-create chrome | `mms-form-architecture.md` §1, §3 | `mms-form-architecture` |
+| Form inventory, draft lifecycle & form ratchet | `mms-form-architecture.md` §2, §8 | `mms-form-architecture` · `/form-audit` |
 | Hooks, page controllers, facades | `mms-hooks.md` | `mms-query-factories` · `mms-frontend` |
 | UI primitives, tokens, a11y, responsiveness | `mms-ui-ux-design.md` | `mms-ui-ux-design` · `ui-ux-pro-max` · `mms-a11y-smoke` |
 | Document templates (editor, persistence/CAS, print) | `mms-document-templates.md` · `mms-data-layer.md` §4 · `mms-api-interface.md` §6 | `mms-document-templates` · `mms-frontend` · `mms-backend-api` |
@@ -165,6 +166,13 @@ Update this table in the same change that adds or removes a check.
 | Data tables use `DataTable` / `WorkBatchTable` (no hand-rolled `<Table>` outside the report/ledger allowlist) | `pnpm run check:work-directory` | ratchet |
 | Every table column is sized by a content `kind` (`MODULE_COLUMN_KIND_WIDTHS`) or explicit `width`; stale stored widths floor at the kind minimum | `pnpm run check:work-directory` (column literals) + `packages/shared/src/__tests__/moduleColumnRegistryKinds.test.ts` (Work registries) | ratchet + test |
 | Shared UI component governance (zero duplicate components across consoles, `@shared/ui` SSOT, zero orphaned imports) | `mms-shared-ui.md` (norm) + `pnpm run check:shared-ui` (CI + pre-PR gate) | rule + ratchet |
+| Form contract architecture (no fire-and-forget `mutate`, no removed `lang` prop, no legacy live-collection store in form surfaces) | `apps/frontend/src/lib/forms/formContractArchitecture.test.ts` (frontend vitest, CI `test-frontend`) | test |
+| Form UI primitives (no raw `input`/`select`/`textarea`/`button`/`label`, no literal placeholder/aria-label, no physical direction classes in form files) | `apps/frontend/src/lib/forms/formUiPrimitives.test.ts` (frontend vitest) | test |
+| Form collection row identity (no index or index-derived keys in repeatable rows) | `apps/frontend/src/lib/forms/formCollectionKeys.test.ts` (frontend vitest, allowlist needs a reason) | test |
+| Form inventory & draft-lifecycle ratchet (missing `saving`, no in-flight submit binding, missing dirty guard, stale `docs/forms-inventory.md`) | `pnpm run check:forms` (`scripts/check-form-architecture.mjs`; baselines may only decrease) + `pre-pr-review.sh` + CI `typecheck-lint` | ratchet |
+| Form lifecycle adoption (in-flight binding / synchronous guard / identity reset / server-error mapping) | `pnpm run check:forms` baseline for the binding; the **synchronous** guard and server-error mapping are **advisory** (regex cannot prove behaviour) — listed by `check-form-architecture.mjs` and reviewed in `docs/forms-audit-2026-11-16.md` | ratchet + advisory |
+| Physical directional CSS class text sweep (also covers plain `.ts` class strings ESLint cannot see) | `node .agent/skills/mms-ui-ux-design/scripts/check-bidi-classes.mjs` — **advisory**; ESLint `mms-bidi` remains the gate | script |
+| Field-level form a11y (programmatic label, `aria-invalid`, `aria-describedby`, focus-first-invalid) | axe spec (`e2e/tests/a11y/a11y-shell.spec.ts`) + `smoke-a11y.sh` heuristics + form specs — **advisory** beyond axe | test + advisory |
 | Reuse-first / consumer-compatible shared changes (`mms-dry` §1) | none — **advisory** (review discipline) | advisory |
 | Test-first ordering (Red before Green) | none can prove ordering — **advisory**; `pnpm run check:tdd-pairing` warns when a changed backend domain file has no changed spec (pre-PR gate, never fails) | advisory |
 | Adversarial audit report before completion | `.github/pull_request_template.md` §Adversarial Loophole Audit + `mms-code-review` `adversarial-audit-template.md` — **advisory** (self-review, no gate) | advisory |
@@ -221,6 +229,7 @@ Every rule starts with a **Workflow skills:** line; the full topic→rule→skil
 | Fastify routes / `inject()` | `mms-backend-api` |
 | FE shell / apiClient | `mms-frontend` |
 | FormModal / Zod forms | `mms-form-architecture` |
+| **Form inventory / lifecycle audit** — every form surface, reset/double-submit/cache bugs, module sweeps | **`mms-form-architecture`** (run `/form-audit` workflow) |
 | Backup wipe-restore | `mms-backup-restore` |
 | Audit trails / tamper-evidence / retention | `mms-audit-trail` |
 | Dep upgrades / catalogs | `mms-dependency-upgrade` |
@@ -266,6 +275,7 @@ node scripts/verify-rules-integrity.mjs
 - [ ] Module tiers respect isolation boundaries in `mms-module-architecture.md`
 - [ ] Person-directory Work: `directoryViews: ['table','cards']` (never `list`) — `mms-module-architecture.md` §3
 - [ ] Bulk PUT upsert / ban wipe-missing-rows — `mms-api-interface.md` §5; form close after `mutateAsync` — `mms-form-architecture.md` §2
+- [ ] Form touched: `pnpm run check:forms` green, `docs/forms-inventory.md` regenerated, guarded submit + identity reset + dirty guard in place — `mms-form-architecture.md` §2, §8
 - [ ] Write Zod `.strict()` — `mms-form-architecture.md`
 - [ ] Work column widths persist (local + `/column-preferences`; merge preserves device widths) — `mms-module-architecture.md` §3
 - [ ] Dashboard/report KPI cards use `/metrics` where available — `mms-reports.md`
@@ -305,4 +315,4 @@ node scripts/verify-rules-integrity.mjs
 
 ## Verify in Cursor
 
-**Settings → Rules** — 2 always-apply rules (`mms-core`, `mms-completion-review`) + 21 scoped rules when matching paths are open (**23 total**).
+**Settings → Rules** — 2 always-apply rules (`mms-core`, `mms-completion-review`) + 22 scoped rules when matching paths are open (**24 total**).

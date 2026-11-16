@@ -20,7 +20,13 @@ per-finding remedies and the review criteria.
 | Manifest `directoryViews: list` with table/cards UI | Align to `['table','cards']` — `mms-module-architecture.md` §3 |
 | File still well over 300 lines with a clean seam | Split by concern behind a stable barrel — `mms-structure-naming.md` |
 | Bulk PUT dropped rows | Upsert/merge without deleting absent rows — `mms-api-interface.md` §5 |
-| Form closed before the mutation resolved | Await `mutateAsync` before closing the dialog or clearing state — `mms-form-architecture.md` |
+| Form closed before the mutation resolved | Await `mutateAsync` before closing the dialog or clearing state — `mms-form-architecture.md` §2 |
+| Form save fired with `void …mutate(` | Route through `useFormSubmission` / `useSubmitGuard`; the guard must be synchronous and await before close — `mms-form-architecture.md` §2 |
+| Form has no `saving` prop on `onSave` | Bind `saving={mutation.isPending}` (or the hook's `submitting`); never invent `isSubmitting` — `mms-form-architecture.md` §1, §2 |
+| Form draft survives a record switch | Reset on the `open`/record identity (`useIdentityReset` / `useZodDraftForm.resetDraft`) and prove it with a create→edit→create spec — `mms-form-architecture.md` §2 |
+| Server field errors shown as a toast only | Map with `mapApiFormError` onto field keys, form-level fallback in the shell `error`, keep the draft — `mms-form-architecture.md` §2, §4 |
+| Mutating form closes without a discard confirm | Pass `isDirty` (`useDirtySnapshot`) so the shell asks; record any exemption — `mms-form-architecture.md` §2 |
+| Form surface missing from the inventory | Run `pnpm run forms:inventory`; a stale `docs/forms-inventory.md` fails `pnpm run check:forms` — `mms-form-architecture.md` §8 |
 | Direct SQL `DELETE` on a tenant entity | Route through soft-delete or check `app.allow_hard_purge` — `mms-data-layer.md` §6 |
 | Unique constraint on a recyclable soft-deletable key | Use a partial unique index `WHERE deleted_at IS NULL` — `mms-data-layer.md` §6 |
 | Cross-feature import added | Route through the `@/tenant/hooks/collections/*` facade or extract to `components/app` / `components/ui` / `lib/` / `@mms/shared` — the boundary lint fails otherwise (`mms-dry.md`) |

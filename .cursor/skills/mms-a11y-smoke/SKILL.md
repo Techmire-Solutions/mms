@@ -4,7 +4,7 @@ description: Runs accessibility verification for MMS UI work — axe scans, focu
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-16
+  last-verified: 2026-11-16
 compatibility: Requires Playwright browsers for the full axe mode; static mode is dependency-free.
 allowed-tools: Read Grep Glob Bash(bash .agent/skills/mms-a11y-smoke/scripts/smoke-a11y.sh) Bash(pnpm test:e2e)
 ---
@@ -35,14 +35,15 @@ Do **not** use to invent design tokens → `mms-ui-ux-design.mdc` rule. Do **not
 1. Confirm the change hits app shell or shared interactive primitives (AppLayout, FormModal, Table, buttons/inputs).
 2. Keyboard path + accessible name/label spot-check on new controls.
 3. FormModal/drawer: focus trap + **focus-return** to the opener on close.
-4. Run `@axe-core/playwright` (or equivalent) on shell + one Work directory at **375** and **1440**; fail on serious/critical.
-5. Work list pending: `aria-busy` / polite live region (not spinner-only) — `mms-ui-ux-design.mdc` §3.
-6. Touch targets ≥ 44px (`min-h-11` / `min-w-11`); no page horizontal overflow.
-7. Verify non-obscured focus indicators under sticky/floating elements (`scroll-padding`).
-8. Honor `prefers-reduced-motion`; semantic landmarks (`main`/`nav`/`section`) preserved.
-9. When FormModal chrome touched: spot-check `dvh`/`svh` + safe-area — `mms-form-architecture.mdc`.
-10. Responsive shell specs named in `mms-ui-ux-design.mdc` §4 when layout chrome changed.
-11. If out of scope, state skip reason in completion review.
+4. Form fields: every control has a programmatic label (`Field` `htmlFor`/`id` or `aria-labelledby`); inline errors are connected with `aria-describedby` and the control sets `aria-invalid` while its error shows; submit failure focuses the first invalid field (activating its tab first).
+5. Run `@axe-core/playwright` (or equivalent) on shell + one Work directory at **375** and **1440**; fail on serious/critical.
+6. Work list pending: `aria-busy` / polite live region (not spinner-only) — `mms-ui-ux-design.mdc` §3.
+7. Touch targets ≥ 44px (`min-h-11` / `min-w-11`); no page horizontal overflow.
+8. Verify non-obscured focus indicators under sticky/floating elements (`scroll-padding`).
+9. Honor `prefers-reduced-motion`; semantic landmarks (`main`/`nav`/`section`) preserved.
+10. When FormModal chrome touched: spot-check `dvh`/`svh` + safe-area — `mms-form-architecture.mdc`.
+11. Responsive shell specs named in `mms-ui-ux-design.mdc` §4 when layout chrome changed.
+12. If out of scope, state skip reason in completion review.
 
 ## Checklist
 
@@ -50,6 +51,7 @@ Do **not** use to invent design tokens → `mms-ui-ux-design.mdc` rule. Do **not
 - [ ] axe serious/critical clean; report a failing scan explicitly even when an issue is filed
 - [ ] Focus-return on FormModal/drawer
 - [ ] Labels / aria-label on icon-only controls
+- [ ] Form fields: programmatic label + `aria-invalid` + `aria-describedby`; first invalid field focused
 - [ ] Work list pending: aria-busy / polite live region
 - [ ] Non-obscured focus indicators via scroll-padding (WCAG 2.2 2.4.11)
 - [ ] Touch targets meet 44×44px floor (min-h-11 min-w-11)

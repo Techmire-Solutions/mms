@@ -28,7 +28,7 @@ Agent skills for Cursor, Antigravity, and Claude Code. Cursor/Claude discover th
 | [mms-faculty-domain](mms-faculty-domain/SKILL.md) | Modifying faculty tables, appointments, or staff directory/drawers |
 | [mms-fields-registry](mms-fields-registry/SKILL.md) | Working with custom fields, system tabs, field types, column registries, field delete guards, or getSortedFields |
 | [mms-finance-accounting](mms-finance-accounting/SKILL.md) | Modifying finance or accounting features, payment gateways, invoice templates, or ledger entries |
-| [mms-form-architecture](mms-form-architecture/SKILL.md) | Building or auditing create/edit forms, FormModal tabs, DatePicker/TimePicker/DateTimePicker/phone fields, or upload flows |
+| [mms-form-architecture](mms-form-architecture/SKILL.md) | Building or auditing create/edit forms, FormModal tabs, DatePicker/TimePicker/DateTimePicker/phone fields, upload flows, or running a form inventory/audit |
 | [mms-frontend](mms-frontend/SKILL.md) | Editing apps/frontend, Vite config, frontend hooks, pages, components, or frontend tests |
 | [mms-i18n-completeness](mms-i18n-completeness/SKILL.md) | Adding user-facing text, when check:i18n fails, or when a locale renders English or overflows |
 | [mms-incident-response](mms-incident-response/SKILL.md) | Production is down, a deploy broke the site, or a release must be reverted |

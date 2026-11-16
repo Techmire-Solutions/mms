@@ -56,6 +56,7 @@ gate "Migrations are forward-only" pnpm run check:migrations-forward-only
 gate "Work directory convergence" pnpm run check:work-directory
 gate "Frontend structure ratchets" pnpm run check:frontend-structure
 gate "Shared UI architecture & governance" pnpm run check:shared-ui
+gate "Form architecture & inventory" pnpm run check:forms
 gate "Documentation ratchets" pnpm run check:docs
 gate "Script unit tests" pnpm run test:scripts
 gate "Ratchet baselines did not increase" node scripts/ci/check-ratchet-baselines.mjs --base "${MMS_CI_BASE:-HEAD~1}"

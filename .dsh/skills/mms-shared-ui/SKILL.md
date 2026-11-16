@@ -4,7 +4,7 @@ description: Governs the shared component architecture (@shared/ui / packages/ui
 license: Proprietary
 metadata:
   owner: mms-platform
-  last-verified: 2026-10-15
+  last-verified: 2026-11-16
 allowed-tools: Read Grep Glob Write Edit Bash(node scripts/check-shared-ui.mjs) Bash(pnpm typecheck)
 ---
 
@@ -53,7 +53,7 @@ packages/ui/src/                    # @shared/ui (Single Source of Truth)
 3. **UI Facades (`apps/frontend/src/components/ui/`):**
    - Provide backward-compatible, typed re-exports from `@shared/ui`.
    - Must contain zero local JSX component implementations or duplicate style logic.
-   - Enforced by `scripts/check-shared-ui.mjs`.
+   - Enforced by `.agent/skills/mms-shared-ui/scripts/check-shared-ui.mjs` (canonical implementation; `scripts/check-shared-ui.mjs` is a thin wrapper).
 
 ## Cross-Console Variation Principles
 
@@ -93,11 +93,15 @@ Whenever cleaning up legacy UI files, deprecated shims, or duplicate components:
 Run the automated governance checker:
 
 ```bash
+# Canonical implementation (cited by this skill, the rule, and /shared-ui-audit):
 node .agent/skills/mms-shared-ui/scripts/check-shared-ui.mjs
-# or via the root script / npm script:
+# The root script and the package script forward to the same implementation:
 node scripts/check-shared-ui.mjs
 pnpm run check:shared-ui
 ```
+
+The implementation exists once, in the skill. The root wrapper exists so `pnpm run check:shared-ui`
+and CI keep working without a second copy that can drift.
 
 The script verifies:
 - Platform Console imports 100% directly from `@shared/ui`.
@@ -112,4 +116,4 @@ The script verifies:
 
 Related workflow: `/dry`.
 
-Local script: [check-shared-ui.mjs](file:///Users/syedaalin/Documents/mms/.agent/skills/mms-shared-ui/scripts/check-shared-ui.mjs).
+Local script: [check-shared-ui.mjs](./scripts/check-shared-ui.mjs) (canonical implementation).
