@@ -1,9 +1,13 @@
 import {
+  cashFlowSectionForAccount,
   isDebitNormalAccountType,
   moneyToCents,
   type AccountingAccountType,
+  type CashFlowSection,
   type LedgerPostingAccounts,
 } from "@mms/shared";
+
+export type { CashFlowSection } from "@mms/shared";
 
 /** One account's movement for a specific report window. */
 export interface ReportAccountRow {
@@ -16,6 +20,8 @@ export interface ReportAccountRow {
   totalCreditCents: number;
   /** Normal-side balance in integer cents (debit-normal type: debit − credit). */
   balanceCents: number;
+  /** IAS 7 section (explicit mapping, else inferred from type/subtype). */
+  cashFlowSection: CashFlowSection;
 }
 
 /** Cash/bank account classification for the cash-flow statement. */
@@ -91,6 +97,7 @@ export function toReportRow(
     totalDebitCents,
     totalCreditCents,
     balanceCents,
+    cashFlowSection: cashFlowSectionForAccount({ type: raw.type, subtype: raw.subtype }),
   };
 }
 
@@ -98,6 +105,12 @@ export interface CashEntryMovement {
   entryId: string;
   cashDebitCents: number;
   cashCreditCents: number;
+}
+
+export interface CashFlowSectionFigures {
+  inflowCents: number;
+  outflowCents: number;
+  netCents: number;
 }
 
 export interface CashFlowFigures {
@@ -111,6 +124,7 @@ export interface CashFlowFigures {
     payablesCents: number;
     otherCents: number;
   };
+  sections: Record<CashFlowSection, CashFlowSectionFigures>;
 }
 
 /**
@@ -132,17 +146,46 @@ export interface CashFlowFigures {
  * inventory, contra-assets, owner equity). The named adjustments stay a display
  * breakdown; `other` is the residual that makes the lines sum to the total.
  */
+/**
+ * Classify one entry's net cash leg by the section of its non-cash counterpart
+ * account(s). A single section wins; mixed counterparties fall back to operating
+ * (conservative — a split entry is not a clean investing/financing event).
+ */
+function sectionForEntry(
+  entryId: string,
+  counterparties: ReadonlyMap<string, readonly string[]>,
+  sectionById: ReadonlyMap<string, CashFlowSection>,
+): CashFlowSection {
+  const sections = new Set(
+    (counterparties.get(entryId) ?? [])
+      .map((accountId) => sectionById.get(accountId))
+      .filter((section): section is CashFlowSection => section !== undefined),
+  );
+  return sections.size === 1 ? [...sections][0]! : "operating";
+}
+
 export function buildCashFlowFigures(
   flowRows: ReportAccountRow[],
   cashMovements: readonly CashEntryMovement[],
   netSurplusCents: number,
   postingRules: Partial<LedgerPostingAccounts>,
+  sectionById: ReadonlyMap<string, CashFlowSection>,
+  entryCounterparties: ReadonlyMap<string, readonly string[]>,
 ): CashFlowFigures {
   let cashInflowCents = 0;
   let cashOutflowCents = 0;
+  const sectionCents: Record<CashFlowSection, CashFlowSectionFigures> = {
+    operating: { inflowCents: 0, outflowCents: 0, netCents: 0 },
+    investing: { inflowCents: 0, outflowCents: 0, netCents: 0 },
+    financing: { inflowCents: 0, outflowCents: 0, netCents: 0 },
+  };
   for (const movement of cashMovements) {
-    cashInflowCents += Math.max(0, movement.cashDebitCents - movement.cashCreditCents);
-    cashOutflowCents += Math.max(0, movement.cashCreditCents - movement.cashDebitCents);
+    const net = movement.cashDebitCents - movement.cashCreditCents;
+    cashInflowCents += Math.max(0, net);
+    cashOutflowCents += Math.max(0, -net);
+    const section = sectionForEntry(movement.entryId, entryCounterparties, sectionById);
+    sectionCents[section].inflowCents += Math.max(0, net);
+    sectionCents[section].outflowCents += Math.max(0, -net);
   }
   const netCashFlowCents = cashInflowCents - cashOutflowCents;
 
@@ -177,11 +220,16 @@ export function buildCashFlowFigures(
   const namedCents = netSurplusCents + depreciationCents + receivablesCents + payablesCents;
   const otherCents = indirectCents - namedCents;
 
+  for (const section of Object.keys(sectionCents) as CashFlowSection[]) {
+    sectionCents[section].netCents =
+      sectionCents[section].inflowCents - sectionCents[section].outflowCents;
+  }
   return {
     cashInflowCents,
     cashOutflowCents,
     netCashFlowCents,
     netCashFlowIndirectCents: indirectCents,
+    sections: sectionCents,
     adjustments: { depreciationCents, receivablesCents, payablesCents, otherCents },
   };
 }

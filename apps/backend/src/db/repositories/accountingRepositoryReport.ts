@@ -13,6 +13,10 @@ import {
   type CashEntryMovement,
   type ReportAccountRow,
 } from "./accountingReportCashFlow.js";
+import {
+  loadAccountSectionMap,
+  loadCashMovementCounterparties,
+} from "./accountingReportCashFlowSections.js";
 
 export interface AccountingReportQuery {
   dateFrom?: string;
@@ -147,14 +151,31 @@ export async function aggregateAccountingReport(
     const equityAccountsCents = centsByType(asOfRows, "Equity");
     const asOfSurplusCents = centsByType(asOfRows, "Revenue") - centsByType(asOfRows, "Expense");
 
-    const cashMovements = await loadCashEntryMovements(
+    const cashAccountIds = flowRows
+      .filter((row) => isCashAccount(row, postingRules.cashAccountId))
+      .map((row) => row.id);
+    const [cashMovements, entryCounterparties] = await Promise.all([
+      loadCashEntryMovements(tx, subdomain, cashAccountIds, dateFrom, dateTo),
+      loadCashMovementCounterparties(tx, subdomain, cashAccountIds, dateFrom, dateTo),
+    ]);
+    const accountSectionById = await loadAccountSectionMap(
       tx,
       subdomain,
-      flowRows.filter((row) => isCashAccount(row, postingRules.cashAccountId)).map((row) => row.id),
-      dateFrom,
-      dateTo,
+      flowRows.map((row) => row.id),
     );
-    const cash = buildCashFlowFigures(flowRows, cashMovements, netSurplusCents, postingRules);
+    // Explicit mapping wins over the type/subtype inference `toReportRow` applied.
+    for (const row of flowRows) {
+      const explicit = accountSectionById.get(row.id);
+      if (explicit) row.cashFlowSection = explicit;
+    }
+    const cash = buildCashFlowFigures(
+      flowRows,
+      cashMovements,
+      netSurplusCents,
+      postingRules,
+      accountSectionById,
+      entryCounterparties,
+    );
     const centsToAmount = (cents: number): number => cents / 100;
 
     return {
@@ -179,6 +200,23 @@ export async function aggregateAccountingReport(
         receivables: centsToAmount(cash.adjustments.receivablesCents),
         payables: centsToAmount(cash.adjustments.payablesCents),
         other: centsToAmount(cash.adjustments.otherCents),
+      },
+      cashFlowSections: {
+        operating: {
+          inflow: centsToAmount(cash.sections.operating.inflowCents),
+          outflow: centsToAmount(cash.sections.operating.outflowCents),
+          net: centsToAmount(cash.sections.operating.netCents),
+        },
+        investing: {
+          inflow: centsToAmount(cash.sections.investing.inflowCents),
+          outflow: centsToAmount(cash.sections.investing.outflowCents),
+          net: centsToAmount(cash.sections.investing.netCents),
+        },
+        financing: {
+          inflow: centsToAmount(cash.sections.financing.inflowCents),
+          outflow: centsToAmount(cash.sections.financing.outflowCents),
+          net: centsToAmount(cash.sections.financing.netCents),
+        },
       },
       trialBalance: rangeRows.map(toTrialBalanceRow),
       incomeStatementTrialBalance: flowRows.map(toTrialBalanceRow),

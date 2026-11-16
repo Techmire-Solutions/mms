@@ -52,6 +52,24 @@ export const accountingCashFlowAdjustmentsSchema = z
 
 export type AccountingCashFlowAdjustments = z.infer<typeof accountingCashFlowAdjustmentsSchema>;
 
+/** Direct-method cash movement for one IAS 7 section. */
+export const accountingCashFlowSectionSchema = z
+  .object({
+    inflow: signedMoneyAmountSchema.default(0),
+    outflow: signedMoneyAmountSchema.default(0),
+    net: signedMoneyAmountSchema.default(0),
+  })
+  .strict();
+
+export type AccountingCashFlowSection = z.infer<typeof accountingCashFlowSectionSchema>;
+
+const EMPTY_CASH_FLOW_SECTION = { inflow: 0, outflow: 0, net: 0 };
+const EMPTY_CASH_FLOW_SECTIONS = {
+  operating: EMPTY_CASH_FLOW_SECTION,
+  investing: EMPTY_CASH_FLOW_SECTION,
+  financing: EMPTY_CASH_FLOW_SECTION,
+};
+
 /**
  * Accounting report aggregates.
  *
@@ -93,6 +111,15 @@ export const accountingReportAggregatesSchema = z
       payables: 0,
       other: 0,
     }),
+    /** Direct-method cash movement split by IAS 7 section (operating/investing/financing). */
+    cashFlowSections: z
+      .object({
+        operating: accountingCashFlowSectionSchema,
+        investing: accountingCashFlowSectionSchema,
+        financing: accountingCashFlowSectionSchema,
+      })
+      .strict()
+      .default(EMPTY_CASH_FLOW_SECTIONS),
     /** Range-based ledger rows, including closing journals (Trial Balance). */
     trialBalance: z.array(accountingTrialBalanceRowSchema).default([]),
     /** Range-based rows excluding closing journals (Income Statement + exports). */
@@ -159,6 +186,11 @@ export const EMPTY_ACCOUNTING_REPORT_AGGREGATES: AccountingReportAggregates = {
   netCashFlow: 0,
   netCashFlowIndirect: 0,
   cashFlowAdjustments: { depreciation: 0, receivables: 0, payables: 0, other: 0 },
+  cashFlowSections: {
+    operating: { inflow: 0, outflow: 0, net: 0 },
+    investing: { inflow: 0, outflow: 0, net: 0 },
+    financing: { inflow: 0, outflow: 0, net: 0 },
+  },
   trialBalance: [],
   balanceSheetTrialBalance: [],
 };

@@ -42,6 +42,8 @@ export const accountingAccounts = pgTable(
     isActive: boolean("is_active").notNull().default(true),
     /** COA parent; null = root. Cycles/depth are enforced by the 0253 trigger. */
     parentAccountId: text("parent_account_id"),
+    /** IAS 7 cash-flow section; null = inferred from type/subtype. */
+    cashFlowSection: varchar("cash_flow_section", { length: 20 }),
     ...fxAccountColumns,
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),

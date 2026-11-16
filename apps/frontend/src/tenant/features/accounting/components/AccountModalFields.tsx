@@ -1,6 +1,6 @@
 import React from "react";
 import { ACCOUNT_TYPES, type Account, type AccountType } from "@/lib/data/accountingData";
-import type { AppTranslationKey } from "@mms/shared";
+import { CASH_FLOW_SECTIONS, type AppTranslationKey } from "@mms/shared";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Field } from "@/components/app/FormPrimitives";
@@ -150,6 +150,29 @@ export function AccountModalFields({
 
         return null;
       })}
+
+      <div className="sm:col-span-2">
+        <Field
+          id="account-cash-flow-section"
+          label={t("accounting.coa.fields.cashFlowSection")}
+          hint={t("accounting.coa.fields.cashFlowSectionHint")}
+        >
+          <FormSelect
+            id="account-cash-flow-section"
+            name="cash_flow_section"
+            value={form.cash_flow_section ?? ""}
+            onChange={(val) => updateField("cash_flow_section", val || null)}
+            options={[
+              { value: "", label: t("accounting.coa.fields.cashFlowAuto") },
+              ...CASH_FLOW_SECTIONS.map((section) => ({
+                value: section,
+                label: t(`accounting.reports.cashflow.section.${section}` as AppTranslationKey),
+              })),
+            ]}
+            placeholder={t("accounting.coa.fields.cashFlowAuto")}
+          />
+        </Field>
+      </div>
     </div>
   );
 }

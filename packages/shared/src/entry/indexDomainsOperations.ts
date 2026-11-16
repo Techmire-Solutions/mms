@@ -12,6 +12,7 @@ export * from "../finance/accountingErrorCodes.js";
 export * from "../finance/accountingFxAccounts.js";
 export * from "../finance/accountingFxLines.js";
 export * from "../finance/accountingEnums.js";
+export * from "../finance/accountingCashFlow.js";
 export * from "../finance/accountingFxSettings.js";
 export * from "../finance/accountingFxExchangeability.js";
 export * from "../finance/accountingFxRevaluation.js";
