@@ -40,8 +40,8 @@ export function ContactsPageSkeleton({
         </div>
       </div>
 
-      {/* Metrics Strip */}
-      <StatsSkeleton count={4} className="grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3" />
+      {/* Metrics Strip — 5 cards to mirror ContactsCommandMetrics */}
+      <StatsSkeleton count={5} className="grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" />
 
       {/* 3-Tier Tab Bar */}
       <div className="flex gap-2 border-b border-border pb-2">

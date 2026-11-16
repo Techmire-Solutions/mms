@@ -153,12 +153,12 @@ export function ContactsBulkTagModal({
         }}
         className="space-y-4 text-start"
       >
-        <p className="text-sm text-muted-foreground m-0">
+        <p className="text-sm text-muted-foreground m-0 text-pretty">
           {t("contacts.selectedCount", { count: selectedCount })}
         </p>
 
         <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground m-0">
+          <p className="text-xs font-semibold text-muted-foreground m-0 text-pretty">
             {t("contacts.bulkTagMode")}
           </p>
           <div role="group" aria-label={t("contacts.bulkTagMode")} className="flex gap-2">
@@ -192,7 +192,7 @@ export function ContactsBulkTagModal({
 
         {suggestions.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-muted-foreground m-0">
+            <p className="text-xs font-semibold text-muted-foreground m-0 text-pretty">
               {t("contacts.bulkTagSuggestions")}
             </p>
             <div className="flex flex-wrap gap-1.5">
