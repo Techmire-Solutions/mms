@@ -317,6 +317,7 @@ jobs:
         run: |
           node scripts/check-frontend-structure.mjs --ratchet
           node scripts/check-code-norms.mjs --ratchet
+          node scripts/check-form-architecture.mjs --ratchet
 
       # Catches the other padding shape: raising a BASELINE constant to exactly
       # the new violation count (which `--ratchet` cannot distinguish).
@@ -340,6 +341,12 @@ jobs:
       # @shared/ui SSOT, pure facades, zero orphaned imports).
       - name: Shared UI architecture & governance
         run: pnpm run check:shared-ui
+
+      # Ratchet: form inventory freshness + the provable form-contract regressions
+      # (missing `saving`, unguarded submit, missing dirty guard). Baselines live in the
+      # script and may only decrease. Advisory findings are printed, not gated.
+      - name: Form architecture & inventory
+        run: pnpm run check:forms
 
       # @mms/shared must stay an environment-agnostic leaf (no DOM/React/Fastify/
       # DB/Redis/Node builtins) so both the browser bundle and the Node backend
