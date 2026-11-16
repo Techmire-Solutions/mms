@@ -579,6 +579,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "accounting.reports.cashflow.section.operating": "الأنشطة التشغيلية",
   "accounting.reports.cashflow.section.investing": "الأنشطة الاستثمارية",
   "accounting.reports.cashflow.section.financing": "الأنشطة التمويلية",
+  "accounting.reports.cashflow.section.indirect": "غير مباشر: {amount}",
+  "accounting.reports.cashflow.section.difference": "مباشر − غير مباشر: {amount}",
   "accounting.reports.cashflow.section.movement": "داخل {inflow} · خارج {outflow}",
   "accounting.reports.cashflow.title": "تدفقات الأنشطة التشغيلية (الطريقة غير المباشرة)",
   "accounting.reports.equity": "حقوق الملكية",

@@ -101,6 +101,22 @@ export function CashFlowStatementPanel({
                           outflow: formatCurrency(figures.outflow),
                         })}
                       </span>
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {t("accounting.reports.cashflow.section.indirect", {
+                          amount: formatCurrency(figures.indirect),
+                        })}
+                      </span>
+                      <span
+                        className={`text-xs font-normal ${
+                          Math.abs(figures.net - figures.indirect) >= 0.005
+                            ? "text-warning"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {t("accounting.reports.cashflow.section.difference", {
+                          amount: formatCurrency(figures.net - figures.indirect),
+                        })}
+                      </span>
                     </span>
                   }
                 />

@@ -589,6 +589,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "accounting.reports.cashflow.section.operating": "فعالیت‌های عملیاتی",
   "accounting.reports.cashflow.section.investing": "فعالیت‌های سرمایه‌گذاری",
   "accounting.reports.cashflow.section.financing": "فعالیت‌های تأمین مالی",
+  "accounting.reports.cashflow.section.indirect": "غیرمستقیم: {amount}",
+  "accounting.reports.cashflow.section.difference": "مستقیم − غیرمستقیم: {amount}",
   "accounting.reports.cashflow.section.movement": "ورودی {inflow} · خروجی {outflow}",
   "accounting.reports.cashflow.title": "جریان نقدی عملیاتی (روش غیرمستقیم)",
   "accounting.reports.equity": "حقوق صاحبان سهام",

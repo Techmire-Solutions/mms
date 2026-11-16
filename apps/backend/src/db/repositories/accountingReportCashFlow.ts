@@ -111,6 +111,8 @@ export interface CashFlowSectionFigures {
   inflowCents: number;
   outflowCents: number;
   netCents: number;
+  /** Indirect-method subtotal for this section (partitions the total indirect). */
+  indirectCents: number;
 }
 
 export interface CashFlowFigures {
@@ -175,9 +177,9 @@ export function buildCashFlowFigures(
   let cashInflowCents = 0;
   let cashOutflowCents = 0;
   const sectionCents: Record<CashFlowSection, CashFlowSectionFigures> = {
-    operating: { inflowCents: 0, outflowCents: 0, netCents: 0 },
-    investing: { inflowCents: 0, outflowCents: 0, netCents: 0 },
-    financing: { inflowCents: 0, outflowCents: 0, netCents: 0 },
+    operating: { inflowCents: 0, outflowCents: 0, netCents: 0, indirectCents: 0 },
+    investing: { inflowCents: 0, outflowCents: 0, netCents: 0, indirectCents: 0 },
+    financing: { inflowCents: 0, outflowCents: 0, netCents: 0, indirectCents: 0 },
   };
   for (const movement of cashMovements) {
     const net = movement.cashDebitCents - movement.cashCreditCents;
@@ -197,13 +199,20 @@ export function buildCashFlowFigures(
   let depreciationCents = 0;
   let receivableMovementCents = 0;
   let payableMovementCents = 0;
+  // The operating section starts from P&L; investing/financing are pure balance-sheet
+  // mirrors of their classified non-cash accounts.
+  sectionCents.operating.indirectCents = netSurplusCents;
 
   for (const row of flowRows) {
     const flowDebitPos = row.totalDebitCents - row.totalCreditCents;
-    if (row.type === "Asset" || row.type === "Liability" || row.type === "Equity") {
-      // Every non-cash balance-sheet movement is the mirror of cash: an asset
-      // increase consumes it, a liability/equity increase releases it.
-      indirectCents -= cashIds.has(row.id) ? 0 : flowDebitPos;
+    const isBalanceSheet =
+      row.type === "Asset" || row.type === "Liability" || row.type === "Equity";
+    if (isBalanceSheet && !cashIds.has(row.id)) {
+      // A non-cash balance-sheet increase consumes cash (asset) or releases it
+      // (liability/equity); the indirect method adds `−movement`.
+      const contribution = -flowDebitPos;
+      indirectCents += contribution;
+      sectionCents[row.cashFlowSection].indirectCents += contribution;
     }
     // A configured AR account is authoritative and EXCLUSIVE: unlike cash there is
     // exactly one receivable, so the name heuristic must not add further accounts.
@@ -217,8 +226,11 @@ export function buildCashFlowFigures(
 
   const receivablesCents = -receivableMovementCents;
   const payablesCents = payableMovementCents;
+  // `other` is now the operating-only residual: the named operating lines
+  // (netSurplus + depreciation + receivables + payables + other) sum to the
+  // operating indirect subtotal.
   const namedCents = netSurplusCents + depreciationCents + receivablesCents + payablesCents;
-  const otherCents = indirectCents - namedCents;
+  const otherCents = sectionCents.operating.indirectCents - namedCents;
 
   for (const section of Object.keys(sectionCents) as CashFlowSection[]) {
     sectionCents[section].netCents =

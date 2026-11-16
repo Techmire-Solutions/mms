@@ -51,9 +51,12 @@ with `cashFlowSectionForAccount` inference (explicit mapping wins; Fixed Assets 
 investing; Equity/Long-Term Liabilities → financing; otherwise operating). The report
 classifies each entry's net cash leg by its **non-cash counterpart** account section
 (mixed counterparties fall back to operating; cash↔cash transfers appear in no
-section) and exposes `cashFlowSections` on the aggregates. The Cash Flow panel shows
-the three direct-method sections, and the Chart of Accounts editor offers the
-optional override.
+section) and exposes `cashFlowSections` on the aggregates. Each section carries a
+direct figure (cash legs) and an indirect figure (non-cash balance-sheet movements:
+operating starts from P&L plus working-capital add-backs; investing/financing mirror
+their classified accounts), and the three indirect figures sum to `netCashFlowIndirect`.
+The Cash Flow panel shows each section's direct and indirect figures with a
+reconciliation line, and the Chart of Accounts editor offers the optional override.
 
 ### G4 (P3) — Reversal policy documented
 Reversals are whole-entry only; a partial correction is a separate adjusting journal.
