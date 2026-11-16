@@ -94,6 +94,8 @@ export function useSimpleTransactionWizard({
   const postingPeriodsQuery = usePostingPeriods(fiscalYearId);
   const voucherNumberingQuery = useVoucherNumbering(form.date);
   const parsedAmount = useMemo(() => parseMoneyInput(form.amount), [form.amount]);
+  // Dirty when the user entered an amount/reference (data a close would discard).
+  const isDirty = form.amount.trim() !== "" || form.ref.trim() !== "" || amountTouched;
 
   const stepSubtitle = useMemo(() => {
     if (step === 2 && selectedType) return quickActionLabel(selectedType, t);
@@ -236,6 +238,7 @@ export function useSimpleTransactionWizard({
     setShowAdvanced,
     amountTouched,
     setAmountTouched,
+    isDirty,
     submittingStatus,
     isSubmitting,
     submitError,

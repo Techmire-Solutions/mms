@@ -20,7 +20,7 @@ Totals: **214** form-like `.tsx` files · **73** files with a `<FormModal>` (**7
 | lib/forms | 1 | 0 | 0 | 0 | 0 |
 | platform/components | 15 | 6 | 4 | 4 | 1 |
 | platform/pages | 5 | 1 | 1 | 0 | 0 |
-| tenant/accounting | 16 | 8 | 8 | 5 | 2 |
+| tenant/accounting | 16 | 8 | 8 | 6 | 2 |
 | tenant/attendance | 6 | 3 | 3 | 3 | 1 |
 | tenant/contacts | 12 | 2 | 2 | 2 | 1 |
 | tenant/enrollments | 6 | 2 | 2 | 2 | 1 |

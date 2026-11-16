@@ -7,7 +7,6 @@ import type { Account, JournalEntry, FiscalYear } from "@/lib/data/accountingDat
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import {
-  generateClientEntityId,
   isJournalEntryBalanced,
   isValidExchangeRate,
   journalEntryWriteSchema,
@@ -27,20 +26,15 @@ import {
   validateJournalPostingGuards,
   isJournalRefUnique,
 } from "../lib/journalEntryFormValidation";
-import { buildJournalEntryDraft } from "../lib/journalEntryDraft";
+import { buildJournalEntryDraft, emptyJournalLine } from "../lib/journalEntryDraft";
 import { buildJournalEntrySaveCandidate } from "../lib/journalEntrySaveCandidate";
 import { accountOptions } from "../lib/accountOptions";
 import { useJournalEntryCurrency } from "./useJournalEntryCurrency";
 import { usePostingPeriods } from "./useAccountingLedgerOps";
 import { useVoucherNumbering } from "./useVoucherNumbering";
 import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
-const EMPTY_LINE = (): DraftLine => ({
-  id: generateClientEntityId("l", "-"),
-  account_id: "",
-  debit: "",
-  credit: "",
-  description: "",
-});
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
+
 interface UseJournalEntryFormOptions {
   accounts: Account[];
   entries: JournalEntry[];
@@ -88,6 +82,9 @@ export function useJournalEntryForm({
     setForm(createDraftForm());
     setErrors({});
   }
+  // Dirty tracking for the shell's discard confirm. The freshly-built draft is the
+  // baseline; `initialKey` (record identity) resets it so refetches never look dirty.
+  const { isDirty } = useDirtySnapshot(form, initialKey, createDraftForm());
   const [prevFiscalYearId, setPrevFiscalYearId] = useState(activeFiscalYear);
   if (prevFiscalYearId !== activeFiscalYear) {
     setPrevFiscalYearId(activeFiscalYear);
@@ -148,7 +145,7 @@ export function useJournalEntryForm({
   );
   const addLine = useCallback(() => {
     const unbalanceCents = totalDebitCents - totalCreditCents;
-    const newLine = EMPTY_LINE();
+    const newLine = emptyJournalLine();
     if (unbalanceCents > 0) {
       newLine.credit = (unbalanceCents / 100).toFixed(2);
     } else if (unbalanceCents < 0) {
@@ -284,6 +281,7 @@ export function useJournalEntryForm({
     voucherNumberingLoading: voucherNumberingQuery.isPending,
     voucherNumberingError: voucherNumberingQuery.isError,
     submitting,
+    isDirty,
     totalDebit,
     totalCredit,
     isBalanced,
