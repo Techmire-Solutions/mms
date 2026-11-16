@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Building2, ChevronsUpDown, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
+import { BiDiText } from "@/components/app/BiDiText";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { usePlatformWorkspaces } from "@/platform/hooks/usePlatformWorkspaces";
 import {
@@ -80,7 +81,9 @@ export function PlatformWorkspaceSwitcher(): React.JSX.Element | null {
                 onSelect={() => jumpToDirectory(r.subdomain, r.madrasaName)}
               >
                 <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                <span className="truncate flex-1">{r.madrasaName}</span>
+                <BiDiText className="truncate flex-1" titleFromContent>
+                  {r.madrasaName}
+                </BiDiText>
                 <span className="text-3xs text-muted-foreground font-mono shrink-0">
                   {r.subdomain}
                 </span>
@@ -104,7 +107,9 @@ export function PlatformWorkspaceSwitcher(): React.JSX.Element | null {
               onSelect={() => jumpToDirectory(w.subdomain, w.madrasaName)}
             >
               <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              <span className="truncate flex-1">{w.madrasaName}</span>
+              <BiDiText className="truncate flex-1" titleFromContent>
+                {w.madrasaName}
+              </BiDiText>
               <span className="text-3xs text-muted-foreground font-mono shrink-0">
                 {w.subdomain}
               </span>

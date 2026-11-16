@@ -2,8 +2,10 @@ import { isJournalRefUnique, type JournalEntry } from "@/lib/data/accountingData
 import {
   findFiscalYearForDate,
   isFiscalYearClosed,
+  isJournalEntryBalanced,
   isValidIsoDate,
   moneyAmountSchema,
+  moneyToCents,
   resolveFiscalYearRef,
   type FiscalYear,
   type JournalEntryStatus,
@@ -46,6 +48,34 @@ export function parseJournalLineAmount(
   const parsed = parseMoneyInput(val, decimalSeparator);
   if (parsed === null || !hasAtMostTwoDecimals(parsed)) return 0;
   return parsed;
+}
+
+/** Computes totals and balance state across journal draft lines. */
+export function computeJournalEntryTotals(
+  lines: readonly DraftLine[],
+  decimalSeparator: MoneySeparator = "period",
+) {
+  const totalDebitCents = lines.reduce(
+    (cents, l) => cents + moneyToCents(parseJournalLineAmount(l.debit, decimalSeparator)),
+    0,
+  );
+  const totalCreditCents = lines.reduce(
+    (cents, l) => cents + moneyToCents(parseJournalLineAmount(l.credit, decimalSeparator)),
+    0,
+  );
+  const isBalanced = isJournalEntryBalanced(
+    lines.map((l) => ({
+      debit: parseJournalLineAmount(l.debit, decimalSeparator),
+      credit: parseJournalLineAmount(l.credit, decimalSeparator),
+    })),
+  );
+  return {
+    totalDebitCents,
+    totalCreditCents,
+    totalDebit: totalDebitCents / 100,
+    totalCredit: totalCreditCents / 100,
+    isBalanced,
+  };
 }
 
 /** Field-level amount validation for the inline error under each voucher row. */

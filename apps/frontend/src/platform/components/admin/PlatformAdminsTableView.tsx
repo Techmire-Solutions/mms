@@ -3,6 +3,7 @@ import { Mail } from "lucide-react";
 import type { PlatformUserProfile } from "@mms/shared";
 import { formatDate } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
+import { BiDiText } from "@/components/app/BiDiText";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import {
   deriveSelectionState,
@@ -75,7 +76,9 @@ export function PlatformAdminsTableView({
           cellClassName: "px-4 py-3 align-top min-w-64",
           render: (admin: PlatformUserProfile) => (
             <div className="space-y-1">
-              <p className="font-bold text-foreground">{admin.name}</p>
+              <BiDiText as="p" className="font-bold text-foreground" titleFromContent>
+                {admin.name}
+              </BiDiText>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Mail className="w-3.5 h-3.5" aria-hidden />
                 <span dir="ltr">{admin.email}</span>

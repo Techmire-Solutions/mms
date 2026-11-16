@@ -460,4 +460,22 @@ describe("useJournalEntryForm validation", () => {
 
     expect(onSave).toHaveBeenCalledTimes(1);
   });
+
+  it("initializes with isDirty false for new and existing entries, and marks dirty on edit", async () => {
+    const onSave = vi.fn();
+    await act(async () => {
+      root.render(<TestHarness onSave={onSave} onController={(c) => (controller = c)} />);
+    });
+    expect(controller!.isDirty).toBe(false);
+
+    await act(async () => {
+      controller!.updateLine(0, "account_id", "a-cash");
+    });
+    expect(controller!.isDirty).toBe(true);
+
+    await act(async () => {
+      controller!.updateLine(0, "account_id", "");
+    });
+    expect(controller!.isDirty).toBe(false);
+  });
 });

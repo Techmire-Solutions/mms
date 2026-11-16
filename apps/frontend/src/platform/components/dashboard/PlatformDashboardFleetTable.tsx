@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Building2 } from "lucide-react";
 import type { PlatformWorkspaceRow } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
+import { BiDiText } from "@/components/app/BiDiText";
 import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
 import { Button, EmptyState, ListPagination } from "@shared/ui";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
@@ -56,7 +57,13 @@ export function PlatformDashboardFleetTable({
         sortField: "name",
         render: (row) => (
           <div className="min-w-0">
-            <p className="text-sm font-bold text-foreground truncate">{row.madrasaName}</p>
+            <BiDiText
+              as="p"
+              className="text-sm font-bold text-foreground truncate"
+              titleFromContent
+            >
+              {row.madrasaName}
+            </BiDiText>
             <p className="text-3xs font-mono text-muted-foreground">{row.subdomain}</p>
           </div>
         ),

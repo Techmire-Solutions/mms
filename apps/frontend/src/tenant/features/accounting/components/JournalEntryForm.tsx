@@ -51,6 +51,7 @@ export function JournalEntryForm({
     setForm,
     errors,
     submitting,
+    isDirty,
     totalDebit,
     totalCredit,
     isBalanced,
@@ -137,6 +138,9 @@ export function JournalEntryForm({
           (voucherAutoGenerate === false && !form.ref?.trim())
         }
         error={errorMessages}
+        isDirty={isDirty}
+        discardUnsavedTitle={t("settings.unsavedChanges")}
+        discardUnsavedDescription={t("common.discardUnsavedDescription")}
         formId="journal-entry-form"
         footerStart={
           <Button

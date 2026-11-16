@@ -60,6 +60,7 @@ export function SimpleTransactionWizard({
     setShowAdvanced,
     amountTouched,
     setAmountTouched,
+    isDirty,
     submittingStatus,
     isSubmitting,
     submitError,
@@ -103,6 +104,9 @@ export function SimpleTransactionWizard({
         panelClassName="max-h-modal-xl"
         hideFooter
         error={submitError ?? undefined}
+        isDirty={isDirty}
+        discardUnsavedTitle={t("settings.unsavedChanges")}
+        discardUnsavedDescription={t("common.discardUnsavedDescription")}
         headerExtra={
           <SimpleTransactionWizardSteps
             currentStep={step}

@@ -4,6 +4,7 @@ import { tenantUrl } from "@/lib/config/tenantConfig";
 import { CopyButton, WorkspaceLogo } from "@shared/ui";
 import { ExternalLink, Mail } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { BiDiText } from "@/components/app/BiDiText";
 import { notify } from "@/lib/notify";
 
 interface WorkspaceIdentityCellProps {
@@ -30,9 +31,13 @@ export function WorkspaceIdentityCell({
       </div>
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-bold tracking-tight text-foreground truncate group-hover:text-primary transition-colors text-balance">
+          <BiDiText
+            as="h3"
+            className="text-sm font-bold tracking-tight text-foreground truncate group-hover:text-primary transition-colors text-balance"
+            titleFromContent
+          >
             {workspace.madrasaName}
-          </h3>
+          </BiDiText>
           <a
             href={tenantLink}
             target="_blank"
@@ -45,7 +50,13 @@ export function WorkspaceIdentityCell({
           </a>
         </div>
         {workspace.tagline ? (
-          <p className="text-xs font-medium text-muted-foreground truncate">{workspace.tagline}</p>
+          <BiDiText
+            as="p"
+            className="text-xs font-medium text-muted-foreground truncate"
+            titleFromContent
+          >
+            {workspace.tagline}
+          </BiDiText>
         ) : null}
         <div className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <div
