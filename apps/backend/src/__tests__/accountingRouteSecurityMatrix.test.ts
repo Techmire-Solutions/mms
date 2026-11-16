@@ -56,6 +56,35 @@ const matrix = JSON.parse(
   ),
 ) as Record<string, MatrixEntry>;
 const ROUTES = Object.entries(matrix);
+
+/**
+ * Posting-authority rule (mirrors the `canManageAccounting` docstring in
+ * `lib/rbacCanModuleHelpers.ts`): `accounting.manage` is controller authority over
+ * period-end and immutable controls only. Routine posting — journal drafts and the
+ * whole hedge lifecycle — is `accounting.write`. Moving a route in or out of this
+ * list is a deliberate policy change: update it with a reason, the docstring, and
+ * `docs/accounting-module-bug-review-2026-11-14.md` together.
+ */
+const CONTROLLER_AUTHORITY_ROUTES = new Map<string, string>([
+  ["POST /api/accounting/entries/:id/reverse", "reversal of an immutable posted voucher"],
+  ["POST /api/accounting/fiscal-years/:id/close", "fiscal-year close"],
+  ["POST /api/accounting/fx-revaluations", "IAS 21 year-end revaluation"],
+  ["POST /api/accounting/ias29-restatements", "IAS 29 restatement"],
+  ["POST /api/accounting/opening-balances/:fiscalYearId/post", "opening-balance posting"],
+  ["POST /api/accounting/posting-periods/:id/close", "posting-period close"],
+  ["POST /api/accounting/posting-periods/:id/reopen", "posting-period reopen"],
+  ["PUT /api/accounting/voucher-numbering", "voucher-numbering configuration"],
+]);
+
+/** Routine posting that must stay on `accounting.write`, not controller authority. */
+const HEDGE_WRITE_ROUTES = [
+  "POST /api/accounting/hedges",
+  "POST /api/accounting/hedges/:id/valuations",
+  "POST /api/accounting/hedges/:id/reclassify",
+  "POST /api/accounting/hedges/:id/settle",
+  "POST /api/accounting/hedges/:id/discontinue",
+] as const;
+
 const TOKENS = {
   admin: adminToken,
   accountant: accountantToken,
@@ -130,6 +159,26 @@ describe("accounting route security matrix", () => {
   it("does not deny the admin role on any classified route", async () => {
     for (const [key, entry] of ROUTES) {
       expect(entry.deniedRoles, key).not.toContain("admin");
+    }
+  });
+
+  it("keeps `manage` limited to the documented controller-authority routes", () => {
+    const manageRoutes = ROUTES.filter(([, entry]) => entry.action === "manage").map(
+      ([key]) => key,
+    );
+
+    // Exact set equality both ways: a new `manage` route, or a downgrade, must be
+    // a deliberate edit here plus the docstring + doc update.
+    expect([...manageRoutes].sort()).toEqual([...CONTROLLER_AUTHORITY_ROUTES.keys()].sort());
+    expect(CONTROLLER_AUTHORITY_ROUTES.size).toBe(manageRoutes.length);
+  });
+
+  it("keeps the hedge lifecycle on routine `write` posting", () => {
+    for (const key of HEDGE_WRITE_ROUTES) {
+      expect(matrix[key], key).toBeDefined();
+      expect(matrix[key]?.action, key).toBe("write");
+      // Accountants post these; only read-only roles and guardians are denied.
+      expect(matrix[key]?.deniedRoles, key).not.toContain("accountant");
     }
   });
 });

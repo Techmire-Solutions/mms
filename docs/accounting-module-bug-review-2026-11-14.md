@@ -30,12 +30,24 @@ closing balance sign handling, aging bucket boundaries, 2-dp/safe-cents money DT
 | F5 | P2 | **Opening balances: "Post" enabled for 0 = 0**, which the server drops then rejects as unbalanced; and the list showed the previously selected year's rows while the new year loaded (`placeholderData`). | `postable` requires positive balanced non-zero rows; the list renders only rows belonging to the loaded year. |
 | F6 | P3 | **Settings toggles promised unimplemented behaviour.** `requireNarration` was ignored by the voucher form; `allowEditPosted` and `autoPostDrafts` had no consumer anywhere (posted vouchers are immutable by design). | The form honours `requireNarration`; the two phantom toggles are removed from Setup → Rules (schema fields kept for backward-compatible saves). |
 
-## Known limitations left deliberately
-1. **Hedge settlement/reclassification require `accounting.write`, while FX/IAS 29 postings require
-   `accounting.manage`.** Both write posted ledger entries, so the split is a policy decision, not a
-   mechanical bug; changing it silently would revoke an existing accountant workflow. Recorded here for
-   product sign-off.
-2. The simple-transaction wizard's low-balance warning is now server-computed from the account's ledger
+## Posting authority (resolved, no behaviour change)
+
+The three accounting permission tiers are deliberate and now documented as a single rule
+(`canManageAccounting` docstring and `.agent/skills/mms-finance-accounting/references/ledger-controls.md`):
+
+- **`accounting.write`** — routine ledger posting: journal drafts and the whole hedge lifecycle
+  (valuation, reclassification, settlement, discontinuation).
+- **`accounting.post`** — draft → posted; a Senior Accountant makes the voucher immutable.
+- **`accounting.manage`** — controller authority over period-end and immutable controls: fiscal-year
+  close, posting-period close/reopen, FX year-end revaluation, IAS 29 restatement, opening-balance
+  posting, reversal of a posted voucher, and voucher-numbering configuration.
+
+The split is pinned by `scripts/ci/accounting-route-security.json` and the controller-authority
+invariant in `apps/backend/src/__tests__/accountingRouteSecurityMatrix.test.ts`: a new `manage`
+route, or a downgrade of one, fails CI until the rule is deliberately revisited.
+
+## Known limitations and deliberate trade-offs
+1. The simple-transaction wizard's low-balance warning is server-computed from the account's ledger
    closing balance; the per-account `(₨ x)` picker suffix was removed because no authoritative balance
    source existed for every option.
 
@@ -52,3 +64,6 @@ New regression tests: `journalEntryFx` (mixed rate types), `fxReportWindow`, `ac
 (projected rows), `journalEntryFormValidation` (comma parsing, narration), `FinancialStatementPanels`
 (exact tolerance), `journalEntriesControllerActions` (post fetches lines), and the row-memo contract from
 the earlier frontend audit.
+
+The posting-authority rule is pinned by `accountingRouteSecurityMatrix` (controller-authority set
+equality and the hedge-stays-`write` guard).
