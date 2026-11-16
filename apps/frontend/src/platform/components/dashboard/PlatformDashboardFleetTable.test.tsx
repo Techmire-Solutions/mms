@@ -147,7 +147,7 @@ describe("PlatformDashboardFleetTable", () => {
     const exportBtn = Array.from(container.querySelectorAll("button")).find((btn) =>
       btn.textContent?.includes("platform.workspaces.exportSelected"),
     );
-    expect(exportBtn).toBeTruthy();
+    expect(exportBtn instanceof HTMLButtonElement).toBe(true);
 
     await act(async () => {
       exportBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -181,7 +181,7 @@ describe("PlatformDashboardFleetTable", () => {
       p.textContent?.includes("Al-Noor Academy"),
     );
     const row = nameCell?.closest("tr");
-    expect(row).toBeTruthy();
+    expect(row instanceof HTMLTableRowElement).toBe(true);
 
     await act(async () => {
       row?.dispatchEvent(new MouseEvent("click", { bubbles: true }));

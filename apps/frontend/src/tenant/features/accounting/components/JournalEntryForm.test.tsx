@@ -256,7 +256,7 @@ describe("JournalEntryForm Component", () => {
     });
 
     const closeBtn = container.querySelector('[data-testid="close-btn"]');
-    expect(closeBtn).toBeTruthy();
+    expect(closeBtn instanceof HTMLButtonElement).toBe(true);
 
     await act(async () => {
       closeBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -307,7 +307,7 @@ describe("JournalEntryForm Component", () => {
 
     const footer = formModalPropsCapture.lastProps?.footerStart as
       React.ReactElement<{ onClick?: () => Promise<void> }> | undefined;
-    expect(footer).toBeTruthy();
+    expect(React.isValidElement(footer)).toBe(true);
 
     await act(async () => {
       await footer?.props.onClick?.();
@@ -328,7 +328,7 @@ describe("JournalEntryForm Component", () => {
     });
 
     const form = container.querySelector("form#journal-entry-form");
-    expect(form).toBeTruthy();
+    expect(form instanceof HTMLFormElement).toBe(true);
 
     await act(async () => {
       form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
