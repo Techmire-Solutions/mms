@@ -282,6 +282,20 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
     `e2e/helpers/platformAdminSeeder.ts` now prints its sanitized seed target, so a divergent database
     is visible in the output instead of surfacing as a credential error.
 
+13. **`restart_servers.sh` start failures now explain themselves (2026-11-16).** The failure path used to
+    tail `.logs/frontend.log` — which the screen child never writes — and suggest `screen -r mms-dev`
+    even when that session had already exited, so a failed start was undebuggable. Now:
+    a fast check fails within seconds when the screen session exits on launch, the diagnostics print the
+    **this run's** slice of `.logs/dev.log` (the file the child actually writes; offset-scoped so a
+    previous turbo run cannot pollute it), the real `screen` session state, a port-still-in-use hint and
+    a directly runnable `--foreground` fallback. `wait_for_port_free` waits up to 15 s for the backend's
+    ~5 s shutdown drain (a restart right after a stop used to die with "Ports not free"), and the screen
+    start retries **once** when the captured log shows a port race.
+    **Environment note for agents:** inside a sandboxed runner, `screen -dmS` can accept the session
+    while the child command never executes (verified: `screen -dmS p sh -c "echo hi > /tmp/p.log"`
+    produces no file and no output). There, use `./restart_servers.sh --foreground --quick` in the
+    background; it drives the same backend/worker/frontend stack and both ports come up healthy.
+
 ## 2026-10-28 project review — fixed vs. still open
 
 A full read-only review of the repository (architecture, tenancy, money, frontend
