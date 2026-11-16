@@ -4,7 +4,7 @@
  * while cash is recognised at the settlement rate (IAS 21.28 realized FX).
  */
 import { convertMoney, invertExchangeRate } from "../money/fxConvert.js";
-import { roundMoneyAmount } from "./accountingLedgerInvariants.js";
+import { roundMoneyAmount, functionalAmountMagnitude } from "./accountingLedgerInvariants.js";
 import { currencyMinorUnits } from "../money/iso4217.js";
 import { moneyToDecimalString, parseMoney, subtractMoney, type Money } from "../money/money.js";
 import { resolveJournalFxLines } from "./accountingFxLines.js";
@@ -185,7 +185,9 @@ export function buildFxPaymentPostingLines(input: FxPaymentPostingInput): Journa
   if (realized.minor !== 0n) {
     if (!accounts.fxRealizedAccountId) throw new MissingFxAccountError();
     const magnitude = realized.minor < 0n ? -realized.minor : realized.minor;
-    const value = Number(moneyToDecimalString({ ...realized, minor: magnitude }));
+    const value = functionalAmountMagnitude(
+      moneyToDecimalString({ ...realized, minor: magnitude }),
+    );
     lines.push({
       id: "pl-fx",
       account_id: accounts.fxRealizedAccountId,

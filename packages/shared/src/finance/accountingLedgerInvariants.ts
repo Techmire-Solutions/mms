@@ -165,6 +165,24 @@ export function roundMoneyAmount(value: string | number): number {
   return decimalAmountToCents(value, true) / 100;
 }
 
+/** `numeric(14,2)` functional columns hold at most 12 integer digits. */
+const FUNCTIONAL_AMOUNT_MAX = 1_000_000_000_000; // 1e12
+
+/**
+ * Non-negative magnitude for a journal `debit`/`credit` functional column.
+ * Parses integer cents exactly (throwing on unsafe cents via `roundMoneyAmount`)
+ * and rejects values that would overflow the `numeric(14,2)` columns, so an FX
+ * conversion can never silently drop a cent or overflow at insert.
+ */
+export function functionalAmountMagnitude(value: string | number): number {
+  const amount = roundMoneyAmount(value);
+  const magnitude = amount < 0 ? -amount : amount;
+  if (magnitude >= FUNCTIONAL_AMOUNT_MAX) {
+    throw new Error("Functional amount exceeds the ledger column bound");
+  }
+  return magnitude;
+}
+
 /**
  * A journal line is single-sided when at most one of debit/credit is positive
  * and neither is negative.

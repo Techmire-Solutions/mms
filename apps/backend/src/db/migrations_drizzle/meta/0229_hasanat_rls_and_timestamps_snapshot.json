@@ -26172,7 +26172,7 @@
     },
     "public.attendance_day_submissions": {
       "name": "attendance_day_submissions",
-      "schema": "public",
+      "schema": "",
       "columns": {
         "workspace_subdomain": {
           "name": "workspace_subdomain",
@@ -26267,8 +26267,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "attendance_day_submissions_workspace_subdomain_class_id_date_on_pk": {
-          "name": "attendance_day_submissions_workspace_subdomain_class_id_date_on_pk",
+        "attendance_day_submissions_pk": {
+          "name": "attendance_day_submissions_pk",
           "columns": ["workspace_subdomain", "class_id", "date_on"]
         }
       },
@@ -26288,7 +26288,7 @@
     },
     "public.attendance_absence_alerts": {
       "name": "attendance_absence_alerts",
-      "schema": "public",
+      "schema": "",
       "columns": {
         "id": { "name": "id", "type": "text", "primaryKey": false, "notNull": true },
         "workspace_subdomain": {
@@ -26492,7 +26492,7 @@
     },
     "public.exam_eligibility_overrides": {
       "name": "exam_eligibility_overrides",
-      "schema": "public",
+      "schema": "",
       "columns": {
         "workspace_subdomain": {
           "name": "workspace_subdomain",

@@ -7,6 +7,7 @@
 import { convertMoney } from "../money/fxConvert.js";
 import { currencyMinorUnits } from "../money/iso4217.js";
 import { moneyToDecimalString, parseMoney, type Money } from "../money/money.js";
+import { roundMoneyAmount } from "./accountingLedgerInvariants.js";
 
 /** A member's trial-balance row in its functional currency (debit-positive balance). */
 export interface MemberTrialBalanceRow {
@@ -48,7 +49,7 @@ export interface TranslatedMember {
 const toMoney = (amount: number, currency: string): Money =>
   parseMoney(amount.toFixed(currencyMinorUnits(currency)), currency);
 
-const toNumber = (money: Money): number => Number(moneyToDecimalString(money));
+const toNumber = (money: Money): number => roundMoneyAmount(moneyToDecimalString(money));
 
 function rateFor(row: MemberTrialBalanceRow, rates: TranslationRates): string {
   if (row.type === "Asset" || row.type === "Liability") return rates.closing;

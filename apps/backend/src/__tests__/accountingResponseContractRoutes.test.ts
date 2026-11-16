@@ -107,6 +107,12 @@ vi.mock("../accounting/use-cases/processSpecializedEntryUseCase.js", () => ({
   processSpecializedEntryUseCase: mockSpecializedEntry,
 }));
 
+const mockCanPostAccounting = vi.hoisted(() => vi.fn());
+vi.mock("../lib/rbacCanModuleHelpers.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/rbacCanModuleHelpers.js")>();
+  return { ...actual, canPostAccounting: (...args: unknown[]) => mockCanPostAccounting(...args) };
+});
+
 const mockSeedChart = vi.hoisted(() => vi.fn());
 vi.mock("../accounting/use-cases/seedDefaultChartOfAccounts.js", () => ({
   seedDefaultChartOfAccountsUseCase: mockSeedChart,
@@ -222,6 +228,7 @@ describe("accounting response contracts", () => {
     mockPreviewIas29.mockResolvedValue(ias29Run);
     mockBuildFxReport.mockResolvedValue(fxReport);
     mockSpecializedEntry.mockResolvedValue({ type: "salary", entryId: "je-1", ledgerPosted: true });
+    mockCanPostAccounting.mockReturnValue(true);
     mockSeedChart.mockResolvedValue({
       count: 42,
       defaultsApplied: { retainedEarnings: true, cashAccount: false },
@@ -322,6 +329,27 @@ describe("accounting response contracts", () => {
     const drifted = await request("POST", "/api/accounting/specialized-entries", salary);
     expect(drifted.statusCode).toBe(500);
     expect(drifted.json().type).toBe("contract_violation");
+  });
+
+  it("requires posting authority for the salary quick action", async () => {
+    // A write-only role (accounting.write + finance.write, no accounting.post)
+    // must not be able to post an immutable salary voucher through this route.
+    mockCanPostAccounting.mockReturnValue(false);
+
+    const salary = {
+      type: "salary",
+      date: "2026-06-30",
+      note: "June salary",
+      staffId: "staff-1",
+      payPeriod: "2026-06",
+      amount: "1000.00",
+      expenseAccountId: "sal-exp",
+      paymentAccountId: "cash",
+    };
+    const res = await request("POST", "/api/accounting/specialized-entries", salary);
+
+    expect(res.statusCode).toBe(403);
+    expect(mockSpecializedEntry).not.toHaveBeenCalled();
   });
 
   it("rejects a query string on the GETs that take no input", async () => {

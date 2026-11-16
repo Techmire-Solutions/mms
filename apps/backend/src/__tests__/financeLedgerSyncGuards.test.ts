@@ -231,6 +231,26 @@ describe("finance ↔ ledger sync guards", () => {
 
       expect(repo.saveInvoice).toHaveBeenCalled();
     });
+
+    it.each(["paid", "cancelled"] as const)(
+      "rejects reopening a settled (%s) posted invoice",
+      async (settledStatus) => {
+        const repo = postedRepo();
+        vi.mocked(repo.findInvoiceById).mockResolvedValue({
+          ...storedInvoice,
+          status: settledStatus,
+        } as never);
+
+        for (const reopenTo of ["pending", "partial", "overdue"] as const) {
+          await expect(
+            runWithTenant("demo", () =>
+              useCasesFor(repo).updateInvoiceById("inv-1", { status: reopenTo } as never),
+            ),
+          ).rejects.toThrow(/reopen|reverse|credit note|cancel-invoice action/i);
+          expect(repo.saveInvoice).not.toHaveBeenCalled();
+        }
+      },
+    );
   });
 });
 

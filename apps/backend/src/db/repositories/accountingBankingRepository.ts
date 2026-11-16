@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { isUniqueViolation, uniqueViolationConstraint } from "../../lib/pgErrors.js";
 import type { BankReconciliationMatch, BankStatement } from "@mms/shared";
@@ -6,6 +6,8 @@ import {
   accountingBankReconciliations,
   accountingBankStatementLines,
   accountingBankStatements,
+  accountingEntries,
+  accountingJournalLines,
 } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { requireDbDateValue } from "../../lib/dbDate.js";
@@ -13,6 +15,7 @@ import {
   auditBankReconciliationMatched,
   auditBankStatementSaved,
 } from "./accountingEntityAudit.js";
+import { bankStatementContentHash } from "./accountingBankStatementIdentity.js";
 
 /** Bank statements and reconciliation matches (split from the ledger-ops repository). */
 
@@ -70,6 +73,30 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
   await withTenant(subdomain, async (tx) => {
     // Before-state for the audit row, read inside the same transaction.
     const previous = (await listBankStatements(tenant)).find((row) => row.id === record.id) ?? null;
+    if (previous) {
+      // Re-importing a statement whose lines are already matched would
+      // delete-and-reinsert those lines and orphan the match rows. Refuse unless
+      // the incoming content is byte-for-byte the same (an idempotent replay).
+      const lineIds = previous.lines.map((line) => line.id);
+      if (lineIds.length > 0) {
+        const [matched] = await tx
+          .select({ statementLineId: accountingBankReconciliations.statementLineId })
+          .from(accountingBankReconciliations)
+          .where(
+            and(
+              eq(accountingBankReconciliations.workspaceSubdomain, subdomain),
+              inArray(accountingBankReconciliations.statementLineId, lineIds),
+            ),
+          )
+          .limit(1);
+        if (matched && bankStatementContentHash(previous) !== bankStatementContentHash(record)) {
+          throw new ConflictError(
+            "This statement has reconciliation matches — unmatch its lines before re-importing",
+            "bank_statement_reconciled",
+          );
+        }
+      }
+    }
     await tx
       .insert(accountingBankStatements)
       .values({
@@ -80,6 +107,7 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
         periodEnd: requireDbDateValue(record.periodEnd, "periodEnd"),
         openingBalance: String(record.openingBalance ?? 0),
         closingBalance: String(record.closingBalance ?? 0),
+        currency: record.currency ?? null,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -90,6 +118,7 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
           periodEnd: requireDbDateValue(record.periodEnd, "periodEnd"),
           openingBalance: String(record.openingBalance ?? 0),
           closingBalance: String(record.closingBalance ?? 0),
+          currency: record.currency ?? null,
           updatedAt: new Date(),
         },
       });
@@ -115,6 +144,20 @@ export async function saveBankStatement(tenant: string, record: BankStatement): 
     }
     await auditBankStatementSaved(tx, subdomain, record, previous);
   });
+}
+
+/** Why a bank-reconciliation match is ineligible, or null when it may proceed. */
+export function bankReconciliationMatchError(input: {
+  statementLineExists: boolean;
+  statementAccountId: string;
+  entryStatus: string | null;
+  journalLineAccountId: string | null;
+}): string | null {
+  if (!input.statementLineExists) return "bank_line_not_found";
+  if (input.entryStatus !== "posted") return "entry_not_posted";
+  if (input.journalLineAccountId == null) return "journal_line_not_found";
+  if (input.journalLineAccountId !== input.statementAccountId) return "account_mismatch";
+  return null;
 }
 
 export async function matchBankReconciliation(
@@ -154,10 +197,79 @@ export async function matchBankReconciliation(
       );
     }
 
+    // Eligibility: the statement line must exist in this tenant and the journal
+    // line must be posted and sit on the statement's own bank account. Without
+    // this, a draft, a foreign-account line, or a bogus statement-line id could
+    // be matched.
+    const [statementLine] = await tx
+      .select({ statementId: accountingBankStatementLines.statementId })
+      .from(accountingBankStatementLines)
+      .where(
+        and(
+          eq(accountingBankStatementLines.workspaceSubdomain, subdomain),
+          eq(accountingBankStatementLines.id, match.statementLineId),
+        ),
+      )
+      .limit(1);
+    let statementAccountId = "";
+    if (statementLine) {
+      const [statement] = await tx
+        .select({ accountId: accountingBankStatements.accountId })
+        .from(accountingBankStatements)
+        .where(
+          and(
+            eq(accountingBankStatements.workspaceSubdomain, subdomain),
+            eq(accountingBankStatements.id, statementLine.statementId),
+          ),
+        )
+        .limit(1);
+      statementAccountId = statement?.accountId ?? "";
+    }
+    const [entry] = await tx
+      .select({ status: accountingEntries.status })
+      .from(accountingEntries)
+      .where(
+        and(
+          eq(accountingEntries.workspaceSubdomain, subdomain),
+          eq(accountingEntries.id, match.journalEntryId),
+        ),
+      )
+      .limit(1);
+    const [journalLine] = await tx
+      .select({ accountId: accountingJournalLines.accountId })
+      .from(accountingJournalLines)
+      .where(
+        and(
+          eq(accountingJournalLines.workspaceSubdomain, subdomain),
+          eq(accountingJournalLines.entryId, match.journalEntryId),
+          eq(accountingJournalLines.id, match.journalLineId),
+        ),
+      )
+      .limit(1);
+
+    const eligibilityError = bankReconciliationMatchError({
+      statementLineExists: Boolean(statementLine),
+      statementAccountId,
+      entryStatus: entry?.status ?? null,
+      journalLineAccountId: journalLine?.accountId ?? null,
+    });
+    if (eligibilityError) {
+      const message =
+        eligibilityError === "bank_line_not_found"
+          ? "The statement line does not exist"
+          : eligibilityError === "entry_not_posted"
+            ? "Only posted journal lines can be reconciled"
+            : eligibilityError === "account_mismatch"
+              ? "The journal line must belong to the statement's bank account"
+              : "The journal line does not exist";
+      throw new ConflictError(message, eligibilityError);
+    }
+
     try {
       await tx.insert(accountingBankReconciliations).values({
         workspaceSubdomain: subdomain,
         statementLineId: match.statementLineId,
+        statementId: statementLine?.statementId ?? null,
         journalEntryId: match.journalEntryId,
         journalLineId: match.journalLineId,
         matchedAt: new Date(),

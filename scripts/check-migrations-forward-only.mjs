@@ -11,6 +11,10 @@
  * always allowed, as is appending entries to Drizzle's meta/_journal.json (existing
  * entries stay frozen). Renames surface as a delete of the old path, so they fail too.
  *
+ * Snapshot metadata (`meta/*_snapshot.json`) is exempt: it is drizzle-kit's diff input,
+ * not applied DDL, so repairing a malformed serialization is a metadata repair, not a
+ * retcon of history that has run on a database.
+ *
  * Why not a hash manifest: 166 migrations would need a committed hash list that any
  * whitespace touch would false-fail. Comparing against the change base gives the same
  * protection from data git already stores.
@@ -36,6 +40,16 @@ const MIGRATION_DIRS = [
 ];
 
 const isMigration = (rel) => MIGRATION_DIRS.some((dir) => rel.startsWith(dir));
+
+/**
+ * Drizzle snapshot files (`meta/*_snapshot.json`) are diff input — drizzle-kit's
+ * serialization of the schema at each migration — not applied DDL. Repairing a
+ * malformed serialization is a metadata repair (a reviewed exception), not a
+ * retcon of history that has already run on a database, so snapshots are not held
+ * byte-identical. Applied migrations (`.sql` and the hand-written TS data
+ * migrations) remain immutable, and `meta/_journal.json` remains append-only.
+ */
+const isSnapshotMetadata = (rel) => rel.endsWith("_snapshot.json");
 
 /** Drizzle's journal must grow with every new migration; only its existing entries are frozen. */
 const JOURNAL = "apps/backend/src/db/migrations_drizzle/meta/_journal.json";
@@ -95,7 +109,7 @@ if (explicitBase !== null) {
 
 const violations = [];
 for (const rel of new Set(files)) {
-  if (!isMigration(rel)) continue;
+  if (!isMigration(rel) || isSnapshotMetadata(rel)) continue;
   const atBase = readAtBase(rel);
   // Not present at the base → a genuinely new migration. Always fine.
   if (atBase === null) continue;

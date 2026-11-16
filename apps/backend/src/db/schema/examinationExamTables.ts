@@ -202,7 +202,10 @@ export const examEligibilityOverrides = pgTable(
     revokedBy: text("revoked_by"),
   },
   (table) => [
-    primaryKey({ columns: [table.workspaceSubdomain, table.examId, table.studentId] }),
+    primaryKey({
+      name: "exam_eligibility_overrides_pk",
+      columns: [table.workspaceSubdomain, table.examId, table.studentId],
+    }),
     foreignKey({
       name: "exam_eligibility_overrides_exam_fk",
       columns: [table.workspaceSubdomain, table.examId],

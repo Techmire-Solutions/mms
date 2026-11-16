@@ -47,7 +47,10 @@ export const attendanceDaySubmissions = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
-    primaryKey({ columns: [table.workspaceSubdomain, table.classId, table.date] }),
+    primaryKey({
+      name: "attendance_day_submissions_pk",
+      columns: [table.workspaceSubdomain, table.classId, table.date],
+    }),
     foreignKey({
       name: "attendance_day_submissions_class_fk",
       columns: [table.workspaceSubdomain, table.classId],

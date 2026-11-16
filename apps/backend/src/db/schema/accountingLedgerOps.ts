@@ -139,6 +139,8 @@ export const accountingBankStatements = pgTable(
     periodEnd: date("period_end", { mode: "string" }).notNull(),
     openingBalance: numeric("opening_balance", { precision: 14, scale: 2 }).notNull().default("0"),
     closingBalance: numeric("closing_balance", { precision: 14, scale: 2 }).notNull().default("0"),
+    /** Statement currency (inherited from the bank account); NULL means the functional currency. */
+    currency: text("currency"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
@@ -148,6 +150,10 @@ export const accountingBankStatements = pgTable(
       columns: [table.workspaceSubdomain, table.accountId],
       foreignColumns: [accountingAccounts.workspaceSubdomain, accountingAccounts.id],
     }),
+    check(
+      "accounting_bank_statements_currency_iso",
+      sql`${table.currency} IS NULL OR ${table.currency} ~ '^[A-Z]{3}$'`,
+    ),
     index("accounting_bank_statements_workspace_account_idx").on(
       table.workspaceSubdomain,
       table.accountId,
@@ -188,6 +194,8 @@ export const accountingBankReconciliations = pgTable(
       .notNull()
       .references(() => workspaces.subdomain, { onDelete: "cascade" }),
     statementLineId: text("statement_line_id").notNull(),
+    /** Server-derived statement the line belongs to (NULL for legacy rows). */
+    statementId: text("statement_id"),
     journalEntryId: text("journal_entry_id").notNull(),
     journalLineId: text("journal_line_id").notNull(),
     matchedAt: timestamp("matched_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -199,6 +207,14 @@ export const accountingBankReconciliations = pgTable(
       table.journalEntryId,
       table.journalLineId,
     ),
+    foreignKey({
+      columns: [table.workspaceSubdomain, table.statementId, table.statementLineId],
+      foreignColumns: [
+        accountingBankStatementLines.workspaceSubdomain,
+        accountingBankStatementLines.statementId,
+        accountingBankStatementLines.id,
+      ],
+    }).onDelete("cascade"),
     foreignKey({
       columns: [table.workspaceSubdomain, table.journalEntryId],
       foreignColumns: [accountingEntries.workspaceSubdomain, accountingEntries.id],
