@@ -45,6 +45,23 @@ Dimensions checked throughout: platform auth/authorization, `.strict()` Zod DTOs
 
 Reviewed `platform-console-critical.spec.ts`, `platform-admin-management.spec.ts`, `platform-onboarding.spec.ts`. None assert on the changed 409/404/error-type behavior; all use super-user or happy paths, so no assertion updates were required. Playwright execution was not run (requires the full Postgres + dev-server stack).
 
+## Modern web best practices audit
+
+Audited `apps/frontend/src/platform` against `mms-core` Baseline (§19), `mms-ui-ux-design` §1, and `mms-performance` §38. **Compliant — no code changes required.**
+
+| Dimension | Result |
+|---|---|
+| Deprecated APIs / polyfills | none (`document.execCommand`, `XMLHttpRequest`, `navigator.userAgent`, `window.event`, `orientationchange`, `unload`, `core-js`, `regenerator` all absent) |
+| Motion scaling | `useReducedMotion()` honored on every animated surface |
+| Image priority (LCP) | the only `<img>` (sidebar logo) uses `fetchPriority="high"` + `decoding="async"` + `loading="eager"` |
+| Scroll/motion listeners | no raw `scroll`/`resize`/`touchmove`/`wheel` listeners |
+| Arbitrary CSS | no `z-[…]`/font-size bracket classes |
+| `dangerouslySetInnerHTML` | only mermaid SVG behind `securityLevel: "strict"` |
+
+**Out-of-scope observation:** platform dialogs/popovers/dropdowns/tooltips consume `@shared/ui` **Radix** primitives, not the native declarative **popover/`<dialog>` + `@starting-style` + light-dismiss** pattern `mms-ui-ux-design` §1 targets. This is correct at the platform layer (its architecture test bans native `<dialog>`/`<button>`/…, so it must use shared primitives); the shared `Toast` already exposes the declarative Top-Layer API (`popover="manual"`, `popovertargetaction="hide"`). Migrating the remaining shared overlays is a `packages/ui` cross-cutting task, not a platform-console defect.
+
+> The `modern-web-guidance` CLI could not be invoked during this audit — pnpm `dlx` cache is outside the workspace sandbox (EPERM on `~/Library/Caches/pnpm/dlx`) — so the audit was performed against the rule criteria directly.
+
 ## Verification matrix
 
 | Gate | Result |
