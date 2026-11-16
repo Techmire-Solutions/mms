@@ -59,7 +59,7 @@ export function renderContactNameCell({
         </Button>
         <ContactIdentityMeta gender={contact.gender} isSyed={contact.isSyed} className="mt-0.5" />
         {showArchived && contact.deletionReason && (
-          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 break-words">
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 break-words text-pretty">
             {t("contacts.deletionReasonLabel")}: {contact.deletionReason}
           </p>
         )}

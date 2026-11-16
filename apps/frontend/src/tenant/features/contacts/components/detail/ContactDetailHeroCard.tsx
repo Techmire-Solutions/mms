@@ -39,7 +39,7 @@ export function ContactDetailHeroCard({ contact }: ContactDetailHeroCardProps): 
               {t("contacts.detail.aiIntelligence")}
             </span>
           </div>
-          <Card className="p-4 rounded-2xl bg-primary/5 border-primary/20 shadow-none text-sm text-foreground leading-relaxed italic relative break-words">
+          <Card className="p-4 rounded-2xl bg-primary/5 border border-primary/20 shadow-none text-sm text-foreground leading-relaxed italic relative break-words text-pretty">
             {aiSummary}
           </Card>
         </div>
