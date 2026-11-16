@@ -23,7 +23,26 @@ function resolveDatabaseUrl(): string {
   } catch {
     // Fall through to error
   }
-  throw new Error(`DATABASE_URL could not be resolved from ${path.join(backendDir, ".env")}`);
+  throw new Error(
+    `DATABASE_URL could not be resolved from ${path.join(backendDir, ".env")}; ` +
+      "set it to the database the backend is using (these specs need an isolated disposable database)",
+  );
+}
+
+/**
+ * Sanitized `host:port/db` for the database the seeder will write to. The seeder
+ * falls back to `apps/backend/.env` when `DATABASE_URL` is unset, so a backend
+ * started against another database (e.g. a disposable one) silently diverges and
+ * every login fails with "Invalid platform credentials". Printing the target makes
+ * that mismatch obvious in the Playwright output.
+ */
+function databaseTargetLabel(databaseUrl: string): string {
+  try {
+    const parsed = new URL(databaseUrl);
+    return `${parsed.hostname}:${parsed.port || "5432"}${parsed.pathname}`;
+  } catch {
+    return "<unparsable DATABASE_URL>";
+  }
 }
 
 function runGuardedScript(script: string, extraEnv: Record<string, string> = {}): string {
@@ -32,6 +51,10 @@ function runGuardedScript(script: string, extraEnv: Record<string, string> = {})
   const tmpDir = mkdtempSync(path.join(tmpBase, "admin-seeder-"));
   const scriptPath = path.join(tmpDir, "seed.cjs");
   writeFileSync(scriptPath, script);
+  const databaseUrl = resolveDatabaseUrl();
+  console.log(
+    `[e2e] seeding into ${databaseTargetLabel(databaseUrl)} — export DATABASE_URL so it matches the backend's database`,
+  );
   try {
     return execFileSync(process.execPath, [scriptPath], {
       cwd: backendDir,
@@ -39,7 +62,7 @@ function runGuardedScript(script: string, extraEnv: Record<string, string> = {})
       timeout: 60_000,
       env: {
         ...process.env,
-        DATABASE_URL: resolveDatabaseUrl(),
+        DATABASE_URL: databaseUrl,
         NODE_PATH: path.join(backendDir, "node_modules"),
         ...extraEnv,
       },
