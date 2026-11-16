@@ -87,7 +87,7 @@ export function NotificationsPopover({
           <Bell className="h-4.5 w-4.5 text-muted-foreground" aria-hidden="true" />
           {unreadCount > 0 && (
             <span
-              className="absolute top-1.5 end-1.5 h-2 w-2 rounded-xs bg-destructive animate-pulse"
+              className="absolute top-2.5 end-2.5 h-2 w-2 rounded-full bg-destructive animate-pulse ring-2 ring-card"
               aria-hidden="true"
             />
           )}
