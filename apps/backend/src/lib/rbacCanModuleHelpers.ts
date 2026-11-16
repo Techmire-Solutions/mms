@@ -89,9 +89,20 @@ export function canManageFinance(user: User): boolean {
 }
 
 /**
- * Privileged accounting authority: period close/reopen, fiscal-year close and
- * voucher-numbering configuration. Ordinary `accounting.write` posts vouchers and
- * runs revaluations.
+ * Controller authority over period-end and immutable controls — the narrow
+ * `accounting.manage` tier:
+ *
+ * - fiscal-year close; posting-period close/reopen;
+ * - FX year-end revaluation and IAS 29 restatement;
+ * - opening-balance posting; reversal of an already-posted voucher;
+ * - voucher-numbering configuration.
+ *
+ * Routine ledger posting — journal drafts and the whole hedge lifecycle
+ * (valuation, reclassification, settlement, discontinuation) — is
+ * `accounting.write`; draft → posted itself is the separate `accounting.post`
+ * tier ({@link canPostAccounting}). Do not widen this helper for a posting route:
+ * the split is pinned by `scripts/ci/accounting-route-security.json` and the
+ * controller-authority test in `accountingRouteSecurityMatrix.test.ts`.
  */
 export function canManageAccounting(user: User): boolean {
   if (!user || !user.role) return false;

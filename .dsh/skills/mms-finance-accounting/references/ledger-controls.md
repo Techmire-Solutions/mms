@@ -12,6 +12,19 @@ Advisory implementation/review guidance; existing MMS norms remain in the owning
 
 ## Posting state and identity
 
+The three MMS posting tiers are deliberate — do not flatten them and do not widen `manage` to cover a
+posting route:
+
+- **`accounting.write`** — routine ledger posting: journal drafts and the whole hedge lifecycle
+  (valuation, reclassification, settlement, discontinuation).
+- **`accounting.post`** — draft → posted; a Senior Accountant makes the voucher immutable.
+- **`accounting.manage`** — controller authority over period-end and immutable controls: fiscal-year
+  close, posting-period close/reopen, FX year-end revaluation, IAS 29 restatement, opening-balance
+  posting, reversal of a posted voucher, and voucher-numbering configuration.
+
+The split is pinned by `scripts/ci/accounting-route-security.json` and the controller-authority
+invariant in `apps/backend/src/__tests__/accountingRouteSecurityMatrix.test.ts`.
+
 Review the draft → posted transition separately from create/edit. Drafts can be incomplete under the current contract; posted entries need valid single-sided lines, nonzero balanced totals, active tenant-owned accounts, and an eligible accounting date. Updating an account's type after use also changes report classification: require an explicit historical policy or prohibit that change.
 
 Ordinary writes should not set source keys, posted audit identity, deleted/restored flags, period-close metadata, or approval state. Derive actors from authenticated context, including impersonation and worker origin. Do not mistake setup access for authority to post, pay, reverse, or close.
