@@ -14,6 +14,27 @@ export function emptyJournalLine(): DraftLine {
   };
 }
 
+/**
+ * Normalizes a draft form into a stable signature ignoring minted client IDs.
+ * Used for dirty-state comparison so newly opened forms don't evaluate as dirty.
+ */
+export function serializeJournalDraft(form: DraftForm): string {
+  return JSON.stringify({
+    ref: String(form.ref ?? "").trim(),
+    date: String(form.date ?? ""),
+    description: String(form.description ?? "").trim(),
+    fiscal_year_id: String(form.fiscal_year_id ?? ""),
+    tags: form.tags ?? [],
+    attachments: form.attachments ?? [],
+    lines: (form.lines ?? []).map((l) => ({
+      account_id: String(l.account_id ?? ""),
+      debit: String(l.debit ?? "").trim(),
+      credit: String(l.credit ?? "").trim(),
+      description: String(l.description ?? "").trim(),
+    })),
+  });
+}
+
 export interface JournalEntryDraftInput {
   initial?: JournalEntry | null;
   functionalCurrency: string;

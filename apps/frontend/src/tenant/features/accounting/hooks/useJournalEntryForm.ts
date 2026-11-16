@@ -7,10 +7,8 @@ import type { Account, JournalEntry, FiscalYear } from "@/lib/data/accountingDat
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import {
-  isJournalEntryBalanced,
   isValidExchangeRate,
   journalEntryWriteSchema,
-  moneyToCents,
   resolveDefaultFiscalYear,
   todayISO,
 } from "@mms/shared";
@@ -20,13 +18,17 @@ import { notify } from "@/lib/notify";
 import type { DraftForm, DraftLine } from "../lib/journalEntryFormTypes";
 import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import {
-  parseJournalLineAmount,
   calculateJournalEntryCompleteness,
+  computeJournalEntryTotals,
+  isJournalRefUnique,
   validateJournalEntryForm,
   validateJournalPostingGuards,
-  isJournalRefUnique,
 } from "../lib/journalEntryFormValidation";
-import { buildJournalEntryDraft, emptyJournalLine } from "../lib/journalEntryDraft";
+import {
+  buildJournalEntryDraft,
+  emptyJournalLine,
+  serializeJournalDraft,
+} from "../lib/journalEntryDraft";
 import { buildJournalEntrySaveCandidate } from "../lib/journalEntrySaveCandidate";
 import { accountOptions } from "../lib/accountOptions";
 import { useJournalEntryCurrency } from "./useJournalEntryCurrency";
@@ -41,7 +43,6 @@ interface UseJournalEntryFormOptions {
   onSave: JournalEntrySave;
   initial?: JournalEntry | null;
   fiscalYears: FiscalYear[];
-  /** Setup prefs: decimal separator, and whether narration is required. */
   decimalSeparator?: "period" | "comma";
   requireNarration?: boolean;
 }
@@ -62,14 +63,17 @@ export function useJournalEntryForm({
   const [entryDate, setEntryDate] = useState(initial?.date ?? todayISO());
   const fx = useJournalEntryCurrency(initial, entryDate);
   const functionalCurrency = fx.functionalCurrency;
-  const createDraftForm = (): DraftForm =>
-    buildJournalEntryDraft({
-      initial,
-      functionalCurrency,
-      activeFiscalYear,
-      activeFiscalYearRecord,
-      userName: user?.name,
-    });
+  const createDraftForm = useCallback(
+    (): DraftForm =>
+      buildJournalEntryDraft({
+        initial,
+        functionalCurrency,
+        activeFiscalYear,
+        activeFiscalYearRecord,
+        userName: user?.name,
+      }),
+    [initial, functionalCurrency, activeFiscalYear, activeFiscalYearRecord, user?.name],
+  );
   const [form, setForm] = useState<DraftForm>(createDraftForm);
   const postingPeriodsQuery = usePostingPeriods(form.fiscal_year_id || undefined);
   const voucherNumberingQuery = useVoucherNumbering(form.date);
@@ -82,9 +86,19 @@ export function useJournalEntryForm({
     setForm(createDraftForm());
     setErrors({});
   }
-  // Dirty tracking for the shell's discard confirm. The freshly-built draft is the
-  // baseline; `initialKey` (record identity) resets it so refetches never look dirty.
-  const { isDirty } = useDirtySnapshot(form, initialKey, createDraftForm());
+  // Dirty tracking for the shell's discard confirm. Ignores auto-minted IDs so freshly
+  // opened blank forms evaluate clean; `initialKey` (record identity) resets on record changes.
+  const draftSignature = serializeJournalDraft(form);
+  const baselineSignature = useMemo(
+    () => serializeJournalDraft(createDraftForm()),
+    [createDraftForm],
+  );
+  const { isDirty: snapshotDirty } = useDirtySnapshot(
+    draftSignature,
+    initialKey,
+    baselineSignature,
+  );
+  const isDirty = formResetKey === initialKey && snapshotDirty;
   const [prevFiscalYearId, setPrevFiscalYearId] = useState(activeFiscalYear);
   if (prevFiscalYearId !== activeFiscalYear) {
     setPrevFiscalYearId(activeFiscalYear);
@@ -103,33 +117,16 @@ export function useJournalEntryForm({
   const [prevUserName, setPrevUserName] = useState(user?.name);
   if (prevUserName !== user?.name) {
     setPrevUserName(user?.name);
-    if (user?.name) {
+    if (user?.name)
       setForm((prev) => (prev.created_by ? prev : { ...prev, created_by: user.name }));
-    }
   }
   const [prevFormDate, setPrevFormDate] = useState(entryDate);
   if (prevFormDate !== form.date) {
     setPrevFormDate(form.date);
     setEntryDate(form.date);
   }
-  const totalDebitCents = form.lines.reduce(
-    (cents, journalLine) =>
-      cents + moneyToCents(parseJournalLineAmount(journalLine.debit, decimalSeparator)),
-    0,
-  );
-  const totalCreditCents = form.lines.reduce(
-    (cents, journalLine) =>
-      cents + moneyToCents(parseJournalLineAmount(journalLine.credit, decimalSeparator)),
-    0,
-  );
-  const totalDebit = totalDebitCents / 100;
-  const totalCredit = totalCreditCents / 100;
-  const isBalanced = isJournalEntryBalanced(
-    form.lines.map((journalLine) => ({
-      debit: parseJournalLineAmount(journalLine.debit, decimalSeparator),
-      credit: parseJournalLineAmount(journalLine.credit, decimalSeparator),
-    })),
-  );
+  const { totalDebitCents, totalCreditCents, totalDebit, totalCredit, isBalanced } =
+    computeJournalEntryTotals(form.lines, decimalSeparator);
   const completeness = calculateJournalEntryCompleteness(form, isBalanced);
   const updateLine = useCallback(
     (lineIndex: number, field: keyof DraftLine, fieldValue: string | number) => {
@@ -274,14 +271,14 @@ export function useJournalEntryForm({
     form,
     setForm,
     errors,
+    submitting,
+    isDirty,
     postingPeriods: postingPeriodsQuery.data ?? [],
     voucherAutoGenerate: voucherNumberingQuery.data?.autoGenerate,
     postingPeriodsLoading: postingPeriodsQuery.isPending,
     postingPeriodsError: postingPeriodsQuery.isError,
     voucherNumberingLoading: voucherNumberingQuery.isPending,
     voucherNumberingError: voucherNumberingQuery.isError,
-    submitting,
-    isDirty,
     totalDebit,
     totalCredit,
     isBalanced,
