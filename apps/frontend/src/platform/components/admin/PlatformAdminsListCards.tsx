@@ -3,6 +3,7 @@ import type { PlatformUserProfile } from "@mms/shared";
 import { formatDate } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { BiDiText } from "@/components/app/BiDiText";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
@@ -71,7 +72,13 @@ export function PlatformAdminsListCards({
                     onClick={(e) => e.stopPropagation()}
                   />
                 )}
-                <p className="min-w-0 truncate text-sm font-bold text-foreground">{admin.name}</p>
+                <BiDiText
+                  as="p"
+                  className="min-w-0 truncate text-sm font-bold text-foreground"
+                  titleFromContent
+                >
+                  {admin.name}
+                </BiDiText>
               </div>
               <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
                 <PlatformAdminStatusBadges admin={admin} />

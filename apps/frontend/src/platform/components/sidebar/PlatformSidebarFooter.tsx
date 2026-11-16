@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, LogOut, ShieldAlert } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button, SectionLabel, UserAvatar } from "@shared/ui";
 import { cn } from "@/lib/utils";
+import { BiDiText } from "@/components/app/BiDiText";
 import { ROUTES } from "@/lib/config/routes";
 import type { PlatformUserProfile } from "@mms/shared";
 
@@ -42,9 +43,12 @@ export function PlatformSidebarFooter({
             fallbackClassName="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold"
           />
           <div className="flex flex-col text-start min-w-0 flex-1">
-            <span className="text-xs font-bold text-sidebar-foreground truncate group-hover:text-sidebar-primary transition-colors">
+            <BiDiText
+              className="text-xs font-bold text-sidebar-foreground truncate group-hover:text-sidebar-primary transition-colors"
+              titleFromContent
+            >
               {platformUser?.name}
-            </span>
+            </BiDiText>
             <SectionLabel
               tracking="wider"
               className="flex items-center gap-1 mt-0.5 text-sidebar-muted-foreground truncate"

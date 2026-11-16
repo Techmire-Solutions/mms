@@ -2,6 +2,7 @@ import { PLATFORM_PERMISSION_CONFIG } from "@/platform/lib/platformPermissionCon
 import React from "react";
 import { Check, X, Shield } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { BiDiText } from "@/components/app/BiDiText";
 import { usePlatformPermissionMatrix } from "@/platform/hooks/usePlatformPermissionMatrix";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import type { PlatformUserProfile } from "@mms/shared";
@@ -61,7 +62,9 @@ export function PlatformPermissionMatrix(): React.JSX.Element {
       label: t("platform.descriptor.user.name"),
       render: (admin) => (
         <div>
-          <div className="font-semibold">{admin.name}</div>
+          <BiDiText as="div" className="font-semibold" titleFromContent>
+            {admin.name}
+          </BiDiText>
           <div className="text-muted-foreground">{admin.email}</div>
         </div>
       ),

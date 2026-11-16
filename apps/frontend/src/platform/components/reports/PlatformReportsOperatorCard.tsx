@@ -3,6 +3,7 @@ import { ShieldCheck, ShieldAlert, CheckCircle2, Award } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Badge, WidgetCard, WidgetCardHeader, WORK_SURFACE_INNER } from "@shared/ui";
 import { cn } from "@/lib/utils";
+import { BiDiText } from "@/components/app/BiDiText";
 import type { PlatformUser } from "@mms/shared";
 
 interface PlatformReportsOperatorCardProps {
@@ -40,9 +41,13 @@ export function PlatformReportsOperatorCard({
             <ShieldCheck className="w-6 h-6 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="text-base font-black tracking-tight text-foreground truncate">
+            <BiDiText
+              as="h4"
+              className="text-base font-black tracking-tight text-foreground truncate"
+              titleFromContent
+            >
               {platformUser?.name}
-            </h4>
+            </BiDiText>
             <p className="text-xs font-mono text-muted-foreground truncate">
               {platformUser?.email}
             </p>

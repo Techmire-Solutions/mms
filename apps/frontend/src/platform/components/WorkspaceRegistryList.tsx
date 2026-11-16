@@ -6,6 +6,7 @@ import { ROUTES } from "@/lib/config/routes";
 import { getAppDomain, tenantUrl } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { BiDiText } from "@/components/app/BiDiText";
 import { useWorkspaceRegistry } from "@/platform/hooks/useWorkspaceRegistry";
 import { EmptyState, ErrorState, CardSkeleton, SectionLabel, WorkspaceLogo } from "@shared/ui";
 import { containerVariants, cardVariants } from "@/platform/lib/animations";
@@ -130,16 +131,24 @@ const RegistryWorkspaceRow = function RegistryWorkspaceRow({
             />
           </div>
           <div className="min-w-0 flex-1 space-y-0.5">
-            <p className="text-sm font-bold text-foreground transition-colors group-hover:text-primary">
+            <BiDiText
+              as="p"
+              className="text-sm font-bold text-foreground transition-colors group-hover:text-primary"
+              titleFromContent
+            >
               {workspace.madrasaName}
-            </p>
+            </BiDiText>
             <p className="break-all font-mono text-xs text-muted-foreground">
               {workspace.subdomain}.{appDomain}
             </p>
             {workspace.tagline ? (
-              <p className="truncate text-xs font-medium text-muted-foreground">
+              <BiDiText
+                as="p"
+                className="truncate text-xs font-medium text-muted-foreground"
+                titleFromContent
+              >
                 {workspace.tagline}
-              </p>
+              </BiDiText>
             ) : null}
           </div>
         </div>
