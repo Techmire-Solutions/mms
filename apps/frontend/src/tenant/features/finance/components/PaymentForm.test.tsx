@@ -79,27 +79,36 @@ vi.mock("@/components/app/DatePicker", () => ({
   ),
 }));
 
+const formModalState = vi.hoisted(() => ({
+  saveDisabled: undefined as boolean | undefined,
+}));
+
 vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({
     title,
     error,
     onSave,
+    saveDisabled,
     children,
   }: {
     title: React.ReactNode;
     error?: string;
     onSave?: () => void;
+    saveDisabled?: boolean;
     children: React.ReactNode;
-  }) => (
-    <div>
-      <h2>{title}</h2>
-      {error ? <div role="alert">{error}</div> : null}
-      {children}
-      <button data-testid="save-payment-btn" type="button" onClick={onSave}>
-        Save Payment
-      </button>
-    </div>
-  ),
+  }) => {
+    formModalState.saveDisabled = saveDisabled;
+    return (
+      <div>
+        <h2>{title}</h2>
+        {error ? <div role="alert">{error}</div> : null}
+        {children}
+        <button data-testid="save-payment-btn" type="button" onClick={onSave}>
+          Save Payment
+        </button>
+      </div>
+    );
+  },
 }));
 
 const mockInvoice: Invoice = {
@@ -155,7 +164,37 @@ describe("PaymentForm Component", () => {
     const amountInput = container.querySelector("#payment-amount-input") as HTMLInputElement;
     expect(amountInput).not.toBeNull();
     expect(amountInput.getAttribute("inputmode")).toBe("decimal");
-    expect(amountInput.value).toBe("300");
+    // Money is prefilled with exactly two decimals (integer-cent difference, not float text).
+    expect(amountInput.value).toBe("300.00");
+  });
+
+  it("prefills a float-unsafe invoice balance as exact two-decimal cents", async () => {
+    // 1200.30 - 400.10 is 800.1999999999999 in float arithmetic; the prefill must be "800.20"
+    // or the two-decimal text contract rejects it and Save stays disabled forever.
+    const onSave = vi.fn();
+    await act(async () => {
+      root.render(
+        <PaymentForm
+          open={true}
+          invoice={{ ...mockInvoice, finalAmt: 1200.3, paidAmt: 400.1 }}
+          onClose={vi.fn()}
+          onSave={onSave}
+        />,
+      );
+    });
+
+    const amountInput = container.querySelector("#payment-amount-input") as HTMLInputElement;
+    expect(amountInput.value).toBe("800.20");
+    // The float-text draft used to fail the two-decimal contract and keep Save disabled.
+    expect(formModalState.saveDisabled).toBe(false);
+
+    const saveBtn = container.querySelector(
+      "[data-testid='save-payment-btn']",
+    ) as HTMLButtonElement;
+    await act(async () => {
+      saveBtn.click();
+    });
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ amount: 800.2 }));
   });
 
   it("shows partial payment warning when amount is less than total balance", async () => {

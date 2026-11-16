@@ -31,7 +31,16 @@ vi.mock("@/tenant/hooks/collections/sessions", () => ({
     {
       id: "ses-1",
       name: "Session 2025",
-      classes: [{ id: "cls-1", name: "Grade 1" }],
+      classes: [
+        {
+          id: "cls-1",
+          name: "Grade 1",
+          sections: [
+            { id: "sec-1", name: "A", enrolled: 0, capacity: 30 },
+            { id: "sec-2", name: "B", enrolled: 0, capacity: 30 },
+          ],
+        },
+      ],
     },
   ],
 }));
@@ -42,6 +51,18 @@ vi.mock("@/tenant/hooks/collections/enrollments", () => ({
       id: "enr-1",
       studentId: "std-1",
       classId: "cls-1",
+      sectionId: "sec-1",
+      sessionId: "ses-1",
+      status: "active",
+      enrollmentDate: "2025-01-01",
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T00:00:00Z",
+    },
+    {
+      id: "enr-2",
+      studentId: "std-2",
+      classId: "cls-1",
+      sectionId: "sec-2",
       sessionId: "ses-1",
       status: "active",
       enrollmentDate: "2025-01-01",
@@ -59,8 +80,39 @@ vi.mock("@/tenant/hooks/collections/students", () => ({
         name: "Ali Raza",
         grNumber: "GR-100",
       },
+      {
+        id: "std-2",
+        name: "Sara Khan",
+        grNumber: "GR-101",
+      },
     ],
   }),
+}));
+
+vi.mock("@/components/common/SectionFilterField", () => ({
+  SectionFilterField: ({
+    sections,
+    value,
+    onChange,
+  }: {
+    sections: Array<{ id: string; name: string }>;
+    value: string;
+    onChange: (value: string) => void;
+  }) => (
+    <select
+      data-testid="section-filter"
+      aria-label="section"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+    >
+      <option value="">all</option>
+      {sections.map((section) => (
+        <option key={section.id} value={section.id}>
+          {section.name}
+        </option>
+      ))}
+    </select>
+  ),
 }));
 
 vi.mock("@/components/app/UserAvatar", () => ({
@@ -205,5 +257,119 @@ describe("EnterMarks Component", () => {
     const input = container.querySelector("input[name='marks_std-1']") as HTMLInputElement | null;
     expect(input?.disabled).toBe(true);
     expect(findSaveButton(container)?.disabled).toBe(true);
+  });
+
+  it("keeps marks and the section filter when the same exam arrives as a new object", async () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    const onSaveResults = vi.fn().mockResolvedValue(undefined);
+
+    await act(async () => {
+      root.render(
+        <EnterMarks exams={[mockExam]} results={mockResults} onSaveResults={onSaveResults} />,
+      );
+    });
+
+    const sectionFilter = container.querySelector<HTMLSelectElement>(
+      '[data-testid="section-filter"]',
+    );
+    await act(async () => {
+      if (sectionFilter) {
+        sectionFilter.value = "sec-1";
+        sectionFilter.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+
+    const input = container.querySelector("input[name='marks_std-1']") as HTMLInputElement;
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      setter?.call(input, "90");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    // A background refetch hands over a fresh exam object with the SAME id — identity is
+    // the id, not the object reference, so the draft must survive.
+    await act(async () => {
+      root.render(
+        <EnterMarks
+          exams={[{ ...mockExam }]}
+          results={mockResults}
+          onSaveResults={onSaveResults}
+        />,
+      );
+    });
+
+    expect((container.querySelector("input[name='marks_std-1']") as HTMLInputElement).value).toBe(
+      "90",
+    );
+    expect(
+      container.querySelector<HTMLSelectElement>('[data-testid="section-filter"]')?.value,
+    ).toBe("sec-1");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("re-seeds marks and clears the section filter for a different exam id", async () => {
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    const onSaveResults = vi.fn().mockResolvedValue(undefined);
+
+    await act(async () => {
+      root.render(
+        <EnterMarks exams={[mockExam]} results={mockResults} onSaveResults={onSaveResults} />,
+      );
+    });
+
+    const sectionFilter = container.querySelector<HTMLSelectElement>(
+      '[data-testid="section-filter"]',
+    );
+    await act(async () => {
+      if (sectionFilter) {
+        sectionFilter.value = "sec-1";
+        sectionFilter.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+    const input = container.querySelector("input[name='marks_std-1']") as HTMLInputElement;
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      setter?.call(input, "90");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    const otherExam: Exam = { ...mockExam, id: "ex-2", name: "Second Test" };
+    const otherResults: ExamResult[] = [{ ...mockResults[0]!, examId: "ex-2", marksObtained: 70 }];
+    const confirmMock = vi.fn(() => true);
+    (window as unknown as { confirm: typeof confirmMock }).confirm = confirmMock;
+    await act(async () => {
+      root.render(
+        <EnterMarks
+          exams={[mockExam, otherExam]}
+          results={[...mockResults, ...otherResults]}
+          onSaveResults={onSaveResults}
+        />,
+      );
+    });
+    const otherExamButton = [...container.querySelectorAll("button")].find(
+      (button) => button.textContent?.trim() === "Second Test",
+    );
+    await act(async () => {
+      otherExamButton?.click();
+    });
+    expect(confirmMock).toHaveBeenCalledTimes(1);
+
+    expect((container.querySelector("input[name='marks_std-1']") as HTMLInputElement).value).toBe(
+      "70",
+    );
+    expect(
+      container.querySelector<HTMLSelectElement>('[data-testid="section-filter"]')?.value,
+    ).toBe("");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 });

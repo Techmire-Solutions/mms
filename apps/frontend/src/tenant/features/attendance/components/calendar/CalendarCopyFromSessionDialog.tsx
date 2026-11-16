@@ -10,6 +10,7 @@ import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
@@ -22,6 +23,9 @@ export interface CalendarCopyFromSessionDialogProps {
   /** Resolves true when every event was created (dialog closes), false to keep it open. */
   onCopy: (bodies: AcademicCalendarEventWrite[]) => Promise<boolean>;
 }
+
+/** The state a reopen (or a successful copy) resets to — the dirty baseline. */
+const EMPTY_SELECTION = { sourceId: "", targetId: "" };
 
 /** Shifts a session-scoped event onto the target session, preserving its length. */
 function shiftEvent(
@@ -74,6 +78,13 @@ export function CalendarCopyFromSessionDialog({
     () => sessions.filter((session) => session.startDate && session.endDate),
     [sessions],
   );
+  // Guard the close: picking a source/target pair is unsaved work, so Cancel/Escape asks first.
+  const { isDirty } = useDirtySnapshot(
+    useMemo(() => ({ sourceId, targetId }), [sourceId, targetId]),
+    String(open),
+    EMPTY_SELECTION,
+  );
+
   const source = datedSessions.find((session) => session.id === sourceId) ?? null;
   const target = datedSessions.find((session) => session.id === targetId) ?? null;
 
@@ -132,6 +143,9 @@ export function CalendarCopyFromSessionDialog({
       saveLabel={t("attendance.calendar.copyAction")}
       saving={isPending || sourceEvents.isFetching}
       saveDisabled={isPending || !canCopy}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       error={copyError ?? undefined}
       onSave={() => void handleCopy()}
       formId="calendar-copy-form"

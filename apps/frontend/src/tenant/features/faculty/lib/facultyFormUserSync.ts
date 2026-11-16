@@ -117,13 +117,19 @@ export interface ConfirmPendingFacultySaveInput {
   linkedUser?: { id: string; role?: string } | null;
   onUserInvalidate?: () => void;
   setErrors?: (errors: Record<string, string>) => void;
+  /**
+   * Called with the original error when the record write fails, so the caller can
+   * map field errors into its own form state. The pending draft and the confirm
+   * dialog are kept open on that path so the user can retry.
+   */
+  onError?: (error: unknown) => void;
 }
 
 /** Commit the stashed draft after the user confirms "save anyway". */
 export async function confirmPendingFacultySave(
   input: ConfirmPendingFacultySaveInput,
-): Promise<void> {
-  if (!input.pendingSaveData) return;
+): Promise<boolean> {
+  if (!input.pendingSaveData) return false;
   input.setSaving(true);
   try {
     // Same ordering as the main flow: record first, account second.
@@ -147,16 +153,18 @@ export async function confirmPendingFacultySave(
       notify.warning(input.t("faculty.toast.savedAccountFailed"));
       input.setPendingSaveData(null);
       input.setDuplicateConfirmOpen(false);
-      input.setSaving(false);
-      return;
+      return false;
     }
 
     input.setPendingSaveData(null);
     input.setDuplicateConfirmOpen(false);
     input.onClose();
+    return true;
   } catch (err: unknown) {
-    input.setDuplicateConfirmOpen(false);
+    // Keep the pending draft + dialog open: the retry must not lose the draft.
     notifyFacultySaveFailed(input.t, err, "faculty.form_save_confirm");
+    input.onError?.(err);
+    return false;
   } finally {
     input.setSaving(false);
   }

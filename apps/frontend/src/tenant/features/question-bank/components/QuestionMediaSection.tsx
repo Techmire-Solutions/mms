@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
-import { uploadAttachmentFile } from "@/lib/attachmentUpload";
+import { deleteAttachmentFile, uploadAttachmentFile } from "@/lib/attachmentUpload";
 import { notify } from "@/lib/notify";
 import { useQuestionBankMutations } from "@/tenant/features/question-bank/hooks/useQuestionBankMutations";
 
@@ -38,8 +38,11 @@ export function QuestionMediaSection({
 
   const upload = async (file: File): Promise<void> => {
     setBusy(true);
+    // Keep the uploaded URL so a failed attach can unlink the file instead of leaking an orphan.
+    let uploadedUrl: string | null = null;
     try {
       const uploaded = await uploadAttachmentFile(file, "question_media");
+      uploadedUrl = uploaded.url;
       const isOption = target.startsWith("option:");
       await addQuestionAttachment.mutateAsync(question.id, {
         kind: isOption ? "option" : "stem",
@@ -50,6 +53,10 @@ export function QuestionMediaSection({
         size: uploaded.size,
       });
     } catch (error) {
+      if (uploadedUrl) {
+        // Only the attach failed: no row references the file, so unlink it (best effort).
+        await deleteAttachmentFile(uploadedUrl).catch(() => undefined);
+      }
       notify.error(t("questionBank.mediaUploadFailed"), {
         description: error instanceof Error ? error.message : String(error),
       });

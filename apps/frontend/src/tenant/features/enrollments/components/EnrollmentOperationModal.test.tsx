@@ -173,4 +173,27 @@ describe("EnrollmentOperationModal", () => {
     });
     expect(handlers.onClose).toHaveBeenCalledTimes(1);
   });
+
+  it("given two synchronous submits, should call onWithdraw once", async () => {
+    // Arrange
+    let release: (value: boolean) => void = () => undefined;
+    const handlers = makeHandlers();
+    handlers.onWithdraw = vi.fn<Handlers["onWithdraw"]>(
+      () => new Promise<boolean>((resolve) => (release = resolve)),
+    );
+    render("withdraw", handlers);
+    const save = container.querySelector("[role='dialog'] > button") as HTMLButtonElement;
+    typeReason("Family moved away");
+
+    // Act: both clicks land before the first save settles (double-click / Enter+click).
+    await act(async () => {
+      save.click();
+      save.click();
+      release(true);
+    });
+
+    // Assert
+    expect(handlers.onWithdraw).toHaveBeenCalledTimes(1);
+    expect(handlers.onClose).toHaveBeenCalledTimes(1);
+  });
 });

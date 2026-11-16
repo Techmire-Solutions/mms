@@ -42,16 +42,6 @@ export const ExaminationsSettings = function ExaminationsSettings({
         className={SETUP_SECTION_CARD_CLASS}
       >
         <ExaminationsPreferencesSection settingsDraft={settingsDraft} upd={upd} errors={errors} />
-        <ModuleSetupSaveFooter
-          dirty={isPrefsDirty}
-          saving={saving}
-          saved={saved}
-          saveLabel={saving ? t("global.saving") : t("common.save")}
-          savedLabel={t("settings.savedBadge")}
-          onSave={handleSave}
-          disableUnsavedGuard
-          footerClassName="mt-4 pt-3"
-        />
       </SectionCard>
 
       <ModuleSetupSaveFooter

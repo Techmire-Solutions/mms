@@ -6,13 +6,15 @@ import { FormModal } from "@/components/app/FormModal";
 import { useHasanatConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { type Denomination, type Distribution, type StockBatch } from "@/lib/data/hasanatData";
-import { generateClientEntityId, hasanatDistributionCreateSchema, todayISO } from "@mms/shared";
+import { generateClientEntityId, hasanatDistributionCreateSchema } from "@mms/shared";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { DistributeModalFields } from "@/tenant/features/hasanat/components/DistributeModalFields";
 import type { DistributionFieldUpdate } from "@/tenant/features/hasanat/components/DistributeRecipientFields";
 
-const EMPTY_DIST: Partial<Distribution> = {
+/** Workspace-local date, so a shifted timezone never defaults to yesterday/tomorrow. */
+const emptyDist = (today: string): Partial<Distribution> => ({
   denominationId: "",
   recipientType: "student",
   recipientStudentId: "",
@@ -20,9 +22,9 @@ const EMPTY_DIST: Partial<Distribution> = {
   recipientClass: "",
   quantity: 1,
   reason: "",
-  issuedDate: todayISO(),
+  issuedDate: today,
   issuedByUserId: "",
-};
+});
 
 export interface DistributeModalProps {
   open: boolean;
@@ -44,6 +46,7 @@ export function DistributeModal({
 }: DistributeModalProps) {
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
+  const today = useWorkspaceToday();
   const [submitting, setSubmitting] = useState(false);
   /** Synchronous guard: two events in the same frame both read `submitting === false`. */
   const submittingRef = useRef(false);
@@ -51,9 +54,8 @@ export function DistributeModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [data, setData] = useState<Partial<Distribution>>(() => ({
-    ...EMPTY_DIST,
+    ...emptyDist(today),
     denominationId: denoms[0]?.id || "",
-    issuedDate: todayISO(),
     issuedByUserId: authUser?.id || "",
   }));
   const [previousOpen, setPreviousOpen] = useState(open);
@@ -74,9 +76,8 @@ export function DistributeModal({
     setPreviousOpen(open);
     if (open) {
       setData({
-        ...EMPTY_DIST,
+        ...emptyDist(today),
         denominationId: denoms[0]?.id || "",
-        issuedDate: todayISO(),
         issuedByUserId: authUser?.id || "",
       });
       setErrors({});

@@ -172,7 +172,6 @@ export function useMarkAttendanceController({
   }, [recordsSignature]);
 
   const isDirty = useRosterDirtyTracking({ rows, baseline: baselineRef, onDirtyChange });
-
   /** Applies the server's persisted rows after a save (ids + versions) and clears the baseline. */
   const applyPersisted = (persisted: AttendanceRecord[]): void => {
     if (persisted.length === 0) return;
@@ -239,7 +238,7 @@ export function useMarkAttendanceController({
     }
   };
 
-  const { handleSaveDraft, handleSubmit, handleSync } = useMarkAttendancePersistence({
+  const { saving, handleSaveDraft, handleSubmit, handleSync } = useMarkAttendancePersistence({
     filters,
     role,
     rows,
@@ -283,6 +282,7 @@ export function useMarkAttendanceController({
     setRow,
     markAll,
     requestGeo,
+    saving,
     handleSaveDraft,
     handleSync,
     handleSubmit,

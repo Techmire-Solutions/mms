@@ -68,12 +68,12 @@ export function EnterMarks({
     [marks, seed],
   );
 
-  // Re-seed only when the exam changes, or when the persisted rows change while there is nothing
-  // to lose. A background refetch must never wipe an in-progress draft.
-  const [prevExam, setPrevExam] = useState(exam);
+  // Re-seed on exam *identity*: a refetch's new `exam` object must not wipe a draft.
+  const [prevExamId, setPrevExamId] = useState<string | null>(exam?.id ?? null);
   const [prevResults, setPrevResults] = useState(results);
-  if (prevExam !== exam) {
-    setPrevExam(exam);
+  const examId = exam?.id ?? null;
+  if (examId !== prevExamId) {
+    setPrevExamId(examId);
     setPrevResults(results);
     if (exam) {
       setMarks(prefilledMarksFor(exam, results));

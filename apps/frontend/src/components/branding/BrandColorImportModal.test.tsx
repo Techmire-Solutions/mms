@@ -141,13 +141,22 @@ describe("BrandColorImportModal & parseImportCandidate", () => {
 
       expect(document.body.textContent).toContain("theme.pastePaletteInvalid");
 
-      // Cancel button triggers onClose
+      // Cancel asks before discarding the typed palette.
       const buttons = Array.from(document.querySelectorAll("button"));
       const cancelBtn = buttons.find((btn) => btn.textContent?.includes("common.cancel"));
       expect(cancelBtn).not.toBeNull();
 
       await act(async () => {
         cancelBtn?.click();
+      });
+
+      expect(onClose).not.toHaveBeenCalled();
+
+      const confirmBtn = Array.from(document.querySelectorAll("button")).find(
+        (btn) => btn.textContent === "common.yes",
+      );
+      await act(async () => {
+        confirmBtn?.click();
       });
 
       expect(onClose).toHaveBeenCalled();

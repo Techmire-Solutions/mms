@@ -7,6 +7,8 @@ import {
 } from "@mms/shared";
 import {
   mergeBrandingIdentityForSave,
+  mergeBrandingThemeForSave,
+  retainIdentityDraftAfterThemeSave,
   retainThemeDraftAfterIdentitySave,
 } from "@/lib/brandingIdentityDraft";
 
@@ -59,5 +61,40 @@ describe("brandingIdentityDraft", () => {
     expect(persisted.cornerStyle).toBe(baseline.cornerStyle);
     expect(BRANDING_IDENTITY_FIELD_KEYS).toContain("tagline");
     expect(BRANDING_THEME_FIELD_KEYS).toContain("cornerStyle");
+  });
+
+  it("mergeBrandingThemeForSave keeps identity fields from baseline", () => {
+    const baseline = mergeBrandingSettings({
+      ...DEFAULT_BRANDING_SETTINGS,
+      madrasaName: "Saved",
+      primaryColor: "#111111",
+    });
+    const draft = mergeBrandingSettings({
+      ...baseline,
+      madrasaName: "Draft name",
+      primaryColor: "#222222",
+    });
+    const persisted = mergeBrandingThemeForSave(draft, baseline);
+    expect(persisted.primaryColor).toBe("#222222");
+    expect(persisted.madrasaName).toBe("Saved");
+    expect(BRANDING_THEME_FIELD_KEYS).toContain("primaryColor");
+    expect(BRANDING_IDENTITY_FIELD_KEYS).toContain("madrasaName");
+  });
+
+  it("retainIdentityDraftAfterThemeSave keeps unsaved identity edits", () => {
+    const persisted = mergeBrandingSettings({
+      ...DEFAULT_BRANDING_SETTINGS,
+      madrasaName: "Saved",
+      primaryColor: "#abcdef",
+    });
+    const currentDraft = mergeBrandingSettings({
+      ...persisted,
+      madrasaName: "Staged name",
+      tagline: "Staged tagline",
+    });
+    const next = retainIdentityDraftAfterThemeSave(persisted, currentDraft);
+    expect(next.primaryColor).toBe("#abcdef");
+    expect(next.madrasaName).toBe("Staged name");
+    expect(next.tagline).toBe("Staged tagline");
   });
 });

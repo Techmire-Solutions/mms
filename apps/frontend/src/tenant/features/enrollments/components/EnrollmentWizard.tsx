@@ -39,12 +39,14 @@ export interface EnrollmentWizardProps {
   onCancel: () => void;
   /** Reports draft presence so the hosting FormModal can guard an accidental close. */
   onDirtyChange?: (dirty: boolean) => void;
+  onSubmittingChange?: (submitting: boolean) => void;
 }
 
 export const EnrollmentWizard = function EnrollmentWizard({
   onComplete,
   onCancel,
   onDirtyChange,
+  onSubmittingChange,
 }: EnrollmentWizardProps): React.JSX.Element {
   const { t } = useTranslation();
   const sessionsQuery = useSessions();
@@ -100,11 +102,10 @@ export const EnrollmentWizard = function EnrollmentWizard({
   );
   React.useEffect(() => {
     onDirtyChange?.(dirty);
-  }, [dirty, onDirtyChange]);
-
+    onSubmittingChange?.(submitting);
+  }, [dirty, onDirtyChange, submitting, onSubmittingChange]);
   const suggested = student && session ? suggestClass(student, session) : null;
-  // Eligibility is deterministic for the selected student/session: compute it once per
-  // change instead of re-running every rule on every render for the footer disabled state.
+  // Eligibility is deterministic per student/session; compute it once per change.
   const eligibilityChecks = useMemo(
     () => (student && session ? runFullEligibility(student, session, suggested, []) : []),
     [student, session, suggested],

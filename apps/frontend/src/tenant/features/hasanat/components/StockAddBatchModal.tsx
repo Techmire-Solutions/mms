@@ -9,9 +9,11 @@ import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
-import { generateClientEntityId, hasanatBatchCreateSchema, todayISO } from "@mms/shared";
+import { generateClientEntityId, hasanatBatchCreateSchema } from "@mms/shared";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { DenominationModal } from "./DenominationModal";
 
 interface StockAddBatchModalProps {
@@ -30,6 +32,7 @@ export function StockAddBatchModal({
   onDenomsChange,
 }: StockAddBatchModalProps): React.JSX.Element {
   const { t } = useTranslation();
+  const today = useWorkspaceToday();
   const [submitting, setSubmitting] = useState(false);
   /** Synchronous guard: two events in the same frame both read `submitting === false`. */
   const submittingRef = useRef(false);
@@ -39,11 +42,19 @@ export function StockAddBatchModal({
   const [data, setData] = useState<Partial<StockBatch>>({
     denominationId: denoms[0]?.id || "",
     quantity: 0,
-    addedDate: todayISO(),
+    addedDate: today,
     addedByUserId: "",
     note: "",
   });
   const [previousOpen, setPreviousOpen] = useState(open);
+  const resetBatch = (): Partial<StockBatch> => ({
+    denominationId: denoms[0]?.id || "",
+    quantity: 0,
+    addedDate: today,
+    addedByUserId: "",
+    note: "",
+  });
+  const { isDirty } = useDirtySnapshot(data, `${open}:new`, resetBatch());
 
   const updateField = <K extends keyof StockBatch>(field: K, value: StockBatch[K]) => {
     setData((previousData: Partial<StockBatch>) => ({ ...previousData, [field]: value }));
@@ -67,7 +78,7 @@ export function StockAddBatchModal({
       setData({
         denominationId: denoms[0]?.id || "",
         quantity: 0,
-        addedDate: todayISO(),
+        addedDate: today,
         addedByUserId: "",
         note: "",
       });
@@ -144,6 +155,9 @@ export function StockAddBatchModal({
       cancelLabel={t("common.cancel")}
       saveLabel={t("hasanat.stock.addBatchAction")}
       saving={submitting}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       error={submitError || undefined}
       onSave={handleSave}
       saveDisabled={denoms.length === 0 || submitting}

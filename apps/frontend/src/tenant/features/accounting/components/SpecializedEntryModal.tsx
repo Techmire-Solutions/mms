@@ -13,6 +13,7 @@ import {
 import { FormModal } from "@/components/app/FormModal";
 import { Form } from "@/components/ui/form";
 import { firstZodFieldError } from "@/lib/forms/translateZodError";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useProcessSpecializedEntryMutation } from "@/tenant/features/accounting/hooks/useAccountingApi";
@@ -70,6 +71,9 @@ function FeeEntryModal({ onClose }: { onClose: () => void }): React.JSX.Element 
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   const { mutateAsync } = useProcessSpecializedEntryMutation();
+  // Same-frame double click must not post two ledger entries; the state flag alone
+  // disables the button only after a re-render.
+  const guardEntry = useSubmitGuard();
   const form = useForm<FeeEntryInput>({
     resolver: zodResolver(feeEntrySchema),
     defaultValues: {
@@ -84,7 +88,7 @@ function FeeEntryModal({ onClose }: { onClose: () => void }): React.JSX.Element 
     },
   });
 
-  const handleSave = form.handleSubmit(async (values) => {
+  const submitEntry = form.handleSubmit(async (values) => {
     setSubmitting(true);
     try {
       const result = await mutateAsync(values);
@@ -102,6 +106,8 @@ function FeeEntryModal({ onClose }: { onClose: () => void }): React.JSX.Element 
       setSubmitting(false);
     }
   });
+
+  const handleSave = (): Promise<void | undefined> => guardEntry(() => submitEntry());
 
   return (
     <FormModal
@@ -141,6 +147,9 @@ function SalaryEntryModal({
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   const { mutateAsync } = useProcessSpecializedEntryMutation();
+  // Same-frame double click must not post two ledger entries; the state flag alone
+  // disables the button only after a re-render.
+  const guardEntry = useSubmitGuard();
   const form = useForm<SalaryEntryInput>({
     resolver: zodResolver(salaryEntrySchema),
     defaultValues: {
@@ -155,7 +164,7 @@ function SalaryEntryModal({
     },
   });
 
-  const handleSave = form.handleSubmit(async (values) => {
+  const submitEntry = form.handleSubmit(async (values) => {
     setSubmitting(true);
     try {
       const result = await mutateAsync(values);
@@ -173,6 +182,8 @@ function SalaryEntryModal({
       setSubmitting(false);
     }
   });
+
+  const handleSave = (): Promise<void | undefined> => guardEntry(() => submitEntry());
 
   return (
     <FormModal

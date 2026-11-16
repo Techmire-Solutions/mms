@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BookOpen, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
   type QuestionSourceFieldId,
 } from "@mms/shared";
 import { QuestionSourceInput } from "@/tenant/features/question-bank/components/QuestionSourceInput";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 
 type TranslateFn = (
   key: import("@mms/shared").AppTranslationKey,
@@ -32,7 +34,7 @@ interface QuestionSourceBooksSectionProps {
   onDeleteBook: (bookId: string) => void;
   onToggleBookField: (fieldId: QuestionSourceFieldId) => void;
   onUpdateBookMeta: (fieldId: QuestionSourceFieldId, value: string) => void;
-  onSaveBook: () => void;
+  onSaveBook: () => void | Promise<void>;
   onCloseBookForm: () => void;
 }
 
@@ -53,6 +55,29 @@ export function QuestionSourceBooksSection({
   onSaveBook,
   onCloseBookForm,
 }: QuestionSourceBooksSectionProps) {
+  const [savingBook, setSavingBook] = useState(false);
+  const [bookError, setBookError] = useState<string | null>(null);
+  const guardSaveBook = useSubmitGuard();
+
+  const handleSaveBook = async (): Promise<void> => {
+    await guardSaveBook(async () => {
+      setSavingBook(true);
+      setBookError(null);
+      try {
+        await onSaveBook();
+      } catch (error) {
+        setBookError(error instanceof Error ? error.message : t("errors.state.generic"));
+      } finally {
+        setSavingBook(false);
+      }
+    });
+  };
+
+  const handleCloseBookForm = (): void => {
+    setBookError(null);
+    onCloseBookForm();
+  };
+
   return (
     <SectionCard
       title={t("questionBank.sourceBooksTitle")}
@@ -112,13 +137,17 @@ export function QuestionSourceBooksSection({
       {showBookForm && draftBook && (
         <FormModal
           open
-          onClose={onCloseBookForm}
+          onClose={handleCloseBookForm}
           title={editingBookId ? t("questionBank.editSourceBook") : t("questionBank.addSourceBook")}
           icon={BookOpen}
           cancelLabel={t("questionBank.cancel")}
           saveLabel={t("questionBank.saveSourceBook")}
-          onSave={onSaveBook}
-          saveDisabled={!draftBook.metadata.bookName?.trim() && !draftBook.name.trim()}
+          onSave={handleSaveBook}
+          saving={savingBook}
+          saveDisabled={
+            savingBook || (!draftBook.metadata.bookName?.trim() && !draftBook.name.trim())
+          }
+          error={bookError ?? undefined}
           formId="question-source-book-form"
         >
           <form
@@ -126,7 +155,9 @@ export function QuestionSourceBooksSection({
             noValidate
             onSubmit={(e) => {
               e.preventDefault();
-              if (draftBook.metadata.bookName?.trim() || draftBook.name.trim()) onSaveBook();
+              if (draftBook.metadata.bookName?.trim() || draftBook.name.trim()) {
+                void handleSaveBook();
+              }
             }}
             className="space-y-3"
           >

@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import type { Account, FiscalYear } from "@mms/shared";
 import { Lock } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Field } from "@/components/app/FormPrimitives";
 import { Alert } from "@/components/app/Alert";
@@ -30,6 +32,8 @@ export function CloseFiscalYearModal({
   const closeFiscalYear = useCloseFiscalYear();
   const [closeError, setCloseError] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
+  // Closing a year is irreversible; a same-frame double click must not re-post.
+  const guardClose = useSubmitGuard();
 
   const equityAccountOptions = useMemo(
     () =>
@@ -75,9 +79,21 @@ export function CloseFiscalYearModal({
     }
   }
 
+  // The account the render-time reset above produces — used as the dirty baseline.
+  const resetCloseAccountId =
+    closeTarget &&
+    equityAccountOptions.some((option) => option.value === preferredRetainedEarningsAccount)
+      ? (preferredRetainedEarningsAccount ?? "")
+      : "";
+  const { isDirty } = useDirtySnapshot(
+    closeAccountId,
+    `true:${closeTarget?.id ?? "new"}`,
+    resetCloseAccountId,
+  );
+
   if (!closeTarget) return null;
 
-  const handleConfirmCloseFiscalYear = async (): Promise<void> => {
+  const confirmCloseFiscalYear = async (): Promise<void> => {
     if (!closeAccountId) {
       setCloseError(t("accounting.settings.fy.closeAccountRequired"));
       return;
@@ -105,6 +121,9 @@ export function CloseFiscalYearModal({
     }
   };
 
+  const handleConfirmCloseFiscalYear = (): Promise<void | undefined> =>
+    guardClose(() => confirmCloseFiscalYear());
+
   return (
     <FormModal
       open
@@ -118,6 +137,9 @@ export function CloseFiscalYearModal({
       saveLabel={t("accounting.settings.fy.close")}
       onSave={handleConfirmCloseFiscalYear}
       saving={closing}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       saveDisabled={!closeAccountId}
       formId="close-fiscal-year-form"
     >

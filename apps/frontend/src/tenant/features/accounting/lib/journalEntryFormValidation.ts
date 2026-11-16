@@ -17,7 +17,16 @@ import {
 export { isJournalRefUnique };
 import { hasFieldValue } from "@/lib/formCompleteness";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { DraftForm } from "./journalEntryFormTypes";
+import type { DraftForm, DraftLine } from "./journalEntryFormTypes";
+
+/**
+ * A pristine placeholder row the editor always renders. It carries no account and
+ * no amount, so validating it would show "Account required" on a blank voucher the
+ * user never filled. Blank rows are dropped from validation and from the save DTO.
+ */
+export function isBlankJournalLine(line: DraftLine): boolean {
+  return !line.account_id && !String(line.debit ?? "").trim() && !String(line.credit ?? "").trim();
+}
 
 /**
  * Strict, separator-aware parse of one voucher amount.
@@ -65,6 +74,23 @@ export interface JournalPostingGuardOptions {
 }
 
 /**
+ * The closed posting period containing `date`, or `null` when the date is open.
+ * Shared by the journal form guard and the reverse dialog so both refuse the same
+ * date for the same reason.
+ */
+export function closedPostingPeriodFor(
+  date: string,
+  postingPeriods: readonly PostingPeriod[],
+): PostingPeriod | null {
+  if (!date) return null;
+  return (
+    postingPeriods.find(
+      (period) => period.status === "closed" && period.startDate <= date && date <= period.endDate,
+    ) ?? null
+  );
+}
+
+/**
  * Form-layer mirror of the backend's period/date and manual-numbering guards.
  *
  * The backend remains authoritative; this prevents a guaranteed API rejection and
@@ -106,9 +132,7 @@ export function validateJournalPostingGuards(
     }
   }
 
-  const closedPeriod = (options.postingPeriods ?? []).find(
-    (period) => period.status === "closed" && period.startDate <= date && date <= period.endDate,
-  );
+  const closedPeriod = closedPostingPeriodFor(date, options.postingPeriods ?? []);
   if (closedPeriod) {
     errors.date = t("accounting.journal.form.errorClosedPostingPeriod", {
       period: closedPeriod.label,
@@ -158,6 +182,7 @@ export function validateJournalEntryForm(
     validationErrors.balance = t("accounting.journal.form.errorBalance");
   }
   form.lines.forEach((journalLine, lineIndex) => {
+    if (isBlankJournalLine(journalLine)) return;
     if (!journalLine.account_id) {
       validationErrors[`line${lineIndex}`] = t("accounting.journal.form.errorAccountRequired");
       return;

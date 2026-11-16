@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckboxField } from "@/components/ui/checkbox";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 
 const EMPTY: Denomination = {
   id: "",
@@ -54,6 +55,8 @@ export function DenominationModal({
   const [previousOpen, setPreviousOpen] = useState(open);
   const [previousDenom, setPreviousDenom] = useState(denom);
   const presetColors = getDenominationPresetColors();
+  const resetDenomination = denom || { ...EMPTY };
+  const { isDirty } = useDirtySnapshot(data, `${open}:${denom?.id ?? "new"}`, resetDenomination);
 
   const updateField = <K extends keyof Denomination>(field: K, value: Denomination[K]) => {
     setData((previousData: Denomination) => ({ ...previousData, [field]: value }));
@@ -151,6 +154,9 @@ export function DenominationModal({
       cancelLabel={t("common.cancel")}
       saveLabel={t("hasanat.denominations.save")}
       saving={submitting}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       saveDisabled={submitting}
       error={submitError || undefined}
       onSave={handleSave}

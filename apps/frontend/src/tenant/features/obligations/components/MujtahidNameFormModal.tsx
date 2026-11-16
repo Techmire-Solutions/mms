@@ -3,6 +3,7 @@ import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import type { Mujtahid, MujtahidRep } from "@/tenant/features/obligations/lib/mujtahidManagerTypes";
 
 export interface MujtahidNameFormModalProps {
@@ -26,6 +27,7 @@ export function MujtahidNameFormModal({
   const [form, setForm] = useState({ ...initial });
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const { isDirty } = useDirtySnapshot(form, `true:${initial.id ?? "new"}`, { ...initial });
 
   const handleSave = async (): Promise<void> => {
     if (!form.name || !form.name.trim()) {
@@ -52,6 +54,9 @@ export function MujtahidNameFormModal({
       saveLabel={t("common.save")}
       onSave={handleSave}
       saving={saving}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       saveDisabled={saving}
       error={error || undefined}
       formId="name-form-modal"

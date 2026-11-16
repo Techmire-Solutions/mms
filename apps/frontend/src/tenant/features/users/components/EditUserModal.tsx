@@ -22,7 +22,8 @@ import { useUsersConfig } from "@/hooks/useStandardModuleConfig";
 import { validateUserCustomFields } from "@/tenant/features/users/lib/userCustomFieldValidation";
 import { Form } from "@/components/ui/form";
 import { firstZodFieldError } from "@/lib/forms/translateZodError";
-import { notify } from "@/lib/notify";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import { EditUserModalFields } from "./EditUserModalFields";
 
 export interface EditUserModalProps {
@@ -63,6 +64,8 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
     return filtered;
   }, [workspaceRoles, authUser?.role, roleLockedByFaculty, user.role]);
   const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const guardSave = useSubmitGuard();
 
   const form = useForm<EditWorkspaceUserInput & Record<string, unknown>>({
     resolver: zodResolver(editWorkspaceUserSchema),
@@ -98,7 +101,7 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
     Boolean(watchedContactId),
   );
 
-  const handleSave = form.handleSubmit(async (values) => {
+  const submitUser = form.handleSubmit(async (values) => {
     if (!assignableRoles.some((role) => role.id === values.role)) {
       form.setError("role", { type: "manual", message: t("users.addErrorRole") });
       return;
@@ -124,6 +127,7 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
       customFields.map((cf) => [cf.id, values[cf.id] ?? user[cf.id] ?? ""]),
     );
 
+    setServerError(null);
     setSubmitting(true);
     try {
       await onSave({
@@ -140,13 +144,24 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
       });
       onClose();
     } catch (error: unknown) {
-      notify.error(t("errors.module.title"), {
-        description: error instanceof Error ? error.message : t("errors.module.description"),
-      });
+      // Field-level contract errors belong on the fields; the banner carries the
+      // form-level reason. A toast alone left the modal looking like a no-op.
+      const mapped = mapApiFormError(error);
+      if (mapped.fieldErrors) {
+        for (const [field, message] of Object.entries(mapped.fieldErrors)) {
+          form.setError(field as keyof EditWorkspaceUserInput & string, {
+            type: "server",
+            message,
+          });
+        }
+      }
+      setServerError(mapped.message ?? t("errors.module.description"));
     } finally {
       setSubmitting(false);
     }
   });
+
+  const handleSave = (): Promise<void | undefined> => guardSave(() => submitUser());
 
   return (
     <FormModal
@@ -155,7 +170,7 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
       title={t("users.editTitle")}
       subtitle={selectedContact?.name || user.name}
       icon={User}
-      error={firstZodFieldError(form.formState.errors, t) || undefined}
+      error={serverError ?? (firstZodFieldError(form.formState.errors, t) || undefined)}
       cancelLabel={t("users.cancel")}
       saveLabel={t("users.saveChanges")}
       onSave={() => {

@@ -16,7 +16,8 @@ const MotionCard = m.create(Card);
 export interface SavedReportCardProps {
   report: GenericSavedReport;
   onRun?: (report: GenericSavedReport) => void;
-  onDelete: (id: string) => void;
+  /** Request deletion — the owner opens the destructive confirm and mutates. */
+  onDelete: (report: GenericSavedReport) => void;
 }
 
 export function SavedReportCard({
@@ -79,7 +80,7 @@ export function SavedReportCard({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => void onDelete(report.id)}
+          onClick={() => onDelete(report)}
           className="min-h-11 px-3 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 gap-1.5 ms-auto cursor-pointer"
           type="button"
           aria-label={`${t("reports.saved.delete")}: ${report.name}`}

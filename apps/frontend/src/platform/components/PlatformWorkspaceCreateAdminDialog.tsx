@@ -11,8 +11,11 @@ import { WorkspaceSummary } from "@/platform/components/workspace/WorkspaceSumma
 import { WorkspacePasswordField } from "@/platform/components/workspace/WorkspacePasswordField";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { CreateAdminResultCard } from "@/platform/components/workspace/CreateAdminResultCard";
+
+const EMPTY_ADMIN_DRAFT = { name: "", email: "", password: "", currentPassword: "" };
 
 interface PlatformWorkspaceCreateAdminDialogProps {
   open: boolean;
@@ -54,6 +57,13 @@ export function PlatformWorkspaceCreateAdminDialog({
     setResult(null);
     setError("");
   });
+
+  const identity = `${open}:${workspace?.subdomain ?? "none"}`;
+  const { isDirty } = useDirtySnapshot(
+    { name, email, password, currentPassword },
+    identity,
+    EMPTY_ADMIN_DRAFT,
+  );
 
   if (!workspace) return null;
 
@@ -123,6 +133,9 @@ export function PlatformWorkspaceCreateAdminDialog({
       saveLabel={result ? t("common.close") : t("platform.createAdminBtn")}
       onSave={result ? handleClose : handleCreate}
       saving={createPending}
+      isDirty={!result && isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       formId={result ? undefined : "platform-create-admin-form"}
     >
       {result ? (

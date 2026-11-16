@@ -80,6 +80,9 @@ export function HedgeDesignationModal({
       saveLabel={t("accounting.settings.hedges.designate")}
       onSave={() => void handleSave()}
       saving={form.isSaving}
+      isDirty={form.isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       formId="hedge-designation-form"
     >
       <form

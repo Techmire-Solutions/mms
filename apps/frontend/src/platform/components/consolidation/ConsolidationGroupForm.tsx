@@ -10,6 +10,7 @@ import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { useConsolidationGroupDraft } from "@/platform/hooks/useConsolidationGroupDraft";
 import { useSaveConsolidationGroup } from "@/platform/hooks/usePlatformConsolidation";
 import { usePlatformWorkspaces } from "@/platform/hooks/usePlatformWorkspaces";
@@ -35,6 +36,7 @@ export function ConsolidationGroupForm({
   const save = useSaveConsolidationGroup();
   const { data: workspaces = [] } = usePlatformWorkspaces({ limit: 100 });
   const [error, setError] = useState<string | undefined>();
+  const { isDirty } = useDirtySnapshot(form.draft, initial?.id ?? "new");
   const workspaceOptions = workspaces.map((workspace) => ({
     value: workspace.subdomain,
     label: workspace.madrasaName
@@ -79,6 +81,9 @@ export function ConsolidationGroupForm({
       onSave={handleSave}
       saving={save.isPending}
       error={error}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
     >
       <div className="space-y-3 text-start">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

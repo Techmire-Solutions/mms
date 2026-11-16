@@ -109,4 +109,46 @@ describe("SavedReports", () => {
     );
     expect(document.body.querySelector("#saved-report-name")).toBeNull();
   });
+
+  it("deletes a saved report only after the destructive confirm is accepted", async () => {
+    const report: GenericSavedReport = {
+      id: "rep-1",
+      name: "Monthly Attendance",
+      category: "students",
+      filters: {},
+      lastRun: "2026-11-01T00:00:00Z",
+      createdBy: "usr-1",
+      createdByName: "Amina",
+      createdAt: "2026-11-01T00:00:00Z",
+    };
+    const deleteReport = vi.fn().mockResolvedValue(undefined);
+    await act(async () => {
+      root.render(
+        <SavedReports
+          category="students"
+          source={{ ...source(vi.fn()), reports: [report], deleteReport }}
+          filters={{}}
+          onApplyFilters={vi.fn()}
+        />,
+      );
+    });
+
+    const cardDelete = [...document.querySelectorAll("button")].find((button) =>
+      button.getAttribute("aria-label")?.startsWith("reports.saved.delete:"),
+    );
+    await act(async () => cardDelete?.click());
+
+    // First click is only a request: no mutation, and the confirm is visible.
+    expect(deleteReport).not.toHaveBeenCalled();
+    expect(document.body.textContent).toContain("reports.saved.deleteConfirmDescription");
+
+    const confirm = [...document.querySelectorAll("button")].find(
+      (button) => button.textContent === "common.delete",
+    );
+    await act(async () => confirm?.click());
+
+    expect(deleteReport).toHaveBeenCalledTimes(1);
+    expect(deleteReport).toHaveBeenCalledWith("rep-1");
+    expect(document.body.textContent).not.toContain("fields.deleteConfirm");
+  });
 });

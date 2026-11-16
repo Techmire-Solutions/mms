@@ -55,6 +55,7 @@ function baseInput(overrides: Partial<FlowInput> = {}): FlowInput {
     onClose: vi.fn(),
     setValidationErrors: vi.fn(),
     setSaving: vi.fn(),
+    setFormError: vi.fn(),
     setPendingSaveData: vi.fn(),
     setTypedDuplicateReason: vi.fn(),
     setDuplicateConfirmOpen: vi.fn(),
@@ -167,5 +168,40 @@ describe("runStudentSaveFlow", () => {
         expect(error.fieldId).not.toBe("grNumber");
       }
     }
+  });
+
+  it("surfaces a non-field 500 in the banner and keeps the draft open for retry", async () => {
+    const setFormError = vi.fn();
+    const setValidationErrors = vi.fn();
+    const setPendingSaveData = vi.fn();
+    const onClose = vi.fn();
+    const onSave = vi
+      .fn()
+      .mockRejectedValue(
+        new ApiError(500, "Database unavailable", "internal_error", undefined, undefined),
+      );
+    const studentDraft = { contactId: "cnt-1", grNumber: "GR-007", status: "active" as const };
+
+    const success = await runStudentSaveFlow(
+      baseInput({
+        setFormError,
+        setValidationErrors,
+        setPendingSaveData,
+        onClose,
+        onSave,
+        studentDraft,
+      }),
+    );
+
+    expect(success).toBe(false);
+    // Cleared at save start, then set from the mapped failure message.
+    expect(setFormError.mock.calls).toEqual([[null], ["Database unavailable"]]);
+    expect(setValidationErrors).toHaveBeenLastCalledWith([]);
+    // Failure keeps the form (and therefore the draft) open for a retry.
+    expect(onClose).not.toHaveBeenCalled();
+    expect(setPendingSaveData).not.toHaveBeenCalled();
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ contactId: "cnt-1", grNumber: "GR-007" }),
+    );
   });
 });

@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import { useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ModuleCustomField } from "@mms/shared";
 import { notify } from "@/lib/notify";
@@ -77,6 +77,9 @@ export function useMarkAttendancePersistence({
   onSubmitDay,
   onRowErrors,
 }: UseMarkAttendancePersistenceOptions) {
+  const [saving, setSaving] = useState(false);
+  // Ref guard: state disables the buttons only after a re-render.
+  const inFlightRef = useRef(false);
   const { t } = useTranslation();
 
   const buildRecords = useCallback(
@@ -203,6 +206,9 @@ export function useMarkAttendancePersistence({
       });
       return;
     }
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+    setSaving(true);
     try {
       const persisted = await persistBatch(buildRecords(rows), overrideReason);
       onRowErrors?.([]);
@@ -237,6 +243,9 @@ export function useMarkAttendancePersistence({
       notify.error(t("attendance.toast.saveFailed"), {
         description: error instanceof Error ? error.message : String(error),
       });
+    } finally {
+      inFlightRef.current = false;
+      setSaving(false);
     }
   };
 
@@ -276,7 +285,7 @@ export function useMarkAttendancePersistence({
     }
   };
 
-  return { handleSaveDraft, handleSubmit, handleSync };
+  return { saving, handleSaveDraft, handleSubmit, handleSync };
 }
 
 export { loadQueue };

@@ -2546,6 +2546,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "contacts.form.phoneNumberPlaceholder": "300 0000000",
   "contacts.form.phonesLabel": "هواتف",
   "contacts.form.pleaseFixErrors": "يرجى تصحيح الأخطاء التالية",
+  "contacts.form.saveConflict":
+    "قام شخص آخر بتغيير جهة الاتصال هذه. أعد تحميلها وحاول مرة أخرى.",
   "contacts.form.noChanges": "لا توجد تغييرات للحفظ بعد.",
   "contacts.form.preferredContactMethod": "وسيلة التواصل المفضلة",
   "contacts.form.preferredLanguage": "اللغة المفضلة",
@@ -7724,6 +7726,9 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "reports.moduleTools.visualizerBuilder": "منشئ المخططات",
   "reports.moduleTools.widgetBuilder": "منشئ الأدوات",
   "reports.saved.delete": "حذف",
+  "reports.saved.deleteConfirmTitle": "حذف التقرير المحفوظ؟",
+  "reports.saved.deleteConfirmDescription":
+    "سيؤدي هذا إلى إزالة \"{name}\" من مساحة العمل. لا يمكن التراجع عن ذلك.",
   "reports.saved.deleteSuccess": "تم حذف قالب التقرير",
   "reports.saved.emptyDescription": "اضبط عوامل التصفية واحفظها كقالب.",
   "reports.saved.emptyTitle": "لا توجد تقارير محفوظة",
@@ -8937,6 +8942,9 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "students.restoreFailed": "تعذر استعادة الطالب",
   "students.restoreSuccess": "تمت استعادة الطالب",
   "students.saveFailed": "تعذر حفظ الطالب",
+  "students.form.avatarContactSyncTitle": "تحديث صورة جهة الاتصال المرتبطة؟",
+  "students.form.avatarContactSyncDescription":
+    "سيؤدي هذا إلى تحديث صورة جهة الاتصال المرتبطة على الفور. لن يؤدي إلغاء نموذج الطالب إلى التراجع عن ذلك.",
   "students.searchColumnsPlaceholder": "تصفية الأعمدة...",
   "students.searchPlaceholder": "البحث في دليل الطلاب\u2026",
   "students.selectedCount": "{count} محدد",

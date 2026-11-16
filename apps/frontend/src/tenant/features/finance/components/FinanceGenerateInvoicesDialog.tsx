@@ -15,6 +15,8 @@ import { billingPeriodFromDate, generateInvoicesBodySchema, todayISO } from "@mm
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useFinanceInvoiceGeneration } from "@/tenant/features/finance/hooks/useFinanceInvoiceGeneration";
 import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 
 export function FinanceGenerateInvoicesDialog({
@@ -28,10 +30,25 @@ export function FinanceGenerateInvoicesDialog({
   const sessions = useSessionsCollection({ enabled: open });
   const generate = useFinanceInvoiceGeneration();
   const guard = useSubmitGuard();
-  const [period, setPeriod] = useState(() => billingPeriodFromDate(todayISO()));
+  const defaultPeriod = billingPeriodFromDate(todayISO());
+  const [period, setPeriod] = useState(defaultPeriod);
   const [sessionId, setSessionId] = useState("");
   const [classId, setClassId] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const identity = `${open}:new`;
+  // Reopening starts from the current period and no filters, so the dirty baseline
+  // is the same value the reset produces.
+  useIdentityReset(identity, () => {
+    setPeriod(defaultPeriod);
+    setSessionId("");
+    setClassId("");
+    setFormError(null);
+  });
+  const { isDirty } = useDirtySnapshot({ period, sessionId, classId }, identity, {
+    period: defaultPeriod,
+    sessionId: "",
+    classId: "",
+  });
 
   const classes = useMemo(
     () => sessions.find((session) => session.id === sessionId)?.classes ?? [],
@@ -88,6 +105,9 @@ export function FinanceGenerateInvoicesDialog({
       saveLabel={t("finance.generate.submit")}
       onSave={handleGenerate}
       saving={generate.isPending}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       error={formError ?? undefined}
       saveDisabled={!period || generate.isPending}
       formId="generate-invoices-form"

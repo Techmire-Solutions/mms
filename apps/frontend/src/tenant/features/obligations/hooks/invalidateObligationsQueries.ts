@@ -11,6 +11,11 @@ import {
   OBLIGATIONS_WAKALA_QUERY_KEY,
 } from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
 import { OBLIGATIONS_PREFERENCES_QUERY_KEY } from "@/tenant/features/obligations/hooks/useObligationsSetupConfig";
+import {
+  ACCOUNTING_ENTRIES_QUERY_KEY,
+  ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
+} from "@/tenant/hooks/collections/accounting";
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
 
 /** Invalidate Obligations collections/metrics/setup Query keys. */
 export const invalidateObligationsQueries = createModuleQueryInvalidator({
@@ -27,5 +32,9 @@ export const invalidateObligationsQueries = createModuleQueryInvalidator({
   // that an edit reverses and reposts — both must be invalidated with the list (frontend audit F1/F2).
   reports: OBLIGATIONS_REPORT_AGGREGATES_QUERY_KEY,
   lookups: OBLIGATIONS_VOUCHER_QUERY_KEY,
+  // A receipt posts a journal entry and moves the accounting reports; both keep their
+  // own cache and stayed stale after a collection write.
+  related: [ACCOUNTING_ENTRIES_QUERY_KEY, ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY],
+  dashboard: DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
   preferences: OBLIGATIONS_PREFERENCES_QUERY_KEY,
 });

@@ -4,6 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Field } from "@/components/app/FormPrimitives";
 import { Textarea } from "@/components/ui/textarea";
 import { FormModal } from "@/components/app/FormModal";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { notify } from "@/lib/notify";
 
 export function parseImportCandidate(raw: string): { primary: string; secondary: string } | null {
@@ -53,6 +54,7 @@ export function BrandColorImportModal({
 }: BrandColorImportModalProps): React.JSX.Element {
   const { t } = useTranslation();
   const [importRawText, setImportRawText] = useState("");
+  const { isDirty } = useDirtySnapshot(importRawText, String(open), "");
 
   const parsedCandidate = parseImportCandidate(importRawText);
 
@@ -79,6 +81,9 @@ export function BrandColorImportModal({
       saveLabel={t("theme.importPaletteAction")}
       saveDisabled={!parsedCandidate}
       onSave={handleConfirmImport}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       formId="brand-color-import-form"
     >
       <form

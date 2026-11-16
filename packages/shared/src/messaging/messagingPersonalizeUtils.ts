@@ -38,7 +38,10 @@ export const ALLOWED_PERSONALIZATION_TOKEN_KEYS = new Set([
   "attendance_status",
 ]);
 
-const PERSONALIZATION_TOKEN_PATTERN_SOURCE = String.raw`\{([a-z_]+)(?:\|([^}]+))?\}`;
+// The key may be any text (not just `[a-z_]`): a saved template containing
+// `{Invoice Number}` must be *detected and rejected*, not shipped literally.
+// The key stops at `|` (fallback separator) or `}`.
+const PERSONALIZATION_TOKEN_PATTERN_SOURCE = String.raw`\{([^}|]+)(?:\|([^}]+))?\}`;
 
 function personalizationTokenPattern(): RegExp {
   return new RegExp(PERSONALIZATION_TOKEN_PATTERN_SOURCE, "gi");
@@ -52,7 +55,9 @@ export function findUnknownPersonalizationTokens(body: string): string[] {
   if (!body) return [];
   const unknown = new Set<string>();
   for (const match of body.matchAll(personalizationTokenPattern())) {
-    const key = String(match[1] ?? "").toLowerCase();
+    const key = String(match[1] ?? "")
+      .trim()
+      .toLowerCase();
     if (key && !ALLOWED_PERSONALIZATION_TOKEN_KEYS.has(key)) {
       unknown.add(key);
     }
@@ -122,7 +127,7 @@ export function personalizeMessage(
   };
 
   return body.replace(personalizationTokenPattern(), (match, key, fallback) => {
-    const lowerKey = String(key).toLowerCase();
+    const lowerKey = String(key).trim().toLowerCase();
     if (!Object.prototype.hasOwnProperty.call(tokenValues, lowerKey)) {
       return match;
     }

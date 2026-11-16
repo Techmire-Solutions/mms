@@ -49,6 +49,7 @@ function baseProps(overrides: Record<string, unknown> = {}) {
     validationErrors: [],
     setValidationErrors: vi.fn(),
     setSaving: vi.fn(),
+    setFormError: vi.fn(),
     setPendingSaveData: vi.fn(),
     setTypedDuplicateReason: vi.fn(),
     setDuplicateConfirmOpen: vi.fn(),

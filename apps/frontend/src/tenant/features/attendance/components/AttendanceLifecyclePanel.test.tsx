@@ -92,6 +92,48 @@ describe("AttendanceLifecyclePanel decisions", () => {
     });
   });
 
+  it("keeps the review dialog and its typed note open when the decision write fails", async () => {
+    mocks.review.mutateAsync.mockRejectedValueOnce(new Error("network down"));
+    await act(async () => root.render(<AttendanceLifecyclePanel />));
+
+    await act(async () => buttonByText("attendance.excuses.reject")?.click());
+    const textarea = document.querySelector("textarea") as HTMLTextAreaElement;
+    expect(textarea).not.toBeNull();
+    await act(async () => {
+      const setValue = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set;
+      setValue?.call(textarea, "Documented reason");
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    await act(async () => buttonByText("attendance.excuses.reject", dialog())?.click());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mocks.review.mutateAsync).toHaveBeenCalledWith({
+      params: { id: "leave-1" },
+      body: { decision: "reject", note: "Documented reason" },
+    });
+    // Rejection keeps the dialog open with the note still typed.
+    expect(document.body.textContent).toContain("attendance.excuses.rejectTitle");
+    expect((document.querySelector("textarea") as HTMLTextAreaElement | null)?.value).toBe(
+      "Documented reason",
+    );
+  });
+
+  it("closes the review dialog only after the decision write resolves", async () => {
+    mocks.review.mutateAsync.mockResolvedValueOnce(undefined);
+    await act(async () => root.render(<AttendanceLifecyclePanel />));
+
+    await act(async () => buttonByText("attendance.excuses.approve")?.click());
+    await act(async () => buttonByText("attendance.excuses.approve", dialog())?.click());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(document.body.textContent).not.toContain("attendance.excuses.approveTitle");
+  });
+
   it("requires a reason before cancelling an approved leave", async () => {
     await act(async () => root.render(<AttendanceLifecyclePanel />));
 

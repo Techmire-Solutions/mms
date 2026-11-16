@@ -231,6 +231,7 @@ export function MarkAttendance(props: MarkAttendanceProps): React.JSX.Element {
         isOffline={controller.isOffline}
         submitted={controller.submitted}
         canWriteAttendance={controller.canWriteAttendance && dayAllowsMarking}
+        saving={controller.saving}
         onSaveDraft={() => void controller.handleSaveDraft()}
         onSubmit={() => void controller.handleSubmit()}
       />

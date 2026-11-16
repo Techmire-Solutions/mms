@@ -312,6 +312,39 @@ describe("SimpleTransactionWizard", () => {
     expect((container.querySelector("#wizard-acc-in") as HTMLSelectElement).value).toBe("a1000");
   });
 
+  it("mints a fresh client voucher id on every opening so a second collection is not a replay", async () => {
+    await renderWizard(true, feeCollection);
+    await act(async () => {
+      setInputValue(amountInput(), "10.00");
+    });
+    await act(async () => {
+      findButton(container, "accounting.journal.dashboard.wizard.next").click();
+    });
+    await act(async () => {
+      findButton(container, "accounting.journal.dashboard.wizard.postTransaction").click();
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
+    const firstId = onSave.mock.calls[0]![0].id;
+
+    // The wizard stays mounted; only the portal closes and reopens.
+    await renderWizard(false, feeCollection);
+    await renderWizard(true, feeCollection);
+    await act(async () => {
+      setInputValue(amountInput(), "25.00");
+    });
+    await act(async () => {
+      findButton(container, "accounting.journal.dashboard.wizard.next").click();
+    });
+    await act(async () => {
+      findButton(container, "accounting.journal.dashboard.wizard.postTransaction").click();
+    });
+
+    expect(onSave).toHaveBeenCalledTimes(2);
+    const secondId = onSave.mock.calls[1]![0].id;
+    expect(secondId).not.toBe(firstId);
+    expect(journalEntryRecordSchema.safeParse(onSave.mock.calls[1]![0]).success).toBe(true);
+  });
+
   it("refuses to post the same account on both legs", async () => {
     await renderWizard(true, adjustment);
     // The Adjustment action presets a source account and leaves the

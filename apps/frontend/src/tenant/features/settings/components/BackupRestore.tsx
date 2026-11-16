@@ -36,8 +36,7 @@ const BackupRestore = function BackupRestore(): React.JSX.Element {
         emailReadOnly: true,
         loading: backup.isCreating,
         onClose: () => backup.setExportModalOpen(false),
-        onSubmit: (password: string, email: string) =>
-          void backup.runEncryptedExport(password, email),
+        onSubmit: (password: string, email: string) => backup.runEncryptedExport(password, email),
       };
     }
     if (backup.pendingDecrypt) {
@@ -55,8 +54,9 @@ const BackupRestore = function BackupRestore(): React.JSX.Element {
         emailReadOnly: decryptEmailReadOnly,
         loading: backup.decryptLoading,
         onClose: () => backup.setPendingDecrypt(null),
-        onSubmit: (password: string, email: string) =>
-          void backup.handleDecryptSubmit(password, email),
+        // Return the promise: the modal awaits it and maps a rejection into its
+        // banner. `void` here made that catch unreachable.
+        onSubmit: (password: string, email: string) => backup.handleDecryptSubmit(password, email),
       };
     }
     return null;

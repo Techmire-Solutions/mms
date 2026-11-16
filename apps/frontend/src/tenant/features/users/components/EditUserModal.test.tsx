@@ -3,6 +3,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { EditUserModal } from "./EditUserModal";
 import { normalizeWorkspaceUser } from "@mms/shared";
+import { ApiError } from "@/lib/apiClient";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -54,16 +55,19 @@ vi.mock("@/components/app/FormModal", () => ({
     children,
     onSave,
     saveDisabled,
+    error,
   }: {
     title?: React.ReactNode;
     subtitle?: React.ReactNode;
     children?: React.ReactNode;
     onSave?: () => void;
     saveDisabled?: boolean;
+    error?: string | readonly string[];
   }) => (
     <div data-testid="form-modal">
       <h2>{title}</h2>
       <h3>{subtitle}</h3>
+      {error ? <div role="alert">{Array.isArray(error) ? error.join(" ") : error}</div> : null}
       <button data-testid="modal-save-btn" disabled={saveDisabled} onClick={onSave}>
         Save
       </button>
@@ -100,6 +104,48 @@ describe("EditUserModal", () => {
       emails: [{ address: "contact@example.com", isPrimary: true }],
       phones: [{ number: "+1234567890", isPrimary: true }],
     };
+  });
+
+  it("surfaces a rejected save in the modal banner instead of only toasting", async () => {
+    const onSave = vi
+      .fn()
+      .mockRejectedValue(
+        new ApiError(409, "Someone else changed this user", "stale_write", undefined, undefined),
+      );
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <EditUserModal
+          user={normalizeWorkspaceUser({
+            id: "u1",
+            name: "Existing User",
+            email: "existing@test.com",
+            role: "admin",
+            status: "active",
+            contactId: "c1",
+            twoFactorEnabled: false,
+          })}
+          onClose={vi.fn()}
+          onSave={onSave}
+        />,
+      );
+    });
+
+    const form = container.querySelector("form");
+    await act(async () => {
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      "Someone else changed this user",
+    );
+
+    await act(async () => root.unmount());
+    container.remove();
   });
 
   it("renders edit form with user details and custom fields", () => {

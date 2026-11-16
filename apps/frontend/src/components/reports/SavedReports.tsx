@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormModal } from "@/components/app/FormModal";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/app/FormPrimitives";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,8 @@ export default function SavedReports({
   const [saving, setSaving] = useState(false);
   const [nameError, setNameError] = useState<string | undefined>();
   const [formError, setFormError] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<GenericSavedReport | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const handleSave = async () => {
     if (saving) return;
@@ -102,12 +105,25 @@ export default function SavedReports({
     }
   };
 
-  const handleDelete = async (id: string) => {
+  /** Card callback is only a request: the destructive confirm owns the mutation. */
+  const handleDeleteRequest = (report: GenericSavedReport): void => {
+    setPendingDelete(report);
+  };
+
+  const handleConfirmDelete = async (): Promise<boolean> => {
+    if (!pendingDelete || deleting) return false;
+    setDeleting(true);
     try {
-      await deleteReport(id);
+      await deleteReport(pendingDelete.id);
       notify.info(t("reports.saved.deleteSuccess"));
+      setPendingDelete(null);
+      return true;
     } catch {
       notify.error(t("reports.saved.delete"));
+      // Keep the dialog open so the retry does not need a second click on the card.
+      return false;
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -154,12 +170,27 @@ export default function SavedReports({
                 key={report.id}
                 report={report}
                 onRun={onApplyFilters ? handleRun : undefined}
-                onDelete={handleDelete}
+                onDelete={handleDeleteRequest}
               />
             ))}
           </AnimatePresence>
         </div>
       )}
+
+      <ConfirmAlertDialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+        title={t("reports.saved.deleteConfirmTitle")}
+        description={t("reports.saved.deleteConfirmDescription", {
+          name: pendingDelete?.name ?? "",
+        })}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+        onConfirm={handleConfirmDelete}
+        destructive
+      />
 
       <FormModal
         open={saveOpen}

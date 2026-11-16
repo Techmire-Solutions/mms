@@ -68,8 +68,12 @@ export function StudentsBulkEnrollModal({
           ? { mode, sessionId }
           : { mode, sessionId, classId, ...(sectionId ? { sectionId } : {}) },
       );
-      // A failed enroll must not discard the chosen session/class: close only on success.
-      if (saved === false) return;
+      // A failed enroll must not discard the chosen session/class: keep the inputs
+      // and surface the failure in the modal banner for a retry.
+      if (saved === false) {
+        setFormError(t("students.saveFailed"));
+        return;
+      }
       setSessionId("");
       setClassId("");
       setSectionId("");

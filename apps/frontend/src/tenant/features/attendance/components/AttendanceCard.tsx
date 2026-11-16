@@ -1,6 +1,7 @@
 import type React from "react";
 import { formatDate } from "@mms/shared";
 import { TimePicker } from "@/components/app/TimePicker";
+import { FORM_ERROR } from "@/components/ui/formStyles";
 import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { EntityCard } from "@/components/app/EntityCard";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
@@ -12,6 +13,8 @@ export interface AttendanceCardProps {
   attendanceRecord: AttendanceRecord;
   isColumnVisible: (key: string) => boolean;
   editingRecord: AttendanceRecord | null;
+  /** Inline save/validation error for the record being edited (rendered under its inputs). */
+  editingRecordError?: string | null;
   statuses: AttendanceStatus[];
   updateDraft: <K extends keyof AttendanceRecord>(key: K, value: AttendanceRecord[K]) => void;
   renderRowActions: (record: AttendanceRecord) => React.ReactNode;
@@ -36,6 +39,7 @@ export function AttendanceCard({
   attendanceRecord,
   isColumnVisible,
   editingRecord,
+  editingRecordError = null,
   statuses,
   updateDraft,
   renderRowActions,
@@ -46,6 +50,7 @@ export function AttendanceCard({
   reducedMotion,
   t,
 }: AttendanceCardProps): React.JSX.Element {
+  const isEditing = editingRecord?.id === attendanceRecord.id;
   return (
     <DirectoryEntityCard
       entity={attendanceRecord}
@@ -86,15 +91,22 @@ export function AttendanceCard({
           )}
           {isColumnVisible("timeIn") && (
             <DirectoryCardMetaTile label={t("attendance.columns.timeIn")}>
-              {editingRecord?.id === attendanceRecord.id ? (
-                <TimePicker
-                  id={`attendance-mobile-time-in-${attendanceRecord.id}`}
-                  name="timeIn"
-                  value={editingRecord.timeIn}
-                  onChange={(nextValue) => updateDraft("timeIn", nextValue)}
-                  aria-label={t("attendance.columns.timeIn")}
-                  className="w-full min-w-0 text-xs"
-                />
+              {isEditing ? (
+                <div className="flex flex-col gap-1">
+                  <TimePicker
+                    id={`attendance-mobile-time-in-${attendanceRecord.id}`}
+                    name="timeIn"
+                    value={editingRecord.timeIn}
+                    onChange={(nextValue) => updateDraft("timeIn", nextValue)}
+                    aria-label={t("attendance.columns.timeIn")}
+                    className="w-full min-w-0 text-xs"
+                  />
+                  {editingRecordError ? (
+                    <p role="alert" className={`${FORM_ERROR} text-start`}>
+                      {editingRecordError}
+                    </p>
+                  ) : null}
+                </div>
               ) : (
                 <span className="font-mono text-xs text-muted-foreground">
                   {attendanceRecord.timeIn || "—"}

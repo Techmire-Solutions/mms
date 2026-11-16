@@ -10,6 +10,8 @@ export interface AttendanceListContentProps {
   isColumnVisible: (key: string) => boolean;
   visibleColCount: number;
   editingRecord: AttendanceRecord | null;
+  /** Inline save/validation error for the record being edited. */
+  editingRecordError?: string | null;
   statuses: AttendanceStatus[];
   updateDraft: <K extends keyof AttendanceRecord>(key: K, value: AttendanceRecord[K]) => void;
   classLabel: (cls: string) => string;
@@ -33,6 +35,7 @@ export function AttendanceListContent(props: AttendanceListContentProps): React.
         paginatedRecords={props.paginatedRecords}
         isColumnVisible={props.isColumnVisible}
         editingRecord={props.editingRecord}
+        editingRecordError={props.editingRecordError}
         statuses={props.statuses}
         updateDraft={props.updateDraft}
         classLabel={props.classLabel}
@@ -54,6 +57,7 @@ export function AttendanceListContent(props: AttendanceListContentProps): React.
       isColumnVisible={props.isColumnVisible}
       visibleColCount={props.visibleColCount}
       editingRecord={props.editingRecord}
+      editingRecordError={props.editingRecordError}
       statuses={props.statuses}
       updateDraft={props.updateDraft}
       classLabel={props.classLabel}

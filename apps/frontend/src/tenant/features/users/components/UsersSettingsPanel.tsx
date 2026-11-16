@@ -51,16 +51,6 @@ export const UsersSettingsPanel = function UsersSettingsPanel({
             onChange={(value) => upd("requireEmailVerification", value)}
           />
         </div>
-        <ModuleSetupSaveFooter
-          dirty={isDirty}
-          saving={saving}
-          saved={saved}
-          saveLabel={saving ? t("global.saving") : t("common.save")}
-          savedLabel={t("settings.savedBadge")}
-          onSave={onSave}
-          disableUnsavedGuard
-          footerClassName="mt-4 pt-3"
-        />
       </SectionCard>
 
       <ModuleSetupSaveFooter

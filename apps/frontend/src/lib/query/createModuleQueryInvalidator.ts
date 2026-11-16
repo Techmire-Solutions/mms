@@ -18,6 +18,18 @@ export interface ModuleQueryInvalidatorKeys {
   /** Setup tier. Omitting it left 18 modules with stale setup screens after a mutation. */
   preferences?: readonly unknown[];
   lookups?: readonly unknown[];
+  /**
+   * Cross-module caches a write also makes stale (e.g. obligations receipts post
+   * accounting journal entries and move report aggregates). Invalidated right
+   * after `lookups`; use one key per related cache.
+   */
+  related?: readonly (readonly unknown[])[];
+  /**
+   * The dashboard summary root (`summary.<module>` KPIs). It is a separate cache
+   * with a long staleTime, so a module mutation that omits it leaves the dashboard
+   * stale until an unrelated refetch or the WebSocket echo.
+   */
+  dashboard?: readonly unknown[];
 }
 
 /**
@@ -38,5 +50,9 @@ export function createModuleQueryInvalidator(keys: ModuleQueryInvalidatorKeys) {
     }
     if (keys.preferences) void queryClient.invalidateQueries({ queryKey: keys.preferences });
     if (keys.lookups) void queryClient.invalidateQueries({ queryKey: keys.lookups });
+    for (const relatedKey of keys.related ?? []) {
+      void queryClient.invalidateQueries({ queryKey: relatedKey });
+    }
+    if (keys.dashboard) void queryClient.invalidateQueries({ queryKey: keys.dashboard });
   };
 }

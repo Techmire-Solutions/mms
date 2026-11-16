@@ -7,6 +7,7 @@ const mockFormState = vi.hoisted(() => ({
   linkedContact: { id: "cnt-1", name: "Zayd Harith" } as { id: string; name: string } | null,
   contactId: "cnt-1",
   validationErrorSummary: undefined as string | undefined,
+  formError: null as string | null,
 }));
 
 vi.mock("@/tenant/features/students/hooks/useStudentFormState", () => ({
@@ -24,6 +25,7 @@ vi.mock("@/tenant/features/students/hooks/useStudentFormState", () => ({
       status: "active",
     },
     validationErrorSummary: mockFormState.validationErrorSummary,
+    formError: mockFormState.formError,
     statusBadgeConfig: {},
     isFieldEnabled: () => true,
     isFieldRequired: () => false,
@@ -48,14 +50,17 @@ vi.mock("@/components/app/FormModal", () => ({
     title,
     children,
     footerStart,
+    error,
   }: {
     title: string;
     children: React.ReactNode;
     footerStart: React.ReactNode;
+    error?: string;
   }) => (
     <div data-testid="form-modal">
       <h1>{title}</h1>
       <div>{footerStart}</div>
+      {error ? <div role="alert">{error}</div> : null}
       <div>{children}</div>
     </div>
   ),
@@ -90,5 +95,15 @@ describe("StudentForm Component", () => {
     mockFormState.linkedContact = { id: "cnt-1", name: "Zayd Harith" };
     mockFormState.contactId = "cnt-1";
     mockFormState.validationErrorSummary = undefined;
+  });
+
+  it("surfaces a non-field save failure through the modal error banner", () => {
+    mockFormState.formError = "Server unavailable";
+
+    const html = renderToStaticMarkup(<StudentForm onClose={vi.fn()} onSave={vi.fn()} />);
+
+    expect(html).toContain("Server unavailable");
+
+    mockFormState.formError = null;
   });
 });

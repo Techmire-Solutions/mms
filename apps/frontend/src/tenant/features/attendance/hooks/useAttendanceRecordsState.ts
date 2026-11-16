@@ -1,4 +1,4 @@
-import { useState, useEffect, useDeferredValue } from "react";
+import { useState, useEffect, useDeferredValue, type Dispatch, type SetStateAction } from "react";
 import { type AttendanceRecord } from "@/lib/data/attendanceData";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
@@ -42,7 +42,14 @@ export function useAttendanceRecordsState({
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [listPage, setListPage] = useState(1);
-  const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(null);
+  const [editingRecord, setEditingRecordState] = useState<AttendanceRecord | null>(null);
+  const [editingRecordError, setEditingRecordError] = useState<string | null>(null);
+
+  /** Starting or cancelling an edit always drops the previous row's error. */
+  const setEditingRecord: Dispatch<SetStateAction<AttendanceRecord | null>> = (next) => {
+    setEditingRecordError(null);
+    setEditingRecordState(next);
+  };
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [confirmBulkOpen, setConfirmBulkOpen] = useState(false);
 
@@ -132,14 +139,16 @@ export function useAttendanceRecordsState({
     ATTENDANCE_COLUMN_KEYS.filter(columnVisible).length + (canDeleteAttendance ? 1 : 0) + 1;
 
   const updateDraft = <K extends keyof AttendanceRecord>(key: K, value: AttendanceRecord[K]) => {
-    setEditingRecord((current) => (current ? { ...current, [key]: value } : current));
+    // A changed field invalidates the inline error the previous save reported.
+    setEditingRecordError(null);
+    setEditingRecordState((current) => (current ? { ...current, [key]: value } : current));
   };
 
   /**
    * Inline-edit guard: the policy would reject these anyway, but a round trip loses the edit context.
    * Mirrors `attendance_time_invalid` / status-time rules from the shared policy.
    */
-  const editingRecordError = (record: AttendanceRecord): string | null => {
+  const validateEditingRecord = (record: AttendanceRecord): string | null => {
     const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
     if (!isoDateSchema.safeParse(record.date).success) return t("attendance.toast.invalidDate");
     if (!attendanceRecordStatusSchema.safeParse(record.status).success) {
@@ -158,19 +167,19 @@ export function useAttendanceRecordsState({
 
   const saveEditingRecord = async () => {
     if (!editingRecord || !canWriteAttendance) return;
-    const invalid = editingRecordError(editingRecord);
+    const invalid = validateEditingRecord(editingRecord);
     if (invalid) {
-      notify.error(t("attendance.toast.saveFailed"), { description: invalid });
+      // Inline, next to the inputs — a toast left the row with no explanation.
+      setEditingRecordError(invalid);
       return;
     }
     try {
       await onUpdateRecord(editingRecord);
       notify.success(t("attendance.toast.updated"));
-      setEditingRecord(null);
+      setEditingRecordError(null);
+      setEditingRecordState(null);
     } catch (error) {
-      notify.error(t("attendance.toast.saveFailed"), {
-        description: error instanceof Error ? error.message : String(error),
-      });
+      setEditingRecordError(error instanceof Error ? error.message : String(error));
     }
   };
 
@@ -206,6 +215,7 @@ export function useAttendanceRecordsState({
     listPage,
     setListPage,
     editingRecord,
+    editingRecordError,
     setEditingRecord,
     pendingDeleteId,
     setPendingDeleteId,

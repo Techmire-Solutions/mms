@@ -1,10 +1,11 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useContactValidation } from "@/lib/contacts/useContactValidation";
 import { getApiValidationErrors, getApiValidationMessage } from "@/lib/apiValidationMessage";
+import { isConflictError } from "@/lib/apiContractError";
 import { validateContactDraftErrors } from "@/tenant/features/contacts/hooks/contactFormDraftValidator";
 import {
   applyTitleCaseToContact,
@@ -45,10 +46,14 @@ export function useContactFormSave({
   const validate = useContactValidation();
   const [saving, setSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  // Non-field failures (500/network/409 without field keys) belong in the modal banner,
+  // not only in a toast the user can miss.
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const handleSave = useCallback(
+  const performSave = useCallback(
     async (options?: { keepOpen?: boolean }): Promise<boolean> => {
       setValidationErrors([]);
+      setFormError(null);
 
       if (contact && isContactDeleted(contact)) {
         notify.error(t("contacts.form.cannotEditDeleted"));
@@ -157,11 +162,15 @@ export function useContactFormSave({
           });
           return false;
         }
-        const description =
-          getApiValidationMessage(err) || (err instanceof Error ? err.message : undefined);
-        notify.error(t("settings.serverSaveFailed"), {
-          description,
-        });
+        // The owning write action already toasts; the banner is what the user can act on.
+        // A 409 (stale write / duplicate) gets conflict-specific copy, not a generic failure.
+        setFormError(
+          isConflictError(err)
+            ? t("contacts.form.saveConflict")
+            : getApiValidationMessage(err) ||
+                (err instanceof Error ? err.message : null) ||
+                t("settings.serverSaveFailed"),
+        );
         return false;
       } finally {
         setSaving(false);
@@ -184,5 +193,22 @@ export function useContactFormSave({
     ],
   );
 
-  return { saving, validationErrors, setValidationErrors, handleSave };
+  // Contact create runs through both the footer and the form's Enter handler; a
+  // same-frame double submit would create two people. The ref is set before the
+  // first await (state only disables the button after a re-render).
+  const inFlightRef = useRef(false);
+  const handleSave = useCallback(
+    async (options?: { keepOpen?: boolean }): Promise<boolean> => {
+      if (inFlightRef.current) return false;
+      inFlightRef.current = true;
+      try {
+        return await performSave(options);
+      } finally {
+        inFlightRef.current = false;
+      }
+    },
+    [performSave],
+  );
+
+  return { saving, validationErrors, setValidationErrors, formError, handleSave };
 }

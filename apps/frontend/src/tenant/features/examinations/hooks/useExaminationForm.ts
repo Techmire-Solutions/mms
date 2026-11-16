@@ -5,6 +5,7 @@ import { notify } from "@/lib/notify";
 import { type Exam } from "@/lib/data/examinationData";
 import { toTitleCase } from "@mms/shared";
 import { EXAMINATION_FORM_EMPTY } from "../lib/examinationFormConstants";
+import { examinationClassOptions } from "../lib/examinationClassOptions";
 import {
   isExamDraftDirty,
   validateExamDraft,
@@ -85,13 +86,7 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
     errors[field] = t(key);
   }
 
-  const classes = (() =>
-    sessions.flatMap((session) =>
-      (session.classes || []).map((sessionClass) => ({
-        id: sessionClass.id,
-        name: `${session.name} - ${sessionClass.name}`,
-      })),
-    ))();
+  const classes = examinationClassOptions(sessions);
 
   const handleSave = async () => {
     setSubmitAttempted(true);

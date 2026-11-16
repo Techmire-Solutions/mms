@@ -10,6 +10,7 @@ import { MessagingMessageBodyField } from "@/components/app/MessagingMessageBody
 import { useCmdEnterShortcut } from "@/hooks/useCmdEnterShortcut";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 
 const TEMPLATE_FORM_ID = "messaging-setup-template-form";
 
@@ -60,10 +61,15 @@ export function MessagingSetupTemplateForm({
 }: MessagingSetupTemplateFormProps): React.JSX.Element {
   const { t } = useTranslation();
 
-  const trySave = useCallback((): void => {
+  const guardSave = useSubmitGuard();
+  // The footer button and Cmd/Ctrl+Enter share this path; a same-frame double
+  // trigger must not create two templates.
+  const trySave = useCallback(async (): Promise<void> => {
     if (saveDisabled) return;
-    void onSave();
-  }, [saveDisabled, onSave]);
+    await guardSave(async () => {
+      await onSave();
+    });
+  }, [guardSave, saveDisabled, onSave]);
 
   // Keyboard shortcut: Cmd/Ctrl + Enter to save — suppressed while the
   // discard-confirmation dialog is open.

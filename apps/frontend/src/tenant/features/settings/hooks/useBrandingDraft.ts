@@ -6,6 +6,8 @@ import { clearBrandingSettingsPreview, previewBrandingSettings } from "@/lib/set
 import { buildBrandingPreviewPatch } from "@/lib/brandingPreviewPatch";
 import {
   mergeBrandingIdentityForSave,
+  mergeBrandingThemeForSave,
+  retainIdentityDraftAfterThemeSave,
   retainThemeDraftAfterIdentitySave,
   sanitizeBrandingSocialLinks,
   resetBrandingIdentityFields,
@@ -43,6 +45,8 @@ export interface UseBrandingDraftResult {
     options?: UseBrandingDraftSaveOptions,
   ) => Promise<boolean>;
   handleSaveIdentity: (toast?: UseBrandingDraftSaveToast) => Promise<boolean>;
+  /** Theme-tab save: persists appearance fields only, never staged institution edits. */
+  handleSaveTheme: (toast?: UseBrandingDraftSaveToast) => Promise<boolean>;
   handleDiscardIdentity: () => void;
   applyPersisted: (brandingSettings: BrandingSettings) => void;
 }
@@ -163,6 +167,32 @@ export function useBrandingDraft({
     }
   };
 
+  const handleSaveTheme = async (toast?: UseBrandingDraftSaveToast): Promise<boolean> => {
+    setSaving(true);
+    try {
+      const cleanedData = sanitizeBrandingSocialLinks(data);
+      const persisted = mergeBrandingThemeForSave(cleanedData, baseline);
+      const result = await saveBrandingSettings(persisted);
+      if (!result.ok) {
+        notify.error(t("settings.serverSaveFailed"), {
+          description: t(serverSyncErrorKey(result.status)),
+        });
+        return false;
+      }
+      const nextData = retainIdentityDraftAfterThemeSave(persisted, cleanedData);
+      setBaseline(persisted);
+      setData(nextData);
+      previewBrandingSettings(buildBrandingPreviewPatch(nextData, trackKeys));
+      flashSaved();
+      notify.success(toast?.saveSuccessMessage ?? saveSuccessMessage, {
+        description: toast?.saveSuccessDescription ?? saveSuccessDescription,
+      });
+      return true;
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleDiscardIdentity = (): void => {
     setData((current) => resetBrandingIdentityFields(current, baseline));
     clearSaved();
@@ -177,6 +207,7 @@ export function useBrandingDraft({
     upd,
     handleSave,
     handleSaveIdentity,
+    handleSaveTheme,
     handleDiscardIdentity,
     applyPersisted,
   };

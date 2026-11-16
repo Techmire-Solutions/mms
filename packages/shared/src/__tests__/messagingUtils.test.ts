@@ -83,6 +83,19 @@ describe("messagingUtils", () => {
       expect(findUnknownPersonalizationTokens("Alias {school_name}")).toEqual([]);
     });
 
+    it("tolerates surrounding spaces inside a brace token", () => {
+      expect(findUnknownPersonalizationTokens("Hello { name } and { madrasa_name }")).toEqual([]);
+      expect(personalizeMessage("Hello { name }", { name: "Ali" })).toBe("Hello Ali");
+    });
+
+    it("rejects brace placeholders outside the lowercase grammar", () => {
+      // `{Invoice Number}` previously matched no pattern at all, so it was saved
+      // and shipped literally instead of being rejected.
+      expect(findUnknownPersonalizationTokens("Due {Invoice Number} now")).toEqual([
+        "invoice number",
+      ]);
+    });
+
     it("returns deduped unknown token keys", () => {
       expect(
         findUnknownPersonalizationTokens(

@@ -38,6 +38,7 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
   );
 
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<import("@mms/shared").ValidationError[]>(
     [],
   );
@@ -83,6 +84,7 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
       setStudentDraft(nextDraft);
       setBaselineSnapshot(studentDraftSnapshot(nextDraft));
       setValidationErrors([]);
+      setFormError(null);
       setIsGrManuallyEdited(false);
     } else if (fieldsChanged) {
       setStudentDraft((prev) => {
@@ -163,6 +165,7 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
     validationErrors,
     setValidationErrors,
     setSaving,
+    setFormError,
     setPendingSaveData,
     setTypedDuplicateReason,
     setDuplicateConfirmOpen,
@@ -175,6 +178,7 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
     dir,
     language,
     saving,
+    formError,
     studentDraft,
     statusBadgeConfig,
     statusSelectOptions,

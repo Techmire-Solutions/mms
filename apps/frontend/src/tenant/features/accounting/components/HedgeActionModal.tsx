@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { accountOptions } from "@/tenant/features/accounting/lib/accountOptions";
 import type { HedgeAction, HedgeActionInput } from "@/tenant/features/accounting/lib/hedgeForms";
 
@@ -44,19 +45,21 @@ export function HedgeActionModal({
   onSave,
 }: HedgeActionModalProps): React.JSX.Element {
   const { t } = useTranslation();
-  const [input, setInput] = useState<HedgeActionInput>({
+  const resetInput = (): HedgeActionInput => ({
     date: todayISO(),
     rate: "",
     accountId: "",
     reason: "",
   });
+  const [input, setInput] = useState<HedgeActionInput>(resetInput);
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   useIdentityReset(`${action}:${hedge.id}`, () => {
-    setInput({ date: todayISO(), rate: "", accountId: "", reason: "" });
+    setInput(resetInput());
     setFormError(null);
     setFieldErrors({});
   });
+  const { isDirty } = useDirtySnapshot(input, `true:${hedge.id}:${action}`, resetInput());
   const settle = action === "settle";
   const discontinue = action === "discontinue";
   const complete = discontinue
@@ -133,6 +136,9 @@ export function HedgeActionModal({
       )}
       onSave={submit}
       saving={saving}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       saveDisabled={!complete}
       error={formError ?? undefined}
       formId="hedge-action-form"
