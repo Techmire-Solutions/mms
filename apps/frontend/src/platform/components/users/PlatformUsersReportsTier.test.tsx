@@ -41,7 +41,7 @@ describe("PlatformUsersReportsTier", () => {
     const html = renderToStaticMarkup(<PlatformUsersReportsTier />);
     expect(html).toContain("platform.manageAdmins");
     expect(html).toContain("platform.capabilitiesLabel");
-    expect(html).toContain("Role &amp; Security Governance");
+    expect(html).toContain("platform.reports.roleSecurityGovernance");
   });
 
   it("renders loading state when loading", () => {

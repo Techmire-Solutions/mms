@@ -130,6 +130,7 @@ export const platformContract = c.router({
       200: z.object({ user: platformUserSchema }),
       400: platformErrorSchema,
       403: platformErrorSchema,
+      409: platformErrorSchema,
     },
     summary: "Register first super-user",
   },
@@ -224,7 +225,12 @@ export const platformContract = c.router({
     summary: "Get super-user activity logs",
   },
   // System admin — read/ops endpoints served by plain Fastify handlers
-  // (platformAdminSystem.ts / platformAiRoutes.ts); declared here so the ts-rest client can reach them.
+  // (platformSchemaRoutes.ts / platformAdminSystem.ts / platformAiRoutes.ts).
+  // Declared here so the ts-rest client can reach them. `getErd`, `getTelemetry`,
+  // and `getActivityTrend` are intentionally loose (`z.unknown()`) client stubs:
+  // their response shape is owned by the backend services, not a shared DTO, so a
+  // hand-written contract schema here would silently drift. Do not add a schema
+  // without also moving the shape into `@mms/shared`.
   getErd: {
     method: "GET",
     path: "/api/platform/schema/erd",
@@ -262,7 +268,13 @@ export const platformContract = c.router({
   getSessionPolicy: {
     method: "GET",
     path: "/api/platform/auth/session/policy",
-    responses: { 200: z.unknown() },
+    responses: {
+      200: z.object({
+        idleMs: z.number(),
+        warnBeforeMs: z.number(),
+        absoluteMs: z.number().nullable(),
+      }),
+    },
     summary: "Get the platform session timeout policy",
   },
   // Workspaces

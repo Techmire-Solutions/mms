@@ -89,7 +89,7 @@ export function PlatformAiPromptBar({
             {isAnalyzing ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
             ) : (
-              <SendHorizontal className="h-4 w-4 rtl:rotate-180" aria-hidden />
+              <SendHorizontal className="h-4 w-4" aria-hidden />
             )}
           </Button>
         </div>

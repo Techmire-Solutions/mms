@@ -55,7 +55,7 @@ describe("PlatformDatabaseTelemetryCard", () => {
 
     expect(html).toContain("platform.db.platformTitle");
     expect(html).toContain("PostgreSQL 16 (Drizzle ORM)");
-    expect(html).toContain("Primary Node");
+    expect(html).toContain("platform.db.primaryNode");
     expect(html).toContain("27%");
     expect(html).toContain("8/30");
     expect(html).toContain("14ms");
@@ -65,9 +65,9 @@ describe("PlatformDatabaseTelemetryCard", () => {
     const html = renderToStaticMarkup(<PlatformDatabaseTelemetryCard telemetry={mockTelemetry} />);
 
     expect(html).toContain("platform.db.tenantTitle");
-    expect(html).toContain("RLS 100% Enforced");
-    expect(html).toContain("12 conns");
-    expect(html).toContain("40% pool ceiling");
+    expect(html).toContain("platform.db.rlsEnforced");
+    expect(html).toContain("platform.db.conns");
+    expect(html).toContain("platform.db.poolCeiling");
     expect(html).toContain("tenant-alpha");
     expect(html).toContain("3 tx");
     expect(html).toContain("tenant-beta");
@@ -106,7 +106,7 @@ describe("PlatformDatabaseTelemetryCard", () => {
       <PlatformDatabaseTelemetryCard telemetry={nearCapTelemetry} />,
     );
 
-    expect(html).toContain("Near Cap Warning");
+    expect(html).toContain("platform.db.nearCapWarning");
     expect(html).toContain("near 5");
   });
 });

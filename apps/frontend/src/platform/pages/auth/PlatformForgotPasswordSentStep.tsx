@@ -40,7 +40,7 @@ export function PlatformForgotPasswordSentStep({
             onClick={() => navigate(resetPath(resetId))}
           >
             {t("platform.forgotEnterCode")}
-            <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
+            <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
         ) : null}
       </AuthCheckEmailSuccess>

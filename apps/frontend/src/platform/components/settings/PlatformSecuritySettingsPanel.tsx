@@ -67,7 +67,7 @@ export function PlatformSecuritySettingsPanel(): React.JSX.Element {
             >
               <Link to={ROUTES.platformAccount}>
                 {t("platform.managePersonalSecurity")}
-                <ArrowRight className="w-3.5 h-3.5 ms-1.5 rtl:rotate-180" />
+                <ArrowRight className="w-3.5 h-3.5 ms-1.5" />
               </Link>
             </Button>
           </div>
@@ -99,7 +99,7 @@ export function PlatformSecuritySettingsPanel(): React.JSX.Element {
               >
                 <Link to={ROUTES.platformActivityLogs}>
                   {t("platform.viewActivityLogs")}
-                  <ArrowRight className="w-3.5 h-3.5 ms-1.5 rtl:rotate-180" />
+                  <ArrowRight className="w-3.5 h-3.5 ms-1.5" />
                 </Link>
               </Button>
             </div>

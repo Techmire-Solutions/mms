@@ -20,7 +20,7 @@ export function PlatformOnboardingAction() {
       <Link to={ROUTES.onboarding}>
         <Plus aria-hidden />
         {t("auth.createMadrasa")}
-        <ArrowRight className="rtl:rotate-180" aria-hidden />
+        <ArrowRight className="" aria-hidden />
       </Link>
     </Button>
   );

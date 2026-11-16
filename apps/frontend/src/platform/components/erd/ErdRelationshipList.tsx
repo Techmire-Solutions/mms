@@ -34,10 +34,7 @@ export function ErdRelationshipList({
             <span className="font-mono text-foreground">
               {rel.fromTable}.{rel.fromColumn}
             </span>
-            <ArrowRight
-              className="h-3.5 w-3.5 shrink-0 text-muted-foreground rtl:rotate-180"
-              aria-hidden
-            />
+            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
             <span className="font-mono text-foreground">
               {rel.toTable}.{rel.toColumn}
             </span>

@@ -15,6 +15,10 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+vi.mock("@/platform/hooks/usePlatformPermissions", () => ({
+  usePlatformPermissions: () => ({ isSuperUser: true }),
+}));
+
 const mockAdmins: PlatformUserProfile[] = [
   {
     id: "admin-1",

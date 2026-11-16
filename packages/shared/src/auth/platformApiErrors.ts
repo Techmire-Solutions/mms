@@ -36,6 +36,7 @@ export const PLATFORM_HTTP_ERROR_TYPES = [
   "validation_error",
   "rate_limit_exceeded",
   "not_found",
+  "challenge_not_found",
   "database_error",
   "remote_migrate_disabled",
   "migrate_restart_in_progress",

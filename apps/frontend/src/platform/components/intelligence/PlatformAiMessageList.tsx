@@ -96,7 +96,7 @@ export function PlatformAiMessageList({
                     className="min-h-9 h-9 text-xs rounded-xl border-primary/30 hover:border-primary bg-background hover:bg-primary/5 text-foreground cursor-pointer transition-colors"
                   >
                     <span>{sug.label}</span>
-                    <ArrowRight className="h-3 w-3 ms-1 text-primary rtl:rotate-180" aria-hidden />
+                    <ArrowRight className="h-3 w-3 ms-1 text-primary" aria-hidden />
                   </Button>
                 ))}
               </div>

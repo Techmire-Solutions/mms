@@ -7,7 +7,6 @@ import {
 } from "../../services/workspaceService.js";
 import { verifyPlatformUserPassword } from "../../services/platform/platformUserService.js";
 import {
-  findTenantUserRowById,
   insertPlatformActivityLog,
   verifyTenantUserEmailRow,
 } from "../../platform/use-cases/platformUseCases.js";
@@ -20,14 +19,6 @@ export async function handleVerifyTenantUserEmail({
 > {
   const { platformUser } = request as PlatformAuthenticatedRequest;
   const { subdomain, userId } = params;
-
-  const user = await findTenantUserRowById(subdomain, userId);
-  if (!user) {
-    return {
-      status: 404 as const,
-      body: { type: "not_found", message: "User not found in workspace" },
-    };
-  }
 
   const ok = await verifyTenantUserEmailRow(subdomain, userId);
   if (!ok) {

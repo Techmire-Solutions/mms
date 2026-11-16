@@ -1,4 +1,6 @@
 import React from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformSidebarNav } from "./PlatformSidebarNav";
@@ -82,7 +84,16 @@ describe("PlatformSidebarNav", () => {
     expect(html).toContain("platform.navAria");
   });
 
-  it("renders collapsed sidebar without errors in RTL", () => {
+  it("pins the console nav to LTR at the source level", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/platform/components/PlatformSidebarNav.tsx"),
+      "utf8",
+    );
+    expect(source).toContain('dir="ltr"');
+    expect(source).not.toContain("dir={dir}");
+  });
+
+  it("renders collapsed sidebar without errors even when the translation direction is RTL", () => {
     currentDir = "rtl";
     const html = renderToStaticMarkup(
       <TooltipProvider>

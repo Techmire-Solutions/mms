@@ -184,13 +184,18 @@ export const platformSetupStatusDtoSchema = z
 
 export type PlatformSetupStatusDto = z.infer<typeof platformSetupStatusDtoSchema>;
 
-export const platformSettingsDtoSchema = z.object({
-  id: z.string(),
-  syncTlsOnCreate: z.boolean(),
-  tlsExtraSans: z.string().optional(),
-  certbotEmail: z.string(),
-  updatedAt: z.string().optional(),
-});
+export const platformSettingsDtoSchema = z
+  .object({
+    id: z.string(),
+    syncTlsOnCreate: z.boolean(),
+    tlsExtraSans: z.string(),
+    certbotEmail: z.string(),
+    emailNotifications: z.boolean(),
+    smsNotifications: z.boolean(),
+    whatsAppNotifications: z.boolean().optional(),
+    updatedAt: z.string().optional(),
+  })
+  .strict();
 
 export type PlatformSettingsDto = z.infer<typeof platformSettingsDtoSchema>;
 

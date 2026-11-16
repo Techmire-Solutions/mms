@@ -21,7 +21,7 @@ export type PlatformUsersTab = PlatformUsersSubTab;
 
 export default function PlatformUsersPage(): React.JSX.Element {
   const { t } = useTranslation();
-  const { canAdmins, canSystem, canSettings } = usePlatformPermissions();
+  const { canSystem, canSettings, isSuperUser } = usePlatformPermissions();
   const { data: admins, isLoading, isError } = usePlatformAdmins();
   const descriptor = usePlatformUserDescriptor();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -104,7 +104,7 @@ export default function PlatformUsersPage(): React.JSX.Element {
           {t("users.exportCsv")}
         </Button>
       ) : null}
-      {canAdmins ? <PlatformAddAdminForm asTriggerOnly /> : null}
+      {isSuperUser ? <PlatformAddAdminForm asTriggerOnly /> : null}
     </div>
   );
 

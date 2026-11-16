@@ -30,13 +30,11 @@ export function PlatformDatabaseTelemetryCard({
   React.useEffect(() => {
     if (!telemetry || isLoading) return;
     if (utilRate > 85) {
-      announceAssertive(`Critical alert: Database pool utilization at ${utilRate}%`);
+      announceAssertive(t("platform.db.criticalUtilization", { pct: utilRate }));
     } else {
-      announcePolite(
-        `Database telemetry updated: latency ${latency}ms, pool utilization ${utilRate}%`,
-      );
+      announcePolite(t("platform.db.telemetryUpdated", { latency, pct: utilRate }));
     }
-  }, [telemetry, isLoading, utilRate, latency, announcePolite, announceAssertive]);
+  }, [telemetry, isLoading, utilRate, latency, announcePolite, announceAssertive, t]);
 
   const activeTenantsCount = tenantDb?.activeTenantsCount ?? 0;
   const totalTenantTx = tenantDb?.totalTenantTransactions ?? 0;
@@ -45,10 +43,10 @@ export function PlatformDatabaseTelemetryCard({
   const activeTenants = tenantDb?.activeTenants ?? [];
 
   const poolTiles = [
-    { label: "Active", val: `${activePool}/${totalPool}`, icon: Layers },
+    { label: t("platform.db.poolActive"), val: `${activePool}/${totalPool}`, icon: Layers },
     { label: t("platform.db.idleReserve"), val: idlePool, icon: Cpu },
     { label: t("platform.db.waitingQueue"), val: waitingPool, icon: Clock },
-    { label: "Latency", val: `${latency}ms`, icon: Clock },
+    { label: t("platform.db.poolLatency"), val: `${latency}ms`, icon: Clock },
   ];
 
   return (
@@ -71,7 +69,7 @@ export function PlatformDatabaseTelemetryCard({
                 {platformDb?.engine ?? "PostgreSQL 16"}
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-3xs font-medium bg-muted text-muted-foreground border border-border/50">
-                {hasReplica ? "Replica Active" : "Primary Node"}
+                {hasReplica ? t("platform.db.replicaActive") : t("platform.db.primaryNode")}
               </span>
             </div>
           </div>
@@ -124,7 +122,7 @@ export function PlatformDatabaseTelemetryCard({
             </div>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-3xs font-semibold bg-success/15 text-success border border-success/30">
               <CheckCircle2 className="w-2.5 h-2.5" />
-              RLS 100% Enforced
+              {t("platform.db.rlsEnforced")}
             </span>
           </div>
           <p className="text-xs text-muted-foreground">{t("platform.db.tenantDesc")}</p>
@@ -138,7 +136,9 @@ export function PlatformDatabaseTelemetryCard({
             <div className="text-sm font-mono font-bold text-foreground">
               {isLoading ? "…" : activeTenantsCount}
             </div>
-            <div className="text-3xs text-muted-foreground">Active tenant leases</div>
+            <div className="text-3xs text-muted-foreground">
+              {t("platform.db.activeTenantLeases")}
+            </div>
           </div>
 
           <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40">
@@ -148,23 +148,29 @@ export function PlatformDatabaseTelemetryCard({
             <div className="text-sm font-mono font-bold text-foreground">
               {isLoading ? "…" : totalTenantTx}
             </div>
-            <div className="text-3xs text-muted-foreground">In-flight transactions</div>
+            <div className="text-3xs text-muted-foreground">
+              {t("platform.db.inFlightTransactions")}
+            </div>
           </div>
 
           <div className="p-2.5 rounded-lg bg-muted/20 border border-border/40">
             <div className="text-3xs text-muted-foreground">{t("platform.db.tenantBudgetCap")}</div>
             <div className="text-sm font-mono font-bold text-foreground">
-              {isLoading ? "…" : `${capLimit} conns`}
+              {isLoading ? "…" : t("platform.db.conns", { count: capLimit })}
             </div>
-            <div className="text-3xs text-muted-foreground">{budgetPct}% pool ceiling</div>
+            <div className="text-3xs text-muted-foreground">
+              {t("platform.db.poolCeiling", { pct: budgetPct })}
+            </div>
           </div>
         </div>
 
         <div className="pt-2 border-t border-border/50 text-xs">
           <div className="text-3xs font-medium text-muted-foreground mb-1.5 flex items-center justify-between">
-            <span>Active Tenant Transaction Leases:</span>
+            <span>{t("platform.db.activeTenantTxLeases")}</span>
             {activeTenants.some((it) => it.count >= capLimit - 1) && (
-              <span className="text-3xs font-semibold text-warning">Near Cap Warning</span>
+              <span className="text-3xs font-semibold text-warning">
+                {t("platform.db.nearCapWarning")}
+              </span>
             )}
           </div>
           {activeTenants.length > 0 ? (

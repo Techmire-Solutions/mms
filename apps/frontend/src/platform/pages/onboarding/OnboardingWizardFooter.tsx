@@ -67,7 +67,7 @@ export function OnboardingWizardFooter({
           disabled={step === 1 || loading}
           className="text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
         >
-          <ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden />
+          <ArrowLeft className="h-4 w-4" aria-hidden />
           {t("onboarding.back")}
         </Button>
 
@@ -85,7 +85,7 @@ export function OnboardingWizardFooter({
           className="px-5 font-semibold shadow-md shadow-primary/10"
         >
           {isLastStep ? t("onboarding.createWorkspace") : t("onboarding.continue")}
-          <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
+          <ArrowRight className="h-4 w-4" aria-hidden />
         </Button>
       </div>
     </>
