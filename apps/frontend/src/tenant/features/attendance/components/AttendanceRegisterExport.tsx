@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { todayISO } from "@mms/shared";
 import { tsrClient } from "@/lib/api";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 
 /** First and last calendar day of a `YYYY-MM` month (date-only math, no timezone drift). */
 function monthBounds(month: string): { dateFrom: string; dateTo: string } {
@@ -28,9 +28,10 @@ export function AttendanceRegisterExport({
   date?: string;
 }): React.JSX.Element {
   const { t } = useTranslation();
-  // `todayISO()` is workspace-local; the old `toISOString()` slice could name the previous month
-  // around midnight in a UTC+5 school.
-  const month = (date || todayISO()).slice(0, 7);
+  // The workspace calendar day (not the device clock): a UTC+5 school at 20:00Z is already
+  // tomorrow locally, and the register must default to that month.
+  const workspaceToday = useWorkspaceToday();
+  const month = (date || workspaceToday).slice(0, 7);
   const { dateFrom, dateTo } = monthBounds(month);
 
   const enqueue = tsrClient.attendance.exportMatrix.useMutation({

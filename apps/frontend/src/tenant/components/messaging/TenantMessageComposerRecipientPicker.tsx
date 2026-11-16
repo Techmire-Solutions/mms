@@ -1,8 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
-import type { StandardMessagingRecipient } from "@mms/shared";
+import {
+  MESSAGING_RECIPIENTS_MATCH_LIMIT,
+  messagingRecipientsMatchResponseSchema,
+  type MessagingGenderFilter,
+  type MessagingRoleFilter,
+  type StandardMessagingRecipient,
+} from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMessagingWorkRecipients } from "@/tenant/features/messaging/hooks/useMessagingWorkRecipients";
+import { apiContract } from "@/lib/api";
+import { ApiError } from "@/lib/apiClient";
+import { notify } from "@/lib/notify";
 import { SearchBar } from "@/components/app/SearchBar";
 import { ListPagination } from "@/components/app/ListPagination";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -21,6 +30,10 @@ export interface MessageComposerRecipientPickerProps {
 
 const DEBOUNCE_MS = 300;
 
+/** The picker lists the reachable directory unfiltered; keep match queries aligned. */
+const ROLE_FILTER: MessagingRoleFilter = "all";
+const GENDER_FILTER: MessagingGenderFilter = "all";
+
 export function TenantMessageComposerRecipientPicker({
   kind,
   existingIds,
@@ -35,6 +48,10 @@ export function TenantMessageComposerRecipientPicker({
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [matching, setMatching] = useState(false);
+  // State re-renders too late to stop a same-frame double click; the ref is the guard.
+  const matchingRef = useRef(false);
+  const [matchError, setMatchError] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -46,8 +63,8 @@ export function TenantMessageComposerRecipientPicker({
 
   const { recipients, total, isPending, isFetching, isError, refetch } = useMessagingWorkRecipients(
     {
-      roleFilter: "all",
-      genderFilter: "all",
+      roleFilter: ROLE_FILTER,
+      genderFilter: GENDER_FILTER,
       search: debouncedQuery,
       kind,
       page,
@@ -67,22 +84,61 @@ export function TenantMessageComposerRecipientPicker({
     [existingIds, onAdd, onRemove],
   );
 
-  const handleToggleAll = () => {
-    const allSelected =
-      recipients.length > 0 && recipients.every((r) => existingIds.has(String(r.id)));
+  const allSelected =
+    recipients.length > 0 && recipients.every((r) => existingIds.has(String(r.id)));
+  const someSelected =
+    recipients.length > 0 && recipients.some((r) => existingIds.has(String(r.id))) && !allSelected;
+
+  const handleToggleAll = async (): Promise<void> => {
     const remove = onRemoveMany ?? ((ids: (string | number)[]) => ids.forEach(onRemove));
     const add = onAddMany ?? ((list: StandardMessagingRecipient[]) => list.forEach(onAdd));
     if (allSelected) {
       remove(recipients.map((r) => r.id));
       return;
     }
-    add(recipients.filter((r) => !existingIds.has(String(r.id))));
+    if (matchingRef.current) return;
+    matchingRef.current = true;
+    setMatching(true);
+    setMatchError(false);
+    try {
+      const search = debouncedQuery.trim();
+      const response = await apiContract.messaging.matchRecipients({
+        query: {
+          role: ROLE_FILTER,
+          gender: GENDER_FILTER,
+          ...(search ? { search } : {}),
+          kind,
+        },
+      });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to match messaging recipients",
+          errorBody?.type,
+        );
+      }
+      const body = messagingRecipientsMatchResponseSchema.parse(response.body);
+      const seen = new Set(existingIds);
+      const matched = body.recipients.filter((recipient) => {
+        const id = String(recipient.id);
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+      const capped = matched.slice(0, MESSAGING_RECIPIENTS_MATCH_LIMIT);
+      if (capped.length > 0) add(capped);
+      if (body.truncated) {
+        notify.info(t("messaging.selectAllTruncated"));
+      }
+    } catch {
+      setMatchError(true);
+      notify.error(t("messaging.selectAllFailed"));
+    } finally {
+      matchingRef.current = false;
+      setMatching(false);
+    }
   };
-
-  const allSelected =
-    recipients.length > 0 && recipients.every((r) => existingIds.has(String(r.id)));
-  const someSelected =
-    recipients.length > 0 && recipients.some((r) => existingIds.has(String(r.id))) && !allSelected;
 
   return (
     <div className="flex min-h-125 flex-col gap-3">
@@ -93,14 +149,20 @@ export function TenantMessageComposerRecipientPicker({
           onChange={setQuery}
           className="flex-1"
         />
-        {(isPending || isFetching) && (
+        {(isPending || isFetching || matching) && (
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden />
         )}
       </div>
 
+      {matchError ? (
+        <p role="alert" className="text-xs text-destructive">
+          {t("messaging.selectAllFailed")}
+        </p>
+      ) : null}
+
       <div
         className="relative flex flex-1 flex-col overflow-hidden rounded-lg border border-border bg-background"
-        aria-busy={isPending || isFetching || undefined}
+        aria-busy={isPending || isFetching || matching || undefined}
       >
         {isError ? (
           <div className="flex flex-1 items-center justify-center p-4">
@@ -119,7 +181,7 @@ export function TenantMessageComposerRecipientPicker({
           <TenantMessageComposerRecipientTable
             recipients={recipients}
             selectedIds={existingIds}
-            disabled={disabled}
+            disabled={disabled || matching}
             onToggle={handleToggle}
             onToggleAll={handleToggleAll}
             allSelected={allSelected}

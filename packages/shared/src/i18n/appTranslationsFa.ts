@@ -2579,6 +2579,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "contacts.form.phoneNumberPlaceholder": "912 000 0000",
   "contacts.form.phonesLabel": "تلفن‌ها",
   "contacts.form.pleaseFixErrors": "لطفاً خطاهای زیر را برطرف کنید",
+  "contacts.form.saveConflict":
+    "شخص دیگری این مخاطب را تغییر داده است. آن را دوباره بارگذاری کنید و دوباره تلاش کنید.",
   "contacts.form.noChanges": "هنوز تغییری برای ذخیره وجود ندارد.",
   "contacts.form.preferredContactMethod": "روش ارتباطی ترجیحی",
   "contacts.form.preferredLanguage": "زبان ترجیحی",
@@ -7838,6 +7840,9 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "reports.moduleTools.visualizerBuilder": "بصری‌ساز",
   "reports.moduleTools.widgetBuilder": "ابزارک‌ساز",
   "reports.saved.delete": "حذف قالب",
+  "reports.saved.deleteConfirmTitle": "حذف گزارش ذخیره‌شده؟",
+  "reports.saved.deleteConfirmDescription":
+    "این کار «{name}» را از فضای کاری حذف می‌کند. قابل بازگشت نیست.",
   "reports.saved.deleteSuccess": "قالب گزارش حذف شد",
   "reports.saved.emptyDescription": "فیلترها را تنظیم و آنها را به عنوان قالب گزارش ذخیره کنید.",
   "reports.saved.emptyTitle": "هیچ گزارش ذخیره شده‌ای وجود ندارد",
@@ -9067,6 +9072,9 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "students.restoreFailed": "بازیابی دانش‌آموز ممکن نشد",
   "students.restoreSuccess": "دانش‌آموز بازیابی شد",
   "students.saveFailed": "ذخیره دانش‌آموز ممکن نشد",
+  "students.form.avatarContactSyncTitle": "به‌روزرسانی عکس مخاطب مرتبط؟",
+  "students.form.avatarContactSyncDescription":
+    "این کار عکس مخاطب مرتبط را فوراً به‌روزرسانی می‌کند. لغو فرم دانش‌آموز آن را برنمی‌گرداند.",
   "students.searchColumnsPlaceholder": "فیلتر ستون‌ها...",
   "students.searchPlaceholder": "جستجو در فهرست دانش‌آموزان\u2026",
   "students.selectedCount": "{count} انتخاب شده",

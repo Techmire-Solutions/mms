@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { Wallet } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/app/FormPrimitives";
@@ -48,6 +49,22 @@ export function BudgetAddModal({
   const detailInvalid = !detail.trim();
   const amountInvalid = !amount || amount <= 0;
 
+  const guardSave = useSubmitGuard();
+  // The footer button and the native Enter submit must share one awaited path;
+  // the previous Enter handler called the raw parent save, so `serverError` was
+  // dead and a failure left an unhandled rejection.
+  const handleSave = async (): Promise<void> => {
+    if (!targetClassId || detailInvalid || amountInvalid) return;
+    await guardSave(async () => {
+      setServerError(null);
+      try {
+        await onSave();
+      } catch (error) {
+        setServerError(error instanceof Error ? error.message : t("errors.state.generic"));
+      }
+    });
+  };
+
   return (
     <FormModal
       open={open}
@@ -60,14 +77,7 @@ export function BudgetAddModal({
       icon={Wallet}
       cancelLabel={t("common.cancel")}
       saveLabel={t("common.save")}
-      onSave={async () => {
-        setServerError(null);
-        try {
-          await onSave();
-        } catch (error) {
-          setServerError(error instanceof Error ? error.message : "Could not save budget");
-        }
-      }}
+      onSave={handleSave}
       saving={saving}
       saveDisabled={saving || !targetClassId || detailInvalid || amountInvalid}
       isDirty={isDirty}
@@ -83,7 +93,7 @@ export function BudgetAddModal({
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          if (!saving && targetClassId && amount && amount > 0) void onSave();
+          if (!saving && targetClassId && amount && amount > 0) void handleSave();
         }}
         className="space-y-4"
       >

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { QueryClient } from "@tanstack/react-query";
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
 import { invalidateQuestionBankQueries } from "./invalidateQuestionBankQueries";
 import {
   QUESTION_BANK_METRICS_QUERY_KEY,
@@ -25,5 +26,6 @@ describe("invalidateQuestionBankQueries", () => {
     expect(seen).toContainEqual(QUESTION_BANK_RESULTS_QUERY_KEY);
     expect(seen).toContainEqual(QUESTION_BANK_METRICS_QUERY_KEY);
     expect(seen).toContainEqual(QUESTION_BANK_REPORT_AGGREGATES_QUERY_KEY);
+    expect(seen).toContainEqual(DASHBOARD_SUMMARY_QUERY_KEY_ROOT);
   });
 });

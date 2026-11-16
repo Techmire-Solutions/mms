@@ -2,6 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StandardMessagingRecipient } from "@mms/shared";
+import { notify } from "@/lib/notify";
 import { TenantMessageComposerRecipientPicker } from "./TenantMessageComposerRecipientPicker";
 
 declare global {
@@ -14,6 +15,16 @@ const recipients: StandardMessagingRecipient[] = [
   { id: "c2", name: "Hira Baig", phone: "+923001234568", email: "hira@example.com" },
   { id: "c3", name: "Ali Raza", phone: "+923001234569", email: "ali@example.com" },
 ];
+
+const matchRecipients = vi.fn();
+
+vi.mock("@/lib/api", () => ({
+  apiContract: { messaging: { matchRecipients: (...args: unknown[]) => matchRecipients(...args) } },
+}));
+
+vi.mock("@/lib/notify", () => ({
+  notify: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
+}));
 
 vi.mock("@/tenant/features/messaging/hooks/useMessagingWorkRecipients", () => ({
   useMessagingWorkRecipients: () => ({
@@ -89,9 +100,13 @@ describe("TenantMessageComposerRecipientPicker", () => {
     expect(onAdd).toHaveBeenCalledWith(recipients[0]);
   });
 
-  it("adds the whole page with one batch call instead of one call per row", async () => {
+  it("adds every matched recipient with one batch call instead of one page", async () => {
     const onAdd = vi.fn();
     const onAddMany = vi.fn();
+    matchRecipients.mockResolvedValueOnce({
+      status: 200,
+      body: { recipients, total: recipients.length, truncated: false, limit: 10_000 },
+    });
     await act(async () => {
       root.render(
         <TenantMessageComposerRecipientPicker
@@ -111,9 +126,74 @@ describe("TenantMessageComposerRecipientPicker", () => {
       checkboxes[0]?.click();
     });
 
+    expect(matchRecipients).toHaveBeenCalledWith({
+      query: { role: "all", gender: "all", kind: "phone" },
+    });
     expect(onAddMany).toHaveBeenCalledTimes(1);
     expect(onAddMany.mock.calls[0]?.[0]).toHaveLength(recipients.length);
     expect(onAdd).not.toHaveBeenCalled();
+  });
+
+  it("select-all adds all 120 matched recipients rather than the visible page of 50", async () => {
+    const onAddMany = vi.fn();
+    const matched = Array.from({ length: 120 }, (_, index) => ({
+      id: `m${index + 1}`,
+      name: `Recipient ${index + 1}`,
+      phone: `+9230000${String(index).padStart(5, "0")}`,
+    }));
+    matchRecipients.mockResolvedValueOnce({
+      status: 200,
+      body: { recipients: matched, total: matched.length, truncated: false, limit: 10_000 },
+    });
+    await act(async () => {
+      root.render(
+        <TenantMessageComposerRecipientPicker
+          kind="phone"
+          existingIds={new Set()}
+          onAdd={vi.fn()}
+          onRemove={vi.fn()}
+          onAddMany={onAddMany}
+          onRemoveMany={vi.fn()}
+        />,
+      );
+    });
+
+    const selectAll = container.querySelector<HTMLButtonElement>('button[role="checkbox"]');
+    await act(async () => {
+      selectAll?.click();
+    });
+
+    expect(onAddMany).toHaveBeenCalledTimes(1);
+    expect(onAddMany.mock.calls[0]?.[0]).toHaveLength(120);
+  });
+
+  it("shows the select-all failure banner and toast when matching fails", async () => {
+    const onAddMany = vi.fn();
+    matchRecipients.mockResolvedValueOnce({
+      status: 500,
+      body: { type: "database_error", message: "Failed to match recipients" },
+    });
+    await act(async () => {
+      root.render(
+        <TenantMessageComposerRecipientPicker
+          kind="phone"
+          existingIds={new Set()}
+          onAdd={vi.fn()}
+          onRemove={vi.fn()}
+          onAddMany={onAddMany}
+          onRemoveMany={vi.fn()}
+        />,
+      );
+    });
+
+    const selectAll = container.querySelector<HTMLButtonElement>('button[role="checkbox"]');
+    await act(async () => {
+      selectAll?.click();
+    });
+
+    expect(onAddMany).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("messaging.selectAllFailed");
+    expect(notify.error).toHaveBeenCalledWith("messaging.selectAllFailed");
   });
 
   it("removes the whole page with one batch call when everything is selected", async () => {

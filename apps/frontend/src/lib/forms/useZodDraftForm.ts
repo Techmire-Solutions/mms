@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { z } from "zod";
 import { notify } from "@/lib/notify";
 import { isApiError } from "@/lib/apiError";
@@ -97,7 +97,7 @@ export function useZodDraftForm<TDraft extends object, TRecord>(
     [notifyFallbackMessage, resolveMessage],
   );
 
-  const save = useCallback<UseZodDraftFormApi<TDraft, TRecord>["save"]>(
+  const performSave = useCallback<UseZodDraftFormApi<TDraft, TRecord>["save"]>(
     async (onSave) => {
       setErrors({});
       setValidationErrors([]);
@@ -160,6 +160,22 @@ export function useZodDraftForm<TDraft extends object, TRecord>(
       takeSnapshot,
       toRecord,
     ],
+  );
+
+  // Setters from state re-render too late to stop a same-frame double submit, and
+  // `toRecord` mints a fresh entity id per invocation — the ref is the guard.
+  const inFlightRef = useRef(false);
+  const save = useCallback<UseZodDraftFormApi<TDraft, TRecord>["save"]>(
+    async (onSave) => {
+      if (inFlightRef.current) return false;
+      inFlightRef.current = true;
+      try {
+        return await performSave(onSave);
+      } finally {
+        inFlightRef.current = false;
+      }
+    },
+    [performSave],
   );
 
   return {

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import { DatePicker } from "@/components/app/DatePicker";
 import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
@@ -100,6 +101,8 @@ export function AttendanceExcuseForm({
     setTouched(false);
   };
 
+  const guardSubmit = useSubmitGuard();
+
   const close = (): void => {
     // A cancelled draft owns no record: drop the certificates it uploaded.
     attachment.cleanup();
@@ -107,7 +110,7 @@ export function AttendanceExcuseForm({
     onClose();
   };
 
-  const submit = (): void => {
+  const submit = async (): Promise<boolean> => {
     const candidate = {
       studentId: draft.studentId,
       fromDate: draft.fromDate,
@@ -124,25 +127,25 @@ export function AttendanceExcuseForm({
       setFieldErrors(validation.fieldErrors);
       setFormError(validation.message);
       setTouched(true);
-      return;
+      return false;
     }
-    excuses.submit.mutate(
-      { body: validation.data! },
-      {
-        onSuccess: () => {
-          attachment.cleanup(validation.data?.documentRef ?? null);
-          reset();
-          onClose();
-        },
-        onError: (error: unknown) => {
-          const mapped = serverFormError(error, (message) =>
-            translateValidationMessage(message, t),
-          );
-          setFieldErrors(mapped.fieldErrors);
-          setFormError(mapped.message || t("attendance.excuses.submitFailed"));
-        },
-      },
-    );
+    // A same-frame double submit would file two excuses; the ref is set before
+    // the first await so the guard wins over the `isPending` re-render.
+    const result = await guardSubmit(async () => {
+      try {
+        await excuses.submit.mutateAsync({ body: validation.data! });
+        attachment.cleanup(validation.data?.documentRef ?? null);
+        reset();
+        onClose();
+        return true;
+      } catch (error) {
+        const mapped = serverFormError(error, (message) => translateValidationMessage(message, t));
+        setFieldErrors(mapped.fieldErrors);
+        setFormError(mapped.message || t("attendance.excuses.submitFailed"));
+        return false;
+      }
+    });
+    return result ?? false;
   };
 
   return (

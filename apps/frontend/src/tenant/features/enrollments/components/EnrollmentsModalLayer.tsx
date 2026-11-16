@@ -60,6 +60,7 @@ export function EnrollmentsModalLayer({
   onRestore,
 }: EnrollmentsModalLayerProps): React.JSX.Element {
   const { t } = useTranslation();
+  const [wizardSubmitting, setWizardSubmitting] = useState(false);
   const [wizardDirty, setWizardDirty] = useState(false);
   const closeWizard = () => {
     setWizardDirty(false);
@@ -92,6 +93,9 @@ export function EnrollmentsModalLayer({
         size="xl"
         hideFooter
         panelClassName="h-modal-tall max-h-modal-tall"
+        // While the enrollment POST is in flight the modal must not be dismissible;
+        // hiding the footer is what kept this surface unguarded.
+        saving={wizardSubmitting}
         isDirty={wizardDirty}
         discardUnsavedTitle={t("settings.unsavedChanges")}
         discardUnsavedDescription={t("enrollments.wizard.discardDescription")}
@@ -103,6 +107,7 @@ export function EnrollmentsModalLayer({
             onComplete={onCompleteWizard}
             onCancel={closeWizard}
             onDirtyChange={setWizardDirty}
+            onSubmittingChange={setWizardSubmitting}
           />
         </ErrorBoundary>
       </FormModal>

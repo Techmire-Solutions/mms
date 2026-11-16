@@ -28,8 +28,11 @@ Project-wide entry points live at the repo root:
 ## Reference
 
 - [Modern-Audit-Trail-Best-Practices.md](./Modern-Audit-Trail-Best-Practices.md) — audit-trail best practices (RFC 8785 etc.).
+- [forms-inventory.md](./forms-inventory.md) — generated manifest of every form surface (`pnpm run forms:inventory`); staleness fails `pnpm run check:forms`.
 
 ## Audits & reviews (point-in-time)
+
+- [forms-audit-2026-11-16.md](./forms-audit-2026-11-16.md) — form architecture audit: generated inventory, draft-lifecycle contract (identity reset / in-flight submit binding / dirty guard / server-error mapping), per-module sweeps, and the `check:forms` ratchet that keeps the baselines shrinking.
 
 - [finance-test-suite-audit-2026-11-12.md](./finance-test-suite-audit-2026-11-12.md) — Finance test-suite audit: concurrency (payments/closes/postings), FX/hedge/IAS 29 edges, RBAC inject tests and the new DB hygiene/manifest/coverage/concurrency CI gates.
 - [finance-frontend-state-audit-2026-11-12.md](./finance-frontend-state-audit-2026-11-12.md) — Finance frontend audit: page/report states, RTL charts, voucher-form correctness and double-submit guards, and cross-module/dashboard query invalidation.

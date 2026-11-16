@@ -12,7 +12,7 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { PaymentFormFields } from "@/tenant/features/finance/components/PaymentFormFields";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
-import { tryParseMoneyAmountNumber } from "@mms/shared";
+import { moneyToCents, tryParseMoneyAmountNumber } from "@mms/shared";
 import {
   formatMoney,
   isValidExchangeRate,
@@ -50,18 +50,28 @@ export function PaymentForm({
   const { user: authUser } = useAuth();
   const { t } = useTranslation();
   const { formatCurrency: formatFunctional, activeCurrency } = useFinanceCurrency();
-  const invoiceBalance = invoice ? invoice.finalAmt - (invoice.paidAmt || 0) : 0;
+  /**
+   * Integer cents, not a float subtraction: `1200.30 - 400.10` renders as
+   * `800.1999…`, which fails the two-decimal text contract and left Save disabled
+   * for a perfectly payable invoice. The pre-filled amount is the same cents value
+   * rendered with exactly two decimals.
+   */
+  const invoiceBalanceCents =
+    moneyToCents(invoice?.finalAmt ?? 0) - moneyToCents(invoice?.paidAmt ?? 0);
+  const invoiceBalance = invoiceBalanceCents / 100;
+  const buildDraft = (receivedByUserId: string) => ({
+    ...buildInitialPaymentDraft(invoiceBalance, receivedByUserId),
+    amount: invoiceBalanceCents > 0 ? (invoiceBalanceCents / 100).toFixed(2) : "",
+  });
 
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [paymentDraft, setPaymentDraft] = useState(() =>
-    buildInitialPaymentDraft(invoiceBalance, authUser?.id || ""),
-  );
+  const [paymentDraft, setPaymentDraft] = useState(() => buildDraft(authUser?.id || ""));
 
   // A different invoice (or a reopen) must not inherit the previous amount/date.
   useIdentityReset(`${open ? "open" : "closed"}:${invoice?.id ?? "none"}`, () => {
-    setPaymentDraft(buildInitialPaymentDraft(invoiceBalance, authUser?.id || ""));
+    setPaymentDraft(buildDraft(authUser?.id || ""));
     setErrors({});
     setFormError(null);
   });

@@ -35,16 +35,16 @@ vi.mock("@/lib/query/createModuleLookupsHooks", () => ({
 describe("useAttendanceLookups Hook suite", () => {
   it("fetches and updates lookup items", async () => {
     const lookups = await fetchAttendanceLookups();
-    expect(lookups.statuses).toBeDefined();
+    expect(lookups.statuses).toEqual([{ id: "present", label: "Present" }]);
 
     const updated = await putAttendanceLookupKind("statuses" as unknown as never, [
       { id: "present", label: "Present" } as unknown as never,
     ]);
-    expect(updated).toBeDefined();
+    expect(updated).toEqual([{ id: "present", label: "Present" }]);
   });
 
   it("exports lookups query and mutation hooks", () => {
-    expect(useAttendanceLookupsQuery).toBeDefined();
-    expect(useAttendanceLookupMutation).toBeDefined();
+    expect(typeof useAttendanceLookupsQuery).toBe("function");
+    expect(typeof useAttendanceLookupMutation).toBe("function");
   });
 });

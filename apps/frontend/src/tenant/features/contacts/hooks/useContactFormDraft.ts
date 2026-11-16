@@ -61,15 +61,16 @@ export function useContactFormDraft({
     contactDraftSnapshot(contactDraft),
   );
 
-  const { saving, validationErrors, setValidationErrors, handleSave } = useContactFormSave({
-    contact,
-    contactDraft,
-    defaultCountryCode,
-    onSave,
-    onClose,
-    onValidationTab,
-    onBaselineReset: (finalized) => setBaselineSnapshot(contactDraftSnapshot(finalized)),
-  });
+  const { saving, validationErrors, setValidationErrors, formError, handleSave } =
+    useContactFormSave({
+      contact,
+      contactDraft,
+      defaultCountryCode,
+      onSave,
+      onClose,
+      onValidationTab,
+      onBaselineReset: (finalized) => setBaselineSnapshot(contactDraftSnapshot(finalized)),
+    });
 
   const isDirty = useMemo(
     () => contactDraftSnapshot(contactDraft) !== baselineSnapshot,
@@ -140,6 +141,7 @@ export function useContactFormDraft({
     updateCountryOptions,
     updateDialCodeOptions,
     saving,
+    formError,
     isDirty,
     cropSrc,
     setCropSrc,

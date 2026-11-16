@@ -14,6 +14,9 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 vi.mock("@/lib/notify", () => ({ notify: { success: vi.fn(), error: vi.fn() } }));
+vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
+  useGlobalSettings: () => ({ timezone: "Asia/Karachi" }),
+}));
 vi.mock("@/lib/api", () => ({
   tsrClient: {
     attendance: {
@@ -27,6 +30,7 @@ describe("AttendanceRegisterExport", () => {
   let root: Root;
 
   beforeEach(() => {
+    mocks.mutate.mockClear();
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
@@ -50,6 +54,29 @@ describe("AttendanceRegisterExport", () => {
       body: { classId: "cls-1", dateFrom: "2026-02-01", dateTo: "2026-02-28", format: "csv" },
     });
     expect(container.textContent).toContain("2026-02");
+  });
+
+  it("defaults to the workspace-timezone month, not the device month", async () => {
+    // 20:00Z on 31 January is already 1 February in a UTC+5 workspace.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-01-31T20:00:00Z"));
+    try {
+      await act(async () => {
+        root.render(<AttendanceRegisterExport classId="cls-1" />);
+      });
+      expect(container.textContent).toContain("2026-02");
+
+      const csv = [...container.querySelectorAll("button")].find((button) =>
+        button.textContent?.includes("attendance.registerExport.csv"),
+      );
+      await act(async () => csv?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+
+      expect(mocks.mutate).toHaveBeenCalledWith({
+        body: { classId: "cls-1", dateFrom: "2026-02-01", dateTo: "2026-02-28", format: "csv" },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("explains why export is unavailable without a class", async () => {

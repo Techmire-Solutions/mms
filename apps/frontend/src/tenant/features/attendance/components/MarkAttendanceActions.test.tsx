@@ -36,3 +36,46 @@ describe("MarkAttendanceActions Component", () => {
     expect(html).toContain("attendance.mark.submitAttendance");
   });
 });
+
+describe("MarkAttendanceActions saving state", () => {
+  it("disables both Save Draft and Submit while the roster save is in flight", async () => {
+    /**
+     * Regression: only Submit honoured `saving`, so Save Draft stayed clickable during
+     * an in-flight batch and could enqueue/save a second overlapping roster.
+     */
+    const { act } = await import("react");
+    const { createRoot } = await import("react-dom/client");
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <MarkAttendanceActions
+          totalRows={3}
+          visibleRows={3}
+          isOffline={false}
+          submitted={false}
+          canWriteAttendance={true}
+          saving={true}
+          onSaveDraft={vi.fn()}
+          onSubmit={vi.fn()}
+        />,
+      );
+    });
+
+    const buttons = [...container.querySelectorAll("button")];
+    const saveDraft = buttons.find((button) =>
+      button.textContent?.includes("attendance.mark.saveDraft"),
+    );
+    const submit = buttons.find((button) =>
+      button.textContent?.includes("attendance.mark.submitAttendance"),
+    );
+    expect(saveDraft?.disabled).toBe(true);
+    expect(submit?.disabled).toBe(true);
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+});

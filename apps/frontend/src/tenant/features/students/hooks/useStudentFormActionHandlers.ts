@@ -41,6 +41,8 @@ interface UseStudentFormActionHandlersOptions {
   validationErrors: ValidationError[];
   setValidationErrors: (errors: ValidationError[]) => void;
   setSaving: (value: boolean) => void;
+  /** Non-field failure banner state owned by the form controller. */
+  setFormError: (message: string | null) => void;
   setPendingSaveData: (value: Partial<Student> | null) => void;
   setTypedDuplicateReason: (value: StudentDuplicateReason | null) => void;
   setDuplicateConfirmOpen: (value: boolean) => void;
@@ -67,6 +69,7 @@ export function useStudentFormActionHandlers({
   validationErrors,
   setValidationErrors,
   setSaving,
+  setFormError,
   setPendingSaveData,
   setTypedDuplicateReason,
   setDuplicateConfirmOpen,
@@ -121,6 +124,7 @@ export function useStudentFormActionHandlers({
           savingRef.current = value;
           setSaving(value);
         },
+        setFormError,
         setPendingSaveData,
         setTypedDuplicateReason,
         setDuplicateConfirmOpen,

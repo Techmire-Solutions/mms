@@ -1,4 +1,5 @@
 import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
 import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 import {
   HASANAT_BATCHES_QUERY_KEY,
@@ -27,6 +28,9 @@ export const invalidateHasanatWorkQueries = createModuleQueryInvalidator({
   // Dashboard/report widgets aggregate over the same cards; without this they stayed stale until
   // the WebSocket echo arrived.
   widgetAggregates: DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY,
+  // The dashboard summary KPI is a separate cache root with a long staleTime; the
+  // widget aggregates alone left `summary.hasanat` stale after an award.
+  dashboard: DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
 });
 
 /** Setup writes change the catalogue/preferences and therefore the configuration screens. */
@@ -36,6 +40,7 @@ export const invalidateHasanatSetupQueries = createModuleQueryInvalidator({
   metrics: HASANAT_METRICS_QUERY_KEY,
   widgetAggregates: DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY,
   preferences: HASANAT_PREFERENCES_QUERY_KEY,
+  dashboard: DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
 });
 
 /**

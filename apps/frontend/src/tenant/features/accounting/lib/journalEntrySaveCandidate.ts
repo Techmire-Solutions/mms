@@ -1,6 +1,6 @@
 import { generateClientEntityId, type JournalEntry, type JournalEntryStatus } from "@mms/shared";
 import { applyEntryCurrency } from "./journalEntryCurrency";
-import { parseJournalLineAmount } from "./journalEntryFormValidation";
+import { parseJournalLineAmount, isBlankJournalLine } from "./journalEntryFormValidation";
 import type { DraftForm } from "./journalEntryFormTypes";
 import type { MoneySeparator } from "../hooks/accountingMoneyParsers";
 
@@ -36,11 +36,14 @@ export function buildJournalEntrySaveCandidate({
     status: targetStatus,
     created_by: form.created_by || userName || "system",
     lines: applyEntryCurrency(
-      form.lines.map((journalLine) => ({
-        ...journalLine,
-        debit: parseJournalLineAmount(journalLine.debit, decimalSeparator),
-        credit: parseJournalLineAmount(journalLine.credit, decimalSeparator),
-      })),
+      form.lines
+        // The editor's pristine placeholder row must never reach the API.
+        .filter((journalLine) => !isBlankJournalLine(journalLine))
+        .map((journalLine) => ({
+          ...journalLine,
+          debit: parseJournalLineAmount(journalLine.debit, decimalSeparator),
+          credit: parseJournalLineAmount(journalLine.credit, decimalSeparator),
+        })),
       fx.currency || fx.functionalCurrency,
       fx.functionalCurrency || fx.currency,
       fx.rate,

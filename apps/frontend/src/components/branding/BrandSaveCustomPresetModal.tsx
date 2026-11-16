@@ -2,6 +2,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 interface BrandSaveCustomPresetModalProps {
@@ -25,6 +26,9 @@ export function BrandSaveCustomPresetModal({
   onSave,
   t,
 }: BrandSaveCustomPresetModalProps) {
+  // The parent seeds the default preset name on open; only a user edit is dirty.
+  const { isDirty } = useDirtySnapshot(presetNameDraft, String(open));
+
   return (
     <FormModal
       open={open}
@@ -36,6 +40,9 @@ export function BrandSaveCustomPresetModal({
       cancelLabel={t("common.cancel")}
       saveLabel={t("common.save")}
       saveDisabled={!presetNameDraft.trim()}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       onSave={() => {
         if (presetNameDraft.trim()) onSave();
       }}

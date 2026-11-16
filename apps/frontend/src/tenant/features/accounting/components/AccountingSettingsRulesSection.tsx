@@ -52,16 +52,6 @@ export function AccountingSettingsRulesSection({
             a control with no effect is worse than not offering it; the persisted
             fields stay in the schema for backward-compatible saves.
           */}
-          <ModuleSetupSaveFooter
-            dirty={Boolean(isPrefsDirty)}
-            saving={Boolean(saving)}
-            saved={Boolean(saved)}
-            saveLabel={saving ? t("global.saving") : t("common.save")}
-            savedLabel={t("settings.savedBadge")}
-            onSave={onSave ?? (() => {})}
-            disableUnsavedGuard
-            footerClassName="mt-4 pt-3"
-          />
         </div>
       </SectionCard>
 

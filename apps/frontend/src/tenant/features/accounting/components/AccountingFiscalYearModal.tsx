@@ -3,6 +3,8 @@ import { Calendar, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/app/DatePicker";
 import { FormModal } from "@/components/app/FormModal";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
@@ -49,6 +51,13 @@ export function AccountingFiscalYearModal({
   const [form, setForm] = useState<Partial<FiscalYear>>(initial || blankFiscalYear);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const { isDirty } = useDirtySnapshot(
+    form,
+    `${open}:${initial?.id ?? "new"}`,
+    initial || blankFiscalYear,
+  );
+  // A re-render disables the button too late for a same-frame double click.
+  const guardSave = useSubmitGuard();
 
   React.useEffect(() => {
     if (open) {
@@ -79,7 +88,7 @@ export function AccountingFiscalYearModal({
     }
   };
 
-  const handleSave = async () => {
+  const submitForm = async () => {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length) {
       setErrors(validationErrors);
@@ -106,6 +115,8 @@ export function AccountingFiscalYearModal({
     }
   };
 
+  const handleSave = (): Promise<void | undefined> => guardSave(() => submitForm());
+
   return (
     <FormModal
       open={open}
@@ -117,6 +128,9 @@ export function AccountingFiscalYearModal({
       saveLabel={t("common.save")}
       onSave={handleSave}
       saving={submitting}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       formId="fiscal-year-modal-form"
     >
       <form

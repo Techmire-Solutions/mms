@@ -11,6 +11,8 @@ import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { isVoucherPrintable } from "@/tenant/features/accounting/lib/paymentVoucherKind";
 import { usePaymentVoucherPrint } from "@/tenant/features/accounting/hooks/usePaymentVoucherPrint";
 import { useJournalEntryDetail } from "@/tenant/features/accounting/hooks/useAccountingQueries";
+// `usePostingPeriods` lives in the ledger-ops hook module (close/reopen mutations + periods).
+import { usePostingPeriods } from "../hooks/useAccountingLedgerOps";
 
 export type JournalModalMode = "new" | "edit" | "view" | null;
 
@@ -82,6 +84,8 @@ export function JournalEntriesModalLayer({
   const detailResult = useJournalEntryDetail(
     modal === "view" || modal === "edit" ? (selected?.id ?? null) : null,
   );
+  // Unconditional hook: `undefined` disables the query until a reverse is requested.
+  const pendingReversePeriods = usePostingPeriods(pendingReverseEntry?.fiscal_year_id);
   const selectedWithLines =
     detailResult.data && detailResult.data.id === selected?.id ? detailResult.data : selected;
   return (
@@ -159,6 +163,7 @@ export function JournalEntriesModalLayer({
           key={pendingReverseEntry.id}
           entry={pendingReverseEntry}
           fiscalYears={fiscalYears}
+          postingPeriods={pendingReversePeriods.data ?? []}
           onOpenChange={(open) => {
             if (!open) onPendingReverseEntryChange(null);
           }}

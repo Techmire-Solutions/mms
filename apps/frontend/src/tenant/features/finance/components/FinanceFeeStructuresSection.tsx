@@ -35,10 +35,19 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
   });
   const [itemName, setItemName] = useState("");
   const [itemAmount, setItemAmount] = useState("");
+  const [itemAmountError, setItemAmountError] = useState("");
   const [frequency, setFrequency] = useState<"monthly" | "term" | "once">("monthly");
 
   const handleAdd = async (): Promise<void> => {
     if (!name.trim()) return;
+    // A named item needs a positive amount; leaving it blank used to save a zero-priced
+    // fee item silently. The check runs before `mutateAsync` so nothing is persisted.
+    const parsedItemAmount = tryParseMoneyAmountNumber(itemAmount);
+    if (itemName.trim() && (parsedItemAmount === null || parsedItemAmount <= 0)) {
+      setItemAmountError(t("finance.amountRequired"));
+      return;
+    }
+    setItemAmountError("");
     try {
       await save.mutateAsync({
         name: name.trim(),
@@ -53,7 +62,7 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
           ? [
               {
                 name: itemName.trim(),
-                amount: tryParseMoneyAmountNumber(itemAmount) ?? 0,
+                amount: parsedItemAmount ?? 0,
                 sortOrder: 0,
               },
             ]
@@ -63,6 +72,7 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
       setScope({ sessionId: "", classId: "", sectionId: "" });
       setItemName("");
       setItemAmount("");
+      setItemAmountError("");
       setFrequency("monthly");
       notify.success(t("finance.feeStructures.saved"));
     } catch (error) {
@@ -108,7 +118,11 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
             ]}
           />
         </Field>
-        <Field id="fee-struct-item-name" label={t("finance.feeStructures.item")}>
+        <Field
+          id="fee-struct-item-name"
+          label={t("finance.feeStructures.item")}
+          error={itemAmountError || undefined}
+        >
           <div className="flex gap-2">
             <Input
               id="fee-struct-item-name"
@@ -123,7 +137,10 @@ export function FinanceFeeStructuresSection(): React.JSX.Element {
               className={`${FORM_INPUT} w-28`}
               inputMode="decimal"
               value={itemAmount}
-              onChange={(event) => setItemAmount(event.target.value)}
+              onChange={(event) => {
+                setItemAmount(event.target.value);
+                if (itemAmountError) setItemAmountError("");
+              }}
               aria-label={t("finance.feeStructures.amount")}
             />
           </div>

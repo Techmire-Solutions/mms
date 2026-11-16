@@ -2571,6 +2571,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "contacts.form.phoneNumberPlaceholder": "300 0000000",
   "contacts.form.phonesLabel": "فون",
   "contacts.form.pleaseFixErrors": "براہ کرم درج ذیل غلطیاں درست کریں",
+  "contacts.form.saveConflict":
+    "کسی اور نے یہ رابطہ تبدیل کر دیا ہے۔ دوبارہ لوڈ کر کے کوشش کریں۔",
   "contacts.form.noChanges": "ابھی محفوظ کرنے کے لیے کوئی تبدیلی نہیں۔",
   "contacts.form.preferredContactMethod": "رابطے کا ترجیحی طریقہ",
   "contacts.form.preferredLanguage": "ترجیحی زبان",
@@ -7806,6 +7808,9 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "reports.moduleTools.visualizerBuilder": "بصری بنانے والا",
   "reports.moduleTools.widgetBuilder": "ویجٹ بنانے والا",
   "reports.saved.delete": "حذف",
+  "reports.saved.deleteConfirmTitle": "محفوظ رپورٹ حذف کریں؟",
+  "reports.saved.deleteConfirmDescription":
+    "یہ \"{name}\" کو ورک اسپیس سے ہٹا دے گا۔ اسے واپس نہیں کیا جا سکتا۔",
   "reports.saved.deleteSuccess": "رپورٹ ٹیمپلیٹ حذف کر دیا گیا",
   "reports.saved.emptyDescription": "فلٹرز ترتیب دیں اور انہیں ٹیمپلیٹ کے طور پر محفوظ کریں۔",
   "reports.saved.emptyTitle": "کوئی محفوظ رپورٹ نہیں",
@@ -9030,6 +9035,9 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "students.restoreFailed": "طالب علم بحال نہیں ہو سکا",
   "students.restoreSuccess": "طالب علم بحال ہو گیا",
   "students.saveFailed": "طالب علم محفوظ نہیں ہو سکا",
+  "students.form.avatarContactSyncTitle": "منسلک رابطے کی تصویر اپ ڈیٹ کریں؟",
+  "students.form.avatarContactSyncDescription":
+    "یہ منسلک رابطے کی تصویر فوراً اپ ڈیٹ کر دے گا۔ طالب علم کا فارم منسوخ کرنے سے یہ واپس نہیں ہوگا۔",
   "students.searchColumnsPlaceholder": "کالمز تلاش کریں...",
   "students.searchPlaceholder": "طلباء کی ڈائریکٹری میں تلاش کریں\u2026",
   "students.selectedCount": "{count} منتخب",

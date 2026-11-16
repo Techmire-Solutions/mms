@@ -33,6 +33,7 @@ import {
   type EnrollmentOperationKind,
 } from "@/tenant/features/enrollments/lib/enrollmentOperationKinds";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 
 export type { EnrollmentOperationKind };
 
@@ -107,58 +108,63 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
     toDay !== today,
   );
 
-  const submit = async () => {
-    const trimmed = reason.trim();
-    const destination = { classId: target.classId, sectionId: target.sectionId || null };
-    setFormError(null);
-    try {
-      let saved = false;
-      if (kind === "transfer") {
-        const parsed = enrollmentTransferBodySchema.safeParse({
-          ...destination,
-          effectiveOn: day,
-          reason: trimmed,
-        });
-        if (!parsed.success)
-          return setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
-        saved = await props.onTransfer(parsed.data);
-      } else if (kind === "withdraw") {
-        const parsed = enrollmentWithdrawBodySchema.safeParse({
-          effectiveOn: day,
-          reason: trimmed,
-          ...(reasonCode
-            ? { reasonCode: reasonCode as (typeof ENROLLMENT_DROP_REASON_CODES)[number] }
-            : {}),
-        });
-        if (!parsed.success)
-          return setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
-        saved = await props.onWithdraw(parsed.data);
-      } else if (kind === "readmit") {
-        const parsed = enrollmentReadmitBodySchema.safeParse({
-          ...destination,
-          effectiveOn: day,
-          reason: trimmed,
-        });
-        if (!parsed.success)
-          return setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
-        saved = await props.onReadmit(parsed.data);
-      } else if (kind === "suspend") {
-        const parsed = enrollmentSuspendBodySchema.safeParse({
-          fromOn: day,
-          toOn: toDay,
-          reason: trimmed,
-        });
-        if (!parsed.success)
-          return setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
-        saved = await props.onSuspend(parsed.data);
+  const submit = useSubmitGuard();
+
+  const handleSubmit = async (): Promise<void> => {
+    await submit(async () => {
+      if (!canSave) return;
+      const trimmed = reason.trim();
+      const destination = { classId: target.classId, sectionId: target.sectionId || null };
+      setFormError(null);
+      try {
+        let saved = false;
+        if (kind === "transfer") {
+          const parsed = enrollmentTransferBodySchema.safeParse({
+            ...destination,
+            effectiveOn: day,
+            reason: trimmed,
+          });
+          if (!parsed.success)
+            return setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+          saved = await props.onTransfer(parsed.data);
+        } else if (kind === "withdraw") {
+          const parsed = enrollmentWithdrawBodySchema.safeParse({
+            effectiveOn: day,
+            reason: trimmed,
+            ...(reasonCode
+              ? { reasonCode: reasonCode as (typeof ENROLLMENT_DROP_REASON_CODES)[number] }
+              : {}),
+          });
+          if (!parsed.success)
+            return setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+          saved = await props.onWithdraw(parsed.data);
+        } else if (kind === "readmit") {
+          const parsed = enrollmentReadmitBodySchema.safeParse({
+            ...destination,
+            effectiveOn: day,
+            reason: trimmed,
+          });
+          if (!parsed.success)
+            return setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+          saved = await props.onReadmit(parsed.data);
+        } else if (kind === "suspend") {
+          const parsed = enrollmentSuspendBodySchema.safeParse({
+            fromOn: day,
+            toOn: toDay,
+            reason: trimmed,
+          });
+          if (!parsed.success)
+            return setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+          saved = await props.onSuspend(parsed.data);
+        }
+        if (saved) onClose();
+      } catch (error) {
+        setFormError(
+          mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+            t("common.formPleaseFixErrors"),
+        );
       }
-      if (saved) onClose();
-    } catch (error) {
-      setFormError(
-        mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
-          t("common.formPleaseFixErrors"),
-      );
-    }
+    });
   };
   return (
     <FormModal
@@ -178,7 +184,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
       discardConfirmLabel={t("common.yes")}
       discardCancelLabel={t("common.cancel")}
       error={formError ?? undefined}
-      onSave={() => void submit()}
+      onSave={() => void handleSubmit()}
       formId="enrollment-operation-form"
     >
       <form
@@ -186,7 +192,9 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          void submit();
+          // No local validity pre-check: the guarded handler early-returns on
+          // `!canSave` and schema errors must stay reachable from Enter.
+          void handleSubmit();
         }}
       >
         <div className="space-y-4 py-1 text-start">

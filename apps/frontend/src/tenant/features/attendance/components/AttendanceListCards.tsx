@@ -16,6 +16,8 @@ export interface AttendanceListCardsProps {
   paginatedRecords: AttendanceRecord[];
   isColumnVisible: (key: string) => boolean;
   editingRecord: AttendanceRecord | null;
+  /** Inline save/validation error for the record being edited (rendered in its card). */
+  editingRecordError?: string | null;
   statuses: AttendanceStatus[];
   updateDraft: <K extends keyof AttendanceRecord>(key: K, value: AttendanceRecord[K]) => void;
   classLabel: (classId: string) => string;
@@ -35,6 +37,7 @@ export function AttendanceListCards({
   paginatedRecords,
   isColumnVisible,
   editingRecord,
+  editingRecordError,
   statuses,
   updateDraft,
   classLabel,
@@ -82,6 +85,7 @@ export function AttendanceListCards({
             attendanceRecord={attendanceRecord}
             isColumnVisible={isColumnVisible}
             editingRecord={editingRecord}
+            editingRecordError={editingRecordError}
             statuses={statuses}
             updateDraft={updateDraft}
             renderRowActions={renderRowActions}

@@ -9,8 +9,10 @@ import {
   type FiscalYear,
   type JournalReversalDateIssue,
   type JournalReversalRequest,
+  type PostingPeriod,
 } from "@mms/shared";
 import type { JournalEntry } from "@/lib/data/accountingData";
+import { closedPostingPeriodFor } from "@/tenant/features/accounting/lib/journalEntryFormValidation";
 
 export type OriginalPeriodStatus = "open" | "closed" | "unconfigured";
 
@@ -22,6 +24,7 @@ export type OriginalPeriodStatus = "open" | "closed" | "unconfigured";
 export function useJournalReverseDialogState(
   entry: JournalEntry,
   fiscalYears: readonly FiscalYear[],
+  postingPeriods: readonly PostingPeriod[] = [],
 ) {
   const today = todayISO();
   const [date, setDate] = useState(() =>
@@ -47,11 +50,17 @@ export function useJournalReverseDialogState(
     : "invalid_date";
   const reasonMissing = reason.trim() === "";
   const priorPeriod = !dateIssue && isPriorPeriodJournalReversal(entry.date, date, fiscalYears);
+  /**
+   * A closed monthly period blocks the reversal exactly like a closed fiscal year:
+   * the server answers 422 for that date, so the dialog must flag it on the field
+   * instead of sending a request it knows will be refused.
+   */
+  const closedPeriod = closedPostingPeriodFor(date, postingPeriods);
 
   /** The validated request, or null after flagging the errors for display. */
   const buildRequest = (): JournalReversalRequest | null => {
     setSubmitted(true);
-    if (dateIssue || reasonMissing) return null;
+    if (dateIssue || reasonMissing || closedPeriod) return null;
     const trimmedRemarks = remarks.trim();
     return { date, reason: reason.trim(), ...(trimmedRemarks ? { remarks: trimmedRemarks } : {}) };
   };
@@ -68,6 +77,8 @@ export function useJournalReverseDialogState(
     originalDateAllowed,
     todayAllowed,
     dateIssue: submitted || date ? dateIssue : null,
+    /** Label of the closed monthly period that blocks `date`, for the date field error. */
+    closedPeriodName: closedPeriod?.label ?? null,
     reasonError: submitted && reasonMissing,
     priorPeriod,
     buildRequest,

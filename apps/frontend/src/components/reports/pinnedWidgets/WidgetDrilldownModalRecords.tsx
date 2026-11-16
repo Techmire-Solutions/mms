@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { StatusBadge } from "@/components/app/StatusBadge";
@@ -32,6 +33,9 @@ export function WidgetDrilldownModalRecords({
   handleDeleteDist,
 }: WidgetDrilldownModalRecordsProps): React.JSX.Element {
   const statusConfig = buildWidgetDrilldownStatusConfig(t);
+  // Deleting a distribution is destructive and irreversible from this surface, so it
+  // goes through a confirm dialog instead of firing on a single click.
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   return (
     <>
@@ -61,7 +65,7 @@ export function WidgetDrilldownModalRecords({
                 <div className="pt-1">
                   {widget.collection === "hasanat_distributions" ? (
                     <Button
-                      onClick={() => handleDeleteDist(recordId)}
+                      onClick={() => setPendingDeleteId(recordId)}
                       variant="destructive"
                       size="sm"
                       className="w-full px-2.5 rounded font-bold uppercase tracking-wider text-xs shadow-none"
@@ -126,7 +130,7 @@ export function WidgetDrilldownModalRecords({
                   <TableCell className="py-3.5 text-end">
                     {widget.collection === "hasanat_distributions" ? (
                       <Button
-                        onClick={() => handleDeleteDist(recordId)}
+                        onClick={() => setPendingDeleteId(recordId)}
                         variant="destructive"
                         size="sm"
                         className="px-2.5 rounded text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all cursor-pointer font-bold uppercase tracking-wider text-xs shadow-none"
@@ -150,6 +154,22 @@ export function WidgetDrilldownModalRecords({
           </TableBody>
         </Table>
       </div>
+
+      <ConfirmAlertDialog
+        open={pendingDeleteId !== null}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setPendingDeleteId(null);
+        }}
+        title={t("hasanat.trash.deleteTitle")}
+        description={t("hasanat.trash.deleteConfirm")}
+        confirmLabel={t("common.delete")}
+        cancelLabel={t("common.cancel")}
+        destructive
+        onConfirm={() => {
+          if (pendingDeleteId) handleDeleteDist(pendingDeleteId);
+          setPendingDeleteId(null);
+        }}
+      />
     </>
   );
 }

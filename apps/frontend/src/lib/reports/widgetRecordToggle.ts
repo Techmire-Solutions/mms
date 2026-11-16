@@ -1,4 +1,4 @@
-import { apiFetch, apiJson } from "@/lib/apiClient";
+import { apiJson } from "@/lib/apiClient";
 import { findCachedCollectionRecord } from "@/lib/queryCacheCollections";
 import { queryClientInstance } from "@/lib/queryClient";
 import {
@@ -12,7 +12,11 @@ import {
 import { ATTENDANCE_QUERY_KEY } from "@/tenant/hooks/collections/attendance";
 import { CONTACTS_QUERY_KEY } from "@/tenant/hooks/collections/contacts";
 import { FINANCE_INVOICES_QUERY_KEY } from "@/tenant/hooks/collections/finance";
-import { HASANAT_DISTRIBUTIONS_QUERY_KEY } from "@/tenant/hooks/collections/hasanat";
+import {
+  HASANAT_DISTRIBUTIONS_QUERY_KEY,
+  HASANAT_METRICS_QUERY_KEY,
+  HASANAT_REPORT_AGGREGATES_QUERY_KEY,
+} from "@/tenant/hooks/collections/hasanat";
 import { SESSIONS_QUERY_KEY } from "@/tenant/hooks/collections/sessions";
 import { STUDENTS_QUERY_KEY } from "@/tenant/hooks/collections/students";
 
@@ -124,10 +128,16 @@ export async function persistWidgetRecordToggle(options: {
 
 /** Soft-delete a Hasanat distribution from widget drill-down via REST. */
 export async function persistWidgetHasanatDistributionDelete(distId: string): Promise<void> {
-  await apiFetch(
+  // `apiJson` throws on 4xx/5xx; `apiFetch` resolves, which made a rejected delete
+  // look like success and left the row on screen with no error.
+  await apiJson(
     `${HASANAT_MODULE_MANIFEST.restBasePath}/distributions/${encodeURIComponent(distId)}`,
     { method: "DELETE" },
   );
   void queryClientInstance.invalidateQueries({ queryKey: HASANAT_DISTRIBUTIONS_QUERY_KEY });
+  // The drill-down KPI cards read the metrics/aggregate roots; without these the
+  // deleted row keeps counting until a manual refresh.
+  void queryClientInstance.invalidateQueries({ queryKey: HASANAT_METRICS_QUERY_KEY });
+  void queryClientInstance.invalidateQueries({ queryKey: HASANAT_REPORT_AGGREGATES_QUERY_KEY });
   window.dispatchEvent(new Event("local-database-update"));
 }

@@ -9,15 +9,21 @@ import {
 
 export function useRolesPermissionDraft(displayRole: WorkspaceRole | null) {
   const [permDraft, setPermDraft] = useState<PermissionMap | null>(null);
-  const [permDraftRoleId, setPermDraftRoleId] = useState<string | null>(null);
+  // Seed identity is the role id **and** its persisted permissions: saving the same
+  // role from the role form changes the payload without changing the id, and an
+  // id-only reset then left the matrix showing (and re-saving) the pre-save grants.
+  const [permDraftSource, setPermDraftSource] = useState<string | null>(null);
+  const permDraftSourceKey = displayRole
+    ? `${displayRole.id}:${JSON.stringify(displayRole.permissions)}`
+    : null;
 
   // Adjust state during render: the draft mirrors the displayed role until the user edits it.
   if (!displayRole) {
     if (permDraft !== null) setPermDraft(null);
-    if (permDraftRoleId !== null) setPermDraftRoleId(null);
-  } else if (displayRole.id !== permDraftRoleId) {
+    if (permDraftSource !== null) setPermDraftSource(null);
+  } else if (permDraftSourceKey !== permDraftSource) {
     setPermDraft(normalizePermissionMap(displayRole.permissions));
-    setPermDraftRoleId(displayRole.id);
+    setPermDraftSource(permDraftSourceKey);
   }
 
   const permDirty = (() => {

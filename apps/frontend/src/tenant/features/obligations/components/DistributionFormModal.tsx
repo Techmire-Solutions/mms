@@ -10,6 +10,7 @@ import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { DISTRIBUTION_TYPES, type ObligationDistribution } from "@/lib/data/obligationsData";
 import { type DistributionType } from "@/tenant/features/obligations/components/WakalaTypeManager";
 import { useDistributionAccountOptions } from "@/tenant/features/obligations/hooks/useDistributionAccountOptions";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 
 interface DistributionFormModalProps {
   title: string;
@@ -31,6 +32,7 @@ export function DistributionFormModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const { isDirty } = useDirtySnapshot(form, `true:${initial.id ?? "new"}`, { ...initial });
 
   const accountOptions = useDistributionAccountOptions(form.type ?? "Income");
 
@@ -75,6 +77,9 @@ export function DistributionFormModal({
       saveLabel={t("common.save")}
       onSave={handleSave}
       saving={saving}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       saveDisabled={saving || !form.name?.trim()}
       error={submitError || undefined}
       formId="distribution-form-modal"

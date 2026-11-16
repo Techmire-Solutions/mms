@@ -53,8 +53,17 @@ export function useSimpleTransactionWizard({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const isSubmitting = submittingStatus !== null;
   // One voucher identity per wizard session: a retry after a failure must not
-  // create a second entry with a different client id.
+  // create a second entry with a different client id. The wizard stays mounted
+  // between openings (only its portal unmounts), so the id is re-minted on every
+  // open transition — otherwise a later, unrelated collection reuses the previous
+  // id and the server treats it as an idempotent replay (silently dropping it) or
+  // refuses it as an immutable posted entry.
   const sessionEntryIdRef = useRef(generateClientEntityId("je"));
+  const sessionOpenRef = useRef(open);
+  if (sessionOpenRef.current !== open) {
+    sessionOpenRef.current = open;
+    if (open) sessionEntryIdRef.current = generateClientEntityId("je");
+  }
   const inFlightRef = useRef(false);
 
   const {

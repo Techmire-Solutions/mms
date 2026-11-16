@@ -12,6 +12,8 @@ import { tryParseMoneyAmountNumber } from "@mms/shared";
 import { notify } from "@/lib/notify";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import {
   canCancelInvoice,
   canCreditInvoice,
@@ -44,12 +46,21 @@ export function InvoiceCorrectionActions({
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  // Both actions move money; a same-frame double click must not post twice.
+  const guardCredit = useSubmitGuard();
+  const guardCancel = useSubmitGuard();
   // Reopening the credit action (or switching invoice) must start from a blank
   // amount/reason instead of the previous submission's values.
   useIdentityReset(`${invoice.id}:${creditOpen ? "open" : "closed"}`, () => {
     setAmount("");
     setReason("");
     setFormError(null);
+  });
+  // The credit modal's identity is the invoice plus its open state; the reset above
+  // blanks both fields, so that is the baseline.
+  const { isDirty } = useDirtySnapshot({ amount, reason }, `${creditOpen}:${invoice.id}`, {
+    amount: "",
+    reason: "",
   });
   const openBalance = getOutstandingAmountForInvoice(invoice);
   const creditAmt = tryParseMoneyAmountNumber(amount) ?? 0;
@@ -59,36 +70,49 @@ export function InvoiceCorrectionActions({
   if (invoice.status === "cancelled" || (!showCredit && !showCancel && notes.length === 0))
     return null;
 
-  const handleCancel = async (): Promise<void> => {
-    try {
-      await cancel.mutateAsync(invoice.id);
-      notify.success(t("finance.collect.cancelled"));
-      onCancelled?.();
-    } catch (error) {
-      notify.error(t("finance.collect.cancelFailed"), {
-        description: error instanceof Error ? error.message : String(error),
-      });
-    }
+  // Returns `false` on failure so ConfirmAlertDialog keeps the dialog open instead
+  // of closing before the ledger mutation resolves.
+  const handleCancel = async (): Promise<boolean> => {
+    const result = await guardCancel(async () => {
+      try {
+        await cancel.mutateAsync(invoice.id);
+        notify.success(t("finance.collect.cancelled"));
+        onCancelled?.();
+        return true;
+      } catch (error) {
+        notify.error(t("finance.collect.cancelFailed"), {
+          description: error instanceof Error ? error.message : String(error),
+        });
+        return false;
+      }
+    });
+    return result ?? false;
   };
 
   const handleCredit = async (): Promise<void> => {
-    if (!canCreditInvoice(invoice, creditAmt)) return;
-    try {
-      await credit.mutateAsync({ invoiceId: invoice.id, amount: creditAmt, reason: reason.trim() });
-      notify.success(t("finance.collect.creditSaved"));
-      setCreditOpen(false);
-      setAmount("");
-      setReason("");
-      setFormError(null);
-    } catch (error) {
-      const mapped = mapApiFormError(error, (message) => translateApiMessage(message, t));
-      setFormError(mapped.message ?? t("finance.collect.creditFailed"));
-      if (!mapped.fieldErrors) {
-        notify.error(t("finance.collect.creditFailed"), {
-          description: mapped.message ?? (error instanceof Error ? error.message : String(error)),
+    await guardCredit(async () => {
+      if (!canCreditInvoice(invoice, creditAmt)) return;
+      try {
+        await credit.mutateAsync({
+          invoiceId: invoice.id,
+          amount: creditAmt,
+          reason: reason.trim(),
         });
+        notify.success(t("finance.collect.creditSaved"));
+        setCreditOpen(false);
+        setAmount("");
+        setReason("");
+        setFormError(null);
+      } catch (error) {
+        const mapped = mapApiFormError(error, (message) => translateApiMessage(message, t));
+        setFormError(mapped.message ?? t("finance.collect.creditFailed"));
+        if (!mapped.fieldErrors) {
+          notify.error(t("finance.collect.creditFailed"), {
+            description: mapped.message ?? (error instanceof Error ? error.message : String(error)),
+          });
+        }
       }
-    }
+    });
   };
 
   return (
@@ -129,8 +153,11 @@ export function InvoiceCorrectionActions({
         icon={StickyNote}
         cancelLabel={t("common.cancel")}
         saveLabel={t("finance.collect.creditSubmit")}
-        onSave={() => void handleCredit()}
+        onSave={handleCredit}
         saving={credit.isPending}
+        isDirty={isDirty}
+        discardUnsavedTitle={t("settings.unsavedChanges")}
+        discardUnsavedDescription={t("common.discardUnsavedDescription")}
         error={formError ?? undefined}
         saveDisabled={!canCreditInvoice(invoice, creditAmt)}
         formId="invoice-credit-form"
@@ -172,10 +199,7 @@ export function InvoiceCorrectionActions({
         description={t("finance.collect.cancelConfirm")}
         confirmLabel={t("finance.collect.cancelAction")}
         cancelLabel={t("common.cancel")}
-        onConfirm={() => {
-          setCancelOpen(false);
-          void handleCancel();
-        }}
+        onConfirm={() => handleCancel()}
       />
     </div>
   );

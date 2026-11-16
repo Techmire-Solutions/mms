@@ -2,7 +2,10 @@ import { useMemo, useState } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { invalidateUsersQueries } from "@/tenant/hooks/collections/users";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import type {
+  AppTranslationKey,
   Contact,
   FacultyDuplicateReason,
   FacultyMember,
@@ -69,6 +72,8 @@ export function useFacultyFormSaveActions({
     null,
   );
   const [duplicateConfirmOpen, setDuplicateConfirmOpen] = useState(false);
+  // Confirm runs from a dialog button: a same-frame double click must not save twice.
+  const submitGuard = useSubmitGuard();
 
   const clearDuplicatePrompt = () => {
     setDuplicateConfirmOpen(false);
@@ -116,21 +121,32 @@ export function useFacultyFormSaveActions({
     });
   };
 
-  const confirmDuplicateSave = () => {
-    void confirmPendingFacultySave({
-      pendingSaveData,
-      faculty: currentFaculty,
-      t,
-      onSave,
-      onClose,
-      setSaving,
-      setPendingSaveData,
-      setDuplicateConfirmOpen,
-      userAccountDraft,
-      linkedUser,
-      onUserInvalidate: () => invalidateUsersQueries(queryClient),
-      setErrors,
-    });
+  const confirmDuplicateSave = async (): Promise<boolean> => {
+    const result = await submitGuard(async () =>
+      confirmPendingFacultySave({
+        pendingSaveData,
+        faculty: currentFaculty,
+        t,
+        onSave,
+        onClose,
+        setSaving,
+        setPendingSaveData,
+        setDuplicateConfirmOpen,
+        userAccountDraft,
+        linkedUser,
+        onUserInvalidate: () => invalidateUsersQueries(queryClient),
+        setErrors,
+        onError: (error) => {
+          // Keep `pendingSaveData` and the confirm dialog open so the user can retry
+          // after fixing whatever the server rejected.
+          const mapped = mapApiFormError(error, (message) => t(message as AppTranslationKey));
+          setErrors(
+            mapped.fieldErrors ?? { save: mapped.message ?? t("faculty.toast.saveFailed") },
+          );
+        },
+      }),
+    );
+    return result ?? false;
   };
 
   return {

@@ -5,6 +5,7 @@ import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { scrollAndFocusFirstError } from "@/lib/forms/formAutoScroll";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import {
   validateStudentDraft,
   checkStudentFormDuplicate,
@@ -29,6 +30,8 @@ interface StudentSaveFlowInput {
   onBaselineReset?: (data: Partial<Student>) => void;
   setValidationErrors: (errors: ValidationError[]) => void;
   setSaving: (saving: boolean) => void;
+  /** Non-field failure banner; cleared at save start and set when fields carry no error. */
+  setFormError: (message: string | null) => void;
   setPendingSaveData: (data: Partial<Student> | null) => void;
   setTypedDuplicateReason: (reason: StudentDuplicateReason | null) => void;
   setDuplicateConfirmOpen: (open: boolean) => void;
@@ -65,6 +68,7 @@ export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<b
   input.setSaving(true);
   try {
     input.setValidationErrors([]);
+    input.setFormError(null);
 
     const zodErrors = validateStudentDraft(input.studentDraft, {
       ...input.validationContext,
@@ -140,6 +144,9 @@ export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<b
       input.setValidationErrors(fieldErrors);
       const first = fieldErrors[0];
       if (first) focusStudentValidationField(input.formInstanceId, first.fieldId);
+    } else {
+      // Non-field failure: the banner is the actionable surface (the toast is easy to miss).
+      input.setFormError(mapApiFormError(err).message ?? input.t("students.saveFailed"));
     }
 
     notifyStudentSaveFailed(input.t, err, "students.form_save", fieldErrors[0]?.message);

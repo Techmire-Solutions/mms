@@ -12,7 +12,7 @@ import {
   useAttendanceExcuses,
 } from "@/tenant/features/attendance/hooks/useAttendanceLifecycle";
 import { AttendanceExcuseForm } from "@/tenant/features/attendance/components/AttendanceExcuseForm";
-import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { AttendanceLifecycleDialogs } from "@/tenant/features/attendance/components/AttendanceLifecycleDialogs";
 
 /**
  * Attendance lifecycle surfaces: the excuse review queue and the chronic-absence alerts.
@@ -198,94 +198,61 @@ export function AttendanceLifecyclePanel(): React.JSX.Element {
         )}
       </SectionCard>
 
-      <ConfirmAlertDialog
-        open={decision !== null}
-        onOpenChange={(open) => {
+      <AttendanceLifecycleDialogs
+        t={t}
+        decision={decision}
+        cancelTarget={cancelTarget}
+        alertTarget={alertTarget}
+        onDecisionOpenChange={(open) => {
           if (!open) setDecision(null);
         }}
-        title={
-          decision?.decision === "reject"
-            ? t("attendance.excuses.rejectTitle")
-            : t("attendance.excuses.approveTitle")
-        }
-        description={
-          decision?.decision === "reject"
-            ? t("attendance.excuses.rejectBody")
-            : t("attendance.excuses.approveBody")
-        }
-        confirmLabel={
-          decision?.decision === "reject"
-            ? t("attendance.excuses.reject")
-            : t("attendance.excuses.approve")
-        }
-        destructive={decision?.decision === "reject"}
-        optionalReason={{
-          label: t("attendance.excuses.decideNoteLabel"),
-          placeholder: t("attendance.excuses.decideNotePlaceholder"),
-        }}
-        onConfirm={async (note) => {
-          if (!decision) return false;
-          const { leave, decision: choice } = decision;
-          setDecision(null);
-          await excuses.review.mutateAsync({
-            params: { id: leave.id },
-            body: { decision: choice, ...(note?.trim() ? { note: note.trim() } : {}) },
-          });
-          return true;
-        }}
-      />
-
-      <ConfirmAlertDialog
-        open={cancelTarget !== null}
-        onOpenChange={(open) => {
+        onCancelOpenChange={(open) => {
           if (!open) setCancelTarget(null);
         }}
-        title={t("attendance.excuses.cancelTitle")}
-        description={t("attendance.excuses.cancelBody")}
-        confirmLabel={t("attendance.excuses.cancel")}
-        destructive
-        optionalReason={{
-          label: t("attendance.excuses.cancelReasonLabel"),
-          placeholder: t("attendance.excuses.cancelReasonPlaceholder"),
-        }}
-        onConfirm={async (reason) => {
-          if (!cancelTarget) return false;
-          if (!reason?.trim()) {
-            notify.error(t("attendance.excuses.reasonRequired"));
-            return false;
-          }
-          const target = cancelTarget;
-          setCancelTarget(null);
-          await excuses.cancel.mutateAsync({
-            params: { id: target.id },
-            body: { reason: reason.trim() },
-          });
-          return true;
-        }}
-      />
-
-      <ConfirmAlertDialog
-        open={alertTarget !== null}
-        onOpenChange={(open) => {
+        onAlertOpenChange={(open) => {
           if (!open) setAlertTarget(null);
         }}
-        title={t("attendance.alerts.resolveTitle")}
-        description={t("attendance.alerts.resolveBody")}
-        confirmLabel={t("attendance.alerts.resolve")}
-        optionalReason={{
-          label: t("attendance.alerts.resolveNoteLabel"),
-          placeholder: t("attendance.alerts.resolveNotePlaceholder"),
-        }}
-        onConfirm={async (note) => {
-          if (!alertTarget) return false;
-          const target = alertTarget;
-          setAlertTarget(null);
-          await absence.resolve.mutateAsync({
-            params: { id: target.id },
-            body: { status: target.status, ...(note?.trim() ? { note: note.trim() } : {}) },
-          });
+        onReview={async (target, note) => {
+          // The dialog must stay open (typed note intact) until the write resolves.
+          try {
+            await excuses.review.mutateAsync({
+              params: { id: target.leave.id },
+              body: {
+                decision: target.decision,
+                ...(note?.trim() ? { note: note.trim() } : {}),
+              },
+            });
+          } catch {
+            return false;
+          }
+          setDecision(null);
           return true;
         }}
+        onCancelLeave={async (target, reason) => {
+          try {
+            await excuses.cancel.mutateAsync({
+              params: { id: target.id },
+              body: { reason: (reason ?? "").trim() },
+            });
+          } catch {
+            return false;
+          }
+          setCancelTarget(null);
+          return true;
+        }}
+        onResolveAlert={async (target, note) => {
+          try {
+            await absence.resolve.mutateAsync({
+              params: { id: target.id },
+              body: { status: target.status, ...(note?.trim() ? { note: note.trim() } : {}) },
+            });
+          } catch {
+            return false;
+          }
+          setAlertTarget(null);
+          return true;
+        }}
+        onReasonRequired={() => notify.error(t("attendance.excuses.reasonRequired"))}
       />
     </div>
   );

@@ -89,16 +89,6 @@ export const QuestionBankSettings = function QuestionBankSettings({
             onToggleDifficulty={toggleDifficulty}
           />
         </div>
-        <ModuleSetupSaveFooter
-          dirty={isPrefsDirty}
-          saving={saving}
-          saved={saved}
-          saveLabel={saving ? t("global.saving") : t("common.save")}
-          savedLabel={t("settings.savedBadge")}
-          onSave={handleSave}
-          disableUnsavedGuard
-          footerClassName="mt-4 pt-3"
-        />
       </SectionCard>
 
       <ModuleSetupSaveFooter

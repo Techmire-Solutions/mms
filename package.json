@@ -28,6 +28,8 @@
     "check:frontend-structure": "node scripts/check-frontend-structure.mjs",
     "check:work-directory": "node scripts/check-work-directory.mjs",
     "check:shared-ui": "node scripts/check-shared-ui.mjs",
+    "check:forms": "node scripts/check-form-architecture.mjs",
+    "forms:inventory": "node scripts/check-form-architecture.mjs --inventory",
     "check:shared-purity": "bash .agent/skills/mms-shared-package/scripts/check-shared-exports.sh",
     "check:shared-structure": "node scripts/check-shared-structure.mjs",
     "check:faculty-domain": "node scripts/check-faculty-domain.mjs",

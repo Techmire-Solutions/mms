@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
 import { CheckboxField } from "@/components/ui/checkbox";
 import { obligationTypeInsertSchema } from "@mms/shared";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import type { ObligationType } from "@/lib/data/obligationsData";
 import {
   DESIGNATED_LABEL_KEYS,
@@ -33,6 +34,7 @@ export function ObligationTypeFormModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const { isDirty } = useDirtySnapshot(form, `true:${initial.id ?? "new"}`, { ...initial });
 
   const designatedOptions = (() =>
     DESIGNATED_FOR_OPTIONS.map((option) => ({
@@ -92,6 +94,9 @@ export function ObligationTypeFormModal({
       saveLabel={t("common.save")}
       onSave={handleSave}
       saving={saving}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       saveDisabled={saving || !form.name?.trim()}
       error={submitError || undefined}
       formId="obligation-type-form-modal"

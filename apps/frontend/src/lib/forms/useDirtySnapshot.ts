@@ -7,15 +7,22 @@ import { useCallback, useRef } from "react";
 export function useDirtySnapshot<T>(
   value: T,
   resetKey: string,
+  /**
+   * The value the form's reset will produce for this key. Pass it when the reset is
+   * scheduled during render (`useIdentityReset`): on the key-change render `value` is
+   * still the previous draft, so without this the baseline is captured from the old
+   * record and every edit-open looks dirty.
+   */
+  resetBaselineValue?: T,
 ): {
   isDirty: boolean;
   resetBaseline: () => void;
 } {
   const keyRef = useRef(resetKey);
-  const baselineRef = useRef(JSON.stringify(value));
+  const baselineRef = useRef(JSON.stringify(resetBaselineValue ?? value));
   if (keyRef.current !== resetKey) {
     keyRef.current = resetKey;
-    baselineRef.current = JSON.stringify(value);
+    baselineRef.current = JSON.stringify(resetBaselineValue ?? value);
   }
   const resetBaseline = useCallback(() => {
     baselineRef.current = JSON.stringify(value);

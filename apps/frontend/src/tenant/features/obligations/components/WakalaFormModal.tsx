@@ -25,7 +25,15 @@ export function WakalaFormModal(props: WakalaFormModalProps): React.JSX.Element 
 
   const state = useWakalaFormModalState(props);
 
-  const errorsList = Object.values(state.errors).filter(Boolean);
+  // On the split step a total below 100% is not savable, so say why instead of
+  // leaving the user with a disabled Save and no message.
+  const distributionsIncomplete = state.step === 3 && state.totalPercentage !== 100;
+  const errorsList = [
+    ...Object.values(state.errors).filter(Boolean),
+    ...(distributionsIncomplete
+      ? [t("obligations.wakala.incompleteAlert", { pct: state.totalPercentage })]
+      : []),
+  ];
   const allErrors = state.submitError ? [...errorsList, state.submitError] : errorsList;
 
   return (
@@ -42,7 +50,7 @@ export function WakalaFormModal(props: WakalaFormModalProps): React.JSX.Element 
           state.saving ||
           (state.step === 1 && (!state.selectedMujtahidId || !state.selectedObTypeId)) ||
           (state.step === 2 && !state.selectedRepId) ||
-          (state.step === 3 && state.totalPercentage > 100)
+          (state.step === 3 && state.totalPercentage !== 100)
         }
         error={allErrors.length > 0 ? allErrors : undefined}
         formId="wakala-form-modal"

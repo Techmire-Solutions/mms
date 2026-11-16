@@ -8,7 +8,9 @@ import { Field } from "@/components/app/FormPrimitives";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
-import { generateClientEntityId, redeemCardBodySchema, todayISO } from "@mms/shared";
+import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
+import { generateClientEntityId, redeemCardBodySchema } from "@mms/shared";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
@@ -23,6 +25,7 @@ interface RedeemModalProps {
 
 export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModalProps) {
   const { t } = useTranslation();
+  const today = useWorkspaceToday();
   const activeDistributions = distributions.filter(
     (distribution) => distribution.status === "active",
   );
@@ -38,10 +41,18 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
     reward: "",
     // Seeded from the card's stamped value; the field stays read-only.
     pointsUsed: activeDistributions[0]?.pointsSnapshot ?? 0,
-    date: todayISO(),
+    date: today,
     approvedByUserId: "",
   });
   const [previousOpen, setPreviousOpen] = useState(open);
+  const resetRedemption = (): Partial<Redemption> => ({
+    distributionId: activeDistributions[0]?.id || "",
+    reward: "",
+    pointsUsed: activeDistributions[0]?.pointsSnapshot ?? 0,
+    date: today,
+    approvedByUserId: "",
+  });
+  const { isDirty } = useDirtySnapshot(data, `${open}:new`, resetRedemption());
 
   const updateField = <K extends keyof Redemption>(field: K, value: Redemption[K]) => {
     setData((previousData: Partial<Redemption>) => ({ ...previousData, [field]: value }));
@@ -68,7 +79,7 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
         reward: "",
         // The card is burned at its stamped value — prefill it so the client cannot send a partial.
         pointsUsed: active[0]?.pointsSnapshot ?? 0,
-        date: todayISO(),
+        date: today,
         approvedByUserId: "",
       });
       setApprovedByName("");
@@ -163,6 +174,9 @@ export function RedeemModal({ open, distributions, onClose, onSave }: RedeemModa
       cancelLabel={t("common.cancel")}
       saveLabel={t("common.save")}
       saving={submitting}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       error={submitError || undefined}
       onSave={handleSave}
       saveDisabled={activeDistributions.length === 0 || submitting}

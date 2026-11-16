@@ -11,6 +11,8 @@ export interface AttendanceListDesktopTableProps {
   isColumnVisible: (key: string) => boolean;
   visibleColCount: number;
   editingRecord: AttendanceRecord | null;
+  /** Inline save/validation error for the record being edited (rendered in its row). */
+  editingRecordError?: string | null;
   statuses: AttendanceStatus[];
   updateDraft: <K extends keyof AttendanceRecord>(key: K, value: AttendanceRecord[K]) => void;
   classLabel: (classId: string) => string;
@@ -31,6 +33,7 @@ export function AttendanceListDesktopTable({
   isColumnVisible,
   visibleColCount: _visibleColCount,
   editingRecord,
+  editingRecordError,
   statuses,
   updateDraft,
   classLabel,
@@ -54,6 +57,7 @@ export function AttendanceListDesktopTable({
   const columns = useAttendanceTableColumns({
     isColumnVisible,
     editingRecord,
+    editingRecordError,
     statuses,
     updateDraft,
     classLabel,

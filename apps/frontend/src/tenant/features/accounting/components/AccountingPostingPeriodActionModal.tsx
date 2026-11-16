@@ -6,6 +6,7 @@ import { Field } from "@/components/app/FormPrimitives";
 import { Textarea } from "@/components/ui/textarea";
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 
 export interface AccountingPostingPeriodActionModalProps {
   period: PostingPeriod;
@@ -27,6 +28,8 @@ export function AccountingPostingPeriodActionModal({
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const isClose = action === "close";
+  // The dialog is mounted per period/action; a typed reason triggers the discard confirm.
+  const { isDirty } = useDirtySnapshot(reason, `true:${period.id}:${action}`, "");
 
   const handleSave = async (): Promise<void> => {
     setError(null);
@@ -59,6 +62,9 @@ export function AccountingPostingPeriodActionModal({
       )}
       onSave={handleSave}
       saving={saving}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       error={error ?? undefined}
       formId="posting-period-action-form"
     >

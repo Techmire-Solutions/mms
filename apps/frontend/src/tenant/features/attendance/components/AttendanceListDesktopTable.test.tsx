@@ -61,4 +61,37 @@ describe("AttendanceListDesktopTable Component", () => {
     expect(html).toContain("Spring 2025");
     expect(html).toContain("On time");
   });
+
+  it("renders the inline edit error in the editing row instead of a toast", () => {
+    const lateRecord: AttendanceRecord = {
+      ...mockRecord,
+      status: "late",
+      timeIn: "",
+    };
+    const html = renderToStaticMarkup(
+      <AttendanceListDesktopTable
+        paginatedRecords={[lateRecord]}
+        isColumnVisible={() => true}
+        visibleColCount={8}
+        editingRecord={lateRecord}
+        editingRecordError="attendance.mark.validationTimeIn"
+        statuses={mockStatuses}
+        updateDraft={vi.fn()}
+        classLabel={() => "Class 1A"}
+        renderRowActions={() => <div>Actions</div>}
+        selectedIds={[]}
+        canDelete={true}
+        allVisibleSelected={false}
+        someVisibleSelected={false}
+        onToggleSelectAll={vi.fn()}
+        onToggleSelectedRecord={vi.fn()}
+        t={((k: string) => k) as unknown as never}
+      />,
+    );
+
+    expect(html).toContain('role="alert"');
+    expect(html).toContain("attendance.mark.validationTimeIn");
+    // Still in edit mode: the time-in picker the user has to fill is on screen.
+    expect(html).toContain("attendance-time-in-rec-1");
+  });
 });

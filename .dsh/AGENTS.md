@@ -62,7 +62,7 @@ DeepSeek Harness loads project instructions from the repo-root `AGENTS.md` / `CL
 | [mms-faculty-domain](skills/mms-faculty-domain/SKILL.md) | Governs the Faculty and Academic Staff domain — faculty records, designation assignments, temporal appointments, departments, and workload. Use when… |
 | [mms-fields-registry](skills/mms-fields-registry/SKILL.md) | Adds or changes field/tab registries, module Setup Fields UI, and field configuration per mms-fields.md. Use when working with custom fields, system… |
 | [mms-finance-accounting](skills/mms-finance-accounting/SKILL.md) | Implements or audits MMS finance and accounting workflows — invoices, payments, double-entry bookkeeping, chart of accounts, fiscal years, fee struct… |
-| [mms-form-architecture](skills/mms-form-architecture/SKILL.md) | Implements static FormModal forms with shared Zod DTOs, React 19 defaults, decimal-as-string money, tenant RLS saves, and authenticated multipart upl… |
+| [mms-form-architecture](skills/mms-form-architecture/SKILL.md) | Implements static FormModal forms with shared Zod DTOs, React 19 defaults, decimal-as-string money, tenant RLS saves, authenticated multipart uploads… |
 | [mms-frontend](skills/mms-frontend/SKILL.md) | Builds or modifies the MMS React frontend — apiClient, routing, providers, TanStack Query vs useLiveCollection, Vitest, Playwright, and module file s… |
 | [mms-i18n-completeness](skills/mms-i18n-completeness/SKILL.md) | Audits and fixes MMS translation coverage across en/ar/ur/fa — missing keys, untranslated strings, RTL/LTR formatting, and hardcoded copy. Use when a… |
 | [mms-incident-response](skills/mms-incident-response/SKILL.md) | Runs the MMS production incident procedure on the Hetzner host — diagnose, decide rollback vs fix-forward, execute, and verify the site is genuinely… |
@@ -95,7 +95,7 @@ DeepSeek Harness loads project instructions from the repo-root `AGENTS.md` / `CL
 
 ## Workflows
 
-[`code-review`](../.agent/workflows/code-review.md) · [`dev-setup`](../.agent/workflows/dev-setup.md) · [`dry`](../.agent/workflows/dry.md) · [`feature-module`](../.agent/workflows/feature-module.md) · [`fix-migration-debt`](../.agent/workflows/fix-migration-debt.md) · [`run-tests`](../.agent/workflows/run-tests.md) · [`shared-ui-audit`](../.agent/workflows/shared-ui-audit.md)
+[`code-review`](../.agent/workflows/code-review.md) · [`dev-setup`](../.agent/workflows/dev-setup.md) · [`dry`](../.agent/workflows/dry.md) · [`feature-module`](../.agent/workflows/feature-module.md) · [`fix-migration-debt`](../.agent/workflows/fix-migration-debt.md) · [`form-audit`](../.agent/workflows/form-audit.md) · [`run-tests`](../.agent/workflows/run-tests.md) · [`shared-ui-audit`](../.agent/workflows/shared-ui-audit.md)
 
 ## Verify
 

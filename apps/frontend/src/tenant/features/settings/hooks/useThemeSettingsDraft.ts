@@ -106,10 +106,11 @@ export function useThemeSettingsDraft(
     const wasBrandingDirty = branding.isThemeFieldsDirty;
 
     if (wasBrandingDirty) {
-      const ok = await branding.handleSave(
-        { saveSuccessMessage, saveSuccessDescription },
-        { skipToast: true },
-      );
+      // Theme-tab save must not commit staged Institution-tab (identity) edits.
+      const ok = await branding.handleSaveTheme({
+        saveSuccessMessage,
+        saveSuccessDescription,
+      });
       if (!ok) return;
     }
 
@@ -137,7 +138,10 @@ export function useThemeSettingsDraft(
 
     if (wasBrandingDirty || savedThemeMode) {
       flashSaved();
-      notify.success(saveSuccessMessage, { description: saveSuccessDescription });
+      // handleSaveTheme already announced appearance-only saves.
+      if (savedThemeMode && !wasBrandingDirty) {
+        notify.success(saveSuccessMessage, { description: saveSuccessDescription });
+      }
     }
   };
 

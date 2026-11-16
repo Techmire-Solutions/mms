@@ -16,6 +16,7 @@ import {
   SearchBar,
 } from "@shared/ui";
 import { FormModal } from "@/components/app/FormModal";
+import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { cn } from "@/lib/utils";
 
 export function PlatformPermissionMatrix(): React.JSX.Element {
@@ -38,6 +39,8 @@ export function PlatformPermissionMatrix(): React.JSX.Element {
     cancelStepUp,
     confirmStepUp,
   } = usePlatformPermissionMatrix();
+
+  const { isDirty } = useDirtySnapshot(stepUpPassword, pendingToggle?.admin.id ?? "none", "");
 
   if (isLoading) return <CardSkeleton count={2} />;
 
@@ -146,6 +149,9 @@ export function PlatformPermissionMatrix(): React.JSX.Element {
           void confirmStepUp();
         }}
         saving={busy}
+        isDirty={isDirty}
+        discardUnsavedTitle={t("settings.unsavedChanges")}
+        discardUnsavedDescription={t("common.discardUnsavedDescription")}
         formId="platform-permission-step-up-form"
       >
         <form

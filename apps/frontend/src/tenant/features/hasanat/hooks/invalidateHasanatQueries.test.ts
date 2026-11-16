@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
 import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 import {
   HASANAT_DENOMS_QUERY_KEY,
@@ -37,6 +38,7 @@ describe("hasanat query invalidation policy", () => {
     expect(includes(keys, HASANAT_METRICS_QUERY_KEY)).toBe(true);
     expect(includes(keys, HASANAT_REPORT_AGGREGATES_QUERY_KEY)).toBe(true);
     expect(includes(keys, DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY)).toBe(true);
+    expect(includes(keys, DASHBOARD_SUMMARY_QUERY_KEY_ROOT)).toBe(true);
     // Awarding points cannot change the tenant's setup preferences.
     expect(includes(keys, PREFS)).toBe(false);
   });

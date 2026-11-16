@@ -4,11 +4,14 @@ import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceData";
 import { AttendanceRecordStatusCell } from "@/tenant/features/attendance/components/AttendanceRecordStatusCell";
 import { TimePicker } from "@/components/app/TimePicker";
+import { FORM_ERROR } from "@/components/ui/formStyles";
 import { formatDate } from "@mms/shared";
 
 export interface UseAttendanceTableColumnsOptions {
   isColumnVisible: (key: string) => boolean;
   editingRecord: AttendanceRecord | null;
+  /** Row-level validation/save failure for the record being edited (inline, not a toast). */
+  editingRecordError?: string | null;
   statuses: AttendanceStatus[];
   updateDraft: <K extends keyof AttendanceRecord>(key: K, value: AttendanceRecord[K]) => void;
   classLabel: (classId: string) => string;
@@ -18,6 +21,7 @@ export interface UseAttendanceTableColumnsOptions {
 export function useAttendanceTableColumns({
   isColumnVisible,
   editingRecord,
+  editingRecordError = null,
   statuses,
   updateDraft,
   classLabel,
@@ -25,6 +29,17 @@ export function useAttendanceTableColumns({
 }: UseAttendanceTableColumnsOptions): WorkBatchTableColumn<AttendanceRecord>[] {
   return React.useMemo<WorkBatchTableColumn<AttendanceRecord>[]>(() => {
     const cols: WorkBatchTableColumn<AttendanceRecord>[] = [];
+    const inlineError = editingRecordError ? (
+      <p role="alert" className={`${FORM_ERROR} text-start`}>
+        {editingRecordError}
+      </p>
+    ) : null;
+    // Render the message once, under the first editable cell that is visible.
+    const errorColumnId = isColumnVisible("timeIn")
+      ? "timeIn"
+      : isColumnVisible("status")
+        ? "status"
+        : "timeOut";
 
     if (isColumnVisible("date")) {
       cols.push({
@@ -81,12 +96,15 @@ export function useAttendanceTableColumns({
         label: t("attendance.columns.status"),
         noWrap: true,
         render: (r: AttendanceRecord) => (
-          <AttendanceRecordStatusCell
-            attendanceRecord={r}
-            editingRecord={editingRecord}
-            statuses={statuses}
-            updateDraft={updateDraft}
-          />
+          <div className="flex flex-col gap-1">
+            <AttendanceRecordStatusCell
+              attendanceRecord={r}
+              editingRecord={editingRecord}
+              statuses={statuses}
+              updateDraft={updateDraft}
+            />
+            {editingRecord?.id === r.id && errorColumnId === "status" ? inlineError : null}
+          </div>
         ),
       });
     }
@@ -99,14 +117,17 @@ export function useAttendanceTableColumns({
         noWrap: true,
         render: (r: AttendanceRecord) =>
           editingRecord?.id === r.id ? (
-            <TimePicker
-              id={`attendance-time-in-${r.id}`}
-              name="timeIn"
-              value={editingRecord.timeIn}
-              onChange={(nextValue) => updateDraft("timeIn", nextValue)}
-              aria-label={t("attendance.columns.timeIn")}
-              className="w-full min-w-attendance-status max-w-attendance-status text-xs"
-            />
+            <div className="flex flex-col gap-1">
+              <TimePicker
+                id={`attendance-time-in-${r.id}`}
+                name="timeIn"
+                value={editingRecord.timeIn}
+                onChange={(nextValue) => updateDraft("timeIn", nextValue)}
+                aria-label={t("attendance.columns.timeIn")}
+                className="w-full min-w-attendance-status max-w-attendance-status text-xs"
+              />
+              {errorColumnId === "timeIn" ? inlineError : null}
+            </div>
           ) : (
             <span className="text-xs text-muted-foreground font-mono">{r.timeIn || "—"}</span>
           ),
@@ -121,14 +142,17 @@ export function useAttendanceTableColumns({
         noWrap: true,
         render: (r: AttendanceRecord) =>
           editingRecord?.id === r.id ? (
-            <TimePicker
-              id={`attendance-time-out-${r.id}`}
-              name="timeOut"
-              value={editingRecord.timeOut}
-              onChange={(nextValue) => updateDraft("timeOut", nextValue)}
-              aria-label={t("attendance.columns.timeOut")}
-              className="w-full min-w-attendance-status max-w-attendance-status text-xs"
-            />
+            <div className="flex flex-col gap-1">
+              <TimePicker
+                id={`attendance-time-out-${r.id}`}
+                name="timeOut"
+                value={editingRecord.timeOut}
+                onChange={(nextValue) => updateDraft("timeOut", nextValue)}
+                aria-label={t("attendance.columns.timeOut")}
+                className="w-full min-w-attendance-status max-w-attendance-status text-xs"
+              />
+              {errorColumnId === "timeOut" ? inlineError : null}
+            </div>
           ) : (
             <span className="text-xs text-muted-foreground font-mono">{r.timeOut || "—"}</span>
           ),
@@ -147,5 +171,5 @@ export function useAttendanceTableColumns({
     }
 
     return cols;
-  }, [classLabel, editingRecord, isColumnVisible, statuses, t, updateDraft]);
+  }, [classLabel, editingRecord, editingRecordError, isColumnVisible, statuses, t, updateDraft]);
 }

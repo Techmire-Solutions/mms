@@ -38,6 +38,7 @@ export function EnrollmentWizardFooter({
           <Button
             type="button"
             onClick={onCancel}
+            disabled={submitting}
             variant="outline"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors min-h-11 h-auto"
           >
@@ -47,6 +48,7 @@ export function EnrollmentWizardFooter({
           <Button
             type="button"
             onClick={onPrevious}
+            disabled={submitting}
             variant="outline"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-colors min-h-11 h-auto"
           >
@@ -66,7 +68,7 @@ export function EnrollmentWizardFooter({
               if (form) e.preventDefault();
               onNext();
             }}
-            disabled={!canNext}
+            disabled={!canNext || submitting}
             className="min-h-11 gap-1.5 px-5 font-semibold"
           >
             {t("common.next")} <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />

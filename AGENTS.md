@@ -9,6 +9,8 @@ pnpm install && pnpm typecheck
 pnpm install && ./restart_servers.sh   # local dev (screen)
 bash .agent/skills/mms-dev-setup/scripts/verify-env.sh   # env + services check
 node scripts/verify-rules-integrity.mjs                  # rules/skills gate
+pnpm run check:forms                                     # form contract / lifecycle ratchet
+pnpm run forms:inventory                                 # regenerate docs/forms-inventory.md
 pnpm ci:local                                            # path-aware local CI before commit/push
 pnpm ci:local:full                                       # + i18n/build/bundle
 ```
@@ -37,12 +39,12 @@ CLAUDE.md            ← thin wrapper: `@AGENTS.md` import + Claude-only notes
   rules/*.mdc        # CANONICAL rule sources (globs + alwaysApply)
   skills/            # generated mirror of .agent/skills/
   hooks.json         # afterFileEdit → format, beforeShellExecution → guard
-  commands/          # /dev-setup, /feature-module, /code-review, /dry, /run-tests, /fix-migration-debt, /shared-ui-audit
+  commands/          # /dev-setup, /feature-module, /code-review, /dry, /run-tests, /fix-migration-debt, /shared-ui-audit, /form-audit
 .claude/
   rules/             # generated mirror (paths: frontmatter)
   skills/            # generated mirror
   agents/            # mms-reviewer, mms-explorer, mms-test-triage, mms-docs-auditor
-  commands/          # same six workflow commands
+  commands/          # same workflow commands as .cursor/commands/
   settings.json      # team permissions (deny-list) + hooks
 .dsh/
   AGENTS.md          # generated DeepSeek Harness index (rules + skills + load model)
@@ -154,10 +156,11 @@ Index: [.agent/skills/README.md](.agent/skills/README.md)
 
 ## Workflows
 
-[.agent/workflows/](.agent/workflows/) — `dev-setup`, `feature-module`, `code-review`, `fix-migration-debt`, `dry`, `run-tests`, `shared-ui-audit`. Available as slash commands in Cursor (`.cursor/commands/`) and Claude Code (`.claude/commands/`); Antigravity reads the folder directly.
+[.agent/workflows/](.agent/workflows/) — `dev-setup`, `feature-module`, `code-review`, `fix-migration-debt`, `dry`, `run-tests`, `shared-ui-audit`, `form-audit`. Available as slash commands in Cursor (`.cursor/commands/`) and Claude Code (`.claude/commands/`); Antigravity reads the folder directly.
 
 | Workflow          | When to invoke                                                                                              |
 | ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| `form-audit`      | Inventory every form surface and audit/fix lifecycle, collection, UI, i18n, and a11y defects                |
 | `shared-ui-audit` | Audit frontend for duplicate/orphaned UI components, enforce `@shared/ui` SSOT, run pre-deletion validation |
 
 ## Editing standards

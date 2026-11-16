@@ -1,4 +1,5 @@
 import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInvalidator";
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
 import {
   QUESTION_BANK_METRICS_QUERY_KEY,
   QUESTION_BANK_QUESTIONS_QUERY_KEY,
@@ -15,4 +16,6 @@ export const invalidateQuestionBankQueries = createModuleQueryInvalidator({
   // The report aggregates carry a 5-minute staleTime; without this the coverage/difficulty panels
   // stayed stale after create/approve/retire.
   reports: QUESTION_BANK_REPORT_AGGREGATES_QUERY_KEY,
+  // Dashboard summary carries a question-bank coverage KPI.
+  dashboard: DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
 });

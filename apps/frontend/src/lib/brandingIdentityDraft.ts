@@ -28,6 +28,28 @@ export function retainThemeDraftAfterIdentitySave(
   });
 }
 
+/** Persist theme fields from the theme tab; keep institution identity from baseline. */
+export function mergeBrandingThemeForSave(
+  data: BrandingSettings,
+  baseline: BrandingSettings,
+): BrandingSettings {
+  return mergeBrandingSettings({
+    ...baseline,
+    ...pickBrandingFields(data, BRANDING_THEME_FIELD_KEYS),
+  });
+}
+
+/** After a theme save, keep unsaved institution-field edits in the shared draft. */
+export function retainIdentityDraftAfterThemeSave(
+  persisted: BrandingSettings,
+  currentDraft: BrandingSettings,
+): BrandingSettings {
+  return mergeBrandingSettings({
+    ...persisted,
+    ...pickBrandingFields(currentDraft, BRANDING_IDENTITY_FIELD_KEYS),
+  });
+}
+
 /** Clean empty social links from branding settings. */
 export function sanitizeBrandingSocialLinks(data: BrandingSettings): BrandingSettings {
   const cleanedSocialLinks = (data.socialLinks || []).filter(

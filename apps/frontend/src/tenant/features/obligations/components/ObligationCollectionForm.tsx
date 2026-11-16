@@ -158,7 +158,6 @@ export function ObligationCollectionForm({
     ...Object.values(errors).map((key) => t(key)),
     ...(serverError ? [serverError] : []),
   ];
-  const validationErrors = validateObligationCollectionForm(form);
 
   return (
     <>
@@ -173,7 +172,7 @@ export function ObligationCollectionForm({
         saveLabel={t("obligations.form.save")}
         onSave={handleSave}
         saving={submitting}
-        saveDisabled={Object.keys(validationErrors).length > 0}
+        saveDisabled={submitting}
         error={errorMessages}
         formId="obligation-collection-form"
       >
@@ -182,9 +181,9 @@ export function ObligationCollectionForm({
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
-            if (Object.keys(validationErrors).length === 0 && !submitting && !inFlightRef.current) {
-              void handleSave();
-            }
+            // Always attempt the save so incomplete fields get their inline errors
+            // instead of a permanently disabled footer Save.
+            if (!submitting && !inFlightRef.current) void handleSave();
           }}
         >
           <ObligationCollectionFormFields

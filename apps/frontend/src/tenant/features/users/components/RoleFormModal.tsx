@@ -4,6 +4,7 @@ import {
   normalizePermissionMap,
   PERMISSION_ACTIONS,
   serializeWorkspaceRoleWrite,
+  workspaceRoleLabel,
   workspaceRoleWriteSchema,
   type PermissionAction,
   type PermissionMap,
@@ -15,6 +16,7 @@ import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { PermissionMatrix } from "@/tenant/features/users/components/PermissionMatrix";
@@ -62,6 +64,8 @@ export function RoleFormModal({
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  // `saving` is render state; the ref guard closes the same-frame double click.
+  const guardSave = useSubmitGuard();
 
   // Adjust state during render: a new role target (or a re-open) resets the whole form.
   const [prevFormSource, setPrevFormSource] = useState({ role, open });
@@ -84,11 +88,12 @@ export function RoleFormModal({
     );
   })();
 
+  // Compare against every role's display label (custom labels AND translated
+  // system labels), excluding the role currently being edited.
   const duplicateName = existingRoles.some(
     (candidate) =>
       candidate.id !== role?.id &&
-      !candidate.isSystem &&
-      (candidate.customLabel ?? "").trim().toLowerCase() === name.trim().toLowerCase(),
+      workspaceRoleLabel(candidate, t).trim().toLowerCase() === name.trim().toLowerCase(),
   );
 
   const togglePerm = (moduleId: string, action: PermissionAction): void => {
@@ -109,8 +114,7 @@ export function RoleFormModal({
     setPerms((prev) => ({ ...prev, [moduleId]: [] }));
   };
 
-  const handleSave = async (): Promise<void> => {
-    if (saving) return;
+  const submitRole = async (): Promise<void> => {
     const parsed = workspaceRoleWriteSchema.safeParse({
       id: role?.id ?? `role_${crypto.randomUUID()}`,
       name: name.trim(),
@@ -135,11 +139,19 @@ export function RoleFormModal({
     try {
       await onSave(serializeWorkspaceRoleWrite(parsed.data, role));
     } catch (saveError) {
-      setError(mapApiFormError(saveError).message ?? t("settings.serverSaveFailed"));
+      // Server field errors must land on the same keys as the Zod map; the
+      // banner alone leaves the offending Name field looking valid.
+      const mapped = mapApiFormError(saveError, (message) =>
+        translateValidationMessage(message, t),
+      );
+      setFieldErrors(mapped.fieldErrors ?? {});
+      setError(mapped.message ?? t("settings.serverSaveFailed"));
     } finally {
       setSaving(false);
     }
   };
+
+  const handleSave = (): Promise<void | undefined> => guardSave(() => submitRole());
 
   return (
     <FormModal

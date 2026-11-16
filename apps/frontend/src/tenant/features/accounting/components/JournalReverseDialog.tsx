@@ -5,6 +5,7 @@ import {
   type AppTranslationKey,
   type FiscalYear,
   type JournalReversalRequest,
+  type PostingPeriod,
 } from "@mms/shared";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { DatePicker } from "@/components/app/DatePicker";
@@ -23,6 +24,8 @@ import { useJournalReverseDialogState } from "@/tenant/features/accounting/hooks
 interface JournalReverseDialogProps {
   entry: JournalEntry;
   fiscalYears: readonly FiscalYear[];
+  /** Monthly periods for the entry's fiscal year; a closed one blocks the chosen date. */
+  postingPeriods: readonly PostingPeriod[];
   onOpenChange: (open: boolean) => void;
   /** Resolve `false` to keep the dialog open (server refusal). */
   onConfirm: (request: JournalReversalRequest) => Promise<boolean>;
@@ -43,6 +46,7 @@ const PERIOD_LABEL = {
 export function JournalReverseDialog({
   entry,
   fiscalYears,
+  postingPeriods,
   onOpenChange,
   onConfirm,
 }: JournalReverseDialogProps) {
@@ -50,7 +54,7 @@ export function JournalReverseDialog({
   const { formatCurrency } = useAccountingCurrency();
   const { user } = useAuth();
   const ids = { date: useId(), reason: useId(), remarks: useId() };
-  const state = useJournalReverseDialogState(entry, fiscalYears);
+  const state = useJournalReverseDialogState(entry, fiscalYears, postingPeriods);
   const { totalDebit } = getJournalEntryLineTotals(entry);
 
   return (
@@ -134,7 +138,11 @@ export function JournalReverseDialog({
             error={
               state.dateIssue
                 ? t(`accounting.journal.reverse.dateIssue.${state.dateIssue}`)
-                : undefined
+                : state.closedPeriodName
+                  ? t("accounting.journal.form.errorClosedPostingPeriod", {
+                      period: state.closedPeriodName,
+                    })
+                  : undefined
             }
           >
             <DatePicker

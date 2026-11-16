@@ -108,6 +108,7 @@ export function AttendanceRecords(props: AttendanceRecordsProps): React.JSX.Elem
           isColumnVisible={state.columnVisible}
           visibleColCount={state.visibleColCount}
           editingRecord={state.editingRecord}
+          editingRecordError={state.editingRecordError}
           statuses={state.statuses}
           updateDraft={state.updateDraft}
           classLabel={state.classLabel}

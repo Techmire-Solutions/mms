@@ -165,9 +165,18 @@ export function QuestionForm({
       notify.success(question ? t("questionBank.updated") : t("questionBank.saved"));
       onClose();
     } catch (err: unknown) {
+      const mapping = mapApiFormError(err, (message) => translateApiMessage(message, t));
+      const fieldErrors = mapping.fieldErrors ?? {};
+      for (const [path, message] of Object.entries(fieldErrors)) {
+        // Same paths the resolver uses, so the server copy lands under the field it belongs to.
+        setError(path as Parameters<typeof setError>[0], { type: "server", message });
+      }
+      // Banner keeps only the residual form-level message; field copy stays inline.
+      const fieldMessages = new Set(Object.values(fieldErrors));
+      const residual =
+        mapping.message && !fieldMessages.has(mapping.message) ? mapping.message : null;
       setServerError(
-        mapApiFormError(err, (message) => translateApiMessage(message, t)).message ??
-          t("questionBank.saveFailed"),
+        residual ?? (Object.keys(fieldErrors).length > 0 ? null : t("questionBank.saveFailed")),
       );
     } finally {
       setSaving(false);
@@ -191,7 +200,10 @@ export function QuestionForm({
       saveLabel={t("questionBank.saveQuestion")}
       onSave={handleSave}
       saving={saving}
-      error={[...Object.values(errors), ...(serverError ? [serverError] : [])]}
+      error={serverError ? [serverError] : undefined}
+      isDirty={formState.isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
       saveDisabled={!questionDraft.text?.trim() || questionDraft.categoryIds.length === 0}
       footerStart={footerStart}
       formId="question-form"

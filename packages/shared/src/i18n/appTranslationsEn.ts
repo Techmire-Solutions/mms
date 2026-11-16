@@ -2591,6 +2591,8 @@ export const APP_TRANSLATIONS_EN = {
   "contacts.form.phoneNumberPlaceholder": "300 0000000",
   "contacts.form.phonesLabel": "phones",
   "contacts.form.pleaseFixErrors": "Please fix the following errors",
+  "contacts.form.saveConflict":
+    "Someone else changed this contact. Reload it and try again.",
   "contacts.form.noChanges": "No changes to save yet.",
   "contacts.form.preferredContactMethod": "Preferred Contact Method",
   "contacts.form.preferredLanguage": "Preferred Language",
@@ -7895,6 +7897,9 @@ export const APP_TRANSLATIONS_EN = {
   "reports.moduleTools.visualizerBuilder": "Visualizer Builder",
   "reports.moduleTools.widgetBuilder": "Widget Builder",
   "reports.saved.delete": "Delete",
+  "reports.saved.deleteConfirmTitle": "Delete saved report?",
+  "reports.saved.deleteConfirmDescription":
+    "This removes \"{name}\" from the workspace. This cannot be undone.",
   "reports.saved.deleteSuccess": "Report template deleted",
   "reports.saved.emptyDescription": "Configure filters and save them as a template.",
   "reports.saved.emptyTitle": "No saved reports",
@@ -9129,6 +9134,9 @@ export const APP_TRANSLATIONS_EN = {
   "students.restoreFailed": "Could not restore student",
   "students.restoreSuccess": "Student restored",
   "students.saveFailed": "Could not save student",
+  "students.form.avatarContactSyncTitle": "Update linked contact photo?",
+  "students.form.avatarContactSyncDescription":
+    "This updates the photo on the linked contact record immediately. Cancelling the student form will not undo it.",
   "students.searchColumnsPlaceholder": "Filter columns...",
   "students.searchPlaceholder": "Search students directory\u2026",
   "students.selectedCount": "{count} selected",

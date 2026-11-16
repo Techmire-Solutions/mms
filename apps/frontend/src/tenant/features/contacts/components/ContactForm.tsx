@@ -137,7 +137,7 @@ export function ContactForm({
       tall
       priority={Boolean(priority || nested)}
       saveOnTabChange={false}
-      error={validationErrorSummary}
+      error={validationErrorSummary ?? draft.formError ?? undefined}
       onSelectError={
         draft.lookupsError
           ? undefined

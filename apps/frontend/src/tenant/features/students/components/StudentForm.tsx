@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { GraduationCap } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
@@ -24,6 +24,15 @@ export const StudentForm = function StudentForm({
   priority = false,
 }: StudentFormProps): React.JSX.Element {
   const form = useStudentFormState({ student, onClose, onSave });
+  // The avatar lives on the linked contact, so changing it is a second write
+  // this form does not own. Hold the picked URL and commit it only on confirm.
+  const [pendingAvatarUrl, setPendingAvatarUrl] = useState<string | null>(null);
+
+  const confirmAvatarChange = async (): Promise<void> => {
+    if (!pendingAvatarUrl) return;
+    await form.handleStudentAvatarChange(pendingAvatarUrl);
+    setPendingAvatarUrl(null);
+  };
 
   const footerStart = form.linkedContact?.name ? (
     <div className="flex flex-wrap items-center gap-2.5 text-xs">
@@ -92,7 +101,7 @@ export const StudentForm = function StudentForm({
           (form.isFieldEnabled("contactId") && !form.studentDraft.contactId) ||
           (Boolean(student?.id) && !form.isDirty)
         }
-        error={form.validationErrorSummary ?? (form.errorSummary || undefined)}
+        error={form.validationErrorSummary ?? form.formError ?? (form.errorSummary || undefined)}
         footerStart={footerStart}
         formId={form.formInstanceId}
       >
@@ -130,7 +139,7 @@ export const StudentForm = function StudentForm({
             isFieldRequired={form.isFieldRequired}
             getFieldError={form.getFieldError}
             onContactSelect={form.handleContactSelect}
-            onStudentAvatarChange={form.handleStudentAvatarChange}
+            onStudentAvatarChange={(avatarUrl) => setPendingAvatarUrl(avatarUrl)}
             onGrNumberChange={form.handleGrNumberChange}
             onDraftChange={form.updateDraft}
           />
@@ -150,6 +159,17 @@ export const StudentForm = function StudentForm({
         confirmLabel={form.t("students.form.saveAnyway")}
         cancelLabel={form.t("students.form.reviewDuplicate")}
         onConfirm={form.confirmDuplicateSave}
+      />
+      <ConfirmAlertDialog
+        open={pendingAvatarUrl !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingAvatarUrl(null);
+        }}
+        title={form.t("students.form.avatarContactSyncTitle")}
+        description={form.t("students.form.avatarContactSyncDescription")}
+        confirmLabel={form.t("contacts.form.applyPhoto")}
+        cancelLabel={form.t("common.cancel")}
+        onConfirm={confirmAvatarChange}
       />
     </>
   );

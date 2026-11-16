@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { APP_TRANSLATIONS_EN, type FiscalYear } from "@mms/shared";
+import { APP_TRANSLATIONS_EN, type FiscalYear, type PostingPeriod } from "@mms/shared";
 import type { JournalEntry } from "@/lib/data/accountingData";
 import { JournalReverseDialog } from "./JournalReverseDialog";
 
@@ -88,13 +88,18 @@ describe("JournalReverseDialog", () => {
     vi.useRealTimers();
   });
 
-  async function renderDialog(original: JournalEntry, fiscalYears: FiscalYear[]) {
+  async function renderDialog(
+    original: JournalEntry,
+    fiscalYears: FiscalYear[],
+    postingPeriods: PostingPeriod[] = [],
+  ) {
     const onConfirm = vi.fn<(request: unknown) => Promise<boolean>>().mockResolvedValue(true);
     await act(async () => {
       root.render(
         <JournalReverseDialog
           entry={original}
           fiscalYears={fiscalYears}
+          postingPeriods={postingPeriods}
           onOpenChange={vi.fn()}
           onConfirm={onConfirm}
         />,
@@ -147,6 +152,32 @@ describe("JournalReverseDialog", () => {
     );
     expect(buttonLabels.some((label) => label.startsWith("Use original date"))).toBe(false);
     expect(onConfirm).toHaveBeenCalledWith({ date: "2026-10-08", reason: "Duplicate posting" });
+  });
+
+  it("given a closed monthly posting period, should flag the date field and not reverse", async () => {
+    // Arrange: the open original date (2026-09-15) is the default reversal date and
+    // it falls in a closed September period.
+    const onConfirm = await renderDialog(
+      entry("2026-09-15"),
+      [FY2026_OPEN],
+      [
+        {
+          id: "pp-sep",
+          fiscalYearId: "FY2026",
+          label: "September 2026",
+          startDate: "2026-09-01",
+          endDate: "2026-09-30",
+          status: "closed",
+        } as PostingPeriod,
+      ],
+    );
+
+    // Act
+    await fillReasonAndConfirm("Wrong expense account");
+
+    // Assert
+    expect(document.body.textContent).toContain("Posting period September 2026 is closed");
+    expect(onConfirm).not.toHaveBeenCalled();
   });
 
   it("given no reason, should show the required-reason error and not reverse", async () => {

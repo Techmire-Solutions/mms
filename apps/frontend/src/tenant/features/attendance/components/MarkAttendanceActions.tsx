@@ -9,6 +9,8 @@ export interface MarkAttendanceActionsProps {
   isOffline: boolean;
   submitted: boolean;
   canWriteAttendance: boolean;
+  /** True while the roster batch (and day submit) is in flight. */
+  saving?: boolean;
   onSaveDraft: () => void;
   onSubmit: () => void;
 }
@@ -20,6 +22,7 @@ export function MarkAttendanceActions({
   isOffline,
   submitted,
   canWriteAttendance,
+  saving = false,
   onSaveDraft,
   onSubmit,
 }: MarkAttendanceActionsProps): React.JSX.Element {
@@ -43,6 +46,7 @@ export function MarkAttendanceActions({
       <div className="flex gap-2">
         <Button
           onClick={onSaveDraft}
+          disabled={saving}
           variant="outline"
           className="flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
@@ -50,7 +54,7 @@ export function MarkAttendanceActions({
         </Button>
         <Button
           onClick={onSubmit}
-          disabled={!canWriteAttendance}
+          disabled={!canWriteAttendance || saving}
           className="flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
           <Send className="w-3.5 h-3.5" aria-hidden="true" />
