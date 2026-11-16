@@ -583,6 +583,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "accounting.reports.cashflow.section.operating": "آپریٹنگ سرگرمیاں",
   "accounting.reports.cashflow.section.investing": "سرمایہ کاری کی سرگرمیاں",
   "accounting.reports.cashflow.section.financing": "فنانسنگ سرگرمیاں",
+  "accounting.reports.cashflow.section.indirect": "بالواسطہ: {amount}",
+  "accounting.reports.cashflow.section.difference": "براہ راست − بالواسطہ: {amount}",
   "accounting.reports.cashflow.section.movement": "اندر {inflow} · باہر {outflow}",
   "accounting.reports.cashflow.title": "آپریٹنگ کیش فلو (بالواسطہ طریقہ)",
   "accounting.reports.equity": "ایکویٹی",

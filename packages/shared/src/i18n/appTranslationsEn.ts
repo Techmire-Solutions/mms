@@ -578,6 +578,8 @@ export const APP_TRANSLATIONS_EN = {
   "accounting.reports.cashflow.section.operating": "Operating activities",
   "accounting.reports.cashflow.section.investing": "Investing activities",
   "accounting.reports.cashflow.section.financing": "Financing activities",
+  "accounting.reports.cashflow.section.indirect": "Indirect: {amount}",
+  "accounting.reports.cashflow.section.difference": "Direct − Indirect: {amount}",
   "accounting.reports.cashflow.section.movement": "In {inflow} · Out {outflow}",
   "accounting.reports.cashflow.title": "Operating Cash Flow (Indirect Method)",
   "accounting.reports.equity": "Equity",

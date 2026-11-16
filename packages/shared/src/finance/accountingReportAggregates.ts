@@ -58,12 +58,14 @@ export const accountingCashFlowSectionSchema = z
     inflow: signedMoneyAmountSchema.default(0),
     outflow: signedMoneyAmountSchema.default(0),
     net: signedMoneyAmountSchema.default(0),
+    /** Indirect-method subtotal for this section. */
+    indirect: signedMoneyAmountSchema.default(0),
   })
   .strict();
 
 export type AccountingCashFlowSection = z.infer<typeof accountingCashFlowSectionSchema>;
 
-const EMPTY_CASH_FLOW_SECTION = { inflow: 0, outflow: 0, net: 0 };
+const EMPTY_CASH_FLOW_SECTION = { inflow: 0, outflow: 0, net: 0, indirect: 0 };
 const EMPTY_CASH_FLOW_SECTIONS = {
   operating: EMPTY_CASH_FLOW_SECTION,
   investing: EMPTY_CASH_FLOW_SECTION,
@@ -187,9 +189,9 @@ export const EMPTY_ACCOUNTING_REPORT_AGGREGATES: AccountingReportAggregates = {
   netCashFlowIndirect: 0,
   cashFlowAdjustments: { depreciation: 0, receivables: 0, payables: 0, other: 0 },
   cashFlowSections: {
-    operating: { inflow: 0, outflow: 0, net: 0 },
-    investing: { inflow: 0, outflow: 0, net: 0 },
-    financing: { inflow: 0, outflow: 0, net: 0 },
+    operating: { inflow: 0, outflow: 0, net: 0, indirect: 0 },
+    investing: { inflow: 0, outflow: 0, net: 0, indirect: 0 },
+    financing: { inflow: 0, outflow: 0, net: 0, indirect: 0 },
   },
   trialBalance: [],
   balanceSheetTrialBalance: [],

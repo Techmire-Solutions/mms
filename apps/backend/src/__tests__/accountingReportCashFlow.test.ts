@@ -148,18 +148,27 @@ describe("buildCashFlowFigures", () => {
       inflowCents: 11_000,
       outflowCents: 0,
       netCents: 11_000,
+      indirectCents: 0,
     });
     expect(figures.sections.investing).toEqual({
       inflowCents: 0,
       outflowCents: 8_000,
       netCents: -8_000,
+      indirectCents: -8_000,
     });
     expect(figures.sections.financing).toEqual({
       inflowCents: 12_000,
       outflowCents: 0,
       netCents: 12_000,
+      indirectCents: 12_000,
     });
     expect(figures.cashInflowCents).toBe(23_000);
     expect(figures.cashOutflowCents).toBe(8_000);
+    // The sections partition the total indirect figure by construction.
+    expect(
+      figures.sections.operating.indirectCents +
+        figures.sections.investing.indirectCents +
+        figures.sections.financing.indirectCents,
+    ).toBe(figures.netCashFlowIndirectCents);
   });
 });

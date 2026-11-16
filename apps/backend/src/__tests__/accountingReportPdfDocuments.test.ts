@@ -45,9 +45,9 @@ const aggregates = (): AccountingReportAggregates => ({
   netCashFlowIndirect: 0,
   cashFlowAdjustments: { depreciation: 0, receivables: 0, payables: 0, other: 0 },
   cashFlowSections: {
-    operating: { inflow: 0, outflow: 0, net: 0 },
-    investing: { inflow: 0, outflow: 0, net: 0 },
-    financing: { inflow: 0, outflow: 0, net: 0 },
+    operating: { inflow: 0, outflow: 0, net: 0, indirect: 0 },
+    investing: { inflow: 0, outflow: 0, net: 0, indirect: 0 },
+    financing: { inflow: 0, outflow: 0, net: 0, indirect: 0 },
   },
   trialBalance: [
     {
