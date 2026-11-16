@@ -267,14 +267,20 @@ transactions.`) and re-attaches triggers for **19** tables against 0104's **14**
     Reproduced on pristine HEAD too (pre-existing; dev-only — the production bundle was unaffected). Found by
     running the platform-onboarding E2E locally.
 
-12. **`@local-only` tenant flow specs fail at the Chart-of-Accounts step (pre-existing).** Running
-    `tenant-critical-lifecycles.spec.ts` and `tenant-operations-flow.spec.ts` locally fails in
-    `createAccountsAndJournalEntry` (`e2e/helpers/tenantOperations.ts:921`): after the account PUT returns
-    2xx and the dialog closes, `getByText("E2E Cash")` is not visible in the Chart of Accounts list.
-    Reproduced identically against the pre-change commit (`6adde94b5`), so it is **not** caused by the
-    recent frontend work — most likely shared-DB state / rot (these specs are `@local-only`, not CI-gated;
-    the repo notes they need an isolated disposable database). Needs a clean-DB reproduction before it is
-    treated as a product bug.
+12. ~~**`@local-only` tenant flow specs fail at the Chart-of-Accounts step.**~~ **RESOLVED
+    (2026-11-16) — environment, not a product bug.** Reproduced on a clean disposable database: both
+    `tenant-critical-lifecycles.spec.ts` (3 tests) and `tenant-operations-flow.spec.ts` (which drives
+    `createAccountsAndJournalEntry`) pass **twice consecutively** on PostgreSQL 16 with a fresh
+    `db:migrate`. The earlier failure was the shared dev database: these specs seed through a
+    subprocess that falls back to `apps/backend/.env` for `DATABASE_URL`, so a backend pointed at a
+    disposable database while Playwright keeps the `.env` target writes the platform admin into the
+    wrong database and every later login fails (observed as "Invalid platform credentials" before the
+    Chart-of-Accounts step is even reached).
+    Recipe: start PostgreSQL on a spare port, `DATABASE_URL=… pnpm --filter mms-backend db:migrate`,
+    then run the dev stack **and** Playwright with the same `DATABASE_URL`
+    (`DATABASE_URL=… NO_WEB_SERVER=1 npx playwright test tests/tenant/... --project=chromium`).
+    `e2e/helpers/platformAdminSeeder.ts` now prints its sanitized seed target, so a divergent database
+    is visible in the output instead of surfacing as a credential error.
 
 ## 2026-10-28 project review — fixed vs. still open
 
