@@ -166,6 +166,7 @@ const configurableColumns = {
   description: accountingAccounts.description,
   isActive: accountingAccounts.isActive,
   parentAccountId: accountingAccounts.parentAccountId,
+  cashFlowSection: accountingAccounts.cashFlowSection,
   isMonetary: accountingAccounts.isMonetary,
   accountCurrency: accountingAccounts.accountCurrency,
   allowRevaluation: accountingAccounts.allowRevaluation,
@@ -183,6 +184,7 @@ const storedConfigurable = (row: ConfigurableRow) => ({
   description: row.description,
   isActive: row.isActive,
   parentAccountId: row.parentAccountId,
+  cashFlowSection: row.cashFlowSection,
   isMonetary: row.isMonetary,
   accountCurrency: row.accountCurrency,
   allowRevaluation: row.allowRevaluation,
@@ -214,6 +216,8 @@ function accountContentChanged(
       record.accountCurrency === undefined ? stored.accountCurrency : record.accountCurrency,
     allowRevaluation:
       record.allowRevaluation === undefined ? stored.allowRevaluation : record.allowRevaluation,
+    cashFlowSection:
+      record.cash_flow_section === undefined ? stored.cashFlowSection : record.cash_flow_section,
   };
   return (Object.keys(incoming) as Array<keyof typeof incoming>).some(
     (key) => incoming[key] !== stored[key],

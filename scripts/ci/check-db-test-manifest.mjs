@@ -86,6 +86,7 @@ const BASELINE = {
   // schema/ledger-control contracts, CSV import, precision, reopen races and the
   // audit-atomicity suite. They may only shrink with a reviewed baseline update.
   "accountingAccountsSchemaDb.integration.test.ts": 22,
+  "accountingBankingDb.integration.test.ts": 3,
   "accountingAuditAtomicityDb.integration.test.ts": 9,
   "accountingCsvImportDb.integration.test.ts": 3,
   "accountingLedgerControlDb.integration.test.ts": 12,

@@ -1828,6 +1828,13 @@
       "when": 1797850800300,
       "tag": "0260_migration_journal_drift_repair",
       "breakpoints": true
+    },
+    {
+      "idx": 261,
+      "version": "7",
+      "when": 1797850800301,
+      "tag": "0261_accounting_cash_flow_section",
+      "breakpoints": true
     }
   ]
 }

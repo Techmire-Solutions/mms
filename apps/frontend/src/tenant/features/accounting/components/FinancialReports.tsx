@@ -160,6 +160,7 @@ export function FinancialReports(): React.JSX.Element {
                   netCashFlow={metrics.netCashFlow}
                   cashInflow={metrics.cashInflow}
                   cashOutflow={metrics.cashOutflow}
+                  cashFlowSections={metrics.cashFlowSections}
                 />
               )}
             </ReportDataGridContainer>

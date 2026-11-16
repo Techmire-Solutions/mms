@@ -1,4 +1,6 @@
 import { and, eq } from "drizzle-orm";
+import { ConflictError } from "../../lib/httpErrors.js";
+import { isUniqueViolation, uniqueViolationConstraint } from "../../lib/pgErrors.js";
 import type { BankReconciliationMatch, BankStatement } from "@mms/shared";
 import {
   accountingBankReconciliations,
@@ -122,26 +124,56 @@ export async function matchBankReconciliation(
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
   await withTenant(subdomain, async (tx) => {
-    await tx
-      .insert(accountingBankReconciliations)
-      .values({
+    // Re-matching the same statement line with the same journal line is an
+    // idempotent replay; pointing it at a different line is a conflict. The
+    // journal-line index (`accounting_bank_reconciliations_journal_line_uidx`)
+    // additionally refuses consuming one line against two statements.
+    const [existing] = await tx
+      .select({
+        journalEntryId: accountingBankReconciliations.journalEntryId,
+        journalLineId: accountingBankReconciliations.journalLineId,
+      })
+      .from(accountingBankReconciliations)
+      .where(
+        and(
+          eq(accountingBankReconciliations.workspaceSubdomain, subdomain),
+          eq(accountingBankReconciliations.statementLineId, match.statementLineId),
+        ),
+      )
+      .for("update");
+    if (existing) {
+      if (
+        existing.journalEntryId === match.journalEntryId &&
+        existing.journalLineId === match.journalLineId
+      ) {
+        return;
+      }
+      throw new ConflictError(
+        "This statement line is already matched to a different journal line",
+        "bank_line_already_matched",
+      );
+    }
+
+    try {
+      await tx.insert(accountingBankReconciliations).values({
         workspaceSubdomain: subdomain,
         statementLineId: match.statementLineId,
         journalEntryId: match.journalEntryId,
         journalLineId: match.journalLineId,
         matchedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: [
-          accountingBankReconciliations.workspaceSubdomain,
-          accountingBankReconciliations.statementLineId,
-        ],
-        set: {
-          journalEntryId: match.journalEntryId,
-          journalLineId: match.journalLineId,
-          matchedAt: new Date(),
-        },
       });
+    } catch (error) {
+      if (
+        isUniqueViolation(error) &&
+        (uniqueViolationConstraint(error) ?? "").includes("_journal_line_uidx")
+      ) {
+        throw new ConflictError(
+          "This journal line is already matched",
+          "journal_line_already_matched",
+        );
+      }
+      throw error;
+    }
     await auditBankReconciliationMatched(tx, subdomain, match, reason);
   });
 }

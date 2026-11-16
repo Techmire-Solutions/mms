@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type Account } from "@mms/shared";
+import { dedupeTrimmedIds, isCashFlowSection, type Account } from "@mms/shared";
 import { accountingAccounts } from "../schema.js";
 import { withTenant, withTenantRead } from "../tenant-context.js";
 import { postedLineCountsByAccount } from "./accountingAccountLedgerLines.js";
@@ -30,6 +30,7 @@ export const accountSelectColumns = {
   description: accountingAccounts.description,
   isActive: accountingAccounts.isActive,
   parentAccountId: accountingAccounts.parentAccountId,
+  cashFlowSection: accountingAccounts.cashFlowSection,
   isMonetary: accountingAccounts.isMonetary,
   accountCurrency: accountingAccounts.accountCurrency,
   allowRevaluation: accountingAccounts.allowRevaluation,
@@ -53,6 +54,10 @@ export function accountRowToRecord(row: AccountRow): Account {
     description: row.description,
     isActive: row.isActive,
     parentId: row.parentAccountId ?? null,
+    cash_flow_section:
+      row.cashFlowSection && isCashFlowSection(row.cashFlowSection)
+        ? row.cashFlowSection
+        : undefined,
     isMonetary: row.isMonetary,
     accountCurrency: row.accountCurrency,
     allowRevaluation: row.allowRevaluation,

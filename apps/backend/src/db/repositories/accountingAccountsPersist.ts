@@ -17,6 +17,7 @@ import {
   assertAccountsFresh,
   assertAccountsNotConfigured,
 } from "./accountingAccountGuards.js";
+import { assertNoPostedAccountTypeChange } from "./accountingAccountTypeGuard.js";
 import { postedLineCountsByAccount } from "./accountingAccountLedgerLines.js";
 import {
   auditAccountLifecycle,
@@ -39,6 +40,7 @@ export async function saveAccount(tenant: string, record: Account): Promise<void
     const before = await readAccountAuditStates(tx, subdomain, [record.id]);
     await assertAccountsFresh(tx, subdomain, [record]);
     await assertAccountHierarchyAllowed(tx, subdomain, [record]);
+    await assertNoPostedAccountTypeChange(tx, subdomain, [record]);
     const now = new Date();
     try {
       await tx
@@ -53,6 +55,7 @@ export async function saveAccount(tenant: string, record: Account): Promise<void
           description: record.description ?? "",
           isActive: record.isActive ?? true,
           parentAccountId: record.parentId ?? null,
+          cashFlowSection: record.cash_flow_section ?? null,
           ...accountFxInsertValues(record),
           deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
           deletedBy: record.deletedBy ?? null,
@@ -72,6 +75,10 @@ export async function saveAccount(tenant: string, record: Account): Promise<void
               record.parentId === undefined
                 ? sql`${accountingAccounts.parentAccountId}`
                 : record.parentId,
+            cashFlowSection:
+              record.cash_flow_section === undefined
+                ? sql`${accountingAccounts.cashFlowSection}`
+                : record.cash_flow_section,
             ...accountFxUpdateSet(record),
             updatedAt: now,
           },
@@ -104,6 +111,7 @@ export async function bulkSaveAccounts(tenant: string, records: Account[]): Prom
     );
     await assertAccountsFresh(tx, subdomain, uniqueRecords);
     await assertAccountHierarchyAllowed(tx, subdomain, uniqueRecords);
+    await assertNoPostedAccountTypeChange(tx, subdomain, uniqueRecords);
     const now = new Date();
     try {
       await tx
@@ -119,6 +127,7 @@ export async function bulkSaveAccounts(tenant: string, records: Account[]): Prom
             description: r.description ?? "",
             isActive: r.isActive ?? true,
             parentAccountId: r.parentId ?? null,
+            cashFlowSection: r.cash_flow_section ?? null,
             ...accountFxInsertValues(r),
             deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
             deletedBy: r.deletedBy ?? null,
@@ -135,6 +144,7 @@ export async function bulkSaveAccounts(tenant: string, records: Account[]): Prom
             subtype: sql`excluded.subtype`,
             description: sql`excluded.description`,
             isActive: sql`excluded.is_active`,
+            cashFlowSection: sql`excluded.cash_flow_section`,
             updatedAt: now,
           },
         });
@@ -177,6 +187,7 @@ export async function replaceAccountsForWorkspace(
           description: r.description ?? "",
           isActive: r.isActive ?? true,
           parentAccountId: r.parentId ?? null,
+          cashFlowSection: r.cash_flow_section ?? null,
           ...accountFxInsertValues(r),
           deletedAt: r.deletedAt ? new Date(r.deletedAt) : null,
           deletedBy: r.deletedBy ?? null,

@@ -357,6 +357,35 @@ describe("account code uniqueness (0253)", () => {
   });
 });
 
+describe("account type immutability", () => {
+  it("refuses to change the type of an account with posted ledger lines", async () => {
+    await expect(
+      bulkSaveAccounts(TEST_SUBDOMAIN, [account("acc-earmarked", "1200", { type: "Expense" })]),
+    ).rejects.toMatchObject({ statusCode: 409, type: "account_type_in_use" });
+  });
+
+  it("still allows harmless edits on the same posted account", async () => {
+    await bulkSaveAccounts(TEST_SUBDOMAIN, [
+      account("acc-earmarked", "1200", { type: "Asset", name: "Barely used (renamed)" }),
+    ]);
+    const [saved] = await listAccountsByWorkspace(TEST_SUBDOMAIN).then((rows) =>
+      rows.filter((row) => row.id === "acc-earmarked"),
+    );
+    expect(saved?.type).toBe("Asset");
+    expect(saved?.name).toBe("Barely used (renamed)");
+  });
+
+  it("allows changing the type of an account with no posted lines", async () => {
+    await bulkSaveAccounts(TEST_SUBDOMAIN, [account("acc-free", "1400", { type: "Liability" })]);
+    const [saved] = await listAccountsByWorkspace(TEST_SUBDOMAIN).then((rows) =>
+      rows.filter((row) => row.id === "acc-free"),
+    );
+    expect(saved?.type).toBe("Liability");
+    // Restore the fixture type for the remaining cases.
+    await bulkSaveAccounts(TEST_SUBDOMAIN, [account("acc-free", "1400", { type: "Asset" })]);
+  });
+});
+
 describe("account archive guards", () => {
   it("refuses to archive an account the posting rules point at", async () => {
     await expect(bulkSoftDeleteAccounts(TEST_SUBDOMAIN, ["acc-cash"], "u1")).rejects.toMatchObject({

@@ -6,6 +6,7 @@ import { ReportMoneyCardsGrid } from "@/components/reports/ReportMoneyCardsGrid"
 import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryTile";
 import { balanceToneClass } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
+import type { AccountingReportAggregates } from "@mms/shared";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -27,6 +28,8 @@ interface CashFlowStatementPanelProps {
   netCashFlow: number;
   cashInflow: number;
   cashOutflow: number;
+  /** Direct-method movement split by IAS 7 section (server-classified). */
+  cashFlowSections?: AccountingReportAggregates["cashFlowSections"];
   viewMode?: WorkDirectoryViewMode;
 }
 
@@ -49,6 +52,7 @@ export function CashFlowStatementPanel({
   netCashFlow,
   cashInflow,
   cashOutflow,
+  cashFlowSections,
   viewMode: propViewMode,
 }: CashFlowStatementPanelProps): React.JSX.Element {
   const { t } = useTranslation();
@@ -75,6 +79,35 @@ export function CashFlowStatementPanel({
             {t("accounting.reports.cashflow.title")}
           </SectionLabel>
         </header>
+        {cashFlowSections && (
+          <ReportMoneyCardsGrid>
+            {(["operating", "investing", "financing"] as const).map((section) => {
+              const figures = cashFlowSections[section];
+              return (
+                <ReportMoneySummaryTile
+                  key={section}
+                  tone="muted"
+                  label={t(`accounting.reports.cashflow.section.${section}` as never)}
+                  value={
+                    <span className="flex flex-col gap-0.5">
+                      <span
+                        className={`font-mono ${figures.net >= 0 ? "text-success" : "text-destructive"}`}
+                      >
+                        {formatCurrency(figures.net)}
+                      </span>
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {t("accounting.reports.cashflow.section.movement", {
+                          inflow: formatCurrency(figures.inflow),
+                          outflow: formatCurrency(figures.outflow),
+                        })}
+                      </span>
+                    </span>
+                  }
+                />
+              );
+            })}
+          </ReportMoneyCardsGrid>
+        )}
         {viewMode === "cards" ? (
           <ReportMoneyCardsGrid>
             <ReportMoneySummaryTile

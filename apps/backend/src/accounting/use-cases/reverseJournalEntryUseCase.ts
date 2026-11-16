@@ -114,6 +114,11 @@ function buildReversalEntry(
 /**
  * Posts a new reversing journal for a posted entry; the original is never edited.
  *
+ * Reversal policy: **full reversal only.** A reversal mirrors every line of the
+ * original (debit↔credit) with a reason and the original reference. A partial
+ * correction must be posted as a separate adjusting journal entry — never as a
+ * partial reversal — so the original economic event and its trace stay intact.
+ *
  * Eligibility, period and duplicate checks run after taking the original's
  * advisory lock, inside the transaction that writes the reversal and its audit
  * row — so two concurrent requests commit at most one reversal, and the

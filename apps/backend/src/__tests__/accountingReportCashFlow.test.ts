@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCashFlowFigures,
   type CashEntryMovement,
+  type CashFlowSection,
   type ReportAccountRow,
 } from "../db/repositories/accountingReportCashFlow.js";
 
@@ -26,6 +27,7 @@ const row = (
   totalDebitCents: debit,
   totalCreditCents: credit,
   balanceCents: type === "Asset" || type === "Expense" ? debit - credit : credit - debit,
+  cashFlowSection: "operating",
 });
 
 describe("buildCashFlowFigures", () => {
@@ -46,6 +48,8 @@ describe("buildCashFlowFigures", () => {
       [transfer, receipt],
       0,
       {},
+      new Map(),
+      new Map(),
     );
     expect(figures.cashInflowCents).toBe(50_000);
     expect(figures.cashOutflowCents).toBe(0);
@@ -59,6 +63,8 @@ describe("buildCashFlowFigures", () => {
       [{ entryId: "e-1", cashDebitCents: 10_000, cashCreditCents: 200 }],
       0,
       {},
+      new Map(),
+      new Map(),
     );
     expect(figures.cashInflowCents).toBe(9_800);
     expect(figures.cashOutflowCents).toBe(0);
@@ -83,6 +89,8 @@ describe("buildCashFlowFigures", () => {
       [{ entryId: "e-1", cashDebitCents: 10_000, cashCreditCents: 4_500 }],
       6_000,
       {},
+      new Map(),
+      new Map(),
     );
     expect(figures.netCashFlowCents).toBe(5_500);
     expect(figures.netCashFlowIndirectCents).toBe(figures.netCashFlowCents);
@@ -101,9 +109,57 @@ describe("buildCashFlowFigures", () => {
       row("prepaid", "Asset", 900, 0),
       row("fees", "Revenue", 0, 5_000),
     ];
-    const figures = buildCashFlowFigures(flowRows, [], 5_000, {});
+    const figures = buildCashFlowFigures(flowRows, [], 5_000, {}, new Map(), new Map());
     expect(figures.adjustments.receivablesCents).toBe(-4_000);
     expect(figures.adjustments.payablesCents).toBe(1_000);
     expect(figures.adjustments.otherCents).not.toBe(0);
+  });
+
+  it("classifies a cash movement by its non-cash counterpart's section", () => {
+    const flowRows: ReportAccountRow[] = [
+      { ...row("cash", "Asset", 20_000, 5_000), cashFlowSection: "operating" },
+      { ...row("equipment", "Asset", 8_000, 0), cashFlowSection: "investing" },
+      { ...row("share-capital", "Equity", 0, 12_000), cashFlowSection: "financing" },
+      { ...row("fees", "Revenue", 0, 11_000), cashFlowSection: "operating" },
+    ];
+    const sectionById = new Map<string, CashFlowSection>([
+      ["equipment", "investing"],
+      ["share-capital", "financing"],
+      ["fees", "operating"],
+      ["cash", "operating"],
+    ]);
+    // e-investing: Dr equipment 8,000 / Cr cash 8,000 (cash leg net -8,000 → outflow).
+    // e-financing: Dr cash 12,000 / Cr share-capital 12,000 (cash leg net +12,000 → inflow).
+    // e-revenue:   Dr cash 11,000 / Cr fees 11,000 (cash leg net +11,000 → operating).
+    const movements: CashEntryMovement[] = [
+      { entryId: "e-investing", cashDebitCents: 0, cashCreditCents: 8_000 },
+      { entryId: "e-financing", cashDebitCents: 12_000, cashCreditCents: 0 },
+      { entryId: "e-revenue", cashDebitCents: 11_000, cashCreditCents: 0 },
+    ];
+    const counterparties = new Map<string, readonly string[]>([
+      ["e-investing", ["equipment"]],
+      ["e-financing", ["share-capital"]],
+      ["e-revenue", ["fees"]],
+    ]);
+
+    const figures = buildCashFlowFigures(flowRows, movements, 0, {}, sectionById, counterparties);
+
+    expect(figures.sections.operating).toEqual({
+      inflowCents: 11_000,
+      outflowCents: 0,
+      netCents: 11_000,
+    });
+    expect(figures.sections.investing).toEqual({
+      inflowCents: 0,
+      outflowCents: 8_000,
+      netCents: -8_000,
+    });
+    expect(figures.sections.financing).toEqual({
+      inflowCents: 12_000,
+      outflowCents: 0,
+      netCents: 12_000,
+    });
+    expect(figures.cashInflowCents).toBe(23_000);
+    expect(figures.cashOutflowCents).toBe(8_000);
   });
 });

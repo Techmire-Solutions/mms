@@ -6,6 +6,7 @@ import {
   FISCAL_YEAR_STATUSES,
   JOURNAL_ENTRY_STATUSES,
 } from "./accountingEnums.js";
+import { CASH_FLOW_SECTIONS } from "./accountingCashFlow.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 import {
   currencyCodeSchema,
@@ -23,18 +24,14 @@ export const accountRecordSchema = z
     subtype: z.string().default(""),
     description: z.string().default(""),
     isActive: z.boolean().default(true),
-    /**
-     * COA parent (`accounting_accounts.parent_account_id`). Root accounts leave it
-     * null; the backend rejects self-parenting, cycles and depth > 8
-     * (`accountingAccountHierarchy.ts`), and the 0253 trigger enforces the same at
-     * the database.
-     */
+    /** COA parent (null = root); cycles/depth enforced by the app guard + 0253 trigger. */
     parentId: z.string().nullable().optional(),
     /** IAS 21 monetary item (retranslated at closing rate); omitted = keep stored value. */
     isMonetary: z.boolean().optional(),
     /** Locks the account to one currency (e.g. a USD bank account); null = any. */
     accountCurrency: currencyCodeSchema.nullable().optional(),
     allowRevaluation: z.boolean().optional(),
+    cash_flow_section: z.enum(CASH_FLOW_SECTIONS).nullable().optional(),
     deletedAt: z.string().nullable().optional(),
     deletedBy: z.string().nullable().optional(),
     deletionReason: z.string().nullable().optional(),
@@ -57,6 +54,7 @@ export const accountRecordInsertSchema = z
     subtype: z.string().optional().default(""),
     description: z.string().optional().default(""),
     isActive: z.boolean().optional().default(true),
+    cash_flow_section: z.enum(CASH_FLOW_SECTIONS).nullable().optional(),
     /** COA parent; omitted = root account. Validated against the stored tree. */
     parentId: z.string().nullable().optional(),
     /** IAS 21 monetary item (retranslated at closing rate); omitted = keep stored value. */
