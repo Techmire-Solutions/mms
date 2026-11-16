@@ -47,7 +47,7 @@ URLs:
 Screen (default):
   Attach    screen -r ${SCREEN_SESSION}
   Detach    Ctrl+A then D
-  Logs      tail -f .logs/frontend.log .logs/backend.log
+  Logs      tail -f .logs/dev.log
 EOF
 }
 
@@ -232,15 +232,20 @@ wait_for_port() {
 # Waits (bounded) for a port to be released. Prevents a lingering process from
 # a previous run causing a doomed start (EADDRINUSE) right after stop_servers.
 wait_for_port_free() {
-  local port="$1" label="$2" max="${3:-10}" i=1
+  local port="$1" label="$2" max="${3:-30}" i=1
   while [ "$i" -le "$max" ]; do
     if ! port_in_use "$port"; then
       return 0
     fi
+    # The backend drains for ~5s on shutdown; a restart right after a stop used to
+    # die in that window with "Ports not free".
+    if [ "$i" = 4 ]; then
+      log "$label port $port still releasing (waiting for the previous process to drain)..."
+    fi
     sleep 0.5
     i=$((i + 1))
   done
-  warn "$label port $port still in use after ${max} waits — aborting start"
+  warn "$label port $port still in use after $((max / 2))s — aborting start"
   return 1
 }
 
@@ -302,6 +307,63 @@ maybe_clear_vite_cache() {
   fi
 }
 
+# Last captured child output, used to decide whether a start failure is a port race.
+# The screen child appends to the same dev.log as the legacy turbo mode, so only the
+# bytes written after this run's launch are evidence for this run.
+START_FAILURE_TAIL=""
+START_LOG_OFFSET=0
+
+mark_start_log_offset() {
+  START_LOG_OFFSET="$(wc -c <"$LOG_DIR/dev.log" 2>/dev/null || echo 0)"
+  START_LOG_OFFSET="${START_LOG_OFFSET// /}"
+}
+
+capture_start_failure_tail() {
+  local from
+  from="$(wc -c <"$LOG_DIR/dev.log" 2>/dev/null || echo 0)"
+  from="${from// /}"
+  if [ "$from" -gt "$START_LOG_OFFSET" ]; then
+    START_FAILURE_TAIL="$(tail -c +"$((START_LOG_OFFSET + 1))" "$LOG_DIR/dev.log" 2>/dev/null | tail -40 || true)"
+  else
+    START_FAILURE_TAIL=""
+  fi
+}
+
+start_failure_is_port_race() {
+  grep -qE "EADDRINUSE|address already in use|Ports not free" <<<"$START_FAILURE_TAIL"
+}
+
+# The screen child writes to dev.log (not frontend.log/backend.log), so the old
+# "tail frontend.log" hint was empty by construction and "screen -r" dead-ended
+# once the session had exited. Report what actually exists.
+print_start_failure_diagnostics() {
+  capture_start_failure_tail
+  if [ -n "$START_FAILURE_TAIL" ]; then
+    warn "── .logs/dev.log (this run, last 20 lines) ──"
+    tail -20 <<<"$START_FAILURE_TAIL" >&2 || true
+  else
+    warn "No .logs/dev.log output was captured"
+  fi
+  for extra_log in "$LOG_DIR/frontend.log" "$LOG_DIR/backend.log"; do
+    [ -f "$extra_log" ] || continue
+    warn "── $(basename "$extra_log") (last 10 lines) ──"
+    tail -10 "$extra_log" >&2 || true
+  done
+  if session_running; then
+    warn "Screen session '$SCREEN_SESSION' is still running — attach with: screen -r $SCREEN_SESSION"
+  else
+    warn "No screen session '$SCREEN_SESSION' (it exited) — reproduce in the foreground:"
+    warn "  MMS_FOREGROUND_WORKER=1 ./restart_servers.sh --foreground --quick"
+  fi
+  if port_in_use "$BACKEND_PORT" || port_in_use "$FRONTEND_PORT"; then
+    warn "A port is still in use after the child exited — clear it: ./restart_servers.sh stop"
+  fi
+  if start_failure_is_port_race; then
+    warn "The log shows a port conflict — free it first: ./restart_servers.sh stop"
+    warn "  lsof -iTCP:$BACKEND_PORT,$FRONTEND_PORT -sTCP:LISTEN"
+  fi
+}
+
 wait_for_dev_ports() {
   if [ "$QUICK" = true ]; then
     sleep 4
@@ -311,8 +373,8 @@ wait_for_dev_ports() {
   wait_for_port "$FRONTEND_PORT" "Frontend" 45 || true
   sleep 3
   port_in_use "$BACKEND_PORT" && port_in_use "$FRONTEND_PORT" || {
-    warn "Servers died shortly after start — check: screen -r $SCREEN_SESSION"
-    tail -15 "$LOG_DIR/frontend.log" 2>/dev/null >&2 || true
+    warn "Servers died shortly after start"
+    print_start_failure_diagnostics
     return 1
   }
 }
@@ -375,11 +437,44 @@ start_servers_screen() {
   maybe_clear_vite_cache
   check_prerequisites
 
-  log "Starting dev in screen session '$SCREEN_SESSION'..."
-  screen -dmS "$SCREEN_SESSION" bash -lc \
-    "cd '$ROOT_DIR' && MMS_FOREGROUND_WORKER=1 exec ./restart_servers.sh --foreground --no-docker --quick >>'$LOG_DIR/dev.log' 2>&1"
+  launch_screen_session() {
+    log "Starting dev in screen session '$SCREEN_SESSION'..."
+    mark_start_log_offset
+    screen -dmS "$SCREEN_SESSION" bash -lc \
+      "cd '$ROOT_DIR' && MMS_FOREGROUND_WORKER=1 exec ./restart_servers.sh --foreground --no-docker --quick >>'$LOG_DIR/dev.log' 2>&1"
 
-  wait_for_dev_ports || die "Dev servers did not start — run: screen -r $SCREEN_SESSION"
+    # Do not wait the full health budget for a child that died on launch.
+    local i=1
+    while [ "$i" -le 10 ]; do
+      session_running && break
+      sleep 1
+      i=$((i + 1))
+    done
+    if ! session_running; then
+      warn "Screen session '$SCREEN_SESSION' exited immediately after launch"
+      return 1
+    fi
+    wait_for_dev_ports
+  }
+
+  local attempt=1
+  while :; do
+    if launch_screen_session; then
+      break
+    fi
+    capture_start_failure_tail
+    if [ "$attempt" -ge 2 ] || ! start_failure_is_port_race; then
+      # wait_for_dev_ports already printed the diagnostics for this attempt.
+      die "Dev servers did not start — see the log above"
+    fi
+    attempt=$((attempt + 1))
+    warn "Port conflict on the first attempt — stopping and retrying once..."
+    stop_servers true
+    sleep 2
+    ensure_ports_free || die "Ports not free — run: ./restart_servers.sh stop"
+    maybe_clear_vite_cache
+  done
+
   save_port_pid "$BACKEND_PORT" "$LOG_DIR/backend.pid"
   save_port_pid "$FRONTEND_PORT" "$LOG_DIR/frontend.pid"
   port_in_use "$BACKEND_PORT" && port_in_use "$FRONTEND_PORT" || die "Servers failed to start"
