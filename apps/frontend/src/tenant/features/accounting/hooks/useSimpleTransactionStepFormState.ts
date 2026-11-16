@@ -7,12 +7,12 @@ import {
   type JournalEntry,
 } from "@/lib/data/accountingData";
 import {
-  calculateAccountBalanceCents,
   wizardAccountOptions,
   wizardCategoryAccountOptions,
   type QuickActionType,
   type WizardFormState,
 } from "../lib/simpleTransactionWizardTypes";
+import { useAccountingLedger } from "./useAccountingQueries";
 import { parseMoneyInput } from "../lib/simpleTransactionMoney";
 
 interface UseSimpleTransactionStepFormStateParams {
@@ -22,7 +22,6 @@ interface UseSimpleTransactionStepFormStateParams {
   currencySymbol: string;
   fiscalYears?: FiscalYear[];
   entries?: readonly JournalEntry[];
-  formatCurrency?: (amount: number | string | null | undefined) => string;
   idPrefix?: string;
   amountTouchedProp?: boolean;
   onAmountTouched?: () => void;
@@ -35,7 +34,6 @@ export function useSimpleTransactionStepFormState({
   currencySymbol,
   fiscalYears,
   entries,
-  formatCurrency,
   idPrefix,
   amountTouchedProp,
   onAmountTouched,
@@ -54,15 +52,7 @@ export function useSimpleTransactionStepFormState({
   const isTransfer = type.groupKey === "accounting.journal.dashboard.group.transfers";
   const showFiscalYear = (fiscalYears ?? []).length > 1;
 
-  const accountOptions = useMemo(
-    () =>
-      wizardAccountOptions(
-        accounts,
-        entries,
-        formatCurrency ? (amount) => formatCurrency(amount) : undefined,
-      ),
-    [accounts, entries, formatCurrency],
-  );
+  const accountOptions = useMemo(() => wizardAccountOptions(accounts), [accounts]);
   const revenueOptions = useMemo(
     () => wizardCategoryAccountOptions(accounts, "Revenue"),
     [accounts],
@@ -98,12 +88,17 @@ export function useSimpleTransactionStepFormState({
   }, [form.ref, entries]);
 
   const moneyLegAccountId = isMoneyIn ? form.debitAcc : form.creditAcc;
+  // Server cumulative balance for the selected money-leg account. Summing the
+  // register page made every account read ₨ 0.00 (and money-out always warned);
+  // the ledger endpoint is the account's actual position across its whole history.
+  const moneyLegLedger = useAccountingLedger(
+    { accountId: moneyLegAccountId, page: 1, limit: 1 },
+    { enabled: Boolean(moneyLegAccountId) },
+  );
   const moneyLegBalanceCents = useMemo(
     () =>
-      moneyLegAccountId && entries
-        ? calculateAccountBalanceCents(moneyLegAccountId, entries)
-        : null,
-    [moneyLegAccountId, entries],
+      moneyLegLedger.data ? Math.round((moneyLegLedger.data.closingBalance ?? 0) * 100) : null,
+    [moneyLegLedger.data],
   );
   const showLowBalanceWarning =
     !isMoneyIn && moneyLegBalanceCents !== null && moneyLegBalanceCents <= 0;

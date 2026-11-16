@@ -30,6 +30,13 @@ vi.mock("@/tenant/features/accounting/hooks/useAccountingLedgerOps", () => ({
   usePostingPeriods: () => ({ data: [] }),
 }));
 
+const ledgerMock = vi.hoisted(() => ({
+  data: undefined as { closingBalance: number } | undefined,
+}));
+vi.mock("@/tenant/features/accounting/hooks/useAccountingQueries", () => ({
+  useAccountingLedger: () => ({ data: ledgerMock.data }),
+}));
+
 vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("@/tenant/features/accounting/hooks/useVoucherNumbering")>();

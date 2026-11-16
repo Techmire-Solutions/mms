@@ -367,23 +367,7 @@ describe("buildWizardFormState", () => {
   });
 });
 
-describe("calculateAccountBalanceCents and balance formatted labels", () => {
-  it("formats live balances into wizardAccountOptions labels when entries and formatCurrency are provided", () => {
-    const mockEntries = [
-      {
-        status: "posted",
-        lines: [
-          { account_id: "a1000", debit: 500, credit: 100 },
-          { account_id: "a4000", debit: 0, credit: 400 },
-        ],
-      },
-    ];
-    const formatCurrency = (amt: number) => `$${amt.toFixed(2)}`;
-    const options = wizardAccountOptions(seedChart, mockEntries, formatCurrency);
-    const cashOption = options.find((opt) => opt.value === "a1000");
-    expect(cashOption?.label).toBe("1000 — Cash in Hand ($400.00)");
-  });
-
+describe("quick-action category classification", () => {
   it("classifies supplies and other_expense as Expense, and rental/other income as Income", () => {
     const supplies = moneyOut.items.find((item) => item.id === "supplies")!;
     const otherExpense = moneyOut.items.find((item) => item.id === "other_expense")!;

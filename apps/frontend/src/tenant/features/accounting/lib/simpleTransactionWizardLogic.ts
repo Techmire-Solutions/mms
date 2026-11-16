@@ -1,4 +1,4 @@
-import { moneyToCents, type Account, type AppTranslationKey } from "@mms/shared";
+import type { Account, AppTranslationKey } from "@mms/shared";
 import { parseMoneyInput } from "./simpleTransactionMoney";
 import { quickActionDescription } from "./quickActionLabels";
 import type {
@@ -45,46 +45,11 @@ export function wizardCashAccounts(accounts: readonly Account[]): Account[] {
   );
 }
 
-export function calculateAccountBalanceCents(
-  accountId: string,
-  entries: readonly {
-    lines: Array<{ account_id: string; debit: number; credit: number }>;
-    status: string;
-  }[],
-): number {
-  let balanceCents = 0;
-  for (const entry of entries) {
-    if (entry.status !== "posted") continue;
-    for (const line of entry.lines) {
-      if (line.account_id === accountId) {
-        balanceCents += moneyToCents(line.debit) - moneyToCents(line.credit);
-      }
-    }
-  }
-  return balanceCents;
-}
-
-export function wizardAccountOptions(
-  accounts: readonly Account[],
-  entries?: readonly {
-    lines: Array<{ account_id: string; debit: number; credit: number }>;
-    status: string;
-  }[],
-  formatCurrency?: (amount: number) => string,
-): WizardAccountOption[] {
-  return wizardCashAccounts(accounts).map((account) => {
-    let balanceSuffix = "";
-    if (entries && formatCurrency) {
-      const balanceCents = calculateAccountBalanceCents(account.id, entries);
-      balanceSuffix = ` (${formatCurrency(balanceCents / 100)})`;
-    }
-    return {
-      value: account.id,
-      label: account.code
-        ? `${account.code} — ${account.name}${balanceSuffix}`
-        : `${account.name}${balanceSuffix}`,
-    };
-  });
+export function wizardAccountOptions(accounts: readonly Account[]): WizardAccountOption[] {
+  return wizardCashAccounts(accounts).map((account) => ({
+    value: account.id,
+    label: account.code ? `${account.code} — ${account.name}` : account.name,
+  }));
 }
 
 /**
