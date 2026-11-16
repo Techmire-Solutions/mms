@@ -40,13 +40,13 @@ export default function TopBar({
           variant="outline"
           onClick={onOpenCommandPalette}
           aria-keyshortcuts="Control+K Meta+K"
-          className="relative flex w-full items-center justify-start rounded-xl border-border/50 bg-muted/50 ps-10 pe-14 min-h-11 h-11 text-sm font-normal text-muted-foreground text-start hover:bg-muted hover:text-foreground cursor-pointer shadow-none"
+          className="relative flex w-full items-center justify-start rounded-xl border-border/50 bg-muted/50 ps-10 pe-16 min-h-11 h-11 text-sm font-normal text-muted-foreground text-start hover:bg-muted hover:text-foreground cursor-pointer shadow-none gap-2"
         >
           <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          <span className="truncate">{t("nav.globalSearchPlaceholder")}</span>
+          <span className="truncate flex-1">{t("nav.globalSearchPlaceholder")}</span>
           <kbd
             aria-hidden="true"
-            className="absolute end-3 top-1/2 -translate-y-1/2 rounded border border-border bg-card px-1.5 py-0.5 text-xs text-muted-foreground font-mono select-none"
+            className="ms-auto shrink-0 rounded border border-border bg-card px-1.5 py-0.5 text-xs text-muted-foreground font-mono select-none"
           >
             {shortcutText}
           </kbd>
