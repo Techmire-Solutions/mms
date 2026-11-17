@@ -7,7 +7,7 @@ import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import { buildRestoredRecord, nowIso } from "../../lib/softDeleteHelpers.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { emitOutboxEvent, emitOutboxEvents } from "../../services/outboxEventService.js";
 import { cascadeRestoreFacultyAssignments } from "../../db/repositories/facultyAssignmentCascade.js";
 import { cascadeRestoreFacultyEmployments } from "../../db/repositories/facultyEmploymentRepository.js";
 import { cascadeRestoreFacultyEmployDesignations } from "../../db/repositories/facultyEmployDesignationRepository.js";
@@ -149,16 +149,19 @@ export async function bulkRestoreFaculty(
         throw err;
       }
 
-      for (const m of toSave) {
-        await emitOutboxEvent("entity.restored", {
-          entityType: "faculty",
-          entityId: String(m.id),
-          tenantId: tenant,
-          restoredAt: m.restoredAt ?? nowIso(),
-          restoredBy: userId ?? "unknown",
-          version: Date.now(),
-        });
-      }
+      await emitOutboxEvents(
+        toSave.map((m) => ({
+          type: "entity.restored" as const,
+          payload: {
+            entityType: "faculty",
+            entityId: String(m.id),
+            tenantId: tenant,
+            restoredAt: m.restoredAt ?? nowIso(),
+            restoredBy: userId ?? "unknown",
+            version: Date.now(),
+          },
+        })),
+      );
       await reconcileFacultyContactsByFacultyIds(
         tenant,
         toSave.map((m) => String(m.id)),

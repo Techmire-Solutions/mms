@@ -28,6 +28,7 @@ vi.mock("../lib/livePush.js", () => ({
 
 vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
+  emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../db/repositories/facultyAssignmentCascade.js", () => ({

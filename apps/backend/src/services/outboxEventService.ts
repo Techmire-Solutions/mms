@@ -144,7 +144,10 @@ export interface OutboxBatchEvent {
  * Audit rows deliberately stay per-row: `recordModernAuditEvent` appends to a
  * sharded hash chain, so batching it would break the chain.
  */
-export async function emitOutboxEvents(events: readonly OutboxBatchEvent[]): Promise<void> {
+export async function emitOutboxEvents(
+  events: readonly OutboxBatchEvent[],
+  tx?: AppDb,
+): Promise<void> {
   if (events.length === 0) return;
   const rows = events.map(({ type, payload }) => ({
     workspaceSubdomain: payload.tenantId,
@@ -153,6 +156,18 @@ export async function emitOutboxEvents(events: readonly OutboxBatchEvent[]): Pro
     entityId: payload.entityId,
     payload,
   }));
+
+  if (tx) {
+    await tx.insert(outboxEvents).values(rows);
+    if ("execute" in tx && typeof tx.execute === "function") {
+      try {
+        await tx.execute(sql`NOTIFY mms_outbox_events, 'new_event'`);
+      } catch {
+        // Non-blocking fallback if NOTIFY is unsupported in testing or mock transactions
+      }
+    }
+    return;
+  }
 
   const db = activeDb();
   await db.insert(outboxEvents).values(rows);

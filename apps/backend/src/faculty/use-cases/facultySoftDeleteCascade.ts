@@ -3,7 +3,7 @@
  * @description Cascade soft-delete of assignments, employ-designations, employments + parent outbox.
  */
 import type { Faculty } from "@mms/shared";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { emitOutboxEvents } from "../../services/outboxEventService.js";
 import { cascadeSoftDeleteFacultyAssignments } from "../../db/repositories/facultyAssignmentCascade.js";
 import { cascadeSoftDeleteFacultyEmployments } from "../../db/repositories/facultyEmploymentRepository.js";
 import { cascadeSoftDeleteFacultyEmployDesignations } from "../../db/repositories/facultyEmployDesignationRepository.js";
@@ -21,18 +21,20 @@ export async function cascadeFacultySoftDeleteSideEffects(
   await cascadeSoftDeleteFacultyAssignments(tenant, ids, deletedBy, trimmedReason);
   await cascadeSoftDeleteFacultyEmployDesignations(tenant, ids, deletedBy, trimmedReason);
   await cascadeSoftDeleteFacultyEmployments(tenant, ids, deletedBy, trimmedReason);
-  for (const f of toSave) {
-    const deletedAt = f.deletedAt ?? now;
-    await emitOutboxEvent("entity.soft_deleted", {
-      entityType: "faculty",
-      entityId: String(f.id),
-      tenantId: tenant,
-      deletedAt,
-      deletedBy,
-      deletionReason: f.deletionReason,
-      version: new Date(deletedAt).getTime() || Date.now(),
-      snapshot: f,
-    });
-  }
+  await emitOutboxEvents(
+    toSave.map((f) => ({
+      type: "entity.soft_deleted" as const,
+      payload: {
+        entityType: "faculty",
+        entityId: String(f.id),
+        tenantId: tenant,
+        deletedAt: f.deletedAt ?? now,
+        deletedBy,
+        deletionReason: f.deletionReason,
+        version: new Date(f.deletedAt ?? now).getTime() || Date.now(),
+        snapshot: f,
+      },
+    })),
+  );
   await revokeFacultySessions(tenant, toSave);
 }
