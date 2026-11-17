@@ -112,12 +112,16 @@ export function AppSidebarNav({
 
   const renderGroup = (group: AppNavGroup): React.JSX.Element => {
     const Icon = group.icon;
+    const subMenuId = `sidebar-subnav-${group.id.replace(/[^a-zA-Z0-9]/g, "-")}`;
     return (
       <div key={group.id} className="space-y-1">
         <Button
           type="button"
           variant="ghost"
           onClick={() => onToggleGroup?.(group.id)}
+          aria-expanded={collapsed ? undefined : group.open}
+          aria-controls={collapsed ? undefined : subMenuId}
+          aria-label={collapsed ? group.label : undefined}
           className={`group flex min-h-11 w-full items-center justify-between rounded-lg px-3 py-2.5 transition-all duration-200 hover:bg-sidebar-accent/50 ${
             group.active
               ? "bg-sidebar-accent/35 text-sidebar-foreground"
@@ -157,6 +161,7 @@ export function AppSidebarNav({
         <AnimatePresence initial={false}>
           {group.open && !collapsed && (
             <m.div
+              id={subMenuId}
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -181,7 +186,6 @@ export function AppSidebarNav({
         icon={link.icon}
         active={link.active}
         showLabel={showLabel}
-        collapsed={collapsed}
         reducedMotion={reducedMotion}
         layoutId={layoutId}
         centerIconWhenCollapsed={centerIconWhenCollapsed}

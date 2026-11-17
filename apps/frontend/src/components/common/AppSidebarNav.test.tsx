@@ -107,4 +107,20 @@ describe("AppSidebarNav", () => {
     expect(html).toContain('aria-label="Home"');
     expect(html).not.toContain(">Home<");
   });
+
+  it("labels the collapsed group toggle and omits disclosure semantics when unmounted", () => {
+    const html = renderToStaticMarkup(<AppSidebarNav sections={grouped} collapsed layoutId="t" />);
+    expect(html).toContain('aria-label="Academics"');
+    expect(html).not.toContain("aria-expanded");
+    expect(html).not.toContain("sidebar-subnav-academics");
+  });
+
+  it("exposes aria-expanded and aria-controls on the expanded group toggle", () => {
+    const html = renderToStaticMarkup(
+      <AppSidebarNav sections={grouped} collapsed={false} layoutId="t" />,
+    );
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).toContain('aria-controls="sidebar-subnav-academics"');
+    expect(html).toContain('id="sidebar-subnav-academics"');
+  });
 });

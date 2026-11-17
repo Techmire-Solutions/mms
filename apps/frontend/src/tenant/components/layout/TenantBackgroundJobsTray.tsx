@@ -4,7 +4,6 @@ import { downloadBackgroundJobArtifact } from "@/lib/backgroundJobs/backgroundJo
 import { BackgroundJobsTray } from "@/components/app/BackgroundJobsTray";
 
 export interface TenantBackgroundJobsTrayProps {
-  compact?: boolean;
   className?: string;
 }
 
@@ -13,14 +12,12 @@ export interface TenantBackgroundJobsTrayProps {
  * to the domain-neutral BackgroundJobsTray presentation component.
  */
 export function TenantBackgroundJobsTray({
-  compact = false,
   className,
 }: TenantBackgroundJobsTrayProps): React.JSX.Element | null {
   const { jobs, activeJobs, dismiss, clearFinished, refresh } = useBackgroundJobs();
 
   return (
     <BackgroundJobsTray
-      compact={compact}
       className={className}
       jobs={jobs}
       activeJobs={activeJobs}

@@ -178,6 +178,47 @@ async function auditMobileSidebar(page: Page, context: string): Promise<void> {
   });
 }
 
+/**
+ * The desktop sidebar collapse path was never audited: the shell sweep renders
+ * the rail expanded, which is how the collapsed "Academics" group toggle shipped
+ * with no accessible name and no disclosure semantics (2026-11-17 review).
+ * Collapse at desktop width, assert the group toggle is named and stops exposing
+ * aria-expanded/aria-controls, axe-scan the collapsed state, then restore.
+ */
+async function auditCollapsedSidebar(page: Page, context: string): Promise<void> {
+  await test.step(`Audit Collapsed Sidebar @ ${context}`, async () => {
+    const collapseTrigger = page.locator("aside").getByRole("button", { name: "Collapse" });
+    const present = await collapseTrigger
+      .waitFor({ state: "visible", timeout: 5_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!present) return;
+
+    await collapseTrigger.click();
+
+    const academicsToggle = page.locator("aside").getByRole("button", { name: "Academics" });
+    await expect(academicsToggle, `${context}: collapsed group toggle must be named`).toBeVisible();
+    await expect(
+      academicsToggle,
+      `${context}: aria-expanded must be absent when collapsed`,
+    ).not.toHaveAttribute("aria-expanded", /.*/);
+    await expect(
+      academicsToggle,
+      `${context}: aria-controls must be absent when collapsed`,
+    ).not.toHaveAttribute("aria-controls", /.*/);
+
+    await assertNoSeriousA11yViolations(page, { context: `${context} (collapsed sidebar)` });
+
+    // Keyboard activation avoids the floating TanStack Query Devtools button,
+    // which overlays the collapsed rail's footer toggle and intercepts pointer clicks.
+    await page.locator("aside").getByRole("button", { name: "Expand" }).press("Enter");
+    await expect(
+      page.locator("aside").getByRole("button", { name: "Collapse" }),
+      `${context}: sidebar must restore to expanded`,
+    ).toBeVisible({ timeout: 5_000 });
+  });
+}
+
 /** LTR sweep for one route group; overlays run on the flagged desktop Work routes. */
 async function ltrSweep(
   page: Page,
@@ -198,6 +239,10 @@ async function ltrSweep(
 
         if (viewport.width === 375 && route.path === "/") {
           await auditMobileSidebar(page, context);
+        }
+
+        if (viewport.width === 1440 && route.path === "/") {
+          await auditCollapsedSidebar(page, context);
         }
 
         if (viewport.width === 1440 && route.overlay) {
@@ -232,6 +277,7 @@ test.describe("accessibility smoke @smoke", () => {
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await assertNoSeriousA11yViolations(page, { context: "dashboard @ 1440px (rtl)" });
     await auditCommandPalette(page, "1440px (rtl)");
+    await auditCollapsedSidebar(page, "1440px (rtl)");
 
     // RTL overlay verification on the dense work directory
     await gotoAndSettle(page, tenantOrigin, "/students", MAIN_CONTENT);

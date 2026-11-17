@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { isNavPathActive, ROUTES } from "@/lib/config/routes";
 import type { NavItem } from "@/lib/config/navConfig";
-import { useIndustryTerminology } from "@/tenant/hooks/useIndustryTerminology";
+import { resolveNavLabel, useIndustryTerminology } from "@/tenant/hooks/useIndustryTerminology";
 import {
   AppSidebarNav,
   type AppNavEntry,
@@ -31,26 +31,19 @@ export function SidebarNav({
   const { t } = useTranslation();
   const terminology = useIndustryTerminology();
 
-  const resolveNavLabel = (labelKey: NavItem["labelKey"]): string => {
-    if (labelKey === "nav.faculty") return terminology.facultyLabel;
-    if (labelKey === "nav.students") return terminology.studentLabel;
-    // Nav keys are parameter-free; cast avoids union-with-params overload of `t`.
-    return t(labelKey as "nav.dashboard");
-  };
-
   const entries: AppNavEntry[] = visibleMenuItems.map((item) => {
     if (item.subItems) {
       return {
         kind: "group",
         group: {
           id: item.labelKey,
-          label: resolveNavLabel(item.labelKey),
+          label: resolveNavLabel(item.labelKey, terminology, t),
           icon: item.icon,
           active: item.subItems.some((sub) => isNavPathActive(locationPathname, sub.path)),
           open: Boolean(openMenus[item.labelKey]),
           items: item.subItems.map((sub) => ({
             id: sub.path,
-            label: resolveNavLabel(sub.labelKey),
+            label: resolveNavLabel(sub.labelKey, terminology, t),
             icon: sub.icon,
             path: sub.path,
             active: isNavPathActive(locationPathname, sub.path),
@@ -64,7 +57,7 @@ export function SidebarNav({
       kind: "link",
       link: {
         id: item.path || item.labelKey,
-        label: resolveNavLabel(item.labelKey),
+        label: resolveNavLabel(item.labelKey, terminology, t),
         icon: item.icon,
         path,
         active: isNavPathActive(locationPathname, path),

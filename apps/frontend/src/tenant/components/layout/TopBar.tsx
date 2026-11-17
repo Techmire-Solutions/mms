@@ -3,21 +3,18 @@ import { Search } from "lucide-react";
 import TopBarActions from "@/tenant/components/layout/TopBarActions";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { cn } from "@/lib/utils";
 
 export interface TopBarProps {
-  /** Reflects whether the desktop sidebar is currently collapsed to adjust the start inset. */
-  sidebarCollapsed: boolean;
   onOpenCommandPalette?: () => void;
 }
 
 /**
  * Global application top-bar header containing search and session controls.
+ *
+ * Positioning (fixed inset + start offset) is owned by `AppShell`'s desktop
+ * `<header role="banner">` wrapper; this component renders the visible bar only.
  */
-export default function TopBar({
-  sidebarCollapsed,
-  onOpenCommandPalette,
-}: TopBarProps): React.JSX.Element {
+export default function TopBar({ onOpenCommandPalette }: TopBarProps): React.JSX.Element {
   const { t } = useTranslation();
 
   const shortcutText = (() => {
@@ -27,12 +24,7 @@ export default function TopBar({
   })();
 
   return (
-    <div
-      className={cn(
-        "fixed top-0 end-0 z-header flex h-16 items-center gap-4 border-b border-border bg-card/80 px-4 backdrop-blur-xl transition-all duration-300 sm:px-6",
-        sidebarCollapsed ? "start-sidebar-collapsed" : "start-sidebar",
-      )}
-    >
+    <div className="flex h-16 w-full items-center gap-4 border-b border-border bg-card/80 px-4 backdrop-blur-xl sm:px-6">
       {/* Desktop: full pill with placeholder text */}
       <div className="hidden min-w-0 flex-1 md:flex md:max-w-md md:mx-auto">
         <Button

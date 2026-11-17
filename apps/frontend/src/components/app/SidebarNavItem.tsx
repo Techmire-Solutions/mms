@@ -11,7 +11,6 @@ export interface SidebarNavItemProps {
   active: boolean;
   /** Whether the label should be visible (e.g. expanded, or always on mobile). */
   showLabel: boolean;
-  collapsed: boolean;
   reducedMotion?: boolean;
   /** Active-rail `layoutId`. Omit to hide the rail (e.g. when reduced motion). */
   layoutId?: string;
@@ -33,7 +32,6 @@ export function SidebarNavItem({
   icon: Icon,
   active,
   showLabel,
-  collapsed: _collapsed,
   reducedMotion = false,
   layoutId,
   onClick,

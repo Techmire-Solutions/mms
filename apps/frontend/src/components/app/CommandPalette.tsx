@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Clock } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { resolveNavLabel, type ResolvedIndustryTerminology } from "@/lib/config/navLabels";
 import type { AppTranslationKey } from "@mms/shared";
 import { cn } from "@/lib/utils";
 import { COMMAND_ITEMS, type CommandItem } from "@/components/app/commandPaletteItems";
@@ -15,12 +16,15 @@ export interface CommandPaletteProps {
   onClose: () => void;
   /** Hides destinations the viewer cannot open (module access); all items when omitted. */
   isPathVisible?: (path: string) => boolean;
+  /** Industry terminology profile; when omitted, labels fall back to plain translations. */
+  terminology?: ResolvedIndustryTerminology;
 }
 
 export function CommandPalette({
   open,
   onClose,
   isPathVisible,
+  terminology,
 }: CommandPaletteProps): React.JSX.Element | null {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -31,15 +35,9 @@ export function CommandPalette({
   );
 
   const translate = useCallback(
-    (key: string) => {
-      try {
-        const val = t(key as AppTranslationKey);
-        return typeof val === "string" && val ? val : "";
-      } catch {
-        return "";
-      }
-    },
-    [t],
+    (key: AppTranslationKey) =>
+      terminology ? resolveNavLabel(key, terminology, t) : t(key as "nav.dashboard"),
+    [terminology, t],
   );
 
   const handleSelect = useCallback(
@@ -82,7 +80,7 @@ export function CommandPalette({
     if (!isEmptyQuery) {
       const groups = new Map<string, CommandItem[]>();
       for (const item of activeFilteredItems) {
-        const cat = translate(item.categoryKey) || item.fallbackCategory;
+        const cat = translate(item.categoryKey);
         if (!groups.has(cat)) groups.set(cat, []);
         groups.get(cat)!.push(item);
       }
@@ -91,7 +89,7 @@ export function CommandPalette({
     const groups = new Map<string, CommandItem[]>();
     if (recentItems.length > 0) groups.set("__recents__", recentItems);
     for (const item of items) {
-      const cat = translate(item.categoryKey) || item.fallbackCategory;
+      const cat = translate(item.categoryKey);
       if (!groups.has(cat)) groups.set(cat, []);
       groups.get(cat)!.push(item);
     }
@@ -138,13 +136,13 @@ export function CommandPalette({
                   aria-hidden="true"
                 >
                   {isRecents && <Clock className="h-3 w-3" aria-hidden="true" />}
-                  {isRecents ? t("nav.recentItems" as AppTranslationKey) || "Recent" : category}
+                  {isRecents ? t("nav.recentItems") : category}
                 </div>
                 {items.map((item) => {
                   const globalIndex = flatItems.indexOf(item);
                   const isSelected = globalIndex === selectedIndex;
                   const Icon = item.icon;
-                  const translatedLabel = translate(item.labelKey) || item.fallbackLabel;
+                  const translatedLabel = translate(item.labelKey);
                   return (
                     <button
                       key={item.id}

@@ -91,7 +91,12 @@ export function ResponsiveAccordionTabsDesktop({
 
           if (tab.href) {
             return (
-              <Link key={tab.id} to={tab.href} className={linkClass}>
+              <Link
+                key={tab.id}
+                to={tab.href}
+                aria-current={active ? "page" : undefined}
+                className={linkClass}
+              >
                 <div className="mb-0.5 flex items-center gap-2">
                   {Icon ? (
                     <span
@@ -125,6 +130,7 @@ export function ResponsiveAccordionTabsDesktop({
               key={tab.id}
               type="button"
               onClick={() => onTabChange(tab.id)}
+              aria-current={active ? "page" : undefined}
               className={linkClass}
             >
               <div className="mb-0.5 flex items-center gap-2">
