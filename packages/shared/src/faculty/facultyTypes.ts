@@ -124,7 +124,7 @@ export const DEFAULT_FACULTY_HIERARCHY_RANK = 10;
 export interface FacultyIjazah {
   id: string;
   title: string;
-  field: "quran" | "hadith" | "fiqh" | "arabic" | "aqeedah" | "other" | string;
+  field: FacultyIjazahField | (string & {});
   grantingAuthority: string;
   year?: number | string | null;
   sanadChain?: string | null;

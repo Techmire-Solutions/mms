@@ -8,7 +8,7 @@ import {
   type FacultySortField,
 } from "@mms/shared";
 import { apiContract, tsrClient } from "@/lib/api";
-import { queryOptions, keepPreviousData } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/react-query";
 import { FACULTY_QUERY_KEY } from "@/tenant/features/faculty/hooks/facultyQueryKeys";
 import {
   facultyPaginatedQueryKey,
@@ -44,6 +44,9 @@ function facultyPaginatedParamsFromRecord(query: Record<string, unknown>): Facul
 const facultyClient = tsrClient.faculty;
 const facultyApi = apiContract.faculty;
 
+/** Typed `(prev) => prev` placeholderData helper (replaces TanStack's deprecated `keepPreviousData`). */
+const keepPrevious = <T>(prev: T): T => prev;
+
 export function facultyListQueryOptions(
   query: Record<string, unknown> = {},
   messages?: { loadFailed: string },
@@ -62,7 +65,7 @@ export function facultyListQueryOptions(
       }
       throw new Error(messages?.loadFailed ?? "Failed to fetch faculty");
     },
-    placeholderData: keepPreviousData,
+    placeholderData: keepPrevious,
     staleTime: 15_000,
   });
 }
@@ -75,7 +78,7 @@ export function useFacultyContractList(query: Record<string, unknown>, enabled =
     queryData: { query },
     staleTime: 15_000,
     enabled,
-    placeholderData: keepPreviousData,
+    placeholderData: keepPrevious,
   });
 }
 

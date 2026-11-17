@@ -92,7 +92,7 @@ export const DEFAULT_FACULTY_SETTINGS: FacultySettings = {
   employeeIdSequenceDigits: 4,
   employeeIdDelimiter: "",
   employeeIdCurrentSequence: 0,
-  employeeIdLastYear: 2026,
+  employeeIdLastYear: new Date().getFullYear(),
   autoGenerateId: true,
   requireContactLink: true,
   defaultSpecialization: DEFAULT_FACULTY_SPECIALIZATION,
