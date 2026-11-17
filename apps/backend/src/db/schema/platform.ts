@@ -52,6 +52,7 @@ export const workspaces = pgTable(
     dateFormat: varchar("date_format", { length: 20 }),
     emailNotifications: boolean("email_notifications"),
     smsNotifications: boolean("sms_notifications"),
+    whatsAppNotifications: boolean("whatsapp_notifications"),
     twoFactor: boolean("two_factor"),
     sessionTimeout: varchar("session_timeout", { length: 20 }),
     passwordPolicy: varchar("password_policy", { length: 20 }),

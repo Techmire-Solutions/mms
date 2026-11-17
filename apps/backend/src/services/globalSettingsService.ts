@@ -144,7 +144,9 @@ export async function saveGlobalSettings(
   });
   settings = { ...settings, llmConfigs };
   await upsertWorkspaceGlobalSettingsRepo(tenant, settings);
-  await saveObject("global_settings", settings);
+  // The document-store copy is legacy (reads prefer the typed columns) — store it
+  // client-safe so LLM secrets never sit in `objects` in plaintext.
+  await saveObject("global_settings", maskGlobalSettingsForClient(settings));
   await invalidateGlobalSettingsCache(tenant);
 }
 

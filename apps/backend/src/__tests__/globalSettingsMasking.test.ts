@@ -115,6 +115,16 @@ describe("LLM secret masking", () => {
     };
     expect(saved.llmApiKey).toBe("real-legacy-key");
     expect(saved.llmConfigs[0].apiKey).toBe("real-gem-key");
+
+    // The document-store copy is masked (client-safe) — never plaintext secrets.
+    const docStore = mockedSaveObject.mock.calls[0][1] as {
+      llmApiKey: string;
+      llmConfigs: Array<{ id: string; apiKey: string }>;
+    };
+    expect(docStore.llmApiKey).toMatch(/^\*\*\*\*/);
+    expect(docStore.llmApiKey).not.toBe("real-legacy-key");
+    expect(docStore.llmConfigs[0].apiKey).toMatch(/^\*\*\*\*/);
+    expect(docStore.llmConfigs[0].apiKey).not.toBe("real-gem-key");
     expect(mockedSaveObject).toHaveBeenCalledWith("global_settings", expect.anything());
   });
 

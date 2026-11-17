@@ -23,7 +23,11 @@
 - ✅ **L5 (branding read scoping)** — resolved: `redactBrandingIdentityForClient` (shared) + `dbObjectRoutes` now return the public + theme subset to non-admin readers.
 - ✅ **L6 (settings tab abstraction)** — resolved: `usePersistedTabState` now accepts an optional `normalize` callback (defaulting to the module-tier migrator); `SettingsPage` passes an identity function, so settings section ids no longer route through `normalizeModuleTierTabId`.
 
-All findings are resolved.
+- ✅ **B1 (plaintext LLM secrets in doc store)** — fixed: `saveGlobalSettings` and the restore path now write `maskGlobalSettingsForClient(settings)` to the document store; strengthened `globalSettingsMasking.test.ts`.
+- ✅ **B2 (missing `whatsapp_notifications` column)** — fixed: added the column to `workspaces` (schema + `ALL_WORKSPACE_COLUMNS` + repository read/write) with forward-only migration `0263_workspaces_whatsapp_notifications`; added `workspaceSettingsRepository.test.ts`.
+- ⏳ **B3, B4** — advisory (fail-open reads, vestigial dual-write); not actioned.
+
+All original frontend/shared findings (H1, M1, M2, L1–L6) are resolved; backend B1/B2 are now fixed.
 
 ---
 
@@ -103,3 +107,41 @@ Every other section passes `settings.introGlobal`/`introBranding`/`introTheme`/`
 2. **M1** (`settings.llm` intro key) — one-line fix.
 3. **M2** (theme/display-mode permission intent) — align backend public-field set with the UI gate.
 4. **L1–L6** — cheap hygiene cleanup in the next settings-touching change.
+
+---
+
+## Backend review (2026-11-17)
+
+Deeper pass over the Settings backend — services, repositories, the `objects` document store, the `workspaces` schema, and the notification resolver.
+
+### 🟠 MEDIUM
+
+**B1 — LLM secrets are dual-written in plaintext to the `objects` document store.**
+
+`globalSettingsService.saveGlobalSettings` restores the decrypted `llmApiKey`/`llmConfigs[].apiKey`, then persists them twice:
+
+- `upsertWorkspaceGlobalSettings` → `workspaces.llm_api_key`/`llm_configs` via `encryptSecretAtRest` (`enc:aes256gcm:` envelope) ✅
+- `saveObject("global_settings", settings)` → `objects.data` as unencrypted `jsonb` ❌ (`documentStoreObjects.saveObject` applies no crypto)
+
+Every settings save therefore writes a plaintext copy of the secrets, defeating the encryption-at-rest control added by migration 090. The copy is tenant-scoped, but it is present in any DB dump/backup.
+
+**Fix direction:** write `maskGlobalSettingsForClient(settings)` to the doc store (or drop the doc-store dual-write entirely, since reads prefer the typed columns); add a test asserting `objects.global_settings` never contains a non-masked secret.
+
+**B2 — `whatsAppNotifications` has no `workspaces` column, so WhatsApp is never an enabled channel.**
+
+`GlobalSettings.whatsAppNotifications` is consumed by `resolveNotificationChannel`/`canSendWhatsAppNotifications`, but the `workspaces` schema has `emailNotifications`/`smsNotifications`/`twoFactor` and **no `whatsAppNotifications` column**; `rowToGlobalSettings`/`upsertWorkspaceGlobalSettings` don't map it. `loadGlobalSettings()` therefore always returns `false` for it, and the auth/OTP channel resolver can never select `whatsapp`.
+
+**Fix direction:** add the column + mapping + a forward-only migration, or retire the field (and its resolver branch) if WhatsApp gating has moved to Messaging Setup. Confirm intent first.
+
+### 🟡 LOW / INFO
+
+**B3 — Fail-open settings reads.** `getWorkspaceGlobalSettings`/`getWorkspaceBranding` catch any DB error and return `null`, so `loadGlobalSettings` silently falls back to defaults on a transient DB fault (resetting localization and security defaults). Likely intentional resilience, but worth an error log/alert.
+
+**B4 — Vestigial dual-write.** global_settings/branding live in both the `workspaces` typed columns and the legacy `objects` store; reads prefer the typed columns, so the `objects` copy is largely dead code — and is exactly what creates B1. Collapsing the two removes the redundancy and the plaintext risk.
+
+### Backend notable-correctness
+
+- LLM secrets encrypted at rest in typed columns; decrypted only on read; masked (`****1234`) on every client-facing read and snapshot.
+- Client snapshot masks secrets; backup snapshot preserves them (correct for encrypted backup); restore re-encrypts via `upsertWorkspaceGlobalSettings`.
+- Field-level RBAC is fail-closed (`sanitizeGlobalSettingsWrite`, `redactAdminOnlyGlobalSettings`, `sanitizeBrandingWrite`).
+- Writes audit inside the same tenant transaction (`dbObjectRoutes`); SSRF-safe external calls in `ai.ts` (`fetchSafeExternal` + `safeOptionalExternalHttpUrl`).
