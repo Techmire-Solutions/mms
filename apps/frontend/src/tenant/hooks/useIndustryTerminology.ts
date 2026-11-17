@@ -7,14 +7,9 @@ import { getTerminologyForIndustry } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getCurrentSubdomain } from "@/lib/config/tenantConfig";
 import { useWorkspaceBySubdomain } from "@/tenant/hooks/useWorkspaceBySubdomain";
+import type { ResolvedIndustryTerminology } from "@/lib/config/navLabels";
 
-/** Resolved, locale-aware industry terminology labels. */
-export interface ResolvedIndustryTerminology {
-  facultyLabel: string;
-  staffSingular: string;
-  studentLabel: string;
-  locationLabel: string;
-}
+export { resolveNavLabel, type ResolvedIndustryTerminology } from "@/lib/config/navLabels";
 
 export function useIndustryTerminology(): ResolvedIndustryTerminology {
   const { t } = useTranslation();

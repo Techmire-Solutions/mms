@@ -73,9 +73,7 @@ describe("commandPaletteUtils", () => {
       {
         id: "students",
         labelKey: "nav.students",
-        fallbackLabel: "Students",
         categoryKey: "nav.modules",
-        fallbackCategory: "Navigation",
         path: "/students",
         icon: () => null,
         keywords: ["learners", "pupils"],
@@ -83,34 +81,43 @@ describe("commandPaletteUtils", () => {
       {
         id: "accounting",
         labelKey: "nav.accounting",
-        fallbackLabel: "Accounting",
         categoryKey: "nav.modules",
-        fallbackCategory: "Navigation",
         path: "/accounting",
         icon: () => null,
         keywords: ["ledger", "journal"],
       },
     ];
 
+    const translate = (key: string) =>
+      ({ "nav.students": "Students", "nav.accounting": "Accounting" })[key] ?? "";
+
     it("returns all items when query is empty", () => {
       const res = filterCommandItems(dummyItems, "", () => "");
       expect(res).toHaveLength(2);
     });
 
-    it("filters exactly by fallback label", () => {
-      const res = filterCommandItems(dummyItems, "student", () => "");
+    it("filters by translated label", () => {
+      const res = filterCommandItems(dummyItems, "student", translate);
       expect(res).toHaveLength(1);
       expect(res[0].id).toBe("students");
     });
 
     it("filters by keyword", () => {
-      const res = filterCommandItems(dummyItems, "ledger", () => "");
+      const res = filterCommandItems(dummyItems, "ledger", translate);
       expect(res).toHaveLength(1);
       expect(res[0].id).toBe("accounting");
     });
 
+    it("matches a terminology-resolved label supplied by translate", () => {
+      const terminologyTranslate = (key: string) =>
+        key === "nav.students" ? "Guests & Patrons" : key === "nav.accounting" ? "Accounting" : "";
+      const res = filterCommandItems(dummyItems, "guests", terminologyTranslate);
+      expect(res).toHaveLength(1);
+      expect(res[0].id).toBe("students");
+    });
+
     it("returns empty array when query does not match", () => {
-      const res = filterCommandItems(dummyItems, "zzzzzzzz", () => "");
+      const res = filterCommandItems(dummyItems, "zzzzzzzz", translate);
       expect(res).toHaveLength(0);
     });
   });

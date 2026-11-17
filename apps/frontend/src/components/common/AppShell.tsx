@@ -74,7 +74,7 @@ export function AppShell({
       {sidebar ? (
         <aside
           aria-label={t("nav.desktopNavigation")}
-          className="hidden lg:block fixed inset-y-0 start-0 z-fixed"
+          className="hidden lg:block fixed inset-y-0 start-0 z-sidebar"
         >
           {sidebar}
         </aside>
@@ -88,7 +88,7 @@ export function AppShell({
         <header
           role="banner"
           className={cn(
-            "hidden lg:block fixed top-0 end-0 z-sticky transition-[start,left,right] duration-300",
+            "hidden lg:block fixed top-0 end-0 z-header transition-[inset-inline-start] duration-300",
             sidebar ? (sidebarCollapsed ? "start-sidebar-collapsed" : "start-sidebar") : "start-0",
           )}
         >

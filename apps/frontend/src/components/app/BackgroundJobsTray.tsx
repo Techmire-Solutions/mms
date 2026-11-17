@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { type AppTranslationKey, type BackgroundJobRecord, formatDateTime } from "@mms/shared";
 
 export interface BackgroundJobsTrayProps {
-  compact?: boolean;
   className?: string;
   jobs?: BackgroundJobRecord[];
   activeJobs?: BackgroundJobRecord[];
@@ -39,7 +38,6 @@ const EMPTY_JOBS: BackgroundJobRecord[] = [];
 
 /** Global download / background job centre (globle1 §8). */
 export function BackgroundJobsTray({
-  compact: _compact = false,
   className,
   jobs = EMPTY_JOBS,
   activeJobs = EMPTY_JOBS,

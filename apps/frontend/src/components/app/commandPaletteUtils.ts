@@ -1,4 +1,5 @@
 import type { CommandItem } from "@/components/app/commandPaletteItems";
+import type { AppTranslationKey } from "@mms/shared";
 
 export const RECENTS_KEY = "cmd:recents";
 export const MAX_RECENTS = 5;
@@ -45,17 +46,16 @@ export function trigramScore(text: string, query: string): number {
 export function filterCommandItems(
   items: readonly CommandItem[],
   query: string,
-  translate: (key: string) => string,
+  translate: (key: AppTranslationKey) => string,
 ): CommandItem[] {
   const q = query.trim().toLowerCase();
   if (!q) return [...items];
 
   const scored = items.map((item) => {
-    const translatedLabel = translate(item.labelKey) || item.fallbackLabel;
+    const translatedLabel = translate(item.labelKey);
     const labelScore = trigramScore(translatedLabel, q);
-    const fallbackScore = trigramScore(item.fallbackLabel, q);
     const keywordScore = Math.max(0, ...item.keywords.map((k) => trigramScore(k, q)));
-    const score = Math.max(labelScore, fallbackScore, keywordScore);
+    const score = Math.max(labelScore, keywordScore);
     return { item, score };
   });
 

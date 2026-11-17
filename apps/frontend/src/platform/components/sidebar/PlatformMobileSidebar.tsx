@@ -48,11 +48,7 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
 
   return (
     <>
-      <div
-        role="region"
-        aria-label={t("nav.openMenu")}
-        className="lg:hidden fixed inset-0 z-sidebar-mobile flex"
-      >
+      <div className="lg:hidden fixed inset-0 z-sidebar-mobile flex">
         <div
           data-overlay-backdrop
           className={cn("fixed inset-0", OVERLAY_BACKDROP, "transition-opacity duration-300")}
@@ -67,7 +63,7 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
           ref={drawerRef}
           role="dialog"
           aria-modal="true"
-          aria-label={t("nav.openMenu")}
+          aria-label={t("platform.navAria")}
           className="relative w-sidebar-mobile max-w-sheet bg-sidebar h-full shadow-drawer flex flex-col z-elevated border-e border-sidebar-border"
         >
           <div className="flex flex-col justify-between h-full w-full">

@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
+import { resolveNavLabel, useIndustryTerminology } from "@/tenant/hooks/useIndustryTerminology";
 import { Button } from "@/components/ui/button";
 import type { NavItem } from "@/lib/config/navConfig";
 import { isNavPathActive, ROUTES } from "@/lib/config/routes";
@@ -23,6 +24,7 @@ export function MobileSidebarNavItems({
 }: MobileSidebarNavItemsProps): React.JSX.Element {
   const location = useLocation();
   const { t } = useTranslation();
+  const terminology = useIndustryTerminology();
 
   return (
     <>
@@ -53,7 +55,9 @@ export function MobileSidebarNavItems({
                   <Icon
                     className={`h-4.5 w-4.5 flex-shrink-0 ${hasActiveSub ? "text-sidebar-primary" : ""}`}
                   />
-                  <span className="text-sm font-medium">{t(item.labelKey)}</span>
+                  <span className="text-sm font-medium">
+                    {resolveNavLabel(item.labelKey, terminology, t)}
+                  </span>
                 </div>
                 <ChevronRight
                   className={`w-3.5 h-3.5 transition-transform duration-200 ${
@@ -103,7 +107,9 @@ export function MobileSidebarNavItems({
                           <SubIcon
                             className={`w-4 h-4 flex-shrink-0 ${isSubActive ? "text-sidebar-primary" : ""}`}
                           />
-                          <span className="text-sm font-medium">{t(sub.labelKey)}</span>
+                          <span className="text-sm font-medium">
+                            {resolveNavLabel(sub.labelKey, terminology, t)}
+                          </span>
                         </Link>
                       );
                     })}
@@ -140,7 +146,9 @@ export function MobileSidebarNavItems({
             <Icon
               className={`h-4.5 w-4.5 flex-shrink-0 ${isActive ? "text-sidebar-primary" : ""}`}
             />
-            <span className="text-sm font-medium">{t(item.labelKey)}</span>
+            <span className="text-sm font-medium">
+              {resolveNavLabel(item.labelKey, terminology, t)}
+            </span>
           </Link>
         );
       })}

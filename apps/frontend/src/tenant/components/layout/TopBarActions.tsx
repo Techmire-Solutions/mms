@@ -44,7 +44,7 @@ export default function TopBarActions({
         </Button>
       )}
       <SyncStatusBadge />
-      <TenantBackgroundJobsTray compact={compact} />
+      <TenantBackgroundJobsTray />
       <TenantNotificationsPopover />
 
       {!compact ? (

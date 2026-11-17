@@ -93,6 +93,20 @@ describe("AppShell — Universal Layout Shell", () => {
     expect(html).not.toContain("lg:ps-sidebar ");
   });
 
+  it("elevates the sidebar with z-sidebar and the header with z-header + logical inset transition", () => {
+    const html = renderWithContext(
+      <AppShell sidebar={<div>Sidebar</div>} topBar={<div>TopBar</div>}>
+        <div>Content</div>
+      </AppShell>,
+    );
+
+    expect(html).toContain("z-sidebar");
+    expect(html).not.toContain("z-fixed");
+    expect(html).toContain("z-header");
+    expect(html).toContain("transition-[inset-inline-start]");
+    expect(html).not.toContain("transition-[start,left,right]");
+  });
+
   it("forwards BiDi dir and BCP-47 lang attributes to outermost container", () => {
     const html = renderWithContext(
       <AppShell dir="rtl" lang="ar">

@@ -107,7 +107,7 @@ export function PlatformHeaderUserNav({
 
       <PlatformNotificationsPopover workspaces={workspaces} isSuperUser={isSuperUser} />
 
-      <BackgroundJobsTray compact={compact} />
+      <BackgroundJobsTray />
 
       {!compact ? (
         <div className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden="true" />

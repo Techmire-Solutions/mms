@@ -23,9 +23,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "dashboard",
     labelKey: "nav.dashboard",
-    fallbackLabel: "Dashboard",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.home,
     icon: LayoutDashboard,
     keywords: ["home", "analytics", "kpi", "metrics", "dashboard"],
@@ -33,9 +31,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "contacts",
     labelKey: "nav.contacts",
-    fallbackLabel: "Contacts",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.contacts,
     icon: Users,
     keywords: ["contacts", "directory", "people", "guardian", "phone"],
@@ -43,9 +39,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "students",
     labelKey: "nav.students",
-    fallbackLabel: "Students",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.students,
     icon: GraduationCap,
     keywords: ["students", "pupils", "learners", "class", "grade"],
@@ -53,9 +47,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "faculty",
     labelKey: "nav.faculty",
-    fallbackLabel: "Faculty",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.faculty,
     icon: UserCheck,
     keywords: ["faculty", "teachers", "instructors", "staff"],
@@ -63,9 +55,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "enrollments",
     labelKey: "nav.enrollments",
-    fallbackLabel: "Enrollments",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.enrollments,
     icon: BookOpen,
     keywords: ["enrollments", "admissions", "classes", "registration"],
@@ -73,9 +63,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "sessions",
     labelKey: "nav.sessions",
-    fallbackLabel: "Sessions",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.sessions,
     icon: Calendar,
     keywords: ["sessions", "timetable", "schedule", "term"],
@@ -83,9 +71,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "attendance",
     labelKey: "nav.attendance",
-    fallbackLabel: "Attendance",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.attendance,
     icon: ClipboardCheck,
     keywords: ["attendance", "present", "absent", "tardy", "rollcall"],
@@ -93,9 +79,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "finance",
     labelKey: "nav.finance",
-    fallbackLabel: "Finance",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.finance,
     icon: DollarSign,
     keywords: ["finance", "fees", "invoices", "payments", "dues", "billing"],
@@ -103,9 +87,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "hasanatCards",
     labelKey: "nav.hasanatCards",
-    fallbackLabel: "Hasanat Cards",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.hasanatCards,
     icon: Award,
     keywords: ["hasanat", "cards", "rewards", "merit", "points"],
@@ -113,9 +95,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "examinations",
     labelKey: "nav.examinations",
-    fallbackLabel: "Examinations",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.examinations,
     icon: FileText,
     keywords: ["examinations", "exams", "grades", "marks", "tests", "results"],
@@ -123,9 +103,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "questionBank",
     labelKey: "nav.questionBank",
-    fallbackLabel: "Question Bank",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.questionBank,
     icon: HelpCircle,
     keywords: ["question bank", "questions", "quiz", "assessment"],
@@ -133,9 +111,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "accounting",
     labelKey: "nav.accounting",
-    fallbackLabel: "Accounting",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.accounting,
     icon: Calculator,
     keywords: ["accounting", "ledger", "journal", "expenses", "revenue"],
@@ -143,9 +119,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "obligations",
     labelKey: "nav.obligations",
-    fallbackLabel: "Obligations",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.obligations,
     icon: ShieldAlert,
     keywords: ["obligations", "compliance", "dues", "liabilities"],
@@ -153,9 +127,7 @@ export const COMMAND_ITEMS: CommandItem[] = [
   {
     id: "messaging",
     labelKey: "nav.messaging",
-    fallbackLabel: "Messaging",
     categoryKey: "nav.modules",
-    fallbackCategory: "Navigation",
     path: ROUTES.messaging,
     icon: MessageSquare,
     keywords: ["messaging", "sms", "whatsapp", "notifications", "broadcast"],

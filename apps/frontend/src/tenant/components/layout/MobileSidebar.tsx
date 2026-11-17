@@ -47,7 +47,7 @@ export default function MobileSidebar({
     if (open) openedAtRef.current = Date.now();
   }, [open]);
 
-  const initials = getInitials(user?.name, 2) || "AK";
+  const initials = getInitials(user?.name, 2) || "م";
 
   if (!open) return null;
 
@@ -55,18 +55,14 @@ export default function MobileSidebar({
     <div
       role="region"
       aria-label={t("nav.mobileNavigation")}
-      className={cn(
-        "fixed inset-0 z-sidebar-mobile lg:hidden",
-        open ? "pointer-events-auto" : "pointer-events-none",
-      )}
+      className="fixed inset-0 z-sidebar-mobile lg:hidden pointer-events-auto"
     >
       <div
         data-overlay-backdrop
         className={cn(
           "fixed inset-0",
           OVERLAY_BACKDROP,
-          "transition-opacity duration-300",
-          open ? "opacity-100" : "opacity-0",
+          "transition-opacity duration-300 opacity-100",
         )}
         onClick={() => {
           // Ignore clicks within 300ms of opening (prevents touch-through / double-tap immediately closing)

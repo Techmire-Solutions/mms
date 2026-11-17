@@ -21,6 +21,7 @@ import { useGlobalShortcut } from "@/hooks/useGlobalShortcut";
 import { useNavigationState } from "@/hooks/useNavigationState";
 import { useInitializeUiState } from "@/tenant/hooks/useInitializeUiState";
 import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
+import { useIndustryTerminology } from "@/tenant/hooks/useIndustryTerminology";
 import { canShowRoute } from "@/lib/config/routeAccess";
 import { MotionPreferences } from "@/providers/MotionPreferences";
 
@@ -48,6 +49,7 @@ export default function AppLayout(): React.JSX.Element {
   );
   const { t } = useTranslation();
   const sessionTimeoutModal = useSessionTimeout();
+  const terminology = useIndustryTerminology();
   useInitializeUiState();
 
   useGlobalShortcut("k", toggleCommandPalette);
@@ -66,9 +68,7 @@ export default function AppLayout(): React.JSX.Element {
       <AppShell
         sidebar={<Sidebar collapsed={sidebarCollapsed} onToggle={toggleCollapsed} />}
         mobileSidebar={<MobileSidebar open={mobileOpen} onClose={closeMobileSidebar} />}
-        topBar={
-          <TopBar sidebarCollapsed={sidebarCollapsed} onOpenCommandPalette={openCommandPalette} />
-        }
+        topBar={<TopBar onOpenCommandPalette={openCommandPalette} />}
         mobileHeader={
           <div className="flex h-14 w-full items-center gap-3 border-b border-border bg-card/80 px-4 backdrop-blur-md">
             <Button
@@ -118,6 +118,7 @@ export default function AppLayout(): React.JSX.Element {
                 open={commandPaletteOpen}
                 onClose={closeCommandPalette}
                 isPathVisible={isCommandPathVisible}
+                terminology={terminology}
               />
             </Suspense>
           ) : null
