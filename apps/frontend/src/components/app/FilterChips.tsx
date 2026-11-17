@@ -81,7 +81,7 @@ export function FilterChips({
             {expanded ? (
               <>
                 <ChevronUp className="w-3 h-3" aria-hidden="true" />
-                {t("common.showLess" as never) || "Show less"}
+                {t("common.showLess")}
               </>
             ) : (
               <>
