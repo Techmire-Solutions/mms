@@ -47,11 +47,19 @@ export interface GlobalSettings {
   llmConfigs: LlmConfig[];
 }
 
-/** Fields any authenticated tenant user may read and write (Language & Region, Theme mode). */
+/** Fields any authenticated tenant user may read and write (Language & Region). */
 export const GLOBAL_SETTINGS_PUBLIC_FIELD_KEYS = [
   "language",
   "timezone",
   "dateFormat",
+] as const satisfies readonly (keyof GlobalSettings)[];
+
+/**
+ * Fields every authenticated tenant user may read, but only `settings.global.write`
+ * may write (workspace display mode). Kept separate from the admin field set so a
+ * non-admin read still receives the real value instead of the default.
+ */
+export const GLOBAL_SETTINGS_ADMIN_WRITE_ONLY_FIELD_KEYS = [
   "theme",
 ] as const satisfies readonly (keyof GlobalSettings)[];
 

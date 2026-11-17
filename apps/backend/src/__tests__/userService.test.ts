@@ -54,11 +54,7 @@ vi.mock("../services/globalSettingsService.js", () => ({
   assertPasswordMeetsPolicy: vi.fn().mockResolvedValue(undefined),
 }));
 
-import {
-  changeTenantUserPassword,
-  saveUsers,
-  validateCredentials,
-} from "../services/auth/userService.js";
+import { changeTenantUserPassword, validateCredentials } from "../services/auth/userService.js";
 
 describe("userService", () => {
   beforeEach(() => {
@@ -127,55 +123,6 @@ describe("userService", () => {
     const result = await validateCredentials("different@contact.local", "secret", "dar-ul-quran");
 
     expect(result).toBeNull();
-  });
-
-  it("stores temporary passwords as forced password changes for tenant users in any role", async () => {
-    mockListTenantUsers.mockResolvedValue([]);
-
-    await saveUsers([
-      {
-        id: "admin-1",
-        name: "Admin User",
-        email: "admin@workspace.local",
-        loginEmail: "admin@workspace.local",
-        phone: "",
-        role: "admin",
-        status: "active",
-        temporaryPassword: "TempAdmin123!",
-      },
-      {
-        id: "teacher-1",
-        name: "Teacher User",
-        email: "teacher@workspace.local",
-        loginEmail: "teacher@workspace.local",
-        phone: "",
-        role: "teacher",
-        status: "active",
-        temporaryPassword: "TempTeacher123!",
-      },
-    ]);
-
-    expect(mockHashPassword).toHaveBeenCalledWith("TempAdmin123!");
-    expect(mockHashPassword).toHaveBeenCalledWith("TempTeacher123!");
-    const savedUsers = mockUpsertTenantUserRow.mock.calls.map((call) => call[0]);
-    expect(savedUsers).toEqual([
-      expect.objectContaining({
-        id: "admin-1",
-        role: "admin",
-        workspaceSubdomain: "dar-ul-quran",
-        passwordHash: "hashed:TempAdmin123!",
-        mustChangePassword: true,
-      }),
-      expect.objectContaining({
-        id: "teacher-1",
-        role: "teacher",
-        workspaceSubdomain: "dar-ul-quran",
-        passwordHash: "hashed:TempTeacher123!",
-        mustChangePassword: true,
-      }),
-    ]);
-    expect(savedUsers[0]).not.toHaveProperty("temporaryPassword");
-    expect(savedUsers[1]).not.toHaveProperty("temporaryPassword");
   });
 
   it("clears the forced password change flag after changing the password", async () => {

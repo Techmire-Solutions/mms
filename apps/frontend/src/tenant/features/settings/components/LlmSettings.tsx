@@ -23,7 +23,7 @@ export default function LlmSettings(): React.JSX.Element {
 
   if (!can("settings.global.write")) {
     return (
-      <SettingsPanel width="medium" introKey="settings.llmDesc">
+      <SettingsPanel width="medium" introKey="settings.llm">
         <SettingsAdminOnlyNotice />
       </SettingsPanel>
     );
@@ -32,7 +32,7 @@ export default function LlmSettings(): React.JSX.Element {
   return (
     <SettingsPanel
       width="medium"
-      introKey="settings.llmDesc"
+      introKey="settings.llm"
       isDirty={isGlobalDirty}
       saved={saved}
       footer={
@@ -42,7 +42,6 @@ export default function LlmSettings(): React.JSX.Element {
           onSave={() => void handleSaveGlobal()}
           dirty={isGlobalDirty}
           saving={saving}
-          saved={saved}
         />
       }
     >

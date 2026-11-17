@@ -204,7 +204,12 @@ export const userContractRouter: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
-        const ok = await usersUseCases.verifyUserEmailById(id, user.role);
+        const ok = await usersUseCases.verifyUserEmailById(
+          id,
+          user.role,
+          String(user.id),
+          request.ip,
+        );
         if (!ok)
           return { status: 404 as const, body: { type: "not_found", message: "User not found" } };
         return { status: 200 as const, body: { success: true } };

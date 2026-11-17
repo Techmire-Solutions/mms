@@ -89,6 +89,7 @@ export const ALL_WORKSPACE_COLUMNS = {
   dateFormat: workspacesTable.dateFormat,
   emailNotifications: workspacesTable.emailNotifications,
   smsNotifications: workspacesTable.smsNotifications,
+  whatsAppNotifications: workspacesTable.whatsAppNotifications,
   twoFactor: workspacesTable.twoFactor,
   sessionTimeout: workspacesTable.sessionTimeout,
   passwordPolicy: workspacesTable.passwordPolicy,

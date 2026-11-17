@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { normalizePersistedWorkspaceRole } from "./userRbacRoleWrite.js";
+import {
+  normalizePersistedWorkspaceRole,
+  workspaceRolePersistedSchema,
+} from "./userRbacRoleWrite.js";
 import type { FieldDefinition, TabDefinition } from "../contacts/contactTypes.js";
 import { DEFAULT_USERS_SETTINGS, type UsersSettings } from "./usersModuleSettings.js";
 import {
@@ -104,7 +107,7 @@ export const userPreferencesPutBodySchema = z
     allowSelfRegistration: z.boolean().optional(),
     requireEmailVerification: z.boolean().optional(),
     defaultViewLayout: z.string().optional(),
-    workspaceRoles: z.array(z.record(z.string(), z.unknown())).optional(),
+    workspaceRoles: z.array(workspaceRolePersistedSchema).optional(),
   })
   .passthrough();
 

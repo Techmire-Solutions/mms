@@ -18,6 +18,7 @@ export function rowToGlobalSettings(ws: typeof workspacesTable.$inferSelect): Gl
   if (ws.dateFormat) overrides.dateFormat = ws.dateFormat;
   if (ws.emailNotifications != null) overrides.emailNotifications = ws.emailNotifications;
   if (ws.smsNotifications != null) overrides.smsNotifications = ws.smsNotifications;
+  if (ws.whatsAppNotifications != null) overrides.whatsAppNotifications = ws.whatsAppNotifications;
   if (ws.twoFactor != null) overrides.twoFactor = ws.twoFactor;
   if (ws.sessionTimeout != null) overrides.sessionTimeout = ws.sessionTimeout;
   if (ws.passwordPolicy)
@@ -57,6 +58,7 @@ export async function upsertWorkspaceGlobalSettings(
       dateFormat: g.dateFormat || null,
       emailNotifications: g.emailNotifications,
       smsNotifications: g.smsNotifications,
+      whatsAppNotifications: g.whatsAppNotifications,
       twoFactor: g.twoFactor,
       sessionTimeout: g.sessionTimeout || null,
       passwordPolicy: g.passwordPolicy || null,

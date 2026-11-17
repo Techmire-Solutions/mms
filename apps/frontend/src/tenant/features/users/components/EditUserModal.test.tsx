@@ -242,4 +242,46 @@ describe("EditUserModal", () => {
       root.unmount();
     });
   });
+
+  it("blocks a self user from changing their own role", async () => {
+    mockActorRole = "admin";
+    const user = normalizeWorkspaceUser({
+      id: "actor-1",
+      name: "Self User",
+      email: "self@test.com",
+      role: "admin",
+      status: "active",
+      contactId: "c1",
+    });
+    const onSave = vi.fn();
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    act(() => {
+      root.render(<EditUserModal user={user} onClose={vi.fn()} onSave={onSave} />);
+    });
+
+    const roleGroup = container.querySelector('[role="group"][aria-label="users.fieldRole"]');
+    const teacherBtn = roleGroup
+      ? Array.from(roleGroup.querySelectorAll("button")).find(
+          (b) => b.textContent === "roles.teacher",
+        )
+      : undefined;
+    expect(teacherBtn).toBeInstanceOf(HTMLButtonElement);
+    act(() => {
+      teacherBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const form = container.querySelector("form");
+    await act(async () => {
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+
+    expect(onSave).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("users.errors.cannotEditSelfRole");
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });

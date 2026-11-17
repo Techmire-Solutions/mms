@@ -9438,6 +9438,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "users.rbac.audit": "سجل التدقيق والأمان",
   "users.errors.cannotAssignSuperAdminRole": "فقط المشرف العام يمكنه تعيين دور المشرف العام.",
   "users.errors.cannotDeleteSuperAdmin": "لا يمكن حذف مستخدم المشرف العام.",
+  "users.errors.cannotEditSelfRole": "استخدم إعدادات الملف الشخصي لتغيير دورك.",
+  "users.errors.cannotEditSelfStatus": "استخدم إعدادات الملف الشخصي لتغيير حالتك.",
   "users.errors.cannotModifySuperAdmin": "لا يمكن تعديل أو إعادة تعيين مستخدم المشرف العام.",
   "users.errors.cannotResetSuperAdminPassword":
     "لا يمكن إعادة تعيين كلمة مرور مستخدم المشرف العام.",

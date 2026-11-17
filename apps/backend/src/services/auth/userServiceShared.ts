@@ -30,7 +30,6 @@ export type PublicUser = User;
 
 /** Public user shape — no password hash. */
 export type PersistedUser = StoredTenantUser & Record<string, unknown>;
-export type IncomingUser = PersistedUser & { temporaryPassword?: string };
 
 export function requireTenantSubdomain(): string {
   const tenant = getRequestTenant();

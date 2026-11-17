@@ -28,11 +28,10 @@ import {
 import { createWorkspaceUserHelper, inviteWorkspaceUserHelper } from "./userCreationUseCases.js";
 import {
   deleteUserByIdHelper,
-  restoreUserByIdHelper,
-  verifyUserEmailByIdHelper,
   upsertWorkspaceUsersHelper,
   updateWorkspaceUserHelper,
 } from "./userMutationUseCases.js";
+import { restoreUserByIdHelper, verifyUserEmailByIdHelper } from "./userLifecycleUseCases.js";
 
 export type {
   UserPasswordResetFailureStage,
@@ -189,8 +188,8 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
 
     restoreUserById,
 
-    verifyUserEmailById: (id: string, actorRole?: string) =>
-      verifyUserEmailByIdHelper(repo, id, actorRole),
+    verifyUserEmailById: (id: string, actorRole?: string, actorId = "system", ip = "127.0.0.1") =>
+      verifyUserEmailByIdHelper(repo, id, actorRole, actorId, ip),
 
     resetUserPasswordById: async (
       id: string,

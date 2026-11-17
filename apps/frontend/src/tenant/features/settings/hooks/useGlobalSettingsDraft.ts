@@ -177,6 +177,7 @@ export function useGlobalSettingsDraft(): UseGlobalSettingsDraftResult {
       dateFormat: baseline.dateFormat,
       emailNotifications: baseline.emailNotifications,
       smsNotifications: baseline.smsNotifications,
+      whatsAppNotifications: baseline.whatsAppNotifications,
       twoFactor: baseline.twoFactor,
       sessionTimeout: baseline.sessionTimeout,
       passwordPolicy: baseline.passwordPolicy,

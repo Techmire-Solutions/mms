@@ -9648,6 +9648,8 @@ export const APP_TRANSLATIONS_EN = {
   "users.errors.cannotAssignSuperAdminRole":
     "Only Super Administrators can assign the Super Admin role.",
   "users.errors.cannotDeleteSuperAdmin": "Cannot delete a Super Admin user.",
+  "users.errors.cannotEditSelfRole": "Use profile settings to change your own role.",
+  "users.errors.cannotEditSelfStatus": "Use profile settings to change your own status.",
   "users.errors.cannotModifySuperAdmin": "Cannot modify or reassign a Super Admin user.",
   "users.errors.cannotResetSuperAdminPassword": "Cannot reset the password of a Super Admin user.",
   "users.errors.rolesAccessRestricted":

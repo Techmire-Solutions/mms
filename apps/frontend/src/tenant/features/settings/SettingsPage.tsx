@@ -38,7 +38,12 @@ export default function Settings(): React.JSX.Element {
   const { t } = useTranslation();
   const { can } = usePermissions();
   const reducedMotion = useReducedMotion();
-  const [tab, setTab] = usePersistedTabState<SettingsSection>("mms-settings-tab", "global");
+  // Settings section ids are already canonical — no module-tier legacy migration.
+  const [tab, setTab] = usePersistedTabState<SettingsSection>(
+    "mms-settings-tab",
+    "global",
+    (id) => id,
+  );
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = resolveSettingsSection(location.search, location.state);

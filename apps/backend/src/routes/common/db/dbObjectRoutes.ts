@@ -5,6 +5,7 @@ import {
   isServerOnlyObjectKey,
   mergeBrandingSettings,
   mergeGlobalSettings,
+  redactBrandingIdentityForClient,
   type BrandingSettings,
   type GlobalSettings,
 } from "@mms/shared";
@@ -59,11 +60,16 @@ export const dbObjectRoutes: FastifyPluginAsync = async (fastify) => {
       }
       if (key === "branding") {
         const tenant = getRequestTenant()!;
-        // Institution identity fields aren't secret (already public via
-        // /api/workspace/by-subdomain) so the full object is safe to read for
-        // any authenticated tenant user — only writing identity fields is gated.
+        // Institution name/logo/colours are public (served via
+        // /api/workspace/by-subdomain), but contact, legal, address and social
+        // fields are admin-only for writes — so a non-admin read gets the public
+        // + theme subset rather than the admin contact/legal details.
         const branding = await getWorkspaceBranding(tenant);
-        if (branding) return reply.send(branding);
+        if (branding) {
+          return reply.send(
+            canWriteObject(user, "branding") ? branding : redactBrandingIdentityForClient(branding),
+          );
+        }
       } else if (key === "global_settings") {
         const tenant = getRequestTenant()!;
         const globalSettings = await loadGlobalSettings(tenant);
@@ -137,7 +143,11 @@ export const dbObjectRoutes: FastifyPluginAsync = async (fastify) => {
       // append left no row in the chain and only a log line behind.
       if (tenant) {
         await withTenant(tenant, async (tx) => {
-          await persistObject(key, objectValueToSave);
+          // global_settings/branding persist to the workspaces typed columns below;
+          // their legacy document-store copies are no longer written.
+          if (!SELF_MANAGED_OBJECT_KEYS.has(key)) {
+            await persistObject(key, objectValueToSave);
+          }
 
           if (AUDITED_OBJECTS.has(key)) {
             await recordModernAuditEvent(tx, {

@@ -157,7 +157,12 @@ export async function synchronizeData(
         if (tenant) {
           await restoreSpecialTenantObject(key, objectValue, tenant);
         }
-        await dbSaveObject(key, objectValue);
+        // branding/global_settings are persisted to typed columns by
+        // restoreSpecialTenantObject; their legacy document-store copies are
+        // no longer written.
+        if (key !== "branding" && key !== "global_settings") {
+          await dbSaveObject(key, objectValue);
+        }
         restoredKeys.add(key);
       }
 

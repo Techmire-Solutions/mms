@@ -195,7 +195,7 @@ describe("dbSyncService collection persistence", () => {
     ]);
 
     const savedObjectKeys = dbSaveObject.mock.calls.map((call) => call[0] as string);
-    expect(savedObjectKeys).toContain("branding");
+    expect(savedObjectKeys).not.toContain("branding"); // branding restores to typed columns
     expect(savedObjectKeys).not.toContain("students_settings");
     expect(savedObjectKeys).not.toContain("student_user_column_preferences");
   });
@@ -237,7 +237,7 @@ describe("dbSyncService collection persistence", () => {
     ]);
 
     const savedObjectKeys = dbSaveObject.mock.calls.map((call) => call[0] as string);
-    expect(savedObjectKeys).toContain("branding");
+    expect(savedObjectKeys).not.toContain("branding"); // branding restores to typed columns
     expect(savedObjectKeys).not.toContain("faculty_settings");
     expect(savedObjectKeys).not.toContain("faculty_user_column_preferences");
   });
@@ -282,7 +282,7 @@ describe("dbSyncService collection persistence", () => {
     ]);
 
     const savedObjectKeys = dbSaveObject.mock.calls.map((call) => call[0] as string);
-    expect(savedObjectKeys).toContain("branding");
+    expect(savedObjectKeys).not.toContain("branding"); // branding restores to typed columns
   });
 
   it("prunes tenant objects the full backup does not carry", async () => {
@@ -300,7 +300,7 @@ describe("dbSyncService collection persistence", () => {
       true,
     );
 
-    expect(dbSaveObject).toHaveBeenCalledWith("branding", { madrasaName: "Dar ul Quran" });
+    expect(dbSaveObject).not.toHaveBeenCalledWith("branding", expect.anything());
     expect(dbDeleteObject.mock.calls.map((call) => call[0]).sort()).toEqual([
       "contacts_duplicate_scan_cache",
       "global_settings",

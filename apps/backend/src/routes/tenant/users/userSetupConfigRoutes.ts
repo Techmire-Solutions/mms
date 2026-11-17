@@ -16,12 +16,14 @@ import {
   saveUserModulePreferences,
 } from "../../../services/userPreferencesService.js";
 import { auditUser } from "./userRouteHelpers.js";
+import { canWriteUserPreferences } from "./userSetupConfigAuthorization.js";
 
 /** Users Setup field-config + preferences (typed FORCE-RLS tables). */
 export const userSetupConfigRoutes: FastifyPluginAsync = async (fastify) => {
   registerModuleSetupConfigRoutes(fastify, {
     canRead: (user) => canReadCollection(user, "users"),
     setupWritePermission: USERS_MODULE_MANIFEST.permissions.setupWrite,
+    canWritePreferences: canWriteUserPreferences,
     fieldConfigSchema: userFieldConfigPutBodySchema,
     preferencesSchema: userPreferencesPutBodySchema,
     loadFieldConfig: loadUserFieldConfig,

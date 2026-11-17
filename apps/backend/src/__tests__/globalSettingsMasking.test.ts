@@ -16,6 +16,8 @@ import {
   maskSecret,
   isMaskedSecret,
   maskGlobalSettingsForClient,
+  redactAdminOnlyGlobalSettings,
+  sanitizeGlobalSettingsWrite,
   saveGlobalSettings,
 } from "../services/globalSettingsService.js";
 import {
@@ -113,7 +115,10 @@ describe("LLM secret masking", () => {
     };
     expect(saved.llmApiKey).toBe("real-legacy-key");
     expect(saved.llmConfigs[0].apiKey).toBe("real-gem-key");
-    expect(mockedSaveObject).toHaveBeenCalledWith("global_settings", expect.anything());
+
+    // global_settings no longer write a legacy document-store copy — the typed
+    // columns are authoritative and encrypt the secrets at rest.
+    expect(mockedSaveObject).not.toHaveBeenCalled();
   });
 
   it("stores a genuinely new (non-masked) key as-is", async () => {
@@ -139,5 +144,23 @@ describe("LLM secret masking", () => {
     };
     expect(saved.llmApiKey).toBe("brand-new-key");
     expect(saved.llmConfigs[0].apiKey).toBe("brand-new-config-key");
+  });
+
+  it("sanitizeGlobalSettingsWrite strips the workspace display mode for non-admins", () => {
+    const sanitized = sanitizeGlobalSettingsWrite(
+      { theme: "light", language: "ar" } as never,
+      { theme: "dark", language: "en" } as never,
+    );
+
+    expect(sanitized.theme).toBe("dark");
+    // Public fields are still writable by non-admins.
+    expect(sanitized.language).toBe("ar");
+  });
+
+  it("redactAdminOnlyGlobalSettings preserves the display mode on read", () => {
+    const redacted = redactAdminOnlyGlobalSettings({ theme: "dark", twoFactor: true } as never);
+
+    expect(redacted.theme).toBe("dark");
+    expect(redacted.twoFactor).toBe(false);
   });
 });

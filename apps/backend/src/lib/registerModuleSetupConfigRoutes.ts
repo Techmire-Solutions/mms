@@ -18,6 +18,13 @@ export type RegisterModuleSetupConfigRoutesOptions<
   domain?: string;
   canRead: (user: User) => boolean;
   setupWritePermission: Permission;
+  /**
+   * Optional per-body override for preference writes. Defaults to
+   * `setupWritePermission`; used where a subset of a preference payload is more
+   * sensitive than the module's general setup-write permission (e.g. the Users
+   * role catalog requires the admin role, not just `settings.global.write`).
+   */
+  canWritePreferences?: (user: User, body: unknown) => boolean | Promise<boolean>;
   fieldConfigSchema: TConfigSchema;
   preferencesSchema: TPrefsSchema;
   loadFieldConfig: () => Promise<TConfig | null | unknown>;
@@ -162,7 +169,10 @@ export function registerModuleSetupConfigRoutes<
 
   const handlePutPreferences = async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.user as User;
-    if (!canWriteSetup(user)) return sendForbidden(reply);
+    const writeAllowed = options.canWritePreferences
+      ? await options.canWritePreferences(user, request.body)
+      : canWriteSetup(user);
+    if (!writeAllowed) return sendForbidden(reply);
     const body = parseRequest(options.preferencesSchema, request.body);
     if (!body.ok) return replyValidationError(reply, body.message);
     const tenant = getRequestTenant() ?? user.workspaceSubdomain;

@@ -52,6 +52,9 @@ export default async function usersRoutes(
         saveFn: usersUseCases.upsertLogs,
         // Server-derive the actor, source IP and a bounded timestamp: the body's
         // userId/ip/ts must never be able to forge another user's activity row.
+        // `action`/`module`/`detail`/`id` remain client-supplied by design — this
+        // is the client-synced activity feed; the tamper-evident audit trail is
+        // produced server-side via recordUserActivityLog / recordModernAuditEvent.
         beforeSave: async (user: User, logs, request) => {
           const now = Date.now();
           return logs.map((log) => {

@@ -1,6 +1,7 @@
 import {
   DEFAULT_GLOBAL_SETTINGS,
   GLOBAL_SETTINGS_ADMIN_FIELD_KEYS,
+  GLOBAL_SETTINGS_ADMIN_WRITE_ONLY_FIELD_KEYS,
   mergeGlobalSettings,
   parseSessionTimeoutMinutes,
   validatePasswordPolicy,
@@ -11,7 +12,6 @@ import {
   getWorkspaceGlobalSettings,
   upsertWorkspaceGlobalSettings as upsertWorkspaceGlobalSettingsRepo,
 } from "../db/repositories/workspaceRepository.js";
-import { saveObject } from "../db/database.js";
 import { redisDel, redisKeys } from "../lib/redis.js";
 import { getOrSetMultiTier, invalidateMultiTierCache } from "../lib/cache/index.js";
 
@@ -85,6 +85,9 @@ export function sanitizeGlobalSettingsWrite(
   for (const key of GLOBAL_SETTINGS_ADMIN_FIELD_KEYS) {
     (sanitized as GlobalSettings)[key] = current[key] as never;
   }
+  for (const key of GLOBAL_SETTINGS_ADMIN_WRITE_ONLY_FIELD_KEYS) {
+    (sanitized as GlobalSettings)[key] = current[key] as never;
+  }
   return sanitized;
 }
 
@@ -140,7 +143,6 @@ export async function saveGlobalSettings(
   });
   settings = { ...settings, llmConfigs };
   await upsertWorkspaceGlobalSettingsRepo(tenant, settings);
-  await saveObject("global_settings", settings);
   await invalidateGlobalSettingsCache(tenant);
 }
 

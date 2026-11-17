@@ -9541,6 +9541,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "users.errors.cannotAssignSuperAdminRole":
     "صرف سپر ایڈمن ہی سپر ایڈمن کا کردار تفویض کر سکتا ہے۔",
   "users.errors.cannotDeleteSuperAdmin": "سپر ایڈمن صارف کو حذف نہیں کیا جا سکتا۔",
+  "users.errors.cannotEditSelfRole": "اپنا کردار تبدیل کرنے کے لیے پروفائل کی ترتیبات استعمال کریں۔",
+  "users.errors.cannotEditSelfStatus": "اپنی حیثیت تبدیل کرنے کے لیے پروفائل کی ترتیبات استعمال کریں۔",
   "users.errors.cannotModifySuperAdmin": "سپر ایڈمن صارف میں ترمیم یا تبدیلی نہیں کی جا سکتی۔",
   "users.errors.cannotResetSuperAdminPassword":
     "سپر ایڈمن صارف کا پاس ورڈ دوبارہ ترتیب نہیں دیا جا سکتا۔",

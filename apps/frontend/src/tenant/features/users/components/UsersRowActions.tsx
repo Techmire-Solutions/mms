@@ -40,6 +40,7 @@ export function UsersRowActions({
   const canMutateTarget = canWrite && canManageTarget;
   const canDeleteTarget = canDelete && !isSelf && canManageTarget;
   const canRestoreTarget = canDelete && canManageTarget;
+  const canResetTarget = canMutateTarget && !isSelf;
 
   return (
     <div className="flex items-center justify-end gap-1">
@@ -56,28 +57,28 @@ export function UsersRowActions({
         </Button>
       )}
       {canMutateTarget && !showDeleted && (
-        <>
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            onClick={() => onEdit(user)}
-            className="min-h-11 min-w-11 rounded-lg border-info/30 bg-info/5 text-info hover:text-info hover:bg-info/15 hover:border-info/40 shadow-none"
-            aria-label={t("users.actionEdit", { name: user.name })}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            onClick={() => onResetPassword(user)}
-            className="min-h-11 min-w-11 rounded-lg border-primary/30 bg-primary/5 text-primary hover:text-primary hover:bg-primary/15 hover:border-primary/40 shadow-none"
-            aria-label={t("users.actionResetPassword", { name: user.name })}
-          >
-            <KeyRound className="h-4 w-4" />
-          </Button>
-        </>
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          onClick={() => onEdit(user)}
+          className="min-h-11 min-w-11 rounded-lg border-info/30 bg-info/5 text-info hover:text-info hover:bg-info/15 hover:border-info/40 shadow-none"
+          aria-label={t("users.actionEdit", { name: user.name })}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+      )}
+      {canResetTarget && !showDeleted && (
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          onClick={() => onResetPassword(user)}
+          className="min-h-11 min-w-11 rounded-lg border-primary/30 bg-primary/5 text-primary hover:text-primary hover:bg-primary/15 hover:border-primary/40 shadow-none"
+          aria-label={t("users.actionResetPassword", { name: user.name })}
+        >
+          <KeyRound className="h-4 w-4" />
+        </Button>
       )}
       {((showDeleted && canRestoreTarget) || (!showDeleted && canDeleteTarget)) && (
         <Button

@@ -63,6 +63,11 @@ vi.mock("../services/authSessionService.js", () => ({
   revokeAllUserSessions: vi.fn(),
 }));
 
+vi.mock("../services/auditTrailService.js", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
+  mapActionStringToAuditType: vi.fn().mockReturnValue("UPDATE"),
+}));
+
 vi.mock("../db/tenant-context.js", () => ({
   withTenant: vi
     .fn()
@@ -107,7 +112,7 @@ describe("usersService activity log upsert", () => {
     expect(replaceActivityLogsForWorkspace).not.toHaveBeenCalled();
   });
 
-  it("verifies user email and broadcasts collection update", async () => {
+  it("verifies user email, broadcasts, and records an activity log", async () => {
     await mockUserRowForTenant({
       id: "u-123",
       workspaceSubdomain: "demo",
@@ -118,11 +123,19 @@ describe("usersService activity log upsert", () => {
       deletedAt: null,
     });
 
-    const result = await runWithTenant("demo", () => verifyUserEmailById("u-123"));
+    const result = await runWithTenant("demo", () =>
+      verifyUserEmailById("u-123", "admin", "u-admin", "127.0.0.1"),
+    );
 
     expect(result).toBe(true);
     expect(verifyTenantUserEmailRow).toHaveBeenCalledWith("demo", "u-123");
     expect(broadcastCollection).toHaveBeenCalledWith("users");
+    expect(bulkSaveActivityLogs).toHaveBeenCalledWith(
+      "demo",
+      expect.arrayContaining([
+        expect.objectContaining({ action: "update", userId: "u-admin", module: "users" }),
+      ]),
+    );
   });
 
   it("resets a user password, forces a change, and revokes every session", async () => {

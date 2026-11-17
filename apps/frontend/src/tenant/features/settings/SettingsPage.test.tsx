@@ -42,19 +42,11 @@ vi.mock("framer-motion", () => ({
 vi.mock("@/lib/config/settingsSectionComponents", () => ({
   SETTINGS_SECTION_COMPONENTS: {
     global: () => <div data-testid="settings-global-content">Global Settings Content</div>,
-    branding: () => <div data-testid="settings-branding-content">Branding Content</div>,
     modules: () => <div data-testid="settings-modules-content">Modules Content</div>,
-    security: () => <div data-testid="settings-security-content">Security Content</div>,
+    branding: () => <div data-testid="settings-branding-content">Branding Content</div>,
+    theme: () => <div data-testid="settings-theme-content">Theme Content</div>,
     backup: () => <div data-testid="settings-backup-content">Backup Content</div>,
-    audit: () => <div data-testid="settings-audit-content">Audit Content</div>,
-    integrations: () => <div data-testid="settings-integrations-content">Integrations Content</div>,
-    notifications: () => (
-      <div data-testid="settings-notifications-content">Notifications Content</div>
-    ),
-    ai: () => <div data-testid="settings-ai-content">AI Content</div>,
-    trash: () => <div data-testid="settings-trash-content">Trash Content</div>,
-    printTemplates: () => <div data-testid="settings-print-content">Print Content</div>,
-    developer: () => <div data-testid="settings-developer-content">Developer Content</div>,
+    llm: () => <div data-testid="settings-llm-content">AI Assistant Content</div>,
   },
 }));
 

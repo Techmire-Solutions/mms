@@ -9584,6 +9584,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "users.rbac.audit": "گزارش حسابرسی و امنیت",
   "users.errors.cannotAssignSuperAdminRole": "فقط مدیر کل می‌تواند نقش مدیر کل را اختصاص دهد.",
   "users.errors.cannotDeleteSuperAdmin": "امکان حذف کاربر مدیر کل وجود ندارد.",
+  "users.errors.cannotEditSelfRole": "برای تغییر نقش خود از تنظیمات نمایه استفاده کنید.",
+  "users.errors.cannotEditSelfStatus": "برای تغییر وضعیت خود از تنظیمات نمایه استفاده کنید.",
   "users.errors.cannotModifySuperAdmin": "امکان ویرایش یا تغییر نقش کاربر مدیر کل وجود ندارد.",
   "users.errors.cannotResetSuperAdminPassword": "امکان بازنشانی گذرواژه کاربر مدیر کل وجود ندارد.",
   "users.errors.rolesAccessRestricted": "پیکربندی نقش‌ها و مجوزها محدود به مدیران است.",
