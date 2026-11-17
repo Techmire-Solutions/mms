@@ -14,9 +14,13 @@ import {
   normalizeWorkspaceUser,
   canAssignRole,
   canManageTargetUser,
+  isAdminRole,
+  isSuperAdminRole,
 } from "@mms/shared";
 import { recordUserActivityLog } from "./userActivityLogUseCases.js";
 import { assertFacultyRoleAllowed } from "./userCreationUseCases.js";
+import { sanitizeBulkUserRow } from "./userBulkUpsertSanitize.js";
+import { assertNotLastActiveAdmin } from "./userLastAdminGuard.js";
 
 export async function deleteUserByIdHelper(
   repo: UsersRepository,
@@ -40,6 +44,9 @@ export async function deleteUserByIdHelper(
     );
   }
 
+  // Never delete the tenant's last active administrator.
+  await assertNotLastActiveAdmin(existing, "last_admin_delete");
+
   const ok = await repo.softDeleteTenantUserRow(tenant, id, deletedBy);
   if (ok) {
     await deleteRefreshTokensForUser(id);
@@ -58,77 +65,24 @@ export async function deleteUserByIdHelper(
   return ok;
 }
 
-export async function restoreUserByIdHelper(
-  repo: UsersRepository,
-  id: string,
-  actorRole?: string,
-  actorId = "system",
-  ip = "127.0.0.1",
-): Promise<boolean> {
-  const tenant = requireTenant();
-  const existing = await repo.findTenantUserRowById(tenant, id);
-  if (!existing) return false;
-
-  if (actorRole && !canManageTargetUser(actorRole, existing.role)) {
-    throw new HttpDomainError(
-      403,
-      "forbidden_super_admin_mutation",
-      "Cannot restore a Super Admin user account",
-    );
-  }
-
-  const ok = await repo.restoreTenantUserRow(tenant, id);
-  if (ok) {
-    await invalidateTenantRbac(tenant);
-    await broadcastCollection("users");
-
-    await recordUserActivityLog(
-      repo,
-      tenant,
-      actorId,
-      "update",
-      `Restored user ${existing.name || id}`,
-      ip,
-    );
-  }
-  return ok;
-}
-
-export async function verifyUserEmailByIdHelper(
-  repo: UsersRepository,
-  id: string,
-  actorRole?: string,
-): Promise<boolean> {
-  const tenant = requireTenant();
-  const existing = await repo.findTenantUserRowById(tenant, id);
-  if (!existing) return false;
-
-  if (actorRole && !canManageTargetUser(actorRole, existing.role)) {
-    throw new HttpDomainError(
-      403,
-      "forbidden_super_admin_mutation",
-      "Cannot modify a Super Admin user account",
-    );
-  }
-
-  const ok = await repo.verifyTenantUserEmailRow(tenant, id);
-  if (ok) await broadcastCollection("users");
-  return ok;
-}
-
 export async function upsertWorkspaceUsersHelper(
   records: WorkspaceUser[],
   actorRole?: string,
   loadWorkspaceUsers?: () => Promise<WorkspaceUser[]>,
 ): Promise<WorkspaceUser[]> {
   const parsed = workspaceUserListSchema.parse(records);
+  // Authoritative allowlist: strip credential/lifecycle fields before any merge
+  // or save, so even a non-contract caller cannot inject them.
+  const sanitized = parsed.map((row) =>
+    sanitizeBulkUserRow(row as WorkspaceUser & Record<string, unknown>),
+  );
   const existing = await getHydratedUsers();
 
   const existingById = new Map(existing.map((u) => [String(u.id), u] as const));
-  const updatesById = new Map(parsed.map((u) => [String(u.id), u] as const));
+  const updatesById = new Map(sanitized.map((u) => [String(u.id), u] as const));
 
   if (actorRole) {
-    for (const update of parsed) {
+    for (const update of sanitized) {
       const existingUser = existingById.get(String(update.id));
       if (existingUser && !canManageTargetUser(actorRole, existingUser.role)) {
         throw new HttpDomainError(
@@ -151,7 +105,7 @@ export async function upsertWorkspaceUsersHelper(
     const update = updatesById.get(String(u.id));
     return update ? ({ ...u, ...update } as PersistedUser) : u;
   });
-  for (const update of parsed) {
+  for (const update of sanitized) {
     if (!existingById.has(String(update.id))) {
       merged.push(update as PersistedUser);
     }
@@ -178,6 +132,26 @@ export async function updateWorkspaceUserHelper(
     throw new HttpDomainError(404, "not_found", "User not found");
   }
 
+  // Self-protection: an administrator cannot change their own role or move their
+  // own account off "active" through the admin endpoint (mirrors self-delete and
+  // self-reset-password guards).
+  if (String(id) === String(actorId)) {
+    if (input.role !== undefined && input.role !== existingRow.role) {
+      throw new HttpDomainError(
+        400,
+        "self_role_change",
+        "Use profile settings to change your own role",
+      );
+    }
+    if (input.status !== undefined && input.status !== "active") {
+      throw new HttpDomainError(
+        400,
+        "self_status_change",
+        "Use profile settings to change your own status",
+      );
+    }
+  }
+
   if (actorRole && !canManageTargetUser(actorRole, existingRow.role)) {
     throw new HttpDomainError(
       403,
@@ -192,6 +166,14 @@ export async function updateWorkspaceUserHelper(
       "forbidden_super_admin_assignment",
       "Only Super Admin can assign the Super Admin role",
     );
+  }
+
+  // Never demote or deactivate the tenant's last active administrator.
+  const removesActiveAdmin =
+    (input.role !== undefined && !isAdminRole(input.role) && !isSuperAdminRole(input.role)) ||
+    (input.status !== undefined && input.status !== "active");
+  if (removesActiveAdmin) {
+    await assertNotLastActiveAdmin(existingRow, "last_admin_mutation");
   }
 
   const effectiveContactId =
@@ -237,12 +219,6 @@ export async function updateWorkspaceUserHelper(
   }
   if (input.status !== undefined) target.status = input.status;
   if (input.twoFactorEnabled !== undefined) target.twoFactorEnabled = input.twoFactorEnabled;
-
-  for (const [k, v] of Object.entries(input)) {
-    if (!["contactId", "role", "status", "twoFactorEnabled", "roleSource"].includes(k)) {
-      (target as Record<string, unknown>)[k] = v;
-    }
-  }
 
   await saveUsers(rawUsers);
   await invalidateTenantRbac(tenant);

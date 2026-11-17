@@ -7,12 +7,10 @@ import {
   findTenantUserRowById,
   upsertTenantUsersBatch,
 } from "../../db/repositories/tenantUserRepository.js";
-import { hashPassword } from "./passwordService.js";
 import {
   getContactsForUsers,
   getRawUsers,
   requireTenantSubdomain,
-  type IncomingUser,
   type PersistedUser,
   type TenantUserRow,
 } from "./userServiceShared.js";
@@ -32,12 +30,10 @@ export async function saveUsers(next: PersistedUser[]): Promise<void> {
   const existingById = new Map(existingUsers.map((user) => [String(user.id), user]));
   const prepared = await Promise.all(
     next.map(async (user) => {
-      const incoming = user as IncomingUser;
+      const incoming = user as PersistedUser;
       const existing = existingById.get(String(incoming.id));
-      const temporaryPassword = incoming.temporaryPassword?.trim();
-      const passwordHash = temporaryPassword
-        ? await hashPassword(temporaryPassword)
-        : typeof incoming.passwordHash === "string" && incoming.passwordHash
+      const passwordHash =
+        typeof incoming.passwordHash === "string" && incoming.passwordHash
           ? incoming.passwordHash
           : typeof existing?.passwordHash === "string"
             ? existing.passwordHash
@@ -51,9 +47,9 @@ export async function saveUsers(next: PersistedUser[]): Promise<void> {
           existing ?? {},
           typeof existing?.email === "string" ? existing.email : undefined,
         );
-      const mustChangePassword = temporaryPassword
-        ? incoming.mustChangePassword !== false
-        : (incoming.mustChangePassword ?? existing?.mustChangePassword ?? false);
+      const mustChangePassword =
+        incoming.mustChangePassword ?? existing?.mustChangePassword ?? false;
+      // Never persist a write-only temporary password (defensive: no caller sets one).
       const { temporaryPassword: _temporaryPassword, ...rest } = incoming;
       void _temporaryPassword;
       return {

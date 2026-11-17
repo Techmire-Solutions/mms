@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { resolveTenantLoginEmail, type Contact, type TenantUserProfile } from "@mms/shared";
 import { getContactById } from "../contactService.js";
+import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
 import { hashPassword, verifyPassword, DUMMY_PASSWORD_HASH } from "./passwordService.js";
 import {
   asAuthUser,
@@ -86,11 +87,23 @@ export async function createUser(
   password: string,
   role: string,
   workspaceSubdomain: string,
-  options?: { emailVerified?: boolean; contactId?: string | number; mustChangePassword?: boolean },
+  options?: {
+    emailVerified?: boolean;
+    contactId?: string | number;
+    mustChangePassword?: boolean;
+    /** Caller already validated the password (e.g. a generated random fallback). */
+    passwordPolicyChecked?: boolean;
+  },
 ): Promise<PublicUser> {
   const loginEmail = email.trim().toLowerCase();
   if (await findUserByLoginEmailAndWorkspace(loginEmail, workspaceSubdomain)) {
     throw new Error(`User with email "${loginEmail}" already exists for this workspace.`);
+  }
+
+  // Enforce the workspace password policy at the boundary unless the caller opted
+  // out (the workspace-onboarding random fallback is force-reset on first login).
+  if (options?.passwordPolicyChecked !== true) {
+    await assertPasswordMeetsPolicy(password);
   }
 
   const passwordHash = await hashPassword(password);

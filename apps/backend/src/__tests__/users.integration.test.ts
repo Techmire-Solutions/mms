@@ -261,7 +261,52 @@ describe("users REST routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({ users: [sampleUser] });
-    expect(mockUpsertWorkspaceUsers).toHaveBeenCalledWith([sampleUser], "admin");
+    // The bulk contract schema strips display/metric/derived fields down to the
+    // editable allowlist before the handler forwards the payload.
+    expect(mockUpsertWorkspaceUsers).toHaveBeenCalledWith(
+      [
+        {
+          id: "u-1",
+          contactId: "c-1",
+          name: "Ahmed User",
+          email: "ahmed@test.com",
+          phone: "3001234567",
+          role: "teacher",
+          status: "active",
+          twoFactorEnabled: false,
+        },
+      ],
+      "admin",
+    );
+    await app.close();
+  });
+
+  it("PUT /api/users/bulk strips credential and lifecycle fields", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/users/bulk",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify([
+        {
+          ...sampleUser,
+          temporaryPassword: "Hacked123!",
+          passwordHash: "injected-hash",
+          deletedAt: "2026-01-01T00:00:00Z",
+          workspaceSubdomain: "other",
+        },
+      ]),
+    });
+    expect(res.statusCode).toBe(200);
+    const forwarded = mockUpsertWorkspaceUsers.mock.calls[0]?.[0]?.[0] as Record<string, unknown>;
+    expect(forwarded).not.toHaveProperty("temporaryPassword");
+    expect(forwarded).not.toHaveProperty("passwordHash");
+    expect(forwarded).not.toHaveProperty("deletedAt");
+    expect(forwarded).not.toHaveProperty("workspaceSubdomain");
     await app.close();
   });
 

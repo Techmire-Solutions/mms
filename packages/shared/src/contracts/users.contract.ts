@@ -3,6 +3,7 @@ import { z } from "zod";
 import { usersListQuerySchema } from "../auth/usersListQuery.js";
 import {
   activityLogRecordSchema,
+  bulkUpdateWorkspaceUsersSchema,
   createWorkspaceUserSchema,
   editWorkspaceUserSchema,
   inviteWorkspaceUserSchema,
@@ -129,7 +130,7 @@ export const userContract = c.router({
   bulkUpdate: {
     method: "PUT",
     path: "/api/users/bulk",
-    body: z.array(workspaceUserRecordSchema),
+    body: bulkUpdateWorkspaceUsersSchema,
     responses: {
       200: z.object({ users: z.array(workspaceUserRecordSchema) }),
       400: errorResponse,

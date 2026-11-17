@@ -34,6 +34,14 @@ export const workspaceRoleWriteSchema = z
 
 export type WorkspaceRoleWrite = z.input<typeof workspaceRoleWriteSchema>;
 
+/** Persisted role shape accepted on the preferences write path (metadata passthrough). */
+export const workspaceRolePersistedSchema = z
+  .object({
+    id: z.string().trim().min(1).max(100),
+    permissions: z.record(z.string(), z.array(z.string())),
+  })
+  .passthrough();
+
 /**
  * Normalises a permission map to canonical module ids and known actions.
  *

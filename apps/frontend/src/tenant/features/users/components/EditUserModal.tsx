@@ -38,6 +38,7 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
   const workspaceRoles = useWorkspaceRoles();
   const { customFields } = useUsersConfig();
   const canManageThisUser = canManageTargetUser(authUser?.role, user.role);
+  const isSelf = Boolean(authUser && String(user.id) === String(authUser.id));
   const roleLockedByFaculty = user.roleSource === "faculty_designations";
   const assignableRoles = useMemo(() => {
     const filtered = filterAssignableRoles(workspaceRoles, authUser?.role);
@@ -104,6 +105,16 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
   const submitUser = form.handleSubmit(async (values) => {
     if (!assignableRoles.some((role) => role.id === values.role)) {
       form.setError("role", { type: "manual", message: t("users.addErrorRole") });
+      return;
+    }
+    // Self-protection mirrors the backend guard: an admin cannot change their own
+    // role, or move their own account off "active", through the admin endpoint.
+    if (isSelf && values.role !== user.role) {
+      form.setError("role", { type: "manual", message: t("users.errors.cannotEditSelfRole") });
+      return;
+    }
+    if (isSelf && values.status !== "active") {
+      form.setError("status", { type: "manual", message: t("users.errors.cannotEditSelfStatus") });
       return;
     }
     const contact = selectedContact;

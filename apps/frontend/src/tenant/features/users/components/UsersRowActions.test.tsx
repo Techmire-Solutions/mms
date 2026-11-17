@@ -121,7 +121,7 @@ describe("UsersRowActions", () => {
     });
   });
 
-  it("hides delete action when viewing own account (self-delete guard)", () => {
+  it("hides delete and reset-password actions when viewing own account (self-protection)", () => {
     mockActor = { id: "u-self", role: "super_admin" };
     const selfUser = normalizeWorkspaceUser({
       id: "u-self",
@@ -150,7 +150,7 @@ describe("UsersRowActions", () => {
     });
 
     const buttons = container.querySelectorAll("button");
-    expect(buttons.length).toBe(3); // View, Edit, ResetPassword (No Delete)
+    expect(buttons.length).toBe(2); // View, Edit (No Delete, No ResetPassword)
 
     act(() => {
       root.unmount();

@@ -123,6 +123,31 @@ export const workspaceUserRecordSchema = z
 /** Validates arrays of workspace user records. */
 export const workspaceUserListSchema = z.array(workspaceUserRecordSchema);
 
+/**
+ * Fields a client may set on workspace users via the bulk upsert endpoint
+ * (`PUT /api/users/bulk`). Strip-mode on purpose (no `.passthrough()`): every
+ * credential, lifecycle, tenant, and derived-auth field (`temporaryPassword`,
+ * `passwordHash`, `deletedAt`, `deletedBy`, `emailVerifiedAt`,
+ * `pendingLoginEmail`, `mustChangePassword`, `workspaceSubdomain`,
+ * `loginEmail`, `profileJson`) is dropped rather than forwarded to
+ * `saveUsers`. `status`/`twoFactorEnabled` deliberately carry no defaults so an
+ * omitted key means "leave unchanged" instead of silently reactivating an
+ * account or downgrading 2FA.
+ */
+export const workspaceUserBulkUpdateRowSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+  phone: z.string().optional(),
+  contactId: z.union([z.string(), z.number()]).optional(),
+  role: z.string(),
+  status: userStatusSchema.optional(),
+  twoFactorEnabled: z.boolean().optional(),
+});
+
+/** Validates arrays of workspace user bulk-update rows. */
+export const bulkUpdateWorkspaceUsersSchema = z.array(workspaceUserBulkUpdateRowSchema);
+
 /** Allowed user activity log action codes. */
 export const activityActionSchema = z.enum([
   "login",
