@@ -37,7 +37,7 @@ export function catalogErrorResponse(
   const statusCode = (error as { statusCode?: unknown } | null)?.statusCode;
   if (statusCode === 400) return { status: 400, body: { type: "validation_error", message } };
   if (statusCode === 409) return { status: 409, body: { type: "conflict", message } };
-  if (statusCode === 404 || message.includes("not found")) {
+  if (statusCode === 404) {
     return { status: 404, body: { type: "not_found", message } };
   }
 

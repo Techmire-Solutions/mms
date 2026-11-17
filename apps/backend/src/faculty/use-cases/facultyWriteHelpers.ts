@@ -1,4 +1,5 @@
 import type { FacultyRecord } from "@mms/shared";
+import { randomUUID } from "node:crypto";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import {
   closeAssignment,
@@ -66,7 +67,7 @@ export async function syncPrimaryAppointment(
     typeof record.designationStartDate === "string" ? record.designationStartDate.trim() : "";
   const startDate = current ? today : designationStart.length > 0 ? designationStart : today;
   await saveFacultyAssignment(tenant, {
-    id: `fa-${facultyId}-${Date.now().toString(36)}`,
+    id: `fa-${facultyId}-${randomUUID()}`,
     workspaceSubdomain: tenant,
     facultyId,
     departmentId,

@@ -185,4 +185,19 @@ describe("faculty catalog error mapping", () => {
     expect(result.body).toMatchObject({ type: "conflict" });
     expect(log.error).not.toHaveBeenCalled();
   });
+
+  it("does not infer 404 from a message substring — only a typed statusCode", async () => {
+    mocks.saveFacultyDesignation.mockRejectedValue(new Error("designation not found in cache"));
+    const { request, log } = makeRequest();
+
+    const result = await handleSaveDesignation({
+      params: { id: "des-1" },
+      body: { name: "Mudarris", departmentId: "dept-1" },
+      request,
+    } as never);
+
+    expect(result.status).toBe(500);
+    expect(result.body).toMatchObject({ type: "server_error" });
+    expect(log.error).toHaveBeenCalledTimes(1);
+  });
 });

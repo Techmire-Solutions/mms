@@ -156,6 +156,7 @@ export async function saveFacultyDepartment(
       input.id,
       name,
     );
+    const existing = await selectDepartmentById(tx, subdomain, input.id);
     const now = new Date();
     await tx
       .insert(facultyDepartments)
@@ -186,8 +187,11 @@ export async function saveFacultyDepartment(
       workspaceSubdomain: subdomain,
       tableName: "faculty_departments",
       recordId: input.id,
-      actionType: "UPDATE",
+      actionType: existing ? "UPDATE" : "CREATE",
       realUserId: input.updatedBy ?? undefined,
+      oldState: existing
+        ? { name: existing.name, description: existing.description, status: existing.status }
+        : undefined,
       newState: { id: input.id, name, description, status },
     });
     const saved = await selectDepartmentById(tx, subdomain, input.id);

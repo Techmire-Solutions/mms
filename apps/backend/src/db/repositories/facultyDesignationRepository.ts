@@ -212,6 +212,7 @@ export async function saveFacultyDesignation(
       hierarchyRank,
       isActive: status === "active",
     };
+    const existing = await selectDesignationById(tx, workspaceSubdomain, input.id);
     await tx
       .insert(facultyDesignations)
       .values({ workspaceSubdomain, id: input.id, ...values })
@@ -228,8 +229,16 @@ export async function saveFacultyDesignation(
       workspaceSubdomain,
       tableName: "faculty_designations",
       recordId: input.id,
-      actionType: "UPDATE",
+      actionType: existing ? "UPDATE" : "CREATE",
       realUserId: input.updatedBy ?? undefined,
+      oldState: existing
+        ? {
+            name: existing.name,
+            departmentId: existing.departmentId,
+            parentDesignationId: existing.parentDesignationId,
+            status: existing.status,
+          }
+        : undefined,
       newState: { id: input.id, ...values, assignableRoles: input.assignableRoles },
     });
     const saved = await selectDesignationById(tx, workspaceSubdomain, input.id);
