@@ -165,5 +165,11 @@ describe("useFacultyFormSaveActions confirmDuplicateSave", () => {
     // …and the server field error must land on the form.
     expect(result.errors).toEqual({ employeeId: "Employee ID is already taken" });
     expect(result.validationErrorSummary).toContain("Employee ID is already taken");
+
+    // Clearing employeeId error removes it from errors
+    act(() => {
+      result.clearEmployeeIdError();
+    });
+    expect(result.errors.employeeId).toBeUndefined();
   });
 });

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUsersContractList } from "@/tenant/hooks/collections/users";
@@ -80,7 +80,7 @@ export function useFacultyFormController({
     linkedFacultyContactIds,
     nextEmployeeId,
     isFetchingNextEmployeeId,
-    handleRegenerateEmployeeId,
+    handleRegenerateEmployeeId: baseRegenerateEmployeeId,
   } = useFacultyDraftState({
     faculty: currentFaculty,
     defaultSpecialization,
@@ -132,6 +132,7 @@ export function useFacultyFormController({
     typedDuplicateReason,
     duplicateConfirmOpen,
     clearDuplicatePrompt,
+    clearEmployeeIdError,
     handleDuplicateDialogOpenChange,
   } = useFacultyFormSaveActions({
     facultyDraft,
@@ -152,6 +153,11 @@ export function useFacultyFormController({
     linkedUser,
     queryClient,
   });
+
+  const handleRegenerateEmployeeId = useCallback(async () => {
+    clearEmployeeIdError();
+    await baseRegenerateEmployeeId();
+  }, [clearEmployeeIdError, baseRegenerateEmployeeId]);
 
   const getFieldError = (fieldId: string): string | undefined =>
     errors[fieldId] || errors[`custom:${fieldId}`];

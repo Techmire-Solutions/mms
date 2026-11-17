@@ -12,13 +12,43 @@ vi.mock("../db/tenant-context.js", () => ({
 const TENANT = "tenant-faculty-preview";
 const CURRENT_YEAR = new Date().getFullYear();
 
-function createMockTx(row: Record<string, unknown> | null): TenantTransaction {
+function extractSqlValues(item: unknown, visited = new Set<unknown>()): string[] {
+  if (!item || typeof item !== "object" || visited.has(item)) return [];
+  visited.add(item);
+  const results: string[] = [];
+  if (Array.isArray(item)) {
+    for (const i of item) results.push(...extractSqlValues(i, visited));
+  } else if (
+    "queryChunks" in item &&
+    Array.isArray((item as { queryChunks: unknown[] }).queryChunks)
+  ) {
+    for (const chunk of (item as { queryChunks: unknown[] }).queryChunks) {
+      if (typeof chunk === "string") results.push(chunk);
+      else results.push(...extractSqlValues(chunk, visited));
+    }
+  }
+  return results;
+}
+
+function createMockTx(
+  row: Record<string, unknown> | null,
+  existingEmployeeIds: string[] = [],
+): TenantTransaction {
   return {
-    select: vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue(row ? [row] : []),
-      }),
-    }),
+    select: vi.fn().mockImplementation((projection?: Record<string, unknown>) => ({
+      from: vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockImplementation((condition?: unknown) => {
+          if (projection && "prefix" in projection) {
+            return Promise.resolve(row ? [row] : []);
+          }
+          const values = extractSqlValues(condition).map((v) => v.toLowerCase());
+          const matched = existingEmployeeIds.filter((id) => values.includes(id.toLowerCase()));
+          return {
+            limit: vi.fn().mockResolvedValue(matched.map((id) => ({ id: `facemp-${id}` }))),
+          };
+        }),
+      })),
+    })),
   } as unknown as TenantTransaction;
 }
 
@@ -101,6 +131,29 @@ describe("facultyEmployeeIdPreview", () => {
     expect(result.nextEmployeeId).toBe(`STAFF-${twoDigitYear}-008`);
     expect(result.config.delimiter).toBe("-");
     expect(result.config.yearFormat).toBe("YY");
+  });
+
+  it("given candidate employee ID already exists in faculty_employments, should advance sequence to next unused ID", async () => {
+    // Arrange: config currentSequence is 0, so next sequence would normally be 1 (FAC20260001).
+    // But FAC20260001 already exists in faculty_employments!
+    const mockTx = createMockTx(
+      {
+        prefix: "FAC",
+        yearFormat: "YYYY",
+        sequenceDigits: 4,
+        delimiter: "",
+        currentSequence: 0,
+        lastYear: CURRENT_YEAR,
+      },
+      [`FAC${CURRENT_YEAR}0001`],
+    );
+    vi.mocked(withTenantRead).mockImplementation((_subdomain, callback) => callback(mockTx));
+
+    // Act
+    const result = await previewNextFacultyEmployeeId(TENANT);
+
+    // Assert: must skip FAC20260001 and return FAC20260002
+    expect(result.nextEmployeeId).toBe(`FAC${CURRENT_YEAR}0002`);
   });
 
   it("given previewNextEmployeeId alias, should export the exact same function", () => {
