@@ -10,8 +10,13 @@ import {
 } from "../faculty/facultyFormCustomFields.js";
 import { facultyEmployDesignationsWriteSchema } from "../faculty/facultyEmployDesignationTypes.js";
 import type { FacultySettings } from "../faculty/facultyModuleSettings.js";
-import { facultyCoreSchema } from "../faculty/facultyModuleManifest.js";
 import {
+  facultyCoreSchema,
+  facultyIjazahSchema,
+  facultyLeaveDetailsSchema,
+} from "../faculty/facultyModuleManifest.js";
+import {
+  FACULTY_CONTRACT_TYPE_VALUES,
   FACULTY_EMPLOYMENT_STATUS_VALUES,
   FACULTY_PROFILE_STATUS_VALUES,
 } from "../faculty/facultyTypes.js";
@@ -33,7 +38,14 @@ const FACULTY_WRITE_AUDIT_META_KEYS = [
  */
 export const FACULTY_WRITE_SYSTEM_KEYS: readonly string[] = (() => {
   /** Legacy `joinDate` + employment write-through keys not in form field seed. */
-  const extra = ["joinDate", "employmentId", "employDesignations"];
+  const extra = [
+    "joinDate",
+    "employmentId",
+    "employDesignations",
+    "employmentContractType",
+    "ijazahs",
+    "leaveDetails",
+  ];
   const keys = new Set<string>([
     ...FACULTY_WRITE_AUDIT_META_KEYS,
     ...listFacultySystemFormFieldKeys(),
@@ -109,6 +121,12 @@ export function buildDynamicFacultySchema(
     employmentStartDate: optionalCalendarDate,
     employmentEndDate: optionalCalendarDate,
     joinDate: optionalCalendarDate,
+    employmentContractType: z
+      .union([z.enum(FACULTY_CONTRACT_TYPE_VALUES), z.literal(""), z.null()])
+      .optional()
+      .transform((val) => (val === "" || val === undefined ? null : val)),
+    ijazahs: z.array(facultyIjazahSchema).optional(),
+    leaveDetails: facultyLeaveDetailsSchema.nullable().optional(),
     qualification: z.string().nullish(),
     notes: z.string().nullish(),
     userId: z.string().nullable().nullish(),

@@ -17,6 +17,7 @@ export function focusFacultyValidationField(formInstanceId: string, fieldId: str
     joinDate: ["faculty-employment-start-date", "employmentStartDate"],
     employmentStartDate: ["faculty-employment-start-date", "joinDate"],
     employmentEndDate: ["faculty-employment-end-date"],
+    employmentContractType: ["faculty-employment-contract-type"],
     designationStartDate: ["faculty-designation-start-date"],
     designationEndDate: ["faculty-designation-end-date"],
     designation: ["designationId", "designation"],
