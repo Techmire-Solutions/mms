@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/shared";
-import { facultySetupConfig } from "../../db/schema/faculty.js";
+import { facultyEmployments, facultySetupConfig } from "../../db/schema/faculty.js";
 import { withTenantRead } from "../../db/tenant-context.js";
 import { logger } from "../../lib/logger.js";
 
@@ -73,14 +73,61 @@ export async function previewNextFacultyEmployeeId(
         .from(facultySetupConfig)
         .where(eq(facultySetupConfig.workspaceSubdomain, subdomain));
 
-      return formatPreview({
+      const resolvedConfig = {
         prefix: row?.prefix ?? fallbackConfig.prefix,
         yearFormat: (row?.yearFormat ?? fallbackConfig.yearFormat) as "YYYY" | "YY" | "NONE",
         sequenceDigits: row?.sequenceDigits ?? fallbackConfig.sequenceDigits,
         delimiter: row?.delimiter ?? fallbackConfig.delimiter,
         currentSequence: row?.currentSequence ?? fallbackConfig.currentSequence,
         lastYear: row?.lastYear ?? currentYear,
-      });
+      };
+
+      let nextSeq =
+        resolvedConfig.lastYear !== currentYear ? 1 : (resolvedConfig.currentSequence ?? 0) + 1;
+      const yearToUse =
+        resolvedConfig.lastYear !== currentYear ? currentYear : resolvedConfig.lastYear;
+
+      const formatCandidate = (seq: number) =>
+        formatDeterministicEmployeeId(
+          seq,
+          {
+            prefix: resolvedConfig.prefix,
+            yearFormat: resolvedConfig.yearFormat === "YY" ? "YY" : "YYYY",
+            sequenceDigits: resolvedConfig.sequenceDigits,
+            delimiter: resolvedConfig.delimiter,
+          },
+          new Date(yearToUse, 0, 1),
+        );
+
+      let candidateId = formatCandidate(nextSeq);
+      let attempts = 0;
+      const maxAttempts = 1000;
+
+      while (attempts < maxAttempts) {
+        const existing = await tx
+          .select({ id: facultyEmployments.id })
+          .from(facultyEmployments)
+          .where(
+            and(
+              eq(facultyEmployments.workspaceSubdomain, subdomain),
+              isNull(facultyEmployments.deletedAt),
+              sql`lower(trim(${facultyEmployments.employeeId})) = ${candidateId.trim().toLowerCase()}`,
+            ),
+          )
+          .limit(1);
+
+        if (existing.length === 0) {
+          break;
+        }
+        nextSeq += 1;
+        attempts += 1;
+        candidateId = formatCandidate(nextSeq);
+      }
+
+      return {
+        nextEmployeeId: candidateId,
+        config: resolvedConfig,
+      };
     });
   } catch (error: unknown) {
     // Table missing / transient DB errors — still return a deterministic preview.

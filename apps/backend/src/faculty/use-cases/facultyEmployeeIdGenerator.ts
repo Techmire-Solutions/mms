@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/shared";
-import { facultySetupConfig } from "../../db/schema/faculty.js";
+import { facultyEmployments, facultySetupConfig } from "../../db/schema/faculty.js";
 import { withTenant, type TenantTransaction } from "../../db/tenant-context.js";
 import type { NextEmployeeIdResult } from "./facultyEmployeeIdService.js";
 
@@ -94,6 +94,43 @@ export async function generateNextFacultyEmployeeId(
       yearToSave = currentYear;
     }
 
+    const formatCandidate = (seq: number) =>
+      formatDeterministicEmployeeId(
+        seq,
+        {
+          prefix,
+          yearFormat: yearFormat === "YY" ? "YY" : "YYYY",
+          sequenceDigits,
+          delimiter,
+        },
+        new Date(yearToSave, 0, 1),
+      );
+
+    let candidateId = formatCandidate(nextSeq);
+    let attempts = 0;
+    const maxAttempts = 1000;
+
+    while (attempts < maxAttempts) {
+      const existing = await tx
+        .select({ id: facultyEmployments.id })
+        .from(facultyEmployments)
+        .where(
+          and(
+            eq(facultyEmployments.workspaceSubdomain, subdomain),
+            isNull(facultyEmployments.deletedAt),
+            sql`lower(trim(${facultyEmployments.employeeId})) = ${candidateId.trim().toLowerCase()}`,
+          ),
+        )
+        .limit(1);
+
+      if (existing.length === 0) {
+        break;
+      }
+      nextSeq += 1;
+      attempts += 1;
+      candidateId = formatCandidate(nextSeq);
+    }
+
     await tx
       .update(facultySetupConfig)
       .set({
@@ -103,19 +140,8 @@ export async function generateNextFacultyEmployeeId(
       })
       .where(eq(facultySetupConfig.workspaceSubdomain, subdomain));
 
-    const employeeId = formatDeterministicEmployeeId(
-      nextSeq,
-      {
-        prefix,
-        yearFormat: yearFormat === "YY" ? "YY" : "YYYY",
-        sequenceDigits,
-        delimiter,
-      },
-      new Date(yearToSave, 0, 1),
-    );
-
     return {
-      employeeId,
+      employeeId: candidateId,
       sequence: nextSeq,
       year: yearToSave,
     };

@@ -73,6 +73,58 @@ describe("facultyEmployeeIdService - formatDeterministicEmployeeId", () => {
 describe("facultyEmployeeIdService - DB operations and rollover logic", () => {
   const currentYear = new Date().getFullYear();
 
+  function extractSqlValues(item: unknown, visited = new Set<unknown>()): string[] {
+    if (!item || typeof item !== "object" || visited.has(item)) return [];
+    visited.add(item);
+    const results: string[] = [];
+    if (Array.isArray(item)) {
+      for (const i of item) results.push(...extractSqlValues(i, visited));
+    } else if (
+      "queryChunks" in item &&
+      Array.isArray((item as { queryChunks: unknown[] }).queryChunks)
+    ) {
+      for (const chunk of (item as { queryChunks: unknown[] }).queryChunks) {
+        if (typeof chunk === "string") results.push(chunk);
+        else results.push(...extractSqlValues(chunk, visited));
+      }
+    }
+    return results;
+  }
+
+  function createGeneratorMockTx(
+    getConfig: () => FacultySetupConfigRow,
+    setConfig: (patch: Partial<FacultySetupConfigRow>) => void,
+    existingEmployeeIds: string[] = [],
+  ) {
+    return {
+      select: (_projection?: Record<string, unknown>) => ({
+        from: () => ({
+          where: (condition?: unknown) => ({
+            for: () => [getConfig()],
+            limit: () => {
+              const values = extractSqlValues(condition).map((v) => v.toLowerCase());
+              const matched = existingEmployeeIds.filter((id) => values.includes(id.toLowerCase()));
+              return matched.map((id) => ({ id: `facemp-${id}` }));
+            },
+          }),
+        }),
+      }),
+      update: () => ({
+        set: (patch: Partial<FacultySetupConfigRow>) => ({
+          where: () => {
+            setConfig(patch);
+            return [getConfig()];
+          },
+        }),
+      }),
+      insert: () => ({
+        values: () => ({
+          onConflictDoNothing: () => [],
+        }),
+      }),
+    };
+  }
+
   it("returns default fallback config when no DB connection or table row exists", async () => {
     const config = await getFacultySetupConfig("demo");
     expect(config.workspaceSubdomain).toBe("demo");
@@ -102,28 +154,12 @@ describe("facultyEmployeeIdService - DB operations and rollover logic", () => {
       updatedAt: new Date(),
     };
 
-    const mockTx = {
-      select: () => ({
-        from: () => ({
-          where: () => ({
-            for: () => [storedConfig],
-          }),
-        }),
-      }),
-      update: () => ({
-        set: (patch: Partial<FacultySetupConfigRow>) => ({
-          where: () => {
-            storedConfig = { ...storedConfig, ...patch };
-            return [storedConfig];
-          },
-        }),
-      }),
-      insert: () => ({
-        values: () => ({
-          onConflictDoNothing: () => [],
-        }),
-      }),
-    };
+    const mockTx = createGeneratorMockTx(
+      () => storedConfig,
+      (patch) => {
+        storedConfig = { ...storedConfig, ...patch };
+      },
+    );
 
     const result = await generateNextFacultyEmployeeId("demo", mockTx as never);
 
@@ -148,28 +184,12 @@ describe("facultyEmployeeIdService - DB operations and rollover logic", () => {
       updatedAt: new Date(),
     };
 
-    const mockTx = {
-      select: () => ({
-        from: () => ({
-          where: () => ({
-            for: () => [storedConfig],
-          }),
-        }),
-      }),
-      update: () => ({
-        set: (patch: Partial<FacultySetupConfigRow>) => ({
-          where: () => {
-            storedConfig = { ...storedConfig, ...patch };
-            return [storedConfig];
-          },
-        }),
-      }),
-      insert: () => ({
-        values: () => ({
-          onConflictDoNothing: () => [],
-        }),
-      }),
-    };
+    const mockTx = createGeneratorMockTx(
+      () => storedConfig,
+      (patch) => {
+        storedConfig = { ...storedConfig, ...patch };
+      },
+    );
 
     const result = await generateNextFacultyEmployeeId("demo", mockTx as never);
 
@@ -179,6 +199,37 @@ describe("facultyEmployeeIdService - DB operations and rollover logic", () => {
     const expectedId = `FAC${currentYear}0001`;
     expect(result.employeeId).toBe(expectedId);
     expect(storedConfig.currentSequence).toBe(1);
+    expect(storedConfig.lastYear).toBe(currentYear);
+  });
+
+  it("atomically skips existing employee IDs in faculty_employments and updates currentSequence to the free sequence", async () => {
+    let storedConfig: FacultySetupConfigRow = {
+      workspaceSubdomain: "demo",
+      prefix: "FAC",
+      yearFormat: "YYYY",
+      sequenceDigits: 4,
+      delimiter: "",
+      currentSequence: 0,
+      lastYear: currentYear,
+      updatedAt: new Date(),
+    };
+
+    const existingEmployeeIds = [`FAC${currentYear}0001`];
+
+    const mockTx = createGeneratorMockTx(
+      () => storedConfig,
+      (patch) => {
+        storedConfig = { ...storedConfig, ...patch };
+      },
+      existingEmployeeIds,
+    );
+
+    const result = await generateNextFacultyEmployeeId("demo", mockTx as never);
+
+    // Sequence 1 (FAC...0001) is already in faculty_employments, so it must advance to sequence 2
+    expect(result.sequence).toBe(2);
+    expect(result.employeeId).toBe(`FAC${currentYear}0002`);
+    expect(storedConfig.currentSequence).toBe(2);
     expect(storedConfig.lastYear).toBe(currentYear);
   });
 

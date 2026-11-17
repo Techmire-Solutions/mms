@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { invalidateUsersQueries } from "@/tenant/hooks/collections/users";
@@ -81,6 +81,15 @@ export function useFacultyFormSaveActions({
     setPendingSaveData(null);
   };
 
+  const clearEmployeeIdError = useCallback(() => {
+    setErrors((prev) => {
+      if (!prev.employeeId) return prev;
+      const { employeeId: _omitted, ...rest } = prev;
+      return rest;
+    });
+    setServerError((prev) => (prev?.toLowerCase().includes("employee") ? null : prev));
+  }, []);
+
   const handleDuplicateDialogOpenChange = (open: boolean) =>
     open ? setDuplicateConfirmOpen(true) : clearDuplicatePrompt();
 
@@ -161,6 +170,7 @@ export function useFacultyFormSaveActions({
     typedDuplicateReason,
     duplicateConfirmOpen,
     clearDuplicatePrompt,
+    clearEmployeeIdError,
     handleDuplicateDialogOpenChange,
   };
 }
