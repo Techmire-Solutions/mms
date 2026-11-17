@@ -82,6 +82,13 @@ describe("TENANT_APP_ROUTE_ACCESS", () => {
     );
     expect([...modules].sort()).toEqual([...ACCESS_CONTROLLED_MODULE_IDS].sort());
   });
+
+  it("gates the faculty route on module read access", () => {
+    expect(TENANT_APP_ROUTE_ACCESS[ROUTES.faculty]).toMatchObject({
+      moduleId: "faculty",
+      action: "read",
+    });
+  });
 });
 
 describe("resolveRouteAccess", () => {
@@ -150,9 +157,9 @@ describe("resolveRouteAccess", () => {
 });
 
 describe("canShowRoute", () => {
-  it("hides Home only when its module is not readable, and never hides open routes", () => {
+  it("shows Home to every authenticated role and never hides open routes", () => {
     expect(canShowRoute(ROUTES.home, evaluator(null, null, "teacher"))).toBe(true);
-    expect(canShowRoute(ROUTES.home, evaluator(null, null, "guardian"))).toBe(false);
+    expect(canShowRoute(ROUTES.home, evaluator(null, null, "guardian"))).toBe(true);
     expect(canShowRoute(ROUTES.settings, evaluator(null, null, "guardian"))).toBe(true);
     expect(canShowRoute("/unknown-module", () => ({ allowed: true }))).toBe(false);
   });

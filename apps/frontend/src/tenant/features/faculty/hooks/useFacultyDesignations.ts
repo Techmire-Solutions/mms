@@ -29,6 +29,7 @@ export function facultyDesignationsQueryOptions(input: {
       return parsed.data;
     },
     staleTime: 30_000,
+    placeholderData: (prev) => prev,
   });
 }
 
