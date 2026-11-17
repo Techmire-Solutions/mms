@@ -54,7 +54,6 @@ export default function BrandingSettings(): React.JSX.Element {
           discardLabel={t("theme.discardChanges")}
           dirty={isIdentityDirty}
           saving={saving}
-          saved={saved}
         />
       }
     >

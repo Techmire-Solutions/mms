@@ -29,6 +29,22 @@ export function globalSettingsPreviewPatch(draft: GlobalSettings): Partial<Globa
   };
 }
 
+/**
+ * Fields persisted by the General + AI Assistant tabs. Extends the preview patch
+ * with LLM configuration fields — these are excluded from live preview (which must
+ * never surface secrets) but still mark the draft dirty and are written on Save.
+ * Masked `llmApiKey`/`llmConfigs[].apiKey` values are safe to send: the server's
+ * round-trip guard preserves the stored secret for masked keys.
+ */
+export function globalSettingsSavePatch(draft: GlobalSettings): Partial<GlobalSettings> {
+  return {
+    ...globalSettingsPreviewPatch(draft),
+    llmProvider: draft.llmProvider,
+    llmApiKey: draft.llmApiKey,
+    llmConfigs: draft.llmConfigs,
+  };
+}
+
 /** Live-preview patch for global preferences + module visibility. */
 export function previewGlobalSettingsDraft(draft: GlobalSettings): Partial<GlobalSettings> {
   return {
@@ -42,8 +58,8 @@ export function isGlobalPreferencesDirty(
   baseline: GlobalSettings,
 ): boolean {
   return (
-    JSON.stringify(globalSettingsPreviewPatch(globalSettings)) !==
-    JSON.stringify(globalSettingsPreviewPatch(baseline))
+    JSON.stringify(globalSettingsSavePatch(globalSettings)) !==
+    JSON.stringify(globalSettingsSavePatch(baseline))
   );
 }
 
@@ -61,7 +77,7 @@ export function isEnabledModulesDraftDirty(
 export function mergeGlobalSettingsDraft(draft: GlobalSettings): GlobalSettings {
   return mergeGlobalSettings({
     ...getGlobalSettings(),
-    ...globalSettingsPreviewPatch(draft),
+    ...globalSettingsSavePatch(draft),
   });
 }
 
@@ -83,6 +99,6 @@ export function retainGlobalDraftAfterModulesSave(
 ): GlobalSettings {
   return mergeGlobalSettings({
     ...persisted,
-    ...globalSettingsPreviewPatch(draft),
+    ...globalSettingsSavePatch(draft),
   });
 }

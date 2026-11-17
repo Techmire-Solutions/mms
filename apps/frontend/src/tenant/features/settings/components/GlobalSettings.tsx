@@ -53,7 +53,6 @@ export default function GlobalSettings(): React.JSX.Element {
             discardLabel={t("theme.discardChanges")}
             dirty={isGlobalDirty}
             saving={saving}
-            saved={saved}
           />
         ) : undefined
       }

@@ -21,4 +21,13 @@ describe("SettingsFormActions", () => {
 
     expect(html).not.toContain("sticky bottom-0");
   });
+
+  it("falls back to a translated discard label when none is passed", () => {
+    const html = renderToStaticMarkup(
+      <SettingsFormActions saveLabel="Save" onSave={vi.fn()} onDiscard={vi.fn()} dirty />,
+    );
+
+    expect(html).toContain("theme.discardChanges");
+    expect(html).not.toContain("Discard Changes");
+  });
 });

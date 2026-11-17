@@ -2,6 +2,7 @@ import React from "react";
 import { RotateCcw, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export interface SettingsFormActionsProps {
   saveLabel: string;
@@ -11,7 +12,6 @@ export interface SettingsFormActionsProps {
   discardLabel?: string;
   dirty?: boolean;
   saving?: boolean;
-  saved?: boolean;
   saveDisabled?: boolean;
   showSave?: boolean;
   /** Pin the action bar to the bottom of the scrollport on long settings panels. */
@@ -30,12 +30,12 @@ export function SettingsFormActions({
   discardLabel,
   dirty = false,
   saving = false,
-  saved: _saved = false,
   saveDisabled = false,
   showSave = true,
   sticky = false,
   children,
 }: SettingsFormActionsProps): React.JSX.Element {
+  const { t } = useTranslation();
   const saveText = saving ? (savingLabel ?? saveLabel) : saveLabel;
   const stickyClass = sticky
     ? "sticky bottom-0 z-sticky -mx-1 bg-background/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-md"
@@ -59,7 +59,7 @@ export function SettingsFormActions({
             className="min-h-11 gap-2 px-4"
           >
             <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-            <span>{discardLabel ?? "Discard Changes"}</span>
+            <span>{discardLabel ?? t("theme.discardChanges")}</span>
           </Button>
         )}
         {children}
@@ -87,7 +87,7 @@ export function SettingsFormActions({
             className="min-h-11 gap-2 px-4"
           >
             <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-            <span>{discardLabel ?? "Discard Changes"}</span>
+            <span>{discardLabel ?? t("theme.discardChanges")}</span>
           </Button>
         )}
         {children}

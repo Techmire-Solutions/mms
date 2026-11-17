@@ -1,6 +1,7 @@
 import {
   DEFAULT_GLOBAL_SETTINGS,
   GLOBAL_SETTINGS_ADMIN_FIELD_KEYS,
+  GLOBAL_SETTINGS_ADMIN_WRITE_ONLY_FIELD_KEYS,
   mergeGlobalSettings,
   parseSessionTimeoutMinutes,
   validatePasswordPolicy,
@@ -83,6 +84,9 @@ export function sanitizeGlobalSettingsWrite(
 ): GlobalSettings {
   const sanitized = { ...incoming };
   for (const key of GLOBAL_SETTINGS_ADMIN_FIELD_KEYS) {
+    (sanitized as GlobalSettings)[key] = current[key] as never;
+  }
+  for (const key of GLOBAL_SETTINGS_ADMIN_WRITE_ONLY_FIELD_KEYS) {
     (sanitized as GlobalSettings)[key] = current[key] as never;
   }
   return sanitized;

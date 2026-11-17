@@ -65,7 +65,6 @@ export default function SystemModulesSettings(): React.JSX.Element {
           discardLabel={t("theme.discardChanges")}
           dirty={isModulesDirty}
           saving={saving}
-          saved={saved}
         />
       }
     >

@@ -84,7 +84,6 @@ export default function ThemeSettings(): React.JSX.Element {
           discardLabel={t("theme.discardChanges")}
           dirty={isDirty}
           saving={saving}
-          saved={saved}
         >
           <Button
             type="button"

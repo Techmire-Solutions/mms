@@ -5,6 +5,7 @@ import {
   isServerOnlyObjectKey,
   mergeBrandingSettings,
   mergeGlobalSettings,
+  redactBrandingIdentityForClient,
   type BrandingSettings,
   type GlobalSettings,
 } from "@mms/shared";
@@ -59,11 +60,16 @@ export const dbObjectRoutes: FastifyPluginAsync = async (fastify) => {
       }
       if (key === "branding") {
         const tenant = getRequestTenant()!;
-        // Institution identity fields aren't secret (already public via
-        // /api/workspace/by-subdomain) so the full object is safe to read for
-        // any authenticated tenant user — only writing identity fields is gated.
+        // Institution name/logo/colours are public (served via
+        // /api/workspace/by-subdomain), but contact, legal, address and social
+        // fields are admin-only for writes — so a non-admin read gets the public
+        // + theme subset rather than the admin contact/legal details.
         const branding = await getWorkspaceBranding(tenant);
-        if (branding) return reply.send(branding);
+        if (branding) {
+          return reply.send(
+            canWriteObject(user, "branding") ? branding : redactBrandingIdentityForClient(branding),
+          );
+        }
       } else if (key === "global_settings") {
         const tenant = getRequestTenant()!;
         const globalSettings = await loadGlobalSettings(tenant);

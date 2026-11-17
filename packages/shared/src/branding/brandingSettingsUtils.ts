@@ -73,6 +73,19 @@ export function toPublicBranding(settings: BrandingSettings): PublicBranding {
   };
 }
 
+/**
+ * Returns a copy of `settings` safe for a non-admin reader: public identity
+ * (name, tagline, logo, colours) plus theme fields, with contact, legal, address,
+ * and social fields reset to defaults. Mirrors `redactAdminOnlyGlobalSettings`.
+ */
+export function redactBrandingIdentityForClient(settings: BrandingSettings): BrandingSettings {
+  return mergeBrandingSettings({
+    ...toPublicBranding(settings),
+    cornerStyle: settings.cornerStyle,
+    footerText: settings.footerText,
+  });
+}
+
 /** Picks a subset of branding fields for scoped dirty checks and preview patches. */
 export function pickBrandingFields<K extends keyof BrandingSettings>(
   settings: BrandingSettings,
