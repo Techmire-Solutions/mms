@@ -131,6 +131,12 @@ export async function generateNextFacultyEmployeeId(
       candidateId = formatCandidate(nextSeq);
     }
 
+    if (attempts >= maxAttempts) {
+      throw new Error(
+        `Unable to generate a unique employee ID after ${maxAttempts} attempts. Check the sequence configuration.`,
+      );
+    }
+
     await tx
       .update(facultySetupConfig)
       .set({

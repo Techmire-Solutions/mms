@@ -46,7 +46,7 @@ export const facultyPreferencesPutBodySchema = z
     requireContactLink: z.boolean().optional(),
     defaultSpecialization: z.string().optional(),
   })
-  .passthrough();
+  .strict();
 
 /** Field-config slice persisted on `faculty_field_configs` (never formTabs / module prefs). */
 export function stripFacultyFieldConfigForPersist(

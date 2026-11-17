@@ -172,6 +172,7 @@ export async function saveFacultyDepartment(
       })
       .onConflictDoUpdate({
         target: [facultyDepartments.workspaceSubdomain, facultyDepartments.id],
+        setWhere: isNull(facultyDepartments.deletedAt),
         set: {
           name,
           description,
