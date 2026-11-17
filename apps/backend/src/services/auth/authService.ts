@@ -20,14 +20,12 @@ import { upsertContactModulePreferences } from "../../db/repositories/contactMod
 import type { Workspace } from "@mms/shared";
 import { buildBrandingFromOnboarding } from "@mms/shared";
 import {
-  assertPasswordMeetsPolicy,
   getJwtExpiresIn,
   loadGlobalSettings,
   saveGlobalSettings,
 } from "../globalSettingsService.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { seedTenantDefaults } from "../tenantSeedService.js";
-import { saveObject } from "../../db/database.js";
 import { createTwoFactorChallenge, issueRefreshToken } from "./twoFactorService.js";
 import { setAuthCookies } from "./authCookieService.js";
 import { clearPlatformAccessCookie } from "../platform/platformCookieService.js";
@@ -225,7 +223,6 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
       socialLinks: input.socialLinks,
     });
     await upsertWorkspaceBranding(workspace.subdomain, branding);
-    await saveObject("branding", branding);
 
     await upsertContactModulePreferences(workspace.subdomain, {
       defaultCountry: input.country?.trim() || "",
@@ -238,15 +235,19 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
 
     const passwordCandidate = input.password?.trim();
     let adminPassword: string;
+    let passwordPolicyChecked = false;
     if (passwordCandidate) {
-      const explicitPassword = input.password ?? passwordCandidate;
-      await assertPasswordMeetsPolicy(explicitPassword);
-      adminPassword = explicitPassword;
+      adminPassword = input.password ?? passwordCandidate;
+      // Password policy is enforced inside createUser.
     } else {
       adminPassword = randomBytes(32).toString("hex");
+      // Cryptographically random and force-reset on first login, so it is exempt
+      // from the human-entered password policy.
+      passwordPolicyChecked = true;
     }
     await createUser(input.email, input.adminName, adminPassword, "admin", workspace.subdomain, {
       mustChangePassword: true,
+      passwordPolicyChecked,
     });
   });
 

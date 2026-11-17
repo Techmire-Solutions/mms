@@ -3,7 +3,6 @@ import {
   isServerOnlyObjectKey,
   BACKUP_EPHEMERAL_OBJECT_KEYS,
   type TenantDatabaseSnapshot,
-  type GlobalSettings,
 } from "@mms/shared";
 import {
   deleteCollection as dbDeleteCollection,
@@ -33,7 +32,6 @@ import { getRequestTenant } from "../lib/tenantContext.js";
 import { throwIfSyncAborted } from "../lib/syncLimits.js";
 import { acquireTenantRestoreLock, RestoreInProgressError } from "../lib/restoreLock.js";
 import { clearTenantBackgroundJobs } from "./backgroundJobService.js";
-import { maskGlobalSettingsForClient } from "./globalSettingsService.js";
 
 const ALL_LEGACY_SETUP_OBJECT_KEYS = [
   ...STUDENTS_LEGACY_SETUP_OBJECT_KEYS,
@@ -159,16 +157,12 @@ export async function synchronizeData(
         if (tenant) {
           await restoreSpecialTenantObject(key, objectValue, tenant);
         }
-        // The document-store copy of global_settings must never hold plaintext LLM
-        // secrets (the backup snapshot carries them unmasked for encrypted backup).
-        const valueToSave =
-          key === "global_settings" &&
-          typeof objectValue === "object" &&
-          objectValue !== null &&
-          !Array.isArray(objectValue)
-            ? maskGlobalSettingsForClient(objectValue as GlobalSettings)
-            : objectValue;
-        await dbSaveObject(key, valueToSave);
+        // branding/global_settings are persisted to typed columns by
+        // restoreSpecialTenantObject; their legacy document-store copies are
+        // no longer written.
+        if (key !== "branding" && key !== "global_settings") {
+          await dbSaveObject(key, objectValue);
+        }
         restoredKeys.add(key);
       }
 

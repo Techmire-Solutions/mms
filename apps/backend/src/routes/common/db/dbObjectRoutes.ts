@@ -143,7 +143,11 @@ export const dbObjectRoutes: FastifyPluginAsync = async (fastify) => {
       // append left no row in the chain and only a log line behind.
       if (tenant) {
         await withTenant(tenant, async (tx) => {
-          await persistObject(key, objectValueToSave);
+          // global_settings/branding persist to the workspaces typed columns below;
+          // their legacy document-store copies are no longer written.
+          if (!SELF_MANAGED_OBJECT_KEYS.has(key)) {
+            await persistObject(key, objectValueToSave);
+          }
 
           if (AUDITED_OBJECTS.has(key)) {
             await recordModernAuditEvent(tx, {

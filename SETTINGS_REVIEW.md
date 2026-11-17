@@ -23,9 +23,10 @@
 - ✅ **L5 (branding read scoping)** — resolved: `redactBrandingIdentityForClient` (shared) + `dbObjectRoutes` now return the public + theme subset to non-admin readers.
 - ✅ **L6 (settings tab abstraction)** — resolved: `usePersistedTabState` now accepts an optional `normalize` callback (defaulting to the module-tier migrator); `SettingsPage` passes an identity function, so settings section ids no longer route through `normalizeModuleTierTabId`.
 
-- ✅ **B1 (plaintext LLM secrets in doc store)** — fixed: `saveGlobalSettings` and the restore path now write `maskGlobalSettingsForClient(settings)` to the document store; strengthened `globalSettingsMasking.test.ts`.
+- ✅ **B1 (plaintext LLM secrets in doc store)** — resolved (superseded by B4): the doc-store copy is no longer written at all, so no plaintext/masked copy exists.
 - ✅ **B2 (missing `whatsapp_notifications` column)** — fixed: added the column to `workspaces` (schema + `ALL_WORKSPACE_COLUMNS` + repository read/write) with forward-only migration `0263_workspaces_whatsapp_notifications`; added `workspaceSettingsRepository.test.ts`.
-- ⏳ **B3, B4** — advisory (fail-open reads, vestigial dual-write); not actioned.
+- ✅ **B4 (vestigial dual-write)** — cleaned: removed the `objects` document-store writes for `global_settings`/`branding` in `saveGlobalSettings`, `dbObjectRoutes` (tenant branch), `dbSyncRestoreService`, and the onboarding `authService` path. Typed `workspaces` columns are now the sole store; apex onboarding branding still uses the doc store.
+- ⏳ **B3** — advisory (fail-open reads); not actioned.
 
 All original frontend/shared findings (H1, M1, M2, L1–L6) are resolved; backend B1/B2 are now fixed.
 

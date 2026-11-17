@@ -12,7 +12,6 @@ import {
   getWorkspaceGlobalSettings,
   upsertWorkspaceGlobalSettings as upsertWorkspaceGlobalSettingsRepo,
 } from "../db/repositories/workspaceRepository.js";
-import { saveObject } from "../db/database.js";
 import { redisDel, redisKeys } from "../lib/redis.js";
 import { getOrSetMultiTier, invalidateMultiTierCache } from "../lib/cache/index.js";
 
@@ -144,9 +143,6 @@ export async function saveGlobalSettings(
   });
   settings = { ...settings, llmConfigs };
   await upsertWorkspaceGlobalSettingsRepo(tenant, settings);
-  // The document-store copy is legacy (reads prefer the typed columns) — store it
-  // client-safe so LLM secrets never sit in `objects` in plaintext.
-  await saveObject("global_settings", maskGlobalSettingsForClient(settings));
   await invalidateGlobalSettingsCache(tenant);
 }
 
