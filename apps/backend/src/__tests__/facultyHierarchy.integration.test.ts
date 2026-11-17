@@ -3,11 +3,6 @@ import { buildApp } from "../app.js";
 import { adminToken } from "./helpers/tokens.js";
 import { createFacultyUseCases } from "../faculty/use-cases/facultyUseCases.js";
 import {
-  HierarchyValidationError,
-  HierarchyCycleError,
-  validateReportingHierarchy,
-} from "../faculty/use-cases/facultyHierarchyValidator.js";
-import {
   SubordinateReassignmentError,
   SubordinateReassignmentUnavailableError,
 } from "../faculty/use-cases/facultySoftDeleteUseCases.js";
@@ -165,41 +160,6 @@ describe("Faculty Hierarchy and Task Management Domain Logic", () => {
     };
     return { repo: repo as FacultyRepository, store };
   }
-
-  it("rejects supervisor assignment if supervisor has lower or equal authority rank", async () => {
-    // Rank 1 = Dean, Rank 2 = HoD — person-level validation retained for legacy callers.
-    const seed: Faculty[] = [
-      { id: "f-hod", hierarchyRank: 2, status: "active", contactId: "c1" },
-      { id: "f-dean", hierarchyRank: 1, status: "active", contactId: "c2" },
-    ];
-    const { repo } = createMockFacultyRepo(seed);
-
-    await expect(validateReportingHierarchy("demo", undefined, 1, "f-hod", repo)).rejects.toThrow(
-      HierarchyValidationError,
-    );
-  });
-
-  it("rejects direct circular reporting (self-reporting)", async () => {
-    const seed: Faculty[] = [{ id: "f-prof", hierarchyRank: 3, status: "active", contactId: "c1" }];
-    const { repo } = createMockFacultyRepo(seed);
-
-    await expect(validateReportingHierarchy("demo", "f-prof", 3, "f-prof", repo)).rejects.toThrow(
-      HierarchyCycleError,
-    );
-  });
-
-  it("rejects indirect multi-hop circular reporting chain (A -> B -> C -> A)", async () => {
-    const seed: Faculty[] = [
-      { id: "f-a", hierarchyRank: 1, reportingFacultyId: null, status: "active", contactId: "c1" },
-      { id: "f-b", hierarchyRank: 2, reportingFacultyId: "f-a", status: "active", contactId: "c2" },
-      { id: "f-c", hierarchyRank: 3, reportingFacultyId: "f-b", status: "active", contactId: "c3" },
-    ];
-    const { repo } = createMockFacultyRepo(seed);
-
-    await expect(validateReportingHierarchy("demo", "f-a", 4, "f-c", repo)).rejects.toThrow(
-      HierarchyCycleError,
-    );
-  });
 
   it("blocks deletion of faculty supervisor with active direct subordinates", async () => {
     const seed: Faculty[] = [

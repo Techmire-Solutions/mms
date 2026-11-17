@@ -19,6 +19,7 @@ import {
   closeAssignment,
   softDeleteFacultyAssignment,
 } from "../../../faculty/use-cases/facultyCatalogUseCases.js";
+import { broadcastCollection } from "../../../lib/livePush.js";
 
 export {
   handleGetSubordinates,
@@ -142,6 +143,7 @@ export async function handleSaveAssignment({
     await reconcileFacultyContactsByFacultyIds(String(tenantId), [facultyId], {
       actorId: user.id,
     });
+    await broadcastCollection("faculty");
     const saved = await findFacultyAssignmentById(String(tenantId), id);
     if (!saved) {
       return {
@@ -192,6 +194,7 @@ export async function handleCloseAssignment({
     await reconcileFacultyContactsByFacultyIds(String(tenantId), [facultyId], {
       actorId: user.id,
     });
+    await broadcastCollection("faculty");
     return { status: 200 as const, body: { success: true as const } };
   } catch (error: unknown) {
     request.log.error({ err: error }, "Failed to close faculty assignment");
@@ -228,6 +231,7 @@ export async function handleDeleteAssignment({
     await reconcileFacultyContactsByFacultyIds(String(tenantId), [facultyId], {
       actorId: user.id,
     });
+    await broadcastCollection("faculty");
     return { status: 200 as const, body: { success: true as const } };
   } catch (error: unknown) {
     const mapped = assignmentErrorResponse(error, "Failed to delete faculty assignment");

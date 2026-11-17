@@ -54,10 +54,11 @@ export async function syncFacultyEmployDesignationsTx(
   subdomain: string,
   employmentId: string,
   facultyMember: FacultyMember,
+  today?: string,
 ): Promise<string | null> {
   const raw = facultyMember.employDesignations;
   if (!Array.isArray(raw) || raw.length === 0) {
-    return upsertFacultyEmployDesignationTx(tx, subdomain, employmentId, facultyMember);
+    return upsertFacultyEmployDesignationTx(tx, subdomain, employmentId, facultyMember, today);
   }
   const rows = raw.filter(isWriteRow).filter((row) => row.designationId.trim().length > 0);
   if (rows.length === 0) return null;
@@ -82,13 +83,13 @@ export async function syncFacultyEmployDesignationsTx(
     const slice: FacultyMember = {
       ...facultyMember,
       designationId: row.designationId.trim(),
-      designationStartDate: row.designationStartDate ?? isoToday(),
+      designationStartDate: row.designationStartDate ?? today ?? isoToday(),
       designationEndDate: row.designationEndDate ?? null,
       employDesignationStatus: status,
       profileStatus: status,
       employDesignationId: row.employDesignationId ?? null,
     };
-    const id = await upsertFacultyEmployDesignationTx(tx, subdomain, employmentId, slice);
+    const id = await upsertFacultyEmployDesignationTx(tx, subdomain, employmentId, slice, today);
     if (!id) continue;
     keptIds.push(id);
     if (status === "active" && !row.designationEndDate) {

@@ -118,13 +118,13 @@ export async function restoreFacultyDesignation(
       current.departmentId &&
       !(await selectDepartmentById(tx, subdomain, current.departmentId))
     ) {
-      throw new Error("Restore the department first");
+      throw new FacultyCatalogConflictError("Restore the department first");
     }
     if (
       current.parentDesignationId &&
       !(await selectDesignationById(tx, subdomain, current.parentDesignationId))
     ) {
-      throw new Error("Restore the parent designation first");
+      throw new FacultyCatalogConflictError("Restore the parent designation first");
     }
     const now = new Date();
     await tx

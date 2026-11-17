@@ -33,6 +33,7 @@ export async function upsertFacultyEmployDesignationTx(
   subdomain: string,
   employmentId: string,
   facultyMember: FacultyMember,
+  today?: string,
 ): Promise<string | null> {
   const designationId =
     typeof facultyMember.designationId === "string" ? facultyMember.designationId.trim() : "";
@@ -79,7 +80,7 @@ export async function upsertFacultyEmployDesignationTx(
   const startDate =
     typeof facultyMember.designationStartDate === "string" && facultyMember.designationStartDate
       ? facultyMember.designationStartDate
-      : isoToday();
+      : (today ?? isoToday());
   const endDate =
     typeof facultyMember.designationEndDate === "string" ? facultyMember.designationEndDate : null;
   const status = resolveEmployDesignationStatus(facultyMember);

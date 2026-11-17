@@ -110,6 +110,49 @@ describe("faculty write contact-profile SSOT", () => {
     await app.close();
   });
 
+  it("POST /api/faculty threads the acting user id as the audit actor", async () => {
+    mockCreateFaculty.mockImplementation(async (teacher: Record<string, unknown>) => ({
+      record: teacher,
+      restored: false,
+    }));
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/faculty",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+      },
+      payload: { contactId: "c-301", status: "active", designationId: "des-1" },
+    });
+    expect(res.statusCode).toBe(201);
+    const [, options] = mockCreateFaculty.mock.calls[0] ?? [];
+    expect(options).toMatchObject({ actorId: expect.any(String) });
+    await app.close();
+  });
+
+  it("PUT /api/faculty/:id threads the acting user id as the audit actor", async () => {
+    mockUpdateFacultyById.mockImplementation(
+      async (id: string, teacher: Record<string, unknown>) => ({ ...teacher, id }),
+    );
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/faculty/f-1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+      },
+      payload: { specialization: "Hifz" },
+    });
+    expect(res.statusCode).toBe(200);
+    const [, , options] = mockUpdateFacultyById.mock.calls[0] ?? [];
+    expect(options).toMatchObject({ actorId: expect.any(String) });
+    await app.close();
+  });
+
   it("POST /api/faculty returns 200 when the create restored an archived faculty member", async () => {
     mockCreateFaculty.mockImplementation(async (teacher: Record<string, unknown>) => ({
       record: { ...teacher, id: "t-archived" },

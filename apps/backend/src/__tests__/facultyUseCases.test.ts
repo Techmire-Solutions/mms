@@ -21,6 +21,10 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 
+vi.mock("../lib/workspaceDay.js", () => ({
+  workspaceTodayIso: vi.fn(async () => `${new Date().getFullYear()}-01-01`),
+}));
+
 vi.mock("../faculty/use-cases/facultyHydrateUseCases.js", () => ({
   hydrateFacultyFromContacts: async (_tenant: unknown, rows: unknown) => rows,
 }));
@@ -229,6 +233,46 @@ describe("createFacultyUseCases (DI composition root)", () => {
       { createOnly: true },
     );
     expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
+  });
+
+  it("createFaculty stamps createdBy/updatedBy and attributes the audit row from options.actorId", async () => {
+    const { repo } = createFakeRepo();
+    const useCases = createFacultyUseCases(repo);
+
+    const { record } = await useCases.createFaculty(
+      { contactId: "c-new", status: "active", designationId: "des-1" },
+      { actorId: "u-admin" },
+    );
+
+    expect(record.createdBy).toBe("u-admin");
+    expect(record.updatedBy).toBe("u-admin");
+    expect(recordModernAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        realUserId: "u-admin",
+        newState: expect.objectContaining({ contactId: "c-new" }),
+      }),
+    );
+  });
+
+  it("updateFacultyById stamps updatedBy and attributes the audit row from options.actorId", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeFaculty("a"));
+    const useCases = createFacultyUseCases(repo);
+
+    const updated = await useCases.updateFacultyById(
+      "a",
+      { specialization: "Hifz" },
+      { actorId: "u-editor" },
+    );
+
+    expect(updated?.updatedBy).toBe("u-editor");
+    expect(recordModernAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        realUserId: "u-editor",
+        oldState: expect.objectContaining({ status: "active" }),
+        newState: expect.objectContaining({ specialization: "Hifz" }),
+      }),
+    );
   });
 
   it("createFaculty defers tag reconcile and broadcast when a batch collector is passed", async () => {

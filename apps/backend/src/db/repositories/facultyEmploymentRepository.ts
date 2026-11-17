@@ -42,9 +42,10 @@ export function employmentWriteValues(
   subdomain: string,
   facultyMember: FacultyMember,
   existingId?: string | null,
+  today = isoToday(),
 ): typeof facultyEmployments.$inferInsert {
   const flat = flattenFacultyEmploymentFields(facultyMember);
-  const employmentStartDate = flat.employmentStartDate ?? flat.joinDate ?? isoToday();
+  const employmentStartDate = flat.employmentStartDate ?? flat.joinDate ?? today;
   const status = isFacultyStatus(flat.status) ? flat.status : DEFAULT_FACULTY_STATUS;
   const contactId = String(flat.contactId ?? "").trim();
   return {
@@ -71,6 +72,7 @@ export async function upsertFacultyEmploymentTx(
   tx: AppDb,
   subdomain: string,
   facultyMember: FacultyMember,
+  today?: string,
 ): Promise<string> {
   const flat = flattenFacultyEmploymentFields(facultyMember);
   const contactId = String(flat.contactId ?? "").trim();
@@ -106,7 +108,7 @@ export async function upsertFacultyEmploymentTx(
     existingId = byContact[0]?.id ?? null;
   }
 
-  const values = employmentWriteValues(subdomain, flat, existingId);
+  const values = employmentWriteValues(subdomain, flat, existingId, today);
   const {
     id: _id,
     workspaceSubdomain: _ws,

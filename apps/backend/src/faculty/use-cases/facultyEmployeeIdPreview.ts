@@ -3,6 +3,7 @@ import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/sh
 import { facultyEmployments, facultySetupConfig } from "../../db/schema/faculty.js";
 import { withTenantRead } from "../../db/tenant-context.js";
 import { logger } from "../../lib/logger.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 export interface NextEmployeeIdResult {
   employeeId: string;
@@ -29,7 +30,7 @@ export async function previewNextFacultyEmployeeId(
   tenant: string,
 ): Promise<EmployeeIdPreviewResult> {
   const subdomain = tenant.trim().toLowerCase();
-  const currentYear = new Date().getFullYear();
+  const currentYear = Number((await workspaceTodayIso(subdomain)).slice(0, 4));
   const fallbackConfig = {
     prefix: DEFAULT_FACULTY_SETTINGS.employeeIdPrefix ?? "FAC",
     yearFormat: (DEFAULT_FACULTY_SETTINGS.employeeIdYearFormat ?? "YYYY") as "YYYY" | "YY" | "NONE",

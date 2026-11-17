@@ -4,10 +4,12 @@ Governs staff seniority, reporting lines, and temporal appointment constraints i
 
 ## 1. Hierarchy Ranking & Seniority Rules
 
-Enforced by `apps/backend/src/faculty/use-cases/facultyHierarchyValidator.ts`:
-- **Seniority Rank Direction:** Lower rank numbers indicate higher seniority (e.g., Rank 1 = Principal, Rank 5 = Head of Department, Rank 10 = Lecturer).
-- **Supervisory Validation:** A faculty member's reporting supervisor (`reportingFacultyId`) must hold a strictly lower rank number (`supervisorRank < hierarchyRank`).
-- **Circular Hierarchy Prohibition:** A faculty member can never report to themselves or to any direct or indirect subordinate in their reporting tree. Checked via recursive CTE in `repo.findAncestorChain()`.
+Reporting hierarchy is **derived**, not written: a faculty member's supervisor is
+inferred from the designation tree (`parent_designation_id`), and `reportingFacultyId`
+is a read-only projection (soft-stopped on write). Rank and cycle prevention are
+enforced in `apps/backend/src/db/repositories/facultyDesignationValidation.ts`:
+- **Seniority Rank Direction:** Lower rank numbers indicate higher seniority (e.g., Rank 1 = Principal, Rank 5 = Head of Department, Rank 10 = Lecturer). `hierarchy_rank` is derived from the parent-chain depth.
+- **Circular Hierarchy Prohibition:** a designation can never be its own ancestor — checked via a recursive CTE (`WITH RECURSIVE`) in `validateFacultyDesignationLink()`.
 
 ## 2. Temporal Appointment Constraints
 

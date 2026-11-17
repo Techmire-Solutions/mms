@@ -11,6 +11,7 @@ const mockCheckAssignmentCycleSafe = vi.fn();
 const mockFindAssignmentSubordinateTree = vi.fn();
 const mockFindAssignmentManagerChain = vi.fn();
 const mockAuditFaculty = vi.fn();
+const mockBroadcastCollection = vi.fn();
 
 vi.mock("../db/repositories/facultyAssignmentRepository.js", () => ({
   findFacultyAssignmentById: (...args: unknown[]) => mockFindFacultyAssignmentById(...args),
@@ -28,6 +29,10 @@ vi.mock("../db/repositories/facultyAssignmentHierarchyRepository.js", () => ({
 
 vi.mock("../routes/tenant/faculty/facultyRouteHelpers.js", () => ({
   auditFaculty: (...args: unknown[]) => mockAuditFaculty(...args),
+}));
+
+vi.mock("../lib/livePush.js", () => ({
+  broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 
 import {
@@ -128,6 +133,7 @@ describe("facultyAssignmentRouteHandlers", () => {
         expect.objectContaining({ updatedBy: "usr-admin" }),
       );
       expect(mockAuditFaculty).not.toHaveBeenCalled();
+      expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
     });
   });
 
@@ -169,6 +175,7 @@ describe("facultyAssignmentRouteHandlers", () => {
       } as never);
       expect(res.status).toBe(200);
       expect(mockCloseAssignment).toHaveBeenCalledWith("demo", "asgn-1", "2025-01-01", "usr-admin");
+      expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
     });
   });
 
@@ -186,6 +193,7 @@ describe("facultyAssignmentRouteHandlers", () => {
         "usr-admin",
         "User deleted",
       );
+      expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
     });
 
     it("maps a domain conflict (primary appointment) to 409 instead of a 500", async () => {

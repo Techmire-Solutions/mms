@@ -5,6 +5,8 @@
 
 /** Raised when a catalog write collides with an existing live row (maps to HTTP 409). */
 export class FacultyCatalogConflictError extends Error {
+  readonly statusCode = 409;
+  readonly type = "conflict";
   constructor(message: string) {
     super(message);
     this.name = "FacultyCatalogConflictError";

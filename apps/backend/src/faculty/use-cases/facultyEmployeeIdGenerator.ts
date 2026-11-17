@@ -3,6 +3,7 @@ import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/sh
 import { facultyEmployments, facultySetupConfig } from "../../db/schema/faculty.js";
 import { withTenant, type TenantTransaction } from "../../db/tenant-context.js";
 import type { NextEmployeeIdResult } from "./facultyEmployeeIdService.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 /**
  * Atomically generates the next faculty employee ID using SELECT ... FOR UPDATE on faculty_setup_config.
@@ -13,10 +14,9 @@ export async function generateNextFacultyEmployeeId(
   txClient?: TenantTransaction,
 ): Promise<NextEmployeeIdResult> {
   const subdomain = tenant.trim().toLowerCase();
+  const currentYear = Number((await workspaceTodayIso(subdomain)).slice(0, 4));
 
   const executeAtomicIncrement = async (tx: TenantTransaction): Promise<NextEmployeeIdResult> => {
-    const currentYear = new Date().getFullYear();
-
     if (!tx || typeof tx.select !== "function") {
       const year = currentYear;
       const employeeId = formatDeterministicEmployeeId(

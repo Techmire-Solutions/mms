@@ -12,6 +12,10 @@ vi.mock("../services/outboxEventService.js", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../lib/workspaceDay.js", () => ({
+  workspaceTodayIso: vi.fn().mockResolvedValue("2026-11-17"),
+}));
+
 import { persistFacultyTx } from "../db/repositories/facultyRepositoryColumns.js";
 
 describe("persistFacultyTx employment profile writes", () => {

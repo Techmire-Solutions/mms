@@ -349,6 +349,9 @@ const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
   "POST /api/faculty/designations/:id/restore": "delete",
   "DELETE /api/faculty/departments/:id": "delete",
   "POST /api/faculty/departments/:id/restore": "delete",
+  // Catalog saves require setup-write (handlers gate on `canManageFacultySetup`).
+  "PUT /api/faculty/designations/:id": "setupWrite",
+  "PUT /api/faculty/departments/:id": "setupWrite",
   "DELETE /api/faculty/:facultyId/assignments/:id": "delete",
   // Tasks archive/restore require `tasks.delete`; the status route is
   // handler-owned (`tasks.write` OR `tasks.complete`).
@@ -364,6 +367,8 @@ const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
   "POST /api/contacts/:id/restore": "delete",
   "POST /api/contacts/bulk-delete": "delete",
   "POST /api/contacts/bulk-restore": "delete",
+  // Duplicate-check is a read-only existence probe (matches students analog).
+  "POST /api/contacts/duplicate-check": "read",
   // Sessions archive/restore require `sessions.delete`; the method default would let an
   // enrollment-writer role archive a session.
   "DELETE /api/sessions/:id": "delete",

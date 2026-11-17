@@ -7,6 +7,7 @@ import {
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { FacultyCatalogConflictError } from "../../../faculty/errors.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
+import { isUniqueViolation } from "../../../lib/pgErrors.js";
 
 export type CatalogForbidden = { status: 403; body: { type: "forbidden"; message: string } };
 export type CatalogAuth = { user: User; tenantId: string };
@@ -44,6 +45,5 @@ export const canArchiveFacultySetup = (user: User) =>
 /** True when the error is a catalog uniqueness / dependency conflict (HTTP 409). */
 export function isCatalogConflict(error: unknown): boolean {
   if (error instanceof FacultyCatalogConflictError) return true;
-  const message = error instanceof Error ? error.message : "";
-  return message.includes("duplicate key") || message.includes("unique");
+  return isUniqueViolation(error);
 }

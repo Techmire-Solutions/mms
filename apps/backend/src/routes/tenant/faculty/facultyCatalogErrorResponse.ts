@@ -1,5 +1,6 @@
 import type { FastifyRequest } from "fastify";
 import { isCatalogConflict } from "./facultyCatalogRouteAuth.js";
+import { isUniqueViolation } from "../../../lib/pgErrors.js";
 
 export interface CatalogErrorResponse {
   status: 400 | 404 | 409 | 500;
@@ -22,6 +23,14 @@ export function catalogErrorResponse(
   logMessage: string,
   fallbackMessage: string,
 ): CatalogErrorResponse {
+  // A raw unique violation (race past the pre-check) must map to a clean 409 —
+  // never leak the driver's `duplicate key … violates unique constraint` text.
+  if (isUniqueViolation(error)) {
+    return {
+      status: 409,
+      body: { type: "conflict", message: "This entry conflicts with an existing record" },
+    };
+  }
   const message = error instanceof Error ? error.message : fallbackMessage;
   if (isCatalogConflict(error)) return { status: 409, body: { type: "conflict", message } };
 

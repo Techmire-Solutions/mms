@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { formatDeterministicEmployeeId } from "@mms/shared";
 import {
   getFacultySetupConfig,
@@ -9,6 +9,12 @@ import {
   generateNextEmployeeId,
 } from "../faculty/use-cases/facultyEmployeeIdService.js";
 import type { FacultySetupConfigRow } from "../db/schema/faculty.js";
+
+vi.mock("../lib/workspaceDay.js", () => ({
+  workspaceTodayIso: vi.fn(async () => `${new Date().getFullYear()}-01-01`),
+}));
+
+import { workspaceTodayIso } from "../lib/workspaceDay.js";
 
 describe("facultyEmployeeIdService - formatDeterministicEmployeeId", () => {
   it("formats deterministic employee ID with default options", () => {
@@ -200,6 +206,33 @@ describe("facultyEmployeeIdService - DB operations and rollover logic", () => {
     expect(result.employeeId).toBe(expectedId);
     expect(storedConfig.currentSequence).toBe(1);
     expect(storedConfig.lastYear).toBe(currentYear);
+  });
+
+  it("derives the year from the workspace-local day instead of the server clock", async () => {
+    vi.mocked(workspaceTodayIso).mockResolvedValueOnce("2025-01-01");
+    let storedConfig: FacultySetupConfigRow = {
+      workspaceSubdomain: "demo",
+      prefix: "FAC",
+      yearFormat: "YYYY",
+      sequenceDigits: 4,
+      delimiter: "",
+      currentSequence: 999,
+      lastYear: 2024,
+      updatedAt: new Date(),
+    };
+
+    const mockTx = createGeneratorMockTx(
+      () => storedConfig,
+      (patch) => {
+        storedConfig = { ...storedConfig, ...patch };
+      },
+    );
+
+    const result = await generateNextFacultyEmployeeId("demo", mockTx as never);
+
+    expect(result.year).toBe(2025);
+    expect(result.employeeId).toBe("FAC20250001");
+    expect(storedConfig.lastYear).toBe(2025);
   });
 
   it("atomically skips existing employee IDs in faculty_employments and updates currentSequence to the free sequence", async () => {

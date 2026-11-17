@@ -9,6 +9,10 @@ vi.mock("../db/tenant-context.js", () => ({
   withTenantRead: vi.fn(),
 }));
 
+vi.mock("../lib/workspaceDay.js", () => ({
+  workspaceTodayIso: vi.fn(async () => `${new Date().getFullYear()}-01-01`),
+}));
+
 const TENANT = "tenant-faculty-preview";
 const CURRENT_YEAR = new Date().getFullYear();
 
