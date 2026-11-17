@@ -185,6 +185,53 @@ describe("buildDynamicFacultySchema", () => {
     }
   });
 
+  it("accepts employmentContractType, ijazahs, and leaveDetails without strict rejection", () => {
+    const schema = buildDynamicFacultySchema(settings, enabledTabs, fields);
+    const result = schema.safeParse({
+      ...validPayload,
+      employmentContractType: "voluntary",
+      ijazahs: [
+        {
+          id: "ij-1",
+          title: "Hifz Sanad",
+          field: "quran",
+          grantingAuthority: "Darul Uloom",
+        },
+      ],
+      leaveDetails: {
+        isOnLeave: false,
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("transforms empty string employmentContractType to null", () => {
+    const schema = buildDynamicFacultySchema(settings, enabledTabs, fields);
+    const result = schema.safeParse({
+      ...validPayload,
+      employmentContractType: "",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect((result.data as Record<string, unknown>).employmentContractType).toBeNull();
+    }
+  });
+
+  it("maps unseeded system fields such as employmentContractType to their designated tab", () => {
+    const schema = buildDynamicFacultySchema(settings, enabledTabs, fields);
+    const result = schema.safeParse({
+      ...validPayload,
+      employmentContractType: "invalid_contract_type",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const formatted = formatFacultyZodIssues(result.error, {}, fields);
+      const contractError = formatted.find((err) => err.fieldId === "employmentContractType");
+      expect(contractError).toBeDefined();
+      expect(contractError?.tabId).toBe("employment");
+    }
+  });
+
   it("rejects unknown keys via .strict()", () => {
     const schema = buildDynamicFacultySchema(settings, enabledTabs, fields);
     const result = schema.safeParse({
@@ -224,7 +271,14 @@ describe("FACULTY_WRITE_SYSTEM_KEYS", () => {
     for (const key of ["id", "userId", "createdAt", "updatedAt", "createdBy", "updatedBy"]) {
       expect(FACULTY_WRITE_SYSTEM_KEYS).toContain(key);
     }
-    for (const key of ["joinDate", "employmentId", "employDesignations"]) {
+    for (const key of [
+      "joinDate",
+      "employmentId",
+      "employDesignations",
+      "employmentContractType",
+      "ijazahs",
+      "leaveDetails",
+    ]) {
       expect(FACULTY_WRITE_SYSTEM_KEYS).toContain(key);
     }
   });
