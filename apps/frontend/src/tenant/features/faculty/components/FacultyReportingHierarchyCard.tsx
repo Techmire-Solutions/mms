@@ -73,7 +73,7 @@ export function FacultyReportingHierarchyCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onFilterSubordinates(String(faculty.id))}
-                className="min-h-9 px-2.5 text-xs text-primary font-medium gap-1.5 touch-manipulation hover:bg-primary/10 border-primary/30"
+                className="px-2.5 text-xs text-primary font-medium gap-1.5 touch-manipulation hover:bg-primary/10 border-primary/30"
               >
                 <span>{t("faculty.hierarchy.viewTeam")}</span>
                 <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" aria-hidden />
