@@ -1,5 +1,6 @@
 import {
   personalizeMessage,
+  type MessageCategory,
   type StandardMessagingRecipient as MessagingRecipient,
 } from "@mms/shared";
 import { notify } from "@/lib/notify";
@@ -21,6 +22,9 @@ export interface ServerDispatchResult {
 }
 
 type DispatchChannel = "sms" | "whatsapp" | "email";
+
+/** Server dispatch schema caps a single POST at 500 recipients (`messagingDispatchSchemas`). */
+const MAX_DISPATCH_RECIPIENTS = 500;
 
 export function toCompletedRecords(
   recipients: MessagingRecipient[],
@@ -134,7 +138,7 @@ export interface DispatchViaServerGatewayArgs {
   eligibleRecipients: ValidatedMessagingRecipient[];
   message: string;
   subject: string;
-  category: string;
+  category: MessageCategory;
   /**
    * Per-submission key minted by the composer (retry-stable, never derived from
    * the body). The server binds it to the canonical body digest.
@@ -145,7 +149,7 @@ export interface DispatchViaServerGatewayArgs {
     mutateAsync: (args: {
       recipients: { id: string | number; phone: string; name: string }[];
       message: string;
-      category?: string;
+      category?: MessageCategory;
       idempotencyKey: string;
     }) => Promise<ServerDispatchResult>;
   };
@@ -154,7 +158,7 @@ export interface DispatchViaServerGatewayArgs {
       recipients: { id: string | number; email: string; name: string }[];
       subject: string;
       message: string;
-      category?: string;
+      category?: MessageCategory;
       idempotencyKey: string;
     }) => Promise<ServerDispatchResult>;
   };
@@ -162,7 +166,7 @@ export interface DispatchViaServerGatewayArgs {
     mutateAsync: (args: {
       recipients: { id: string | number; phone: string; name: string }[];
       message: string;
-      category?: string;
+      category?: MessageCategory;
       idempotencyKey: string;
     }) => Promise<ServerDispatchResult>;
   };
@@ -187,6 +191,11 @@ export async function dispatchViaServerGateway(args: DispatchViaServerGatewayArg
     onClose,
     t,
   } = args;
+
+  if (eligibleRecipients.length > MAX_DISPATCH_RECIPIENTS) {
+    notify.error(t("messaging.tooManyRecipients", { max: String(MAX_DISPATCH_RECIPIENTS) }));
+    return;
+  }
 
   let result: ServerDispatchResult;
   if (channel === "sms") {

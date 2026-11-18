@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { isOverlayOpen } from "@/lib/ui/keyboardGuards";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { Message } from "@mms/shared";
 
 /** Class used to locate the keyboard-focused row/card for scroll-into-view. */
@@ -18,6 +19,7 @@ export function useMessagingWorkTierKeyboardNav({
 }: UseMessagingWorkTierKeyboardNavParams): { focusedIndex: number } {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const [previousLogs, setPreviousLogs] = useState(logs);
+  const reducedMotion = useReducedMotion();
 
   // Any change to the visible log set invalidates the row index - reset during render.
   if (previousLogs !== logs) {
@@ -30,8 +32,8 @@ export function useMessagingWorkTierKeyboardNav({
     if (focusedIndex < 0) return;
     document
       .querySelector(`.${MESSAGING_KB_FOCUS_CLASS}`)
-      ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [focusedIndex]);
+      ?.scrollIntoView({ block: "nearest", behavior: reducedMotion ? "auto" : "smooth" });
+  }, [focusedIndex, reducedMotion]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {

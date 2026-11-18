@@ -29,7 +29,6 @@ const MessageComposer = lazy(() => import("@/tenant/components/messaging/TenantM
 export interface MessagingPageViewProps {
   canRead: boolean;
   canWrite: boolean;
-  canViewSetup: boolean;
   canEditSetup: boolean;
   canClearLogs: boolean;
   canRestoreLogs: boolean;

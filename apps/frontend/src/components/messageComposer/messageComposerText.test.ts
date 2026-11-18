@@ -132,7 +132,7 @@ describe("messageComposerText", () => {
         opening: false,
         useServerGateway: false,
       }),
-    ).toBe("messaging.openAllWhatsapp (2)");
+    ).toBe('messaging.openAllWhatsappCount:{"count":"2"}');
   });
 
   it("labels the primary action for the server gateway", () => {

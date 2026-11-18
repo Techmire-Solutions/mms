@@ -86,9 +86,13 @@ export const MessagingSetupTier = function MessagingSetupTier({
     <ModuleTierMotion tier="setup">
       <ErrorBoundary>
         <div className="space-y-3">
-          {/* View-only roles still browse presets/preferences — the notice sits
-              above the content instead of replacing it. */}
-          {!canEditSetup ? <SetupReadOnlyMessage title={t("messaging.setup.readOnly")} /> : null}
+          {/* Setup is split across two sub-tabs with different permissions: templates
+              are messaging content (`canWrite`), preferences/integrations are setup
+              (`canEditSetup`). Show the read-only notice only when the viewer can edit
+              neither. */}
+          {!canEditSetup && !canWrite ? (
+            <SetupReadOnlyMessage title={t("messaging.setup.readOnly")} />
+          ) : null}
           {setupTabs.length > 1 && (
             <SubTabBar tabs={setupTabs} value={subTabs.sub} onChange={subTabs.handleSubTabChange} />
           )}
@@ -136,9 +140,7 @@ export const MessagingSetupTier = function MessagingSetupTier({
               />
             </div>
           )}
-          {subTabs.sub === "preferences" && (
-            <MessagingSetupPreferences canWrite={canEditSetup && canWrite} />
-          )}
+          {subTabs.sub === "preferences" && <MessagingSetupPreferences canWrite={canEditSetup} />}
 
           <ConfirmAlertDialog
             open={subTabs.discardConfirmOpen}

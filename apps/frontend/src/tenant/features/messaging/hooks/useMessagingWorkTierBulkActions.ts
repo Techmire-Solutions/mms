@@ -1,5 +1,9 @@
 import { useCallback, useState } from "react";
-import type { Message, StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type {
+  Message,
+  MessagingStatusFilter,
+  StandardMessagingRecipient as MessagingRecipient,
+} from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";
 import { exportMessagingLogsFiltered } from "../lib/messagingReportsExport";
@@ -9,7 +13,7 @@ interface UseMessagingWorkTierBulkActionsParams {
   channel: "all" | "sms" | "whatsapp" | "email";
   category: string;
   debouncedSearch: string;
-  status: "all" | "sent" | "delivered" | "failed" | "skipped";
+  status: MessagingStatusFilter;
   queryStartDate: string | undefined;
   endDate: string;
   t: TranslationFunction;

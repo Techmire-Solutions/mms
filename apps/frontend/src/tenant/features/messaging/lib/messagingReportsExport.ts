@@ -1,4 +1,4 @@
-import type { MessagingCsvExportQueryDto } from "@mms/shared";
+import type { MessagingCsvExportQueryDto, MessagingStatusFilter } from "@mms/shared";
 import { downloadBackgroundJobArtifact } from "@/lib/backgroundJobs/backgroundJobApi";
 import { startServerMessagingCsvExport } from "@/lib/backgroundJobs/startServerMessagingCsvExport";
 import { notify } from "@/lib/notify";
@@ -8,7 +8,7 @@ interface ExportMessagingLogsOptions {
   channel: "all" | "sms" | "whatsapp" | "email";
   category: string;
   debouncedSearch: string;
-  status: "all" | "sent" | "delivered" | "failed" | "skipped";
+  status: MessagingStatusFilter;
   startDate?: string;
   endDate?: string;
   t: TranslationFunction;

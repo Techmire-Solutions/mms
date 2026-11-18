@@ -142,7 +142,7 @@ export function MessagingGatewayStatusOverview({
                 onCheckedChange={(val) => void handleToggleChannel("smsNotifications", val)}
                 disabled={!canWrite || toggling === "smsNotifications"}
               />
-              <SmsIntegrationPanel />
+              <SmsIntegrationPanel canWrite={canWrite} />
             </div>
           )}
 
@@ -156,7 +156,7 @@ export function MessagingGatewayStatusOverview({
                 onCheckedChange={(val) => void handleToggleChannel("whatsAppNotifications", val)}
                 disabled={!canWrite || toggling === "whatsAppNotifications"}
               />
-              <WhatsAppIntegrationPanel />
+              <WhatsAppIntegrationPanel canWrite={canWrite} />
             </div>
           )}
 
@@ -170,7 +170,7 @@ export function MessagingGatewayStatusOverview({
                 onCheckedChange={(val) => void handleToggleChannel("emailNotifications", val)}
                 disabled={!canWrite || toggling === "emailNotifications"}
               />
-              <EmailIntegrationPanel />
+              <EmailIntegrationPanel canWrite={canWrite} />
             </div>
           )}
         </div>

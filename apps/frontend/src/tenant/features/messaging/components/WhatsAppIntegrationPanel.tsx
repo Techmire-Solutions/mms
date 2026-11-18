@@ -10,7 +10,11 @@ import { useWhatsAppIntegrationPanel } from "../hooks/useWhatsAppIntegrationPane
  * Multi-provider WhatsApp Business setup (Meta Cloud API, Twilio, Infobip).
  * Only mounted by parent while WhatsApp Notifications is enabled.
  */
-export default function WhatsAppIntegrationPanel(): React.JSX.Element {
+export default function WhatsAppIntegrationPanel({
+  canWrite = true,
+}: {
+  canWrite?: boolean;
+}): React.JSX.Element {
   const {
     t,
     providers,
@@ -43,6 +47,8 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
       lastError={actionError ?? form.lastError}
       saving={saving}
       testing={testing}
+      saveDisabled={!canWrite}
+      testDisabled={!canWrite}
       saveLabel={t("whatsapp.saveConnection")}
       testLabel={t("whatsapp.sendTest")}
       onSave={() => void handleSave()}
@@ -57,6 +63,7 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
             value={testPhone}
             onChange={(event) => setTestPhone(event.target.value)}
             placeholder="+923001234567"
+            disabled={!canWrite}
           />
         </div>
       }
@@ -68,6 +75,7 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
           name="providerId"
           value={form.providerId}
           onChange={(v) => setField("providerId", v as WhatsappProviderId)}
+          disabled={!canWrite}
           options={providers.map((preset) => ({
             value: preset.id,
             label: t(preset.labelKey as AppTranslationKey),
@@ -86,6 +94,7 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
           value={form.accountId}
           onChange={(event) => setField("accountId", event.target.value)}
           placeholder={t("whatsapp.accountIdPlaceholder")}
+          disabled={!canWrite}
         />
       </div>
 
@@ -97,6 +106,7 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
           value={form.senderId}
           onChange={(event) => setField("senderId", event.target.value)}
           placeholder={selectedPreset.senderPlaceholder}
+          disabled={!canWrite}
         />
       </div>
 
@@ -109,6 +119,7 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
             value={form.phoneNumberId ?? ""}
             onChange={(event) => setField("phoneNumberId", event.target.value)}
             placeholder={t("whatsapp.phoneNumberIdPlaceholder")}
+            disabled={!canWrite}
           />
         </div>
       )}
@@ -120,6 +131,7 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
           name="whatsappAccountSecret"
           value={accountSecret}
           onChange={(event) => setAccountSecret(event.target.value)}
+          disabled={!canWrite}
           placeholder={
             form.hasCredentials
               ? t("whatsapp.accountSecretPlaceholderSaved")
@@ -138,6 +150,7 @@ export default function WhatsAppIntegrationPanel(): React.JSX.Element {
             value={form.apiBaseUrl ?? ""}
             onChange={(event) => setField("apiBaseUrl", event.target.value)}
             placeholder={selectedPreset.baseUrlPlaceholder}
+            disabled={!canWrite}
           />
         </div>
       )}

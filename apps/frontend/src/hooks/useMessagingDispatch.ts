@@ -1,4 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
+import type {
+  MessageCategory,
+  MessagingEmailDispatchDto,
+  MessagingSmsDispatchDto,
+  MessagingWhatsAppDispatchDto,
+} from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 import { invalidateMessagingQueries } from "@/hooks/useMessaging";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,6 +36,11 @@ interface DispatchKeyedPayload {
   idempotencyKey: string;
 }
 
+/** Shared dispatch DTO with server-owned fields dropped and `category` optional. */
+type DispatchDto<T> = Omit<T, "idempotencyKey" | "queued" | "category"> & {
+  category?: MessageCategory;
+};
+
 /** Server-gateway send mutations (sms/whatsapp/email) shared by the composer. */
 export function useMessagingDispatchMutations() {
   const queryClient = useQueryClient();
@@ -38,18 +49,7 @@ export function useMessagingDispatchMutations() {
   const onError = (error: unknown) => notifyApiFailure(error, t as TranslationFunction);
 
   const dispatchServerSms = useMutation({
-    mutationFn: async (
-      payload: {
-        recipients: Array<{
-          id: string | number;
-          phone: string;
-          name?: string;
-          [key: string]: unknown;
-        }>;
-        message: string;
-        category?: string;
-      } & DispatchKeyedPayload,
-    ) => {
+    mutationFn: async (payload: DispatchDto<MessagingSmsDispatchDto> & DispatchKeyedPayload) => {
       const { idempotencyKey, ...rest } = payload;
       const normalized = {
         ...rest,
@@ -73,19 +73,7 @@ export function useMessagingDispatchMutations() {
   });
 
   const dispatchServerEmail = useMutation({
-    mutationFn: async (
-      payload: {
-        recipients: Array<{
-          id: string | number;
-          email: string;
-          name?: string;
-          [key: string]: unknown;
-        }>;
-        subject: string;
-        message: string;
-        category?: string;
-      } & DispatchKeyedPayload,
-    ) => {
+    mutationFn: async (payload: DispatchDto<MessagingEmailDispatchDto> & DispatchKeyedPayload) => {
       const { idempotencyKey, ...rest } = payload;
       const normalized = {
         ...rest,
@@ -110,16 +98,7 @@ export function useMessagingDispatchMutations() {
 
   const dispatchServerWhatsApp = useMutation({
     mutationFn: async (
-      payload: {
-        recipients: Array<{
-          id: string | number;
-          phone: string;
-          name?: string;
-          [key: string]: unknown;
-        }>;
-        message: string;
-        category?: string;
-      } & DispatchKeyedPayload,
+      payload: DispatchDto<MessagingWhatsAppDispatchDto> & DispatchKeyedPayload,
     ) => {
       const { idempotencyKey, ...rest } = payload;
       const normalized = {
