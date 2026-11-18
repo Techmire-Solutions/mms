@@ -32,6 +32,19 @@ beforeAll(async () => {
   dbAvailable = await pingDatabase();
   if (!dbAvailable) return;
   await applyDrizzleMigrations();
+
+  const tx = await beginLongLivedTenantTransaction(null, { allowGlobal: true });
+  try {
+    await tx.tx.execute(sql`
+      CREATE EXTENSION IF NOT EXISTS pg_trgm;
+      CREATE INDEX IF NOT EXISTS message_logs_sent_at_brin_idx ON message_logs USING brin (sent_at);
+      CREATE INDEX IF NOT EXISTS contacts_name_trgm_idx ON contacts USING gin (name gin_trgm_ops);
+    `);
+    await tx.commit();
+  } catch (error) {
+    await tx.rollback().catch(() => undefined);
+    throw error;
+  }
 });
 
 afterAll(async () => {
