@@ -66,6 +66,7 @@ export function ContactDetailPhonesSection({
               key={`phone-${phone.number}-${phoneIndex}`}
               label={resolvePhoneLabel(phone.label, phoneLabels, t)}
               value={formattedPhone}
+              dir="ltr"
               actions={actions}
             />
           );

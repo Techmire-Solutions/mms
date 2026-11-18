@@ -1,5 +1,6 @@
 import type { ContactsWorkDrillDown } from "@mms/shared";
 import { applyContactsWorkDrillDown } from "@/lib/contacts/contactsWorkDrillDown";
+import { TENANT_PATHS } from "@/lib/routing/tenantPaths";
 
 /** Minimal widget shape needed to map Reports/dashboard clicks → Work filters. */
 interface ContactsWidgetDrillDownSource {
@@ -41,6 +42,6 @@ export function applyContactsWidgetWorkDrillDown(widget: ContactsWidgetDrillDown
   const drillDown = contactsWidgetToWorkDrillDown(widget);
   if (drillDown === null) return false;
   applyContactsWorkDrillDown(drillDown);
-  window.location.assign("/contacts");
+  window.location.assign(TENANT_PATHS.contacts);
   return true;
 }

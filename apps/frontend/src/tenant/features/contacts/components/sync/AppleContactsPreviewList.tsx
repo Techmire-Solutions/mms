@@ -4,6 +4,7 @@ import type { Contact } from "@mms/shared";
 import { getDisplayName, getPrimaryEmail, getPrimaryPhone } from "@mms/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BiDiText } from "@/components/app/BiDiText";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface AppleContactsPreviewListProps {
@@ -58,11 +59,11 @@ export function AppleContactsPreviewList({
             key={contactIndex}
             className="flex min-w-0 items-center justify-between gap-2 px-3 py-1.5 rounded-lg hover:bg-muted/50 text-sm"
           >
-            <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+            <BiDiText className="flex-1 truncate font-medium text-foreground">
               {getDisplayName(contact)}
-            </span>
+            </BiDiText>
             <span className="text-xs text-muted-foreground shrink-0 ms-2">
-              {getPrimaryPhone(contact) || getPrimaryEmail(contact) || ""}
+              <bdi dir="ltr">{getPrimaryPhone(contact) || getPrimaryEmail(contact) || ""}</bdi>
             </span>
           </div>
         ))}

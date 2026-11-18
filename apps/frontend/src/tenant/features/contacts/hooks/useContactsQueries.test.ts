@@ -3,8 +3,6 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import {
   contactsListQueryOptions,
-  contactsInfiniteQueryOptions,
-  useContactsInfiniteList,
   useContactsContractList,
   useContactsContractGet,
   useContactPickerSearch,
@@ -34,9 +32,12 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
     useQueryClient: () => ({
       invalidateQueries: invalidateSpy,
     }),
-    useInfiniteQuery: vi.fn(() => ({ data: { pages: [] }, isSuccess: true })),
   };
 });
+
+vi.mock("@/lib/contexts/AuthContext", () => ({
+  useAuth: () => ({ isAuthenticated: true }),
+}));
 
 const mockList = vi.fn();
 
@@ -107,7 +108,10 @@ describe("useContactsQueries", () => {
     )({
       signal: new AbortController().signal,
     });
-    expect(result).toEqual({ contacts: [{ id: "1" }], total: 1, hasMore: false, page: 1 });
+    expect(result).toEqual({
+      status: 200,
+      body: { contacts: [{ id: "1" }], total: 1, hasMore: false, page: 1 },
+    });
 
     mockList.mockResolvedValueOnce({ status: 500, body: "Error" });
     await expect(
@@ -115,44 +119,6 @@ describe("useContactsQueries", () => {
         signal: new AbortController().signal,
       }),
     ).rejects.toThrow("Failed to fetch contacts");
-  });
-
-  it("contactsInfiniteQueryOptions handles pageParam and getNextPageParam", async () => {
-    const opts = contactsInfiniteQueryOptions({ search: "Jane" });
-    expect(
-      opts.getNextPageParam(
-        { hasMore: true, page: 1, contacts: [], total: 10 } as never,
-        [],
-        1,
-        [1],
-      ),
-    ).toBe(2);
-    expect(
-      opts.getNextPageParam(
-        { hasMore: false, page: 2, contacts: [], total: 10 } as never,
-        [],
-        2,
-        [1, 2],
-      ),
-    ).toBeUndefined();
-
-    mockList.mockResolvedValueOnce({
-      status: 200,
-      body: { contacts: [{ id: "2" }], total: 1, hasMore: false, page: 2 },
-    });
-    const result = await (
-      opts.queryFn as unknown as ({
-        pageParam,
-        signal,
-      }: {
-        pageParam: number;
-        signal: AbortSignal;
-      }) => Promise<unknown>
-    )({
-      pageParam: 2,
-      signal: new AbortController().signal,
-    });
-    expect(result).toEqual({ contacts: [{ id: "2" }], total: 1, hasMore: false, page: 2 });
   });
 
   it("executes hooks properly and triggers invalidation on mutations", async () => {
@@ -166,7 +132,6 @@ describe("useContactsQueries", () => {
     let updateFieldConfigMutation: { config?: { onSuccess?: () => void } } | undefined;
 
     function TestComponent(): React.JSX.Element {
-      useContactsInfiniteList();
       useContactsContractList({});
       useContactsContractGet("1");
       const searchRes = useContactPickerSearch({ search: "test" });

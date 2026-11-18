@@ -189,6 +189,14 @@ export async function loadDuplicatePairsPage(
           pairCount: pairs.length,
           pairs,
         });
+        // A write between the version check and the save already invalidated; re-delete
+        // so the stale snapshot cannot survive the race (mirrors runContactsDuplicateScan).
+        if (repo.getLatestWriteAt) {
+          const versionFinal = await repo.getLatestWriteAt(tenant);
+          if (versionFinal !== versionAfter) {
+            await deleteObject(CACHE_KEY);
+          }
+        }
       } catch {
         // Best-effort cache fill; the page result is returned regardless.
       }

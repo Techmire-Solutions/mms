@@ -2253,6 +2253,9 @@ export const APP_TRANSLATIONS_EN = {
   "contacts.duplicates.batchMerging": "Merging {count} pairs...",
   "contacts.duplicates.batchMergePartial":
     "Merged {merged} of {total} pairs — {failed} need review.",
+  "contacts.duplicates.confidenceHigh": "High confidence",
+  "contacts.duplicates.confidenceLow": "Low confidence",
+  "contacts.duplicates.confidenceMedium": "Medium confidence",
   "contacts.duplicates.confirmMerge": "Confirm merge",
   "contacts.duplicates.contactA": "Contact A",
   "contacts.duplicates.contactB": "Contact B",

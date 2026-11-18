@@ -23,7 +23,9 @@ import {
 export const contactDuplicateRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.post("/duplicate-check", async (request, reply) => {
     const user = request.user as User;
-    if (!requireContactPermission(reply, user, "write")) return;
+    // Read-only existence probe (matches the module route action `read` and the
+    // students duplicate-check analog): it counts matches, it never writes.
+    if (!requireContactPermission(reply, user, "read")) return;
     const fieldConfig = await loadContactFieldConfig();
     const checkSchema = buildContactDuplicateCheckBodySchema(
       collectContactWriteExtraFieldKeys(fieldConfig),

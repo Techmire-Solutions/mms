@@ -3,6 +3,7 @@ import { dedupeTrimmedIds } from "@mms/shared";
 import { contacts } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 
 export async function bulkSoftDeleteContactsSql(
   tenant: string,
@@ -15,6 +16,10 @@ export async function bulkSoftDeleteContactsSql(
   if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
   const now = new Date();
   const res = await withTenant(subdomain, async (tx) => {
+    // `deleted_at` participates in the RLS policy's USING clause, so the new row
+    // fails the policy check unless archived rows are visible in this transaction
+    // (migration 0200's RESTRICTIVE soft-delete policy has no separate WITH CHECK).
+    await enableIncludeDeleted(tx);
     const updated = await tx
       .update(contacts)
       .set({
@@ -51,6 +56,9 @@ export async function bulkRestoreContactsSql(
   if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
   const now = new Date();
   const res = await withTenant(subdomain, async (tx) => {
+    // Same RLS reasoning as soft-delete: restoring (deleted_at → NULL) mutates a
+    // row the restrictive policy would otherwise hide, so opt in for this tx.
+    await enableIncludeDeleted(tx);
     const updated = await tx
       .update(contacts)
       .set({

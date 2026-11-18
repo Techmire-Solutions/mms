@@ -13,6 +13,7 @@ import {
   type ContactAttachment,
   getContactTags,
 } from "./contactTypes.js";
+import { normalizeToE164 } from "../core/phoneUtils.js";
 
 const EXCLUDED_MERGE_KEYS = new Set([
   "id",
@@ -35,6 +36,13 @@ const EXCLUDED_MERGE_KEYS = new Set([
   "updatedAt",
 ]);
 
+/**
+ * Merge two contacts into one. **Conservative union policy:** `keep` (the local
+ * survivor) wins on every scalar; collections are unioned, never replaced, so a
+ * value already on the local contact is never overwritten by the merged-away
+ * record. Phones are deduped by country-aware E.164 digits so the same number in
+ * different formats (`0300…` vs `+92300…`) collapses to a single row.
+ */
 export const mergeContacts = (keep: Contact, other: Contact): Contact => {
   const merged: Contact = { ...keep };
 
@@ -74,7 +82,14 @@ export const mergeContacts = (keep: Contact, other: Contact): Contact => {
 
   const addPhone = (phone: ContactPhone | undefined): void => {
     if (!phone || !phone.number) return;
-    const normalizedNumber = phone.number.replace(/[^\d]/g, "");
+    const rawNumber = String(phone.number).trim();
+    if (!rawNumber) return;
+    // Country-aware E.164 key: `0300…` (with countryCode `+92`) and `+92300…`
+    // collapse to one entry instead of surviving as near-duplicates.
+    const normalizedNumber = rawNumber.startsWith("+")
+      ? rawNumber.replace(/\D/g, "")
+      : normalizeToE164(phone.countryCode || "", rawNumber).replace(/\D/g, "");
+    if (!normalizedNumber) return;
     if (!seenNumbers.has(normalizedNumber)) {
       seenNumbers.add(normalizedNumber);
       mergedPhones.push({ ...phone });

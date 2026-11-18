@@ -2220,6 +2220,9 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "contacts.duplicates.batchMerging": "جارٍ دمج {count} من الأزواج...",
   "contacts.duplicates.batchMergePartial":
     "تم دمج {merged} من {total} زوجًا — {failed} بحاجة إلى مراجعة.",
+  "contacts.duplicates.confidenceHigh": "ثقة عالية",
+  "contacts.duplicates.confidenceLow": "ثقة منخفضة",
+  "contacts.duplicates.confidenceMedium": "ثقة متوسطة",
   "contacts.duplicates.confirmMerge": "تأكيد الدمج",
   "contacts.duplicates.contactA": "جهة اتصال أ",
   "contacts.duplicates.contactB": "جهة اتصال ب",

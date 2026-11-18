@@ -40,3 +40,8 @@ export const CONTACTS_FIELD_CONFIG_QUERY_KEY = [
 export function contactDetailQueryKey(contactId: string) {
   return [...CONTACTS_QUERY_KEY, "detail", contactId] as const;
 }
+
+/** Canonical list cache key shared by `contactsListQueryOptions` and `useContactsContractList`. */
+export function contactsListQueryKey(query: Record<string, unknown>) {
+  return [...CONTACTS_QUERY_KEY, "contract-list", query] as const;
+}

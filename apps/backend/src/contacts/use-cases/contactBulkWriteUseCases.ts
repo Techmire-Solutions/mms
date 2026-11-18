@@ -2,6 +2,7 @@ import {
   filterManualContactTags,
   getContactTags,
   mergeContacts as mergeContactRecords,
+  summarizeContactFieldChanges,
   type Contact,
 } from "@mms/shared";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
@@ -25,7 +26,12 @@ import { loadPreviousRelationshipTargets } from "./contactRelationshipIds.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
-import { auditContactBulkTagged, auditContactMerged } from "./contactWriteAudit.js";
+import { archiveMergeLoser } from "./contactMergeArchive.js";
+import {
+  auditContactBulkSaved,
+  auditContactBulkTagged,
+  auditContactMerged,
+} from "./contactWriteAudit.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
@@ -107,18 +113,10 @@ export async function mergeContactsById(
       updatedAt: new Date().toISOString(),
     };
 
-    const now = new Date().toISOString();
-    // Archive the merged-away row FIRST. The survivor may inherit a
-    // workspace-unique value from it (e.g. `cnic`), and that partial unique
-    // index only covers active rows — saving the survivor first aborts the
-    // merge with a false 400 "duplicate CNIC".
-    await repo.save(tenant, {
-      ...other,
-      deletedAt: now,
-      deletedBy,
-      deletionReason: `Merged into ${keepId}`,
-      updatedAt: now,
-    });
+    // Archive the merged-away row FIRST (frees the CNIC partial-unique index for
+    // the survivor) and clear its child rows so they don't linger orphaned or
+    // collide under the phone/email unique indexes.
+    await archiveMergeLoser(repo, tenant, other, keepId, deleteId, deletedBy);
 
     if (expectedKeepUpdatedAt) {
       // Same predicate-in-the-UPDATE guarantee as the interactive edit path.
@@ -131,6 +129,7 @@ export async function mergeContactsById(
     await applyContactRelationshipInference(tenant, next, undefined, repo, {
       actorId: deletedBy,
       previousSource: keep,
+      relationshipPairs: context.relationshipPairs,
     });
 
     await repo.reparentContactReferences(tenant, keepId, deleteId, deletedBy);
@@ -163,21 +162,51 @@ export async function mergeContactsById(
 /** Bulk persist pre-validated contacts (Google sync batch import) through the storage gateway. */
 export async function bulkSaveContacts(
   contacts: Contact[],
+  options: { actorId?: string; action?: "create" | "update" } = {},
   repo: ContactsRepository = contactsRepository,
 ): Promise<void> {
   const tenant = getRequestTenant();
   if (!tenant || contacts.length === 0) return;
-  const ids = contacts
-    .map((contact) => contact.id)
-    .filter((id): id is string | number => id != null)
-    .map(String);
-  // Bulk save replaces the child graph, so removed relationship links must be
-  // reconciled too: read the prior targets before the write.
-  const previousTargets = await loadPreviousRelationshipTargets(repo, tenant, ids);
-  await repo.bulkSave(tenant, contacts);
-  if (ids.length > 0) {
-    await reconcileContactSystemTags(tenant, [...ids, ...previousTargets]);
-  }
+  await runInTransaction(async () => {
+    const ids = contacts
+      .map((contact) => contact.id)
+      .filter((id): id is string | number => id != null)
+      .map(String);
+    // Bulk saves are blind upserts, so no legacy attachment URL is grandfathered:
+    // every attachment must be a tenant-scoped upload path (fail closed). Today
+    // Google sync sends `attachments: []`, so this is a no-op guard for future callers.
+    for (const contact of contacts) {
+      assertContactAttachmentUrls(contact, tenant);
+    }
+    // Bulk save replaces the child graph, so removed relationship links must be
+    // reconciled too: read the prior targets before the write.
+    const previousTargets = await loadPreviousRelationshipTargets(repo, tenant, ids);
+    // For update actions, capture the pre-merge state once so the audit row can
+    // carry a minimized field-diff (mms-data-layer §5.1).
+    const existingById = new Map<string, Contact>();
+    if (options.action === "update" && ids.length > 0) {
+      for (const existing of await repo.findByIds(tenant, ids)) {
+        existingById.set(String(existing.id), existing);
+      }
+    }
+    await repo.bulkSave(tenant, contacts);
+    if (ids.length > 0) {
+      await reconcileContactSystemTags(tenant, [...ids, ...previousTargets]);
+    }
+    // Per-record audit rows commit with the write (mms-data-layer §5.1/§5.4);
+    // the caller distinguishes create vs update so the action type is accurate.
+    const action = options.action ?? "update";
+    for (const contact of contacts) {
+      const previous = existingById.get(String(contact.id));
+      await auditContactBulkSaved({
+        tenant,
+        contactId: String(contact.id),
+        actorId: options.actorId,
+        action,
+        fieldDiff: previous ? summarizeContactFieldChanges(previous, contact) : undefined,
+      });
+    }
+  });
   await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
 }
 

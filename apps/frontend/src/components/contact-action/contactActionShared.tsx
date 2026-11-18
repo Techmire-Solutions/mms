@@ -37,14 +37,14 @@ export const ActionIconButton = function ActionIconButton({
 }: ActionIconButtonProps): React.JSX.Element {
   const commonClasses = cn(
     MESSAGING_ICON_BTN,
-    "relative h-7 w-7 min-h-7 min-w-7 sm:min-h-7 sm:min-w-7 rounded-lg inline-flex items-center justify-center p-0 shrink-0 select-none text-xs before:absolute before:-inset-2 before:content-['']",
+    "relative h-11 w-11 rounded-lg inline-flex items-center justify-center p-0 shrink-0 select-none text-xs",
     toneClass,
     className,
   );
 
   const content = (
     <>
-      <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+      <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
       <span className="sr-only">{label}</span>
     </>
   );

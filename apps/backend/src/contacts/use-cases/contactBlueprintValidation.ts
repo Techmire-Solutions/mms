@@ -2,6 +2,8 @@ import crypto from "node:crypto";
 import type { z } from "zod";
 import {
   buildDynamicContactSchema,
+  collectContactWriteExtraFieldKeys,
+  CONTACT_WRITE_SYSTEM_KEYS,
   formatZodIssues,
   resolveContactEnabledTabIds,
   verifyBlueprintVersion,
@@ -136,11 +138,34 @@ export async function validateContactDynamic(
     schemaCache.set(cacheKey, schema);
   }
 
+  // Strict allowlist (system keys ∪ Setup custom keys): unknown top-level keys are
+  // rejected here rather than accepted-and-dropped by the repository projection
+  // (`mms-fields` §4). The dynamic schema above remains the per-field authority
+  // (including required-field checks), so this is a key check only — it must not
+  // re-impose the write schema's own required fields.
+  const allowedKeys = new Set<string>([
+    ...CONTACT_WRITE_SYSTEM_KEYS,
+    ...collectContactWriteExtraFieldKeys(fieldConfig),
+  ]);
+
   const records = Array.isArray(contact) ? contact : [contact];
   for (const record of records) {
     const parsed = schema.safeParse(record);
     if (!parsed.success) {
       throw toBlueprintValidationError(parsed.error, record, fieldConfig.fields || {}, language);
+    }
+    if (record && typeof record === "object" && !Array.isArray(record)) {
+      const unknownKeys = Object.keys(record).filter((key) => !allowedKeys.has(key));
+      if (unknownKeys.length > 0) {
+        throw new ContactBlueprintValidationError(
+          `Unknown field(s): ${unknownKeys.join(", ")}`,
+          unknownKeys.map((fieldId) => ({
+            fieldId,
+            tabId: "basic",
+            message: `Unknown field: ${fieldId}`,
+          })),
+        );
+      }
     }
   }
 }

@@ -8,17 +8,25 @@ import { getDuplicateFieldLabel, getDuplicateFieldValue } from "@/lib/contacts/c
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BiDiText } from "@/components/app/BiDiText";
 
 export interface ConfidenceBadgeProps {
   score: number;
   prefs: Partial<ContactPreferences>;
 }
 
+const CONFIDENCE_TIER_LABEL_KEY = {
+  high: "contacts.duplicates.confidenceHigh",
+  medium: "contacts.duplicates.confidenceMedium",
+  low: "contacts.duplicates.confidenceLow",
+} as const;
+
 export function ConfidenceBadge({ score, prefs }: ConfidenceBadgeProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { colorClass } = getDuplicateConfidenceBadgeStyle(score, prefs);
+  const { colorClass, labelTier } = getDuplicateConfidenceBadgeStyle(score, prefs);
   return (
     <Badge pill variant="outline" className={cn("px-2 font-bold", colorClass)}>
+      <span className="sr-only">{t(CONFIDENCE_TIER_LABEL_KEY[labelTier])}: </span>
       {score}
       {t("contacts.duplicates.matchSuffix")}
     </Badge>
@@ -67,9 +75,9 @@ export function DuplicateContactCard({
             <span className="text-xs text-muted-foreground w-14 shrink-0">
               {getDuplicateFieldLabel(field, t)}:
             </span>
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+            <BiDiText className="flex-1 truncate text-sm font-medium text-foreground">
               {getDuplicateFieldValue(field, contact, t)}
-            </span>
+            </BiDiText>
           </div>
         ))}
       </div>

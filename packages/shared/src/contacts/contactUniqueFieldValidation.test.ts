@@ -238,4 +238,22 @@ describe("collectUniqueContactFieldValues", () => {
     );
     expect(values.map((value) => value.fieldKey).sort()).toEqual(["address", "cnic", "number"]);
   });
+
+  it("collects unique fields on non-phone/email array tabs (skills/education)", () => {
+    const skillFields = {
+      skills: [field({ key: "name", unique: true, label: "Skill" })],
+      education: [field({ key: "institution", unique: true, label: "Institution" })],
+    };
+    const values = collectUniqueContactFieldValues(
+      {
+        skills: [{ name: "Leadership" }],
+        education: [{ institution: "Al-Huda" }],
+      },
+      listUniqueContactFieldRefs(skillFields),
+    );
+    expect(values.map((value) => `${value.tabId}.${value.fieldKey}`).sort()).toEqual([
+      "education.institution",
+      "skills.name",
+    ]);
+  });
 });

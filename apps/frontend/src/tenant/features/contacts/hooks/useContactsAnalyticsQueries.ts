@@ -7,6 +7,7 @@ import {
 } from "@mms/shared";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
+import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { apiContract, tsrClient } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -39,9 +40,10 @@ interface ContactsReportAnalyticsParams {
 
 export function useContactsReportAnalytics(params: ContactsReportAnalyticsParams = {}) {
   const { isAuthenticated } = useAuth();
+  const { language: workspaceLanguage } = useGlobalSettings();
   const enabled = params.enabled ?? true;
   const compareYears = params.compareYears?.filter(Boolean) ?? [];
-  const language = params.language ?? "en";
+  const language = params.language ?? workspaceLanguage;
 
   return tsrClient.contacts.reportAnalytics.useQuery({
     queryKey: [...CONTACTS_REPORT_ANALYTICS_QUERY_KEY, compareYears.join(","), language] as const,
@@ -92,9 +94,12 @@ export function useContactsWidgetAggregates(
 
   const query = useQuery({
     queryKey: [...CONTACTS_WIDGET_AGGREGATES_QUERY_KEY, querySignature] as const,
-    queryFn: async (): Promise<Record<string, ContactsWidgetAggregateResult>> =>
+    queryFn: async ({ signal }): Promise<Record<string, ContactsWidgetAggregateResult>> =>
       fetchWidgetAggregatesBatched(queries, (batch) =>
-        apiContract.contacts.widgetAggregates({ body: { widgets: batch } }),
+        apiContract.contacts.widgetAggregates({
+          body: { widgets: batch },
+          fetchOptions: { signal },
+        }),
       ) as Promise<Record<string, ContactsWidgetAggregateResult>>,
     enabled: isAuthenticated && enabled && queries.length > 0,
     staleTime: 30_000,

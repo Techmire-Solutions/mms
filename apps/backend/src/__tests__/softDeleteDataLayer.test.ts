@@ -111,6 +111,35 @@ vi.mock("../contacts/use-cases/contactDuplicateScanUseCases.js", () => ({
   invalidateDuplicateScanCache: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../contacts/use-cases/contactWriteContext.js", () => ({
+  loadContactWriteContext: vi.fn().mockResolvedValue({
+    runtimeDefaults: { defaultPhoneCountryCode: "+92" },
+    countryCodes: [],
+    fieldConfig: {
+      version: 1,
+      fields: {
+        emails: [
+          {
+            key: "address",
+            label: "Email",
+            type: "email",
+            enabled: true,
+            unique: true,
+            order: 0,
+            required: false,
+            permissions: [],
+            defaultValue: "",
+          },
+        ],
+      },
+      formTabs: [],
+      enabledTabs: ["emails"],
+      requiredTabs: [],
+    },
+    relationshipPairs: [],
+  }),
+}));
+
 const defaultReadTx = {
   select: vi.fn().mockReturnValue({
     from: vi.fn().mockReturnValue({
@@ -327,6 +356,7 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
         findActiveContactsMatchingUniqueValues: vi.fn().mockResolvedValue([]),
         findContactDuplicateCandidateIds: vi.fn().mockResolvedValue([]),
         findContactDuplicateBlockedIds: vi.fn().mockResolvedValue([]),
+        acquireUniqueValueLocks: vi.fn().mockResolvedValue(undefined),
       } as unknown as ContactsRepository;
     }
 
@@ -355,9 +385,9 @@ describe("Soft-Delete Data Layer & Relational Guardrails", () => {
 
       await expect(
         runWithTenant("demo", () => restoreContactById("c-archived", "u-admin", repo)),
-      ).rejects.toThrow(
-        "Email zayd@example.com is already in use by active contact c-active-conflict",
-      );
+      ).rejects.toMatchObject({
+        errors: [{ fieldId: "address", tabId: "emails" }],
+      });
     });
 
     it("traps PostgreSQL 23505 unique violation error during save and throws ConflictError (409)", async () => {

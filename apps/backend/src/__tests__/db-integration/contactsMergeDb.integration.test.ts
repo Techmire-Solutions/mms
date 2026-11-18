@@ -333,7 +333,7 @@ describe("contact merge (Postgres)", () => {
     const keep = await runWithTenant(tenant, () => contactUseCases.getContactById(keepId));
     const staleId = "merge-contact-stale";
     await runWithTenant(tenant, () =>
-      contactUseCases.upsertContact(baseContact(staleId, "Sana", "3001000020", "s@x.com")),
+      contactUseCases.upsertContact(baseContact(staleId, "Sana", "3001000040", "sana@x.com")),
     );
 
     await expect(
@@ -355,7 +355,7 @@ describe("contact write guards (Postgres)", () => {
   it("keeps the stored phones when a write patch omits them", async () => {
     const id = "merge-contact-omit";
     await runWithTenant(tenant, () =>
-      contactUseCases.upsertContact(baseContact(id, "Hina", "3001000030", "h@x.com")),
+      contactUseCases.upsertContact(baseContact(id, "Hina", "3001000041", "hina@x.com")),
     );
 
     await runWithTenant(tenant, () =>
@@ -364,18 +364,18 @@ describe("contact write guards (Postgres)", () => {
     );
 
     const loaded = await runWithTenant(tenant, () => contactUseCases.getContactById(id));
-    expect(loaded?.phones?.map((phone) => phone.number)).toEqual(["3001000030"]);
+    expect(loaded?.phones?.map((phone) => phone.number)).toEqual(["3001000041"]);
   });
 
   it("still clears a collection when the patch sends an explicit empty array", async () => {
     const id = "merge-contact-clear";
     await runWithTenant(tenant, () =>
-      contactUseCases.upsertContact(baseContact(id, "Imran", "3001000031", "i@x.com")),
+      contactUseCases.upsertContact(baseContact(id, "Imran", "3001000042", "i@x.com")),
     );
 
     await runWithTenant(tenant, () =>
       contactUseCases.upsertContact({
-        ...baseContact(id, "Imran", "3001000031", "i@x.com"),
+        ...baseContact(id, "Imran", "3001000042", "i@x.com"),
         phones: [],
       }),
     );
@@ -415,7 +415,7 @@ describe("merge reference repair migration (0203)", () => {
     const loserId = "repair-loser";
     await runWithTenant(tenant, async () => {
       await contactUseCases.upsertContact(
-        baseContact(survivorId, "Survivor", "3001000050", "s@x.com"),
+        baseContact(survivorId, "Survivor", "3001000050", "survivor@x.com"),
       );
       await contactUseCases.upsertContact(baseContact(loserId, "Loser", "3001000051", "l@x.com"));
     });

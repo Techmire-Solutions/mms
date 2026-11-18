@@ -72,8 +72,10 @@ export function createContactsUseCases(repo: ContactsRepository = contactsReposi
       deletedBy: string,
       options?: Parameters<typeof writeUseCases.mergeContactsById>[5],
     ) => writeUseCases.mergeContactsById(keepId, deleteId, mergedInput, deletedBy, repo, options),
-    bulkSaveContacts: (contacts: Parameters<typeof writeUseCases.bulkSaveContacts>[0]) =>
-      writeUseCases.bulkSaveContacts(contacts, repo),
+    bulkSaveContacts: (
+      contacts: Parameters<typeof writeUseCases.bulkSaveContacts>[0],
+      options?: Parameters<typeof writeUseCases.bulkSaveContacts>[1],
+    ) => writeUseCases.bulkSaveContacts(contacts, options, repo),
     bulkTagContacts: (
       ids: string[],
       options: Parameters<typeof writeUseCases.bulkTagContacts>[1],

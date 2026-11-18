@@ -5,22 +5,14 @@
  * Phase 7 surface here.
  */
 import { apiContract, tsrClient } from "@/lib/api";
-import {
-  infiniteQueryOptions,
-  keepPreviousData,
-  queryOptions,
-  useInfiniteQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import type {
-  ContactsListPageResult,
-  ContactsListQuery,
-  ContactPickerSearchQuery,
-} from "@mms/shared";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
+import type { ContactPickerSearchQuery, ContactsQuickFilter } from "@mms/shared";
 import {
   CONTACTS_FIELD_CONFIG_QUERY_KEY,
   CONTACTS_QUERY_KEY,
   CONTACTS_REPORT_ANALYTICS_QUERY_KEY,
+  contactsListQueryKey,
 } from "@/tenant/features/contacts/hooks/contactsQueryKeys";
 import { invalidateContactsQueries } from "@/tenant/features/contacts/hooks/invalidateContactsQueries";
 
@@ -56,72 +48,72 @@ export {
   useContactColumnPrefsMutation,
   useContactsSavedReportsSource,
 } from "@/tenant/features/contacts/hooks/useContactPrefsQueries";
-import { apiContractError } from "@/lib/apiContractError";
+import { assertContractOk } from "@/lib/apiContractError";
 
 // --- Phase 7: contract-driven tsrClient hooks & query factories -------------
 
-export function contactsListQueryOptions(query: Partial<ContactsListQuery> = {}) {
+/**
+ * Wire-compatible query params for the contacts list contract. Mirrors
+ * `StudentsContractQueryParams`: the ts-rest schema accepts comma-separated id
+ * strings on the wire (transformed to arrays server-side), so array-shaped
+ * programmatic fields must not leak into the query data.
+ */
+export interface ContactsContractQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  gender?: string;
+  includeDeleted?: boolean;
+  sortField?: string;
+  sortDir?: "asc" | "desc" | "";
+  hasPhone?: boolean;
+  hasEmail?: boolean;
+  hasReachable?: boolean;
+  quickFilter?: ContactsQuickFilter;
+  /** Comma-separated contact ids to omit/include (wire format). */
+  excludeIds?: string;
+  includeIds?: string;
+  excludeLinkedModules?: string;
+  afterId?: string;
+  skipCount?: boolean;
+  fullHydration?: boolean;
+  [key: string]: unknown;
+}
+
+export function contactsListQueryOptions(query: ContactsContractQueryParams = {}) {
   return queryOptions({
-    queryKey: [...CONTACTS_QUERY_KEY, "contract-list", query] as const,
+    queryKey: contactsListQueryKey(query),
     queryFn: async ({ signal }) => {
       const response = await apiContract.contacts.list({
-        query: query as never,
+        query: query as Record<string, string>,
         signal,
         fetchOptions: { signal },
       });
-      if (response.status === 200) {
-        return response.body as ContactsListPageResult;
-      }
-      throw apiContractError(response, "Failed to fetch contacts");
+      assertContractOk(response, "Failed to fetch contacts");
+      return response;
     },
     placeholderData: (prev) => prev,
     staleTime: 15_000,
   });
 }
 
-export function contactsInfiniteQueryOptions(query: Partial<ContactsListQuery> = {}) {
-  return infiniteQueryOptions({
-    queryKey: [...CONTACTS_QUERY_KEY, "contract-infinite-list", query] as const,
-    queryFn: async ({ pageParam, signal }) => {
-      const effectiveQuery = { ...query, page: pageParam };
-      const response = await apiContract.contacts.list({
-        query: effectiveQuery as never,
-        signal,
-        fetchOptions: { signal },
-      });
-      if (response.status === 200) {
-        return response.body as ContactsListPageResult;
-      }
-      throw apiContractError(response, "Failed to fetch contacts");
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.page + 1 : undefined),
-    staleTime: 15_000,
-  });
-}
-
-export function useContactsInfiniteList(query: Partial<ContactsListQuery> = {}, enabled = true) {
-  return useInfiniteQuery({
-    ...contactsInfiniteQueryOptions(query),
-    enabled,
-  });
-}
-
-export function useContactsContractList(query: Partial<ContactsListQuery>, enabled = true) {
+export function useContactsContractList(query: ContactsContractQueryParams, enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.contacts.list.useQuery({
-    queryKey: [...CONTACTS_QUERY_KEY, "contract-list", query],
-    queryData: { query: query as never },
+    queryKey: contactsListQueryKey(query),
+    queryData: { query },
     placeholderData: (prev: unknown) => prev,
     staleTime: 15_000,
-    enabled,
+    enabled: isAuthenticated && enabled,
   });
 }
 
 export function useContactsContractGet(id: string, enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.contacts.get.useQuery({
     queryKey: [...CONTACTS_QUERY_KEY, "detail", id],
     queryData: { params: { id } },
-    enabled,
+    enabled: isAuthenticated && enabled,
     staleTime: 30_000,
   });
 }
@@ -131,10 +123,11 @@ export function useContactsContractGet(id: string, enabled = true) {
  * students/faculty/workshops read grants without `contacts.read`.
  */
 export function useContactPickerSearch(query: ContactPickerSearchQuery, enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.contacts.picker.search.useQuery({
     queryKey: [...CONTACTS_QUERY_KEY, "picker", "search", query],
-    queryData: { query: query as Record<string, unknown> },
-    enabled,
+    queryData: { query },
+    enabled: isAuthenticated && enabled,
     staleTime: 15_000,
     placeholderData: keepPreviousData,
   });
@@ -142,10 +135,11 @@ export function useContactPickerSearch(query: ContactPickerSearchQuery, enabled 
 
 /** Resolve one picker option by id (`/api/contacts/picker/:id`). */
 export function useContactPickerOption(id: string | undefined, enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.contacts.picker.get.useQuery({
     queryKey: [...CONTACTS_QUERY_KEY, "picker", id],
     queryData: { params: { id: id ?? "" } },
-    enabled: enabled && Boolean(id),
+    enabled: isAuthenticated && enabled && Boolean(id),
     staleTime: 30_000,
   });
 }
@@ -154,10 +148,11 @@ export function useContactsContractReportAnalytics(
   query: { years?: number[]; lang?: string },
   enabled = true,
 ) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.contacts.reportAnalytics.useQuery({
     queryKey: [...CONTACTS_REPORT_ANALYTICS_QUERY_KEY, query],
     queryData: { query },
-    enabled,
+    enabled: isAuthenticated && enabled,
     staleTime: 60_000,
   });
 }
@@ -205,11 +200,12 @@ export function useContactsContractBulkRestore() {
 }
 
 export function useContactsContractFieldConfig(enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.contacts.getFieldConfig.useQuery({
     queryKey: CONTACTS_FIELD_CONFIG_QUERY_KEY,
     queryData: {},
     staleTime: 30_000,
-    enabled,
+    enabled: isAuthenticated && enabled,
   });
 }
 

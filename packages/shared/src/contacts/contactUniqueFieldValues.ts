@@ -7,6 +7,7 @@ import { normalizeToE164 } from "../core/phoneUtils.js";
 import type { Contact } from "./contactEntityTypes.js";
 import type { FieldDefinition } from "./contactFieldSchemaTypes.js";
 import { isContactCustomCollectionTab, isContactSeedFormTab } from "./contactEnabledTabs.js";
+import { CONTACT_TAB_COLLECTION_KEYS } from "./contactCollectionKeys.js";
 
 type UniqueContactFieldRef = {
   tabId: string;
@@ -20,14 +21,6 @@ export type UniqueContactFieldValue = {
   fieldKey: string;
   index?: number;
   normalized: string;
-};
-
-const LIST_PROP_BY_TAB: Record<string, string> = {
-  phones: "phones",
-  emails: "emails",
-  addresses: "addresses",
-  socials: "socials",
-  relationship: "relationshipContacts",
 };
 
 /** Lists enabled fields with `unique: true` from a field config map. */
@@ -45,7 +38,12 @@ export function listUniqueContactFieldRefs(
 }
 
 function resolveListProp(tabId: string): string | undefined {
-  if (LIST_PROP_BY_TAB[tabId]) return LIST_PROP_BY_TAB[tabId];
+  // Single source of truth (`contactCollectionKeys.ts`): a tab's list property is
+  // the first key of its group, so array tabs added to the registry (education,
+  // experience, skills, bankDetails, …) participate in unique-field extraction
+  // without a divergent local copy silently skipping them.
+  const collectionKey = CONTACT_TAB_COLLECTION_KEYS[tabId]?.[0];
+  if (typeof collectionKey === "string") return collectionKey;
   if (isContactCustomCollectionTab(tabId)) return tabId;
   return undefined;
 }

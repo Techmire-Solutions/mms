@@ -1,4 +1,4 @@
-import type { FieldConfig } from "@mms/shared";
+import type { FieldConfig, RelationshipPair } from "@mms/shared";
 import type { ContactRuntimeDefaults } from "./contactRuntimeDefaults.js";
 
 /** Country-code lookup rows exactly as the contacts lookup service returns them. */
@@ -6,7 +6,8 @@ export type ContactCountryCodeRow = { country?: string; code?: string } | string
 
 /**
  * Tenant configuration a contact write needs: runtime defaults (phone dialling
- * code, default labels), the country-code lookup and the Setup field config.
+ * code, default labels), the country-code lookup, the Setup field config, and the
+ * tenant's relationship pairs.
  *
  * Loading these reads costs ~10 queries per write, and a batch write used to pay
  * that cost **per contact** inside a single transaction. Callers load the
@@ -18,4 +19,6 @@ export interface ContactWriteContext {
   runtimeDefaults: ContactRuntimeDefaults;
   countryCodes: readonly ContactCountryCodeRow[];
   fieldConfig: FieldConfig | null;
+  /** Relationship pairs resolved from preferences; threaded into inference so it never re-reads prefs per record. */
+  relationshipPairs: RelationshipPair[];
 }

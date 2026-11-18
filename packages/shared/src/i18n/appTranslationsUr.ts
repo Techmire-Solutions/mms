@@ -2239,6 +2239,9 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "contacts.duplicates.batchMerging": "{count} جوڑے ضم ہو رہے ہیں...",
   "contacts.duplicates.batchMergePartial":
     "{total} میں سے {merged} جوڑے ضم ہو گئے — {failed} کا جائزہ لینا ہے۔",
+  "contacts.duplicates.confidenceHigh": "اعلی اعتماد",
+  "contacts.duplicates.confidenceLow": "کم اعتماد",
+  "contacts.duplicates.confidenceMedium": "درمیانی اعتماد",
   "contacts.duplicates.confirmMerge": "ضم کی تصدیق",
   "contacts.duplicates.contactA": "رابطہ A",
   "contacts.duplicates.contactB": "رابطہ B",

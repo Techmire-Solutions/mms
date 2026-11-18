@@ -2,11 +2,16 @@ import { getRequestTenant } from "../../lib/tenantContext.js";
 import { loadContactLookupKind } from "./contactLookupsService.js";
 import { loadContactPreferences } from "./contactPreferencesService.js";
 import { getWorkspaceBranding } from "../../db/repositories/workspaceRepository.js";
+import type { RelationshipPair } from "@mms/shared";
 
 export interface ContactRuntimeDefaults {
   defaultPhoneCountryCode: string;
   phoneLabel: string;
   emailLabel: string;
+  /** Raw country-code rows the write context threads into `prepareContactRecord`. */
+  countryCodes: readonly unknown[];
+  /** Preferences-derived pairs threaded into relationship inference. */
+  relationshipPairs: RelationshipPair[];
 }
 
 function firstString(value: unknown): string {
@@ -61,5 +66,7 @@ export async function loadContactRuntimeDefaults(): Promise<ContactRuntimeDefaul
     ),
     phoneLabel: firstCollectionString(phoneLabels as unknown[]),
     emailLabel: firstCollectionString(emailLabels as unknown[]),
+    countryCodes: (countryCodes ?? []) as unknown[],
+    relationshipPairs: preferences?.relationshipPairs ?? [],
   };
 }

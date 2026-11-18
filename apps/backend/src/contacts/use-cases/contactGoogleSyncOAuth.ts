@@ -1,5 +1,6 @@
 import { isOriginAllowedForAppDomain, isTrustedWorkspaceOrigin } from "@mms/shared";
 import { fetchWithTimeout } from "../../lib/outboundUrl.js";
+import { logger } from "../../lib/logger.js";
 import {
   clearGoogleSyncTokens,
   getContactGoogleSyncConfig,
@@ -13,6 +14,7 @@ import {
 interface GoogleTokenResponse {
   access_token?: string;
   refresh_token?: string;
+  scope?: string;
   error?: string;
   error_description?: string;
 }
@@ -112,6 +114,16 @@ export async function exchangeGoogleContactsOAuthCode(
   }
   if (!tokenResponse.access_token) {
     throw new GoogleOAuthExchangeError("No access token returned from Google");
+  }
+  // The client requests `contacts.readonly`; an over-broad or unexpected grant is
+  // surfaced here (defense-in-depth — the People API call would still fail on an
+  // insufficient scope, but a broader grant should not pass silently). Anchoring on
+  // `.readonly` means a read-write `…/auth/contacts` grant is also detected.
+  if (tokenResponse.scope && !/contacts\.readonly/.test(tokenResponse.scope)) {
+    logger.warn(
+      { userId, scope: tokenResponse.scope },
+      "Google OAuth exchange granted an unexpected scope; contacts sync expects contacts.readonly",
+    );
   }
 
   const saved = await setContactGoogleSyncConfig(userId, {

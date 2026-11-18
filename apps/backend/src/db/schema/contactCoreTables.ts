@@ -125,6 +125,12 @@ export const contactPhones = pgTable(
       desc(table.isPrimary),
       table.sortOrder,
     ),
+    // Recyclable-unique backstop (mirrors the pre-3NF contacts.phone partial index):
+    // same normalized digits are unique per workspace. Application-level E.164
+    // normalization via `assertContactUniqueFields` remains the richer UX guard.
+    uniqueIndex("contact_phones_workspace_number_active_uidx")
+      .on(table.workspaceSubdomain, sql`regexp_replace(${table.number}, '[^0-9]', '', 'g')`)
+      .where(sql`NULLIF(regexp_replace(${table.number}, '[^0-9]', '', 'g'), '') IS NOT NULL`),
     foreignKey({
       columns: [table.workspaceSubdomain, table.contactId],
       foreignColumns: [contacts.workspaceSubdomain, contacts.id],
@@ -151,6 +157,12 @@ export const contactEmails = pgTable(
     primaryKey({ columns: [table.workspaceSubdomain, table.contactId, table.id] }),
     index("contact_emails_workspace_contact_idx").on(table.workspaceSubdomain, table.contactId),
     index("contact_emails_workspace_address_idx").on(table.workspaceSubdomain, table.address),
+    // Recyclable-unique backstop (mirrors the pre-3NF contacts.email partial index):
+    // same normalized address is unique per workspace. App-level trim/lower via
+    // `assertContactUniqueFields` remains the richer UX guard.
+    uniqueIndex("contact_emails_workspace_address_active_uidx")
+      .on(table.workspaceSubdomain, sql`lower(trim(${table.address}))`)
+      .where(sql`NULLIF(trim(${table.address}), '') IS NOT NULL`),
     foreignKey({
       columns: [table.workspaceSubdomain, table.contactId],
       foreignColumns: [contacts.workspaceSubdomain, contacts.id],
