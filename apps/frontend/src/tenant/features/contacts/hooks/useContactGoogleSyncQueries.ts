@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient } from "@/lib/api";
+import type { ContactGoogleSyncConfigClient } from "@mms/shared";
 import { CONTACTS_GOOGLE_SYNC_QUERY_KEY } from "@/tenant/features/contacts/hooks/contactsQueryKeys";
 
 export function useContactGoogleSyncConfig(options?: { enabled?: boolean }) {
@@ -18,7 +19,7 @@ export function useContactGoogleSyncConfig(options?: { enabled?: boolean }) {
 export function useContactGoogleSyncMutations() {
   const queryClient = useQueryClient();
   const saveConfig = tsrClient.contacts.updateGoogleSyncConfig.useMutation({
-    onSuccess: (res: { status: number; body?: { config?: unknown } }) => {
+    onSuccess: (res: { status: number; body?: { config?: ContactGoogleSyncConfigClient } }) => {
       if (res.status === 200 && res.body?.config) {
         queryClient.setQueryData(CONTACTS_GOOGLE_SYNC_QUERY_KEY, res.body.config);
       }
@@ -26,7 +27,7 @@ export function useContactGoogleSyncMutations() {
   });
   const logSyncAudit = tsrClient.contacts.logGoogleSyncAudit.useMutation();
   const exchangeOAuth = tsrClient.contacts.exchangeGoogleSyncOAuth.useMutation({
-    onSuccess: (res: { status: number; body?: { config?: unknown } }) => {
+    onSuccess: (res: { status: number; body?: { config?: ContactGoogleSyncConfigClient } }) => {
       if (res.status === 200 && res.body?.config) {
         queryClient.setQueryData(CONTACTS_GOOGLE_SYNC_QUERY_KEY, res.body.config);
       }

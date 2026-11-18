@@ -1,4 +1,10 @@
-import { dedupeTrimmedIds, type Contact } from "@mms/shared";
+import {
+  collectUniqueContactFieldValues,
+  dedupeTrimmedIds,
+  listUniqueContactFieldRefs,
+  type Contact,
+  type UniqueContactFieldValue,
+} from "@mms/shared";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
@@ -41,24 +47,6 @@ export async function restoreContactById(
     // answer 404 and skip the restore audit/outbox row (C-07).
     if (!existing.deletedAt) return null;
 
-    // 1. Pre-check active conflicts on recyclable unique fields
-    if (existing.email && existing.email.trim()) {
-      const emailMatches = await repo.findActiveContactsMatchingUniqueValues(
-        tenant,
-        {
-          emails: [existing.email.trim().toLowerCase()],
-          phoneDigits: [],
-          scalars: [],
-        },
-        [id],
-      );
-      if (emailMatches.length > 0) {
-        throw new ConflictError(
-          `Email ${existing.email} is already in use by active contact ${emailMatches[0].id}`,
-        );
-      }
-    }
-
     const now = new Date().toISOString();
     const next: Contact = {
       ...existing,
@@ -70,6 +58,9 @@ export async function restoreContactById(
       updatedAt: now,
     };
 
+    // Active-conflict pre-checks live in `assertContactUniqueFields` (email,
+    // phone, CNIC, scalars) so a recyclable-unique collision surfaces as a 400
+    // `validation_error` with structured fields — not a bare 409 (mms-data-layer §6.10).
     await assertContactUniqueFields(tenant, next, { language: "en", context }, [], repo);
 
     // 2. Persist with 23505 race condition protection
@@ -140,21 +131,63 @@ export async function bulkRestoreContacts(
     const existingContacts = await repo.findByIds(tenant, uniqueIds, { includeDeleted: true });
     const existingMap = new Map(existingContacts.map((c) => [String(c.id), c]));
 
+    // First pass: shape every restorable record and pre-fetch the matching peers
+    // once, so the uniqueness check does not issue one SQL lookup per record.
+    const restorable: Array<{ id: string; restored: Contact }> = [];
     for (const id of uniqueIds) {
       const existing = existingMap.get(String(id));
       if (!(existing && existing.deletedAt)) {
         failed += 1;
         continue;
       }
-      const restored: Contact = {
-        ...existing,
-        deletedAt: undefined,
-        deletedBy: undefined,
-        deletionReason: undefined,
-        restoredAt: now,
-        restoredBy: userId,
-        updatedAt: now,
-      };
+      restorable.push({
+        id: String(id),
+        restored: {
+          ...existing,
+          deletedAt: undefined,
+          deletedBy: undefined,
+          deletionReason: undefined,
+          restoredAt: now,
+          restoredBy: userId,
+          updatedAt: now,
+        },
+      });
+    }
+
+    const fields = context.fieldConfig?.fields;
+    const uniqueFields = fields ? listUniqueContactFieldRefs(fields) : [];
+    const peers = await (async () => {
+      if (uniqueFields.length === 0 || restorable.length === 0) return [];
+      const allValues: UniqueContactFieldValue[] = [];
+      for (const { restored } of restorable) {
+        allValues.push(
+          ...collectUniqueContactFieldValues(restored, uniqueFields, {
+            defaultPhoneCountryCode: context.runtimeDefaults.defaultPhoneCountryCode,
+          }),
+        );
+      }
+      if (allValues.length === 0) return [];
+      const phoneDigits = allValues
+        .filter((value) => value.tabId === "phones" && value.fieldKey === "number")
+        .map((value) => value.normalized);
+      const emails = allValues
+        .filter((value) => value.tabId === "emails" && value.fieldKey === "address")
+        .map((value) => value.normalized);
+      const scalars = allValues
+        .filter(
+          (value) =>
+            !(value.tabId === "phones" && value.fieldKey === "number") &&
+            !(value.tabId === "emails" && value.fieldKey === "address"),
+        )
+        .map((value) => ({ fieldKey: value.fieldKey, normalized: value.normalized }));
+      return repo.findActiveContactsMatchingUniqueValues(
+        tenant,
+        { phoneDigits, emails, scalars },
+        restorable.map((r) => r.id),
+      );
+    })();
+
+    for (const { id, restored } of restorable) {
       try {
         await assertContactUniqueFields(
           tenant,
@@ -162,6 +195,7 @@ export async function bulkRestoreContacts(
           {
             language: "en",
             additionalPeers: accepted,
+            peers,
             context,
           },
           [],
@@ -173,7 +207,7 @@ export async function bulkRestoreContacts(
       } catch (error) {
         if (error instanceof ContactUniqueFieldError) {
           failed += 1;
-          conflicts.push({ id: String(id), errors: error.errors });
+          conflicts.push({ id, errors: error.errors });
           continue;
         }
         throw error;

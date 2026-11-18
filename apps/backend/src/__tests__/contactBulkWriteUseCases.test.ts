@@ -9,6 +9,7 @@ const mockInvalidateCache = vi.fn();
 const mockInvalidateDuplicateScanCache = vi.fn();
 const mockAuditMerged = vi.fn();
 const mockAuditBulkTagged = vi.fn();
+const mockAuditBulkSaved = vi.fn();
 const mockPrepareContactRecord = vi.fn();
 const mockValidateContactDynamic = vi.fn();
 
@@ -41,6 +42,7 @@ vi.mock("../contacts/use-cases/contactWriteContext.js", () => ({
 vi.mock("../contacts/use-cases/contactWriteAudit.js", () => ({
   auditContactMerged: (...args: unknown[]) => mockAuditMerged(...args),
   auditContactBulkTagged: (...args: unknown[]) => mockAuditBulkTagged(...args),
+  auditContactBulkSaved: (...args: unknown[]) => mockAuditBulkSaved(...args),
 }));
 vi.mock("../db/database.js", () => ({
   runInTransaction: (callback: () => unknown) => callback(),
@@ -50,6 +52,10 @@ vi.mock("../lib/livePush.js", () => ({
 }));
 vi.mock("../lib/cache/index.js", () => ({
   invalidateMultiTierCache: (...args: unknown[]) => mockInvalidateCache(...args),
+}));
+vi.mock("../services/outboxEventService.js", () => ({
+  emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
+  emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
 const { bulkSaveContacts, bulkTagContacts, mergeContactsById } =
@@ -80,12 +86,18 @@ describe("bulkSaveContacts", () => {
       findSummaryByIds: vi.fn().mockResolvedValue([contact("c-1", "g-1")]),
     } as unknown as ContactsRepository;
 
-    await runWithTenant("demo", () => bulkSaveContacts([contact("c-1")], repo));
+    await runWithTenant("demo", () => bulkSaveContacts([contact("c-1")], {}, repo));
 
     expect(repo.findSummaryByIds).toHaveBeenCalledWith("demo", ["c-1"]);
     expect(mockReconcile).toHaveBeenCalledWith("demo", ["c-1", "g-1"]);
     expect(repo.bulkSave).toHaveBeenCalledWith("demo", [contact("c-1")]);
     expect(mockInvalidateCache).toHaveBeenCalledWith({ tenantId: "demo", domain: "contacts" });
+    expect(mockAuditBulkSaved).toHaveBeenCalledWith({
+      tenant: "demo",
+      contactId: "c-1",
+      actorId: undefined,
+      action: "update",
+    });
   });
 
   it("still writes when the adapter cannot load prior relationships", async () => {
@@ -93,7 +105,7 @@ describe("bulkSaveContacts", () => {
       bulkSave: vi.fn().mockResolvedValue(undefined),
     } as unknown as ContactsRepository;
 
-    await runWithTenant("demo", () => bulkSaveContacts([contact("c-1")], repo));
+    await runWithTenant("demo", () => bulkSaveContacts([contact("c-1")], {}, repo));
 
     expect(repo.bulkSave).toHaveBeenCalledTimes(1);
     expect(mockReconcile).toHaveBeenCalledWith("demo", ["c-1"]);

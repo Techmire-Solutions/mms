@@ -15,6 +15,11 @@ export interface ContactDetailHeroCardProps {
 
 export function ContactDetailHeroCard({ contact }: ContactDetailHeroCardProps): React.JSX.Element {
   const { t } = useTranslation();
+  // `notes`/`aiSummary` are intentionally NOT gated by field config: `notes` is a
+  // retired form field (`REMOVED_FORM_FIELD_KEYS`), so it never appears in the
+  // tenant field registry and thus has no `isTabFieldEnabled`/`canViewContactField`
+  // entry. The hero card renders them as fixed chrome; role-hidden values are
+  // already stripped by the authoritative backend `contactResponseSanitizer`.
   const aiSummary = typeof contact.aiSummary === "string" ? contact.aiSummary.trim() : "";
   const notes = typeof contact.notes === "string" ? contact.notes.trim() : "";
 

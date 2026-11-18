@@ -29,8 +29,6 @@ export { invalidateContactsQueries } from "@/tenant/features/contacts/hooks/inva
 // Contract-driven tsrClient hooks & query factories
 export {
   contactsListQueryOptions,
-  contactsInfiniteQueryOptions,
-  useContactsInfiniteList,
   useContactsContractList,
   useContactsContractGet,
   useContactsContractReportAnalytics,

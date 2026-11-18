@@ -2248,6 +2248,9 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "contacts.duplicates.batchMerging": "در حال ادغام {count} جفت...",
   "contacts.duplicates.batchMergePartial":
     "{merged} از {total} جفت ادغام شد — {failed} نیاز به بررسی دارد.",
+  "contacts.duplicates.confidenceHigh": "اطمینان بالا",
+  "contacts.duplicates.confidenceLow": "اطمینان پایین",
+  "contacts.duplicates.confidenceMedium": "اطمینان متوسط",
   "contacts.duplicates.confirmMerge": "تأیید ادغام مخاطبین",
   "contacts.duplicates.contactA": "مخاطب الف",
   "contacts.duplicates.contactB": "مخاطب ب",

@@ -41,6 +41,12 @@ export interface AssertContactUniqueFieldsOptions {
    * config and runtime defaults are not re-read per contact.
    */
   context?: ContactWriteContext;
+  /**
+   * Pre-fetched active peer contacts (batch writers / Google sync) that already
+   * matched the batch's unique values. When present, the per-record peer SQL
+   * lookup is skipped — the caller issues one lookup for the whole batch.
+   */
+  peers?: ReadonlyArray<Contact>;
 }
 
 /**
@@ -132,11 +138,13 @@ export async function assertContactUniqueFields(
     .map((value) => ({ fieldKey: value.fieldKey, normalized: value.normalized }));
 
   const excludeIds = [...excludeContactIds, ...(contact.id != null ? [contact.id] : [])];
-  const peers = await repo.findActiveContactsMatchingUniqueValues(
-    tenant,
-    { phoneDigits, emails, scalars },
-    excludeIds,
-  );
+  const peers =
+    options.peers ??
+    (await repo.findActiveContactsMatchingUniqueValues(
+      tenant,
+      { phoneDigits, emails, scalars },
+      excludeIds,
+    ));
 
   const errors = findContactUniqueFieldConflicts(
     contact,

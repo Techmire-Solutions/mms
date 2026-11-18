@@ -19,19 +19,12 @@ describe("TanStack Query v5 Query Options Factories (P8)", () => {
   describe("contacts collection facade", () => {
     it("exports contactsListQueryOptions and contactsCommandMetricsQueryOptions", () => {
       expect(typeof contactsFacade.contactsListQueryOptions).toBe("function");
-      expect(typeof contactsFacade.contactsInfiniteQueryOptions).toBe("function");
       expect(typeof contactsFacade.contactsCommandMetricsQueryOptions).toBe("function");
 
       const listOptions = contactsFacade.contactsListQueryOptions({ page: 1, limit: 25 });
       expect(listOptions.queryKey).toBeDefined();
       expect(typeof listOptions.queryFn).toBe("function");
       expect(listOptions.staleTime).toBe(15_000);
-
-      const infiniteOptions = contactsFacade.contactsInfiniteQueryOptions({ limit: 25 });
-      expect(infiniteOptions.queryKey).toBeDefined();
-      expect(typeof infiniteOptions.queryFn).toBe("function");
-      expect(typeof infiniteOptions.getNextPageParam).toBe("function");
-      expect(infiniteOptions.staleTime).toBe(15_000);
 
       const metricsOptions = contactsFacade.contactsCommandMetricsQueryOptions();
       expect(metricsOptions.queryKey).toEqual(["contacts", "metrics"]);

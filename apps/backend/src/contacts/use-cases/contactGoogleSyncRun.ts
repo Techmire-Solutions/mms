@@ -144,6 +144,8 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
               // A previously accepted update is not in the database yet; without its
               // peer here two updates could both introduce the same unique value.
               additionalPeers: pendingPeersFor(candidateComposites, String(match.id)),
+              // Reuse the once-per-run peer set; skip the per-record SQL lookup.
+              peers: peerContacts,
               context: writeContext,
             });
             acceptedUpdates.push(prepared);
@@ -172,6 +174,8 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
           await assertContactUniqueFields(tenant, prepared, {
             language: "en",
             additionalPeers: pendingPeersFor(candidateComposites),
+            // Reuse the once-per-run peer set; skip the per-record SQL lookup.
+            peers: peerContacts,
             context: writeContext,
           });
 
@@ -189,10 +193,10 @@ export async function runGoogleContactsSync(userId: string): Promise<GoogleConta
     }
 
     if (acceptedInserts.length > 0) {
-      await bulkSaveContacts(acceptedInserts);
+      await bulkSaveContacts(acceptedInserts, { actorId: userId, action: "create" });
     }
     if (acceptedUpdates.length > 0) {
-      await bulkSaveContacts(acceptedUpdates);
+      await bulkSaveContacts(acceptedUpdates, { actorId: userId, action: "update" });
     }
     if (acceptedInserts.length > 0 || acceptedUpdates.length > 0) {
       await invalidateDuplicateScanCache();

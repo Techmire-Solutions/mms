@@ -63,4 +63,20 @@ describe("mergeContacts — existing collection behaviour stays intact", () => {
     expect(merged.emails?.map((email) => email.address)).toEqual(["ali@example.com"]);
     expect(merged.tags).toEqual(["VIP", "Donor"]);
   });
+
+  it("collapses the same number across country-code formats into one phone", () => {
+    const keep = contact({
+      id: "keep",
+      phones: [{ number: "03001234567", countryCode: "+92", label: "mobile" }],
+    });
+    const other = contact({
+      id: "other",
+      phones: [{ number: "+923001234567", label: "home" }],
+    });
+
+    const merged = mergeContacts(keep, other);
+
+    expect(merged.phones).toHaveLength(1);
+    expect(merged.phones?.[0]?.number).toBe("03001234567");
+  });
 });

@@ -50,6 +50,13 @@ export function useContactDuplicateCheck({
       ? duplicateResult.count
       : 0;
 
+  // Intentional query-factories exception: this is a debounced, non-blocking
+  // transient probe (not cacheable server state), keyed by a candidate signature
+  // so a stale count is never shown for a different draft. It mirrors the
+  // imperative students duplicate check (`checkStudentRegistrationDuplicate`).
+  // A `useQuery` here would populate the shared cache with per-keystroke probe
+  // results and still need the same 600ms debounce + abort wiring, so the manual
+  // effect is the clearer form for this signal.
   useEffect(() => {
     if (!hasCandidateKey) {
       return;

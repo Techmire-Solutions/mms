@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("../services/contactService.js", () => ({
-  loadContactsByIdsForTenant: mocks.loadContacts,
+  loadContactsSummaryByIdsForTenant: mocks.loadContacts,
 }));
 
 vi.mock("../db/repositories/facultyDesignationRepository.js", () => ({

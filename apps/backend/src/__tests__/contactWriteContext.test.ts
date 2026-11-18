@@ -7,18 +7,16 @@ vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
   }),
 }));
 
-vi.mock("../contacts/use-cases/contactLookupsService.js", () => ({
-  loadContactLookupKind: vi.fn().mockResolvedValue([
-    { country: "PK", code: "+92" },
-    { country: "US", code: "+1" },
-  ]),
-}));
-
 vi.mock("../contacts/use-cases/contactLoadUseCases.js", () => ({
   loadContactRuntimeDefaults: vi.fn().mockResolvedValue({
     defaultPhoneCountryCode: "+92",
     phoneLabel: "Mobile",
     emailLabel: "Personal",
+    countryCodes: [
+      { country: "PK", code: "+92" },
+      { country: "US", code: "+1" },
+    ],
+    relationshipPairs: [],
   }),
 }));
 

@@ -122,6 +122,11 @@ export function ContactForm({
     [validationErrorItems],
   );
 
+  const saveDisabled =
+    draft.lookupsLoading ||
+    (firstNameRequired && !draft.contactDraft.firstName?.trim()) ||
+    (Boolean(contact) && !draft.isDirty);
+
   return (
     <FormModal
       open={open}
@@ -157,11 +162,7 @@ export function ContactForm({
       onSave={draft.handleSave}
       isDirty={draft.isDirty}
       saving={draft.saving}
-      saveDisabled={
-        draft.lookupsLoading ||
-        (firstNameRequired && !draft.contactDraft.firstName?.trim()) ||
-        (Boolean(contact) && !draft.isDirty)
-      }
+      saveDisabled={saveDisabled}
       discardUnsavedTitle={t("contacts.form.discardUnsavedTitle")}
       discardUnsavedDescription={t("contacts.form.discardUnsavedDescription")}
       discardConfirmLabel={t("contacts.form.discardChanges")}
@@ -182,13 +183,8 @@ export function ContactForm({
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
-          if (
-            !draft.lookupsLoading &&
-            (!firstNameRequired || draft.contactDraft.firstName?.trim()) &&
-            !(Boolean(contact) && !draft.isDirty)
-          ) {
-            void draft.handleSave();
-          }
+          // Enter mirrors the FormModal save button: same gate, same guarded handler.
+          if (!saveDisabled) void draft.handleSave();
         }}
       >
         <ContactFormTabContent

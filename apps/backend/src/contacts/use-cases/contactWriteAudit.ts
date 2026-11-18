@@ -10,22 +10,30 @@ export async function auditContactPersisted(input: {
   actorId?: string;
   created: boolean;
   restored: boolean;
+  /** Minimized field-diff (old/new capture) for update-style writes per mms-data-layer §5.1. */
+  fieldDiff?: string;
 }): Promise<void> {
   const action = input.restored
     ? "contact.restore"
     : input.created
       ? "contact.create"
       : "contact.upsert";
+  const summary = input.restored
+    ? `Restored contact ${input.contactId} via upsert`
+    : `${input.created ? "Created" : "Updated"} contact ${input.contactId}`;
   await appendCollectionAuditInTx({
     tenant: input.tenant,
     tableName: "contacts",
     recordId: input.contactId,
     action,
-    summary: input.restored
-      ? `Restored contact ${input.contactId} via upsert`
-      : `${input.created ? "Created" : "Updated"} contact ${input.contactId}`,
+    summary,
     realUserId: input.actorId,
     subjectId: input.contactId,
+    newState: {
+      summary,
+      action,
+      ...(input.fieldDiff ? { changedFields: input.fieldDiff } : {}),
+    },
   });
 }
 
@@ -33,15 +41,23 @@ export async function auditContactUpdated(input: {
   tenant: string;
   contactId: string;
   actorId?: string;
+  /** Minimized field-diff (old/new capture) per mms-data-layer §5.1. */
+  fieldDiff?: string;
 }): Promise<void> {
+  const summary = `Updated contact ${input.contactId}`;
   await appendCollectionAuditInTx({
     tenant: input.tenant,
     tableName: "contacts",
     recordId: input.contactId,
     action: "contact.update",
-    summary: `Updated contact ${input.contactId}`,
+    summary,
     realUserId: input.actorId,
     subjectId: input.contactId,
+    newState: {
+      summary,
+      action: "contact.update",
+      ...(input.fieldDiff ? { changedFields: input.fieldDiff } : {}),
+    },
   });
 }
 
@@ -68,6 +84,32 @@ export async function auditContactMerged(input: {
       action: "contact.merge",
       summary: `Merged contact ${input.deleteId} into ${input.keepId}`,
       archivedContactId: input.deleteId,
+    },
+  });
+}
+
+/** Per-record row for the Google-sync bulk save; bulk writes must audit each changed record in-tx. */
+export async function auditContactBulkSaved(input: {
+  tenant: string;
+  contactId: string;
+  actorId?: string;
+  action: "create" | "update";
+  /** Minimized field-diff (old/new capture) for update-style writes per mms-data-layer §5.1. */
+  fieldDiff?: string;
+}): Promise<void> {
+  const summary = `${input.action === "create" ? "Created" : "Updated"} contact ${input.contactId}`;
+  await appendCollectionAuditInTx({
+    tenant: input.tenant,
+    tableName: "contacts",
+    recordId: input.contactId,
+    action: input.action === "create" ? "contact.create" : "contact.update",
+    summary,
+    realUserId: input.actorId,
+    subjectId: input.contactId,
+    newState: {
+      summary,
+      action: input.action === "create" ? "contact.create" : "contact.update",
+      ...(input.fieldDiff ? { changedFields: input.fieldDiff } : {}),
     },
   });
 }

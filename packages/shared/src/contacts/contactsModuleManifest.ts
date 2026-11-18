@@ -36,6 +36,7 @@ export {
   collectContactWriteExtraFieldKeys,
   buildContactWriteSchema,
   contactWriteSchema,
+  CONTACT_WRITE_SYSTEM_KEYS,
 } from "../schemas/contacts.dto.js";
 
 export const contactRecordSchema = z

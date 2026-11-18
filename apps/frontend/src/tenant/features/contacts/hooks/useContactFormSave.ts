@@ -124,13 +124,12 @@ export function useContactFormSave({
 
         // A tab the viewer cannot read is absent from the loaded record; the form
         // still rendered blank rows for it. Never send those back — the server
-        // would read them as "clear the collection" (R4-03).
-        const withPresence = stripAbsentContactCollections(
-          contactRaw as unknown as Record<string, unknown>,
-          contact as unknown as Record<string, unknown> | undefined,
-        ) as unknown as Contact;
+        // would read them as "clear the collection" (R4-03). `Contact` carries an
+        // index signature, so it satisfies the helpers' `Record<string, unknown>`
+        // bound without an `unknown` cast.
+        const withPresence = stripAbsentContactCollections(contactRaw, contact ?? undefined);
 
-        const titleCased = applyTitleCaseToContact(withPresence) as Contact;
+        const titleCased = applyTitleCaseToContact(withPresence);
         const finalized = syncContactScalarFields(titleCased);
         // Blueprint version lock: the server rejects a form saved against a field
         // config that changed while it was open (`_blueprintId` = active version).

@@ -1,10 +1,11 @@
 import React, { type ReactNode } from "react";
 import { Mail } from "lucide-react";
-import { sanitizeEmailForMailto } from "@mms/shared";
+import { sanitizeEmailForMailto, APP_TRANSLATIONS_EN, type AppTranslationKey } from "@mms/shared";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { MESSAGING_ICON_BTN_TONES } from "@/components/app/messagingActionStyles";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   ActionCopyButton,
   ActionIconButton,
@@ -56,6 +57,7 @@ export const ContactEmailAction = function ContactEmailAction({
   actionsClassName,
   labels,
 }: ContactEmailActionProps): React.JSX.Element | null {
+  const { t } = useTranslation();
   const cleanEmail = (email || "").trim();
 
   if (!cleanEmail) {
@@ -67,9 +69,13 @@ export const ContactEmailAction = function ContactEmailAction({
   const canCopy = showCopy && Boolean(cleanEmail);
 
   const targetName = name ? ` (${name})` : "";
+  const resolveVerb = (k: AppTranslationKey, fallback: string) => {
+    const val = t(k);
+    return val && val !== k ? val : (APP_TRANSLATIONS_EN[k] ?? fallback);
+  };
   const mailLabel = labels?.mail
     ? `${labels.mail}${targetName}`
-    : `Email ${cleanEmail}${targetName}`;
+    : `${resolveVerb("contacts.detail.emailAction", "Email")} ${cleanEmail}${targetName}`;
 
   const actionsNode = (
     <div

@@ -126,7 +126,9 @@ describe("fetchContactById", () => {
       body: { contact: { id: 7, name: "Seven" } },
     });
     const contact = await fetchContactById("7");
-    expect(apiContractMock.contacts.get).toHaveBeenCalledWith({ params: { id: "7" } });
+    expect(apiContractMock.contacts.get).toHaveBeenCalledWith(
+      expect.objectContaining({ params: { id: "7" } }),
+    );
     expect(contact).toEqual({ id: 7, name: "Seven" });
   });
 });

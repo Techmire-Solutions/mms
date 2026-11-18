@@ -4,18 +4,25 @@ import type {
   ContactsSavedReport,
   ContactsSavedReportShareScope,
   ContactsWorkDrillDown,
+  AppTranslationKey,
 } from "@mms/shared";
 import { canDeleteContactsSavedReport, validateContactsSavedReportDrillDown } from "@mms/shared";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
+import { BiDiText } from "@/components/app/BiDiText";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
+import { formatContactGenderLabel } from "@/lib/contacts/contactI18nFormat";
 
-function formatDrillDownSummary(drillDown: ContactsWorkDrillDown, searchLabel: string): string {
+function formatDrillDownSummary(
+  drillDown: ContactsWorkDrillDown,
+  searchLabel: string,
+  t: (key: AppTranslationKey) => string,
+): string {
   const parts: string[] = [];
-  if (drillDown.gender) parts.push(drillDown.gender);
+  if (drillDown.gender) parts.push(formatContactGenderLabel(drillDown.gender, t));
   if (drillDown.search?.trim()) parts.push(`${searchLabel}: ${drillDown.search.trim()}`);
   return parts.join(" · ") || "—";
 }
@@ -98,9 +105,11 @@ export function ContactsSavedReportsList({
           >
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h4 className="text-sm font-semibold text-foreground">{savedReport.name}</h4>
+                <h4 className="text-sm font-semibold text-foreground">
+                  <BiDiText>{savedReport.name}</BiDiText>
+                </h4>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {formatDrillDownSummary(savedReport.drillDown, searchLabel)}
+                  {formatDrillDownSummary(savedReport.drillDown, searchLabel, t)}
                 </p>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <Badge pill tone="primary" className="gap-1 uppercase tracking-wide px-2">

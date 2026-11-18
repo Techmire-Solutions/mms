@@ -647,6 +647,11 @@ describe("createContactsUseCases (DI composition root)", () => {
       defaultPhoneCountryCode: "+92",
       phoneLabel: "Work",
       emailLabel: "Primary",
+      countryCodes: [
+        { country: "Pakistan", code: "+92" },
+        { country: "Saudi Arabia", code: "+966" },
+      ],
+      relationshipPairs: [],
     });
     expect(loadContactLookupKind).toHaveBeenCalledWith("countryCodes");
     expect(loadContactLookupKind).toHaveBeenCalledWith("phoneLabels");

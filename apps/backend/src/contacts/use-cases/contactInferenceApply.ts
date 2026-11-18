@@ -91,6 +91,11 @@ export interface ContactRelationshipInferenceOptions {
    * whose inferred reciprocal row must be removed when a link is dropped.
    */
   previousSource?: Contact;
+  /**
+   * Tenant relationship pairs resolved once by the write context. When present,
+   * inference never re-reads preferences (the N+1 config load in batch writes).
+   */
+  relationshipPairs?: RelationshipPair[];
 }
 
 /**
@@ -127,9 +132,11 @@ export async function applyContactRelationshipInference(
 
   const resolvedPairs =
     sourceLinks.length > 0
-      ? customPairs && customPairs.length > 0
-        ? customPairs
-        : resolveRelationshipPairs((await loadContactPreferences())?.relationshipPairs)
+      ? options?.relationshipPairs !== undefined
+        ? options.relationshipPairs
+        : customPairs && customPairs.length > 0
+          ? customPairs
+          : resolveRelationshipPairs((await loadContactPreferences())?.relationshipPairs)
       : [];
 
   const firstContacts = firstIds.length > 0 ? await repo.findByIds(tenant, firstIds) : [];

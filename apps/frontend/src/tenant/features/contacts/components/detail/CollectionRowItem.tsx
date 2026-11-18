@@ -24,6 +24,8 @@ export interface CollectionRowItemProps {
   value: string;
   copyable?: boolean;
   actions?: CollectionRowAction[];
+  /** Direction for the value: `ltr` for phone/email/URL/account identifiers, `auto` for free-form text. */
+  dir?: "ltr" | "rtl" | "auto";
 }
 
 function RowActionButton({ action }: { action: CollectionRowAction }): React.JSX.Element {
@@ -71,6 +73,7 @@ export function CollectionRowItem({
   value,
   copyable = true,
   actions,
+  dir = "auto",
 }: CollectionRowItemProps): React.JSX.Element {
   return (
     <div className="p-3 border-b border-border/50 last:border-b-0 flex items-center justify-between gap-3">
@@ -81,7 +84,7 @@ export function CollectionRowItem({
           </Badge>
         </div>
         <span className="font-semibold text-xs text-foreground block leading-relaxed truncate">
-          {value}
+          <bdi dir={dir}>{value}</bdi>
         </span>
       </div>
       {value && (

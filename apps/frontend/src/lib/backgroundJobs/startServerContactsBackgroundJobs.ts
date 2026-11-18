@@ -15,8 +15,8 @@ export async function startServerContactsVcfExport(options: {
 }
 
 export async function startContactsDuplicateScan(label?: string): Promise<BackgroundJobRecord> {
-  // Fresh per explicit trigger: the backend derives the job id from this key, so a
-  // repeat request from the same trigger dedupes onto the existing scan job.
+  // Each explicit trigger is a NEW scan: a fresh UUID means the backend enqueues a
+  // distinct job (the idempotency key is per-trigger, not dedupe-against-previous).
   const idempotencyKey = crypto.randomUUID();
   return startServerBackgroundJob({
     path: "/api/contacts/duplicates/scan",

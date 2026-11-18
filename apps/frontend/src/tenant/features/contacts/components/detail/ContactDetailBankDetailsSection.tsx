@@ -71,8 +71,8 @@ export function ContactDetailBankDetailsSection({
                     <CreditCard className="h-3 w-3" />
                     {t("contacts.fields.bankAccountNumber")}:
                   </span>
-                  <span className="font-semibold tracking-wider text-foreground select-all">
-                    {bank.accountNumber}
+                  <span className="font-semibold text-foreground select-all">
+                    <bdi dir="ltr">{bank.accountNumber}</bdi>
                   </span>
                 </div>
               </div>

@@ -45,6 +45,7 @@ export function ContactDetailEmailsSection({
               key={`email-${email.address}-${emailIndex}`}
               label={resolveEmailLabel(email.label, emailLabels, t)}
               value={rawEmail}
+              dir="ltr"
               actions={actions}
             />
           );

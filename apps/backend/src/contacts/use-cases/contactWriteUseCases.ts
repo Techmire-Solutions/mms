@@ -1,4 +1,4 @@
-import { type Contact, type User } from "@mms/shared";
+import { type Contact, summarizeContactFieldChanges, type User } from "@mms/shared";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
@@ -16,6 +16,7 @@ import {
 } from "./contactValidationUseCases.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
+import { emitOutboxEvent } from "../../services/outboxEventService.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
 import { stripUnreadableContactWriteKeys } from "./contactViewerWriteGuard.js";
 import { collectRelatedContactIds } from "./contactRelationshipIds.js";
@@ -125,6 +126,16 @@ export async function upsertContact(
       // resurrects a trashed contact must record who did it and when.
       saved.restoredAt = new Date().toISOString();
       saved.restoredBy = actorId ?? existing?.restoredBy;
+      // Resurrecting a trashed contact is a restore in effect: emit the same
+      // CDC event the interactive restore path does (in-transaction).
+      await emitOutboxEvent("entity.restored", {
+        entityType: "contacts",
+        entityId: String(saved.id),
+        tenantId: tenant,
+        restoredAt: saved.restoredAt,
+        restoredBy: saved.restoredBy ?? "unknown",
+        version: Date.now(),
+      });
     }
 
     if (existing && requiredToken) {
@@ -141,6 +152,7 @@ export async function upsertContact(
     await applyContactRelationshipInference(tenant, saved, undefined, repo, {
       actorId,
       previousSource: existing ?? undefined,
+      relationshipPairs: context.relationshipPairs,
     });
     // Relationship edits can add/remove Student/Parent/Guardian roles; the
     // reconcile expands to related contacts, and removed links are included
@@ -156,16 +168,17 @@ export async function upsertContact(
     if (!opts?.batchMode) {
       await invalidateDuplicateScanCache();
     }
-    // Authoritative audit row commits with the write (mms-data-layer §5.4).
-    if (!opts?.batchMode) {
-      await auditContactPersisted({
-        tenant,
-        contactId: String(saved.id),
-        actorId,
-        created,
-        restored: Boolean(restoredFromDelete),
-      });
-    }
+    // Authoritative audit row commits with the write (mms-data-layer §5.4). Unlike
+    // the cache/broadcast side effects, audit stays per record even in batch mode:
+    // §5.1 requires per-record audit rows, and the batch summary is job provenance only.
+    await auditContactPersisted({
+      tenant,
+      contactId: String(saved.id),
+      actorId,
+      created,
+      restored: Boolean(restoredFromDelete),
+      fieldDiff: existing ? summarizeContactFieldChanges(existing, saved) : undefined,
+    });
     return { contact: saved, created, restoredFromDelete: restoredFromDelete || undefined };
   });
   const tenant = getRequestTenant();
@@ -250,6 +263,7 @@ export async function updateContactById(
       await applyContactRelationshipInference(tenant, next, undefined, repo, {
         actorId,
         previousSource: existing,
+        relationshipPairs: context.relationshipPairs,
       });
     }
     await reconcileContactSystemTags(
@@ -258,7 +272,12 @@ export async function updateContactById(
       { actorId },
     );
     await invalidateDuplicateScanCache();
-    await auditContactUpdated({ tenant, contactId: id, actorId });
+    await auditContactUpdated({
+      tenant,
+      contactId: id,
+      actorId,
+      fieldDiff: summarizeContactFieldChanges(existing, next),
+    });
     return next;
   });
   if (saved) {

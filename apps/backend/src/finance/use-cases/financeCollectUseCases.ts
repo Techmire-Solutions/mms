@@ -8,7 +8,7 @@ import {
   getOutstandingAmountForInvoice,
   invoiceOpenBalance,
   isInvoiceDueForReminder,
-  toMessagingRecipient,
+  tryParseMoneyAmountNumber,
   wasRemindedRecently,
   type CollectInvoicesBody,
   type CollectInvoicesResult,
@@ -19,10 +19,9 @@ import {
   type RemindInvoicesResult,
 } from "@mms/shared";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
-import { tryParseMoneyAmountNumber } from "@mms/shared";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
-import { loadContactsByIdsForTenant } from "../../services/contactService.js";
+import { loadSanitizedReminderContacts, reminderRecipient } from "./financeCollectRecipients.js";
 import { financeUseCases } from "./financeUseCases.js";
 import {
   applyLateFeeAmounts,
@@ -127,7 +126,7 @@ export async function collectOverdueInvoices(
 
 export async function remindOpenInvoices(
   input: RemindInvoicesBody = {},
-  options: { today?: string } = {},
+  options: { today?: string; viewerRole?: string } = {},
 ): Promise<RemindInvoicesResult> {
   const tenant = requireTenant();
   const body = input;
@@ -154,9 +153,13 @@ export async function remindOpenInvoices(
       eligible.map((invoice) => invoice.familyContactId).filter((id): id is string => Boolean(id)),
     ),
   ];
-  const contacts =
-    contactIds.length > 0 ? await loadContactsByIdsForTenant(tenant, contactIds) : [];
-  const contactById = new Map(contacts.map((contact) => [String(contact.id), contact]));
+  // Recipient mapping runs after the contacts viewer sanitizer (messaging parity):
+  // a finance role whose field-config hides phones/emails must not receive them.
+  const contactById = await loadSanitizedReminderContacts(
+    tenant,
+    contactIds,
+    options.viewerRole ?? "",
+  );
   // Claim the reminders before building the recipient list: a concurrent run (or a
   // retried job) that already stamped an invoice must not notify it again.
   const claimedIds = await claimInvoicesForReminder(
@@ -170,7 +173,7 @@ export async function remindOpenInvoices(
     if (!claimed.has(invoice.id)) continue;
     const contact = invoice.familyContactId ? contactById.get(invoice.familyContactId) : undefined;
     if (!contact) continue;
-    const recipient = toMessagingRecipient(contact);
+    const recipient = reminderRecipient(contact);
     if (!recipient.phone && !recipient.email) continue;
     recipients.push({
       id: String(recipient.id),

@@ -27,7 +27,11 @@ const mockPrefs = vi.hoisted(() => ({
 }));
 
 const mockContacts = vi.hoisted(() => ({
-  loadContactsByIdsForTenant: vi.fn(),
+  loadContactsSummaryByIdsForTenant: vi.fn(),
+}));
+
+const mockFieldConfig = vi.hoisted(() => ({
+  loadContactFieldConfig: vi.fn(),
 }));
 
 const mockFinanceUseCases = vi.hoisted(() => ({
@@ -51,6 +55,7 @@ vi.mock("../db/repositories/financeCollectRepository.js", () => mockRepo);
 vi.mock("../accounting/ledgerPosting/ledgerPostingService.js", () => mockLedgerPosting);
 vi.mock("../services/financePreferencesService.js", () => mockPrefs);
 vi.mock("../services/contactService.js", () => mockContacts);
+vi.mock("../contacts/use-cases/contactConfigService.js", () => mockFieldConfig);
 // The sweep day is now resolved in the workspace zone; stub it so this stays a pure orchestration
 // test (the zone behaviour itself is covered by financeCollectTimeZone.test.ts).
 vi.mock("../lib/workspaceDay.js", () => ({
@@ -150,6 +155,7 @@ describe("financeCollectUseCases", () => {
         feeReminders: true,
         reminderDaysBefore: "7",
       });
+      mockFieldConfig.loadContactFieldConfig.mockResolvedValue(undefined);
       mockRepo.listOpenInvoicesForCollect.mockResolvedValue([
         {
           id: "inv-1",
@@ -161,17 +167,66 @@ describe("financeCollectUseCases", () => {
           familyContactId: "c-1",
         },
       ]);
-      mockContacts.loadContactsByIdsForTenant.mockResolvedValue([
-        { id: "c-1", name: "Parent One", phone: "+1234567890", email: "p@test.com" },
+      mockContacts.loadContactsSummaryByIdsForTenant.mockResolvedValue([
+        {
+          id: "c-1",
+          name: "Parent One",
+          phones: [{ number: "+1234567890", isPrimary: true }],
+          emails: [{ address: "p@test.com", isPrimary: true }],
+        },
       ]);
       mockRepo.claimInvoicesForReminder.mockResolvedValue(["inv-1"]);
 
-      const result = await runWithTenant("tenant-1", () => remindOpenInvoices());
+      const result = await runWithTenant("tenant-1", () =>
+        remindOpenInvoices({}, { viewerRole: "admin" }),
+      );
 
       expect(result.reminded).toBe(1);
       expect(result.recipients).toHaveLength(1);
-      expect(result.recipients[0]?.phone).toBe("+1234567890");
+      expect(result.recipients[0]?.phone).toBe("+1 234567890");
+      expect(result.recipients[0]?.email).toBe("p@test.com");
       expect(mockRepo.claimInvoicesForReminder).toHaveBeenCalledWith("tenant-1", ["inv-1"]);
+    });
+
+    it("sanitizes recipient phone/email when the tenant field config hides them", async () => {
+      mockPrefs.loadFinanceModulePreferences.mockResolvedValue({
+        overdueReminder: true,
+        feeReminders: true,
+        reminderDaysBefore: "7",
+      });
+      mockFieldConfig.loadContactFieldConfig.mockResolvedValue({
+        fields: {},
+        formTabs: [{ key: "phones", label: "Phones", enabled: false, order: 0 }],
+      });
+      mockRepo.listOpenInvoicesForCollect.mockResolvedValue([
+        {
+          id: "inv-1",
+          status: "unpaid",
+          finalAmt: 200,
+          paidAmt: 0,
+          creditedAmt: 0,
+          dueDate: "2026-09-08",
+          familyContactId: "c-1",
+        },
+      ]);
+      mockContacts.loadContactsSummaryByIdsForTenant.mockResolvedValue([
+        {
+          id: "c-1",
+          name: "Parent One",
+          phones: [{ number: "+1234567890", isPrimary: true }],
+          emails: [{ address: "p@test.com", isPrimary: true }],
+        },
+      ]);
+      mockRepo.claimInvoicesForReminder.mockResolvedValue(["inv-1"]);
+
+      const result = await runWithTenant("tenant-1", () =>
+        remindOpenInvoices({}, { viewerRole: "accountant" }),
+      );
+
+      expect(result.reminded).toBe(1);
+      expect(result.recipients).toHaveLength(1);
+      expect(result.recipients[0]?.phone).toBe("");
+      expect(result.recipients[0]?.email).toBe("p@test.com");
     });
   });
 

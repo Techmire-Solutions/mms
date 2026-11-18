@@ -50,9 +50,13 @@ export const sameContactsListFilters = builders.sameListFilters;
 /** Single SQL page — preferred for report visualizer (no unbounded walk). */
 export async function fetchContactById(
   contactId: string,
-  _signal?: AbortSignal,
+  signal?: AbortSignal,
 ): Promise<Contact | undefined> {
-  const response = await apiContract.contacts.get({ params: { id: contactId } });
+  const response = await apiContract.contacts.get({
+    params: { id: contactId },
+    signal,
+    fetchOptions: { signal },
+  });
   assertContractOk(response, "Failed to fetch contact");
   const body = response.body as { contact?: Contact } | undefined;
   return body?.contact;

@@ -62,7 +62,7 @@ export const financeCollectRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const result = await withTenant(
         String(request.tenant?.id),
-        () => remindOpenInvoices(parsed.data),
+        () => remindOpenInvoices(parsed.data, { viewerRole: user.role }),
         {
           readOnly: false,
         },

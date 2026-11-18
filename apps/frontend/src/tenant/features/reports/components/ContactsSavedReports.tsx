@@ -5,6 +5,7 @@ import {
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import type {
+  AppTranslationKey,
   ContactsSavedReport,
   ContactsSavedReportShareScope,
   ContactsWorkDrillDown,
@@ -143,11 +144,16 @@ export default function ContactsSavedReports({
     return formatDate(iso);
   })();
 
+  const SHARE_SCOPE_LABELS: Record<ContactsSavedReportShareScope, AppTranslationKey> = {
+    private: "contacts.savedReports.shareScope.private",
+    roles: "contacts.savedReports.shareScope.roles",
+    users: "contacts.savedReports.shareScope.users",
+    global: "contacts.savedReports.shareScope.global",
+  };
+
   const shareLabel = (scope: ContactsSavedReportShareScope | undefined): string => {
     const key = scope ?? "private";
-    return t(
-      `contacts.savedReports.shareScope.${key}` as "contacts.savedReports.shareScope.private",
-    );
+    return t(SHARE_SCOPE_LABELS[key]);
   };
 
   const canSave = Boolean(user);
@@ -164,12 +170,7 @@ export default function ContactsSavedReports({
           </p>
         </div>
         {canSave && (
-          <Button
-            type="button"
-            onClick={openSaveDialog}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors shadow-none"
-          >
-            <Plus className="w-3.5 h-3.5" />
+          <Button type="button" variant="primary" icon={Plus} onClick={openSaveDialog}>
             {t("contacts.savedReports.saveCurrent")}
           </Button>
         )}

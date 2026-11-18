@@ -4,7 +4,7 @@ import {
   type Contact,
   type Faculty,
 } from "@mms/shared";
-import { loadContactsByIdsForTenant } from "../../services/contactService.js";
+import { loadContactsSummaryByIdsForTenant } from "../../services/contactService.js";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 import { logger } from "../../lib/logger.js";
 
@@ -18,7 +18,7 @@ async function loadSupervisorNames(
     const supervisors = await findFacultyByIds(tenant, [...supervisorIds]);
     const supContactIds = supervisors.map((s) => s.contactId).filter(Boolean);
     if (supContactIds.length === 0) return new Map();
-    const supContacts = (await loadContactsByIdsForTenant(
+    const supContacts = (await loadContactsSummaryByIdsForTenant(
       tenant,
       supContactIds as string[],
     )) as Contact[];
@@ -78,7 +78,7 @@ export async function hydrateFacultyFromContacts(
 
   let contactMap = new Map();
   if (ids.size > 0) {
-    const contacts = (await loadContactsByIdsForTenant(tenant, [...ids])) as Contact[];
+    const contacts = (await loadContactsSummaryByIdsForTenant(tenant, [...ids])) as Contact[];
     contactMap = createContactLookupMap(contacts as never);
   }
   const [supervisorNameMap, rolesByDesignation] = await Promise.all([
