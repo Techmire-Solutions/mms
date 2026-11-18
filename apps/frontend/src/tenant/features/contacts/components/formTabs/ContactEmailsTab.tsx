@@ -31,7 +31,11 @@ export function ContactEmailsTab({
       resolveLabel={(raw, options, translate) =>
         resolveEmailLabel(raw as string | undefined, options, translate)
       }
-      emptyItem={(resolvedLabel) => ({ label: resolvedLabel, address: "" })}
+      emptyItem={(resolvedLabel) => ({
+        id: crypto.randomUUID(),
+        label: resolvedLabel,
+        address: "",
+      })}
       icon={Mail}
       emptyMessage={t("contacts.form.noEmailAddressesYet")}
       addLabel={t("contacts.form.addEmailAddress")}

@@ -49,6 +49,7 @@ export function ContactPhonesTab({
         resolvePhoneLabel(raw as string | undefined, options, translate)
       }
       emptyItem={(resolvedLabel) => ({
+        id: crypto.randomUUID(),
         label: resolvedLabel,
         number: "",
         countryCode: defaultCountryCode,

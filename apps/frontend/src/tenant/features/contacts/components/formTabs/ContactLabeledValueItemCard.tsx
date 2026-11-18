@@ -123,10 +123,15 @@ export function ContactLabeledValueItemCard({
     />
   );
 
+  const itemKey =
+    (item as { id?: string; _localId?: string }).id ??
+    (item as { _localId?: string })._localId ??
+    getLocalId(listKey, idx);
+
   return (
     <FormListFieldCard
-      key={getLocalId(listKey, idx)}
-      id={getLocalId(listKey, idx)}
+      key={itemKey}
+      id={itemKey}
       index={idx}
       icon={Icon}
       label={undefined}

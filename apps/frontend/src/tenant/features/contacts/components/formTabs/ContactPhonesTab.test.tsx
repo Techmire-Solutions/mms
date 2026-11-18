@@ -8,13 +8,18 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+let capturedSubListProps: Record<string, unknown> | null = null;
+
 vi.mock("./ContactLabeledValueSubListTab", () => ({
-  ContactLabeledValueSubListTab: (props: { listKey: string; options: string[] }) => (
-    <div data-testid="labeled-sublist">
-      <span>{props.listKey}</span>
-      <span>{props.options.join(",")}</span>
-    </div>
-  ),
+  ContactLabeledValueSubListTab: (props: Record<string, unknown>) => {
+    capturedSubListProps = props;
+    return (
+      <div data-testid="labeled-sublist">
+        <span>{String(props.listKey)}</span>
+        <span>{(props.options as string[]).join(",")}</span>
+      </div>
+    );
+  },
 }));
 
 describe("ContactPhonesTab Component", () => {
@@ -43,5 +48,23 @@ describe("ContactPhonesTab Component", () => {
 
     expect(html).toContain("phones");
     expect(html).toContain("mobile,home");
+  });
+
+  it("generates stable unique UUID id for each newly added phone item", () => {
+    expect(capturedSubListProps).not.toBeNull();
+    const emptyItem = capturedSubListProps?.emptyItem as (label: string) => Record<string, unknown>;
+    expect(typeof emptyItem).toBe("function");
+
+    const phone1 = emptyItem("Mobile");
+    const phone2 = emptyItem("Work");
+
+    expect(typeof phone1.id).toBe("string");
+    expect((phone1.id as string).length).toBeGreaterThan(0);
+    expect(typeof phone2.id).toBe("string");
+    expect((phone2.id as string).length).toBeGreaterThan(0);
+    // Distinct items must each have their own stable unique id
+    expect(phone1.id).not.toBe(phone2.id);
+    expect(phone1.countryCode).toBe("+92");
+    expect(phone1.number).toBe("");
   });
 });

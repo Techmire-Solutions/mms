@@ -34,13 +34,15 @@ vi.mock("@/components/app/FormPrimitives", () => ({
     <div data-testid="editable-select">{value}</div>
   ),
   FormListFieldCard: ({
+    id,
     children,
     typeSelect,
   }: {
+    id?: string;
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (
-    <div data-testid="list-field-card">
+    <div data-testid="list-field-card" data-card-id={id}>
       <div>{typeSelect}</div>
       <div>{children}</div>
     </div>
@@ -52,13 +54,15 @@ vi.mock("./ContactSubListCards", () => ({
     <div data-testid="sublist-shell">{children}</div>
   ),
   FormListFieldCard: ({
+    id,
     children,
     typeSelect,
   }: {
+    id?: string;
     children: React.ReactNode;
     typeSelect?: React.ReactNode;
   }) => (
-    <div data-testid="list-field-card">
+    <div data-testid="list-field-card" data-card-id={id}>
       <div>{typeSelect}</div>
       <div>{children}</div>
     </div>
@@ -101,5 +105,47 @@ describe("ContactLabeledValueSubListTab Component", () => {
     );
 
     expect(html).toContain("test@example.com");
+  });
+
+  it("uses stable item id as card id and React key to prevent input focus loss", () => {
+    const html = renderToStaticMarkup(
+      <ContactLabeledValueSubListTab
+        contactDraft={{
+          phones: [
+            { id: "stable-phone-id-1", number: "1234567890", label: "mobile" },
+            { id: "stable-phone-id-2", number: "0987654321", label: "work" },
+          ],
+        }}
+        getLocalId={(_k, idx) => `fallback-${idx}`}
+        listKey="phones"
+        labelFieldKey="label"
+        valueFieldKey="number"
+        options={["mobile", "work"]}
+        onUpdateOptions={vi.fn()}
+        resolveLabel={(raw) => String(raw || "mobile")}
+        emptyItem={(label) => ({ id: "gen-id", label, number: "" })}
+        icon={Mail}
+        emptyMessage="No phones"
+        addLabel="Add Phone"
+        removeLabel={(idx) => `Remove Phone ${idx}`}
+        valuePlaceholder="Phone number"
+        valueInputIdPrefix="phone-input"
+        labelSelectIdPrefix="phone-label"
+        getListItemError={() => undefined}
+        isFieldEnabled={() => true}
+        isFieldRequired={() => false}
+        fields={{}}
+        formInstanceId="inst-1"
+        addSubListItem={vi.fn()}
+        ensureSubListItem={vi.fn()}
+        updateSubListItem={vi.fn()}
+        removeSubListItem={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('data-card-id="stable-phone-id-1"');
+    expect(html).toContain('data-card-id="stable-phone-id-2"');
+    expect(html).not.toContain('data-card-id="fallback-0"');
+    expect(html).not.toContain('data-card-id="fallback-1"');
   });
 });

@@ -25,6 +25,19 @@ function newLocalId(formInstanceId: string, fieldKey: string): string {
   return `${formInstanceId}-${fieldKey}-${suffix}`;
 }
 
+/** Stamp a stable `id` and `_localId` on a sub-list item if it doesn't already have one. */
+function withLocalId<T>(item: T): T {
+  if (item && typeof item === "object") {
+    const rec = item as Record<string, unknown>;
+    const id =
+      (typeof rec.id === "string" && rec.id) ||
+      (typeof rec._localId === "string" && rec._localId) ||
+      crypto.randomUUID();
+    return { ...item, id, _localId: id };
+  }
+  return item;
+}
+
 export function useContactFormSubLists(
   contactDraft: Partial<Contact>,
   setContactDraft: Dispatch<SetStateAction<Partial<Contact>>>,
@@ -68,7 +81,7 @@ export function useContactFormSubLists(
         const currentList = Array.isArray(rawList) ? rawList : [];
         return {
           ...prev,
-          [fieldKey]: withHealedPrimary(fieldKey, [...currentList, newItem]),
+          [fieldKey]: withHealedPrimary(fieldKey, [...currentList, withLocalId(newItem)]),
         };
       });
     },
@@ -85,7 +98,7 @@ export function useContactFormSubLists(
         const rawList = (prev as Record<string, unknown>)[fieldKey];
         const currentList = Array.isArray(rawList) ? rawList : [];
         if (currentList.length > 0) return prev;
-        return { ...prev, [fieldKey]: withHealedPrimary(fieldKey, [newItem]) };
+        return { ...prev, [fieldKey]: withHealedPrimary(fieldKey, [withLocalId(newItem)]) };
       });
     },
     [contactDraft, idsFor, setContactDraft],
