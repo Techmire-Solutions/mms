@@ -32,6 +32,7 @@ export interface ContactSkillCardItemProps {
   isFieldRequired: (group: string, field: string) => boolean;
   getListItemError: (group: string, field: string, index: number) => string | undefined;
   getLocalId: (group: string, index: number) => string;
+  localId?: string;
   updateSkill: (idx: number, patch: Partial<ContactSkill> & Record<string, unknown>) => void;
   removeSkill: (idx: number) => void;
 }
@@ -39,6 +40,7 @@ export interface ContactSkillCardItemProps {
 export function ContactSkillCardItem({
   skill,
   idx,
+  localId,
   formInstanceId,
   categoryOptions,
   onUpdateCategoryOptions,
@@ -66,10 +68,12 @@ export function ContactSkillCardItem({
   const issuerError = getListItemError("skills", "issuer", idx);
   const descriptionError = getListItemError("skills", "description", idx);
 
+  const resolvedId =
+    localId ?? skill.id ?? (skill as { _localId?: string })._localId ?? getLocalId("skills", idx);
+
   return (
     <FormListFieldCard
-      key={getLocalId("skills", idx)}
-      id={getLocalId("skills", idx)}
+      id={resolvedId}
       index={idx}
       icon={Tag}
       label={undefined}

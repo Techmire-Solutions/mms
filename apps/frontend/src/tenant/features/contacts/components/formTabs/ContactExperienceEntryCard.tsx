@@ -22,6 +22,7 @@ export interface ContactExperienceEntryCardProps extends Pick<
 > {
   exp: ContactExperience;
   idx: number;
+  localId?: string;
   showTitle: boolean;
   showOrganization: boolean;
   showEmploymentType: boolean;
@@ -39,6 +40,7 @@ export interface ContactExperienceEntryCardProps extends Pick<
 export function ContactExperienceEntryCard({
   exp,
   idx,
+  localId,
   formInstanceId,
   getLocalId,
   getListItemError,
@@ -67,9 +69,12 @@ export function ContactExperienceEntryCard({
   const isCurrentError = getErr("isCurrent");
   const descriptionError = getErr("description");
 
+  const resolvedId =
+    localId ?? exp.id ?? (exp as { _localId?: string })._localId ?? getLocalId("experience", idx);
+
   return (
     <FormListFieldCard
-      id={getLocalId("experience", idx)}
+      id={resolvedId}
       index={idx}
       icon={Briefcase}
       label={undefined}

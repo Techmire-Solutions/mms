@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import { Heart } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import { getDisplayName, getPrimaryPhone } from "@mms/shared";
+import { getDisplayName, getPrimaryPhone, type RelationshipContact } from "@mms/shared";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import {
   FormCardTypeSelect,
@@ -62,7 +62,11 @@ export function ContactRelationshipTab({
   );
 
   const emptyLink = useCallback(
-    () => ({
+    (): RelationshipContact => ({
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? `rel-${crypto.randomUUID()}`
+          : `rel-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       relationship: STATIC_RELATIONSHIP_OPTIONS[0],
       contactId: "",
     }),
@@ -106,10 +110,15 @@ export function ContactRelationshipTab({
                 ? baseOptions
                 : [{ value: currentVal, label: currentVal }, ...baseOptions];
 
+            const itemKey =
+              link.id ??
+              (link as { _localId?: string })._localId ??
+              getLocalId("relationship", idx);
+
             return (
               <FormListFieldCard
-                key={getLocalId("relationship", idx)}
-                id={getLocalId("relationship", idx)}
+                key={itemKey}
+                id={itemKey}
                 index={idx}
                 icon={Heart}
                 label={undefined}

@@ -47,7 +47,10 @@ export function ContactBankDetailsTab({
 
   const emptyBankDetail = useCallback(
     (): ContactBankDetail => ({
-      id: `bnk-${crypto.randomUUID()}`,
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? `bnk-${crypto.randomUUID()}`
+          : `bnk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       bankName: "",
       accountTitle: "",
       accountNumber: "",
@@ -88,23 +91,30 @@ export function ContactBankDetailsTab({
       allowAdd={allowAdd}
     >
       <AnimatePresence initial={false}>
-        {bankDetails.map((bankDetail, idx) => (
-          <ContactBankDetailCard
-            key={getLocalId("bankDetails", idx)}
-            bankDetail={bankDetail}
-            idx={idx}
-            formInstanceId={formInstanceId}
-            bankNameOptions={resolvedBankNameOptions}
-            onUpdateBankNameOptions={resolvedOnUpdateBankNameOptions}
-            showBankName={showBankName}
-            showAccountTitle={showAccountTitle}
-            showAccountNumber={showAccountNumber}
-            getListItemError={getListItemError}
-            getLocalId={getLocalId}
-            updateBankDetail={updateBankDetail}
-            removeBankDetail={removeBankDetail}
-          />
-        ))}
+        {bankDetails.map((bankDetail, idx) => {
+          const itemKey =
+            bankDetail.id ??
+            (bankDetail as { _localId?: string })._localId ??
+            getLocalId("bankDetails", idx);
+          return (
+            <ContactBankDetailCard
+              key={itemKey}
+              localId={itemKey}
+              bankDetail={bankDetail}
+              idx={idx}
+              formInstanceId={formInstanceId}
+              bankNameOptions={resolvedBankNameOptions}
+              onUpdateBankNameOptions={resolvedOnUpdateBankNameOptions}
+              showBankName={showBankName}
+              showAccountTitle={showAccountTitle}
+              showAccountNumber={showAccountNumber}
+              getListItemError={getListItemError}
+              getLocalId={getLocalId}
+              updateBankDetail={updateBankDetail}
+              removeBankDetail={removeBankDetail}
+            />
+          );
+        })}
       </AnimatePresence>
     </ContactSubListShell>
   );

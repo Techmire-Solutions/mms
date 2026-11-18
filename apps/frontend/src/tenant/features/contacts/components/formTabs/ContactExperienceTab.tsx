@@ -95,29 +95,34 @@ export function ContactExperienceTab({
       allowAdd={allowAdd}
     >
       <AnimatePresence initial={false}>
-        {experiences.map((exp, idx) => (
-          <ContactExperienceEntryCard
-            key={getLocalId("experience", idx)}
-            exp={exp}
-            idx={idx}
-            formInstanceId={formInstanceId}
-            getLocalId={getLocalId}
-            getListItemError={getListItemError}
-            isFieldRequired={isFieldRequired}
-            showTitle={showTitle}
-            showOrganization={showOrganization}
-            showEmploymentType={showEmploymentType}
-            showLocation={showLocation}
-            showStartDate={showStartDate}
-            showEndDate={showEndDate}
-            showIsCurrent={showIsCurrent}
-            showDescription={showDescription}
-            employmentTypeOptions={employmentTypeOptions}
-            onUpdateEmploymentTypeOptions={onUpdateEmploymentTypeOptions}
-            onUpdate={(patch) => updateExperience(idx, patch)}
-            onRemove={() => removeExperience(idx)}
-          />
-        ))}
+        {experiences.map((exp, idx) => {
+          const itemKey =
+            exp.id ?? (exp as { _localId?: string })._localId ?? getLocalId("experience", idx);
+          return (
+            <ContactExperienceEntryCard
+              key={itemKey}
+              localId={itemKey}
+              exp={exp}
+              idx={idx}
+              formInstanceId={formInstanceId}
+              getLocalId={getLocalId}
+              getListItemError={getListItemError}
+              isFieldRequired={isFieldRequired}
+              showTitle={showTitle}
+              showOrganization={showOrganization}
+              showEmploymentType={showEmploymentType}
+              showLocation={showLocation}
+              showStartDate={showStartDate}
+              showEndDate={showEndDate}
+              showIsCurrent={showIsCurrent}
+              showDescription={showDescription}
+              employmentTypeOptions={employmentTypeOptions}
+              onUpdateEmploymentTypeOptions={onUpdateEmploymentTypeOptions}
+              onUpdate={(patch) => updateExperience(idx, patch)}
+              onRemove={() => removeExperience(idx)}
+            />
+          );
+        })}
       </AnimatePresence>
     </ContactSubListShell>
   );

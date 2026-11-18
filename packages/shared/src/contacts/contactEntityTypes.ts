@@ -57,6 +57,7 @@ export interface SocialLink {
 /** Educational qualification / degree record for contacts. */
 export interface ContactEducation {
   id?: string;
+  _localId?: string;
   degree?: string;
   institution: string;
   fieldOfStudy?: string;
@@ -70,6 +71,7 @@ export interface ContactEducation {
 /** Professional work / employment experience record for contacts. */
 export interface ContactExperience {
   id?: string;
+  _localId?: string;
   title: string;
   organization: string;
   employmentType?: string;
@@ -85,6 +87,7 @@ export interface ContactExperience {
 /** Skills, expertise, qualifications, and Sanad/Ijazah records for contacts. */
 export interface ContactSkill {
   id?: string;
+  _localId?: string;
   name: string;
   category?: string;
   proficiency?: string;
@@ -99,6 +102,7 @@ export interface ContactSkill {
 /** Bank account details for contacts. */
 export interface ContactBankDetail {
   id?: string;
+  _localId?: string;
   bankName?: string | null;
   accountTitle?: string | null;
   accountNumber?: string | null;
@@ -109,6 +113,8 @@ export type ContactBankDetailInput = ContactBankDetail;
 
 /** Linked contact entry for the Relationship form tab (reciprocal graph). */
 export interface RelationshipContact {
+  id?: string;
+  _localId?: string;
   name?: string;
   relationship?: string;
   phone?: string;

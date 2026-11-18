@@ -32,7 +32,10 @@ export function ContactEmailsTab({
         resolveEmailLabel(raw as string | undefined, options, translate)
       }
       emptyItem={(resolvedLabel) => ({
-        id: crypto.randomUUID(),
+        id:
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `email-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         label: resolvedLabel,
         address: "",
       })}

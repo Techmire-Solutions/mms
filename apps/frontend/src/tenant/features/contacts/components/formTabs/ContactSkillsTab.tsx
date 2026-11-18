@@ -62,6 +62,10 @@ export function ContactSkillsTab({
 
   const emptySkill = useCallback(
     (): ContactSkill => ({
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `skill-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       name: "",
       category: defaultCategory || categoryOptions[0] || "",
       proficiency: defaultProficiency || (proficiencyOptions ? proficiencyOptions[0] : "") || "",
@@ -106,30 +110,35 @@ export function ContactSkillsTab({
       allowAdd={allowAdd}
     >
       <AnimatePresence initial={false}>
-        {skills.map((skill, idx) => (
-          <ContactSkillCardItem
-            key={getLocalId("skills", idx)}
-            skill={skill}
-            idx={idx}
-            formInstanceId={formInstanceId}
-            categoryOptions={categoryOptions}
-            onUpdateCategoryOptions={onUpdateCategoryOptions}
-            proficiencyOptions={proficiencyOptions}
-            onUpdateProficiencyOptions={onUpdateProficiencyOptions}
-            showName={showName}
-            showCategory={showCategory}
-            showProficiency={showProficiency}
-            showYears={showYears}
-            showIsCertified={showIsCertified}
-            showIssuer={showIssuer}
-            showDescription={showDescription}
-            isFieldRequired={isFieldRequired}
-            getListItemError={getListItemError}
-            getLocalId={getLocalId}
-            updateSkill={updateSkill}
-            removeSkill={removeSkill}
-          />
-        ))}
+        {skills.map((skill, idx) => {
+          const itemKey =
+            skill.id ?? (skill as { _localId?: string })._localId ?? getLocalId("skills", idx);
+          return (
+            <ContactSkillCardItem
+              key={itemKey}
+              localId={itemKey}
+              skill={skill}
+              idx={idx}
+              formInstanceId={formInstanceId}
+              categoryOptions={categoryOptions}
+              onUpdateCategoryOptions={onUpdateCategoryOptions}
+              proficiencyOptions={proficiencyOptions}
+              onUpdateProficiencyOptions={onUpdateProficiencyOptions}
+              showName={showName}
+              showCategory={showCategory}
+              showProficiency={showProficiency}
+              showYears={showYears}
+              showIsCertified={showIsCertified}
+              showIssuer={showIssuer}
+              showDescription={showDescription}
+              isFieldRequired={isFieldRequired}
+              getListItemError={getListItemError}
+              getLocalId={getLocalId}
+              updateSkill={updateSkill}
+              removeSkill={removeSkill}
+            />
+          );
+        })}
       </AnimatePresence>
     </ContactSubListShell>
   );

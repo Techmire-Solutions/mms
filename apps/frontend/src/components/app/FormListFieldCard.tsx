@@ -45,7 +45,7 @@ export function FormListFieldCard({
 
   return (
     <m.div
-      key={id}
+      id={id}
       initial={reducedMotion ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}

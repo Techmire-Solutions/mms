@@ -51,6 +51,10 @@ export function ContactEducationTab({
 
   const emptyEducation = useCallback(
     (): ContactEducation => ({
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `edu-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       degree: defaultDegree || degreeOptions[0] || "",
       institution: "",
       fieldOfStudy: "",
@@ -94,27 +98,31 @@ export function ContactEducationTab({
       allowAdd={allowAdd}
     >
       <AnimatePresence initial={false}>
-        {educations.map((edu, idx) => (
-          <ContactEducationEntryCard
-            key={getLocalId("education", idx)}
-            edu={edu}
-            idx={idx}
-            formInstanceId={formInstanceId}
-            localId={getLocalId("education", idx)}
-            degreeOptions={degreeOptions}
-            onUpdateDegreeOptions={onUpdateDegreeOptions}
-            defaultDegree={defaultDegree}
-            showDegree={showDegree}
-            showInstitution={showInstitution}
-            showFieldOfStudy={showFieldOfStudy}
-            showYear={showYear}
-            showGrade={showGrade}
-            isFieldRequired={isFieldRequired}
-            getListItemError={getListItemError}
-            onUpdateEducation={(patch) => updateEducation(idx, patch)}
-            onRemoveEducation={() => removeEducation(idx)}
-          />
-        ))}
+        {educations.map((edu, idx) => {
+          const itemKey =
+            edu.id ?? (edu as { _localId?: string })._localId ?? getLocalId("education", idx);
+          return (
+            <ContactEducationEntryCard
+              key={itemKey}
+              edu={edu}
+              idx={idx}
+              formInstanceId={formInstanceId}
+              localId={itemKey}
+              degreeOptions={degreeOptions}
+              onUpdateDegreeOptions={onUpdateDegreeOptions}
+              defaultDegree={defaultDegree}
+              showDegree={showDegree}
+              showInstitution={showInstitution}
+              showFieldOfStudy={showFieldOfStudy}
+              showYear={showYear}
+              showGrade={showGrade}
+              isFieldRequired={isFieldRequired}
+              getListItemError={getListItemError}
+              onUpdateEducation={(patch) => updateEducation(idx, patch)}
+              onRemoveEducation={() => removeEducation(idx)}
+            />
+          );
+        })}
       </AnimatePresence>
     </ContactSubListShell>
   );
