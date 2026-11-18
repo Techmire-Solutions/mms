@@ -49,6 +49,7 @@ describe("TopBar and TopBarActions", () => {
     );
 
     expect(html).toContain("nav.globalSearchPlaceholder");
+    expect(html).toContain("ps-9 pe-3");
   });
 
   it("renders topbar actions including sync status, notifications, and user nav", () => {
