@@ -157,9 +157,9 @@ describe("resolveRouteAccess", () => {
 });
 
 describe("canShowRoute", () => {
-  it("shows Home to every authenticated role and never hides open routes", () => {
+  it("hides Home only when its module is not readable, and never hides open routes", () => {
     expect(canShowRoute(ROUTES.home, evaluator(null, null, "teacher"))).toBe(true);
-    expect(canShowRoute(ROUTES.home, evaluator(null, null, "guardian"))).toBe(true);
+    expect(canShowRoute(ROUTES.home, evaluator(null, null, "guardian"))).toBe(false);
     expect(canShowRoute(ROUTES.settings, evaluator(null, null, "guardian"))).toBe(true);
     expect(canShowRoute("/unknown-module", () => ({ allowed: true }))).toBe(false);
   });
