@@ -81,6 +81,9 @@ export const contacts = pgTable(
     index("contacts_workspace_name_active_idx")
       .on(table.workspaceSubdomain, table.name)
       .where(sql`${table.deletedAt} is null`),
+    index("contacts_name_trgm_idx")
+      .using("gin", sql`${table.name} gin_trgm_ops`)
+      .where(sql`${table.deletedAt} is null`),
     index("contacts_workspace_first_name_active_idx")
       .on(table.workspaceSubdomain, table.firstName)
       .where(sql`${table.deletedAt} is null`),

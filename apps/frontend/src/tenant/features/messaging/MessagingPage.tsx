@@ -27,8 +27,15 @@ export default function MessagingPage(): React.JSX.Element {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { canRead, canWrite, canViewSetup, canEditSetup, canClearLogs, canRestoreLogs } =
-    useModulePermissions(MESSAGING_MODULE_MANIFEST);
+  const {
+    canRead,
+    canWrite,
+    canViewSetup,
+    canEditSetup,
+    canClearLogs,
+    canRestoreLogs,
+    canReports,
+  } = useModulePermissions(MESSAGING_MODULE_MANIFEST);
   const tabParam = searchParams.get("tab") as "work" | "reports" | "setup" | null;
   const [activeTab, setActiveTab] = usePersistedTabState<"work" | "reports" | "setup">(
     "messaging_active_tab",
@@ -47,6 +54,7 @@ export default function MessagingPage(): React.JSX.Element {
   const { deleteTemplate, clearLogs, restoreLogs } = useMessagingMutations();
   const visibleTabs = useFilteredModuleTierTabs({
     canViewSetup: canViewSetup || canEditSetup,
+    canViewReports: canReports,
     workLabelKey: "nav.messaging",
   });
   // A hidden tab must not render its tier: `?tab=setup` (or a persisted tab from

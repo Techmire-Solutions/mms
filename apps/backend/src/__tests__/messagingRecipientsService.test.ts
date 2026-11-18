@@ -148,7 +148,7 @@ describe("messaging recipient resolvers (contacts use-case seam)", () => {
       },
       "teacher",
     );
-    expect(result).toMatchObject({ total: 1, page: 1, limit: 50, hasMore: false });
+    expect(result).toMatchObject({ total: 1, page: 1, pageSize: 50, hasMore: false });
     expect(result.recipients).toHaveLength(1);
     expect(Object.keys(result.recipients[0]).sort()).toEqual(["email", "id", "name", "phone"]);
     expect(result.recipients[0]).not.toHaveProperty("notes");

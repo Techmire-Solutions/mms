@@ -3,4 +3,5 @@ export * from "./messagingCategorySchemas.js";
 export * from "./messagingTemplateSchemas.js";
 export * from "./messagingDispatchSchemas.js";
 export * from "./messagingPreferencesSchemas.js";
+export * from "./messagingPersonalizeUtils.js";
 export * from "../schemas/messaging.dto.js";

@@ -22,6 +22,7 @@ import { dispatchMessagingCampaignDirect } from "./messagingDirectDispatch.js";
 import {
   type MessagingDispatchPayload,
   messagingDispatchBodyDigest,
+  idempotencyBodyMatches,
   resolveIdempotencyKey,
   withMessagingIdempotency,
 } from "./messagingLogIdempotency.js";
@@ -85,7 +86,7 @@ export const messagingEmailDispatchRoute: FastifyPluginAsync = async (fastify) =
         const payload = await getUserBackgroundJobPayload(userId, dispatchId);
         const existingDigest =
           typeof payload?.bodyDigest === "string" ? payload.bodyDigest : undefined;
-        if (!existingDigest || existingDigest !== bodyDigest) {
+        if (!idempotencyBodyMatches({ bodyDigest: existingDigest ?? "" }, bodyDigest)) {
           return reply.status(409).send({
             type: "conflict",
             message: "Idempotency key reused with a different dispatch body",

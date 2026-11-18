@@ -143,7 +143,7 @@ describe("messaging logs against real PostgreSQL", () => {
         contactId: "c-skipped",
         channel: "sms",
         body: "Skipped body",
-        sentAt: "2026-11-05T10:05:00.000Z",
+        sentAt: new Date("2026-11-05T10:05:00.000Z"),
         status: "skipped",
         category: "general",
       });

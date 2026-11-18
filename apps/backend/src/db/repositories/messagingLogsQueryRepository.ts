@@ -1,5 +1,5 @@
 import { and, eq, gte, ilike, isNull, lte, or, sql, asc, desc } from "drizzle-orm";
-import { messageLogs } from "../schema.js";
+import { messageLogs, contacts } from "../schema.js";
 import type { Message } from "@mms/shared";
 import { MESSAGE_LOGS_DEFAULT_PAGE_SIZE, toSqlSearchPattern } from "@mms/shared";
 import { withTenant } from "../tenant-context.js";
@@ -99,13 +99,13 @@ export async function queryFilteredMessageLogs(
     }
 
     if (query.startDate?.trim()) {
-      conditions.push(gte(messageLogs.sentAt, query.startDate.trim()));
+      conditions.push(gte(messageLogs.sentAt, new Date(query.startDate.trim())));
     }
 
     if (query.endDate?.trim()) {
       const rawEnd = query.endDate.trim();
       const normalizedEnd = rawEnd.includes("T") ? rawEnd : `${rawEnd}T23:59:59.999Z`;
-      conditions.push(lte(messageLogs.sentAt, normalizedEnd));
+      conditions.push(lte(messageLogs.sentAt, new Date(normalizedEnd)));
     }
 
     if (query.search?.trim()) {
@@ -116,10 +116,10 @@ export async function queryFilteredMessageLogs(
           ilike(messageLogs.subject, s),
           ilike(messageLogs.contactId, s),
           sql`${messageLogs.contactId} IN (
-            SELECT id FROM contacts
-            WHERE workspace_subdomain = ${subdomain}
-              AND deleted_at IS NULL
-              AND name ILIKE ${s}
+            SELECT ${contacts.id} FROM ${contacts}
+            WHERE ${contacts.workspaceSubdomain} = ${subdomain}
+              AND ${contacts.deletedAt} IS NULL
+              AND ${contacts.name} ILIKE ${s}
           )`,
         )!,
       );
@@ -246,11 +246,11 @@ export async function queryMessagingMetrics(
         AND deleted_at IS NULL
         AND (
           ${startDate}::text IS NULL
-          OR sent_at >= ${startDate}
+          OR sent_at >= ${startDate}::timestamptz
         )
         AND (
           ${endDate}::text IS NULL
-          OR sent_at <= ${endDate}
+          OR sent_at <= ${endDate}::timestamptz
         )
     `);
 

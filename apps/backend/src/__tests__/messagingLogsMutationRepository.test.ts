@@ -7,12 +7,26 @@ const { state } = vi.hoisted(() => ({
     deleteReturning: [] as Array<{ id: string }>,
     insertValues: null as Array<Record<string, unknown>> | null,
     conflictConfig: null as Record<string, unknown> | null,
+    selectRows: [] as Array<{ id: string }>,
   },
 }));
 
 vi.mock("../db/tenant-context.js", () => ({
   withTenant: async (_tenant: string, callback: (tx: unknown) => Promise<unknown>) =>
     callback({
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: () => ({
+              for: async () => {
+                const rows = state.selectRows;
+                state.selectRows = [];
+                return rows;
+              },
+            }),
+          }),
+        }),
+      }),
       update: () => ({
         set: (values: Record<string, unknown>) => {
           state.updateSet = values;
@@ -64,9 +78,11 @@ describe("softDeleteActiveMessageLogs", () => {
     state.updateSet = null;
     state.updateWhere = null;
     state.deleteReturning = [];
+    state.selectRows = [];
   });
 
   it("stamps the archiving actor and reason on every cleared log", async () => {
+    state.selectRows = [{ id: "log-1" }];
     await softDeleteActiveMessageLogs("demo", "u-admin");
 
     expect(state.updateSet).toEqual(
@@ -80,6 +96,7 @@ describe("softDeleteActiveMessageLogs", () => {
   });
 
   it("normalizes the tenant subdomain before writing", async () => {
+    state.selectRows = [{ id: "log-1" }];
     await softDeleteActiveMessageLogs("  DEMO  ", "u-admin");
     expect(state.updateSet).toEqual(
       expect.objectContaining({ deletedBy: "u-admin", deletionReason: "messaging.logs.clear" }),

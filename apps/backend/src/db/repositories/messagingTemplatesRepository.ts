@@ -5,6 +5,9 @@ import { withTenant } from "../tenant-context.js";
 
 type TemplateRow = typeof messageTemplates.$inferSelect;
 
+/** `inArray` id fetches are chunked to bound the bind list (`mms-performance` §1). */
+const TEMPLATE_ID_BATCH_SIZE = 250;
+
 export function templateRowToRecord(row: TemplateRow): MessageTemplate {
   const template: MessageTemplate = {
     id: row.id,
@@ -88,26 +91,31 @@ export async function findMessageTemplatesByIds(
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
   return withTenant(subdomain, async (tx) => {
-    const rows = await tx
-      .select({
-        id: messageTemplates.id,
-        workspaceSubdomain: messageTemplates.workspaceSubdomain,
-        label: messageTemplates.label,
-        labelKey: messageTemplates.labelKey,
-        body: messageTemplates.body,
-        category: messageTemplates.category,
-        channel: messageTemplates.channel,
-        createdAt: messageTemplates.createdAt,
-        updatedAt: messageTemplates.updatedAt,
-      })
-      .from(messageTemplates)
-      .where(
-        and(
-          eq(messageTemplates.workspaceSubdomain, subdomain),
-          inArray(messageTemplates.id, cleanIds),
-        ),
-      );
-    return rows.map(templateRowToRecord);
+    const results: MessageTemplate[] = [];
+    for (let i = 0; i < cleanIds.length; i += TEMPLATE_ID_BATCH_SIZE) {
+      const chunk = cleanIds.slice(i, i + TEMPLATE_ID_BATCH_SIZE);
+      const rows = await tx
+        .select({
+          id: messageTemplates.id,
+          workspaceSubdomain: messageTemplates.workspaceSubdomain,
+          label: messageTemplates.label,
+          labelKey: messageTemplates.labelKey,
+          body: messageTemplates.body,
+          category: messageTemplates.category,
+          channel: messageTemplates.channel,
+          createdAt: messageTemplates.createdAt,
+          updatedAt: messageTemplates.updatedAt,
+        })
+        .from(messageTemplates)
+        .where(
+          and(
+            eq(messageTemplates.workspaceSubdomain, subdomain),
+            inArray(messageTemplates.id, chunk),
+          ),
+        );
+      results.push(...rows.map(templateRowToRecord));
+    }
+    return results;
   });
 }
 

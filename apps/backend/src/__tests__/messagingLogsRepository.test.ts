@@ -5,6 +5,8 @@ const { state } = vi.hoisted(() => ({
   state: {
     inserted: [] as Array<{ id: string }>,
     values: null as unknown[] | null,
+    selectCalls: [] as unknown[][],
+    mockRows: [] as unknown[],
   },
 }));
 
@@ -21,10 +23,21 @@ vi.mock("../db/tenant-context.js", () => ({
           };
         },
       }),
+      select: () => ({
+        from: () => ({
+          where: async (_cond: unknown) => {
+            state.selectCalls.push(state.mockRows);
+            return state.mockRows;
+          },
+        }),
+      }),
     }),
 }));
 
-import { insertMessageLogs } from "../db/repositories/messagingLogsRepository.js";
+import {
+  findMessageLogsByIds,
+  insertMessageLogs,
+} from "../db/repositories/messagingLogsRepository.js";
 
 function log(id: string): Message {
   return {
@@ -43,6 +56,8 @@ describe("insertMessageLogs", () => {
   beforeEach(() => {
     state.inserted = [];
     state.values = null;
+    state.selectCalls = [];
+    state.mockRows = [];
   });
 
   it("reports the number of rows actually persisted, not the submitted length", async () => {
@@ -63,5 +78,27 @@ describe("insertMessageLogs", () => {
     expect(state.values).toHaveLength(1);
 
     await expect(insertMessageLogs("demo", [])).resolves.toBe(0);
+  });
+});
+
+describe("findMessageLogsByIds", () => {
+  beforeEach(() => {
+    state.inserted = [];
+    state.values = null;
+    state.selectCalls = [];
+    state.mockRows = [];
+  });
+
+  it("returns empty array when given empty or whitespace-only ids", async () => {
+    await expect(findMessageLogsByIds("demo", [])).resolves.toEqual([]);
+    await expect(findMessageLogsByIds("demo", ["", "   "])).resolves.toEqual([]);
+    expect(state.selectCalls).toHaveLength(0);
+  });
+
+  it("chunks queries into batches of 250 when querying many ids", async () => {
+    const ids = Array.from({ length: 520 }, (_, i) => `msg_${i}`);
+    await findMessageLogsByIds("demo", ids);
+    // 520 items with 250 batch size should produce ceil(520/250) = 3 select queries
+    expect(state.selectCalls).toHaveLength(3);
   });
 });

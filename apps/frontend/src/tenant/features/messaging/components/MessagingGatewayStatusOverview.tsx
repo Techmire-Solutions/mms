@@ -37,6 +37,9 @@ export function MessagingGatewayStatusOverview({
 
   const activeChannels = getActiveNotificationChannels(globalSettings);
 
+  // These toggles control app-wide notification channels (consumed by
+  // `getActiveNotificationChannels`), not messaging-specific preferences — so they
+  // persist via the global settings store, not the messaging preferences REST path.
   const handleToggleChannel = async (
     field: "emailNotifications" | "smsNotifications" | "whatsAppNotifications",
     val: boolean,

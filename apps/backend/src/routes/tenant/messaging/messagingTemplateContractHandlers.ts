@@ -39,11 +39,10 @@ export async function messagingListTemplatesHandler({
     };
   }
   try {
-    const templates = await withTenant(
-      String(request.tenant?.id),
-      () => messagingUseCases.loadMessageTemplates(),
-      { readOnly: true },
-    );
+    const subdomain = getTenantSubdomain(request);
+    const templates = await withTenant(subdomain, () => messagingUseCases.loadMessageTemplates(), {
+      readOnly: true,
+    });
     return { status: 200 as const, body: { templates } };
   } catch (err) {
     logHandlerFailure("listTemplates", err);

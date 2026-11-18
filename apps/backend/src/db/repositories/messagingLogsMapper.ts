@@ -1,6 +1,6 @@
 import type { Message } from "@mms/shared";
 import type { messageLogs } from "../schema.js";
-import { mapAuditTimestamps } from "./repositoryMappers.js";
+import { mapAuditTimestamps, toIsoString } from "./repositoryMappers.js";
 
 export type LogRow = typeof messageLogs.$inferSelect;
 /**
@@ -18,7 +18,7 @@ export function logRowToRecord(row: LogSelectRow): Message {
     contactId: row.contactId,
     channel: row.channel as Message["channel"],
     body: row.body,
-    sentAt: row.sentAt,
+    sentAt: toIsoString(row.sentAt) ?? "",
     status: row.status as Message["status"],
     category: row.category as Message["category"],
     ...mapAuditTimestamps(row),
@@ -39,7 +39,7 @@ export function mapMessageToInsertRow(record: Message, subdomain: string): Messa
     contactId: String(record.contactId),
     channel: record.channel,
     body: record.body,
-    sentAt: record.sentAt,
+    sentAt: new Date(record.sentAt),
     status: record.status ?? "sent",
     subject: record.subject ?? null,
     category: record.category ?? "general",

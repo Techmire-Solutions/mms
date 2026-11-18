@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeAny } from "zod";
-import type { User } from "@mms/shared";
+import { canonicalizeJson, type User } from "@mms/shared";
 import { getRequestAuditContext, getRequestTenant } from "./tenantContext.js";
 import { sendForbidden, sendServiceUnavailable } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
@@ -98,7 +98,8 @@ export function registerModuleCsvImportRoutes(
       // Same key, different body: never silently ignore the new rows.
       const stored = await getUserBackgroundJobPayload(userId, jobId);
       if (stored && Array.isArray(stored.rows)) {
-        if (JSON.stringify(stored.rows) !== JSON.stringify(data.rows)) {
+        // RFC 8785 canonical JSON so key order does not change the digest.
+        if (canonicalizeJson(stored.rows) !== canonicalizeJson(data.rows)) {
           return reply.status(409).send({
             type: "conflict",
             message:

@@ -14,6 +14,9 @@ export { logRowToRecord, type LogRow, type LogSelectRow };
 
 export type ListMessageLogsOptions = RepositoryListOptions;
 
+/** `inArray` id fetches are chunked to bound the bind list (`mms-performance` §1). */
+const MESSAGING_ID_BATCH_SIZE = 250;
+
 export async function listMessageLogsByWorkspace(
   tenant: string,
   options?: ListMessageLogsOptions,
@@ -40,6 +43,8 @@ export async function listMessageLogsByWorkspace(
         deletionReason: messageLogs.deletionReason,
         restoredAt: messageLogs.restoredAt,
         restoredBy: messageLogs.restoredBy,
+        createdAt: messageLogs.createdAt,
+        updatedAt: messageLogs.updatedAt,
       })
       .from(messageLogs)
       .where(and(eq(messageLogs.workspaceSubdomain, subdomain), isNull(messageLogs.deletedAt)))
@@ -105,45 +110,48 @@ export async function findMessageLogsByIds(
   const cleanIds = dedupeTrimmedIds(ids);
   if (cleanIds.length === 0) return [];
   const subdomain = tenant.trim().toLowerCase();
+  const isDeletedOnly = options?.deleted === "deleted" || options?.includeDeleted === true;
+  const isAll = options?.deleted === "all";
   return withTenant(subdomain, async (tx) => {
-    const isDeletedOnly = options?.deleted === "deleted" || options?.includeDeleted === true;
-    const isAll = options?.deleted === "all";
-    const deletedCond = isDeletedOnly
-      ? isNotNull(messageLogs.deletedAt)
-      : isAll
-        ? null
-        : isNull(messageLogs.deletedAt);
+    const results: Message[] = [];
+    for (let i = 0; i < cleanIds.length; i += MESSAGING_ID_BATCH_SIZE) {
+      const chunk = cleanIds.slice(i, i + MESSAGING_ID_BATCH_SIZE);
+      const conditions = [
+        eq(messageLogs.workspaceSubdomain, subdomain),
+        inArray(messageLogs.id, chunk),
+      ];
+      if (isDeletedOnly) {
+        conditions.push(isNotNull(messageLogs.deletedAt));
+      } else if (!isAll) {
+        conditions.push(isNull(messageLogs.deletedAt));
+      }
 
-    const conditions = [
-      eq(messageLogs.workspaceSubdomain, subdomain),
-      inArray(messageLogs.id, cleanIds),
-    ];
-    if (deletedCond) conditions.push(deletedCond);
-
-    const rows = await tx
-      .select({
-        id: messageLogs.id,
-        workspaceSubdomain: messageLogs.workspaceSubdomain,
-        userId: messageLogs.userId,
-        contactId: messageLogs.contactId,
-        channel: messageLogs.channel,
-        body: messageLogs.body,
-        sentAt: messageLogs.sentAt,
-        status: messageLogs.status,
-        subject: messageLogs.subject,
-        category: messageLogs.category,
-        errorMessage: messageLogs.errorMessage,
-        deletedAt: messageLogs.deletedAt,
-        deletedBy: messageLogs.deletedBy,
-        deletionReason: messageLogs.deletionReason,
-        restoredAt: messageLogs.restoredAt,
-        restoredBy: messageLogs.restoredBy,
-        createdAt: messageLogs.createdAt,
-        updatedAt: messageLogs.updatedAt,
-      })
-      .from(messageLogs)
-      .where(and(...conditions));
-    return rows.map((r) => logRowToRecord(r as LogRow));
+      const rows = await tx
+        .select({
+          id: messageLogs.id,
+          workspaceSubdomain: messageLogs.workspaceSubdomain,
+          userId: messageLogs.userId,
+          contactId: messageLogs.contactId,
+          channel: messageLogs.channel,
+          body: messageLogs.body,
+          sentAt: messageLogs.sentAt,
+          status: messageLogs.status,
+          subject: messageLogs.subject,
+          category: messageLogs.category,
+          errorMessage: messageLogs.errorMessage,
+          deletedAt: messageLogs.deletedAt,
+          deletedBy: messageLogs.deletedBy,
+          deletionReason: messageLogs.deletionReason,
+          restoredAt: messageLogs.restoredAt,
+          restoredBy: messageLogs.restoredBy,
+          createdAt: messageLogs.createdAt,
+          updatedAt: messageLogs.updatedAt,
+        })
+        .from(messageLogs)
+        .where(and(...conditions));
+      results.push(...rows.map((r) => logRowToRecord(r as LogRow)));
+    }
+    return results;
   });
 }
 
@@ -159,7 +167,7 @@ export function messageLogWriteValues(
     contactId: String(record.contactId),
     channel: record.channel,
     body: record.body,
-    sentAt: record.sentAt,
+    sentAt: new Date(record.sentAt),
     status: record.status ?? "sent",
     subject: record.subject ?? null,
     category: record.category ?? "general",

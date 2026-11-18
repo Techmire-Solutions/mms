@@ -2,6 +2,7 @@ import type {
   MessageTemplate,
   Message,
   MessagingMetricsDto,
+  MessagingPreferences,
   WhatsappIntegrationConfig,
   WhatsappIntegrationSecrets,
 } from "@mms/shared";
@@ -90,4 +91,8 @@ export interface MessagingRepository {
     tenant: string,
     secrets: WhatsappIntegrationSecrets,
   ): Promise<void>;
+
+  // Preferences
+  loadMessagingPreferences(tenant: string): Promise<MessagingPreferences | null>;
+  saveMessagingPreferences(tenant: string, prefs: MessagingPreferences): Promise<void>;
 }

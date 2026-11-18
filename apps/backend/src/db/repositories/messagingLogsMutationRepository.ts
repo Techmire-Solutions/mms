@@ -15,16 +15,37 @@ export async function softDeleteActiveMessageLogs(
 ): Promise<void> {
   const subdomain = workspaceSubdomain?.trim().toLowerCase();
   if (!subdomain) return;
+  const now = new Date();
   await withTenant(subdomain, async (tx) => {
-    await tx
-      .update(messageLogs)
-      .set({
-        deletedAt: new Date(),
-        deletedBy: userId || null,
-        deletionReason,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(messageLogs.workspaceSubdomain, subdomain), isNull(messageLogs.deletedAt)));
+    // Bound the archive in 500-row SKIP LOCKED batches, mirroring restore-all, so
+    // a very large workspace never runs one unbounded UPDATE (`mms-performance` §1).
+    for (;;) {
+      const batch = await tx
+        .select({ id: messageLogs.id })
+        .from(messageLogs)
+        .where(and(eq(messageLogs.workspaceSubdomain, subdomain), isNull(messageLogs.deletedAt)))
+        .limit(500)
+        .for("update", { skipLocked: true });
+      if (batch.length === 0) break;
+
+      await tx
+        .update(messageLogs)
+        .set({
+          deletedAt: now,
+          deletedBy: userId || null,
+          deletionReason,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(messageLogs.workspaceSubdomain, subdomain),
+            inArray(
+              messageLogs.id,
+              batch.map((row) => row.id),
+            ),
+          ),
+        );
+    }
   });
 }
 
@@ -71,7 +92,7 @@ export async function claimMessageLogForDelivery(
         contactId: claim.contactId,
         channel: claim.channel,
         body: claim.body,
-        sentAt: claim.sentAt,
+        sentAt: new Date(claim.sentAt),
         status: "sending",
         subject: claim.subject ?? null,
         category: claim.category ?? "general",
@@ -154,7 +175,7 @@ export async function saveMessageLogDeliveryOutcomes(
           contactId: outcome.contactId,
           channel: outcome.channel,
           body: outcome.body,
-          sentAt: outcome.sentAt,
+          sentAt: new Date(outcome.sentAt),
           status: outcome.status,
           subject: outcome.subject ?? null,
           category: outcome.category ?? "general",

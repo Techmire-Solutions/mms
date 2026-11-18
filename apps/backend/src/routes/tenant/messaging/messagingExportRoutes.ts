@@ -21,7 +21,7 @@ import {
   getUserBackgroundJobPayload,
 } from "../../../services/backgroundJobWorkerService.js";
 import { canWriteMessaging } from "../../../services/rbacService.js";
-import { resolveIdempotencyKey } from "./messagingLogIdempotency.js";
+import { resolveIdempotencyKey, idempotencyBodyMatches } from "./messagingLogIdempotency.js";
 
 function messagingExportBodyDigest(input: {
   query?: unknown;
@@ -76,7 +76,7 @@ export const messagingExportRoutes: FastifyPluginAsync = async (fastify) => {
         const payload = await getUserBackgroundJobPayload(userId, jobId);
         const existingDigest =
           typeof payload?.bodyDigest === "string" ? payload.bodyDigest : undefined;
-        if (!existingDigest || existingDigest !== bodyDigest) {
+        if (!idempotencyBodyMatches({ bodyDigest: existingDigest ?? "" }, bodyDigest)) {
           return reply.status(409).send({
             type: "conflict",
             message: "Idempotency key reused with a different export body",
