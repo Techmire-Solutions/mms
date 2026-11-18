@@ -129,6 +129,8 @@ export function WorkBatchTable<TData extends { id: string | number }>({
         ref={containerRef}
         className={cn(
           "overflow-x-auto",
+          // Keep keyboard-focused rows clear of the sticky header (WCAG 2.2 2.4.11).
+          "scroll-pt-12",
           isVirtualized && cn(maxHeightClassName, "overflow-y-auto"),
           bordered && WORK_SURFACE,
         )}

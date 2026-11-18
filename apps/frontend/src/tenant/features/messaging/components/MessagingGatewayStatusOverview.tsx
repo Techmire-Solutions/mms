@@ -67,10 +67,12 @@ export function MessagingGatewayStatusOverview({
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className="text-base font-semibold text-balance">
               {t("messaging.gateways.title")}
             </CardTitle>
-            <CardDescription className="text-xs">{t("messaging.gateways.desc")}</CardDescription>
+            <CardDescription className="text-xs text-pretty">
+              {t("messaging.gateways.desc")}
+            </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs font-medium" aria-live="polite">
             <span className="text-muted-foreground">{t("global.notificationsActiveChannel")}:</span>
