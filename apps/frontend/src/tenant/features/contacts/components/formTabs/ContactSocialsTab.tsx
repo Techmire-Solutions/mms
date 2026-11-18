@@ -30,7 +30,7 @@ export function ContactSocialsTab({
       resolveLabel={(raw, options, translate) =>
         resolveSocialPlatformLabel(raw as string | undefined, options, translate)
       }
-      emptyItem={(resolvedLabel) => ({ platform: resolvedLabel, url: "" })}
+      emptyItem={(resolvedLabel) => ({ id: crypto.randomUUID(), platform: resolvedLabel, url: "" })}
       icon={Share2}
       emptyMessage={t("contacts.form.noSocialLinksYet")}
       addLabel={t("contacts.form.addSocialLink")}

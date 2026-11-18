@@ -105,7 +105,9 @@ export function ContactAddressesTab({
 
           return (
             <ContactAddressEntryCard
-              key={getLocalId("addresses", idx)}
+              key={
+                addr.id ?? (addr as { _localId?: string })._localId ?? getLocalId("addresses", idx)
+              }
               addr={addr}
               idx={idx}
               localId={getLocalId("addresses", idx)}

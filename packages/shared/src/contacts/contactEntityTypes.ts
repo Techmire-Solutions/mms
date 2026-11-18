@@ -15,6 +15,8 @@ export type WhatsAppStatus = (typeof WHATSAPP_STATUS_VALUES)[number];
 
 /** Phone number model for contacts with label, country code, and verification status. */
 export interface PhoneNumber {
+  id?: string;
+  _localId?: string;
   label: string;
   number: string;
   countryCode?: string;
@@ -24,6 +26,8 @@ export interface PhoneNumber {
 
 /** Email address model for contacts with verification state and primary flag. */
 export interface EmailAddress {
+  id?: string;
+  _localId?: string;
   label: string;
   address: string;
   isPrimary?: boolean;
@@ -32,6 +36,8 @@ export interface EmailAddress {
 
 /** Physical address model for contacts. */
 export interface Address {
+  id?: string;
+  _localId?: string;
   line1?: string;
   city?: string;
   state?: string;
@@ -42,6 +48,8 @@ export interface Address {
 
 /** Social profile link model for contacts. */
 export interface SocialLink {
+  id?: string;
+  _localId?: string;
   platform: string;
   url: string;
 }

@@ -135,7 +135,11 @@ export function ContactLabeledValueSubListTab({
       <AnimatePresence initial={false}>
         {items.map((item, idx) => (
           <ContactLabeledValueItemCard
-            key={getLocalId(listKey, idx)}
+            key={
+              (item as { id?: string; _localId?: string }).id ??
+              (item as { _localId?: string })._localId ??
+              getLocalId(listKey, idx)
+            }
             item={item}
             idx={idx}
             listKey={listKey}
