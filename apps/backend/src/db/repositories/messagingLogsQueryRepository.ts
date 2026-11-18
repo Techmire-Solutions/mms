@@ -225,6 +225,10 @@ export async function queryMessagingMetrics(
   const rawEnd = filters.endDate?.trim() || null;
   const endDate = rawEnd ? (rawEnd.includes("T") ? rawEnd : `${rawEnd}T23:59:59.999Z`) : null;
   return withTenant(subdomain, async (tx) => {
+    // Note: `delivered` is a valid terminal state (messageStatusSchema) but no
+    // provider callback currently writes it — the campaign runner only persists
+    // `sent`/`failed`. It is kept as a reserved bucket for future async delivery
+    // reports, so `successRate` treats it as a success (delivered + sent).
     const result = await tx.execute(sql`
       SELECT
         COUNT(*)::int AS total,

@@ -83,7 +83,6 @@ export function useMessagingDispatchMutations() {
         }>;
         subject: string;
         message: string;
-        html?: string;
         category?: string;
       } & DispatchKeyedPayload,
     ) => {

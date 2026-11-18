@@ -26,7 +26,6 @@ export interface DirectDispatchParams {
   sentAt: string;
   category: MessageCategory;
   subject?: string;
-  html?: string;
 }
 
 export interface DirectDispatchSummary {
@@ -47,7 +46,6 @@ async function sendDirectChannel(
   recipient: DirectDispatchRecipient,
   body: string,
   subject: string | undefined,
-  html: string | undefined,
 ): Promise<SendOutcome> {
   try {
     if (channel === "sms") {
@@ -62,7 +60,6 @@ async function sendDirectChannel(
       to: recipient.email ?? "",
       subject: subject || "Notification",
       text: body,
-      html,
     });
     return { sent: res.sent, failureMessage: res.message || res.reason };
   } catch (err) {
@@ -91,7 +88,6 @@ export async function dispatchMessagingCampaignDirect(
     const personalizedSubject = params.subject
       ? personalizeMessage(params.subject, recipient)
       : undefined;
-    const personalizedHtml = params.html ? personalizeMessage(params.html, recipient) : undefined;
     const claimId = buildMessageLogClaimId(dispatchId, String(recipient.id), channel);
 
     const claimed = await messagingUseCases.claimMessageLogForDelivery(tenantSubdomain, {
@@ -114,7 +110,6 @@ export async function dispatchMessagingCampaignDirect(
       recipient,
       personalizedBody,
       personalizedSubject,
-      personalizedHtml,
     );
     if (outcome.sent) sentCount += 1;
     else failedCount += 1;

@@ -47,6 +47,8 @@ export function mapMessageToInsertRow(record: Message, subdomain: string): Messa
     deletedAt: record.deletedAt ? new Date(record.deletedAt) : null,
     deletedBy: record.deletedBy ?? null,
     deletionReason: record.deletionReason ?? null,
+    restoredAt: record.restoredAt ? new Date(record.restoredAt) : null,
+    restoredBy: record.restoredBy ?? null,
     createdAt: record.createdAt ? new Date(record.createdAt) : new Date(),
     updatedAt: new Date(),
   };

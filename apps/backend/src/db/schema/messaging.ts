@@ -160,7 +160,13 @@ export const whatsappIntegrations = pgTable("whatsapp_integrations", {
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 
-/** Tenant-scoped messaging preferences — replaces objects KV `messaging_preferences`. */
+/**
+ * Tenant-scoped messaging preferences — replaces objects KV `messaging_preferences`.
+ *
+ * Uses the tenant-only `tenant_isolation_policy` (no `platform_superadmin_policy`),
+ * matching `message_logs`/`message_templates` — the migration applies FORCE RLS with
+ * the same single-tenant policy these sibling tables use.
+ */
 export const messagingPreferences = pgTable("messaging_preferences", {
   workspaceSubdomain: text("workspace_subdomain")
     .primaryKey()

@@ -67,7 +67,6 @@ const messagingEmailDispatchBaseSchema = z
       .min(1)
       .max(50_000)
       .refine((v) => v.trim().length > 0, "Message cannot be empty"),
-    html: z.string().max(100_000).optional(),
     category: messageCategorySchema.optional().default("general"),
     queued: z.boolean().optional(),
     idempotencyKey: z

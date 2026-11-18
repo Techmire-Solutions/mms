@@ -1,8 +1,9 @@
 import type { User } from "@mms/shared";
-import { type messagingContract } from "@mms/shared";
+import { MESSAGING_MODULE_MANIFEST, type messagingContract } from "@mms/shared";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { logger } from "../../../lib/logger.js";
-import { canReadMessaging, canWriteMessaging } from "../../../services/rbacService.js";
+import { canReadMessaging } from "../../../services/rbacService.js";
+import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { messagingPreferencesService } from "../../../services/messagingPreferencesService.js";
 import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
@@ -45,7 +46,10 @@ export async function messagingUpdatePreferencesHandler({
   ContractRouteResponse<(typeof messagingContract)["updatePreferences"]>
 > {
   const user = request.user as User;
-  if (!canWriteMessaging(user)) {
+  // Setup-tier write: the module gate resolves PUT /preferences to `setupWrite`
+  // (`settings.global.write`), so the handler mirrors that permission rather than
+  // the weaker `messaging.write` (`mms-auth-security` module access gates).
+  if (!userHasPermission(user, MESSAGING_MODULE_MANIFEST.permissions.setupWrite)) {
     return {
       status: 403 as const,
       body: { type: "forbidden", message: "Insufficient permissions" },
