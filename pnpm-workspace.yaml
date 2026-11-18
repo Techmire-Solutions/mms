@@ -119,3 +119,13 @@ overrides:
   # Security: happy-dom GHSA-834v-8h66-3h79 unsanitized import alias leads to host code execution.
   # Transitive path: @vitest/coverage-v8 > vitest > happy-dom.
   happy-dom: ">=21.0.4"
+
+# REVIEWED EXCEPTION — picomatch <=4.0.7 (GHSA-fc5q-39xc-vjpf): ReDoS through
+# single-branch repeated extglobs. Dev-tooling only (vitest → vite → picomatch;
+# tinyglobby → fdir → picomatch; rollup pluginutils) — never in the production
+# bundle and never fed untrusted input at runtime. The patched version 4.0.8 is
+# unpublished as of this writing, so the advisory is ignored by id until the
+# patch ships; then remove this block and pin via `overrides`.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-fc5q-39xc-vjpf
