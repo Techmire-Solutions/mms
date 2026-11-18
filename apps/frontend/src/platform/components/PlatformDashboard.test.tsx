@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformDashboard } from "./PlatformDashboard";
 
+const state = vi.hoisted(() => ({ canWorkspaces: true }));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (k: string) => k,
@@ -17,7 +19,7 @@ vi.mock("@/platform/hooks/usePlatformPermissions", () => ({
   usePlatformPermissions: () => ({
     platformUser: { id: "admin-1", name: "Zaid", email: "zaid@example.com" },
     isSuperUser: true,
-    canWorkspaces: true,
+    canWorkspaces: state.canWorkspaces,
     canOnboard: true,
     canSystem: true,
     canAdmins: true,
@@ -81,5 +83,16 @@ describe("PlatformDashboard section order", () => {
     expect(fleet).toBeGreaterThan(metrics);
     expect(charts).toBeGreaterThan(fleet);
     expect(health).toBeGreaterThan(charts);
+  });
+
+  it("shows a no-access empty state instead of a skeleton when the admin lacks workspaces", () => {
+    state.canWorkspaces = false;
+    try {
+      const html = renderToStaticMarkup(<PlatformDashboard />);
+      expect(html).toContain("platform.noAccessTitle");
+      expect(html).not.toContain('data-testid="dashboard-metrics"');
+    } finally {
+      state.canWorkspaces = true;
+    }
   });
 });

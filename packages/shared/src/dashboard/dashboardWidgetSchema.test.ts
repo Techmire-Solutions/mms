@@ -139,4 +139,15 @@ describe("dashboardWidgetsPutBodySchema", () => {
     const tooMany = Array.from({ length: 501 }, (_, i) => ({ ...validWidget, id: `w-${i}` }));
     expect(dashboardWidgetsPutBodySchema.safeParse(tooMany).success).toBe(false);
   });
+
+  it("rejects a payload whose serialized size exceeds the request cap", () => {
+    // Each widget stays under the per-widget 16 KB refine, but the whole payload
+    // exceeds the request-level cap — the contract must 400, not rely on the body limit.
+    const big = Array.from({ length: 40 }, (_, i) => ({
+      ...validWidget,
+      id: `w-${i}`,
+      fixedSubText: "x".repeat(13_000),
+    }));
+    expect(dashboardWidgetsPutBodySchema.safeParse(big).success).toBe(false);
+  });
 });

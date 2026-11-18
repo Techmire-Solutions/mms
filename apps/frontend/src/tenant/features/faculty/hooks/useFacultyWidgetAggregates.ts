@@ -6,6 +6,7 @@ import {
   FACULTY_WIDGET_AGGREGATES_QUERY_KEY,
   type FacultyWidgetAggregateWidgetInput,
 } from "@/tenant/features/faculty/hooks/facultyQueryKeys";
+import { fetchWidgetAggregatesBatched } from "@/lib/reports/widgetAggregatesBatch";
 
 function facultyWidgetAggregateQueries(widgets: FacultyWidgetAggregateWidgetInput[]) {
   return widgets
@@ -40,26 +41,13 @@ export function facultyWidgetAggregatesQueryOptions(
 
   return queryOptions({
     queryKey: [...FACULTY_WIDGET_AGGREGATES_QUERY_KEY, querySignature] as const,
-    queryFn: async ({ signal }) => {
-      const res = await apiContract.faculty.widgetAggregates({
-        body: { widgets: queries },
-        fetchOptions: { signal },
-      });
-      return (
-        (
-          res.body as {
-            results?: Record<
-              string,
-              {
-                value?: number;
-                totalCount?: number;
-                chartData?: Array<{ name: string; value: number }>;
-              }
-            >;
-          } | null
-        )?.results ?? {}
-      );
-    },
+    queryFn: async ({ signal }) =>
+      fetchWidgetAggregatesBatched(queries, (batch) =>
+        apiContract.faculty.widgetAggregates({
+          body: { widgets: batch },
+          fetchOptions: { signal },
+        }),
+      ),
     enabled: isAuthenticated && enabled && queries.length > 0,
     staleTime: 30_000,
   });

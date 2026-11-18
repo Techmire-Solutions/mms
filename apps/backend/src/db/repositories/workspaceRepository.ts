@@ -21,6 +21,7 @@ export {
 
 export {
   listWorkspaceRowsWithBranding,
+  listWorkspaceRowsPage,
   getWorkspaceBranding,
   getWorkspaceWithBranding,
   updateWorkspaceBrandingRow,

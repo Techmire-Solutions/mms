@@ -134,6 +134,7 @@ export function StatisticsGrid({
               title={statItem.title}
               footer={statItem.sub}
               trend={isEditMode || statItem.unavailable ? undefined : statItem.trend}
+              trendKind={statItem.trendKind}
               trendAriaLabel={
                 statItem.trend !== 0 && !isEditMode && !statItem.unavailable
                   ? t("dashboard.trendAria", {

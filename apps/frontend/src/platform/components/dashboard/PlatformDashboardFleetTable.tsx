@@ -4,7 +4,7 @@ import type { PlatformWorkspaceRow } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BiDiText } from "@/components/app/BiDiText";
 import { usePlatformInspector } from "@/platform/lib/PlatformInspectorContext";
-import { Button, EmptyState, ListPagination } from "@shared/ui";
+import { EmptyState, ListPagination } from "@shared/ui";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { WorkspaceStatusBadge } from "@/platform/components/workspace/WorkspaceStatusBadge";
 import { PlatformDashboardFleetRowMenu } from "@/platform/components/dashboard/PlatformDashboardFleetRowMenu";
@@ -21,7 +21,6 @@ export interface PlatformDashboardFleetTableProps {
   onPageChange: (page: number) => void;
   sortDir: "asc" | "desc";
   onToggleSort: () => void;
-  onRequestExport: () => void;
 }
 
 type FleetRow = PlatformWorkspaceRow & { id: string };
@@ -39,7 +38,6 @@ export function PlatformDashboardFleetTable({
   onPageChange,
   sortDir,
   onToggleSort,
-  onRequestExport,
 }: PlatformDashboardFleetTableProps): React.JSX.Element {
   const { t } = useTranslation();
   const { openInspector } = usePlatformInspector();
@@ -88,18 +86,7 @@ export function PlatformDashboardFleetTable({
 
   const footer = (
     <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 px-3 py-2">
-      {selected.size > 0 ? (
-        <Button
-          type="button"
-          variant="secondary"
-          className="min-h-11 rounded-xl text-xs font-bold cursor-pointer"
-          onClick={onRequestExport}
-        >
-          {t("platform.workspaces.exportSelected")} ({selected.size})
-        </Button>
-      ) : (
-        <span />
-      )}
+      <span />
       <ListPagination
         page={page}
         total={total}

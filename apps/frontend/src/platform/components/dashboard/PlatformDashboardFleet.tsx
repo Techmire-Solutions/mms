@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { usePlatformWorkspaces } from "@/platform/hooks/usePlatformWorkspaces";
@@ -7,13 +7,11 @@ import {
   type FleetStatusFilter,
 } from "@/platform/components/dashboard/PlatformDashboardFleetControls";
 import { PlatformDashboardFleetTable } from "@/platform/components/dashboard/PlatformDashboardFleetTable";
-import { ConfirmAlertDialog } from "@shared/ui";
-import { notify } from "@/lib/notify";
 
 const PAGE_SIZE = 5;
 const REFRESH_MS = 60_000;
 
-/** Zones C–G — fleet filters, table, confirm modal; row click opens inspector. */
+/** Zones C–G — fleet filters and table; row click opens inspector. */
 export function PlatformDashboardFleet(): React.JSX.Element | null {
   const { t } = useTranslation();
   const { canWorkspaces } = usePlatformPermissions();
@@ -25,16 +23,17 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
   const [page, setPage] = useState(1);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
-  const [exportOpen, setExportOpen] = useState(false);
 
   // Changing the filters/sort invalidates the current page and selection — adjust during render.
-  const [prevFilterKey, setPrevFilterKey] = useState({ search, status, sortDir });
+  const [prevFilterKey, setPrevFilterKey] = useState({ search, status, sortDir, dateFrom, dateTo });
   if (
     prevFilterKey.search !== search ||
     prevFilterKey.status !== status ||
-    prevFilterKey.sortDir !== sortDir
+    prevFilterKey.sortDir !== sortDir ||
+    prevFilterKey.dateFrom !== dateFrom ||
+    prevFilterKey.dateTo !== dateTo
   ) {
-    setPrevFilterKey({ search, status, sortDir });
+    setPrevFilterKey({ search, status, sortDir, dateFrom, dateTo });
     setPage(1);
     setSelected(new Set());
   }
@@ -46,6 +45,8 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
     status,
     sortField: "name",
     sortDir,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
   });
 
   useEffect(() => {
@@ -56,14 +57,7 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
     return () => window.clearInterval(id);
   }, [autoRefresh, refetch]);
 
-  const rows = data ?? [];
-  const filteredByDate = rows.filter((row) => {
-    if (!dateFrom && !dateTo) return true;
-    const created = row.createdAt?.slice(0, 10) ?? "";
-    if (dateFrom && created < dateFrom) return false;
-    if (dateTo && created > dateTo) return false;
-    return true;
-  });
+  const rows = useMemo(() => data ?? [], [data]);
 
   const onToggleSelect = useCallback((subdomain: string) => {
     setSelected((prev) => {
@@ -76,9 +70,9 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
 
   const onToggleSelectAll = useCallback(
     (checked: boolean) => {
-      setSelected(checked ? new Set(filteredByDate.map((r) => r.subdomain)) : new Set());
+      setSelected(checked ? new Set(rows.map((r) => r.subdomain)) : new Set());
     },
-    [filteredByDate],
+    [rows],
   );
 
   if (!canWorkspaces) return null;
@@ -101,7 +95,7 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
         onDateToChange={setDateTo}
       />
       <PlatformDashboardFleetTable
-        rows={filteredByDate}
+        rows={rows}
         total={total}
         page={page}
         pageSize={PAGE_SIZE}
@@ -112,19 +106,6 @@ export function PlatformDashboardFleet(): React.JSX.Element | null {
         onPageChange={setPage}
         sortDir={sortDir}
         onToggleSort={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-        onRequestExport={() => setExportOpen(true)}
-      />
-      <ConfirmAlertDialog
-        open={exportOpen}
-        onOpenChange={setExportOpen}
-        title={t("platform.fleetExportTitle")}
-        description={t("platform.fleetExportHint", { count: selected.size })}
-        confirmLabel={t("platform.workspaces.exportSelected")}
-        cancelLabel={t("common.cancel")}
-        onConfirm={() => {
-          notify.success(t("platform.fleetExportQueued", { count: selected.size }));
-          setSelected(new Set());
-        }}
       />
     </div>
   );

@@ -15,15 +15,11 @@ interface SetupIncompleteCalloutProps {
   isAdmin: boolean;
 }
 
-/** Returns true when the institution profile has enough filled-in fields. */
+/** Returns true when the institution profile has a logo plus a contact identity field. */
 export function isInstitutionProfileComplete(branding: BrandingSettings): boolean {
-  return !!(
-    branding.logoUrl ||
-    branding.country ||
-    branding.email ||
-    branding.phone ||
-    branding.tagline
-  );
+  // A single stray field (e.g. a tagline) must not mark the profile complete and
+  // permanently suppress the setup callout (2026-11-17 review, m8).
+  return Boolean(branding.logoUrl && (branding.country || branding.email || branding.phone));
 }
 
 const DISMISSED_KEY = "mms_setup_callout_dismissed";

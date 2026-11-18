@@ -32,6 +32,9 @@ Project-wide entry points live at the repo root:
 
 ## Audits & reviews (point-in-time)
 
+- [dashboard-module-review-2026-11-17.md](./dashboard-module-review-2026-11-17.md) — dashboard module review (tenant + platform, backend + frontend + UI/UX): re-verifies the 2026-11-04 findings (D1–D5, m1–m15) and surfaces new ones (N1–N3, P1–P9), with severity triage, rule citations, and a tiered resolution plan.
+- [dashboard-review-fixes-2026-11-17.md](./dashboard-review-fixes-2026-11-17.md) — consolidated record of every fix landed for the dashboard review: D1 (shared board + `settings.global.write` gate), m1 (drop dead `analytics.view`), m7/m8/m11–m15, N1–N3, P1–P9, U1, with the verification results (typecheck, suites, ratchets, axe gate).
+
 - [platform-console-review.md](./platform-console-review.md) — whole-platform-console review (frontend + backend + `@mms/shared`): fixed the `platformSettingsDtoSchema` notification-field gap and missing `.strict()`, the `setupRegister` 409 / workspace-modules 404 / `patchWorkspace` contract drift, the misleading 2FA-resend `invalid_credentials` (now `challenge_not_found`), a redundant tenant-user double lookup, the platform sidebar LTR-lock + dead `rtl:` classes, hardcoded English in the telemetry/reports cards (15 new keys across en/ar/ur/fa), and a work-tier permission-gating inconsistency where non-super-user `admins`-grant operators saw create/edit/disable/delete controls the backend (correctly) restricts to `super_user`. Confirmed no-change: workspace-ops step-up stays area-grant-only and `/session/extend` stays idle-only.
 
 - [forms-audit-2026-11-16.md](./forms-audit-2026-11-16.md) — form architecture audit: generated inventory, draft-lifecycle contract (identity reset / in-flight submit binding / dirty guard / server-error mapping), per-module sweeps, and the `check:forms` ratchet that keeps the baselines shrinking.

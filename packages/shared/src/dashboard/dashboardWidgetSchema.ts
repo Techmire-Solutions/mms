@@ -26,6 +26,9 @@ const WIDGET_TYPES = [
 /** Upper bound for one widget payload set — shared by the read cap, write and reorder DTOs. */
 export const DASHBOARD_WIDGETS_MAX = 500;
 
+/** Upper bound on the serialized size of one widget PUT payload (jsonb `config`). */
+export const DASHBOARD_WIDGETS_MAX_JSON_BYTES = 512_000;
+
 const OPERATIONS = ["count", "sum", "avg", "percentage"] as const;
 const SUB_TEXT_TYPES = ["fixed", "dynamic"] as const;
 const TREND_TYPES = ["manual", "database"] as const;
@@ -247,7 +250,13 @@ export function normalizeDashboardWidgets(raw: unknown): DashboardWidgetDto[] {
 /** PUT /api/dashboard/widgets — bulk upsert (insert + update; no wipe). */
 export const dashboardWidgetsPutBodySchema = z.preprocess(
   (val) => normalizeDashboardWidgets(val),
-  z.array(customWidgetSchema).max(DASHBOARD_WIDGETS_MAX, "Too many widgets in one request"),
+  z
+    .array(customWidgetSchema)
+    .max(DASHBOARD_WIDGETS_MAX, "Too many widgets in one request")
+    .refine(
+      (widgets) => JSON.stringify(widgets).length <= DASHBOARD_WIDGETS_MAX_JSON_BYTES,
+      "Widget configuration is too large",
+    ),
 );
 
 export type DashboardWidgetsPutBody = z.infer<typeof dashboardWidgetsPutBodySchema>;

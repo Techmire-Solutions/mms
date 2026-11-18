@@ -18,11 +18,16 @@ export interface StatCardTrendProps {
  * finite-number guard. A prior-period jump from 1 to 382 workspaces rendered as
  * `↗ 42467%` and blew out the card (2026-10-31 review, UX-18).
  */
-export function formatTrendDelta(trend: number): string {
-  if (!Number.isFinite(trend)) return formatPercent(0);
+export function formatTrendDelta(trend: number, unit: "percent" | "points" = "percent"): string {
+  if (!Number.isFinite(trend)) return unit === "percent" ? formatPercent(0) : "0";
   const magnitude = Math.abs(trend);
   const capped = Math.min(magnitude, TREND_DISPLAY_CAP);
-  return `${formatPercent(capped)}${magnitude > TREND_DISPLAY_CAP ? "+" : ""}`;
+  const suffix = magnitude > TREND_DISPLAY_CAP ? "+" : "";
+  if (unit === "points") {
+    // Percentage-point delta (e.g. attendance rate): no "%" — "pp" instead.
+    return `${capped}${suffix} pp`;
+  }
+  return `${formatPercent(capped)}${suffix}`;
 }
 
 export const StatCardTrend = React.memo(function StatCardTrend({

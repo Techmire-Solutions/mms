@@ -23,7 +23,7 @@ describe("PlatformDatabaseTelemetryCard", () => {
       hasReplica: false,
     },
     tenantDb: {
-      rlsIsolation: "enforced",
+      rlsIsolation: "schema-enforced",
       activeTenantsCount: 3,
       totalTenantTransactions: 5,
       tenantCapLimit: 12,

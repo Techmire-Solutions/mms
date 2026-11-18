@@ -35,7 +35,10 @@ export const dashboardContract = c.router({
     method: "GET",
     path: "/api/dashboard/preferences",
     responses: {
-      200: z.object({ preferences: dashboardPreferencesResponseSchema }),
+      200: z.object({
+        preferences: dashboardPreferencesResponseSchema,
+        updatedAt: z.string().nullable(),
+      }),
       403: errorResponse,
       500: errorResponse,
     },
@@ -46,9 +49,14 @@ export const dashboardContract = c.router({
     path: "/api/dashboard/preferences",
     body: dashboardPreferencesPutBodySchema,
     responses: {
-      200: z.object({ success: z.literal(true), preferences: dashboardPreferencesResponseSchema }),
+      200: z.object({
+        success: z.literal(true),
+        preferences: dashboardPreferencesResponseSchema,
+        updatedAt: z.string(),
+      }),
       400: errorResponse,
       403: errorResponse,
+      409: errorResponse,
       500: errorResponse,
     },
     summary: "Update dashboard preferences",

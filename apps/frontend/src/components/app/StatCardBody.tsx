@@ -13,6 +13,8 @@ export interface StatCardBodyProps {
   title: React.ReactNode;
   footer?: React.ReactNode;
   trend?: number;
+  /** Trend unit: "percent" (default) or "points" (percentage-point delta). */
+  trendKind?: "percent" | "points";
   /** Accessible label for the trend chip (overrides the default `ui.statCard.*` fallback). */
   trendAriaLabel?: string;
   /** Edit-mode action cluster rendered right of the trend chip. */
@@ -34,6 +36,7 @@ export function StatCardBody({
   title,
   footer,
   trend,
+  trendKind = "percent",
   trendAriaLabel,
   actions,
   className,
@@ -71,8 +74,8 @@ export function StatCardBody({
                 aria-label={
                   trendAriaLabel ??
                   (isPositive
-                    ? `${t("ui.statCard.positiveTrend")} ${formatTrendDelta(trend as number)}`
-                    : `${t("ui.statCard.negativeTrend")} ${formatTrendDelta(trend as number)}`)
+                    ? `${t("ui.statCard.positiveTrend")} ${formatTrendDelta(trend as number, trendKind)}`
+                    : `${t("ui.statCard.negativeTrend")} ${formatTrendDelta(trend as number, trendKind)}`)
                 }
               >
                 {isPositive ? (
@@ -84,7 +87,7 @@ export function StatCardBody({
                   {isPositive ? "+" : "-"}
                   {/* Capped at 999 %+ and locale-formatted; a raw percent blew out
                       the card for near-new workspaces (2026-10-31 UX-18). */}
-                  {formatTrendDelta(trend as number)}
+                  {formatTrendDelta(trend as number, trendKind)}
                 </bdi>
               </Badge>
             )}

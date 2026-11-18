@@ -30,6 +30,8 @@ export function usePlatformWorkspaces(params: PlatformWorkspacesListParams = {})
     status: params.status,
     sortField: params.sortField,
     sortDir: params.sortDir,
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
   };
 
   const query = useQuery({
@@ -40,6 +42,8 @@ export function usePlatformWorkspaces(params: PlatformWorkspacesListParams = {})
       status: listParams.status ?? "all",
       sortField: listParams.sortField ?? "name",
       sortDir: listParams.sortDir ?? "asc",
+      dateFrom: listParams.dateFrom ?? "",
+      dateTo: listParams.dateTo ?? "",
     }),
     queryFn: async ({ signal }) => {
       const response = await apiContract.platform.listWorkspaces({
@@ -52,6 +56,8 @@ export function usePlatformWorkspaces(params: PlatformWorkspacesListParams = {})
             : {}),
           ...(listParams.sortField ? { sortField: listParams.sortField } : {}),
           ...(listParams.sortDir ? { sortDir: listParams.sortDir } : {}),
+          ...(listParams.dateFrom ? { dateFrom: listParams.dateFrom } : {}),
+          ...(listParams.dateTo ? { dateTo: listParams.dateTo } : {}),
         },
         signal,
         fetchOptions: { signal },

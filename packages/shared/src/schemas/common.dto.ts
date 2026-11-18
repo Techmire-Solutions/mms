@@ -5,6 +5,9 @@ import { deepSanitizeStrings } from "./sanitize.js";
 /** Batch resolve entity rows by id (globle2 §10). */
 export const ENTITY_RESOLVE_MAX_IDS = 100;
 
+/** Upper bound for one widget-aggregate request — shared by the schema and the FE batcher. */
+export const WIDGET_AGGREGATES_MAX = 32;
+
 const entityResolveBodyBaseSchema = z
   .object({
     ids: z.array(z.string().min(1).max(64)).max(ENTITY_RESOLVE_MAX_IDS),
@@ -48,7 +51,7 @@ export const widgetQuerySchema = z
 
 const widgetAggregatesBodyBaseSchema = z
   .object({
-    widgets: z.array(widgetQuerySchema).max(32),
+    widgets: z.array(widgetQuerySchema).max(WIDGET_AGGREGATES_MAX),
   })
   .strict();
 

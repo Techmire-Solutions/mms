@@ -85,6 +85,8 @@ export const dashboardPreferencesPutBodySchema = z
     attendanceChartColor: z.string().optional(),
     hasanatChartType: z.enum(HASANAT_CHART_TYPES).optional(),
     hasanatChartColor: z.string().optional(),
+    /** OCC token echoed from the last GET (row `updated_at`); null = first write. */
+    expectedUpdatedAt: z.string().nullable().optional(),
   })
   .passthrough();
 

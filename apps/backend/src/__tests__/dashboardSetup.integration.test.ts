@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
-import { adminToken, teacherToken, viewerToken } from "./helpers/tokens.js";
+import { adminToken, signTenantToken, teacherToken, viewerToken } from "./helpers/tokens.js";
 import { recordModernAuditEvent } from "../services/auditTrailService.js";
 
 vi.mock("../db/database.js", () => ({
@@ -44,8 +44,8 @@ const mockBroadcastDashboardWidgetsChanged = vi.fn();
 const mockEvictDashboardPreferencesCache = vi.fn();
 
 vi.mock("../services/dashboardPreferencesService.js", () => ({
-  loadDashboardPreferences: (...args: unknown[]) => mockLoadDashboardPreferences(...args),
-  saveDashboardPreferences: (...args: unknown[]) => mockSaveDashboardPreferences(...args),
+  loadDashboardPreferencesToken: (...args: unknown[]) => mockLoadDashboardPreferences(...args),
+  saveDashboardPreferencesCas: (...args: unknown[]) => mockSaveDashboardPreferences(...args),
   evictDashboardPreferencesCache: (...args: unknown[]) =>
     mockEvictDashboardPreferencesCache(...args),
 }));
@@ -84,19 +84,25 @@ describe("dashboard config routes", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
     vi.clearAllMocks();
-    mockLoadDashboardPreferences.mockResolvedValue(null);
+    mockLoadDashboardPreferences.mockResolvedValue({
+      preferences: null,
+      updatedAt: null,
+    });
     mockSaveDashboardPreferences.mockResolvedValue({
-      disabledCardIds: [],
-      gridMode: "compact",
-      enrollmentChartType: "area",
-      enrollmentChartColor: "emerald",
-      enrollmentChartPeriod: 10,
-      revenueChartType: "bar",
-      revenueChartColor: "mixed",
-      attendanceChartType: "bar",
-      attendanceChartColor: "semantic",
-      hasanatChartType: "pie",
-      hasanatChartColor: "mixed",
+      preferences: {
+        disabledCardIds: [],
+        gridMode: "compact",
+        enrollmentChartType: "area",
+        enrollmentChartColor: "emerald",
+        enrollmentChartPeriod: 10,
+        revenueChartType: "bar",
+        revenueChartColor: "mixed",
+        attendanceChartType: "bar",
+        attendanceChartColor: "semantic",
+        hasanatChartType: "pie",
+        hasanatChartColor: "mixed",
+      },
+      updatedAt: "2026-01-02T00:00:00.000Z",
     });
     mockLoadDashboardWidgets.mockResolvedValue([sampleWidget]);
     mockUpsertDashboardWidgets.mockResolvedValue([sampleWidget]);
@@ -143,19 +149,22 @@ describe("dashboard config routes", () => {
 
     // Partial PUT must merge over the stored document, not reset omitted keys.
     mockLoadDashboardPreferences.mockResolvedValue({
-      disabledCardIds: ["keep-me"],
-      gridMode: "comfortable",
-      lowAttendanceThreshold: 80,
-      urgentAttendanceThreshold: 55,
-      enrollmentChartType: "area",
-      enrollmentChartColor: "#000000",
-      enrollmentChartPeriod: 6,
-      revenueChartType: "bar",
-      revenueChartColor: "#000000",
-      attendanceChartType: "line",
-      attendanceChartColor: "#000000",
-      hasanatChartType: "bar",
-      hasanatChartColor: "#000000",
+      preferences: {
+        disabledCardIds: ["keep-me"],
+        gridMode: "comfortable",
+        lowAttendanceThreshold: 80,
+        urgentAttendanceThreshold: 55,
+        enrollmentChartType: "area",
+        enrollmentChartColor: "#000000",
+        enrollmentChartPeriod: 6,
+        revenueChartType: "bar",
+        revenueChartColor: "#000000",
+        attendanceChartType: "line",
+        attendanceChartColor: "#000000",
+        hasanatChartType: "bar",
+        hasanatChartColor: "#000000",
+      },
+      updatedAt: "2026-01-01T00:00:00.000Z",
     });
 
     // PUT preferences — admin allowed.
@@ -191,6 +200,21 @@ describe("dashboard config routes", () => {
     expect(deleteOk.statusCode).toBe(200);
     expect(mockDeleteDashboardWidget).toHaveBeenCalledWith("custom-1", "u-admin");
 
+    await app.close();
+  });
+
+  it("denies customization to a principal (settings read) without settings.global.write", async () => {
+    const app = await buildApp();
+    const principal = signTenantToken(app, { role: "principal" });
+
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/preferences",
+      headers: { host: "demo.localhost", authorization: `Bearer ${principal}` },
+      payload: { gridMode: "compact" },
+    });
+
+    expect(res.statusCode).toBe(403);
     await app.close();
   });
 
@@ -292,6 +316,29 @@ describe("dashboard config routes", () => {
     expect(denied.statusCode).toBe(403);
     expect(mockEvictDashboardPreferencesCache).not.toHaveBeenCalled();
 
+    await app.close();
+  });
+
+  it("returns 409 when the preferences OCC token is stale", async () => {
+    const app = await buildApp();
+    mockLoadDashboardPreferences.mockResolvedValue({
+      preferences: { gridMode: "comfortable" },
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    });
+    // Compare-and-set miss: another writer moved the row between read and write.
+    mockSaveDashboardPreferences.mockResolvedValueOnce(null);
+
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/preferences",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: { gridMode: "compact", expectedUpdatedAt: "2026-01-01T00:00:00.000Z" },
+    });
+
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toMatchObject({ type: "conflict" });
+    // A refused write must not evict the (still-valid) cached document.
+    expect(mockEvictDashboardPreferencesCache).not.toHaveBeenCalled();
     await app.close();
   });
 

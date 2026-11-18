@@ -17,6 +17,7 @@ import {
   type StudentsWidgetAggregateWidgetInput,
 } from "@/tenant/features/students/hooks/studentsQueryKeys";
 import { assertContractOk } from "@/lib/apiContractError";
+import { fetchWidgetAggregatesBatched } from "@/lib/reports/widgetAggregatesBatch";
 
 export function studentsCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<StudentsCommandMetricsSnapshot>({
@@ -95,23 +96,10 @@ export function useStudentsWidgetAggregates(
 
   const query = useQuery({
     queryKey: [...STUDENTS_WIDGET_AGGREGATES_QUERY_KEY, querySignature] as const,
-    queryFn: async () => {
-      const res = await apiContract.students.widgetAggregates({ body: { widgets: queries } });
-      return (
-        (
-          res.body as {
-            results?: Record<
-              string,
-              {
-                value?: number;
-                totalCount?: number;
-                chartData?: Array<{ name: string; value: number }>;
-              }
-            >;
-          } | null
-        )?.results ?? {}
-      );
-    },
+    queryFn: async () =>
+      fetchWidgetAggregatesBatched(queries, (batch) =>
+        apiContract.students.widgetAggregates({ body: { widgets: batch } }),
+      ),
     enabled: isAuthenticated && enabled && queries.length > 0,
     staleTime: 30_000,
   });

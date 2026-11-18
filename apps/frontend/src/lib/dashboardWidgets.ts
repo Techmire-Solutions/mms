@@ -27,6 +27,12 @@ export interface StatItem {
   color: string;
   trend: number;
   /**
+   * Trend unit: `points` for a percentage-point delta (attendance rate), `percent`
+   * for a relative percent change (default). Rendered differently so a "+5 pp"
+   * is not misread as "+5%".
+   */
+  trendKind?: "percent" | "points";
+  /**
    * True when the card's source metric snapshot is absent (loading, failed, or
    * filtered out). The grid renders this as "unavailable" instead of a `0` that
    * would otherwise look like a real measurement.

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { DASHBOARD_MODULE_MANIFEST } from "@mms/shared";
 import { resolveDashboardRole } from "@/lib/dashboardRole";
 import { getActiveCustomCardIds, isDashboardWidgetAllowed } from "@/lib/dashboardCollections";
@@ -39,6 +39,7 @@ export function useDashboardPageController() {
   const [isWidgetBuilderOpen, setIsWidgetBuilderOpen] = useState(false);
   const [editingWidget, setEditingWidget] = useState<CustomWidget | null>(null);
   const [widgetBuilderType, setWidgetBuilderType] = useState<CustomWidget["widgetType"]>("card");
+  const builderOpenerRef = useRef<Element | null>(null);
 
   const canCustomize = can(DASHBOARD_MODULE_MANIFEST.permissions.customize);
 
@@ -54,12 +55,19 @@ export function useDashboardPageController() {
   const closeBuilder = useCallback(() => {
     setIsWidgetBuilderOpen(false);
     setEditingWidget(null);
+    // Return focus to the element that opened the builder (keyboard a11y).
+    const opener = builderOpenerRef.current;
+    builderOpenerRef.current = null;
+    if (opener instanceof HTMLElement && opener.isConnected) {
+      opener.focus();
+    }
   }, []);
 
   const openWidgetBuilder = useCallback(
     (type: CustomWidget["widgetType"], widget: CustomWidget | null = null) => {
       if (!canCustomize) return;
       if (!isEditMode) setIsEditMode(true);
+      builderOpenerRef.current = document.activeElement;
       setEditingWidget(widget);
       setWidgetBuilderType(type);
       setIsWidgetBuilderOpen(true);

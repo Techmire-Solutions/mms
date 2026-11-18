@@ -32,6 +32,15 @@ export default async function platformWorkspaceRoutes(
 ): Promise<void> {
   const breakGlassRateLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
 
+  /** Super-user-only guard for break-glass / destructive platform operations. */
+  const requireSuperUser = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    if (reply.sent) return;
+    const req = request as PlatformAuthenticatedRequest;
+    if (req.platformUser?.role !== "super_user") {
+      void reply.status(403).send({ type: "forbidden", message: "Super-user privilege required" });
+    }
+  };
+
   fastify.addHook("preHandler", authenticatePlatform);
   fastify.addHook("preHandler", requirePlatformPermission("workspaces"));
 
@@ -47,6 +56,7 @@ export default async function platformWorkspaceRoutes(
       hooks: {
         preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
           await breakGlassRateLimit(request, reply);
+          await requireSuperUser(request, reply);
         },
       },
       handler: handleResetWorkspaceAdminPassword,
@@ -55,6 +65,7 @@ export default async function platformWorkspaceRoutes(
       hooks: {
         preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
           await breakGlassRateLimit(request, reply);
+          await requireSuperUser(request, reply);
         },
       },
       handler: handleCreateWorkspaceAdminUser,
@@ -63,13 +74,7 @@ export default async function platformWorkspaceRoutes(
       hooks: {
         preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
           await breakGlassRateLimit(request, reply);
-          if (reply.sent) return;
-          const req = request as PlatformAuthenticatedRequest;
-          if (req.platformUser?.role !== "super_user") {
-            return reply
-              .status(403)
-              .send({ type: "forbidden", message: "Super-user privilege required" });
-          }
+          await requireSuperUser(request, reply);
         },
       },
       handler: handleDeleteWorkspace,

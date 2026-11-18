@@ -14,6 +14,7 @@ import {
   CONTACTS_REPORT_ANALYTICS_QUERY_KEY,
   CONTACTS_WIDGET_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/contacts/hooks/contactsQueryKeys";
+import { fetchWidgetAggregatesBatched } from "@/lib/reports/widgetAggregatesBatch";
 
 export function contactsCommandMetricsQueryOptions() {
   return serverMetricsQueryOptions<ContactsCommandMetricsSnapshot>({
@@ -91,12 +92,10 @@ export function useContactsWidgetAggregates(
 
   const query = useQuery({
     queryKey: [...CONTACTS_WIDGET_AGGREGATES_QUERY_KEY, querySignature] as const,
-    queryFn: async (): Promise<Record<string, ContactsWidgetAggregateResult>> => {
-      const res = await apiContract.contacts.widgetAggregates({ body: { widgets: queries } });
-      const body = res.body as
-        { results?: Record<string, ContactsWidgetAggregateResult> } | undefined;
-      return body?.results ?? {};
-    },
+    queryFn: async (): Promise<Record<string, ContactsWidgetAggregateResult>> =>
+      fetchWidgetAggregatesBatched(queries, (batch) =>
+        apiContract.contacts.widgetAggregates({ body: { widgets: batch } }),
+      ) as Promise<Record<string, ContactsWidgetAggregateResult>>,
     enabled: isAuthenticated && enabled && queries.length > 0,
     staleTime: 30_000,
   });

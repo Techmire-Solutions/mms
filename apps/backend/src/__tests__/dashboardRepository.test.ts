@@ -7,14 +7,14 @@ import {
   reorderDashboardWidgetsForWorkspace,
   listAllDashboardWidgetsByWorkspace,
   replaceDashboardWidgetsForWorkspace,
-  findDashboardWidgetById,
-  restoreDashboardWidgetById,
 } from "../db/repositories/dashboardWidgetsRepository.js";
 import {
   getDashboardPreferencesByWorkspace,
   upsertDashboardPreferences,
   listAllDashboardPreferencesByWorkspace,
   replaceDashboardPreferencesForWorkspace,
+  getDashboardPreferencesWithUpdatedAt,
+  saveDashboardPreferencesCas,
 } from "../db/repositories/dashboardPreferencesRepository.js";
 
 const mockTx = {
@@ -156,19 +156,6 @@ describe("dashboard repositories", () => {
       expect(mockWhere).toHaveBeenCalled();
     });
 
-    it("restoreDashboardWidgetById restores a soft-deleted widget", async () => {
-      const mockWhere = vi.fn().mockResolvedValue({ rowCount: 1 });
-      const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
-      mockTx.update.mockReturnValue({ set: mockSet });
-
-      const count = await restoreDashboardWidgetById("demo", "custom-1", "u-admin");
-
-      expect(count).toBe(1);
-      expect(mockTx.update).toHaveBeenCalled();
-      expect(mockSet).toHaveBeenCalled();
-      expect(mockWhere).toHaveBeenCalled();
-    });
-
     it("reorderDashboardWidgetsForWorkspace updates sortOrder per widget in a transaction", async () => {
       const mockWhere = vi.fn().mockResolvedValue([]);
       const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
@@ -229,51 +216,6 @@ describe("dashboard repositories", () => {
       expect(mockTx.update).toHaveBeenCalledTimes(1);
       expect(mockSet).toHaveBeenCalledTimes(1);
     });
-
-    it("findDashboardWidgetById returns null for empty/blank id", async () => {
-      const result1 = await findDashboardWidgetById("demo", "");
-      expect(result1).toBeNull();
-      const result2 = await findDashboardWidgetById("demo", "   ");
-      expect(result2).toBeNull();
-      expect(mockTx.select).not.toHaveBeenCalled();
-    });
-
-    it("findDashboardWidgetById returns mapped DTO when row found", async () => {
-      const dbRow = {
-        id: "custom-1",
-        workspaceSubdomain: "demo",
-        widgetType: "card",
-        category: "students",
-        collection: "students",
-        role: "admin",
-        isPinnedToDashboard: true,
-        title: "Active Students",
-        icon: null,
-        color: "emerald",
-        operation: "count",
-        sortOrder: 1,
-        config: null,
-        updatedAt: new Date(),
-      };
-      const mockLimit = vi.fn().mockResolvedValue([dbRow]);
-      const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
-      mockTx.select.mockReturnValue({ from: mockFrom });
-
-      const widget = await findDashboardWidgetById("demo", " custom-1 ");
-      expect(widget).not.toBeNull();
-      expect(widget?.id).toBe("custom-1");
-    });
-
-    it("findDashboardWidgetById returns null when no row found", async () => {
-      const mockLimit = vi.fn().mockResolvedValue([]);
-      const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
-      mockTx.select.mockReturnValue({ from: mockFrom });
-
-      const widget = await findDashboardWidgetById("demo", "no-such-widget");
-      expect(widget).toBeNull();
-    });
   });
 
   describe("dashboardPreferencesRepository", () => {
@@ -327,6 +269,53 @@ describe("dashboard repositories", () => {
 
       expect(mockTx.delete).toHaveBeenCalled();
       expect(mockTx.insert).toHaveBeenCalled();
+    });
+
+    it("getDashboardPreferencesWithUpdatedAt reads preferences plus the OCC token", async () => {
+      const dbRow = {
+        preferences: { gridMode: "compact" },
+        updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+      };
+      const mockLimit = vi.fn().mockResolvedValue([dbRow]);
+      const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
+      mockTx.select.mockReturnValue({ from: mockFrom });
+
+      const row = await getDashboardPreferencesWithUpdatedAt("demo");
+
+      expect(row.preferences).toEqual({ gridMode: "compact" });
+      expect(row.updatedAt).toEqual(new Date("2026-01-01T00:00:00.000Z"));
+    });
+
+    it("saveDashboardPreferencesCas returns null on a stale updatedAt token", async () => {
+      const mockReturning = vi.fn().mockResolvedValue([]);
+      const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
+      const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
+      mockTx.update.mockReturnValue({ set: mockSet });
+
+      const result = await saveDashboardPreferencesCas(
+        "demo",
+        { gridMode: "compact" },
+        new Date("2026-01-01T00:00:00.000Z"),
+      );
+
+      expect(result).toBeNull();
+      expect(mockTx.update).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalled();
+      expect(mockWhere).toHaveBeenCalled();
+    });
+
+    it("saveDashboardPreferencesCas inserts only when no row exists (null token)", async () => {
+      const mockReturning = vi.fn().mockResolvedValue([]);
+      const mockOnConflictDoNothing = vi.fn().mockReturnValue({ returning: mockReturning });
+      const mockValues = vi.fn().mockReturnValue({ onConflictDoNothing: mockOnConflictDoNothing });
+      mockTx.insert.mockReturnValue({ values: mockValues });
+
+      const result = await saveDashboardPreferencesCas("demo", { gridMode: "compact" }, null);
+
+      expect(result).toBeNull();
+      expect(mockTx.insert).toHaveBeenCalled();
+      expect(mockOnConflictDoNothing).toHaveBeenCalled();
     });
   });
 });

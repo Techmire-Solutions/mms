@@ -135,6 +135,7 @@ export function buildDashboardMetricCard({
     icon,
     color,
     trend: resolvedTrend,
+    trendKind: trendMetric === "attendance" ? "points" : "percent",
     ...(unavailable ? { unavailable: true } : {}),
   };
 }

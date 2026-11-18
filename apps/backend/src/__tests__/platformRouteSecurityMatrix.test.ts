@@ -121,6 +121,8 @@ const ROUTE_AREAS: ReadonlyArray<{ pattern: RegExp; area: Area }> = [
 const SUPER_USER_ONLY = new Set([
   "POST /api/platform/admin/system/migrate-and-restart",
   "DELETE /api/platform/workspaces/:subdomain",
+  "POST /api/platform/workspaces/:subdomain/reset-admin-password",
+  "POST /api/platform/workspaces/:subdomain/admin-users",
   "POST /api/platform/users",
   "DELETE /api/platform/users/:adminId",
   "PATCH /api/platform/users/:adminId/disabled",

@@ -11,10 +11,8 @@ import { requireTenant } from "../../../lib/tenantContext.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 export function canWriteDashboard(user: User): boolean {
-  return (
-    userHasPermission(user, DASHBOARD_MODULE_MANIFEST.permissions.setupWrite) ||
-    userHasPermission(user, DASHBOARD_MODULE_MANIFEST.permissions.customize)
-  );
+  // Workspace-wide board: customization requires the global settings write.
+  return userHasPermission(user, DASHBOARD_MODULE_MANIFEST.permissions.setupWrite);
 }
 
 export async function handleDashboardRead<T>(

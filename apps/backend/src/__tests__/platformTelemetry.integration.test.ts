@@ -111,11 +111,17 @@ describe("Platform Telemetry & Activity Trend API", () => {
       const telemetry = await getPlatformTelemetry();
       expect(typeof telemetry).toBe("object");
       expect(telemetry.platformDb.engine).toContain("PostgreSQL");
-      expect(telemetry.tenantDb.rlsIsolation).toBe("enforced");
+      expect(telemetry.tenantDb.rlsIsolation).toBe("schema-enforced");
       expect(typeof telemetry.dbPool.totalCount).toBe("number");
       expect(typeof telemetry.memory.rssMb).toBe("number");
       expect(typeof telemetry.latencyMs).toBe("number");
       expect(typeof telemetry.uptimeSeconds).toBe("number");
+    });
+
+    it("caches telemetry within the TTL so concurrent polls share one ping", async () => {
+      const first = await getPlatformTelemetry();
+      const second = await getPlatformTelemetry();
+      expect(second).toBe(first);
     });
 
     it("returns valid activity trend list from getPlatformActivityTrend()", async () => {

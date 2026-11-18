@@ -7,6 +7,8 @@ import {
 import { attendance } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
+import { getWorkspaceTimezone } from "../../lib/workspaceTimezone.js";
+import { todayInTimeZone } from "../../lib/dbDate.js";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -21,11 +23,15 @@ export async function aggregateAttendanceCommandMetrics(
 ): Promise<AttendanceCommandMetricsSnapshot> {
   const subdomain = tenant.trim().toLowerCase();
   const periodDays = options?.periodDays ?? MODULE_METRICS_DEFAULT_PERIOD_DAYS;
+  // "Today" and the period window are workspace-local calendar days — `attendance.date`
+  // is a YYYY-MM-DD string, so UTC `toISOString().slice(0,10)` could land on the wrong
+  // day for a workspace ahead of/behind UTC (2026-11-17 review, m13).
+  const timezone = await getWorkspaceTimezone(subdomain);
   const selectedDate =
     options?.selectedDate && DATE_RE.test(options.selectedDate)
       ? options.selectedDate
-      : new Date().toISOString().slice(0, 10);
-  const periodStart = new Date(Date.now() - periodDays * 86_400_000).toISOString().slice(0, 10);
+      : todayInTimeZone(timezone);
+  const periodStart = todayInTimeZone(timezone, new Date(Date.now() - periodDays * 86_400_000));
 
   const countable = (await loadCountableAttendanceSql(subdomain))('"attendance"');
   // One placeholder list for every "attended" filter (present, late, half day).

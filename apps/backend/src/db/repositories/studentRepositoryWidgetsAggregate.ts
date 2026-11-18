@@ -60,6 +60,10 @@ export async function aggregateStudentsWidgetQueries(
                 : 0
               : filteredCount;
         } else if (query.operation === "sum" || query.operation === "avg") {
+          // The scalar value is computed here, separately from the grouped chart below,
+          // *deliberately*: the chart is truncated at `chartLimit`, so summing its rows
+          // would under-count once distinct x-axis groups exceed the limit. This value
+          // query is a single aggregate row (bounded), not a second result-set scan.
           const target = query.targetField?.trim() || "";
           if (target) {
             const targetExpr = resolveStudentFieldExpr(target, useJoined);
