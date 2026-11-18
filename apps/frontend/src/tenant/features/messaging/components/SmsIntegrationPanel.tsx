@@ -10,7 +10,11 @@ import { useSmsIntegrationPanel } from "../hooks/useSmsIntegrationPanel";
  * One active provider at a time — Twilio, Vonage, MSG91, Infobip, or Telesign.
  * Only mounted by the parent while SMS Notifications is enabled.
  */
-export default function SmsIntegrationPanel(): React.JSX.Element {
+export default function SmsIntegrationPanel({
+  canWrite = true,
+}: {
+  canWrite?: boolean;
+}): React.JSX.Element {
   const {
     t,
     providers,
@@ -43,6 +47,8 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
       lastError={actionError ?? form.lastError}
       saving={saving}
       testing={testing}
+      saveDisabled={!canWrite}
+      testDisabled={!canWrite}
       saveLabel={t("sms.saveConnection")}
       testLabel={t("sms.sendTest")}
       onSave={() => void handleSave()}
@@ -57,6 +63,7 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
             value={testPhone}
             onChange={(event) => setTestPhone(event.target.value)}
             placeholder="+923001234567"
+            disabled={!canWrite}
           />
         </div>
       }
@@ -68,6 +75,7 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
           name="providerId"
           value={form.providerId}
           onChange={(v) => setField("providerId", v as SmsProviderId)}
+          disabled={!canWrite}
           options={providers.map((preset) => ({
             value: preset.id,
             label: t(preset.labelKey as AppTranslationKey),
@@ -85,6 +93,7 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
           name="accountId"
           value={form.accountId}
           onChange={(event) => setField("accountId", event.target.value)}
+          disabled={!canWrite}
         />
       </div>
       <div className="space-y-2">
@@ -94,6 +103,7 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
           name="senderId"
           value={form.senderId}
           onChange={(event) => setField("senderId", event.target.value)}
+          disabled={!canWrite}
         />
       </div>
 
@@ -104,6 +114,7 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
           name="smsAccountSecret"
           value={accountSecret}
           onChange={(event) => setAccountSecret(event.target.value)}
+          disabled={!canWrite}
           placeholder={
             form.hasCredentials
               ? t("sms.accountSecretPlaceholderSaved")
@@ -122,6 +133,7 @@ export default function SmsIntegrationPanel(): React.JSX.Element {
             value={form.apiBaseUrl ?? ""}
             onChange={(event) => setField("apiBaseUrl", event.target.value)}
             placeholder={selectedPreset.baseUrlPlaceholder}
+            disabled={!canWrite}
           />
         </div>
       )}

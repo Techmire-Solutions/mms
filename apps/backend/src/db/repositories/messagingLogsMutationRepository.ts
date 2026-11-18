@@ -52,6 +52,9 @@ export async function softDeleteActiveMessageLogs(
 /** Sending claims older than this are considered abandoned and may be retried. */
 export const STALE_MESSAGE_LOG_CLAIM_MS = 10 * 60 * 1000;
 
+/** `inArray` restore ids are chunked to bound the bind list (`mms-performance` §1). */
+const RESTORE_IDS_BATCH_SIZE = 250;
+
 export type MessageLogClaim = {
   id: string;
   userId: string;
@@ -217,19 +220,26 @@ export async function restoreArchivedMessageLog(
     ];
 
     if (cleanIds.length > 0) {
-      const restored = await tx
-        .update(messageLogs)
-        .set({
-          deletedAt: null,
-          deletedBy: null,
-          deletionReason: null,
-          restoredAt: now,
-          restoredBy: userId,
-          updatedAt: now,
-        })
-        .where(and(...activeConditions, inArray(messageLogs.id, cleanIds)))
-        .returning({ id: messageLogs.id });
-      return restored.length;
+      // Specific-ids restore is bounded the same way the id fetches are, so a
+      // large selection never becomes one oversized `IN (...)` bind list.
+      let total = 0;
+      for (let i = 0; i < cleanIds.length; i += RESTORE_IDS_BATCH_SIZE) {
+        const chunk = cleanIds.slice(i, i + RESTORE_IDS_BATCH_SIZE);
+        const restored = await tx
+          .update(messageLogs)
+          .set({
+            deletedAt: null,
+            deletedBy: null,
+            deletionReason: null,
+            restoredAt: now,
+            restoredBy: userId,
+            updatedAt: now,
+          })
+          .where(and(...activeConditions, inArray(messageLogs.id, chunk)))
+          .returning({ id: messageLogs.id });
+        total += restored.length;
+      }
+      return total;
     }
 
     // `restore all` over a year-scale archive: claim bounded batches with

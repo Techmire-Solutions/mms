@@ -27,6 +27,16 @@ export interface SendEmailResult {
   message?: string;
 }
 
+/** HTML-escapes plain text before it is wrapped into the auto-generated email HTML part. */
+function escapeHtmlText(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function resolveSmtpOptions(
   config: EmailIntegrationConfig,
   password: string,
@@ -99,7 +109,7 @@ export async function sendTenantEmail(
       to: input.to,
       subject: input.subject,
       text: input.text,
-      html: input.html ?? `<p>${input.text.replace(/\n/g, "<br/>")}</p>`,
+      html: input.html ?? `<p>${escapeHtmlText(input.text).replace(/\n/g, "<br/>")}</p>`,
     });
     return { sent: true };
   } catch (error) {

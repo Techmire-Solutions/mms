@@ -10,7 +10,11 @@ import { useEmailIntegrationPanel } from "../hooks/useEmailIntegrationPanel";
  * Multi-provider SMTP setup (Gmail, Microsoft 365, Outlook, Yahoo, iCloud, Zoho, custom).
  * Only mounted by the parent while Email Notifications is enabled.
  */
-export default function EmailIntegrationPanel(): React.JSX.Element {
+export default function EmailIntegrationPanel({
+  canWrite = true,
+}: {
+  canWrite?: boolean;
+}): React.JSX.Element {
   const {
     t,
     providers,
@@ -42,6 +46,8 @@ export default function EmailIntegrationPanel(): React.JSX.Element {
       lastError={actionError ?? form.lastError}
       saving={saving}
       testing={testing}
+      saveDisabled={!canWrite}
+      testDisabled={!canWrite}
       saveLabel={t("email.saveConnection")}
       testLabel={t("email.sendTest")}
       onSave={() => void handleSave()}
@@ -54,6 +60,7 @@ export default function EmailIntegrationPanel(): React.JSX.Element {
           name="providerId"
           value={form.providerId}
           onChange={(v) => setField("providerId", v as EmailProviderId)}
+          disabled={!canWrite}
           options={providers.map((preset) => ({
             value: preset.id,
             label: t(preset.labelKey as AppTranslationKey),
@@ -71,6 +78,7 @@ export default function EmailIntegrationPanel(): React.JSX.Element {
           name="fromName"
           value={form.fromName}
           onChange={(event) => setField("fromName", event.target.value)}
+          disabled={!canWrite}
         />
       </div>
       <div className="space-y-2">
@@ -82,6 +90,7 @@ export default function EmailIntegrationPanel(): React.JSX.Element {
           value={form.fromAddress}
           onChange={(event) => setField("fromAddress", event.target.value)}
           placeholder={`admin@${selectedPreset.exampleDomain}`}
+          disabled={!canWrite}
         />
       </div>
 
@@ -94,6 +103,7 @@ export default function EmailIntegrationPanel(): React.JSX.Element {
           onChange={(event) => setField("smtpUsername", event.target.value)}
           placeholder={`you@${selectedPreset.exampleDomain}`}
           autoComplete="username"
+          disabled={!canWrite}
         />
       </div>
 
@@ -104,6 +114,7 @@ export default function EmailIntegrationPanel(): React.JSX.Element {
           name="emailSmtpPassword"
           value={smtpPassword}
           onChange={(event) => setSmtpPassword(event.target.value)}
+          disabled={!canWrite}
           placeholder={
             form.hasCredentials
               ? t("email.smtpPasswordPlaceholderSaved")
@@ -122,6 +133,7 @@ export default function EmailIntegrationPanel(): React.JSX.Element {
               name="smtpHost"
               value={form.smtpHost ?? ""}
               onChange={(event) => setField("smtpHost", event.target.value)}
+              disabled={!canWrite}
             />
           </div>
           <div className="space-y-2">
@@ -135,6 +147,7 @@ export default function EmailIntegrationPanel(): React.JSX.Element {
               max={65535}
               value={form.smtpPort ?? 587}
               onChange={(event) => setField("smtpPort", Number(event.target.value))}
+              disabled={!canWrite}
             />
           </div>
         </>

@@ -1,5 +1,9 @@
 import React, { type JSX } from "react";
-import { formatDateToIso, type ModuleColumnRegistryEntry } from "@mms/shared";
+import {
+  formatDateToIso,
+  type MessagingStatusFilter,
+  type ModuleColumnRegistryEntry,
+} from "@mms/shared";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessagingFiltersMenuButton } from "./MessagingFiltersMenuButton";
@@ -21,8 +25,8 @@ export interface MessagingListFiltersProps {
   channel: "all" | "sms" | "whatsapp" | "email";
   onChannelChange: (channel: "all" | "sms" | "whatsapp" | "email") => void;
   channelOptions: Array<{ value: string; label: string }>;
-  status: "all" | "sent" | "delivered" | "failed" | "skipped";
-  onStatusChange: (status: "all" | "sent" | "delivered" | "failed" | "skipped") => void;
+  status: MessagingStatusFilter;
+  onStatusChange: (status: MessagingStatusFilter) => void;
   statusOptions: Array<{ value: string; label: string }>;
   category: string;
   onCategoryChange: (category: string) => void;

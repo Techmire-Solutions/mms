@@ -1,15 +1,21 @@
 import { useState } from "react";
 import type { SetURLSearchParams } from "react-router-dom";
-import { isValidIsoDate } from "@mms/shared";
+import { isValidIsoDate, type MessagingStatusFilter } from "@mms/shared";
 import { useDebounce } from "@/hooks/useDebounce";
 import { messagingExportEndDateBound } from "../lib/messagingReportsExport";
 import { useMessagingWorkTierUrlSync } from "./useMessagingWorkTierUrlSync";
 
 export type MessagingChannelFilter = "all" | "sms" | "whatsapp" | "email";
-export type MessagingStatusFilter = "all" | "sent" | "delivered" | "failed" | "skipped";
 
 const CHANNELS = new Set<MessagingChannelFilter>(["sms", "whatsapp", "email"]);
-const STATUSES = new Set<MessagingStatusFilter>(["sent", "delivered", "failed", "skipped"]);
+const STATUSES = new Set<MessagingStatusFilter>([
+  "queued",
+  "sending",
+  "sent",
+  "delivered",
+  "failed",
+  "skipped",
+]);
 
 export interface MessagingWorkFilterParams {
   channel: MessagingChannelFilter;

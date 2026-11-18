@@ -122,10 +122,12 @@ export function MessagingSetupPreferences({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">
+          <CardTitle className="text-base font-semibold text-balance">
             {t("messaging.preferences.title")}
           </CardTitle>
-          <CardDescription className="text-xs">{t("messaging.preferences.desc")}</CardDescription>
+          <CardDescription className="text-xs text-pretty">
+            {t("messaging.preferences.desc")}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

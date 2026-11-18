@@ -175,6 +175,8 @@ export function messageLogWriteValues(
     deletedAt: audit.deletedAt,
     deletedBy: audit.deletedBy,
     deletionReason: audit.deletionReason,
+    restoredAt: audit.restoredAt,
+    restoredBy: audit.restoredBy,
     createdAt: audit.createdAt ?? new Date(),
     updatedAt: audit.updatedAt,
   };

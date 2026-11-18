@@ -100,6 +100,7 @@ describe("messagingLogsQueryRepository", () => {
       expect(res.whatsappCount).toBe(3);
       expect(res.emailCount).toBe(2);
       expect(res.deliveredCount).toBe(2);
+      expect(res.successRate).toBe(89);
       expect(state.executedSql).toHaveLength(1);
     });
   });

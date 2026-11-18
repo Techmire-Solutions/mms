@@ -66,7 +66,12 @@ export function resolveIdempotencyKey(
 ): string | undefined {
   const fromHeader = Array.isArray(headerValue) ? headerValue[0] : headerValue;
   const raw = (bodyKey ?? fromHeader ?? "").trim();
-  return raw.length >= 8 ? raw.slice(0, 128) : undefined;
+  if (raw.length < 8) return undefined;
+  // The header is not Zod-validated (the body key is). Constrain it to the same
+  // charset so a malformed `Idempotency-Key` header can never reach
+  // `buildBackgroundJobId` and surface as an unhandled 500.
+  if (!/^[a-zA-Z0-9_-]+$/.test(raw)) return undefined;
+  return raw.slice(0, 128);
 }
 
 export function messagingIdempotencyLookupKey(

@@ -15,7 +15,6 @@ import {
 } from "../../../services/backgroundJobWorkerService.js";
 import {
   collectUnknownPersonalizationTokens,
-  containsExecutableHtml,
   formatUnknownTokensMessage,
 } from "./messagingPersonalizationGuard.js";
 import { dispatchMessagingCampaignDirect } from "./messagingDirectDispatch.js";
@@ -44,9 +43,6 @@ export const messagingEmailDispatchRoute: FastifyPluginAsync = async (fastify) =
     if (allUnknown.length > 0) {
       return replyValidationError(reply, formatUnknownTokensMessage(allUnknown));
     }
-    if (parsed.data.html && containsExecutableHtml(parsed.data.html)) {
-      return replyValidationError(reply, "Executable HTML is not allowed in email messages");
-    }
 
     const tenantSubdomain = getRequestTenant();
     if (!tenantSubdomain) {
@@ -55,7 +51,7 @@ export const messagingEmailDispatchRoute: FastifyPluginAsync = async (fastify) =
         .send({ type: "validation_error", message: "Tenant context required" });
     }
 
-    const { recipients, subject, message, html, category } = parsed.data;
+    const { recipients, subject, message, category } = parsed.data;
     const sentAt = new Date().toISOString();
     const userId = String(user.id);
     const idempotencyKey = resolveIdempotencyKey(
@@ -71,7 +67,6 @@ export const messagingEmailDispatchRoute: FastifyPluginAsync = async (fastify) =
       recipients,
       subject,
       message,
-      html: html ?? null,
       category,
       queued: isQueued,
     });
@@ -138,7 +133,6 @@ export const messagingEmailDispatchRoute: FastifyPluginAsync = async (fastify) =
         sentAt,
         category,
         subject,
-        html,
       });
 
     if (idempotencyKey) {

@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import type { MessagingStatusFilter } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
@@ -13,9 +14,18 @@ import {
 const toChannel = (value: string): "all" | "sms" | "whatsapp" | "email" =>
   value === "sms" || value === "whatsapp" || value === "email" ? value : "all";
 
-const toStatus = (value: string): "all" | "sent" | "delivered" | "failed" | "skipped" =>
-  value === "sent" || value === "delivered" || value === "failed" || value === "skipped"
-    ? value
+const NON_ALL_STATUSES: readonly MessagingStatusFilter[] = [
+  "queued",
+  "sending",
+  "sent",
+  "delivered",
+  "failed",
+  "skipped",
+];
+
+const toStatus = (value: string): MessagingStatusFilter =>
+  (NON_ALL_STATUSES as readonly string[]).includes(value)
+    ? (value as MessagingStatusFilter)
     : "all";
 
 export interface MessagingFiltersMenuButtonProps {
@@ -25,7 +35,7 @@ export interface MessagingFiltersMenuButtonProps {
   onChannelChange: (val: "all" | "sms" | "whatsapp" | "email") => void;
   channelOptions: Array<{ value: string; label: string }>;
   status: string;
-  onStatusChange: (val: "all" | "sent" | "delivered" | "failed" | "skipped") => void;
+  onStatusChange: (val: MessagingStatusFilter) => void;
   statusOptions: Array<{ value: string; label: string }>;
   category: string;
   onCategoryChange: (val: string) => void;

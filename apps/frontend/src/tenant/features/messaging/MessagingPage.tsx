@@ -231,7 +231,6 @@ export default function MessagingPage(): React.JSX.Element {
     <MessagingPageView
       canRead={canRead}
       canWrite={canWrite}
-      canViewSetup={canViewSetup}
       canEditSetup={canEditSetup}
       canClearLogs={canClearLogs}
       canRestoreLogs={canRestoreLogs}

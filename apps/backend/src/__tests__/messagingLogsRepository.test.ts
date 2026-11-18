@@ -37,6 +37,7 @@ vi.mock("../db/tenant-context.js", () => ({
 import {
   findMessageLogsByIds,
   insertMessageLogs,
+  messageLogWriteValues,
 } from "../db/repositories/messagingLogsRepository.js";
 
 function log(id: string): Message {
@@ -100,5 +101,18 @@ describe("findMessageLogsByIds", () => {
     await findMessageLogsByIds("demo", ids);
     // 520 items with 250 batch size should produce ceil(520/250) = 3 select queries
     expect(state.selectCalls).toHaveLength(3);
+  });
+});
+
+describe("messageLogWriteValues", () => {
+  it("maps restoredAt and restoredBy audit fields", () => {
+    const now = new Date();
+    const row = messageLogWriteValues("demo", {
+      ...log("m-1"),
+      restoredAt: now.toISOString(),
+      restoredBy: "user-restorer",
+    });
+    expect(row.restoredAt).toEqual(now);
+    expect(row.restoredBy).toBe("user-restorer");
   });
 });

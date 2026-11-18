@@ -136,6 +136,6 @@ export function getComposerSaveLabel({
     : isSms
       ? t("messaging.openSmsApp")
       : isBulk
-        ? `${t("messaging.openAllWhatsapp")} (${count})`
+        ? t("messaging.openAllWhatsappCount", { count })
         : t("messaging.openWhatsapp");
 }

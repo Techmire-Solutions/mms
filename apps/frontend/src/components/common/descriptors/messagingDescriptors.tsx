@@ -59,6 +59,7 @@ export const messagingEntityDescriptor: EntityDescriptor<MessageRecordDto> =
           delivered: { label: "Delivered", tone: "success", className: SEMANTIC_BADGE.success },
           failed: { label: "Failed", tone: "destructive", className: SEMANTIC_BADGE.destructive },
           queued: { label: "Queued", tone: "warning", className: SEMANTIC_BADGE.warning },
+          sending: { label: "Sending", tone: "info", className: SEMANTIC_BADGE.info },
           skipped: { label: "Skipped", tone: "muted", className: SEMANTIC_BADGE.muted },
         },
       },

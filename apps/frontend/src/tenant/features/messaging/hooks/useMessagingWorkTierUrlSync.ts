@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import type { SetURLSearchParams } from "react-router-dom";
+import type { MessagingStatusFilter } from "@mms/shared";
 
 interface UseMessagingWorkTierUrlSyncParams {
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
   channel: "all" | "sms" | "whatsapp" | "email";
-  status: "all" | "sent" | "delivered" | "failed" | "skipped";
+  status: MessagingStatusFilter;
   category: string;
   debouncedSearch: string;
   startDate: string;

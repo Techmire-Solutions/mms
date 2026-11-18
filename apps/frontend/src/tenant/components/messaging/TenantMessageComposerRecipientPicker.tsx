@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import {
+  MESSAGING_MODULE_MANIFEST,
   MESSAGING_RECIPIENTS_MATCH_LIMIT,
   messagingRecipientsMatchResponseSchema,
   type MessagingGenderFilter,
@@ -68,7 +69,7 @@ export function TenantMessageComposerRecipientPicker({
       search: debouncedQuery,
       kind,
       page,
-      pageSize: 50,
+      pageSize: MESSAGING_MODULE_MANIFEST.defaultPageSize,
     },
   );
 
@@ -194,7 +195,7 @@ export function TenantMessageComposerRecipientPicker({
         <ListPagination
           page={page}
           total={total || recipients.length}
-          limit={50}
+          limit={MESSAGING_MODULE_MANIFEST.defaultPageSize}
           onPageChange={setPage}
         />
       </div>

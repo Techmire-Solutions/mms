@@ -21,6 +21,7 @@ export interface IntegrationPanelChromeProps {
   saving: boolean;
   testing: boolean;
   testDisabled?: boolean;
+  saveDisabled?: boolean;
   saveLabel: string;
   testLabel: string;
   onSave: () => void;
@@ -49,6 +50,7 @@ export function IntegrationPanelChrome({
   saving,
   testing,
   testDisabled,
+  saveDisabled,
   saveLabel,
   testLabel,
   onSave,
@@ -124,7 +126,7 @@ export function IntegrationPanelChrome({
         <Button
           type="button"
           onClick={onSave}
-          disabled={saving || testing}
+          disabled={saving || testing || saveDisabled}
           className="min-h-11 gap-2 px-4 shadow-sm cursor-pointer"
         >
           {saving ? (

@@ -60,5 +60,24 @@ describe("messagingLogsMapper", () => {
       expect(row.status).toBe("sent");
       expect(row.category).toBe("general");
     });
+
+    it("carries restoredAt/restoredBy provenance through the insert row", () => {
+      const msg: Message = {
+        id: "msg_1",
+        userId: "u1",
+        contactId: "c1",
+        channel: "sms",
+        body: "hi",
+        sentAt: "2026-11-18T12:00:00.000Z",
+        status: "sent",
+        category: "general",
+        restoredAt: "2026-11-17T12:00:00.000Z",
+        restoredBy: "u-admin",
+      };
+
+      const row = mapMessageToInsertRow(msg, "demo");
+      expect(row.restoredAt).toEqual(new Date("2026-11-17T12:00:00.000Z"));
+      expect(row.restoredBy).toBe("u-admin");
+    });
   });
 });
