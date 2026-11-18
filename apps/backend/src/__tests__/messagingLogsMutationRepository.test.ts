@@ -156,3 +156,16 @@ describe("saveMessageLogDeliveryOutcomes", () => {
     expect(state.insertValues).toBeNull();
   });
 });
+
+describe("restoreArchivedMessageLog", () => {
+  it("chunks restore by ids when given more than 250 ids", async () => {
+    const { restoreArchivedMessageLog } =
+      await import("../db/repositories/messagingLogsMutationRepository.js");
+    const manyIds = Array.from({ length: 550 }, (_, i) => `msg_${i}`);
+    state.deleteReturning = [{ id: "msg_1" }];
+
+    const count = await restoreArchivedMessageLog("demo", "user-admin", manyIds);
+    // 3 chunks (250 + 250 + 50) each returning 1 item => 3
+    expect(count).toBe(3);
+  });
+});
