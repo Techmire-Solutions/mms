@@ -68,7 +68,7 @@ export function buildDashboardNotifications(
   const urgentThreshold =
     thresholds?.urgentAttendanceThreshold ?? DASHBOARD_URGENT_ATTENDANCE_THRESHOLD;
 
-  const canFinance = can ? can(FINANCE_MODULE_MANIFEST.permissions.write) : true;
+  const canFinance = can ? can(FINANCE_MODULE_MANIFEST.permissions.read) : true;
   const canStudents = can ? can(STUDENTS_MODULE_MANIFEST.permissions.read) : true;
   const canAttendance = can
     ? can(ATTENDANCE_MODULE_MANIFEST.permissions.write) ||

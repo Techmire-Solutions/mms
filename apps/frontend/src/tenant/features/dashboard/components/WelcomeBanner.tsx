@@ -73,7 +73,7 @@ export function WelcomeBanner({
               ? t("dashboard.greeting.personal", { name: userName })
               : t(DASHBOARD_ROLE_GREETING_KEYS[dashboardRole])}
           </h1>
-          <p className="text-xs md:text-sm text-muted-foreground mt-2 max-w-lg mb-0 font-medium leading-relaxed">
+          <p className="text-xs md:text-sm text-muted-foreground mt-2 max-w-lg mb-0 font-medium leading-relaxed text-pretty">
             {subtitle}
           </p>
         </div>

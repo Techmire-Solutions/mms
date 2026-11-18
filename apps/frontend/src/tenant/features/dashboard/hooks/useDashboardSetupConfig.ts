@@ -70,7 +70,8 @@ export function useDashboardPreferencesQuery() {
   // `isSuccess` alone is not enough: a 200 body without a preferences document
   // must not be treated as a loaded configuration.
   const hasLoadedPreferences = query.isSuccess && rawPreferences !== undefined;
-  return { ...query, data: preferences, hasLoadedPreferences };
+  const updatedAt = query.data?.body?.updatedAt ?? null;
+  return { ...query, data: preferences, updatedAt, hasLoadedPreferences };
 }
 
 export function useDashboardPreferencesMutation() {
@@ -84,15 +85,17 @@ export function useDashboardPreferencesMutation() {
       await queryClient.cancelQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
       const previous = queryClient.getQueryData(DASHBOARD_PREFERENCES_QUERY_KEY);
       const previousDoc = (
-        previous as { body?: { preferences?: Record<string, unknown> } } | undefined
-      )?.body?.preferences;
+        previous as
+          | { body?: { preferences?: Record<string, unknown>; updatedAt?: string | null } }
+          | undefined
+      )?.body;
       const merged = normalizeDashboardPreferences({
-        ...(previousDoc ?? {}),
+        ...(previousDoc?.preferences ?? {}),
         ...(variables.body as Record<string, unknown>),
       });
       queryClient.setQueryData(DASHBOARD_PREFERENCES_QUERY_KEY, {
         status: 200,
-        body: { success: true, preferences: merged },
+        body: { success: true, preferences: merged, updatedAt: previousDoc?.updatedAt ?? null },
       });
       return { previous };
     },
@@ -104,6 +107,8 @@ export function useDashboardPreferencesMutation() {
       if (context?.previous !== undefined) {
         queryClient.setQueryData(DASHBOARD_PREFERENCES_QUERY_KEY, context.previous);
       }
+      // Re-sync the authoritative document (a 409 means another writer moved it).
+      void queryClient.invalidateQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
       notify.error(t("dashboard.toast.prefSaveFailed"));
     },
     onSuccess: (res: { status: number; body?: { preferences?: unknown } }) => {

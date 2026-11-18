@@ -47,17 +47,24 @@ export function PlatformDashboardCharts({
   const isAwaitingTrend =
     !activityTrend || activityTrend.length === 0 || activityTrend.every((d) => (d.ops ?? 0) === 0);
 
-  const trendData =
-    activityTrend && activityTrend.length > 0
-      ? activityTrend
-      : [
-          { month: "Jan", tenants: activeWorkspaces, ops: 0 },
-          { month: "Feb", tenants: activeWorkspaces, ops: 0 },
-          { month: "Mar", tenants: activeWorkspaces, ops: 0 },
-          { month: "Apr", tenants: activeWorkspaces, ops: 0 },
-          { month: "May", tenants: activeWorkspaces, ops: 0 },
-          { month: "Jun", tenants: activeWorkspaces, ops: 0 },
-        ];
+  // Platform apex is English-only (useTranslation), so the no-data placeholder
+  // mirrors the backend's last-6-months buckets instead of hardcoded "Jan"…"Jun"
+  // (2026-11-17 review, P6).
+  const fallbackMonths = React.useMemo(
+    () =>
+      Array.from({ length: 6 }, (_, i) => {
+        const d = new Date(new Date().getFullYear(), new Date().getMonth() - (5 - i), 1);
+        return {
+          month: d.toLocaleString("en-US", { month: "short" }),
+          yearMonth: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+          tenants: activeWorkspaces,
+          ops: 0,
+        };
+      }),
+    [activeWorkspaces],
+  );
+
+  const trendData = activityTrend && activityTrend.length > 0 ? activityTrend : fallbackMonths;
 
   return (
     <WidgetCard className="p-6 space-y-4 rounded-2xl border border-border/60 bg-card/70 backdrop-blur-sm shadow-xs">
@@ -69,28 +76,30 @@ export function PlatformDashboardCharts({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
         <ReportChartCard title={t("platform.charts.activeVsInactive")} heightClass="h-52">
-          <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
-            <XAxis
-              dataKey="name"
-              stroke="currentColor"
-              className="text-xs font-semibold text-muted-foreground"
-              tickLine={false}
-            />
-            <YAxis
-              stroke="currentColor"
-              className="text-xs font-semibold text-muted-foreground"
-              allowDecimals={false}
-              tickLine={false}
-              axisLine={false}
-            />
-            <Tooltip content={<PlatformCountTooltip />} />
-            <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
+          <div role="img" aria-label={t("platform.charts.activeVsInactive")}>
+            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
+              <XAxis
+                dataKey="name"
+                stroke="currentColor"
+                className="text-xs font-semibold text-muted-foreground"
+                tickLine={false}
+              />
+              <YAxis
+                stroke="currentColor"
+                className="text-xs font-semibold text-muted-foreground"
+                allowDecimals={false}
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip content={<PlatformCountTooltip />} />
+              <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </div>
         </ReportChartCard>
 
         <ReportChartCard
@@ -104,33 +113,35 @@ export function PlatformDashboardCharts({
             ) : undefined
           }
         >
-          <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <defs>
-              <ChartAreaGradient id={gradientId} color="hsl(var(--primary))" opacity={0.4} />
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
-            <XAxis
-              dataKey="month"
-              stroke="currentColor"
-              className="text-xs font-semibold text-muted-foreground"
-              tickLine={false}
-            />
-            <YAxis
-              stroke="currentColor"
-              className="text-xs font-semibold text-muted-foreground"
-              tickLine={false}
-              axisLine={false}
-            />
-            <Tooltip content={<PlatformCountTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="ops"
-              stroke="hsl(var(--primary))"
-              strokeWidth={2.5}
-              fillOpacity={1}
-              fill={`url(#${gradientId})`}
-            />
-          </AreaChart>
+          <div role="img" aria-label={t("platform.charts.activityTrend")}>
+            <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <ChartAreaGradient id={gradientId} color="hsl(var(--primary))" opacity={0.4} />
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
+              <XAxis
+                dataKey="month"
+                stroke="currentColor"
+                className="text-xs font-semibold text-muted-foreground"
+                tickLine={false}
+              />
+              <YAxis
+                stroke="currentColor"
+                className="text-xs font-semibold text-muted-foreground"
+                tickLine={false}
+                axisLine={false}
+              />
+              <Tooltip content={<PlatformCountTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="ops"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill={`url(#${gradientId})`}
+              />
+            </AreaChart>
+          </div>
         </ReportChartCard>
       </div>
     </WidgetCard>

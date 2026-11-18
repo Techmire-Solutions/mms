@@ -81,7 +81,6 @@ describe("PlatformDashboardFleetTable", () => {
             onPageChange={vi.fn()}
             sortDir="asc"
             onToggleSort={vi.fn()}
-            onRequestExport={vi.fn()}
           />
         </MemoryRouter>,
       );
@@ -112,47 +111,12 @@ describe("PlatformDashboardFleetTable", () => {
             onPageChange={vi.fn()}
             sortDir="asc"
             onToggleSort={vi.fn()}
-            onRequestExport={vi.fn()}
           />
         </MemoryRouter>,
       );
     });
 
     expect(container.textContent).toContain("platform.fleetEmptyTitle");
-  });
-
-  it("renders export button when items are selected and responds to clicks", async () => {
-    const onRequestExport = vi.fn();
-    await act(async () => {
-      root.render(
-        <MemoryRouter>
-          <PlatformDashboardFleetTable
-            rows={mockRows}
-            total={2}
-            page={1}
-            pageSize={10}
-            isLoading={false}
-            selected={new Set(["al-noor"])}
-            onToggleSelect={vi.fn()}
-            onToggleSelectAll={vi.fn()}
-            onPageChange={vi.fn()}
-            sortDir="asc"
-            onToggleSort={vi.fn()}
-            onRequestExport={onRequestExport}
-          />
-        </MemoryRouter>,
-      );
-    });
-
-    const exportBtn = Array.from(container.querySelectorAll("button")).find((btn) =>
-      btn.textContent?.includes("platform.workspaces.exportSelected"),
-    );
-    expect(exportBtn instanceof HTMLButtonElement).toBe(true);
-
-    await act(async () => {
-      exportBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    expect(onRequestExport).toHaveBeenCalledTimes(1);
   });
 
   it("invokes openInspector when a row is clicked", async () => {
@@ -171,7 +135,6 @@ describe("PlatformDashboardFleetTable", () => {
             onPageChange={vi.fn()}
             sortDir="asc"
             onToggleSort={vi.fn()}
-            onRequestExport={vi.fn()}
           />
         </MemoryRouter>,
       );

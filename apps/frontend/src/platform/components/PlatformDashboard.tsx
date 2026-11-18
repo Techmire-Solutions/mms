@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Building2, Globe, Ban, PlusCircle } from "lucide-react";
+import { Building2, Globe, Ban, Lock, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { m } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -58,7 +58,15 @@ export function PlatformDashboard(): React.JSX.Element {
       />
 
       <m.div variants={reducedMotion ? undefined : itemVariants}>
-        {metricsError ? (
+        {!canWorkspaces ? (
+          // Authenticated but missing the workspaces grant: a perpetual skeleton
+          // would imply data is loading; show a definitive no-access state instead.
+          <EmptyState
+            icon={Lock}
+            title={t("platform.noAccessTitle")}
+            description={t("platform.noAccessHint")}
+          />
+        ) : metricsError ? (
           <ErrorState
             title={t("platform.loadFailed")}
             description={t("platform.loadFailedHint")}
@@ -105,7 +113,10 @@ export function PlatformDashboard(): React.JSX.Element {
             ]}
           />
         ) : (
-          <StatsSkeleton count={3} />
+          <div role="status" aria-live="polite">
+            <span className="sr-only">{t("common.loading")}</span>
+            <StatsSkeleton count={3} />
+          </div>
         )}
       </m.div>
 

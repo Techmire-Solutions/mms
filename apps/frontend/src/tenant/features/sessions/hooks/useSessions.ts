@@ -5,6 +5,7 @@ import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMe
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient, apiContract } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
+import { fetchWidgetAggregatesBatched } from "@/lib/reports/widgetAggregatesBatch";
 import type { Session } from "@/lib/data/sessionsData";
 
 export function sessionsCommandMetricsQueryOptions() {
@@ -165,25 +166,10 @@ export function useSessionsWidgetAggregates(
 
   const query = useQuery({
     queryKey: [...SESSIONS_WIDGET_AGGREGATES_QUERY_KEY, querySignature] as const,
-    queryFn: async () => {
-      const res = await apiContract.sessions.widgetAggregates({
-        body: { widgets: sessionQueries },
-      });
-      return (
-        (
-          res.body as {
-            results?: Record<
-              string,
-              {
-                value?: number;
-                totalCount?: number;
-                chartData?: Array<{ name: string; value: number }>;
-              }
-            >;
-          } | null
-        )?.results ?? {}
-      );
-    },
+    queryFn: async () =>
+      fetchWidgetAggregatesBatched(sessionQueries, (batch) =>
+        apiContract.sessions.widgetAggregates({ body: { widgets: batch } }),
+      ),
     enabled: isAuthenticated && enabled && sessionQueries.length > 0,
     staleTime: 30_000,
   });

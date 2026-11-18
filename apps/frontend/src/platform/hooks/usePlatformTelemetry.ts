@@ -15,7 +15,7 @@ export interface PlatformTelemetryData {
     hasReplica: boolean;
   };
   tenantDb?: {
-    rlsIsolation: "enforced";
+    rlsIsolation: "schema-enforced";
     activeTenantsCount: number;
     totalTenantTransactions: number;
     tenantCapLimit: number;

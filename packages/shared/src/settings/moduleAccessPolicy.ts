@@ -121,10 +121,11 @@ export function getModuleActionPermission(
   action: ModulePermissionAction,
 ): Permission {
   const p: ModulePermissionSource["permissions"] = MODULE_PERMISSION_SOURCES[moduleId].permissions;
-  const write = p.write ?? p.read;
+  const read = p.read;
+  const write = p.write ?? read;
   switch (action) {
     case "read":
-      return p.read;
+      return read;
     case "write":
       return write;
     case "manage":
@@ -135,7 +136,7 @@ export function getModuleActionPermission(
     case "delete":
       return p.delete ?? write;
     case "export":
-      return p.export ?? p.read;
+      return p.export ?? read;
     case "setupWrite":
       return p.setupWrite;
   }

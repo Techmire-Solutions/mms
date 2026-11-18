@@ -141,67 +141,6 @@ export async function reorderDashboardWidgetsForWorkspace(
   });
 }
 
-/** Find a single active dashboard widget by id within the workspace. */
-export async function findDashboardWidgetById(
-  workspaceSubdomain: string,
-  id: string,
-): Promise<DashboardWidgetDto | null> {
-  const subdomain = workspaceSubdomain.trim().toLowerCase();
-  const cleanId = id?.trim();
-  if (!cleanId) return null;
-  return withTenant(subdomain, async (tx) => {
-    const rows = await tx
-      .select({
-        id: dashboardWidgets.id,
-        workspaceSubdomain: dashboardWidgets.workspaceSubdomain,
-        widgetType: dashboardWidgets.widgetType,
-        category: dashboardWidgets.category,
-        collection: dashboardWidgets.collection,
-        role: dashboardWidgets.role,
-        isPinnedToDashboard: dashboardWidgets.isPinnedToDashboard,
-        title: dashboardWidgets.title,
-        icon: dashboardWidgets.icon,
-        color: dashboardWidgets.color,
-        operation: dashboardWidgets.operation,
-        sortOrder: dashboardWidgets.sortOrder,
-        config: dashboardWidgets.config,
-        updatedAt: dashboardWidgets.updatedAt,
-      })
-      .from(dashboardWidgets)
-      .where(
-        and(
-          eq(dashboardWidgets.workspaceSubdomain, subdomain),
-          eq(dashboardWidgets.id, cleanId),
-          isNull(dashboardWidgets.deletedAt),
-        ),
-      )
-      .limit(1);
-    return rows[0] ? toDto(rows[0]) : null;
-  });
-}
-
-/** Restore a previously soft-deleted dashboard widget by id. */
-export async function restoreDashboardWidgetById(
-  workspaceSubdomain: string,
-  id: string,
-  restoredBy?: string,
-): Promise<number> {
-  const subdomain = workspaceSubdomain.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    const result = await tx
-      .update(dashboardWidgets)
-      .set({
-        deletedAt: null,
-        deletedBy: null,
-        restoredAt: new Date(),
-        restoredBy: restoredBy ?? null,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(dashboardWidgets.workspaceSubdomain, subdomain), eq(dashboardWidgets.id, id)));
-    return result.rowCount ?? 0;
-  });
-}
-
 /** Backup/restore parity — full active workspace widgets, in the shape the write DTO accepts. */
 export async function listAllDashboardWidgetsByWorkspace(
   workspaceSubdomain: string,

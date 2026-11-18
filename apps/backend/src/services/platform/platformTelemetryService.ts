@@ -17,7 +17,8 @@ export interface PlatformTelemetryResult {
     hasReplica: boolean;
   };
   tenantDb: {
-    rlsIsolation: "enforced";
+    /** Static schema assertion (FORCE ROW LEVEL SECURITY), not a live per-table probe. */
+    rlsIsolation: "schema-enforced";
     activeTenantsCount: number;
     totalTenantTransactions: number;
     tenantCapLimit: number;
@@ -41,7 +42,17 @@ export interface PlatformTelemetryResult {
   uptimeSeconds: number;
 }
 
+const TELEMETRY_CACHE_TTL_MS = 5_000;
+let telemetryCache: { result: PlatformTelemetryResult; expiresAt: number } | null = null;
+
 export async function getPlatformTelemetry(): Promise<PlatformTelemetryResult> {
+  const nowMs = Date.now();
+  // A short TTL collapses the frontend's 30s poll across concurrent operators
+  // into one DB ping (2026-11-17 review, P9).
+  if (telemetryCache && telemetryCache.expiresAt > nowMs) {
+    return telemetryCache.result;
+  }
+
   const mem = process.memoryUsage();
   const pool = getPoolMetrics() ?? { totalCount: 1, idleCount: 1, waitingCount: 0 };
   const tenantMetrics = getTenantDbMetrics();
@@ -54,7 +65,7 @@ export async function getPlatformTelemetry(): Promise<PlatformTelemetryResult> {
   await pingDatabase();
   const latencyMs = Math.round(performance.now() - start);
 
-  return {
+  const result: PlatformTelemetryResult = {
     platformDb: {
       engine: "PostgreSQL 16 (Drizzle ORM)",
       totalCount: total,
@@ -66,7 +77,7 @@ export async function getPlatformTelemetry(): Promise<PlatformTelemetryResult> {
       hasReplica: Boolean(pool.replica),
     },
     tenantDb: {
-      rlsIsolation: "enforced",
+      rlsIsolation: "schema-enforced",
       activeTenantsCount: tenantMetrics.activeTenantsCount,
       totalTenantTransactions: tenantMetrics.totalTenantActiveTransactions,
       tenantCapLimit: tenantMetrics.tenantCapLimit,
@@ -89,6 +100,8 @@ export async function getPlatformTelemetry(): Promise<PlatformTelemetryResult> {
     latencyMs,
     uptimeSeconds: Math.floor(process.uptime()),
   };
+  telemetryCache = { result, expiresAt: nowMs + TELEMETRY_CACHE_TTL_MS };
+  return result;
 }
 
 export async function getPlatformActivityTrend(

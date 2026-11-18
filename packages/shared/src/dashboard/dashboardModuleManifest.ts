@@ -15,10 +15,10 @@ export const DASHBOARD_MODULE_MANIFEST = {
   widgetsObjectKey: DASHBOARD_WIDGETS_KEY,
   tiers: [] as const,
   permissions: {
-    /** View home dashboard (authenticated tenants; coarse gate via analytics). */
     read: "analytics.view",
-    /** Customize metric cards and pinned widgets. */
-    customize: "configuration.view",
+    /** Customize metric cards and pinned widgets. The board is workspace-wide,
+     *  so this requires the global settings write, not settings read. */
+    customize: "settings.global.write",
     setupView: "configuration.view",
     setupWrite: "settings.global.write",
   } satisfies Record<string, Permission>,

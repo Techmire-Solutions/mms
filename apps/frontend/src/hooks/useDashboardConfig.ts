@@ -59,9 +59,7 @@ export function useDashboardConfig() {
   const { t } = useTranslation();
   const { can } = usePermissions();
 
-  const canWriteDashboard =
-    can(DASHBOARD_MODULE_MANIFEST.permissions.setupWrite) ||
-    can(DASHBOARD_MODULE_MANIFEST.permissions.customize);
+  const canWriteDashboard = can(DASHBOARD_MODULE_MANIFEST.permissions.setupWrite);
 
   const prefs: DashboardPreferences = prefsQuery.data ?? DEFAULT_DASHBOARD_PREFERENCES;
   const serverWidgets = widgetsQuery.hasServerData ? widgetsQuery.data : [];
@@ -82,6 +80,36 @@ export function useDashboardConfig() {
   useEffect(() => {
     if (prefsQuery.hasLoadedPreferences) latestPrefsRef.current = prefs;
   }, [prefs, prefsQuery.hasLoadedPreferences]);
+
+  // Single-flight write queue (N1): only one preferences PUT is in flight, and
+  // each write echoes the freshest `updated_at` token so a stale write is a 409,
+  // not a silent clobber. Rapid edits collapse into the latest pending document.
+  const pendingPrefsRef = useRef<DashboardPreferences | null>(null);
+  const prefsInflightRef = useRef(false);
+  const latestTokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    latestTokenRef.current = prefsQuery.updatedAt ?? null;
+  }, [prefsQuery.updatedAt]);
+
+  const flushPrefs = useCallback(async () => {
+    if (prefsInflightRef.current) return;
+    prefsInflightRef.current = true;
+    try {
+      while (pendingPrefsRef.current) {
+        const doc = pendingPrefsRef.current;
+        pendingPrefsRef.current = null;
+        const res = await prefsMutation.mutateAsync({
+          body: { ...doc, expectedUpdatedAt: latestTokenRef.current } as never,
+        });
+        const newToken = (res as { body?: { updatedAt?: string | null } })?.body?.updatedAt;
+        if (typeof newToken === "string") latestTokenRef.current = newToken;
+      }
+    } catch {
+      // onError already rolled back + refetched; stop the queue.
+    } finally {
+      prefsInflightRef.current = false;
+    }
+  }, [prefsMutation]);
 
   useEffect(() => {
     if (!widgetsQuery.hasServerData) return;
@@ -153,9 +181,10 @@ export function useDashboardConfig() {
       const latest = latestPrefsRef.current ?? cached?.body?.preferences ?? prefs;
       const next = { ...latest, [key]: value };
       latestPrefsRef.current = next;
-      prefsMutation.mutate({ body: next });
+      pendingPrefsRef.current = next;
+      void flushPrefs();
     },
-    [canWriteDashboard, prefs, prefsMutation, prefsQuery.hasLoadedPreferences, queryClient],
+    [canWriteDashboard, prefs, prefsQuery.hasLoadedPreferences, queryClient, flushPrefs],
   );
 
   const toggleCardVisibility = (cardId: string) => {

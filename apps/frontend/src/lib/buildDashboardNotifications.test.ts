@@ -77,7 +77,7 @@ describe("buildDashboardNotifications", () => {
     expect(notifications[0].urgent).toBe(false);
   });
 
-  it("hides finance alerts when the caller cannot write invoices", () => {
+  it("hides finance alerts when the caller cannot read finance", () => {
     const notifications = buildDashboardNotifications(
       "admin",
       { ...baseMetrics, outstandingInvoiceCount: 3, outstandingBalance: 900 },
@@ -87,6 +87,18 @@ describe("buildDashboardNotifications", () => {
     );
 
     expect(notifications.find((n) => n.id === "unpaid-invoices")).toBeUndefined();
+  });
+
+  it("shows finance alerts to a read-only finance role (no write needed)", () => {
+    const notifications = buildDashboardNotifications(
+      "admin",
+      { ...baseMetrics, outstandingInvoiceCount: 3, outstandingBalance: 900 },
+      mockT,
+      (val) => `$${val}`,
+      (permission) => permission !== "finance.write",
+    );
+
+    expect(notifications.filter((n) => n.id === "unpaid-invoices")).toHaveLength(1);
   });
 
   it("uses the configured attendance thresholds instead of the defaults", () => {

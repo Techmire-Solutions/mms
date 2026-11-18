@@ -21,6 +21,7 @@ import {
   getWorkspaceBranding,
   getWorkspaceWithBranding,
   listWorkspaceRowsWithBranding,
+  listWorkspaceRowsPage,
   updateWorkspaceBrandingRow,
   upsertWorkspaceBranding as upsertWorkspaceBrandingRepo,
 } from "../db/repositories/workspaceRepository.js";
@@ -66,41 +67,6 @@ function mapWorkspaceSummaryRow(
   };
 }
 
-function filterAndSortSummaries(
-  summaries: PlatformWorkspaceRow[],
-  query: PlatformWorkspacesListQuery,
-): PlatformWorkspaceRow[] {
-  const search = (query.search ?? "").trim().toLowerCase();
-  const status = query.status ?? "all";
-  const sortField = query.sortField === "madrasaName" ? "name" : (query.sortField ?? "name");
-  const sortDir = query.sortDir ?? "asc";
-
-  let filtered = summaries;
-  if (search) {
-    filtered = filtered.filter(
-      (w) =>
-        (w.madrasaName ?? "").toLowerCase().includes(search) ||
-        w.subdomain.toLowerCase().includes(search),
-    );
-  }
-  if (status === "active") filtered = filtered.filter((w) => w.enabled);
-  if (status === "inactive") filtered = filtered.filter((w) => !w.enabled);
-
-  return [...filtered].sort((a, b) => {
-    let comparison = 0;
-    if (sortField === "name") {
-      comparison = (a.madrasaName ?? "").localeCompare(b.madrasaName ?? "");
-    } else if (sortField === "subdomain") {
-      comparison = a.subdomain.localeCompare(b.subdomain);
-    } else if (sortField === "createdAt") {
-      comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    } else if (sortField === "status") {
-      comparison = Number(b.enabled) - Number(a.enabled);
-    }
-    return sortDir === "asc" ? comparison : -comparison;
-  });
-}
-
 /** Cheap fleet KPI counts for platform dashboard / toolbar. */
 export async function getPlatformWorkspaceMetrics(): Promise<PlatformWorkspaceMetrics> {
   const db = getDb();
@@ -125,41 +91,31 @@ export async function listPlatformWorkspaces(
   const page = query.page ?? 1;
   const pageSize = query.limit ?? 25;
 
-  const rows = await listWorkspaceRowsWithBranding();
-  // Build lightweight rows first (no prefs/admin email) for filter/sort/page,
-  // then hydrate only the current page — avoids N prefs lookups for filtered-out rows.
-  const lightSummaries: PlatformWorkspaceRow[] = rows.map(({ workspace, branding }) =>
-    mapWorkspaceSummaryRow(workspace, branding, null, undefined),
-  );
-  const sorted = filterAndSortSummaries(lightSummaries, query);
-  const total = sorted.length;
-  const start = (page - 1) * pageSize;
-  const pageSlice = sorted.slice(start, start + pageSize);
-  const pageSubdomains = pageSlice.map((w) => w.subdomain);
+  // Search/status/date/sort/pagination all run in SQL — only the current page is
+  // hydrated (prefs + admin emails), avoiding an O(N) scan + in-memory sort.
+  const { rows: pageRows, total } = await listWorkspaceRowsPage({
+    search: query.search,
+    status: query.status,
+    sortField: query.sortField,
+    sortDir: query.sortDir,
+    dateFrom: query.dateFrom,
+    dateTo: query.dateTo,
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  });
 
+  const pageSubdomains = pageRows.map(({ workspace }) => workspace.subdomain);
   const prefsBySubdomain = await getUserModulePreferencesByWorkspaces(pageSubdomains);
   const adminEmailsBySubdomain = await getWorkspaceAdminEmailsMap(pageSubdomains);
-  const brandingBySubdomain = new Map(
-    rows.map(({ workspace, branding }) => [workspace.subdomain.toLowerCase(), branding] as const),
-  );
 
-  const workspaces = pageSlice.map((light) => {
-    const branding = brandingBySubdomain.get(light.subdomain.toLowerCase());
-    const rawPrefs = prefsBySubdomain.get(light.subdomain.toLowerCase()) ?? null;
-    const adminEmail = adminEmailsBySubdomain.get(light.subdomain.toLowerCase());
-    return mapWorkspaceSummaryRow(
-      {
-        subdomain: light.subdomain,
-        madrasaName: light.madrasaName ?? light.subdomain,
-        tagline: light.tagline,
-        enabled: light.enabled,
-        createdAt: light.createdAt,
-      },
+  const workspaces = pageRows.map(({ workspace, branding }) =>
+    mapWorkspaceSummaryRow(
+      workspace,
       branding,
-      rawPrefs,
-      adminEmail,
-    );
-  });
+      prefsBySubdomain.get(workspace.subdomain.toLowerCase()) ?? null,
+      adminEmailsBySubdomain.get(workspace.subdomain.toLowerCase()),
+    ),
+  );
 
   return { workspaces, total, page, pageSize };
 }

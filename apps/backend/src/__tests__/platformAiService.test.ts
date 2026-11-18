@@ -14,7 +14,7 @@ vi.mock("../services/platform/platformTelemetryService.js", () => ({
       hasReplica: false,
     },
     tenantDb: {
-      rlsIsolation: "enforced",
+      rlsIsolation: "schema-enforced",
       activeTenantsCount: 15,
       totalTenantTransactions: 120,
       tenantCapLimit: 100,

@@ -113,6 +113,7 @@ describe("buildDashboardMetricCard", () => {
     expect(card.id).toBe("def-card-admin-students");
     expect(card.value).toBe("120");
     expect(card.trend).toBe(7);
+    expect(card.trendKind).toBe("percent");
   });
 
   it("does not let a late aggregate overwrite a seeded summary card", () => {
@@ -169,6 +170,7 @@ describe("buildDashboardMetricCard", () => {
 
     expect(card.value).toBe("92%");
     expect(card.trend).toBe(5);
+    expect(card.trendKind).toBe("points");
   });
 
   it("handles fallback widget trend when trendMetric is not mapped directly", () => {

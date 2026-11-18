@@ -77,7 +77,10 @@ vi.mock("@/tenant/hooks/collections/dashboard", async () => {
       data: state.prefsLoaded ? PREFERENCES : DEFAULT_DASHBOARD_PREFERENCES,
       hasLoadedPreferences: state.prefsLoaded,
     }),
-    useDashboardPreferencesMutation: () => ({ mutate: spies.putPreferences }),
+    useDashboardPreferencesMutation: () => ({
+      mutate: spies.putPreferences,
+      mutateAsync: spies.putPreferences,
+    }),
     useDashboardWidgetsQuery: () => ({
       data: state.widgetsLoaded ? state.serverWidgets : [],
       hasServerData: state.widgetsLoaded,
@@ -230,7 +233,7 @@ describe("useDashboardConfig", () => {
     });
   });
 
-  it("keeps both changes when two preferences are written in one tick", () => {
+  it("keeps both changes when two preferences are written in one tick", async () => {
     renderTree(root, queryClient);
 
     act(() => {
@@ -238,14 +241,15 @@ describe("useDashboardConfig", () => {
       latestApi?.updatePref("disabledCardIds", ["card-b"]);
     });
 
-    expect(spies.putPreferences).toHaveBeenCalledTimes(2);
+    // Single-flight queue: the second PUT is flushed after the first resolves.
+    await vi.waitFor(() => expect(spies.putPreferences).toHaveBeenCalledTimes(2));
     // The second PUT must build on the first optimistic write, not the render snapshot.
     expect(spies.putPreferences.mock.calls.at(-1)?.[0]).toMatchObject({
       body: { gridMode: "compact", disabledCardIds: ["card-b"] },
     });
   });
 
-  it("keeps both card toggles within one tick", () => {
+  it("keeps both card toggles within one tick", async () => {
     renderTree(root, queryClient);
 
     act(() => {
@@ -253,6 +257,7 @@ describe("useDashboardConfig", () => {
       latestApi?.toggleCardVisibility("card-c");
     });
 
+    await vi.waitFor(() => expect(spies.putPreferences).toHaveBeenCalledTimes(2));
     expect(spies.putPreferences.mock.calls.at(-1)?.[0]?.body).toMatchObject({
       disabledCardIds: expect.arrayContaining(["card-a", "card-b", "card-c"]),
     });

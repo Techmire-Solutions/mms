@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import type { Workspace, BrandingSettings } from "@mms/shared";
 import { activeDb } from "../dbConnection.js";
 import { workspaces as workspacesTable } from "../schema.js";
@@ -6,48 +6,129 @@ import { loadWorkspaceRow, invalidateWorkspaceCache } from "./workspaceRepositor
 import { rowToWorkspace, rowToBranding } from "./workspaceRowMappers.js";
 
 /**
- * Lists all workspaces with their branding in a single query. Avoids the
- * N+1 pattern of fetching branding per workspace (used by the apex registry
- * and platform console listings).
- *
+ * Branding-bearing workspace columns projected by list/summary queries.
  * Intentionally omits LLM secrets (`llm_api_key`, `llm_configs`) — platform
  * list/summary responses must never project those columns.
+ */
+const WORKSPACE_BRANDING_PROJECTION = {
+  id: workspacesTable.id,
+  subdomain: workspacesTable.subdomain,
+  madrasaName: workspacesTable.madrasaName,
+  tagline: workspacesTable.tagline,
+  country: workspacesTable.country,
+  enabled: workspacesTable.enabled,
+  primaryColor: workspacesTable.primaryColor,
+  secondaryColor: workspacesTable.secondaryColor,
+  cornerStyle: workspacesTable.cornerStyle,
+  logoUrl: workspacesTable.logoUrl,
+  faviconUrl: workspacesTable.faviconUrl,
+  footerText: workspacesTable.footerText,
+  email: workspacesTable.email,
+  phone: workspacesTable.phone,
+  website: workspacesTable.website,
+  legalName: workspacesTable.legalName,
+  registrationNumber: workspacesTable.registrationNumber,
+  addressLine1: workspacesTable.addressLine1,
+  addressLine2: workspacesTable.addressLine2,
+  city: workspacesTable.city,
+  region: workspacesTable.region,
+  postalCode: workspacesTable.postalCode,
+  socialLinks: workspacesTable.socialLinks,
+  createdAt: workspacesTable.createdAt,
+} as const;
+
+type WorkspaceBrandingRow = typeof workspacesTable.$inferSelect;
+
+function toWorkspaceWithBranding(ws: unknown): {
+  workspace: Workspace;
+  branding: BrandingSettings;
+} {
+  const row = ws as WorkspaceBrandingRow;
+  return {
+    workspace: rowToWorkspace(row),
+    branding: rowToBranding(row),
+  };
+}
+
+/**
+ * Lists all workspaces with their branding in a single query. Avoids the
+ * N+1 pattern of fetching branding per workspace (used by the apex registry).
  */
 export async function listWorkspaceRowsWithBranding(): Promise<
   Array<{ workspace: Workspace; branding: BrandingSettings }>
 > {
   const rows = await activeDb()
-    .select({
-      id: workspacesTable.id,
-      subdomain: workspacesTable.subdomain,
-      madrasaName: workspacesTable.madrasaName,
-      tagline: workspacesTable.tagline,
-      country: workspacesTable.country,
-      enabled: workspacesTable.enabled,
-      primaryColor: workspacesTable.primaryColor,
-      secondaryColor: workspacesTable.secondaryColor,
-      cornerStyle: workspacesTable.cornerStyle,
-      logoUrl: workspacesTable.logoUrl,
-      faviconUrl: workspacesTable.faviconUrl,
-      footerText: workspacesTable.footerText,
-      email: workspacesTable.email,
-      phone: workspacesTable.phone,
-      website: workspacesTable.website,
-      legalName: workspacesTable.legalName,
-      registrationNumber: workspacesTable.registrationNumber,
-      addressLine1: workspacesTable.addressLine1,
-      addressLine2: workspacesTable.addressLine2,
-      city: workspacesTable.city,
-      region: workspacesTable.region,
-      postalCode: workspacesTable.postalCode,
-      socialLinks: workspacesTable.socialLinks,
-      createdAt: workspacesTable.createdAt,
-    })
+    .select({ ...WORKSPACE_BRANDING_PROJECTION })
     .from(workspacesTable);
-  return rows.map((ws) => ({
-    workspace: rowToWorkspace(ws as unknown as typeof workspacesTable.$inferSelect),
-    branding: rowToBranding(ws as unknown as typeof workspacesTable.$inferSelect),
-  }));
+  return rows.map(toWorkspaceWithBranding);
+}
+
+export interface WorkspaceRowsPageQuery {
+  search?: string;
+  status?: "all" | "active" | "inactive";
+  sortField?: "name" | "subdomain" | "createdAt" | "status" | "madrasaName";
+  sortDir?: "asc" | "desc";
+  dateFrom?: string;
+  dateTo?: string;
+  limit: number;
+  offset: number;
+}
+
+export interface WorkspaceRowsPage {
+  rows: Array<{ workspace: Workspace; branding: BrandingSettings }>;
+  total: number;
+}
+
+/**
+ * Paginated, filtered, sorted workspace+branding listing — search/status/date
+ * are pushed into SQL (previously an in-memory filter/sort over every row).
+ */
+export async function listWorkspaceRowsPage(
+  query: WorkspaceRowsPageQuery,
+): Promise<WorkspaceRowsPage> {
+  const conditions = [];
+  const search = (query.search ?? "").trim();
+  if (search) {
+    const pattern = `%${search}%`;
+    conditions.push(
+      or(ilike(workspacesTable.madrasaName, pattern), ilike(workspacesTable.subdomain, pattern)),
+    );
+  }
+  if (query.status === "active") conditions.push(eq(workspacesTable.enabled, true));
+  if (query.status === "inactive") conditions.push(eq(workspacesTable.enabled, false));
+  if (query.dateFrom) {
+    conditions.push(sql`${workspacesTable.createdAt}::date >= ${query.dateFrom}`);
+  }
+  if (query.dateTo) {
+    conditions.push(sql`${workspacesTable.createdAt}::date <= ${query.dateTo}`);
+  }
+  const where = conditions.length ? and(...conditions) : undefined;
+
+  const sortField = query.sortField === "madrasaName" ? "name" : (query.sortField ?? "name");
+  const column =
+    sortField === "subdomain"
+      ? workspacesTable.subdomain
+      : sortField === "createdAt"
+        ? workspacesTable.createdAt
+        : sortField === "status"
+          ? workspacesTable.enabled
+          : workspacesTable.madrasaName;
+  const orderBy = (query.sortDir ?? "asc") === "asc" ? asc(column) : desc(column);
+
+  const db = activeDb();
+  const [countRow] = await db.select({ total: count() }).from(workspacesTable).where(where);
+  const rows = await db
+    .select({ ...WORKSPACE_BRANDING_PROJECTION })
+    .from(workspacesTable)
+    .where(where)
+    .orderBy(orderBy)
+    .limit(query.limit)
+    .offset(query.offset);
+
+  return {
+    rows: rows.map(toWorkspaceWithBranding),
+    total: Number(countRow?.total ?? 0),
+  };
 }
 
 /** Read all branding fields for a workspace. Returns null when workspace not found. */

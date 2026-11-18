@@ -96,6 +96,7 @@ describe("moduleAccessPolicy", () => {
 
   it("falls back delete → write → read when a manifest omits an action", () => {
     expect(getModuleActionPermission("messaging", "delete")).toBe("messaging.write");
+    // Dashboard declares no write; it falls back to its read gate (analytics.view).
     expect(getModuleActionPermission("dashboard", "write")).toBe("analytics.view");
     expect(getModuleActionPermission("students", "setupWrite")).toBe("settings.global.write");
   });

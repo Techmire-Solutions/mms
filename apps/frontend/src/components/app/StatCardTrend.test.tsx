@@ -1,7 +1,18 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { StatCardTrend } from "./StatCardTrend";
+import { StatCardTrend, formatTrendDelta } from "./StatCardTrend";
+
+describe("formatTrendDelta", () => {
+  it("formats a percentage-point delta with pp, not %", () => {
+    expect(formatTrendDelta(5, "points")).toBe("5 pp");
+    expect(formatTrendDelta(-3, "points")).toBe("3 pp");
+  });
+
+  it("formats a relative change with %", () => {
+    expect(formatTrendDelta(15)).toBe("15%");
+  });
+});
 
 describe("StatCardTrend Component", () => {
   it("renders positive trend percentage and upward indicator", () => {

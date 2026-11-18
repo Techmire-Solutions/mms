@@ -71,7 +71,7 @@ export function QuickActionsPanel({ actions }: QuickActionsPanelProps): React.JS
                   <p className="text-sm font-bold text-foreground group-hover/item:text-primary transition-colors m-0 leading-tight">
                     {label}
                   </p>
-                  <p className="text-xs font-medium text-foreground mt-1 m-0 leading-normal">
+                  <p className="text-xs font-medium text-foreground mt-1 m-0 leading-normal text-pretty">
                     {t(quickAction.descKey)}
                   </p>
                 </div>

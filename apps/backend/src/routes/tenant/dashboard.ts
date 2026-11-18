@@ -2,7 +2,6 @@ import type { FastifyPluginAsync } from "fastify";
 import {
   dashboardContract,
   normalizeDashboardPreferences,
-  type DashboardPreferences,
   type DashboardWidgetDto,
 } from "@mms/shared";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
@@ -16,8 +15,8 @@ import {
 import { requireTenant } from "../../lib/tenantContext.js";
 import { createCollectionAuditHelper } from "../../lib/createCollectionAuditHelper.js";
 import {
-  loadDashboardPreferences,
-  saveDashboardPreferences,
+  loadDashboardPreferencesToken,
+  saveDashboardPreferencesCas,
   evictDashboardPreferencesCache,
 } from "../../services/dashboardPreferencesService.js";
 import {
@@ -43,8 +42,11 @@ const dashboardRouter = s.router(dashboardContract, {
     handleDashboardRead(
       request,
       async () => {
-        const preferences = await loadDashboardPreferences();
-        return { preferences: preferences ?? normalizeDashboardPreferences(null) };
+        const token = await loadDashboardPreferencesToken();
+        return {
+          preferences: token.preferences,
+          updatedAt: token.updatedAt,
+        };
       },
       "Failed to load dashboard preferences",
     ),
@@ -57,16 +59,23 @@ const dashboardRouter = s.router(dashboardContract, {
   > => {
     try {
       const result = await handleDashboardWrite(request, async (user) => {
+        const { expectedUpdatedAt, ...prefsBody } = body ?? {};
         // The write DTO declares every field optional, but the stored document
         // is a full singleton: merge the body over the stored row so a partial
         // PUT cannot reset every omitted preference to its default.
-        const stored = await loadDashboardPreferences();
-        const saved = await saveDashboardPreferences(
-          normalizeDashboardPreferences({
-            ...(stored ?? {}),
-            ...(body as Record<string, unknown>),
-          } as DashboardPreferences),
+        const stored = await loadDashboardPreferencesToken();
+        const merged = normalizeDashboardPreferences({
+          ...(stored.preferences as unknown as Record<string, unknown>),
+          ...(prefsBody as unknown as Record<string, unknown>),
+        });
+        // OCC: the client echoes the `updated_at` token it read; a concurrent
+        // writer moves the row, so the compare-and-set misses and we refuse the
+        // stale write instead of clobbering the other editor.
+        const saved = await saveDashboardPreferencesCas(
+          merged,
+          expectedUpdatedAt ?? stored.updatedAt,
         );
+        if (!saved) return { kind: "conflict" as const };
         try {
           await auditDashboard(
             user,
@@ -77,14 +86,34 @@ const dashboardRouter = s.router(dashboardContract, {
         } catch {
           /* non-critical */
         }
-        return saved;
+        return {
+          kind: "saved" as const,
+          preferences: saved.preferences,
+          updatedAt: saved.updatedAt,
+        };
       });
       if (!result.ok) return result.error;
+      if (result.data.kind === "conflict") {
+        return {
+          status: 409 as const,
+          body: {
+            type: "conflict",
+            message: "Dashboard preferences changed elsewhere; reload and retry",
+          },
+        };
+      }
       // The write committed — re-evict now so a reader that repopulated the
       // cache between the in-transaction eviction and the commit cannot pin
       // the pre-commit document for the whole TTL.
       await evictDashboardPreferencesCache();
-      return { status: 200 as const, body: { success: true, preferences: result.data } };
+      return {
+        status: 200 as const,
+        body: {
+          success: true,
+          preferences: result.data.preferences,
+          updatedAt: result.data.updatedAt,
+        },
+      };
     } catch (err) {
       request.log.error({ err }, "Failed to save dashboard preferences");
       return {

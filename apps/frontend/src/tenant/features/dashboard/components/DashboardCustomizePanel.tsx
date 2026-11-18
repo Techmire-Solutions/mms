@@ -72,6 +72,9 @@ export function DashboardCustomizePanel({
       aria-label={t("dashboard.customizeCards")}
       className="space-y-5 pb-1 print:hidden"
     >
+      <p className="text-xs text-muted-foreground text-pretty">
+        {t("dashboard.customizeWorkspaceWide")}
+      </p>
       <AnimatePresence>
         {isWidgetBuilderOpen && (
           <div ref={builderRef} tabIndex={-1} className="mb-5 scroll-mt-24 outline-none">

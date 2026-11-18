@@ -232,6 +232,9 @@ export const platformWorkspacesListQuerySchema = z
     status: z.enum(["all", "active", "inactive"]).optional(),
     sortField: z.enum(["name", "subdomain", "createdAt", "status", "madrasaName"]).optional(),
     sortDir: z.enum(["asc", "desc"]).optional(),
+    /** Inclusive creation-date range (YYYY-MM-DD) applied server-side before pagination. */
+    dateFrom: z.iso.date().optional(),
+    dateTo: z.iso.date().optional(),
   })
   .strict();
 
