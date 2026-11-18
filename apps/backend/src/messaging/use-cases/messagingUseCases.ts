@@ -8,6 +8,7 @@ import {
   type MessageTemplate,
   type Message,
   type MessagingMetricsDto,
+  type MessagingPreferences,
   messageTemplateListSchema,
 } from "@mms/shared";
 import type {
@@ -216,6 +217,23 @@ export function createMessagingUseCases(repo: MessagingRepository = messagingRep
         };
       }
       return repo.queryMessagingMetrics(workspaceSubdomain, filters);
+    },
+
+    loadMessagingPreferences: async (
+      workspaceSubdomain: string,
+    ): Promise<MessagingPreferences | null> => {
+      const tenant = workspaceSubdomain?.trim().toLowerCase();
+      if (!tenant) return null;
+      return repo.loadMessagingPreferences(tenant);
+    },
+
+    saveMessagingPreferences: async (
+      workspaceSubdomain: string,
+      prefs: MessagingPreferences,
+    ): Promise<void> => {
+      const tenant = workspaceSubdomain?.trim().toLowerCase();
+      if (!tenant) return;
+      await repo.saveMessagingPreferences(tenant, prefs);
     },
 
     resolveMessagingRecipients,

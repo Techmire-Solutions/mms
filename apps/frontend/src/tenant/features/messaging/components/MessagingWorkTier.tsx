@@ -10,7 +10,7 @@ interface MessagingWorkTierProps {
   canClearLogs: boolean;
   canRestoreLogs?: boolean;
   onRestoreLog?: (log: Message) => Promise<void>;
-  onBulkRestore?: Parameters<typeof useMessagingWorkTierController>[0]["onBulkRestore"];
+  onBulkRestore?: (ids: string[]) => Promise<void> | void;
   onClearLogsRequest: () => void;
   onResend: Parameters<typeof useMessagingWorkTierController>[0]["onResend"];
   onBulkResend?: Parameters<typeof useMessagingWorkTierController>[0]["onBulkResend"];

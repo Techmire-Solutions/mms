@@ -124,7 +124,7 @@ export async function loadMessagingRecipients(
     recipients,
     total: contactPage.total,
     page: contactPage.page,
-    limit: contactPage.limit,
+    pageSize: contactPage.limit,
     hasMore: contactPage.hasMore,
   };
 }

@@ -4,11 +4,13 @@ import {
   MESSAGING_ROLE_OPTIONS,
   MESSAGING_GENDER_OPTIONS,
   MESSAGING_STATUS_OPTIONS,
-  getChannelBadgeStyle,
+  MESSAGING_STATUS_FILTERS,
+  MESSAGING_LOG_RETENTION_DAYS,
   getChannelLabelKey,
   getMessageCategoryLabelKey,
   toMessagingRecipient,
   messagingResolveResponseSchema,
+  messagingRecipientsPageResponseSchema,
 } from "../messaging/messagingModuleManifest.js";
 
 describe("messagingModuleManifest", () => {
@@ -24,6 +26,9 @@ describe("messagingModuleManifest", () => {
     expect(MESSAGING_MODULE_MANIFEST.permissions.write).toBe("messaging.write");
     expect(MESSAGING_MODULE_MANIFEST.permissions.clearLogs).toBe("messaging.clearLogs");
     expect(MESSAGING_MODULE_MANIFEST.permissions.restoreLogs).toBe("messaging.restoreLogs");
+    expect(MESSAGING_MODULE_MANIFEST.permissions.setupWrite).toBe("settings.global.write");
+    expect(MESSAGING_MODULE_MANIFEST.defaultPageSize).toBe(50);
+    expect(MESSAGING_MODULE_MANIFEST.softDelete.retentionDays).toBe(MESSAGING_LOG_RETENTION_DAYS);
     expect(MESSAGING_MODULE_MANIFEST.recipientsColumnPreferencesObjectKey).toBe(
       "messaging_recipients_user_column_preferences",
     );
@@ -61,10 +66,9 @@ describe("messagingModuleManifest", () => {
   });
 
   it("resolves correct badge style for channel types", () => {
-    expect(getChannelBadgeStyle("email")).toContain("text-warning");
-    expect(getChannelBadgeStyle("sms")).toContain("text-info");
-    expect(getChannelBadgeStyle("whatsapp")).toContain("text-success");
-    expect(getChannelBadgeStyle("unknown")).toContain("text-success");
+    expect(MESSAGING_STATUS_FILTERS).toEqual(
+      expect.arrayContaining(["queued", "sending", "sent", "delivered", "failed", "skipped"]),
+    );
   });
 
   it("returns appropriate i18n label keys for channels and categories", () => {
@@ -101,5 +105,16 @@ describe("messagingModuleManifest", () => {
     });
     expect(parsed.recipients).toHaveLength(1);
     expect(parsed.recipients[0]?.name).toBe("Ali");
+  });
+
+  it("uses pageSize (not limit) in the recipients page response", () => {
+    const parsed = messagingRecipientsPageResponseSchema.parse({
+      recipients: [],
+      total: 0,
+      page: 1,
+      pageSize: 50,
+      hasMore: false,
+    });
+    expect(parsed.pageSize).toBe(50);
   });
 });

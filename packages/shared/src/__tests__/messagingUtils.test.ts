@@ -8,6 +8,7 @@ import {
   insertVariableTokenAt,
 } from "../core/utils.js";
 import { calculateSmsSegments } from "../messaging/smsUtils.js";
+import { ALLOWED_PERSONALIZATION_TOKEN_KEYS } from "../messaging/messagingPersonalizeUtils.js";
 import {
   mergeMessageTemplates,
   DEFAULT_MESSAGE_TEMPLATES,
@@ -205,6 +206,15 @@ describe("messagingUtils", () => {
         expect(typeof vt.fallbackExample).toBe("string");
         expect(vt.fallbackExample.length).toBeGreaterThan(0);
       });
+    });
+
+    it("keeps the allowlist and UI token registry in parity", () => {
+      const registryTokens = new Set(
+        MESSAGING_VARIABLE_TOKENS.map((vt) => vt.token.replace(/[{}]/g, "")),
+      );
+      for (const key of ALLOWED_PERSONALIZATION_TOKEN_KEYS) {
+        expect(registryTokens.has(key)).toBe(true);
+      }
     });
   });
 

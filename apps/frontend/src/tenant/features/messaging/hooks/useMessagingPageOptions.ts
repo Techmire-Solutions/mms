@@ -94,6 +94,7 @@ export function useMessagingPageOptions() {
   const logStatusConfig = useMemo(
     () =>
       ({
+        queued: { label: t("messaging.status.queued"), cls: SEMANTIC_BADGE.warning },
         sending: { label: t("messaging.status.sending"), cls: SEMANTIC_BADGE.info },
         sent: { label: t("messaging.status.sent"), cls: SEMANTIC_BADGE.success },
         delivered: { label: t("messaging.status.delivered"), cls: SEMANTIC_BADGE.successStrong },

@@ -7,8 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 /** i18n-resolved messaging entity descriptor for Work filter chips. */
 export function useMessagingEntityDescriptor(): EntityDescriptor<MessageRecordDto> {
   const { t } = useTranslation();
-  return useStaticEntityDescriptor(
-    messagingEntityDescriptor,
-    (key, fallback) => t(key as Parameters<typeof t>[0]) || fallback,
+  return useStaticEntityDescriptor(messagingEntityDescriptor, (key) =>
+    t(key as Parameters<typeof t>[0]),
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail, MessageSquare, MessageCircle } from "lucide-react";
-import { getChannelBadgeStyle, getChannelLabelKey } from "@mms/shared";
+import { getChannelLabelKey } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -11,8 +11,19 @@ export interface ChannelBadgeProps {
   showIcon?: boolean;
 }
 
+/** Frontend-only badge styling map (UI tokens do not belong in `@mms/shared`). */
+function getChannelBadgeStyle(channel: string): string {
+  if (channel === "email") {
+    return "bg-warning/10 text-warning border border-warning/20";
+  }
+  if (channel === "sms") {
+    return "bg-info/10 text-info border border-info/20";
+  }
+  return "bg-success/10 text-success border border-success/20";
+}
+
 /**
- * Channel pill — Badge shell + shared channel style/label map.
+ * Channel pill — Badge shell + channel style/label map.
  */
 export function ChannelBadge({
   channel,

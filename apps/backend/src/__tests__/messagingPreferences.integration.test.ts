@@ -42,6 +42,15 @@ vi.mock("../db/documentStoreObjects.js", () => ({
   }),
 }));
 
+vi.mock("../db/repositories/messagingPreferencesRepository.js", () => ({
+  loadMessagingPreferences: vi.fn().mockImplementation(async () => storedPrefs),
+  saveMessagingPreferences: vi
+    .fn()
+    .mockImplementation(async (_subdomain: string, data: unknown) => {
+      storedPrefs = data;
+    }),
+}));
+
 describe("Messaging Preferences Contract Routes", () => {
   beforeEach(async () => {
     process.env.JWT_SECRET = "test-secret";

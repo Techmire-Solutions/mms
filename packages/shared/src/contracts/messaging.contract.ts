@@ -8,6 +8,7 @@ import {
   messagingRecipientsQuerySchema,
   messagingRecipientsMatchQuerySchema,
   messagingMetricsSchema,
+  messagingMetricsQuerySchema,
   recordMessageLogsSchema,
 } from "../schemas/messaging.dto.js";
 import { messageTemplateSchema } from "../messaging/messagingTemplateSchemas.js";
@@ -76,12 +77,7 @@ export const messagingContract = c.router({
   getMetrics: {
     method: "GET",
     path: "/api/messaging/metrics",
-    query: z
-      .object({
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-      })
-      .optional(),
+    query: messagingMetricsQuerySchema.optional(),
     responses: { 200: z.object({ metrics: messagingMetricsSchema }), 403: ok, 500: ok },
     summary: "Get messaging analytics metrics",
   },

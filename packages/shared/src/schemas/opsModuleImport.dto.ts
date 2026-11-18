@@ -130,11 +130,8 @@ export const messagingImportRowSchema = z
   .object({
     title: z.string().trim().max(200).optional(),
     channel: z.string().trim().max(50).optional(),
-    recipient: z.string().trim().max(200).optional(),
     message: z.string().trim().max(5000).optional(),
-    status: z.string().trim().max(50).optional(),
-    sentAt: z.string().trim().max(50).optional(),
-    notes: z.string().trim().max(2000).optional(),
+    category: z.string().trim().max(50).optional(),
   })
   .passthrough();
 

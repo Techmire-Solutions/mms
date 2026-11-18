@@ -12,11 +12,8 @@ import {
 export interface MessagingTransferEntity {
   title: string;
   channel: string;
-  recipient?: string;
   message: string;
-  status?: string;
-  sentAt?: string;
-  notes?: string;
+  category?: string;
 }
 
 export const messagingTransferSchema: ModuleTransferSchema<MessagingTransferEntity> =
@@ -42,14 +39,6 @@ export const messagingTransferSchema: ModuleTransferSchema<MessagingTransferEnti
         extract: (m) => m.channel || "sms",
       },
       {
-        key: "recipient",
-        label: "Recipient Phone / Email",
-        aliases: ["phone", "mobile", "Recipient"],
-        sample: "+923001234567",
-        extract: (m) => m.recipient || "",
-        parse: (raw) => raw.trim().replace(/^'+/, ""),
-      },
-      {
         key: "message",
         label: "Message Content",
         aliases: ["content", "Body", "Text"],
@@ -58,25 +47,11 @@ export const messagingTransferSchema: ModuleTransferSchema<MessagingTransferEnti
         extract: (m) => m.message || "",
       },
       {
-        key: "status",
-        label: "Status",
-        aliases: ["Delivery Status"],
-        sample: "active",
-        extract: (m) => m.status || "draft",
-      },
-      {
-        key: "sentAt",
-        label: "Sent Timestamp",
-        aliases: ["sent_at", "Date Sent"],
-        sample: "2024-09-01 10:00:00",
-        extract: (m) => m.sentAt || "",
-      },
-      {
-        key: "notes",
-        label: "Notes",
-        aliases: ["remarks"],
-        sample: "Automated notification template",
-        extract: (m) => m.notes || "",
+        key: "category",
+        label: "Category",
+        aliases: ["category", "Category", "Category Type"],
+        sample: "general",
+        extract: (m) => m.category || "general",
       },
     ],
   });

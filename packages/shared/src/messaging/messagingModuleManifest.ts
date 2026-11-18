@@ -11,7 +11,18 @@ import {
 
 export const MESSAGING_ROLE_FILTERS = ["all", "students", "faculty", "staff", "contacts"] as const;
 export const MESSAGING_GENDER_FILTERS = ["all", "male", "female", "unspecified"] as const;
-export const MESSAGING_STATUS_FILTERS = ["all", "sent", "delivered", "failed", "skipped"] as const;
+export const MESSAGING_STATUS_FILTERS = [
+  "all",
+  "queued",
+  "sending",
+  "sent",
+  "delivered",
+  "failed",
+  "skipped",
+] as const;
+
+/** Single source for the `message_logs` Bucket-3 TTL purge window (days). */
+export const MESSAGING_LOG_RETENTION_DAYS = 365;
 
 export type MessagingRoleFilter = (typeof MESSAGING_ROLE_FILTERS)[number];
 export type MessagingGenderFilter = (typeof MESSAGING_GENDER_FILTERS)[number];
@@ -38,6 +49,7 @@ export const MESSAGING_MODULE_MANIFEST = {
   entityType: "Message",
   collectionKey: "messages",
   restBasePath: "/api/messaging",
+  defaultPageSize: 50,
   tiers: ["work", "reports", "setup"] as const,
   setupSubTabs: ["templates", "preferences"] as const,
   preferencesObjectKey: "messaging_preferences",
@@ -46,7 +58,7 @@ export const MESSAGING_MODULE_MANIFEST = {
     reportsIncludeDeleted: false,
     exportsIncludeDeleted: false,
     captureDeletionReason: false,
-    retentionDays: 365,
+    retentionDays: MESSAGING_LOG_RETENTION_DAYS,
   },
   recipientsColumnPreferencesObjectKey: "messaging_recipients_user_column_preferences",
   historyColumnPreferencesObjectKey: "messaging_history_user_column_preferences",
@@ -57,7 +69,7 @@ export const MESSAGING_MODULE_MANIFEST = {
     clearLogs: "messaging.clearLogs",
     restoreLogs: "messaging.restoreLogs",
     setupView: "configuration.view",
-    setupWrite: "messaging.write",
+    setupWrite: "settings.global.write",
     reports: "messaging.read",
   } satisfies Record<string, Permission>,
   /** Admin clear soft-archives active logs (typed `deleted_at`); not a Contacts-style trash browser. */
@@ -72,19 +84,6 @@ export const MESSAGING_MODULE_MANIFEST = {
 } as const;
 
 export type MessagingModuleTier = (typeof MESSAGING_MODULE_MANIFEST.tiers)[number];
-
-/**
- * Resolves the visual badge styling for message channels.
- */
-export function getChannelBadgeStyle(channel: "sms" | "whatsapp" | "email" | string): string {
-  if (channel === "email") {
-    return "bg-warning/10 text-warning border border-warning/20";
-  }
-  if (channel === "sms") {
-    return "bg-info/10 text-info border border-info/20";
-  }
-  return "bg-success/10 text-success border border-success/20";
-}
 
 /**
  * Helper to get the i18n label key for a message channel.
@@ -126,7 +125,7 @@ export const messagingRecipientsPageResponseSchema = z.object({
   recipients: z.array(messagingRecipientSchema),
   total: z.number().int().nonnegative(),
   page: z.number().int().positive(),
-  limit: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
   hasMore: z.boolean(),
 });
 

@@ -26,6 +26,10 @@ import {
   upsertWhatsappIntegrationConfigRow,
   upsertWhatsappIntegrationSecretsRow,
 } from "../../db/repositories/whatsappIntegrationRepository.js";
+import {
+  loadMessagingPreferences,
+  saveMessagingPreferences,
+} from "../../db/repositories/messagingPreferencesRepository.js";
 
 /**
  * Drizzle-backed adapter for {@link MessagingRepository}. Delegates to the
@@ -55,4 +59,6 @@ export const messagingRepository: MessagingRepository = {
   getWhatsappIntegrationRow,
   upsertWhatsappIntegrationConfigRow,
   upsertWhatsappIntegrationSecretsRow,
+  loadMessagingPreferences,
+  saveMessagingPreferences,
 };

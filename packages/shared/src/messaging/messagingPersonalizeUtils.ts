@@ -165,6 +165,11 @@ export const MESSAGING_VARIABLE_TOKENS: VariableToken[] = [
     fallbackExample: "{madrasa_name|Madrasa}",
   },
   {
+    token: "{school_name}",
+    labelKey: "messaging.tokenSchoolName",
+    fallbackExample: "{school_name|Madrasa}",
+  },
+  {
     token: "{salutation}",
     labelKey: "messaging.tokenSalutation",
     fallbackExample: "{salutation|Respected}",

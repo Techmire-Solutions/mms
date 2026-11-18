@@ -99,6 +99,7 @@ describe("moduleAccessPolicy", () => {
     // Dashboard declares no write; it falls back to its read gate (analytics.view).
     expect(getModuleActionPermission("dashboard", "write")).toBe("analytics.view");
     expect(getModuleActionPermission("students", "setupWrite")).toBe("settings.global.write");
+    expect(getModuleActionPermission("messaging", "setupWrite")).toBe("settings.global.write");
   });
 
   it("collapses availability to effective flags and fails closed without data", () => {

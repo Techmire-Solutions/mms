@@ -82,6 +82,8 @@ export const MessagingDetail = function MessagingDetail({
   const isFailed = log.status === "failed";
   const isSkipped = log.status === "skipped";
   const cleanPhone = recipient?.phone ? recipient.phone.replace(/[^0-9]/g, "") : "";
+  const isMac = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform || navigator.userAgent || "");
+  const resendShortcut = isMac ? "⌘+Enter" : "Ctrl+Enter";
 
   return (
     <DetailDrawerShell
@@ -135,7 +137,7 @@ export const MessagingDetail = function MessagingDetail({
                   size="sm"
                   onClick={handleResend}
                   className="gap-1.5 min-h-11 px-3"
-                  title={`${t("messaging.resend")} (⌘+Enter)`}
+                  title={t("messaging.resendShortcutHint", { shortcut: resendShortcut })}
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   {t("messaging.resend")}

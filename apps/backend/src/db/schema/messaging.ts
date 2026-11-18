@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { desc, sql } from "drizzle-orm";
 import { workspaces } from "./platform.js";
+import { MESSAGING_LOG_RETENTION_DAYS } from "@mms/shared";
 
 export const messageTemplates = pgTable(
   "message_templates",
@@ -44,7 +45,7 @@ export const messageLogs = pgTable(
     contactId: varchar("contact_id", { length: 64 }).notNull(),
     channel: varchar("channel", { length: 30 }).notNull(),
     body: text("body").notNull(),
-    sentAt: varchar("sent_at", { length: 35 }).notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true, mode: "date" }).notNull(),
     status: varchar("status", { length: 30 }).notNull().default("sent"),
     subject: varchar("subject", { length: 500 }),
     category: varchar("category", { length: 50 }).notNull().default("general"),
@@ -55,9 +56,9 @@ export const messageLogs = pgTable(
     /** Attribution for the soft-archive undo (GET/POST /logs/restore §2.1). */
     restoredAt: timestamp("restored_at", { withTimezone: true, mode: "date" }),
     restoredBy: text("restored_by"),
-    /** Generated column: TTL expiry = deleted_at + 365 days (retentionDays = 365 per §13.4). */
+    /** Generated column: TTL expiry = deleted_at + 365 days (retentionDays per `mms-soft-delete` §13.4). */
     purgeAfter: timestamp("purge_after", { withTimezone: true, mode: "date" }).generatedAlwaysAs(
-      sql`deleted_at + INTERVAL '365 days'`,
+      sql.raw(`deleted_at + INTERVAL '${MESSAGING_LOG_RETENTION_DAYS} days'`),
     ),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
@@ -89,8 +90,17 @@ export const messageLogs = pgTable(
     index("message_logs_purge_after_idx")
       .on(table.workspaceSubdomain, table.purgeAfter)
       .where(sql`${table.deletedAt} is not null and ${table.purgeAfter} is not null`),
+    /** BRIN index over the append-only monotonic `sent_at` instant (§1.20). */
+    index("message_logs_sent_at_brin_idx").using("brin", table.sentAt),
   ],
 );
+
+/**
+ * `message_logs` follows Soft-Delete Bucket 3 (Sweeper-Driven TTL Purge): rows are
+ * soft-archived, then hard-purged by the sweeper after the retention window. Bucket 3
+ * has no cascade-restore, so `deleted_with_cascade` is intentionally omitted from this
+ * table's column sextuple (`mms-soft-delete` §10).
+ */
 
 /** Tenant-scoped email integration config & credentials — replaces objects KV (email_integration / email_integration_secrets). */
 export const emailIntegrations = pgTable("email_integrations", {
@@ -150,6 +160,20 @@ export const whatsappIntegrations = pgTable("whatsapp_integrations", {
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 
+/** Tenant-scoped messaging preferences — replaces objects KV `messaging_preferences`. */
+export const messagingPreferences = pgTable("messaging_preferences", {
+  workspaceSubdomain: text("workspace_subdomain")
+    .primaryKey()
+    .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+  defaultChannel: varchar("default_channel", { length: 30 }).notNull().default("sms"),
+  defaultSmsMode: varchar("default_sms_mode", { length: 30 }).notNull().default("gateway"),
+  defaultDispatchSpeed: varchar("default_dispatch_speed", { length: 30 })
+    .notNull()
+    .default("normal"),
+  defaultCountryCode: varchar("default_country_code", { length: 10 }).notNull().default(""),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+});
+
 /* ========================================================================= */
 /*                         ROW INFER TYPES                                   */
 /* ========================================================================= */
@@ -167,3 +191,6 @@ export type InsertSmsIntegrationRow = typeof smsIntegrations.$inferInsert;
 
 export type WhatsappIntegrationRow = typeof whatsappIntegrations.$inferSelect;
 export type InsertWhatsappIntegrationRow = typeof whatsappIntegrations.$inferInsert;
+
+export type MessagingPreferencesRow = typeof messagingPreferences.$inferSelect;
+export type InsertMessagingPreferencesRow = typeof messagingPreferences.$inferInsert;

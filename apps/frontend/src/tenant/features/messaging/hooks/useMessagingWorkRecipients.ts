@@ -5,7 +5,7 @@ import type {
   MessagingRecipientsPageResponse,
   StandardMessagingRecipient,
 } from "@mms/shared";
-import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
+import { MESSAGING_MODULE_MANIFEST } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -28,7 +28,7 @@ export interface MessagingWorkRecipientsResult {
   recipients: StandardMessagingRecipient[];
   page: number;
   total: number;
-  limit: number;
+  pageSize: number;
   hasMore: boolean;
   isError: boolean;
   isPending: boolean;
@@ -43,7 +43,7 @@ export function useMessagingWorkRecipients(
   params: UseMessagingWorkRecipientsParams,
 ): MessagingWorkRecipientsResult {
   const { isAuthenticated } = useAuth();
-  const pageSize = params.pageSize ?? CONTACTS_MODULE_MANIFEST.defaultPageSize;
+  const pageSize = params.pageSize ?? MESSAGING_MODULE_MANIFEST.defaultPageSize;
   const enabled = params.enabled !== false && isAuthenticated;
   const role = params.roleFilter;
   const gender = params.genderFilter;
@@ -98,7 +98,7 @@ export function useMessagingWorkRecipients(
     recipients: data?.recipients ?? [],
     page: data?.page ?? page,
     total: data?.total ?? 0,
-    limit: data?.limit ?? pageSize,
+    pageSize: data?.pageSize ?? pageSize,
     hasMore: Boolean(data?.hasMore),
     isError: query.isError,
     isPending: query.isPending,

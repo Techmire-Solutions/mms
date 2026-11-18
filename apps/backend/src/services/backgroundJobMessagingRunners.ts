@@ -9,7 +9,7 @@ export function registerMessagingImportJobRunner(): void {
     title?: string;
     message?: string;
     channel?: string;
-    notes?: string;
+    category?: string;
   }>({
     moduleId: MESSAGING_MODULE_MANIFEST.moduleId,
     entityNounPlural: "templates",
@@ -31,9 +31,9 @@ export function registerMessagingImportJobRunner(): void {
         ) as "sms" | "whatsapp" | "email" | "all";
         const category = (
           ["general", "academic", "financial", "attendance", "emergency"].includes(
-            row.notes?.toLowerCase() || "",
+            row.category?.toLowerCase() || "",
           )
-            ? row.notes?.toLowerCase()
+            ? row.category?.toLowerCase()
             : "general"
         ) as "general" | "academic" | "financial" | "attendance" | "emergency";
 
