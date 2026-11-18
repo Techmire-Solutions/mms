@@ -47,6 +47,7 @@ export async function handleCreateFaculty({
       () =>
         facultyUseCases.createFaculty(body, {
           canRestore: canDeleteCollection(user, "faculty"),
+          actorId: String(user.id),
         }),
       { readOnly: false },
     );
@@ -133,6 +134,7 @@ export async function handleUpdateFaculty({
       () =>
         facultyUseCases.updateFacultyById(id, body, {
           expectedUpdatedAt: request.headers["x-expected-updated-at"] as string | undefined,
+          actorId: String(user.id),
         }),
       { readOnly: false },
     );

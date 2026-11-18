@@ -100,6 +100,12 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     onlyModules: ["faculty"],
   },
   {
+    methods: ["PUT"],
+    pattern: /^\/api\/faculty\/(departments|designations)\/:id$/,
+    action: "setupWrite",
+    onlyModules: ["faculty"],
+  },
+  {
     methods: ["POST"],
     pattern: /^\/api\/faculty\/(departments|designations)\/:id\/restore$/,
     action: "delete",

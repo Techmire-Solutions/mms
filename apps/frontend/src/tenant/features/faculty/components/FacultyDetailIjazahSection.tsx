@@ -73,7 +73,7 @@ export function FacultyDetailIjazahSection({
                     variant="ghost"
                     size="sm"
                     onClick={() => toggleSanad(ijazah.id)}
-                    className="min-h-9 px-2 text-xs text-muted-foreground hover:text-foreground gap-1.5 touch-manipulation"
+                    className="px-2 text-xs text-muted-foreground hover:text-foreground gap-1.5 touch-manipulation"
                     aria-expanded={isSanadExpanded}
                   >
                     <Scroll className="w-3.5 h-3.5 text-primary" aria-hidden />

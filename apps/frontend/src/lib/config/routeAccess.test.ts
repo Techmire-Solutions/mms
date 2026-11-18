@@ -82,6 +82,13 @@ describe("TENANT_APP_ROUTE_ACCESS", () => {
     );
     expect([...modules].sort()).toEqual([...ACCESS_CONTROLLED_MODULE_IDS].sort());
   });
+
+  it("gates the faculty route on module read access", () => {
+    expect(TENANT_APP_ROUTE_ACCESS[ROUTES.faculty]).toMatchObject({
+      moduleId: "faculty",
+      action: "read",
+    });
+  });
 });
 
 describe("resolveRouteAccess", () => {

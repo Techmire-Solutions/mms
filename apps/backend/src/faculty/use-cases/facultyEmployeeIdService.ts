@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { DEFAULT_FACULTY_SETTINGS, type FacultyEmployeeIdSettings } from "@mms/shared";
 import { facultySetupConfig, type FacultySetupConfigRow } from "../../db/schema/faculty.js";
 import { withTenant, withTenantRead } from "../../db/tenant-context.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 export type { NextEmployeeIdResult, EmployeeIdPreviewResult } from "./facultyEmployeeIdPreview.js";
 
@@ -11,7 +12,7 @@ export type { NextEmployeeIdResult, EmployeeIdPreviewResult } from "./facultyEmp
 export async function getFacultySetupConfig(tenant: string): Promise<FacultySetupConfigRow> {
   const subdomain = tenant.trim().toLowerCase();
   return await withTenantRead(subdomain, async (tx) => {
-    const currentYear = new Date().getFullYear();
+    const currentYear = Number((await workspaceTodayIso(subdomain)).slice(0, 4));
     const fallbackRow: FacultySetupConfigRow = {
       workspaceSubdomain: subdomain,
       prefix: DEFAULT_FACULTY_SETTINGS.employeeIdPrefix ?? "FAC",
@@ -54,7 +55,7 @@ export async function updateFacultySetupConfig(
 ): Promise<FacultySetupConfigRow> {
   const subdomain = tenant.trim().toLowerCase();
   return await withTenant(subdomain, async (tx) => {
-    const currentYear = new Date().getFullYear();
+    const currentYear = Number((await workspaceTodayIso(subdomain)).slice(0, 4));
     if (!tx || typeof tx.select !== "function") {
       return {
         workspaceSubdomain: subdomain,

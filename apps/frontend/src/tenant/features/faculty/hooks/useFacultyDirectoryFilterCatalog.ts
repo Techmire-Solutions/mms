@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { FacultyMember } from "@mms/shared";
+import { isFacultyCatalogRowActive, type FacultyMember } from "@mms/shared";
 import { useFacultyDepartments } from "@/tenant/features/faculty/hooks/useFacultyDepartments";
 import { useFacultyDesignations } from "@/tenant/features/faculty/hooks/useFacultyDesignations";
 import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
@@ -25,7 +25,7 @@ export function useFacultyDirectoryFilterCatalog(enabled: boolean) {
   const departmentFilterOptions = useMemo(
     () =>
       departments
-        .filter((item) => item.isActive !== false)
+        .filter((item) => isFacultyCatalogRowActive(item))
         .map((item) => ({ value: item.name, label: item.name }))
         .sort((left, right) => left.label.localeCompare(right.label)),
     [departments],
@@ -34,7 +34,7 @@ export function useFacultyDirectoryFilterCatalog(enabled: boolean) {
   const designationFilterOptions = useMemo(
     () =>
       (designationsQuery.data ?? [])
-        .filter((item) => item.isActive !== false)
+        .filter((item) => isFacultyCatalogRowActive(item))
         .map((item) => ({ value: item.name, label: item.name }))
         .sort((left, right) => left.label.localeCompare(right.label)),
     [designationsQuery.data],

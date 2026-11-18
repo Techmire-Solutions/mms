@@ -21,8 +21,6 @@ import { logger } from "../../lib/logger.js";
 import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 import { facultyRoleFingerprint } from "./facultyLinkedUserRoleSync.js";
 
-export { HierarchyValidationError, HierarchyCycleError } from "./facultyHierarchyValidator.js";
-
 export interface CreateFacultyResult {
   record: FacultyRecord;
   /** True when an archived faculty member with the same contactId was restored instead of inserting. */
@@ -49,6 +47,8 @@ export interface FacultyBatchSideEffects {
 }
 
 export interface CreateFacultyOptions {
+  /** Acting user id stamped on the row and the audit trail. */
+  actorId?: string;
   /** False when the caller lacks `faculty.delete`; blocks implicit restore. */
   canRestore?: boolean;
   /**
@@ -64,6 +64,8 @@ export interface CreateFacultyOptions {
 
 /** Options for the single-record update path (batch deferred side effects optional). */
 export interface UpdateFacultyOptions {
+  /** Acting user id stamped on the row and the audit trail. */
+  actorId?: string;
   guards?: FacultyWriteGuards;
   /** Present on batch writes: defers reconcile + broadcast to the caller. */
   batch?: FacultyBatchSideEffects;
@@ -135,6 +137,7 @@ export async function createFaculty(
     });
 
     if (archived) {
+      if (options.actorId) guarded.record.updatedBy = options.actorId;
       const merged = await handleImplicitRestore(
         tenant,
         archived as FacultyRecord,
@@ -146,7 +149,7 @@ export async function createFaculty(
         collectFacultyBatchContacts(options.batch, [merged.contactId]);
       } else {
         await reconcileContactSystemTags(tenant, [merged.contactId], {
-          actorId: merged.updatedBy ?? undefined,
+          actorId: options.actorId,
         });
       }
       // Authoritative audit row commits with the write (mms-data-layer §5.4).
@@ -158,20 +161,30 @@ export async function createFaculty(
           recordId: String(merged.id),
           action: "faculty.restore",
           summary: `Restored faculty member ${String(merged.id)} via re-registration`,
-          realUserId: merged.updatedBy ?? null,
+          realUserId: options.actorId ?? null,
+          newState: {
+            id: merged.id,
+            contactId: merged.contactId,
+            designationId: merged.designationId,
+            status: merged.status,
+          },
           subjectId: String(merged.id),
         });
       }
       return { record: merged, restored: true };
     }
 
+    if (options.actorId) {
+      guarded.record.createdBy = options.actorId;
+      guarded.record.updatedBy = options.actorId;
+    }
     await repo.save(tenant, guarded.record, { createOnly: true });
     await guards.syncPrimaryAppointment(tenant, guarded.record, guarded.departmentId);
     if (options.batch) {
       collectFacultyBatchContacts(options.batch, [guarded.record.contactId]);
     } else {
       await reconcileContactSystemTags(tenant, [guarded.record.contactId], {
-        actorId: guarded.record.updatedBy ?? undefined,
+        actorId: options.actorId,
       });
       // Authoritative audit row commits with the write (mms-data-layer §5.4).
       // CSV import records one queue-level `faculty.import` aggregate row instead.
@@ -181,7 +194,14 @@ export async function createFaculty(
         recordId: String(guarded.record.id),
         action: "faculty.create",
         summary: `Created faculty member ${String(guarded.record.id)}`,
-        realUserId: guarded.record.updatedBy ?? null,
+        realUserId: options.actorId ?? null,
+        newState: {
+          id: guarded.record.id,
+          contactId: guarded.record.contactId,
+          designationId: guarded.record.designationId,
+          employeeId: guarded.record.employeeId,
+          status: guarded.record.status,
+        },
         subjectId: String(guarded.record.id),
       });
     }
@@ -213,6 +233,7 @@ export async function updateFacultyById(
       designationChanged: (normalized.designationId ?? null) !== (existing.designationId ?? null),
       contactChanged: String(normalized.contactId ?? "") !== String(existing.contactId ?? ""),
     });
+    if (options.actorId) guarded.record.updatedBy = options.actorId;
     // Only a changed contact/designation/tenure can change the linked role.
     const syncRole =
       facultyRoleFingerprint(existing as Record<string, unknown>) !==
@@ -238,7 +259,7 @@ export async function updateFacultyById(
       collectFacultyBatchContacts(options.batch, [existing.contactId, guarded.record.contactId]);
     } else {
       await reconcileContactSystemTags(tenant, [existing.contactId, guarded.record.contactId], {
-        actorId: guarded.record.updatedBy ?? undefined,
+        actorId: options.actorId,
       });
       // Authoritative audit row commits with the write (mms-data-layer §5.4).
       await appendCollectionAuditInTx({
@@ -247,7 +268,17 @@ export async function updateFacultyById(
         recordId: id,
         action: "faculty.update",
         summary: `Updated faculty member ${id}`,
-        realUserId: guarded.record.updatedBy ?? null,
+        realUserId: options.actorId ?? null,
+        oldState: {
+          designationId: existing.designationId,
+          status: existing.status,
+          specialization: existing.specialization,
+        },
+        newState: {
+          designationId: guarded.record.designationId,
+          status: guarded.record.status,
+          specialization: guarded.record.specialization,
+        },
         subjectId: id,
       });
     }

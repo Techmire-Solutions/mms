@@ -41,6 +41,10 @@ vi.mock("../faculty/use-cases/facultyPreferencesService.js", () => ({
   loadFacultyModulePreferences: () => mocks.loadPreferences(),
 }));
 
+vi.mock("../lib/workspaceDay.js", () => ({
+  workspaceTodayIso: vi.fn(async () => `${new Date().getFullYear()}-01-01`),
+}));
+
 import { migrateFacultyMissingEmployeeIds } from "../faculty/use-cases/facultyOperationUseCases.js";
 
 function makeRepo(saves: string[]) {

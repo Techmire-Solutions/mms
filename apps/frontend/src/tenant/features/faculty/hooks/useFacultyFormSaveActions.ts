@@ -102,32 +102,35 @@ export function useFacultyFormSaveActions({
   }, [errors, serverError, typedDuplicateReason, t]);
 
   const handleSave = async (options?: { keepOpen?: boolean }): Promise<boolean> => {
-    return await runFacultySaveFlow({
-      facultyDraft: currentDraft,
-      faculty: currentFaculty,
-      autoGenerateId,
-      nextEmployeeId,
-      formInstanceId,
-      linkedContact,
-      settings,
-      enabledTabs,
-      fields: fieldsMap,
-      language,
-      t,
-      onSave,
-      onClose,
-      keepOpen: options?.keepOpen,
-      onBaselineReset: (payload) => setBaselineSnapshot(facultyDraftSnapshot(payload)),
-      setErrors,
-      setServerError,
-      setSaving,
-      setPendingSaveData,
-      setTypedDuplicateReason,
-      setDuplicateConfirmOpen,
-      userAccountDraft,
-      linkedUser,
-      onUserInvalidate: () => invalidateUsersQueries(queryClient),
-    });
+    const result = await submitGuard(() =>
+      runFacultySaveFlow({
+        facultyDraft: currentDraft,
+        faculty: currentFaculty,
+        autoGenerateId,
+        nextEmployeeId,
+        formInstanceId,
+        linkedContact,
+        settings,
+        enabledTabs,
+        fields: fieldsMap,
+        language,
+        t,
+        onSave,
+        onClose,
+        keepOpen: options?.keepOpen,
+        onBaselineReset: (payload) => setBaselineSnapshot(facultyDraftSnapshot(payload)),
+        setErrors,
+        setServerError,
+        setSaving,
+        setPendingSaveData,
+        setTypedDuplicateReason,
+        setDuplicateConfirmOpen,
+        userAccountDraft,
+        linkedUser,
+        onUserInvalidate: () => invalidateUsersQueries(queryClient),
+      }),
+    );
+    return result ?? false;
   };
 
   const confirmDuplicateSave = async (): Promise<boolean> => {

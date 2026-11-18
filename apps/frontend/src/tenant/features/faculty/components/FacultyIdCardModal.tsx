@@ -25,7 +25,7 @@ export function FacultyIdCardModal({
   open,
   onClose,
   items,
-  madrasaName = "Madrasa Management System",
+  madrasaName,
 }: FacultyIdCardModalProps): JSX.Element | null {
   const { t } = useTranslation();
   const printAreaRef = useRef<HTMLDivElement>(null);
@@ -89,9 +89,11 @@ export function FacultyIdCardModal({
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-border/40 pb-2.5 mb-3">
                   <div className="min-w-0">
-                    <h4 className="text-xs font-bold text-foreground truncate tracking-tight">
-                      {madrasaName}
-                    </h4>
+                    {madrasaName ? (
+                      <h4 className="text-xs font-bold text-foreground truncate tracking-tight">
+                        {madrasaName}
+                      </h4>
+                    ) : null}
                     <p className="text-2xs uppercase font-semibold text-primary tracking-wider">
                       {t("faculty.idCard.title")}
                     </p>

@@ -1,6 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { apiErrorResponseSchema } from "../schemas/api.dto.js";
+import { apiErrorResponseSchema, bulkIdsBodySchema } from "../schemas/api.dto.js";
 import {
   facultyRecordSchema,
   facultyBulkStatusSchema,
@@ -188,24 +188,21 @@ export const facultyContract = c.router({
   bulkDelete: {
     method: "POST",
     path: "/api/faculty/bulk-delete",
-    body: z.object({
-      ids: z.array(z.union([z.string(), z.number()])),
-      deletionReason: z.string().optional(),
-    }),
+    body: bulkIdsBodySchema,
     responses: { 200: facultyBulkResultResponseSchema, 403: errorResponse, 500: errorResponse },
     summary: "Bulk delete faculty members",
   },
   bulkRestore: {
     method: "POST",
     path: "/api/faculty/bulk-restore",
-    body: z.object({ ids: z.array(z.union([z.string(), z.number()])) }),
+    body: bulkIdsBodySchema,
     responses: { 200: facultyBulkResultResponseSchema, 403: errorResponse, 500: errorResponse },
     summary: "Bulk restore faculty members",
   },
   resolve: {
     method: "POST",
     path: "/api/faculty/resolve",
-    body: z.object({ ids: z.array(z.string()) }),
+    body: z.object({ ids: z.array(z.string().min(1)).min(1).max(500) }),
     responses: {
       200: z.object({ faculty: z.array(facultyRecordSchema).optional() }),
       403: errorResponse,

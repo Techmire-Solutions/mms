@@ -3,6 +3,7 @@ import type { FacultyDesignationAssignment } from "@mms/shared";
 import { facultyAssignments, facultyDesignations } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { listFacultyDesignations } from "./facultyDesignationRepository.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 function iso(value: Date): string {
   return value.toISOString();
@@ -93,9 +94,10 @@ export async function listFacultyDesignationAssignments(
 export async function findCurrentFacultyDesignationAssignment(
   tenant: string,
   facultyId: string,
-  onDate = new Date().toISOString().slice(0, 10),
+  onDate?: string,
 ): Promise<FacultyDesignationAssignment | null> {
   const workspaceSubdomain = tenant.trim().toLowerCase();
+  const effectiveDate = onDate ?? (await workspaceTodayIso(workspaceSubdomain));
   return withTenantRead(workspaceSubdomain, async (tx) => {
     const rows = await tx
       .select(FA_PROJECTION_COLUMNS)
@@ -114,8 +116,8 @@ export async function findCurrentFacultyDesignationAssignment(
           eq(facultyAssignments.isPrimary, true),
           eq(facultyAssignments.status, "active"),
           isNull(facultyAssignments.deletedAt),
-          lte(facultyAssignments.startDate, onDate),
-          or(isNull(facultyAssignments.endDate), gte(facultyAssignments.endDate, onDate)),
+          lte(facultyAssignments.startDate, effectiveDate),
+          or(isNull(facultyAssignments.endDate), gte(facultyAssignments.endDate, effectiveDate)),
         ),
       )
       .limit(1);

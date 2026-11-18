@@ -27,6 +27,7 @@ import {
   preferEmployDesignationPrimary,
 } from "./facultyEmploymentSsotHydrate.js";
 import { FACULTY_PROJECTION_COLUMNS, KNOWN_FACULTY_KEYS } from "./facultyRepositoryColumnDefs.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 export type FacultyInsert = typeof faculty.$inferInsert;
 export { FACULTY_PROJECTION_COLUMNS };
@@ -148,12 +149,14 @@ export async function persistFacultyTx(
   options?: { createOnly?: boolean },
 ): Promise<void> {
   const flat = flattenFacultyEmploymentFields(facultyMember);
-  const employmentId = await upsertFacultyEmploymentTx(tx, subdomain, flat);
+  const today = await workspaceTodayIso(subdomain);
+  const employmentId = await upsertFacultyEmploymentTx(tx, subdomain, flat, today);
   const employDesignationId = await syncFacultyEmployDesignationsTx(
     tx,
     subdomain,
     employmentId,
     flat,
+    today,
   );
   let userId = flat.userId ? String(flat.userId) : null;
   const contactId = String(flat.contactId ?? "").trim();

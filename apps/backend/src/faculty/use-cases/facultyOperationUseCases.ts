@@ -14,6 +14,7 @@ import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
 import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
+import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 /** Active duplicate probe (contact / employeeId) before save — server authoritative. */
 export async function checkFacultyRegistrationDuplicate(
@@ -106,7 +107,7 @@ export async function computeNextFacultyEmployeeIdForSettings(
   };
 
   const now = new Date();
-  const year = now.getFullYear();
+  const year = tenant ? Number((await workspaceTodayIso(tenant)).slice(0, 4)) : now.getFullYear();
   const count = tenant
     ? await repo.countNextEmployeeId(tenant, {
         prefix: settings.idPrefix,
@@ -167,7 +168,7 @@ export async function migrateFacultyMissingEmployeeIds(
     // per-row helper re-read preferences, re-ran the COUNT and probed collisions
     // for every record (~3-4 queries each).
     const now = new Date();
-    const year = now.getFullYear();
+    const year = Number((await workspaceTodayIso(tenant)).slice(0, 4));
     const startSeq =
       Number.isFinite(settings.idStartSeq) && Number(settings.idStartSeq) > 1
         ? Math.floor(Number(settings.idStartSeq))

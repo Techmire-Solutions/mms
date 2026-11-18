@@ -104,6 +104,7 @@ export async function restoreFacultyDesignation(
       .select({
         departmentId: facultyDesignations.departmentId,
         parentDesignationId: facultyDesignations.parentDesignationId,
+        name: facultyDesignations.name,
       })
       .from(facultyDesignations)
       .where(
@@ -118,13 +119,23 @@ export async function restoreFacultyDesignation(
       current.departmentId &&
       !(await selectDepartmentById(tx, subdomain, current.departmentId))
     ) {
-      throw new Error("Restore the department first");
+      throw new FacultyCatalogConflictError("Restore the department first");
     }
     if (
       current.parentDesignationId &&
       !(await selectDesignationById(tx, subdomain, current.parentDesignationId))
     ) {
-      throw new Error("Restore the parent designation first");
+      throw new FacultyCatalogConflictError("Restore the parent designation first");
+    }
+    const duplicate = await tx.execute<{ id: string }>(sql`
+      SELECT id FROM faculty_designations WHERE workspace_subdomain = ${subdomain} AND id <> ${id}
+        AND deleted_at IS NULL AND department_id = ${current.departmentId}
+        AND lower(btrim(name)) = lower(btrim(${current.name})) LIMIT 1
+    `);
+    if (duplicate.rows.length) {
+      throw new FacultyCatalogConflictError(
+        "A designation with this name already exists in this department — rename it before restoring",
+      );
     }
     const now = new Date();
     await tx

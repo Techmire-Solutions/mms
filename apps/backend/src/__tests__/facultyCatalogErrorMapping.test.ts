@@ -141,4 +141,63 @@ describe("faculty catalog error mapping", () => {
     expect(result.status).toBe(500);
     expect(log.error).toHaveBeenCalledTimes(1);
   });
+
+  it("maps a raw unique violation (23505) to a clean 409 without leaking the PG message", async () => {
+    const raw = Object.assign(
+      new Error(
+        'duplicate key value violates unique constraint "faculty_designations_ws_dept_name_active_uidx"',
+      ),
+      { code: "23505" },
+    );
+    mocks.saveFacultyDesignation.mockRejectedValue(raw);
+    const { request } = makeRequest();
+
+    const result = await handleSaveDesignation({
+      params: { id: "des-1" },
+      body: { name: "Mudarris", departmentId: "dept-1" },
+      request,
+    } as never);
+
+    expect(result.status).toBe(409);
+    expect(result.body).toMatchObject({ type: "conflict" });
+    expect((result.body as { message: string }).message).not.toContain("duplicate key");
+    expect((result.body as { message: string }).message).not.toContain(
+      "violates unique constraint",
+    );
+  });
+
+  it("recognizes a wrapped unique violation whose code lives on the cause", async () => {
+    const cause = Object.assign(new Error('duplicate key value violates unique constraint "x"'), {
+      code: "23505",
+    });
+    const wrapped = new Error("Failed query") as Error & { cause?: unknown };
+    wrapped.cause = cause;
+    mocks.saveFacultyDepartment.mockRejectedValue(wrapped);
+    const { request, log } = makeRequest();
+
+    const result = await handleSaveDepartment({
+      params: { id: "dept-1" },
+      body: { name: "Hifz" },
+      request,
+    } as never);
+
+    expect(result.status).toBe(409);
+    expect(result.body).toMatchObject({ type: "conflict" });
+    expect(log.error).not.toHaveBeenCalled();
+  });
+
+  it("does not infer 404 from a message substring — only a typed statusCode", async () => {
+    mocks.saveFacultyDesignation.mockRejectedValue(new Error("designation not found in cache"));
+    const { request, log } = makeRequest();
+
+    const result = await handleSaveDesignation({
+      params: { id: "des-1" },
+      body: { name: "Mudarris", departmentId: "dept-1" },
+      request,
+    } as never);
+
+    expect(result.status).toBe(500);
+    expect(result.body).toMatchObject({ type: "server_error" });
+    expect(log.error).toHaveBeenCalledTimes(1);
+  });
 });

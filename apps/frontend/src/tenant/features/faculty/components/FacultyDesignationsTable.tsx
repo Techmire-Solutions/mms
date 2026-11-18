@@ -4,6 +4,7 @@ import type { FacultyDesignationDefinition } from "@mms/shared";
 import { EmptyCellDash } from "@/components/app/EmptyCellDash";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { ArchivedBadge } from "./ArchivedBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import {
   DataTable,
@@ -88,9 +89,7 @@ export function FacultyDesignationsTable({
       searchValue: (d) => (d.deletedAt ? t("faculty.detail.archivedSubtitle") : statusLabel(d)),
       render: (d) =>
         d.deletedAt ? (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-destructive/10 text-destructive">
-            {t("faculty.detail.archivedSubtitle")}
-          </span>
+          <ArchivedBadge />
         ) : (
           <StatusBadge status={d.status} config={statusConfig} size="sm" />
         ),
@@ -139,9 +138,7 @@ export function FacultyDesignationsTable({
         title: (d) => d.name,
         badge: (d) =>
           d.deletedAt ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-destructive/10 text-destructive">
-              {t("faculty.detail.archivedSubtitle")}
-            </span>
+            <ArchivedBadge />
           ) : (
             <StatusBadge status={d.status} config={statusConfig} size="sm" />
           ),

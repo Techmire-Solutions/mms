@@ -3,7 +3,7 @@
  * @description Shared modern audit + outbox for employment / employ-designation rows.
  */
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { emitOutboxEvents, type OutboxBatchEvent } from "../../services/outboxEventService.js";
 import type { AppDb } from "../tenant-context.js";
 
 type EmploymentEntityTable = "faculty_employments" | "faculty_employ_designations";
@@ -35,6 +35,7 @@ export async function auditEmploymentEntitySoftDeletes(
   deletionReason: string | undefined,
   deletedAt: Date,
 ): Promise<void> {
+  const events: OutboxBatchEvent[] = [];
   for (const id of ids) {
     await recordModernAuditEvent(tx, {
       workspaceSubdomain: subdomain,
@@ -44,16 +45,20 @@ export async function auditEmploymentEntitySoftDeletes(
       realUserId: deletedBy,
       newState: { reason: deletionReason ?? null },
     });
-    await emitOutboxEvent(tx, "entity.soft_deleted", {
-      entityType: tableName,
-      entityId: id,
-      tenantId: subdomain,
-      deletedAt: deletedAt.toISOString(),
-      deletedBy,
-      deletionReason,
-      version: deletedAt.getTime(),
+    events.push({
+      type: "entity.soft_deleted",
+      payload: {
+        entityType: tableName,
+        entityId: id,
+        tenantId: subdomain,
+        deletedAt: deletedAt.toISOString(),
+        deletedBy,
+        deletionReason,
+        version: deletedAt.getTime(),
+      },
     });
   }
+  await emitOutboxEvents(events, tx);
 }
 
 export async function auditEmploymentEntityRestores(
@@ -64,6 +69,7 @@ export async function auditEmploymentEntityRestores(
   restoredBy: string | undefined,
   restoredAt: Date,
 ): Promise<void> {
+  const events: OutboxBatchEvent[] = [];
   for (const id of ids) {
     await recordModernAuditEvent(tx, {
       workspaceSubdomain: subdomain,
@@ -72,13 +78,17 @@ export async function auditEmploymentEntityRestores(
       actionType: "RESTORE",
       realUserId: restoredBy,
     });
-    await emitOutboxEvent(tx, "entity.restored", {
-      entityType: tableName,
-      entityId: id,
-      tenantId: subdomain,
-      restoredAt: restoredAt.toISOString(),
-      restoredBy: restoredBy ?? "",
-      version: restoredAt.getTime(),
+    events.push({
+      type: "entity.restored",
+      payload: {
+        entityType: tableName,
+        entityId: id,
+        tenantId: subdomain,
+        restoredAt: restoredAt.toISOString(),
+        restoredBy: restoredBy ?? "",
+        version: restoredAt.getTime(),
+      },
     });
   }
+  await emitOutboxEvents(events, tx);
 }

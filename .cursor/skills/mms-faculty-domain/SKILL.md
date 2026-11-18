@@ -48,8 +48,9 @@ Non-overlap is enforced in the application, not by DDL:
   route handlers never report infrastructure failures as client input.
 - All appointment reads evaluate temporal bounds (`start_date` to `end_date`);
   date-only ends are written with the **workspace-local day**, not UTC.
-- Reporting-hierarchy ranking and cycle prevention live in
-  `apps/backend/src/faculty/use-cases/facultyHierarchyValidator.ts`.
+- Reporting hierarchy is **derived** from the designation tree; `reportingFacultyId`
+  is a read-only projection (soft-stopped on write). Rank/cycle prevention live in
+  `apps/backend/src/db/repositories/facultyDesignationValidation.ts`.
 
 For seniority ranking rules, cycle prevention, and temporal constraint details, see [references/faculty-hierarchy-rules.md](references/faculty-hierarchy-rules.md).
 
@@ -58,7 +59,7 @@ For seniority ranking rules, cycle prevention, and temporal constraint details, 
 | Concern | Path / Symbol |
 |---|---|
 | Drizzle Schema | `apps/backend/src/db/schema/faculty.ts`, `facultyDesignationTables.ts`, `facultyAssignmentTables.ts`, `facultyDepartmentTables.ts` |
-| Backend Use-Cases | `apps/backend/src/faculty/use-cases/facultyWriteUseCases.ts`, `facultyHierarchyValidator.ts` |
+| Backend Use-Cases | `apps/backend/src/faculty/use-cases/facultyWriteUseCases.ts` |
 | Appointment Overlap Guard | `apps/backend/src/db/repositories/facultyAssignmentValidation.ts` |
 | Employee ID Generator | `apps/backend/src/faculty/use-cases/facultyEmployeeIdGenerator.ts` |
 | Frontend Page Shell | `apps/frontend/src/tenant/features/faculty/FacultyPage.tsx` |
