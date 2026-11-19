@@ -6454,6 +6454,7 @@ export const APP_TRANSLATIONS_EN = {
   "tasks.quickFilter.urgentHigh": "Urgent & High",
   "tasks.quickFilter.overdue": "Overdue",
   "tasks.metrics.total": "Total Tasks",
+  "tasks.metrics.filtered": "Shown (Filtered)",
   "tasks.metrics.inProgress": "In Progress",
   "tasks.metrics.blocked": "Blocked",
   "tasks.metrics.completed": "Completed",

@@ -6318,6 +6318,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "tasks.quickFilter.urgentHigh": "عاجلة ومهمة",
   "tasks.quickFilter.overdue": "متأخرة",
   "tasks.metrics.total": "إجمالي المهام",
+  "tasks.metrics.filtered": "المعروضة (مفلترة)",
   "tasks.metrics.inProgress": "قيد التنفيذ",
   "tasks.metrics.blocked": "معطلة",
   "tasks.metrics.completed": "مكتملة",

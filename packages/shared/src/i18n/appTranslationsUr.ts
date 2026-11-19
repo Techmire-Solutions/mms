@@ -6390,6 +6390,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "tasks.quickFilter.urgentHigh": "فوری اور اہم",
   "tasks.quickFilter.overdue": "تاخیر شدہ",
   "tasks.metrics.total": "کل ٹاسکس",
+  "tasks.metrics.filtered": "دکھائے گئے (فلٹر شدہ)",
   "tasks.metrics.inProgress": "جاری",
   "tasks.metrics.blocked": "روکے ہوئے",
   "tasks.metrics.completed": "مکمل",

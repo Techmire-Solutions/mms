@@ -6418,6 +6418,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "tasks.quickFilter.urgentHigh": "فوری و بالا",
   "tasks.quickFilter.overdue": "به‌تعویق‌افتاده",
   "tasks.metrics.total": "کل وظایف",
+  "tasks.metrics.filtered": "نمایش‌داده‌شده (فیلترشده)",
   "tasks.metrics.inProgress": "در حال انجام",
   "tasks.metrics.blocked": "مسدود",
   "tasks.metrics.completed": "تکمیل شده",

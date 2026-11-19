@@ -9,6 +9,7 @@ import { TasksWorkTab } from "@/tenant/features/tasks/components/TasksWorkTab";
 import { TaskFormModal } from "@/tenant/features/tasks/components/TaskFormModal";
 import { TasksCsvImportDialog } from "@/tenant/features/tasks/components/TasksCsvImportDialog";
 import { TasksPageHeaderActions } from "@/tenant/features/tasks/components/TasksPageHeaderActions";
+import { TasksCommandMetrics } from "@/tenant/features/tasks/components/TasksCommandMetrics";
 import type { TasksPageController } from "@/tenant/features/tasks/hooks/useTasksPageController";
 
 // Reports pulls Recharts and Setup pulls the settings form; neither belongs in
@@ -90,20 +91,7 @@ export function TasksPageView({
       }
       metricsStrip={
         viewingDeleted || activeTab !== "work" ? undefined : (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground">
-            <span>
-              {t("tasks.metrics.total")}:{" "}
-              <strong className="text-foreground">{metrics ? metrics.total : "—"}</strong>
-            </span>
-            <span>
-              {t("tasks.metrics.inProgress")}:{" "}
-              <strong className="text-foreground">{metrics ? metrics.inProgress : "—"}</strong>
-            </span>
-            <span>
-              {t("tasks.metrics.completed")}:{" "}
-              <strong className="text-foreground">{metrics ? metrics.completed : "—"}</strong>
-            </span>
-          </div>
+          <TasksCommandMetrics metrics={metrics} shown={totalTasks} />
         )
       }
     >
