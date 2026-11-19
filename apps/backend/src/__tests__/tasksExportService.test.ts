@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { TaskRecord } from "@mms/shared";
 
 const mockListTasks = vi.fn();
+const mockGetWorkspaceTimezone = vi.fn().mockReturnValue("UTC");
 
 vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: () => "demo",
@@ -9,6 +10,10 @@ vi.mock("../lib/tenantContext.js", () => ({
 
 vi.mock("../tasks/use-cases/tasksUseCases.js", () => ({
   listTasks: (...args: unknown[]) => mockListTasks(...args),
+}));
+
+vi.mock("../services/taskSettingsService.js", () => ({
+  getWorkspaceTimezone: (...args: unknown[]) => mockGetWorkspaceTimezone(...args),
 }));
 
 import {
@@ -77,6 +82,21 @@ describe("tasks export", () => {
       ids: "task-1,task-2",
       includeDeleted: true,
     });
+  });
+
+  it("renders due dates in the workspace timezone (m5)", async () => {
+    mockGetWorkspaceTimezone.mockReturnValue("Asia/Karachi");
+    mockListTasks.mockResolvedValue({
+      tasks: [
+        { ...task(1), dueAt: "2026-09-30T20:00:00.000Z" }, // 2026-10-01 01:00 in Karachi
+      ],
+      total: 1,
+    });
+
+    const result = await buildTasksCsvExport({}, {});
+
+    expect(result.csv).toContain("2026-10-01");
+    expect(result.csv).not.toContain("2026-09-30");
   });
 
   it("streams the header once and every row", async () => {

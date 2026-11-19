@@ -385,6 +385,27 @@ describe("Tasks assign route gates (inject)", () => {
     }
   });
 
+  it("passes directory filters into GET /api/tasks/metrics (m7)", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    getTaskMetrics.mockResolvedValueOnce({ total: 1, todo: 0 });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/metrics?status=in_progress&priority=high",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(getTaskMetrics).toHaveBeenCalledWith(
+        "demo",
+        expect.objectContaining({ status: "in_progress", priority: "high" }),
+      );
+    } finally {
+      await app.close();
+    }
+  });
+
   it("returns tenant task settings on GET /api/tasks/settings", async () => {
     canPerformTaskAction.mockResolvedValue(true);
     getTenantTaskSettings.mockResolvedValueOnce({

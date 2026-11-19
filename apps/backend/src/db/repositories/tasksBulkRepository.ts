@@ -17,7 +17,7 @@ import { hasActiveChild, hasActiveParent } from "./tasksBulkPredicates.js";
 import {
   classifyDeleteSkips,
   classifyRestoreSkips,
-  loadForbiddenIds,
+  resolveActionableIds,
   uniqueIds,
   type TaskBulkSkip,
 } from "./tasksBulkSkips.js";
@@ -44,14 +44,13 @@ export async function bulkDeleteTasksBatch(
 
   return withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);
-    const forbidden = await loadForbiddenIds(
+    const { actionable, forbidden } = await resolveActionableIds(
       tx,
       subdomain,
       requested,
       actorUserId,
       canAssignAnywhere,
     );
-    const actionable = requested.filter((id) => !forbidden.has(id));
     const now = new Date();
     const deleted = await tx
       .update(tasks)
@@ -69,7 +68,7 @@ export async function bulkDeleteTasksBatch(
     const deletedIds = deleted.map((row) => String(row.id));
     const deletedSet = new Set(deletedIds);
     const remaining = actionable.filter((id) => !deletedSet.has(id));
-    const skipped: TaskBulkSkip[] = [...forbidden].map((id) => ({ id, reason: "forbidden" }));
+    const skipped: TaskBulkSkip[] = [...forbidden];
     if (remaining.length) skipped.push(...(await classifyDeleteSkips(tx, subdomain, remaining)));
 
     for (const id of deletedIds) {
@@ -111,14 +110,13 @@ export async function bulkRestoreTasksBatch(
 
   return withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);
-    const forbidden = await loadForbiddenIds(
+    const { actionable, forbidden } = await resolveActionableIds(
       tx,
       subdomain,
       requested,
       actorUserId,
       canAssignAnywhere,
     );
-    const actionable = requested.filter((id) => !forbidden.has(id));
     const now = new Date();
     const restored = await tx
       .update(tasks)
@@ -143,7 +141,7 @@ export async function bulkRestoreTasksBatch(
     const restoredIds = restored.map((row) => String(row.id));
     const restoredSet = new Set(restoredIds);
     const remaining = actionable.filter((id) => !restoredSet.has(id));
-    const skipped: TaskBulkSkip[] = [...forbidden].map((id) => ({ id, reason: "forbidden" }));
+    const skipped: TaskBulkSkip[] = [...forbidden];
     if (remaining.length) skipped.push(...(await classifyRestoreSkips(tx, subdomain, remaining)));
 
     for (const id of restoredIds) {

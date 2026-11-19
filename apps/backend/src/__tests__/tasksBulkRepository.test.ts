@@ -70,6 +70,7 @@ describe("tasks bulk repository", () => {
   it("classifies a skipped delete as has_active_children", async () => {
     mocks.returning.mockResolvedValue([]);
     mocks.selectWhere
+      .mockReturnValueOnce([]) // loadAssignedTaskIds
       .mockReturnValueOnce([]) // loadForbiddenIds (creator lookup)
       .mockReturnValueOnce([]) // subquery built while composing the UPDATE
       .mockReturnValueOnce([{ id: "b", deletedAt: null }])
@@ -84,6 +85,7 @@ describe("tasks bulk repository", () => {
   it("batch-restores with one update and reports archived-parent skips", async () => {
     mocks.returning.mockResolvedValue([{ id: "a" }]);
     mocks.selectWhere
+      .mockReturnValueOnce([]) // loadAssignedTaskIds
       .mockReturnValueOnce([]) // loadForbiddenIds (creator lookup)
       .mockReturnValueOnce([]) // subquery built while composing the UPDATE
       .mockReturnValueOnce([{ id: "b", parentTaskId: "p-1", deletedAt: new Date() }])

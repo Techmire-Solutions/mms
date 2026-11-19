@@ -1,11 +1,34 @@
 import { and, eq, isNull, isNotNull } from "drizzle-orm";
-import { tasks } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { taskAssignees, tasks } from "../schema.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { emitOutboxEvent } from "../../services/outboxEventService.js";
 import { findTaskById } from "./tasksRepository.js";
 import { ConflictError, ForbiddenError } from "../../lib/httpErrors.js";
+
+/** True when the actor is an active assignee of the task. */
+async function isAssigned(
+  tx: TenantTransaction,
+  subdomain: string,
+  taskId: string,
+  actorUserId: string | undefined,
+): Promise<boolean> {
+  if (!actorUserId) return false;
+  const rows = await tx
+    .select({ id: taskAssignees.id })
+    .from(taskAssignees)
+    .where(
+      and(
+        eq(taskAssignees.workspaceSubdomain, subdomain),
+        eq(taskAssignees.taskId, taskId),
+        eq(taskAssignees.userId, actorUserId),
+        isNull(taskAssignees.deletedAt),
+      ),
+    )
+    .limit(1);
+  return rows.length > 0;
+}
 
 export async function deleteTask(
   tenant: string,
@@ -22,7 +45,11 @@ export async function deleteTask(
       .where(and(eq(tasks.workspaceSubdomain, subdomain), eq(tasks.id, id)));
     if (!target) return "not_found";
     if (target.deletedAt) return "already_deleted";
-    if (!canAssignAnywhere && target.createdByUserId !== actorUserId) {
+    if (
+      !canAssignAnywhere &&
+      target.createdByUserId !== actorUserId &&
+      !(await isAssigned(tx, subdomain, id, actorUserId))
+    ) {
       throw new ForbiddenError("You do not have permission to archive this task");
     }
     const children = await tx
@@ -83,7 +110,11 @@ export async function restoreTask(
         and(eq(tasks.workspaceSubdomain, subdomain), eq(tasks.id, id), isNotNull(tasks.deletedAt)),
       );
     if (!current) return null;
-    if (!canAssignAnywhere && current.createdByUserId !== actorUserId) {
+    if (
+      !canAssignAnywhere &&
+      current.createdByUserId !== actorUserId &&
+      !(await isAssigned(tx, subdomain, id, actorUserId))
+    ) {
       throw new ForbiddenError("You do not have permission to restore this task");
     }
     if (current.parentTaskId && !(await findTaskById(subdomain, current.parentTaskId))) {

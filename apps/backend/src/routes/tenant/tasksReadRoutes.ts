@@ -31,8 +31,12 @@ export async function registerTasksReadRoutes(fastify: FastifyInstance): Promise
     if (!(await canPerformTaskAction(request, "tasks.read"))) {
       return reply.status(403).send({ type: "forbidden", message: "Forbidden" });
     }
+    const parsed = taskListQuerySchema.safeParse(request.query);
+    if (!parsed.success) {
+      return reply.status(400).send({ type: "validation_error", message: "Invalid query" });
+    }
     try {
-      const metrics = await getTaskMetrics(String(request.tenant?.id));
+      const metrics = await getTaskMetrics(String(request.tenant?.id), parsed.data);
       return reply.status(200).send(metrics);
     } catch (error) {
       const mapped = mapTaskRouteError(error);

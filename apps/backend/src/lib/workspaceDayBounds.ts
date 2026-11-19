@@ -51,3 +51,18 @@ export function nextIsoDay(day: string): string {
 export function isIsoDateOnly(value: string): boolean {
   return DATE_RE.test(value);
 }
+
+/** Renders an ISO instant as `YYYY-MM-DD` in the given IANA timezone. */
+export function formatIsoDateInTimezone(iso: string, timeZone: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const map: Record<string, string> = {};
+  for (const part of parts) map[part.type] = part.value;
+  return `${map.year}-${map.month}-${map.day}`;
+}

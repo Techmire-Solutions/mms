@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { DEFAULT_TASK_SETTINGS, taskSettingsSchema, type TaskSettings } from "@mms/shared";
-import { taskModulePreferences } from "../db/schema.js";
+import { taskModulePreferences, workspaces } from "../db/schema.js";
 import { withTenant } from "../db/tenant-context.js";
 import { getRequestTenant, getRequestUserId } from "../lib/tenantContext.js";
 import { recordModernAuditEvent } from "./auditTrailService.js";
@@ -9,6 +9,18 @@ function tenantContext(): string {
   const tenant = getRequestTenant()?.trim().toLowerCase();
   if (!tenant) throw new Error("Tenant context required");
   return tenant;
+}
+
+/** Workspace IANA timezone (defaults to UTC when unset). */
+export async function getWorkspaceTimezone(subdomain: string): Promise<string> {
+  const tenant = subdomain.trim().toLowerCase();
+  return withTenant(tenant, async (tx) => {
+    const [row] = await tx
+      .select({ timezone: workspaces.timezone })
+      .from(workspaces)
+      .where(eq(workspaces.subdomain, tenant));
+    return row?.timezone?.trim() || "UTC";
+  });
 }
 
 async function loadTenantTaskSettings(tenant: string): Promise<TaskSettings> {

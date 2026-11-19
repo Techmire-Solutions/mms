@@ -20,6 +20,7 @@ export const SELECT_COLS = {
 export function mapTaskRow(
   r: { [K in keyof typeof SELECT_COLS]: (typeof tasks.$inferSelect)[K] },
   assigneesMap: Map<string, TaskRecord["assignees"]>,
+  creatorNamesMap: Map<string, string> = new Map(),
 ): TaskRecord {
   return {
     id: r.id,
@@ -32,6 +33,7 @@ export function mapTaskRow(
     dueAt: r.dueAt ? r.dueAt.toISOString() : null,
     parentTaskId: r.parentTaskId,
     createdById: r.createdByUserId,
+    creatorName: r.createdByUserId ? creatorNamesMap.get(r.createdByUserId) : undefined,
     assignees: assigneesMap.get(r.id) ?? [],
     createdAt: r.createdAt ? r.createdAt.toISOString() : undefined,
     updatedAt: r.updatedAt ? r.updatedAt.toISOString() : undefined,

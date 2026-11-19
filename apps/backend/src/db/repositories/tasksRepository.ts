@@ -27,8 +27,8 @@ import {
   type TaskRecord,
   type TaskStatus,
 } from "@mms/shared";
-import { taskAssignees, tasks, workspaces } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { taskAssignees, tasks, tenantUsers, workspaces } from "../schema.js";
+import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { fetchAssigneesByTaskIds } from "./tasksAssigneesRepository.js";
 import { isIsoDateOnly, nextIsoDay, workspaceDayStartUtc } from "../../lib/workspaceDayBounds.js";
 
@@ -43,6 +43,21 @@ function splitEnum<T extends string>(raw: string | undefined, allowed: readonly 
     .split(",")
     .map((value) => value.trim())
     .filter((value): value is T => (allowed as readonly string[]).includes(value));
+}
+
+/** Batched creator display names for the selected `createdByUserId` values (m15). */
+async function fetchCreatorNamesByUserIds(
+  tx: TenantTransaction,
+  subdomain: string,
+  userIds: string[],
+): Promise<Map<string, string>> {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const rows = await tx
+    .select({ id: tenantUsers.id, name: tenantUsers.name })
+    .from(tenantUsers)
+    .where(and(eq(tenantUsers.workspaceSubdomain, subdomain), inArray(tenantUsers.id, unique)));
+  return new Map(rows.map((row) => [String(row.id), row.name]));
 }
 
 export async function listTasks(
@@ -157,9 +172,14 @@ export async function listTasks(
       subdomain,
       rows.map((r) => r.id),
     );
+    const creatorNames = await fetchCreatorNamesByUserIds(
+      tx,
+      subdomain,
+      rows.map((r) => r.createdByUserId),
+    );
 
     return {
-      tasks: rows.map((r) => mapTaskRow(r, assigneesByTaskId)),
+      tasks: rows.map((r) => mapTaskRow(r, assigneesByTaskId, creatorNames)),
       total: count,
     };
   });
@@ -179,6 +199,7 @@ export async function findTaskById(tenant: string, id: string): Promise<TaskReco
     if (!taskRow) return null;
 
     const assigneesMap = await fetchAssigneesByTaskIds(tx, subdomain, [id]);
-    return mapTaskRow(taskRow, assigneesMap);
+    const creatorNames = await fetchCreatorNamesByUserIds(tx, subdomain, [taskRow.createdByUserId]);
+    return mapTaskRow(taskRow, assigneesMap, creatorNames);
   });
 }

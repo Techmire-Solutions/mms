@@ -3,7 +3,7 @@
  * @description Skip classification for Tasks bulk archive/restore.
  */
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { tasks } from "../schema.js";
+import { taskAssignees, tasks } from "../schema.js";
 import type { TenantTransaction } from "../tenant-context.js";
 
 export type TaskBulkSkipReason =
@@ -27,13 +27,36 @@ export function uniqueIds(ids: readonly string[]): string[] {
   return [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))];
 }
 
-/** Ids the actor may not touch: creator mismatch without `assign_anywhere` (M2). */
+/** Task ids the actor is currently assigned to (active assignee rows). */
+export async function loadAssignedTaskIds(
+  tx: TenantTransaction,
+  subdomain: string,
+  actorUserId: string,
+  ids: string[],
+): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  const rows = await tx
+    .select({ taskId: taskAssignees.taskId })
+    .from(taskAssignees)
+    .where(
+      and(
+        eq(taskAssignees.workspaceSubdomain, subdomain),
+        eq(taskAssignees.userId, actorUserId),
+        inArray(taskAssignees.taskId, ids),
+        isNull(taskAssignees.deletedAt),
+      ),
+    );
+  return new Set(rows.map((row) => String(row.taskId)));
+}
+
+/** Ids the actor may not touch: not creator, not assignee, without `assign_anywhere` (M2). */
 export async function loadForbiddenIds(
   tx: TenantTransaction,
   subdomain: string,
   ids: string[],
   actorUserId: string,
   canAssignAnywhere: boolean,
+  assignedIds: ReadonlySet<string> = new Set(),
 ): Promise<Set<string>> {
   if (canAssignAnywhere) return new Set();
   const rows = await tx
@@ -41,8 +64,33 @@ export async function loadForbiddenIds(
     .from(tasks)
     .where(and(eq(tasks.workspaceSubdomain, subdomain), inArray(tasks.id, ids)));
   return new Set(
-    rows.filter((row) => row.createdByUserId !== actorUserId).map((row) => String(row.id)),
+    rows
+      .filter((row) => row.createdByUserId !== actorUserId && !assignedIds.has(String(row.id)))
+      .map((row) => String(row.id)),
   );
+}
+
+/** Actionable ids + the forbidden skip rows (creator/assignee/`assign_anywhere` gate). */
+export async function resolveActionableIds(
+  tx: TenantTransaction,
+  subdomain: string,
+  requested: string[],
+  actorUserId: string,
+  canAssignAnywhere: boolean,
+): Promise<{ actionable: string[]; forbidden: TaskBulkSkip[] }> {
+  const assignedIds = await loadAssignedTaskIds(tx, subdomain, actorUserId, requested);
+  const forbidden = await loadForbiddenIds(
+    tx,
+    subdomain,
+    requested,
+    actorUserId,
+    canAssignAnywhere,
+    assignedIds,
+  );
+  return {
+    actionable: requested.filter((id) => !forbidden.has(id)),
+    forbidden: [...forbidden].map((id) => ({ id, reason: "forbidden" as const })),
+  };
 }
 
 export async function classifyDeleteSkips(
