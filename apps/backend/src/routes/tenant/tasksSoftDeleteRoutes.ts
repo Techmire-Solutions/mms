@@ -13,6 +13,7 @@ import {
   restoreTask,
 } from "../../tasks/use-cases/tasksUseCases.js";
 import { mapTaskRouteError } from "../../lib/taskRouteErrors.js";
+import { broadcastTenantUpdate } from "../../lib/livePush.js";
 
 export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.delete<{ Params: { id: string } }>("/api/tasks/:id", async (request, reply) => {
@@ -79,6 +80,7 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
         user.id,
         await canPerformTaskAction(request, "tasks.assign_anywhere"),
       );
+      broadcastTenantUpdate(String(request.tenant?.id), "collection", "tasks");
       return reply.status(200).send(result);
     } catch (error) {
       const mapped = mapTaskRouteError(error);
@@ -106,6 +108,7 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
         user.id,
         await canPerformTaskAction(request, "tasks.assign_anywhere"),
       );
+      broadcastTenantUpdate(String(request.tenant?.id), "collection", "tasks");
       return reply.status(200).send(result);
     } catch (error) {
       const mapped = mapTaskRouteError(error);

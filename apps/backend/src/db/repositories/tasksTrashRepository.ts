@@ -6,6 +6,7 @@ import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { emitOutboxEvent } from "../../services/outboxEventService.js";
 import { findTaskById } from "./tasksRepository.js";
 import { ConflictError, ForbiddenError } from "../../lib/httpErrors.js";
+import { broadcastTenantUpdate } from "../../lib/livePush.js";
 
 /** True when the actor is an active assignee of the task. */
 async function isAssigned(
@@ -88,6 +89,7 @@ export async function deleteTask(
         deletedBy: actorUserId ?? "system",
         version: now.getTime(),
       });
+      broadcastTenantUpdate(subdomain, "collection", "tasks");
       return "deleted";
     }
     return "already_deleted";
@@ -149,6 +151,7 @@ export async function restoreTask(
       restoredBy: actorUserId,
       version: now.getTime(),
     });
+    broadcastTenantUpdate(subdomain, "collection", "tasks");
     return findTaskById(subdomain, id);
   });
 }

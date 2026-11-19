@@ -46,12 +46,16 @@ export async function listTasks(
     if (query.createdById) conditions.push(eq(tasks.createdByUserId, query.createdById));
 
     // Workspace-local day boundaries (m5): date-only filters denote a calendar
-    // day in the workspace timezone, not UTC.
-    const [workspace] = await tx
-      .select({ timezone: workspaces.timezone })
-      .from(workspaces)
-      .where(eq(workspaces.subdomain, subdomain));
-    const timezone = workspace?.timezone?.trim() || "UTC";
+    // day in the workspace timezone, not UTC. Only load the timezone when a date
+    // filter is present (D5).
+    let timezone = "UTC";
+    if (query.dueFrom?.trim() || query.dueTo?.trim() || query.dueOn?.trim()) {
+      const [workspace] = await tx
+        .select({ timezone: workspaces.timezone })
+        .from(workspaces)
+        .where(eq(workspaces.subdomain, subdomain));
+      timezone = workspace?.timezone?.trim() || "UTC";
+    }
 
     conditions.push(...buildTaskFilterConditions(query, timezone));
 

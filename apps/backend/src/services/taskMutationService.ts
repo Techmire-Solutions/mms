@@ -14,6 +14,7 @@ import {
   emitTaskNotificationIntents,
 } from "./taskNotificationService.js";
 import { canActorMutateTask } from "./taskOwnership.js";
+import { broadcastTenantUpdate } from "../lib/livePush.js";
 import { HttpDomainError } from "../lib/httpErrors.js";
 
 /** Delegation eligibility failure → 403 via the shared Tasks error mapper. */
@@ -82,6 +83,7 @@ export async function mutateTask(
         next,
       });
     }
+    broadcastTenantUpdate(tenant, "collection", "tasks");
     return next;
   });
 }
@@ -124,6 +126,7 @@ export async function changeTaskStatus(
         next,
       });
     }
+    broadcastTenantUpdate(tenant, "collection", "tasks");
     return next;
   });
 }
@@ -151,6 +154,7 @@ export async function changeTasksBulkStatus(
         changes: result.changes,
       });
     }
+    broadcastTenantUpdate(tenant, "collection", "tasks");
     return result;
   });
 }

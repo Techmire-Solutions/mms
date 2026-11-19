@@ -18,6 +18,7 @@ import { invalidateExaminationsQueries } from "@/tenant/hooks/collections/examin
 import { invalidateQuestionBankQueries } from "@/tenant/hooks/collections/questionBank";
 import { invalidateAccountingQueries } from "@/tenant/hooks/collections/accounting";
 import { invalidateObligationsQueries } from "@/tenant/hooks/collections/obligations";
+import { invalidateTasksQueries } from "@/tenant/hooks/collections/tasks";
 import { invalidateDocumentTemplatesQueries } from "@/lib/templates/useDocumentTemplates";
 import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 import {
@@ -138,5 +139,8 @@ export function invalidateModuleQueries(queryClient: QueryClient, key: string): 
       return invalidateDocumentTemplatesQueries(queryClient);
     case "notifications":
       return invalidateStoredNotificationsQueries(queryClient);
+    case "tasks":
+      void invalidateTasksQueries(queryClient);
+      return;
   }
 }

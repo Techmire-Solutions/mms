@@ -53,20 +53,30 @@ function buildAssigneeInputs(
   raw: string,
   eligible: Awaited<ReturnType<typeof getEligibleTaskAssignees>>,
 ): TaskAssigneeInput[] {
-  const needle = raw.trim().toLowerCase();
-  const match = eligible.find((recipient) =>
-    [recipient.employeeId, recipient.name, recipient.userId]
-      .filter((value): value is string => Boolean(value))
-      .some((value) => value.trim().toLowerCase() === needle),
-  );
-  if (!match) throw new Error(`Assignee not found: ${raw}`);
-  return [
-    {
+  const needles = raw
+    .split(/[;,]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (needles.length === 0) return [];
+  const resolved: TaskAssigneeInput[] = [];
+  const seen = new Set<string>();
+  for (const needle of needles) {
+    const key = needle.toLowerCase();
+    const match = eligible.find((recipient) =>
+      [recipient.employeeId, recipient.name, recipient.userId, recipient.userEmail]
+        .filter((value): value is string => Boolean(value))
+        .some((value) => value.trim().toLowerCase() === key),
+    );
+    if (!match) throw new Error(`Assignee not found: ${needle}`);
+    if (seen.has(match.userId)) continue;
+    seen.add(match.userId);
+    resolved.push({
       facultyId: match.facultyId,
       userId: match.userId,
       ...(match.assignmentId ? { facultyAssignmentId: match.assignmentId } : {}),
-    },
-  ];
+    });
+  }
+  return resolved;
 }
 
 /**

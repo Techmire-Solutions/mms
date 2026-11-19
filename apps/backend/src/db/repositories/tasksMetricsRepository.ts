@@ -35,11 +35,14 @@ export async function getTaskMetrics(
     const now = new Date();
     const conditions = [eq(tasks.workspaceSubdomain, subdomain), isNull(tasks.deletedAt)];
 
-    const [workspace] = await tx
-      .select({ timezone: workspaces.timezone })
-      .from(workspaces)
-      .where(eq(workspaces.subdomain, subdomain));
-    const timezone = workspace?.timezone?.trim() || "UTC";
+    let timezone = "UTC";
+    if (query?.dueFrom?.trim() || query?.dueTo?.trim() || query?.dueOn?.trim()) {
+      const [workspace] = await tx
+        .select({ timezone: workspaces.timezone })
+        .from(workspaces)
+        .where(eq(workspaces.subdomain, subdomain));
+      timezone = workspace?.timezone?.trim() || "UTC";
+    }
 
     conditions.push(...buildTaskFilterConditions(query, timezone));
 

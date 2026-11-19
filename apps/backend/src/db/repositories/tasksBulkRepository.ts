@@ -179,11 +179,7 @@ export async function bulkUpdateTaskStatusBatch(
   status: TaskStatus,
   actorUserId: string,
   canAssignAnywhere = false,
-): Promise<{
-  updatedIds: string[];
-  skipped: TaskBulkSkip[];
-  changes: TaskStatusChange[];
-}> {
+): Promise<{ updatedIds: string[]; skipped: TaskBulkSkip[]; changes: TaskStatusChange[] }> {
   const subdomain = tenant.trim().toLowerCase();
   const requested = uniqueIds(ids);
   if (requested.length === 0) return { updatedIds: [], skipped: [], changes: [] };
@@ -248,6 +244,7 @@ export async function bulkUpdateTaskStatusBatch(
     }
     if (allowed.length === 0) return { updatedIds: [], skipped, changes: [] };
 
+    // Bulk status is last-write-wins (no OCC token; D4 documented).
     const now = new Date();
     const updated = await tx
       .update(tasks)
