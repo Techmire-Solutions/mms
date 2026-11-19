@@ -70,6 +70,7 @@ export function ContactAddressEntryCard({
 
   return (
     <FormListFieldCard
+      key={localId}
       id={localId}
       index={idx}
       icon={MapPin}

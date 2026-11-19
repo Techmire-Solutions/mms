@@ -74,6 +74,7 @@ export function ContactExperienceEntryCard({
 
   return (
     <FormListFieldCard
+      key={resolvedId}
       id={resolvedId}
       index={idx}
       icon={Briefcase}

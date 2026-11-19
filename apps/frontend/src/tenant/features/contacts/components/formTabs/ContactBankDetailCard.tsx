@@ -63,6 +63,7 @@ export function ContactBankDetailCard({
 
   return (
     <FormListFieldCard
+      key={resolvedId}
       id={resolvedId}
       index={idx}
       icon={Landmark}

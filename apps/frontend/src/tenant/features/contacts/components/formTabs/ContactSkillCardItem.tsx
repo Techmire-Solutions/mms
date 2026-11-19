@@ -73,6 +73,7 @@ export function ContactSkillCardItem({
 
   return (
     <FormListFieldCard
+      key={resolvedId}
       id={resolvedId}
       index={idx}
       icon={Tag}
