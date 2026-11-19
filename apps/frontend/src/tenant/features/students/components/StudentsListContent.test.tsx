@@ -19,7 +19,7 @@ vi.mock("@/hooks/useTranslation", () => ({
         "students.table.students": "Students",
         "students.detail.father": "Father",
         "students.detail.mother": "Mother",
-        "students.table.actions": "Actions",
+        "common.actions": "Actions",
       };
       return labels[key] ?? key;
     },

@@ -190,7 +190,6 @@ export function QuestionsListDesktopTable({
           onTrashAction={onTrashAction}
         />
       )}
-      actionsLabel={t("questionBank.columns.actions")}
     />
   );
 }

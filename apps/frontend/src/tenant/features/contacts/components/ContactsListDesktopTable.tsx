@@ -131,7 +131,6 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
         getColumnWidth,
         onColumnResize: setColumnWidth,
       }}
-      actionsLabel={t("contacts.table.actions")}
       renderRowActions={(contact) => (
         <ContactsRowActions
           contact={contact}

@@ -1,6 +1,9 @@
 import React, { type JSX } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
+import {
+  MODULE_TABLE_HEAD_TYPOGRAPHY_CLASS,
+  ModuleTableHeaderCell,
+} from "@/components/app/ModuleTableHeaderCell";
 import {
   TableHead,
   TableHeader,
@@ -9,6 +12,7 @@ import {
   type TableCellVariant,
 } from "@/components/ui/table";
 import { WORK_STICKY_HEAD } from "@/components/ui/formStyles";
+import { WORK_TABLE_ACTIONS_WIDTH_CLASS } from "@/components/common/work/workBatchTableWidths";
 import { cn } from "@/lib/utils";
 
 export interface ModuleWorkTableHeaderProps<
@@ -69,7 +73,7 @@ export function ModuleWorkTableHeader<
   setColumnWidth,
   selection,
   actionsLabel,
-  actionsClassName = "w-28 min-w-28 text-end",
+  actionsClassName = WORK_TABLE_ACTIONS_WIDTH_CLASS,
   stickyColumnId = "name",
 }: ModuleWorkTableHeaderProps<TCol>): JSX.Element {
   return (
@@ -143,7 +147,14 @@ export function ModuleWorkTableHeader<
         })}
 
         {actionsLabel && (
-          <TableHead noWrap className={cn("px-4 py-3 h-auto", actionsClassName)}>
+          <TableHead
+            noWrap
+            className={cn(
+              MODULE_TABLE_HEAD_TYPOGRAPHY_CLASS,
+              "px-4 py-3 text-end h-auto",
+              actionsClassName,
+            )}
+          >
             <span>{actionsLabel}</span>
           </TableHead>
         )}

@@ -81,7 +81,6 @@ export function AccountingFiscalYearsTable({
       data={sortedYears}
       columns={columns}
       filters={filters}
-      actionsLabel={t("accounting.settings.fy.actions")}
       card={{
         title: (fy) => fy.label,
         badge: (fy) => <StatusBadge status={fy.status} config={fyStatusConfig} size="sm" />,

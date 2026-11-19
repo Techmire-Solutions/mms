@@ -4,9 +4,12 @@ import { ResizableTableHead } from "@/components/app/ResizableTableHead";
 import type { TableCellAlign, TableCellVariant } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
+/** Canonical Work-table header typography — shared by data columns and the actions column. */
+export const MODULE_TABLE_HEAD_TYPOGRAPHY_CLASS =
+  "text-xs font-semibold text-muted-foreground uppercase tracking-wide";
+
 /** Canonical Work-table header cell chrome — SSOT for header typography/padding across module tables. */
-export const MODULE_TABLE_HEAD_CLASS =
-  "px-4 py-3 text-start text-xs font-semibold text-muted-foreground uppercase tracking-wide";
+export const MODULE_TABLE_HEAD_CLASS = `px-4 py-3 text-start ${MODULE_TABLE_HEAD_TYPOGRAPHY_CLASS}`;
 
 export interface ModuleTableHeaderCellProps {
   columnKey: string;

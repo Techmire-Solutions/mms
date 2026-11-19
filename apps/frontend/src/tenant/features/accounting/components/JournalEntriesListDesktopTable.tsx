@@ -95,7 +95,6 @@ export function JournalEntriesListDesktopTable(
       data={entries}
       columns={columns}
       caption={t("accounting.journal.dashboard.tableCaption")}
-      className="table-fixed"
       selection={
         canDelete
           ? {
@@ -114,7 +113,6 @@ export function JournalEntriesListDesktopTable(
         onColumnResize,
       }}
       renderRowActions={renderEntryActions}
-      actionsLabel={renderEntryActions !== undefined ? t("accounting.table.actions") : undefined}
       footerRow={footerRow}
     />
   );

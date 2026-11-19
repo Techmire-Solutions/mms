@@ -39,6 +39,6 @@ describe("StudentCardActions Component", () => {
 
     expect(html).toContain("students.actionViewShort");
     expect(html).toContain("students.list.viewProfile - Zayd Harith");
-    expect(html).toContain("students.list.actionsAria");
+    expect(html).toContain("common.actionsFor");
   });
 });

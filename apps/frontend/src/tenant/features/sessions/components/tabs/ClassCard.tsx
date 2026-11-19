@@ -91,7 +91,7 @@ export function ClassCard({
       overflowActions={
         canWrite ? (
           <ModuleRowActionsMenu
-            triggerLabel={t("sessions.classes.actionsFor", { name: sessionClass.name })}
+            triggerLabel={t("common.actionsFor", { name: sessionClass.name })}
             archived={false}
             canWrite
             canDelete

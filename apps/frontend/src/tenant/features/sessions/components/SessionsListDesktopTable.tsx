@@ -230,7 +230,6 @@ export function SessionsListDesktopTable({
             )
           : undefined
       }
-      actionsLabel={canDelete ? t("common.actions") : undefined}
     />
   );
 }

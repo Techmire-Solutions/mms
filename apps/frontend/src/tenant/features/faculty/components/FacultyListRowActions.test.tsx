@@ -39,6 +39,6 @@ describe("FacultyListRowActions Component", () => {
       />,
     );
 
-    expect(html).toContain("faculty.table.actions");
+    expect(html).toContain("common.actionsFor");
   });
 });

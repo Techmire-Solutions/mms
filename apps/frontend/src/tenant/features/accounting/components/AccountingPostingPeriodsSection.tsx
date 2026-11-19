@@ -89,35 +89,8 @@ export function AccountingPostingPeriodsSection({
           </span>
         ),
       },
-      {
-        id: "action",
-        label: t("common.actions"),
-        width: 140,
-        render: (period) =>
-          canManage ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="min-h-11"
-              disabled={saving || periodsQuery.isPending || periodsQuery.isError}
-              onClick={() =>
-                setPending({
-                  period,
-                  action: period.status === "closed" ? "reopen" : "close",
-                })
-              }
-            >
-              {t(
-                period.status === "closed"
-                  ? "accounting.settings.postingPeriods.reopen"
-                  : "accounting.settings.postingPeriods.close",
-              )}
-            </Button>
-          ) : null,
-      },
     ],
-    [canManage, periodsQuery.isError, periodsQuery.isPending, saving, t],
+    [t],
   );
 
   const handleConfirm = async (reason?: string): Promise<void> => {
@@ -163,6 +136,33 @@ export function AccountingPostingPeriodsSection({
           isLoading={Boolean(fiscalYearId) && periodsQuery.isPending}
           card={{ title: (period) => period.label }}
           emptyState={<EmptyState title={t("accounting.settings.postingPeriods.empty")} />}
+          renderRowActions={
+            canManage
+              ? (period) => (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="min-h-11"
+                    disabled={saving || periodsQuery.isPending || periodsQuery.isError}
+                    onClick={() =>
+                      setPending({
+                        period,
+                        action: period.status === "closed" ? "reopen" : "close",
+                      })
+                    }
+                  >
+                    {t(
+                      period.status === "closed"
+                        ? "accounting.settings.postingPeriods.reopen"
+                        : "accounting.settings.postingPeriods.close",
+                    )}
+                  </Button>
+                )
+              : undefined
+          }
+          actionsHeaderClassName="w-36 min-w-36"
+          actionsCellClassName="w-36 min-w-36"
         />
       )}
       {pending ? (

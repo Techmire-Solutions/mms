@@ -199,7 +199,6 @@ export function EnrollmentsListDesktopTable(
           />
         );
       }}
-      actionsLabel={t("enrollments.columns.actions")}
     />
   );
 }

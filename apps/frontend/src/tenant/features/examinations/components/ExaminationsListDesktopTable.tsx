@@ -150,7 +150,6 @@ export function ExaminationsListDesktopTable(
       data={exams}
       columns={columns}
       caption={t("examinations.exams")}
-      className="table-fixed"
       tableBodyClassName="divide-y divide-border/50"
       onRowClick={props.onRowClick ? (exam) => props.onRowClick?.(exam.id) : undefined}
       selection={
@@ -181,7 +180,6 @@ export function ExaminationsListDesktopTable(
           onTrashAction={onTrashAction}
         />
       )}
-      actionsLabel={t("examinations.columns.actions")}
     />
   );
 }

@@ -47,7 +47,7 @@ export function ObligationCollectionRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("obligations.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: collection.receipt_no })}
       viewLabel={t("obligations.actions.viewShort")}
       deleteLabel={t("common.delete")}
       restoreLabel={t("obligations.trash.restore")}

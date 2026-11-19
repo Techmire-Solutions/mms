@@ -106,60 +106,6 @@ export function AccountingHedgesSection({
       label: t("accounting.settings.hedges.status"),
       render: (hedge) => t(STATUS_KEYS[hedge.status]),
     },
-    {
-      id: "actions",
-      kind: "shortText",
-      label: t("accounting.settings.hedges.actions"),
-      render: (hedge) =>
-        canEdit ? (
-          <div className="flex flex-wrap gap-2">
-            {hedge.status === "active" && (
-              <>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="min-h-11"
-                  disabled={panel.valuing}
-                  onClick={() => void panel.handleValue(hedge)}
-                >
-                  {t("accounting.settings.hedges.value")}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="min-h-11"
-                  onClick={() => panel.setPending({ action: "settle", hedge })}
-                >
-                  {t("accounting.settings.hedges.settle")}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  className="min-h-11"
-                  onClick={() => panel.setPending({ action: "discontinue", hedge })}
-                >
-                  {t("accounting.settings.hedges.discontinue")}
-                </Button>
-              </>
-            )}
-            {(hedge.status === "settled" || hedge.status === "discontinued") &&
-              hedge.hedgeType === "cash_flow" && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="min-h-11"
-                  onClick={() => panel.setPending({ action: "reclassify", hedge })}
-                >
-                  {t("accounting.settings.hedges.reclassify")}
-                </Button>
-              )}
-          </div>
-        ) : null,
-    },
   ];
 
   return (
@@ -206,6 +152,60 @@ export function AccountingHedgesSection({
           isLoading={panel.loading}
           card={{ title: (hedge) => hedge.name }}
           emptyState={<EmptyState title={t("accounting.settings.hedges.empty")} />}
+          renderRowActions={
+            canEdit
+              ? (hedge) => (
+                  <div className="flex flex-wrap gap-2">
+                    {hedge.status === "active" && (
+                      <>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="min-h-11"
+                          disabled={panel.valuing}
+                          onClick={() => void panel.handleValue(hedge)}
+                        >
+                          {t("accounting.settings.hedges.value")}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="min-h-11"
+                          onClick={() => panel.setPending({ action: "settle", hedge })}
+                        >
+                          {t("accounting.settings.hedges.settle")}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="min-h-11"
+                          onClick={() => panel.setPending({ action: "discontinue", hedge })}
+                        >
+                          {t("accounting.settings.hedges.discontinue")}
+                        </Button>
+                      </>
+                    )}
+                    {(hedge.status === "settled" || hedge.status === "discontinued") &&
+                      hedge.hedgeType === "cash_flow" && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="min-h-11"
+                          onClick={() => panel.setPending({ action: "reclassify", hedge })}
+                        >
+                          {t("accounting.settings.hedges.reclassify")}
+                        </Button>
+                      )}
+                  </div>
+                )
+              : undefined
+          }
+          actionsHeaderClassName="w-64 min-w-64"
+          actionsCellClassName="w-64 min-w-64"
         />
       )}
       {panel.designating && (

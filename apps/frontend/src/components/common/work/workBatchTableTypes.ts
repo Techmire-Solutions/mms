@@ -43,7 +43,7 @@ export interface WorkBatchTableColumn<TData> {
   noWrap?: boolean;
   /** Truncates overflowing text with an ellipsis. */
   truncate?: boolean;
-  /** Standardized text alignment: right for numbers/currency, left for text, center for badges/actions. */
+  /** Standardized text alignment: right for numbers/currency, left for text, center for badge/action-variant cells. */
   align?: TableCellAlign;
   /** Column data variant automatically configuring alignment and formatting. */
   variant?: TableCellVariant;
@@ -103,6 +103,8 @@ export interface WorkBatchTableProps<TData extends { id: string | number }> {
   actionsLabel?: string;
   actionsHeaderClassName?: string;
   actionsCellClassName?: string;
+  /** Resolved actions column width in px for min-width math; defaults to `WORK_TABLE_ACTIONS_WIDTH`. */
+  actionsWidth?: number;
 
   // Sticky column
   stickyColumnId?: string;

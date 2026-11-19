@@ -178,7 +178,6 @@ export function UsersListDesktopTable({
           onResetPassword={onResetPassword}
         />
       )}
-      actionsLabel={t("users.colActions")}
     />
   );
 }

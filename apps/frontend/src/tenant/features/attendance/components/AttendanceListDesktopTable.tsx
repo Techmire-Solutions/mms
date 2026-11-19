@@ -87,7 +87,6 @@ export function AttendanceListDesktopTable({
         onColumnResize,
       }}
       renderRowActions={renderRowActions}
-      actionsLabel={t("attendance.table.actions")}
       emptyState={
         <EmptyState
           title={t("attendance.empty.records")}

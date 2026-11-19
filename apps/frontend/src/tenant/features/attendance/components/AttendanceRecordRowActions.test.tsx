@@ -67,7 +67,7 @@ describe("AttendanceRecordRowActions Component", () => {
       />,
     );
 
-    expect(html).toContain("attendance.table.actions");
+    expect(html).toContain("common.actionsFor");
     expect(html).toContain("attendance.message.whatsapp");
     expect(html).toContain("attendance.message.sms");
   });

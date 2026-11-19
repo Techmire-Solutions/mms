@@ -29,7 +29,7 @@ export function SessionListRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("sessions.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: session.name })}
       viewLabel={t("sessions.table.viewProfile")}
       deleteLabel={t("common.delete")}
       restoreLabel={t("sessions.restore")}

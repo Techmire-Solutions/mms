@@ -51,7 +51,7 @@ export function StudentsRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("students.list.actionsAria")}
+      triggerLabel={t("common.actionsFor", { name: student.name ?? studentId })}
       viewLabel={t("students.list.viewProfile")}
       editLabel={t("students.list.editStudent")}
       deleteLabel={t("students.list.remove")}

@@ -169,6 +169,8 @@ export function DataTable<TData extends { id: string | number }>({
           isLoading={isLoading}
           renderRowActions={renderRowActions}
           actionsLabel={tableProps.actionsLabel ?? t("common.actions")}
+          actionsHeaderClassName={tableProps.actionsHeaderClassName}
+          actionsCellClassName={tableProps.actionsCellClassName}
           columnResize={toColumnResize(layout)}
         />
       )}

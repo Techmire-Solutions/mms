@@ -164,7 +164,6 @@ export function FacultyListDesktopTable(props: FacultyListDesktopTableProps): Re
           getColumnWidth,
           onColumnResize,
         }}
-        actionsLabel={t("faculty.table.actions")}
         renderRowActions={(facultyMember) => {
           const { facultyIdStr } = facultyRowIdentity(facultyMember, selectedSet, t);
           return (

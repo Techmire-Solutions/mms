@@ -60,7 +60,7 @@ export function DistributionsRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("hasanat.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: distribution.recipientName || distribution.id })}
       deleteLabel={t("common.delete")}
       restoreLabel={t("hasanat.trash.restore")}
       archived={showDeleted}

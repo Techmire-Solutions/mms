@@ -92,8 +92,6 @@ export function ObligationCollectionsListDesktopTable(
           : undefined
       }
       columnResize={{ getColumnWidth: (key) => getColumnWidth?.(key), onColumnResize }}
-      actionsHeaderClassName="w-24 min-w-24 text-end px-3 py-3"
-      actionsCellClassName="w-24 min-w-24 text-end px-3 py-3"
       renderRowActions={(collection) => (
         <div className="flex items-center gap-1 justify-end">
           {!showDeleted && (
@@ -122,7 +120,6 @@ export function ObligationCollectionsListDesktopTable(
           />
         </div>
       )}
-      actionsLabel={t("common.actions")}
     />
   );
 }

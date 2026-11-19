@@ -203,7 +203,6 @@ export function AccountTypeGroup({
             getColumnWidth,
             onColumnResize,
           }}
-          actionsLabel={t("accounting.columns.actions")}
           rowClassName={(account) => (account.isActive === false ? "opacity-50" : "")}
           renderRowActions={(account) => (
             <div className="flex items-center justify-end gap-1">
