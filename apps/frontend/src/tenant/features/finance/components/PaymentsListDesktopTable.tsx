@@ -165,7 +165,6 @@ export function PaymentsListDesktopTable({
         onColumnResize,
       }}
       renderRowActions={canDelete ? renderRowAction : undefined}
-      actionsLabel={canDelete ? t("common.actions") : undefined}
       emptyState={<EmptyState title={t("finance.empty.payments")} compact />}
     />
   );

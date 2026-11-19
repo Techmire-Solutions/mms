@@ -95,7 +95,7 @@ describe("ObligationCollectionsListDesktopTable", () => {
     expect(html).toContain("unknown-uuid-456");
   });
 
-  it("renders compact actions header label and selection elements", () => {
+  it("renders actions header label and selection elements", () => {
     const html = renderToStaticMarkup(
       <ObligationCollectionsListDesktopTable
         {...baseProps}
@@ -104,6 +104,6 @@ describe("ObligationCollectionsListDesktopTable", () => {
     );
 
     expect(html).toContain("common.actions");
-    expect(html).toContain("w-24 min-w-24 text-end");
+    expect(html).toContain("w-28 min-w-28");
   });
 });

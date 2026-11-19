@@ -36,6 +36,7 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   actionsLabel,
   actionsHeaderClassName,
   actionsCellClassName,
+  actionsWidth,
   stickyColumnId,
   optimisticDeletedIds,
   footerCount,
@@ -91,6 +92,7 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   const tableMinWidth = computeWorkTableMinWidth([...resolvedWidths.values()], {
     selection: Boolean(selection),
     actions: Boolean(renderRowActions),
+    actionsWidth,
   });
 
   const isVirtualized = Boolean(virtualize ?? activeRows.length > 30);

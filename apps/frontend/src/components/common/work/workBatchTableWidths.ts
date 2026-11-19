@@ -10,8 +10,12 @@ import {
 
 /** Selection checkbox column (`w-12`). */
 export const WORK_TABLE_SELECTION_WIDTH = 48;
-/** Default row-actions column (`w-28`). */
+/** Default row-actions column width in px (`w-28`). */
 export const WORK_TABLE_ACTIONS_WIDTH = 112;
+/** Default row-actions column width class — SSOT for the header + cell default. */
+export const WORK_TABLE_ACTIONS_WIDTH_CLASS = "w-28 min-w-28";
+/** Wide row-actions column width in px (`w-56`, e.g. Platform inline action rows). */
+export const WORK_TABLE_ACTIONS_WIDTH_WIDE = 224;
 /** Space reserved for a column that has neither a width nor a kind. */
 export const WORK_TABLE_UNSIZED_COLUMN_FLOOR = 120;
 
@@ -39,7 +43,7 @@ export function resolveWorkColumnMinWidth(column: WidthSource): number | undefin
  */
 export function computeWorkTableMinWidth(
   widths: readonly (number | undefined)[],
-  chrome: { selection: boolean; actions: boolean },
+  chrome: { selection: boolean; actions: boolean; actionsWidth?: number },
 ): number {
   const columns = widths.reduce<number>(
     (total, width) => total + (width ?? WORK_TABLE_UNSIZED_COLUMN_FLOOR),
@@ -48,6 +52,6 @@ export function computeWorkTableMinWidth(
   return (
     columns +
     (chrome.selection ? WORK_TABLE_SELECTION_WIDTH : 0) +
-    (chrome.actions ? WORK_TABLE_ACTIONS_WIDTH : 0)
+    (chrome.actions ? (chrome.actionsWidth ?? WORK_TABLE_ACTIONS_WIDTH) : 0)
   );
 }

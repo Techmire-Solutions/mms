@@ -31,7 +31,7 @@ export function ExaminationsRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("examinations.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: exam.name })}
       editLabel={t("common.edit")}
       deleteLabel={t("common.delete")}
       restoreLabel={t("examinations.trash.restore")}

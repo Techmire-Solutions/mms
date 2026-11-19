@@ -33,7 +33,6 @@ export function DataTableRowActions({
             onClick={onClick}
             disabled={disabled}
             aria-label={label}
-            title={label}
             className={cn(
               "min-h-11 min-w-11 p-0 cursor-pointer",
               tone === "destructive"

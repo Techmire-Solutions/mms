@@ -167,7 +167,6 @@ export function InvoicesListDesktopTable(props: InvoicesListDesktopTableProps): 
           openComposer={openComposer}
         />
       )}
-      actionsLabel={t("common.actions")}
     />
   );
 }

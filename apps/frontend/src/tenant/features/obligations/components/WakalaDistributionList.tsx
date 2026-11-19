@@ -103,7 +103,6 @@ export function WakalaDistributionList({
       data={distributions}
       columns={columns}
       filters={filters}
-      actionsLabel={t("obligations.wakala.colActions")}
       card={{ title: (d) => d.name }}
       renderRowActions={(d) => (
         <DataTableRowActions

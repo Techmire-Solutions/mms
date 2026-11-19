@@ -4,6 +4,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { ModuleTableSelectionCell } from "@/components/app/ModuleTableSelectionCell";
 import { workTableRowBg, workTableStickyCellBg } from "@/components/app/tableWorkSticky";
 import { cn } from "@/lib/utils";
+import { WORK_TABLE_ACTIONS_WIDTH_CLASS } from "./workBatchTableWidths";
 import type { ListRowMotionFn } from "@/hooks/useListRowMotion";
 import type { WorkBatchTableColumn } from "./WorkBatchTable";
 
@@ -116,7 +117,10 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
       {renderRowActions && (
         <TableCell
           noWrap
-          className={cn("text-end", actionsCellClassName ?? "w-12 min-w-12 px-2 py-3")}
+          className={cn(
+            "px-4 py-3 text-end",
+            actionsCellClassName ?? WORK_TABLE_ACTIONS_WIDTH_CLASS,
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           {renderRowActions(row, rowIndex)}

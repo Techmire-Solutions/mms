@@ -45,7 +45,7 @@ export function AttendanceRecordRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("attendance.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: attendanceRecord.studentName })}
       editLabel={t("common.edit")}
       deleteLabel={t("attendance.deleteRecord")}
       restoreLabel={t("attendance.restoreRecord")}

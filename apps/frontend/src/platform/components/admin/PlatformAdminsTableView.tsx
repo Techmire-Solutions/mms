@@ -9,6 +9,7 @@ import {
   deriveSelectionState,
   WORK_TABLE_CONTAINER_CLASS,
 } from "@/components/common/work/workBatchTableTypes";
+import { WORK_TABLE_ACTIONS_WIDTH_WIDE } from "@/components/common/work/workBatchTableWidths";
 import {
   PlatformAdminStatusBadges,
   PlatformAdminPermissionsBadges,
@@ -118,9 +119,9 @@ export function PlatformAdminsTableView({
       columns={columns}
       onRowClick={onInspect}
       selection={selection}
-      actionsLabel={t("common.actions")}
-      actionsHeaderClassName="w-56 min-w-56 text-end px-4 py-3"
-      actionsCellClassName="w-56 min-w-56 text-end px-4 py-3 align-top"
+      actionsHeaderClassName="w-56 min-w-56"
+      actionsCellClassName="w-56 min-w-56 align-top"
+      actionsWidth={WORK_TABLE_ACTIONS_WIDTH_WIDE}
       renderRowActions={(admin) => (
         <PlatformAdminActionButtons
           admin={admin}

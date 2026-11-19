@@ -1,5 +1,11 @@
 import React from "react";
-import { type Contact, getPrimaryEmail, getPrimaryPhone, hasWhatsApp } from "@mms/shared";
+import {
+  type Contact,
+  getDisplayName,
+  getPrimaryEmail,
+  getPrimaryPhone,
+  hasWhatsApp,
+} from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
@@ -51,7 +57,7 @@ export const ContactsRowActions = React.memo(function ContactsRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("contacts.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: getDisplayName(contact) })}
       viewLabel={t("contacts.table.viewProfile")}
       editLabel={t("contacts.table.edit")}
       deleteLabel={t("contacts.table.deleteContact")}

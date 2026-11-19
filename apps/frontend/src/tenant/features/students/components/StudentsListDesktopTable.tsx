@@ -134,7 +134,6 @@ export function StudentsListDesktopTable({
           getColumnWidth,
           onColumnResize,
         }}
-        actionsLabel={t("students.table.actions")}
         renderRowActions={(studentRow) => (
           <StudentsRowActions
             student={studentRow}

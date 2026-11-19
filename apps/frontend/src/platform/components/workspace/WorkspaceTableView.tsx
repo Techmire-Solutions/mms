@@ -14,6 +14,7 @@ import {
   deriveSelectionState,
   WORK_TABLE_CONTAINER_CLASS,
 } from "@/components/common/work/workBatchTableTypes";
+import { WORK_TABLE_ACTIONS_WIDTH_WIDE } from "@/components/common/work/workBatchTableWidths";
 import { WorkspaceIdentityCell } from "@/platform/components/workspace/WorkspaceIdentityCell";
 import { WorkspaceRowActions } from "@/platform/components/workspace/WorkspaceRowActions";
 import {
@@ -208,9 +209,9 @@ export function WorkspaceTableView({
       onRowClick={onInspect ? (w) => onInspect(w) : undefined}
       stickyColumnId="madrasaName"
       columnResize={toColumnResize(columnLayout)}
-      actionsLabel={t("common.actions")}
-      actionsHeaderClassName={cn("w-56 min-w-56 text-end", pad)}
-      actionsCellClassName={cn("w-56 min-w-56 text-end align-middle", pad)}
+      actionsHeaderClassName={cn("w-56 min-w-56", pad)}
+      actionsCellClassName={cn("w-56 min-w-56 align-middle", pad)}
+      actionsWidth={WORK_TABLE_ACTIONS_WIDTH_WIDE}
       renderRowActions={(workspace) => (
         <WorkspaceRowActions
           subdomain={workspace.subdomain}

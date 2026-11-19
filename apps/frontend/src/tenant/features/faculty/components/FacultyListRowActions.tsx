@@ -4,6 +4,7 @@ import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagin
 import { resolveFacultyPrimaryChannels } from "@/lib/faculty/facultyPrimaryChannels";
 import { facultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
 import { hasWhatsApp, type Faculty } from "@mms/shared";
+import { resolveFacultyDisplayName } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 
 export interface FacultyListRowActionsProps {
   faculty?: Faculty;
@@ -58,7 +59,9 @@ export function FacultyListRowActions(props: FacultyListRowActionsProps): React.
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("faculty.table.actions")}
+      triggerLabel={t("common.actionsFor", {
+        name: resolveFacultyDisplayName(effectiveFaculty, t),
+      })}
       viewLabel={t("faculty.list.viewDetails")}
       editLabel={t("common.edit")}
       deleteLabel={t("common.delete")}

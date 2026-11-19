@@ -64,7 +64,7 @@ export function EnrollmentRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("enrollments.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: studentDisplayName || enrollment.id })}
       viewLabel={t("enrollments.table.viewProfile")}
       deleteLabel={t("common.delete")}
       restoreLabel={t("enrollments.restore")}

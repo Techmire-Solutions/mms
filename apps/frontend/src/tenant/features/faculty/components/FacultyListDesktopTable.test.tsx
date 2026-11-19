@@ -15,7 +15,7 @@ vi.mock("@/hooks/useTranslation", () => ({
       }
       const labels: Record<string, string> = {
         "faculty.table.selectAll": "Select All",
-        "faculty.table.actions": "Actions",
+        "common.actionsFor": "Actions",
         "faculty.table.emptyDash": "—",
         "faculty.deletionReasonLabel": "Reason",
         "faculty.form.faculty": "faculty member",

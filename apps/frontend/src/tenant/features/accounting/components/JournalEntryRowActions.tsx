@@ -51,7 +51,7 @@ export function JournalEntryRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("accounting.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: entry.ref })}
       viewLabel={t("accounting.table.view")}
       editLabel={t("accounting.table.edit")}
       deleteLabel={t("common.delete")}

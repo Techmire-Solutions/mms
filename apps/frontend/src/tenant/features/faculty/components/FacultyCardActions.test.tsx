@@ -40,6 +40,6 @@ describe("FacultyCardActions Component", () => {
 
     expect(html).toContain("faculty.actionViewShort");
     expect(html).toContain("faculty.list.viewDetails - Ustadh Umar");
-    expect(html).toContain("faculty.table.actions");
+    expect(html).toContain("common.actionsFor");
   });
 });

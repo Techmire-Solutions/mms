@@ -30,7 +30,7 @@ export function PlatformDashboardFleetRowMenu({
           size="sm"
           icon={MoreHorizontal}
           className="min-w-11"
-          aria-label={t("common.actions")}
+          aria-label={t("common.actionsFor", { name: row.madrasaName })}
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 rounded-xl">

@@ -63,7 +63,7 @@ export function InvoicesRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("finance.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: invoice.studentName || invoice.id })}
       viewLabel={t("finance.table.viewProfile")}
       deleteLabel={t("common.delete")}
       restoreLabel={t("finance.trash.restore")}

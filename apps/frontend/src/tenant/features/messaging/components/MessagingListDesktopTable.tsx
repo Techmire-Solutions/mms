@@ -146,8 +146,8 @@ export function MessagingListDesktopTable({
           ) : null}
         </div>
       )}
-      actionsCellClassName="w-24 min-w-24 px-2 py-3"
-      actionsLabel={t("common.actions")}
+      actionsHeaderClassName="w-32 min-w-32"
+      actionsCellClassName="w-32 min-w-32"
       footerCount={{
         selectedCountLabel: t("messaging.selectedCount", { count: selectedCount }),
         pageCountLabel,

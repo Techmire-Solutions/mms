@@ -40,6 +40,6 @@ describe("StudentsRowActions Component", () => {
       />,
     );
 
-    expect(html).toContain("students.list.actionsAria");
+    expect(html).toContain("common.actionsFor");
   });
 });

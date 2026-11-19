@@ -56,7 +56,7 @@ describe("ExaminationsRowActions Component", () => {
       />,
     );
 
-    expect(html).toContain("examinations.table.actions");
+    expect(html).toContain("common.actionsFor");
     expect(html).toContain("common.edit");
     expect(html).toContain("common.delete");
   });

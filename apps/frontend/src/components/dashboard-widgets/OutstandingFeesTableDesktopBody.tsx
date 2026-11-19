@@ -83,7 +83,7 @@ export function OutstandingFeesTableDesktopBody({
                 variant="action"
                 className="px-3 py-3 select-none"
               >
-                {t("hasanat.columns.actions")}
+                {t("common.actions")}
               </ModuleTableHeaderCell>
             )}
           </TableRow>

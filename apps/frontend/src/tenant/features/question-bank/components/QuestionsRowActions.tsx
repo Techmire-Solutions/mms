@@ -36,7 +36,7 @@ export function QuestionsRowActions({
 
   return (
     <ModuleRowActionsMenu
-      triggerLabel={t("questionBank.table.actions")}
+      triggerLabel={t("common.actionsFor", { name: question.text })}
       editLabel={t("questionBank.editQuestion")}
       deleteLabel={t("common.delete")}
       restoreLabel={t("questionBank.trash.restore")}

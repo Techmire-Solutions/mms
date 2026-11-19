@@ -39,7 +39,7 @@ export interface DataTableColumn<TData> {
   noWrap?: boolean;
   /** Truncates overflowing text with an ellipsis. */
   truncate?: boolean;
-  /** Standardized text alignment: right for numbers/currency, left for text, center for badges/actions. */
+  /** Standardized text alignment: right for numbers/currency, left for text, center for badge/action-variant cells. */
   align?: TableCellAlign;
   /** Column data variant automatically configuring alignment and formatting. */
   variant?: TableCellVariant;
@@ -75,6 +75,8 @@ type PassThroughTableProps<TData extends { id: string | number }> = Pick<
   | "rowClassName"
   | "stickyColumnId"
   | "actionsLabel"
+  | "actionsHeaderClassName"
+  | "actionsCellClassName"
   | "caption"
 >;
 

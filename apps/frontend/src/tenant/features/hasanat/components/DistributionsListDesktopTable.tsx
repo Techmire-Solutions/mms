@@ -92,7 +92,6 @@ export function DistributionsListDesktopTable(
           onTrashAction={onTrashAction}
         />
       )}
-      actionsLabel={t("hasanat.columns.actions")}
     />
   );
 }
