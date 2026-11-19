@@ -1,4 +1,5 @@
 import path from "node:path";
+import os from "node:os";
 import { defineConfig } from "vitest/config";
 import { DurationShardSequencer } from "./src/test/shardSequencer.ts";
 
@@ -95,7 +96,7 @@ export default defineConfig({
     pool:
       (process.env.VITEST_POOL as "threads" | "forks") ??
       (process.platform === "darwin" && !process.env.CI ? "forks" : "threads"),
-    maxWorkers: process.env.CI ? 4 : undefined,
+    maxWorkers: process.env.CI ? 4 : Math.min(4, os.availableParallelism?.() ?? 4),
     fileParallelism: true,
     clearMocks: true,
     restoreMocks: true,
