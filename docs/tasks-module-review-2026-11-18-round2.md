@@ -297,24 +297,21 @@ code-norms / i18n / migrations-forward-only / db-projections gates hold.
 | Item | Status | Notes |
 | --- | --- | --- |
 | Shared contracts (`notificationChannel`, `forceCompleteSubtasks`, notification kinds, i18n) | **Done** | `tasksModuleManifest.ts`, `tenantNotifications.ts`, 4× i18n packs |
-| Schema + migration | **Done (code)** | `notification_channel`, `recipient_user_id`, `(ws, created_at DESC)` index, drop `task_assignees.completed_at`; migration `0266` + journal written. Drizzle snapshot still needs `drizzle-kit generate` against a live DB |
-| M2 ownership (mutation) + assignee-removal guard | **Done** | `taskMutationService` via `taskOwnership.canActorMutateTask`; spec `taskMutationService.test.ts` (5) |
-| M2 ownership (archive/restore, single + bulk) | **Done** | `deleteTask`/`restoreTask` + `bulkDeleteTasksBatch`/`bulkRestoreTasksBatch` skip non-creator rows without `assign_anywhere` (`forbidden` skip reason) |
-| A1 subtask barrier (single + bulk) | **Done** | `tasksWriteRepository` + `tasksBulkRepository`; spec `tasksWriteRepository.test.ts` (+3) |
-| m1 backend date validation | **Done** | `createTask`/`updateTask`; spec (+1) |
-| m3 delete 404 | **Done** | `deleteTask` → `deleted\|already_deleted\|not_found`; spec `tasksSoftDeleteErrors` (+2) |
+| Schema + migration | **Done** | `notification_channel`, `recipient_user_id`, `(ws, created_at DESC)` index, drop `task_assignees.completed_at`; migration `0266` regenerated via `drizzle-kit generate` (SQL + snapshot), applied to local DB (`db:check` ✓) |
+| M2 ownership (mutation) + assignee-removal guard | **Done** | `taskMutationService` via `taskOwnership.canActorMutateTask`; spec `taskMutationService.test.ts` |
+| M2 ownership (archive/restore, single + bulk) | **Done** | creator **or assignee** or `assign_anywhere` (`isAssigned`/`resolveActionableIds`); non-owners skipped as `forbidden` |
+| A1 subtask barrier (single + bulk) | **Done** | `tasksWriteRepository` + `tasksBulkRepository`; spec `tasksWriteRepository.test.ts` |
+| m1 backend date validation | **Done** | `createTask`/`updateTask`; spec |
+| m3 delete 404 | **Done** | `deleteTask` → `deleted\|already_deleted\|not_found`; spec `tasksSoftDeleteErrors` |
 | N1 list query safeParse | **Done** | `tasksReadRoutes.ts` |
-| N2 tenant normalization | **Done** | metrics + single trash paths |
-| m15 mapper trim | **Partial** | dead columns removed; `creatorName` still unpopulated |
-| A5/A6 atomic outbox + status use-cases | **Done** | `emitTaskNotificationIntents(tx, …)` inside the mutation transaction; `changeTaskStatus`/`changeTasksBulkStatus` replace route-level orchestration |
-| M4 delivery consumer (in-app + messaging) | **Done (email messaging)** | `outboxCdcProcessor` → `deliverTaskNotification`: user-targeted in-app rows + plain-text email via `sendTenantEmail`. SMS/WhatsApp deferred (needs contact-phone resolution) |
-| m5 (workspace day bounds) | **Done** | `lib/workspaceDayBounds.ts` + `listTasks` now use the workspace timezone for `dueFrom`/`dueTo`/`dueOn` (spec `workspaceDayBounds.test.ts`) |
-| m7 (filtered metrics) | **Resolved** | KPI strip is intentionally workspace-wide; directory footer already reflects the filtered `total` |
+| N2 tenant normalization | **Done** | metrics + trash paths |
+| m5 workspace day bounds | **Done** | `workspaceDayBounds.ts` for `listTasks` **and** `tasksExportService` due-date rendering (specs) |
+| m7 filtered metrics | **Done** | `getTaskMetrics(tenant, query?)` applies directory filters; metrics route parses the query (spec) |
+| m15 mapper cleanup | **Done** | dead columns trimmed + `completed_at` dropped; `creatorName` populated from `tenant_users.name` (spec) |
+| A5/A6 atomic outbox + status use-cases | **Done** | `emitTaskNotificationIntents(tx, …)` inside the mutation transaction; `changeTaskStatus`/`changeTasksBulkStatus` |
+| M4 delivery consumer | **Done (email messaging)** | `outboxCdcProcessor` → `deliverTaskNotification`: user-targeted in-app rows + email via `usersUseCases` + `sendTenantEmail`. **SMS/WhatsApp dispatch still pending** (needs contact-phone resolution + `dispatchMessagingCampaignDirect`) |
 | Frontend Setup channel selector | **Done** | `TasksSetupTab` `notificationChannel` select (in-app / messaging / both) |
 
-**Verification run this round:** `pnpm --filter @mms/shared build && typecheck` ✓ · backend `typecheck` ✓ ·
-frontend `typecheck` ✓ · `check:code-norms` / `check:i18n` / `check:migrations-forward-only` /
-`check:db-projections` ✓ · backend tasks+notifications suites ✓ (incl. new `taskMutationService.test.ts`) ·
-frontend tasks+notifications suites ✓ (93 + notification suites).
+**Verification:** `pnpm ci:local` ✓ (gates + Prettier + 591 backend files / 4167 tests + shared + frontend) · `db:migrate`/`db:check` ✓ (267=267) · `test:db taskDelegationScopeDb occWritesDb` ✓ (9/9). Commits: `787eb53b9` (remediation) → `917b29606` (residual gaps G1/G3/G4/G5).
 
 (End of file)
