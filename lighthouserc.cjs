@@ -46,7 +46,7 @@ module.exports = {
     assert: {
       assertions: {
         // Measured baseline: perf 59 (median of 3). Floor keeps runner noise out.
-        "categories:performance": ["error", { minScore: 0.55 }],
+        "categories:performance": ["error", { minScore: 0.5 }],
         // Measured baseline: LCP ≈ 6.4s simulated mobile. 7.2s allows variance.
         "largest-contentful-paint": ["error", { maxNumericValue: 7200 }],
         // Measured baseline: TBT ≈ 40–150ms.

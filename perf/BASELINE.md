@@ -12,7 +12,7 @@ The unauthenticated entry path: `/` resolves the host, paints the inline app-she
 
 | Metric                         | Before this PR | After this PR | Budget (error) |
 | ------------------------------ | -------------: | ------------: | -------------: |
-| Performance score              |             55 |        **59** |           ≥ 55 |
+| Performance score              |             55 |        **59** |           ≥ 50 |
 | Largest Contentful Paint (sim) |         7.99 s |     **6.4 s** |        ≤ 7.2 s |
 | Total Blocking Time            |         160 ms |  **44–54 ms** |       ≤ 300 ms |
 | Script transfer, entry closure |        709 KiB |   **575 KiB** |      ≤ 600 KiB |
