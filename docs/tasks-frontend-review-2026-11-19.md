@@ -106,7 +106,7 @@ disambiguation.
 
 | ID | Priority | Change |
 | --- | --- | --- |
-| F1 | **Fix now** | use `taskUpdateSchema` for edits / send `payload` not `parsed.data`; add the omission spec |
+| F1 | **Fixed** (d0eab29e3) | use `taskUpdateSchema` for edits / send `payload` not `parsed.data`; add the omission spec |
 | F2 | Follow-up | surface `TaskBulkSkipReason` (at least `forbidden`) |
 | F3 | Follow-up | populate `contextLabel` with the localized status |
 | F4 | Follow-up | distinct `tasks` notification icon/tint |

@@ -152,8 +152,8 @@ KPI can differ from a `?overdue=true` filtered count. **Fix:** compute "now" onc
 
 | ID | Priority | Change |
 | --- | --- | --- |
-| B1 | **Fix now** | key emails by user id (Map), not position; add an out-of-order spec |
-| B2 | **Fix now** | ownership predicate + `forbidden` skips in `bulkUpdateTaskStatusBatch`; deny-case spec |
+| B1 | **Fixed** (d0eab29e3) | key emails by user id (Map), not position; add an out-of-order spec |
+| B2 | **Fixed** (d0eab29e3) | ownership predicate + `forbidden` skips in `bulkUpdateTaskStatusBatch`; deny-case spec |
 | B3 | Follow-up | deterministic `dedupeKey` on the in-app notification |
 | B4 | Follow-up | move `messagingDirectDispatch.ts` out of `routes/` |
 | B5 | Follow-up | extract shared `buildTaskListConditions` |
