@@ -2,7 +2,7 @@
  * @file tasksBulkSkips.ts
  * @description Skip classification for Tasks bulk archive/restore.
  */
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, notInArray } from "drizzle-orm";
 import { taskAssignees, tasks } from "../schema.js";
 import type { TenantTransaction } from "../tenant-context.js";
 
@@ -78,19 +78,50 @@ export async function resolveActionableIds(
   actorUserId: string,
   canAssignAnywhere: boolean,
 ): Promise<{ actionable: string[]; forbidden: TaskBulkSkip[] }> {
-  const assignedIds = await loadAssignedTaskIds(tx, subdomain, actorUserId, requested);
-  const forbidden = await loadForbiddenIds(
+  const forbidden = await loadForbiddenSet(
     tx,
     subdomain,
     requested,
     actorUserId,
     canAssignAnywhere,
-    assignedIds,
   );
   return {
     actionable: requested.filter((id) => !forbidden.has(id)),
     forbidden: [...forbidden].map((id) => ({ id, reason: "forbidden" as const })),
   };
+}
+
+/** Forbidden-id set (not creator, not assignee, no `assign_anywhere`). */
+export async function loadForbiddenSet(
+  tx: TenantTransaction,
+  subdomain: string,
+  requested: string[],
+  actorUserId: string,
+  canAssignAnywhere: boolean,
+): Promise<Set<string>> {
+  const assignedIds = await loadAssignedTaskIds(tx, subdomain, actorUserId, requested);
+  return loadForbiddenIds(tx, subdomain, requested, actorUserId, canAssignAnywhere, assignedIds);
+}
+
+/** Task ids that still have unresolved children (subtask barrier). */
+export async function loadUnresolvedParentIds(
+  tx: TenantTransaction,
+  subdomain: string,
+  requested: string[],
+): Promise<Set<string>> {
+  if (requested.length === 0) return new Set();
+  const rows = await tx
+    .select({ parentTaskId: tasks.parentTaskId })
+    .from(tasks)
+    .where(
+      and(
+        eq(tasks.workspaceSubdomain, subdomain),
+        inArray(tasks.parentTaskId, requested),
+        isNull(tasks.deletedAt),
+        notInArray(tasks.status, ["completed", "cancelled"]),
+      ),
+    );
+  return new Set(rows.map((row) => String(row.parentTaskId)));
 }
 
 export async function classifyDeleteSkips(

@@ -67,7 +67,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.getTenantTaskSettingsBySubdomain.mockResolvedValue(settings);
   mocks.notify.mockResolvedValue(true);
-  mocks.loadUserEmailsByTenant.mockResolvedValue([]);
+  mocks.loadUserEmailsByTenant.mockResolvedValue(new Map());
   mocks.loadUserContactIdsByTenant.mockResolvedValue(new Map());
   mocks.loadContactsSummaryByIdsForTenant.mockResolvedValue([]);
   mocks.loadMessagingPreferences.mockResolvedValue(null);
@@ -119,7 +119,12 @@ describe("deliverTaskNotification", () => {
       ...settings,
       notificationChannel: "messaging",
     });
-    mocks.loadUserEmailsByTenant.mockResolvedValue(["u1@example.test", "u2@example.test"]);
+    mocks.loadUserEmailsByTenant.mockResolvedValue(
+      new Map([
+        ["u1", "u1@example.test"],
+        ["u2", "u2@example.test"],
+      ]),
+    );
 
     await deliverTaskNotification("demo", payload);
 

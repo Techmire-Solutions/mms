@@ -99,11 +99,14 @@ describe("tasks bulk repository", () => {
   });
 
   it("updates only legal status transitions and reports every skip reason", async () => {
-    mocks.selectWhere.mockReturnValue([
-      { id: "a", title: "A", createdById: null, status: "todo" },
-      { id: "b", title: "B", createdById: null, status: "cancelled" },
-      { id: "c", title: "C", createdById: null, status: "in_progress" },
-    ]);
+    mocks.selectWhere
+      .mockReturnValueOnce([
+        { id: "a", title: "A", createdById: null, status: "todo" },
+        { id: "b", title: "B", createdById: null, status: "cancelled" },
+        { id: "c", title: "C", createdById: null, status: "in_progress" },
+      ]) // current rows
+      .mockReturnValueOnce([]) // loadAssignedTaskIds
+      .mockReturnValueOnce([]); // loadForbiddenIds (no forbidden)
     mocks.returning.mockResolvedValue([{ id: "a" }]);
 
     const result = await bulkUpdateTaskStatusBatch(

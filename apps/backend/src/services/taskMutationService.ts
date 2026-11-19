@@ -135,14 +135,14 @@ export async function changeTaskStatus(
 export async function changeTasksBulkStatus(
   tenant: string,
   actorId: string,
-  _canAssignAnywhere: boolean,
+  canAssignAnywhere: boolean,
   ids: string[],
   status: TaskStatus,
 ) {
   return withTenant(tenant, async (tx) => {
     await lockFacultyHierarchy(tx, tenant);
     const settings = await getTenantTaskSettings();
-    const result = await bulkUpdateTaskStatus(tenant, ids, status, actorId);
+    const result = await bulkUpdateTaskStatus(tenant, ids, status, actorId, canAssignAnywhere);
     if (result.changes.length > 0) {
       await emitTaskBulkStatusNotifications(tx, {
         tenant,

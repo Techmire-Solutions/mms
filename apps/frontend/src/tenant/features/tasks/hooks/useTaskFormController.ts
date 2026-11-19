@@ -155,7 +155,9 @@ export function useTaskFormController({
       initialData,
     });
 
-    // Same write contract the API enforces — no cast of a partial draft.
+    // Same write contract the API enforces — validate only; send the *built*
+    // payload so the M5 "omit unchanged assignees" behaviour survives (a re-parse
+    // through `taskInsertSchema` would re-add `assignees: []`).
     const parsed = taskInsertSchema.safeParse(payload);
     if (!parsed.success) {
       setError(translateValidationMessage(parsed.error.issues[0]?.message, t));
@@ -164,7 +166,7 @@ export function useTaskFormController({
 
     inFlightRef.current = true;
     try {
-      await onSave(parsed.data);
+      await onSave(payload);
       onClose();
     } catch (err) {
       setError(mapApiFormError(err).message ?? t("tasks.saveFailed"));

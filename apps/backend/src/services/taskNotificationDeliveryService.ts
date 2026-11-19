@@ -111,11 +111,8 @@ async function resolveMessagingRecipients(
 
   if (withoutContact.length > 0) {
     const emails = await usersUseCases.loadUserEmailsByTenant(tenant, withoutContact);
-    const byUser = new Map(
-      withoutContact.map((userId, index) => [userId, emails[index] ?? undefined]),
-    );
     for (const userId of withoutContact) {
-      const email = byUser.get(userId);
+      const email = emails.get(userId);
       if (email) recipients.push({ id: userId, email });
     }
   }

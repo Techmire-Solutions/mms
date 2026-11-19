@@ -6,7 +6,7 @@
  * insert + NOTIFY, and per-row audit (the hash chain is per-record by design).
  * Rows that cannot change are returned with a reason instead of being dropped.
  */
-import { and, eq, inArray, isNotNull, isNull, notInArray, or } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, or } from "drizzle-orm";
 import { isTaskStatusTransitionAllowed, type TaskStatus } from "@mms/shared";
 import { tasks } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
@@ -17,6 +17,8 @@ import { hasActiveChild, hasActiveParent } from "./tasksBulkPredicates.js";
 import {
   classifyDeleteSkips,
   classifyRestoreSkips,
+  loadForbiddenSet,
+  loadUnresolvedParentIds,
   resolveActionableIds,
   uniqueIds,
   type TaskBulkSkip,
@@ -176,6 +178,7 @@ export async function bulkUpdateTaskStatusBatch(
   ids: readonly string[],
   status: TaskStatus,
   actorUserId: string,
+  canAssignAnywhere = false,
 ): Promise<{
   updatedIds: string[];
   skipped: TaskBulkSkip[];
@@ -204,22 +207,18 @@ export async function bulkUpdateTaskStatusBatch(
       );
     const currentById = new Map(current.map((row) => [String(row.id), row]));
 
-    // Subtask barrier (A1): completing a task with unresolved children is a skip.
-    const unresolvedParents = new Set<string>();
-    if (status === "completed" && requested.length > 0) {
-      const withChildren = await tx
-        .select({ parentTaskId: tasks.parentTaskId })
-        .from(tasks)
-        .where(
-          and(
-            eq(tasks.workspaceSubdomain, subdomain),
-            inArray(tasks.parentTaskId, requested),
-            isNull(tasks.deletedAt),
-            notInArray(tasks.status, ["completed", "cancelled"]),
-          ),
-        );
-      for (const row of withChildren) unresolvedParents.add(String(row.parentTaskId));
-    }
+    // Scoped ownership (M2) + subtask barrier (A1): computed out-of-line.
+    const forbidden = await loadForbiddenSet(
+      tx,
+      subdomain,
+      requested,
+      actorUserId,
+      canAssignAnywhere,
+    );
+    const unresolvedParents =
+      status === "completed"
+        ? await loadUnresolvedParentIds(tx, subdomain, requested)
+        : new Set<string>();
 
     const skipped: TaskBulkSkip[] = [];
     const allowed: typeof current = [];
@@ -227,6 +226,10 @@ export async function bulkUpdateTaskStatusBatch(
       const row = currentById.get(id);
       if (!row) {
         skipped.push({ id, reason: "not_found" });
+        continue;
+      }
+      if (forbidden.has(id)) {
+        skipped.push({ id, reason: "forbidden" });
         continue;
       }
       if (row.status === status) {

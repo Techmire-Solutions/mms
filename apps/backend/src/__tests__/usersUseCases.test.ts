@@ -168,7 +168,9 @@ describe("users use-cases (DI with fake repository)", () => {
     const emails = await useCases.loadUserEmailsByTenant("demo", ["u-1", "u-2", "u-3"]);
 
     expect(repo.listTenantUsersByIds).toHaveBeenCalledWith("demo", ["u-1", "u-2", "u-3"]);
-    expect(emails).toEqual(["one@example.com"]);
+    expect(emails.get("u-1")).toBe("one@example.com");
+    expect(emails.has("u-2")).toBe(false);
+    expect(emails.has("u-3")).toBe(false);
   });
 
   it("loadUserContactIdsByTenant returns active users' contact ids", async () => {

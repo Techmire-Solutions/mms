@@ -139,15 +139,18 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
       return user ?? null;
     },
 
-    /** Active tenant users' login emails by id, with an explicit tenant (worker-safe). */
-    loadUserEmailsByTenant: async (tenant: string, ids: string[]): Promise<string[]> => {
+    /** Active tenant users' login emails keyed by user id, with an explicit tenant (worker-safe). */
+    loadUserEmailsByTenant: async (tenant: string, ids: string[]): Promise<Map<string, string>> => {
       const uniqueIds = dedupeTrimmedIds(ids);
-      if (uniqueIds.length === 0) return [];
+      if (uniqueIds.length === 0) return new Map();
       const rows = await repo.listTenantUsersByIds(tenant, uniqueIds);
-      return rows
-        .filter((row) => !row.deletedAt)
-        .map((row) => row.loginEmail)
-        .filter((email): email is string => Boolean(email && email.trim()));
+      const map = new Map<string, string>();
+      for (const row of rows) {
+        if (!row.deletedAt && row.loginEmail?.trim()) {
+          map.set(String(row.id), row.loginEmail);
+        }
+      }
+      return map;
     },
 
     /** Active tenant users' contact id by user id (explicit tenant, worker-safe). */
