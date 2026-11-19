@@ -23,6 +23,18 @@ export async function getWorkspaceTimezone(subdomain: string): Promise<string> {
   });
 }
 
+/** Workspace default language (defaults to "en" when unset). */
+export async function getWorkspaceLanguage(subdomain: string): Promise<string> {
+  const tenant = subdomain.trim().toLowerCase();
+  return withTenant(tenant, async (tx) => {
+    const [row] = await tx
+      .select({ language: workspaces.language })
+      .from(workspaces)
+      .where(eq(workspaces.subdomain, tenant));
+    return row?.language?.trim() || "en";
+  });
+}
+
 async function loadTenantTaskSettings(tenant: string): Promise<TaskSettings> {
   return withTenant(tenant, async (tx) => {
     const [row] = await tx

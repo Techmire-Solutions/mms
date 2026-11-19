@@ -6,12 +6,13 @@ import {
   toMessagingRecipient,
 } from "@mms/shared";
 import type { TaskNotifyPayload } from "./outboxEventService.js";
-import { getTenantTaskSettingsBySubdomain } from "./taskSettingsService.js";
+import { getTenantTaskSettingsBySubdomain, getWorkspaceLanguage } from "./taskSettingsService.js";
 import { notificationsUseCases } from "../notifications/use-cases/notificationsUseCases.js";
 import { usersUseCases } from "../users/use-cases/usersUseCases.js";
 import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 import { loadContactsSummaryByIdsForTenant } from "./contactService.js";
-import { dispatchMessagingCampaignDirect } from "../routes/tenant/messaging/messagingDirectDispatch.js";
+import { dispatchMessagingCampaignDirect } from "./messagingDirectDispatch.js";
+import { localizeTaskMessage, localizeTaskStatus } from "../lib/taskNotificationI18n.js";
 import { logger } from "../lib/logger.js";
 
 /**
@@ -32,6 +33,7 @@ export async function deliverTaskNotification(
 
   const channel = settings.notificationChannel;
   const recipientIds = payload.recipientUserIds ?? [];
+  const language = await getWorkspaceLanguage(tenant);
 
   if ((channel === "in_app" || channel === "both") && recipientIds.length > 0) {
     const kind = payload.reason === "assignment" ? "task_assigned" : "task_status_changed";
@@ -42,7 +44,9 @@ export async function deliverTaskNotification(
         entityType: "tasks",
         entityId: payload.entityId,
         subjectLabel: payload.title ?? "",
-        contextLabel: "",
+        contextLabel: payload.status ? localizeTaskStatus(payload.status, language) : "",
+        // Stable dedupe key so a CDC retry after a partial commit is a no-op.
+        dedupeKey: `task-${payload.reason}-${payload.entityId}-${userId}`,
         recipientUserId: userId,
       });
     }
@@ -57,7 +61,12 @@ export async function deliverTaskNotification(
     );
     const medium: "sms" | "whatsapp" | "email" =
       prefs.defaultChannel === "all" ? "sms" : prefs.defaultChannel;
-    const body = composeTaskMessage(payload);
+    const body = localizeTaskMessage(
+      payload.reason,
+      payload.title ?? "",
+      payload.status ?? "",
+      language,
+    );
     const subject = payload.reason === "assignment" ? "New task assigned" : "Task status updated";
 
     try {
@@ -118,11 +127,4 @@ async function resolveMessagingRecipients(
   }
 
   return recipients;
-}
-
-function composeTaskMessage(payload: TaskNotifyPayload): string {
-  const title = payload.title?.trim() || "Untitled task";
-  if (payload.reason === "assignment") return `You were assigned a task: ${title}`;
-  const status = payload.status ?? "";
-  return `Task "${title}" status changed to ${status}.`;
 }

@@ -1,15 +1,8 @@
-import { and, eq, gte, ilike, inArray, isNull, lt, lte, notInArray, or, sql } from "drizzle-orm";
-import {
-  TASK_PRIORITIES,
-  TASK_STATUSES,
-  toSqlSearchPattern,
-  type TaskListQuery,
-  type TaskPriority,
-  type TaskStatus,
-} from "@mms/shared";
+import { and, eq, isNull, sql } from "drizzle-orm";
+import { type TaskListQuery } from "@mms/shared";
 import { tasks, workspaces } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
-import { isIsoDateOnly, nextIsoDay, workspaceDayStartUtc } from "../../lib/workspaceDayBounds.js";
+import { buildTaskFilterConditions } from "./tasksFilterConditions.js";
 
 export interface TaskMetricsRow {
   total: number;
@@ -28,14 +21,6 @@ export interface TaskMetricsRow {
   };
 }
 
-function splitEnum<T extends string>(raw: string | undefined, allowed: readonly T[]): T[] {
-  if (!raw?.trim()) return [];
-  return raw
-    .split(",")
-    .map((value) => value.trim())
-    .filter((value): value is T => (allowed as readonly string[]).includes(value));
-}
-
 /**
  * Workspace task metrics, optionally narrowed by the same directory filters the
  * Work tab applies (m7). When no filters are supplied the result is the
@@ -47,11 +32,8 @@ export async function getTaskMetrics(
 ): Promise<TaskMetricsRow> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
+    const now = new Date();
     const conditions = [eq(tasks.workspaceSubdomain, subdomain), isNull(tasks.deletedAt)];
-
-    if (query?.status) conditions.push(eq(tasks.status, query.status));
-    if (query?.priority) conditions.push(eq(tasks.priority, query.priority));
-    if (query?.createdById) conditions.push(eq(tasks.createdByUserId, query.createdById));
 
     const [workspace] = await tx
       .select({ timezone: workspaces.timezone })
@@ -59,44 +41,7 @@ export async function getTaskMetrics(
       .where(eq(workspaces.subdomain, subdomain));
     const timezone = workspace?.timezone?.trim() || "UTC";
 
-    if (query?.dueFrom?.trim()) {
-      const fromStr = query.dueFrom.trim();
-      const fromDate = fromStr.includes("T")
-        ? new Date(fromStr)
-        : workspaceDayStartUtc(fromStr, timezone);
-      if (!isNaN(fromDate.getTime())) conditions.push(gte(tasks.dueAt, fromDate));
-    }
-    if (query?.dueTo?.trim()) {
-      const toStr = query.dueTo.trim();
-      if (toStr.includes("T")) {
-        const toDate = new Date(toStr);
-        if (!isNaN(toDate.getTime())) conditions.push(lte(tasks.dueAt, toDate));
-      } else if (isIsoDateOnly(toStr)) {
-        conditions.push(lt(tasks.dueAt, workspaceDayStartUtc(nextIsoDay(toStr), timezone)));
-      }
-    }
-    const statuses = splitEnum<TaskStatus>(query?.statuses, TASK_STATUSES);
-    if (statuses.length > 0) conditions.push(inArray(tasks.status, statuses));
-    const priorities = splitEnum<TaskPriority>(query?.priorities, TASK_PRIORITIES);
-    if (priorities.length > 0) conditions.push(inArray(tasks.priority, priorities));
-    if (query?.overdue) {
-      conditions.push(
-        and(lt(tasks.dueAt, new Date()), notInArray(tasks.status, ["completed", "cancelled"]))!,
-      );
-    }
-    if (query?.dueOn?.trim() && isIsoDateOnly(query.dueOn.trim())) {
-      const day = query.dueOn.trim();
-      conditions.push(
-        and(
-          gte(tasks.dueAt, workspaceDayStartUtc(day, timezone)),
-          lt(tasks.dueAt, workspaceDayStartUtc(nextIsoDay(day), timezone)),
-        )!,
-      );
-    }
-    if (query?.search) {
-      const term = toSqlSearchPattern(query.search);
-      conditions.push(or(ilike(tasks.title, term), ilike(tasks.description, term))!);
-    }
+    conditions.push(...buildTaskFilterConditions(query, timezone));
 
     const [row] = await tx
       .select({
@@ -107,8 +52,7 @@ export async function getTaskMetrics(
         blocked: sql<number>`count(*) FILTER (WHERE status = 'blocked')::int`,
         completed: sql<number>`count(*) FILTER (WHERE status = 'completed')::int`,
         cancelled: sql<number>`count(*) FILTER (WHERE status = 'cancelled')::int`,
-        overdue: sql<number>`count(*) FILTER (WHERE due_at < CURRENT_TIMESTAMP
-        AND status NOT IN ('completed', 'cancelled'))::int`,
+        overdue: sql<number>`count(*) FILTER (WHERE ${tasks.dueAt} < ${now} AND ${tasks.status} NOT IN ('completed', 'cancelled'))::int`,
         priorityLow: sql<number>`count(*) FILTER (WHERE priority = 'low')::int`,
         priorityMedium: sql<number>`count(*) FILTER (WHERE priority = 'medium')::int`,
         priorityHigh: sql<number>`count(*) FILTER (WHERE priority = 'high')::int`,

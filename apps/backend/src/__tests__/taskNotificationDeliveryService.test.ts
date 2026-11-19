@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../services/taskSettingsService.js", () => ({
   getTenantTaskSettingsBySubdomain: (...args: unknown[]) =>
     mocks.getTenantTaskSettingsBySubdomain(...args),
+  getWorkspaceLanguage: () => "en",
 }));
 vi.mock("../notifications/use-cases/notificationsUseCases.js", () => ({
   notificationsUseCases: { notify: (...args: unknown[]) => mocks.notify(...args) },
@@ -36,7 +37,7 @@ vi.mock("../messaging/use-cases/messagingUseCases.js", () => ({
     loadMessagingPreferences: (...args: unknown[]) => mocks.loadMessagingPreferences(...args),
   },
 }));
-vi.mock("../routes/tenant/messaging/messagingDirectDispatch.js", () => ({
+vi.mock("../services/messagingDirectDispatch.js", () => ({
   dispatchMessagingCampaignDirect: (...args: unknown[]) =>
     mocks.dispatchMessagingCampaignDirect(...args),
 }));

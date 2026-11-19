@@ -10,6 +10,7 @@ import { DataTableRowActions } from "@/components/common/data-table";
 import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { DirectoryCardMetaGrid } from "@/components/app/DirectoryCardMetaGrid";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
+import { BiDiText } from "@/components/app/BiDiText";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TaskPriorityBadge } from "./TaskBadges";
 import { TaskStatusMenu } from "./TaskStatusMenu";
@@ -115,12 +116,12 @@ export function TaskCardItem({
           ) : null}
           {isColumnVisible("description") ? (
             <DirectoryCardMetaTile label={t("tasks.description")}>
-              {task.description?.trim() || "—"}
+              <BiDiText className="text-wrap-pretty">{task.description?.trim() || "—"}</BiDiText>
             </DirectoryCardMetaTile>
           ) : null}
           {isColumnVisible("assignees") ? (
             <DirectoryCardMetaTile label={t("tasks.assignees")}>
-              {assigneeLabel}
+              <BiDiText className="text-wrap-pretty">{assigneeLabel}</BiDiText>
             </DirectoryCardMetaTile>
           ) : null}
           {isColumnVisible("dueAt") ? (

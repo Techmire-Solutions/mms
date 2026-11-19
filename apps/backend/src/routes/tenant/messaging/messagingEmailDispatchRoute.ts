@@ -17,7 +17,7 @@ import {
   collectUnknownPersonalizationTokens,
   formatUnknownTokensMessage,
 } from "./messagingPersonalizationGuard.js";
-import { dispatchMessagingCampaignDirect } from "./messagingDirectDispatch.js";
+import { dispatchMessagingCampaignDirect } from "../../../services/messagingDirectDispatch.js";
 import {
   type MessagingDispatchPayload,
   messagingDispatchBodyDigest,

@@ -1,11 +1,11 @@
 import type { MessageCategory } from "@mms/shared";
 import { personalizeMessage } from "@mms/shared";
-import { buildMessageLogClaimId } from "../../../lib/messageLogClaimId.js";
-import { logger } from "../../../lib/logger.js";
-import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
-import { sendTenantSms } from "../../../services/sms/smsService.js";
-import { sendTenantWhatsApp } from "../../../services/whatsapp/whatsappService.js";
-import { sendTenantEmail } from "../../../services/email/emailService.js";
+import { buildMessageLogClaimId } from "../lib/messageLogClaimId.js";
+import { logger } from "../lib/logger.js";
+import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
+import { sendTenantSms } from "./sms/smsService.js";
+import { sendTenantWhatsApp } from "./whatsapp/whatsappService.js";
+import { sendTenantEmail } from "./email/emailService.js";
 
 /** Lean recipient shape shared by the channel dispatch routes. */
 export interface DirectDispatchRecipient {
