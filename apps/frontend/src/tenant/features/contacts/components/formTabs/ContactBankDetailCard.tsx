@@ -26,6 +26,7 @@ export interface ContactBankDetailCardProps {
   isFieldRequired?: (group: string, field: string) => boolean;
   getListItemError?: (group: string, field: string, index: number) => string | undefined;
   getLocalId: (group: string, index: number) => string;
+  localId?: string;
   updateBankDetail: (
     idx: number,
     patch: Partial<ContactBankDetail> & Record<string, unknown>,
@@ -36,6 +37,7 @@ export interface ContactBankDetailCardProps {
 export function ContactBankDetailCard({
   bankDetail,
   idx,
+  localId,
   formInstanceId,
   bankNameOptions = DEFAULT_BANK_NAMES,
   onUpdateBankNameOptions,
@@ -53,9 +55,15 @@ export function ContactBankDetailCard({
   const accountTitleError = getListItemError?.("bankDetails", "accountTitle", idx);
   const accountNumberError = getListItemError?.("bankDetails", "accountNumber", idx);
 
+  const resolvedId =
+    localId ??
+    bankDetail.id ??
+    (bankDetail as { _localId?: string })._localId ??
+    getLocalId("bankDetails", idx);
+
   return (
     <FormListFieldCard
-      id={getLocalId("bankDetails", idx)}
+      id={resolvedId}
       index={idx}
       icon={Landmark}
       label={showBankName ? undefined : t("contacts.form.bankAccountSequence", { index: idx + 1 })}

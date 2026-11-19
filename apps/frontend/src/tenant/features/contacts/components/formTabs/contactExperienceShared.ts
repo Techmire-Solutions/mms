@@ -5,6 +5,10 @@ export function createEmptyExperience(
   employmentTypeOptions: string[],
 ): ContactExperience {
   return {
+    id:
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `exp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     title: "",
     organization: "",
     employmentType: defaultEmploymentType || employmentTypeOptions[0] || "",

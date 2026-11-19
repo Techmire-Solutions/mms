@@ -32,7 +32,9 @@ function withLocalId<T>(item: T): T {
     const id =
       (typeof rec.id === "string" && rec.id) ||
       (typeof rec._localId === "string" && rec._localId) ||
-      crypto.randomUUID();
+      (typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
     return { ...item, id, _localId: id };
   }
   return item;
@@ -54,7 +56,6 @@ export function useContactFormSubLists(
     (fieldKey: string, length: number): string[] => {
       const ids = localIdsRef.current[fieldKey] ?? [];
       while (ids.length < length) ids.push(newLocalId(formInstanceId, fieldKey));
-      if (ids.length > length) ids.length = length;
       localIdsRef.current[fieldKey] = ids;
       return ids;
     },

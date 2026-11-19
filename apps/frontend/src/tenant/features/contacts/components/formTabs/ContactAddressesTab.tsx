@@ -50,6 +50,10 @@ export function ContactAddressesTab({
 
   const emptyAddress = useCallback(
     (): Address => ({
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `addr-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       label: resolveAddressLabel(undefined, addressLabels, t),
       line1: "",
       city: defaultCity,
@@ -100,17 +104,17 @@ export function ContactAddressesTab({
     >
       <AnimatePresence initial={false}>
         {addresses.map((addr, idx) => {
+          const itemKey =
+            addr.id ?? (addr as { _localId?: string })._localId ?? getLocalId("addresses", idx);
           const isOnlyAddressOrPrimary =
             Boolean(addr.isPrimary) || (!addresses.some((a) => a.isPrimary) && idx === 0);
 
           return (
             <ContactAddressEntryCard
-              key={
-                addr.id ?? (addr as { _localId?: string })._localId ?? getLocalId("addresses", idx)
-              }
+              key={itemKey}
               addr={addr}
               idx={idx}
-              localId={getLocalId("addresses", idx)}
+              localId={itemKey}
               formInstanceId={formInstanceId}
               showLabel={showLabel}
               showLine1={showLine1}
