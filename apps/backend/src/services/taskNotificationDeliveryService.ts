@@ -1,16 +1,26 @@
+import {
+  getDisplayName,
+  getPrimaryEmail,
+  getPrimaryPhone,
+  normalizeMessagingPreferences,
+  toMessagingRecipient,
+} from "@mms/shared";
 import type { TaskNotifyPayload } from "./outboxEventService.js";
 import { getTenantTaskSettingsBySubdomain } from "./taskSettingsService.js";
 import { notificationsUseCases } from "../notifications/use-cases/notificationsUseCases.js";
 import { usersUseCases } from "../users/use-cases/usersUseCases.js";
-import { sendTenantEmail } from "./email/emailService.js";
+import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
+import { loadContactsSummaryByIdsForTenant } from "./contactService.js";
+import { dispatchMessagingCampaignDirect } from "../routes/tenant/messaging/messagingDirectDispatch.js";
+import { logger } from "../lib/logger.js";
 
 /**
  * Delivers a task notification intent to the configured channel(s) (M4).
  *
  * - `in_app` inserts a user-targeted `tenant_notifications` row per recipient.
- * - `messaging`/`both` sends a plain-text email to each recipient's login email
- *   (SMS/WhatsApp follow-up requires contact-phone resolution through the
- *   faculty/employment link).
+ * - `messaging`/`both` dispatches through the messaging module using the
+ *   tenant's default channel (SMS fallback), with email as the fallback for
+ *   recipients that have no linked contact phone.
  */
 export async function deliverTaskNotification(
   tenant: string,
@@ -39,15 +49,78 @@ export async function deliverTaskNotification(
   }
 
   if (channel === "messaging" || channel === "both") {
-    const emails = await usersUseCases.loadUserEmailsByTenant(tenant, recipientIds);
-    if (emails.length > 0) {
-      const body = composeTaskMessage(payload);
-      const subject = payload.reason === "assignment" ? "New task assigned" : "Task status updated";
-      for (const email of emails) {
-        await sendTenantEmail({ to: email, subject, text: body });
-      }
+    const recipients = await resolveMessagingRecipients(tenant, recipientIds);
+    if (recipients.length === 0) return;
+
+    const prefs = normalizeMessagingPreferences(
+      await messagingUseCases.loadMessagingPreferences(tenant),
+    );
+    const medium: "sms" | "whatsapp" | "email" =
+      prefs.defaultChannel === "all" ? "sms" : prefs.defaultChannel;
+    const body = composeTaskMessage(payload);
+    const subject = payload.reason === "assignment" ? "New task assigned" : "Task status updated";
+
+    try {
+      await dispatchMessagingCampaignDirect({
+        tenantSubdomain: tenant,
+        userId: payload.actorUserId ?? "system",
+        dispatchId: `task-${payload.reason}-${payload.entityId}-${payload.version}`,
+        channel: medium,
+        recipients,
+        message: body,
+        sentAt: new Date().toISOString(),
+        category: "general",
+        subject,
+      });
+    } catch (err) {
+      logger.warn(
+        { err, tenant, reason: payload.reason, entityId: payload.entityId },
+        "[TaskNotify] messaging dispatch failed",
+      );
     }
   }
+}
+
+/** Resolves recipients to `{ id, name, phone, email }` for the messaging dispatch. */
+async function resolveMessagingRecipients(
+  tenant: string,
+  userIds: string[],
+): Promise<Array<{ id: string | number; name?: string; phone?: string; email?: string }>> {
+  if (userIds.length === 0) return [];
+  const contactIds = await usersUseCases.loadUserContactIdsByTenant(tenant, userIds);
+  const contacts = await loadContactsSummaryByIdsForTenant(tenant, [...contactIds.values()]);
+  const contactById = new Map(contacts.map((contact) => [String(contact.id), contact]));
+
+  const recipients: Array<{ id: string | number; name?: string; phone?: string; email?: string }> =
+    [];
+  const withoutContact: string[] = [];
+  for (const userId of userIds) {
+    const contactId = contactIds.get(userId);
+    const contact = contactId ? contactById.get(contactId) : undefined;
+    if (contact) {
+      const recipient = toMessagingRecipient(contact, {
+        getDisplayName,
+        getPrimaryPhone,
+        getPrimaryEmail,
+      });
+      recipients.push(recipient);
+    } else {
+      withoutContact.push(userId);
+    }
+  }
+
+  if (withoutContact.length > 0) {
+    const emails = await usersUseCases.loadUserEmailsByTenant(tenant, withoutContact);
+    const byUser = new Map(
+      withoutContact.map((userId, index) => [userId, emails[index] ?? undefined]),
+    );
+    for (const userId of withoutContact) {
+      const email = byUser.get(userId);
+      if (email) recipients.push({ id: userId, email });
+    }
+  }
+
+  return recipients;
 }
 
 function composeTaskMessage(payload: TaskNotifyPayload): string {

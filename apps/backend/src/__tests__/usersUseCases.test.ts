@@ -171,6 +171,21 @@ describe("users use-cases (DI with fake repository)", () => {
     expect(emails).toEqual(["one@example.com"]);
   });
 
+  it("loadUserContactIdsByTenant returns active users' contact ids", async () => {
+    const repo = createFakeRepo();
+    (repo.listTenantUsersByIds as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "u-1", contactId: "c-1", deletedAt: null },
+      { id: "u-2", contactId: null, deletedAt: null },
+    ]);
+    const useCases = createUsersUseCases(repo);
+
+    const map = await useCases.loadUserContactIdsByTenant("demo", ["u-1", "u-2"]);
+
+    expect(repo.listTenantUsersByIds).toHaveBeenCalledWith("demo", ["u-1", "u-2"]);
+    expect(map.get("u-1")).toBe("c-1");
+    expect(map.has("u-2")).toBe(false);
+  });
+
   it("loadLogById and loadLogsByIds respect tenant scoping and ID cleaning", async () => {
     const repo = createFakeRepo();
     const fakeLog = {

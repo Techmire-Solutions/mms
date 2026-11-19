@@ -150,6 +150,21 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
         .filter((email): email is string => Boolean(email && email.trim()));
     },
 
+    /** Active tenant users' contact id by user id (explicit tenant, worker-safe). */
+    loadUserContactIdsByTenant: async (
+      tenant: string,
+      ids: string[],
+    ): Promise<Map<string, string>> => {
+      const uniqueIds = dedupeTrimmedIds(ids);
+      if (uniqueIds.length === 0) return new Map();
+      const rows = await repo.listTenantUsersByIds(tenant, uniqueIds);
+      return new Map(
+        rows
+          .filter((row) => !row.deletedAt && row.contactId)
+          .map((row) => [String(row.id), String(row.contactId)]),
+      );
+    },
+
     countUsers: async (): Promise<number> => {
       const tenant = getRequestTenant();
       if (!tenant) return 0;

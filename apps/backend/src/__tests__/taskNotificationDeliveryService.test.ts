@@ -7,8 +7,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getTenantTaskSettingsBySubdomain: vi.fn(),
   notify: vi.fn(),
-  sendTenantEmail: vi.fn(),
   loadUserEmailsByTenant: vi.fn(),
+  loadUserContactIdsByTenant: vi.fn(),
+  loadContactsSummaryByIdsForTenant: vi.fn(),
+  loadMessagingPreferences: vi.fn(),
+  dispatchMessagingCampaignDirect: vi.fn(),
 }));
 
 vi.mock("../services/taskSettingsService.js", () => ({
@@ -18,14 +21,26 @@ vi.mock("../services/taskSettingsService.js", () => ({
 vi.mock("../notifications/use-cases/notificationsUseCases.js", () => ({
   notificationsUseCases: { notify: (...args: unknown[]) => mocks.notify(...args) },
 }));
-vi.mock("../services/email/emailService.js", () => ({
-  sendTenantEmail: (...args: unknown[]) => mocks.sendTenantEmail(...args),
-}));
 vi.mock("../users/use-cases/usersUseCases.js", () => ({
   usersUseCases: {
     loadUserEmailsByTenant: (...args: unknown[]) => mocks.loadUserEmailsByTenant(...args),
+    loadUserContactIdsByTenant: (...args: unknown[]) => mocks.loadUserContactIdsByTenant(...args),
   },
 }));
+vi.mock("../services/contactService.js", () => ({
+  loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
+    mocks.loadContactsSummaryByIdsForTenant(...args),
+}));
+vi.mock("../messaging/use-cases/messagingUseCases.js", () => ({
+  messagingUseCases: {
+    loadMessagingPreferences: (...args: unknown[]) => mocks.loadMessagingPreferences(...args),
+  },
+}));
+vi.mock("../routes/tenant/messaging/messagingDirectDispatch.js", () => ({
+  dispatchMessagingCampaignDirect: (...args: unknown[]) =>
+    mocks.dispatchMessagingCampaignDirect(...args),
+}));
+vi.mock("../lib/logger.js", () => ({ logger: { warn: vi.fn() } }));
 
 import { deliverTaskNotification } from "../services/taskNotificationDeliveryService.js";
 
@@ -52,7 +67,16 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.getTenantTaskSettingsBySubdomain.mockResolvedValue(settings);
   mocks.notify.mockResolvedValue(true);
-  mocks.sendTenantEmail.mockResolvedValue({ sent: true });
+  mocks.loadUserEmailsByTenant.mockResolvedValue([]);
+  mocks.loadUserContactIdsByTenant.mockResolvedValue(new Map());
+  mocks.loadContactsSummaryByIdsForTenant.mockResolvedValue([]);
+  mocks.loadMessagingPreferences.mockResolvedValue(null);
+  mocks.dispatchMessagingCampaignDirect.mockResolvedValue({
+    sentCount: 0,
+    failedCount: 0,
+    skippedCount: 0,
+    total: 0,
+  });
 });
 
 describe("deliverTaskNotification", () => {
@@ -90,7 +114,7 @@ describe("deliverTaskNotification", () => {
     );
   });
 
-  it("sends an email for each recipient on the messaging channel", async () => {
+  it("dispatches messaging via the tenant default channel with an email fallback", async () => {
     mocks.getTenantTaskSettingsBySubdomain.mockResolvedValue({
       ...settings,
       notificationChannel: "messaging",
@@ -99,10 +123,18 @@ describe("deliverTaskNotification", () => {
 
     await deliverTaskNotification("demo", payload);
 
-    expect(mocks.loadUserEmailsByTenant).toHaveBeenCalledWith("demo", ["u1", "u2"]);
-    expect(mocks.sendTenantEmail).toHaveBeenCalledTimes(2);
-    expect(mocks.sendTenantEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ to: "u1@example.test" }),
+    expect(mocks.loadUserContactIdsByTenant).toHaveBeenCalledWith("demo", ["u1", "u2"]);
+    expect(mocks.dispatchMessagingCampaignDirect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantSubdomain: "demo",
+        channel: "sms",
+        recipients: [
+          { id: "u1", email: "u1@example.test" },
+          { id: "u2", email: "u2@example.test" },
+        ],
+        message: expect.stringContaining("Prepare report"),
+        category: "general",
+      }),
     );
   });
 });
