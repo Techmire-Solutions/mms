@@ -23,6 +23,8 @@ describe("facultySetupConfigTypes prefs SSOT", () => {
       idRestartAnnually: DEFAULT_FACULTY_SETTINGS.idRestartAnnually,
       autoGenerateId: DEFAULT_FACULTY_SETTINGS.autoGenerateId,
       requireContactLink: DEFAULT_FACULTY_SETTINGS.requireContactLink,
+      requireContactPhone: DEFAULT_FACULTY_SETTINGS.requireContactPhone,
+      requireContactEmail: DEFAULT_FACULTY_SETTINGS.requireContactEmail,
       defaultSpecialization: DEFAULT_FACULTY_SETTINGS.defaultSpecialization,
       employeeIdPrefix: DEFAULT_FACULTY_SETTINGS.employeeIdPrefix,
       employeeIdYearFormat: DEFAULT_FACULTY_SETTINGS.employeeIdYearFormat,
@@ -71,5 +73,18 @@ describe("facultySetupConfigTypes prefs SSOT", () => {
     expect(prefs.requireContactLink).toBe(true);
     const settings = normalizeFacultySettings({ requireContactLink: false });
     expect(settings.requireContactLink).toBe(true);
+  });
+
+  it("normalizes requireContactPhone/requireContactEmail to booleans", () => {
+    const prefs = normalizeFacultyModulePreferences({ requireContactPhone: true });
+    expect(prefs.requireContactPhone).toBe(true);
+    // Email defaults ON to preserve the legacy always-required email rule.
+    expect(prefs.requireContactEmail).toBe(true);
+
+    const coerced = normalizeFacultyModulePreferences({
+      requireContactEmail: false,
+    } as never);
+    expect(coerced.requireContactEmail).toBe(false);
+    expect(coerced.requireContactPhone).toBe(false);
   });
 });

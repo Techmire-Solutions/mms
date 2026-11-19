@@ -35,5 +35,7 @@ export const facultyPreferencesResponseSchema = z.object({
   idPrefix: z.string(),
   autoGenerateId: z.boolean(),
   requireContactLink: z.boolean(),
+  requireContactPhone: z.boolean(),
+  requireContactEmail: z.boolean(),
   defaultSpecialization: z.string(),
 });

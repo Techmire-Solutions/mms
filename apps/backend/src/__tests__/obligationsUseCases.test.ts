@@ -61,6 +61,7 @@ function createFakeRepo(): ObligationsRepository {
     saveObligationCollection: vi.fn().mockResolvedValue(undefined),
     bulkSaveObligationCollections: vi.fn().mockResolvedValue(undefined),
     replaceObligationCollectionsForWorkspace: vi.fn().mockResolvedValue(undefined),
+    allocateReceiptNumbers: vi.fn().mockResolvedValue(["OBL-2026-00001"]),
 
     aggregateObligationsCommandMetrics: vi.fn().mockResolvedValue({
       total: 5,
@@ -577,5 +578,82 @@ describe("obligations domain guards (use cases)", () => {
     // The half-writes must not run: the aggregate is one transaction.
     expect(repo.replaceWakalaTypesForWorkspace).not.toHaveBeenCalled();
     expect(repo.replaceObligationDistributionsForWorkspace).not.toHaveBeenCalled();
+  });
+});
+
+describe("obligations receipt numbering (server-authoritative)", () => {
+  const receipt = {
+    id: "oc-numbered",
+    receipt_no: "",
+    received_date: "2026-09-01",
+    sender_id: "c-1",
+    reference_id: null,
+    amount: 100,
+    currency_id: "PKR",
+    payment_mode: "Cash" as const,
+    obligation_type_id: "type-1",
+    mujtahid_representative_id: "rep-1",
+    received_by: "u-1",
+  };
+
+  it("fills a blank receipt number from the server allocator on bulk upsert", async () => {
+    const repo = createFakeRepo();
+    (repo.allocateReceiptNumbers as ReturnType<typeof vi.fn>).mockResolvedValue(["OBL-2026-00007"]);
+    const useCases = createObligationsUseCases(repo);
+
+    const result = await runWithTenant("demo", () =>
+      useCases.upsertObligationCollections([receipt]),
+    );
+
+    expect(repo.allocateReceiptNumbers).toHaveBeenCalledWith("demo", {
+      date: "2026-09-01",
+      count: 1,
+    });
+    expect(repo.bulkSaveObligationCollections).toHaveBeenCalledWith("demo", [
+      expect.objectContaining({ receipt_no: "OBL-2026-00007" }),
+    ]);
+    expect(result).toEqual([expect.objectContaining({ receipt_no: "OBL-2026-00007" })]);
+  });
+
+  it("respects a provided receipt number without calling the allocator", async () => {
+    const repo = createFakeRepo();
+    const useCases = createObligationsUseCases(repo);
+
+    await runWithTenant("demo", () =>
+      useCases.upsertObligationCollections([{ ...receipt, receipt_no: "MANUAL-1" }]),
+    );
+
+    expect(repo.allocateReceiptNumbers).not.toHaveBeenCalled();
+    expect(repo.bulkSaveObligationCollections).toHaveBeenCalledWith("demo", [
+      expect.objectContaining({ receipt_no: "MANUAL-1" }),
+    ]);
+  });
+
+  it("rejects a blank receipt number when automatic numbering is off", async () => {
+    const repo = createFakeRepo();
+    (repo.allocateReceiptNumbers as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+    const useCases = createObligationsUseCases(repo);
+
+    await expect(
+      runWithTenant("demo", () => useCases.upsertObligationCollections([receipt])),
+    ).rejects.toThrow(/Receipt number is required/);
+    expect(repo.bulkSaveObligationCollections).not.toHaveBeenCalled();
+  });
+
+  it("fills a blank receipt number on the single-create (import) path", async () => {
+    const repo = createFakeRepo();
+    (repo.allocateReceiptNumbers as ReturnType<typeof vi.fn>).mockResolvedValue(["OBL-2026-00009"]);
+    const useCases = createObligationsUseCases(repo);
+
+    await runWithTenant("demo", () => useCases.createObligationCollection(receipt));
+
+    expect(repo.allocateReceiptNumbers).toHaveBeenCalledWith("demo", {
+      date: "2026-09-01",
+      count: 1,
+    });
+    expect(repo.saveObligationCollection).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ receipt_no: "OBL-2026-00009" }),
+    );
   });
 });

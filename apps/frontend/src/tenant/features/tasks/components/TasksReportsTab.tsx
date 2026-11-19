@@ -4,13 +4,13 @@
  */
 
 import React from "react";
-import { CheckCircle2, Clock, AlertTriangle, RotateCcw, ListTodo, TrendingUp } from "lucide-react";
 import { useTaskMetrics } from "../hooks/useTasksApi";
 import { ErrorState } from "@/components/app/ErrorState";
 import { StatsSkeleton } from "@shared/ui";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TasksReportsCharts } from "./TasksReportsCharts";
+import { TASK_METRIC_UI } from "../lib/taskMetricUi";
 
 export function TasksReportsTab(): React.JSX.Element {
   const { t } = useTranslation();
@@ -62,43 +62,43 @@ export function TasksReportsTab(): React.JSX.Element {
             key: "total",
             label: t("tasks.metrics.total"),
             value: m.total,
-            icon: ListTodo,
-            accent: "primary",
+            icon: TASK_METRIC_UI.total.icon,
+            accent: TASK_METRIC_UI.total.accent,
           },
           {
             key: "inProgress",
             label: t("tasks.metrics.inProgress"),
             value: m.inProgress,
-            icon: Clock,
-            accent: "warning",
+            icon: TASK_METRIC_UI.inProgress.icon,
+            accent: TASK_METRIC_UI.inProgress.accent,
           },
           {
             key: "completed",
             label: t("tasks.metrics.completed"),
             value: m.completed,
-            icon: CheckCircle2,
-            accent: "success",
+            icon: TASK_METRIC_UI.completed.icon,
+            accent: TASK_METRIC_UI.completed.accent,
           },
           {
             key: "blocked",
             label: t("tasks.metrics.blocked"),
             value: m.blocked,
-            icon: AlertTriangle,
-            accent: "destructive",
+            icon: TASK_METRIC_UI.blocked.icon,
+            accent: TASK_METRIC_UI.blocked.accent,
           },
           {
             key: "overdue",
             label: t("tasks.metrics.overdue"),
             value: m.overdue,
-            icon: RotateCcw,
-            accent: "destructive",
+            icon: TASK_METRIC_UI.overdue.icon,
+            accent: TASK_METRIC_UI.overdue.accent,
           },
           {
             key: "completionRate",
             label: t("tasks.metrics.completionRate"),
             value: `${completionRate}%`,
-            icon: TrendingUp,
-            accent: "primary",
+            icon: TASK_METRIC_UI.completionRate.icon,
+            accent: TASK_METRIC_UI.completionRate.accent,
           },
         ]}
       />

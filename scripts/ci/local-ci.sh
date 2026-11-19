@@ -14,17 +14,20 @@ cd "$ROOT"
 FULL=0
 WITH_DB=0
 WITH_E2E=0
+WITH_LIGHTHOUSE=0
 for arg in "$@"; do
   case "$arg" in
     --full) FULL=1 ;;
     --with-db) WITH_DB=1 ;;
     --with-e2e) WITH_E2E=1 ;;
+    --with-lighthouse) WITH_LIGHTHOUSE=1 ;;
     -h|--help)
-      echo "Usage: bash scripts/ci/local-ci.sh [--full] [--with-db] [--with-e2e]"
-      echo "  default   pre-pr gates (affected typecheck, changed-file lint) + changed-related unit tests"
-      echo "  --full    full typecheck/lint/test suites + i18n/build/bundle; shared test:coverage"
-      echo "  --with-db DB integration when backend_db paths changed"
-      echo "  --with-e2e Playwright when e2e paths changed"
+      echo "Usage: bash scripts/ci/local-ci.sh [--full] [--with-db] [--with-e2e] [--with-lighthouse]"
+      echo "  default           pre-pr gates (affected typecheck, changed-file lint) + changed-related unit tests"
+      echo "  --full            full typecheck/lint/test suites + i18n/build/bundle + Lighthouse; shared test:coverage"
+      echo "  --with-db         DB integration when backend_db paths changed"
+      echo "  --with-e2e        Playwright when e2e paths changed"
+      echo "  --with-lighthouse Lighthouse CI (mobile + desktop) against the production build"
       exit 0
       ;;
     *) echo "Unknown flag: $arg (try --help)" >&2; exit 2 ;;
@@ -181,6 +184,27 @@ if [[ "$FULL" -eq 1 ]]; then
   pnpm run check:obligations-route-injection && note_ran "check:obligations-route-injection"
   pnpm run check:examinations-route-injection && note_ran "check:examinations-route-injection"
   pnpm run check:examinations-route-security && note_ran "check:examinations-route-security"
+fi
+
+# Lighthouse CI (mobile + desktop) — runs with --full (reusing its build) or
+# standalone with --with-lighthouse (which builds the frontend first).
+if [[ "$FULL" -eq 1 || "$WITH_LIGHTHOUSE" -eq 1 ]]; then
+  echo ""
+  echo "Phase G: Lighthouse CI (mobile + desktop)"
+  if [[ "$FULL" -ne 1 ]]; then
+    pnpm --filter mms-frontend build
+  fi
+  # Clean up stale results from a previous local run (the `mv` below would
+  # otherwise fail once .lighthouseci-mobile/.lighthouseci-desktop exist).
+  rm -rf .lighthouseci .lighthouseci-mobile .lighthouseci-desktop
+  npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.cjs
+  if [ -d .lighthouseci ]; then mv .lighthouseci .lighthouseci-mobile; fi
+  npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.desktop.cjs
+  if [ -d .lighthouseci ]; then mv .lighthouseci .lighthouseci-desktop; fi
+  node scripts/perf/format-lhci-comment.cjs
+  note_ran "lighthouse"
+else
+  note_skip "lighthouse(pass--with-lighthouse)"
 fi
 
 if [[ "$WITH_DB" -eq 1 && "$NEED_BE_DB" -eq 1 ]]; then

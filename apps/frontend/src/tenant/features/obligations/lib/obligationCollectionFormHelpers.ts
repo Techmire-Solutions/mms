@@ -42,8 +42,12 @@ function isZeroAmountText(text: string): boolean {
 
 export function validateObligationCollectionForm(
   form: ObligationCollectionFormState,
+  requireReceiptNo = false,
 ): Partial<Record<keyof ObligationCollectionFormState, AppTranslationKey>> {
   const nextErrors: Partial<Record<keyof ObligationCollectionFormState, AppTranslationKey>> = {};
+  if (requireReceiptNo && !form.receipt_no.trim()) {
+    nextErrors.receipt_no = "obligations.form.errors.receiptRequired";
+  }
   if (!form.sender_id) nextErrors.sender_id = "obligations.form.errors.senderRequired";
   // The amount is judged as text: `parseFloat` on a money value is banned by check:money-safety
   // (it rounds beyond 2^53 and silently accepts "10.12abc"), and the DTO rejects an amount a

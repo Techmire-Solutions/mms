@@ -30,6 +30,11 @@ jobs:
     environment: production
     timeout-minutes: 15
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Validate configuration
         env:
           SERVER_IP: ${{ secrets.SERVER_IP }}
@@ -37,16 +42,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           MMS_APP_DOMAIN_SECRET: ${{ secrets.MMS_APP_DOMAIN }}
         run: |
-          set -euo pipefail
-          missing=""
-          [ -z "${SERVER_IP}" ] && missing="${missing} SERVER_IP"
-          [ -z "${SERVER_USER}" ] && missing="${missing} SERVER_USER"
-          [ -z "${SSH_PRIVATE_KEY}" ] && missing="${missing} SSH_PRIVATE_KEY"
-          if [ -n "${missing}" ]; then
-            echo "ERROR: Missing GitHub secrets:${missing}"
-            echo "Add them under Settings → Secrets and variables → Actions"
-            exit 1
-          fi
+          bash scripts/ci/validate-secrets.sh SERVER_IP SERVER_USER SSH_PRIVATE_KEY
           if [ -z "${MMS_APP_DOMAIN}" ]; then
             echo "ERROR: MMS_APP_DOMAIN is empty"
             echo "Set the workflow input or add MMS_APP_DOMAIN secret (e.g. mmsv2.aabtaab.com)"
@@ -56,11 +52,6 @@ jobs:
           if [ -z "${MMS_APP_DOMAIN_SECRET}" ]; then
             echo "::warning::MMS_APP_DOMAIN secret is not set — using workflow input only. Add the secret for deploy.yml too."
           fi
-
-      - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
 
       - name: Configure SSH
         uses: ./.github/actions/ssh-setup
@@ -101,26 +92,8 @@ jobs:
           # Allow 3 seconds for Apache worker threads to settle post-reload
           sleep 3
 
-          for i in 1 2 3 4 5; do
-            if curl -fsS --connect-timeout 5 --max-time 15 "${BASE}/health" >/dev/null \
-              && curl -fsS --connect-timeout 5 --max-time 15 "${BASE}/" >/dev/null; then
-              break
-            fi
-            echo "Waiting for Apache reload to serve traffic (attempt ${i}/5)..."
-            sleep 3
-            if [ "$i" -eq 5 ]; then
-              echo "ERROR: ${BASE} did not respond within 15s post-isolation reload"
-              exit 1
-            fi
-          done
-          echo "OK: ${BASE}/ responded successfully"
-
-          SETUP_CODE="$(curl -s -o /dev/null -w '%{http_code}' "${BASE}/api/platform/auth/setup/status")"
-          if [ "${SETUP_CODE}" = "403" ]; then
-            echo "ERROR: platform setup 403 — MMS_APP_DOMAIN misconfigured"
-            exit 1
-          fi
-          echo "Platform setup/status → HTTP ${SETUP_CODE}"
+          # Poll health/SPA + fast-fail TLS + setup/status 403 (shared); exports SETUP_CODE.
+          bash scripts/ci/verify-site.sh "${BASE}" --attempts 5 --sleep 3
 
           # Verify HTTP/2 negotiation and edge headers
           HTTP_VER="$(curl -s -I --http2 "${BASE}/health" | head -n 1 | tr -d '\r\n')"
@@ -137,9 +110,9 @@ jobs:
           API_WS_STATUS="$(curl -s -o /dev/null -w '%{http_code}' -H "Upgrade: websocket" -H "Connection: Upgrade" "${BASE}/api/ws" || true)"
           echo "/api/ws upgrade probe → HTTP ${API_WS_STATUS}"
 
-          # Export telemetry for step summary
+          # Export telemetry for step summary (SETUP_CODE is already exported by
+          # scripts/ci/verify-site.sh).
           {
-            echo "SETUP_CODE=${SETUP_CODE}"
             echo "HTTP_VER=${HTTP_VER}"
             echo "COMPRESSION=${COMPRESSION}"
             echo "WS_STATUS=${WS_STATUS}"

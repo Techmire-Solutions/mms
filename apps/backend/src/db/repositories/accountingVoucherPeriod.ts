@@ -29,6 +29,8 @@ export interface VoucherPeriod {
   periodYear: number;
   /** Year printed in the ref: the period, or the voucher's calendar year when it never restarts. */
   printYear: number;
+  /** Month (1-12) printed in the ref for `YYYYMM` formats, else the voucher's calendar month. */
+  printMonth: number;
 }
 
 /** Start year of the fiscal year containing `date`: the stored fiscal year, else the `fyStartMonth` preference. */
@@ -62,7 +64,7 @@ async function fiscalStartYear(
 export async function resolveVoucherPeriod(
   tx: TenantTransaction,
   subdomain: string,
-  config: VoucherNumberingUpdate,
+  config: Pick<VoucherNumberingUpdate, "rolloverPolicy">,
   date: string | undefined,
 ): Promise<VoucherPeriod> {
   // The workspace's business day, not the UTC day: a Karachi tenant at 02:00 local
@@ -70,9 +72,17 @@ export async function resolveVoucherPeriod(
   const today = await workspaceTodayIso(subdomain);
   const voucherDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : today;
   const calendarYear = voucherCalendarYear(voucherDate, new Date().getFullYear());
-  if (config.rolloverPolicy === "never") return { periodYear: 0, printYear: calendarYear };
+  const calendarMonth = Number(voucherDate.slice(5, 7)) || new Date().getMonth() + 1;
+  if (config.rolloverPolicy === "never")
+    return { periodYear: 0, printYear: calendarYear, printMonth: calendarMonth };
+  if (config.rolloverPolicy === "monthly")
+    return {
+      periodYear: calendarYear * 100 + calendarMonth,
+      printYear: calendarYear,
+      printMonth: calendarMonth,
+    };
   if (config.rolloverPolicy === "annual_calendar")
-    return { periodYear: calendarYear, printYear: calendarYear };
+    return { periodYear: calendarYear, printYear: calendarYear, printMonth: calendarMonth };
   const fiscal = await fiscalStartYear(tx, subdomain, voucherDate);
-  return { periodYear: fiscal, printYear: fiscal };
+  return { periodYear: fiscal, printYear: fiscal, printMonth: calendarMonth };
 }

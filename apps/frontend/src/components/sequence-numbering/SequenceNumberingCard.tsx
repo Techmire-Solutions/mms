@@ -5,11 +5,13 @@ import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles
 import { Input } from "@/components/ui/input";
 import { ToggleRow } from "@shared/ui";
 import { Field } from "@/components/app/FormPrimitives";
+import { FormSelect } from "@/components/app/FormSelect";
 import { SectionCard } from "@/components/app/SectionCard";
 import {
   formatDeterministicSequence,
   buildSequenceFormulaTemplate,
   type SequenceNumberingConfig,
+  type SequenceRolloverPolicy,
   type SequenceYearFormat,
 } from "@mms/shared";
 import { SequenceNumberingPreview } from "./SequenceNumberingPreview";
@@ -36,8 +38,6 @@ export interface SequenceNumberingCardProps {
   startSeqLabel?: string;
   startSeqHint?: string;
   telemetryLabel?: string;
-  restartLabel?: string;
-  restartDesc?: string;
   footer?: React.ReactNode;
 }
 
@@ -61,8 +61,6 @@ export function SequenceNumberingCard({
   startSeqLabel,
   startSeqHint,
   telemetryLabel,
-  restartLabel,
-  restartDesc,
   footer,
 }: SequenceNumberingCardProps): React.JSX.Element {
   const { t } = useTranslation();
@@ -95,7 +93,14 @@ export function SequenceNumberingCard({
     onChange({ ...config, [field]: val });
   };
 
-  const isAnnualReset = config.rolloverPolicy !== "never";
+  const rolloverOptions = [
+    { value: "never", label: t("common.sequenceNumbering.rolloverNever") },
+    { value: "monthly", label: t("common.sequenceNumbering.rolloverMonthly") },
+    { value: "annual_calendar", label: t("common.sequenceNumbering.rolloverAnnually") },
+    ...(allowFiscalRollover
+      ? [{ value: "annual_fiscal", label: t("common.sequenceNumbering.rolloverFiscal") }]
+      : []),
+  ];
   const prefixPlaceholder = defaultPrefixPlaceholder
     ? t("common.sequenceNumbering.prefixPlaceholder", { example: defaultPrefixPlaceholder })
     : undefined;
@@ -174,32 +179,15 @@ export function SequenceNumberingCard({
             </div>
 
             <div className="border-t border-border/40 pt-2">
-              <ToggleRow
-                label={
-                  restartLabel ??
-                  t(
-                    allowFiscalRollover
-                      ? "common.sequenceNumbering.restartFiscal"
-                      : "common.sequenceNumbering.restartAnnually",
-                  )
-                }
-                description={
-                  restartDesc ??
-                  t(
-                    allowFiscalRollover
-                      ? "common.sequenceNumbering.restartFiscalDesc"
-                      : "common.sequenceNumbering.restartAnnuallyDesc",
-                    { entity: entityLabel },
-                  )
-                }
-                value={isAnnualReset}
-                onChange={(enabled) =>
-                  updateField(
-                    "rolloverPolicy",
-                    enabled ? (allowFiscalRollover ? "annual_fiscal" : "annual_calendar") : "never",
-                  )
-                }
-              />
+              <Field label={t("common.sequenceNumbering.rolloverLabel")} id="sequence-rollover">
+                <FormSelect
+                  id="sequence-rollover"
+                  name="sequence-rollover"
+                  value={config.rolloverPolicy}
+                  onChange={(val) => updateField("rolloverPolicy", val as SequenceRolloverPolicy)}
+                  options={rolloverOptions}
+                />
+              </Field>
             </div>
           </>
         ) : null}

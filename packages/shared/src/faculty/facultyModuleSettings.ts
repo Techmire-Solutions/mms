@@ -40,6 +40,8 @@ export interface FacultySettings {
   idPrefix: string;
   autoGenerateId: boolean;
   requireContactLink: boolean;
+  requireContactPhone: boolean;
+  requireContactEmail: boolean;
   defaultSpecialization: string;
   idTemplate?: string;
   idDigits?: number;
@@ -95,6 +97,8 @@ export const DEFAULT_FACULTY_SETTINGS: FacultySettings = {
   employeeIdLastYear: new Date().getFullYear(),
   autoGenerateId: true,
   requireContactLink: true,
+  requireContactPhone: false,
+  requireContactEmail: true,
   defaultSpecialization: DEFAULT_FACULTY_SPECIALIZATION,
   fields: cloneFacultyFieldSeed(),
   fieldOrder: defaultFacultyFieldOrderFromSeed(),

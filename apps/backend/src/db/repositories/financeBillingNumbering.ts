@@ -1,48 +1,57 @@
 /**
- * Invoice number allocation (single and batch).
+ * Invoice number allocation (single and batch) — server-authoritative.
+ *
+ * Replaces the `LIKE … ORDER BY DESC LIMIT 100` scan, which raced under concurrency and
+ * honoured only the prefix while the Setup screen exposed the full sequence config.
+ * Counters are seeded lazily from existing invoice numbers on first allocation.
  */
 
-import { and, desc, eq, like } from "drizzle-orm";
-import { formatInvoiceNumber, nextInvoiceNumber, nextInvoiceSequence } from "@mms/shared";
-import { financeInvoices } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
-export async function allocateNextInvoiceNumber(
-  tenant: string,
-  year: number,
-  prefix = "INV",
-  delimiter = "-",
-): Promise<string> {
-  const subdomain = tenant.trim().toLowerCase();
-  return withTenant(subdomain, async (tx) => {
-    const rows = await tx
-      .select({ invoiceNumber: financeInvoices.invoiceNumber })
-      .from(financeInvoices)
-      .where(
-        and(
-          eq(financeInvoices.workspaceSubdomain, subdomain),
-          like(financeInvoices.invoiceNumber, `${prefix}${delimiter}${year}${delimiter}%`),
-        ),
-      )
-      .orderBy(desc(financeInvoices.invoiceNumber))
-      .limit(100);
-    return nextInvoiceNumber(
-      rows.map((row) => row.invoiceNumber).filter((value): value is string => Boolean(value)),
-      year,
-      prefix,
-    );
-  });
-}
-export async function allocateInvoiceNumberBatch(
-  tenant: string,
-  year: number,
-  count: number,
-  prefix = "INV",
-  delimiter = "-",
-): Promise<string[]> {
-  if (count <= 0) return [];
-  const first = await allocateNextInvoiceNumber(tenant, year, prefix, delimiter);
-  const start = nextInvoiceSequence([first], year, prefix) - 1;
-  return Array.from({ length: count }, (_, index) =>
-    formatInvoiceNumber(year, start + index, prefix),
+import { eq } from "drizzle-orm";
+import {
+  financeSettingsToSequenceConfig,
+  normalizeFinanceModulePreferences,
+  type SequenceNumberingConfig,
+} from "@mms/shared";
+import { financeInvoiceCounters, financeInvoices, financeModulePreferences } from "../schema.js";
+import type { TenantTransaction } from "../tenant-context.js";
+import { allocateSequenceNumbers } from "./sequenceNumberAllocator.js";
+
+/** Reads the invoice-numbering config inside the write transaction. Unlike other modules,
+ * invoice numbers are always assigned when absent — `autoGenerateInvoice` governs invoice
+ * *creation*, not numbering — so this never returns `null`. */
+async function readConfig(
+  tx: TenantTransaction,
+  subdomain: string,
+): Promise<SequenceNumberingConfig | null> {
+  const [row] = await tx
+    .select({ preferences: financeModulePreferences.preferences })
+    .from(financeModulePreferences)
+    .where(eq(financeModulePreferences.workspaceSubdomain, subdomain))
+    .limit(1);
+  return financeSettingsToSequenceConfig(
+    normalizeFinanceModulePreferences(row?.preferences ?? null),
   );
+}
+
+/**
+ * Issues `count` invoice numbers for the period `date` falls in. Must run inside the
+ * invoice write transaction: the counter row stays locked until commit, and a rollback
+ * returns the numbers.
+ */
+export async function allocateInvoiceNumbers(
+  tenant: string,
+  options: { date?: string; count?: number; reserved?: ReadonlySet<string> } = {},
+): Promise<string[]> {
+  const allocated = await allocateSequenceNumbers(
+    tenant,
+    {
+      label: "invoice",
+      counterTable: financeInvoiceCounters,
+      docTable: financeInvoices,
+      docNumberColumn: financeInvoices.invoiceNumber,
+      readConfig,
+    },
+    options,
+  );
+  return allocated ?? [];
 }

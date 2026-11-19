@@ -7,6 +7,7 @@ import {
   wakalaTypes,
   obligationDistributions,
   obligationCollections,
+  obligationReceiptCounters,
 } from "../obligations.js";
 
 export const obligationTypesRelations = relations(obligationTypes, ({ one, many }) => ({
@@ -83,3 +84,13 @@ export const obligationCollectionsRelations = relations(obligationCollections, (
     references: [mujtahidReps.workspaceSubdomain, mujtahidReps.id],
   }),
 }));
+
+export const obligationReceiptCountersRelations = relations(
+  obligationReceiptCounters,
+  ({ one }) => ({
+    workspace: one(workspaces, {
+      fields: [obligationReceiptCounters.workspaceSubdomain],
+      references: [workspaces.subdomain],
+    }),
+  }),
+);

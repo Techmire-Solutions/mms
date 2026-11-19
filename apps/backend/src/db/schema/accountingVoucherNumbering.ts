@@ -24,7 +24,7 @@ export const accountingVoucherNumbering = pgTable(
     autoGenerate: boolean("auto_generate").notNull().default(true),
     prefix: varchar("prefix", { length: 10 }).notNull().default("JE"),
     delimiter: varchar("delimiter", { length: 1 }).notNull().default("-"),
-    yearFormat: varchar("year_format", { length: 4 }).notNull().default("NONE"),
+    yearFormat: varchar("year_format", { length: 6 }).notNull().default("NONE"),
     sequenceDigits: integer("sequence_digits").notNull().default(4),
     startingSequence: integer("starting_sequence").notNull().default(1),
     rolloverPolicy: varchar("rollover_policy", { length: 16 }).notNull().default("never"),
@@ -42,7 +42,7 @@ export const accountingVoucherNumbering = pgTable(
     ),
     check(
       "accounting_voucher_numbering_year_format_check",
-      sql`${table.yearFormat} IN ('YYYY', 'YY', 'NONE')`,
+      sql`${table.yearFormat} IN ('YYYY', 'YY', 'YYYYMM', 'NONE')`,
     ),
     check(
       "accounting_voucher_numbering_digits_check",
@@ -54,7 +54,7 @@ export const accountingVoucherNumbering = pgTable(
     ),
     check(
       "accounting_voucher_numbering_rollover_check",
-      sql`${table.rolloverPolicy} IN ('annual_calendar', 'annual_fiscal', 'never')`,
+      sql`${table.rolloverPolicy} IN ('monthly', 'annual_calendar', 'annual_fiscal', 'never')`,
     ),
     check(
       "accounting_voucher_numbering_rollover_year_check",

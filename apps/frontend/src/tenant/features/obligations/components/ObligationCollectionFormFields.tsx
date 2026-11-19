@@ -36,6 +36,7 @@ export interface ObligationCollectionFormFieldsProps {
   form: ObligationCollectionFormState;
   setForm: React.Dispatch<React.SetStateAction<ObligationCollectionFormState>>;
   errors: Partial<Record<keyof ObligationCollectionFormState, AppTranslationKey>>;
+  autoGenerate: boolean;
   obligationTypes: ObligationType[];
   eligibleReps: MujtahidRep[];
   getMujtahid: (repId: string) => Mujtahid | null | undefined;
@@ -51,6 +52,7 @@ export function ObligationCollectionFormFields({
   form,
   setForm,
   errors,
+  autoGenerate,
   obligationTypes,
   eligibleReps,
   getMujtahid,
@@ -81,21 +83,38 @@ export function ObligationCollectionFormFields({
 
   return (
     <div className="space-y-3">
-      <Card
-        accentColor="primary"
-        className={cn(
-          "p-4 flex items-center gap-3.5 bg-primary/5 border-primary/25",
-          CARD_STRIPE_INSET,
-        )}
-      >
-        <Receipt className="w-5 h-5 text-primary" aria-hidden="true" />
-        <div>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide m-0">
-            {t("obligations.form.receiptAuto")}
-          </h3>
-          <p className="text-lg font-bold text-primary font-mono m-0">{form.receipt_no}</p>
-        </div>
-      </Card>
+      {autoGenerate ? (
+        <Card
+          accentColor="primary"
+          className={cn(
+            "p-4 flex items-center gap-3.5 bg-primary/5 border-primary/25",
+            CARD_STRIPE_INSET,
+          )}
+        >
+          <Receipt className="w-5 h-5 text-primary" aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide m-0">
+              {t("obligations.form.receiptAuto")}
+            </h3>
+            <p className="text-sm text-muted-foreground m-0">
+              {t("obligations.form.receiptAutoPending")}
+            </p>
+          </div>
+        </Card>
+      ) : (
+        formField(
+          "receipt_no",
+          t("obligations.form.receiptNoLabel"),
+          true,
+          <Input
+            id="obligation-receipt_no"
+            name="receipt_no"
+            value={form.receipt_no}
+            onChange={(event) => setForm({ ...form, receipt_no: event.target.value })}
+            placeholder={t("obligations.form.receiptNoPlaceholder")}
+          />,
+        )
+      )}
 
       <SectionCard
         accentColor="primary"

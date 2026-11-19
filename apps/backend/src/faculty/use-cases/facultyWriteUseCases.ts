@@ -1,4 +1,8 @@
-import type { FacultyRecord, FacultyWrite } from "@mms/shared";
+import {
+  normalizeFacultyModulePreferences,
+  type FacultyRecord,
+  type FacultyWrite,
+} from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
@@ -13,65 +17,23 @@ import {
   applyFacultyWriteGuards,
   defaultFacultyWriteGuards,
   handleImplicitRestore,
-  type FacultyWriteGuards,
 } from "./facultyWriteHelpers.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
 import { logger } from "../../lib/logger.js";
 import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 import { facultyRoleFingerprint } from "./facultyLinkedUserRoleSync.js";
+import { loadFacultyModulePreferences } from "./facultyPreferencesService.js";
+import type { FacultyContactRequirements } from "./facultyWriteGuards.js";
 
-export interface CreateFacultyResult {
-  record: FacultyRecord;
-  /** True when an archived faculty member with the same contactId was restored instead of inserting. */
-  restored: boolean;
-}
-
-/** Thrown when a create would un-delete an archived faculty member without delete permission. */
-export class FacultyPermissionError extends Error {
-  readonly statusCode = 403;
-  readonly type = "forbidden";
-  constructor(message = "Restoring an archived faculty member requires delete permission") {
-    super(message);
-    this.name = "FacultyPermissionError";
-  }
-}
-
-/**
- * Batch writers (CSV import) pass one collector so contact-tag reconciliation
- * and the live-push broadcast run once after the loop instead of per row.
- * See `mms-code-review.md` §8 (batch writers) and `mms-data-layer.md` §9.
- */
-export interface FacultyBatchSideEffects {
-  contactIds: Set<string>;
-}
-
-export interface CreateFacultyOptions {
-  /** Acting user id stamped on the row and the audit trail. */
-  actorId?: string;
-  /** False when the caller lacks `faculty.delete`; blocks implicit restore. */
-  canRestore?: boolean;
-  /**
-   * Batch writers pass an intentional employee id per row; skipping the
-   * preview probe saves one read per record.
-   */
-  skipEmployeeIdPreview?: boolean;
-  /** DI seam for the DB-backed link guards (unit tests pass fakes). */
-  guards?: FacultyWriteGuards;
-  /** Present on batch writes: defers reconcile + broadcast to the caller. */
-  batch?: FacultyBatchSideEffects;
-}
-
-/** Options for the single-record update path (batch deferred side effects optional). */
-export interface UpdateFacultyOptions {
-  /** Acting user id stamped on the row and the audit trail. */
-  actorId?: string;
-  guards?: FacultyWriteGuards;
-  /** Present on batch writes: defers reconcile + broadcast to the caller. */
-  batch?: FacultyBatchSideEffects;
-  /** `updatedAt` the client read — enforces the 409 compare-and-set path. */
-  expectedUpdatedAt?: string;
-}
+import { FacultyPermissionError } from "./facultyWriteTypes.js";
+import type {
+  CreateFacultyResult,
+  FacultyBatchSideEffects,
+  CreateFacultyOptions,
+  UpdateFacultyOptions,
+} from "./facultyWriteTypes.js";
+export * from "./facultyWriteTypes.js";
 
 const FACULTY_VERSION_CONFLICT =
   "This faculty member was changed by someone else. Reload it and try again.";
@@ -88,6 +50,24 @@ function collectFacultyBatchContacts(
 }
 
 /**
+ * Loads the workspace's faculty contact-eligibility requirements. Falls back to
+ * the historical defaults (email required, phone not required) when preferences
+ * cannot be read, so a transient config read failure never blocks a write.
+ */
+async function loadFacultyContactRequirements(): Promise<FacultyContactRequirements> {
+  try {
+    const settings = normalizeFacultyModulePreferences(await loadFacultyModulePreferences());
+    return {
+      requireEmail: settings.requireContactEmail,
+      requirePhone: settings.requireContactPhone,
+    };
+  } catch (error: unknown) {
+    logger.warn({ err: error }, "Faculty contact requirements load failed; using defaults");
+    return { requireEmail: true, requirePhone: false };
+  }
+}
+
+/**
  * Creates a faculty member. When the incoming record carries a `contactId` that matches a
  * soft-deleted faculty (re-registration), the archived row is restored in place.
  */
@@ -97,6 +77,7 @@ export async function createFaculty(
   options: CreateFacultyOptions = {},
 ): Promise<CreateFacultyResult> {
   const guards = options.guards ?? defaultFacultyWriteGuards;
+  const contactRequirements = await loadFacultyContactRequirements();
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) throw new Error("Tenant context required");
@@ -134,6 +115,7 @@ export async function createFaculty(
       excludeFacultyId: archived ? String(archived.id) : undefined,
       designationChanged: true,
       contactChanged: true,
+      contactRequirements,
     });
 
     if (archived) {
@@ -218,6 +200,7 @@ export async function updateFacultyById(
   options: UpdateFacultyOptions = {},
 ): Promise<FacultyRecord | null> {
   const guards = options.guards ?? defaultFacultyWriteGuards;
+  const contactRequirements = await loadFacultyContactRequirements();
   const saved = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) return null;
@@ -232,6 +215,7 @@ export async function updateFacultyById(
       excludeFacultyId: id,
       designationChanged: (normalized.designationId ?? null) !== (existing.designationId ?? null),
       contactChanged: String(normalized.contactId ?? "") !== String(existing.contactId ?? ""),
+      contactRequirements,
     });
     if (options.actorId) guarded.record.updatedBy = options.actorId;
     // Only a changed contact/designation/tenure can change the linked role.

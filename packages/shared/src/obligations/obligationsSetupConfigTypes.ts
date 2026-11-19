@@ -80,6 +80,7 @@ export function normalizeObligationsModulePreferences(raw: unknown): Obligations
     receiptYearFormat:
       prefs.receiptYearFormat === "YYYY" ||
       prefs.receiptYearFormat === "YY" ||
+      prefs.receiptYearFormat === "YYYYMM" ||
       prefs.receiptYearFormat === "NONE"
         ? prefs.receiptYearFormat
         : (DEFAULT_OBLIGATIONS_SETTINGS.receiptYearFormat ?? "YYYY"),
@@ -96,6 +97,7 @@ export function normalizeObligationsModulePreferences(raw: unknown): Obligations
         ? prefs.receiptStartingSequence
         : (DEFAULT_OBLIGATIONS_SETTINGS.receiptStartingSequence ?? 1),
     receiptRolloverPolicy:
+      prefs.receiptRolloverPolicy === "monthly" ||
       prefs.receiptRolloverPolicy === "annual_calendar" ||
       prefs.receiptRolloverPolicy === "annual_fiscal" ||
       prefs.receiptRolloverPolicy === "never"

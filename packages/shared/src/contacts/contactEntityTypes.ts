@@ -1,4 +1,3 @@
-import { z } from "zod";
 import type { SerializedEntityAuditFields } from "../core/softDelete.js";
 import type { ContactSystemTag } from "./contactSystemTags.js";
 
@@ -238,6 +237,24 @@ export interface Contact<TCustom = Record<string, unknown>> extends SerializedEn
   [key: string]: unknown;
 }
 
+/** True when the contact has a non-empty primary phone or at least one non-empty phone entry. */
+export function contactHasPhone(contact: Contact | null | undefined): boolean {
+  if (!contact) return false;
+  if (typeof contact.phone === "string" && contact.phone.trim()) return true;
+  return Boolean(
+    contact.phones?.some((entry) => typeof entry.number === "string" && entry.number.trim()),
+  );
+}
+
+/** True when the contact has a non-empty primary email or at least one non-empty email entry. */
+export function contactHasEmail(contact: Contact | null | undefined): boolean {
+  if (!contact) return false;
+  if (typeof contact.email === "string" && contact.email.trim()) return true;
+  return Boolean(
+    contact.emails?.some((entry) => typeof entry.address === "string" && entry.address.trim()),
+  );
+}
+
 /** Resolves normalized unique array of tag strings from a Contact (supporting tags array or comma-delimited tag string). */
 export function getContactTags(
   contact?: { tag?: string | null; tags?: string[] | null } | null,
@@ -259,28 +276,11 @@ export function getContactTags(
   return [];
 }
 
-/** Payload schema for bulk tagging contact records. */
-/** Caps mirrored by the Contacts bulk-tag modal (server rejects beyond these). */
-export const CONTACTS_BULK_TAG_MAX_TAGS = 100;
-export const CONTACTS_BULK_TAG_MAX_CONTACTS = 500;
-
-export const contactsBulkTagBodySchema = z
-  .object({
-    // Same ceiling as `bulkIdsBodySchema`: one request may not force an unbounded
-    // `IN (...)` write (PostgreSQL caps bind parameters at 65 535).
-    ids: z
-      .array(z.string().min(1))
-      .min(1, "At least one contact ID is required")
-      .max(
-        CONTACTS_BULK_TAG_MAX_CONTACTS,
-        `At most ${CONTACTS_BULK_TAG_MAX_CONTACTS} contacts can be tagged at once`,
-      ),
-    addTags: z.array(z.string().trim().min(1)).max(CONTACTS_BULK_TAG_MAX_TAGS).optional(),
-    removeTags: z.array(z.string().trim().min(1)).max(CONTACTS_BULK_TAG_MAX_TAGS).optional(),
-  })
-  .strict()
-  .refine((data) => (data.addTags?.length ?? 0) > 0 || (data.removeTags?.length ?? 0) > 0, {
-    message: "At least one tag to add or remove must be provided",
-  });
-
-export type ContactsBulkTagBody = z.infer<typeof contactsBulkTagBodySchema>;
+// Bulk-tag schema + caps live in their own file (kept this module under the
+// 300-line ratchet); re-exported here for existing consumers.
+export {
+  CONTACTS_BULK_TAG_MAX_TAGS,
+  CONTACTS_BULK_TAG_MAX_CONTACTS,
+  contactsBulkTagBodySchema,
+  type ContactsBulkTagBody,
+} from "./contactBulkTag.js";

@@ -83,7 +83,6 @@ describe("ObligationCollectionForm submit", () => {
           wakalaTypes={[]}
           reps={[]}
           mujtahids={[]}
-          existingCollections={[]}
         />,
       );
     });

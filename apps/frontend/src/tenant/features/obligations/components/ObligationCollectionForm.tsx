@@ -2,7 +2,6 @@ import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
 import { useRef, useState } from "react";
 import { Receipt } from "lucide-react";
 import {
-  generateReceiptNo,
   type ObligationCollection,
   type ObligationType,
   type WakalaType,
@@ -49,7 +48,6 @@ export interface ObligationCollectionFormProps {
   wakalaTypes: WakalaType[];
   reps: MujtahidRep[];
   mujtahids: Mujtahid[];
-  existingCollections: ObligationCollection[];
   onChangeTypes?: (types: ObligationType[]) => Promise<void> | void;
   onChangeMujtahids?: (mujtahids: Mujtahid[]) => Promise<void> | void;
   onChangeReps?: (reps: MujtahidRep[]) => Promise<void> | void;
@@ -63,7 +61,6 @@ export function ObligationCollectionForm({
   wakalaTypes,
   reps,
   mujtahids,
-  existingCollections,
   onChangeTypes,
   onChangeMujtahids,
   onChangeReps,
@@ -72,9 +69,10 @@ export function ObligationCollectionForm({
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
   const { settings } = useObligationsSettings();
+  const autoGenerate = settings.autoGenerateReceipt !== false;
   const [form, setForm] = useState<ObligationCollectionFormState>({
     ...EMPTY,
-    receipt_no: generateReceiptNo(existingCollections, settings),
+    receipt_no: "",
     received_by: authUser?.id || "",
   });
   const [errors, setErrors] = useState<
@@ -128,7 +126,7 @@ export function ObligationCollectionForm({
   }
 
   const handleSave = async (): Promise<void> => {
-    const validationErrors = validateObligationCollectionForm(form);
+    const validationErrors = validateObligationCollectionForm(form, !autoGenerate);
     if (Object.keys(validationErrors).length) {
       setErrors(validationErrors);
       return;
@@ -190,6 +188,7 @@ export function ObligationCollectionForm({
             form={form}
             setForm={setForm}
             errors={errors}
+            autoGenerate={autoGenerate}
             obligationTypes={obligationTypes}
             eligibleReps={eligibleReps}
             getMujtahid={(repId) => resolveMujtahidForRep(repId, reps, mujtahids)}

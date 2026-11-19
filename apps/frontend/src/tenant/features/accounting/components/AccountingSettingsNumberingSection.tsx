@@ -38,8 +38,6 @@ export function AccountingSettingsNumberingSection({
         autoGenerateLabel={t("accounting.settings.voucher.autoGenerate")}
         prefixLabel={t("accounting.settings.voucher.prefix")}
         prefixHint={t("accounting.settings.voucher.prefixHint")}
-        restartLabel={t("accounting.settings.voucher.restartAnnually")}
-        restartDesc={t("accounting.settings.voucher.restartAnnuallyDesc")}
       />
       <FieldErrorMessage
         id="accounting-voucher-prefix-error"

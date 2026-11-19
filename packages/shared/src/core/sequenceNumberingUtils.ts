@@ -24,6 +24,7 @@ export function formatDeterministicSequence(
     : new Date();
   const validDate = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
   const fullYear = validDate.getFullYear();
+  const month = validDate.getMonth() + 1;
 
   const parts: string[] = [];
   if (prefix.length > 0) {
@@ -34,6 +35,8 @@ export function formatDeterministicSequence(
     parts.push(String(fullYear));
   } else if (yearFormat === "YY") {
     parts.push(String(fullYear).slice(-2));
+  } else if (yearFormat === "YYYYMM") {
+    parts.push(`${fullYear}${String(month).padStart(2, "0")}`);
   }
 
   const seqStr = String(Math.max(1, Math.floor(sequenceNumber))).padStart(digits, "0");
@@ -89,6 +92,68 @@ export function formatTemplateSequence(
   }
 
   return result;
+}
+
+/** Escapes POSIX regex metacharacters so a literal segment can be embedded in a match pattern. */
+const SEQUENCE_REGEX_ESCAPE = /[.*+?^${}()|[\]\\]/g;
+function escapeRegexLiteral(value: string): string {
+  return value.replace(SEQUENCE_REGEX_ESCAPE, "\\$&");
+}
+
+/**
+ * A sequence that restarts each period must print the period, or the second
+ * period would reissue the first period's numbers.
+ */
+export function sequenceNumberingIsUnambiguous(
+  config: Pick<SequenceNumberingConfig, "rolloverPolicy" | "yearFormat">,
+): boolean {
+  if (config.rolloverPolicy === "never") return true;
+  if (config.rolloverPolicy === "monthly") return config.yearFormat === "YYYYMM";
+  return config.yearFormat !== "NONE";
+}
+
+/** Counter identity: numbers in one format never share a counter with another format. */
+export function sequenceFormatKey(
+  config: Pick<SequenceNumberingConfig, "prefix" | "delimiter" | "yearFormat">,
+): string {
+  return `${config.yearFormat}|${config.delimiter}|${config.prefix}`;
+}
+
+/**
+ * POSIX regex capturing the trailing sequence of numbers issued for one counter
+ * period. `periodYear = 0` (never restarts) accepts any year segment.
+ */
+export function sequencePattern(
+  config: Pick<SequenceNumberingConfig, "prefix" | "delimiter" | "yearFormat">,
+  periodYear: number,
+): string {
+  const parts: string[] = [];
+  if (config.prefix) parts.push(escapeRegexLiteral(config.prefix));
+  if (config.yearFormat !== "NONE") {
+    if (config.yearFormat === "YYYYMM") {
+      parts.push(periodYear > 0 ? String(periodYear) : "\\d{6}");
+    } else if (config.yearFormat === "YYYY") {
+      parts.push(periodYear > 0 ? String(periodYear) : "\\d{4}");
+    } else {
+      parts.push(periodYear > 0 ? String(periodYear).slice(-2) : "\\d{2}");
+    }
+  }
+  parts.push("(\\d{1,9})");
+  return `^${parts.join(escapeRegexLiteral(config.delimiter))}$`;
+}
+
+/**
+ * Formats a sequence number for one counter period through the shared engine, so
+ * previews and issued numbers always agree. `printYear` is the period's printed
+ * year (the counter period when numbering restarts, else the calendar year).
+ */
+export function formatSequenceNumber(
+  sequence: number,
+  config: Partial<SequenceNumberingConfig>,
+  printYear: number,
+  printMonth = 6,
+): string {
+  return formatDeterministicSequence(sequence, config, new Date(printYear, printMonth - 1, 15));
 }
 
 export * from "./sequenceNumberingAdapters.js";

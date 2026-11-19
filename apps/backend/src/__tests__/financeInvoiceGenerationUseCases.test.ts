@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { runWithTenant } from "../lib/tenantContext.js";
 
 const mockBillingRepo = vi.hoisted(() => ({
-  allocateInvoiceNumberBatch: vi.fn(),
+  allocateInvoiceNumbers: vi.fn(),
   listFeeStructures: vi.fn(),
 }));
 
@@ -134,10 +134,7 @@ describe("financeInvoiceGenerationUseCases", () => {
         { id: "s-1", contactId: "c-1" },
         { id: "s-2", guardianContactId: "c-2" },
       ]);
-      mockBillingRepo.allocateInvoiceNumberBatch.mockResolvedValue([
-        "INV-2026-0001",
-        "INV-2026-0002",
-      ]);
+      mockBillingRepo.allocateInvoiceNumbers.mockResolvedValue(["INV-2026-0001", "INV-2026-0002"]);
       mockInvoicesRepo.bulkSaveInvoices.mockResolvedValue(undefined);
       mockEnrollmentPersistRepo.linkEnrollmentInvoiceIds.mockResolvedValue(undefined);
 
@@ -152,11 +149,9 @@ describe("financeInvoiceGenerationUseCases", () => {
         posted: 2,
         unposted: 0,
       });
-      expect(mockBillingRepo.allocateInvoiceNumberBatch).toHaveBeenCalledWith(
+      expect(mockBillingRepo.allocateInvoiceNumbers).toHaveBeenCalledWith(
         "tenant-1",
-        2026,
-        2,
-        "INV",
+        expect.objectContaining({ count: 2 }),
       );
       expect(mockInvoicesRepo.bulkSaveInvoices).toHaveBeenCalledWith(
         "tenant-1",

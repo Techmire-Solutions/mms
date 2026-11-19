@@ -15,6 +15,8 @@ import {
 } from "@/tenant/features/faculty/hooks/useFacultyDepartments";
 import {
   DEFAULT_FACULTY_SETTINGS,
+  contactHasEmail,
+  contactHasPhone,
   resolveFacultyEnabledTabIds,
   resolveFacultyFieldsMapForColumnSync,
 } from "@mms/shared";
@@ -89,6 +91,13 @@ export function useFacultyFormController({
     settings,
     today,
   });
+
+  const requireContactPhone = settings.requireContactPhone === true;
+  const requireContactEmail = settings.requireContactEmail === true;
+  const missingRequiredPhone =
+    requireContactPhone && linkedContact != null && !contactHasPhone(linkedContact);
+  const missingRequiredEmail =
+    requireContactEmail && linkedContact != null && !contactHasEmail(linkedContact);
 
   const enabledTabs = useMemo(() => new Set(resolveFacultyEnabledTabIds(settings)), [settings]);
 
@@ -179,6 +188,10 @@ export function useFacultyFormController({
     statusConfig,
     autoGenerateId,
     requireContactLink,
+    requireContactPhone,
+    requireContactEmail,
+    missingRequiredPhone,
+    missingRequiredEmail,
     fieldsMap,
     linkedContact,
     linkedFacultyContactIds,

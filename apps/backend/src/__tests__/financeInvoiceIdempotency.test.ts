@@ -8,7 +8,7 @@ const mockLedger = vi.hoisted(() => ({
   tryPostInvoiceJournal: vi.fn().mockResolvedValue(undefined),
 }));
 const mockBilling = vi.hoisted(() => ({
-  allocateNextInvoiceNumber: vi.fn().mockResolvedValue("INV-2026-0001"),
+  allocateInvoiceNumbers: vi.fn().mockResolvedValue(["INV-2026-0001"]),
   replacePaymentAllocations: vi.fn().mockResolvedValue(undefined),
 }));
 const mockStudents = vi.hoisted(() => ({

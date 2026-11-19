@@ -7,10 +7,9 @@ import {
   type InvoiceUpdate,
 } from "@mms/shared";
 import type { createGenericRelationalService } from "../services/genericRelationalService.js";
-import { allocateNextInvoiceNumber } from "../db/repositories/financeBillingRepository.js";
+import { allocateInvoiceNumbers } from "../db/repositories/financeBillingRepository.js";
 import { tryPostInvoiceJournal } from "../accounting/ledgerPosting/ledgerPostingService.js";
 import { resolveDocumentFx } from "./use-cases/financeDocumentFx.js";
-import { loadFinanceModulePreferences } from "../services/financePreferencesService.js";
 import { withTenant } from "../db/tenant-context.js";
 import { HttpDomainError } from "../lib/httpErrors.js";
 import { invoiceAuditState, recordInvoiceAudit } from "./use-cases/financeAuditEvents.js";
@@ -139,14 +138,6 @@ export function createFinanceInvoiceMutationOperations({
     createInvoice: async (record: InvoiceCreateInput): Promise<Invoice> => {
       const tenant = requireTenant();
       return withTenant(tenant, async () => {
-        const year = Number((record.dueDate ?? "").slice(0, 4)) || new Date().getFullYear();
-        let prefix = "INV";
-        try {
-          const prefs = await loadFinanceModulePreferences();
-          prefix = prefs?.invoicePrefix?.trim() || "INV";
-        } catch {
-          // Keep default prefix when preferences are unavailable.
-        }
         const lines = (record.lines ?? []).map((line, index) => ({
           ...line,
           id: line.id ?? `il-${index + 1}`,
@@ -193,7 +184,8 @@ export function createFinanceInvoiceMutationOperations({
           studentId: students[0]?.id ?? record.studentId,
           familyContactId: record.familyContactId ?? resolveFamilyContactId(students[0]),
           invoiceNumber:
-            record.invoiceNumber || (await allocateNextInvoiceNumber(tenant, year, prefix)),
+            record.invoiceNumber ??
+            (await allocateInvoiceNumbers(tenant, { date: record.dueDate, count: 1 }))[0],
           ...(totals
             ? {
                 baseFee: totals.baseFee,

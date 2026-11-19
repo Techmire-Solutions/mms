@@ -69,6 +69,7 @@ export function SequenceNumberingParametersGrid({
   const { t } = useTranslation();
   const [digitsText, setDigitsText] = useState(String(sequenceDigits));
   const [digitsError, setDigitsError] = useState<string | undefined>();
+  const currentMonth = new Date().getMonth() + 1;
 
   // Follow externally applied digit changes so the draft never drifts from the
   // committed value. Adjusted during render per React's documented prop-change pattern.
@@ -88,6 +89,13 @@ export function SequenceNumberingParametersGrid({
       value: "YY",
       label: t("common.sequenceNumbering.yearFormatYY", {
         year: String(currentYear).slice(-2),
+      }),
+    },
+    {
+      value: "YYYYMM",
+      label: t("common.sequenceNumbering.yearFormatYYYYMM", {
+        year: currentYear,
+        month: String(currentMonth).padStart(2, "0"),
       }),
     },
   ];

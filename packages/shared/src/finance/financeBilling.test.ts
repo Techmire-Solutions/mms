@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  formatInvoiceNumber,
-  invoiceLineNet,
-  invoiceTotalsFromLines,
-  nextInvoiceNumber,
-  nextInvoiceSequence,
-} from "./financeBilling.js";
+import { formatInvoiceNumber, invoiceLineNet, invoiceTotalsFromLines } from "./financeBilling.js";
 
 describe("financeBilling", () => {
   it("formats INV-{YEAR}-{SEQ} with a 4-digit sequence", () => {
@@ -22,11 +16,6 @@ describe("financeBilling", () => {
         invoiceSequenceDigits: 5,
       }),
     ).toBe("BILL/26/00005");
-  });
-
-  it("increments the highest sequence for the requested year", () => {
-    expect(nextInvoiceSequence(["INV-2026-0003", "INV-2025-0099", "inv-2026-0012"], 2026)).toBe(13);
-    expect(nextInvoiceNumber([], 2026)).toBe("INV-2026-0001");
   });
 
   it("nets invoice lines and rolls them into header totals", () => {

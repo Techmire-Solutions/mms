@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   formatObligationReceiptNumber,
   computeNextObligationReceiptNo,
+  obligationReceiptNumberingIsUnambiguous,
+  obligationReceiptFormatKey,
+  obligationReceiptSequencePattern,
   type ObligationCollectionReceiptRecord,
 } from "./obligationsReceiptNumberingUtils.js";
 
@@ -57,6 +60,72 @@ describe("obligationsReceiptNumberingUtils", () => {
     it("returns empty string when autoGenerateReceipt is false", () => {
       const result = computeNextObligationReceiptNo([], { autoGenerateReceipt: false });
       expect(result).toBe("");
+    });
+  });
+
+  describe("obligationReceiptNumberingIsUnambiguous", () => {
+    it("allows restart that never occurs regardless of year format", () => {
+      expect(
+        obligationReceiptNumberingIsUnambiguous({ rolloverPolicy: "never", yearFormat: "NONE" }),
+      ).toBe(true);
+    });
+
+    it("allows an annual restart that prints the year", () => {
+      expect(
+        obligationReceiptNumberingIsUnambiguous({
+          rolloverPolicy: "annual_calendar",
+          yearFormat: "YYYY",
+        }),
+      ).toBe(true);
+    });
+
+    it("rejects an annual restart with no year segment", () => {
+      expect(
+        obligationReceiptNumberingIsUnambiguous({
+          rolloverPolicy: "annual_calendar",
+          yearFormat: "NONE",
+        }),
+      ).toBe(false);
+    });
+  });
+
+  describe("obligationReceiptFormatKey", () => {
+    it("composes year format, delimiter and prefix into a stable counter identity", () => {
+      expect(
+        obligationReceiptFormatKey({ prefix: "OBL", delimiter: "-", yearFormat: "YYYY" }),
+      ).toBe("YYYY|-|OBL");
+    });
+  });
+
+  describe("obligationReceiptSequencePattern", () => {
+    it("matches a four-digit-year receipt for the calendar period", () => {
+      expect(
+        obligationReceiptSequencePattern(
+          { prefix: "OBL", delimiter: "-", yearFormat: "YYYY" },
+          2026,
+        ),
+      ).toBe("^OBL-2026-(\\d{1,9})$");
+    });
+
+    it("matches a two-digit-year receipt for the calendar period", () => {
+      expect(
+        obligationReceiptSequencePattern({ prefix: "OBL", delimiter: "-", yearFormat: "YY" }, 2026),
+      ).toBe("^OBL-26-(\\d{1,9})$");
+    });
+
+    it("matches a yearless receipt when numbering never restarts", () => {
+      expect(
+        obligationReceiptSequencePattern({ prefix: "OBL", delimiter: "-", yearFormat: "NONE" }, 0),
+      ).toBe("^OBL-(\\d{1,9})$");
+    });
+
+    it("escapes regex metacharacters in the delimiter and prefix", () => {
+      expect(
+        obligationReceiptSequencePattern(
+          { prefix: "REC.1", delimiter: "/", yearFormat: "YYYY" },
+          2026,
+        ),
+      ).toBe("^REC\\.1/2026/(\\d{1,9})$");
     });
   });
 });

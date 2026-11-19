@@ -11,6 +11,7 @@ import { prepareFacultyRecord } from "./facultyNormalizeUseCases.js";
 import {
   validateFacultyContactLink,
   validateFacultyDesignationLink,
+  type FacultyContactRequirements,
 } from "./facultyWriteGuards.js";
 
 /** Injectable guard seam so unit tests run against in-memory repositories. */
@@ -96,7 +97,12 @@ export async function applyFacultyWriteGuards(
   tenant: string,
   record: FacultyRecord,
   guards: FacultyWriteGuards,
-  options: { excludeFacultyId?: string; designationChanged: boolean; contactChanged: boolean },
+  options: {
+    excludeFacultyId?: string;
+    designationChanged: boolean;
+    contactChanged: boolean;
+    contactRequirements: FacultyContactRequirements;
+  },
 ): Promise<{ record: FacultyRecord; departmentId: string | null }> {
   let next = record;
   const contactId = record.contactId != null ? String(record.contactId).trim() : "";
@@ -105,6 +111,7 @@ export async function applyFacultyWriteGuards(
       tenant,
       contactId,
       options.excludeFacultyId,
+      options.contactRequirements,
     );
     if (userId && !next.userId) next = { ...next, userId };
   }
