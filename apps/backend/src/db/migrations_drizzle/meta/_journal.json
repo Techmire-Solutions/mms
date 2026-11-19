@@ -1870,6 +1870,27 @@
       "when": 1797850801403,
       "tag": "0266_magical_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 267,
+      "version": "7",
+      "when": 1797850801404,
+      "tag": "0267_calm_talon",
+      "breakpoints": true
+    },
+    {
+      "idx": 268,
+      "version": "7",
+      "when": 1797850801405,
+      "tag": "0268_robust_mikhail_rasputin",
+      "breakpoints": true
+    },
+    {
+      "idx": 269,
+      "version": "7",
+      "when": 1797850801406,
+      "tag": "0269_romantic_squirrel_girl",
+      "breakpoints": true
     }
   ]
 }

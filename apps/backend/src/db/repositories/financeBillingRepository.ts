@@ -18,7 +18,4 @@ export {
   replaceInvoiceLines,
   replacePaymentAllocations,
 } from "./financeBillingInvoiceLines.js";
-export {
-  allocateNextInvoiceNumber,
-  allocateInvoiceNumberBatch,
-} from "./financeBillingNumbering.js";
+export { allocateInvoiceNumbers } from "./financeBillingNumbering.js";

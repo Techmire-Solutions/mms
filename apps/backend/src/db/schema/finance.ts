@@ -196,3 +196,28 @@ export type FinanceFieldConfigsRow = typeof financeFieldConfigs.$inferSelect;
 export type InsertFinanceFieldConfigsRow = typeof financeFieldConfigs.$inferInsert;
 export type FinanceModulePreferencesRow = typeof financeModulePreferences.$inferSelect;
 export type InsertFinanceModulePreferencesRow = typeof financeModulePreferences.$inferInsert;
+
+/**
+ * Last issued invoice sequence per (format, period). `period_year = 0` is the
+ * never-resetting bucket. Allocation is an upsert on this row, so concurrent
+ * writers serialize on its row lock until their transaction ends.
+ */
+export const financeInvoiceCounters = pgTable(
+  "finance_invoice_counters",
+  {
+    workspaceSubdomain: text("workspace_subdomain")
+      .notNull()
+      .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+    formatKey: varchar("format_key", { length: 24 }).notNull(),
+    periodYear: integer("period_year").notNull(),
+    lastValue: integer("last_value").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workspaceSubdomain, table.formatKey, table.periodYear] }),
+    check("finance_invoice_counters_last_value_check", sql`${table.lastValue} >= 0`),
+  ],
+);
+
+export type FinanceInvoiceCounterRow = typeof financeInvoiceCounters.$inferSelect;
+export type InsertFinanceInvoiceCounterRow = typeof financeInvoiceCounters.$inferInsert;

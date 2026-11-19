@@ -35,6 +35,8 @@ export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.
     statusConfig,
     autoGenerateId,
     requireContactLink,
+    missingRequiredPhone,
+    missingRequiredEmail,
     fieldsMap,
     departmentEntities,
     linkedContact,
@@ -104,13 +106,18 @@ export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.
         discardCancelLabel={t("faculty.form.keepEditing")}
         error={validationErrorSummary}
         saveDisabled={
-          (requireContactLink && !facultyDraft.contactId) || (Boolean(faculty?.id) && !isDirty)
+          (requireContactLink && !facultyDraft.contactId) ||
+          missingRequiredPhone ||
+          missingRequiredEmail ||
+          (Boolean(faculty?.id) && !isDirty)
         }
         footerStart={
           <FacultyFormFooter
             linkedContact={linkedContact}
             facultyDraft={facultyDraft}
             requireContactLink={requireContactLink}
+            missingRequiredPhone={missingRequiredPhone}
+            missingRequiredEmail={missingRequiredEmail}
             statusConfig={statusConfig}
             t={t}
           />
@@ -126,6 +133,8 @@ export const FacultyForm = function FacultyForm(props: FacultyFormProps): React.
               !saving &&
               !(
                 (requireContactLink && !facultyDraft.contactId) ||
+                missingRequiredPhone ||
+                missingRequiredEmail ||
                 (Boolean(faculty?.id) && !isDirty)
               )
             ) {

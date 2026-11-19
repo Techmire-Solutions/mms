@@ -4759,6 +4759,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "faculty.form.contactHint":
     "موجودہ رابطہ منتخب کریں — پروفائل کی تفصیلات رابطوں میں منظم ہوتی ہیں۔",
   "faculty.form.contactRequired": "رابطہ لازمی ہے",
+  "faculty.form.contactEmailRequired": "منسلک رابطے کے پاس ای میل ہونا ضروری ہے۔",
+  "faculty.form.contactPhoneRequired": "منسلک رابطے کے پاس فون نمبر ہونا ضروری ہے۔",
   "faculty.form.department": "شعبہ",
   "faculty.form.departmentPlaceholder": "مثلاً حفظ، تدریسی امور، انتظامیہ",
   "faculty.form.hierarchyDeprecatedNotice":
@@ -4940,6 +4942,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "faculty.selectedCount": "{count} منتخب",
   "faculty.settings.autoGenerateId": "ملازم نمبر خود بخود بنائیں",
   "faculty.settings.availableTokens": "دستیاب ٹوکنز",
+  "faculty.settings.contactRequirementsTitle": "رابطے کے تقاضے",
   "faculty.settings.defaultSpecialization": "طے شدہ تخصص",
   "faculty.settings.delimiter": "فاصلہ یا علامت",
   "faculty.settings.delimiterHint": "اختیاری جدا کنندہ (مثلاً - یا /)",
@@ -4960,9 +4963,15 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "faculty.settings.idTemplatePlaceholder": "مثلاً PREFIX-SEQ",
   "faculty.settings.preview": "براہِ راست پیش نظارہ",
   "faculty.settings.registrationGovernance": "رجسٹریشن اور شناخت کا نظام",
+  "faculty.settings.requireContactEmail": "رابطہ کا ای میل لازمی",
+  "faculty.settings.requireContactEmailDesc":
+    "رابطے کے پاس ای میل ہونا ضروری ہے اس سے پہلے کہ وہ استاد بن سکے۔",
   "faculty.settings.requireContactLink": "رابطہ لنک لازمی",
   "faculty.settings.requireContactLinkDesc":
     "لازمی بنائیں کہ تمام اساتذہ کا ریکارڈ مرکزی رابطہ پروفائل سے منسلک ہو تاکہ فون، پتہ اور ہنگامی معلومات یکجا رہیں۔",
+  "faculty.settings.requireContactPhone": "رابطہ کا فون نمبر لازمی",
+  "faculty.settings.requireContactPhoneDesc":
+    "رابطے کے پاس فون نمبر ہونا ضروری ہے اس سے پہلے کہ وہ استاد بن سکے۔",
   "faculty.settings.saved": "فیکلٹی کی ترتیبات محفوظ ہو گئیں",
   "faculty.settings.title": "فیکلٹی کی ترتیبات",
   "faculty.settings.yearFormat": "سال کی ساخت",
@@ -6083,6 +6092,10 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "obligations.form.obligationType": "الزام کی قسم",
   "obligations.form.paymentMode": "ادائیگی کا طریقہ",
   "obligations.form.receiptAuto": "خودکار رسید نمبر",
+  "obligations.form.receiptAutoPending": "محفوظ کرنے پر خودکار تفویض ہوگا",
+  "obligations.form.receiptNoLabel": "رسید نمبر",
+  "obligations.form.receiptNoPlaceholder": "مثلاً OBL-2026-00001",
+  "obligations.form.errors.receiptRequired": "رسید نمبر درکار ہے",
   "obligations.form.receivedBy": "وصول کنندہ (صارف)",
   "obligations.form.receivedDate": "وصولی کی تاریخ",
   "obligations.form.reference": "حوالہ رابطہ",
@@ -9979,6 +9992,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "common.sequenceNumbering.yearFormatHint": "چار ہندسے (YYYY)، دو ہندسے (YY)، یا چھوڑ دیں",
   "common.sequenceNumbering.yearFormatYYYY": "YYYY (مثال: {year})",
   "common.sequenceNumbering.yearFormatYY": "YY (مثال: {year})",
+  "common.sequenceNumbering.yearFormatYYYYMM": "YYYY-MM (مثال: {year}-{month})",
   "common.sequenceNumbering.yearFormatNone": "کوئی نہیں (سال چھوڑیں)",
   "common.sequenceNumbering.digits": "ترتیبی ہندسے",
   "common.sequenceNumbering.digitsHint": 'مثال: 4 سے "0001"، 3 سے "001" بنتا ہے',
@@ -10002,6 +10016,11 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "common.sequenceNumbering.restartFiscal": "ہر مالی سال ترتیب دوبارہ شروع کریں",
   "common.sequenceNumbering.restartFiscalDesc":
     "ہر مالی سال کے آغاز پر {entity} کی ترتیب ری سیٹ کریں",
+  "common.sequenceNumbering.rolloverLabel": "ترتیب دوبارہ شروع کریں",
+  "common.sequenceNumbering.rolloverNever": "کبھی نہیں",
+  "common.sequenceNumbering.rolloverMonthly": "ہر مہینے",
+  "common.sequenceNumbering.rolloverAnnually": "ہر سال",
+  "common.sequenceNumbering.rolloverFiscal": "ہر مالی سال",
   "contacts.columns.bank_accountNumber": "اکاؤنٹ نمبر",
   "contacts.columns.bank_accountTitle": "اکاؤنٹ کا عنوان",
   "contacts.columns.bank_name": "بینک کا نام",

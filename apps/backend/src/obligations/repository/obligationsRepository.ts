@@ -125,6 +125,15 @@ export interface ObligationsRepository {
     ids: string[],
     userId?: string,
   ): Promise<{ succeeded: number; failed: number }>;
+  /**
+   * Issues receipt numbers for the period `date` falls in, or `null` when automatic
+   * receipt numbering is off. Server-authoritative: callers assign the returned numbers
+   * to records with a blank `receipt_no` inside the save transaction.
+   */
+  allocateReceiptNumbers?(
+    tenant: string,
+    options?: { date?: string; count?: number; reserved?: ReadonlySet<string> },
+  ): Promise<string[] | null>;
 
   // Aggregates
   aggregateObligationsCommandMetrics(

@@ -27,7 +27,7 @@ describe("resolveVoucherPeriod", () => {
     const period = await resolveVoucherPeriod(tx, "demo", config, undefined);
 
     expect(mockWorkspaceToday).toHaveBeenCalledWith("demo");
-    expect(period).toEqual({ periodYear: 2026, printYear: 2026 });
+    expect(period).toEqual({ periodYear: 2026, printYear: 2026, printMonth: 1 });
   });
 
   it("keeps the last calendar day of the old year on the old year", async () => {
@@ -35,6 +35,6 @@ describe("resolveVoucherPeriod", () => {
 
     const period = await resolveVoucherPeriod(tx, "demo", config, undefined);
 
-    expect(period).toEqual({ periodYear: 2025, printYear: 2025 });
+    expect(period).toEqual({ periodYear: 2025, printYear: 2025, printMonth: 12 });
   });
 });

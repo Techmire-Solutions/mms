@@ -11,15 +11,23 @@ export interface DesignationLinkResolution {
   departmentId: string;
 }
 
+/** Workspace-configurable contact-eligibility requirements for becoming faculty. */
+export interface FacultyContactRequirements {
+  requireEmail: boolean;
+  requirePhone: boolean;
+}
+
 /**
- * Contact ID guard (Faculty Management model): the contact must be live, carry at
- * least one email, that email must not belong to another faculty profile, and any
- * registered user account must belong to the same contact.
+ * Contact ID guard (Faculty Management model): the contact must be live; when the
+ * workspace requires it, the contact must carry an email and/or a phone; any email
+ * must not belong to another faculty profile; and any registered user account must
+ * belong to the same contact.
  */
 export async function validateFacultyContactLink(
   tenant: string,
   contactId: string,
   excludeFacultyId?: string,
+  requirements: FacultyContactRequirements = { requireEmail: true, requirePhone: false },
 ): Promise<ContactLinkResolution> {
   const subdomain = tenant.trim().toLowerCase();
   const excludeId = excludeFacultyId ?? "";
@@ -34,60 +42,75 @@ export async function validateFacultyContactLink(
       WHERE workspace_subdomain = ${subdomain} AND contact_id = ${contactId} AND btrim(address) <> ''
     `);
     const addresses = emails.rows.map((row) => row.address);
-    if (addresses.length === 0)
+
+    if (requirements.requireEmail && addresses.length === 0)
       throw new ValidationError("The linked contact must have an email address");
 
-    const addressList = sql.join(
-      addresses.map((address) => sql`${address}`),
-      sql`, `,
-    );
-
-    const duplicateEmail = await tx.execute<{ id: string }>(sql`
-      SELECT f.id FROM faculty f
-      JOIN faculty_employments fe
-        ON fe.workspace_subdomain = f.workspace_subdomain
-       AND fe.id = f.employment_id
-       AND fe.deleted_at IS NULL
-      JOIN contact_emails e
-        ON e.workspace_subdomain = fe.workspace_subdomain
-       AND e.contact_id = fe.contact_id
-      WHERE f.workspace_subdomain = ${subdomain}
-        AND f.deleted_at IS NULL
-        AND f.id <> ${excludeId}
-        AND fe.contact_id <> ${contactId}
-        AND lower(btrim(e.address)) IN (${addressList})
-      LIMIT 1
-    `);
-    if (duplicateEmail.rows.length) {
-      throw new ConflictError("Another faculty profile already uses this contact email");
-    }
-
-    const users = await tx.execute<{ id: string; contact_id: string | null }>(sql`
-      SELECT id, contact_id FROM tenant_users
-      WHERE workspace_subdomain = ${subdomain} AND deleted_at IS NULL
-        AND (contact_id = ${contactId} OR lower(btrim(login_email)) IN (${addressList}))
-      ORDER BY (contact_id = ${contactId}) DESC
-      LIMIT 2
-    `);
-    const mismatched = users.rows.find((row) => row.contact_id && row.contact_id !== contactId);
-    if (mismatched) {
-      throw new ConflictError(
-        "The contact email is registered to a user account linked to a different contact",
-      );
-    }
-    const user = users.rows[0] ?? null;
-    if (user) {
-      const otherFaculty = await tx.execute<{ id: string }>(sql`
-        SELECT id FROM faculty WHERE workspace_subdomain = ${subdomain} AND deleted_at IS NULL
-          AND user_id = ${user.id} AND id <> ${excludeId} LIMIT 1
+    if (requirements.requirePhone) {
+      const phones = await tx.execute<{ number: string }>(sql`
+        SELECT number FROM contact_phones
+        WHERE workspace_subdomain = ${subdomain} AND contact_id = ${contactId} AND btrim(number) <> ''
+        LIMIT 1
       `);
-      if (otherFaculty.rows.length) {
+      if (!phones.rows.length)
+        throw new ValidationError("The linked contact must have a phone number");
+    }
+
+    let linkedUser: { id: string; contact_id: string | null } | null = null;
+    if (addresses.length > 0) {
+      const addressList = sql.join(
+        addresses.map((address) => sql`${address}`),
+        sql`, `,
+      );
+
+      const duplicateEmail = await tx.execute<{ id: string }>(sql`
+        SELECT f.id FROM faculty f
+        JOIN faculty_employments fe
+          ON fe.workspace_subdomain = f.workspace_subdomain
+         AND fe.id = f.employment_id
+         AND fe.deleted_at IS NULL
+        JOIN contact_emails e
+          ON e.workspace_subdomain = fe.workspace_subdomain
+         AND e.contact_id = fe.contact_id
+        WHERE f.workspace_subdomain = ${subdomain}
+          AND f.deleted_at IS NULL
+          AND f.id <> ${excludeId}
+          AND fe.contact_id <> ${contactId}
+          AND lower(btrim(e.address)) IN (${addressList})
+        LIMIT 1
+      `);
+      if (duplicateEmail.rows.length) {
+        throw new ConflictError("Another faculty profile already uses this contact email");
+      }
+
+      const users = await tx.execute<{ id: string; contact_id: string | null }>(sql`
+        SELECT id, contact_id FROM tenant_users
+        WHERE workspace_subdomain = ${subdomain} AND deleted_at IS NULL
+          AND (contact_id = ${contactId} OR lower(btrim(login_email)) IN (${addressList}))
+        ORDER BY (contact_id = ${contactId}) DESC
+        LIMIT 2
+      `);
+      const mismatched = users.rows.find((row) => row.contact_id && row.contact_id !== contactId);
+      if (mismatched) {
         throw new ConflictError(
-          "The registered user account is already linked to another faculty profile",
+          "The contact email is registered to a user account linked to a different contact",
         );
       }
+      const user = users.rows[0] ?? null;
+      if (user) {
+        const otherFaculty = await tx.execute<{ id: string }>(sql`
+          SELECT id FROM faculty WHERE workspace_subdomain = ${subdomain} AND deleted_at IS NULL
+            AND user_id = ${user.id} AND id <> ${excludeId} LIMIT 1
+        `);
+        if (otherFaculty.rows.length) {
+          throw new ConflictError(
+            "The registered user account is already linked to another faculty profile",
+          );
+        }
+      }
+      linkedUser = user;
     }
-    return { userId: user?.id ?? null };
+    return { userId: linkedUser?.id ?? null };
   });
 }
 

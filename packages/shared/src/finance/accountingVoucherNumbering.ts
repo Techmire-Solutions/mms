@@ -3,7 +3,12 @@ import {
   sequenceRolloverPolicySchema,
   sequenceYearFormatSchema,
 } from "../core/sequenceNumberingTypes.js";
-import { formatDeterministicSequence } from "../core/sequenceNumberingUtils.js";
+import {
+  formatSequenceNumber,
+  sequenceFormatKey,
+  sequenceNumberingIsUnambiguous,
+  sequencePattern,
+} from "../core/sequenceNumberingUtils.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
 
 /** Alphanumeric only: the prefix is embedded in a server-side match pattern. */
@@ -31,7 +36,7 @@ export type VoucherNumberingUpdate = z.infer<typeof voucherNumberingFieldsSchema
 export function voucherNumberingIsUnambiguous(
   config: Pick<VoucherNumberingUpdate, "rolloverPolicy" | "yearFormat">,
 ): boolean {
-  return config.rolloverPolicy === "never" || config.yearFormat !== "NONE";
+  return sequenceNumberingIsUnambiguous(config);
 }
 
 export const voucherNumberingUpdateSchema = voucherNumberingFieldsSchema.refine(
@@ -87,31 +92,22 @@ export function formatVoucherNumber(
   sequence: number,
   config: VoucherNumberingUpdate,
   printYear: number,
+  printMonth = 6,
 ): string {
-  return formatDeterministicSequence(sequence, config, new Date(printYear, 5, 15));
+  return formatSequenceNumber(sequence, config, printYear, printMonth);
 }
-
-const escapeDelimiter = (delimiter: string): string =>
-  delimiter.replace(/[./-]/g, (char) => `\\${char}`);
 
 /**
  * POSIX regex capturing the sequence of refs issued for one counter period.
  * `periodYear = 0` (never restarts) accepts any year segment.
  */
 export function voucherSequencePattern(config: VoucherNumberingUpdate, periodYear: number): string {
-  const parts: string[] = [];
-  if (config.prefix) parts.push(config.prefix);
-  if (config.yearFormat !== "NONE") {
-    const year = config.yearFormat === "YYYY" ? String(periodYear) : String(periodYear).slice(-2);
-    parts.push(periodYear > 0 ? year : config.yearFormat === "YYYY" ? "\\d{4}" : "\\d{2}");
-  }
-  parts.push("(\\d{1,9})");
-  return `^${parts.join(escapeDelimiter(config.delimiter))}$`;
+  return sequencePattern(config, periodYear);
 }
 
 /** Counter identity: numbers in one format never share a counter with another format. */
 export function voucherFormatKey(
   config: Pick<VoucherNumberingUpdate, "prefix" | "delimiter" | "yearFormat">,
 ): string {
-  return `${config.yearFormat}|${config.delimiter}|${config.prefix}`;
+  return sequenceFormatKey(config);
 }

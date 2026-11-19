@@ -3,6 +3,10 @@ import {
   formatDeterministicSequence,
   buildSequenceFormulaTemplate,
   formatTemplateSequence,
+  formatSequenceNumber,
+  sequenceFormatKey,
+  sequenceNumberingIsUnambiguous,
+  sequencePattern,
   facultySettingsToSequenceConfig,
   studentSettingsToSequenceConfig,
   financeSettingsToSequenceConfig,
@@ -84,6 +88,20 @@ describe("sequenceNumberingUtils", () => {
         new Date(2026, 1, 1),
       );
       expect(result).toBe("2026-0005");
+    });
+
+    it("prints year and month for the YYYYMM year format", () => {
+      const result = formatDeterministicSequence(
+        7,
+        {
+          prefix: "OBL",
+          yearFormat: "YYYYMM",
+          sequenceDigits: 5,
+          delimiter: "-",
+        },
+        new Date(2026, 10, 15),
+      );
+      expect(result).toBe("OBL-202611-00007");
     });
   });
 
@@ -174,6 +192,77 @@ describe("sequenceNumberingUtils", () => {
       expect(config.delimiter).toBe("-");
       expect(config.yearFormat).toBe("YYYY");
       expect(config.rolloverPolicy).toBe("annual_calendar");
+    });
+  });
+
+  describe("shared sequence pattern / format-key helpers", () => {
+    it("keys counters by the printed format", () => {
+      expect(sequenceFormatKey({ prefix: "OBL", delimiter: "-", yearFormat: "YYYY" })).toBe(
+        "YYYY|-|OBL",
+      );
+    });
+
+    it("matches a four-digit-year number for its calendar period", () => {
+      expect(sequencePattern({ prefix: "OBL", delimiter: "-", yearFormat: "YYYY" }, 2026)).toBe(
+        "^OBL-2026-(\\d{1,9})$",
+      );
+    });
+
+    it("escapes regex metacharacters in prefix and delimiter", () => {
+      expect(sequencePattern({ prefix: "REC.1", delimiter: "/", yearFormat: "YYYY" }, 2026)).toBe(
+        "^REC\\.1/2026/(\\d{1,9})$",
+      );
+    });
+
+    it("rejects a restart that does not print the year", () => {
+      expect(
+        sequenceNumberingIsUnambiguous({ rolloverPolicy: "annual_calendar", yearFormat: "NONE" }),
+      ).toBe(false);
+      expect(sequenceNumberingIsUnambiguous({ rolloverPolicy: "never", yearFormat: "NONE" })).toBe(
+        true,
+      );
+    });
+
+    it("formats a number for the printed period year", () => {
+      expect(
+        formatSequenceNumber(
+          3,
+          { prefix: "OBL", delimiter: "-", yearFormat: "YYYY", sequenceDigits: 5 },
+          2026,
+        ),
+      ).toBe("OBL-2026-00003");
+    });
+
+    it("matches a six-digit year-month number for its period", () => {
+      expect(sequencePattern({ prefix: "OBL", delimiter: "-", yearFormat: "YYYYMM" }, 202611)).toBe(
+        "^OBL-202611-(\\d{1,9})$",
+      );
+      expect(sequencePattern({ prefix: "OBL", delimiter: "-", yearFormat: "YYYYMM" }, 0)).toBe(
+        "^OBL-\\d{6}-(\\d{1,9})$",
+      );
+    });
+
+    it("requires the printed month for a monthly restart", () => {
+      expect(
+        sequenceNumberingIsUnambiguous({ rolloverPolicy: "monthly", yearFormat: "YYYYMM" }),
+      ).toBe(true);
+      expect(
+        sequenceNumberingIsUnambiguous({ rolloverPolicy: "monthly", yearFormat: "YYYY" }),
+      ).toBe(false);
+      expect(
+        sequenceNumberingIsUnambiguous({ rolloverPolicy: "annual_calendar", yearFormat: "YYYYMM" }),
+      ).toBe(true);
+    });
+
+    it("formats a number for the printed year-month", () => {
+      expect(
+        formatSequenceNumber(
+          3,
+          { prefix: "OBL", delimiter: "-", yearFormat: "YYYYMM", sequenceDigits: 5 },
+          2026,
+          11,
+        ),
+      ).toBe("OBL-202611-00003");
     });
   });
 });

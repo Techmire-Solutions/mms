@@ -16,6 +16,8 @@ export type FacultyModulePreferences = Pick<
   | "employeeIdCurrentSequence"
   | "autoGenerateId"
   | "requireContactLink"
+  | "requireContactPhone"
+  | "requireContactEmail"
   | "defaultSpecialization"
 >;
 
@@ -33,6 +35,8 @@ export const FACULTY_MODULE_PREFERENCE_KEYS = [
   "employeeIdCurrentSequence",
   "autoGenerateId",
   "requireContactLink",
+  "requireContactPhone",
+  "requireContactEmail",
   "defaultSpecialization",
 ] as const;
 
@@ -54,6 +58,8 @@ export function normalizeFacultyModulePreferences(
     employeeIdCurrentSequence: DEFAULT_FACULTY_SETTINGS.employeeIdCurrentSequence ?? 0,
     autoGenerateId: DEFAULT_FACULTY_SETTINGS.autoGenerateId,
     requireContactLink: DEFAULT_FACULTY_SETTINGS.requireContactLink,
+    requireContactPhone: DEFAULT_FACULTY_SETTINGS.requireContactPhone,
+    requireContactEmail: DEFAULT_FACULTY_SETTINGS.requireContactEmail,
     defaultSpecialization: DEFAULT_FACULTY_SETTINGS.defaultSpecialization,
   };
   if (!partial || typeof partial !== "object") return { ...defaults };
@@ -111,6 +117,14 @@ export function normalizeFacultyModulePreferences(
         : defaults.autoGenerateId,
     // Contact link is product-compulsory — never honor a stored false.
     requireContactLink: true,
+    requireContactPhone:
+      typeof partial.requireContactPhone === "boolean"
+        ? partial.requireContactPhone
+        : defaults.requireContactPhone,
+    requireContactEmail:
+      typeof partial.requireContactEmail === "boolean"
+        ? partial.requireContactEmail
+        : defaults.requireContactEmail,
     defaultSpecialization:
       typeof partial.defaultSpecialization === "string" && partial.defaultSpecialization.trim()
         ? partial.defaultSpecialization

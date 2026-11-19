@@ -1,9 +1,43 @@
 import { formatDeterministicSequence } from "../core/sequenceNumberingUtils.js";
 import { obligationsSettingsToSequenceConfig } from "../core/sequenceNumberingAdapters.js";
+import {
+  sequenceFormatKey,
+  sequenceNumberingIsUnambiguous,
+  sequencePattern,
+} from "../core/sequenceNumberingUtils.js";
+import type { SequenceNumberingConfig } from "../core/sequenceNumberingTypes.js";
 import type { ObligationsSettings } from "./obligationsModuleSettings.js";
 
 export interface ObligationCollectionReceiptRecord {
   receipt_no?: string | null;
+}
+
+/**
+ * A sequence that restarts each period must print the period, or the second
+ * period would reissue the first period's receipt numbers.
+ */
+export function obligationReceiptNumberingIsUnambiguous(
+  config: Pick<SequenceNumberingConfig, "rolloverPolicy" | "yearFormat">,
+): boolean {
+  return sequenceNumberingIsUnambiguous(config);
+}
+
+/** Counter identity: receipt numbers in one format never share a counter with another format. */
+export function obligationReceiptFormatKey(
+  config: Pick<SequenceNumberingConfig, "prefix" | "delimiter" | "yearFormat">,
+): string {
+  return sequenceFormatKey(config);
+}
+
+/**
+ * POSIX regex capturing the trailing sequence of receipts issued for one counter
+ * period. `periodYear = 0` (never restarts) accepts any year segment.
+ */
+export function obligationReceiptSequencePattern(
+  config: Pick<SequenceNumberingConfig, "prefix" | "delimiter" | "yearFormat">,
+  periodYear: number,
+): string {
+  return sequencePattern(config, periodYear);
 }
 
 /** Formats a deterministic obligation receipt number using tenant configuration. */

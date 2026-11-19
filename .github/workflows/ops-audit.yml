@@ -41,6 +41,14 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Validate configuration
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: bash scripts/ci/validate-secrets.sh SERVER_IP SERVER_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS
+
       - name: Configure SSH
         uses: ./.github/actions/ssh-setup
         with:

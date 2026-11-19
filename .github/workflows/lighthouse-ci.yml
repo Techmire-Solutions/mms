@@ -8,7 +8,12 @@ on:
       - "packages/ui/**"
       - "perf/**"
       - "lighthouserc.cjs"
+      - "lighthouserc.desktop.cjs"
   workflow_dispatch:
+
+concurrency:
+  group: lighthouse-ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -16,9 +21,9 @@ permissions:
 
 jobs:
   lighthouse-ci:
-    name: Lighthouse CI (Mobile)
+    name: Lighthouse CI (Mobile + Desktop)
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Code
@@ -33,12 +38,33 @@ jobs:
           build-shared: "true"
 
       - name: Build Frontend for Production
+        id: build-frontend
         run: pnpm --filter mms-frontend build
 
       - name: Run Lighthouse CI (Mobile - 3 runs)
-        id: lhci
+        id: lhci-mobile
         run: |
+          set +e
           npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.cjs
+          exit_code=$?
+          set -e
+          # Preserve LHRs for the PR comment regardless of pass/fail.
+          if [ -d .lighthouseci ]; then mv .lighthouseci .lighthouseci-mobile; fi
+          exit $exit_code
+
+      - name: Run Lighthouse CI (Desktop - 3 runs)
+        id: lhci-desktop
+        # Run independently of the mobile leg so a mobile budget failure can't
+        # hide a simultaneous desktop regression. Still gated on a successful build.
+        if: ${{ always() && steps.build-frontend.outcome == 'success' }}
+        run: |
+          set +e
+          npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.desktop.cjs
+          exit_code=$?
+          set -e
+          # Preserve LHRs for the PR comment regardless of pass/fail.
+          if [ -d .lighthouseci ]; then mv .lighthouseci .lighthouseci-desktop; fi
+          exit $exit_code
 
       - name: Format Lighthouse PR Comment
         if: always() && github.event_name == 'pull_request'

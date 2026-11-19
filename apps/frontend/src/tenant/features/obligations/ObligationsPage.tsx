@@ -157,7 +157,6 @@ export default function Obligations() {
         mujtahids={c.mujtahids}
         wakalaTypes={c.wakalaTypes}
         distributions={c.distributions}
-        collections={c.collections}
         messagingTarget={c.messagingTarget}
         voucherCollection={c.voucherCollection}
         onViewVoucher={c.setVoucherCollection}

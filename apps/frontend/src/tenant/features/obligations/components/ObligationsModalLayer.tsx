@@ -47,7 +47,6 @@ interface ObligationsModalLayerProps {
   mujtahids: Mujtahid[];
   wakalaTypes: WakalaType[];
   distributions: ObligationDistribution[];
-  collections: ObligationCollection[];
   messagingTarget: MessagingTarget | null;
   voucherCollection?: ObligationCollection | null;
   onViewVoucher?: (collection: ObligationCollection) => void;
@@ -74,7 +73,6 @@ export function ObligationsModalLayer({
   mujtahids,
   wakalaTypes,
   distributions,
-  collections,
   messagingTarget,
   voucherCollection,
   onViewVoucher,
@@ -99,7 +97,6 @@ export function ObligationsModalLayer({
               reps={reps}
               mujtahids={mujtahids}
               wakalaTypes={wakalaTypes}
-              existingCollections={collections}
               onSave={onSaveCollection}
               onChangeTypes={onChangeTypes}
               onChangeMujtahids={onChangeMujtahids}

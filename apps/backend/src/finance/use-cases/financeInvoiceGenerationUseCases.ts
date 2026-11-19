@@ -18,7 +18,7 @@ import {
 import { getRequestTenant, requireTenant } from "../../lib/tenantContext.js";
 import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
 import {
-  allocateInvoiceNumberBatch,
+  allocateInvoiceNumbers,
   listFeeStructures,
 } from "../../db/repositories/financeBillingRepository.js";
 import { bulkSaveInvoices } from "../../db/repositories/financeInvoicesRepository.js";
@@ -56,7 +56,6 @@ function resolveFrequency(
 async function persistGeneratedInvoices(
   tenant: string,
   drafts: ReturnType<typeof buildInvoiceDraftFromEnrollment>[],
-  prefix: string,
 ): Promise<Invoice[]> {
   if (drafts.length === 0) return [];
   if (drafts.length === 1) {
@@ -66,8 +65,10 @@ async function persistGeneratedInvoices(
   // land together, so a posting failure rolls the batch back instead of leaving
   // a term of unposted receivables behind.
   return withTenant(tenant, async () => {
-    const year = Number(drafts[0]?.billingPeriod.slice(0, 4)) || new Date().getFullYear();
-    const numbers = await allocateInvoiceNumberBatch(tenant, year, drafts.length, prefix);
+    const numbers = await allocateInvoiceNumbers(tenant, {
+      date: drafts[0]?.dueDate,
+      count: drafts.length,
+    });
     const invoices: Invoice[] = drafts.map((draft, index) => ({
       ...draft,
       id: `inv-${randomUUID()}`,
@@ -101,7 +102,6 @@ export async function generateInvoices(
     1,
     Number.parseInt(prefs?.dueDays ?? DEFAULT_FINANCE_SETTINGS.dueDays, 10) || 30,
   );
-  const prefix = prefs?.invoicePrefix?.trim() || DEFAULT_FINANCE_SETTINGS.invoicePrefix;
   const marks = await listEnrollmentInvoiceMarks(
     tenant,
     enrollments.map((enrollment) => enrollment.id),
@@ -145,7 +145,7 @@ export async function generateInvoices(
   // the enrollment links. Linking after the commit left posted invoices the
   // enrollment did not record whenever the link write failed.
   const created = await withTenant(tenant, async () => {
-    const invoices = await persistGeneratedInvoices(tenant, draftsWithFamily, prefix);
+    const invoices = await persistGeneratedInvoices(tenant, draftsWithFamily);
     await linkEnrollmentInvoiceIds(
       tenant,
       invoices

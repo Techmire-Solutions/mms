@@ -159,3 +159,28 @@ export const obligationModulePreferences = pgTable(
 
 export type ObligationModulePreferencesRow = typeof obligationModulePreferences.$inferSelect;
 export type InsertObligationModulePreferencesRow = typeof obligationModulePreferences.$inferInsert;
+
+/**
+ * Last issued receipt sequence per (format, period). `period_year = 0` is the
+ * never-resetting bucket. Allocation is an upsert on this row, so concurrent
+ * writers serialize on its row lock until their transaction ends.
+ */
+export const obligationReceiptCounters = pgTable(
+  "obligation_receipt_counters",
+  {
+    workspaceSubdomain: text("workspace_subdomain")
+      .notNull()
+      .references(() => workspaces.subdomain, { onDelete: "cascade" }),
+    formatKey: varchar("format_key", { length: 24 }).notNull(),
+    periodYear: integer("period_year").notNull(),
+    lastValue: integer("last_value").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.workspaceSubdomain, table.formatKey, table.periodYear] }),
+    check("obligation_receipt_counters_last_value_check", sql`${table.lastValue} >= 0`),
+  ],
+);
+
+export type ObligationReceiptCounterRow = typeof obligationReceiptCounters.$inferSelect;
+export type InsertObligationReceiptCounterRow = typeof obligationReceiptCounters.$inferInsert;

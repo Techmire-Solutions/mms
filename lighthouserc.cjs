@@ -23,7 +23,8 @@
  *
  * These assertions are the single source of truth: `scripts/perf/format-lhci-comment.cjs`
  * derives its PR-comment pass/fail marks from this file, so the comment's verdict
- * always matches what CI actually enforces (median of the runs).
+ * always matches what CI actually enforces (median of the runs). The desktop
+ * (unthrottled) pass lives in `lighthouserc.desktop.cjs`.
  *
  * There is no `upload` target: reports stay local to the run, and the PR comment
  * is the durable artifact (a `temporary-public-storage` upload would only add an

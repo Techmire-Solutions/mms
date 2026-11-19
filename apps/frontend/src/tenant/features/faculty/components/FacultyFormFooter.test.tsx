@@ -88,4 +88,36 @@ describe("FacultyFormFooter Component", () => {
 
     expect(html).toBe("");
   });
+
+  it("renders phone/email required banners when the linked contact lacks them", () => {
+    const html = renderToStaticMarkup(
+      <FacultyFormFooter
+        linkedContact={mockContact}
+        facultyDraft={{ contactId: "cnt-1" }}
+        requireContactLink={false}
+        missingRequiredPhone={true}
+        missingRequiredEmail={true}
+        statusConfig={mockStatusConfig}
+        t={mockT}
+      />,
+    );
+
+    expect(html).toContain("faculty.form.contactPhoneRequired");
+    expect(html).toContain("faculty.form.contactEmailRequired");
+  });
+
+  it("does not render phone/email banners when not required", () => {
+    const html = renderToStaticMarkup(
+      <FacultyFormFooter
+        linkedContact={mockContact}
+        facultyDraft={{ contactId: "cnt-1" }}
+        requireContactLink={false}
+        statusConfig={mockStatusConfig}
+        t={mockT}
+      />,
+    );
+
+    expect(html).not.toContain("faculty.form.contactPhoneRequired");
+    expect(html).not.toContain("faculty.form.contactEmailRequired");
+  });
 });

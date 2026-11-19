@@ -1,88 +1,28 @@
 import { z } from "zod";
-import type { FieldDefinition, TabDefinition } from "../contacts/contactTypes.js";
+import type { TabDefinition } from "../contacts/contactTypes.js";
 import { DEFAULT_FINANCE_SETTINGS, type FinanceSettings } from "./financeModuleSettings.js";
 import { normalizeFinancePaymentMethods } from "./financeSetupPaymentMethods.js";
+import {
+  sequenceRolloverPolicySchema,
+  sequenceYearFormatSchema,
+  type SequenceRolloverPolicy,
+  type SequenceYearFormat,
+} from "../core/sequenceNumberingTypes.js";
 
 export { normalizeFinancePaymentMethods } from "./financeSetupPaymentMethods.js";
-import {
-  FINANCE_TAB_REGISTRY,
-  INITIAL_FINANCE_FIELD_SEED,
-} from "../settings/moduleFieldSetupFinance.js";
-import { getFlatFieldsConfig } from "../settings/moduleFieldConfigUtils.js";
+import { FINANCE_TAB_REGISTRY } from "../settings/moduleFieldSetupFinance.js";
 import { moduleFieldConfigPutBodyBaseSchema } from "../schemas/moduleFieldConfig.dto.js";
 import { deepSanitizeStrings } from "../schemas/sanitize.js";
+import { resolveFinanceFieldsMap } from "./financeFieldSetup.js";
 
-/** Deep clone {@link INITIAL_FINANCE_FIELD_SEED} for default and Setup states. */
-export function cloneFinanceFieldSeed(): Record<string, FieldDefinition[]> {
-  const next: Record<string, FieldDefinition[]> = {};
-  for (const [tabId, fields] of Object.entries(INITIAL_FINANCE_FIELD_SEED)) {
-    next[tabId] = fields.map((field) => ({ ...field }));
-  }
-  return next;
-}
-
-/** True when `fieldKey` is a core/system field within `tabId`'s seed. */
-export function isFinanceSystemFormField(tabId: string, fieldKey: string): boolean {
-  return INITIAL_FINANCE_FIELD_SEED[tabId]?.some((field) => field.key === fieldKey) ?? false;
-}
-
-/** True when `tabKey` is a seed/system form tab for Finance. */
-export function isFinanceSeedFormTab(tabKey: string): boolean {
-  return FINANCE_TAB_REGISTRY.some((tab) => tab.key === tabKey);
-}
-
-/** True when `tabKey` is locked as enabled (Basic Setup tab). */
-export function isFinanceLockedEnabledTab(tabKey: string): boolean {
-  return tabKey.toLowerCase() === "basic";
-}
-
-/**
- * Resolve Finance `settings.fields` to a tabbed Setup Fields map.
- * Flat legacy `{ fieldId: { enabled, required } }` overlays onto {@link INITIAL_FINANCE_FIELD_SEED}.
- */
-export function resolveFinanceFieldsMap(
-  fields: Record<string, unknown> | undefined,
-): Record<string, FieldDefinition[]> {
-  if (!fields || typeof fields !== "object") {
-    return cloneFinanceFieldSeed();
-  }
-  const entries = Object.entries(fields);
-  if (entries.length > 0 && entries.every(([, value]) => Array.isArray(value))) {
-    const tabbed = cloneFinanceFieldSeed();
-    for (const [tabId, tabFields] of entries) {
-      tabbed[tabId] = Array.isArray(tabFields) ? (tabFields as FieldDefinition[]) : [];
-    }
-    for (const [tabId, seedFields] of Object.entries(INITIAL_FINANCE_FIELD_SEED)) {
-      if (!tabbed[tabId]) {
-        tabbed[tabId] = seedFields.map((f) => ({ ...f }));
-      } else {
-        const existingKeys = new Set(tabbed[tabId].map((f) => f.key));
-        for (const seedField of seedFields) {
-          if (!existingKeys.has(seedField.key)) {
-            tabbed[tabId].push({ ...seedField });
-          }
-        }
-      }
-    }
-    return tabbed;
-  }
-
-  const flat = getFlatFieldsConfig(fields);
-  const tabbed = cloneFinanceFieldSeed();
-  for (const tabFields of Object.values(tabbed)) {
-    for (let index = 0; index < tabFields.length; index += 1) {
-      const field = tabFields[index];
-      const flags = flat[field.key];
-      if (!flags) continue;
-      tabFields[index] = {
-        ...field,
-        enabled: flags.enabled !== false,
-        required: flags.required ?? field.required,
-      };
-    }
-  }
-  return tabbed;
-}
+// Re-export the field-seed helpers from their own module for existing consumers.
+export {
+  cloneFinanceFieldSeed,
+  isFinanceSystemFormField,
+  isFinanceSeedFormTab,
+  isFinanceLockedEnabledTab,
+  resolveFinanceFieldsMap,
+} from "./financeFieldSetup.js";
 
 /** PUT /api/finance/field-config — field registry JSON without prefs keys. */
 const financeFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
@@ -110,6 +50,12 @@ export const financePreferencesPutBodySchema = z
     taxRate: z.string().optional(),
     paymentMethods: z.array(z.string()).optional(),
     autoGenerateInvoice: z.boolean().optional(),
+    invoiceYearFormat: sequenceYearFormatSchema.optional(),
+    invoiceSequenceDigits: z.number().int().min(2).max(8).optional(),
+    invoiceDelimiter: z.string().max(3).optional(),
+    invoiceStartingSequence: z.number().int().min(1).optional(),
+    invoiceRolloverPolicy: sequenceRolloverPolicySchema.optional(),
+    invoiceCurrentSequence: z.number().int().min(0).optional(),
     sendInvoiceEmail: z.boolean().optional(),
     allowPartialPayment: z.boolean().optional(),
     requireApproval: z.boolean().optional(),
@@ -129,6 +75,12 @@ export type FinanceModulePreferences = Pick<
   | "taxRate"
   | "paymentMethods"
   | "autoGenerateInvoice"
+  | "invoiceYearFormat"
+  | "invoiceSequenceDigits"
+  | "invoiceDelimiter"
+  | "invoiceStartingSequence"
+  | "invoiceRolloverPolicy"
+  | "invoiceCurrentSequence"
   | "sendInvoiceEmail"
   | "allowPartialPayment"
   | "requireApproval"
@@ -146,6 +98,12 @@ const PREF_KEYS = [
   "taxRate",
   "paymentMethods",
   "autoGenerateInvoice",
+  "invoiceYearFormat",
+  "invoiceSequenceDigits",
+  "invoiceDelimiter",
+  "invoiceStartingSequence",
+  "invoiceRolloverPolicy",
+  "invoiceCurrentSequence",
   "sendInvoiceEmail",
   "allowPartialPayment",
   "requireApproval",
@@ -169,6 +127,19 @@ function normalizeBool(v: unknown, def: boolean): boolean {
   return typeof v === "boolean" ? v : def;
 }
 
+function normalizeYearFormat(v: unknown, def: SequenceYearFormat): SequenceYearFormat {
+  return v === "YY" || v === "YYYYMM" || v === "NONE" ? v : def;
+}
+
+function normalizeRolloverPolicy(v: unknown, def: SequenceRolloverPolicy): SequenceRolloverPolicy {
+  return v === "monthly" || v === "annual_fiscal" || v === "never" ? v : def;
+}
+
+function normalizeNonNegativeInt(v: unknown, def: number, min: number): number {
+  const n = Number(v);
+  return Number.isInteger(n) && n >= min ? n : def;
+}
+
 /** Normalize Finance module preferences (typed `finance_module_preferences`). */
 
 export function normalizeFinanceModulePreferences(
@@ -184,6 +155,27 @@ export function normalizeFinanceModulePreferences(
     taxRate: normalizeStr(p.taxRate, d.taxRate),
     paymentMethods: normalizeFinancePaymentMethods(p.paymentMethods, d.paymentMethods),
     autoGenerateInvoice: normalizeBool(p.autoGenerateInvoice, d.autoGenerateInvoice),
+    invoiceYearFormat: normalizeYearFormat(p.invoiceYearFormat, d.invoiceYearFormat ?? "YYYY"),
+    invoiceSequenceDigits: normalizeNonNegativeInt(
+      p.invoiceSequenceDigits,
+      d.invoiceSequenceDigits ?? 4,
+      2,
+    ),
+    invoiceDelimiter: normalizeStr(p.invoiceDelimiter, d.invoiceDelimiter ?? "-"),
+    invoiceStartingSequence: normalizeNonNegativeInt(
+      p.invoiceStartingSequence,
+      d.invoiceStartingSequence ?? 1,
+      1,
+    ),
+    invoiceRolloverPolicy: normalizeRolloverPolicy(
+      p.invoiceRolloverPolicy,
+      d.invoiceRolloverPolicy ?? "annual_calendar",
+    ),
+    invoiceCurrentSequence: normalizeNonNegativeInt(
+      p.invoiceCurrentSequence,
+      d.invoiceCurrentSequence ?? 0,
+      0,
+    ),
     sendInvoiceEmail: normalizeBool(p.sendInvoiceEmail, d.sendInvoiceEmail),
     allowPartialPayment: normalizeBool(p.allowPartialPayment, d.allowPartialPayment),
     requireApproval: normalizeBool(p.requireApproval, d.requireApproval),

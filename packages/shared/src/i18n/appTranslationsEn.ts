@@ -4800,6 +4800,8 @@ export const APP_TRANSLATIONS_EN = {
   "faculty.form.contactHint":
     "Select an existing contact — profile details are managed in Contacts.",
   "faculty.form.contactRequired": "Contact is required",
+  "faculty.form.contactEmailRequired": "The linked contact must have an email.",
+  "faculty.form.contactPhoneRequired": "The linked contact must have a phone number.",
   "faculty.form.department": "Department",
   "faculty.form.departmentPlaceholder": "e.g. Hifz, Academics, Administration",
   "faculty.form.hierarchyDeprecatedNotice":
@@ -4985,6 +4987,7 @@ export const APP_TRANSLATIONS_EN = {
   "faculty.selectedCount": "{count} selected",
   "faculty.settings.autoGenerateId": "Auto-generate employee IDs",
   "faculty.settings.availableTokens": "Available tokens",
+  "faculty.settings.contactRequirementsTitle": "Contact requirements",
   "faculty.settings.defaultSpecialization": "Default specialization",
   "faculty.settings.delimiter": "Delimiter",
   "faculty.settings.delimiterHint": "Optional separator (e.g. - or /)",
@@ -5005,9 +5008,15 @@ export const APP_TRANSLATIONS_EN = {
   "faculty.settings.idTemplatePlaceholder": "e.g. PREFIX-SEQ",
   "faculty.settings.preview": "Live Preview",
   "faculty.settings.registrationGovernance": "Registration & Identity Governance",
+  "faculty.settings.requireContactEmail": "Require contact email",
+  "faculty.settings.requireContactEmailDesc":
+    "A contact must have an email before it can become faculty.",
   "faculty.settings.requireContactLink": "Require contact link",
   "faculty.settings.requireContactLinkDesc":
     "Enforce that all faculty records must be linked to a central Contact profile for unified phone, address, and emergency data.",
+  "faculty.settings.requireContactPhone": "Require contact phone number",
+  "faculty.settings.requireContactPhoneDesc":
+    "A contact must have a phone number before it can become faculty.",
   "faculty.settings.saved": "Faculty settings saved",
   "faculty.settings.title": "Faculty configuration",
   "faculty.settings.yearFormat": "Year Format",
@@ -6146,6 +6155,10 @@ export const APP_TRANSLATIONS_EN = {
   "obligations.form.obligationType": "Obligation Type",
   "obligations.form.paymentMode": "Payment Mode",
   "obligations.form.receiptAuto": "Auto-Generated Receipt No.",
+  "obligations.form.receiptAutoPending": "Assigned automatically on save",
+  "obligations.form.receiptNoLabel": "Receipt No.",
+  "obligations.form.receiptNoPlaceholder": "e.g. OBL-2026-00001",
+  "obligations.form.errors.receiptRequired": "Receipt number is required",
   "obligations.form.receivedBy": "Received By (User)",
   "obligations.form.receivedDate": "Received Date",
   "obligations.form.reference": "Reference Contact",
@@ -10079,6 +10092,7 @@ export const APP_TRANSLATIONS_EN = {
   "common.sequenceNumbering.yearFormatHint": "Four-digit (YYYY), two-digit (YY), or omit",
   "common.sequenceNumbering.yearFormatYYYY": "YYYY (e.g. {year})",
   "common.sequenceNumbering.yearFormatYY": "YY (e.g. {year})",
+  "common.sequenceNumbering.yearFormatYYYYMM": "YYYY-MM (e.g. {year}-{month})",
   "common.sequenceNumbering.yearFormatNone": "None (omit year)",
   "common.sequenceNumbering.digits": "Sequence Digits",
   "common.sequenceNumbering.digitsHint": 'e.g. 4 produces "0001", 3 produces "001"',
@@ -10102,6 +10116,11 @@ export const APP_TRANSLATIONS_EN = {
   "common.sequenceNumbering.restartFiscal": "Restart sequence every fiscal year",
   "common.sequenceNumbering.restartFiscalDesc":
     "Reset {entity} sequence at the start of each fiscal year",
+  "common.sequenceNumbering.rolloverLabel": "Restart sequence",
+  "common.sequenceNumbering.rolloverNever": "Never",
+  "common.sequenceNumbering.rolloverMonthly": "Every month",
+  "common.sequenceNumbering.rolloverAnnually": "Every year",
+  "common.sequenceNumbering.rolloverFiscal": "Every fiscal year",
   "contacts.columns.firstName": "First Name",
   "contacts.columns.lastName": "Last Name",
   "contacts.columns.phone_label": "Phone Label",

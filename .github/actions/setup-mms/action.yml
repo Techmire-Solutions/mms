@@ -37,13 +37,13 @@ runs:
           packages/*/node_modules/.cache/tsc
           packages/*/node_modules/.cache/eslint
           e2e/node_modules/.cache/eslint
-        key: turbo-${{ runner.os }}-${{ inputs.turbo-cache-scope }}-${{ hashFiles('pnpm-lock.yaml') }}-v2-${{ github.sha }}
-        # `-v2-` scopes the fallbacks too: the pre-v2 snapshots must not be
-        # restored again, so the oversized entries age out by LRU eviction
-        # instead of being re-imported and re-saved on every run.
+        key: turbo-${{ runner.os }}-${{ inputs.turbo-cache-scope }}-${{ hashFiles('pnpm-lock.yaml', '.nvmrc') }}-v3-${{ github.sha }}
+        # `-v3-` scopes the fallbacks too: Node is now part of the key (.nvmrc),
+        # so pre-v3 snapshots (which could be built under a different Node) must
+        # not be restored, and the oversized pre-v2 entries age out by LRU.
         restore-keys: |
-          turbo-${{ runner.os }}-${{ inputs.turbo-cache-scope }}-${{ hashFiles('pnpm-lock.yaml') }}-v2-
-          turbo-${{ runner.os }}-${{ inputs.turbo-cache-scope }}-v2-
+          turbo-${{ runner.os }}-${{ inputs.turbo-cache-scope }}-${{ hashFiles('pnpm-lock.yaml', '.nvmrc') }}-v3-
+          turbo-${{ runner.os }}-${{ inputs.turbo-cache-scope }}-v3-
 
     - name: Setup pnpm
       uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0

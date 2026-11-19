@@ -165,32 +165,3 @@ export function formatInvoiceNumber(
 
   return formatDeterministicSequence(sequence, config, new Date(year, 0, 1));
 }
-
-/** Next sequence for `{prefix}-{year}-NNNN` among existing display numbers. */
-export function nextInvoiceSequence(
-  existingNumbers: readonly string[],
-  year: number,
-  prefix = INVOICE_NUMBER_PREFIX,
-): number {
-  const head = `${prefix}-${year}-`.toUpperCase();
-  let max = 0;
-  for (const raw of existingNumbers) {
-    const value = raw.trim().toUpperCase();
-    if (!value.startsWith(head)) continue;
-    // Parse the sequence straight after `<PREFIX>-<YEAR>-`. The previous
-    // hardcoded `/^(INV|inv)-\d{4}-\d+$/` regex rejected any user-configured
-    // prefix, so the sequence always restarted at 1 and the next invoice
-    // collided on the unique (workspace, invoice_number) index.
-    const seq = Number.parseInt(value.slice(head.length), 10);
-    if (Number.isFinite(seq) && seq > max) max = seq;
-  }
-  return max + 1;
-}
-
-export function nextInvoiceNumber(
-  existingNumbers: readonly string[],
-  year: number,
-  prefix = INVOICE_NUMBER_PREFIX,
-): string {
-  return formatInvoiceNumber(year, nextInvoiceSequence(existingNumbers, year, prefix), prefix);
-}

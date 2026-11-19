@@ -41,6 +41,7 @@ import {
   bulkSoftDeleteObligationCollections,
   bulkRestoreObligationCollections,
 } from "../../db/repositories/obligationRepository.js";
+import { allocateObligationReceiptNumbers } from "../../db/repositories/obligationReceiptNumbering.js";
 import { countCatalogueDependents } from "../../db/repositories/obligationCatalogueDependentsRepository.js";
 import { aggregateObligationsCommandMetrics } from "../../db/repositories/obligationRepositoryMetrics.js";
 import { aggregateObligationsReport } from "../../db/repositories/obligationRepositoryReport.js";
@@ -101,6 +102,7 @@ export const obligationsRepository: ObligationsRepository = {
   replaceObligationCollectionsForWorkspace,
   bulkSoftDeleteObligationCollections,
   bulkRestoreObligationCollections,
+  allocateReceiptNumbers: allocateObligationReceiptNumbers,
   aggregateObligationsCommandMetrics,
   aggregateObligationsReport,
   getPreferences: getObligationModulePreferences,

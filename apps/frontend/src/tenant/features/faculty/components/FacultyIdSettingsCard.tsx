@@ -56,8 +56,6 @@ export function FacultyIdSettingsCard({
       autoGenerateLabel={t("faculty.settings.autoGenerateId")}
       prefixLabel={t("faculty.settings.idPrefix")}
       prefixHint={t("faculty.settings.idPrefixHint")}
-      restartLabel={t("faculty.settings.idRestartAnnually")}
-      restartDesc={t("faculty.settings.idRestartAnnuallyDesc")}
       footer={
         onSave ? (
           <ModuleSetupSaveFooter

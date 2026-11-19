@@ -35,6 +35,11 @@ jobs:
     timeout-minutes: 25
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Validate configuration & secrets
         env:
           MMS_APP_DOMAIN: ${{ secrets.MMS_APP_DOMAIN }}
@@ -45,27 +50,12 @@ jobs:
           NAMECOM_USERNAME: ${{ secrets.NAMECOM_USERNAME }}
           NAMECOM_API_TOKEN: ${{ secrets.NAMECOM_API_TOKEN }}
         run: |
-          set -euo pipefail
-          missing=""
-          [ -z "${SERVER_IP}" ] && missing="${missing} SERVER_IP"
-          [ -z "${SERVER_USER}" ] && missing="${missing} SERVER_USER"
-          [ -z "${SSH_PRIVATE_KEY}" ] && missing="${missing} SSH_PRIVATE_KEY"
-          [ -z "${MMS_APP_DOMAIN}" ] && missing="${missing} MMS_APP_DOMAIN"
+          bash scripts/ci/validate-secrets.sh SERVER_IP SERVER_USER SSH_PRIVATE_KEY MMS_APP_DOMAIN
           if [ "${DRY_RUN}" != "true" ]; then
-            [ -z "${NAMECOM_USERNAME}" ] && missing="${missing} NAMECOM_USERNAME"
-            [ -z "${NAMECOM_API_TOKEN}" ] && missing="${missing} NAMECOM_API_TOKEN"
-          fi
-          if [ -n "${missing}" ]; then
-            echo "ERROR: Missing required GitHub Actions secrets:${missing}"
-            echo "Add them under Settings → Secrets and variables → Actions"
-            exit 1
+            # Name.com creds are only required for a real (non-dry-run) issuance.
+            bash scripts/ci/validate-secrets.sh NAMECOM_USERNAME NAMECOM_API_TOKEN
           fi
           echo "Configuration validated for domain: ${MMS_APP_DOMAIN} (dry_run: ${DRY_RUN})"
-
-      - name: Checkout Code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
 
       - name: Configure SSH
         uses: ./.github/actions/ssh-setup

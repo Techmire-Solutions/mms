@@ -171,6 +171,21 @@ describe("journal voucher counters (Postgres)", () => {
     expect(peek).toMatchObject({ period: { periodYear: 2026, printYear: 2026 }, lastValue: 1 });
   });
 
+  it("restarts per month and prints the year-month", async () => {
+    await resetCounters();
+    await saveVoucherNumbering(tenant, {
+      ...DEFAULT_VOUCHER_NUMBERING,
+      prefix: "JV",
+      sequenceDigits: 3,
+      yearFormat: "YYYYMM",
+      rolloverPolicy: "monthly",
+    });
+    expect(await allocateVoucherNumbers(tenant, { date: "2026-11-15" })).toEqual(["JV-202611-001"]);
+    expect(await allocateVoucherNumbers(tenant, { date: "2026-11-20" })).toEqual(["JV-202611-002"]);
+    expect(await allocateVoucherNumbers(tenant, { date: "2026-12-01" })).toEqual(["JV-202612-001"]);
+    expect(await allocateVoucherNumbers(tenant, { date: "2026-11-05" })).toEqual(["JV-202611-003"]);
+  });
+
   it("restarts per fiscal year using the stored fiscal year, then the start-month preference", async () => {
     await resetCounters();
     await withTenant(tenant, (tx) =>

@@ -4,6 +4,10 @@ import {
   bulkIdsBodySchema,
   softDeleteBodySchema,
 } from "../core/apiSchemas.js";
+import {
+  sequenceRolloverPolicySchema,
+  sequenceYearFormatSchema,
+} from "../core/sequenceNumberingTypes.js";
 import { invoiceCreateSchema } from "../schemas/finance.dto.js";
 import {
   invoiceRecordSchema,
@@ -48,6 +52,12 @@ export const financePreferencesResponseSchema = z.object({
   taxRate: z.string(),
   paymentMethods: z.array(z.string()),
   autoGenerateInvoice: z.boolean(),
+  invoiceYearFormat: sequenceYearFormatSchema,
+  invoiceSequenceDigits: z.number().int().min(2).max(8),
+  invoiceDelimiter: z.string(),
+  invoiceStartingSequence: z.number().int().min(1),
+  invoiceRolloverPolicy: sequenceRolloverPolicySchema,
+  invoiceCurrentSequence: z.number().int().min(0).optional(),
   sendInvoiceEmail: z.boolean(),
   allowPartialPayment: z.boolean(),
   requireApproval: z.boolean(),

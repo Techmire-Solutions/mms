@@ -19,7 +19,7 @@ import {
   postSavedCollection,
   restoreCollectionsWithLedger,
 } from "./obligationLedgerSync.js";
-import { assertReceiptHasWakala } from "../domain/obligationWriteGuards.js";
+import { fillBlankReceiptNumbers, guardReceipts } from "./obligationCollectionWritePrep.js";
 import { auditCollectionSaved } from "./obligationAuditTrail.js";
 import { withTenant } from "../../db/tenant-context.js";
 import { findObligationJournalEntry } from "../../accounting/ledgerPosting/obligationVoucherLookup.js";
@@ -34,30 +34,6 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
   const catalogUseCases = createObligationsCatalogUseCases(repo);
 
   const collectionBulkService = createObligationCollectionBulkService(repo);
-
-  /**
-   * Rejects receipts whose type/representative pair has no wakala.
-   *
-   * The rule lived only in the browser's representative picker; without it the receipt saved and
-   * the ledger credited 100 % to the default income account, turning a wakala liability into
-   * income. One wakala read per write batch, not per receipt.
-   */
-  const guardReceipts = async (
-    tenant: string,
-    records: readonly ObligationCollection[],
-  ): Promise<void> => {
-    if (records.length === 0) return;
-    const wakalas = await repo.listWakalaTypesByWorkspace(tenant);
-    for (const record of records) {
-      assertReceiptHasWakala(
-        {
-          obligation_type_id: record.obligation_type_id,
-          mujtahid_representative_id: record.mujtahid_representative_id,
-        },
-        wakalas,
-      );
-    }
-  };
 
   const collectionCrud = createGenericRelationalService<ObligationCollection>({
     repo: {
@@ -143,7 +119,7 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
     saveObligationCollection: async (record: ObligationCollection): Promise<void> => {
       const tenant = getRequestTenant();
       if (!tenant) return;
-      await guardReceipts(tenant, [record]);
+      await guardReceipts(repo, tenant, [record]);
       const previous =
         (await loadCollectionsById(repo, tenant, [record.id])).get(record.id) ?? null;
       // The write and its audit row share one transaction: an audit append failure rolls the
@@ -161,10 +137,13 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
       record: Parameters<typeof collectionCrud.create>[0],
     ): Promise<ObligationCollection> => {
       const requestTenant = getRequestTenant();
-      if (requestTenant) await guardReceipts(requestTenant, [record as ObligationCollection]);
+      if (requestTenant) await guardReceipts(repo, requestTenant, [record as ObligationCollection]);
       if (!requestTenant) return collectionCrud.create(record);
       return withTenant(requestTenant, async () => {
-        const row = await collectionCrud.create(record);
+        const [enriched] = await fillBlankReceiptNumbers(repo, requestTenant, [
+          record as ObligationCollection,
+        ]);
+        const row = await collectionCrud.create(enriched);
         await auditCollectionSaved(requestTenant, null, row);
         await postCreatedCollection(requestTenant, row);
         return row;
@@ -193,7 +172,7 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
       records: ObligationCollection[],
     ): Promise<ObligationCollection[]> => {
       const tenant = getRequestTenant();
-      if (tenant) await guardReceipts(tenant, records);
+      if (tenant) await guardReceipts(repo, tenant, records);
       // Read the pre-write rows first: after the upsert they would be the new
       // values, every edit would look unchanged, and the stale journal entry
       // would stay on the books.
@@ -205,9 +184,10 @@ export function createObligationsUseCases(repo: ObligationsRepository = obligati
           )
         : new Map<string, ObligationCollection>();
       const saved = await withTenant(tenant!, async () => {
+        const enriched = await fillBlankReceiptNumbers(repo, tenant!, records);
         const written = await upsertWithBroadcast(
           obligationCollectionListSchema,
-          records,
+          enriched,
           repo.bulkSaveObligationCollections,
           "obligation_collections",
         );

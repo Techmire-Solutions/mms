@@ -58,10 +58,14 @@ describe("applyFacultyWriteGuards", () => {
       excludeFacultyId: "fac-1",
       designationChanged: true,
       contactChanged: true,
+      contactRequirements: { requireEmail: true, requirePhone: false },
     });
 
     // Assert
-    expect(guards.validateContactLink).toHaveBeenCalledWith("demo", "c-1", "fac-1");
+    expect(guards.validateContactLink).toHaveBeenCalledWith("demo", "c-1", "fac-1", {
+      requireEmail: true,
+      requirePhone: false,
+    });
     expect(guards.validateDesignationLink).toHaveBeenCalledWith("demo", "des-2");
     expect(result).toEqual({ record: { ...record, userId: "usr-9" }, departmentId: "dept-1" });
   });
@@ -74,6 +78,7 @@ describe("applyFacultyWriteGuards", () => {
     const result = await applyFacultyWriteGuards("demo", record, guards, {
       designationChanged: false,
       contactChanged: false,
+      contactRequirements: { requireEmail: true, requirePhone: false },
     });
 
     // Assert
@@ -89,6 +94,7 @@ describe("applyFacultyWriteGuards", () => {
       applyFacultyWriteGuards("demo", { ...record, designationId: null }, guards, {
         designationChanged: true,
         contactChanged: false,
+        contactRequirements: { requireEmail: true, requirePhone: false },
       }),
     ).rejects.toThrow("Selected designation is required");
   });

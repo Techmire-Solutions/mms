@@ -44,6 +44,8 @@ export const facultyPreferencesPutBodySchema = z
     employeeIdCurrentSequence: z.number().optional(),
     autoGenerateId: z.boolean().optional(),
     requireContactLink: z.boolean().optional(),
+    requireContactPhone: z.boolean().optional(),
+    requireContactEmail: z.boolean().optional(),
     defaultSpecialization: z.string().optional(),
   })
   .strict();
@@ -61,6 +63,8 @@ export function stripFacultyFieldConfigForPersist(
     idRestartAnnually: _idRestartAnnually,
     autoGenerateId: _autoGenerateId,
     requireContactLink: _requireContactLink,
+    requireContactPhone: _requireContactPhone,
+    requireContactEmail: _requireContactEmail,
     defaultSpecialization: _defaultSpecialization,
     ...rest
   } = config as FacultySettings & Record<string, unknown>;

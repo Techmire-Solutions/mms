@@ -163,7 +163,7 @@ jobs:
   # build, gitleaks, ratchets) and the slowest path through CI. It is split
   # into three parallel jobs; ci-gate requires all of them.
   typecheck-lint:
-    name: Typecheck, Lint & Ratchets
+    name: Typecheck, Lint & Format
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -196,6 +196,49 @@ jobs:
         if: github.event_name != 'pull_request'
         continue-on-error: true
         run: pnpm --filter mms-frontend lint:warn
+
+      # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
+      # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
+      # A full-repo scan costs 45-57 s per run; PRs check only the files they
+      # touch (the diff base is available via the fetch-depth: 2 checkout above)
+      # while pushes to main keep the full check. Formatting-config edits force a
+      # full check so a config change cannot silently reformat untouched files.
+      - name: Formatting (Prettier)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ -n "${BASE_SHA}" ] \
+            && ! git diff --name-only "${BASE_SHA}...HEAD" | grep -qE '^(\.prettierrc|\.prettierignore|\.editorconfig)'; then
+            bash scripts/ci/format-changed.sh "${BASE_SHA}"
+          else
+            pnpm format:check
+          fi
+
+      # Fails on high/critical advisories. One moderate finding is a reviewed,
+      # documented exception (ts-deepmerge via @ts-rest/open-api) — see the
+      # `overrides` block in pnpm-workspace.yaml and the OpenAPI test in
+      # apps/backend/src/__tests__/app.health.test.ts for the full rationale.
+      # Keeping this at `high` means the exception never masks a serious
+      # advisory, which is the failure mode of blanket-ignoring audit output.
+      - name: Dependency audit (high and critical)
+        run: pnpm audit --audit-level=high || (sleep 30 && pnpm audit --audit-level=high)
+
+  ratchets:
+    name: Ratchets & Quality Gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Depth 2 gives the migration ratchets a diff base (HEAD^1).
+          fetch-depth: 2
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-mms
+        with:
+          turbo-cache-scope: ratchets
 
       # The CI gate policy and ratchet/coverage evaluators are shell-adjacent,
       # so they get pure unit tests rather than being verified only by watching
@@ -231,32 +274,6 @@ jobs:
 
       - name: Accounting route security matrix
         run: pnpm run check:accounting-route-security
-
-      # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
-      # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
-      # A full-repo scan costs 45-57 s per run; PRs check only the files they
-      # touch (the diff base is available via the fetch-depth: 2 checkout above)
-      # while pushes to main keep the full check. Formatting-config edits force a
-      # full check so a config change cannot silently reformat untouched files.
-      - name: Formatting (Prettier)
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          if [ -n "${BASE_SHA}" ] \
-            && ! git diff --name-only "${BASE_SHA}...HEAD" | grep -qE '^(\.prettierrc|\.prettierignore|\.editorconfig)'; then
-            bash scripts/ci/format-changed.sh "${BASE_SHA}"
-          else
-            pnpm format:check
-          fi
-
-      # Fails on high/critical advisories. One moderate finding is a reviewed,
-      # documented exception (ts-deepmerge via @ts-rest/open-api) — see the
-      # `overrides` block in pnpm-workspace.yaml and the OpenAPI test in
-      # apps/backend/src/__tests__/app.health.test.ts for the full rationale.
-      # Keeping this at `high` means the exception never masks a serious
-      # advisory, which is the failure mode of blanket-ignoring audit output.
-      - name: Dependency audit (high and critical)
-        run: pnpm audit --audit-level=high || (sleep 30 && pnpm audit --audit-level=high)
 
       # Ratchet: no new bare `.select()` wildcard projections (mms-performance ban).
       - name: DB projection safety
@@ -1046,6 +1063,7 @@ jobs:
         dependency-review,
         workflow-lint,
         typecheck-lint,
+        ratchets,
         build,
         secret-scan,
         sensitive-file-guard,
@@ -1084,6 +1102,7 @@ jobs:
           echo "Dependency Review:     ${{ needs.dependency-review.result }}"
           echo "Workflow Lint:         ${{ needs.workflow-lint.result }}"
           echo "Typecheck & Lint:       ${{ needs.typecheck-lint.result }}"
+          echo "Ratchets & Quality:     ${{ needs.ratchets.result }}"
           echo "Build & Release:        ${{ needs.build.result }}"
           echo "Secret Scan:            ${{ needs.secret-scan.result }}"
           echo "Sensitive File Guard:   ${{ needs.sensitive-file-guard.result }}"
@@ -1123,6 +1142,11 @@ jobs:
 
           if [ "${{ needs.typecheck-lint.result }}" != "success" ]; then
             echo "::error::typecheck-lint failed or was cancelled (result: ${{ needs.typecheck-lint.result }})"
+            failed=1
+          fi
+
+          if [ "${{ needs.ratchets.result }}" != "success" ]; then
+            echo "::error::ratchets failed or was cancelled (result: ${{ needs.ratchets.result }})"
             failed=1
           fi
 
@@ -1191,7 +1215,8 @@ jobs:
           |---|---|---|
           | **Dependency Review** | \`${{ needs.dependency-review.result }}\` | High/Critical Advisory Check (PRs) |
           | **Workflow Lint** | \`${{ needs.workflow-lint.result }}\` | actionlint + zizmor |
-          | **Typecheck, Lint & Ratchets** | \`${{ needs.typecheck-lint.result }}\` | Turbo Cache (parallel job) |
+          | **Typecheck, Lint & Format** | \`${{ needs.typecheck-lint.result }}\` | Typecheck + ESLint + Prettier + Audit (parallel job) |
+          | **Ratchets & Quality Gates** | \`${{ needs.ratchets.result }}\` | ~25 architecture/ratchet checks (parallel job) |
           | **Build & Release Artifact** | \`${{ needs.build.result }}\` | Build + Bundle Budget (parallel job) |
           | **Secret Scan** | \`${{ needs.secret-scan.result }}\` | gitleaks, full history (parallel job) |
           | **Sensitive File Guard** | \`${{ needs.sensitive-file-guard.result }}\` | Whole-tree sensitive-filename blocklist |

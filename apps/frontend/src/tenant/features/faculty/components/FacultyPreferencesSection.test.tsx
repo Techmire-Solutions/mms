@@ -27,6 +27,9 @@ describe("FacultyPreferencesSection Component", () => {
     expect(html).not.toContain("faculty.settings.registrationGovernance");
     expect(html).not.toContain("faculty.settings.requireContactLink");
     expect(html).not.toContain("faculty.settings.defaultSpecialization");
+    expect(html).toContain("faculty.settings.contactRequirementsTitle");
+    expect(html).toContain("faculty.settings.requireContactPhone");
+    expect(html).toContain("faculty.settings.requireContactEmail");
     expect(html).toContain("common.save");
   });
 });

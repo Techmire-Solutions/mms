@@ -40,7 +40,7 @@ vi.mock("../lib/livePush.js", () => ({
 }));
 
 vi.mock("../db/repositories/financeBillingRepository.js", () => ({
-  allocateNextInvoiceNumber: vi.fn().mockResolvedValue("INV-2026-0001"),
+  allocateInvoiceNumbers: vi.fn().mockResolvedValue(["INV-2026-0001"]),
   replacePaymentAllocations: vi.fn().mockResolvedValue(undefined),
 }));
 

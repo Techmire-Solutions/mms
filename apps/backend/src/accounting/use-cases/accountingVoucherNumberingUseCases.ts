@@ -18,7 +18,12 @@ export async function loadVoucherNumbering(date?: string): Promise<VoucherNumber
     ...format,
     currentSequence: lastValue,
     periodYear: period.periodYear,
-    nextVoucherNumber: formatVoucherNumber(lastValue + 1, format, period.printYear),
+    nextVoucherNumber: formatVoucherNumber(
+      lastValue + 1,
+      format,
+      period.printYear,
+      period.printMonth,
+    ),
     ...(updatedAt ? { updatedAt } : {}),
   };
 }
