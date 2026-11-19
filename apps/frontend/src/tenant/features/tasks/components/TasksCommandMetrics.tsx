@@ -1,8 +1,9 @@
 import React from "react";
-import { AlertTriangle, CheckCircle2, Clock, Filter, ListChecks } from "lucide-react";
+import { Filter } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import type { TaskMetricsResponse } from "../hooks/useTasksApi";
+import { TASK_METRIC_UI } from "../lib/taskMetricUi";
 
 export interface TasksCommandMetricsProps {
   /** Server task metrics (`useTaskMetrics`); `undefined` until the query settles. */
@@ -25,10 +26,10 @@ export const TasksCommandMetrics = function TasksCommandMetrics({
 
   const items = [
     {
-      icon: ListChecks,
+      icon: TASK_METRIC_UI.total.icon,
       label: t("tasks.metrics.total"),
       value: value(metrics?.total),
-      accent: "primary" as const,
+      accent: TASK_METRIC_UI.total.accent,
     },
     {
       icon: Filter,
@@ -37,22 +38,28 @@ export const TasksCommandMetrics = function TasksCommandMetrics({
       accent: "info" as const,
     },
     {
-      icon: Clock,
+      icon: TASK_METRIC_UI.inProgress.icon,
       label: t("tasks.metrics.inProgress"),
       value: value(metrics?.inProgress),
-      accent: "info" as const,
+      accent: TASK_METRIC_UI.inProgress.accent,
     },
     {
-      icon: AlertTriangle,
+      icon: TASK_METRIC_UI.blocked.icon,
+      label: t("tasks.metrics.blocked"),
+      value: value(metrics?.blocked),
+      accent: TASK_METRIC_UI.blocked.accent,
+    },
+    {
+      icon: TASK_METRIC_UI.overdue.icon,
       label: t("tasks.metrics.overdue"),
       value: value(metrics?.overdue),
-      accent: "warning" as const,
+      accent: TASK_METRIC_UI.overdue.accent,
     },
     {
-      icon: CheckCircle2,
+      icon: TASK_METRIC_UI.completed.icon,
       label: t("tasks.metrics.completed"),
       value: value(metrics?.completed),
-      accent: "success" as const,
+      accent: TASK_METRIC_UI.completed.accent,
     },
   ];
 
