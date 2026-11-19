@@ -34,15 +34,11 @@ jobs:
 
       - name: Build Frontend for Production
         run: pnpm --filter mms-frontend build
-        env:
-          ANALYZE: "1"
 
       - name: Run Lighthouse CI (Mobile - 3 runs)
         id: lhci
         run: |
           npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.cjs
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
       - name: Format Lighthouse PR Comment
         if: always() && github.event_name == 'pull_request'
@@ -58,10 +54,12 @@ jobs:
             const fs = require('fs');
             if (fs.existsSync('lhci-comment.md')) {
               const body = fs.readFileSync('lhci-comment.md', 'utf8');
-              const { data: comments } = await github.rest.issues.listComments({
+              // Paginate: the bot comment may sit beyond the default first page.
+              const comments = await github.paginate(github.rest.issues.listComments, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
+                per_page: 100,
               });
               const botComment = comments.find(c => c.body.includes('Lighthouse CI Performance Summary'));
               if (botComment) {

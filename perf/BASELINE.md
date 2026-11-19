@@ -44,4 +44,6 @@ npx --yes @lhci/cli@0.14.0 autorun --config=./lighthouserc.cjs
 node scripts/perf/format-lhci-comment.cjs   # writes lhci-comment.md from .lighthouseci/lhr-*.json
 ```
 
-`scripts/perf/run-lighthouse.mjs` is the local Windows/macOS helper for one-off mobile + desktop reports; CI uses the LHCI config above.
+`scripts/perf/format-lhci-comment.cjs` derives its pass/fail budgets from `lighthouserc.cjs`, so the PR comment's verdict always matches the CI gate (median of the 3 runs). There is no `upload` target: results stay local to the run and the PR comment is the durable artifact.
+
+`scripts/perf/run-lighthouse.mjs` is the local Windows/macOS helper for one-off mobile + desktop reports; CI uses the LHCI config above. The helper invokes the unpinned `npx lighthouse` CLI (not `@lhci/cli`), so its local numbers can drift slightly from CI.

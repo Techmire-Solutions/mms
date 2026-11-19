@@ -145,3 +145,5 @@ __pycache__/
 # Lighthouse CI local artifacts
 .lighthouseci/
 lhci-comment.md
+# Local one-off Lighthouse reports + bundle visualizer (scripts/perf/run-lighthouse.mjs)
+perf/baseline/

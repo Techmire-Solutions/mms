@@ -20,6 +20,15 @@
  * `resource-summary:script:size` is deterministic for a given build (transfer
  * bytes), so it has the tightest headroom and is the hard guard against
  * bundle bloat.
+ *
+ * These assertions are the single source of truth: `scripts/perf/format-lhci-comment.cjs`
+ * derives its PR-comment pass/fail marks from this file, so the comment's verdict
+ * always matches what CI actually enforces (median of the runs).
+ *
+ * There is no `upload` target: reports stay local to the run, and the PR comment
+ * is the durable artifact (a `temporary-public-storage` upload would only add an
+ * ephemeral 7-day public report plus a GitHub App dependency, duplicating the
+ * comment).
  */
 module.exports = {
   ci: {
@@ -44,9 +53,6 @@ module.exports = {
         // 600 KiB. Measured baseline: ≈ 575 KiB for the entry closure (deterministic).
         "resource-summary:script:size": ["error", { maxNumericValue: 614400 }],
       },
-    },
-    upload: {
-      target: "temporary-public-storage",
     },
   },
 };
