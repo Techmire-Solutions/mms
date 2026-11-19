@@ -13,7 +13,9 @@ export type TaskBulkSkipReason =
   | "has_active_children"
   | "parent_archived"
   | "already_in_status"
-  | "illegal_transition";
+  | "illegal_transition"
+  | "has_unresolved_subtasks"
+  | "forbidden";
 
 export interface TaskBulkSkip {
   id: string;
@@ -23,6 +25,24 @@ export interface TaskBulkSkip {
 /** Deduplicates and trims ids, returning the requested order. */
 export function uniqueIds(ids: readonly string[]): string[] {
   return [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))];
+}
+
+/** Ids the actor may not touch: creator mismatch without `assign_anywhere` (M2). */
+export async function loadForbiddenIds(
+  tx: TenantTransaction,
+  subdomain: string,
+  ids: string[],
+  actorUserId: string,
+  canAssignAnywhere: boolean,
+): Promise<Set<string>> {
+  if (canAssignAnywhere) return new Set();
+  const rows = await tx
+    .select({ id: tasks.id, createdByUserId: tasks.createdByUserId })
+    .from(tasks)
+    .where(and(eq(tasks.workspaceSubdomain, subdomain), inArray(tasks.id, ids)));
+  return new Set(
+    rows.filter((row) => row.createdByUserId !== actorUserId).map((row) => String(row.id)),
+  );
 }
 
 export async function classifyDeleteSkips(

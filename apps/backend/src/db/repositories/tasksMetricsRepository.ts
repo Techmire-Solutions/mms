@@ -20,7 +20,8 @@ export interface TaskMetricsRow {
 }
 
 export async function getTaskMetrics(tenant: string): Promise<TaskMetricsRow> {
-  return withTenantRead(tenant, async (tx) => {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
     const [row] = await tx
       .select({
         total: sql<number>`count(*)::int`,
@@ -38,7 +39,7 @@ export async function getTaskMetrics(tenant: string): Promise<TaskMetricsRow> {
         priorityUrgent: sql<number>`count(*) FILTER (WHERE priority = 'urgent')::int`,
       })
       .from(tasks)
-      .where(and(eq(tasks.workspaceSubdomain, tenant), isNull(tasks.deletedAt)));
+      .where(and(eq(tasks.workspaceSubdomain, subdomain), isNull(tasks.deletedAt)));
 
     return {
       total: row?.total ?? 0,

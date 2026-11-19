@@ -27,9 +27,10 @@ import {
   type TaskRecord,
   type TaskStatus,
 } from "@mms/shared";
-import { taskAssignees, tasks } from "../schema.js";
+import { taskAssignees, tasks, workspaces } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { fetchAssigneesByTaskIds } from "./tasksAssigneesRepository.js";
+import { isIsoDateOnly, nextIsoDay, workspaceDayStartUtc } from "../../lib/workspaceDayBounds.js";
 
 export { getTaskMetrics } from "./tasksMetricsRepository.js";
 export { createTask, updateTask, updateTaskStatus } from "./tasksWriteRepository.js";
@@ -58,18 +59,31 @@ export async function listTasks(
     if (query.status) conditions.push(eq(tasks.status, query.status));
     if (query.priority) conditions.push(eq(tasks.priority, query.priority));
     if (query.createdById) conditions.push(eq(tasks.createdByUserId, query.createdById));
+
+    // Workspace-local day boundaries (m5): date-only filters denote a calendar
+    // day in the workspace timezone, not UTC.
+    const [workspace] = await tx
+      .select({ timezone: workspaces.timezone })
+      .from(workspaces)
+      .where(eq(workspaces.subdomain, subdomain));
+    const timezone = workspace?.timezone?.trim() || "UTC";
+
     if (query.dueFrom?.trim()) {
       const fromStr = query.dueFrom.trim();
-      const fromDate = new Date(fromStr.includes("T") ? fromStr : `${fromStr}T00:00:00.000Z`);
+      const fromDate = fromStr.includes("T")
+        ? new Date(fromStr)
+        : workspaceDayStartUtc(fromStr, timezone);
       if (!isNaN(fromDate.getTime())) {
         conditions.push(gte(tasks.dueAt, fromDate));
       }
     }
     if (query.dueTo?.trim()) {
       const toStr = query.dueTo.trim();
-      const toDate = new Date(toStr.includes("T") ? toStr : `${toStr}T23:59:59.999Z`);
-      if (!isNaN(toDate.getTime())) {
-        conditions.push(lte(tasks.dueAt, toDate));
+      if (toStr.includes("T")) {
+        const toDate = new Date(toStr);
+        if (!isNaN(toDate.getTime())) conditions.push(lte(tasks.dueAt, toDate));
+      } else if (isIsoDateOnly(toStr)) {
+        conditions.push(lt(tasks.dueAt, workspaceDayStartUtc(nextIsoDay(toStr), timezone)));
       }
     }
     const statuses = splitEnum<TaskStatus>(query.statuses, TASK_STATUSES);
@@ -87,12 +101,12 @@ export async function listTasks(
         and(lt(tasks.dueAt, new Date()), notInArray(tasks.status, ["completed", "cancelled"]))!,
       );
     }
-    if (query.dueOn?.trim() && /^\d{4}-\d{2}-\d{2}$/.test(query.dueOn.trim())) {
+    if (query.dueOn?.trim() && isIsoDateOnly(query.dueOn.trim())) {
       const day = query.dueOn.trim();
       conditions.push(
         and(
-          gte(tasks.dueAt, new Date(`${day}T00:00:00.000Z`)),
-          lte(tasks.dueAt, new Date(`${day}T23:59:59.999Z`)),
+          gte(tasks.dueAt, workspaceDayStartUtc(day, timezone)),
+          lt(tasks.dueAt, workspaceDayStartUtc(nextIsoDay(day), timezone)),
         )!,
       );
     }

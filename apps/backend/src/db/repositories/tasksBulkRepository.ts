@@ -6,7 +6,7 @@
  * insert + NOTIFY, and per-row audit (the hash chain is per-record by design).
  * Rows that cannot change are returned with a reason instead of being dropped.
  */
-import { and, eq, inArray, isNotNull, isNull, or } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, notInArray, or } from "drizzle-orm";
 import { isTaskStatusTransitionAllowed, type TaskStatus } from "@mms/shared";
 import { tasks } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
@@ -17,6 +17,7 @@ import { hasActiveChild, hasActiveParent } from "./tasksBulkPredicates.js";
 import {
   classifyDeleteSkips,
   classifyRestoreSkips,
+  loadForbiddenIds,
   uniqueIds,
   type TaskBulkSkip,
 } from "./tasksBulkSkips.js";
@@ -35,6 +36,7 @@ export async function bulkDeleteTasksBatch(
   tenant: string,
   ids: readonly string[],
   actorUserId: string,
+  canAssignAnywhere = false,
 ): Promise<{ deletedIds: string[]; skipped: TaskBulkSkip[] }> {
   const subdomain = tenant.trim().toLowerCase();
   const requested = uniqueIds(ids);
@@ -42,6 +44,14 @@ export async function bulkDeleteTasksBatch(
 
   return withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);
+    const forbidden = await loadForbiddenIds(
+      tx,
+      subdomain,
+      requested,
+      actorUserId,
+      canAssignAnywhere,
+    );
+    const actionable = requested.filter((id) => !forbidden.has(id));
     const now = new Date();
     const deleted = await tx
       .update(tasks)
@@ -49,7 +59,7 @@ export async function bulkDeleteTasksBatch(
       .where(
         and(
           eq(tasks.workspaceSubdomain, subdomain),
-          inArray(tasks.id, requested),
+          inArray(tasks.id, actionable),
           isNull(tasks.deletedAt),
           hasActiveChild(tx, subdomain),
         ),
@@ -58,8 +68,9 @@ export async function bulkDeleteTasksBatch(
 
     const deletedIds = deleted.map((row) => String(row.id));
     const deletedSet = new Set(deletedIds);
-    const remaining = requested.filter((id) => !deletedSet.has(id));
-    const skipped = remaining.length ? await classifyDeleteSkips(tx, subdomain, remaining) : [];
+    const remaining = actionable.filter((id) => !deletedSet.has(id));
+    const skipped: TaskBulkSkip[] = [...forbidden].map((id) => ({ id, reason: "forbidden" }));
+    if (remaining.length) skipped.push(...(await classifyDeleteSkips(tx, subdomain, remaining)));
 
     for (const id of deletedIds) {
       await recordModernAuditEvent(tx, {
@@ -92,6 +103,7 @@ export async function bulkRestoreTasksBatch(
   tenant: string,
   ids: readonly string[],
   actorUserId: string,
+  canAssignAnywhere = false,
 ): Promise<{ restoredIds: string[]; skipped: TaskBulkSkip[] }> {
   const subdomain = tenant.trim().toLowerCase();
   const requested = uniqueIds(ids);
@@ -99,6 +111,14 @@ export async function bulkRestoreTasksBatch(
 
   return withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);
+    const forbidden = await loadForbiddenIds(
+      tx,
+      subdomain,
+      requested,
+      actorUserId,
+      canAssignAnywhere,
+    );
+    const actionable = requested.filter((id) => !forbidden.has(id));
     const now = new Date();
     const restored = await tx
       .update(tasks)
@@ -113,7 +133,7 @@ export async function bulkRestoreTasksBatch(
       .where(
         and(
           eq(tasks.workspaceSubdomain, subdomain),
-          inArray(tasks.id, requested),
+          inArray(tasks.id, actionable),
           isNotNull(tasks.deletedAt),
           or(isNull(tasks.parentTaskId), hasActiveParent(tx, subdomain)),
         ),
@@ -122,8 +142,9 @@ export async function bulkRestoreTasksBatch(
 
     const restoredIds = restored.map((row) => String(row.id));
     const restoredSet = new Set(restoredIds);
-    const remaining = requested.filter((id) => !restoredSet.has(id));
-    const skipped = remaining.length ? await classifyRestoreSkips(tx, subdomain, remaining) : [];
+    const remaining = actionable.filter((id) => !restoredSet.has(id));
+    const skipped: TaskBulkSkip[] = [...forbidden].map((id) => ({ id, reason: "forbidden" }));
+    if (remaining.length) skipped.push(...(await classifyRestoreSkips(tx, subdomain, remaining)));
 
     for (const id of restoredIds) {
       await recordModernAuditEvent(tx, {
@@ -185,6 +206,23 @@ export async function bulkUpdateTaskStatusBatch(
       );
     const currentById = new Map(current.map((row) => [String(row.id), row]));
 
+    // Subtask barrier (A1): completing a task with unresolved children is a skip.
+    const unresolvedParents = new Set<string>();
+    if (status === "completed" && requested.length > 0) {
+      const withChildren = await tx
+        .select({ parentTaskId: tasks.parentTaskId })
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.workspaceSubdomain, subdomain),
+            inArray(tasks.parentTaskId, requested),
+            isNull(tasks.deletedAt),
+            notInArray(tasks.status, ["completed", "cancelled"]),
+          ),
+        );
+      for (const row of withChildren) unresolvedParents.add(String(row.parentTaskId));
+    }
+
     const skipped: TaskBulkSkip[] = [];
     const allowed: typeof current = [];
     for (const id of requested) {
@@ -199,6 +237,10 @@ export async function bulkUpdateTaskStatusBatch(
       }
       if (!isTaskStatusTransitionAllowed(row.status as TaskStatus, status)) {
         skipped.push({ id, reason: "illegal_transition" });
+        continue;
+      }
+      if (status === "completed" && unresolvedParents.has(id)) {
+        skipped.push({ id, reason: "has_unresolved_subtasks" });
         continue;
       }
       allowed.push(row);

@@ -247,6 +247,12 @@ export class NotFoundError extends HttpDomainError {
   }
 }
 
+export class ForbiddenError extends HttpDomainError {
+  constructor(message = "Forbidden") {
+    super(403, "forbidden", message);
+  }
+}
+
 export class ServiceUnavailableError extends HttpDomainError {
   constructor(message = "Service unavailable") {
     super(503, "service_unavailable", message);

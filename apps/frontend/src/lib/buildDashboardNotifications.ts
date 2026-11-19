@@ -16,14 +16,16 @@ import {
   type DashboardRole,
 } from "@/lib/dashboardRole";
 
-export type DashboardNotificationType = "fee" | "event" | "student" | "attendance" | "admission";
+export type DashboardNotificationType =
+  "fee" | "event" | "student" | "attendance" | "admission" | "tasks";
 
 /** Where a notification leads when opened — resolved to a route + Work drill-down by the tenant shell. */
 export type DashboardNotificationTarget =
   | { kind: "invoices"; statuses: string[] }
   | { kind: "students"; status: string }
   | { kind: "attendanceDay"; date: string }
-  | { kind: "admissions" };
+  | { kind: "admissions" }
+  | { kind: "tasks" };
 
 export interface DashboardNotificationItem {
   id: string;

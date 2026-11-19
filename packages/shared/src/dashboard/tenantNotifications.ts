@@ -9,6 +9,10 @@ export const TENANT_NOTIFICATION_KINDS = [
   "finance_invoices_overdue",
   /** Scheduled accounting sweep (month-end revaluation / IAS 29) failed and needs a human. */
   "accounting_automation_failed",
+  /** A task was assigned to this user. */
+  "task_assigned",
+  /** A task the user created changed status. */
+  "task_status_changed",
 ] as const;
 export type TenantNotificationKind = (typeof TENANT_NOTIFICATION_KINDS)[number];
 

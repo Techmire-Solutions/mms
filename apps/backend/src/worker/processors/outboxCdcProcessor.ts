@@ -3,6 +3,7 @@ import { withGlobalTenant } from "../../db/tenant-context.js";
 import { outboxEvents } from "../../db/schema/outboxEvents.js";
 import { redisGet, redisSet, redisDelPattern, redisKeys } from "../../lib/redis.js";
 import { logger } from "../../lib/logger.js";
+import { deliverTaskNotification } from "../../services/taskNotificationDeliveryService.js";
 import type { SearchIndexAdapter } from "../adapters/searchIndexAdapter.js";
 
 const BATCH_SIZE = 100;
@@ -110,6 +111,13 @@ export async function processOutboxCdcBatch(
           await searchAdapter.indexDocument(row.entityType, row.entityId, payload);
           // 2. Evict stale cache entries so next read is fresh
           await redisDelPattern(cacheEvictPattern(row.workspaceSubdomain, row.entityType));
+        } else if (row.eventType === "task.assigned" || row.eventType === "task.status_changed") {
+          // Deliver the task notification intent through the configured channel
+          // (in-app / messaging). Idempotent via the notification dedupe key.
+          await deliverTaskNotification(
+            row.workspaceSubdomain,
+            payload as Parameters<typeof deliverTaskNotification>[1],
+          );
         } else {
           // entity.hard_purge or unknown — just evict cache
           await redisDelPattern(cacheEvictPattern(row.workspaceSubdomain, row.entityType));

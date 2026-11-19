@@ -21,8 +21,16 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
       return reply.status(403).send({ type: "forbidden", message: "Forbidden" });
     }
     try {
-      const success = await deleteTask(String(request.tenant?.id), request.params.id, user.id);
-      return reply.status(200).send({ success });
+      const result = await deleteTask(
+        String(request.tenant?.id),
+        request.params.id,
+        user.id,
+        await canPerformTaskAction(request, "tasks.assign_anywhere"),
+      );
+      if (result === "not_found") {
+        return reply.status(404).send({ type: "not_found", message: "Task not found" });
+      }
+      return reply.status(200).send({ success: result === "deleted" });
     } catch (error) {
       const mapped = mapTaskRouteError(error);
       if (mapped) return reply.status(mapped.status).send(mapped.body);
@@ -37,7 +45,12 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
       return reply.status(403).send({ type: "forbidden", message: "Forbidden" });
     }
     try {
-      const restored = await restoreTask(String(request.tenant?.id), request.params.id, user.id);
+      const restored = await restoreTask(
+        String(request.tenant?.id),
+        request.params.id,
+        user.id,
+        await canPerformTaskAction(request, "tasks.assign_anywhere"),
+      );
       if (!restored) {
         return reply.status(404).send({ type: "not_found", message: "Task not found in trash" });
       }
@@ -60,7 +73,12 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
       return reply.status(400).send({ type: "validation_error", message: "Invalid payload" });
     }
     try {
-      const result = await bulkRestoreTasks(String(request.tenant?.id), parsed.data.ids, user.id);
+      const result = await bulkRestoreTasks(
+        String(request.tenant?.id),
+        parsed.data.ids,
+        user.id,
+        await canPerformTaskAction(request, "tasks.assign_anywhere"),
+      );
       return reply.status(200).send(result);
     } catch (error) {
       const mapped = mapTaskRouteError(error);
@@ -82,7 +100,12 @@ export async function registerTasksSoftDeleteRoutes(fastify: FastifyInstance): P
       return reply.status(400).send({ type: "validation_error", message: "Invalid payload" });
     }
     try {
-      const result = await bulkDeleteTasks(String(request.tenant?.id), parsed.data.ids, user.id);
+      const result = await bulkDeleteTasks(
+        String(request.tenant?.id),
+        parsed.data.ids,
+        user.id,
+        await canPerformTaskAction(request, "tasks.assign_anywhere"),
+      );
       return reply.status(200).send(result);
     } catch (error) {
       const mapped = mapTaskRouteError(error);

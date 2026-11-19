@@ -12,23 +12,13 @@ export const SELECT_COLS = {
   dueAt: tasks.dueAt,
   parentTaskId: tasks.parentTaskId,
   createdByUserId: tasks.createdByUserId,
-  assignedByUserId: tasks.assignedByUserId,
-  completedAt: tasks.completedAt,
-  cancelledAt: tasks.cancelledAt,
   deletedAt: tasks.deletedAt,
-  deletedBy: tasks.deletedBy,
-  deletionReason: tasks.deletionReason,
-  restoredAt: tasks.restoredAt,
-  restoredBy: tasks.restoredBy,
-  deletedWithCascade: tasks.deletedWithCascade,
   createdAt: tasks.createdAt,
   updatedAt: tasks.updatedAt,
-  createdBy: tasks.createdBy,
-  updatedBy: tasks.updatedBy,
 } as const;
 
 export function mapTaskRow(
-  r: typeof tasks.$inferSelect,
+  r: { [K in keyof typeof SELECT_COLS]: (typeof tasks.$inferSelect)[K] },
   assigneesMap: Map<string, TaskRecord["assignees"]>,
 ): TaskRecord {
   return {

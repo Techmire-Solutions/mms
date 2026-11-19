@@ -1863,6 +1863,13 @@
       "when": 1797850801402,
       "tag": "0265_tense_magneto",
       "breakpoints": true
+    },
+    {
+      "idx": 266,
+      "version": "7",
+      "when": 1797850801403,
+      "tag": "0266_magical_grey_gargoyle",
+      "breakpoints": true
     }
   ]
 }

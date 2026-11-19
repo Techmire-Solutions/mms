@@ -12,12 +12,19 @@ export const taskModulePreferences = pgTable(
     allowSelfAssignment: boolean("allow_self_assignment").notNull().default(true),
     notifyOnAssignment: boolean("notify_on_assignment").notNull().default(true),
     notifyOnStatusChange: boolean("notify_on_status_change").notNull().default(true),
+    notificationChannel: varchar("notification_channel", { length: 32 })
+      .notNull()
+      .default("in_app"),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     check(
       "task_module_preferences_scope_check",
       sql`${t.delegationScope} IN ('descendants', 'direct_reports')`,
+    ),
+    check(
+      "task_module_preferences_channel_check",
+      sql`${t.notificationChannel} IN ('in_app', 'messaging', 'both')`,
     ),
   ],
 );

@@ -18,4 +18,5 @@ export const DASHBOARD_NOTIFICATION_ICONS: Record<
   student: { icon: User, bg: "bg-success/10", text: "text-success" },
   attendance: { icon: AlertTriangle, bg: "bg-warning/10", text: "text-warning" },
   admission: { icon: ClipboardList, bg: "bg-primary/10", text: "text-primary" },
+  tasks: { icon: ClipboardList, bg: "bg-primary/10", text: "text-primary" },
 };

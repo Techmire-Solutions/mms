@@ -139,6 +139,17 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
       return user ?? null;
     },
 
+    /** Active tenant users' login emails by id, with an explicit tenant (worker-safe). */
+    loadUserEmailsByTenant: async (tenant: string, ids: string[]): Promise<string[]> => {
+      const uniqueIds = dedupeTrimmedIds(ids);
+      if (uniqueIds.length === 0) return [];
+      const rows = await repo.listTenantUsersByIds(tenant, uniqueIds);
+      return rows
+        .filter((row) => !row.deletedAt)
+        .map((row) => row.loginEmail)
+        .filter((email): email is string => Boolean(email && email.trim()));
+    },
+
     countUsers: async (): Promise<number> => {
       const tenant = getRequestTenant();
       if (!tenant) return 0;

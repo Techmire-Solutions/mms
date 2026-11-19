@@ -61,6 +61,18 @@ const STORED_NOTIFICATION_COPY: Record<
     descKey: "notifications.accountingAutomationFailedDesc",
     type: "fee",
   },
+  task_assigned: {
+    titleKey: "notifications.taskAssignedTitle",
+    descKey: "notifications.taskAssignedDesc",
+    type: "tasks",
+    target: { kind: "tasks" },
+  },
+  task_status_changed: {
+    titleKey: "notifications.taskStatusChangedTitle",
+    descKey: "notifications.taskStatusChangedDesc",
+    type: "tasks",
+    target: { kind: "tasks" },
+  },
 };
 
 export function toStoredNotificationItem(

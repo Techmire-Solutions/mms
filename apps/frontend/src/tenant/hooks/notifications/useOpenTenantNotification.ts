@@ -28,6 +28,9 @@ export function openNotificationTarget(
       applyEnrollmentsWorkDrillDown({ subTab: "admissions" });
       navigate(ROUTES.enrollments);
       return;
+    case "tasks":
+      navigate(ROUTES.tasks);
+      return;
   }
 }
 

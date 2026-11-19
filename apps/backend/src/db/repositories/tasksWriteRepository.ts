@@ -1,4 +1,4 @@
-import { and, eq, isNull, or, sql } from "drizzle-orm";
+import { and, eq, isNull, notInArray, or, sql } from "drizzle-orm";
 import {
   isTaskStatusTransitionAllowed,
   type TaskInsert,
@@ -21,6 +21,40 @@ function lifecycle(status: TaskStatus, now: Date) {
     completedAt: status === "completed" ? now : null,
     cancelledAt: status === "cancelled" ? now : null,
   };
+}
+
+/** `startDate` (a date-only `YYYY-MM-DD`) must not be after `dueAt`'s UTC day (m1). */
+function assertValidDateRange(
+  startDate: string | null | undefined,
+  dueAt: Date | null | undefined,
+): void {
+  if (!startDate || !dueAt) return;
+  if (startDate > dueAt.toISOString().slice(0, 10)) {
+    throw new ValidationError("Due date must be after the start date");
+  }
+}
+
+/** A task cannot be completed while it still has active, unresolved subtasks (A1). */
+async function assertNoUnresolvedSubtasks(
+  tx: TenantTransaction,
+  tenant: string,
+  taskId: string,
+  force: boolean,
+): Promise<void> {
+  if (force) return;
+  const [child] = await tx
+    .select({ id: tasks.id })
+    .from(tasks)
+    .where(
+      and(
+        eq(tasks.workspaceSubdomain, tenant),
+        eq(tasks.parentTaskId, taskId),
+        isNull(tasks.deletedAt),
+        notInArray(tasks.status, ["completed", "cancelled"]),
+      ),
+    )
+    .limit(1);
+  if (child) throw new ConflictError("Complete the task's subtasks first");
 }
 
 async function validateParent(
@@ -61,6 +95,7 @@ export async function createTask(
   const id = crypto.randomUUID();
   return withTenant(subdomain, async (tx) => {
     await validateParent(tx, subdomain, id, data.parentTaskId);
+    assertValidDateRange(data.startDate, data.dueAt ? new Date(data.dueAt) : null);
     await tx.insert(tasks).values({
       id,
       workspaceSubdomain: subdomain,
@@ -111,6 +146,9 @@ export async function updateTask(
     await validateParent(tx, subdomain, id, data.parentTaskId);
     const current = await findTaskById(subdomain, id);
     if (!current) return null;
+    const nextStartDate = data.startDate !== undefined ? data.startDate : current.startDate;
+    const nextDueAt = data.dueAt !== undefined ? data.dueAt : current.dueAt;
+    assertValidDateRange(nextStartDate, nextDueAt ? new Date(nextDueAt) : null);
     const versionToken = expectedUpdatedAt?.trim();
     const expectedDate = versionToken ? new Date(versionToken) : null;
     if (versionToken && (!expectedDate || Number.isNaN(expectedDate.getTime()))) {
@@ -131,8 +169,12 @@ export async function updateTask(
     }
     if (data.status !== undefined) {
       payload.status = data.status;
-      if (data.status !== current.status)
+      if (data.status !== current.status) {
+        if (data.status === "completed") {
+          await assertNoUnresolvedSubtasks(tx, subdomain, id, data.forceCompleteSubtasks === true);
+        }
         Object.assign(payload, lifecycle(data.status, new Date()));
+      }
     }
     if (data.priority !== undefined) payload.priority = data.priority;
     if (data.startDate !== undefined) payload.startDate = data.startDate;

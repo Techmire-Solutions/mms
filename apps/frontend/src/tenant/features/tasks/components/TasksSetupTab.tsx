@@ -3,7 +3,9 @@ import { Save } from "lucide-react";
 import {
   type TaskSettings,
   type DelegationScope,
+  type TaskNotificationChannel,
   DELEGATION_SCOPES,
+  TASK_NOTIFICATION_CHANNELS,
   DEFAULT_TASK_SETTINGS,
 } from "@mms/shared";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,8 @@ function settingsEqual(a: TaskSettings, b: TaskSettings): boolean {
     a.delegationScope === b.delegationScope &&
     a.allowSelfAssignment === b.allowSelfAssignment &&
     a.notifyOnAssignment === b.notifyOnAssignment &&
-    a.notifyOnStatusChange === b.notifyOnStatusChange
+    a.notifyOnStatusChange === b.notifyOnStatusChange &&
+    a.notificationChannel === b.notificationChannel
   );
 }
 
@@ -118,6 +121,30 @@ export function TasksSetupTab({
             onCheckedChange={(checked) => setDraft({ ...settings, notifyOnStatusChange: checked })}
             disabled={!canEditSetup || isLoading}
           />
+
+          <Field
+            id="tasks-notification-channel"
+            label={t("tasks.setup.notificationChannel")}
+            hint={t("tasks.setup.notificationChannelDesc")}
+          >
+            <FormSelect
+              id="tasks-notification-channel"
+              value={settings.notificationChannel}
+              onChange={(v) =>
+                setDraft({ ...settings, notificationChannel: v as TaskNotificationChannel })
+              }
+              disabled={!canEditSetup || isLoading}
+              options={TASK_NOTIFICATION_CHANNELS.map((channel) => ({
+                value: channel,
+                label:
+                  channel === "in_app"
+                    ? t("tasks.setup.notificationChannel.in_app")
+                    : channel === "messaging"
+                      ? t("tasks.setup.notificationChannel.messaging")
+                      : t("tasks.setup.notificationChannel.both"),
+              }))}
+            />
+          </Field>
         </div>
 
         {canEditSetup ? (

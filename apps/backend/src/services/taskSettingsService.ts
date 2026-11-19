@@ -11,8 +11,7 @@ function tenantContext(): string {
   return tenant;
 }
 
-export async function getTenantTaskSettings(): Promise<TaskSettings> {
-  const tenant = tenantContext();
+async function loadTenantTaskSettings(tenant: string): Promise<TaskSettings> {
   return withTenant(tenant, async (tx) => {
     const [row] = await tx
       .select({
@@ -20,11 +19,21 @@ export async function getTenantTaskSettings(): Promise<TaskSettings> {
         allowSelfAssignment: taskModulePreferences.allowSelfAssignment,
         notifyOnAssignment: taskModulePreferences.notifyOnAssignment,
         notifyOnStatusChange: taskModulePreferences.notifyOnStatusChange,
+        notificationChannel: taskModulePreferences.notificationChannel,
       })
       .from(taskModulePreferences)
       .where(eq(taskModulePreferences.workspaceSubdomain, tenant));
     return row ? taskSettingsSchema.parse(row) : { ...DEFAULT_TASK_SETTINGS };
   });
+}
+
+export async function getTenantTaskSettings(): Promise<TaskSettings> {
+  return loadTenantTaskSettings(tenantContext());
+}
+
+/** Explicit-subdomain variant for non-request contexts (e.g. the outbox worker). */
+export async function getTenantTaskSettingsBySubdomain(subdomain: string): Promise<TaskSettings> {
+  return loadTenantTaskSettings(subdomain.trim().toLowerCase());
 }
 
 export async function updateTenantTaskSettings(payload: unknown): Promise<TaskSettings> {

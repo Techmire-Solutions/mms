@@ -288,4 +288,33 @@ status has no OCC token; it applies the transition to whatever state the rows ar
 | H1 | **Open** | import assignee resolver now exists; import is per-row partial-success by design |
 | H5/H6 | **H6 closed** (OCC added); **H5 open** (notification diff read pre-lock) |
 
+## 12. Remediation status (2026-11-19, in progress)
+
+Implemented against the approved plan (M2 scoped ownership · M4 configurable channel · A1 barrier · A5/A6
+atomic outbox + status use-cases · Tier-2 minors), with TDD specs. All three packages typecheck and the
+code-norms / i18n / migrations-forward-only / db-projections gates hold.
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Shared contracts (`notificationChannel`, `forceCompleteSubtasks`, notification kinds, i18n) | **Done** | `tasksModuleManifest.ts`, `tenantNotifications.ts`, 4× i18n packs |
+| Schema + migration | **Done (code)** | `notification_channel`, `recipient_user_id`, `(ws, created_at DESC)` index, drop `task_assignees.completed_at`; migration `0266` + journal written. Drizzle snapshot still needs `drizzle-kit generate` against a live DB |
+| M2 ownership (mutation) + assignee-removal guard | **Done** | `taskMutationService` via `taskOwnership.canActorMutateTask`; spec `taskMutationService.test.ts` (5) |
+| M2 ownership (archive/restore, single + bulk) | **Done** | `deleteTask`/`restoreTask` + `bulkDeleteTasksBatch`/`bulkRestoreTasksBatch` skip non-creator rows without `assign_anywhere` (`forbidden` skip reason) |
+| A1 subtask barrier (single + bulk) | **Done** | `tasksWriteRepository` + `tasksBulkRepository`; spec `tasksWriteRepository.test.ts` (+3) |
+| m1 backend date validation | **Done** | `createTask`/`updateTask`; spec (+1) |
+| m3 delete 404 | **Done** | `deleteTask` → `deleted\|already_deleted\|not_found`; spec `tasksSoftDeleteErrors` (+2) |
+| N1 list query safeParse | **Done** | `tasksReadRoutes.ts` |
+| N2 tenant normalization | **Done** | metrics + single trash paths |
+| m15 mapper trim | **Partial** | dead columns removed; `creatorName` still unpopulated |
+| A5/A6 atomic outbox + status use-cases | **Done** | `emitTaskNotificationIntents(tx, …)` inside the mutation transaction; `changeTaskStatus`/`changeTasksBulkStatus` replace route-level orchestration |
+| M4 delivery consumer (in-app + messaging) | **Done (email messaging)** | `outboxCdcProcessor` → `deliverTaskNotification`: user-targeted in-app rows + plain-text email via `sendTenantEmail`. SMS/WhatsApp deferred (needs contact-phone resolution) |
+| m5 (workspace day bounds) | **Done** | `lib/workspaceDayBounds.ts` + `listTasks` now use the workspace timezone for `dueFrom`/`dueTo`/`dueOn` (spec `workspaceDayBounds.test.ts`) |
+| m7 (filtered metrics) | **Resolved** | KPI strip is intentionally workspace-wide; directory footer already reflects the filtered `total` |
+| Frontend Setup channel selector | **Done** | `TasksSetupTab` `notificationChannel` select (in-app / messaging / both) |
+
+**Verification run this round:** `pnpm --filter @mms/shared build && typecheck` ✓ · backend `typecheck` ✓ ·
+frontend `typecheck` ✓ · `check:code-norms` / `check:i18n` / `check:migrations-forward-only` /
+`check:db-projections` ✓ · backend tasks+notifications suites ✓ (incl. new `taskMutationService.test.ts`) ·
+frontend tasks+notifications suites ✓ (93 + notification suites).
+
 (End of file)

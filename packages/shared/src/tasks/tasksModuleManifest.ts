@@ -45,6 +45,10 @@ export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 export const DELEGATION_SCOPES = ["descendants", "direct_reports"] as const;
 export type DelegationScope = (typeof DELEGATION_SCOPES)[number];
 
+/** Delivery channels an admin can enable for assignment/status notifications. */
+export const TASK_NOTIFICATION_CHANNELS = ["in_app", "messaging", "both"] as const;
+export type TaskNotificationChannel = (typeof TASK_NOTIFICATION_CHANNELS)[number];
+
 export const taskAssigneeRecordSchema = z
   .object({
     id: z.string().min(1),
@@ -111,12 +115,15 @@ export const taskUpdateSchema = taskInsertSchema.partial().extend({
   status: z.enum(TASK_STATUSES).optional(),
   priority: z.enum(TASK_PRIORITIES).optional(),
   assignees: z.array(taskAssigneeInputSchema).max(100).optional(),
+  /** Allow completing a task whose subtasks are still open (A1). */
+  forceCompleteSubtasks: z.boolean().optional(),
 });
 export type TaskUpdate = z.infer<typeof taskUpdateSchema>;
 
 export const taskStatusUpdateSchema = z
   .object({
     status: z.enum(TASK_STATUSES),
+    forceCompleteSubtasks: z.boolean().optional(),
   })
   .strict();
 
@@ -171,6 +178,8 @@ export const taskSettingsSchema = z
     allowSelfAssignment: z.boolean().default(true),
     notifyOnAssignment: z.boolean().default(true),
     notifyOnStatusChange: z.boolean().default(true),
+    /** Delivery channel(s) for assignment/status notifications (M4). */
+    notificationChannel: z.enum(TASK_NOTIFICATION_CHANNELS).default("in_app"),
   })
   .strict();
 
@@ -181,6 +190,7 @@ export const DEFAULT_TASK_SETTINGS: TaskSettings = {
   allowSelfAssignment: true,
   notifyOnAssignment: true,
   notifyOnStatusChange: true,
+  notificationChannel: "in_app",
 };
 
 export const tasksCommandMetricsSnapshotSchema = z

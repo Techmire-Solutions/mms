@@ -50,7 +50,7 @@ describe("Tasks archive/restore error taxonomy (inject)", () => {
   });
 
   it("archives a task with a 200", async () => {
-    deleteTask.mockResolvedValueOnce(true);
+    deleteTask.mockResolvedValueOnce("deleted");
 
     const app = await buildApp();
     try {
@@ -61,6 +61,40 @@ describe("Tasks archive/restore error taxonomy (inject)", () => {
       });
       expect(response.statusCode).toBe(200);
       expect(response.json()).toEqual({ success: true });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 404 for an unknown task id (m3)", async () => {
+    deleteTask.mockResolvedValueOnce("not_found");
+
+    const app = await buildApp();
+    try {
+      const response = await app.inject({
+        method: "DELETE",
+        url: "/api/tasks/task-missing",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toMatchObject({ type: "not_found" });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 200 success:false for an already-archived task", async () => {
+    deleteTask.mockResolvedValueOnce("already_deleted");
+
+    const app = await buildApp();
+    try {
+      const response = await app.inject({
+        method: "DELETE",
+        url: "/api/tasks/task-1",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({ success: false });
     } finally {
       await app.close();
     }
