@@ -312,6 +312,6 @@ code-norms / i18n / migrations-forward-only / db-projections gates hold.
 | M4 delivery consumer | **Done** | `outboxCdcProcessor` → `deliverTaskNotification`: user-targeted in-app rows + messaging dispatch via `dispatchMessagingCampaignDirect` (tenant `defaultChannel`, email fallback for contactless recipients) |
 | Frontend Setup channel selector | **Done** | `TasksSetupTab` `notificationChannel` select (in-app / messaging / both) |
 
-**Verification:** `pnpm ci:local` ✓ (gates + Prettier + 591 backend files / 4167 tests + shared + frontend) · `db:migrate`/`db:check` ✓ (267=267) · `test:db taskDelegationScopeDb occWritesDb` ✓ (9/9). Commits: `787eb53b9` (remediation) → `917b29606` (residual gaps G1/G3/G4/G5).
+**Verification:** `pnpm ci:local` ✓ (gates + Prettier + 591 backend files / 4168 tests + shared + frontend) · `db:migrate`/`db:check` ✓ (267=267) · `test:db taskDelegationScopeDb occWritesDb` ✓ (9/9). Commits: `787eb53b9` (remediation) → `917b29606` (residual gaps G1/G3/G4/G5) → `6868b1d1f` (G2 messaging dispatch) → `669ba44a1` (docs).
 
 (End of file)
