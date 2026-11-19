@@ -3,45 +3,31 @@
  * @description Persistence and query operations for tasks.
  */
 
-import {
-  and,
-  desc,
-  eq,
-  gte,
-  ilike,
-  inArray,
-  isNotNull,
-  isNull,
-  lt,
-  lte,
-  notInArray,
-  or,
-  sql,
-} from "drizzle-orm";
-import {
-  TASK_PRIORITIES,
-  TASK_STATUSES,
-  toSqlSearchPattern,
-  type TaskListQuery,
-  type TaskPriority,
-  type TaskRecord,
-  type TaskStatus,
-} from "@mms/shared";
-import { taskAssignees, tasks } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { type TaskListQuery, type TaskRecord } from "@mms/shared";
+import { taskAssignees, tasks, tenantUsers, workspaces } from "../schema.js";
+import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
 import { fetchAssigneesByTaskIds } from "./tasksAssigneesRepository.js";
+import { buildTaskFilterConditions } from "./tasksFilterConditions.js";
 
 export { getTaskMetrics } from "./tasksMetricsRepository.js";
 export { createTask, updateTask, updateTaskStatus } from "./tasksWriteRepository.js";
 export { deleteTask, restoreTask } from "./tasksTrashRepository.js";
 import { SELECT_COLS, mapTaskRow } from "./tasksRowMapping.js";
 
-function splitEnum<T extends string>(raw: string | undefined, allowed: readonly T[]): T[] {
-  if (!raw?.trim()) return [];
-  return raw
-    .split(",")
-    .map((value) => value.trim())
-    .filter((value): value is T => (allowed as readonly string[]).includes(value));
+/** Batched creator display names for the selected `createdByUserId` values (m15). */
+async function fetchCreatorNamesByUserIds(
+  tx: TenantTransaction,
+  subdomain: string,
+  userIds: string[],
+): Promise<Map<string, string>> {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const rows = await tx
+    .select({ id: tenantUsers.id, name: tenantUsers.name })
+    .from(tenantUsers)
+    .where(and(eq(tenantUsers.workspaceSubdomain, subdomain), inArray(tenantUsers.id, unique)));
+  return new Map(rows.map((row) => [String(row.id), row.name]));
 }
 
 export async function listTasks(
@@ -58,48 +44,20 @@ export async function listTasks(
     if (query.status) conditions.push(eq(tasks.status, query.status));
     if (query.priority) conditions.push(eq(tasks.priority, query.priority));
     if (query.createdById) conditions.push(eq(tasks.createdByUserId, query.createdById));
-    if (query.dueFrom?.trim()) {
-      const fromStr = query.dueFrom.trim();
-      const fromDate = new Date(fromStr.includes("T") ? fromStr : `${fromStr}T00:00:00.000Z`);
-      if (!isNaN(fromDate.getTime())) {
-        conditions.push(gte(tasks.dueAt, fromDate));
-      }
+
+    // Workspace-local day boundaries (m5): date-only filters denote a calendar
+    // day in the workspace timezone, not UTC. Only load the timezone when a date
+    // filter is present (D5).
+    let timezone = "UTC";
+    if (query.dueFrom?.trim() || query.dueTo?.trim() || query.dueOn?.trim()) {
+      const [workspace] = await tx
+        .select({ timezone: workspaces.timezone })
+        .from(workspaces)
+        .where(eq(workspaces.subdomain, subdomain));
+      timezone = workspace?.timezone?.trim() || "UTC";
     }
-    if (query.dueTo?.trim()) {
-      const toStr = query.dueTo.trim();
-      const toDate = new Date(toStr.includes("T") ? toStr : `${toStr}T23:59:59.999Z`);
-      if (!isNaN(toDate.getTime())) {
-        conditions.push(lte(tasks.dueAt, toDate));
-      }
-    }
-    const statuses = splitEnum<TaskStatus>(query.statuses, TASK_STATUSES);
-    if (statuses.length > 0) conditions.push(inArray(tasks.status, statuses));
-    const priorities = splitEnum<TaskPriority>(query.priorities, TASK_PRIORITIES);
-    if (priorities.length > 0) conditions.push(inArray(tasks.priority, priorities));
-    const ids = (query.ids ?? "")
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean)
-      .slice(0, 500);
-    if (ids.length > 0) conditions.push(inArray(tasks.id, ids));
-    if (query.overdue) {
-      conditions.push(
-        and(lt(tasks.dueAt, new Date()), notInArray(tasks.status, ["completed", "cancelled"]))!,
-      );
-    }
-    if (query.dueOn?.trim() && /^\d{4}-\d{2}-\d{2}$/.test(query.dueOn.trim())) {
-      const day = query.dueOn.trim();
-      conditions.push(
-        and(
-          gte(tasks.dueAt, new Date(`${day}T00:00:00.000Z`)),
-          lte(tasks.dueAt, new Date(`${day}T23:59:59.999Z`)),
-        )!,
-      );
-    }
-    if (query.search) {
-      const term = toSqlSearchPattern(query.search);
-      conditions.push(or(ilike(tasks.title, term), ilike(tasks.description, term))!);
-    }
+
+    conditions.push(...buildTaskFilterConditions(query, timezone));
 
     if (query.assignedToFacultyId || query.assignedToUserId) {
       const assigneeConditions = [
@@ -143,9 +101,14 @@ export async function listTasks(
       subdomain,
       rows.map((r) => r.id),
     );
+    const creatorNames = await fetchCreatorNamesByUserIds(
+      tx,
+      subdomain,
+      rows.map((r) => r.createdByUserId),
+    );
 
     return {
-      tasks: rows.map((r) => mapTaskRow(r, assigneesByTaskId)),
+      tasks: rows.map((r) => mapTaskRow(r, assigneesByTaskId, creatorNames)),
       total: count,
     };
   });
@@ -165,6 +128,7 @@ export async function findTaskById(tenant: string, id: string): Promise<TaskReco
     if (!taskRow) return null;
 
     const assigneesMap = await fetchAssigneesByTaskIds(tx, subdomain, [id]);
-    return mapTaskRow(taskRow, assigneesMap);
+    const creatorNames = await fetchCreatorNamesByUserIds(tx, subdomain, [taskRow.createdByUserId]);
+    return mapTaskRow(taskRow, assigneesMap, creatorNames);
   });
 }

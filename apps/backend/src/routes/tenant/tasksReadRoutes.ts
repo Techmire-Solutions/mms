@@ -10,7 +10,11 @@ export async function registerTasksReadRoutes(fastify: FastifyInstance): Promise
     if (!(await canPerformTaskAction(request, "tasks.read"))) {
       return reply.status(403).send({ type: "forbidden", message: "Forbidden" });
     }
-    const query = taskListQuerySchema.parse(request.query);
+    const parsed = taskListQuerySchema.safeParse(request.query);
+    if (!parsed.success) {
+      return reply.status(400).send({ type: "validation_error", message: "Invalid query" });
+    }
+    const query = parsed.data;
     // Trash reads require delete permission, matching Contacts/Students/Faculty.
     // Frontend visibility is not a boundary: the archive is only readable by
     // roles allowed to restore or purge it.
@@ -27,8 +31,12 @@ export async function registerTasksReadRoutes(fastify: FastifyInstance): Promise
     if (!(await canPerformTaskAction(request, "tasks.read"))) {
       return reply.status(403).send({ type: "forbidden", message: "Forbidden" });
     }
+    const parsed = taskListQuerySchema.safeParse(request.query);
+    if (!parsed.success) {
+      return reply.status(400).send({ type: "validation_error", message: "Invalid query" });
+    }
     try {
-      const metrics = await getTaskMetrics(String(request.tenant?.id));
+      const metrics = await getTaskMetrics(String(request.tenant?.id), parsed.data);
       return reply.status(200).send(metrics);
     } catch (error) {
       const mapped = mapTaskRouteError(error);

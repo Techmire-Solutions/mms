@@ -63,6 +63,10 @@ export const tasks = pgTable(
       .on(table.workspaceSubdomain, table.parentTaskId)
       .where(sql`${table.deletedAt} is null`),
 
+    index("tasks_workspace_created_active_idx")
+      .on(table.workspaceSubdomain, sql`${table.createdAt} DESC`)
+      .where(sql`${table.deletedAt} is null`),
+
     index("tasks_deleted_idx")
       .on(table.workspaceSubdomain, table.deletedAt)
       .where(sql`${table.deletedAt} is not null`),
@@ -99,7 +103,6 @@ export const taskAssignees = pgTable(
       .notNull()
       .defaultNow(),
     assignedByUserId: text("assigned_by_user_id").notNull(),
-    completedAt: timestamp("completed_at", { withTimezone: true, mode: "date" }),
     ...softDeleteColumns,
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),

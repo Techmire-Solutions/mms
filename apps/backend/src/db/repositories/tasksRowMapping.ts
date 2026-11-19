@@ -12,24 +12,15 @@ export const SELECT_COLS = {
   dueAt: tasks.dueAt,
   parentTaskId: tasks.parentTaskId,
   createdByUserId: tasks.createdByUserId,
-  assignedByUserId: tasks.assignedByUserId,
-  completedAt: tasks.completedAt,
-  cancelledAt: tasks.cancelledAt,
   deletedAt: tasks.deletedAt,
-  deletedBy: tasks.deletedBy,
-  deletionReason: tasks.deletionReason,
-  restoredAt: tasks.restoredAt,
-  restoredBy: tasks.restoredBy,
-  deletedWithCascade: tasks.deletedWithCascade,
   createdAt: tasks.createdAt,
   updatedAt: tasks.updatedAt,
-  createdBy: tasks.createdBy,
-  updatedBy: tasks.updatedBy,
 } as const;
 
 export function mapTaskRow(
-  r: typeof tasks.$inferSelect,
+  r: { [K in keyof typeof SELECT_COLS]: (typeof tasks.$inferSelect)[K] },
   assigneesMap: Map<string, TaskRecord["assignees"]>,
+  creatorNamesMap: Map<string, string> = new Map(),
 ): TaskRecord {
   return {
     id: r.id,
@@ -42,6 +33,7 @@ export function mapTaskRow(
     dueAt: r.dueAt ? r.dueAt.toISOString() : null,
     parentTaskId: r.parentTaskId,
     createdById: r.createdByUserId,
+    creatorName: r.createdByUserId ? creatorNamesMap.get(r.createdByUserId) : undefined,
     assignees: assigneesMap.get(r.id) ?? [],
     createdAt: r.createdAt ? r.createdAt.toISOString() : undefined,
     updatedAt: r.updatedAt ? r.updatedAt.toISOString() : undefined,

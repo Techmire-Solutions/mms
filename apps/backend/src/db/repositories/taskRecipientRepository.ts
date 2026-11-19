@@ -14,6 +14,7 @@ export interface TaskRecipientRow extends Record<string, unknown> {
   assignmentId: string;
   departmentName: string | null;
   userId: string;
+  userEmail?: string | null;
   isSelf: boolean;
 }
 
@@ -95,7 +96,8 @@ export async function findEligibleTaskRecipientRows(
          AND child.deleted_at IS NULL
         WHERE scope_designations.depth < ${scopeDepth}
       ), occupants AS (
-        SELECT f.id AS faculty_id, fe.employee_id, u.id AS user_id, a.id AS assignment_id,
+        SELECT f.id AS faculty_id, fe.employee_id, u.id AS user_id, u.login_email AS login_email,
+          a.id AS assignment_id,
           a.designation_id AS designation_id,
           d.name AS department_name, concat_ws(' ', c.first_name, c.last_name) AS name
         FROM faculty_assignments a
@@ -115,6 +117,7 @@ export async function findEligibleTaskRecipientRows(
           AND u.deleted_at IS NULL AND COALESCE(u.profile_json->>'status', 'active') = 'active'
       )
       SELECT o.faculty_id AS "facultyId", o.employee_id AS "employeeId", o.user_id AS "userId",
+        o.login_email AS "userEmail",
         o.assignment_id AS "assignmentId",
         o.department_name AS "departmentName", o.name, o.user_id = ${actorUserId} AS "isSelf"
       FROM occupants o

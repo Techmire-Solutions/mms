@@ -1,25 +1,64 @@
 import { and, eq, isNull, isNotNull } from "drizzle-orm";
-import { tasks } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { taskAssignees, tasks } from "../schema.js";
+import { withTenant, type TenantTransaction } from "../tenant-context.js";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { emitOutboxEvent } from "../../services/outboxEventService.js";
 import { findTaskById } from "./tasksRepository.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError, ForbiddenError } from "../../lib/httpErrors.js";
+import { broadcastTenantUpdate } from "../../lib/livePush.js";
+
+/** True when the actor is an active assignee of the task. */
+async function isAssigned(
+  tx: TenantTransaction,
+  subdomain: string,
+  taskId: string,
+  actorUserId: string | undefined,
+): Promise<boolean> {
+  if (!actorUserId) return false;
+  const rows = await tx
+    .select({ id: taskAssignees.id })
+    .from(taskAssignees)
+    .where(
+      and(
+        eq(taskAssignees.workspaceSubdomain, subdomain),
+        eq(taskAssignees.taskId, taskId),
+        eq(taskAssignees.userId, actorUserId),
+        isNull(taskAssignees.deletedAt),
+      ),
+    )
+    .limit(1);
+  return rows.length > 0;
+}
 
 export async function deleteTask(
   tenant: string,
   id: string,
   actorUserId?: string,
-): Promise<boolean> {
-  return withTenant(tenant, async (tx) => {
-    await lockFacultyHierarchy(tx, tenant);
+  canAssignAnywhere = false,
+): Promise<"deleted" | "already_deleted" | "not_found"> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenant(subdomain, async (tx) => {
+    await lockFacultyHierarchy(tx, subdomain);
+    const [target] = await tx
+      .select({ createdByUserId: tasks.createdByUserId, deletedAt: tasks.deletedAt })
+      .from(tasks)
+      .where(and(eq(tasks.workspaceSubdomain, subdomain), eq(tasks.id, id)));
+    if (!target) return "not_found";
+    if (target.deletedAt) return "already_deleted";
+    if (
+      !canAssignAnywhere &&
+      target.createdByUserId !== actorUserId &&
+      !(await isAssigned(tx, subdomain, id, actorUserId))
+    ) {
+      throw new ForbiddenError("You do not have permission to archive this task");
+    }
     const children = await tx
       .select({ id: tasks.id })
       .from(tasks)
       .where(
         and(
-          eq(tasks.workspaceSubdomain, tenant),
+          eq(tasks.workspaceSubdomain, subdomain),
           eq(tasks.parentTaskId, id),
           isNull(tasks.deletedAt),
         ),
@@ -30,39 +69,57 @@ export async function deleteTask(
     const [changed] = await tx
       .update(tasks)
       .set({ deletedAt: now, deletedBy: actorUserId, updatedAt: now })
-      .where(and(eq(tasks.workspaceSubdomain, tenant), eq(tasks.id, id), isNull(tasks.deletedAt)))
+      .where(
+        and(eq(tasks.workspaceSubdomain, subdomain), eq(tasks.id, id), isNull(tasks.deletedAt)),
+      )
       .returning({ id: tasks.id });
-    if (!changed) return false;
-    await recordModernAuditEvent(tx, {
-      workspaceSubdomain: tenant,
-      tableName: "tasks",
-      recordId: id,
-      actionType: "DELETE",
-      realUserId: actorUserId,
-    });
-    await emitOutboxEvent(tx, "entity.soft_deleted", {
-      entityType: "tasks",
-      entityId: id,
-      tenantId: tenant,
-      deletedAt: now.toISOString(),
-      deletedBy: actorUserId ?? "system",
-      version: now.getTime(),
-    });
-    return true;
+    if (changed) {
+      await recordModernAuditEvent(tx, {
+        workspaceSubdomain: subdomain,
+        tableName: "tasks",
+        recordId: id,
+        actionType: "DELETE",
+        realUserId: actorUserId,
+      });
+      await emitOutboxEvent(tx, "entity.soft_deleted", {
+        entityType: "tasks",
+        entityId: id,
+        tenantId: subdomain,
+        deletedAt: now.toISOString(),
+        deletedBy: actorUserId ?? "system",
+        version: now.getTime(),
+      });
+      broadcastTenantUpdate(subdomain, "collection", "tasks");
+      return "deleted";
+    }
+    return "already_deleted";
   });
 }
 
-export async function restoreTask(tenant: string, id: string, actorUserId: string) {
-  return withTenant(tenant, async (tx) => {
-    await lockFacultyHierarchy(tx, tenant);
+export async function restoreTask(
+  tenant: string,
+  id: string,
+  actorUserId: string,
+  canAssignAnywhere = false,
+) {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenant(subdomain, async (tx) => {
+    await lockFacultyHierarchy(tx, subdomain);
     const [current] = await tx
-      .select({ parentTaskId: tasks.parentTaskId })
+      .select({ parentTaskId: tasks.parentTaskId, createdByUserId: tasks.createdByUserId })
       .from(tasks)
       .where(
-        and(eq(tasks.workspaceSubdomain, tenant), eq(tasks.id, id), isNotNull(tasks.deletedAt)),
+        and(eq(tasks.workspaceSubdomain, subdomain), eq(tasks.id, id), isNotNull(tasks.deletedAt)),
       );
     if (!current) return null;
-    if (current.parentTaskId && !(await findTaskById(tenant, current.parentTaskId))) {
+    if (
+      !canAssignAnywhere &&
+      current.createdByUserId !== actorUserId &&
+      !(await isAssigned(tx, subdomain, id, actorUserId))
+    ) {
+      throw new ForbiddenError("You do not have permission to restore this task");
+    }
+    if (current.parentTaskId && !(await findTaskById(subdomain, current.parentTaskId))) {
       throw new ConflictError("Restore the parent task first");
     }
     const now = new Date();
@@ -77,10 +134,10 @@ export async function restoreTask(tenant: string, id: string, actorUserId: strin
         updatedAt: now,
       })
       .where(
-        and(eq(tasks.workspaceSubdomain, tenant), eq(tasks.id, id), isNotNull(tasks.deletedAt)),
+        and(eq(tasks.workspaceSubdomain, subdomain), eq(tasks.id, id), isNotNull(tasks.deletedAt)),
       );
     await recordModernAuditEvent(tx, {
-      workspaceSubdomain: tenant,
+      workspaceSubdomain: subdomain,
       tableName: "tasks",
       recordId: id,
       actionType: "RESTORE",
@@ -89,11 +146,12 @@ export async function restoreTask(tenant: string, id: string, actorUserId: strin
     await emitOutboxEvent(tx, "entity.restored", {
       entityType: "tasks",
       entityId: id,
-      tenantId: tenant,
+      tenantId: subdomain,
       restoredAt: now.toISOString(),
       restoredBy: actorUserId,
       version: now.getTime(),
     });
-    return findTaskById(tenant, id);
+    broadcastTenantUpdate(subdomain, "collection", "tasks");
+    return findTaskById(subdomain, id);
   });
 }

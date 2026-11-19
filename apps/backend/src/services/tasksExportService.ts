@@ -15,6 +15,8 @@ import {
 } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { listTasks } from "../tasks/use-cases/tasksUseCases.js";
+import { getWorkspaceTimezone } from "./taskSettingsService.js";
+import { formatIsoDateInTimezone } from "../lib/workspaceDayBounds.js";
 
 export interface TasksExportOptions {
   columns?: unknown;
@@ -102,7 +104,7 @@ async function loadExportPage(
   return { rows: result.tasks, hasMore: offset + result.tasks.length < result.total };
 }
 
-function taskToRow(task: TaskRecord): string[] {
+function taskToRow(task: TaskRecord, timezone: string): string[] {
   const assignees = (task.assignees ?? [])
     .map((assignee) => assignee.facultyName ?? assignee.userEmail ?? assignee.userId)
     .filter(Boolean)
@@ -112,7 +114,7 @@ function taskToRow(task: TaskRecord): string[] {
     assignees,
     task.priority,
     task.status,
-    task.dueAt ? String(task.dueAt).slice(0, 10) : "",
+    task.dueAt ? formatIsoDateInTimezone(String(task.dueAt), timezone) : "",
     task.description ?? "",
     "",
   ];
@@ -126,12 +128,13 @@ export async function buildTasksCsvExport(
   const tenant = requireTenant();
   const filename = resolveFilename(tenant, options.filename);
   const listQuery = toListQuery(query, options.allowDeleted === true);
+  const timezone = await getWorkspaceTimezone(tenant);
   const rows: string[][] = [TASK_EXPORT_COLUMNS.slice()];
 
   let count = 0;
   for (let page = 1; ; page += 1) {
     const result = await loadExportPage(tenant, listQuery, page);
-    rows.push(...result.rows.map(taskToRow));
+    rows.push(...result.rows.map((task) => taskToRow(task, timezone)));
     count += result.rows.length;
     if (!result.hasMore) break;
   }
@@ -147,13 +150,14 @@ export async function* generateTasksCsvStreamChunks(
   const tenant = requireTenant();
   const filename = resolveFilename(tenant, options.filename);
   const listQuery = toListQuery(query, options.allowDeleted === true);
+  const timezone = await getWorkspaceTimezone(tenant);
 
   yield buildCsvContent([TASK_EXPORT_COLUMNS.slice()]);
   let count = 0;
   for (let page = 1; ; page += 1) {
     const result = await loadExportPage(tenant, listQuery, page);
     if (result.rows.length > 0) {
-      yield "\n" + buildCsvContent(result.rows.map(taskToRow));
+      yield "\n" + buildCsvContent(result.rows.map((task) => taskToRow(task, timezone)));
       count += result.rows.length;
     }
     if (!result.hasMore) break;

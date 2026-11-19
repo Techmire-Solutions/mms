@@ -47,6 +47,7 @@ const currentTask = {
 function createTx({
   updatedRows = [{ id: "task-1" }] as Array<{ id: string }>,
   parentRows = [] as Array<{ id: string; parent_id: string | null; cycle: boolean }>,
+  childRows = [] as Array<{ id: string }>,
 } = {}) {
   const values = vi.fn(async () => undefined);
   const insert = vi.fn(() => ({ values }));
@@ -54,9 +55,26 @@ function createTx({
   const where = vi.fn(() => ({ returning }));
   const set = vi.fn(() => ({ where }));
   const update = vi.fn(() => ({ set }));
+  const limit = vi.fn(async () => childRows);
+  const selectWhere = vi.fn(() => ({ limit }));
+  const from = vi.fn(() => ({ where: selectWhere }));
+  const select = vi.fn(() => ({ from }));
   const execute = vi.fn(async () => ({ rows: parentRows }));
-  const tx = { insert, update, execute };
-  return { tx, insert, values, update, set, where, returning, execute };
+  const tx = { insert, update, select, execute };
+  return {
+    tx,
+    insert,
+    values,
+    update,
+    set,
+    where,
+    returning,
+    execute,
+    select,
+    from,
+    selectWhere,
+    limit,
+  };
 }
 
 beforeEach(() => {
@@ -364,5 +382,48 @@ describe("updateTask", () => {
     await updateTaskStatus("demo", "task-1", "in_progress", "actor-1");
 
     expect(tx.set).toHaveBeenCalledWith(expect.objectContaining({ status: "in_progress" }));
+  });
+
+  it("rejects completing a task that still has unresolved subtasks (A1)", async () => {
+    const tx = createTx({ childRows: [{ id: "child-1" }] });
+    runUpdate(tx);
+    mocks.findTaskById.mockResolvedValue({ ...currentTask, status: "in_progress" });
+
+    await expect(
+      updateTask("demo", "task-1", { status: "completed" }, undefined, "actor-1"),
+    ).rejects.toBeInstanceOf(ConflictError);
+    expect(tx.update).not.toHaveBeenCalled();
+  });
+
+  it("allows completing a task with subtasks when forced (A1)", async () => {
+    const tx = createTx({ childRows: [{ id: "child-1" }] });
+    runUpdate(tx);
+    mocks.findTaskById.mockResolvedValue({ ...currentTask, status: "in_progress" });
+
+    await updateTask(
+      "demo",
+      "task-1",
+      { status: "completed", forceCompleteSubtasks: true },
+      undefined,
+      "actor-1",
+    );
+
+    expect(tx.update).toHaveBeenCalled();
+  });
+
+  it("rejects a startDate after dueAt (m1)", async () => {
+    const tx = createTx();
+    runUpdate(tx);
+
+    await expect(
+      updateTask(
+        "demo",
+        "task-1",
+        { startDate: "2026-12-02", dueAt: "2026-12-01T00:00:00.000Z" },
+        undefined,
+        "actor-1",
+      ),
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(tx.update).not.toHaveBeenCalled();
   });
 });

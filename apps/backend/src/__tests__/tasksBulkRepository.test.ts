@@ -70,6 +70,8 @@ describe("tasks bulk repository", () => {
   it("classifies a skipped delete as has_active_children", async () => {
     mocks.returning.mockResolvedValue([]);
     mocks.selectWhere
+      .mockReturnValueOnce([]) // loadAssignedTaskIds
+      .mockReturnValueOnce([]) // loadForbiddenIds (creator lookup)
       .mockReturnValueOnce([]) // subquery built while composing the UPDATE
       .mockReturnValueOnce([{ id: "b", deletedAt: null }])
       .mockReturnValueOnce([{ parentTaskId: "b" }]);
@@ -83,6 +85,8 @@ describe("tasks bulk repository", () => {
   it("batch-restores with one update and reports archived-parent skips", async () => {
     mocks.returning.mockResolvedValue([{ id: "a" }]);
     mocks.selectWhere
+      .mockReturnValueOnce([]) // loadAssignedTaskIds
+      .mockReturnValueOnce([]) // loadForbiddenIds (creator lookup)
       .mockReturnValueOnce([]) // subquery built while composing the UPDATE
       .mockReturnValueOnce([{ id: "b", parentTaskId: "p-1", deletedAt: new Date() }])
       .mockReturnValueOnce([{ id: "p-1", deletedAt: new Date() }]);
@@ -95,11 +99,14 @@ describe("tasks bulk repository", () => {
   });
 
   it("updates only legal status transitions and reports every skip reason", async () => {
-    mocks.selectWhere.mockReturnValue([
-      { id: "a", title: "A", createdById: null, status: "todo" },
-      { id: "b", title: "B", createdById: null, status: "cancelled" },
-      { id: "c", title: "C", createdById: null, status: "in_progress" },
-    ]);
+    mocks.selectWhere
+      .mockReturnValueOnce([
+        { id: "a", title: "A", createdById: null, status: "todo" },
+        { id: "b", title: "B", createdById: null, status: "cancelled" },
+        { id: "c", title: "C", createdById: null, status: "in_progress" },
+      ]) // current rows
+      .mockReturnValueOnce([]) // loadAssignedTaskIds
+      .mockReturnValueOnce([]); // loadForbiddenIds (no forbidden)
     mocks.returning.mockResolvedValue([{ id: "a" }]);
 
     const result = await bulkUpdateTaskStatusBatch(

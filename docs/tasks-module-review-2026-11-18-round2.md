@@ -288,4 +288,30 @@ status has no OCC token; it applies the transition to whatever state the rows ar
 | H1 | **Open** | import assignee resolver now exists; import is per-row partial-success by design |
 | H5/H6 | **H6 closed** (OCC added); **H5 open** (notification diff read pre-lock) |
 
+## 12. Remediation status (2026-11-19, in progress)
+
+Implemented against the approved plan (M2 scoped ownership · M4 configurable channel · A1 barrier · A5/A6
+atomic outbox + status use-cases · Tier-2 minors), with TDD specs. All three packages typecheck and the
+code-norms / i18n / migrations-forward-only / db-projections gates hold.
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Shared contracts (`notificationChannel`, `forceCompleteSubtasks`, notification kinds, i18n) | **Done** | `tasksModuleManifest.ts`, `tenantNotifications.ts`, 4× i18n packs |
+| Schema + migration | **Done** | `notification_channel`, `recipient_user_id`, `(ws, created_at DESC)` index, drop `task_assignees.completed_at`; migration `0266` regenerated via `drizzle-kit generate` (SQL + snapshot), applied to local DB (`db:check` ✓) |
+| M2 ownership (mutation) + assignee-removal guard | **Done** | `taskMutationService` via `taskOwnership.canActorMutateTask`; spec `taskMutationService.test.ts` |
+| M2 ownership (archive/restore, single + bulk) | **Done** | creator **or assignee** or `assign_anywhere` (`isAssigned`/`resolveActionableIds`); non-owners skipped as `forbidden` |
+| A1 subtask barrier (single + bulk) | **Done** | `tasksWriteRepository` + `tasksBulkRepository`; spec `tasksWriteRepository.test.ts` |
+| m1 backend date validation | **Done** | `createTask`/`updateTask`; spec |
+| m3 delete 404 | **Done** | `deleteTask` → `deleted\|already_deleted\|not_found`; spec `tasksSoftDeleteErrors` |
+| N1 list query safeParse | **Done** | `tasksReadRoutes.ts` |
+| N2 tenant normalization | **Done** | metrics + trash paths |
+| m5 workspace day bounds | **Done** | `workspaceDayBounds.ts` for `listTasks` **and** `tasksExportService` due-date rendering (specs) |
+| m7 filtered metrics | **Done** | `getTaskMetrics(tenant, query?)` applies directory filters; metrics route parses the query (spec) |
+| m15 mapper cleanup | **Done** | dead columns trimmed + `completed_at` dropped; `creatorName` populated from `tenant_users.name` (spec) |
+| A5/A6 atomic outbox + status use-cases | **Done** | `emitTaskNotificationIntents(tx, …)` inside the mutation transaction; `changeTaskStatus`/`changeTasksBulkStatus` |
+| M4 delivery consumer | **Done** | `outboxCdcProcessor` → `deliverTaskNotification`: user-targeted in-app rows + messaging dispatch via `dispatchMessagingCampaignDirect` (tenant `defaultChannel`, email fallback for contactless recipients) |
+| Frontend Setup channel selector | **Done** | `TasksSetupTab` `notificationChannel` select (in-app / messaging / both) |
+
+**Verification:** `pnpm ci:local` ✓ (gates + Prettier + 591 backend files / 4168 tests + shared + frontend) · `db:migrate`/`db:check` ✓ (267=267) · `test:db taskDelegationScopeDb occWritesDb` ✓ (9/9). Commits: `787eb53b9` (remediation) → `917b29606` (residual gaps G1/G3/G4/G5) → `6868b1d1f` (G2 messaging dispatch) → `669ba44a1` (docs).
+
 (End of file)

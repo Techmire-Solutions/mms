@@ -156,6 +156,38 @@ describe("users use-cases (DI with fake repository)", () => {
     expect(allList).toHaveLength(2);
   });
 
+  it("loadUserEmailsByTenant returns active users' login emails", async () => {
+    const repo = createFakeRepo();
+    (repo.listTenantUsersByIds as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "u-1", loginEmail: "one@example.com", deletedAt: null },
+      { id: "u-2", loginEmail: "two@example.com", deletedAt: "2026-02-01T00:00:00.000Z" },
+      { id: "u-3", loginEmail: "", deletedAt: null },
+    ]);
+    const useCases = createUsersUseCases(repo);
+
+    const emails = await useCases.loadUserEmailsByTenant("demo", ["u-1", "u-2", "u-3"]);
+
+    expect(repo.listTenantUsersByIds).toHaveBeenCalledWith("demo", ["u-1", "u-2", "u-3"]);
+    expect(emails.get("u-1")).toBe("one@example.com");
+    expect(emails.has("u-2")).toBe(false);
+    expect(emails.has("u-3")).toBe(false);
+  });
+
+  it("loadUserContactIdsByTenant returns active users' contact ids", async () => {
+    const repo = createFakeRepo();
+    (repo.listTenantUsersByIds as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: "u-1", contactId: "c-1", deletedAt: null },
+      { id: "u-2", contactId: null, deletedAt: null },
+    ]);
+    const useCases = createUsersUseCases(repo);
+
+    const map = await useCases.loadUserContactIdsByTenant("demo", ["u-1", "u-2"]);
+
+    expect(repo.listTenantUsersByIds).toHaveBeenCalledWith("demo", ["u-1", "u-2"]);
+    expect(map.get("u-1")).toBe("c-1");
+    expect(map.has("u-2")).toBe(false);
+  });
+
   it("loadLogById and loadLogsByIds respect tenant scoping and ID cleaning", async () => {
     const repo = createFakeRepo();
     const fakeLog = {

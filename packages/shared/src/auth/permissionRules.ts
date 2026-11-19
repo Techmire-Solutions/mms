@@ -101,6 +101,10 @@ export const PERMISSION_RULES: Readonly<Record<Permission, PermissionRule>> = Ob
   "tasks.read": { module: "tasks", requiredActions: ["read"] },
   "tasks.write": { module: "tasks", requiredActions: ["create", "update"] },
   "tasks.delete": { module: "tasks", requiredActions: ["delete"] },
+  // `tasks.assign` is intentionally a write alias (D3): the assignment gate is a
+  // semantic marker over the same "create"/"update" actions as `tasks.write`, so
+  // a role can never hold assign without write. Kept for route-gate symmetry and
+  // future delegation granularity.
   "tasks.assign": { module: "tasks", requiredActions: ["create", "update"] },
   "tasks.assign_anywhere": { module: "tasks.assign_anywhere", requiredActions: ["update"] },
   "tasks.complete": { module: "tasks", requiredActions: ["update"] },

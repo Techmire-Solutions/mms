@@ -14,6 +14,7 @@ const baseSettings: TaskSettings = {
   allowSelfAssignment: true,
   notifyOnAssignment: true,
   notifyOnStatusChange: true,
+  notificationChannel: "in_app",
 };
 
 function task(partial: Partial<TaskRecord>): TaskRecord {
@@ -36,7 +37,7 @@ describe("emitTaskNotificationIntents", () => {
   });
 
   it("given new assignees and notifyOnAssignment, should emit task.assigned", async () => {
-    await emitTaskNotificationIntents({
+    await emitTaskNotificationIntents({} as never, {
       tenant: "demo",
       settings: baseSettings,
       actorUserId: "actor",
@@ -57,7 +58,7 @@ describe("emitTaskNotificationIntents", () => {
   });
 
   it("given notify prefs off, should emit nothing", async () => {
-    await emitTaskNotificationIntents({
+    await emitTaskNotificationIntents({} as never, {
       tenant: "demo",
       settings: { ...baseSettings, notifyOnAssignment: false, notifyOnStatusChange: false },
       actorUserId: "actor",
@@ -72,7 +73,7 @@ describe("emitTaskNotificationIntents", () => {
   });
 
   it("given status change and notifyOnStatusChange, should emit task.status_changed to creator", async () => {
-    await emitTaskNotificationIntents({
+    await emitTaskNotificationIntents({} as never, {
       tenant: "demo",
       settings: { ...baseSettings, notifyOnAssignment: false },
       actorUserId: "actor",

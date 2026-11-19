@@ -17,6 +17,9 @@ import { hasActiveChild, hasActiveParent } from "./tasksBulkPredicates.js";
 import {
   classifyDeleteSkips,
   classifyRestoreSkips,
+  loadForbiddenSet,
+  loadUnresolvedParentIds,
+  resolveActionableIds,
   uniqueIds,
   type TaskBulkSkip,
 } from "./tasksBulkSkips.js";
@@ -35,6 +38,7 @@ export async function bulkDeleteTasksBatch(
   tenant: string,
   ids: readonly string[],
   actorUserId: string,
+  canAssignAnywhere = false,
 ): Promise<{ deletedIds: string[]; skipped: TaskBulkSkip[] }> {
   const subdomain = tenant.trim().toLowerCase();
   const requested = uniqueIds(ids);
@@ -42,6 +46,13 @@ export async function bulkDeleteTasksBatch(
 
   return withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);
+    const { actionable, forbidden } = await resolveActionableIds(
+      tx,
+      subdomain,
+      requested,
+      actorUserId,
+      canAssignAnywhere,
+    );
     const now = new Date();
     const deleted = await tx
       .update(tasks)
@@ -49,7 +60,7 @@ export async function bulkDeleteTasksBatch(
       .where(
         and(
           eq(tasks.workspaceSubdomain, subdomain),
-          inArray(tasks.id, requested),
+          inArray(tasks.id, actionable),
           isNull(tasks.deletedAt),
           hasActiveChild(tx, subdomain),
         ),
@@ -58,8 +69,9 @@ export async function bulkDeleteTasksBatch(
 
     const deletedIds = deleted.map((row) => String(row.id));
     const deletedSet = new Set(deletedIds);
-    const remaining = requested.filter((id) => !deletedSet.has(id));
-    const skipped = remaining.length ? await classifyDeleteSkips(tx, subdomain, remaining) : [];
+    const remaining = actionable.filter((id) => !deletedSet.has(id));
+    const skipped: TaskBulkSkip[] = [...forbidden];
+    if (remaining.length) skipped.push(...(await classifyDeleteSkips(tx, subdomain, remaining)));
 
     for (const id of deletedIds) {
       await recordModernAuditEvent(tx, {
@@ -92,6 +104,7 @@ export async function bulkRestoreTasksBatch(
   tenant: string,
   ids: readonly string[],
   actorUserId: string,
+  canAssignAnywhere = false,
 ): Promise<{ restoredIds: string[]; skipped: TaskBulkSkip[] }> {
   const subdomain = tenant.trim().toLowerCase();
   const requested = uniqueIds(ids);
@@ -99,6 +112,13 @@ export async function bulkRestoreTasksBatch(
 
   return withTenant(subdomain, async (tx) => {
     await lockFacultyHierarchy(tx, subdomain);
+    const { actionable, forbidden } = await resolveActionableIds(
+      tx,
+      subdomain,
+      requested,
+      actorUserId,
+      canAssignAnywhere,
+    );
     const now = new Date();
     const restored = await tx
       .update(tasks)
@@ -113,7 +133,7 @@ export async function bulkRestoreTasksBatch(
       .where(
         and(
           eq(tasks.workspaceSubdomain, subdomain),
-          inArray(tasks.id, requested),
+          inArray(tasks.id, actionable),
           isNotNull(tasks.deletedAt),
           or(isNull(tasks.parentTaskId), hasActiveParent(tx, subdomain)),
         ),
@@ -122,8 +142,9 @@ export async function bulkRestoreTasksBatch(
 
     const restoredIds = restored.map((row) => String(row.id));
     const restoredSet = new Set(restoredIds);
-    const remaining = requested.filter((id) => !restoredSet.has(id));
-    const skipped = remaining.length ? await classifyRestoreSkips(tx, subdomain, remaining) : [];
+    const remaining = actionable.filter((id) => !restoredSet.has(id));
+    const skipped: TaskBulkSkip[] = [...forbidden];
+    if (remaining.length) skipped.push(...(await classifyRestoreSkips(tx, subdomain, remaining)));
 
     for (const id of restoredIds) {
       await recordModernAuditEvent(tx, {
@@ -157,11 +178,8 @@ export async function bulkUpdateTaskStatusBatch(
   ids: readonly string[],
   status: TaskStatus,
   actorUserId: string,
-): Promise<{
-  updatedIds: string[];
-  skipped: TaskBulkSkip[];
-  changes: TaskStatusChange[];
-}> {
+  canAssignAnywhere = false,
+): Promise<{ updatedIds: string[]; skipped: TaskBulkSkip[]; changes: TaskStatusChange[] }> {
   const subdomain = tenant.trim().toLowerCase();
   const requested = uniqueIds(ids);
   if (requested.length === 0) return { updatedIds: [], skipped: [], changes: [] };
@@ -185,12 +203,29 @@ export async function bulkUpdateTaskStatusBatch(
       );
     const currentById = new Map(current.map((row) => [String(row.id), row]));
 
+    // Scoped ownership (M2) + subtask barrier (A1): computed out-of-line.
+    const forbidden = await loadForbiddenSet(
+      tx,
+      subdomain,
+      requested,
+      actorUserId,
+      canAssignAnywhere,
+    );
+    const unresolvedParents =
+      status === "completed"
+        ? await loadUnresolvedParentIds(tx, subdomain, requested)
+        : new Set<string>();
+
     const skipped: TaskBulkSkip[] = [];
     const allowed: typeof current = [];
     for (const id of requested) {
       const row = currentById.get(id);
       if (!row) {
         skipped.push({ id, reason: "not_found" });
+        continue;
+      }
+      if (forbidden.has(id)) {
+        skipped.push({ id, reason: "forbidden" });
         continue;
       }
       if (row.status === status) {
@@ -201,10 +236,15 @@ export async function bulkUpdateTaskStatusBatch(
         skipped.push({ id, reason: "illegal_transition" });
         continue;
       }
+      if (status === "completed" && unresolvedParents.has(id)) {
+        skipped.push({ id, reason: "has_unresolved_subtasks" });
+        continue;
+      }
       allowed.push(row);
     }
     if (allowed.length === 0) return { updatedIds: [], skipped, changes: [] };
 
+    // Bulk status is last-write-wins (no OCC token; D4 documented).
     const now = new Date();
     const updated = await tx
       .update(tasks)

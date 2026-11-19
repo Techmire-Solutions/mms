@@ -1,6 +1,8 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { tasks } from "../schema.js";
+import { type TaskListQuery } from "@mms/shared";
+import { tasks, workspaces } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
+import { buildTaskFilterConditions } from "./tasksFilterConditions.js";
 
 export interface TaskMetricsRow {
   total: number;
@@ -19,8 +21,31 @@ export interface TaskMetricsRow {
   };
 }
 
-export async function getTaskMetrics(tenant: string): Promise<TaskMetricsRow> {
-  return withTenantRead(tenant, async (tx) => {
+/**
+ * Workspace task metrics, optionally narrowed by the same directory filters the
+ * Work tab applies (m7). When no filters are supplied the result is the
+ * workspace-wide command-centre KPI strip.
+ */
+export async function getTaskMetrics(
+  tenant: string,
+  query?: TaskListQuery,
+): Promise<TaskMetricsRow> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const now = new Date();
+    const conditions = [eq(tasks.workspaceSubdomain, subdomain), isNull(tasks.deletedAt)];
+
+    let timezone = "UTC";
+    if (query?.dueFrom?.trim() || query?.dueTo?.trim() || query?.dueOn?.trim()) {
+      const [workspace] = await tx
+        .select({ timezone: workspaces.timezone })
+        .from(workspaces)
+        .where(eq(workspaces.subdomain, subdomain));
+      timezone = workspace?.timezone?.trim() || "UTC";
+    }
+
+    conditions.push(...buildTaskFilterConditions(query, timezone));
+
     const [row] = await tx
       .select({
         total: sql<number>`count(*)::int`,
@@ -30,15 +55,14 @@ export async function getTaskMetrics(tenant: string): Promise<TaskMetricsRow> {
         blocked: sql<number>`count(*) FILTER (WHERE status = 'blocked')::int`,
         completed: sql<number>`count(*) FILTER (WHERE status = 'completed')::int`,
         cancelled: sql<number>`count(*) FILTER (WHERE status = 'cancelled')::int`,
-        overdue: sql<number>`count(*) FILTER (WHERE due_at < CURRENT_TIMESTAMP
-        AND status NOT IN ('completed', 'cancelled'))::int`,
+        overdue: sql<number>`count(*) FILTER (WHERE ${tasks.dueAt} < ${now} AND ${tasks.status} NOT IN ('completed', 'cancelled'))::int`,
         priorityLow: sql<number>`count(*) FILTER (WHERE priority = 'low')::int`,
         priorityMedium: sql<number>`count(*) FILTER (WHERE priority = 'medium')::int`,
         priorityHigh: sql<number>`count(*) FILTER (WHERE priority = 'high')::int`,
         priorityUrgent: sql<number>`count(*) FILTER (WHERE priority = 'urgent')::int`,
       })
       .from(tasks)
-      .where(and(eq(tasks.workspaceSubdomain, tenant), isNull(tasks.deletedAt)));
+      .where(and(...conditions));
 
     return {
       total: row?.total ?? 0,

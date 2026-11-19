@@ -9,6 +9,8 @@ import { ConflictError, ValidationError } from "../lib/httpErrors.js";
 const {
   canPerformTaskAction,
   mutateTask,
+  changeTaskStatus,
+  changeTasksBulkStatus,
   listTasks,
   findTaskById,
   getTaskMetrics,
@@ -20,6 +22,8 @@ const {
 } = vi.hoisted(() => ({
   canPerformTaskAction: vi.fn(),
   mutateTask: vi.fn(),
+  changeTaskStatus: vi.fn(),
+  changeTasksBulkStatus: vi.fn(),
   listTasks: vi.fn(),
   findTaskById: vi.fn(),
   getTaskMetrics: vi.fn(),
@@ -37,6 +41,8 @@ vi.mock("../services/taskPermissionService.js", () => ({
 }));
 vi.mock("../services/taskMutationService.js", () => ({
   mutateTask: (...args: unknown[]) => mutateTask(...args),
+  changeTaskStatus: (...args: unknown[]) => changeTaskStatus(...args),
+  changeTasksBulkStatus: (...args: unknown[]) => changeTasksBulkStatus(...args),
   TaskDelegationError: class TaskDelegationError extends Error {},
 }));
 vi.mock("../db/repositories/tasksRepository.js", () => ({
@@ -209,7 +215,7 @@ describe("Tasks assign route gates (inject)", () => {
 
   it("maps an illegal status transition to 400 instead of 500", async () => {
     canPerformTaskAction.mockResolvedValue(true);
-    updateTaskStatus.mockRejectedValueOnce(
+    changeTaskStatus.mockRejectedValueOnce(
       new ValidationError("Invalid status transition: completed → todo"),
     );
 
@@ -253,7 +259,7 @@ describe("Tasks assign route gates (inject)", () => {
     canPerformTaskAction.mockImplementation(async (_req: unknown, permission: string) => {
       return permission === "tasks.complete";
     });
-    bulkUpdateTaskStatus.mockResolvedValue({
+    changeTasksBulkStatus.mockResolvedValue({
       updatedIds: ["task-1"],
       skipped: [{ id: "task-2", reason: "illegal_transition" }],
       changes: [],
@@ -268,11 +274,12 @@ describe("Tasks assign route gates (inject)", () => {
         payload: { ids: ["task-1", "task-2"], status: "completed" },
       });
       expect(response.statusCode).toBe(200);
-      expect(bulkUpdateTaskStatus).toHaveBeenCalledWith(
+      expect(changeTasksBulkStatus).toHaveBeenCalledWith(
         "demo",
+        "u-actor",
+        false,
         ["task-1", "task-2"],
         "completed",
-        "u-actor",
       );
       expect(response.json()).toMatchObject({
         updatedIds: ["task-1"],
@@ -378,6 +385,27 @@ describe("Tasks assign route gates (inject)", () => {
     }
   });
 
+  it("passes directory filters into GET /api/tasks/metrics (m7)", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    getTaskMetrics.mockResolvedValueOnce({ total: 1, todo: 0 });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/metrics?status=in_progress&priority=high",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(getTaskMetrics).toHaveBeenCalledWith(
+        "demo",
+        expect.objectContaining({ status: "in_progress", priority: "high" }),
+      );
+    } finally {
+      await app.close();
+    }
+  });
+
   it("returns tenant task settings on GET /api/tasks/settings", async () => {
     canPerformTaskAction.mockResolvedValue(true);
     getTenantTaskSettings.mockResolvedValueOnce({
@@ -385,6 +413,7 @@ describe("Tasks assign route gates (inject)", () => {
       allowSelfAssignment: true,
       notifyOnAssignment: true,
       notifyOnStatusChange: true,
+      notificationChannel: "in_app",
     });
 
     const app = await buildTasksApp();
@@ -406,7 +435,7 @@ describe("Tasks assign route gates (inject)", () => {
 
   it("maps stale x-expected-updated-at ConflictError to 409 on PATCH /api/tasks/:id/status", async () => {
     canPerformTaskAction.mockResolvedValue(true);
-    updateTaskStatus.mockRejectedValueOnce(
+    changeTaskStatus.mockRejectedValueOnce(
       new ConflictError("This task was changed by someone else. Reload it and try again."),
     );
 

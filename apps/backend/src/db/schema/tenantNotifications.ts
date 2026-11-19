@@ -32,6 +32,8 @@ export const tenantNotifications = pgTable(
      * makes the absence scan's notifications exactly-once across crashes and double runs.
      */
     dedupeKey: varchar("dedupe_key", { length: 120 }),
+    /** User-targeted delivery (task notifications); null = permission-audience delivery. */
+    recipientUserId: text("recipient_user_id"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
   },
   (table) => [
@@ -43,6 +45,10 @@ export const tenantNotifications = pgTable(
     uniqueIndex("tenant_notifications_workspace_dedupe_uidx")
       .on(table.workspaceSubdomain, table.dedupeKey)
       .where(sql`${table.dedupeKey} IS NOT NULL`),
+    index("tenant_notifications_workspace_recipient_idx").on(
+      table.workspaceSubdomain,
+      table.recipientUserId,
+    ),
   ],
 );
 

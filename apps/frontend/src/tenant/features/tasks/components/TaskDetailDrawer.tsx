@@ -14,6 +14,7 @@ import { DetailSectionTitle } from "@/components/app/DetailSectionTitle";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import { CopyBtn } from "@/components/app/CopyButton";
+import { BiDiText } from "@/components/app/BiDiText";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TaskPriorityBadge } from "./TaskBadges";
 import { TaskStatusMenu } from "./TaskStatusMenu";
@@ -95,9 +96,12 @@ export function TaskDetailDrawer({
           </div>
         </div>
         {task.description ? (
-          <p className="text-sm text-foreground text-wrap-pretty whitespace-pre-wrap break-words">
+          <BiDiText
+            as="p"
+            className="text-sm text-foreground text-wrap-pretty whitespace-pre-wrap break-words"
+          >
             {task.description}
-          </p>
+          </BiDiText>
         ) : null}
 
         <div className="space-y-3 pt-1">

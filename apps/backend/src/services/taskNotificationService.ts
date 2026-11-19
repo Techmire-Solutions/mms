@@ -5,16 +5,24 @@
  */
 
 import type { TaskRecord, TaskSettings, TaskStatus } from "@mms/shared";
-import { withTenant } from "../db/tenant-context.js";
+import type { AppDb } from "../db/tenant-context.js";
 import { emitOutboxEvent, emitOutboxEvents, type OutboxBatchEvent } from "./outboxEventService.js";
 
-export async function emitTaskNotificationIntents(input: {
-  tenant: string;
-  settings: TaskSettings;
-  actorUserId: string;
-  previous: TaskRecord | null;
-  next: TaskRecord;
-}): Promise<void> {
+/**
+ * Emits assignment/status notification intents **inside the caller's
+ * transaction** so the outbox row commits atomically with the task mutation
+ * (A5). The delivery channel is resolved later by the outbox consumer (M4).
+ */
+export async function emitTaskNotificationIntents(
+  tx: AppDb,
+  input: {
+    tenant: string;
+    settings: TaskSettings;
+    actorUserId: string;
+    previous: TaskRecord | null;
+    next: TaskRecord;
+  },
+): Promise<void> {
   const { tenant, settings, actorUserId, previous, next } = input;
   const assigneeIds = [
     ...new Set(
@@ -34,34 +42,32 @@ export async function emitTaskNotificationIntents(input: {
 
   if (!shouldNotifyAssignment && !shouldNotifyStatus) return;
 
-  await withTenant(tenant, async (tx) => {
-    if (shouldNotifyAssignment) {
-      await emitOutboxEvent(tx, "task.assigned", {
-        entityType: "tasks",
-        entityId: next.id,
-        tenantId: tenant,
-        version: Date.now(),
-        recipientUserIds: newAssigneeIds,
-        actorUserId,
-        reason: "assignment",
-        status: next.status,
-        title: next.title,
-      });
-    }
-    if (shouldNotifyStatus && creatorId) {
-      await emitOutboxEvent(tx, "task.status_changed", {
-        entityType: "tasks",
-        entityId: next.id,
-        tenantId: tenant,
-        version: Date.now(),
-        recipientUserIds: [creatorId],
-        actorUserId,
-        reason: "status_change",
-        status: next.status,
-        title: next.title,
-      });
-    }
-  });
+  if (shouldNotifyAssignment) {
+    await emitOutboxEvent(tx, "task.assigned", {
+      entityType: "tasks",
+      entityId: next.id,
+      tenantId: tenant,
+      version: Date.now(),
+      recipientUserIds: newAssigneeIds,
+      actorUserId,
+      reason: "assignment",
+      status: next.status,
+      title: next.title,
+    });
+  }
+  if (shouldNotifyStatus && creatorId) {
+    await emitOutboxEvent(tx, "task.status_changed", {
+      entityType: "tasks",
+      entityId: next.id,
+      tenantId: tenant,
+      version: Date.now(),
+      recipientUserIds: [creatorId],
+      actorUserId,
+      reason: "status_change",
+      status: next.status,
+      title: next.title,
+    });
+  }
 }
 
 export interface TaskBulkStatusNotificationChange {
@@ -75,12 +81,15 @@ export interface TaskBulkStatusNotificationChange {
  * Batched creator notification for a bulk status change: one transaction, one
  * outbox insert + NOTIFY for the whole batch (single-task parity).
  */
-export async function emitTaskBulkStatusNotifications(input: {
-  tenant: string;
-  settings: TaskSettings;
-  actorUserId: string;
-  changes: readonly TaskBulkStatusNotificationChange[];
-}): Promise<void> {
+export async function emitTaskBulkStatusNotifications(
+  tx: AppDb,
+  input: {
+    tenant: string;
+    settings: TaskSettings;
+    actorUserId: string;
+    changes: readonly TaskBulkStatusNotificationChange[];
+  },
+): Promise<void> {
   const { tenant, settings, actorUserId, changes } = input;
   if (!settings.notifyOnStatusChange || changes.length === 0) return;
 
@@ -102,7 +111,5 @@ export async function emitTaskBulkStatusNotifications(input: {
     }));
   if (events.length === 0) return;
 
-  await withTenant(tenant, async () => {
-    await emitOutboxEvents(events);
-  });
+  await emitOutboxEvents(events, tx);
 }

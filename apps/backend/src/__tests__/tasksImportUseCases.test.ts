@@ -52,6 +52,7 @@ describe("runTasksImportJob", () => {
       allowSelfAssignment: true,
       notifyOnAssignment: true,
       notifyOnStatusChange: true,
+      notificationChannel: "in_app",
     });
     mockEligible.mockResolvedValue(eligible);
     mockMutate.mockResolvedValue({ id: "created" });
