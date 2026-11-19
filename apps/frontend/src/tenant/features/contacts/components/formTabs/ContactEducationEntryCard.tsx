@@ -60,6 +60,7 @@ export function ContactEducationEntryCard({
 
   return (
     <FormListFieldCard
+      key={localId}
       id={localId}
       index={idx}
       icon={GraduationCap}
