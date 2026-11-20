@@ -11,7 +11,11 @@ import { sendTenantEmail, verifyEmailTransport } from "../../services/email/emai
 import { loadGlobalSettings } from "../../services/globalSettingsService.js";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { canWriteObject } from "../../services/rbacService.js";
-import { emailIntegrationBodySchema, verificationCodeBodySchema } from "@mms/shared";
+import {
+  emailIntegrationBodySchema,
+  emailTestBodySchema,
+  verificationCodeBodySchema,
+} from "@mms/shared";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 import { sendForbidden } from "../../lib/httpErrors.js";
 import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
@@ -81,7 +85,7 @@ export default async function emailRoutes(
     return reply.send(saved);
   });
 
-  fastify.post("/integration/test", async (request, reply) => {
+  fastify.post("/integration/test", { preHandler: emailSendLimit }, async (request, reply) => {
     const user = request.user as User;
     if (!canWriteObject(user, "email_integration")) {
       return sendForbidden(
@@ -89,6 +93,10 @@ export default async function emailRoutes(
         "Administrator access is required for email integration settings",
       );
     }
+
+    const parsed = parseRequest(emailTestBodySchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    const testEmail = parsed.data.testEmail?.trim() || user.email;
 
     const verify = await verifyEmailTransport();
     if (!verify.sent) {
@@ -101,7 +109,7 @@ export default async function emailRoutes(
     const settings = await loadGlobalSettings();
     const testSend = await sendTenantEmail(
       {
-        to: user.email,
+        to: testEmail,
         subject: "MMS email test",
         text: "Your madrasa workspace email integration is working.",
       },

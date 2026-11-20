@@ -3374,6 +3374,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "email.testFailed": "ٹیسٹ ای میل ناکام",
   "email.testSuccess": "ٹیسٹ ای میل بھیج دی گئی",
   "email.testSuccessDesc": "اپنا ان باکس چیک کریں۔",
+  "email.testEmailPlaceholder": "ٹیسٹ بھیجنے کے لیے ای میل ایڈریس",
   "obligations.columns.currency": "کرنسی",
   "obligations.columns.receivedBy": "وصول کنندہ",
   "obligations.columns.reference": "حوالہ",
@@ -3439,12 +3440,15 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "whatsapp.phoneNumberId": "فون نمبر آئی ڈی",
   "whatsapp.phoneNumberIdPlaceholder": "ڈیش بورڈ سے میٹا فون نمبر آئی ڈی",
   "whatsapp.provider": "واٹس ایپ فراہم کنندہ",
+  "whatsapp.providerLogiqueues": "Logiqueues",
+  "whatsapp.providerLogiqueuesHint":
+    "Logiqueues واٹس ایپ گیٹ وے۔ اپنی API کلید کو API سیکرٹ کے طور پر درج کریں؛ Logiqueues اسمارٹ اینڈ پوائنٹ استعمال کرنے کے لیے بیس یو آر ایل خالی چھوڑیں۔",
   "whatsapp.providerInfobip": "انفوبپ واٹس ایپ",
   "whatsapp.providerInfobipHint":
     "انفوبپ واٹس ایپ بزنس API۔ اپنا بیس URL، بھیجنے والے کا نمبر اور API کلید درج کریں۔",
   "whatsapp.providerCustom": "کسٹم / عمومی گیٹ وے (URL)",
   "whatsapp.providerCustomHint":
-    "کسی بھی گیٹ وے اینڈ پوائنٹ (جیسے LogiQueues یا ویب ہک) پر براہ راست HTTP POST بمع بیئرر توثیق۔",
+    "کسی بھی گیٹ وے اینڈ پوائنٹ (جیسے Logiqueues یا ویب ہک) پر براہ راست HTTP POST بمع بیئرر توثیق۔",
   "whatsapp.providerMeta": "میٹا واٹس ایپ کلاؤڈ API",
   "whatsapp.providerMetaHint":
     "براہ راست میٹا کلاؤڈ API۔ اپنا واٹس ایپ بزنس اکاؤنٹ، فون نمبر آئی ڈی اور مستقل ایکسس ٹوکن درج کریں۔",

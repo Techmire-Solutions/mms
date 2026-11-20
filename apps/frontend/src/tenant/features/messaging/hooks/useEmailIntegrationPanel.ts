@@ -24,12 +24,18 @@ export function useEmailIntegrationPanel() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [form, setForm] = useState<EmailIntegrationConfig>(DEFAULT_EMAIL_INTEGRATION);
   const [smtpPassword, setSmtpPassword] = useState("");
+  const [testEmail, setTestEmail] = useState("");
 
   // `loading` already starts true, so the mount fetch only has to clear it when it settles.
   const load = useCallback(async (): Promise<void> => {
     try {
       const config = await fetchEmailIntegration();
-      if (config) setForm(config);
+      if (config) {
+        setForm(config);
+        if (config.fromAddress) {
+          setTestEmail((prev) => prev || config.fromAddress);
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -79,7 +85,7 @@ export function useEmailIntegrationPanel() {
         setForm(saved);
         setSmtpPassword("");
       }
-      const config = await testEmailIntegration();
+      const config = await testEmailIntegration(testEmail.trim() || form.fromAddress);
       setForm(config);
       void queryClient.invalidateQueries({ queryKey: ["email-integration"] });
       notify.success(t("email.testSuccess"), { description: t("email.testSuccessDesc") });
@@ -102,6 +108,8 @@ export function useEmailIntegrationPanel() {
     form,
     smtpPassword,
     setSmtpPassword,
+    testEmail,
+    setTestEmail,
     selectedPreset,
     isCustom,
     setField,

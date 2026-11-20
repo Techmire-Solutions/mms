@@ -25,6 +25,8 @@ export default function EmailIntegrationPanel({
     form,
     smtpPassword,
     setSmtpPassword,
+    testEmail,
+    setTestEmail,
     selectedPreset,
     isCustom,
     setField,
@@ -52,6 +54,20 @@ export default function EmailIntegrationPanel({
       testLabel={t("email.sendTest")}
       onSave={() => void handleSave()}
       onTest={() => void handleTest()}
+      footerContent={
+        <div className="space-y-2">
+          <Label htmlFor="email-test-email">{t("email.testEmailPlaceholder")}</Label>
+          <Input
+            id="email-test-email"
+            name="testEmail"
+            type="email"
+            value={testEmail ?? ""}
+            onChange={(event) => setTestEmail(event.target.value)}
+            placeholder={`admin@${selectedPreset.exampleDomain}`}
+            disabled={!canWrite}
+          />
+        </div>
+      }
     >
       <div className="space-y-2 sm:col-span-2">
         <Label htmlFor="email-provider">{t("email.provider")}</Label>
@@ -76,7 +92,7 @@ export default function EmailIntegrationPanel({
         <Input
           id="email-from-name"
           name="fromName"
-          value={form.fromName}
+          value={form.fromName ?? ""}
           onChange={(event) => setField("fromName", event.target.value)}
           disabled={!canWrite}
         />
@@ -87,7 +103,7 @@ export default function EmailIntegrationPanel({
           id="email-from-address"
           name="fromAddress"
           type="email"
-          value={form.fromAddress}
+          value={form.fromAddress ?? ""}
           onChange={(event) => setField("fromAddress", event.target.value)}
           placeholder={`admin@${selectedPreset.exampleDomain}`}
           disabled={!canWrite}
@@ -99,7 +115,7 @@ export default function EmailIntegrationPanel({
         <Input
           id="email-smtp-username"
           name="smtpUsername"
-          value={form.smtpUsername}
+          value={form.smtpUsername ?? ""}
           onChange={(event) => setField("smtpUsername", event.target.value)}
           placeholder={`you@${selectedPreset.exampleDomain}`}
           autoComplete="username"
