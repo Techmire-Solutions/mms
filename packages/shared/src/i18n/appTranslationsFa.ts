@@ -3460,12 +3460,15 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "whatsapp.phoneNumberId": "شناسه شماره تلفن",
   "whatsapp.phoneNumberIdPlaceholder": "شناسه شماره تلفن متا از پنل کاربری",
   "whatsapp.provider": "ارائه‌دهنده واتساپ",
+  "whatsapp.providerLogiqueues": "Logiqueues",
+  "whatsapp.providerLogiqueuesHint":
+    "درگاه واتساپ Logiqueues. کلید API را به عنوان کلید مخفی وارد کنید؛ برای استفاده از نقطه پایانی هوشمند Logiqueues، آدرس پایه را خالی بگذارید.",
   "whatsapp.providerInfobip": "اینفوبیپ واتساپ",
   "whatsapp.providerInfobipHint":
     "API تجاری واتساپ اینفوبیپ. آدرس پایه، شماره فرستنده و کلید API را وارد کنید.",
   "whatsapp.providerCustom": "درگاه سفارشی / عمومی (URL)",
   "whatsapp.providerCustomHint":
-    "درخواست مستقیم HTTP POST به هر آدرس گیت‌وی (مانند LogiQueues یا وب‌هوک) با احراز هویت Bearer.",
+    "درخواست مستقیم HTTP POST به هر آدرس گیت‌وی (مانند Logiqueues یا وب‌هوک) با احراز هویت Bearer.",
   "whatsapp.providerMeta": "متا واتساپ کلود API",
   "whatsapp.providerMetaHint":
     "API مستقیم کلود متا. شناسه حساب، شناسه شماره تلفن و توکن دسترسی دائمی را وارد کنید.",

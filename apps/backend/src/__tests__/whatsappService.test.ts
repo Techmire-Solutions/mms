@@ -118,6 +118,32 @@ describe("whatsappService", () => {
     expect(fetchSpy.mock.calls[0][0]).toBe("https://logiqueues.com/gateway/v1/messages/smart");
   });
 
+  it("dispatches successfully via the LogiQueues provider using its default smart endpoint", async () => {
+    vi.spyOn(globalSettingsService, "loadGlobalSettings").mockResolvedValue({
+      ...DEFAULT_GLOBAL_SETTINGS,
+      whatsAppNotifications: true,
+    });
+    vi.spyOn(whatsappIntegrationService, "loadWhatsappIntegrationConfig").mockResolvedValue({
+      ...DEFAULT_WHATSAPP_INTEGRATION,
+      providerId: "logiqueues",
+      apiBaseUrl: "",
+    });
+    vi.spyOn(whatsappIntegrationService, "loadWhatsappIntegrationSecrets").mockResolvedValue({
+      accountSecret: "ngw_live_test_key",
+    });
+
+    const fetchSpy = vi.spyOn(outboundUrl, "fetchSafeExternal").mockResolvedValue(
+      new Response(JSON.stringify({ id: "wa_logiqueues_123" }), {
+        status: 202,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const result = await sendTenantWhatsApp({ to: "+923001234567", body: "Test LogiQueues" });
+    expect(result).toEqual({ sent: true, providerMessageId: "wa_logiqueues_123" });
+    expect(fetchSpy.mock.calls[0][0]).toBe("https://logiqueues.com/gateway/v1/messages/smart");
+  });
+
   it("verifies transport connectivity check", async () => {
     vi.spyOn(whatsappIntegrationService, "loadWhatsappIntegrationConfig").mockResolvedValue({
       ...DEFAULT_WHATSAPP_INTEGRATION,

@@ -3462,12 +3462,15 @@ export const APP_TRANSLATIONS_EN = {
   "whatsapp.phoneNumberId": "Phone Number ID",
   "whatsapp.phoneNumberIdPlaceholder": "Meta Phone Number ID from App Dashboard",
   "whatsapp.provider": "WhatsApp Provider",
+  "whatsapp.providerLogiqueues": "Logiqueues",
+  "whatsapp.providerLogiqueuesHint":
+    "Logiqueues WhatsApp gateway. Enter your API key as the API secret; leave the base URL blank to use the Logiqueues smart endpoint.",
   "whatsapp.providerInfobip": "Infobip WhatsApp",
   "whatsapp.providerInfobipHint":
     "Infobip WhatsApp Business API. Enter your base URL, sender number, and API key.",
   "whatsapp.providerCustom": "Custom / Generic Gateway (URL)",
   "whatsapp.providerCustomHint":
-    "Direct HTTP POST to any gateway endpoint (e.g. LogiQueues, Webhooks). Sends standard { to, body } with Bearer auth.",
+    "Direct HTTP POST to any gateway endpoint (e.g. Logiqueues, Webhooks). Sends standard { to, body } with Bearer auth.",
   "whatsapp.providerMeta": "Meta WhatsApp Cloud API",
   "whatsapp.providerMetaHint":
     "Direct Meta Cloud API. Enter your WhatsApp Business Account ID, Phone Number ID, and Permanent Access Token.",

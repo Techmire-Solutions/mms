@@ -3,6 +3,15 @@ import type { WhatsappProviderId, WhatsappProviderPreset } from "./whatsappInteg
 /** Supported WhatsApp providers — exactly one active per tenant at a time. */
 export const WHATSAPP_PROVIDER_PRESETS: readonly WhatsappProviderPreset[] = [
   {
+    id: "logiqueues",
+    labelKey: "whatsapp.providerLogiqueues",
+    hintKey: "whatsapp.providerLogiqueuesHint",
+    requiresBaseUrl: true,
+    requiresPhoneNumberId: false,
+    baseUrlPlaceholder: "https://logiqueues.com/gateway/v1/messages/smart",
+    senderPlaceholder: "+923001234567",
+  },
+  {
     id: "meta",
     labelKey: "whatsapp.providerMeta",
     hintKey: "whatsapp.providerMetaHint",

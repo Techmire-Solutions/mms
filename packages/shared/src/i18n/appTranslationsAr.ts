@@ -3402,12 +3402,15 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "whatsapp.phoneNumberId": "معرّف رقم الهاتف",
   "whatsapp.phoneNumberIdPlaceholder": "معرّف رقم هاتف Meta من لوحة التحكم",
   "whatsapp.provider": "مزود واتساب",
+  "whatsapp.providerLogiqueues": "Logiqueues",
+  "whatsapp.providerLogiqueuesHint":
+    "بوابة واتساب Logiqueues. أدخل مفتاح API كسر واجهة البرمجة؛ اترك رابط القاعدة فارغاً لاستخدام نقطة النهاية الذكية من Logiqueues.",
   "whatsapp.providerInfobip": "إنفوبيب واتساب",
   "whatsapp.providerInfobipHint":
     "واجهة برمجة تطبيقات Infobip لواتساب للأعمال. أدخل عنوان URL ورقم المرسل والمفتاح السري.",
   "whatsapp.providerCustom": "بوابة مخصصة / عامة (رابط مباشر)",
   "whatsapp.providerCustomHint":
-    "طلب HTTP POST مباشر إلى أي نقطة نهاية بوابة (مثل LogiQueues أو Webhook) مع مصادقة Bearer.",
+    "طلب HTTP POST مباشر إلى أي نقطة نهاية بوابة (مثل Logiqueues أو Webhook) مع مصادقة Bearer.",
   "whatsapp.providerMeta": "واجهة ميتا واتساب السحابية",
   "whatsapp.providerMetaHint":
     "واجهة برمجة تطبيقات Meta Cloud المباشرة. أدخل معرّف حساب واتساب ومعرّف رقم الهاتف ورمز الوصول الدائم.",

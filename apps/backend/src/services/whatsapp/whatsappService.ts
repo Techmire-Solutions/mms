@@ -23,6 +23,7 @@ export interface SendWhatsappResult {
 }
 
 const PROVIDER_SENDERS: Record<string, WhatsappProviderSender> = {
+  logiqueues: sendGenericOutboundMessage,
   meta: sendMetaWhatsApp,
   twilio: sendTwilioWhatsApp,
   infobip: sendInfobipWhatsApp,
@@ -41,7 +42,7 @@ async function dispatchViaActiveProvider(to: string, body: string): Promise<Send
   const secrets = await loadWhatsappIntegrationSecrets();
   const accountSecret = secrets.accountSecret ?? "";
 
-  const requiresSenderId = config.providerId !== "custom";
+  const requiresSenderId = config.providerId !== "custom" && config.providerId !== "logiqueues";
   if (!accountSecret || (requiresSenderId && !config.senderId)) {
     return { sent: false, reason: "not_configured" };
   }
