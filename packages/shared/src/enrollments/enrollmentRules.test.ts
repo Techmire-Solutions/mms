@@ -9,7 +9,10 @@ import {
 describe("addDeadlineError", () => {
   it("allows the deadline day and rejects the day after", () => {
     expect(addDeadlineError("2026-04-15", "2026-04-15")).toBeNull();
-    expect(addDeadlineError("2026-04-15", "2026-04-16")).toMatch(/closed on 2026-04-15/);
+    expect(addDeadlineError("2026-04-15", "2026-04-16")).toEqual({
+      key: "enrollments.errors.addDeadlinePassed",
+      day: "2026-04-15",
+    });
   });
 
   it("treats empty/invalid deadlines as no limit", () => {
@@ -22,7 +25,10 @@ describe("addDeadlineError", () => {
 describe("dropDeadlineError", () => {
   it("allows the deadline day and rejects a later effective date", () => {
     expect(dropDeadlineError("2026-05-01", "2026-05-01")).toBeNull();
-    expect(dropDeadlineError("2026-05-01", "2026-05-02")).toMatch(/was 2026-05-01/);
+    expect(dropDeadlineError("2026-05-01", "2026-05-02")).toEqual({
+      key: "enrollments.errors.dropDeadlinePassed",
+      day: "2026-05-01",
+    });
     expect(dropDeadlineError(undefined, "2026-05-02")).toBeNull();
   });
 });

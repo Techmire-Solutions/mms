@@ -13,6 +13,7 @@ import {
   normalizeGenderKey,
   isGenderUiKey,
   getGenderThemeConfig,
+  genderLabel,
 } from "./genderUi";
 import { Mars, Venus, UserRound } from "lucide-react";
 
@@ -129,5 +130,36 @@ describe("getGenderThemeConfig", () => {
     expect(config.iconClass).toBe("text-info");
     expect(config.bgClass).toBe("bg-info/10");
     expect(config.borderClass).toBe("border-info/30");
+  });
+});
+
+describe("genderLabel", () => {
+  const t = (key: string) => `translated:${key}`;
+
+  it("translates male, female, mixed, other, and falls back to unspecified", () => {
+    expect(genderLabel("male", t as unknown as Parameters<typeof genderLabel>[1])).toBe(
+      "translated:gender.male",
+    );
+    expect(genderLabel("FEMALE", t as unknown as Parameters<typeof genderLabel>[1])).toBe(
+      "translated:gender.female",
+    );
+    expect(genderLabel("mixed", t as unknown as Parameters<typeof genderLabel>[1])).toBe(
+      "translated:gender.mixed",
+    );
+    expect(genderLabel("coed", t as unknown as Parameters<typeof genderLabel>[1])).toBe(
+      "translated:gender.mixed",
+    );
+    expect(genderLabel("other", t as unknown as Parameters<typeof genderLabel>[1])).toBe(
+      "translated:gender.other",
+    );
+    expect(genderLabel("", t as unknown as Parameters<typeof genderLabel>[1])).toBe(
+      "translated:gender.unspecified",
+    );
+    expect(genderLabel(null, t as unknown as Parameters<typeof genderLabel>[1])).toBe(
+      "translated:gender.unspecified",
+    );
+    expect(genderLabel("unknown_value", t as unknown as Parameters<typeof genderLabel>[1])).toBe(
+      "translated:gender.unspecified",
+    );
   });
 });

@@ -460,7 +460,18 @@ describe("enrollments REST routes integration", () => {
         { monthKey: "2026-02", students: 3 },
         { monthKey: "2026-03", students: 4 },
       ],
-      statusCounts: { pending: 1, confirmed: 2, cancelled: 0, completed: 1, total: 4 },
+      statusCounts: {
+        pending: 1,
+        confirmed: 2,
+        cancelled: 0,
+        completed: 1,
+        withdrawn: 0,
+        promoted: 0,
+        retained: 0,
+        graduated: 0,
+        left: 0,
+        total: 4,
+      },
       fees: { due: 300, paid: 150 },
       bySession: [{ sessionId: "ses-1", name: "Hifz", count: 4, revenue: 300 }],
     });
@@ -491,6 +502,11 @@ describe("enrollments REST routes integration", () => {
       confirmed: 2,
       cancelled: 0,
       completed: 1,
+      withdrawn: 0,
+      promoted: 0,
+      retained: 0,
+      graduated: 0,
+      left: 0,
       total: 4,
     });
     expect(body.fees).toEqual({ due: 300, paid: 150 });
@@ -502,7 +518,18 @@ describe("enrollments REST routes integration", () => {
   it("GET /api/enrollments/report-aggregates forwards comparison query params", async () => {
     mockLoadEnrollmentsReportAggregates.mockResolvedValue({
       cumulativeTrends: [],
-      statusCounts: { pending: 0, confirmed: 0, cancelled: 0, completed: 0, total: 0 },
+      statusCounts: {
+        pending: 0,
+        confirmed: 0,
+        cancelled: 0,
+        completed: 0,
+        withdrawn: 0,
+        promoted: 0,
+        retained: 0,
+        graduated: 0,
+        left: 0,
+        total: 0,
+      },
       fees: { due: 0, paid: 0 },
       bySession: [],
       comparison: {

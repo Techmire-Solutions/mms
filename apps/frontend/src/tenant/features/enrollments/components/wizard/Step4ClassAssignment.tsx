@@ -8,6 +8,7 @@ import { ProgressBar } from "@/components/app/ProgressBar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
+import { genderLabel } from "@/lib/ui/genderUi";
 import { handleRadioGroupKeyDown } from "@/lib/ui/radioGroupKeyboard";
 import {
   capacityLabel,
@@ -186,7 +187,7 @@ export function Step4ClassAssignment({
                       <span>
                         {t("enrollments.wizard.step4AgeRange", { min: minAge, max: maxAge })}
                       </span>
-                      <span className="capitalize">{sessionClass.gender}</span>
+                      <span className="capitalize">{genderLabel(sessionClass.gender, t)}</span>
                       <span>{sessionClass.facultyName}</span>
                       {sessionClass.room && <span>{sessionClass.room}</span>}
                     </div>

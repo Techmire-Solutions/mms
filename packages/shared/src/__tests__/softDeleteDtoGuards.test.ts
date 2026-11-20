@@ -231,7 +231,7 @@ describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
       expect(parsedCreate.updatedBy).toBeUndefined();
     });
 
-    it("enrollmentRecordInsertSchema and enrollmentRecordUpdateSchema strictly reject soft-delete fields", () => {
+    it("enrollmentRecordInsertSchema and enrollmentRecordUpdateSchema strip server-owned soft-delete fields", () => {
       const insertPayload = {
         studentId: "std-1",
         sessionId: "ses-1",
@@ -239,7 +239,12 @@ describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
         enrolledDate: "2026-09-01",
         deletedAt: "2026-09-10T12:00:00Z",
       };
-      expect(enrollmentRecordInsertSchema.safeParse(insertPayload).success).toBe(false);
+      const parsedInsert = enrollmentRecordInsertSchema.parse(insertPayload) as Record<
+        string,
+        unknown
+      >;
+      expect(parsedInsert.studentId).toBe("std-1");
+      expect(parsedInsert.deletedAt).toBeUndefined();
 
       const updatePayload = {
         discountPct: 15,
@@ -247,7 +252,14 @@ describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
         deletedBy: "malicious-actor",
         deletionReason: "Archive bypass attempt",
       };
-      expect(enrollmentRecordUpdateSchema.safeParse(updatePayload).success).toBe(false);
+      const parsedUpdate = enrollmentRecordUpdateSchema.parse(updatePayload) as Record<
+        string,
+        unknown
+      >;
+      expect(parsedUpdate.discountPct).toBe(15);
+      expect(parsedUpdate.deletedAt).toBeUndefined();
+      expect(parsedUpdate.deletedBy).toBeUndefined();
+      expect(parsedUpdate.deletionReason).toBeUndefined();
     });
 
     it("SessionInsertSchema strictly rejects soft-delete columns", () => {

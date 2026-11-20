@@ -8,6 +8,10 @@ import {
 } from "../index.js";
 import { enrollmentPreferencesResponseSchema } from "../enrollments/enrollmentSetupPreferences.js";
 import {
+  enrollmentRecordInsertSchema,
+  enrollmentRecordUpdateSchema,
+} from "../enrollments/enrollmentsModuleManifest.js";
+import {
   enrollmentsListPageResponseSchema,
   enrollmentsListQuerySchema,
 } from "../enrollments/enrollmentsListQuery.js";
@@ -58,5 +62,57 @@ describe("enrollment contract parity", () => {
     expect(
       enrollmentWithdrawBodySchema.safeParse({ ...base, reasonCode: "not_a_reason" }).success,
     ).toBe(false);
+  });
+
+  it("write DTOs accept a full read record (round-trip) and strip server-owned fields", () => {
+    const readRecord = {
+      id: "enr-1",
+      studentId: "std-1",
+      studentName: "Student One",
+      sessionId: "ses-1",
+      sessionName: "Session One",
+      classId: "cls-1",
+      className: "Class One",
+      sectionId: "sec-1",
+      rollNo: "3",
+      enrolledDate: "2026-09-01",
+      startOn: "2026-09-01",
+      endOn: null,
+      endReason: null,
+      promotedFromEnrollmentId: null,
+      completionStatus: null,
+      completedAt: null,
+      certificateIssuedAt: null,
+      baseFee: 1000,
+      discountType: "none",
+      discountLabel: "No Discount",
+      discountPct: 0,
+      discountAmt: 0,
+      finalFee: 1000,
+      status: "pending",
+      invoiceId: null,
+      paymentStatus: "none",
+      notes: "",
+      timeline: [],
+      deletedAt: null,
+      deletedBy: null,
+      deletionReason: null,
+      restoredAt: null,
+      restoredBy: null,
+      deletedWithCascade: null,
+      createdAt: "2026-09-01T00:00:00.000Z",
+      updatedAt: "2026-09-01T00:00:00.000Z",
+    };
+
+    const insert = enrollmentRecordInsertSchema.parse(readRecord) as Record<string, unknown>;
+    expect(insert.studentId).toBe("std-1");
+    expect(insert.endOn).toBeUndefined();
+    expect(insert.deletedAt).toBeUndefined();
+
+    const update = enrollmentRecordUpdateSchema.parse(readRecord) as Record<string, unknown>;
+    expect(update.studentId).toBe("std-1");
+    expect(update.endOn).toBeUndefined();
+    expect(update.completedAt).toBeUndefined();
+    expect(update.deletedAt).toBeUndefined();
   });
 });

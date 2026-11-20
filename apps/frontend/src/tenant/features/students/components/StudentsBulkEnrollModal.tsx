@@ -7,7 +7,7 @@ import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
-import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { resolveEnrollmentApiError } from "@/lib/forms/resolveEnrollmentApiError";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 
 export interface StudentsBulkEnrollModalProps {
@@ -79,7 +79,7 @@ export function StudentsBulkEnrollModal({
       setSectionId("");
       onClose();
     } catch (error) {
-      setFormError(mapApiFormError(error).message ?? t("common.formPleaseFixErrors"));
+      setFormError(resolveEnrollmentApiError(error, t) ?? t("common.formPleaseFixErrors"));
     }
   };
 

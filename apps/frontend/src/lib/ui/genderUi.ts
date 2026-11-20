@@ -1,5 +1,7 @@
 import { Mars, Venus, UserRound, type LucideIcon } from "lucide-react";
-import { getAvatarColor } from "@mms/shared";
+import { getAvatarColor, type AppTranslationKey } from "@mms/shared";
+
+type Translate = (key: AppTranslationKey) => string;
 
 /** Canonical gender keys used for icons/tones across the app. */
 export type GenderUiKey = "male" | "female" | "other" | "unspecified";
@@ -35,6 +37,24 @@ export function getGenderIcon(gender: string | null | undefined): LucideIcon {
       return Venus;
     default:
       return UserRound;
+  }
+}
+
+/** Localized gender label; `mixed` stays distinct (co-ed classes) and unknown/empty → unspecified. */
+export function genderLabel(gender: string | null | undefined, t: Translate): string {
+  const raw = (gender ?? "").trim().toLowerCase();
+  switch (raw) {
+    case "male":
+      return t("gender.male");
+    case "female":
+      return t("gender.female");
+    case "mixed":
+    case "coed":
+      return t("gender.mixed");
+    case "other":
+      return t("gender.other");
+    default:
+      return t("gender.unspecified");
   }
 }
 

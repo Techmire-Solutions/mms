@@ -29,7 +29,8 @@ const BUILT_IN_DISCOUNTS: Record<string, { label: string; pct: number }> = {
 
 /**
  * Enrollment fee: session discount matching the student's discount type wins, then built-in
- * discount types, then a custom student percentage. Amounts are rounded to whole currency units.
+ * discount types, then a custom student percentage. The percentage is clamped to `[0, 100]`;
+ * `discountAmt` is rounded to whole currency units (the final fee keeps the base fee's cents).
  */
 export function calcEnrollmentFee(
   baseFee: number,
@@ -53,6 +54,9 @@ export function calcEnrollmentFee(
   } else if (pct > 0) {
     label = "Custom Discount";
   }
+  // A session/class discount configured above 100% must not produce a negative fee or violate
+  // the `discount_pct <= 100` CHECK constraint; clamp before the DB sees it.
+  pct = Math.min(100, Math.max(0, pct));
 
   const discountAmt = Math.round((baseFee * pct) / 100);
   const finalFee = Math.max(0, baseFee - discountAmt);

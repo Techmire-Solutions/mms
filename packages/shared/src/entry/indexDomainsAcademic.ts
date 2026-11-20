@@ -102,7 +102,6 @@ export * from "../schemas/moduleColumnPreferences.dto.js";
 export * from "../schemas/attendance.dto.js";
 export * from "../schemas/users.dto.js";
 export * from "../schemas/db.dto.js";
-export * from "../schemas/enrollments.dto.js";
 export * from "../schemas/email.dto.js";
 export * from "../schemas/sms.dto.js";
 export * from "../schemas/sanitize.js";

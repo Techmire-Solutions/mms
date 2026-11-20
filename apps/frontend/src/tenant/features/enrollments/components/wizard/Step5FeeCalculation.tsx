@@ -1,9 +1,9 @@
 import React from "react";
 import { DollarSign, Tag, Info } from "lucide-react";
 import { calcFee, type CalculatedFee } from "@/lib/data/enrollmentData";
-import { toMoneyNumber } from "@mms/shared";
+import { classFeeDiscounts, toMoneyNumber } from "@mms/shared";
 import { type Student } from "@/lib/data/studentsData";
-import { type Session } from "@/lib/data/sessionsData";
+import { type Session, type Class } from "@/lib/data/sessionsData";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 export interface Step5FeeCalculationProps {
   student: Student | null | undefined;
   session: Session | null | undefined;
+  /** Selected class — its discounts (not a session-level list) drive the fee preview. */
+  classInfo: Class | null | undefined;
   feeResult: CalculatedFee | null | undefined;
   onFeeResult: (fee: CalculatedFee) => void;
 }
@@ -19,22 +21,19 @@ export interface Step5FeeCalculationProps {
 export function Step5FeeCalculation({
   student,
   session,
+  classInfo,
   feeResult,
   onFeeResult,
 }: Step5FeeCalculationProps): React.JSX.Element {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
   const baseFee = session?.baseFee || "0";
-  const sessionDiscounts =
-    (
-      session as {
-        discounts?: Array<{ id?: string; name?: string; percentage?: number; type?: string }>;
-      } | null
-    )?.discounts ?? [];
-  const discountsKey = JSON.stringify(sessionDiscounts);
+  // The authoritative fee rule uses the *class*'s discounts (mirrors `enrollmentFeeForClass`).
+  const classDiscounts = classFeeDiscounts({ discounts: classInfo?.discounts ?? [] });
+  const discountsKey = JSON.stringify(classDiscounts);
   const fee = React.useMemo(() => {
-    return calcFee(toMoneyNumber(baseFee) ?? 0, student || {}, [], sessionDiscounts);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on stable granular fields + discountsKey; adding the `student`/`sessionDiscounts` object deps would recreate `fee` every render and re-fire the onFeeResult effect.
+    return calcFee(toMoneyNumber(baseFee) ?? 0, student || {}, [], classDiscounts);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on stable granular fields + discountsKey; adding the `student`/`classDiscounts` object deps would recreate `fee` every render and re-fire the onFeeResult effect.
   }, [baseFee, student?.id, student?.discountType, student?.discountPct, discountsKey]);
 
   // Notify parent

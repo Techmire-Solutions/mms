@@ -16,6 +16,10 @@ export const SYSTEM_ACTOR: OperationActor = { userId: null, label: "System" };
  * Ends every live enrollment of the given sessions or student on `lastDay` through the withdrawal
  * path: window end, placement closed, seat released, later untouched invoices cancelled (paid ones
  * returned for review). Freed seats go to the waitlist only for withdrawals, not cancellations.
+ *
+ * Each row ends in its own guarded transaction (per-row `applyEnrollmentWithdrawal` is idempotent
+ * by status), so a mid-loop failure leaves a resumable partial result — re-running this with the
+ * same filter continues with the remaining live enrollments. This is intentional, not a gap.
  */
 export async function endLiveEnrollments(
   tenant: string,
@@ -43,6 +47,7 @@ export async function endLiveEnrollments(
       await recordEnrollmentAudit(tx, tenant, {
         recordId: enrollment.id,
         actionType: "UPDATE",
+        actor: options.actor,
         reasonCode:
           options.status === "cancelled"
             ? "session_cancelled"
@@ -100,6 +105,7 @@ export async function completeLiveEnrollments(
       await recordEnrollmentAudit(tx, tenant, {
         recordId: enrollment.id,
         actionType: "UPDATE",
+        actor,
         reasonCode: "session_completed",
         oldState: { status: enrollment.status },
         newState: { status: "completed", effectiveOn: lastDay },

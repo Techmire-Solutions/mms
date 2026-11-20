@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
   addDeadlineError,
-  describeEligibilityReasons,
+  ENROLLMENT_ERROR_CODES,
   enrollmentFeeForClass,
   isSessionReadOnly,
   staffEligibilityReasons,
@@ -73,7 +73,11 @@ export async function bulkEnrollStudentsIntoClass(
   if (!sessionClass) throw new ValidationError("Class does not belong to the selected session");
   const today = todayInTimeZone(await repo.findWorkspaceTimezone(tenant));
   const deadlineError = addDeadlineError(sessionClass.enrollmentDeadline, today);
-  if (deadlineError && !input.allowAfterDeadline) throw new ConflictError(deadlineError);
+  if (deadlineError && !input.allowAfterDeadline) {
+    throw new HttpDomainError(409, ENROLLMENT_ERROR_CODES[3], deadlineError.key, {
+      details: { day: deadlineError.day },
+    });
+  }
 
   const [students, already] = await Promise.all([
     repo.findStudentsByIds(tenant, studentIds),
@@ -98,11 +102,13 @@ export async function bulkEnrollStudentsIntoClass(
     .filter((row) => row.reasons.length > 0);
   if (ineligible.length > 0 && !input.ignoreEligibility) {
     const [first] = ineligible;
-    throw new HttpDomainError(
-      422,
-      "ineligible",
-      `${first.student.name || String(first.student.id)} is not eligible for ${sessionClass.name}: ${describeEligibilityReasons(first.reasons)}`,
-    );
+    throw new HttpDomainError(422, "ineligible", "enrollments.errors.ineligible", {
+      details: {
+        student: first.student.name || String(first.student.id),
+        class: sessionClass.name,
+        reasons: first.reasons,
+      },
+    });
   }
 
   const eligible = students

@@ -28,28 +28,33 @@ export const importEnrollmentRows: ImportBatchFn<EnrollmentImportRow> = async (r
     const planned = plan.planned[index]!;
     try {
       await runWithTenant(ctx.tenant, () =>
-        enrollmentsUseCases.createEnrollment({
-          id: randomUUID(),
-          studentId: planned.studentId,
-          studentName: planned.studentName,
-          sessionId: planned.session.id,
-          sessionName: planned.session.name,
-          classId: planned.cls.id,
-          className: planned.cls.name ?? "",
-          ...(planned.sectionId ? { sectionId: planned.sectionId } : {}),
-          enrolledDate: planned.enrolledDate || today,
-          baseFee: planned.baseFee,
-          discountType: planned.discountType,
-          discountLabel: planned.discountLabel,
-          discountPct: planned.discountPct,
-          discountAmt: planned.discountAmt,
-          finalFee: planned.finalFee,
-          status: planned.status,
-          paymentStatus: planned.paymentStatus as never,
-          notes: planned.notes,
-          invoiceId: null,
-          timeline: [],
-        } as never),
+        // The import plan already computed and range-checked the authoritative fee server-side
+        // (including any per-row CSV overrides), so the create path must not recompute it.
+        enrollmentsUseCases.createEnrollment(
+          {
+            id: randomUUID(),
+            studentId: planned.studentId,
+            studentName: planned.studentName,
+            sessionId: planned.session.id,
+            sessionName: planned.session.name,
+            classId: planned.cls.id,
+            className: planned.cls.name ?? "",
+            ...(planned.sectionId ? { sectionId: planned.sectionId } : {}),
+            enrolledDate: planned.enrolledDate || today,
+            baseFee: planned.baseFee,
+            discountType: planned.discountType,
+            discountLabel: planned.discountLabel,
+            discountPct: planned.discountPct,
+            discountAmt: planned.discountAmt,
+            finalFee: planned.finalFee,
+            status: planned.status,
+            paymentStatus: planned.paymentStatus,
+            notes: planned.notes,
+            invoiceId: null,
+            timeline: [],
+          },
+          { canOverrideFees: true },
+        ),
       );
       imported += 1;
     } catch (error) {

@@ -1,4 +1,5 @@
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
+import { withTenant } from "../../db/tenant-context.js";
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
 import { logger } from "../../lib/logger.js";
 import { ADMISSIONS_BROADCAST_KEY } from "./registrationPublicUseCases.js";
@@ -28,20 +29,25 @@ export async function offerFreedSeat(
     );
     if (!preferences.waitlistEnabled) return null;
     const offerHours = Number.parseInt(preferences.waitlistOfferHours, 10) || 72;
-    const flagged = await repo.flagOldestWaitlistedApplication(tenant, classId, offerHours);
-    if (!flagged) return null;
-    // Own transaction: the caller has already committed, so this row is the only trace of the offer.
-    await recordModernAuditEvent({
-      workspaceSubdomain: tenant,
-      tableName: "registration_applications",
-      recordId: flagged.id,
-      actionType: "UPDATE",
-      newState: {
-        operation: "waitlist_offer",
-        classId,
-        expiresAt: flagged.expiresAt,
-      },
+    // Flag + audit commit atomically (the repo joins this transaction): a crash after the flag
+    // must not leave an un-audited offer, and vice versa.
+    const flagged = await withTenant(tenant, async (tx) => {
+      const offered = await repo.flagOldestWaitlistedApplication(tenant, classId, offerHours);
+      if (!offered) return null;
+      await recordModernAuditEvent(tx, {
+        workspaceSubdomain: tenant,
+        tableName: "registration_applications",
+        recordId: offered.id,
+        actionType: "UPDATE",
+        newState: {
+          operation: "waitlist_offer",
+          classId,
+          expiresAt: offered.expiresAt,
+        },
+      });
+      return offered;
     });
+    if (!flagged) return null;
     broadcastTenantUpdate(tenant, "collection", ADMISSIONS_BROADCAST_KEY);
     await notificationsUseCases.notify(tenant, {
       kind: "waitlist_seat_offered",

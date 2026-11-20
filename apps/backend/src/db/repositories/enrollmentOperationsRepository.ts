@@ -9,24 +9,23 @@ import {
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { ENROLLMENT_OPERABLE_STATUSES } from "@mms/shared";
 import { ConflictError } from "../../lib/httpErrors.js";
+import {
+  ENDED_EVENT_LABEL,
+  NOT_OPERABLE,
+  assertChanged,
+  operableEnrollmentKey,
+  type EndedEnrollmentStatus,
+  type LiveEnrollmentRow,
+  type OperationActor,
+} from "./enrollmentTransitionGuards.js";
+import { lockAndAssertTargetSectionTx } from "./enrollmentSeatCountRepository.js";
+
 export {
   ENDED_EVENT_LABEL,
   type EndedEnrollmentStatus,
   type LiveEnrollmentRow,
   type OperationActor,
-} from "./enrollmentTransitionGuards.js";
-import type {
-  EndedEnrollmentStatus,
-  LiveEnrollmentRow,
-  OperationActor,
-} from "./enrollmentTransitionGuards.js";
-import { ENDED_EVENT_LABEL } from "./enrollmentTransitionGuards.js";
-import { lockAndAssertTargetSectionTx } from "./enrollmentSeatCountRepository.js";
-import {
-  NOT_OPERABLE,
-  assertChanged,
-  operableEnrollmentKey,
-} from "./enrollmentTransitionGuards.js";
+};
 
 export { listEnrollmentPlacements } from "./enrollmentPlacementHistory.js";
 

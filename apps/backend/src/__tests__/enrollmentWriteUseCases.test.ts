@@ -36,6 +36,7 @@ describe("enrollmentWriteUseCases", () => {
       findStudentById: vi.fn().mockResolvedValue({ id: "stu-1", name: "Student 1" }),
       findSessionById: vi.fn().mockResolvedValue({ id: "sess-1", name: "Session 1" }),
       findClassById: vi.fn().mockResolvedValue({ id: "cls-1", name: "Class 1" }),
+      findWorkspaceTimezone: vi.fn().mockResolvedValue("UTC"),
     };
 
     const useCases = createEnrollmentWriteUseCases({ repo, crud, deps });
@@ -62,6 +63,83 @@ describe("enrollmentWriteUseCases", () => {
 
     expect(result).toBeDefined();
     expect(crud.create).toHaveBeenCalled();
+  });
+
+  it("recomputes the authoritative fee and ignores client-supplied money fields without manage", async () => {
+    const { useCases, crud, deps } = setupTest();
+    deps.findSessionById.mockResolvedValue({
+      id: "sess-1",
+      baseFee: "1000",
+      classes: [
+        {
+          id: "cls-1",
+          gender: "mixed",
+          minAge: 0,
+          maxAge: 120,
+          ageCalculationDate: "",
+          discounts: [{ discountType: "sibling", percentage: 10, status: "active" }],
+        },
+      ],
+    });
+    deps.findStudentById.mockResolvedValue({ id: "stu-1", discountType: "sibling" });
+
+    await runWithTenant("demo", () =>
+      useCases.createEnrollment({
+        studentId: "stu-1",
+        sessionId: "sess-1",
+        classId: "cls-1",
+        enrolledDate: "2026-09-01",
+        baseFee: 0,
+        discountType: "none",
+        discountPct: 100,
+        discountAmt: 0,
+        finalFee: 0,
+      } as any),
+    );
+
+    expect(crud.create).toHaveBeenCalledWith(
+      expect.objectContaining({ baseFee: 1000, discountPct: 10, discountAmt: 100, finalFee: 900 }),
+    );
+  });
+
+  it("honors an explicit fee override when the caller has manage", async () => {
+    const { useCases, crud, deps } = setupTest();
+    deps.findSessionById.mockResolvedValue({
+      id: "sess-1",
+      baseFee: "1000",
+      classes: [
+        {
+          id: "cls-1",
+          gender: "mixed",
+          minAge: 0,
+          maxAge: 120,
+          ageCalculationDate: "",
+          discounts: [{ discountType: "sibling", percentage: 10, status: "active" }],
+        },
+      ],
+    });
+    deps.findStudentById.mockResolvedValue({ id: "stu-1", discountType: "sibling" });
+
+    await runWithTenant("demo", () =>
+      useCases.createEnrollment(
+        {
+          studentId: "stu-1",
+          sessionId: "sess-1",
+          classId: "cls-1",
+          enrolledDate: "2026-09-01",
+          baseFee: 800,
+          discountType: "scholarship",
+          discountPct: 100,
+          discountAmt: 800,
+          finalFee: 0,
+        } as any,
+        { canOverrideFees: true },
+      ),
+    );
+
+    expect(crud.create).toHaveBeenCalledWith(
+      expect.objectContaining({ baseFee: 800, discountPct: 100, finalFee: 0 }),
+    );
   });
 
   it("rejects creating an enrollment in a terminal status", async () => {

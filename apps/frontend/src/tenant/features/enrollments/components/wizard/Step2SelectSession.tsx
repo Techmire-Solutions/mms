@@ -14,13 +14,7 @@ import {
   spotsLeft as computeSpotsLeft,
 } from "@/tenant/features/enrollments/lib/enrollmentCapacity";
 
-/**
- * Format a date string to a localized PK date.
- *
- * @param date - Date string to format.
- * @returns Formatted date.
- */
-import { formatDate } from "@mms/shared";
+import { formatDate, sessionTypeI18nKey } from "@mms/shared";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 
 import { normalizeSessionStatus, SESSION_ENROLLABLE_STATES } from "@mms/shared";
@@ -118,7 +112,7 @@ export function Step2SelectSession({
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-bold text-foreground">{session.name}</p>
                     <Badge pill tone="primary" className="px-1.5 font-bold">
-                      {session.type}
+                      {t(sessionTypeI18nKey(session.type) ?? "sessions.types.other")}
                     </Badge>
                     {isFull && <StatusBadge status="full" config={sessionStatusConfig} size="sm" />}
                     {!isFull && spotsLeft <= 5 && (

@@ -13,7 +13,10 @@ import {
   listActiveRegistrationLinksTx,
   lockRegistrationLinkTx,
 } from "../../db/repositories/registrationLinkRepository.js";
-import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
+import {
+  findSessionById,
+  findSessionsByIds,
+} from "../../db/repositories/sessionRepositoryQueries.js";
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
 import { findStudentsByIds } from "../../db/repositories/studentRepositoryHydrate.js";
 import { bulkSaveEnrollments } from "../../db/repositories/enrollmentRepositoryPersist.js";
@@ -40,6 +43,7 @@ export const admissionsRepository: AdmissionsRepository = {
   listActiveRegistrationLinksTx,
   lockRegistrationLinkTx,
   findSessionById,
+  findSessionsByIds,
   findWorkspaceTimezone,
   findStudentsByIds,
   bulkSaveEnrollments,

@@ -216,7 +216,7 @@ export function EnrollmentDetailSections({
                         : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/15 hover:text-primary"
                     }`}
                   >
-                    <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                    <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" />
                     {statusConfig[nextStatus]?.label || nextStatus}
                   </Button>
                 );

@@ -1,5 +1,6 @@
 import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import { ClipboardCheck } from "lucide-react";
 import {
   registrationReviewSchema,
@@ -51,16 +52,14 @@ export function AdmissionsDecisionModal({
       : undefined;
 
   // Clear the previous decision's reason/match choice on each (re)open (render-phase reset).
-  const [prevOpen, setPrevOpen] = useState(open);
-  if (prevOpen !== open) {
-    setPrevOpen(open);
+  useIdentityReset(open ? "open" : "closed", () => {
     if (open) {
       setReason("");
       setUseMatch(true);
       setAttempted(false);
       setFormError(null);
     }
-  }
+  });
 
   const handleSave = async (): Promise<void> => {
     setAttempted(true);

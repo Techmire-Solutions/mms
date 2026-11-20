@@ -52,7 +52,8 @@ export function EnrollmentWizardFooter({
             variant="outline"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-colors min-h-11 h-auto"
           >
-            <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" /> {t("common.previous")}
+            <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" />{" "}
+            {t("common.previous")}
           </Button>
         )}
       </div>
@@ -71,7 +72,8 @@ export function EnrollmentWizardFooter({
             disabled={!canNext || submitting}
             className="min-h-11 gap-1.5 px-5 font-semibold"
           >
-            {t("common.next")} <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+            {t("common.next")}{" "}
+            <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" aria-hidden="true" />
           </Button>
         ) : (
           <Button

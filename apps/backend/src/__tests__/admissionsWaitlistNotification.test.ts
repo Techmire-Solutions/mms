@@ -97,6 +97,7 @@ describe("offerFreedSeat", () => {
 
     expect(mocks.flag).toHaveBeenCalledWith("demo", "class-1", 24);
     expect(mocks.audit).toHaveBeenCalledWith(
+      expect.anything(),
       expect.objectContaining({
         tableName: "registration_applications",
         recordId: "app-2",

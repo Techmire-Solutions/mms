@@ -60,9 +60,13 @@ export async function listOpenRegistrations(subdomain: string): Promise<PublicRe
     repo.listActiveRegistrationLinksTx(tx, subdomain),
   );
   const now = new Date();
+  const sessions = await repo.findSessionsByIds(subdomain, [
+    ...new Set(links.map((link) => link.sessionId)),
+  ]);
+  const sessionById = new Map(sessions.map((session) => [session.id, session]));
   const views: PublicRegistrationView[] = [];
   for (const link of links) {
-    const session = await repo.findSessionById(subdomain, link.sessionId);
+    const session = sessionById.get(link.sessionId);
     if (!session || session.deletedAt) continue;
     const view = toPublicView(link, session, workspace.madrasaName ?? "", now);
     if (view.acceptingSubmissions) views.push(view);
@@ -113,6 +117,10 @@ export async function submitPublicRegistration(
       );
     // A waitlist only exists when the module enables it; otherwise a full class is a hard stop
     // (the old code created waitlisted applications regardless of the preference).
+    // NOTE: `eligibility.waitlist` is read from a non-locked seat count, so two concurrent
+    // submissions can both classify as `submitted` when the last seat is taken. That is a
+    // display classification only — approval re-asserts the seat under the section lock
+    // (`bulkEnrollStudentsIntoClass`), so it can never produce a double-booking.
     if (eligibility.waitlist) {
       const preferences = normalizeEnrollmentModulePreferences(
         await repo.getEnrollmentModulePreferencesByWorkspace(subdomain),

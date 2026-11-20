@@ -1,8 +1,7 @@
-import { ENROLLMENT_ERROR_CODES } from "@mms/shared";
 import {
+  ENROLLMENT_ERROR_CODES,
   allowedEnrollmentTransitions,
   canTransitionEnrollment,
-  isEnrollmentTerminal,
   parseEnrollmentStatus,
   type EnrollmentRecord,
   type EnrollmentUpdate,
@@ -13,7 +12,9 @@ import { withTenant } from "../../db/tenant-context.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { ConflictError, HttpDomainError, ValidationError } from "../../lib/httpErrors.js";
 import {
+  recomputeEnrollmentFee,
   validateActiveForeignKeys,
+  validateEnrollmentRestorePreconditions,
   validateNewEnrollmentRules,
   withoutSoftDeleteFields,
 } from "./enrollmentAdmissionRules.js";
@@ -36,7 +37,10 @@ export function createEnrollmentWriteUseCases({
   deps?: EnrollmentsUseCasesDependencies;
 }) {
   return {
-    createEnrollment: async (record: EnrollmentInsert | EnrollmentRecord) => {
+    createEnrollment: async (
+      record: EnrollmentInsert | EnrollmentRecord,
+      opts: { canOverrideFees?: boolean } = {},
+    ) => {
       const tenant = getRequestTenant();
       if (!tenant) throw new Error("Tenant context required");
 
@@ -59,13 +63,38 @@ export function createEnrollmentWriteUseCases({
         }
       }
 
-      // A new enrollment starts pending (or already confirmed); terminal states are
-      // produced by the operation that owns them, never by a create payload.
+      // A new enrollment starts pending (or already confirmed); every other state is
+      // produced by the operation that owns it (withdraw/cancel/session-completion/rollover),
+      // never by a create payload.
       const status =
         sanitized.status === undefined ? "pending" : parseEnrollmentStatus(sanitized.status);
-      if (isEnrollmentTerminal(status)) {
+      if (status !== "pending" && status !== "confirmed") {
         throw new ValidationError(`An enrollment cannot be created as "${status}"`);
       }
+
+      // Authoritative fee: the class schedule is the single source of truth. A write-only role
+      // must not set money fields (bulk/import/rollover already recompute); only the
+      // administrative `enrollments.manage` capability may override the schedule on create.
+      if (!opts.canOverrideFees && sanitized.sessionId && sanitized.classId) {
+        const getStudent = deps?.findStudentById ?? repo.findStudentById;
+        const getSession = deps?.findSessionById ?? repo.findSessionById;
+        const [student, session] = await Promise.all([
+          sanitized.studentId && getStudent
+            ? getStudent(tenant, sanitized.studentId)
+            : Promise.resolve(null),
+          getSession ? getSession(tenant, sanitized.sessionId) : Promise.resolve(null),
+        ]);
+        const fee = recomputeEnrollmentFee(session, sanitized.classId, student);
+        if (fee) {
+          sanitized.baseFee = fee.baseFee;
+          sanitized.discountType = fee.discountType;
+          sanitized.discountLabel = fee.discountLabel;
+          sanitized.discountPct = fee.discountPct;
+          sanitized.discountAmt = fee.discountAmt;
+          sanitized.finalFee = fee.finalFee;
+        }
+      }
+
       const created = await withTenant(tenant, async (tx) => {
         const row = await crud.create({ ...sanitized, status } as EnrollmentRecord);
         await recordEnrollmentAudit(tx, tenant, {
@@ -215,32 +244,7 @@ export function createEnrollmentWriteUseCases({
         (err as Error & { statusCode: number }).statusCode = 400;
         throw err;
       }
-      if (existing.sessionId) {
-        const getSession =
-          deps?.findSessionById ??
-          (await import("../../db/repositories/sessionRepositoryHydrate.js")).findSessionById;
-        const session = await getSession(tenant, existing.sessionId);
-        if (session?.deletedAt) {
-          const err = new Error(
-            "Cannot restore enrollment because its session is archived. Restore the session instead.",
-          );
-          (err as Error & { statusCode: number }).statusCode = 400;
-          throw err;
-        }
-      }
-      if (existing.studentId) {
-        const getStudent =
-          deps?.findStudentById ??
-          (await import("../../db/repositories/studentRepositoryHydrate.js")).findStudentById;
-        const student = await getStudent(tenant, existing.studentId);
-        if (student?.deletedAt) {
-          const err = new Error(
-            "Cannot restore enrollment because its student is archived. Restore the student instead.",
-          );
-          (err as Error & { statusCode: number }).statusCode = 400;
-          throw err;
-        }
-      }
+      await validateEnrollmentRestorePreconditions(tenant, existing, deps);
       if (existing.sessionId && existing.studentId && repo.findActiveEnrollmentInSession) {
         // The student may have been re-enrolled while this row sat in the trash; restoring
         // it would create a second live enrollment for the same session.
