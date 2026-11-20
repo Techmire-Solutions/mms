@@ -7,7 +7,6 @@ import { SessionClassSectionSchema } from "./sessionSectionTypes.js";
 import { WEEKDAY_NAMES } from "../attendance/academicCalendar.js";
 import { isoDateOrEmptySchema, isoDateTimeSchema } from "../core/isoDateSchema.js";
 import { sessionStatusSchema } from "./sessionTransitions.js";
-import { nonNegativeMoneyDecimalAmountSchema } from "../money/moneySchemas.js";
 import {
   SessionClassBudgetInsertSchema,
   SessionClassBudgetSchema,
@@ -165,7 +164,7 @@ export const SessionSchema = z
     requiresExamPass: z.boolean().optional(),
     description: z.string().max(2000).optional(),
     currency: z.string().optional().default("PKR"),
-    baseFee: nonNegativeMoneyDecimalAmountSchema.default("0"),
+    baseFee: z.coerce.number().nonnegative().default(0),
     // Model 6 components
     faculty: z.array(SessionFacultySchema).default([]),
     classes: z.array(ClassSchema).default([]),

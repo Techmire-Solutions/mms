@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { generateClientEntityId, toMoneyNumber } from "@mms/shared";
+import { generateClientEntityId } from "@mms/shared";
 import type { Session, SessionClassBudget } from "@/lib/data/sessionsData";
 import type { BudgetItemWithClass, DeleteBudgetTarget } from "./budgetTabShared";
 
@@ -11,7 +11,7 @@ export function useBudgetTabState(
   const [targetClassId, setTargetClassId] = useState<string>("");
   const [budgetType, setBudgetType] = useState<"income" | "expense">("income");
   const [detail, setDetail] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState<number>(0);
   const [deleteTarget, setDeleteTarget] = useState<DeleteBudgetTarget | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -24,15 +24,15 @@ export function useBudgetTabState(
   const incomes = allBudgetItems.filter((b) => b.budgetType === "income");
   const expenses = allBudgetItems.filter((b) => b.budgetType === "expense");
 
-  const totalIncome = incomes.reduce((sum, b) => sum + (toMoneyNumber(b.amount) ?? 0), 0);
-  const totalExpenses = expenses.reduce((sum, b) => sum + (toMoneyNumber(b.amount) ?? 0), 0);
+  const totalIncome = incomes.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+  const totalExpenses = expenses.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
   const balance = totalIncome - totalExpenses;
 
   const handleOpenAdd = (type: "income" | "expense") => {
     setBudgetType(type);
     setTargetClassId(classes[0]?.id || "");
     setDetail("");
-    setAmount("");
+    setAmount(0);
     setModalOpen(true);
   };
 
@@ -47,7 +47,7 @@ export function useBudgetTabState(
             classId: c.id,
             budgetType,
             detail: detail.trim(),
-            amount: amount.trim() || "0",
+            amount: Number(amount) || 0,
           };
           return {
             ...c,

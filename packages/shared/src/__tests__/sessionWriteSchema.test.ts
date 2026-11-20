@@ -49,7 +49,7 @@ describe("sessionWriteSchema", () => {
       status: "active",
       startDate: "2026-09-01",
       endDate: "2026-12-31",
-      baseFee: "1000",
+      baseFee: 1000,
       currency: "PKR",
       deletedAt: "2026-01-01T00:00:00.000Z",
       deletedBy: "u1",
@@ -76,7 +76,7 @@ describe("sessionWriteSchema", () => {
       status: "active",
       startDate: "2026-01-01",
       endDate: "2026-03-31",
-      baseFee: "500",
+      baseFee: 500,
       deletedAt: "2026-01-01T00:00:00.000Z",
     });
     // SessionInsertSchema is strict and rejects deletedAt
@@ -106,7 +106,7 @@ describe("sessionWriteSchema", () => {
       status: "open",
       startDate: "2026-01-01",
       endDate: "2026-12-31",
-      baseFee: "1000",
+      baseFee: 1000,
       currency: "PKR",
       version: 3,
       overlapExempt: true,

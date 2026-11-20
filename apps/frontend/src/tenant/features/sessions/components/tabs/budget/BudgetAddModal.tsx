@@ -19,8 +19,8 @@ interface BudgetAddModalProps {
   onTargetClassIdChange: (id: string) => void;
   detail: string;
   onDetailChange: (detail: string) => void;
-  amount: string;
-  onAmountChange: (amount: string) => void;
+  amount: number | string;
+  onAmountChange: (amount: number) => void;
   currencyLabel: string;
   saving: boolean;
   onSave: () => Promise<void> | void;
@@ -48,7 +48,8 @@ export function BudgetAddModal({
     `${open}|${budgetType}`,
   );
   const detailInvalid = !detail.trim();
-  const amountInvalid = !amount || (toMoneyNumber(amount) ?? 0) <= 0;
+  const numAmount = typeof amount === "number" ? amount : (toMoneyNumber(amount) ?? 0);
+  const amountInvalid = !amount || numAmount <= 0;
 
   const guardSave = useSubmitGuard();
   // The footer button and the native Enter submit must share one awaited path;
@@ -94,8 +95,7 @@ export function BudgetAddModal({
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          if (!saving && targetClassId && amount && (toMoneyNumber(amount) ?? 0) > 0)
-            void handleSave();
+          if (!saving && targetClassId && numAmount > 0) void handleSave();
         }}
         className="space-y-4"
       >
@@ -141,11 +141,11 @@ export function BudgetAddModal({
             type="text"
             inputMode="decimal"
             placeholder="0.00"
-            value={amount}
+            value={amount ? String(amount) : ""}
             onChange={(e) => {
               const val = e.target.value;
               if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
-                onAmountChange(val);
+                onAmountChange(parseFloat(val) || 0);
               }
             }}
           />

@@ -91,7 +91,7 @@ export function registerSessionImportJobRunner(): void {
                 status,
                 startDate: row.startDate?.trim().slice(0, 10) ?? "",
                 endDate: row.endDate?.trim().slice(0, 10) ?? "",
-                baseFee: String(row.baseFee ?? "0"),
+                baseFee: Number(row.baseFee ?? 0) || 0,
                 currency: row.currency?.trim() || "PKR",
                 description: row.description?.trim() ?? "",
                 classes: [],

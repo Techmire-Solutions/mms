@@ -15,7 +15,7 @@ export function useClassDetailFinancialDraft(setClassDraft: Dispatch<SetStateAct
         id: crypto.randomUUID(),
         classId: prev.id,
         feeType: "Tuition Fee",
-        amount: "0",
+        amount: 0,
       };
       return { ...prev, fees: [...(prev.fees || []), newFee] };
     });
@@ -81,7 +81,7 @@ export function useClassDetailFinancialDraft(setClassDraft: Dispatch<SetStateAct
         classId: prev.id,
         budgetType: "expense",
         detail: "Class Materials & Stationary",
-        amount: "0",
+        amount: 0,
       };
       return { ...prev, budgets: [...(prev.budgets || []), newBudget] };
     });
@@ -115,8 +115,8 @@ export function useClassDetailFinancialDraft(setClassDraft: Dispatch<SetStateAct
         date: new Date().toISOString().slice(0, 10),
         item: "Snacks & Juices",
         quantity: 0,
-        pricePerUnit: "0",
-        paidAmount: "0",
+        pricePerUnit: 0,
+        paidAmount: 0,
       };
       return { ...prev, refreshments: [...(prev.refreshments || []), newRefreshment] };
     });

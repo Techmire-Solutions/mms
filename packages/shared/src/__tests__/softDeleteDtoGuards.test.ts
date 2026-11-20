@@ -178,7 +178,7 @@ describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
         status: "active",
         startDate: "2026-06-01",
         endDate: "2026-08-31",
-        baseFee: "1500",
+        baseFee: 1500,
         currency: "PKR",
         deletedAt: "2026-09-10T12:00:00Z",
         deletedBy: "attacker",
@@ -257,7 +257,7 @@ describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
         status: "active",
         startDate: "2026-09-01",
         endDate: "2026-12-31",
-        baseFee: "2000",
+        baseFee: 2000,
         currency: "PKR",
         deletedAt: "2026-09-10T12:00:00Z",
       };

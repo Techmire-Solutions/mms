@@ -5,7 +5,6 @@
 import { z } from "zod";
 import { isoDateOrEmptySchema } from "../core/isoDateSchema.js";
 import { isoDateSchema } from "../core/isoDateSchema.js";
-import { nonNegativeMoneyDecimalAmountSchema } from "../money/moneySchemas.js";
 
 // ============================================================================
 // 1. Session Management (Faculty Assigned to Session)
@@ -44,7 +43,7 @@ export const SessionClassFeeSchema = z
     id: z.string(),
     classId: z.string().optional(),
     feeType: z.string().min(1, "Fee type is required").max(100), // dynamic: admission, monthly, one_time, exam, material
-    amount: nonNegativeMoneyDecimalAmountSchema.default("0"),
+    amount: z.coerce.number().nonnegative("Amount must be non-negative").default(0),
   })
   .strict();
 
@@ -53,7 +52,7 @@ export const SessionClassFeeInsertSchema = z
     id: z.string().optional(),
     classId: z.string().optional(),
     feeType: z.string().min(1, "Fee type is required").max(100),
-    amount: nonNegativeMoneyDecimalAmountSchema.default("0"),
+    amount: z.coerce.number().nonnegative("Amount must be non-negative").default(0),
   })
   .strict();
 
@@ -95,7 +94,7 @@ export const SessionClassBudgetSchema = z
     classId: z.string().optional(),
     budgetType: z.enum(["income", "expense"]),
     detail: z.string().min(1, "Budget detail is required").max(500),
-    amount: nonNegativeMoneyDecimalAmountSchema.default("0"),
+    amount: z.coerce.number().nonnegative("Amount must be non-negative").default(0),
   })
   .strict();
 
@@ -105,7 +104,7 @@ export const SessionClassBudgetInsertSchema = z
     classId: z.string().optional(),
     budgetType: z.enum(["income", "expense"]),
     detail: z.string().min(1, "Budget detail is required").max(500),
-    amount: nonNegativeMoneyDecimalAmountSchema.default("0"),
+    amount: z.coerce.number().nonnegative("Amount must be non-negative").default(0),
   })
   .strict();
 
@@ -215,8 +214,8 @@ export const SessionClassRefreshmentSchema = z
     date: isoDateSchema,
     item: z.string().min(1, "Item name is required"),
     quantity: z.coerce.number().int().nonnegative("Quantity must be non-negative").default(0),
-    pricePerUnit: nonNegativeMoneyDecimalAmountSchema.default("0"),
-    paidAmount: nonNegativeMoneyDecimalAmountSchema.default("0"),
+    pricePerUnit: z.coerce.number().nonnegative("Unit price must be non-negative").default(0),
+    paidAmount: z.coerce.number().nonnegative("Paid amount must be non-negative").default(0),
   })
   .strict();
 
@@ -227,8 +226,8 @@ export const SessionClassRefreshmentInsertSchema = z
     date: isoDateSchema,
     item: z.string().min(1, "Item name is required"),
     quantity: z.coerce.number().int().nonnegative("Quantity must be non-negative").default(0),
-    pricePerUnit: nonNegativeMoneyDecimalAmountSchema.default("0"),
-    paidAmount: nonNegativeMoneyDecimalAmountSchema.default("0"),
+    pricePerUnit: z.coerce.number().nonnegative("Unit price must be non-negative").default(0),
+    paidAmount: z.coerce.number().nonnegative("Paid amount must be non-negative").default(0),
   })
   .strict();
 

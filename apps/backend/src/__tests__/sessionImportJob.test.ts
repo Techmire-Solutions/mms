@@ -85,7 +85,7 @@ describe("sessions CSV import runner", () => {
         status: "open",
         startDate: "2027-01-01",
         endDate: "2027-06-30",
-        baseFee: "1500",
+        baseFee: 1500,
         classes: [],
         faculty: [],
       }),

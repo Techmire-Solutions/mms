@@ -16,7 +16,7 @@ describe("sessionsExportUtils", () => {
     status: "in_progress",
     startDate: "2026-06-01",
     endDate: "2026-07-31",
-    baseFee: "5000.00",
+    baseFee: 5000,
     currency: "PKR",
     description: "Annual summer hifz intensive camp",
     classes: [
@@ -91,7 +91,7 @@ describe("sessionsExportUtils", () => {
     );
     expect(extractSessionCell(sampleSession, "facultyCount")).toBe("2");
     expect(extractSessionCell(sampleSession, "facultyNames")).toBe("Qari Usama; Sheikh Abdullah");
-    expect(extractSessionCell(sampleSession, "baseFee")).toBe("5000.00");
+    expect(extractSessionCell(sampleSession, "baseFee")).toBe("5000");
     expect(extractSessionCell(sampleSession, "location")).toBe("Main Campus");
     expect(extractSessionCell(sampleSession, "meta")).toBe('{"approvedBy":"Board"}');
   });

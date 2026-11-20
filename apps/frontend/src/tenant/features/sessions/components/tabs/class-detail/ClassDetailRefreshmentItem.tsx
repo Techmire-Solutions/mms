@@ -65,11 +65,11 @@ export function ClassDetailRefreshmentItem({
           inputMode="decimal"
           placeholder={t("sessions.classes.detail.refreshments.price")}
           aria-label={t("sessions.classes.detail.refreshments.price")}
-          value={r.pricePerUnit === "0" ? "" : r.pricePerUnit}
+          value={r.pricePerUnit === 0 ? "" : String(r.pricePerUnit)}
           onChange={(e) => {
             const val = e.target.value;
             if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
-              onUpdate(r.id, { pricePerUnit: val });
+              onUpdate(r.id, { pricePerUnit: parseFloat(val) || 0 });
             }
           }}
           className="text-xs"
@@ -83,11 +83,11 @@ export function ClassDetailRefreshmentItem({
           inputMode="decimal"
           placeholder={t("sessions.classes.detail.refreshments.paid")}
           aria-label={t("sessions.classes.detail.refreshments.paid")}
-          value={r.paidAmount === "0" ? "" : r.paidAmount}
+          value={r.paidAmount === 0 ? "" : String(r.paidAmount)}
           onChange={(e) => {
             const val = e.target.value;
             if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
-              onUpdate(r.id, { paidAmount: val });
+              onUpdate(r.id, { paidAmount: parseFloat(val) || 0 });
             }
           }}
           className="text-xs"
