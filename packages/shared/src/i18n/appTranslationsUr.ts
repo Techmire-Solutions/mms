@@ -3374,6 +3374,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "email.testFailed": "ٹیسٹ ای میل ناکام",
   "email.testSuccess": "ٹیسٹ ای میل بھیج دی گئی",
   "email.testSuccessDesc": "اپنا ان باکس چیک کریں۔",
+  "email.testEmailPlaceholder": "ٹیسٹ بھیجنے کے لیے ای میل ایڈریس",
   "obligations.columns.currency": "کرنسی",
   "obligations.columns.receivedBy": "وصول کنندہ",
   "obligations.columns.reference": "حوالہ",

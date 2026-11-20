@@ -5,6 +5,7 @@ import {
   includeDeletedQuerySchema,
   softDeleteBodySchema,
 } from "../core/apiSchemas.js";
+import { emailTestBodySchema } from "../schemas/email.dto.js";
 
 describe("apiSchemas", () => {
   it("parses includeDeleted query", () => {
@@ -37,5 +38,25 @@ describe("apiSchemas", () => {
       limit: 25,
       search: "ali",
     });
+  });
+});
+
+describe("emailTestBodySchema", () => {
+  it("parses a valid test email", () => {
+    expect(emailTestBodySchema.parse({ testEmail: "admin@example.com" })).toEqual({
+      testEmail: "admin@example.com",
+    });
+  });
+
+  it("allows the test email to be omitted so the route can fall back", () => {
+    expect(emailTestBodySchema.parse({})).toEqual({});
+  });
+
+  it("rejects a malformed email", () => {
+    expect(() => emailTestBodySchema.parse({ testEmail: "not-an-email" })).toThrow();
+  });
+
+  it("rejects unknown keys", () => {
+    expect(() => emailTestBodySchema.parse({ testEmail: "a@b.co", extra: 1 })).toThrow();
   });
 });

@@ -41,11 +41,12 @@ export async function saveEmailIntegration(
   });
 }
 
-export async function testEmailIntegration(): Promise<EmailIntegrationConfig> {
+export async function testEmailIntegration(testEmail?: string): Promise<EmailIntegrationConfig> {
   const integrationResponse = await apiJson<{ config: EmailIntegrationConfig }>(
     "/api/email/integration/test",
     {
       method: "POST",
+      body: JSON.stringify({ testEmail: testEmail?.trim() || undefined }),
     },
   );
   return integrationResponse.config;

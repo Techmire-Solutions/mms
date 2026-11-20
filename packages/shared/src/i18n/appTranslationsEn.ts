@@ -3398,6 +3398,7 @@ export const APP_TRANSLATIONS_EN = {
   "email.testFailed": "Test email failed",
   "email.testSuccess": "Test email sent",
   "email.testSuccessDesc": "Check your inbox for the test message.",
+  "email.testEmailPlaceholder": "Email address to send the test to",
   "obligations.columns.currency": "Currency",
   "obligations.columns.receivedBy": "Received by",
   "obligations.columns.reference": "Reference",

@@ -3341,6 +3341,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "email.testFailed": "فشل البريد التجريبي",
   "email.testSuccess": "تم إرسال البريد التجريبي",
   "email.testSuccessDesc": "تحقق من بريدك الوارد.",
+  "email.testEmailPlaceholder": "البريد الإلكتروني لإرسال الاختبار إليه",
   "obligations.columns.currency": "العملة",
   "obligations.columns.receivedBy": "استُلم بواسطة",
   "obligations.columns.reference": "المرجع",

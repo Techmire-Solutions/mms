@@ -25,6 +25,8 @@ export default function EmailIntegrationPanel({
     form,
     smtpPassword,
     setSmtpPassword,
+    testEmail,
+    setTestEmail,
     selectedPreset,
     isCustom,
     setField,
@@ -52,6 +54,20 @@ export default function EmailIntegrationPanel({
       testLabel={t("email.sendTest")}
       onSave={() => void handleSave()}
       onTest={() => void handleTest()}
+      footerContent={
+        <div className="space-y-2">
+          <Label htmlFor="email-test-email">{t("email.testEmailPlaceholder")}</Label>
+          <Input
+            id="email-test-email"
+            name="testEmail"
+            type="email"
+            value={testEmail}
+            onChange={(event) => setTestEmail(event.target.value)}
+            placeholder={`admin@${selectedPreset.exampleDomain}`}
+            disabled={!canWrite}
+          />
+        </div>
+      }
     >
       <div className="space-y-2 sm:col-span-2">
         <Label htmlFor="email-provider">{t("email.provider")}</Label>

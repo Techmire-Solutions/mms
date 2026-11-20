@@ -29,3 +29,15 @@ export const verificationCodeBodySchema = z.preprocess((raw) => {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   return deepSanitizeStrings(raw);
 }, verificationCodeBodyBaseSchema);
+
+const emailTestBodyBaseSchema = z
+  .object({
+    /** Recipient for the test email; falls back to the session user's email when omitted. */
+    testEmail: z.string().trim().email().max(255).optional(),
+  })
+  .strict();
+
+export const emailTestBodySchema = z.preprocess((raw) => {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  return deepSanitizeStrings(raw);
+}, emailTestBodyBaseSchema);

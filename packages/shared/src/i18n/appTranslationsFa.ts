@@ -3394,6 +3394,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "email.testFailed": "ارسال ایمیل تست ناموفق بود",
   "email.testSuccess": "ایمیل تست با موفقیت ارسال شد",
   "email.testSuccessDesc": "برای پیام تست صندوق ورودی خود را بررسی کنید.",
+  "email.testEmailPlaceholder": "آدرس ایمیل برای ارسال آزمایش",
   "obligations.columns.currency": "واحد پول",
   "obligations.columns.receivedBy": "دریافت‌کننده",
   "obligations.columns.reference": "مرجع",
