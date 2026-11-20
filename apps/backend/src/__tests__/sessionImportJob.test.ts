@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const h = vi.hoisted(() => ({
   create: vi.fn(),
   load: vi.fn(),
+  loadByIds: vi.fn(),
   registered: undefined as
     | {
         importBatch: (
@@ -32,6 +33,7 @@ vi.mock("../sessions/use-cases/sessionsUseCases.js", () => ({
   sessionsUseCases: {
     createSession: h.create,
     loadSessionById: (...args: unknown[]) => h.load(...args),
+    loadSessionsByIds: (...args: unknown[]) => h.loadByIds(...args),
   },
 }));
 vi.mock("../lib/tenantContext.js", () => ({
@@ -44,6 +46,7 @@ describe("sessions CSV import runner", () => {
   beforeEach(() => {
     h.create.mockReset().mockResolvedValue(undefined);
     h.load.mockReset().mockResolvedValue(null);
+    h.loadByIds.mockReset().mockResolvedValue([]);
   });
 
   it("creates a session per valid row and reports invalid rows", async () => {
@@ -99,8 +102,8 @@ describe("sessions CSV import runner", () => {
       if (record.id) createdIds.push(record.id);
       return undefined;
     });
-    h.load.mockImplementation(async (id: string) =>
-      createdIds.includes(id) ? { id, deletedAt: null } : null,
+    h.loadByIds.mockImplementation(async (ids: string[]) =>
+      ids.filter((id) => createdIds.includes(id)).map((id) => ({ id, deletedAt: null })),
     );
     const ctx = {
       tenant: "demo",

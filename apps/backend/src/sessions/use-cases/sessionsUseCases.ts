@@ -70,10 +70,12 @@ export function createSessionsUseCases(
 
   const validateActiveFacultyForeignKeys = async (
     tenant: string,
-    record: Partial<SessionRecord>,
+    record: { classes?: Array<{ facultyId?: string | null }> },
   ) => {
     const facultyIds = dedupeTrimmedIds(
-      (record.classes ?? []).map((c) => c.facultyId).filter(Boolean),
+      (record.classes ?? [])
+        .map((c) => c.facultyId)
+        .filter((id): id is string => typeof id === "string" && id.length > 0),
     );
     if (facultyIds.length > 0) {
       const getFaculty =

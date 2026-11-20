@@ -1,6 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ApiError } from "@/lib/apiError";
 import type { Session } from "@/lib/data/sessionsData";
 
@@ -19,28 +20,23 @@ const h = vi.hoisted(() => ({
   bulkStatus: vi.fn(),
 }));
 
-vi.mock("@/lib/api", () => {
-  const hook = (mutateAsync: unknown) => ({
-    useMutation: () => ({ isPending: false, mutateAsync }),
-  });
+vi.mock("@/lib/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
-    tsrClient: {
+    ...actual,
+    apiContract: {
+      ...actual.apiContract,
       sessions: {
-        create: hook(h.create),
-        update: hook(h.update),
-        delete: hook(h.remove),
-        restore: hook(h.restore),
-        bulkDelete: hook(h.bulkDelete),
-        bulkRestore: hook(h.bulkRestore),
-        bulkStatus: hook(h.bulkStatus),
+        create: h.create,
+        update: h.update,
+        delete: h.remove,
+        restore: h.restore,
+        bulkDelete: h.bulkDelete,
+        bulkRestore: h.bulkRestore,
+        bulkStatus: h.bulkStatus,
       },
     },
   };
-});
-
-vi.mock("@tanstack/react-query", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
-  return { ...actual, useQueryClient: () => ({ invalidateQueries: vi.fn() }) };
 });
 
 import { useSessionMutations } from "./useSessionMutations";
@@ -70,14 +66,20 @@ function Harness() {
 describe("useSessionMutations contract handling", () => {
   let container: HTMLDivElement;
   let root: Root;
+  let queryClient: QueryClient;
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
     await act(async () => {
-      root.render(<Harness />);
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <Harness />
+        </QueryClientProvider>,
+      );
     });
   });
 
@@ -101,7 +103,7 @@ describe("useSessionMutations contract handling", () => {
     expect(h.update).toHaveBeenCalledWith(
       expect.objectContaining({
         params: { id: "sess-1" },
-        headers: { "x-expected-updated-at": "2026-01-01T00:00:00.000Z" },
+        extraHeaders: { "x-expected-updated-at": "2026-01-01T00:00:00.000Z" },
       }),
     );
   });

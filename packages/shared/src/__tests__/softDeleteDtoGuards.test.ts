@@ -286,7 +286,7 @@ describe("Soft-Delete DTO Validation, Write Guards & Query Coercion", () => {
           invoiceId: "inv-1",
           studentId: "s-1",
           contactId: "c-1",
-          amount: 500,
+          amount: "500",
           paymentDate: "2026-09-02",
           method: "cash",
           deletedBy: "malicious-actor",

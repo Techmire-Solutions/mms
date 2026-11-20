@@ -1,5 +1,5 @@
 import { useQuery, queryOptions } from "@tanstack/react-query";
-import type { SessionsCommandMetricsSnapshot } from "@mms/shared";
+import type { SessionsCommandMetricsSnapshot, SessionsReportAggregates } from "@mms/shared";
 import { SESSIONS_MODULE_MANIFEST, sessionsWidgetQueryFromWidget } from "@mms/shared";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -106,18 +106,12 @@ export interface SessionDetailState {
 function useSessionDetailResolver(summary: Session | null): SessionDetailState {
   const { isAuthenticated } = useAuth();
   const id = summary ? String(summary.id) : "";
-  const includeDeleted = summary?.deletedAt ? "true" : undefined;
-  const query = tsrClient.sessions.get.useQuery({
-    queryKey: [...SESSION_DETAIL_QUERY_KEY, id, includeDeleted ?? "active"],
-    queryData: { params: { id }, query: includeDeleted ? { includeDeleted } : {} },
+  const includeDeleted = Boolean(summary?.deletedAt);
+  const query = useQuery({
+    ...sessionDetailQueryOptions(id, includeDeleted),
     enabled: isAuthenticated && Boolean(id),
-    staleTime: 15_000,
   });
-  const session =
-    id && query.data?.status === 200
-      ? ((query.data.body as { session?: Session } | null)?.session ?? null)
-      : null;
-  const resolved = session && String(session.id) === id ? session : null;
+  const resolved = query.data && String(query.data.id) === id ? query.data : null;
   return {
     session: resolved,
     isLoading: Boolean(id) && query.isLoading,
@@ -188,10 +182,9 @@ export function useSessionsMetrics(options?: { enabled?: boolean }) {
 export function useSessionsReportAggregates(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
-  return tsrClient.sessions.reportAggregates.useQuery({
-    queryKey: SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
+  return useQuery({
+    ...sessionReportAggregatesQueryOptions(),
     enabled: isAuthenticated && enabled,
-    staleTime: 30_000,
   });
 }
 
@@ -209,5 +202,35 @@ export function sessionsListQueryOptions(query: Record<string, unknown> = {}) {
       return response.body;
     },
     staleTime: 15_000,
+  });
+}
+
+/** Full-session detail query factory (summary rows are lazy-resolved to their full record). */
+export function sessionDetailQueryOptions(id: string, includeDeleted: boolean) {
+  return queryOptions({
+    queryKey: [...SESSION_DETAIL_QUERY_KEY, id, includeDeleted ? "deleted" : "active"] as const,
+    queryFn: async ({ signal }): Promise<Session | null> => {
+      const response = await apiContract.sessions.get({
+        params: { id },
+        query: includeDeleted ? { includeDeleted: "true" } : {},
+        signal,
+      });
+      assertContractOk(response, "Failed to load session");
+      return (response.body as { session?: Session } | null)?.session ?? null;
+    },
+    staleTime: 15_000,
+  });
+}
+
+/** Report-aggregates query factory. */
+export function sessionReportAggregatesQueryOptions() {
+  return queryOptions({
+    queryKey: SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
+    queryFn: async ({ signal }): Promise<SessionsReportAggregates> => {
+      const response = await apiContract.sessions.reportAggregates({ signal });
+      assertContractOk(response, "Failed to load session report aggregates");
+      return response.body as SessionsReportAggregates;
+    },
+    staleTime: 30_000,
   });
 }

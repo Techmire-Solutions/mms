@@ -4,6 +4,7 @@ import { formatMoney } from "@mms/shared";
 import { SectionHeader } from "@shared/ui";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { BudgetItemWithClass } from "./budgetTabShared";
 
 interface BudgetSectionProps {
@@ -31,6 +32,7 @@ export function BudgetSection({
   onAdd,
   onDelete,
 }: BudgetSectionProps): React.JSX.Element {
+  const { t } = useTranslation();
   const isIncome = type === "income";
   const Icon = isIncome ? TrendingUp : TrendingDown;
   const toneClass = isIncome ? "text-success" : "text-destructive";
@@ -38,7 +40,7 @@ export function BudgetSection({
   const btnClasses = isIncome
     ? "border-success/20 bg-success/10 text-success hover:bg-success/15 hover:text-success"
     : "border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive";
-  const addLabel = isIncome ? "Add Income" : "Add Expense";
+  const addLabel = isIncome ? t("sessions.budget.addIncome") : t("sessions.budget.addExpense");
 
   return (
     <section aria-labelledby={headingId}>
@@ -72,7 +74,7 @@ export function BudgetSection({
               <div className="min-w-0 flex-1">
                 <p className="m-0 text-sm font-medium text-foreground">{item.detail}</p>
                 <p className="m-0 truncate text-xs text-muted-foreground">
-                  Class: {item.className}
+                  {t("sessions.budget.classPrefix", { className: item.className })}
                 </p>
               </div>
               <div className="flex items-center justify-between gap-3 sm:contents">
@@ -81,9 +83,14 @@ export function BudgetSection({
                 </p>
                 {isWritable && (
                   <Button
-                    aria-label={`Delete ${item.detail}`}
+                    aria-label={t(
+                      isIncome
+                        ? "sessions.budget.deleteIncomeNamed"
+                        : "sessions.budget.deleteExpenseNamed",
+                      { name: item.detail },
+                    )}
                     onClick={() => onDelete(item)}
-                    className="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
+                    className="min-h-11 min-w-11 shrink-0 text-muted-foreground transition-colors hover:text-destructive"
                     variant="ghost"
                     size="icon"
                   >

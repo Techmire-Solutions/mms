@@ -18,7 +18,6 @@ import {
   listSessionsPage,
   countSessionsActive,
   aggregateSessionsCommandMetrics,
-  bulkUpdateSessionsStatusSql,
 } from "../../db/repositories/sessionRepositoryList.js";
 import { aggregateSessionsWidgetQueries } from "../../db/repositories/sessionRepositoryWidgets.js";
 import { loadSessionsReportAggregatesSql } from "../../db/repositories/sessionRepositoryReport.js";
@@ -40,7 +39,6 @@ export const sessionsRepository: SessionsRepository = {
   listSessionsPage,
   countSessionsActive,
   aggregateSessionsCommandMetrics,
-  bulkUpdateSessionsStatus: bulkUpdateSessionsStatusSql,
   aggregateSessionsWidgetQueries,
   loadSessionsReportAggregates: loadSessionsReportAggregatesSql,
   softDeleteSessionWithCascade,

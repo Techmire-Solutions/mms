@@ -61,9 +61,11 @@ export function normalizeSessionStatus(raw: string | null | undefined): SessionL
 /** A write-path status value that is neither a lifecycle state nor a known legacy alias. */
 export class InvalidSessionStatusError extends Error {
   readonly code = "invalid_session_status";
-  constructor(readonly raw: unknown) {
+  readonly raw: unknown;
+  constructor(raw: unknown) {
     super(`Unknown session status: ${String(raw ?? "")}`);
     this.name = "InvalidSessionStatusError";
+    this.raw = raw;
   }
 }
 

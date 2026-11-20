@@ -37,6 +37,19 @@ export function registerSessionImportJobRunner(): void {
         }
       };
 
+      // Batch the idempotency probe: one chunked read instead of a hydrated load per row. The
+      // write (`createSession`) still runs per row because it owns the overlap guard + audit.
+      const existingIds = new Set<string>();
+      for (let start = 0; start < rows.length; start += 500) {
+        const chunkIds = rows
+          .slice(start, start + 500)
+          .map((_, index) => importIdForRow(start + index));
+        const found = await runWithTenant(ctx.tenant, () =>
+          sessionsUseCases.loadSessionsByIds(chunkIds),
+        );
+        for (const session of found) existingIds.add(session.id);
+      }
+
       for (let index = 0; index < rows.length; index += 1) {
         throwIfBackgroundJobAborted(ctx.signal);
         const row = rows[index];
@@ -64,10 +77,7 @@ export function registerSessionImportJobRunner(): void {
         } else {
           try {
             const sessionId = importIdForRow(index);
-            const already = await runWithTenant(ctx.tenant, () =>
-              sessionsUseCases.loadSessionById(sessionId),
-            );
-            if (already) {
+            if (existingIds.has(sessionId)) {
               // Idempotent retry: the row was imported by an earlier attempt of this job.
               imported += 1;
               await report(index + 1, rows.length);
@@ -87,7 +97,7 @@ export function registerSessionImportJobRunner(): void {
                 classes: [],
                 faculty: [],
                 workingDays: [],
-              } as never),
+              }),
             );
             imported += 1;
           } catch (error) {

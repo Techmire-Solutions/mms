@@ -74,7 +74,7 @@ describe("FacultyManagementTab", () => {
     });
 
     expect(document.body.textContent).toContain("Ustadh Ali");
-    expect(document.body.textContent).toContain("Lead Instructor");
+    expect(document.body.textContent).toContain("sessions.faculty.roles.leadInstructor");
     expect(document.body.textContent).toContain("active");
   });
 

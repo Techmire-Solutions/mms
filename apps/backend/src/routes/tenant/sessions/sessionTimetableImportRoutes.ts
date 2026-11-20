@@ -159,7 +159,16 @@ export const sessionTimetableImportRoutes: FastifyPluginAsync = async (fastify) 
     const updated = await sessionsUseCases.updateSessionById(
       session.id,
       { classes },
-      { canOverrideLock: true, lockOverrideReason: "Timetable import" },
+      {
+        // Locked sessions (completed/cancelled/archived) and past-timetable rewrites need the same
+        // override permission as the PUT path; import must not grant delete-level authority to a
+        // write+manage-only role (review finding M1).
+        canOverrideLock: userHasPermission(
+          user as never,
+          SESSIONS_MODULE_MANIFEST.permissions.overrideLock,
+        ),
+        lockOverrideReason: "Timetable import",
+      },
       session.updatedAt,
       session.version,
     );

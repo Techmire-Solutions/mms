@@ -24,8 +24,8 @@ export function useBudgetTabState(
   const incomes = allBudgetItems.filter((b) => b.budgetType === "income");
   const expenses = allBudgetItems.filter((b) => b.budgetType === "expense");
 
-  const totalIncome = incomes.reduce((sum, b) => sum + (b.amount || 0), 0);
-  const totalExpenses = expenses.reduce((sum, b) => sum + (b.amount || 0), 0);
+  const totalIncome = incomes.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+  const totalExpenses = expenses.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
   const balance = totalIncome - totalExpenses;
 
   const handleOpenAdd = (type: "income" | "expense") => {

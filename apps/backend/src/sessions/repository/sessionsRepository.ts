@@ -75,11 +75,6 @@ export interface SessionsRepository {
   listSessionsPage(tenant: string, query: SessionsListQuery): Promise<SessionsListPageResult>;
   countSessionsActive(tenant: string): Promise<number>;
   aggregateSessionsCommandMetrics(tenant: string): Promise<SessionsCommandMetricsSnapshot>;
-  bulkUpdateSessionsStatus(
-    tenant: string,
-    ids: string[],
-    status: string,
-  ): Promise<{ succeeded: number; failed: number }>;
   aggregateSessionsWidgetQueries(
     tenant: string,
     queries: SessionsWidgetQuery[],

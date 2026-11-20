@@ -1,4 +1,4 @@
-import { todayISO } from "@mms/shared";
+import { todayISO, toMoneyNumber } from "@mms/shared";
 import type { EnrollmentInsert } from "@mms/shared";
 import { type CalculatedFee } from "@/lib/data/enrollmentData";
 import { type Student } from "@/lib/data/studentsData";
@@ -25,7 +25,7 @@ export function buildEnrollmentPayload(params: {
     ...(placement?.sectionId ? { sectionId: placement.sectionId } : {}),
     ...(placement?.rollNo.trim() ? { rollNo: placement.rollNo.trim() } : {}),
     enrolledDate: todayISO(),
-    baseFee: session.baseFee,
+    baseFee: toMoneyNumber(session.baseFee) ?? 0,
     discountType: feeResult.id,
     discountLabel: feeResult.label,
     discountPct: feeResult.pct,

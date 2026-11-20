@@ -60,9 +60,9 @@ export function createSessionTrashUseCases(repo: SessionsRepository) {
         }
         throw new NotFoundError("Session not found");
       }
-      await broadcastCollection("sessions");
-      await broadcastCollection("enrollments");
-      await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+      runAfterCommit(() => broadcastCollection("sessions"));
+      runAfterCommit(() => broadcastCollection("enrollments"));
+      runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" }));
       return true;
     },
     bulkSoftDeleteSessions: async (
@@ -80,9 +80,9 @@ export function createSessionTrashUseCases(repo: SessionsRepository) {
         deletionReason,
       );
       if (res.succeeded > 0) {
-        await broadcastCollection("sessions");
-        await broadcastCollection("enrollments");
-        await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+        runAfterCommit(() => broadcastCollection("sessions"));
+        runAfterCommit(() => broadcastCollection("enrollments"));
+        runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" }));
       }
       return res;
     },
@@ -95,9 +95,9 @@ export function createSessionTrashUseCases(repo: SessionsRepository) {
       if (!tenant || uniqueIds.length === 0) return { succeeded: 0, failed: uniqueIds.length };
       const res = await repo.bulkRestoreSessionsWithCascade(tenant, uniqueIds, userId);
       if (res.succeeded > 0) {
-        await broadcastCollection("sessions");
-        await broadcastCollection("enrollments");
-        await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+        runAfterCommit(() => broadcastCollection("sessions"));
+        runAfterCommit(() => broadcastCollection("enrollments"));
+        runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" }));
       }
       return res;
     },

@@ -106,7 +106,7 @@ export function SessionFacultyFormModal({
             value={role}
             onChange={onRoleChange}
             options={[
-              ...COMMON_FACULTY_ROLES.map((r) => ({ value: r, label: r })),
+              ...COMMON_FACULTY_ROLES.map((r) => ({ value: r.value, label: t(r.labelKey) })),
               { value: "Custom", label: t("sessions.classes.detail.schedule.custom") },
             ]}
             className="w-full"

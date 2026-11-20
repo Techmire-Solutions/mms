@@ -121,7 +121,7 @@ export function ClassesTab({ session, onUpdate, canWrite }: ClassesTabProps) {
                 setClassBeingEdited(null);
                 setShowModal(true);
               }}
-              className="flex h-auto w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
+              className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
             >
               <Plus className="w-3.5 h-3.5" aria-hidden="true" /> {terms.class.singular}
             </Button>

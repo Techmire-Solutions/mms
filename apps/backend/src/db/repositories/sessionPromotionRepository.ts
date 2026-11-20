@@ -175,21 +175,28 @@ export async function findPromotedSourceIds(
   return new Set(rows.map((row) => String(row.from)));
 }
 
-/** Accumulates outcome counters on the run so resumed attempts report complete totals. */
-export async function incrementPromotionRunCounts(
+/**
+ * Sets the run's outcome counters to absolute totals (idempotent). The rollover job computes the
+ * complete count from the full plan in memory on every attempt, so a resume re-sets the same value
+ * instead of double-counting (the previous `+ delta` semantics were only safe because each student
+ * was incremented once under the `!alreadyCarried` guard).
+ */
+export async function setPromotionRunCounts(
   tenant: string,
   id: string,
-  delta: Partial<Record<"promoted" | "retained" | "graduated" | "left", number>>,
+  counts: Partial<Record<"promoted" | "retained" | "graduated" | "left", number>>,
 ): Promise<void> {
   const subdomain = tenant.trim().toLowerCase();
-  const set: Record<string, unknown> = { updatedAt: new Date() };
-  for (const key of ["promoted", "retained", "graduated", "left"] as const) {
-    if (delta[key]) set[key] = sql`${sessionPromotionRuns[key]} + ${Math.trunc(delta[key] ?? 0)}`;
-  }
   await withTenant(subdomain, (tx) =>
     tx
       .update(sessionPromotionRuns)
-      .set(set)
+      .set({
+        promoted: Math.trunc(counts.promoted ?? 0),
+        retained: Math.trunc(counts.retained ?? 0),
+        graduated: Math.trunc(counts.graduated ?? 0),
+        left: Math.trunc(counts.left ?? 0),
+        updatedAt: new Date(),
+      })
       .where(
         and(
           eq(sessionPromotionRuns.workspaceSubdomain, subdomain),

@@ -1,12 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type {
-  SectionAssignmentEndBody,
-  SectionStaffAssignBody,
-  SectionStudentRoleBody,
-} from "@mms/shared";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import {
-  sectionStaffApi,
+  addSectionStudentRoleMutationOptions,
+  assignSectionStaffMutationOptions,
+  endSectionStaffMutationOptions,
+  endSectionStudentRoleMutationOptions,
   sectionStaffQueryKey,
   sectionStaffQueryOptions,
   sectionStudentRolesQueryKey,
@@ -35,26 +33,9 @@ export function useSectionStaffMutations(sectionId: string) {
   };
 
   return {
-    assign: useMutation({
-      mutationFn: (body: SectionStaffAssignBody) => sectionStaffApi.assign(sectionId, body),
-      onSuccess,
-    }),
-    end: useMutation({
-      mutationFn: ({
-        assignmentId,
-        ...body
-      }: SectionAssignmentEndBody & { assignmentId: string }) =>
-        sectionStaffApi.end(sectionId, assignmentId, body),
-      onSuccess,
-    }),
-    addRole: useMutation({
-      mutationFn: (body: SectionStudentRoleBody) => sectionStaffApi.addRole(sectionId, body),
-      onSuccess,
-    }),
-    endRole: useMutation({
-      mutationFn: ({ roleId, ...body }: SectionAssignmentEndBody & { roleId: string }) =>
-        sectionStaffApi.endRole(sectionId, roleId, body),
-      onSuccess,
-    }),
+    assign: useMutation({ ...assignSectionStaffMutationOptions(sectionId), onSuccess }),
+    end: useMutation({ ...endSectionStaffMutationOptions(sectionId), onSuccess }),
+    addRole: useMutation({ ...addSectionStudentRoleMutationOptions(sectionId), onSuccess }),
+    endRole: useMutation({ ...endSectionStudentRoleMutationOptions(sectionId), onSuccess }),
   };
 }

@@ -99,7 +99,7 @@ describe("BudgetTab", () => {
     // Items
     expect(document.body.textContent).toContain("Book Sales");
     expect(document.body.textContent).toContain("Stationery");
-    expect(document.body.textContent).toContain("Class: Fiqh Level 1");
+    expect(document.body.textContent).toContain("sessions.budget.classPrefix");
   });
 
   it("opens delete confirmation and triggers onUpdate when confirmed", async () => {
@@ -111,7 +111,7 @@ describe("BudgetTab", () => {
     });
 
     const deleteBtn = document.body.querySelector<HTMLButtonElement>(
-      'button[aria-label="Delete Book Sales"]',
+      'button[aria-label="sessions.budget.deleteIncomeNamed"]',
     );
     expect(deleteBtn).not.toBeNull();
 

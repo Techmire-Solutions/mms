@@ -52,10 +52,7 @@ const SessionReport = function SessionReport({ filters }: SessionReportProps): R
   const sessionsQuery = useSessions();
   const sessions = useSessionsCollection();
   const aggregatesQuery = useSessionsReportAggregates();
-  const aggregates =
-    aggregatesQuery.data?.status === 200
-      ? (aggregatesQuery.data.body as SessionsReportAggregates)
-      : undefined;
+  const aggregates = (aggregatesQuery.data ?? undefined) as SessionsReportAggregates | undefined;
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
 

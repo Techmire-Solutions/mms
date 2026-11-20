@@ -18,6 +18,7 @@ import { broadcastCollection } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { workspaceToday } from "./sessionLockGuard.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { runAfterCommit } from "../../db/commitScope.js";
 
 async function loadOpenSection(tenant: string, sectionId: string, effectiveOn: string) {
   const roster = await repo.loadSectionRoster(tenant, sectionId);
@@ -48,9 +49,9 @@ async function afterChange(
     oldState: oldState ?? { sectionId, status: "active" },
     newState: detail,
   });
-  await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
-  await broadcastCollection("sessions");
-  await broadcastCollection("enrollments");
+  runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" }));
+  runAfterCommit(() => broadcastCollection("sessions"));
+  runAfterCommit(() => broadcastCollection("enrollments"));
 }
 
 const actorOf = (user: User) => ({ userId: user.id, label: user.name || user.email });

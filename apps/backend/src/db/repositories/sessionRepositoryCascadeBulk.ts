@@ -3,6 +3,7 @@ import { sessions, enrollments } from "../schema.js";
 import { withTenant } from "../tenant-context.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { recordCascadeEvents, returningEnrollmentIds } from "./sessionCascadeEvents.js";
+import { throwOverlapConflict } from "./sessionPersistErrors.js";
 import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 
 export async function bulkDeleteSessions(
@@ -129,24 +130,31 @@ export async function bulkRestoreSessions(
     const oldStates = Object.fromEntries(
       before.map((row) => [row.id, { ...row, version: Number(row.version) }]),
     );
-    const res = await tx
-      .update(sessions)
-      .set({
-        deletedAt: null,
-        deletedBy: null,
-        deletionReason: null,
-        restoredAt: now,
-        restoredBy: userId || null,
-        updatedAt: now,
-      })
-      .where(
-        and(
-          eq(sessions.workspaceSubdomain, subdomain),
-          inArray(sessions.id, sessionIds),
-          isNotNull(sessions.deletedAt),
-        ),
-      )
-      .returning({ id: sessions.id });
+    let res: { id: string }[];
+    try {
+      res = await tx
+        .update(sessions)
+        .set({
+          deletedAt: null,
+          deletedBy: null,
+          deletionReason: null,
+          restoredAt: now,
+          restoredBy: userId || null,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(sessions.workspaceSubdomain, subdomain),
+            inArray(sessions.id, sessionIds),
+            isNotNull(sessions.deletedAt),
+          ),
+        )
+        .returning({ id: sessions.id });
+    } catch (error) {
+      // Restoring overlapping live sessions re-fires the 0206 exclusion constraint (`23P01`);
+      // surface it as a 409 like the single restore / save paths instead of a database error.
+      throwOverlapConflict(error);
+    }
 
     const restoredIds = res.map((r) => r.id);
     if (restoredIds.length > 0) {

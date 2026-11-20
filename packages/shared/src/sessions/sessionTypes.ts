@@ -22,6 +22,7 @@ import {
   SessionClassScholarshipSchema,
   SessionClassTimetableInsertSchema,
   SessionClassTimetableSchema,
+  SessionFacultyInsertSchema,
   SessionFacultySchema,
 } from "./sessionSubEntityTypes.js";
 
@@ -144,7 +145,7 @@ export type ClassInsert = z.infer<typeof ClassInsertSchema>;
 export const SessionSchema = z
   .object({
     id: z.string(),
-    name: z.string().min(1, "Session name is required"),
+    name: z.string().min(1, "Session name is required").max(255),
     // Lifecycle state (see sessionLifecycle); legacy writes normalize to the six stored states.
     status: sessionStatusSchema.default("draft"),
     /** Legacy display snapshot; superseded by `categoryId` / `programId`. */
@@ -161,7 +162,7 @@ export const SessionSchema = z
     minAttendancePct: z.coerce.number().int().min(0).max(100).nullable().optional(),
     /** Short-course completion: every class exam must be passed. */
     requiresExamPass: z.boolean().optional(),
-    description: z.string().optional(),
+    description: z.string().max(2000).optional(),
     currency: z.string().optional().default("PKR"),
     baseFee: z.coerce.number().nonnegative().default(0),
     // Model 6 components
@@ -203,8 +204,16 @@ export const SessionInsertSchema = SessionSchema.omit({
   overlapExempt: true,
   createdAt: true,
   updatedAt: true,
+  // Server-generated child ids (the persist layer does `id || randomUUID()`).
+  faculty: true,
+  classes: true,
 })
-  .extend({ id: z.string().optional(), status: sessionStatusSchema.default("draft") })
+  .extend({
+    id: z.string().optional(),
+    status: sessionStatusSchema.default("draft"),
+    faculty: z.array(SessionFacultyInsertSchema).default([]),
+    classes: z.array(ClassInsertSchema).default([]),
+  })
   .strict();
 export type SessionInsert = z.infer<typeof SessionInsertSchema>;
 export const SessionUpdateSchema = SessionInsertSchema.partial();

@@ -151,7 +151,7 @@ describe("sessions soft delete routes", () => {
       status: "active",
       startDate: "2026-01-01",
       endDate: "2026-12-31",
-      baseFee: 1000,
+      baseFee: "1000",
       currency: "PKR",
       classes: [],
       timetable: [],
@@ -173,7 +173,7 @@ describe("sessions soft delete routes", () => {
         status: "active",
         startDate: "2026-01-01",
         endDate: "2026-12-31",
-        baseFee: 1000,
+        baseFee: "1000",
         currency: "PKR",
       },
     });

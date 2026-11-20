@@ -245,5 +245,3 @@ export async function aggregateSessionsCommandMetrics(
     };
   });
 }
-
-export { bulkUpdateSessionsStatusSql } from "./sessionRepositoryBulkStatus.js";
