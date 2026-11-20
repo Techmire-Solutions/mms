@@ -77,7 +77,7 @@ export function useSessionFormController({
       startDate: draft.startDate || "",
       endDate: draft.endDate || "",
       workingDays: draft.workingDays ?? [],
-      baseFee: String(draft.baseFee ?? "0"),
+      baseFee: Number(draft.baseFee || 0),
       currency: draft.currency || defaultCurrency,
       description: draft.description || "",
       minAttendancePct: draft.minAttendancePct ? Number(draft.minAttendancePct) : null,
