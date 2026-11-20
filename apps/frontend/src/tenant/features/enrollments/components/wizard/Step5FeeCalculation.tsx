@@ -1,6 +1,7 @@
 import React from "react";
 import { DollarSign, Tag, Info } from "lucide-react";
 import { calcFee, type CalculatedFee } from "@/lib/data/enrollmentData";
+import { toMoneyNumber } from "@mms/shared";
 import { type Student } from "@/lib/data/studentsData";
 import { type Session } from "@/lib/data/sessionsData";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
@@ -23,7 +24,7 @@ export function Step5FeeCalculation({
 }: Step5FeeCalculationProps): React.JSX.Element {
   const { t } = useTranslation();
   const { formatCurrency } = useFinanceCurrency();
-  const baseFee = session?.baseFee || 0;
+  const baseFee = session?.baseFee || "0";
   const sessionDiscounts =
     (
       session as {
@@ -32,7 +33,7 @@ export function Step5FeeCalculation({
     )?.discounts ?? [];
   const discountsKey = JSON.stringify(sessionDiscounts);
   const fee = React.useMemo(() => {
-    return calcFee(baseFee, student || {}, [], sessionDiscounts);
+    return calcFee(toMoneyNumber(baseFee) ?? 0, student || {}, [], sessionDiscounts);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on stable granular fields + discountsKey; adding the `student`/`sessionDiscounts` object deps would recreate `fee` every render and re-fire the onFeeResult effect.
   }, [baseFee, student?.id, student?.discountType, student?.discountPct, discountsKey]);
 

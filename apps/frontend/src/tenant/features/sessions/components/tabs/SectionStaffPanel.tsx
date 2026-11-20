@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   formatFacultyDisplayName,
   SECTION_STAFF_ROLES,
+  sectionStaffAssignBodySchema,
   type FacultyMember,
   type SectionStaffAssignment,
   type SectionStaffRole,
@@ -52,7 +53,16 @@ export function SectionStaffPanel({
   const submit = async () => {
     setAttempted(true);
     setFormError(null);
-    if (!facultyId || !startOn || (role === "subject_teacher" && !subjectId)) {
+    // Shared write schema for the structural checks; the subject_teacher business rule stays
+    // inline because the schema treats `subjectId` as nullish for any role.
+    const parsed = sectionStaffAssignBodySchema.safeParse({
+      facultyId,
+      role,
+      subjectId: role === "class_teacher" ? null : subjectId || null,
+      startOn,
+      reason: reason.trim() || null,
+    });
+    if (!parsed.success || (role === "subject_teacher" && !subjectId)) {
       setFormError(t("common.formPleaseFixErrors"));
       return;
     }
@@ -67,13 +77,7 @@ export function SectionStaffPanel({
       return;
     }
     try {
-      await assign.mutateAsync({
-        facultyId,
-        role,
-        subjectId: role === "class_teacher" ? null : subjectId || null,
-        startOn,
-        reason: reason.trim() || null,
-      });
+      await assign.mutateAsync(parsed.data);
       notify.success(t("sessions.staff.assigned"));
       setFacultyId("");
       setReason("");

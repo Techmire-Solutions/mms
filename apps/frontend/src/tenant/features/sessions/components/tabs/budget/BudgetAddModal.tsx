@@ -7,6 +7,7 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
+import { toMoneyNumber } from "@mms/shared";
 import type { Class } from "@/lib/data/sessionsData";
 
 interface BudgetAddModalProps {
@@ -18,8 +19,8 @@ interface BudgetAddModalProps {
   onTargetClassIdChange: (id: string) => void;
   detail: string;
   onDetailChange: (detail: string) => void;
-  amount: number;
-  onAmountChange: (amount: number) => void;
+  amount: string;
+  onAmountChange: (amount: string) => void;
   currencyLabel: string;
   saving: boolean;
   onSave: () => Promise<void> | void;
@@ -47,7 +48,7 @@ export function BudgetAddModal({
     `${open}|${budgetType}`,
   );
   const detailInvalid = !detail.trim();
-  const amountInvalid = !amount || amount <= 0;
+  const amountInvalid = !amount || (toMoneyNumber(amount) ?? 0) <= 0;
 
   const guardSave = useSubmitGuard();
   // The footer button and the native Enter submit must share one awaited path;
@@ -93,7 +94,8 @@ export function BudgetAddModal({
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          if (!saving && targetClassId && amount && amount > 0) void handleSave();
+          if (!saving && targetClassId && amount && (toMoneyNumber(amount) ?? 0) > 0)
+            void handleSave();
         }}
         className="space-y-4"
       >
@@ -139,11 +141,11 @@ export function BudgetAddModal({
             type="text"
             inputMode="decimal"
             placeholder="0.00"
-            value={amount ? String(amount) : ""}
+            value={amount}
             onChange={(e) => {
               const val = e.target.value;
               if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
-                onAmountChange(parseFloat(val) || 0);
+                onAmountChange(val);
               }
             }}
           />

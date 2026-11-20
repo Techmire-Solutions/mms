@@ -68,7 +68,7 @@ export function useClassDetailAcademicDraft(
 
   const addPeriodRow = useCallback(() => {
     const firstFaculty = allFaculty[0];
-    const initialFacultyName = formatFacultyDisplayName(firstFaculty) || "Instructor";
+    const initialFacultyName = formatFacultyDisplayName(firstFaculty) || "";
     setClassDraft((prev) => {
       const timetable = prev.timetables?.[0] ?? createEmptyTimetable(prev.id);
       const facultyIdStr = firstFaculty?.id ? String(firstFaculty.id) : "";

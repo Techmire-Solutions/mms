@@ -1,57 +1,85 @@
-import { isValidIsoDate, type Class } from "@mms/shared";
+import { ClassInsertSchema, isValidIsoDate, type Class } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { ClassDetailTabId } from "./types";
 
-/** Client-side class form validation; returns field errors and the tab that owns the first one. */
+const TAB_IDS: readonly ClassDetailTabId[] = [
+  "general",
+  "sections",
+  "schedule",
+  "fees",
+  "budget",
+  "scholarship",
+];
+
+/**
+ * Client-side class-form validation; returns field errors keyed by form field and the first tab
+ * (in navigation order) that owns one.
+ *
+ * Shape and bounds come from the shared `ClassInsertSchema` (single source of truth), mapped back
+ * to the flat keys the tab bodies render inline. A second pass keeps the business rules the shared
+ * schema deliberately leaves to the client/back-end (cross-field and derived constraints):
+ * age-range order, capacity vs. live enrollments, section-name uniqueness, positive fee/budget
+ * amounts, HH:mm period times with a valid order, and non-reversed schedule dates.
+ */
 export function validateClassDraft(
   draft: Class,
   t: TranslationFunction,
 ): { errors: Record<string, string>; tab: ClassDetailTabId } {
-  const next: Record<string, string> = {};
-  let tab: ClassDetailTabId = "general";
-  if (!draft.name?.trim()) {
-    next.name = t("common.formPleaseFixErrors");
+  const errors: Record<string, string> = {};
+  const erroredTabs = new Set<ClassDetailTabId>();
+  const setError = (key: string, tab: ClassDetailTabId) => {
+    if (!errors[key]) errors[key] = t("common.formPleaseFixErrors");
+    erroredTabs.add(tab);
+  };
+
+  const parsed = ClassInsertSchema.safeParse(draft);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const [top, index, field] = issue.path as [string, number, string];
+      if (top === "sections") {
+        const section = draft.sections?.[index];
+        if (section?.id && (field === "name" || field === "capacity" || field === "room")) {
+          setError(`section.${section.id}.${field}`, "sections");
+        }
+      } else if (top === "discounts") {
+        const discount = draft.discounts?.[index];
+        if (discount?.id && field === "percentage") {
+          setError(`discount.${discount.id}.percentage`, "fees");
+        }
+      } else if (top === "refreshments") {
+        const refreshment = draft.refreshments?.[index];
+        if (refreshment?.id && (field === "quantity" || field === "pricePerUnit")) {
+          setError(`refreshment.${refreshment.id}.amount`, "budget");
+        }
+      } else if (top === "scholarships") {
+        if (field === "percentage") setError("scholarshipPercentage", "scholarship");
+      }
+    }
   }
+
+  // Business rules (cross-field / derived) not owned by the shared schema.
+  if (!draft.name?.trim()) setError("name", "general");
   if (draft.minAge > 0 && draft.maxAge > 0 && draft.minAge > draft.maxAge) {
-    next.maxAge = t("common.formPleaseFixErrors");
+    setError("maxAge", "general");
   }
-  if ((draft.maxStudents ?? 0) < (draft.enrolled ?? 0)) {
-    next.maxStudents = t("common.formPleaseFixErrors");
-  }
+  if ((draft.maxStudents ?? 0) < (draft.enrolled ?? 0)) setError("maxStudents", "general");
+
   const sectionNames = new Set<string>();
   for (const section of draft.sections ?? []) {
     const name = section.name?.trim() ?? "";
     const nameKey = name.toUpperCase();
-    if (!name || sectionNames.has(nameKey)) {
-      next[`section.${section.id}.name`] = t("common.formPleaseFixErrors");
-      tab = "sections";
-    }
+    if (!name || sectionNames.has(nameKey)) setError(`section.${section.id}.name`, "sections");
     if (name) sectionNames.add(nameKey);
-    if (
-      !Number.isInteger(Number(section.capacity)) ||
-      Number(section.capacity) < 0 ||
-      Number(section.capacity) > 100_000
-    ) {
-      next[`section.${section.id}.capacity`] = t("common.formPleaseFixErrors");
-      tab = "sections";
-    }
-    if ((section.room ?? "").length > 100) {
-      next[`section.${section.id}.room`] = t("common.formPleaseFixErrors");
-      tab = "sections";
-    }
   }
   for (const schedule of draft.schedules ?? []) {
     if (schedule.startDate && !isValidIsoDate(schedule.startDate)) {
-      next[`schedule.${schedule.id}.startDate`] = t("common.formPleaseFixErrors");
-      tab = "schedule";
+      setError(`schedule.${schedule.id}.startDate`, "schedule");
     }
     if (schedule.endDate && !isValidIsoDate(schedule.endDate)) {
-      next[`schedule.${schedule.id}.endDate`] = t("common.formPleaseFixErrors");
-      tab = "schedule";
+      setError(`schedule.${schedule.id}.endDate`, "schedule");
     }
     if (schedule.startDate && schedule.endDate && schedule.endDate < schedule.startDate) {
-      next[`schedule.${schedule.id}.endDate`] = t("common.formPleaseFixErrors");
-      tab = "schedule";
+      setError(`schedule.${schedule.id}.endDate`, "schedule");
     }
   }
   for (const timetable of draft.timetables ?? []) {
@@ -62,39 +90,17 @@ export function validateClassDraft(
         period.startTime >= period.endTime ||
         !period.subject?.trim()
       ) {
-        next[`period.${period.id}.time`] = t("common.formPleaseFixErrors");
-        tab = "schedule";
+        setError(`period.${period.id}.time`, "schedule");
       }
     }
   }
   for (const fee of draft.fees ?? []) {
-    if (!(Number(fee.amount) > 0)) {
-      next[`fee.${fee.id}.amount`] = t("common.formPleaseFixErrors");
-      tab = "fees";
-    }
-  }
-  for (const discount of draft.discounts ?? []) {
-    if (Number(discount.percentage) < 0 || Number(discount.percentage) > 100) {
-      next[`discount.${discount.id}.percentage`] = t("common.formPleaseFixErrors");
-      tab = "fees";
-    }
+    if (!(Number(fee.amount) > 0)) setError(`fee.${fee.id}.amount`, "fees");
   }
   for (const budget of draft.budgets ?? []) {
-    if (!(Number(budget.amount) > 0)) {
-      next[`budget.${budget.id}.amount`] = t("common.formPleaseFixErrors");
-      tab = "budget";
-    }
+    if (!(Number(budget.amount) > 0)) setError(`budget.${budget.id}.amount`, "budget");
   }
-  for (const refreshment of draft.refreshments ?? []) {
-    if (Number(refreshment.quantity) < 0 || Number(refreshment.pricePerUnit) < 0) {
-      next[`refreshment.${refreshment.id}.amount`] = t("common.formPleaseFixErrors");
-      tab = "budget";
-    }
-  }
-  const scholarship = draft.scholarships?.[0];
-  if (scholarship && (Number(scholarship.percentage) < 0 || Number(scholarship.percentage) > 100)) {
-    next.scholarshipPercentage = t("common.formPleaseFixErrors");
-    tab = "scholarship";
-  }
-  return { errors: next, tab };
+
+  const tab = TAB_IDS.find((id) => erroredTabs.has(id)) ?? "general";
+  return { errors, tab };
 }

@@ -7,8 +7,8 @@ import { z } from "zod";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import { sessionRolloverRepository as runs } from "../repository/sessionRolloverRepositoryAdapter.js";
 import {
+  bulkCloseRolloverSourceEnrollments,
   carryRolloverEnrollments,
-  closeRolloverSourceEnrollment,
   listRolloverCandidates,
 } from "../../enrollments/use-cases/enrollmentRolloverUseCases.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
@@ -130,6 +130,12 @@ export async function executeSessionRollover(
 
       const lastDay = source.endDate || (await workspaceToday(tenant));
       const actor = { userId: actorUserId, label: "Session rollover" };
+      const closeInputs: Array<{
+        enrollmentId: string;
+        studentId: string;
+        status: "promoted" | "retained" | "graduated" | "left";
+        lastDay: string;
+      }> = [];
       for (const [index, row] of plan.entries()) {
         const candidate = byId.get(row.enrollmentId);
         if (!candidate) continue;
@@ -146,21 +152,26 @@ export async function executeSessionRollover(
           continue;
         }
         if (!alreadyCarried) {
-          await closeRolloverSourceEnrollment(tenant, {
+          closeInputs.push({
             enrollmentId: candidate.id,
             studentId: candidate.studentId,
             status: PROMOTION_OUTCOME_STATUS[row.outcome] as
               "promoted" | "retained" | "graduated" | "left",
             lastDay,
-            actor,
           });
-          // Persist the counter immediately so an interrupted attempt does not lose outcomes that
-          // are already closed (resumed runs report complete totals).
-          await runs.incrementPromotionRunCounts(tenant, runId, { [status]: 1 });
         }
         counts[status] += 1;
         await reportProgress(index + 1, plan.length);
       }
+
+      // One batched transaction for the year-end closes (replaces the per-student loop).
+      if (closeInputs.length > 0) {
+        await bulkCloseRolloverSourceEnrollments(tenant, closeInputs, actor);
+      }
+
+      // One idempotent SET of the full in-memory totals (the plan is re-derived on every attempt,
+      // so a resume re-sets the same value instead of double-counting).
+      await runs.setPromotionRunCounts(tenant, runId, counts);
 
       if (payload.body.closeSource !== false) {
         try {

@@ -21,7 +21,7 @@ const mockSession: Session = {
   status: "in_progress",
   startDate: "2024-01-01",
   endDate: "2024-12-31",
-  baseFee: 100,
+  baseFee: "100",
   currency: "USD",
   faculty: [],
   classes: [

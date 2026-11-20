@@ -10,6 +10,17 @@ vi.mock("../sessions/use-cases/sessionTransitionService.js", () => ({
   transitionSession: vi.fn(),
 }));
 
+const commitHooks = vi.hoisted(() => ({
+  runAfterCommit: vi.fn(),
+  broadcastCollection: vi.fn(),
+  invalidateMultiTierCache: vi.fn(),
+}));
+vi.mock("../db/commitScope.js", () => ({ runAfterCommit: commitHooks.runAfterCommit }));
+vi.mock("../lib/livePush.js", () => ({ broadcastCollection: commitHooks.broadcastCollection }));
+vi.mock("../lib/cache/index.js", () => ({
+  invalidateMultiTierCache: commitHooks.invalidateMultiTierCache,
+}));
+
 function fakeRepo(overrides: Partial<SessionsRepository> = {}): SessionsRepository {
   return {
     findSessionById: vi.fn().mockResolvedValue(null),
@@ -100,5 +111,21 @@ describe("session trash use-cases", () => {
       "s1",
       expect.objectContaining({ to: "in_progress" }),
     );
+  });
+
+  it("defers broadcast and cache invalidation to runAfterCommit on restore", async () => {
+    // Arrange
+    commitHooks.runAfterCommit.mockImplementation((fn: () => unknown) => fn());
+    commitHooks.broadcastCollection.mockResolvedValue(undefined);
+    commitHooks.invalidateMultiTierCache.mockResolvedValue(undefined);
+    const trash = createSessionTrashUseCases(fakeRepo());
+
+    // Act
+    await runWithTenant("demo", () => trash.restoreSessionById("s1", "u-1"));
+
+    // Assert
+    expect(commitHooks.runAfterCommit).toHaveBeenCalled();
+    expect(commitHooks.broadcastCollection).toHaveBeenCalledWith("sessions");
+    expect(commitHooks.invalidateMultiTierCache).toHaveBeenCalled();
   });
 });

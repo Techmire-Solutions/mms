@@ -77,11 +77,11 @@ export function ClassDetailFeesTab({
                   inputMode="decimal"
                   placeholder={t("sessions.classes.detail.amount")}
                   aria-label={t("sessions.classes.detail.amount")}
-                  value={fee.amount === 0 ? "" : String(fee.amount)}
+                  value={fee.amount === "0" ? "" : fee.amount}
                   onChange={(e) => {
                     const val = e.target.value;
                     if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
-                      onUpdateFee(fee.id, { amount: parseFloat(val) || 0 });
+                      onUpdateFee(fee.id, { amount: val });
                     }
                   }}
                   className={cn("text-xs", currencySymbol && "ps-6")}

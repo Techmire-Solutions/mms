@@ -192,6 +192,8 @@ export async function applyEnrollmentWithdrawal(
   });
 }
 
+export { bulkApplyEnrollmentWithdrawal } from "./enrollmentOperationsBulk.js";
+
 /**
  * Enrollments a staff operation may act on (pending/confirmed), for the given sessions
  * and/or students.

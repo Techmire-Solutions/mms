@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import {
   SectionStaffAssignmentSchema,
@@ -55,3 +55,37 @@ export const sectionStaffApi = {
   endRole: (sectionId: string, roleId: string, body: SectionAssignmentEndBody) =>
     post(sectionId, `/student-roles/${encodeURIComponent(roleId)}/end`, body),
 };
+
+/** Assign staff to a section. */
+export function assignSectionStaffMutationOptions(sectionId: string) {
+  return mutationOptions({
+    mutationKey: ["sessions", "section-staff", sectionId, "assign"] as const,
+    mutationFn: (body: SectionStaffAssignBody) => sectionStaffApi.assign(sectionId, body),
+  });
+}
+
+/** End a staff assignment on a date. */
+export function endSectionStaffMutationOptions(sectionId: string) {
+  return mutationOptions({
+    mutationKey: ["sessions", "section-staff", sectionId, "end"] as const,
+    mutationFn: ({ assignmentId, ...body }: SectionAssignmentEndBody & { assignmentId: string }) =>
+      sectionStaffApi.end(sectionId, assignmentId, body),
+  });
+}
+
+/** Add a student role (e.g. class captain) to a section. */
+export function addSectionStudentRoleMutationOptions(sectionId: string) {
+  return mutationOptions({
+    mutationKey: ["sessions", "section-student-roles", sectionId, "add"] as const,
+    mutationFn: (body: SectionStudentRoleBody) => sectionStaffApi.addRole(sectionId, body),
+  });
+}
+
+/** End a student role on a date. */
+export function endSectionStudentRoleMutationOptions(sectionId: string) {
+  return mutationOptions({
+    mutationKey: ["sessions", "section-student-roles", sectionId, "end"] as const,
+    mutationFn: ({ roleId, ...body }: SectionAssignmentEndBody & { roleId: string }) =>
+      sectionStaffApi.endRole(sectionId, roleId, body),
+  });
+}

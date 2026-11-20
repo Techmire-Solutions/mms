@@ -4,6 +4,7 @@ import { withTenant } from "../tenant-context.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { recordCascadeEvents, returningEnrollmentIds } from "./sessionCascadeEvents.js";
 import { sessionAuditStateTx } from "./sessionAuditState.js";
+import { throwOverlapConflict } from "./sessionPersistErrors.js";
 import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 
 export {
@@ -120,24 +121,31 @@ export async function restoreSessionWithCascade(
       )
       .for("update");
 
-    const sessionRes = await tx
-      .update(sessions)
-      .set({
-        deletedAt: null,
-        deletedBy: null,
-        deletionReason: null,
-        restoredAt: now,
-        restoredBy: restoredBy || null,
-        updatedAt: now,
-      })
-      .where(
-        and(
-          eq(sessions.workspaceSubdomain, subdomain),
-          eq(sessions.id, sessionId),
-          isNotNull(sessions.deletedAt),
-        ),
-      )
-      .returning({ id: sessions.id });
+    let sessionRes: { id: string }[];
+    try {
+      sessionRes = await tx
+        .update(sessions)
+        .set({
+          deletedAt: null,
+          deletedBy: null,
+          deletionReason: null,
+          restoredAt: now,
+          restoredBy: restoredBy || null,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(sessions.workspaceSubdomain, subdomain),
+            eq(sessions.id, sessionId),
+            isNotNull(sessions.deletedAt),
+          ),
+        )
+        .returning({ id: sessions.id });
+    } catch (error) {
+      // Restoring an overlapping live session re-fires the 0206 exclusion constraint (`23P01`);
+      // surface it as a 409 like the save/update paths do instead of a database error.
+      throwOverlapConflict(error);
+    }
 
     if (sessionRes.length === 0) {
       return false;

@@ -25,6 +25,7 @@ export interface EnrollmentOperationsRepository {
   listEnrollmentPlacements: OperationsStore["listEnrollmentPlacements"];
   applyEnrollmentTransfer: OperationsStore["applyEnrollmentTransfer"];
   applyEnrollmentWithdrawal: OperationsStore["applyEnrollmentWithdrawal"];
+  bulkApplyEnrollmentWithdrawal: OperationsStore["bulkApplyEnrollmentWithdrawal"];
   listOperableEnrollments: OperationsStore["listOperableEnrollments"];
   /** Live seat counts per class/section, used to validate rollover quota under a lock. */
   countLiveSeatsByClassTx: OperationsStore["countLiveSeatsByClassTx"];

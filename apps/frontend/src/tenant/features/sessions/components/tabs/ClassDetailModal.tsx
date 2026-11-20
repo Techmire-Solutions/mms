@@ -186,7 +186,7 @@ export function ClassDetailModal({
       discardUnsavedDescription={t("enrollments.ops.discardDescription")}
       discardConfirmLabel={t("common.yes")}
       discardCancelLabel={t("common.cancel")}
-      error={[Object.values(errors)[0], serverError].filter(Boolean).join(" · ") || undefined}
+      error={serverError ?? undefined}
       formId="class-detail-modal-form"
     >
       <form

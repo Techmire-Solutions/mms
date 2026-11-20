@@ -22,6 +22,7 @@ import {
   type AppTranslationKey,
 } from "@mms/shared";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";
@@ -80,6 +81,7 @@ export const SessionDetail = function SessionDetail({
   onRestore,
 }: SessionDetailProps): React.JSX.Element {
   const { t, isRtl } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const terms = useAcademicTerms();
   const { canWrite, canOverrideLock } = useModulePermissions(SESSIONS_MODULE_MANIFEST);
   const [tab, setTab] = useState<string>("classes");
@@ -201,10 +203,10 @@ export const SessionDetail = function SessionDetail({
           <AnimatePresence mode="wait">
             <m.section
               key={tab}
-              initial={{ opacity: 0, x: isRtl ? -8 : 8 }}
+              initial={reducedMotion ? false : { opacity: 0, x: isRtl ? -8 : 8 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: isRtl ? 8 : -8 }}
-              transition={{ duration: 0.18 }}
+              exit={reducedMotion ? undefined : { opacity: 0, x: isRtl ? 8 : -8 }}
+              transition={reducedMotion ? { duration: 0 } : { duration: 0.18 }}
               aria-label={tabs.find((tabDefinition) => tabDefinition.key === tab)?.label}
             >
               <TabContent

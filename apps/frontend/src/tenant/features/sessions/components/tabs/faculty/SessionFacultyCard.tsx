@@ -3,6 +3,7 @@ import { UserCheck, Edit2, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SessionFaculty } from "@/lib/data/sessionsData";
 import { useTranslation } from "@/hooks/useTranslation";
+import { facultyRoleLabel } from "./facultyManagementShared";
 
 interface SessionFacultyCardProps {
   item: SessionFaculty;
@@ -31,7 +32,7 @@ export function SessionFacultyCard({
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="rounded bg-muted px-1.5 py-0.5 font-medium text-foreground">
-              {item.role}
+              {facultyRoleLabel(item.role, t)}
             </span>
             <span className="flex items-center gap-1">
               {item.status === "active" ? (

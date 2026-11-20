@@ -27,6 +27,8 @@ export function SectionStaffModal({
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("staff");
   return (
+    // A two-tab management panel (list + inline add), not a single create/edit form, so the
+    // list-capable `Modal` is the right shell here rather than `FormModal`.
     <Modal
       open={open}
       onClose={onClose}

@@ -21,7 +21,7 @@ async function attachSessionChildrenTx(
   );
 }
 
-const sessionSelectColumns = {
+export const sessionSelectColumns = {
   id: sessions.id,
   workspaceSubdomain: sessions.workspaceSubdomain,
   name: sessions.name,
@@ -62,9 +62,10 @@ export async function listSessionsByWorkspace(
     if (options?.offset) {
       baseQuery.offset(Math.max(0, options.offset));
     }
-    const rows = options?.limit
-      ? await baseQuery.limit(Math.min(Math.max(1, options.limit), 5000))
-      : await baseQuery;
+    // Always bounded: callers that omitted a limit used to run an unbounded dump (background import
+    // name resolution, legacy `loadSessions`). Default to the same ceiling the explicit path uses.
+    const limit = options?.limit ? Math.min(Math.max(1, options.limit), 5000) : 5000;
+    const rows = await baseQuery.limit(limit);
     return attachSessionChildrenTx(tx, subdomain, await hydrateSessionsList(tx, subdomain, rows));
   });
 }

@@ -75,36 +75,21 @@ export function defaultSessionsExportColumns(
     { id: "name", label: t("sessions.columns.name" as AppTranslationKey) },
     { id: "type", label: t("sessions.columns.type" as AppTranslationKey) },
     { id: "status", label: t("sessions.columns.status" as AppTranslationKey) },
-    {
-      id: "startDate",
-      label: t("sessions.columns.startDate" as AppTranslationKey) || "Start Date",
-    },
-    { id: "endDate", label: t("sessions.columns.endDate" as AppTranslationKey) || "End Date" },
+    { id: "startDate", label: t("sessions.columns.startDate" as AppTranslationKey) },
+    { id: "endDate", label: t("sessions.columns.endDate" as AppTranslationKey) },
     { id: "duration", label: t("sessions.columns.duration" as AppTranslationKey) },
     { id: "baseFee", label: t("sessions.columns.fee" as AppTranslationKey) },
-    { id: "currency", label: t("sessions.columns.currency" as AppTranslationKey) || "Currency" },
-    {
-      id: "description",
-      label: t("sessions.columns.description" as AppTranslationKey) || "Description",
-    },
-    {
-      id: "enrolled",
-      label: t("sessions.columns.enrolled" as AppTranslationKey) || "Enrolled Students",
-    },
-    { id: "capacity", label: t("sessions.columns.capacity" as AppTranslationKey) || "Capacity" },
+    { id: "currency", label: t("sessions.columns.currency" as AppTranslationKey) },
+    { id: "description", label: t("sessions.columns.description" as AppTranslationKey) },
+    { id: "enrolled", label: t("sessions.columns.enrolled" as AppTranslationKey) },
+    { id: "capacity", label: t("sessions.columns.capacity" as AppTranslationKey) },
     {
       id: "classesCount",
-      label: t("sessions.columns.classesCount" as AppTranslationKey) || "Classes Count",
+      label: t("sessions.columns.classesCount" as AppTranslationKey),
     },
-    { id: "classNames", label: t("sessions.columns.classes" as AppTranslationKey) || "Classes" },
-    {
-      id: "facultyCount",
-      label: t("sessions.columns.facultyCount" as AppTranslationKey) || "Faculty Count",
-    },
-    {
-      id: "facultyNames",
-      label: t("sessions.columns.faculty" as AppTranslationKey) || "Assigned Faculty",
-    },
+    { id: "classNames", label: t("sessions.columns.classes" as AppTranslationKey) },
+    { id: "facultyCount", label: t("sessions.columns.facultyCount" as AppTranslationKey) },
+    { id: "facultyNames", label: t("sessions.columns.faculty" as AppTranslationKey) },
   ];
   return mergeCustomSessionExportColumns(base, settings);
 }

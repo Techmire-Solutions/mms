@@ -1,6 +1,7 @@
 import type { ModuleAction } from "@mms/shared";
 import { EXAMINATIONS_MODULE_ROUTE_ACTION_RULES } from "./moduleRouteActionRulesExaminations.js";
 import { FINANCE_ACCOUNTING_MODULE_ROUTE_ACTION_RULES } from "./moduleRouteActionRulesFinance.js";
+import { SESSIONS_MODULE_ROUTE_ACTION_RULES } from "./moduleRouteActionRulesSessions.js";
 
 /**
  * Single registry of module routes whose required action differs from the HTTP-method default.
@@ -138,21 +139,7 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     action: "availability",
     onlyModules: ["tasks"],
   },
-  // Sessions archive/restore are `sessions.delete` operations (the handlers already require
-  // `canDeleteCollection`). Without these the method default resolved DELETE/POST to `write`,
-  // so an enrollment-writer role could archive sessions.
-  {
-    methods: ["DELETE"],
-    pattern: /^\/api\/sessions\/:id$/,
-    action: "delete",
-    onlyModules: ["sessions"],
-  },
-  {
-    methods: ["POST"],
-    pattern: /^\/api\/sessions\/(bulk-delete|bulk-restore)$|^\/api\/sessions\/:id\/restore$/,
-    action: "delete",
-    onlyModules: ["sessions"],
-  },
+  ...SESSIONS_MODULE_ROUTE_ACTION_RULES,
   // Handler-owned permissions (grant + enablement still enforced here):
   // workspace-shared dashboard prefs/widgets (setupWrite|customize; the summary
   // is filtered per module by the caller's permissions), the staff activity log
@@ -230,13 +217,6 @@ export const MODULE_ROUTE_ACTION_RULES: readonly ModuleRouteActionRule[] = [
     // `read` while the handler requires `messaging.write`; method default (write)
     // is the correct gate here.
     exceptModules: ["messaging"],
-  },
-  // Academic catalogs (session categories / programs / subjects) are Sessions setup data.
-  {
-    methods: ["PUT", "DELETE", "POST"],
-    pattern: /^\/api\/sessions\/catalogs\/:catalog\/:id(\/restore)?$/,
-    action: "setupWrite",
-    onlyModules: ["sessions"],
   },
   // Deciding an excuse rewrites historical attendance evidence: require the module's delete-level
   // permission, not merely write (the handler re-checks the same permission).

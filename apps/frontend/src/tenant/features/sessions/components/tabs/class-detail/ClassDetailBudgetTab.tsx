@@ -88,11 +88,11 @@ export function ClassDetailBudgetTab({
                 inputMode="decimal"
                 placeholder="0.00"
                 aria-label={t("sessions.classes.detail.amount")}
-                value={b.amount === 0 ? "" : String(b.amount)}
+                value={b.amount === "0" ? "" : b.amount}
                 onChange={(e) => {
                   const val = e.target.value;
                   if (val === "" || /^\d*(\.\d{0,2})?$/.test(val)) {
-                    onUpdateBudget(b.id, { amount: parseFloat(val) || 0 });
+                    onUpdateBudget(b.id, { amount: val });
                   }
                 }}
                 className="w-32 text-xs"

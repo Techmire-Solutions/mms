@@ -36,7 +36,7 @@ const mockSession: Session = {
   endDate: "2026-12-20",
   status: "in_progress",
   currency: "USD",
-  baseFee: 100,
+  baseFee: "100",
   classes: [],
   faculty: [
     {
@@ -74,7 +74,7 @@ describe("FacultyManagementTab", () => {
     });
 
     expect(document.body.textContent).toContain("Ustadh Ali");
-    expect(document.body.textContent).toContain("Lead Instructor");
+    expect(document.body.textContent).toContain("sessions.faculty.roles.leadInstructor");
     expect(document.body.textContent).toContain("active");
   });
 

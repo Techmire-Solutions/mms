@@ -375,6 +375,18 @@ const EXPECTED_MODULE_ROUTE_ACTIONS: Readonly<Record<string, ModuleAction>> = {
   "POST /api/sessions/:id/restore": "delete",
   "POST /api/sessions/bulk-delete": "delete",
   "POST /api/sessions/bulk-restore": "delete",
+  // Structural ops require `sessions.manage` (handlers check write + manage); the
+  // bulk-archive job is a `sessions.delete` op.
+  "POST /api/sessions/bulk-archive/jobs": "delete",
+  "POST /api/sessions/bulk-status": "manage",
+  "POST /api/sessions/bulk-status/jobs": "manage",
+  "POST /api/sessions/:id/cancel": "manage",
+  "POST /api/sessions/:id/postpone": "manage",
+  "POST /api/sessions/:id/rollover/preview": "manage",
+  "POST /api/sessions/:id/rollover": "manage",
+  "POST /api/sessions/:id/completion/evaluate": "manage",
+  "POST /api/sessions/:id/completion/certificates": "manage",
+  "POST /api/sessions/:id/timetable/import": "manage",
   // Examinations deviates from the import/export defaults deliberately: the CSV import is a
   // controller action (delete-level — it can reshape scoring frames) and the CSV export is a
   // read (its handler enforces canRead). See moduleRouteActionRulesExaminations.ts.

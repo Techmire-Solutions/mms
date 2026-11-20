@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { SECTION_STUDENT_ROLES, type SectionStudentRoleKind } from "@mms/shared";
+import {
+  SECTION_STUDENT_ROLES,
+  sectionStudentRoleBodySchema,
+  type SectionStudentRoleKind,
+} from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/app/DatePicker";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -52,12 +56,14 @@ export function SectionStudentRolesPanel({
   const add = async () => {
     setAttempted(true);
     setFormError(null);
-    if (!enrollmentId || !startOn) {
+    // Shared write schema (single source of truth) instead of hand-rolled presence checks.
+    const parsed = sectionStudentRoleBodySchema.safeParse({ enrollmentId, role, startOn });
+    if (!parsed.success) {
       setFormError(t("common.formPleaseFixErrors"));
       return;
     }
     try {
-      await addRole.mutateAsync({ enrollmentId, role, startOn });
+      await addRole.mutateAsync(parsed.data);
       notify.success(t("sessions.staff.assigned"));
       setEnrollmentId("");
     } catch (error) {

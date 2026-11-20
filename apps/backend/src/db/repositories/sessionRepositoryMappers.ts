@@ -109,7 +109,7 @@ export function sessionRowToRecord(
       id: f.id,
       classId: f.sessionClassId,
       feeType: f.feeType,
-      amount: Number(f.amount) || 0,
+      amount: String(f.amount ?? "0"),
     });
     feesByClass.set(f.sessionClassId, arr);
   }
@@ -135,7 +135,7 @@ export function sessionRowToRecord(
       classId: b.sessionClassId,
       budgetType: (b.budgetType === "income" ? "income" : "expense") as "income" | "expense",
       detail: b.detail,
-      amount: Number(b.amount) || 0,
+      amount: String(b.amount ?? "0"),
     });
     budgetsByClass.set(b.sessionClassId, arr);
   }
@@ -165,8 +165,8 @@ export function sessionRowToRecord(
       date: r.date ?? "",
       item: r.item,
       quantity: r.quantity,
-      pricePerUnit: Number(r.pricePerUnit) || 0,
-      paidAmount: Number(r.paidAmount) || 0,
+      pricePerUnit: String(r.pricePerUnit ?? "0"),
+      paidAmount: String(r.paidAmount ?? "0"),
     });
     refreshmentsByClass.set(r.sessionClassId, arr);
   }
@@ -241,7 +241,7 @@ export function sessionRowToRecord(
     programId: rowNorm.programId || "",
     startDate: rowNorm.startDate || "",
     endDate: rowNorm.endDate || "",
-    baseFee: Number(rowNorm.baseFee) || 0,
+    baseFee: String(rowNorm.baseFee ?? "0"),
     currency: rowNorm.currency || "PKR",
     description: rowNorm.description || undefined,
     minAttendancePct: row.minAttendancePct ?? null,

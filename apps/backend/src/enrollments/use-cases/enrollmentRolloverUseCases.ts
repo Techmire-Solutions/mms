@@ -200,3 +200,30 @@ export async function closeRolloverSourceEnrollment(
     status: input.status,
   });
 }
+
+/**
+ * Batched year-end close of carried source enrollments (one transaction for the whole batch).
+ * Used by the rollover job to replace the per-student `closeRolloverSourceEnrollment` loop.
+ */
+export async function bulkCloseRolloverSourceEnrollments(
+  tenant: string,
+  inputs: ReadonlyArray<{
+    enrollmentId: string;
+    studentId: string;
+    status: Extract<EndedEnrollmentStatus, "promoted" | "retained" | "graduated" | "left">;
+    lastDay: string;
+  }>,
+  actor: OperationActor,
+): Promise<void> {
+  await ops.bulkApplyEnrollmentWithdrawal(
+    tenant,
+    inputs.map((input) => ({
+      enrollmentId: input.enrollmentId,
+      studentId: input.studentId,
+      status: input.status,
+      effectiveOn: input.lastDay,
+    })),
+    "Year-end rollover",
+    actor,
+  );
+}

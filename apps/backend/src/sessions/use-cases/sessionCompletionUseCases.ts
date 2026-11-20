@@ -19,6 +19,7 @@ import { broadcastCollection } from "../../lib/livePush.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { withTenant } from "../../db/tenant-context.js";
+import { runAfterCommit } from "../../db/commitScope.js";
 import { workspaceToday } from "./sessionLockGuard.js";
 import { CompletionBlockedError } from "./sessionCompletionErrors.js";
 
@@ -150,8 +151,8 @@ function createSessionCompletionUseCases() {
           { reason: body.reason ?? null, acknowledged: body.acknowledge ?? [] },
         );
         await repo.markCompletionEvaluated(tenant, sessionId);
-        await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
-        await broadcastCollection("enrollments");
+        runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" }));
+        runAfterCommit(() => broadcastCollection("enrollments"));
         return loadRows(tenant, session);
       });
     },
@@ -178,8 +179,8 @@ function createSessionCompletionUseCases() {
           acknowledged: body.acknowledge ?? [],
         });
         if (issued.length > 0) {
-          await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
-          await broadcastCollection("enrollments");
+          runAfterCommit(() => invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" }));
+          runAfterCommit(() => broadcastCollection("enrollments"));
         }
         return { issued, rows: await loadRows(tenant, session) };
       });

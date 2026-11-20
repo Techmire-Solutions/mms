@@ -1,3 +1,5 @@
+import { toMoneyNumber } from "../money/moneySchemas.js";
+
 /** Fee breakdown applied to an enrollment (shared by the enrollment wizard and server-side bulk enrollment). */
 export interface CalculatedFee {
   id: string;
@@ -79,7 +81,7 @@ export function classFeeDiscounts(cls: {
 
 /** Enrollment fee columns for a student placed in a class (session base fee + class discounts). */
 export function enrollmentFeeForClass(
-  baseFee: number,
+  baseFee: number | string,
   cls: Parameters<typeof classFeeDiscounts>[0],
   student: { discountType?: string | null; discountPct?: number | null },
 ): {
@@ -90,9 +92,11 @@ export function enrollmentFeeForClass(
   discountAmt: number;
   finalFee: number;
 } {
-  const fee = calcEnrollmentFee(baseFee, student, classFeeDiscounts(cls));
+  // Session base fees now travel as decimal strings; convert without a float parse for arithmetic.
+  const baseFeeNum = typeof baseFee === "string" ? (toMoneyNumber(baseFee) ?? 0) : baseFee;
+  const fee = calcEnrollmentFee(baseFeeNum, student, classFeeDiscounts(cls));
   return {
-    baseFee,
+    baseFee: baseFeeNum,
     discountType: fee.id,
     discountLabel: fee.label,
     discountPct: fee.pct,

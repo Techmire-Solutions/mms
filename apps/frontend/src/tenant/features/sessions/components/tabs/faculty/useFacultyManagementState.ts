@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useFacultyContractList, useFacultyByIds } from "@/tenant/hooks/collections/faculty";
 import { FACULTY_MODULE_MANIFEST, formatFacultyDisplayName, type FacultyMember } from "@mms/shared";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Session, SessionFaculty } from "@/lib/data/sessionsData";
 import { COMMON_FACULTY_ROLES } from "./facultyManagementShared";
 
@@ -8,6 +9,7 @@ export function useFacultyManagementState(
   session: Session,
   onUpdate: (updatedSession: Session) => void | Promise<void>,
 ) {
+  const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState<SessionFaculty | null>(null);
   const [facultyId, setFacultyId] = useState("");
@@ -59,7 +61,7 @@ export function useFacultyManagementState(
   const handleOpenEdit = (item: SessionFaculty) => {
     setEditingFaculty(item);
     setFacultyId(item.facultyId || "");
-    if (COMMON_FACULTY_ROLES.includes(item.role)) {
+    if (COMMON_FACULTY_ROLES.some((entry) => entry.value === item.role)) {
       setRole(item.role);
       setCustomRole("");
     } else {
@@ -81,12 +83,10 @@ export function useFacultyManagementState(
     try {
       const selectedMember = allFaculty.find((f) => String(f.id) === String(facultyId));
       const resolvedName = selectedMember
-        ? formatFacultyDisplayName(selectedMember) ||
-          editingFaculty?.facultyName ||
-          "Faculty Member"
-        : editingFaculty?.facultyName || "Faculty Member";
+        ? formatFacultyDisplayName(selectedMember) || editingFaculty?.facultyName || ""
+        : editingFaculty?.facultyName || "";
 
-      const finalRole = role === "Custom" ? customRole.trim() || "Instructor" : role;
+      const finalRole = role === "Custom" ? customRole.trim() || "Lead Instructor" : role;
       const updatedFaculty = [...(session.faculty || [])];
 
       if (editingFaculty) {
@@ -115,7 +115,7 @@ export function useFacultyManagementState(
       await onUpdate({ ...session, faculty: updatedFaculty });
       setModalOpen(false);
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Could not save faculty");
+      setSaveError(error instanceof Error ? error.message : t("sessions.faculty.saveError"));
     } finally {
       setSaving(false);
     }

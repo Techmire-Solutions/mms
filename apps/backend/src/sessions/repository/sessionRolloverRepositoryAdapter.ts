@@ -3,8 +3,8 @@ import {
   createPromotionRun,
   findPromotedSourceIds,
   findPromotionRun,
-  incrementPromotionRunCounts,
   listPromotionRuns,
+  setPromotionRunCounts,
   updatePromotionRun,
 } from "../../db/repositories/sessionPromotionRepository.js";
 import {
@@ -19,7 +19,7 @@ import {
 export const sessionRolloverRepository: SessionRolloverRepository = {
   createPromotionRun,
   updatePromotionRun,
-  incrementPromotionRunCounts,
+  setPromotionRunCounts,
   findPromotionRun,
   listPromotionRuns,
   findPromotedSourceIds,

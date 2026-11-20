@@ -9,7 +9,7 @@ const source = SessionSchema.parse({
   startDate: "2025-04-01",
   endDate: "2026-03-31",
   workingDays: ["monday", "tuesday"],
-  baseFee: 1000,
+  baseFee: "1000",
   faculty: [{ id: "f1", sessionId: "s1", facultyId: "t1", role: "coordinator" }],
   classes: [
     {
@@ -21,7 +21,7 @@ const source = SessionSchema.parse({
         { id: "a", name: "A", capacity: 20, status: "active", enrolled: 12 },
         { id: "b", name: "B", capacity: 20, status: "closed" },
       ],
-      fees: [{ id: "fee", feeType: "monthly", amount: 500 }],
+      fees: [{ id: "fee", feeType: "monthly", amount: "500" }],
       schedules: [
         { id: "sched", scheduleType: "weekly", startDate: "2025-05-01", endDate: "2025-06-01" },
       ],
@@ -105,7 +105,7 @@ describe("buildRolloverSession", () => {
     expect(ids.classIds.get("c1")).toBe(cls?.id);
     expect(ids.sectionIds.get("a")).toBe(cls?.sections?.[0]?.id);
     expect(ids.sectionIds.get("b")).toBe(cls?.sections?.[1]?.id);
-    expect(cls?.fees[0]).toMatchObject({ classId: cls?.id, amount: 500 });
+    expect(cls?.fees[0]).toMatchObject({ classId: cls?.id, amount: "500" });
     expect(cls?.fees[0]?.id).not.toBe("fee");
     expect(cls?.discounts[0]).toMatchObject({ startDate: "2026-04-01", endDate: "" });
     expect(cls?.scholarships[0]?.expiryDate).toBe("2027-03-31");

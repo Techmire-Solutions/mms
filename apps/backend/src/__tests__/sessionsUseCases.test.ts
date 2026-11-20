@@ -41,7 +41,6 @@ function createFakeRepo(): SessionsRepository {
       sessionsThisWeek: 0,
       sessionsLastWeek: 0,
     }),
-    bulkUpdateSessionsStatus: vi.fn().mockResolvedValue({ succeeded: 2, failed: 0 }),
     aggregateSessionsWidgetQueries: vi.fn().mockResolvedValue({}),
     loadSessionsReportAggregates: vi.fn().mockResolvedValue({
       capacity: [],
