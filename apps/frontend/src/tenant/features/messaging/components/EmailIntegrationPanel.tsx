@@ -61,7 +61,7 @@ export default function EmailIntegrationPanel({
             id="email-test-email"
             name="testEmail"
             type="email"
-            value={testEmail}
+            value={testEmail ?? ""}
             onChange={(event) => setTestEmail(event.target.value)}
             placeholder={`admin@${selectedPreset.exampleDomain}`}
             disabled={!canWrite}
@@ -92,7 +92,7 @@ export default function EmailIntegrationPanel({
         <Input
           id="email-from-name"
           name="fromName"
-          value={form.fromName}
+          value={form.fromName ?? ""}
           onChange={(event) => setField("fromName", event.target.value)}
           disabled={!canWrite}
         />
@@ -103,7 +103,7 @@ export default function EmailIntegrationPanel({
           id="email-from-address"
           name="fromAddress"
           type="email"
-          value={form.fromAddress}
+          value={form.fromAddress ?? ""}
           onChange={(event) => setField("fromAddress", event.target.value)}
           placeholder={`admin@${selectedPreset.exampleDomain}`}
           disabled={!canWrite}
@@ -115,7 +115,7 @@ export default function EmailIntegrationPanel({
         <Input
           id="email-smtp-username"
           name="smtpUsername"
-          value={form.smtpUsername}
+          value={form.smtpUsername ?? ""}
           onChange={(event) => setField("smtpUsername", event.target.value)}
           placeholder={`you@${selectedPreset.exampleDomain}`}
           autoComplete="username"
