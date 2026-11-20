@@ -153,7 +153,7 @@ describe("enrollment lifecycle rules (real Postgres)", () => {
           mode: "add",
         }),
       ),
-    ).rejects.toMatchObject({ statusCode: 409, type: "conflict" });
+    ).rejects.toMatchObject({ statusCode: 409, type: "add_deadline_passed" });
 
     const overridden = await runWithTenant(TENANT, () =>
       bulkEnrollStudentsIntoClass(TENANT, {
