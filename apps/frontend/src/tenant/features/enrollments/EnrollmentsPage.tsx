@@ -28,6 +28,7 @@ const EnrollmentsSetupTier = lazy(() =>
 export default function EnrollmentsPage() {
   const pageState = useEnrollmentsPageState();
   const [importOpen, setImportOpen] = useState(false);
+  const [setupDirty, setSetupDirty] = useState(false);
   const {
     t,
     SUB_TABS,
@@ -114,7 +115,18 @@ export default function EnrollmentsPage() {
       <ResponsiveAccordionTabs
         tabs={TABS}
         activeTab={tab}
-        onTabChange={setTab}
+        onTabChange={(nextTab) => {
+          if (
+            tab === "setup" &&
+            nextTab !== "setup" &&
+            setupDirty &&
+            !window.confirm(t("enrollments.setup.unsavedPreferencesWarning"))
+          ) {
+            return;
+          }
+          setSetupDirty(false);
+          setTab(nextTab);
+        }}
         panelIdPrefix="enrollments-tab"
       >
         <AnimatePresence mode="wait">
@@ -189,7 +201,7 @@ export default function EnrollmentsPage() {
             {tab === "setup" && (
               <ErrorBoundary>
                 <Suspense fallback={<RouteStatusFallback />}>
-                  <EnrollmentsSetupTier />
+                  <EnrollmentsSetupTier onPrefsDirtyChange={setSetupDirty} />
                 </Suspense>
               </ErrorBoundary>
             )}

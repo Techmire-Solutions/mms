@@ -19,7 +19,7 @@ export const enrollmentPreferencesPutBodySchema = z
     reenrollmentReminder: z.boolean().optional(),
     defaultViewLayout: z.string().optional(),
   })
-  .passthrough();
+  .strict();
 
 /** Wire schema for normalized preferences (GET/PUT /api/enrollments/preferences). */
 export const enrollmentPreferencesResponseSchema = z

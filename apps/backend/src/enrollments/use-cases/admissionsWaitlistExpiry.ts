@@ -1,4 +1,5 @@
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
+import { withTenant } from "../../db/tenant-context.js";
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
 import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 import { ADMISSIONS_BROADCAST_KEY } from "./registrationPublicUseCases.js";
@@ -16,17 +17,9 @@ import { hasActiveTransaction } from "../../db/dbTransactions.js";
 export async function expireWaitlistOffers(
   limit = 200,
 ): Promise<{ reverted: number; workspaces: string[] }> {
+  // Revert + audit commit atomically inside the repo (the global sweep opens the transaction
+  // there, so this file keeps no global-scope boundary — see enrollmentTenantBoundary.test.ts).
   const rows = await repo.revertExpiredWaitlistOffers(limit);
-  for (const row of rows) {
-    await recordModernAuditEvent({
-      workspaceSubdomain: row.workspace,
-      tableName: "registration_applications",
-      recordId: row.id,
-      actionType: "UPDATE",
-      oldState: { status: "under_review" },
-      newState: { operation: "waitlist_offer_expired", status: "waitlisted" },
-    });
-  }
   const workspaces = [...new Set(rows.map((row) => row.workspace))];
   for (const workspace of workspaces) {
     broadcastTenantUpdate(workspace, "collection", ADMISSIONS_BROADCAST_KEY);
@@ -37,21 +30,24 @@ export async function expireWaitlistOffers(
 /** Reverts an unconsumed offer set when a class no longer has a free seat. */
 export async function releaseOffersIfClassFull(tenant: string, classId: string): Promise<number> {
   if (await repo.classHasFreeSeat(tenant, classId)) return 0;
-  const ids = await repo.revertSeatOffersForClass(tenant, classId);
-  for (const id of ids) {
-    await recordModernAuditEvent({
-      workspaceSubdomain: tenant,
-      tableName: "registration_applications",
-      recordId: id,
-      actionType: "UPDATE",
-      oldState: { status: "under_review" },
-      newState: {
-        operation: "waitlist_offer_revoked",
-        status: "waitlisted",
-        reason: "Seat taken before approval",
-      },
-    });
-  }
+  const ids = await withTenant(tenant, async (tx) => {
+    const reverted = await repo.revertSeatOffersForClass(tenant, classId);
+    for (const id of reverted) {
+      await recordModernAuditEvent(tx, {
+        workspaceSubdomain: tenant,
+        tableName: "registration_applications",
+        recordId: id,
+        actionType: "UPDATE",
+        oldState: { status: "under_review" },
+        newState: {
+          operation: "waitlist_offer_revoked",
+          status: "waitlisted",
+          reason: "Seat taken before approval",
+        },
+      });
+    }
+    return reverted;
+  });
   if (ids.length > 0) broadcastTenantUpdate(tenant, "collection", ADMISSIONS_BROADCAST_KEY);
   return ids.length;
 }

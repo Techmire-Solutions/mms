@@ -1,7 +1,7 @@
 import { ENROLLMENT_ERROR_CODES } from "@mms/shared";
 import {
   addDeadlineError,
-  describeEligibilityReasons,
+  enrollmentFeeForClass,
   isSessionReadOnly,
   staffEligibilityReasons,
   type EnrollmentRecord,
@@ -17,6 +17,13 @@ import { enrollmentsRepository } from "../repository/enrollmentsRepositoryAdapte
  * themselves are pure decisions (which write paths call them is the use case's job).
  */
 
+/** A session class's discount shape, as consumed by {@link enrollmentFeeForClass}. */
+export type EnrollmentClassDiscountInput = {
+  discountType: string;
+  percentage: number | string;
+  status?: string;
+};
+
 export interface EnrollmentsUseCasesDependencies {
   findStudentById?: (
     tenant: string,
@@ -26,6 +33,9 @@ export interface EnrollmentsUseCasesDependencies {
     deletedAt?: unknown;
     dob?: string | null;
     gender?: string | null;
+    /** Student discount inputs for the authoritative fee rule (`enrollmentFeeForClass`). */
+    discountType?: string | null;
+    discountPct?: number | null;
   } | null>;
   findSessionById?: (
     tenant: string,
@@ -35,6 +45,8 @@ export interface EnrollmentsUseCasesDependencies {
     deletedAt?: unknown;
     status?: string;
     startDate?: string | null;
+    /** Session base fee (decimal string or number) for the authoritative fee rule. */
+    baseFee?: number | string | null;
     classes?: Array<{
       id: string;
       name?: string;
@@ -44,6 +56,7 @@ export interface EnrollmentsUseCasesDependencies {
       ageCalculationDate?: string | null;
       enrollmentDeadline?: string;
       dropDeadline?: string;
+      discounts?: EnrollmentClassDiscountInput[];
     }>;
   } | null>;
   findWorkspaceTimezone?: (tenant: string) => Promise<string | null>;
@@ -129,7 +142,9 @@ export async function validateNewEnrollmentRules(
   const today = todayInTimeZone(timezone);
   const deadlineError = addDeadlineError(cls.enrollmentDeadline, today);
   if (deadlineError) {
-    throw new HttpDomainError(409, ENROLLMENT_ERROR_CODES[3], deadlineError);
+    throw new HttpDomainError(409, ENROLLMENT_ERROR_CODES[3], deadlineError.key, {
+      details: { day: deadlineError.day },
+    });
   }
   if (!student) return;
   const reasons = staffEligibilityReasons({
@@ -144,10 +159,68 @@ export async function validateNewEnrollmentRules(
     asOf: today,
   });
   if (reasons.length > 0) {
-    throw new HttpDomainError(
-      422,
-      "ineligible",
-      `The student is not eligible for this class: ${describeEligibilityReasons(reasons)}`,
-    );
+    throw new HttpDomainError(422, "ineligible", "enrollments.errors.ineligible", {
+      details: { reasons },
+    });
+  }
+}
+
+/**
+ * Authoritative enrollment fee for a student in a class (session base fee + class discounts).
+ *
+ * Mirrors the bulk/import/rollover/transfer write paths (`enrollmentFeeForClass`). The single
+ * create endpoint must not trust client-supplied money fields, so it recomputes from the
+ * schedule unless the caller holds the administrative `enrollments.manage` capability.
+ */
+export function recomputeEnrollmentFee(
+  session:
+    | {
+        baseFee?: number | string | null;
+        classes?: Array<{ id: string; discounts?: EnrollmentClassDiscountInput[] }>;
+      }
+    | null
+    | undefined,
+  classId: string | undefined,
+  student: { discountType?: string | null; discountPct?: number | null } | null | undefined,
+): ReturnType<typeof enrollmentFeeForClass> | null {
+  if (!session || !classId) return null;
+  const cls = session.classes?.find((candidate) => candidate.id === classId);
+  if (!cls) return null;
+  return enrollmentFeeForClass(session.baseFee ?? 0, cls, student ?? {});
+}
+
+/**
+ * Validates that an enrollment's parent session and student are not archived prior to restore.
+ */
+export async function validateEnrollmentRestorePreconditions(
+  tenant: string,
+  existing: Pick<EnrollmentRecord, "sessionId" | "studentId">,
+  deps?: EnrollmentsUseCasesDependencies,
+): Promise<void> {
+  if (existing.sessionId) {
+    const getSession =
+      deps?.findSessionById ??
+      (await import("../../db/repositories/sessionRepositoryHydrate.js")).findSessionById;
+    const session = await getSession(tenant, existing.sessionId);
+    if (session?.deletedAt) {
+      const err = new Error(
+        "Cannot restore enrollment because its session is archived. Restore the session instead.",
+      );
+      (err as Error & { statusCode: number }).statusCode = 400;
+      throw err;
+    }
+  }
+  if (existing.studentId) {
+    const getStudent =
+      deps?.findStudentById ??
+      (await import("../../db/repositories/studentRepositoryHydrate.js")).findStudentById;
+    const student = await getStudent(tenant, existing.studentId);
+    if (student?.deletedAt) {
+      const err = new Error(
+        "Cannot restore enrollment because its student is archived. Restore the student instead.",
+      );
+      (err as Error & { statusCode: number }).statusCode = 400;
+      throw err;
+    }
   }
 }

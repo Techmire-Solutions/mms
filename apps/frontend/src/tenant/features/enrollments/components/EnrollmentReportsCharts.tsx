@@ -5,7 +5,6 @@ import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { ENROLLMENT_STATUSES } from "@mms/shared";
-import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { EnrollmentsReportAggregates } from "@mms/shared";
 import { enrollmentStatusLabels } from "@/lib/ui/enrollmentStatusBadge";
@@ -18,7 +17,6 @@ export function EnrollmentReportsCharts({
   aggregates,
 }: EnrollmentReportsChartsProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { formatCurrency: _formatCurrency } = useFinanceCurrency();
   const palette = useBrandPalette();
   const COLORS = (() => [
     palette.primary,
@@ -33,16 +31,7 @@ export function EnrollmentReportsCharts({
 
   const statusData = ENROLLMENT_STATUSES.map((status) => ({
     name: statusLabels[status] ?? status,
-    value:
-      status === "pending"
-        ? statusCounts.pending
-        : status === "confirmed"
-          ? statusCounts.confirmed
-          : status === "cancelled"
-            ? statusCounts.cancelled
-            : status === "completed"
-              ? statusCounts.completed
-              : 0,
+    value: statusCounts[status] ?? 0,
   }));
 
   return (

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { ENROLLMENTS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/enrollments/components/EnrollmentsListFilters";
@@ -93,7 +94,7 @@ export function useEnrollmentsPageState() {
   const pageData = (workPageData?.body ?? workPageData) as
     { enrollments?: Enrollment[]; total?: number } | undefined;
 
-  const enrollments = (() => (pageData?.enrollments ?? []) as Enrollment[])();
+  const enrollments = (pageData?.enrollments ?? []) as Enrollment[];
   const filteredCount = pageData?.total ?? enrollments.length;
 
   const [viewing, setViewing] = useState<Enrollment | null>(null);
@@ -124,13 +125,11 @@ export function useEnrollmentsPageState() {
 
   // No write access → the eligibility sub-tab is not available (render-phase reset, no effect).
   const subTabAccessKey = `${canWriteEnrollments}|${activeSubTab}`;
-  const [prevSubTabAccessKey, setPrevSubTabAccessKey] = useState(subTabAccessKey);
-  if (prevSubTabAccessKey !== subTabAccessKey) {
-    setPrevSubTabAccessKey(subTabAccessKey);
+  useIdentityReset(subTabAccessKey, () => {
     if (!canWriteEnrollments && activeSubTab === "eligibility") {
       setActiveSubTab("directory");
     }
-  }
+  });
 
   useModuleShortcuts({
     searchInputId: ENROLLMENTS_WORK_SEARCH_INPUT_ID,

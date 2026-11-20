@@ -1,6 +1,7 @@
 import type { Permission } from "../auth/permissions.js";
 import { z } from "zod";
 import { isoDateSchema } from "../core/isoDateSchema.js";
+import { moneyNumberAmountSchema } from "../money/moneySchemas.js";
 
 export const ENROLLMENT_STATUSES = [
   "pending",
@@ -107,7 +108,36 @@ export const enrollmentRecordSchema = z
   })
   .strict();
 
-export const enrollmentRecordInsertSchema = z
+/**
+ * Server-owned / read-only fields the read mapper (`enrollmentProjection.enrollmentRowToRecord`)
+ * always emits but a client must never set on create/update. They are stripped before validation
+ * so a full record can round-trip (accept-then-strip), mirroring `sessions.dto.ts`.
+ */
+const ENROLLMENT_SERVER_OWNED_FIELDS = [
+  "endOn",
+  "endReason",
+  "promotedFromEnrollmentId",
+  "completionStatus",
+  "completedAt",
+  "certificateIssuedAt",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "deletedBy",
+  "deletionReason",
+  "restoredAt",
+  "restoredBy",
+  "deletedWithCascade",
+] as const;
+
+function stripServerOwnedEnrollmentFields(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const next = { ...(raw as Record<string, unknown>) };
+  for (const field of ENROLLMENT_SERVER_OWNED_FIELDS) delete next[field];
+  return next;
+}
+
+const enrollmentRecordInsertBaseSchema = z
   .object({
     id: z.string().optional(),
     studentId: z.string().min(1, "Student is required"),
@@ -123,12 +153,12 @@ export const enrollmentRecordInsertSchema = z
     enrolledDate: isoDateSchema,
     /** Late join: first day the student attends (defaults to `enrolledDate`). */
     startOn: isoDateSchema.nullable().optional(),
-    baseFee: z.number().nonnegative().optional().default(0),
+    baseFee: moneyNumberAmountSchema.optional().default(0),
     discountType: z.string().optional().default("none"),
     discountLabel: z.string().optional().default(""),
     discountPct: z.number().min(0).max(100).optional().default(0),
-    discountAmt: z.number().nonnegative().optional().default(0),
-    finalFee: z.number().nonnegative().optional().default(0),
+    discountAmt: moneyNumberAmountSchema.optional().default(0),
+    finalFee: moneyNumberAmountSchema.optional().default(0),
     status: z.enum(ENROLLMENT_STATUSES).optional().default("pending"),
     invoiceId: z.string().nullable().optional(),
     paymentStatus: z.enum(ENROLLMENT_PAYMENT_STATUSES).optional().default("none"),
@@ -137,7 +167,15 @@ export const enrollmentRecordInsertSchema = z
   })
   .strict();
 
-export const enrollmentRecordUpdateSchema = enrollmentRecordInsertSchema.partial().strict();
+export const enrollmentRecordInsertSchema = z.preprocess(
+  stripServerOwnedEnrollmentFields,
+  enrollmentRecordInsertBaseSchema,
+);
+
+export const enrollmentRecordUpdateSchema = z.preprocess(
+  stripServerOwnedEnrollmentFields,
+  enrollmentRecordInsertBaseSchema.partial().strict(),
+);
 
 export type Enrollment = z.infer<typeof enrollmentRecordSchema>;
 export type EnrollmentRecord = Enrollment;

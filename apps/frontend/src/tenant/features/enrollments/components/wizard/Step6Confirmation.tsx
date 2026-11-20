@@ -1,11 +1,12 @@
 import React from "react";
 import { User, BookOpen, Layers, DollarSign, CheckCircle2 } from "lucide-react";
-import { formatDate } from "@mms/shared";
+import { formatDate, sessionTypeI18nKey } from "@mms/shared";
 import { calcAge, type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
 import { type CalculatedFee } from "@/lib/data/enrollmentData";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
+import { genderLabel } from "@/lib/ui/genderUi";
 import { Field } from "@/components/app/FormField";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -53,7 +54,7 @@ export function Step6Confirmation({
           <Step6ConfirmationRow label={t("enrollments.detail.name")} value={student?.name} />
           <Step6ConfirmationRow
             label={t("enrollments.wizard.step6RowGender")}
-            value={student?.gender}
+            value={student?.gender ? genderLabel(student.gender, t) : undefined}
           />
           <Step6ConfirmationRow
             label={t("enrollments.wizard.step6RowAge")}
@@ -76,7 +77,11 @@ export function Step6Confirmation({
           <Step6ConfirmationRow label={t("enrollments.detail.session")} value={session?.name} />
           <Step6ConfirmationRow
             label={t("enrollments.wizard.step6RowType")}
-            value={session?.type}
+            value={
+              session?.type
+                ? t(sessionTypeI18nKey(session.type) ?? "sessions.types.other")
+                : undefined
+            }
           />
           <Step6ConfirmationRow
             label={t("enrollments.wizard.step6RowStarts")}

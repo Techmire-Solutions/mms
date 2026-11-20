@@ -23,7 +23,7 @@ Totals: **214** form-like `.tsx` files · **73** files with a `<FormModal>` (**7
 | tenant/accounting | 16 | 8 | 8 | 6 | 2 |
 | tenant/attendance | 6 | 3 | 3 | 3 | 1 |
 | tenant/contacts | 12 | 2 | 2 | 2 | 1 |
-| tenant/enrollments | 6 | 2 | 2 | 2 | 1 |
+| tenant/enrollments | 6 | 2 | 2 | 2 | 0 |
 | tenant/examinations | 6 | 1 | 1 | 1 | 0 |
 | tenant/faculty | 16 | 3 | 3 | 3 | 3 |
 | tenant/finance | 10 | 4 | 4 | 2 | 4 |
@@ -37,7 +37,7 @@ Totals: **214** form-like `.tsx` files · **73** files with a `<FormModal>` (**7
 | tenant/reports | 1 | 1 | 1 | 1 | 0 |
 | tenant/sessions | 16 | 8 | 7 | 7 | 3 |
 | tenant/settings | 7 | 3 | 2 | 1 | 1 |
-| tenant/students | 8 | 2 | 2 | 2 | 1 |
+| tenant/students | 8 | 2 | 2 | 2 | 0 |
 | tenant/tasks | 4 | 1 | 1 | 1 | 0 |
 | tenant/users | 14 | 4 | 4 | 1 | 3 |
 | tenant/workshops | 3 | 1 | 1 | 1 | 0 |
@@ -73,8 +73,8 @@ Totals: **214** form-like `.tsx` files · **73** files with a `<FormModal>` (**7
 | `tenant/features/attendance/components/calendar/CalendarEventFormModal.tsx` | tenant/attendance | modal-form | ok | ok | ok | — | — |
 | `tenant/features/contacts/components/ContactForm.tsx` | tenant/contacts | modal-form | ok | ok | ok | — | — |
 | `tenant/features/contacts/components/ContactsBulkTagModal.tsx` | tenant/contacts | modal-form | ok | ok | ok | — | ok |
-| `tenant/features/enrollments/components/admissions/AdmissionsDecisionModal.tsx` | tenant/enrollments | modal-form | ok | ok | ok | — | — |
-| `tenant/features/enrollments/components/EnrollmentOperationModal.tsx` | tenant/enrollments | modal-form | ok | ok | ok | — | ok |
+| `tenant/features/enrollments/components/admissions/AdmissionsDecisionModal.tsx` | tenant/enrollments | modal-form | ok | ok | ok | ok | — |
+| `tenant/features/enrollments/components/EnrollmentOperationModal.tsx` | tenant/enrollments | modal-form | ok | ok | ok | ok | — |
 | `tenant/features/enrollments/components/EnrollmentsModalLayer.tsx` | tenant/enrollments | modal-form | ok | ok | ok | — | — |
 | `tenant/features/examinations/components/ExaminationForm.tsx` | tenant/examinations | modal-form | ok | ok | ok | — | — |
 | `tenant/features/examinations/components/ExaminationsModalLayer.tsx` | tenant/examinations | modal-form | ok | ok | missing | — | — |
@@ -111,7 +111,7 @@ Totals: **214** form-like `.tsx` files · **73** files with a `<FormModal>` (**7
 | `tenant/features/settings/components/BackupRestoreConfirmModal.tsx` | tenant/settings | modal-form | ok | ok | ok | — | — |
 | `tenant/features/settings/components/LlmConfigModal.tsx` | tenant/settings | modal-form | ok | ok | missing | — | — |
 | `tenant/features/students/components/StudentForm.tsx` | tenant/students | modal-form | ok | ok | ok | — | — |
-| `tenant/features/students/components/StudentsBulkEnrollModal.tsx` | tenant/students | modal-form | ok | ok | ok | ok | ok |
+| `tenant/features/students/components/StudentsBulkEnrollModal.tsx` | tenant/students | modal-form | ok | ok | ok | ok | — |
 | `tenant/features/tasks/components/TaskFormModal.tsx` | tenant/tasks | modal-form | ok | ok | ok | — | — |
 | `tenant/features/users/components/AddUserModal.tsx` | tenant/users | modal-form | ok | ok | ok | — | — |
 | `tenant/features/users/components/EditUserModal.tsx` | tenant/users | modal-form | ok | ok | ok | — | ok |

@@ -28,6 +28,7 @@ export interface AdmissionsRepository {
   listActiveRegistrationLinksTx: LinkStore["listActiveRegistrationLinksTx"];
   lockRegistrationLinkTx: LinkStore["lockRegistrationLinkTx"];
   findSessionById: SessionQueries["findSessionById"];
+  findSessionsByIds: SessionQueries["findSessionsByIds"];
   findWorkspaceTimezone: WorkspaceStore["findWorkspaceTimezone"];
   findStudentsByIds: StudentHydrate["findStudentsByIds"];
   bulkSaveEnrollments: EnrollmentPersist["bulkSaveEnrollments"];

@@ -47,7 +47,7 @@ export interface EligibilityInput {
   /** Today in the workspace timezone (`YYYY-MM-DD`). */
   asOf: string;
   /** Registration window (ISO instants); outside it the application is rejected. */
-  window?: { opensAt?: string | null; closesAt?: string | null; now?: string };
+  window?: { opensAt?: string | null; closesAt?: string | null; now: string };
 }
 
 export interface EligibilityResult {
@@ -116,11 +116,12 @@ export function evaluateEligibility(input: EligibilityInput): EligibilityResult 
   const reasons: EligibilityReason[] = [];
   if (!SESSION_ENROLLABLE_STATES.includes(normalizeSessionStatus(session.status)))
     reasons.push("session_not_open");
-  const now = openWindow?.now ?? new Date().toISOString();
-  if (
-    (openWindow?.opensAt && now < openWindow.opensAt) ||
-    (openWindow?.closesAt && now > openWindow.closesAt)
-  )
+  // Deterministic: the caller supplies `now` whenever it supplies a window; wall-clock time is
+  // never read inside this pure rule.
+  const now = openWindow?.now;
+  const opensAt = openWindow?.opensAt;
+  const closesAt = openWindow?.closesAt;
+  if ((opensAt && now && now < opensAt) || (closesAt && now && now > closesAt))
     reasons.push("window_closed");
 
   const ageDay = cls.ageCalculationDate || session.startDate || asOf;

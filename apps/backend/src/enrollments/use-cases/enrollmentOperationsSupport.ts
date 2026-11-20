@@ -1,5 +1,5 @@
 import {
-  enrollmentHoldsSeat,
+  enrollmentAllowsOperations,
   isSessionReadOnly,
   type Enrollment,
   type Session,
@@ -28,11 +28,11 @@ export async function loadEnrollmentInOpenSession(
   return { enrollment, session, today };
 }
 
-/** A live (seat-holding, not completed) enrollment in an open session, with its placements. */
+/** A pending/confirmed enrollment in an open session, with its placements. */
 export async function loadOperable(tenant: string, id: string) {
   const loaded = await loadEnrollmentInOpenSession(tenant, id);
   const { enrollment } = loaded;
-  if (!enrollmentHoldsSeat(enrollment.status) || enrollment.status === "completed")
+  if (!enrollmentAllowsOperations(enrollment.status))
     throw new ConflictError(`A ${enrollment.status} enrollment cannot be changed`);
   const placements = await repo.listEnrollmentPlacements(tenant, enrollment.id);
   return { ...loaded, placements };

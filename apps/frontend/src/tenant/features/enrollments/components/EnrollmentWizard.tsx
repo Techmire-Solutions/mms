@@ -1,7 +1,4 @@
-import {
-  translateApiMessage,
-  translateValidationMessage,
-} from "@/lib/forms/translateValidationMessage";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import {
@@ -20,11 +17,11 @@ import { Step5FeeCalculation } from "@/tenant/features/enrollments/components/wi
 import { Step6Confirmation } from "@/tenant/features/enrollments/components/wizard/Step6Confirmation";
 import { suggestClass, runFullEligibility, type CalculatedFee } from "@/lib/data/enrollmentData";
 import { type EnrollmentInsert } from "@mms/shared";
-import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { resolveEnrollmentApiError } from "@/lib/forms/resolveEnrollmentApiError";
 import { parseEnrollmentInsertPayload } from "@/tenant/features/enrollments/lib/enrollmentWizardParse";
 import { type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
-import { useSessions } from "@/tenant/hooks/collections/sessions";
+import { useEnrollmentWizardSessions } from "@/tenant/features/enrollments/hooks/useEnrollmentWizardSessions";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Alert } from "@/components/app/Alert";
 import { useEnrollmentConfig } from "@/hooks/useStandardModuleConfig";
@@ -49,15 +46,7 @@ export const EnrollmentWizard = function EnrollmentWizard({
   onSubmittingChange,
 }: EnrollmentWizardProps): React.JSX.Element {
   const { t } = useTranslation();
-  const sessionsQuery = useSessions();
-  const sessions = useMemo(() => {
-    const body = sessionsQuery.data?.status === 200 ? sessionsQuery.data.body : null;
-    if (Array.isArray(body)) return body as Session[];
-    if (body && typeof body === "object" && "sessions" in body && Array.isArray(body.sessions)) {
-      return body.sessions as Session[];
-    }
-    return [] as Session[];
-  }, [sessionsQuery.data]);
+  const { sessions, sessionsQuery } = useEnrollmentWizardSessions();
   const [step, setStep] = useState<number>(0);
   const [student, setStudent] = useState<Student | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -167,10 +156,7 @@ export const EnrollmentWizard = function EnrollmentWizard({
       successCloseTimerRef.current = window.setTimeout(() => onCancel(), 900);
     } catch (error) {
       // Keep the wizard open and show the mapped reason inline as well as in the parent toast.
-      setSubmitError(
-        mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
-          t("enrollments.toast.saveFailed"),
-      );
+      setSubmitError(resolveEnrollmentApiError(error, t) ?? t("enrollments.toast.saveFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -254,6 +240,7 @@ export const EnrollmentWizard = function EnrollmentWizard({
               <Step5FeeCalculation
                 student={student}
                 session={session}
+                classInfo={classInfo}
                 feeResult={feeResult}
                 onFeeResult={setFeeResult}
               />

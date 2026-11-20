@@ -28,6 +28,7 @@ describe("Step5FeeCalculation Component", () => {
       <Step5FeeCalculation
         student={null}
         session={mockSession}
+        classInfo={null}
         feeResult={null}
         onFeeResult={vi.fn()}
       />,

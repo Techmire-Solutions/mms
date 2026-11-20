@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 
 /** Directory filters and trash SSOT for Enrollments Work. */
 export function useEnrollmentsDirectoryFilters() {
@@ -13,11 +14,7 @@ export function useEnrollmentsDirectoryFilters() {
 
   // Page 1 whenever a server-side filter dimension changes (render-phase reset, no effect).
   const filterKey = `${debouncedSearch}|${statusFilter}|${sessionFilter}|${showDeleted}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-  if (prevFilterKey !== filterKey) {
-    setPrevFilterKey(filterKey);
-    setListPage(1);
-  }
+  useIdentityReset(filterKey, () => setListPage(1));
 
   const clearFilters = () => {
     setSearch("");

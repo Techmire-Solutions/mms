@@ -74,6 +74,8 @@ export interface EnrollmentsRepository {
     deletedAt?: unknown;
     dob?: string | null;
     gender?: string | null;
+    discountType?: string | null;
+    discountPct?: number | null;
   } | null>;
   findSessionById?(
     tenant: string,
@@ -83,6 +85,7 @@ export interface EnrollmentsRepository {
     deletedAt?: unknown;
     status?: string;
     startDate?: string | null;
+    baseFee?: number | string | null;
     classes?: Array<{
       id: string;
       name?: string;
@@ -92,6 +95,7 @@ export interface EnrollmentsRepository {
       ageCalculationDate?: string | null;
       enrollmentDeadline?: string;
       dropDeadline?: string;
+      discounts?: Array<{ discountType: string; percentage: number | string; status?: string }>;
     }>;
   } | null>;
   findWorkspaceTimezone?(tenant: string): Promise<string | null>;

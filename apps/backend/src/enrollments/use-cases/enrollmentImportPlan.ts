@@ -1,5 +1,6 @@
 import {
   enrollmentFeeForClass,
+  normalizeEnrollmentPaymentStatus,
   parseEnrollmentStatus,
   type ImportRowError,
   type Session,
@@ -32,7 +33,7 @@ interface PlannedEnrollment {
   discountAmt: number;
   finalFee: number;
   notes: string;
-  paymentStatus: string;
+  paymentStatus: "paid" | "pending" | "none";
 }
 
 export interface EnrollmentImportPlan {
@@ -120,6 +121,7 @@ export async function planEnrollmentImport(
     student: ImportStudentRow;
     session: Session;
     cls: Session["classes"][number];
+    status: "pending" | "confirmed";
   }> = [];
 
   for (let index = 0; index < rows.length; index += 1) {
@@ -215,8 +217,7 @@ export async function planEnrollmentImport(
       continue;
     }
 
-    resolved.push({ rowNumber, row, student, session, cls });
-    void status; // status/date/fee captured below in the second pass
+    resolved.push({ rowNumber, row, student, session, cls, status });
   }
 
   // One query for every pre-existing live pair in this batch.
@@ -239,8 +240,7 @@ export async function planEnrollmentImport(
     }
     seen.add(pair);
     if (existingPairs.has(pair)) continue; // already enrolled before this import — skip
-    const status = parseEnrollmentStatus((item.row.status ?? "pending").trim().toLowerCase()) as
-      "pending" | "confirmed";
+    const status = item.status;
     const fee = enrollmentFeeForClass(item.session.baseFee, item.cls, {
       discountType: item.student.discountType ?? null,
       discountPct: item.student.discountPct != null ? Number(item.student.discountPct) : null,
@@ -270,7 +270,7 @@ export async function planEnrollmentImport(
       discountAmt: Math.max(0, baseFee - finalFee),
       finalFee,
       notes: item.row.notes?.trim() || "",
-      paymentStatus: item.row.paymentStatus?.trim() || "none",
+      paymentStatus: normalizeEnrollmentPaymentStatus(item.row.paymentStatus),
     });
   }
   return { planned, errors, duplicates };

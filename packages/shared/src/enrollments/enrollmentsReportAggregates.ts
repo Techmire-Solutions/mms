@@ -12,6 +12,11 @@ export const enrollmentsReportStatusCountsSchema = z.object({
   confirmed: z.number().int().nonnegative(),
   cancelled: z.number().int().nonnegative(),
   completed: z.number().int().nonnegative(),
+  withdrawn: z.number().int().nonnegative(),
+  promoted: z.number().int().nonnegative(),
+  retained: z.number().int().nonnegative(),
+  graduated: z.number().int().nonnegative(),
+  left: z.number().int().nonnegative(),
   total: z.number().int().nonnegative(),
 });
 
@@ -122,7 +127,18 @@ export const EMPTY_ENROLLMENTS_REPORT_COMPARISON: EnrollmentsReportComparison = 
 
 export const EMPTY_ENROLLMENTS_REPORT_AGGREGATES: EnrollmentsReportAggregates = {
   cumulativeTrends: [],
-  statusCounts: { pending: 0, confirmed: 0, cancelled: 0, completed: 0, total: 0 },
+  statusCounts: {
+    pending: 0,
+    confirmed: 0,
+    cancelled: 0,
+    completed: 0,
+    withdrawn: 0,
+    promoted: 0,
+    retained: 0,
+    graduated: 0,
+    left: 0,
+    total: 0,
+  },
   fees: { due: 0, paid: 0 },
   bySession: [],
   classFillRates: [],
@@ -195,6 +211,11 @@ export function computeEnrollmentsReportPanels(
     confirmed: 0,
     cancelled: 0,
     completed: 0,
+    withdrawn: 0,
+    promoted: 0,
+    retained: 0,
+    graduated: 0,
+    left: 0,
     total: enrollments.length,
   };
   let due = 0;
@@ -207,6 +228,11 @@ export function computeEnrollmentsReportPanels(
     else if (status === "confirmed") statusCounts.confirmed += 1;
     else if (status === "cancelled") statusCounts.cancelled += 1;
     else if (status === "completed") statusCounts.completed += 1;
+    else if (status === "withdrawn") statusCounts.withdrawn += 1;
+    else if (status === "promoted") statusCounts.promoted += 1;
+    else if (status === "retained") statusCounts.retained += 1;
+    else if (status === "graduated") statusCounts.graduated += 1;
+    else if (status === "left") statusCounts.left += 1;
 
     const fee = Number(enrollment.finalFee) || 0;
     if (enrollmentHoldsSeat(status)) due += fee;

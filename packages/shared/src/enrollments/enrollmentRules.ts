@@ -4,6 +4,7 @@ import {
   type EligibilityReason,
   type EligibilitySession,
 } from "./enrollmentEligibility.js";
+import type { AppTranslationKey } from "../i18n/appTranslations.js";
 
 /**
  * Enrollment business rules shared by the staff write paths (bulk add, create, approval,
@@ -19,6 +20,12 @@ const isoDay = (value: string | null | undefined): string | null => {
   return ISO_DATE_PREFIX.test(trimmed) ? trimmed.slice(0, 10) : null;
 };
 
+/** Structured deadline failure: a stable i18n key plus the specific cut-off day. */
+export interface DeadlineError {
+  key: AppTranslationKey;
+  day: string;
+}
+
 /**
  * Classes carry an optional `enrollment_deadline` (the "add deadline"). Empty means no
  * deadline; a deadline *day* is inclusive.
@@ -26,11 +33,11 @@ const isoDay = (value: string | null | undefined): string | null => {
 export function addDeadlineError(
   deadline: string | null | undefined,
   today: string,
-): string | null {
+): DeadlineError | null {
   const day = isoDay(deadline);
   if (!day) return null;
   if (today <= day) return null;
-  return `Enrollment for this class closed on ${day}`;
+  return { key: "enrollments.errors.addDeadlinePassed", day };
 }
 
 /**
@@ -40,11 +47,11 @@ export function addDeadlineError(
 export function dropDeadlineError(
   deadline: string | null | undefined,
   effectiveOn: string,
-): string | null {
+): DeadlineError | null {
   const day = isoDay(deadline);
   if (!day) return null;
   if (effectiveOn <= day) return null;
-  return `The drop deadline for this class was ${day}`;
+  return { key: "enrollments.errors.dropDeadlinePassed", day };
 }
 
 /**

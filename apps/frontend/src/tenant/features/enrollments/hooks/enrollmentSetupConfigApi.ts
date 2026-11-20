@@ -7,10 +7,11 @@ import {
 } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<EnrollmentModulePreferences>({
-  fetchPreferencesFn: async (_signal) => {
+  fetchPreferencesFn: async (signal) => {
     const res = await apiContract.enrollments.getPreferences({
       query: undefined,
       extraHeaders: {},
+      fetchOptions: { signal },
     });
     const body = res.body as { preferences?: unknown } | null;
     return enrollmentPreferencesResponseSchema.parse(body?.preferences);

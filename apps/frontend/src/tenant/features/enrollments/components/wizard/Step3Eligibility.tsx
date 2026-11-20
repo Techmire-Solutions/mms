@@ -1,28 +1,11 @@
 import React from "react";
-import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { type CheckResult, runFullEligibility } from "@/lib/data/enrollmentData";
 import { type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Alert } from "@/components/app/Alert";
-
-const ICONS: Record<string, React.ReactElement> = {
-  pass: <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" aria-hidden="true" />,
-  fail: <XCircle className="w-4 h-4 text-destructive flex-shrink-0" aria-hidden="true" />,
-  warn: <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0" aria-hidden="true" />,
-};
-
-const ROW_COLORS: Record<string, string> = {
-  pass: "bg-success/10 border-success/30",
-  fail: "bg-destructive/10 border-destructive/30",
-  warn: "bg-warning/10 border-warning/30",
-};
-
-const LABEL_COLORS: Record<string, string> = {
-  pass: "text-success",
-  fail: "text-destructive",
-  warn: "text-warning",
-};
+import { EligibilityCheckRows } from "@/tenant/features/enrollments/components/EligibilityCheckRows";
 
 export interface Step3EligibilityProps {
   student: Student;
@@ -88,21 +71,7 @@ export function Step3Eligibility({
       </div>
 
       {/* Check rows */}
-      <div className="space-y-2" role="list" aria-label={t("enrollments.wizard.step3DetailsAria")}>
-        {checks.map((check) => (
-          <div
-            key={check.id}
-            className={`flex items-start gap-3 p-3 rounded-xl border ${ROW_COLORS[check.status]}`}
-            role="listitem"
-          >
-            <div className="mt-0.5">{ICONS[check.status]}</div>
-            <div className="flex-1 min-w-0">
-              <p className={`text-xs font-bold ${LABEL_COLORS[check.status]}`}>{check.label}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{check.detail}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <EligibilityCheckRows checks={checks} ariaLabel={t("enrollments.wizard.step3DetailsAria")} />
 
       {/* Result banner */}
       {canProceed ? (

@@ -32,7 +32,10 @@ export async function countLiveSeatsByClassTx(
         FROM enrollments
        WHERE workspace_subdomain = ${subdomain} AND session_id = ${sessionId}
          AND deleted_at IS NULL
-         AND status NOT IN ('cancelled', 'withdrawn', 'promoted', 'retained', 'graduated', 'left')
+         AND status NOT IN (${sql.join(
+           SEAT_RELEASED_ENROLLMENT_STATUSES.map((status) => sql`${status}`),
+           sql`, `,
+         )})
        GROUP BY class_id, section_id
     `);
     return rows.rows.map((row) => ({

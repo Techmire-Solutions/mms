@@ -6,7 +6,11 @@ import { requireDbDate } from "../../lib/dbDate.js";
 export type EnrollmentInsert = typeof enrollments.$inferInsert;
 
 /** Contract → DB insert values for an enrollment (section/roll resolved by the caller). */
-export function recordToInsert(tenant: string, record: Enrollment): EnrollmentInsert {
+export function recordToInsert(
+  tenant: string,
+  record: Enrollment,
+  options: { preserveSoftDelete?: boolean } = {},
+): EnrollmentInsert {
   return {
     id: String(record.id),
     workspaceSubdomain: tenant.trim().toLowerCase(),
@@ -31,6 +35,19 @@ export function recordToInsert(tenant: string, record: Enrollment): EnrollmentIn
     invoiceId: record.invoiceId ? String(record.invoiceId) : null,
     paymentStatus: String(record.paymentStatus || "none"),
     notes: String(record.notes || ""),
-    ...mapAuditToInsert(record),
+    // Server-owned provenance is stripped at the write choke point: a client `Enrollment`
+    // must never set soft-delete or audit-attribution columns. The backup/restore path opts in
+    // to preserve them (`preserveSoftDelete`), the only caller that legitimately restores them.
+    ...(options.preserveSoftDelete
+      ? mapAuditToInsert(record)
+      : {
+          updatedAt: new Date(),
+          deletedAt: null,
+          deletedBy: null,
+          deletionReason: null,
+          restoredAt: null,
+          restoredBy: null,
+          deletedWithCascade: false,
+        }),
   } satisfies EnrollmentInsert;
 }

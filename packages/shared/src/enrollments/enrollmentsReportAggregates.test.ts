@@ -13,7 +13,18 @@ describe("enrollmentsReportAggregates", () => {
         { monthKey: "2026-01", students: 2 },
         { monthKey: "2026-02", students: 5 },
       ],
-      statusCounts: { pending: 1, confirmed: 2, cancelled: 0, completed: 1, total: 4 },
+      statusCounts: {
+        pending: 1,
+        confirmed: 2,
+        cancelled: 0,
+        completed: 1,
+        withdrawn: 0,
+        promoted: 0,
+        retained: 0,
+        graduated: 0,
+        left: 0,
+        total: 4,
+      },
       fees: { due: 300, paid: 100 },
       bySession: [{ sessionId: "ses-1", name: "Hifz", count: 3, revenue: 250 }],
       comparison: {
@@ -101,6 +112,11 @@ describe("enrollmentsReportAggregates", () => {
       confirmed: 1,
       cancelled: 1,
       completed: 1,
+      withdrawn: 0,
+      promoted: 0,
+      retained: 0,
+      graduated: 0,
+      left: 0,
       total: 4,
     });
     expect(panels.fees).toEqual({ due: 190, paid: 140 });
@@ -108,5 +124,63 @@ describe("enrollmentsReportAggregates", () => {
       { sessionId: "ses-1", name: "Hifz", count: 2, revenue: 150 },
       { sessionId: "ses-2", name: "Nazira", count: 2, revenue: 40 },
     ]);
+  });
+
+  it("status counts bucket every terminal outcome so they sum to total", () => {
+    const panels = computeEnrollmentsReportPanels([
+      {
+        sessionId: "ses-1",
+        sessionName: "S",
+        status: "withdrawn",
+        paymentStatus: "none",
+        finalFee: 0,
+      },
+      {
+        sessionId: "ses-1",
+        sessionName: "S",
+        status: "promoted",
+        paymentStatus: "none",
+        finalFee: 0,
+      },
+      {
+        sessionId: "ses-1",
+        sessionName: "S",
+        status: "retained",
+        paymentStatus: "none",
+        finalFee: 0,
+      },
+      {
+        sessionId: "ses-1",
+        sessionName: "S",
+        status: "graduated",
+        paymentStatus: "none",
+        finalFee: 0,
+      },
+      { sessionId: "ses-1", sessionName: "S", status: "left", paymentStatus: "none", finalFee: 0 },
+      {
+        sessionId: "ses-1",
+        sessionName: "S",
+        status: "confirmed",
+        paymentStatus: "none",
+        finalFee: 0,
+      },
+    ]);
+    const counts = panels.statusCounts;
+    const sum =
+      counts.pending +
+      counts.confirmed +
+      counts.cancelled +
+      counts.completed +
+      counts.withdrawn +
+      counts.promoted +
+      counts.retained +
+      counts.graduated +
+      counts.left;
+    expect(sum).toBe(counts.total);
+    expect(counts.withdrawn).toBe(1);
+    expect(counts.promoted).toBe(1);
+    expect(counts.retained).toBe(1);
+    expect(counts.graduated).toBe(1);
+    expect(counts.left).toBe(1);
   });
 });

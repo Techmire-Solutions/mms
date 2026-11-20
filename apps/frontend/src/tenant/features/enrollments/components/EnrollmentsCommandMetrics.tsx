@@ -1,6 +1,5 @@
 import React from "react";
 import { ClipboardList, Filter, CheckCircle2, Clock } from "lucide-react";
-import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useEnrollmentsMetrics } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
@@ -15,7 +14,6 @@ export const EnrollmentsCommandMetrics = function EnrollmentsCommandMetrics({
   shown,
 }: EnrollmentsCommandMetricsProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { formatCurrency: _formatCurrency, activeCurrency: _activeCurrency } = useFinanceCurrency();
   const { data: serverMetrics } = useEnrollmentsMetrics();
 
   const metrics = (() => ({

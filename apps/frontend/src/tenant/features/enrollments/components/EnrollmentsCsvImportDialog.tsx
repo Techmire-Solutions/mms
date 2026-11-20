@@ -1,5 +1,9 @@
 import React from "react";
-import { enrollmentsTransferSchema, type EnrollmentTransferEntity } from "@mms/shared";
+import {
+  ENROLLMENTS_MODULE_MANIFEST,
+  enrollmentsTransferSchema,
+  type EnrollmentTransferEntity,
+} from "@mms/shared";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface EnrollmentsCsvImportDialogProps {
@@ -19,8 +23,8 @@ export function EnrollmentsCsvImportDialog({
       open={open}
       onClose={onClose}
       canWrite={canWrite}
-      apiPath="/api/enrollments/import"
-      preflightPath="/api/enrollments/import/preflight"
+      apiPath={`${ENROLLMENTS_MODULE_MANIFEST.restBasePath}/import`}
+      preflightPath={`${ENROLLMENTS_MODULE_MANIFEST.restBasePath}/import/preflight`}
       schema={enrollmentsTransferSchema}
       navKey="nav.enrollments"
     />

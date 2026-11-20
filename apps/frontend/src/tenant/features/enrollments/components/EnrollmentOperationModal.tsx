@@ -1,8 +1,6 @@
-import {
-  translateApiMessage,
-  translateValidationMessage,
-} from "@/lib/forms/translateValidationMessage";
+import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
+import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import {
   ENROLLMENT_DROP_REASON_CODES,
   enrollmentReadmitBodySchema,
@@ -32,7 +30,7 @@ import {
   ENROLLMENT_OPERATION_KINDS,
   type EnrollmentOperationKind,
 } from "@/tenant/features/enrollments/lib/enrollmentOperationKinds";
-import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { resolveEnrollmentApiError } from "@/lib/forms/resolveEnrollmentApiError";
 import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 
 export type { EnrollmentOperationKind };
@@ -72,9 +70,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
 
   // Fresh operation draft whenever the operation or the enrollment being changed changes.
   const operationKey = `${kind}|${sessionId}|${currentClassId}|${currentSectionId}|${today}`;
-  const [prevOperationKey, setPrevOperationKey] = useState(operationKey);
-  if (prevOperationKey !== operationKey) {
-    setPrevOperationKey(operationKey);
+  useIdentityReset(operationKey, () => {
     if (kind) {
       setTarget({
         sessionId,
@@ -87,7 +83,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
       setReasonCode("");
       setFormError(null);
     }
-  }
+  });
   const reasonValid = reason.trim().length >= 3;
   const rangeValid = kind !== "suspend" || toDay >= day;
   const targetClass = session?.classes?.find((cls) => cls.id === target.classId);
@@ -159,10 +155,7 @@ export function EnrollmentOperationModal(props: EnrollmentOperationModalProps): 
         }
         if (saved) onClose();
       } catch (error) {
-        setFormError(
-          mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
-            t("common.formPleaseFixErrors"),
-        );
+        setFormError(resolveEnrollmentApiError(error, t) ?? t("common.formPleaseFixErrors"));
       }
     });
   };

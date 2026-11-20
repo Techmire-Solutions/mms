@@ -164,7 +164,9 @@ export async function replaceEnrollmentsForWorkspace(
       const placed = await resolveEnrollmentSectionsTx(tx, subdomain, records);
       await tx
         .insert(enrollments)
-        .values(placed.map((record) => recordToInsert(subdomain, record)));
+        .values(
+          placed.map((record) => recordToInsert(subdomain, record, { preserveSoftDelete: true })),
+        );
       await appendClientTimelineTx(tx, subdomain, records);
       await syncPlacementsTx(tx, subdomain, placed, today);
       // A restore replaces the whole table: legacy class-less pairs for students who now have

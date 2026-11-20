@@ -137,7 +137,12 @@ export async function approveApplications(
                 "The class is full — raise its capacity or waitlist the applicant before approving",
               );
           }
-          const enrollmentId = await repo.findLatestEnrollmentId(subdomain, studentId, app.classId);
+          const enrollmentId = await repo.findLatestEnrollmentId(
+            subdomain,
+            studentId,
+            app.classId,
+            app.sessionId,
+          );
           await repo.updateApplicationTx(tx, subdomain, app.id, {
             status: "approved",
             studentId,

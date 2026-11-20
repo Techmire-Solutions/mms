@@ -80,6 +80,11 @@ export async function loadEnrollmentsReportAggregatesSql(
       confirmed: 0,
       cancelled: 0,
       completed: 0,
+      withdrawn: 0,
+      promoted: 0,
+      retained: 0,
+      graduated: 0,
+      left: 0,
       total: 0,
     };
     for (const row of getQueryRows<Record<string, unknown>>(statusResult)) {
@@ -92,6 +97,11 @@ export async function loadEnrollmentsReportAggregatesSql(
       else if (status === "confirmed") statusCounts.confirmed += count;
       else if (status === "cancelled") statusCounts.cancelled += count;
       else if (status === "completed") statusCounts.completed += count;
+      else if (status === "withdrawn") statusCounts.withdrawn += count;
+      else if (status === "promoted") statusCounts.promoted += count;
+      else if (status === "retained") statusCounts.retained += count;
+      else if (status === "graduated") statusCounts.graduated += count;
+      else if (status === "left") statusCounts.left += count;
     }
 
     const feesResult = await tx.execute(sql`

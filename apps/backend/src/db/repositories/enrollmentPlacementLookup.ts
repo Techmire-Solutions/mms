@@ -1,6 +1,8 @@
 import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { enrollments } from "../schema.js";
 import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
+import { enableIncludeDeleted, withIncludeDeletedScope } from "../../lib/softDeleteHelpers.js";
 
 export interface EnrollmentPlacementRow {
   studentId: string;
@@ -67,7 +69,10 @@ export async function listEnrollmentPlacementsAsOfTx(
     studentIds.map((id) => sql`${id}`),
     sql`, `,
   );
-  const result = await tx.execute<EnrollmentPlacementRow & Record<string, unknown>>(sql`
+  // Trashed enrollments must stay resolvable for historical backfill (placements are kept after
+  // trash); FORCE RLS hides them unless the transaction opts in. Scoped so the GUC doesn't leak.
+  return withIncludeDeletedScope(tx, async () => {
+    const result = await tx.execute<EnrollmentPlacementRow & Record<string, unknown>>(sql`
     SELECT DISTINCT ON (e.student_id, p.class_id)
            e.student_id AS "studentId", p.class_id AS "classId", p.section_id AS "sectionId"
       FROM enrollment_placements p
@@ -80,7 +85,8 @@ export async function listEnrollmentPlacementsAsOfTx(
        AND (p.end_on IS NULL OR p.end_on >= ${asOf})
      ORDER BY e.student_id, p.class_id, p.start_on DESC
   `);
-  return result.rows as EnrollmentPlacementRow[];
+    return result.rows as EnrollmentPlacementRow[];
+  });
 }
 
 export async function listEnrollmentPlacementsAsOf(
@@ -124,6 +130,8 @@ export async function listEnrollmentPlacementsForDates(
     sql`, `,
   );
   return withTenantRead(subdomain, async (tx) => {
+    // Trashed enrollments must stay resolvable for historical backfill (see AsOf lookup above).
+    await enableIncludeDeleted(tx);
     const result = await tx.execute<{
       date: string;
       studentId: string;
@@ -155,25 +163,29 @@ export async function listEnrollmentPlacementsForDates(
   });
 }
 
-/** Most recent live enrollment of a student in a class, if any. */
+/** Most recent live (seat-holding) enrollment of a student in a class, optionally in a session. */
 export async function findLatestEnrollmentId(
   tenant: string,
   studentId: string,
   classId: string,
+  sessionId?: string,
 ): Promise<string | null> {
   const subdomain = tenant.trim().toLowerCase();
+  const conditions = [
+    eq(enrollments.workspaceSubdomain, subdomain),
+    eq(enrollments.studentId, studentId),
+    eq(enrollments.classId, classId),
+    isNull(enrollments.deletedAt),
+    // A withdrawn/cancelled row still has `deleted_at IS NULL`; only a seat-holding
+    // enrollment may be linked as the application's live enrollment.
+    enrollmentHoldsSeatWhere(),
+  ];
+  if (sessionId) conditions.push(eq(enrollments.sessionId, sessionId));
   const [row] = await withTenantRead(subdomain, (tx) =>
     tx
       .select({ id: enrollments.id })
       .from(enrollments)
-      .where(
-        and(
-          eq(enrollments.workspaceSubdomain, subdomain),
-          eq(enrollments.studentId, studentId),
-          eq(enrollments.classId, classId),
-          isNull(enrollments.deletedAt),
-        ),
-      )
+      .where(and(...conditions))
       .orderBy(desc(enrollments.createdAt))
       .limit(1),
   );

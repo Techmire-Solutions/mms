@@ -138,10 +138,13 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
           status: 403 as const,
           body: { type: "forbidden", message: "Insufficient permissions" },
         };
+      // Fee fields are financial adjustments: only `enrollments.manage` may override the class
+      // schedule. A write-only role gets the authoritative recomputed fee server-side.
+      const canOverrideFees = userHasPermission(user, "enrollments.manage");
       try {
         const item = await withTenant(
           tenantOf(request),
-          () => enrollmentsUseCases.createEnrollment(body),
+          () => enrollmentsUseCases.createEnrollment(body, { canOverrideFees }),
           { readOnly: false },
         );
         return { status: 201 as const, body: item };
@@ -225,63 +228,6 @@ export const enrollmentContractRouter: FastifyPluginAsync = async (fastify) => {
         return handleContractError(request, error, {
           status: 500,
           body: { type: "database_error", message: "Failed to delete enrollment" },
-        });
-      }
-    },
-    bulkDelete: async ({
-      body,
-      request,
-    }: ContractRouteArgs<(typeof enrollmentContract)["bulkDelete"]>): Promise<
-      ContractRouteResponse<(typeof enrollmentContract)["bulkDelete"]>
-    > => {
-      const user = request.user as User;
-      if (!canDeleteCollection(user, ENROLLMENTS_COLLECTION))
-        return {
-          status: 403 as const,
-          body: { type: "forbidden", message: "Insufficient permissions" },
-        };
-      try {
-        const result = await withTenant(
-          tenantOf(request),
-          () =>
-            enrollmentsUseCases.bulkSoftDeleteEnrollments(
-              body.ids.map(String),
-              String(user.id),
-              body.deletionReason,
-            ),
-          { readOnly: false },
-        );
-        return { status: 200 as const, body: { success: true, ...result } };
-      } catch (error) {
-        return handleContractError(request, error, {
-          status: 500,
-          body: { type: "database_error", message: "Failed to bulk delete enrollments" },
-        });
-      }
-    },
-    bulkRestore: async ({
-      body,
-      request,
-    }: ContractRouteArgs<(typeof enrollmentContract)["bulkRestore"]>): Promise<
-      ContractRouteResponse<(typeof enrollmentContract)["bulkRestore"]>
-    > => {
-      const user = request.user as User;
-      if (!canDeleteCollection(user, ENROLLMENTS_COLLECTION))
-        return {
-          status: 403 as const,
-          body: { type: "forbidden", message: "Insufficient permissions" },
-        };
-      try {
-        const result = await withTenant(
-          tenantOf(request),
-          () => enrollmentsUseCases.bulkRestoreEnrollments(body.ids.map(String), String(user.id)),
-          { readOnly: false },
-        );
-        return { status: 200 as const, body: { success: true, ...result } };
-      } catch (error) {
-        return handleContractError(request, error, {
-          status: 500,
-          body: { type: "database_error", message: "Failed to bulk restore enrollments" },
         });
       }
     },

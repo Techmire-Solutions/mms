@@ -36,7 +36,7 @@ export const ENROLLMENT_TERMINAL_STATUSES = [
   "left",
 ] as const satisfies readonly EnrollmentStatus[];
 
-/** Statuses a staff operation (transfer, withdraw, suspend, readmission source) may act on. */
+/** Statuses a staff operation (transfer, withdraw, suspend) may act on. Readmission is gated separately by the operation channel (`withdrawn → confirmed`), not by this list. */
 export const ENROLLMENT_OPERABLE_STATUSES = [
   "pending",
   "confirmed",

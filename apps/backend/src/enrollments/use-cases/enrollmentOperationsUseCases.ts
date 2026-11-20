@@ -101,7 +101,9 @@ export const enrollmentOperationsUseCases = {
     const targetClass = session.classes?.find((cls) => cls.id === enrollment.classId);
     const dropError = dropDeadlineError(targetClass?.dropDeadline, effectiveOn);
     if (dropError && !input.overrideDropDeadline) {
-      throw new HttpDomainError(409, ENROLLMENT_ERROR_CODES[4], dropError);
+      throw new HttpDomainError(409, ENROLLMENT_ERROR_CODES[4], dropError.key, {
+        details: { day: dropError.day },
+      });
     }
     const billing = await withTenant(tenant, async (tx) => {
       await repo.applyEnrollmentWithdrawal(tenant, {

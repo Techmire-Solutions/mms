@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { SEAT_AVAILABLE_REVIEW_NOTE, SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/shared";
 import { withTenant, withGlobalTenant } from "../tenant-context.js";
+import { recordModernAuditEvent } from "../../services/auditTrailService.js";
 
 /** The application a freed seat flagged, with the labels a staff notification needs. */
 export type FlaggedWaitlistApplication = {
@@ -89,6 +90,18 @@ export async function revertExpiredWaitlistOffers(limit = 200): Promise<Reverted
          SET ${CLEAR_OFFER}
        WHERE (workspace_subdomain, id) IN (${keys})
     `);
+    // Revert + audit commit atomically: a crash after the UPDATE must not leave an
+    // un-audited expiry, so the audit row is appended inside this same transaction.
+    for (const row of rows) {
+      await recordModernAuditEvent(tx, {
+        workspaceSubdomain: row.workspace,
+        tableName: "registration_applications",
+        recordId: row.id,
+        actionType: "UPDATE",
+        oldState: { status: "under_review" },
+        newState: { operation: "waitlist_offer_expired", status: "waitlisted" },
+      });
+    }
     return rows;
   });
 }

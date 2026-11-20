@@ -72,7 +72,7 @@ export async function carryRolloverEnrollments(
 ): Promise<RolloverCarryResult> {
   if (placements.length === 0) return { created: 0, carriedSourceIds: new Set() };
   const classes = new Map(target.classes.map((cls) => [cls.id, cls]));
-  return withTenant(tenant, async (tx) => {
+  const result = await withTenant(tenant, async (tx) => {
     await ops.lockRolloverCarryTx(tenant, target.id);
     const used = new Map<string, number>();
     for (const row of await ops.countLiveSeatsByClassTx(tenant, target.id)) {
@@ -163,9 +163,6 @@ export async function carryRolloverEnrollments(
       if (error instanceof SeatCapacityError) throw new RolloverSeatError([error.message]);
       throw error;
     }
-    await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
-    await broadcastCollection("enrollments");
-    await broadcastCollection("sessions");
     // Only rows that actually landed may close their source enrollment; a student another
     // writer already enrolled in the target keeps the source open for a human decision.
     const createdIds = new Set(inserted);
@@ -178,6 +175,11 @@ export async function carryRolloverEnrollments(
       ),
     };
   });
+  // Post-commit: clients must only be invalidated after the rollover is durable.
+  await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+  await broadcastCollection("enrollments");
+  await broadcastCollection("sessions");
+  return result;
 }
 
 /** Closes a source enrollment with its rollover outcome on the session's last day (no billing). */

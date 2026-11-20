@@ -9,6 +9,7 @@ import {
 } from "@mms/shared";
 import { handleContractError } from "../../../lib/contractError.js";
 import { isUniqueViolation } from "../../../lib/pgErrors.js";
+import { withTenant } from "../../../db/tenant-context.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 import {
@@ -201,6 +202,59 @@ export const enrollmentContractAdminHandlers = {
       return handleContractError(request, error, {
         status: 500,
         body: { type: "database_error", message: "Failed to restore enrollment" },
+      });
+    }
+  },
+
+  bulkDelete: async ({
+    body,
+    request,
+  }: ContractRouteArgs<(typeof enrollmentContract)["bulkDelete"]>): Promise<
+    ContractRouteResponse<(typeof enrollmentContract)["bulkDelete"]>
+  > => {
+    const user = request.user as User;
+    if (!canDeleteCollection(user, COLLECTION)) return forbidden;
+    try {
+      const tenant = String(request.tenant?.id ?? "").trim();
+      const result = await withTenant(
+        tenant,
+        () =>
+          enrollmentsUseCases.bulkSoftDeleteEnrollments(
+            body.ids.map(String),
+            String(user.id),
+            body.deletionReason,
+          ),
+        { readOnly: false },
+      );
+      return { status: 200 as const, body: { success: true, ...result } };
+    } catch (error) {
+      return handleContractError(request, error, {
+        status: 500,
+        body: { type: "database_error", message: "Failed to bulk delete enrollments" },
+      });
+    }
+  },
+
+  bulkRestore: async ({
+    body,
+    request,
+  }: ContractRouteArgs<(typeof enrollmentContract)["bulkRestore"]>): Promise<
+    ContractRouteResponse<(typeof enrollmentContract)["bulkRestore"]>
+  > => {
+    const user = request.user as User;
+    if (!canDeleteCollection(user, COLLECTION)) return forbidden;
+    try {
+      const tenant = String(request.tenant?.id ?? "").trim();
+      const result = await withTenant(
+        tenant,
+        () => enrollmentsUseCases.bulkRestoreEnrollments(body.ids.map(String), String(user.id)),
+        { readOnly: false },
+      );
+      return { status: 200 as const, body: { success: true, ...result } };
+    } catch (error) {
+      return handleContractError(request, error, {
+        status: 500,
+        body: { type: "database_error", message: "Failed to bulk restore enrollments" },
       });
     }
   },
