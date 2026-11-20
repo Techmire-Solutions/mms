@@ -85,7 +85,7 @@ export default async function emailRoutes(
     return reply.send(saved);
   });
 
-  fastify.post("/integration/test", async (request, reply) => {
+  fastify.post("/integration/test", { preHandler: emailSendLimit }, async (request, reply) => {
     const user = request.user as User;
     if (!canWriteObject(user, "email_integration")) {
       return sendForbidden(

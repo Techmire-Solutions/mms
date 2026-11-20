@@ -118,7 +118,7 @@ describe("whatsappService", () => {
     expect(fetchSpy.mock.calls[0][0]).toBe("https://logiqueues.com/gateway/v1/messages/smart");
   });
 
-  it("dispatches successfully via the LogiQueues provider using its default smart endpoint", async () => {
+  it("dispatches successfully via the Logiqueues provider using its default smart endpoint", async () => {
     vi.spyOn(globalSettingsService, "loadGlobalSettings").mockResolvedValue({
       ...DEFAULT_GLOBAL_SETTINGS,
       whatsAppNotifications: true,
@@ -139,7 +139,7 @@ describe("whatsappService", () => {
       }),
     );
 
-    const result = await sendTenantWhatsApp({ to: "+923001234567", body: "Test LogiQueues" });
+    const result = await sendTenantWhatsApp({ to: "+923001234567", body: "Test Logiqueues" });
     expect(result).toEqual({ sent: true, providerMessageId: "wa_logiqueues_123" });
     expect(fetchSpy.mock.calls[0][0]).toBe("https://logiqueues.com/gateway/v1/messages/smart");
   });
