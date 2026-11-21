@@ -10,8 +10,9 @@ import {
   type FieldConfig,
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import { logger } from "../../lib/logger.js";
 import { loadContactFieldConfig } from "./contactConfigService.js";
-import { getDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import { loadDuplicatePairs } from "./contactDuplicateScanUseCases.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
 
@@ -24,6 +25,16 @@ function metricsFieldConfig(fieldConfig: FieldConfig | null): FieldConfig {
     fields: {},
     formTabs: DEFAULT_FORM_TABS,
   };
+}
+
+/** A failed duplicate scan degrades the card to 0 instead of failing every metric. */
+async function countDuplicatePairs(repo: ContactsRepository): Promise<number> {
+  try {
+    return (await loadDuplicatePairs(repo)).length;
+  } catch (error) {
+    logger.warn({ err: error }, "Contact duplicate count unavailable; reporting 0");
+    return 0;
+  }
 }
 
 export async function loadContactsCommandMetrics(
@@ -40,9 +51,9 @@ export async function loadContactsCommandMetrics(
     };
   }
   const fieldConfig = await loadContactFieldConfig();
-  const dupeCache = await getDuplicateScanCache();
-  // Include all actionable pairs (including exact name matches) — cache when warm; 0 when cold (no full-tenant scan).
-  const duplicatePairCount = dupeCache ? dupeCache.pairs.length : 0;
+  // Same pair set as the Potential Duplicates list (name matches included): the cached
+  // scan when warm, otherwise one SQL-blocked scan that is then cached for the list.
+  const duplicatePairCount = await countDuplicatePairs(repo);
   return repo.aggregateCommandMetrics(tenant, metricsFieldConfig(fieldConfig), {
     duplicatePairCount,
   });

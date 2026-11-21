@@ -1,10 +1,15 @@
 import type { Contact, ContactPreferences } from "./contactTypes.js";
 import { cleanName, getEmails, getPhoneNumbers } from "../core/utils.js";
 import { filterActiveContacts } from "./contactSoftDelete.js";
-import {
+import { collectContactGuardianIds, isGuardianNameOnlyPair } from "./contactDuplicateGuardians.js";
+export {
   areSiblingsSharingParent,
   isParentChildOrGuardianPair,
   PARENT_CHILD_GUARDIAN_RELATIONSHIP_TERMS,
+} from "./contactDuplicateFamilyRules.js";
+import {
+  areSiblingsSharingParent,
+  isParentChildOrGuardianPair,
 } from "./contactDuplicateFamilyRules.js";
 
 export type ContactDuplicateReasonKey =
@@ -73,12 +78,6 @@ export function getContactCleanName(contact: Contact, namePrefixesToIgnore?: str
     contact.name?.trim() || [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim();
   return cleanName(fullName, namePrefixesToIgnore);
 }
-
-export {
-  areSiblingsSharingParent,
-  isParentChildOrGuardianPair,
-  PARENT_CHILD_GUARDIAN_RELATIONSHIP_TERMS,
-};
 
 function getContactCleanCnic(contact: Contact): string {
   if (!contact.cnic) return "";
@@ -211,13 +210,24 @@ function collectCandidatesFromKeys(
   }
 }
 
+/** Options for {@link findContactDuplicatePairs}. */
+export interface FindContactDuplicatePairsOptions {
+  includeDeleted?: boolean;
+  /**
+   * Contacts known to be a parent/guardian of some child from outside the pool
+   * (SQL relationship/student links). Merged with links visible in the pool.
+   */
+  guardianContactIds?: Iterable<string | number>;
+}
+
 /** Finds potential duplicate contact pairs (globle1 §2.2). Indexed scan for large directories. */
 export function findContactDuplicatePairs(
   contacts: Contact[],
   preferences: DuplicatePreferences = {},
-  options?: { includeDeleted?: boolean },
+  options?: FindContactDuplicatePairsOptions,
 ): ContactDuplicatePair[] {
   const pool = options?.includeDeleted ? contacts : filterActiveContacts(contacts);
+  const guardianIds = collectContactGuardianIds(pool, options?.guardianContactIds);
   const entries: ContactIndexEntry[] = pool.map((contact) => ({
     contact,
     keys: getContactDuplicateCandidateKeys(contact, preferences),
@@ -272,9 +282,8 @@ export function findContactDuplicatePairs(
         entry1.keys,
         entry2.keys,
       );
-      if (!pair) continue;
-
       matchedPairs.add(key);
+      if (!pair || isGuardianNameOnlyPair(pair, guardianIds)) continue;
       list.push(pair);
     }
   }

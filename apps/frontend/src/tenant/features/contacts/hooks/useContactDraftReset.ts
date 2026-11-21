@@ -20,7 +20,7 @@ export interface UseContactDraftResetParams {
   isDirty: boolean;
   setContactDraft: Dispatch<SetStateAction<Partial<Contact>>>;
   setBaselineSnapshot: Dispatch<SetStateAction<string>>;
-  setValidationErrors: Dispatch<SetStateAction<ValidationError[]>>;
+  setValidationErrors: (next: ValidationError[]) => void;
 }
 
 export function useContactDraftReset({

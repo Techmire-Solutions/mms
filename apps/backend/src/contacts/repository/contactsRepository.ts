@@ -119,6 +119,11 @@ export interface ContactsRepository {
     excludeIds?: Array<string | number>,
   ): Promise<string[]>;
   findContactDuplicateBlockedIds(tenant: string, namePrefixes: string[]): Promise<string[]>;
+  /**
+   * Which of `ids` are a parent/guardian of some active child (relationship links or
+   * student father/mother/guardian ids). Optional so test fakes can opt out.
+   */
+  findContactGuardianIds?(tenant: string, ids: string[]): Promise<string[]>;
   reparentContactReferences(
     tenant: string,
     keepId: string,

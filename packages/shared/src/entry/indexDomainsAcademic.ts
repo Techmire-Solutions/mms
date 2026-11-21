@@ -11,6 +11,7 @@ export * from "../contacts/contactCollectionKeys.js";
 export * from "../contacts/contactColumnRegistrySync.js";
 export * from "../contacts/contactDuplicateUtils.js";
 export * from "../contacts/contactDuplicateFamilyRules.js";
+export * from "../contacts/contactDuplicateGuardians.js";
 export * from "../contacts/contactEnabledTabs.js";
 export * from "../contacts/contactFieldAccess.js";
 export * from "../contacts/contactFieldDependencies.js";

@@ -17,7 +17,7 @@ import {
   loadContactsWidgetAggregates,
 } from "../contacts/use-cases/contactAnalyticsUseCases.js";
 import { loadContactFieldConfig } from "../contacts/use-cases/contactConfigService.js";
-import { getDuplicateScanCache } from "../contacts/use-cases/contactDuplicateScanUseCases.js";
+import { loadDuplicatePairs } from "../contacts/use-cases/contactDuplicateScanUseCases.js";
 import type { ContactsRepository } from "../contacts/repository/contactsRepository.js";
 
 vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
@@ -25,7 +25,7 @@ vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
 }));
 
 vi.mock("../contacts/use-cases/contactDuplicateScanUseCases.js", () => ({
-  getDuplicateScanCache: vi.fn(),
+  loadDuplicatePairs: vi.fn(),
 }));
 
 const TENANT = "tenant-analytics";
@@ -73,7 +73,7 @@ describe("contactAnalyticsUseCases", () => {
       expect(mockRepo.aggregateCommandMetrics).not.toHaveBeenCalled();
     });
 
-    it("given active tenant and dupe cache with actionable pairs, should aggregate metrics with all duplicate pairs", async () => {
+    it("given active tenant and duplicate pairs including a name match, should count every pair", async () => {
       // Arrange
       const mockFieldConfig: ContactFieldConfigWithTabs = {
         version: 1,
@@ -83,12 +83,11 @@ describe("contactAnalyticsUseCases", () => {
         formTabs: [{ key: "basic", label: "Basic", enabled: true, order: 1 }],
       };
       vi.mocked(loadContactFieldConfig).mockResolvedValue(mockFieldConfig);
-      vi.mocked(getDuplicateScanCache).mockResolvedValue({
-        computedAt: "2026-03-01T00:00:00.000Z",
-        contactCount: 100,
-        pairCount: 3,
-        pairs: [createPair("p1", "phone"), createPair("p2", "email"), createPair("p3", "name")],
-      });
+      vi.mocked(loadDuplicatePairs).mockResolvedValue([
+        createPair("p1", "phone"),
+        createPair("p2", "email"),
+        createPair("p3", "name"),
+      ]);
 
       const expectedSnapshot: ContactsCommandMetricsSnapshot = {
         total: 100,
@@ -112,6 +111,31 @@ describe("contactAnalyticsUseCases", () => {
           expect.objectContaining({ version: 1 }),
           { duplicatePairCount: 3 },
         );
+        expect(loadDuplicatePairs).toHaveBeenCalledWith(mockRepo);
+      });
+    });
+
+    it("given the duplicate scan fails, should report 0 duplicates and still return the other metrics", async () => {
+      // Arrange
+      vi.mocked(loadContactFieldConfig).mockResolvedValue(null);
+      vi.mocked(loadDuplicatePairs).mockRejectedValue(new Error("scan failed"));
+      const mockRepo = {
+        aggregateCommandMetrics: vi.fn(async () => ({
+          total: 5,
+          newThisPeriod: 1,
+          whatsappCount: 0,
+          incompleteCount: 0,
+          duplicatePairCount: 0,
+        })),
+      } as unknown as ContactsRepository;
+
+      // Act
+      const result = await runWithTenant(TENANT, () => loadContactsCommandMetrics(mockRepo));
+
+      // Assert
+      expect(result.total).toBe(5);
+      expect(mockRepo.aggregateCommandMetrics).toHaveBeenCalledWith(TENANT, expect.any(Object), {
+        duplicatePairCount: 0,
       });
     });
   });
