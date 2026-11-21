@@ -109,6 +109,14 @@ export interface WorkBatchTableProps<TData extends { id: string | number }> {
   // Sticky column
   stickyColumnId?: string;
 
+  // Column header drag-to-reorder
+  onReorderColumn?: (
+    sourceColumnId: string,
+    targetColumnId: string,
+    position: "before" | "after",
+  ) => void;
+  isColumnDraggable?: (columnId: string) => boolean;
+
   // Optimistic removals
   optimisticDeletedIds?: Set<string | number>;
 

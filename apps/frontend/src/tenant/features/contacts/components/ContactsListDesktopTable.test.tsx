@@ -95,4 +95,43 @@ describe("ContactsListDesktopTable Component", () => {
     expect(html).not.toContain("Select row cnt-1");
     expect(html).not.toContain('aria-label="cnt-1"');
   });
+
+  it("renders bottom padding and horizontal scrollbar container without clipping", () => {
+    const html = renderTable();
+
+    expect(html).toContain("overflow-x-auto");
+    expect(html).toContain("pb-6");
+  });
+
+  it("marks non-sticky columns as draggable with grab cursor, while sticky name column is not draggable", () => {
+    const html = renderToStaticMarkup(
+      <ContactsListDesktopTable
+        contacts={[mockContact]}
+        selected={[]}
+        onSelect={vi.fn()}
+        onSelectAll={vi.fn()}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        sortField="name"
+        sortDir="asc"
+        onSort={vi.fn()}
+        columns={[
+          { id: "name", label: "Name" },
+          { id: "phone", label: "Phone" },
+          { id: "email", label: "Email" },
+        ]}
+      />,
+    );
+
+    // Name is stickyColumnId="name", so it should NOT have cursor-grab
+    const nameMatch = /<th[^>]*data-column-id="name"[^>]*>/i.exec(html)?.[0] ?? "";
+    expect(nameMatch).not.toContain("cursor-grab");
+
+    // Phone and Email are draggable, so they should have cursor-grab
+    const phoneMatch = /<th[^>]*data-column-id="phone"[^>]*>/i.exec(html)?.[0] ?? "";
+    expect(phoneMatch).toContain("cursor-grab");
+
+    const emailMatch = /<th[^>]*data-column-id="email"[^>]*>/i.exec(html)?.[0] ?? "";
+    expect(emailMatch).toContain("cursor-grab");
+  });
 });

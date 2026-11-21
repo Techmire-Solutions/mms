@@ -38,6 +38,8 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   actionsCellClassName,
   actionsWidth,
   stickyColumnId,
+  onReorderColumn,
+  isColumnDraggable,
   optimisticDeletedIds,
   footerCount,
   caption,
@@ -50,7 +52,7 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   onRowHover,
   virtualize,
   estimateRowSize,
-  maxHeightClassName = "max-h-150",
+  maxHeightClassName = "max-h-[calc(100vh-19rem)] min-h-75 max-h-150",
   rowClassName,
   className,
   tableBodyClassName,
@@ -126,18 +128,23 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   }));
 
   return (
-    <div className={cn("space-y-2", containerClassName)}>
+    <div className={cn("space-y-2 pb-6", containerClassName)}>
       <div
         ref={containerRef}
         className={cn(
           "overflow-x-auto",
           // Keep keyboard-focused rows clear of the sticky header (WCAG 2.2 2.4.11).
           "scroll-pt-12",
-          isVirtualized && cn(maxHeightClassName, "overflow-y-auto"),
+          Boolean(maxHeightClassName) && cn(maxHeightClassName, "overflow-y-auto"),
           bordered && WORK_SURFACE,
         )}
       >
-        <Table className={cn("table-fixed w-full", className)} style={{ minWidth: tableMinWidth }}>
+        <Table
+          stickyHeader
+          containerClassName="overflow-visible max-w-full"
+          className={cn("table-fixed w-full", className)}
+          style={{ minWidth: tableMinWidth }}
+        >
           {caption ? <caption className="sr-only">{caption}</caption> : null}
           <ModuleWorkTableHeader
             columns={headerColumns}
@@ -159,6 +166,8 @@ export function WorkBatchTable<TData extends { id: string | number }>({
             actionsLabel={renderRowActions ? resolvedActionsLabel : undefined}
             actionsClassName={actionsHeaderClassName}
             stickyColumnId={stickyColumnId}
+            onReorderColumn={onReorderColumn}
+            isColumnDraggable={isColumnDraggable}
           />
 
           <TableBody className={cn("divide-y divide-border/50", tableBodyClassName)}>
