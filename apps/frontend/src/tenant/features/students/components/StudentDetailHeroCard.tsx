@@ -3,7 +3,6 @@ import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/Status
 import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
 import { Badge } from "@/components/ui/badge";
 import { getGenderCardAccent } from "@/lib/ui/genderUi";
-import { useTranslation } from "@/hooks/useTranslation";
 import type { Student } from "@mms/shared";
 
 export interface StudentDetailHeroCardProps {
@@ -15,7 +14,6 @@ export function StudentDetailHeroCard({
   student,
   statusBadgeConfig,
 }: StudentDetailHeroCardProps): React.JSX.Element {
-  const { t } = useTranslation();
   const displayName = student.name?.trim() || "";
   const avatarUrl = typeof student.avatar === "string" ? student.avatar : undefined;
 
@@ -35,7 +33,7 @@ export function StudentDetailHeroCard({
           tone="primary"
           className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
         >
-          {t("students.grPrefix")}: {student.grNumber}
+          {student.grNumber}
         </Badge>
       ) : null}
     </PersonDetailHeroCard>

@@ -95,6 +95,7 @@ describe("renderStudentsListDesktopTableCell", () => {
     );
 
     expect(html).toContain("GR-99");
+    expect(html).not.toContain("students.grPrefix");
   });
 
   it("renders gender badge", () => {
