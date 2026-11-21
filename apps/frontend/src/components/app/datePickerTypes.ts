@@ -8,6 +8,11 @@ export interface DatePickerProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  readOnly?: boolean;
+  /** When true (default), date can only be selected from the calendar popup; manual text typing is disabled. */
+  calendarOnly?: boolean;
+  /** Explicit opt-in to allow manual keyboard typing into the input. Defaults to false. */
+  allowManualInput?: boolean;
   min?: string | number | null;
   max?: string | number | null;
   id?: string;

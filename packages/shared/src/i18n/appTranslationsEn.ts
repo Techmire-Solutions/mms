@@ -3358,6 +3358,8 @@ export const APP_TRANSLATIONS_EN = {
   "datePicker.nextMonth": "Next month",
   "datePicker.thisYear": "This Year",
   "datePicker.today": "Today",
+  "datePicker.yesterday": "Yesterday",
+  "datePicker.jumpYear": "Jump Years",
   "dateTimePicker.dateAria": "Date",
   "dateTimePicker.timeAria": "Time",
   "email.enabledNote":

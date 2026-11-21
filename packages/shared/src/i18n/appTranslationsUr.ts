@@ -3334,6 +3334,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "datePicker.nextMonth": "اگلا مہینہ",
   "datePicker.thisYear": "موجودہ سال",
   "datePicker.today": "آج",
+  "datePicker.yesterday": "گزشتہ کل",
+  "datePicker.jumpYear": "سال بدلیں",
   "dateTimePicker.dateAria": "تاریخ",
   "dateTimePicker.timeAria": "وقت",
   "email.enabledNote":
