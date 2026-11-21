@@ -49,9 +49,14 @@ export interface ModuleWorkTableHeaderProps<
   actionsLabel?: string;
   actionsClassName?: string;
 
-  // Optional name property to make it sticky beside the checkbox.
-  // Defaults to "name" as the identifier for the sticky column if any.
-  stickyColumnId?: string;
+  /** Ordered left-pinned column ids (the selection column stays pinned at start). */
+  stickyColumnIds?: string[];
+  /** Ordered right-pinned column ids (the Actions column stays pinned at end). */
+  stickyEndColumnIds?: string[];
+  /** Cumulative `inset-inline-start` offsets (px) keyed by left-pinned column id. */
+  stickyLeftOffsets?: Record<string, number>;
+  /** Cumulative `inset-inline-end` offsets (px) keyed by right-pinned column id. */
+  stickyRightOffsets?: Record<string, number>;
 
   /** Callback when a column header is dragged to reorder. */
   onReorderColumn?: (
@@ -61,6 +66,16 @@ export interface ModuleWorkTableHeaderProps<
   ) => void;
   /** Filter to declare whether a column is draggable (e.g. pinned columns). */
   isColumnDraggable?: (columnId: string) => boolean;
+
+  /** Header cell padding override (row density). Defaults to `px-4 py-3`. */
+  headerPaddingClass?: string;
+
+  /** SR announcement when a column sort changes (columnId, next dir). */
+  onSortAnnounce?: (columnId: string, dir: "asc" | "desc") => void;
+  /** SR announcement when a column is resized (columnId, width px). */
+  onResizeAnnounce?: (columnId: string, width: number) => void;
+  /** SR announcement when a column is reordered (sourceColumnId). */
+  onReorderAnnounce?: (sourceColumnId: string) => void;
 }
 
 export function ModuleWorkTableHeader<
@@ -87,22 +102,44 @@ export function ModuleWorkTableHeader<
   selection,
   actionsLabel,
   actionsClassName = WORK_TABLE_ACTIONS_WIDTH_CLASS,
-  stickyColumnId = "name",
+  stickyColumnIds = [],
+  stickyEndColumnIds = [],
+  stickyLeftOffsets = {},
+  stickyRightOffsets = {},
   onReorderColumn,
   isColumnDraggable,
+  headerPaddingClass = "px-4 py-3",
+  onSortAnnounce,
+  onResizeAnnounce,
+  onReorderAnnounce,
 }: ModuleWorkTableHeaderProps<TCol>): JSX.Element {
+  const pinnedColumnIds = React.useMemo(
+    () => new Set<string>([...stickyColumnIds, ...stickyEndColumnIds]),
+    [stickyColumnIds, stickyEndColumnIds],
+  );
+
+  const handleReorder = React.useMemo(() => {
+    if (!onReorderColumn) return undefined;
+    return (sourceId: string, targetId: string, position: DropPosition) => {
+      onReorderColumn(sourceId, targetId, position);
+      onReorderAnnounce?.(sourceId);
+    };
+  }, [onReorderColumn, onReorderAnnounce]);
+
   const { getThDragProps, renderDropIndicator, renderDragOverlay, suppressClickRef } =
     useColumnHeaderDrag({
       columns,
-      stickyColumnId,
-      onReorder: onReorderColumn,
+      pinnedColumnIds,
+      onReorder: handleReorder,
       isColumnDraggable,
     });
 
   return (
     <>
       {renderDragOverlay()}
-      <TableHeader sticky>
+      {/* `shadow-none` at rest; the scroll-state rule in index.css adds a shadow only
+          when the header is stuck, signalling that content scrolls beneath it. */}
+      <TableHeader sticky className="shadow-none">
         <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
           {selection && (
             <TableHead
@@ -114,7 +151,8 @@ export function ModuleWorkTableHeader<
                 }
               }}
               className={cn(
-                "w-12 min-w-12 px-4 py-3 sticky start-0 z-sticky border-e border-border/30 h-auto cursor-pointer",
+                "w-12 min-w-12 sticky start-0 z-sticky border-e border-border/30 h-auto cursor-pointer",
+                headerPaddingClass,
                 WORK_STICKY_HEAD,
               )}
             >
@@ -130,22 +168,22 @@ export function ModuleWorkTableHeader<
           {columns.map((col) => {
             const sortKey = col.sortable === false ? null : col.sortField || col.id;
 
-            // If there is a selection column, the sticky column needs to start at offset 12 (48px).
-            // Otherwise, it starts at 0.
-            let stickyClass = "";
-            if (col.id === stickyColumnId) {
-              if (selection) {
-                stickyClass = cn(
-                  "sticky start-12 z-sticky border-e border-border/30",
-                  WORK_STICKY_HEAD,
-                );
-              } else {
-                stickyClass = cn(
-                  "sticky start-0 z-sticky border-e border-border/30",
-                  WORK_STICKY_HEAD,
-                );
-              }
-            }
+            const leftOffset = stickyLeftOffsets[col.id];
+            const rightOffset = stickyRightOffsets[col.id];
+            const isStickyStart = leftOffset !== undefined;
+            const isStickyEnd = rightOffset !== undefined;
+            const stickyStyle =
+              isStickyStart || isStickyEnd
+                ? { insetInlineStart: leftOffset, insetInlineEnd: rightOffset }
+                : undefined;
+            const stickyClass =
+              isStickyStart || isStickyEnd
+                ? cn(
+                    "sticky z-sticky",
+                    isStickyStart ? "border-e border-border/30" : "border-s border-border/30",
+                    WORK_STICKY_HEAD,
+                  )
+                : "";
 
             const width = getColumnWidth(col.id) ?? col.width;
             const thDragProps = getThDragProps(col.id, col.label);
@@ -159,6 +197,8 @@ export function ModuleWorkTableHeader<
                 activeSortField={sortField}
                 sortDir={sortDir}
                 onSort={onSort}
+                onSortAnnounce={onSortAnnounce}
+                onResizeAnnounce={onResizeAnnounce}
                 width={width}
                 minWidth={col.minWidth}
                 onResize={setColumnWidth}
@@ -166,7 +206,13 @@ export function ModuleWorkTableHeader<
                 truncate={col.truncate}
                 align={col.align}
                 variant={col.variant}
-                className={cn("px-4 py-3 text-wrap break-words", stickyClass, col.headerClassName)}
+                style={stickyStyle}
+                className={cn(
+                  headerPaddingClass,
+                  "text-wrap break-words",
+                  stickyClass,
+                  col.headerClassName,
+                )}
                 thProps={thDragProps}
                 dropIndicator={dropIndicator}
                 suppressSortClick={suppressClickRef}
@@ -181,7 +227,11 @@ export function ModuleWorkTableHeader<
               noWrap
               className={cn(
                 MODULE_TABLE_HEAD_TYPOGRAPHY_CLASS,
-                "px-4 py-3 text-end h-auto",
+                // Sticky end-edge keeps the Actions column reachable during horizontal
+                // scroll; border-s + opaque head separate it from the last data column.
+                "text-end h-auto sticky end-0 z-sticky border-s border-border/30",
+                headerPaddingClass,
+                WORK_STICKY_HEAD,
                 actionsClassName,
               )}
             >

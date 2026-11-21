@@ -1,30 +1,12 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Button, DataTable, ThemeScope, UiConfigProvider, type DataTableColumn } from "@shared/ui";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { Button, EmptyState, ThemeScope, UiConfigProvider } from "@shared/ui";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
-interface WorkspaceRow {
-  id: string;
-  name: string;
-  subdomain: string;
-  plan: string;
-}
-
-const workspaceColumns: DataTableColumn<WorkspaceRow>[] = [
-  { id: "name", header: "Workspace", accessorKey: "name" },
-  { id: "subdomain", header: "Domain", accessorKey: "subdomain" },
-  { id: "plan", header: "Plan", accessorKey: "plan" },
-];
-
-const mockWorkspaces: WorkspaceRow[] = [
-  { id: "ws-1", name: "Al-Huda Institute", subdomain: "alhuda", plan: "Enterprise" },
-  { id: "ws-2", name: "Darul Uloom Central", subdomain: "du-central", plan: "Standard" },
-];
 
 describe("Cross-Console Shared UI Parity (Platform vs Tenant)", () => {
   let container: HTMLDivElement;
@@ -53,22 +35,10 @@ describe("Cross-Console Shared UI Parity (Platform vs Tenant)", () => {
             radius: "0.5rem",
           }}
         >
-          <UiConfigProvider
-            config={{
-              dir: "ltr",
-              labels: {
-                searchPlaceholder: "Filter workspaces...",
-                emptyTitle: "No workspaces provisioned yet",
-              },
-            }}
-          >
+          <UiConfigProvider config={{ dir: "ltr" }}>
             <div data-testid="platform-shell">
               <Button variant="default">Create Workspace</Button>
-              <DataTable
-                data={mockWorkspaces}
-                columns={workspaceColumns}
-                onSearchChange={vi.fn()}
-              />
+              <EmptyState title="No workspaces provisioned yet" />
             </div>
           </UiConfigProvider>
         </ThemeScope>,
@@ -82,15 +52,10 @@ describe("Cross-Console Shared UI Parity (Platform vs Tenant)", () => {
     expect(themeWrapper.style.getPropertyValue("--primary-foreground")).toBe("black");
 
     expect(container.textContent).toContain("Create Workspace");
-    expect(container.textContent).toContain("Al-Huda Institute");
-    expect(container.textContent).toContain("alhuda");
-
-    const searchInput = container.querySelector("input[type='search']") as HTMLInputElement;
-    expect(searchInput).toBeTruthy();
-    expect(searchInput.placeholder).toBe("Filter workspaces...");
+    expect(container.textContent).toContain("No workspaces provisioned yet");
   });
 
-  it("renders Tenant Console theme with emerald branding, RTL layout, and Arabic labels", async () => {
+  it("renders Tenant Console theme with emerald branding, RTL layout, and localized content", async () => {
     await act(async () => {
       root.render(
         <ThemeScope
@@ -100,22 +65,10 @@ describe("Cross-Console Shared UI Parity (Platform vs Tenant)", () => {
             radius: "0.75rem",
           }}
         >
-          <UiConfigProvider
-            config={{
-              dir: "rtl",
-              labels: {
-                searchPlaceholder: "البحث في السجلات...",
-                emptyTitle: "لا توجد سجلات",
-              },
-            }}
-          >
+          <UiConfigProvider config={{ dir: "rtl" }}>
             <div data-testid="tenant-shell">
               <Button variant="default">إضافة طالب</Button>
-              <DataTable
-                data={mockWorkspaces}
-                columns={workspaceColumns}
-                onSearchChange={vi.fn()}
-              />
+              <EmptyState title="لا توجد سجلات" />
             </div>
           </UiConfigProvider>
         </ThemeScope>,
@@ -128,9 +81,7 @@ describe("Cross-Console Shared UI Parity (Platform vs Tenant)", () => {
     expect(themeWrapper.style.getPropertyValue("--primary-foreground")).toBe("white");
 
     expect(container.textContent).toContain("إضافة طالب");
-    const searchInput = container.querySelector("input[type='search']") as HTMLInputElement;
-    expect(searchInput).toBeTruthy();
-    expect(searchInput.placeholder).toBe("البحث في السجلات...");
+    expect(container.textContent).toContain("لا توجد سجلات");
   });
 
   it("guarantees context isolation between concurrent platform and tenant scopes", async () => {

@@ -18,7 +18,7 @@ import {
   ContactCardDeletedBanner,
   ContactCardMetadataGrid,
 } from "@/tenant/features/contacts/components/ContactCardSections";
-import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/ContactTableRow";
+import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";

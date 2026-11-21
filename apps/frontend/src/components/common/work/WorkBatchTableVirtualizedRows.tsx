@@ -11,12 +11,16 @@ export interface WorkBatchTableVirtualizedRowsProps<TData extends { id: string |
   totalColSpan: number;
   totalSize: number;
   columns: WorkBatchTableColumn<TData>[];
-  stickyColumnId?: string;
+  stickyLeftOffsets?: Record<string, number>;
+  stickyRightOffsets?: Record<string, number>;
+  rowHeaderColumnId?: string;
   hasSelection: boolean;
   onSelectOne?: (id: string) => void;
+  onSelectRange?: (id: string | number) => void;
   selectRowAriaLabel?: (row: TData) => string;
   renderRowActions?: (row: TData, index: number) => React.ReactNode;
   actionsCellClassName?: string;
+  cellPaddingClass?: string;
   onRowClick?: (row: TData) => void;
   onRowHover?: (row: TData) => void;
   rowClassName?: (row: TData) => string | undefined;
@@ -29,12 +33,16 @@ export function WorkBatchTableVirtualizedRows<TData extends { id: string | numbe
   totalColSpan,
   totalSize,
   columns,
-  stickyColumnId,
+  stickyLeftOffsets,
+  stickyRightOffsets,
+  rowHeaderColumnId,
   hasSelection,
   onSelectOne,
+  onSelectRange,
   selectRowAriaLabel,
   renderRowActions,
   actionsCellClassName,
+  cellPaddingClass,
   onRowClick,
   onRowHover,
   rowClassName,
@@ -65,11 +73,15 @@ export function WorkBatchTableVirtualizedRows<TData extends { id: string | numbe
             rowClassName={rowClassName}
             hasSelection={hasSelection}
             onSelectOne={onSelectOne}
+            onSelectRange={onSelectRange}
             selectRowAriaLabel={selectRowAriaLabel}
             columns={columns}
-            stickyColumnId={stickyColumnId}
+            stickyLeftOffsets={stickyLeftOffsets}
+            stickyRightOffsets={stickyRightOffsets}
+            rowHeaderColumnId={rowHeaderColumnId}
             renderRowActions={renderRowActions}
             actionsCellClassName={actionsCellClassName}
+            cellPaddingClass={cellPaddingClass}
           />
         );
       })}

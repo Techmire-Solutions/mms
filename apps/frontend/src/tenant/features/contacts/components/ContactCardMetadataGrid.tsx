@@ -12,7 +12,7 @@ import { ContactArchivedBanner } from "@/tenant/features/contacts/components/Con
 import { ContactMetadataCell } from "@/tenant/features/contacts/components/ContactMetadataCell";
 import { hasContactCardColumnData } from "@/tenant/features/contacts/lib/contactCardColumnData";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
-import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/ContactTableRow";
+import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 
 export interface ContactCardMetadataGridProps {
   contact: Contact;

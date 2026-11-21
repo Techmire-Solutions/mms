@@ -5,7 +5,7 @@ import { buildContactsMap } from "@/lib/contacts/contactI18n";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
-import type { ContactsColumnConfig } from "@/tenant/features/contacts/components/ContactTableRow";
+import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 import { ContactCardItem } from "@/tenant/features/contacts/components/ContactCardItem";
 import { useContactEntityDescriptor } from "@/tenant/features/contacts/hooks/useContactEntityDescriptor";
 

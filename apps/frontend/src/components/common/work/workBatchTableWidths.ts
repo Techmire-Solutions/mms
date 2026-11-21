@@ -55,3 +55,22 @@ export function computeWorkTableMinWidth(
     (chrome.actions ? (chrome.actionsWidth ?? WORK_TABLE_ACTIONS_WIDTH) : 0)
   );
 }
+
+/**
+ * Cumulative sticky offsets for a list of pinned columns. Each column's offset is
+ * the sum of the widths of the pinned columns before it, plus `startOffset`
+ * (the selection column width for start-pinned, or the actions width for end-pinned).
+ */
+export function computeStickyOffsets(
+  pinnedIds: readonly string[],
+  getWidth: (id: string) => number,
+  startOffset: number,
+): Record<string, number> {
+  const offsets: Record<string, number> = {};
+  let cursor = startOffset;
+  for (const id of pinnedIds) {
+    offsets[id] = cursor;
+    cursor += getWidth(id);
+  }
+  return offsets;
+}

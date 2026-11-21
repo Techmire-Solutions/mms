@@ -1,6 +1,7 @@
 import type React from "react";
 import type { ModuleColumnKind } from "@mms/shared";
 import type { TableCellAlign, TableCellVariant } from "@/components/ui/table";
+import type { WorkTableDensity } from "@/hooks/useWorkTableDensity";
 
 /**
  * Computes allSelected / someSelected from a list of items and a selection set.
@@ -92,6 +93,8 @@ export interface WorkBatchTableProps<TData extends { id: string | number }> {
     someSelected: boolean;
     selectAllAriaLabel?: string;
     selectRowAriaLabel?: (row: TData) => string;
+    /** Called on shift+click to extend selection to a contiguous range (optional). */
+    onSelectRange?: (id: string | number) => void;
   };
 
   // Sorting
@@ -110,6 +113,24 @@ export interface WorkBatchTableProps<TData extends { id: string | number }> {
 
   // Sticky column
   stickyColumnId?: string;
+
+  /**
+   * Ordered left-pinned columns (defaults to `[stickyColumnId]`). The selection
+   * checkbox column is always pinned at the start and is not listed here.
+   */
+  stickyColumnIds?: string[];
+
+  /** Ordered right-pinned columns. The Actions column (when present) stays pinned at the end. */
+  stickyEndColumnIds?: string[];
+
+  /**
+   * Column rendered as the row header (`<th scope="row">`) so screen readers
+   * associate each row with its identity cell. Defaults to `stickyColumnId`.
+   */
+  rowHeaderColumnId?: string;
+
+  /** Row density (padding-based). Defaults to "standard" (`px-4 py-3`). */
+  density?: WorkTableDensity;
 
   // Column header drag-to-reorder
   onReorderColumn?: (

@@ -1,3 +1,10 @@
+/**
+ * Low-level table primitives only. The single table *engine* for the whole app is
+ * `WorkBatchTable` (apps/frontend/src/components/common/work/WorkBatchTable.tsx),
+ * with the stateful shell `DataTable` (apps/frontend/src/components/common/data-table).
+ * Do not add a second DataTable/Pagination-style table engine here — the
+ * `check:shared-ui` ratchet enforces this allowlist.
+ */
 export {
   Table,
   TableHeader,
@@ -17,13 +24,11 @@ export {
   type TableHeadCellProps,
 } from "./TableHead";
 export { TableCell, type TableCellProps } from "./TableCell";
-export { Pagination, type PaginationProps } from "./Pagination";
 export {
   ListPagination,
   type ListPaginationProps,
   type ListPaginationLabels,
 } from "./ListPagination";
-export { DataTable, type DataTableProps, type DataTableColumn } from "./DataTable";
 export { TableSkeleton, type TableSkeletonProps } from "./TableSkeleton";
 export { TableEmpty, type TableEmptyProps } from "./TableEmpty";
 export { DensityToggle, type DensityMode, type DensityToggleProps } from "./DensityToggle";

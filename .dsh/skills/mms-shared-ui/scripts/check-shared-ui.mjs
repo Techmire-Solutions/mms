@@ -309,6 +309,47 @@ for (const file of allFrontendFiles) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 6. Check: Single table engine in @shared/ui
+//    WorkBatchTable (apps/frontend/src/components/common/work) is the sole table
+//    engine across Tenant and Platform Consoles. @shared/ui ships only low-level
+//    table primitives; a second DataTable/Pagination-style engine is banned. New
+//    primitives require an explicit allowlist entry (a deliberate, reviewed change).
+// ─────────────────────────────────────────────────────────────────────────────
+const SANCTIONED_TABLE_PRIMITIVES = new Set([
+  "Table.tsx",
+  "TableCell.tsx",
+  "TableHead.tsx",
+  "TableSkeleton.tsx",
+  "TableEmpty.tsx",
+  "TableCellLink.tsx",
+  "ListPagination.tsx",
+  "DensityToggle.tsx",
+  "useTableSort.ts",
+  "tableTypes.ts",
+  "tableUtils.ts",
+  "index.ts",
+]);
+
+const tablePrimitiveViolations = [];
+const sharedTableDir = path.join(SHARED_UI_DIR, "table");
+if (fs.existsSync(sharedTableDir)) {
+  for (const entry of fs.readdirSync(sharedTableDir, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    const base = entry.name;
+    if (/\.test\.(ts|tsx)$/.test(base)) continue;
+    if (/\.(ts|tsx)$/.test(base) && !SANCTIONED_TABLE_PRIMITIVES.has(base)) {
+      tablePrimitiveViolations.push({
+        file: toRel(path.join(sharedTableDir, base)),
+        issue:
+          `Unexpected table primitive '${base}' in @shared/ui. The single table engine is ` +
+          "WorkBatchTable (apps/frontend/src/components/common/work/WorkBatchTable.tsx); " +
+          "add new low-level primitives to SANCTIONED_TABLE_PRIMITIVES only as a deliberate decision.",
+      });
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Summary & Reporting
 // ─────────────────────────────────────────────────────────────────────────────
 const totalViolations =
@@ -316,7 +357,8 @@ const totalViolations =
   crossConsoleImports.length +
   facadeViolations.length +
   duplicatePrimitiveFiles.length +
-  orphanedImports.length;
+  orphanedImports.length +
+  tablePrimitiveViolations.length;
 
 if (process.argv.includes("--json")) {
   console.log(
@@ -328,6 +370,7 @@ if (process.argv.includes("--json")) {
         facadeViolations,
         duplicatePrimitiveFiles,
         orphanedImports,
+        tablePrimitiveViolations,
       },
       null,
       2,
@@ -398,6 +441,18 @@ if (orphanedImports.length > 0) {
   }
 } else {
   console.log("✅ Orphaned imports: zero unresolved UI imports across codebase (0 violations)");
+}
+
+if (tablePrimitiveViolations.length > 0) {
+  passed = false;
+  console.error(
+    `❌ Unexpected table primitives in @shared/ui (${tablePrimitiveViolations.length} violations):`,
+  );
+  for (const v of tablePrimitiveViolations) {
+    console.error(`   - ${v.file}: ${v.issue}`);
+  }
+} else {
+  console.log("✅ Single table engine: @shared/ui ships only sanctioned table primitives (0 violations)");
 }
 
 console.log("\n=======================================================");
