@@ -164,7 +164,7 @@ export function DatePicker({
         name={resolvedName}
         value={state.inputValue}
         readOnly={isCalendarOnly}
-        onChange={isCalendarOnly ? undefined : state.handleInputChange}
+        onChange={state.handleInputChange}
         onBlur={isCalendarOnly ? onBlur : state.handleBlur}
         onClick={() => {
           if (!disabled) {
