@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, type SetStateAction } from "react";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
@@ -52,9 +52,11 @@ export function useContactFormSave({
   // Errors from the last save attempt; `validationErrors` below is the live view of them.
   const [submitErrors, setSubmitErrors] = useState<ValidationError[]>([]);
   const [serverErrors, setServerErrors] = useState<ContactServerErrorSnapshot | null>(null);
-  const setValidationErrors = useCallback((next: ValidationError[]) => {
+  // A list replaces the last save's errors; an updater (phone blur) edits them in place and
+  // keeps any server errors still pinned to their rejected values.
+  const setValidationErrors = useCallback((next: SetStateAction<ValidationError[]>) => {
     setSubmitErrors(next);
-    setServerErrors(null);
+    if (typeof next !== "function") setServerErrors(null);
   }, []);
   // Non-field failures (500/network/409 without field keys) belong in the modal banner,
   // not only in a toast the user can miss.
