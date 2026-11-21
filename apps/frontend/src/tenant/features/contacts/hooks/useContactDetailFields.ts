@@ -95,7 +95,7 @@ export function useContactDetailFields({
 
   const formatFieldValue = useCallback(
     (field: { key: string; type: string }): string | null => {
-      const fieldValue = (contactState as Record<string, unknown>)[field.key];
+      const fieldValue = contactState[field.key];
       if (isEmptyValue(fieldValue)) return null;
       if (Array.isArray(fieldValue)) return fieldValue.join(", ");
       if (field.key === "dob") {

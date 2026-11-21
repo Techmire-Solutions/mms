@@ -4,13 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   contactsListQueryOptions,
   useContactsContractList,
-  useContactsContractGet,
   useContactPickerSearch,
   useContactPickerOption,
-  useContactsContractReportAnalytics,
-  useContactsContractCreate,
-  useContactsContractUpdate,
-  useContactsContractDelete,
   useContactsContractRestore,
   useContactsContractBulkDelete,
   useContactsContractBulkRestore,
@@ -52,9 +47,6 @@ vi.mock("@/lib/api", () => ({
       list: {
         useQuery: vi.fn(() => ({ data: { body: [] }, isSuccess: true })),
       },
-      get: {
-        useQuery: vi.fn(() => ({ data: { body: null }, isSuccess: true })),
-      },
       picker: {
         search: {
           useQuery: vi.fn((opts) => ({ data: { body: { contacts: [] } }, isSuccess: true, opts })),
@@ -62,18 +54,6 @@ vi.mock("@/lib/api", () => ({
         get: {
           useQuery: vi.fn(() => ({ data: { body: null }, isSuccess: true })),
         },
-      },
-      reportAnalytics: {
-        useQuery: vi.fn(() => ({ data: { body: {} }, isSuccess: true })),
-      },
-      create: {
-        useMutation: vi.fn((config) => ({ mutate: vi.fn(), isPending: false, config })),
-      },
-      update: {
-        useMutation: vi.fn((config) => ({ mutate: vi.fn(), isPending: false, config })),
-      },
-      delete: {
-        useMutation: vi.fn((config) => ({ mutate: vi.fn(), isPending: false, config })),
       },
       restore: {
         useMutation: vi.fn((config) => ({ mutate: vi.fn(), isPending: false, config })),
@@ -123,9 +103,6 @@ describe("useContactsQueries", () => {
 
   it("executes hooks properly and triggers invalidation on mutations", async () => {
     let pickerSearchOpts: unknown;
-    let createMutation: { config?: { onSuccess?: () => void } } | undefined;
-    let updateMutation: { config?: { onSuccess?: () => void } } | undefined;
-    let deleteMutation: { config?: { onSuccess?: () => void } } | undefined;
     let restoreMutation: { config?: { onSuccess?: () => void } } | undefined;
     let bulkDeleteMutation: { config?: { onSuccess?: () => void } } | undefined;
     let bulkRestoreMutation: { config?: { onSuccess?: () => void } } | undefined;
@@ -133,14 +110,9 @@ describe("useContactsQueries", () => {
 
     function TestComponent(): React.JSX.Element {
       useContactsContractList({});
-      useContactsContractGet("1");
       const searchRes = useContactPickerSearch({ search: "test" });
       pickerSearchOpts = (searchRes as { opts?: unknown }).opts;
       useContactPickerOption("1");
-      useContactsContractReportAnalytics({});
-      createMutation = useContactsContractCreate() as unknown as typeof createMutation;
-      updateMutation = useContactsContractUpdate() as unknown as typeof updateMutation;
-      deleteMutation = useContactsContractDelete() as unknown as typeof deleteMutation;
       restoreMutation = useContactsContractRestore() as unknown as typeof restoreMutation;
       bulkDeleteMutation = useContactsContractBulkDelete() as unknown as typeof bulkDeleteMutation;
       bulkRestoreMutation =
@@ -162,9 +134,6 @@ describe("useContactsQueries", () => {
       enabled: true,
       staleTime: 15_000,
     });
-    createMutation?.config?.onSuccess?.();
-    updateMutation?.config?.onSuccess?.();
-    deleteMutation?.config?.onSuccess?.();
     restoreMutation?.config?.onSuccess?.();
     bulkDeleteMutation?.config?.onSuccess?.();
     bulkRestoreMutation?.config?.onSuccess?.();

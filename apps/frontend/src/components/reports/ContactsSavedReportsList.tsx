@@ -109,7 +109,9 @@ export function ContactsSavedReportsList({
                   <BiDiText>{savedReport.name}</BiDiText>
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {formatDrillDownSummary(savedReport.drillDown, searchLabel, t)}
+                  <BiDiText>
+                    {formatDrillDownSummary(savedReport.drillDown, searchLabel, t)}
+                  </BiDiText>
                 </p>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <Badge pill tone="primary" className="gap-1 uppercase tracking-wide px-2">
