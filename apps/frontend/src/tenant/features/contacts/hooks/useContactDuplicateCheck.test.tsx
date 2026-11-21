@@ -43,7 +43,7 @@ describe("useContactDuplicateCheck", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   afterEach(async () => {
@@ -77,9 +77,16 @@ describe("useContactDuplicateCheck", () => {
     expect(apiContract.contacts.duplicateCheck).not.toHaveBeenCalled();
   });
 
-  it("returns 0 and skips check when contactId is present (edit mode)", async () => {
+  it("given edit mode, should check duplicates and send the contact id so the server excludes it", async () => {
+    // Arrange
+    vi.mocked(apiContract.contacts.duplicateCheck).mockResolvedValueOnce({
+      status: 200,
+      body: { matchCount: 1 },
+      headers: new Headers(),
+    } as unknown as Awaited<ReturnType<typeof apiContract.contacts.duplicateCheck>>);
     let observedCount = -1;
 
+    // Act
     await act(async () => {
       root.render(
         <TestHarness
@@ -92,13 +99,17 @@ describe("useContactDuplicateCheck", () => {
         />,
       );
     });
-
-    act(() => {
-      vi.advanceTimersByTime(1000);
+    await act(async () => {
+      vi.advanceTimersByTime(650);
     });
 
-    expect(observedCount).toBe(0);
-    expect(apiContract.contacts.duplicateCheck).not.toHaveBeenCalled();
+    // Assert
+    expect(apiContract.contacts.duplicateCheck).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: { contact: { name: "John Doe", id: "contact-123" } },
+      }),
+    );
+    expect(observedCount).toBe(1);
   });
 
   it("calls duplicateCheck and updates count after debounce", async () => {

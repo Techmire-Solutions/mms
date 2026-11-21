@@ -33,9 +33,10 @@ export function useContactDuplicateCheck({
   // actual network request.
   const deferredDraft = useDeferredValue(contactDraft);
 
+  // Runs on create and edit: on edit the contact id is sent so the server excludes
+  // the record itself and only other contacts (e.g. a same-name person) count.
   const hasCandidateKey = Boolean(
     open &&
-    !contactId &&
     (deferredDraft.name?.trim() ||
       deferredDraft.firstName?.trim() ||
       (deferredDraft.phones && deferredDraft.phones.some((p) => p.number?.trim())) ||
@@ -69,8 +70,9 @@ export function useContactDuplicateCheck({
       try {
         // The tag property is a computed frontend-only UI state added by normalization
         const { tag: _tag, ...cleanDraft } = deferredDraft as Record<string, unknown>;
+        const contact = contactId != null ? { ...cleanDraft, id: contactId } : cleanDraft;
         const res = await apiContract.contacts.duplicateCheck({
-          body: { contact: cleanDraft },
+          body: { contact },
           fetchOptions: { signal: abortController.signal },
           signal: abortController.signal,
         });
@@ -93,7 +95,7 @@ export function useContactDuplicateCheck({
       clearTimeout(timer);
       abortController.abort();
     };
-  }, [hasCandidateKey, deferredDraft]);
+  }, [hasCandidateKey, deferredDraft, contactId]);
 
   return effectiveCount;
 }

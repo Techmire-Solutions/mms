@@ -6,7 +6,7 @@ const mockGetRequestTenant = vi.fn();
 const mockBroadcastCollection = vi.fn();
 const mockInvalidateDuplicateScanCache = vi.fn();
 const mockLoadContactFieldConfig = vi.fn();
-const mockGetDuplicateScanCache = vi.fn();
+const mockLoadDuplicatePairs = vi.fn();
 const mockLoadDuplicatePairsPage = vi.fn();
 const mockCanDeleteContacts = vi.fn();
 
@@ -40,7 +40,7 @@ vi.mock("../services/auditTrailService.js", () => ({
 
 vi.mock("../contacts/use-cases/contactDuplicateScanUseCases.js", () => ({
   invalidateDuplicateScanCache: (...args: unknown[]) => mockInvalidateDuplicateScanCache(...args),
-  getDuplicateScanCache: (...args: unknown[]) => mockGetDuplicateScanCache(...args),
+  loadDuplicatePairs: (...args: unknown[]) => mockLoadDuplicatePairs(...args),
   loadDuplicatePairsPage: (...args: unknown[]) => mockLoadDuplicatePairsPage(...args),
 }));
 
@@ -209,7 +209,7 @@ describe("createContactsUseCases (DI composition root)", () => {
     mockBroadcastCollection.mockResolvedValue(undefined);
     mockInvalidateDuplicateScanCache.mockResolvedValue(undefined);
     mockLoadContactFieldConfig.mockResolvedValue(null);
-    mockGetDuplicateScanCache.mockResolvedValue(null);
+    mockLoadDuplicatePairs.mockResolvedValue([]);
     mockCanDeleteContacts.mockReturnValue(true);
   });
 
@@ -602,18 +602,20 @@ describe("createContactsUseCases (DI composition root)", () => {
     expect(repo.findByIds).toHaveBeenCalledWith("demo", ["a", "gone"]);
   });
 
-  it("loadContactsCommandMetrics excludes name-only duplicate pairs from the count", async () => {
+  it("loadContactsCommandMetrics counts every duplicate pair, name-only included", async () => {
     const { repo } = createFakeRepo();
-    mockGetDuplicateScanCache.mockResolvedValue({
-      pairs: [{ reasonKey: "name" }, { reasonKey: "phone" }, { reasonKey: "email" }],
-    } as never);
+    mockLoadDuplicatePairs.mockResolvedValue([
+      { reasonKey: "name" },
+      { reasonKey: "phone" },
+      { reasonKey: "email" },
+    ]);
     const useCases = createContactsUseCases(repo);
 
     const metrics = await useCases.loadContactsCommandMetrics();
     expect(repo.aggregateCommandMetrics).toHaveBeenCalledWith("demo", expect.any(Object), {
-      duplicatePairCount: 2,
+      duplicatePairCount: 3,
     });
-    expect(metrics.duplicatePairCount).toBe(2);
+    expect(metrics.duplicatePairCount).toBe(3);
   });
 
   it("loadContactsReportAnalytics skips monthly counts when no compareYears are given", async () => {

@@ -1,6 +1,7 @@
 import type { Contact, ContactPreferences } from "./contactTypes.js";
 import { cleanName, getEmails, getPhoneNumbers } from "../core/utils.js";
 import { filterActiveContacts } from "./contactSoftDelete.js";
+import { collectContactGuardianIds } from "./contactDuplicateGuardians.js";
 
 export type ContactDuplicateReasonKey =
   "cnic" | "cnicName" | "phoneEmail" | "namePhone" | "phone" | "nameEmail" | "email" | "name";
@@ -190,13 +191,37 @@ function collectCandidatesFromKeys(
   }
 }
 
+/** Options for {@link findContactDuplicatePairs}. */
+export interface FindContactDuplicatePairsOptions {
+  includeDeleted?: boolean;
+  /**
+   * Contacts known to be a parent/guardian of some child from outside the pool
+   * (SQL relationship/student links). Merged with links visible in the pool.
+   */
+  guardianContactIds?: Iterable<string | number>;
+}
+
+/**
+ * Two guardians sharing only a name are not flagged: one parent with several
+ * children (e.g. one guardian contact per admission) must not show up as a
+ * duplicate of itself. Any phone/email/CNIC match is still reported.
+ */
+function isGuardianNameOnlyPair(
+  pair: ContactDuplicatePair,
+  guardianIds: ReadonlySet<string>,
+): boolean {
+  if (pair.reasonKey !== "name" || guardianIds.size === 0) return false;
+  return pair.contacts.every((row) => guardianIds.has(String(row.id)));
+}
+
 /** Finds potential duplicate contact pairs (globle1 §2.2). Indexed scan for large directories. */
 export function findContactDuplicatePairs(
   contacts: Contact[],
   preferences: DuplicatePreferences = {},
-  options?: { includeDeleted?: boolean },
+  options?: FindContactDuplicatePairsOptions,
 ): ContactDuplicatePair[] {
   const pool = options?.includeDeleted ? contacts : filterActiveContacts(contacts);
+  const guardianIds = collectContactGuardianIds(pool, options?.guardianContactIds);
   const entries: ContactIndexEntry[] = pool.map((contact) => ({
     contact,
     keys: getContactDuplicateCandidateKeys(contact, preferences),
@@ -251,9 +276,8 @@ export function findContactDuplicatePairs(
         entry1.keys,
         entry2.keys,
       );
-      if (!pair) continue;
-
       matchedPairs.add(key);
+      if (!pair || isGuardianNameOnlyPair(pair, guardianIds)) continue;
       list.push(pair);
     }
   }

@@ -27,3 +27,4 @@ export {
   findContactDuplicateBlockedIds,
   reparentContactReferences,
 } from "./contactRepositoryDuplicates.js";
+export { findContactGuardianIds } from "./contactRepositoryGuardianFind.js";

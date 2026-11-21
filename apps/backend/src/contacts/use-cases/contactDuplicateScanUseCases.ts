@@ -72,6 +72,20 @@ async function hydrateDuplicateParticipants(
 }
 
 /**
+ * Participants that are a parent/guardian of some child (SQL relationship and
+ * student links). Their name-only pairs are not duplicates: one parent with
+ * several children may hold one guardian contact per admission.
+ */
+async function loadGuardianIds(
+  tenant: string,
+  ids: string[],
+  repo: ContactsRepository,
+): Promise<string[]> {
+  if (ids.length === 0 || typeof repo.findContactGuardianIds !== "function") return [];
+  return await repo.findContactGuardianIds(tenant, ids);
+}
+
+/**
  * Pair-finding over only the SQL-blocked participant set.
  *
  * SQL returns the distinct ids that share a normalized phone/email/name key with
@@ -89,10 +103,14 @@ async function findBlockedDuplicatePairs(
     repo,
   );
   if (blockedIds.length === 0) return [];
-  const pool = await hydrateDuplicateParticipants(tenant, blockedIds, repo);
+  const [pool, guardianContactIds] = await Promise.all([
+    hydrateDuplicateParticipants(tenant, blockedIds, repo),
+    loadGuardianIds(tenant, blockedIds, repo),
+  ]);
   return findContactDuplicatePairs(
     pool.filter((contact) => !contact.deletedAt),
     preferences ?? {},
+    { guardianContactIds },
   );
 }
 
@@ -164,6 +182,47 @@ export async function runContactsDuplicateScan(
   return { pairCount: pairs.length, contactCount: total };
 }
 
+/**
+ * All current duplicate pairs: the cached scan when warm, otherwise an on-demand
+ * SQL-blocked scan that is persisted so paginating/reopening (and the command
+ * metric) does not rescan the tenant (C-02). Single source for the pairs list
+ * and the Potential Duplicates count, so the two can never disagree.
+ */
+export async function loadDuplicatePairs(
+  repo: ContactsRepository = contactsRepository,
+): Promise<ContactDuplicatePair[]> {
+  const cached = await getCachedDuplicatePairs();
+  if (cached) return cached;
+  const tenant = getRequestTenant();
+  const versionBefore = tenant ? await repo.getLatestWriteAt?.(tenant) : undefined;
+  const pairs = await findBlockedDuplicatePairs(await loadContactPreferences(), repo);
+  const versionAfter =
+    tenant && repo.getLatestWriteAt ? await repo.getLatestWriteAt(tenant) : versionBefore;
+  if (tenant && (!repo.getLatestWriteAt || versionBefore === versionAfter)) {
+    // A cache-write failure must not fail the read.
+    try {
+      const contactCount = await repo.countByWorkspace(tenant, { deleted: "active" });
+      await saveObject(CACHE_KEY, {
+        computedAt: new Date().toISOString(),
+        contactCount,
+        pairCount: pairs.length,
+        pairs,
+      });
+      // A write between the version check and the save already invalidated; re-delete
+      // so the stale snapshot cannot survive the race (mirrors runContactsDuplicateScan).
+      if (repo.getLatestWriteAt) {
+        const versionFinal = await repo.getLatestWriteAt(tenant);
+        if (versionFinal !== versionAfter) {
+          await deleteObject(CACHE_KEY);
+        }
+      }
+    } catch (error) {
+      logger.warn({ err: error }, "Failed to cache contact duplicate pairs");
+    }
+  }
+  return pairs;
+}
+
 export async function loadDuplicatePairsPage(
   query: {
     page?: number;
@@ -171,37 +230,7 @@ export async function loadDuplicatePairsPage(
   },
   repo: ContactsRepository = contactsRepository,
 ): Promise<ContactsDuplicatePairsPageResult> {
-  const tenant = getRequestTenant();
-  let pairs = await getCachedDuplicatePairs();
-  if (!pairs) {
-    const versionBefore = tenant ? await repo.getLatestWriteAt?.(tenant) : undefined;
-    pairs = await findBlockedDuplicatePairs(await loadContactPreferences(), repo);
-    const versionAfter =
-      tenant && repo.getLatestWriteAt ? await repo.getLatestWriteAt(tenant) : versionBefore;
-    if (tenant && (!repo.getLatestWriteAt || versionBefore === versionAfter)) {
-      // Persist the on-demand result so paginating/reopening does not rescan the
-      // tenant (C-02). A cache-write failure must not fail the read.
-      try {
-        const contactCount = await repo.countByWorkspace(tenant, { deleted: "active" });
-        await saveObject(CACHE_KEY, {
-          computedAt: new Date().toISOString(),
-          contactCount,
-          pairCount: pairs.length,
-          pairs,
-        });
-        // A write between the version check and the save already invalidated; re-delete
-        // so the stale snapshot cannot survive the race (mirrors runContactsDuplicateScan).
-        if (repo.getLatestWriteAt) {
-          const versionFinal = await repo.getLatestWriteAt(tenant);
-          if (versionFinal !== versionAfter) {
-            await deleteObject(CACHE_KEY);
-          }
-        }
-      } catch {
-        // Best-effort cache fill; the page result is returned regardless.
-      }
-    }
-  }
+  const pairs = await loadDuplicatePairs(repo);
   return paginateContactDuplicatePairs(pairs, query.page ?? 1, query.limit ?? 50);
 }
 
@@ -220,10 +249,15 @@ export async function countContactDuplicateMatches(
   const ids = await loadContactDuplicateCandidateIds(keys, excludeIds, repo);
   if (ids.length === 0) return 0;
 
-  const peers = tenant
-    ? (await hydrateDuplicateParticipants(tenant, ids, repo)).filter((c) => !c.deletedAt)
-    : [];
-  const pairs = findContactDuplicatePairs([...peers, contact], preferences ?? {});
+  if (!tenant) return 0;
+  const [hydrated, guardianContactIds] = await Promise.all([
+    hydrateDuplicateParticipants(tenant, ids, repo),
+    loadGuardianIds(tenant, [...ids, ...excludeIds], repo),
+  ]);
+  const peers = hydrated.filter((c) => !c.deletedAt);
+  const pairs = findContactDuplicatePairs([...peers, contact], preferences ?? {}, {
+    guardianContactIds,
+  });
   return pairs.filter((pair) =>
     pair.contacts.some(
       (row) => row === contact || (contact.id != null && String(row.id) === String(contact.id)),

@@ -13,6 +13,7 @@ import {
   findActiveContactsMatchingUniqueValues,
   findContactDuplicateCandidateIds,
   findContactDuplicateBlockedIds,
+  findContactGuardianIds,
   reparentContactReferences,
   replaceContactTags,
   listContactsPage,
@@ -60,6 +61,7 @@ function createContactsRepository(): ContactsRepository {
       findContactDuplicateCandidateIds(tenant, keys, excludeIds),
     findContactDuplicateBlockedIds: (tenant, namePrefixes) =>
       findContactDuplicateBlockedIds(tenant, namePrefixes),
+    findContactGuardianIds: (tenant, ids) => findContactGuardianIds(tenant, ids),
     reparentContactReferences: (tenant, keepId, deleteId, actorId) =>
       reparentContactReferences(tenant, keepId, deleteId, actorId),
     acquireUniqueValueLocks: async (tenant, lockKeys) => {
