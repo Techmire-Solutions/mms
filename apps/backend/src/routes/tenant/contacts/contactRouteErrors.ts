@@ -40,7 +40,8 @@ export function parsePostgresUniqueError(error: unknown): ParsedUniqueConstraint
     };
   }
 
-  return { fieldId: "cnic", tabId: "basic", message: "Value must be unique per contact" };
+  // Unknown future unique constraints must not masquerade as CNIC.
+  return { fieldId: "value", tabId: "basic", message: "Value must be unique per contact" };
 }
 
 export function handleContactWriteError(

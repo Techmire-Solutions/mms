@@ -52,6 +52,18 @@ export async function runContactsImportJob(
     context.userId,
     CONTACTS_MODULE_MANIFEST.permissions.delete,
   );
+  const canWrite = await tenantUserHasPermission(
+    context.tenant,
+    context.userId,
+    CONTACTS_MODULE_MANIFEST.permissions.write,
+  );
+  if (!canWrite) {
+    // The user lost `contacts.write` between enqueue and execution: fail the
+    // whole batch rather than writing with a stale grant (mms-auth-security §3).
+    const failures = [`Permission revoked: ${CONTACTS_MODULE_MANIFEST.permissions.write}`];
+    await recordContactsImportAudit(context, 0, total, total);
+    return { imported: 0, failed: total, total, failures };
+  }
   const language = payload.language || "en";
   const failures: string[] = [];
   const importedContactIds = new Set<string>();

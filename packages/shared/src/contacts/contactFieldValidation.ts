@@ -60,7 +60,7 @@ function msg(
   language: string,
   vars?: Record<string, string | number>,
 ): string {
-  return translateAppParams(key, language, vars as never);
+  return translateAppParams(key, language, vars);
 }
 
 /** Compiles a dynamic field validator from its field definition. */

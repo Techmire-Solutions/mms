@@ -128,12 +128,27 @@ export const contactPhones = pgTable(
       desc(table.isPrimary),
       table.sortOrder,
     ),
-    // Recyclable-unique backstop (mirrors the pre-3NF contacts.phone partial index):
-    // same normalized digits are unique per workspace. Application-level E.164
-    // normalization via `assertContactUniqueFields` remains the richer UX guard.
-    uniqueIndex("contact_phones_workspace_number_active_uidx")
-      .on(table.workspaceSubdomain, sql`regexp_replace(${table.number}, '[^0-9]', '', 'g')`)
-      .where(sql`NULLIF(regexp_replace(${table.number}, '[^0-9]', '', 'g'), '') IS NOT NULL`),
+    // Recyclable-unique backstop: the same E.164 key (country_code + number,
+    // reconstructed exactly as `contactRepositoryLookup` does) is unique per
+    // workspace. `country_code` participates so two distinct E.164 numbers that
+    // share a national significant number do not collide. `concat_ws` is STABLE
+    // (not IMMUTABLE) so the index uses `||` concatenation instead.
+    uniqueIndex("contact_phones_workspace_number_active_uidx").on(
+      table.workspaceSubdomain,
+      sql`regexp_replace(
+          CASE
+            WHEN NULLIF(trim(${table.number}), '') LIKE '+%' THEN trim(${table.number})
+            ELSE COALESCE(trim(${table.countryCode}), '') || COALESCE(trim(${table.number}), '')
+          END,
+          '[^0-9]', '', 'g'
+        )`,
+    ).where(sql`NULLIF(regexp_replace(
+        CASE
+          WHEN NULLIF(trim(${table.number}), '') LIKE '+%' THEN trim(${table.number})
+          ELSE COALESCE(trim(${table.countryCode}), '') || COALESCE(trim(${table.number}), '')
+        END,
+        '[^0-9]', '', 'g'
+      ), '') IS NOT NULL`),
     foreignKey({
       columns: [table.workspaceSubdomain, table.contactId],
       foreignColumns: [contacts.workspaceSubdomain, contacts.id],

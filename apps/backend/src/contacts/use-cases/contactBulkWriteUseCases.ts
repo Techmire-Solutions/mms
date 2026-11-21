@@ -68,14 +68,12 @@ export async function mergeContactsById(
     const other = await repo.findById(tenant, deleteId);
     if (!keep || keep.deletedAt) throw new NotFoundError("Keep contact not found");
     if (!other || other.deletedAt) throw new NotFoundError("Delete contact not found");
-    // Merge is a whole-row write of the survivor: reject a stale snapshot instead
-    // of silently reverting an edit committed since the client opened the preview.
+    // Merge is a whole-row write: reject a stale snapshot instead of silently reverting a committed edit.
     if (expectedKeepUpdatedAt && keep.updatedAt && keep.updatedAt !== expectedKeepUpdatedAt) {
       throw new ConflictError(CONTACT_VERSION_CONFLICT);
     }
 
-    // `merged` is a patch, not a replacement: a field the client omitted (or a
-    // collection the role cannot read) keeps the survivor's value.
+    // `merged` is a patch, not a replacement: omitted/unreadable fields keep the survivor's value.
     const viewerSafeInput = mergedInput
       ? stripUnreadableContactWriteKeys(mergedInput, options.viewerRole, context.fieldConfig)
       : undefined;
@@ -113,9 +111,8 @@ export async function mergeContactsById(
       updatedAt: new Date().toISOString(),
     };
 
-    // Archive the merged-away row FIRST (frees the CNIC partial-unique index for
-    // the survivor) and clear its child rows so they don't linger orphaned or
-    // collide under the phone/email unique indexes.
+    // Archive the merged-away row FIRST (frees the CNIC partial-unique index for the
+    // survivor) and clear its child rows so they don't collide under unique indexes.
     await archiveMergeLoser(repo, tenant, other, keepId, deleteId, deletedBy);
 
     if (expectedKeepUpdatedAt) {
@@ -133,8 +130,7 @@ export async function mergeContactsById(
     });
 
     await repo.reparentContactReferences(tenant, keepId, deleteId, deletedBy);
-    // Merge is not a role end: the merged-away contact's system rows go away,
-    // while the surviving contact inherits the reconciled roles.
+    // Merge is not a role end: the survivor inherits the reconciled roles.
     await removeSystemTagsForContacts(tenant, [deleteId]);
     await reconcileContactSystemTags(tenant, [keepId], {
       actorId: deletedBy,
@@ -173,28 +169,31 @@ export async function bulkSaveContacts(
       .filter((id): id is string | number => id != null)
       .map(String);
     // Bulk saves are blind upserts, so no legacy attachment URL is grandfathered:
-    // every attachment must be a tenant-scoped upload path (fail closed). Today
-    // Google sync sends `attachments: []`, so this is a no-op guard for future callers.
+    // every attachment must be a tenant-scoped upload path (fail closed).
     for (const contact of contacts) {
       assertContactAttachmentUrls(contact, tenant);
     }
-    // Bulk save replaces the child graph, so removed relationship links must be
-    // reconciled too: read the prior targets before the write.
+    // Removed relationship links must be reconciled too: read prior targets before the write.
     const previousTargets = await loadPreviousRelationshipTargets(repo, tenant, ids);
-    // For update actions, capture the pre-merge state once so the audit row can
-    // carry a minimized field-diff (mms-data-layer §5.1).
+    // Capture pre-merge state once for a minimized audit field-diff (mms-data-layer §5.1).
     const existingById = new Map<string, Contact>();
     if (options.action === "update" && ids.length > 0) {
       for (const existing of await repo.findByIds(tenant, ids)) {
         existingById.set(String(existing.id), existing);
       }
     }
+    // Bulk save is a blind upsert: stamp the actor or created_by/updated_by stay null.
+    if (options.actorId) {
+      for (const contact of contacts) {
+        contact.updatedBy = options.actorId;
+        if (options.action === "create") contact.createdBy = options.actorId;
+      }
+    }
     await repo.bulkSave(tenant, contacts);
     if (ids.length > 0) {
       await reconcileContactSystemTags(tenant, [...ids, ...previousTargets]);
     }
-    // Per-record audit rows commit with the write (mms-data-layer §5.1/§5.4);
-    // the caller distinguishes create vs update so the action type is accurate.
+    // Per-record audit rows commit with the write; the caller distinguishes create vs update.
     const action = options.action ?? "update";
     for (const contact of contacts) {
       const previous = existingById.get(String(contact.id));
