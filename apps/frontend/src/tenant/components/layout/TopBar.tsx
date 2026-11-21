@@ -9,6 +9,20 @@ export interface TopBarProps {
 }
 
 /**
+ * `Button` wraps children in its own `relative inline-flex` content spans, so an
+ * absolutely positioned icon anchors to that span (where the text also starts),
+ * not to the button padding. The icon therefore stays in the flex flow, and the
+ * content spans are stretched full width and start-aligned so the placeholder
+ * truncates and the shortcut hint sits at the inline end.
+ */
+const TOP_BAR_SEARCH_TRIGGER_CLASS = [
+  "flex w-full justify-start min-h-11 h-11 px-3 gap-2 rounded-xl border-border/50 bg-muted/50 shadow-none",
+  "text-sm font-normal text-muted-foreground text-start hover:bg-muted hover:text-foreground cursor-pointer",
+  "[&>span]:w-full [&>span]:min-w-0",
+  "[&_[data-slot=button-content]]:w-full [&_[data-slot=button-content]]:min-w-0 [&_[data-slot=button-content]]:justify-start",
+].join(" ");
+
+/**
  * Global application top-bar header containing search and session controls.
  *
  * Positioning (fixed inset + start offset) is owned by `AppShell`'s desktop
@@ -32,10 +46,10 @@ export default function TopBar({ onOpenCommandPalette }: TopBarProps): React.JSX
           variant="outline"
           onClick={onOpenCommandPalette}
           aria-keyshortcuts="Control+K Meta+K"
-          className="relative flex w-full items-center justify-start rounded-xl border-border/50 bg-muted/50 ps-9 pe-3 min-h-11 h-11 text-sm font-normal text-muted-foreground text-start hover:bg-muted hover:text-foreground cursor-pointer shadow-none gap-2"
+          className={TOP_BAR_SEARCH_TRIGGER_CLASS}
         >
-          <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          <span className="truncate flex-1">{t("nav.globalSearchPlaceholder")}</span>
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <span className="min-w-0 flex-1 truncate">{t("nav.globalSearchPlaceholder")}</span>
           <kbd
             aria-hidden="true"
             className="ms-auto shrink-0 rounded border border-border bg-card px-1.5 py-0.5 text-xs text-muted-foreground font-mono select-none"
