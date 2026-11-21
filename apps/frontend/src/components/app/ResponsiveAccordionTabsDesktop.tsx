@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useDragScroll } from "@/hooks/useDragScroll";
 import type { AccordionTabItem } from "@/components/app/ResponsiveAccordionTabsTypes";
 
 interface ResponsiveAccordionTabsDesktopProps {
@@ -20,13 +21,15 @@ export function ResponsiveAccordionTabsDesktop({
   onTabChange,
   sectionAriaLabel,
 }: ResponsiveAccordionTabsDesktopProps): React.JSX.Element {
+  const dragScrollRef = useDragScroll<HTMLDivElement>();
   if (desktopLayout === "horizontal") {
     return (
       <div className="space-y-4">
         <div
+          ref={dragScrollRef}
           role="tablist"
           aria-label={sectionAriaLabel}
-          className="flex gap-0 overflow-x-auto border-b border-border mask-fade-inline-end"
+          className="flex gap-0 overflow-x-auto overscroll-x-contain scroll-strip-x border-b border-border mask-fade-inline-end"
         >
           {tabs.map((tab) => {
             const Icon = tab.icon;

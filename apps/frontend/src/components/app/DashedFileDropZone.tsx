@@ -1,8 +1,22 @@
-import type { ChangeEvent, DragEvent, RefObject } from "react";
+import { useCallback, useRef, type ChangeEvent, type DragEvent, type RefObject } from "react";
 import type { LucideIcon } from "lucide-react";
 import { FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+/** Clears the previous pick (so re-choosing the same file still fires `change`) and opens the picker. */
+function openFileInput(input: HTMLInputElement | null | undefined): void {
+  if (!input) return;
+  input.value = "";
+  input.click();
+}
+
+function assignInputRef(
+  ref: RefObject<HTMLInputElement | null> | undefined,
+  node: HTMLInputElement | null,
+): void {
+  if (ref) ref.current = node;
+}
 
 export interface DashedFileDropZoneProps {
   isDragging: boolean;
@@ -52,13 +66,24 @@ export function DashedFileDropZone({
   disabled = false,
   className,
 }: DashedFileDropZoneProps): React.JSX.Element {
+  // Own the input element so the zone opens the picker even when the caller
+  // passes only inputId/inputName (module CSV import) and no ref.
+  const localInputRef = useRef<HTMLInputElement | null>(null);
+  const setInputRef = useCallback(
+    (node: HTMLInputElement | null) => {
+      localInputRef.current = node;
+      assignInputRef(fileInputRef, node);
+    },
+    [fileInputRef],
+  );
+
   const openPicker = () => {
     if (disabled || isUploading) return;
     if (onOpenPicker) {
       onOpenPicker();
       return;
     }
-    fileInputRef?.current?.click();
+    openFileInput(localInputRef.current ?? fileInputRef?.current);
   };
 
   const handleDragOver = (event: DragEvent<HTMLElement>) => {
@@ -125,7 +150,7 @@ export function DashedFileDropZone({
         id={inputId}
         name={inputName}
         type="file"
-        ref={fileInputRef}
+        ref={setInputRef}
         onChange={handleInputChange}
         multiple={multiple}
         accept={accept}
@@ -167,26 +192,30 @@ export function DashedFileDropZone({
   }
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      disabled={disabled || isUploading}
-      onClick={openPicker}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      // WCAG 2.5.3: the zone's name must contain the copy it displays (title +
-      // description). The hidden file input keeps `inputAriaLabel`.
-      aria-label={`${title} ${description}`}
-      className={cn(
-        "h-auto w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-7 text-muted-foreground shadow-none transition-all",
-        draggingClass,
-        className,
-      )}
-    >
-      {iconNode}
-      {copy}
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={disabled || isUploading}
+        onClick={openPicker}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        // WCAG 2.5.3: the zone's name must contain the copy it displays (title +
+        // description). The hidden file input keeps `inputAriaLabel`.
+        aria-label={`${title} ${description}`}
+        className={cn(
+          "h-auto w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-7 text-muted-foreground shadow-none transition-all",
+          draggingClass,
+          className,
+        )}
+      >
+        {iconNode}
+        {copy}
+      </Button>
+      {/* Kept outside the <button>: an input nested in a button is invalid
+          interactive content and its bubbled click re-entered openPicker. */}
       {fileInput}
-    </Button>
+    </>
   );
 }
