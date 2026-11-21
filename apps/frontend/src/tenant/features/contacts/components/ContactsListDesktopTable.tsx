@@ -32,6 +32,11 @@ export interface ContactsListDesktopTableProps {
   canDelete?: boolean;
   allSelected?: boolean;
   someSelected?: boolean;
+  onReorderColumn?: (
+    sourceColumnId: string,
+    targetColumnId: string,
+    position: "before" | "after",
+  ) => void;
 }
 
 export const ContactsListDesktopTable = React.memo(function ContactsListDesktopTable({
@@ -56,9 +61,17 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
   canDelete = false,
   allSelected = false,
   someSelected = false,
+  onReorderColumn: propOnReorderColumn,
 }: ContactsListDesktopTableProps): React.JSX.Element {
-  const { prefs, countryCodesMap, countryCodes, getColumnWidth, setColumnWidth } =
-    useContactConfig();
+  const {
+    prefs,
+    countryCodesMap,
+    countryCodes,
+    getColumnWidth,
+    setColumnWidth,
+    columnRegistry,
+    updateUserColumnLayout,
+  } = useContactConfig();
   const { t } = useTranslation();
 
   const contactsMap = useMemo(() => buildContactsMap(allContacts), [allContacts]);
@@ -66,6 +79,44 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
     singular: "contacts.form.contact",
     plural: "contacts.table.contacts",
   });
+
+  const handleReorderColumn = React.useCallback(
+    (sourceId: string, targetId: string, position: "before" | "after") => {
+      if (propOnReorderColumn) {
+        propOnReorderColumn(sourceId, targetId, position);
+        return;
+      }
+      if (!columnRegistry || columnRegistry.length === 0 || sourceId === targetId) return;
+      if (sourceId === "name" || targetId === "name") return;
+
+      const visible = [...columnRegistry]
+        .filter((c) => c.enabled)
+        .sort((a, b) => a.order - b.order);
+      const visibleKeys = visible.map((c) => c.key);
+
+      const sourceIdx = visibleKeys.indexOf(sourceId);
+      if (sourceIdx === -1) return;
+
+      const newKeys = [...visibleKeys];
+      newKeys.splice(sourceIdx, 1);
+      const targetIdx = newKeys.indexOf(targetId);
+      if (targetIdx === -1) return;
+
+      const insertIdx = position === "after" ? targetIdx + 1 : targetIdx;
+      newKeys.splice(insertIdx, 0, sourceId);
+
+      const updated = columnRegistry.map((col) => {
+        const orderIdx = newKeys.indexOf(col.key);
+        if (orderIdx !== -1) {
+          return { ...col, order: orderIdx };
+        }
+        return col;
+      });
+
+      updateUserColumnLayout(updated);
+    },
+    [columnRegistry, updateUserColumnLayout, propOnReorderColumn],
+  );
 
   const finalColumns = useMemo<WorkBatchTableColumn<Contact>[]>(() => {
     return columns.map((col) => {
@@ -154,6 +205,8 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
         />
       )}
       stickyColumnId="name"
+      onReorderColumn={handleReorderColumn}
+      isColumnDraggable={(colId) => colId !== "name"}
       footerCount={{
         selectedCountLabel: t("contacts.selectedCount", { count: selected.length }),
         pageCountLabel,

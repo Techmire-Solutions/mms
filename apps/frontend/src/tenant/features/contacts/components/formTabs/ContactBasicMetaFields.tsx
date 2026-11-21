@@ -75,6 +75,7 @@ export function ContactBasicMetaFields({
             onChange={(dateStr) => updateDraft({ dob: dateStr })}
             required={isFieldRequired("basic", "dob")}
             max={todayISO()}
+            allowManualInput
             className={cn(
               dobError &&
                 "border-destructive focus-within:border-destructive focus-within:ring-destructive",

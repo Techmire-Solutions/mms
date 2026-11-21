@@ -1,8 +1,22 @@
-import type { ChangeEvent, DragEvent, RefObject } from "react";
+import { useCallback, useRef, type ChangeEvent, type DragEvent, type RefObject } from "react";
 import type { LucideIcon } from "lucide-react";
 import { FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+/** Clears the previous pick (so re-choosing the same file still fires `change`) and opens the picker. */
+function openFileInput(input: HTMLInputElement | null | undefined): void {
+  if (!input) return;
+  input.value = "";
+  input.click();
+}
+
+function assignInputRef(
+  ref: RefObject<HTMLInputElement | null> | undefined,
+  node: HTMLInputElement | null,
+): void {
+  if (ref) ref.current = node;
+}
 
 export interface DashedFileDropZoneProps {
   isDragging: boolean;
@@ -52,13 +66,24 @@ export function DashedFileDropZone({
   disabled = false,
   className,
 }: DashedFileDropZoneProps): React.JSX.Element {
+  // Own the input element so the zone opens the picker even when the caller
+  // passes only inputId/inputName (module CSV import) and no ref.
+  const localInputRef = useRef<HTMLInputElement | null>(null);
+  const setInputRef = useCallback(
+    (node: HTMLInputElement | null) => {
+      localInputRef.current = node;
+      assignInputRef(fileInputRef, node);
+    },
+    [fileInputRef],
+  );
+
   const openPicker = () => {
     if (disabled || isUploading) return;
     if (onOpenPicker) {
       onOpenPicker();
       return;
     }
-    fileInputRef?.current?.click();
+    openFileInput(localInputRef.current ?? fileInputRef?.current);
   };
 
   const handleDragOver = (event: DragEvent<HTMLElement>) => {
@@ -83,11 +108,15 @@ export function DashedFileDropZone({
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.target;
+    const files = input.files;
     if (onFileChange) {
       onFileChange(event);
+      input.value = "";
       return;
     }
-    onFiles(event.target.files);
+    onFiles(files);
+    input.value = "";
   };
 
   const draggingClass = isDragging
@@ -97,7 +126,7 @@ export function DashedFileDropZone({
   const iconNode = (
     <div
       className={cn(
-        "flex items-center justify-center text-primary",
+        "flex items-center justify-center text-primary pointer-events-none",
         browseLabel ? "h-12 w-12 rounded-2xl bg-primary/10" : "opacity-40",
       )}
     >
@@ -113,20 +142,26 @@ export function DashedFileDropZone({
   );
 
   const copy = (
-    <div className="text-center">
+    <div className="text-center pointer-events-none">
       <p className="text-sm font-semibold text-foreground text-balance">{title}</p>
       <p className="mt-1 text-xs text-muted-foreground text-pretty">{description}</p>
     </div>
   );
 
+  const effectiveInputId = inputId ?? (onOpenPicker ? undefined : "dashed-dropzone-file-input");
+  const effectiveInputName = inputName ?? (onOpenPicker ? undefined : "file");
+
   const fileInput =
-    inputId && inputName ? (
+    effectiveInputId && effectiveInputName ? (
       <input
-        id={inputId}
-        name={inputName}
+        id={effectiveInputId}
+        name={effectiveInputName}
         type="file"
-        ref={fileInputRef}
+        ref={setInputRef}
         onChange={handleInputChange}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
         multiple={multiple}
         accept={accept}
         className="hidden"
@@ -139,11 +174,12 @@ export function DashedFileDropZone({
     return (
       <div
         role="presentation"
+        onClick={openPicker}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          "flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed p-8 text-center transition-all",
+          "flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed p-8 text-center transition-all cursor-pointer",
           isDragging && "scale-102 motion-reduce:scale-100",
           draggingClass,
           className,
@@ -154,7 +190,10 @@ export function DashedFileDropZone({
         {fileInput}
         <Button
           disabled={disabled || isUploading}
-          onClick={openPicker}
+          onClick={(e) => {
+            e.stopPropagation();
+            openPicker();
+          }}
           className="mt-2 min-h-11 rounded-xl bg-primary px-6 text-xs font-bold text-primary-foreground shadow-none transition-all hover:scale-105 active:scale-95 motion-reduce:transform-none cursor-pointer disabled:cursor-not-allowed"
           type="button"
           // WCAG 2.5.3: the accessible name must contain the visible label.
@@ -167,26 +206,30 @@ export function DashedFileDropZone({
   }
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      disabled={disabled || isUploading}
-      onClick={openPicker}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      // WCAG 2.5.3: the zone's name must contain the copy it displays (title +
-      // description). The hidden file input keeps `inputAriaLabel`.
-      aria-label={`${title} ${description}`}
-      className={cn(
-        "h-auto w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-7 text-muted-foreground shadow-none transition-all",
-        draggingClass,
-        className,
-      )}
-    >
-      {iconNode}
-      {copy}
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={disabled || isUploading}
+        onClick={openPicker}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        // WCAG 2.5.3: the zone's name must contain the copy it displays (title +
+        // description). The hidden file input keeps `inputAriaLabel`.
+        aria-label={`${title} ${description}`}
+        className={cn(
+          "h-auto w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-7 text-muted-foreground shadow-none transition-all",
+          draggingClass,
+          className,
+        )}
+      >
+        {iconNode}
+        {copy}
+      </Button>
+      {/* Kept outside the <button>: an input nested in a button is invalid
+          interactive content and its bubbled click re-entered openPicker. */}
       {fileInput}
-    </Button>
+    </>
   );
 }

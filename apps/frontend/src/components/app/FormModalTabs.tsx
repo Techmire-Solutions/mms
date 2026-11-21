@@ -3,6 +3,7 @@ import { AnimatePresence, m } from "framer-motion";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import type { SubTab } from "@/components/app/SubTabBar";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useDragScroll } from "@/hooks/useDragScroll";
 import { cn } from "@/lib/utils";
 
 interface FormModalTabsProps<K extends string = string> {
@@ -27,6 +28,7 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
 }: FormModalTabsProps<K>): React.JSX.Element {
   const reducedMotion = useReducedMotion();
   const tabContentRef = React.useRef<HTMLDivElement>(null);
+  const tabListDragRef = useDragScroll<HTMLDivElement>();
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -50,8 +52,9 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
       className="flex h-full min-h-0 flex-1 flex-col items-stretch gap-4 md:flex-row md:gap-6 @md:flex-row @md:gap-6"
     >
       <TabsPrimitive.List
+        ref={tabListDragRef}
         className={cn(
-          "flex h-auto w-full shrink-0 flex-row gap-1 overflow-x-auto rounded-xl border border-border bg-muted/20 p-1.5 mask-fade-inline-end md:[mask-image:none]",
+          "flex h-auto w-full shrink-0 flex-row gap-1 overflow-x-auto overscroll-x-contain scroll-strip-x rounded-xl border border-border bg-muted/20 p-1.5 mask-fade-inline-end md:[mask-image:none]",
           "md:w-56 md:min-w-56 md:flex-col md:overflow-x-visible md:overflow-y-auto md:rounded-none md:border-0 md:border-e md:border-border/60 md:bg-transparent md:p-0 md:pe-4 md:space-y-1",
           "@md:w-56 @md:min-w-56 @md:flex-col @md:overflow-x-visible @md:overflow-y-auto @md:rounded-none @md:border-0 @md:border-e @md:border-border/60 @md:bg-transparent @md:p-0 @md:pe-4 @md:space-y-1",
         )}

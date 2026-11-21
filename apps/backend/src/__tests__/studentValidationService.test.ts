@@ -182,3 +182,37 @@ describe("student dynamic validation", () => {
     ).resolves.toBeUndefined();
   });
 });
+
+describe("student dynamic validation cache", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.loadContacts.mockResolvedValue([]);
+  });
+
+  it("given Setup flips a field to required at the same settings version, should enforce it on the next write", async () => {
+    // Arrange
+    const optionalDob = settings(
+      [
+        { key: "contactId", type: "text", enabled: true, required: true, order: 0 },
+        { key: "dob", type: "date", enabled: true, required: false, order: 1 },
+      ],
+      91,
+    );
+    const requiredDob = settings(
+      [
+        { key: "contactId", type: "text", enabled: true, required: true, order: 0 },
+        { key: "dob", type: "date", enabled: true, required: true, order: 1 },
+      ],
+      91,
+    );
+    mocks.loadSettings.mockResolvedValueOnce(optionalDob).mockResolvedValueOnce(requiredDob);
+
+    // Act
+    const before = await collectStudentDynamicIssues("cache-demo", { contactId: "c-1" });
+    const after = await collectStudentDynamicIssues("cache-demo", { contactId: "c-1" });
+
+    // Assert
+    expect(before).toEqual([]);
+    expect([...new Set(after.map((issue) => issue.field))]).toEqual(["dob"]);
+  });
+});

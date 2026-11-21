@@ -45,7 +45,7 @@ export const StudentForm = function StudentForm({
             tone="primary"
             className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
           >
-            {form.t("students.grPrefix")}: {form.studentDraft.grNumber}
+            {form.studentDraft.grNumber}
           </Badge>
         ) : null}
         {form.isFieldEnabled("status") ? (

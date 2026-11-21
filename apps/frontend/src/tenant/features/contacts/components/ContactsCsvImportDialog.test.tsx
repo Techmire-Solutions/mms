@@ -87,7 +87,7 @@ describe("ContactsCsvImportDialog", () => {
 
   async function selectCsv(content: string, fileName = "contacts.csv"): Promise<void> {
     const fileInput = document.body.querySelector('input[type="file"]') as HTMLInputElement;
-    expect(fileInput).toBeDefined();
+    expect(fileInput).not.toBeNull();
     const file = new File([content], fileName, { type: "text/csv" });
 
     await act(async () => {
@@ -101,7 +101,7 @@ describe("ContactsCsvImportDialog", () => {
 
   async function clickImport(label: string): Promise<void> {
     const importBtn = findButton(label);
-    expect(importBtn).toBeDefined();
+    expect(importBtn).not.toBeNull();
 
     await act(async () => {
       importBtn?.click();
@@ -133,7 +133,7 @@ describe("ContactsCsvImportDialog", () => {
     expect(document.body.textContent).toContain("Download CSV Template");
 
     const templateBtn = findButton("Download CSV Template");
-    expect(templateBtn).toBeDefined();
+    expect(templateBtn).not.toBeNull();
 
     act(() => {
       templateBtn?.click();
@@ -216,7 +216,48 @@ describe("ContactsCsvImportDialog", () => {
     expect(notify.success).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain("two_contacts.csv");
-    expect(findButton("Import 2 Records")).toBeDefined();
+    expect(findButton("Import 2 Records")).not.toBeNull();
     expect(document.body.textContent).not.toContain("Imported 2 of 2 contacts");
+  });
+
+  it("opens file picker on dropzone click, processes selected CSV file, and allows re-selection", async () => {
+    act(() => {
+      root.render(<ContactsCsvImportDialog open={true} onClose={vi.fn()} canWrite={true} />);
+    });
+
+    const fileInput = document.body.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+    expect(fileInput.getAttribute("accept")).toBe(".csv,text/csv");
+
+    const clickSpy = vi.spyOn(fileInput, "click");
+
+    const dropzoneButton = Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("or click to browse from your device"),
+    );
+    expect(dropzoneButton).not.toBeNull();
+    expect(dropzoneButton?.className).toContain("cursor-pointer");
+
+    act(() => {
+      dropzoneButton?.click();
+    });
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+
+    const file = new File([twoRowCsv], "browse_selected_contacts.csv", { type: "text/csv" });
+    await act(async () => {
+      Object.defineProperty(fileInput, "files", {
+        value: [file],
+        writable: true,
+      });
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    expect(fileInput.value).toBe("");
+    expect(document.body.textContent).toContain("browse_selected_contacts.csv");
+    expect(document.body.textContent).toContain("2 valid record(s) ready to import");
+
+    await clickImport("Import 2 Records");
+
+    expect(mockStartServerImport).toHaveBeenCalledTimes(1);
+    expect(document.body.textContent).toContain("Imported 2 of 2 contacts");
   });
 });

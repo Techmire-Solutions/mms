@@ -140,6 +140,31 @@ async function fillContactEmail(dialog: Locator, email: string): Promise<void> {
   await expect(emailInput).toHaveValue(email);
 }
 
+/** Sets date value into a DatePicker input, supporting both editable and readOnly/calendarOnly inputs */
+export async function fillDateInput(locator: Locator, value: string): Promise<void> {
+  await expect(locator).toBeVisible({ timeout: 5000 });
+  const isReadOnly = await locator.getAttribute("readonly");
+  if (isReadOnly !== null) {
+    await locator.evaluate((el: HTMLInputElement, val: string) => {
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      if (nativeSetter) {
+        nativeSetter.call(el, val);
+      } else {
+        el.value = val;
+      }
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }, value);
+    await locator.blur();
+  } else {
+    await locator.fill(value);
+    await locator.blur();
+  }
+}
+
 /** Parameterized contact creation in Contacts module */
 export async function createContact(page: Page, data: ContactFormData): Promise<void> {
   const fullName = `${data.firstName} ${data.lastName}`.trim();
@@ -159,9 +184,7 @@ export async function createContact(page: Page, data: ContactFormData): Promise<
 
     if (data.dob) {
       const dobInput = dialog.locator('[id$="-dob"], input[name="dob"]').first();
-      await expect(dobInput).toBeVisible({ timeout: 5000 });
-      await dobInput.fill(data.dob);
-      await dobInput.blur();
+      await fillDateInput(dobInput, data.dob);
     }
 
     if (data.phone) {
@@ -733,8 +756,7 @@ export async function createSessionAndClass(page: Page): Promise<void> {
 
     await sessionDialog.getByLabel("Session name").fill("Afternoon Tajweed 2026");
     const endDate = sessionDialog.getByLabel(/Enter date in/).nth(1);
-    await endDate.fill("2026-12-31");
-    await endDate.blur();
+    await fillDateInput(endDate, "2026-12-31");
 
     const statusSelect = sessionDialog.locator("#session-status, select[name='status']").first();
     if (await statusSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
