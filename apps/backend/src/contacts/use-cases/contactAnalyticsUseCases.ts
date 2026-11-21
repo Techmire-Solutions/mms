@@ -41,10 +41,8 @@ export async function loadContactsCommandMetrics(
   }
   const fieldConfig = await loadContactFieldConfig();
   const dupeCache = await getDuplicateScanCache();
-  // Actionable pairs only (exclude name-only) — cache when warm; 0 when cold (no full-tenant scan).
-  const duplicatePairCount = dupeCache
-    ? dupeCache.pairs.filter((pair) => pair.reasonKey !== "name").length
-    : 0;
+  // Include all actionable pairs (including exact name matches) — cache when warm; 0 when cold (no full-tenant scan).
+  const duplicatePairCount = dupeCache ? dupeCache.pairs.length : 0;
   return repo.aggregateCommandMetrics(tenant, metricsFieldConfig(fieldConfig), {
     duplicatePairCount,
   });

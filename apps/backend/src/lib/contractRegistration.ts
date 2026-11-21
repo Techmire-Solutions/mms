@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { RequestValidationError } from "@ts-rest/fastify";
 import { ResponseValidationError } from "@ts-rest/core";
+import { ZodError } from "zod";
 import { replyValidationError } from "./zodRequest.js";
 
 /**
@@ -9,7 +10,8 @@ import { replyValidationError } from "./zodRequest.js";
  * ts-rest defaults to the `'combined'` handler, which responds with
  * `{ pathParameterErrors, headerErrors, queryParameterErrors, bodyErrors }` —
  * a different shape from the rest of the API's `{ type, message }` envelope.
- * Registering this on every router keeps 400 responses consistent.
+ * Registering this on every router keeps 400 responses consistent and formats
+ * Zod errors into human-readable messages + field error details.
  *
  * Usage:
  *   await fastify.register(s.plugin(router), {
@@ -22,7 +24,16 @@ export function standardRequestValidationErrorHandler(
   reply: FastifyReply,
 ): void {
   const zodError = err.body ?? err.query ?? err.pathParams ?? err.headers;
-  const message = zodError instanceof Error ? zodError.message : err.message;
+  if (zodError instanceof ZodError) {
+    const issues = zodError.issues.map((issue) => ({
+      path: issue.path.join(".") || "(root)",
+      message: issue.message,
+    }));
+    const message = zodError.issues[0]?.message || "Invalid request";
+    void replyValidationError(reply, { message, issues });
+    return;
+  }
+  const message = err.message || "Invalid request";
   void replyValidationError(reply, message);
 }
 
