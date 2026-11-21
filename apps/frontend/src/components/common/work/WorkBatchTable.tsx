@@ -118,6 +118,7 @@ export function WorkBatchTable<TData extends { id: string | number }>({
     id: col.id,
     label: col.label,
     sortField: col.sortField,
+    sortable: col.sortable,
     width: resolvedWidths.get(col.id),
     minWidth: resolveWorkColumnMinWidth(col),
     headerClassName: col.headerClassName,

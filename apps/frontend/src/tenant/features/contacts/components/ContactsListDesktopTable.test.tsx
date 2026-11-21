@@ -87,8 +87,13 @@ const defaultProps = {
   ],
 };
 
-function renderTable(contacts: Contact[] = [mockContact]): string {
-  return renderToStaticMarkup(<ContactsListDesktopTable {...defaultProps} contacts={contacts} />);
+function renderTable(
+  contacts: Contact[] = [mockContact],
+  columns: Array<{ id: string; label: string }> = defaultProps.columns,
+): string {
+  return renderToStaticMarkup(
+    <ContactsListDesktopTable {...defaultProps} contacts={contacts} columns={columns} />,
+  );
 }
 
 describe("ContactsListDesktopTable Component", () => {
@@ -122,6 +127,24 @@ describe("ContactsListDesktopTable Component", () => {
 
     expect(html).not.toContain("Select row cnt-1");
     expect(html).not.toContain('aria-label="cnt-1"');
+  });
+
+  it("renders a sort button only for columns the server can order", () => {
+    const html = renderTable(
+      [mockContact],
+      [
+        { id: "name", label: "Name" },
+        { id: "phone", label: "Phone" },
+        { id: "lunarDob", label: "Lunar DOB" },
+      ],
+    );
+    const thead = html.slice(html.indexOf("<thead"), html.indexOf("</thead>"));
+    const sortIndicators = thead.match(/lucide-chevron-(up|down)/g) ?? [];
+
+    // Name and Lunar DOB (sorts by `dob`) are sortable; Phone is not.
+    expect(sortIndicators).toHaveLength(2);
+    expect(thead).toMatch(/>Phone</);
+    expect(thead).not.toMatch(/<button[^>]*>Phone/);
   });
 
   it("renders bottom padding and horizontal scrollbar container without clipping", () => {

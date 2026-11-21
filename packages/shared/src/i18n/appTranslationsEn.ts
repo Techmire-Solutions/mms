@@ -2819,6 +2819,7 @@ export const APP_TRANSLATIONS_EN = {
   "contacts.resetLayout": "Reset layout",
   "contacts.restoreContact": "Restore contact",
   "contacts.restoreFailed": "Could not restore contact. Try again.",
+  "contacts.deleteFailed": "Could not delete contact.",
   "contacts.restoreSuccessDescription": '"{name}" is active again.',
   "contacts.restoreSuccessDescriptionDefault": "Contact restored to the directory.",
   "contacts.restoreSuccessTitle": "Contact restored",

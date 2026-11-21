@@ -1,4 +1,4 @@
-import { act } from "react";
+import { act, StrictMode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { MemoryRouter } from "react-router-dom";
@@ -127,5 +127,62 @@ describe("useContactsDirectoryFilters sort direction", () => {
     act(() => filters.handleSort("createdAt"));
     expect(filters.sortField).toBe("createdAt");
     expect(filters.sortDir).toBe("asc");
+  });
+});
+
+/**
+ * Header clicks must reverse the order even under StrictMode, which replays state
+ * updaters: a side-effecting updater toggled the direction twice (net no-op).
+ */
+describe("useContactsDirectoryFilters sorting", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  let filters: Filters;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+    function TestComponent() {
+      filters = useContactsDirectoryFilters({ setActiveTab: () => undefined });
+      return null;
+    }
+    act(() => {
+      root.render(
+        <StrictMode>
+          <MemoryRouter initialEntries={["/contacts"]}>
+            <TestComponent />
+          </MemoryRouter>
+        </StrictMode>,
+      );
+    });
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it("toggles asc → desc → asc when the active column is clicked again", () => {
+    expect(filters.sortField).toBe("name");
+    expect(filters.sortDir).toBe("asc");
+    act(() => filters.handleSort("name"));
+    expect(filters.sortDir).toBe("desc");
+    act(() => filters.handleSort("name"));
+    expect(filters.sortDir).toBe("asc");
+  });
+
+  it("switches field and resets to ascending when a new column is clicked", () => {
+    act(() => filters.handleSort("name"));
+    act(() => filters.handleSort("city"));
+    expect(filters.sortField).toBe("city");
+    expect(filters.sortDir).toBe("asc");
+    act(() => filters.handleSort("city"));
+    expect(filters.sortDir).toBe("desc");
+  });
+
+  it("applies an explicit direction from the Filters menu", () => {
+    act(() => filters.handleSortDir("desc"));
+    expect(filters.sortDir).toBe("desc");
   });
 });

@@ -23,8 +23,18 @@ export async function softDeleteContactById(
   deletionReason?: string,
   repo: ContactsRepository = contactsRepository,
 ): Promise<boolean> {
+  // A single delete keeps the 409 contract: the dialog shows why this contact is locked.
+  const tenant = getRequestTenant();
+  if (tenant && repo.guardDeleteDependents) await repo.guardDeleteDependents(tenant, [id]);
   const result = await bulkSoftDeleteContacts([id], deletedBy, deletionReason, repo);
   return result.succeeded === 1;
+}
+
+export interface ContactBulkSoftDeleteResult {
+  succeeded: number;
+  failed: number;
+  /** Contacts skipped because an active student/faculty/user/workshop link still uses them. */
+  blocked?: Array<{ id: string; message: string }>;
 }
 
 export async function bulkSoftDeleteContacts(
@@ -32,16 +42,30 @@ export async function bulkSoftDeleteContacts(
   deletedBy: string,
   deletionReason?: string,
   repo: ContactsRepository = contactsRepository,
-): Promise<{ succeeded: number; failed: number }> {
-  const uniqueIds = dedupeTrimmedIds(ids);
-  if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
+): Promise<ContactBulkSoftDeleteResult> {
+  const requestedIds = dedupeTrimmedIds(ids);
+  if (requestedIds.length === 0) return { succeeded: 0, failed: 0 };
   const tenant = getRequestTenant();
-  if (!tenant) return { succeeded: 0, failed: uniqueIds.length };
+  if (!tenant) return { succeeded: 0, failed: requestedIds.length };
+
+  // One linked parent used to 409 the whole batch; archive the rest and report it.
+  let blocked: Array<{ id: string; message: string }> = [];
+  if (repo.findDeleteBlockers) {
+    const blockers = await repo.findDeleteBlockers(tenant, requestedIds);
+    const requested = new Set(requestedIds);
+    blocked = blockers
+      .filter((blocker) => requested.has(blocker.contactId))
+      .map((blocker) => ({ id: blocker.contactId, message: blocker.message }));
+  } else if (repo.guardDeleteDependents) {
+    await repo.guardDeleteDependents(tenant, requestedIds);
+  }
+  const blockedIds = new Set(blocked.map((entry) => entry.id));
+  const uniqueIds = requestedIds.filter((id) => !blockedIds.has(id));
+  const withBlocked = (outcome: { succeeded: number; failed: number }) =>
+    blocked.length > 0 ? { ...outcome, failed: outcome.failed + blocked.length, blocked } : outcome;
+  if (uniqueIds.length === 0) return withBlocked({ succeeded: 0, failed: 0 });
 
   const result = await runInTransaction(async () => {
-    if (repo.guardDeleteDependents) {
-      await repo.guardDeleteDependents(tenant, uniqueIds);
-    }
     let outcome: { succeeded: number; failed: number };
     const now = new Date().toISOString();
     const trimmedReason = deletionReason?.trim();
@@ -131,5 +155,5 @@ export async function bulkSoftDeleteContacts(
   });
 
   if (result.succeeded > 0) await broadcastCollection("contacts");
-  return result;
+  return withBlocked(result);
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  findContactDeleteBlockers,
   guardContactSoftDeleteDependents,
   guardStudentSoftDelete,
 } from "../db/repositories/studentDeleteGuard.js";
@@ -15,6 +16,11 @@ vi.mock("../db/tenant-context.js", () => ({
     return cb({
       execute: async () => {
         call += 1;
+        if (tenant === "mixed-links") {
+          if (call === 1) return { rows: [{ contact_id: "parent" }] };
+          if (call === 2) return { rows: [{ contact_id: "parent" }, { contact_id: "teacher" }] };
+          return { rows: [] };
+        }
         if (tenant === "has-unpaid-invoices" || tenant === "has-active-students") {
           return { rows: [{ id: "match-1" }] };
         }
@@ -83,5 +89,28 @@ describe("guardContactSoftDeleteDependents", () => {
       statusCode: 409,
       message: expect.stringContaining("active staff user"),
     });
+  });
+});
+
+describe("findContactDeleteBlockers", () => {
+  it("returns nothing for an empty id list", async () => {
+    await expect(findContactDeleteBlockers("mixed-links", [])).resolves.toEqual([]);
+  });
+
+  it("reports each blocked contact once with its first blocking link", async () => {
+    const blockers = await findContactDeleteBlockers("mixed-links", ["parent", "teacher", "free"]);
+
+    expect(blockers).toEqual([
+      {
+        contactId: "parent",
+        kind: "student",
+        message: expect.stringContaining("active student profiles"),
+      },
+      {
+        contactId: "teacher",
+        kind: "faculty",
+        message: expect.stringContaining("active faculty employment"),
+      },
+    ]);
   });
 });

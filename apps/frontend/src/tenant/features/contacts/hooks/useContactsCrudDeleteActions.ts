@@ -1,6 +1,8 @@
 import type { AppTranslationKey } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";
+import { apiErrorMessage } from "@/lib/apiErrorMessage";
+import { reportClientError } from "@/lib/clientErrorReporting";
 import { useContactMutations } from "@/tenant/features/contacts/hooks/useContacts";
 
 type NotifyBulkResult = (
@@ -8,16 +10,15 @@ type NotifyBulkResult = (
   failed: number,
   singleSuccessKey: AppTranslationKey,
   multiSuccessKey: AppTranslationKey,
+  conflictDetail?: string,
 ) => void;
 
 export function useContactsCrudDeleteActions({
   t,
-  handleError,
   notifyBulkResult,
   notifyArchivedWithUndo,
 }: {
   t: TranslationFunction;
-  handleError: (err: unknown, scope: string, messageKey?: AppTranslationKey) => void;
   notifyBulkResult: NotifyBulkResult;
   notifyArchivedWithUndo?: (
     onUndo: () => void | Promise<void>,
@@ -31,6 +32,12 @@ export function useContactsCrudDeleteActions({
     bulkRestoreContacts: bulkRestoreMutation,
     restoreContact: restoreMutation,
   } = useContactMutations();
+
+  const notifyDeleteFailed = (err: unknown, scope: string): void => {
+    const reason = apiErrorMessage(err);
+    notify.error(t("contacts.deleteFailed"), reason ? { description: reason } : undefined);
+    reportClientError(err, { scope });
+  };
 
   const removeContact = async (
     id: string | number,
@@ -52,7 +59,9 @@ export function useContactsCrudDeleteActions({
         });
       }
     } catch (err) {
-      handleError(err, "contacts.remove_contact");
+      // A 409 (contact still backs a student/staff/workshop) is a delete failure with a
+      // server reason — not "could not save changes, check your connection".
+      notifyDeleteFailed(err, "contacts.remove_contact");
     }
   };
 
@@ -71,9 +80,10 @@ export function useContactsCrudDeleteActions({
         result.failed,
         "contacts.deletedTitle",
         "contacts.bulkDeleteSuccess",
+        result.blocked?.[0]?.message,
       );
     } catch (err) {
-      handleError(err, "contacts.bulk_delete");
+      notifyDeleteFailed(err, "contacts.bulk_delete");
     }
   };
 

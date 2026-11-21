@@ -43,6 +43,8 @@ export const contactBulkResultResponseSchema = z.object({
   success: z.literal(true),
   succeeded: z.number(),
   failed: z.number(),
+  /** Bulk delete: contacts skipped because an active student/staff/workshop link still uses them. */
+  blocked: z.array(z.object({ id: z.string(), message: z.string() })).optional(),
 });
 
 /** Contacts Setup per-kind lookup map (`ContactLookupsMap`). */

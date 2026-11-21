@@ -48,6 +48,7 @@ export * from "../contacts/contactValidation.js";
 export * from "../contacts/contactsDuplicatesQuery.js";
 export * from "../contacts/contactsExportUtils.js";
 export * from "../contacts/contactsListQuery.js";
+export * from "../contacts/contactSortFields.js";
 export * from "../contacts/contactsMetricsUtils.js";
 export * from "../contacts/contactsModuleManifest.js";
 export * from "../contacts/contactsPreferencesTypes.js";

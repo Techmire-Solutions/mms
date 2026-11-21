@@ -21,6 +21,8 @@ export interface ModuleWorkTableHeaderProps<
     id: string;
     label: string;
     sortField?: string;
+    /** `false` omits the sort button for this column. */
+    sortable?: boolean;
     width?: number;
     minWidth?: number;
     headerClassName?: string;
@@ -66,6 +68,7 @@ export function ModuleWorkTableHeader<
     id: string;
     label: string;
     sortField?: string;
+    sortable?: boolean;
     width?: number;
     minWidth?: number;
     headerClassName?: string;
@@ -125,7 +128,7 @@ export function ModuleWorkTableHeader<
           )}
 
           {columns.map((col) => {
-            const sortKey = col.sortField || col.id;
+            const sortKey = col.sortable === false ? null : col.sortField || col.id;
 
             // If there is a selection column, the sticky column needs to start at offset 12 (48px).
             // Otherwise, it starts at 0.

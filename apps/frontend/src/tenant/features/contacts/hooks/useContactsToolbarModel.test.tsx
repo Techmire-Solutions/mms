@@ -14,9 +14,12 @@ const mockUpdateUserColumnLayout = vi.fn();
 vi.mock("@/lib/contexts/ContactConfigContext", () => ({
   useContactConfig: () => ({
     availableColumns: [
-      { key: "name", label: "Name", sortField: "name" },
-      { key: "custom_score", label: "Score", sortField: "score" },
-      { key: "avatar", label: "Photo" },
+      { id: "name", label: "Name" },
+      { id: "custom_score", label: "Score", sortField: "score" },
+      { id: "phone", label: "Phone" },
+      { id: "dob", label: "Date of Birth" },
+      { id: "lunarDob", label: "Lunar DOB", sortField: "dob" },
+      { id: "avatar", label: "Photo" },
     ],
     genders: ["male", "female", "other"],
     systemSortOptions: [
@@ -67,12 +70,14 @@ describe("useContactsToolbarModel Hook", () => {
     hookResult = null;
   });
 
-  it("merges dynamic column sorts and system sort options without duplicates, omitting unsortable columns", async () => {
+  it("offers only server-sortable columns, once per sort key, plus system sort options", async () => {
     const { root } = await mount();
 
+    // Custom fields and phone are not server-sortable (they used to sort by id);
+    // Lunar DOB shares Date of Birth's `dob` key, so it is listed once.
     expect(hookResult?.sortOptions).toEqual([
       { field: "name", label: "Name" },
-      { field: "score", label: "Score" },
+      { field: "dob", label: "Date of Birth" },
       { field: "createdAt", label: "Recently Added" },
     ]);
     expect(hookResult?.sortOptions.some((s) => s.label === "Photo")).toBe(false);

@@ -7,7 +7,6 @@ export function useContactsCrudActions() {
   const write = useContactsCrudWriteActions({ t, handleError, notifyBulkResult });
   const remove = useContactsCrudDeleteActions({
     t,
-    handleError,
     notifyBulkResult,
     notifyArchivedWithUndo,
   });

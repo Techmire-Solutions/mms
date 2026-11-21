@@ -153,6 +153,11 @@ export interface ContactsRepository {
     queries: ContactsWidgetQuery[],
   ): Promise<Record<string, ContactsWidgetAggregateResult>>;
   guardDeleteDependents?(tenant: string, ids: string[]): Promise<void>;
+  /** Per-contact active links that block archiving (bulk delete skips these ids). */
+  findDeleteBlockers?(
+    tenant: string,
+    ids: string[],
+  ): Promise<Array<{ contactId: string; message: string }>>;
   isAttachmentReferenced(
     tenant: string,
     url: string,
