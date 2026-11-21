@@ -16,6 +16,7 @@ import { imageUploadErrorDetail, imageUploadErrorKey } from "@/lib/imageUploadEr
 import {
   isContactCustomCollectionTab,
   REMOVED_FORM_FIELD_KEYS,
+  validatePhoneNumberByCountry,
   type Contact,
   type FieldDefinition,
   type ValidationError,
@@ -25,6 +26,7 @@ export function useContactFormDraftHelpers({
   formInstanceId: _formInstanceId,
   defaultCountryCode,
   validationErrors,
+  setValidationErrors,
   contactDraft,
   setContactDraft,
   isTabFieldEnabled,
@@ -34,6 +36,7 @@ export function useContactFormDraftHelpers({
   formInstanceId: string;
   defaultCountryCode: string;
   validationErrors: ValidationError[];
+  setValidationErrors?: Dispatch<SetStateAction<ValidationError[]>>;
   contactDraft: Partial<Contact>;
   setContactDraft: Dispatch<SetStateAction<Partial<Contact>>>;
   isTabFieldEnabled?: (tabId: string, fieldId: string) => boolean;
@@ -195,10 +198,30 @@ export function useContactFormDraftHelpers({
         const phone = currentPhones[index];
         if (!phone || !phone.number) return prev;
         const previousNumber = phone.number.trim();
+        const effectiveCountry = phone.countryCode || defaultCountryCode;
         const { countryCode, formattedNumber: number } = formatContactPhoneDisplay(
           phone.number,
-          phone.countryCode || defaultCountryCode,
+          effectiveCountry,
         );
+
+        if (setValidationErrors) {
+          const res = validatePhoneNumberByCountry(number, countryCode, { t });
+          setValidationErrors((errs) => {
+            const filtered = errs.filter(
+              (e) => !(e.tabId === "phones" && e.fieldId === "number" && e.index === index),
+            );
+            if (!res.isValid) {
+              filtered.push({
+                tabId: "phones",
+                fieldId: "number",
+                index,
+                message: res.error || t("contacts.validation.phoneInvalidGeneric"),
+              });
+            }
+            return filtered;
+          });
+        }
+
         const updatedPhones = [...currentPhones];
         if (previousNumber !== number.trim()) {
           const { whatsappStatus: _cleared, ...rest } = phone;
@@ -210,7 +233,7 @@ export function useContactFormDraftHelpers({
         return { ...prev, phones: updatedPhones };
       });
     },
-    [defaultCountryCode, setContactDraft],
+    [defaultCountryCode, setContactDraft, setValidationErrors, t],
   );
 
   return {

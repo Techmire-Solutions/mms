@@ -4,7 +4,11 @@ import { CardPrimaryButton, EditableSelect } from "@/components/app/FormPrimitiv
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolvePhoneLabel } from "@/lib/contacts/contactI18n";
-import { parsePhoneNumber } from "@mms/shared";
+import {
+  clampPhoneNumberInput,
+  getMaxAllowedPhoneInputLength,
+  parsePhoneNumber,
+} from "@mms/shared";
 import { ContactLabeledValueSubListTab } from "./ContactLabeledValueSubListTab";
 import { isSubListItemPrimary } from "./ContactSubListCards";
 
@@ -85,11 +89,21 @@ export function ContactPhonesTab({
           />
         );
       }}
+      valueMaxLength={(item) =>
+        getMaxAllowedPhoneInputLength(
+          typeof item.number === "string" ? item.number : "",
+          resolveDialCode(item),
+        )
+      }
       valueLeadingAddon={({ item, index, updateItem }) => (
         <EditableSelect
           options={countryCodeOptions}
           value={resolveDialCode(item)}
-          onChange={(val) => updateItem(index, { countryCode: val })}
+          onChange={(val) => {
+            const currentNum = typeof item.number === "string" ? item.number : "";
+            const clamped = clampPhoneNumberInput(currentNum, val);
+            updateItem(index, { countryCode: val, number: clamped });
+          }}
           onUpdateOptions={onUpdateDialCodeOptions}
           className="w-phone-prefix shrink-0"
           id={`cf-${base.formInstanceId}-phone-country-${index}`}
@@ -102,13 +116,15 @@ export function ContactPhonesTab({
         const trimmed = value.trim();
         if (trimmed.startsWith("+") || trimmed.startsWith("00")) {
           const parsed = parsePhoneNumber(value, countryCode, countryCodeOptions);
+          const clamped = clampPhoneNumberInput(parsed.number, parsed.countryCode);
           updateItem(index, {
             countryCode: parsed.countryCode,
-            number: parsed.number,
+            number: clamped,
           });
           return;
         }
-        updateItem(index, { number: value });
+        const clamped = clampPhoneNumberInput(value, countryCode);
+        updateItem(index, { number: clamped });
       }}
     />
   );

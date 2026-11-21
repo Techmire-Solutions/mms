@@ -33,6 +33,7 @@ export interface ContactLabeledValueItemCardProps {
   valueInputType?: React.HTMLInputTypeAttribute;
   valueInputIdPrefix: string;
   labelSelectIdPrefix: string;
+  valueMaxLength?: number | ((item: ListItem) => number | undefined);
   autoComplete?: string;
   inputMode?: "search" | "text" | "email" | "tel" | "url" | "numeric" | "none" | "decimal";
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
@@ -67,6 +68,7 @@ export function ContactLabeledValueItemCard({
   valueInputType = "text",
   valueInputIdPrefix,
   labelSelectIdPrefix,
+  valueMaxLength,
   autoComplete,
   inputMode,
   autoCapitalize,
@@ -96,6 +98,8 @@ export function ContactLabeledValueItemCard({
     updateItem,
   };
 
+  const maxLength = typeof valueMaxLength === "function" ? valueMaxLength(item) : valueMaxLength;
+
   const valueInput = (
     <LeadingIconInput
       icon={Icon}
@@ -103,6 +107,7 @@ export function ContactLabeledValueItemCard({
       id={`${valueInputIdPrefix}-${idx}`}
       name={`${valueInputIdPrefix}-${idx}`}
       value={stringValue}
+      maxLength={maxLength}
       autoComplete={autoComplete}
       inputMode={inputMode}
       autoCapitalize={autoCapitalize}

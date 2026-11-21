@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Contact } from "@mms/shared";
+import { ValidationError } from "../lib/httpErrors.js";
 
 const mockLoadContactRuntimeDefaults = vi.fn();
 const mockLoadContactLookupKind = vi.fn();
@@ -119,6 +120,26 @@ describe("contactValidationUseCases", () => {
       });
       const prepared = await prepareContactRecord(contact, "c1");
       expect(prepared.phone).toBe("+92 3001234567");
+    });
+
+    it("blocks saving phone numbers with invalid digit counts for the selected country", async () => {
+      const invalidShort = fakeContact("c1", {
+        phones: [{ label: "Mobile", number: "344224102", countryCode: "+92", isPrimary: true }],
+      });
+      await expect(prepareContactRecord(invalidShort, "c1")).rejects.toBeInstanceOf(
+        ValidationError,
+      );
+
+      const invalidLong = fakeContact("c1", {
+        phones: [{ label: "Mobile", number: "34422410245", countryCode: "+92", isPrimary: true }],
+      });
+      await expect(prepareContactRecord(invalidLong, "c1")).rejects.toBeInstanceOf(ValidationError);
+
+      const valid = fakeContact("c1", {
+        phones: [{ label: "Mobile", number: "3442241024", countryCode: "+92", isPrimary: true }],
+      });
+      const prepared = await prepareContactRecord(valid, "c1");
+      expect(prepared.phones?.[0]?.number).toBe("3442241024");
     });
 
     it("applies title-case to name fields", async () => {

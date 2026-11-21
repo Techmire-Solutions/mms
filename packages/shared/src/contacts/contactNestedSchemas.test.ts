@@ -51,6 +51,21 @@ describe("contactNestedSchemas", () => {
     expect(phoneNumberSchema.safeParse({ label: "Mobile" }).success).toBe(false);
   });
 
+  it("validates country-specific exact subscriber digit lengths", () => {
+    // Valid 10-digit Pakistan
+    expect(phoneNumberSchema.safeParse({ countryCode: "+92", number: "3442241024" }).success).toBe(
+      true,
+    );
+
+    // Invalid 9-digit Pakistan (+92 344224102)
+    const shortPk = phoneNumberSchema.safeParse({ countryCode: "+92", number: "344224102" });
+    expect(shortPk.success).toBe(false);
+
+    // Invalid 11-digit Pakistan
+    const longPk = phoneNumberSchema.safeParse({ countryCode: "+92", number: "34422410245" });
+    expect(longPk.success).toBe(false);
+  });
+
   it("requires a relationship contactId", () => {
     expect(relationshipSchema.safeParse({ relationship: "Parent" }).success).toBe(false);
   });

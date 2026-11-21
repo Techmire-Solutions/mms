@@ -8,8 +8,10 @@ import {
   stripContactClientSoftDeleteFields,
   stripContactRetiredClassificationFields,
   syncContactScalarFields,
+  validatePhoneNumberByCountry,
   type Contact,
 } from "@mms/shared";
+import { ValidationError } from "../../lib/httpErrors.js";
 import { loadContactLookupKind } from "./contactLookupsService.js";
 import { loadContactRuntimeDefaults } from "./contactLoadUseCases.js";
 import {
@@ -93,6 +95,12 @@ async function normalizeContactPhones(
     phones: phones.map((phone) => {
       const fallbackCode = phone.countryCode || dialDefault;
       const trimmedNumber = (phone.number || "").trim();
+      if (trimmedNumber) {
+        const validation = validatePhoneNumberByCountry(trimmedNumber, fallbackCode);
+        if (!validation.isValid) {
+          throw new ValidationError(validation.error || `Invalid phone number for ${fallbackCode}`);
+        }
+      }
       const parsedRaw = parsePhoneNumber(trimmedNumber, fallbackCode, knownCodes);
       const e164 = normalizeToE164(parsedRaw.countryCode, parsedRaw.number);
       const parsed = parsePhoneNumber(e164, parsedRaw.countryCode, knownCodes);
