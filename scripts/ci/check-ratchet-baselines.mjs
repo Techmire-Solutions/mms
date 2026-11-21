@@ -57,7 +57,14 @@ export function findIncreasedBaselines(baseSource, headSource) {
 }
 
 function git(args) {
-  return execFileSync("git", args, { encoding: "utf8" }).trim();
+  try {
+    return execFileSync("git", args, {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return null;
+  }
 }
 
 function main() {
@@ -65,18 +72,32 @@ function main() {
   const baseIndex = args.indexOf("--base");
   const base = baseIndex >= 0 ? args[baseIndex + 1] : process.env.MMS_CI_BASE || "HEAD^1";
 
-  try {
-    git(["rev-parse", "--verify", "--quiet", base]);
-  } catch {
+  const baseRev = git(["rev-parse", "--verify", "--quiet", base]);
+  if (!baseRev) {
     console.error(`::error::cannot resolve base ref "${base}" for the baseline check`);
     process.exitCode = 1;
     return;
   }
 
+  let baseDiff = git([
+    "diff",
+    "--name-only",
+    "--diff-filter=ACMR",
+    `${base}...HEAD`,
+    "--",
+    "scripts",
+  ]);
+  if (baseDiff === null) {
+    baseDiff =
+      git(["diff", "--name-only", "--diff-filter=ACMR", `${base}..HEAD`, "--", "scripts"]) ??
+      git(["diff", "--name-only", "--diff-filter=ACMR", base, "HEAD", "--", "scripts"]) ??
+      "";
+  }
+
   const diffOutput = [
-    git(["diff", "--name-only", "--diff-filter=ACMR", `${base}...HEAD`, "--", "scripts"]),
-    git(["diff", "--name-only", "--diff-filter=ACMR", "--cached", "--", "scripts"]),
-    git(["diff", "--name-only", "--diff-filter=ACMR", "--", "scripts"]),
+    baseDiff,
+    git(["diff", "--name-only", "--diff-filter=ACMR", "--cached", "--", "scripts"]) ?? "",
+    git(["diff", "--name-only", "--diff-filter=ACMR", "--", "scripts"]) ?? "",
   ].join("\n");
 
   const changed = new Set(
@@ -88,10 +109,8 @@ function main() {
 
   let failures = 0;
   for (const file of changed) {
-    let baseSource;
-    try {
-      baseSource = git(["show", `${base}:${file}`]);
-    } catch {
+    const baseSource = git(["show", `${base}:${file}`]);
+    if (baseSource === null) {
       continue; // new script — nothing to compare against
     }
     const headSource = fs.readFileSync(path.resolve(file), "utf8");
