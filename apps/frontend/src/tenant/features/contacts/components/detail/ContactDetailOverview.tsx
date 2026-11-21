@@ -108,7 +108,7 @@ export function ContactDetailOverview({
             group={groupName}
             fields={fields}
             formatValue={formatFieldValue}
-            getRawValue={(key) => (contact as Record<string, unknown>)[key]}
+            getRawValue={(key) => contact[key]}
             accentColor={ACCENT_COLORS[index % ACCENT_COLORS.length]}
           />
         ))}

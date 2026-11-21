@@ -11,7 +11,6 @@ import type { ContactPickerSearchQuery, ContactsQuickFilter } from "@mms/shared"
 import {
   CONTACTS_FIELD_CONFIG_QUERY_KEY,
   CONTACTS_QUERY_KEY,
-  CONTACTS_REPORT_ANALYTICS_QUERY_KEY,
   contactsListQueryKey,
 } from "@/tenant/features/contacts/hooks/contactsQueryKeys";
 import { invalidateContactsQueries } from "@/tenant/features/contacts/hooks/invalidateContactsQueries";
@@ -108,16 +107,6 @@ export function useContactsContractList(query: ContactsContractQueryParams, enab
   });
 }
 
-export function useContactsContractGet(id: string, enabled = true) {
-  const { isAuthenticated } = useAuth();
-  return tsrClient.contacts.get.useQuery({
-    queryKey: [...CONTACTS_QUERY_KEY, "detail", id],
-    queryData: { params: { id } },
-    enabled: isAuthenticated && enabled,
-    staleTime: 30_000,
-  });
-}
-
 /**
  * Lean picker search — `/api/contacts/picker`, readable by roles holding the
  * students/faculty/workshops read grants without `contacts.read`.
@@ -141,40 +130,6 @@ export function useContactPickerOption(id: string | undefined, enabled = true) {
     queryData: { params: { id: id ?? "" } },
     enabled: isAuthenticated && enabled && Boolean(id),
     staleTime: 30_000,
-  });
-}
-
-export function useContactsContractReportAnalytics(
-  query: { years?: number[]; lang?: string },
-  enabled = true,
-) {
-  const { isAuthenticated } = useAuth();
-  return tsrClient.contacts.reportAnalytics.useQuery({
-    queryKey: [...CONTACTS_REPORT_ANALYTICS_QUERY_KEY, query],
-    queryData: { query },
-    enabled: isAuthenticated && enabled,
-    staleTime: 60_000,
-  });
-}
-
-export function useContactsContractCreate() {
-  const queryClient = useQueryClient();
-  return tsrClient.contacts.create.useMutation({
-    onSuccess: () => invalidateContactsQueries(queryClient),
-  });
-}
-
-export function useContactsContractUpdate() {
-  const queryClient = useQueryClient();
-  return tsrClient.contacts.update.useMutation({
-    onSuccess: () => invalidateContactsQueries(queryClient),
-  });
-}
-
-export function useContactsContractDelete() {
-  const queryClient = useQueryClient();
-  return tsrClient.contacts.delete.useMutation({
-    onSuccess: () => invalidateContactsQueries(queryClient),
   });
 }
 

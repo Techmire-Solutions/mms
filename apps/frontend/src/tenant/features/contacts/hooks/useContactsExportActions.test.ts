@@ -7,12 +7,12 @@ import {
 describe("contacts export column helpers", () => {
   const fakeT = (key: string) => `translated:${key}`;
 
-  it("defaultContactsExportColumns returns translated default columns", () => {
-    const columns = defaultContactsExportColumns(fakeT);
+  it("defaultContactsExportColumns returns default columns with registry labels", () => {
+    const columns = defaultContactsExportColumns();
     expect(columns.length).toBeGreaterThan(0);
     expect(columns[0]).toEqual({
       id: "id",
-      label: "translated:contacts.columns.id",
+      label: "Contact ID",
     });
   });
 
@@ -36,7 +36,7 @@ describe("contacts export column helpers", () => {
 
   it("resolveContactsExportColumns falls back to defaults when list is empty", () => {
     const result = resolveContactsExportColumns([], fakeT);
-    expect(result).toEqual(defaultContactsExportColumns(fakeT));
+    expect(result).toEqual(defaultContactsExportColumns());
   });
 
   it("resolveContactsExportColumns caps columns at 200", () => {
@@ -66,7 +66,7 @@ describe("contacts export column helpers", () => {
       formTabs: [{ key: "custom_medical", label: "Medical History", enabled: true, order: 10 }],
     };
 
-    const columns = defaultContactsExportColumns(fakeT, fieldConfig);
+    const columns = defaultContactsExportColumns(fieldConfig);
     const ids = columns.map((c) => c.id);
     expect(ids).toContain("bloodGroup");
     expect(ids).toContain("custom_medical");

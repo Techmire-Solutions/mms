@@ -30,9 +30,4 @@ export { invalidateContactsQueries } from "@/tenant/features/contacts/hooks/inva
 export {
   contactsListQueryOptions,
   useContactsContractList,
-  useContactsContractGet,
-  useContactsContractReportAnalytics,
-  useContactsContractCreate,
-  useContactsContractUpdate,
-  useContactsContractDelete,
 } from "@/tenant/features/contacts/hooks/useContactsQueries";

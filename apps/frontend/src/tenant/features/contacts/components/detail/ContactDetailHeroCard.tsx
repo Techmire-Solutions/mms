@@ -6,6 +6,7 @@ import { ContactIdentityMeta } from "../ContactIdentityMeta";
 import { ContactTagList } from "../ContactTagBadge";
 import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
 import { DetailNotesBlock } from "@/components/app/DetailNotesBlock";
+import { BiDiText } from "@/components/app/BiDiText";
 import { Card } from "@/components/ui/card";
 import { getGenderCardAccent } from "@/lib/ui/genderUi";
 
@@ -45,7 +46,7 @@ export function ContactDetailHeroCard({ contact }: ContactDetailHeroCardProps): 
             </span>
           </div>
           <Card className="p-4 rounded-2xl bg-primary/5 border border-primary/20 shadow-none text-sm text-foreground leading-relaxed italic relative break-words text-pretty">
-            {aiSummary}
+            <BiDiText>{aiSummary}</BiDiText>
           </Card>
         </div>
       ) : null}

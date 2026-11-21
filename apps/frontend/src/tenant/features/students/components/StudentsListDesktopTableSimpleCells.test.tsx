@@ -3,16 +3,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { Student } from "@mms/shared";
 import {
   renderStudentDobCell,
-  renderStudentSessionsCell,
   renderStudentStatusCell,
 } from "./StudentsListDesktopTableSimpleCells";
 
 const mockTranslate = ((key: string, params?: Record<string, string | number>) => {
   if (key === "students.list.ageYears" && params?.age != null) {
     return `${params.age} years`;
-  }
-  if (key === "students.list.notEnrolled") {
-    return "Not enrolled";
   }
   return key;
 }) as never;
@@ -57,33 +53,6 @@ describe("StudentsListDesktopTableSimpleCells", () => {
     );
 
     expect(html).toContain("—");
-  });
-
-  it("renders session badges when student is enrolled", () => {
-    const html = renderToStaticMarkup(
-      <div>
-        {renderStudentSessionsCell({
-          sessionNames: ["Quran Morning", "Hadith Evening"],
-          t: mockTranslate,
-        })}
-      </div>,
-    );
-
-    expect(html).toContain("Quran Morning");
-    expect(html).toContain("Hadith Evening");
-  });
-
-  it("renders not-enrolled note when sessionNames is empty", () => {
-    const html = renderToStaticMarkup(
-      <div>
-        {renderStudentSessionsCell({
-          sessionNames: [],
-          t: mockTranslate,
-        })}
-      </div>,
-    );
-
-    expect(html).toContain("Not enrolled");
   });
 
   it("renders status badge", () => {

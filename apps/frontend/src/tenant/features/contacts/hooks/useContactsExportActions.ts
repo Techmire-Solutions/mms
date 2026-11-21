@@ -16,7 +16,6 @@ import { reportClientError } from "@/lib/clientErrorReporting";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 
 interface UseContactsExportActionsOptions {
-  tableColumns: Array<{ id?: string; key?: string; label?: string; labelKey?: AppTranslationKey }>;
   fieldConfig?: Partial<FieldConfig> | null;
   canExport: boolean;
   /** Debounced directory search — the same value the visible list was filtered by. */
@@ -45,7 +44,6 @@ interface UseContactsExportActionsOptions {
 }
 
 export function useContactsExportActions({
-  tableColumns: _tableColumns,
   fieldConfig,
   canExport,
   search,
@@ -71,8 +69,8 @@ export function useContactsExportActions({
   );
 
   const resolvedColumns = useMemo(
-    () => defaultContactsExportColumns(t, effectiveConfig),
-    [t, effectiveConfig],
+    () => defaultContactsExportColumns(effectiveConfig),
+    [effectiveConfig],
   );
 
   /** Mirrors `buildContactsPageUrl` so the export scope matches the visible list. */
@@ -113,18 +111,12 @@ export function useContactsExportActions({
 
 /** Default Work export columns including custom fields when fieldConfig is present. */
 export function defaultContactsExportColumns(
-  t: (key: AppTranslationKey) => string,
   fieldConfig?: Partial<FieldConfig> | null,
 ): ContactExportColumn[] {
   const allColumns = resolveAllContactExportColumns(fieldConfig);
-  return allColumns.map((column) => {
-    const key = `contacts.columns.${column.id}` as AppTranslationKey;
-    const translated = t(key);
-    return {
-      id: column.id,
-      label: translated && translated !== key ? translated : column.label,
-    };
-  });
+  // Export column labels come from the shared English registry; there is no
+  // `contacts.columns.*` key per export id, so skip the (always-missing) lookup.
+  return allColumns.map((column) => ({ id: column.id, label: column.label }));
 }
 
 /** Resolves and sanitizes active export columns for backend CSV job. */
@@ -142,7 +134,7 @@ export function resolveContactsExportColumns(
     .filter((col) => col.id.length > 0 && col.id.length <= 64 && col.label.length > 0);
 
   if (mapped.length === 0) {
-    return defaultContactsExportColumns(t, fieldConfig);
+    return defaultContactsExportColumns(fieldConfig);
   }
   return mapped.slice(0, 200);
 }
