@@ -78,6 +78,7 @@ export * from "../students/studentColumnRegistrySync.js";
 export * from "../students/studentDirectoryColumns.js";
 export * from "../students/studentFieldDependencies.js";
 export * from "../students/studentFormCustomFields.js";
+export * from "../students/studentRequiredFields.js";
 export * from "../students/studentGuardianFromContacts.js";
 export * from "../students/studentLookupTypes.js";
 export * from "../students/studentPreferencesNormalization.js";

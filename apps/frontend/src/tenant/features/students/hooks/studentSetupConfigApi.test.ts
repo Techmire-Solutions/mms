@@ -1,13 +1,25 @@
 import { describe, expect, it, vi } from "vitest";
-import { normalizeStudentModulePreferences } from "@mms/shared";
+import {
+  normalizeStudentModulePreferences,
+  normalizeStudentsSettings,
+  setStudentFieldRequired,
+  studentFieldConfigPutBodySchema,
+  type FieldDefinition,
+} from "@mms/shared";
 import { apiContract } from "@/lib/api";
-import { saveStudentPreferencesAsync } from "@/tenant/features/students/hooks/studentSetupConfigApi";
+import {
+  fetchStudentFieldConfig,
+  saveStudentFieldConfigAsync,
+  saveStudentPreferencesAsync,
+} from "@/tenant/features/students/hooks/studentSetupConfigApi";
 
 vi.mock("@/lib/api", () => ({
   apiContract: {
     students: {
       getPreferences: vi.fn(),
       updatePreferences: vi.fn(),
+      getFieldConfig: vi.fn(),
+      updateFieldConfig: vi.fn(),
     },
   },
 }));
@@ -34,5 +46,70 @@ describe("saveStudentPreferencesAsync", () => {
     } as never);
 
     await expect(saveStudentPreferencesAsync(preferences)).resolves.toEqual(saved);
+  });
+});
+
+describe("student field config API", () => {
+  it("given no saved config, should fall back to the seeded field registry", async () => {
+    // Arrange
+    vi.mocked(apiContract.students.getFieldConfig).mockResolvedValue({
+      status: 200,
+      body: { config: null },
+      headers: new Headers(),
+    } as never);
+
+    // Act
+    const config = await fetchStudentFieldConfig();
+
+    // Assert
+    expect(config.fields).toEqual(normalizeStudentsSettings(null).fields);
+  });
+
+  it("given a required-field change, should send a body the strict PUT DTO accepts", async () => {
+    // Arrange
+    const settings = normalizeStudentsSettings(null);
+    const fields = setStudentFieldRequired(
+      settings.fields as Record<string, FieldDefinition[]>,
+      "notes",
+      true,
+    );
+    vi.mocked(apiContract.students.updateFieldConfig).mockImplementation((async ({
+      body,
+    }: {
+      body: Record<string, unknown>;
+    }) => ({
+      status: 200,
+      body: { success: true, config: body },
+      headers: new Headers(),
+    })) as never);
+
+    // Act
+    const saved = await saveStudentFieldConfigAsync({ ...settings, fields });
+
+    // Assert
+    const sent = vi.mocked(apiContract.students.updateFieldConfig).mock.calls[0]?.[0]?.body;
+    expect(studentFieldConfigPutBodySchema.safeParse(sent).success).toBe(true);
+    expect(sent).not.toHaveProperty("formTabs");
+    expect(sent).not.toHaveProperty("grNumberDigits");
+    const notes = (saved.fields as Record<string, FieldDefinition[]>).registration.find(
+      (field) => field.key === "notes",
+    );
+    expect(notes?.required).toBe(true);
+  });
+
+  it("rejects so the Setup tab cannot claim success on a 500", async () => {
+    // Arrange
+    vi.mocked(apiContract.students.updateFieldConfig).mockResolvedValue({
+      status: 500,
+      body: { type: "server_error", message: "Save failed" },
+      headers: new Headers(),
+    } as never);
+
+    // Act / Assert
+    await expect(
+      saveStudentFieldConfigAsync(normalizeStudentsSettings(null)),
+    ).rejects.toMatchObject({
+      status: 500,
+    });
   });
 });

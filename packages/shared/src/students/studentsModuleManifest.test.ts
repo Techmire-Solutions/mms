@@ -38,7 +38,11 @@ describe("STUDENTS_MODULE_MANIFEST", () => {
   });
 
   it("orders Setup sub-tabs as preferences and card_template", () => {
-    expect(STUDENTS_MODULE_MANIFEST.setupSubTabs).toEqual(["preferences", "card_template"]);
+    expect(STUDENTS_MODULE_MANIFEST.setupSubTabs).toEqual([
+      "preferences",
+      "required_fields",
+      "card_template",
+    ]);
   });
 });
 
