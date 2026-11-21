@@ -18,9 +18,13 @@ vi.mock("@/hooks/useTranslation", () => ({
         "datePicker.clearAria": "Clear date",
         "datePicker.clear": "Clear",
         "datePicker.today": "Today",
+        "datePicker.yesterday": "Yesterday",
+        "datePicker.jumpYear": "Jump Years",
         "datePicker.thisYear": "This Year",
         "datePicker.previousYears": "Previous years",
         "datePicker.nextYears": "Next years",
+        "datePicker.selectYear": "Select year",
+        "datePicker.selectMonth": "Select month",
         "datePicker.selectYearAria": `Select year ${params?.year ?? ""}`,
         "datePicker.enterFormatAria": `Enter date in format ${params?.format ?? "DD/MM/YYYY"}`,
         "datePicker.enterYearAria": "Enter year in YYYY format",
@@ -87,7 +91,7 @@ describe("DatePicker Component", () => {
 
   it("auto-formats user typing numbers by inserting / between segments", async () => {
     const onChange = vi.fn();
-    const { input } = await renderDatePicker({ value: "", onChange });
+    const { input } = await renderDatePicker({ value: "", onChange, allowManualInput: true });
     expect(input.value).toBe("");
 
     // User types "21"
@@ -112,7 +116,7 @@ describe("DatePicker Component", () => {
 
   it("allows backspacing without re-inserting trailing separator immediately", async () => {
     const onChange = vi.fn();
-    const { input } = await renderDatePicker({ value: "", onChange });
+    const { input } = await renderDatePicker({ value: "", onChange, allowManualInput: true });
 
     await act(async () => {
       changeInput(input, "21");
@@ -128,7 +132,7 @@ describe("DatePicker Component", () => {
 
   it("auto-formats pasted 8-digit strings into full date with / separators", async () => {
     const onChange = vi.fn();
-    const { input } = await renderDatePicker({ value: "", onChange });
+    const { input } = await renderDatePicker({ value: "", onChange, allowManualInput: true });
 
     await act(async () => {
       changeInput(input, "21072026");
@@ -220,7 +224,11 @@ describe("DatePicker Component", () => {
 
   it("reverts invalid or incomplete dates on blur", async () => {
     const onChange = vi.fn();
-    const { input } = await renderDatePicker({ value: "2026-07-21", onChange });
+    const { input } = await renderDatePicker({
+      value: "2026-07-21",
+      onChange,
+      allowManualInput: true,
+    });
 
     // User types invalid date
     await act(async () => {
@@ -242,6 +250,7 @@ describe("DatePicker Component", () => {
     const { input } = await renderDatePicker({
       value: "",
       onChange,
+      allowManualInput: true,
       min: "2026-06-01",
       max: "2026-06-30",
     });
@@ -277,7 +286,11 @@ describe("DatePicker Component", () => {
 
   it("clears value when user deletes all text from input", async () => {
     const onChange = vi.fn();
-    const { input } = await renderDatePicker({ value: "2026-07-21", onChange });
+    const { input } = await renderDatePicker({
+      value: "2026-07-21",
+      onChange,
+      allowManualInput: true,
+    });
     expect(input.value).toBe("21/07/2026");
 
     await act(async () => {
@@ -337,7 +350,7 @@ describe("DatePicker Component", () => {
 
   it("commits typed date and closes popover when Enter key is pressed", async () => {
     const onChange = vi.fn();
-    const { input } = await renderDatePicker({ value: "", onChange });
+    const { input } = await renderDatePicker({ value: "", onChange, allowManualInput: true });
 
     const triggerButton = container.querySelector(
       'button[aria-label="Open calendar"]',
@@ -375,7 +388,8 @@ describe("DatePicker Component", () => {
   it("opens popover when ArrowDown key is pressed on the input", async () => {
     const onChange = vi.fn();
     const { input } = await renderDatePicker({ value: "", onChange });
-    expect(input.getAttribute("inputmode")).toBe("numeric");
+    expect(input.getAttribute("inputmode")).toBe("none");
+    expect(input.readOnly).toBe(true);
     expect(input.getAttribute("aria-expanded")).toBe("false");
 
     await act(async () => {
@@ -421,7 +435,12 @@ describe("DatePicker Component", () => {
 
     it("allows direct YYYY numeric input and restricts to 4 digits", async () => {
       const onChange = vi.fn();
-      const { input } = await renderDatePicker({ mode: "year", value: "", onChange });
+      const { input } = await renderDatePicker({
+        mode: "year",
+        value: "",
+        onChange,
+        allowManualInput: true,
+      });
 
       // Typing non-digit characters is stripped
       await act(async () => {
@@ -448,6 +467,7 @@ describe("DatePicker Component", () => {
         maxYear: 2030,
         onChange,
         onBlur,
+        allowManualInput: true,
       });
 
       // Typing out-of-bounds year: 2018 (below minYear 2020)
@@ -630,7 +650,11 @@ describe("DatePicker Component", () => {
   describe("Tri-Format Flexible Date Support (Year, Month-Year, Complete Date)", () => {
     it("accepts and renders Year-only values (YYYY) in standard datepicker", async () => {
       const onChange = vi.fn();
-      const { input } = await renderDatePicker({ value: "2024", onChange });
+      const { input } = await renderDatePicker({
+        value: "2024",
+        onChange,
+        allowManualInput: true,
+      });
 
       expect(input.value).toBe("2024");
 
@@ -643,7 +667,11 @@ describe("DatePicker Component", () => {
 
     it("accepts and renders Month-and-Year values (MM/YYYY -> YYYY-MM) in standard datepicker", async () => {
       const onChange = vi.fn();
-      const { input } = await renderDatePicker({ value: "2024-05", onChange });
+      const { input } = await renderDatePicker({
+        value: "2024-05",
+        onChange,
+        allowManualInput: true,
+      });
 
       expect(input.value).toBe("05/2024");
 
@@ -656,7 +684,11 @@ describe("DatePicker Component", () => {
 
     it("accepts and renders Complete Date values (DD/MM/YYYY -> YYYY-MM-DD)", async () => {
       const onChange = vi.fn();
-      const { input } = await renderDatePicker({ value: "2024-05-21", onChange });
+      const { input } = await renderDatePicker({
+        value: "2024-05-21",
+        onChange,
+        allowManualInput: true,
+      });
 
       expect(input.value).toBe("21/05/2024");
 
@@ -669,7 +701,12 @@ describe("DatePicker Component", () => {
     it("preserves partial date entries on blur without resetting to empty or full date", async () => {
       const onChange = vi.fn();
       const onBlur = vi.fn();
-      const { input } = await renderDatePicker({ value: "", onChange, onBlur });
+      const { input } = await renderDatePicker({
+        value: "",
+        onChange,
+        onBlur,
+        allowManualInput: true,
+      });
 
       // Enter Year-only and blur
       await act(async () => {
@@ -714,6 +751,113 @@ describe("DatePicker Component", () => {
 
       expect(input.value).toBe("07/21/2026");
       expect(input.placeholder).toBe("MM/DD/YYYY");
+    });
+  });
+
+  describe("Calendar-Only and Quick Ease-of-Use Options", () => {
+    it("enforces calendar-only mode by default: input is readOnly with inputMode none and opens on click", async () => {
+      const onChange = vi.fn();
+      const { input } = await renderDatePicker({ value: "", onChange });
+
+      expect(input.readOnly).toBe(true);
+      expect(input.getAttribute("inputmode")).toBe("none");
+      expect(input.classList.contains("cursor-pointer")).toBe(true);
+      expect(input.getAttribute("aria-expanded")).toBe("false");
+
+      // Clicking the input opens the calendar popover
+      await act(async () => {
+        input.click();
+      });
+      expect(input.getAttribute("aria-expanded")).toBe("true");
+    });
+
+    it("opens popover on Space and Enter keys and clears on Backspace when calendar-only", async () => {
+      const onChange = vi.fn();
+      const { input } = await renderDatePicker({ value: "2026-07-21", onChange });
+
+      // Space key opens popover
+      await act(async () => {
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+      });
+      expect(input.getAttribute("aria-expanded")).toBe("true");
+
+      // Escape closes popover
+      await act(async () => {
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      });
+      expect(input.getAttribute("aria-expanded")).toBe("false");
+
+      // Enter key opens popover
+      await act(async () => {
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      });
+      expect(input.getAttribute("aria-expanded")).toBe("true");
+
+      // Backspace clears date
+      await act(async () => {
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace", bubbles: true }));
+      });
+      expect(onChange).toHaveBeenCalledWith("");
+    });
+
+    it("selects yesterday when Yesterday button is clicked in the calendar", async () => {
+      const onChange = vi.fn();
+      const { input } = await renderDatePicker({ value: "", onChange });
+
+      await act(async () => {
+        input.click();
+      });
+
+      const yesterdayButton = Array.from(document.body.querySelectorAll("button")).find(
+        (btn) => btn.textContent === "Yesterday",
+      );
+      expect(yesterdayButton).toBeInstanceOf(HTMLButtonElement);
+
+      await act(async () => {
+        yesterdayButton?.click();
+      });
+
+      expect(onChange).toHaveBeenCalled();
+      const expectedYesterday = new Date();
+      expectedYesterday.setDate(expectedYesterday.getDate() - 1);
+      const expectedYear = expectedYesterday.getFullYear();
+      const expectedMonth = String(expectedYesterday.getMonth() + 1).padStart(2, "0");
+      const expectedDay = String(expectedYesterday.getDate()).padStart(2, "0");
+      const expectedIso = `${expectedYear}-${expectedMonth}-${expectedDay}`;
+      expect(onChange).toHaveBeenCalledWith(expectedIso);
+      expect(input.getAttribute("aria-expanded")).toBe("false");
+    });
+
+    it("navigates decades and years via quick year jump buttons (-10y, -1y, +1y, +10y)", async () => {
+      const onChange = vi.fn();
+      const { input } = await renderDatePicker({ value: "2026-07-21", onChange });
+
+      await act(async () => {
+        input.click();
+      });
+
+      const jump10BackButton = document.body.querySelector(
+        'button[aria-label="-10 years"]',
+      ) as HTMLButtonElement;
+      expect(jump10BackButton).toBeInstanceOf(HTMLButtonElement);
+
+      // Jump back 10 years (from 2026 to 2016)
+      await act(async () => {
+        jump10BackButton.click();
+      });
+
+      const yearDropdown = document.body.querySelector('button[aria-label="Select year"]');
+      expect(yearDropdown?.textContent).toContain("2016");
+
+      // Jump forward 1 year (to 2017)
+      const jump1ForwardButton = document.body.querySelector(
+        'button[aria-label="+1 year"]',
+      ) as HTMLButtonElement;
+      await act(async () => {
+        jump1ForwardButton.click();
+      });
+
+      expect(yearDropdown?.textContent).toContain("2017");
     });
   });
 });

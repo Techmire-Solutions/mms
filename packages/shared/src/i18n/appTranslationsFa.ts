@@ -3352,6 +3352,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "datePicker.nextMonth": "ماه بعد",
   "datePicker.thisYear": "امسال",
   "datePicker.today": "امروز",
+  "datePicker.yesterday": "دیروز",
+  "datePicker.jumpYear": "پرش سال",
   "dateTimePicker.dateAria": "تاریخ",
   "dateTimePicker.timeAria": "زمان",
   "email.enabledNote":

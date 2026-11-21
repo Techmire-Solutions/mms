@@ -3303,6 +3303,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "datePicker.nextMonth": "الشهر التالي",
   "datePicker.thisYear": "هذا العام",
   "datePicker.today": "اليوم",
+  "datePicker.yesterday": "أمس",
+  "datePicker.jumpYear": "الانتقال بالسنوات",
   "dateTimePicker.dateAria": "التاريخ",
   "dateTimePicker.timeAria": "الوقت",
   "email.enabledNote": "إشعارات البريد مفعّلة. احفظ إعدادات المزود أدناه ثم أرسل بريداً تجريبياً.",
