@@ -73,7 +73,7 @@ describe("contactAnalyticsUseCases", () => {
       expect(mockRepo.aggregateCommandMetrics).not.toHaveBeenCalled();
     });
 
-    it("given active tenant and dupe cache with actionable pairs, should aggregate metrics with non-name pair count", async () => {
+    it("given active tenant and dupe cache with actionable pairs, should aggregate metrics with all duplicate pairs", async () => {
       // Arrange
       const mockFieldConfig: ContactFieldConfigWithTabs = {
         version: 1,
@@ -87,11 +87,7 @@ describe("contactAnalyticsUseCases", () => {
         computedAt: "2026-03-01T00:00:00.000Z",
         contactCount: 100,
         pairCount: 3,
-        pairs: [
-          createPair("p1", "phone"),
-          createPair("p2", "email"),
-          createPair("p3", "name"), // excluded from duplicatePairCount
-        ],
+        pairs: [createPair("p1", "phone"), createPair("p2", "email"), createPair("p3", "name")],
       });
 
       const expectedSnapshot: ContactsCommandMetricsSnapshot = {
@@ -99,7 +95,7 @@ describe("contactAnalyticsUseCases", () => {
         newThisPeriod: 12,
         whatsappCount: 45,
         incompleteCount: 3,
-        duplicatePairCount: 2,
+        duplicatePairCount: 3,
       };
 
       const mockRepo = {
@@ -114,7 +110,7 @@ describe("contactAnalyticsUseCases", () => {
         expect(mockRepo.aggregateCommandMetrics).toHaveBeenCalledWith(
           TENANT,
           expect.objectContaining({ version: 1 }),
-          { duplicatePairCount: 2 },
+          { duplicatePairCount: 3 },
         );
       });
     });

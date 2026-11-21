@@ -75,7 +75,40 @@ describe("getContactDuplicateCandidateKeys", () => {
 
   it("collapses internal whitespace in name keys", () => {
     const keys = getContactDuplicateCandidateKeys(contact("1", "Ali  Khan"), {});
-    expect(keys.name).toBe("alikhan");
+    expect(keys.name).toBe("ali khan");
+  });
+
+  it("detects exact same normalized full name as duplicate pair", () => {
+    const c1 = contact("1", "Ali Khan");
+    const c2 = contact("2", "ali   khan");
+    const pairs = findContactDuplicatePairs([c1, c2]);
+    expect(pairs).toHaveLength(1);
+    expect(pairs[0]?.reasonKey).toBe("name");
+    expect(pairs[0]?.confidence).toBe(75);
+  });
+
+  it("does NOT flag parent/child contacts as duplicates even with same name or shared phone", () => {
+    // Child named after father with shared phone, but linked as Parent
+    const parent = contact("p-1", "Ali Khan", "+923001111111");
+    const child: Contact = {
+      ...contact("c-1", "Ali Khan", "+923001111111"),
+      relationshipContacts: [{ contactId: "p-1", relationship: "Parent" }],
+    };
+    const pairs = findContactDuplicatePairs([parent, child]);
+    expect(pairs).toHaveLength(0);
+  });
+
+  it("does NOT flag siblings sharing parent phone when linked to the same parent", () => {
+    const child1: Contact = {
+      ...contact("c-1", "Fatima Ali", "+923001111111"),
+      relationshipContacts: [{ contactId: "p-1", relationship: "Father" }],
+    };
+    const child2: Contact = {
+      ...contact("c-2", "Zainab Ali", "+923001111111"),
+      relationshipContacts: [{ contactId: "p-1", relationship: "Father" }],
+    };
+    const pairs = findContactDuplicatePairs([child1, child2]);
+    expect(pairs).toHaveLength(0);
   });
 
   it("matches pair-finder results for prefix-stripped names", () => {
