@@ -10,6 +10,7 @@ import { DraggableField } from "./CustomReportBuilderDraggableField";
 import { type AggregateFn, type PreviewRow } from "./customReportBuilderFields";
 import { exportReportExcel, exportReportPdf } from "@/lib/reports/reportExportCore";
 import { CustomReportBuilderPreviewVisualizer } from "./CustomReportBuilderPreviewVisualizer";
+import { buildCustomReportExportColumns } from "./customReportBuilderExport";
 
 interface CustomReportBuilderPreviewPanelProps {
   selectedFields: string[];
@@ -41,6 +42,8 @@ export function CustomReportBuilderPreviewPanel({
   resolveFieldLabel,
 }: CustomReportBuilderPreviewPanelProps): JSX.Element {
   const { t } = useTranslation();
+  const exportColumns = buildCustomReportExportColumns(selectedFields, resolveFieldLabel);
+  const exportRows = previewData as Record<string, unknown>[];
 
   return (
     <div className="lg:col-span-2 space-y-6 flex flex-col justify-between">
@@ -114,7 +117,8 @@ export function CustomReportBuilderPreviewPanel({
                 onClick={() =>
                   void exportReportExcel({
                     title: reportName,
-                    rows: previewData as Record<string, unknown>[],
+                    columns: exportColumns,
+                    rows: exportRows,
                     filename: reportName,
                   })
                 }
@@ -130,11 +134,8 @@ export function CustomReportBuilderPreviewPanel({
                 onClick={() =>
                   void exportReportPdf({
                     title: reportName,
-                    sourceColumns: selectedFields.map((f) => ({
-                      header: resolveFieldLabel(f),
-                      key: f,
-                    })),
-                    rows: previewData as Record<string, unknown>[],
+                    columns: exportColumns,
+                    rows: exportRows,
                     filename: reportName,
                     orientation,
                     formatSize: pageSize,
