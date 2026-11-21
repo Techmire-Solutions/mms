@@ -37,7 +37,7 @@ export function renderStudentSessionsCell({
     <div className="flex flex-wrap gap-1">
       {sessionNames.length === 0 ? (
         <span className="text-xs text-muted-foreground italic">
-          {t("students.list.notEnrolled")}
+          {t("students.detail.notEnrolled")}
         </span>
       ) : (
         sessionNames.map((sessionName, idx) => (

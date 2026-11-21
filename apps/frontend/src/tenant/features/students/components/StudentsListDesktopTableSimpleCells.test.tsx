@@ -11,7 +11,7 @@ const mockTranslate = ((key: string, params?: Record<string, string | number>) =
   if (key === "students.list.ageYears" && params?.age != null) {
     return `${params.age} years`;
   }
-  if (key === "students.list.notEnrolled") {
+  if (key === "students.detail.notEnrolled") {
     return "Not enrolled";
   }
   return key;
