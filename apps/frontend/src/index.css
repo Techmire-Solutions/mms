@@ -968,6 +968,20 @@
  * Modern Web Guidance: soft-edge-content-fade
  * Directional and dual-edge linear gradient mask utilities for fading scroll overflow.
  */
+/*
+ * Horizontal tab/chip strips: a visible thin scrollbar with room below the
+ * items and smooth wheel/keyboard scrolling.
+ * Pair with useDragScroll() for mouse drag + wheel support.
+ */
+@utility scroll-strip-x {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.45) transparent;
+  padding-block-end: 0.25rem;
+  @media (prefers-reduced-motion: no-preference) {
+    scroll-behavior: smooth;
+  }
+}
+
 @utility mask-fade-inline-end {
   -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
   mask-image: linear-gradient(to right, black 88%, transparent 100%);
@@ -1320,6 +1334,7 @@
 
 ::-webkit-scrollbar {
   width: 8px;
+  /* Without a height, WebKit renders horizontal scrollbars at 0px (tab strips looked unscrollable). */
   height: 8px;
 }
 

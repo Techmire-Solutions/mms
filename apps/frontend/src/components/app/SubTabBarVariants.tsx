@@ -2,6 +2,7 @@ import React from "react";
 import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SubTabBarBadge } from "@/components/app/SubTabBarBadge";
+import { useDragScroll } from "@/hooks/useDragScroll";
 import {
   SubTabBarAccordionVariant,
   type SubTabBarAccordionVariantProps,
@@ -19,12 +20,14 @@ export function SubTabBarUnderlineVariant<K extends string>({
   panelIdPrefix,
   children,
 }: SubTabBarVariantProps<K> & { children?: React.ReactNode }): React.JSX.Element {
+  const dragScrollRef = useDragScroll<HTMLDivElement>();
   return (
     <div className={cn("w-full space-y-3", className)}>
       <div
+        ref={dragScrollRef}
         role="tablist"
         aria-orientation="horizontal"
-        className="flex w-full items-center gap-1 border-b border-border/40 overflow-x-auto no-scrollbar mask-fade-inline-end"
+        className="flex w-full items-center gap-1 border-b border-border/40 overflow-x-auto overscroll-x-contain scroll-strip-x mask-fade-inline-end"
       >
         {tabs.map((tab) => {
           const active = value === tab.key;
@@ -77,6 +80,7 @@ export function SubTabBarPillVariant<K extends string>({
   onChange,
   className,
 }: SubTabBarVariantProps<K>): React.JSX.Element {
+  const dragScrollRef = useDragScroll<HTMLDivElement>();
   return (
     <div className={cn("space-y-2", className)}>
       <div role="tablist" aria-orientation="vertical" className="space-y-1 lg:hidden">
@@ -106,9 +110,10 @@ export function SubTabBarPillVariant<K extends string>({
         })}
       </div>
       <div
+        ref={dragScrollRef}
         role="tablist"
         aria-orientation="horizontal"
-        className="hidden w-fit items-center gap-1 overflow-x-auto rounded-xl bg-muted/60 p-1 border border-border/40 backdrop-blur-xs lg:flex"
+        className="hidden w-fit max-w-full items-center gap-1 overflow-x-auto overscroll-x-contain scroll-strip-x rounded-xl bg-muted/60 p-1 border border-border/40 backdrop-blur-xs lg:flex"
       >
         {tabs.map((t) => {
           const active = value === t.key;
