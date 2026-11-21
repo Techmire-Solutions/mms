@@ -173,4 +173,26 @@ describe("ModuleTableHeaderCell", () => {
     });
     container.remove();
   });
+
+  it("given a sortable column, should keep the header's uppercase casing on the sort button", () => {
+    // Arrange
+    const html = renderToStaticMarkup(
+      <table>
+        <thead>
+          <tr>
+            <ModuleTableHeaderCell columnKey="name" sortKey="name" onSort={() => undefined}>
+              Name
+            </ModuleTableHeaderCell>
+          </tr>
+        </thead>
+      </table>,
+    );
+
+    // Act
+    const button = new DOMParser().parseFromString(html, "text/html").querySelector("th button");
+
+    // Assert
+    expect(button).toBeInstanceOf(HTMLButtonElement);
+    expect(button?.classList.contains("uppercase")).toBe(true);
+  });
 });

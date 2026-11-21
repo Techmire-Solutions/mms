@@ -47,24 +47,25 @@ export function AppPageShellSkeleton({
     >
       <span className="sr-only">Loading module content...</span>
 
-      {/* PageHeader Skeleton */}
-      {hasHeader ? (
-        <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
-          <div className="flex min-w-0 items-start gap-3">
-            <Skeleton className="mt-0.5 h-9 w-9 shrink-0 rounded-xl bg-primary/10" />
-            <div className="space-y-2 min-w-0">
-              <Skeleton className="h-6 w-44 rounded-md" />
-              <Skeleton className="h-4 w-64 rounded-md" />
+      {/* PageHeader + KPI strip skeleton — grouped like AppPageShell's command centre */}
+      <div className="space-y-4 sm:space-y-5">
+        {hasHeader ? (
+          <div className="flex items-start justify-between gap-x-4 gap-y-3 flex-wrap">
+            <div className="flex min-w-0 items-start gap-3">
+              <Skeleton className="mt-0.5 h-9 w-9 shrink-0 rounded-xl bg-primary/10" />
+              <div className="space-y-2 min-w-0">
+                <Skeleton className="h-6 w-44 rounded-md" />
+                <Skeleton className="h-4 w-64 rounded-md" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-10 w-28 rounded-xl" />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-10 w-28 rounded-xl" />
-          </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      {/* KPI Metrics Strip Skeleton */}
-      {hasMetrics ? <StatsSkeleton count={4} /> : null}
+        {hasMetrics ? <StatsSkeleton count={4} /> : null}
+      </div>
 
       {/* 3-Tier Tab Bar Skeleton */}
       {hasTabs ? (

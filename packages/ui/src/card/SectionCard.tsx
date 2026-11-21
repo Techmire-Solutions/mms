@@ -52,7 +52,14 @@ export function SectionCard({
   const paddingClass = typeof padding === "string" ? padding : padding ? "px-5 py-4" : undefined;
 
   return (
-    <Card ref={ref} className={className} accentColor={accentColor}>
+    // The title bar and body each reserve the stripe inset themselves (so the
+    // title bar's tint still reaches the stripe). Dropping Card's own inset keeps
+    // that space from stacking up to ~48px on the start edge vs ~20px on the end.
+    <Card
+      ref={ref}
+      className={cn(hasStripe && "ps-0 sm:ps-0", className)}
+      accentColor={accentColor}
+    >
       {hasHeader && (
         <CardTitleBar
           title={title}

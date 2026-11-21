@@ -118,7 +118,9 @@ export function AppShell({
         tabIndex={-1}
         className={cn(
           "flex min-h-screen min-w-0 max-w-full flex-col outline-none transition-[padding] duration-150 ease-out",
-          topBar || mobileHeader ? "pt-14 lg:pt-16" : "",
+          // The mobile header is `sticky` (in flow), so it already reserves its own
+          // height; only the `fixed` desktop top bar needs a matching offset.
+          topBar ? "lg:pt-16" : "",
           sidebar ? (sidebarCollapsed ? "lg:ps-sidebar-collapsed" : "lg:ps-sidebar") : "",
           className,
         )}

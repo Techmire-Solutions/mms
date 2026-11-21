@@ -38,4 +38,22 @@ describe("SectionCard", () => {
     expect(html).not.toContain("bg-primary/45");
     expect(html).not.toContain("w-1.5");
   });
+
+  it("given an accent stripe, should inset the start edge once rather than stacking card and body insets", () => {
+    // Arrange
+    const html = renderToStaticMarkup(
+      <SectionCard>
+        <p>Body</p>
+      </SectionCard>,
+    );
+
+    // Act
+    const card = new DOMParser().parseFromString(html, "text/html").body.firstElementChild;
+    const body = card?.lastElementChild;
+
+    // Assert
+    expect(card?.className).toContain("ps-0 sm:ps-0");
+    expect(card?.className).not.toContain("ps-5");
+    expect(body?.className).toBe("px-5 py-4 ps-5 sm:ps-6");
+  });
 });

@@ -22,7 +22,7 @@ export const PageHeader = function PageHeader({
   breadcrumb = null,
 }: PageHeaderProps): React.ReactElement {
   return (
-    <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
+    <div className="flex items-start justify-between gap-x-4 gap-y-3 flex-wrap">
       <div className="flex min-w-0 items-start gap-3">
         {Icon && (
           <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
