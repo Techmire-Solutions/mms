@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
  * Measured 2026-11-17: 278 after tightening assertions in newly added
  * component specs.
  */
-const BASELINE = 278;
+const BASELINE = 277;
 const LOOSE_ASSERTION = /\btoBeTruthy\(|\btoBeFalsy\(|\btoBeDefined\(/g;
 
 // Tests run with `apps/frontend` as cwd; tolerate a repo-root invocation.
