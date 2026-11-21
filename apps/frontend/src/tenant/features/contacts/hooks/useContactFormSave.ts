@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
@@ -7,6 +7,10 @@ import { useContactValidation } from "@/lib/contacts/useContactValidation";
 import { getApiValidationErrors, getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { isConflictError } from "@/lib/apiContractError";
 import { validateContactDraftErrors } from "@/tenant/features/contacts/hooks/contactFormDraftValidator";
+import {
+  reconcileContactValidationErrors,
+  type ContactServerErrorSnapshot,
+} from "@/tenant/features/contacts/lib/contactLiveValidation";
 import {
   applyTitleCaseToContact,
   composeContactName,
@@ -45,7 +49,13 @@ export function useContactFormSave({
   const { language } = useGlobalSettings();
   const validate = useContactValidation();
   const [saving, setSaving] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  // Errors from the last save attempt; `validationErrors` below is the live view of them.
+  const [submitErrors, setSubmitErrors] = useState<ValidationError[]>([]);
+  const [serverErrors, setServerErrors] = useState<ContactServerErrorSnapshot | null>(null);
+  const setValidationErrors = useCallback((next: ValidationError[]) => {
+    setSubmitErrors(next);
+    setServerErrors(null);
+  }, []);
   // Non-field failures (500/network/409 without field keys) belong in the modal banner,
   // not only in a toast the user can miss.
   const [formError, setFormError] = useState<string | null>(null);
@@ -152,7 +162,8 @@ export function useContactFormSave({
       } catch (err: unknown) {
         const apiErrors = getApiValidationErrors(err);
         if (apiErrors && apiErrors.length > 0) {
-          setValidationErrors(apiErrors);
+          setSubmitErrors(apiErrors);
+          setServerErrors({ errors: apiErrors, draft: cleanedDraft });
           const firstError = apiErrors[0];
           if (firstError?.tabId) {
             onValidationTab(firstError.tabId, firstError.fieldId, firstError.index);
@@ -184,6 +195,7 @@ export function useContactFormSave({
       onClose,
       onValidationTab,
       onBaselineReset,
+      setValidationErrors,
       fields,
       fieldConfigVersion,
       isTabFieldRequired,
@@ -209,6 +221,27 @@ export function useContactFormSave({
     },
     [performSave],
   );
+
+  // Live view: an error disappears as soon as the user fixes it — no new save or reopen
+  // needed — while untouched errors stay. New errors still only appear on save.
+  const validationErrors = useMemo(() => {
+    if (submitErrors.length === 0) return submitErrors;
+    const liveDraft = cleanContactDraft(contactDraft);
+    const clientErrors = validateContactDraftErrors({
+      cleanedDraft: liveDraft,
+      fields,
+      language,
+      isFieldRequired: isTabFieldRequired,
+      validateBase: validate,
+      t,
+    });
+    return reconcileContactValidationErrors({
+      current: submitErrors,
+      clientErrors,
+      server: serverErrors,
+      draft: liveDraft,
+    });
+  }, [submitErrors, serverErrors, contactDraft, fields, language, isTabFieldRequired, validate, t]);
 
   return { saving, validationErrors, setValidationErrors, formError, handleSave };
 }

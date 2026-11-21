@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   getApiValidationMessage: vi.fn(),
   notifyError: vi.fn(),
   notifySuccess: vi.fn(),
+  validateDraft: vi.fn(),
 }));
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -34,7 +35,7 @@ vi.mock("@/lib/contacts/useContactValidation", () => ({
 }));
 
 vi.mock("@/tenant/features/contacts/hooks/contactFormDraftValidator", () => ({
-  validateContactDraftErrors: () => [],
+  validateContactDraftErrors: (...args: unknown[]) => mocks.validateDraft(...args),
 }));
 
 vi.mock("@/lib/apiValidationMessage", () => ({
@@ -63,6 +64,7 @@ vi.mock("@mms/shared", () => ({
   formatSocialPlatformUrl: (_platform: string, url: string) => url,
   todayISO: () => "2026-01-01",
   uuidv7: () => "generated-id",
+  CONTACT_TAB_COLLECTION_KEYS: { phones: ["phones", "phone"] },
 }));
 
 type HookResult = ReturnType<typeof useContactFormSave>;
@@ -85,13 +87,15 @@ describe("useContactFormSave", () => {
   let root: Root;
   let result: HookResult;
 
+  // One stable component type, so a re-render keeps hook state instead of remounting.
+  function TestComponent({ props }: { props: ReturnType<typeof baseProps> }) {
+    result = useContactFormSave(props);
+    return null;
+  }
+
   function renderHook(props = baseProps()): void {
-    function TestComponent() {
-      result = useContactFormSave(props);
-      return null;
-    }
     act(() => {
-      root.render(<TestComponent />);
+      root.render(<TestComponent props={props} />);
     });
   }
 
@@ -101,6 +105,7 @@ describe("useContactFormSave", () => {
     root = createRoot(container);
     mocks.getApiValidationErrors.mockReturnValue(null);
     mocks.getApiValidationMessage.mockReturnValue("");
+    mocks.validateDraft.mockReturnValue([]);
   });
 
   afterEach(async () => {
@@ -180,5 +185,78 @@ describe("useContactFormSave", () => {
 
     expect(saved).toBe(false);
     expect(result.formError).toBe("contacts.form.saveConflict");
+  });
+
+  describe("live error clearing after a failed save", () => {
+    const duplicatePhoneError = {
+      fieldId: "number",
+      tabId: "phones",
+      index: 0,
+      message: "Phone Number must be unique",
+    };
+
+    it("given a server duplicate-phone error, should clear it once the phone changes, without another save", async () => {
+      // Arrange
+      const onSave = vi.fn().mockRejectedValueOnce(new Error("Duplicate"));
+      mocks.getApiValidationErrors.mockReturnValue([duplicatePhoneError]);
+      const draft = {
+        firstName: "Zayd",
+        phones: [{ label: "mobile", number: "3001234567" }],
+      } as Partial<Contact>;
+      renderHook(baseProps({ onSave, contactDraft: draft }));
+      await act(async () => {
+        await result.handleSave();
+      });
+      expect(result.validationErrors).toEqual([duplicatePhoneError]);
+
+      // Act
+      renderHook(
+        baseProps({
+          onSave,
+          contactDraft: { ...draft, phones: [{ label: "mobile", number: "3009999999" }] },
+        }),
+      );
+
+      // Assert
+      expect(result.validationErrors).toEqual([]);
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+
+    it("given an unrelated edit, should keep the server error on the unchanged phone", async () => {
+      // Arrange
+      const onSave = vi.fn().mockRejectedValueOnce(new Error("Duplicate"));
+      mocks.getApiValidationErrors.mockReturnValue([duplicatePhoneError]);
+      const draft = {
+        firstName: "Zayd",
+        phones: [{ label: "mobile", number: "3001234567" }],
+      } as Partial<Contact>;
+      renderHook(baseProps({ onSave, contactDraft: draft }));
+      await act(async () => {
+        await result.handleSave();
+      });
+
+      // Act
+      renderHook(baseProps({ onSave, contactDraft: { ...draft, firstName: "Zaid" } }));
+
+      // Assert
+      expect(result.validationErrors).toEqual([duplicatePhoneError]);
+    });
+
+    it("given a client duplicate error, should clear it when the draft no longer produces it", async () => {
+      // Arrange
+      mocks.validateDraft.mockReturnValue([duplicatePhoneError]);
+      renderHook(baseProps());
+      await act(async () => {
+        await result.handleSave();
+      });
+      expect(result.validationErrors).toEqual([duplicatePhoneError]);
+
+      // Act
+      mocks.validateDraft.mockReturnValue([]);
+      renderHook(baseProps({ contactDraft: { firstName: "Zayd", lastName: "Harith " } }));
+
+      // Assert
+      expect(result.validationErrors).toEqual([]);
+    });
   });
 });
