@@ -78,7 +78,7 @@ export function StudentDetailSiblingsSection({
                           tone="primary"
                           className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
                         >
-                          {t("students.grPrefix")}: {sibling.grNumber}
+                          {sibling.grNumber}
                         </Badge>
                       ) : null}
                       {sibling.status && (
