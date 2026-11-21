@@ -2,13 +2,21 @@ import React, { createContext, useContext, useMemo } from "react";
 
 export interface UiConfigLabels {
   cancel?: string;
+  save?: string;
+  saving?: string;
   confirm?: string;
   delete?: string;
-  close?: string;
-  retry?: string;
   searchPlaceholder?: string;
+  retry?: string;
   clearSearch?: string;
   loading?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  rowsPerPage?: string;
+  pageOf?: (page: number, total: number) => string;
+  previous?: string;
+  next?: string;
+  close?: string;
 }
 
 export interface UiConfig {
@@ -16,15 +24,25 @@ export interface UiConfig {
   labels?: UiConfigLabels;
 }
 
-const DEFAULT_LABELS: Required<UiConfigLabels> = {
+const DEFAULT_LABELS: Required<Omit<UiConfigLabels, "pageOf">> & {
+  pageOf: (page: number, total: number) => string;
+} = {
   cancel: "Cancel",
+  save: "Save",
+  saving: "Saving...",
   confirm: "Confirm",
   delete: "Delete",
-  close: "Close",
+  searchPlaceholder: "Search...",
   retry: "Retry",
-  searchPlaceholder: "Search…",
   clearSearch: "Clear Search",
   loading: "Loading…",
+  emptyTitle: "No records found",
+  emptyDescription: "Try adjusting your search or filters.",
+  rowsPerPage: "Rows per page",
+  pageOf: (page: number, total: number) => `Page ${page} of ${total}`,
+  previous: "Previous",
+  next: "Next",
+  close: "Close",
 };
 
 const UiConfigContext = createContext<UiConfig>({
@@ -57,7 +75,9 @@ export function UiConfigProvider({ config, children }: UiConfigProviderProps): R
 
 export function useUiConfig(): {
   dir: "ltr" | "rtl";
-  labels: Required<UiConfigLabels>;
+  labels: Required<Omit<UiConfigLabels, "pageOf">> & {
+    pageOf: (page: number, total: number) => string;
+  };
 } {
   const context = useContext(UiConfigContext);
   return {
