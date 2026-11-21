@@ -10,7 +10,7 @@ import {
   canReadCollection,
   canDeleteCollection,
 } from "../../../services/rbacService.js";
-import { replyValidationError } from "../../../lib/zodRequest.js";
+import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 
 import {
   auditContact,
@@ -274,10 +274,6 @@ export const contactCrudRoutes: FastifyPluginAsync = async (fastify) => {
   } as unknown as RouterImplementation<typeof contactsContract>);
 
   await fastify.register(s.plugin(router), {
-    requestValidationErrorHandler: (err, _request, reply) => {
-      const zErr = err.body ?? err.query ?? err.pathParams ?? err.headers;
-      const message = zErr instanceof Error ? zErr.message : err.message;
-      void replyValidationError(reply, message);
-    },
+    requestValidationErrorHandler: standardRequestValidationErrorHandler,
   });
 };

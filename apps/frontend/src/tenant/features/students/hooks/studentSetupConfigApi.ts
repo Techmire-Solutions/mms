@@ -1,8 +1,13 @@
 import { apiContract } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import { createModuleSetupConfigApi } from "@/lib/query/createModuleSetupConfigApi";
-import type { StudentModulePreferences } from "@mms/shared";
-import { normalizeStudentModulePreferences } from "@mms/shared";
+import {
+  normalizeStudentModulePreferences,
+  normalizeStudentsSettings,
+  stripStudentFieldConfigForPersist,
+  type StudentModulePreferences,
+  type StudentsSettings,
+} from "@mms/shared";
 
 const api = createModuleSetupConfigApi<StudentModulePreferences>({
   fetchPreferencesFn: async (_signal) => {
@@ -22,3 +27,22 @@ export const setStudentPreferencesMemory = api.setPreferencesMemory;
 export const fetchStudentPreferences = api.fetchPreferences;
 export const saveStudentPreferencesAsync = api.savePreferencesAsync;
 export const getStudentSettingsMemoryFallback = api.getSettingsMemoryFallback;
+
+/** GET /api/students/field-config — composed settings, or seed defaults when never saved. */
+export async function fetchStudentFieldConfig(_signal?: AbortSignal): Promise<StudentsSettings> {
+  const response = await apiContract.students.getFieldConfig({ extraHeaders: {} });
+  assertContractOk(response, "Failed to load student field configuration");
+  const body = response.body as { config: Record<string, unknown> | null };
+  return normalizeStudentsSettings(body?.config ?? null);
+}
+
+/** PUT /api/students/field-config — persists the field registry slice (never prefs / tabs). */
+export async function saveStudentFieldConfigAsync(
+  config: StudentsSettings,
+): Promise<StudentsSettings> {
+  const bodyPayload = stripStudentFieldConfigForPersist(config);
+  const response = await apiContract.students.updateFieldConfig({ body: bodyPayload });
+  assertContractOk(response, "Failed to save student field configuration");
+  const body = response.body as { success: boolean; config: Record<string, unknown> };
+  return normalizeStudentsSettings(body?.config ?? bodyPayload);
+}

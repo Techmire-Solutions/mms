@@ -15,6 +15,10 @@ const StudentsSetupPanel = lazy(
   () => import("@/tenant/features/students/components/StudentsSetupPanel"),
 );
 
+const StudentsRequiredFieldsSection = lazy(
+  () => import("@/tenant/features/students/components/StudentsRequiredFieldsSection"),
+);
+
 const StudentCardTemplateEditor = lazy(
   () => import("@/tenant/features/students/components/card-template/StudentCardTemplateEditor"),
 );
@@ -34,6 +38,9 @@ export const StudentsSetupTier = function StudentsSetupTier({
   const { t } = useTranslation();
   const { canEditSetup } = useModulePermissions(STUDENTS_MODULE_MANIFEST);
   const [prefsDirty, setPrefsDirty] = useState(false);
+  const [requiredFieldsDirty, setRequiredFieldsDirty] = useState(false);
+  // Remounting the section on discard resets its local draft.
+  const [requiredFieldsResetNonce, setRequiredFieldsResetNonce] = useState(0);
 
   const handlePrefsDirty = (dirty: boolean) => {
     setPrefsDirty(dirty);
@@ -45,9 +52,15 @@ export const StudentsSetupTier = function StudentsSetupTier({
   const subTabs = useModuleSetupSubTabs({
     initialKey: activeSubTab || "preferences",
     isDirty: (key) =>
-      (key === "preferences" && prefsDirty) || (key === "card_template" && templateGuard.isDirty()),
+      (key === "preferences" && prefsDirty) ||
+      (key === "required_fields" && requiredFieldsDirty) ||
+      (key === "card_template" && templateGuard.isDirty()),
     onDiscard: (leavingKey) => {
       if (leavingKey === "preferences") setPrefsDirty(false);
+      if (leavingKey === "required_fields") {
+        setRequiredFieldsDirty(false);
+        setRequiredFieldsResetNonce((nonce) => nonce + 1);
+      }
       if (leavingKey === "card_template") templateGuard.discard();
     },
     onChange: onSubTabChange,
@@ -56,6 +69,7 @@ export const StudentsSetupTier = function StudentsSetupTier({
   const subTabBarItems = useMemo(
     () => [
       { key: "preferences", label: t("students.setup.preferences") },
+      { key: "required_fields", label: t("students.setup.requiredFields") },
       { key: "card_template", label: t("students.setup.cardTemplate") },
     ],
     [t],
@@ -78,6 +92,12 @@ export const StudentsSetupTier = function StudentsSetupTier({
               {subTabs.sub === "preferences" && (
                 <StudentsSetupPanel onPrefsDirtyChange={handlePrefsDirty} />
               )}
+              {subTabs.sub === "required_fields" && (
+                <StudentsRequiredFieldsSection
+                  key={requiredFieldsResetNonce}
+                  onDirtyChange={setRequiredFieldsDirty}
+                />
+              )}
               {subTabs.sub === "card_template" && (
                 <StudentCardTemplateEditor
                   key={templateGuard.resetNonce}
@@ -99,7 +119,11 @@ export const StudentsSetupTier = function StudentsSetupTier({
             if (!open) subTabs.clearPendingSubTab();
           }}
           title={t("settings.unsavedChanges")}
-          description={t("students.setup.discardUnsavedPreferencesConfirm")}
+          description={
+            subTabs.sub === "required_fields"
+              ? t("students.setup.discardUnsavedFieldsConfirm")
+              : t("students.setup.discardUnsavedPreferencesConfirm")
+          }
           confirmLabel={t("common.yes")}
           cancelLabel={t("common.cancel")}
           destructive

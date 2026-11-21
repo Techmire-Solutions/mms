@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { WORK_STICKY_HEAD } from "@/components/ui/formStyles";
 import { WORK_TABLE_ACTIONS_WIDTH_CLASS } from "@/components/common/work/workBatchTableWidths";
+import { useColumnHeaderDrag, type DropPosition } from "@/components/app/useColumnHeaderDrag";
 import { cn } from "@/lib/utils";
 
 export interface ModuleWorkTableHeaderProps<
@@ -49,6 +50,15 @@ export interface ModuleWorkTableHeaderProps<
   // Optional name property to make it sticky beside the checkbox.
   // Defaults to "name" as the identifier for the sticky column if any.
   stickyColumnId?: string;
+
+  /** Callback when a column header is dragged to reorder. */
+  onReorderColumn?: (
+    sourceColumnId: string,
+    targetColumnId: string,
+    position: DropPosition,
+  ) => void;
+  /** Filter to declare whether a column is draggable (e.g. pinned columns). */
+  isColumnDraggable?: (columnId: string) => boolean;
 }
 
 export function ModuleWorkTableHeader<
@@ -75,90 +85,108 @@ export function ModuleWorkTableHeader<
   actionsLabel,
   actionsClassName = WORK_TABLE_ACTIONS_WIDTH_CLASS,
   stickyColumnId = "name",
+  onReorderColumn,
+  isColumnDraggable,
 }: ModuleWorkTableHeaderProps<TCol>): JSX.Element {
+  const { getThDragProps, renderDropIndicator, renderDragOverlay, suppressClickRef } =
+    useColumnHeaderDrag({
+      columns,
+      stickyColumnId,
+      onReorder: onReorderColumn,
+      isColumnDraggable,
+    });
+
   return (
-    <TableHeader>
-      <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
-        {selection && (
-          <TableHead
-            noWrap
-            onClick={(e) => {
-              const target = e.target as HTMLElement;
-              if (!target.closest('button[role="checkbox"]')) {
-                selection.onSelectAll();
-              }
-            }}
-            className={cn(
-              "w-12 min-w-12 px-4 py-3 sticky start-0 z-sticky border-e border-border/30 h-auto cursor-pointer",
-              WORK_STICKY_HEAD,
-            )}
-          >
-            <Checkbox
-              checked={selection.someSelected ? "indeterminate" : selection.allSelected}
-              onCheckedChange={() => selection.onSelectAll()}
-              aria-label={selection.ariaLabel}
-              className="cursor-pointer"
-            />
-          </TableHead>
-        )}
-
-        {columns.map((col) => {
-          const sortKey = col.sortField || col.id;
-
-          // If there is a selection column, the sticky column needs to start at offset 12 (48px).
-          // Otherwise, it starts at 0.
-          let stickyClass = "";
-          if (col.id === stickyColumnId) {
-            if (selection) {
-              stickyClass = cn(
-                "sticky start-12 z-sticky border-e border-border/30",
+    <>
+      {renderDragOverlay()}
+      <TableHeader sticky>
+        <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
+          {selection && (
+            <TableHead
+              noWrap
+              onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (!target.closest('button[role="checkbox"]')) {
+                  selection.onSelectAll();
+                }
+              }}
+              className={cn(
+                "w-12 min-w-12 px-4 py-3 sticky start-0 z-sticky border-e border-border/30 h-auto cursor-pointer",
                 WORK_STICKY_HEAD,
-              );
-            } else {
-              stickyClass = cn(
-                "sticky start-0 z-sticky border-e border-border/30",
-                WORK_STICKY_HEAD,
-              );
-            }
-          }
-
-          const width = getColumnWidth(col.id) ?? col.width;
-
-          return (
-            <ModuleTableHeaderCell
-              key={col.id}
-              columnKey={col.id}
-              sortKey={sortKey}
-              activeSortField={sortField}
-              sortDir={sortDir}
-              onSort={onSort}
-              width={width}
-              minWidth={col.minWidth}
-              onResize={setColumnWidth}
-              noWrap={col.noWrap}
-              truncate={col.truncate}
-              align={col.align}
-              variant={col.variant}
-              className={cn("px-4 py-3 text-wrap break-words", stickyClass, col.headerClassName)}
+              )}
             >
-              {col.label}
-            </ModuleTableHeaderCell>
-          );
-        })}
+              <Checkbox
+                checked={selection.someSelected ? "indeterminate" : selection.allSelected}
+                onCheckedChange={() => selection.onSelectAll()}
+                aria-label={selection.ariaLabel}
+                className="cursor-pointer"
+              />
+            </TableHead>
+          )}
 
-        {actionsLabel && (
-          <TableHead
-            noWrap
-            className={cn(
-              MODULE_TABLE_HEAD_TYPOGRAPHY_CLASS,
-              "px-4 py-3 text-end h-auto",
-              actionsClassName,
-            )}
-          >
-            <span>{actionsLabel}</span>
-          </TableHead>
-        )}
-      </TableRow>
-    </TableHeader>
+          {columns.map((col) => {
+            const sortKey = col.sortField || col.id;
+
+            // If there is a selection column, the sticky column needs to start at offset 12 (48px).
+            // Otherwise, it starts at 0.
+            let stickyClass = "";
+            if (col.id === stickyColumnId) {
+              if (selection) {
+                stickyClass = cn(
+                  "sticky start-12 z-sticky border-e border-border/30",
+                  WORK_STICKY_HEAD,
+                );
+              } else {
+                stickyClass = cn(
+                  "sticky start-0 z-sticky border-e border-border/30",
+                  WORK_STICKY_HEAD,
+                );
+              }
+            }
+
+            const width = getColumnWidth(col.id) ?? col.width;
+            const thDragProps = getThDragProps(col.id, col.label);
+            const dropIndicator = renderDropIndicator(col.id);
+
+            return (
+              <ModuleTableHeaderCell
+                key={col.id}
+                columnKey={col.id}
+                sortKey={sortKey}
+                activeSortField={sortField}
+                sortDir={sortDir}
+                onSort={onSort}
+                width={width}
+                minWidth={col.minWidth}
+                onResize={setColumnWidth}
+                noWrap={col.noWrap}
+                truncate={col.truncate}
+                align={col.align}
+                variant={col.variant}
+                className={cn("px-4 py-3 text-wrap break-words", stickyClass, col.headerClassName)}
+                thProps={thDragProps}
+                dropIndicator={dropIndicator}
+                suppressSortClick={suppressClickRef}
+              >
+                {col.label}
+              </ModuleTableHeaderCell>
+            );
+          })}
+
+          {actionsLabel && (
+            <TableHead
+              noWrap
+              className={cn(
+                MODULE_TABLE_HEAD_TYPOGRAPHY_CLASS,
+                "px-4 py-3 text-end h-auto",
+                actionsClassName,
+              )}
+            >
+              <span>{actionsLabel}</span>
+            </TableHead>
+          )}
+        </TableRow>
+      </TableHeader>
+    </>
   );
 }

@@ -602,7 +602,7 @@ describe("createContactsUseCases (DI composition root)", () => {
     expect(repo.findByIds).toHaveBeenCalledWith("demo", ["a", "gone"]);
   });
 
-  it("loadContactsCommandMetrics excludes name-only duplicate pairs from the count", async () => {
+  it("loadContactsCommandMetrics includes exact name duplicate pairs in the count", async () => {
     const { repo } = createFakeRepo();
     mockGetDuplicateScanCache.mockResolvedValue({
       pairs: [{ reasonKey: "name" }, { reasonKey: "phone" }, { reasonKey: "email" }],
@@ -611,9 +611,9 @@ describe("createContactsUseCases (DI composition root)", () => {
 
     const metrics = await useCases.loadContactsCommandMetrics();
     expect(repo.aggregateCommandMetrics).toHaveBeenCalledWith("demo", expect.any(Object), {
-      duplicatePairCount: 2,
+      duplicatePairCount: 3,
     });
-    expect(metrics.duplicatePairCount).toBe(2);
+    expect(metrics.duplicatePairCount).toBe(3);
   });
 
   it("loadContactsReportAnalytics skips monthly counts when no compareYears are given", async () => {

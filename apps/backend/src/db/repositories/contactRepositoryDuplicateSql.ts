@@ -26,9 +26,9 @@ export function cnicComparisonKeySql(cnicExpr: SQL): SQL {
 
 /** Lower/trim + prefix-strip (first match, like JS) + whitespace-collapse name key — `cleanName`. */
 export function nameKeySql(prefixRegex: string): SQL {
-  const nameExpr = sql`COALESCE(NULLIF(${contacts.name}, ''), ${contacts.firstName})`;
+  const nameExpr = sql`COALESCE(NULLIF(trim(${contacts.name}), ''), NULLIF(trim(concat_ws(' ', ${contacts.firstName}, ${contacts.lastName})), ''))`;
   const stripped = prefixRegex
     ? sql`regexp_replace(lower(trim(COALESCE(${nameExpr}, ''))), ${prefixRegex}, '')`
     : sql`lower(trim(COALESCE(${nameExpr}, '')))`;
-  return sql`regexp_replace(${stripped}, '[[:space:]]+', '', 'g')`;
+  return sql`trim(regexp_replace(${stripped}, '[[:space:]]+', ' ', 'g'))`;
 }

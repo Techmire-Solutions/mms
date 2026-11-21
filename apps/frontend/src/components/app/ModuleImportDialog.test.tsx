@@ -98,6 +98,47 @@ describe("ModuleImportDialog", () => {
     expect(baseActions.handleDownloadTemplate).toHaveBeenCalledTimes(1);
   });
 
+  it("triggers file picker when clicking the dropzone and forwards selected file", async () => {
+    act(() => {
+      root.render(
+        <ModuleImportDialog
+          open={true}
+          onClose={vi.fn()}
+          title="Import Students"
+          canWrite={true}
+          actions={baseActions}
+        />,
+      );
+    });
+
+    const fileInput = document.body.querySelector(
+      'input[type="file"]#module-csv-file-input',
+    ) as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+
+    const clickSpy = vi.spyOn(fileInput, "click");
+    const dropzoneButton = Array.from(document.body.querySelectorAll("button")).find((btn) =>
+      btn.textContent?.includes("Drop CSV file here"),
+    );
+    expect(dropzoneButton).not.toBeNull();
+
+    act(() => {
+      dropzoneButton?.click();
+    });
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+
+    const file = new File(["id,name\n1,Ahmed"], "students.csv", { type: "text/csv" });
+    await act(async () => {
+      Object.defineProperty(fileInput, "files", {
+        value: [file],
+      });
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    expect(baseActions.handleFileSelect).toHaveBeenCalledWith(file);
+    expect(fileInput.value).toBe("");
+  });
+
   it("displays parsed rows ready to import and triggers import", () => {
     const actions = {
       ...baseActions,

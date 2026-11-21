@@ -10,10 +10,7 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("@/tenant/features/students/hooks/useStudentDetailModel", () => ({
   useStudentDetailModel: (_student: Student) => ({
-    t: (key: string, params?: Record<string, string | number>) => {
-      if (params?.gr) return `GR: ${params.gr}`;
-      return key;
-    },
+    t: (key: string) => key,
     statusBadgeConfig: {},
     sortedEnabledFields: [],
     relationshipLinks: [],
@@ -82,7 +79,8 @@ describe("StudentDetail Component", () => {
     );
 
     expect(html).toContain("students.detail.title");
-    expect(html).toContain("GR: GR-99");
+    expect(html).toContain("GR-99");
+    expect(html).not.toContain("students.detail.grSubtitle");
     expect(html).toContain("Sample student note");
     expect(html).toContain("students.detail.printIdCard");
   });
