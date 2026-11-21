@@ -17,10 +17,15 @@ import {
 } from "@/tenant/features/contacts/hooks/useContactsQueries";
 import { invalidateContactsQueries } from "@/tenant/features/contacts/hooks/invalidateContactsQueries";
 import { unwrapContactMutationBody } from "@/tenant/features/contacts/hooks/contactMutationResponse";
+import { hideContactsInListCaches } from "@/tenant/features/contacts/hooks/contactsOptimisticHide";
 
 type ContactSuccessResponse = { success: true };
 type ContactWrappedResponse = ContactSuccessResponse & { contact: Contact };
 type ContactBulkResult = ContactSuccessResponse & { succeeded: number; failed: number };
+type ContactBulkDeleteResult = ContactBulkResult & {
+  /** Contacts the server kept because an active student/staff/workshop link still uses them. */
+  blocked?: Array<{ id: string; message: string }>;
+};
 type ContactBulkRestoreResult = ContactBulkResult & {
   /** Server field issues are `ValidationError` (`fieldId`/`tabId`/`message`), not `field`. */
   conflicts: Array<{ id: string; errors: ValidationError[] }>;
@@ -126,6 +131,8 @@ export function useContactMutations() {
     deleteContact: {
       ...deleteContactMutation,
       mutateAsync: async ({ id, deletionReason }: { id: string; deletionReason?: string }) => {
+        // Hide the row now; a refused delete (409 linked contact) puts it back.
+        const rollback = await hideContactsInListCaches(queryClient, [id]);
         try {
           const response = await deleteContactMutation.mutateAsync({
             params: { id },
@@ -135,6 +142,8 @@ export function useContactMutations() {
         } catch (error) {
           if (shouldQueueContactWrite(error)) {
             enqueueContactsOutbox({ kind: "delete", contactId: id, deletionReason });
+          } else {
+            rollback();
           }
           throw error;
         }
@@ -142,8 +151,15 @@ export function useContactMutations() {
     },
     bulkDeleteContacts: {
       mutateAsync: async (payload: { ids: string[]; deletionReason?: string }) => {
-        const response = await bulkDeleteMutation.mutateAsync({ body: payload });
-        return unwrapContactMutationBody<ContactBulkResult>(response);
+        // Blocked (linked) ids come back on the post-success refetch.
+        const rollback = await hideContactsInListCaches(queryClient, payload.ids);
+        try {
+          const response = await bulkDeleteMutation.mutateAsync({ body: payload });
+          return unwrapContactMutationBody<ContactBulkDeleteResult>(response);
+        } catch (error) {
+          rollback();
+          throw error;
+        }
       },
       isPending: bulkDeleteMutation.isPending,
     },

@@ -2798,6 +2798,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "contacts.resetLayout": "ترتیب ری سیٹ کریں",
   "contacts.restoreContact": "رابطہ بحال کریں",
   "contacts.restoreFailed": "رابطہ بحال نہیں ہو سکا۔ دوبارہ کوشش کریں۔",
+  "contacts.deleteFailed": "رابطہ حذف نہیں ہو سکا۔",
   "contacts.restoreSuccessDescription": '"{name}" دوبارہ فعال ہے۔',
   "contacts.restoreSuccessDescriptionDefault": "رابطہ ڈائریکٹری میں بحال ہو گیا۔",
   "contacts.restoreSuccessTitle": "رابطہ بحال ہو گیا",

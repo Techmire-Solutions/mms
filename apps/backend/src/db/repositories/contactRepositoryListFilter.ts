@@ -1,6 +1,6 @@
-import { desc, asc, eq, inArray, isNotNull, isNull, notInArray, sql, type SQL } from "drizzle-orm";
-import { isQueryFlagTrue, type ContactsListQuery } from "@mms/shared";
-import { contacts, contactAddresses } from "../schema.js";
+import { eq, inArray, isNotNull, isNull, notInArray, sql, type SQL } from "drizzle-orm";
+import { CONTACT_SORT_FIELDS, isQueryFlagTrue, type ContactsListQuery } from "@mms/shared";
+import { contacts, contactAddresses, contactTags } from "../schema.js";
 import { hasEmailSql, hasPhoneSql, hasWhatsAppSql } from "./contactRepositorySql.js";
 import {
   existsActiveStudentLinkSql,
@@ -9,58 +9,73 @@ import {
 } from "./contactRepositoryLinkSql.js";
 import { isSyedSql, buildSearchSql } from "./contactRepositoryListSql.js";
 
-export const CONTACT_SORT_FIELDS = new Set([
-  "name",
-  "firstName",
-  "lastName",
-  "city",
-  "gender",
-  "createdAt",
-  "updatedAt",
-]);
-
-export function buildOrderBy(
-  sortField: string | undefined,
-  sortDir: "asc" | "desc" | "" | undefined,
-): SQL {
-  const dir = sortDir === "desc" ? "desc" : "asc";
-  const field = sortField?.trim();
-  if (!field || !CONTACT_SORT_FIELDS.has(field)) {
-    return sql`${contacts.id} asc`;
-  }
-  // Deterministic tiebreaker: SQL does not guarantee a stable order for rows
-  // with equal sort keys, so page-walking exports could skip or repeat rows
-  // across OFFSET pages without one.
-  const tiebreak = (expression: SQL): SQL => sql`${expression}, ${contacts.id} asc`;
-  if (field === "updatedAt") {
-    return tiebreak(dir === "desc" ? desc(contacts.updatedAt) : asc(contacts.updatedAt));
-  }
-  if (field === "createdAt") {
-    return tiebreak(dir === "desc" ? desc(contacts.createdAt) : asc(contacts.createdAt));
-  }
-  if (field === "name") {
-    return tiebreak(dir === "desc" ? desc(contacts.name) : asc(contacts.name));
-  }
-  if (field === "firstName") {
-    return tiebreak(dir === "desc" ? desc(contacts.firstName) : asc(contacts.firstName));
-  }
-  if (field === "lastName") {
-    return tiebreak(dir === "desc" ? desc(contacts.lastName) : asc(contacts.lastName));
-  }
-  if (field === "gender") {
-    return tiebreak(dir === "desc" ? desc(contacts.gender) : asc(contacts.gender));
-  }
-  if (field === "city") {
-    const cityExpr = sql`(
-      SELECT a.city FROM ${contactAddresses} a
+/** First address value by primary flag then sort order (matches the Work address cell). */
+function primaryAddressSql(column: "line1" | "city" | "state" | "country"): SQL {
+  return sql`(
+      SELECT a.${sql.raw(column)} FROM ${contactAddresses} a
       WHERE a.workspace_subdomain = ${contacts.workspaceSubdomain}
         AND a.contact_id = ${contacts.id}
       ORDER BY CASE WHEN a.is_primary THEN 0 ELSE 1 END, a.sort_order ASC
       LIMIT 1
     )`;
-    return tiebreak(dir === "desc" ? desc(cityExpr) : asc(cityExpr));
+}
+
+/** Alphabetically first active tag (the Tag column shows the tag chips in name order). */
+function firstTagSql(): SQL {
+  return sql`(
+      SELECT min(lower(t.name)) FROM ${contactTags} t
+      WHERE t.workspace_subdomain = ${contacts.workspaceSubdomain}
+        AND t.contact_id = ${contacts.id}
+        AND t.archived = false
+    )`;
+}
+
+/** Sort expression per supported key; `nullable` keeps empty values last in both directions. */
+function sortExpression(field: string): { expression: SQL; nullable: boolean } | undefined {
+  switch (field) {
+    case "name":
+      return { expression: sql`${contacts.name}`, nullable: false };
+    case "firstName":
+      return { expression: sql`${contacts.firstName}`, nullable: false };
+    case "lastName":
+      return { expression: sql`${contacts.lastName}`, nullable: true };
+    case "createdAt":
+      return { expression: sql`${contacts.createdAt}`, nullable: false };
+    case "updatedAt":
+      return { expression: sql`${contacts.updatedAt}`, nullable: false };
+    case "isSyed":
+      return { expression: sql`${contacts.isSyed}`, nullable: false };
+    case "gender":
+      return { expression: sql`NULLIF(lower(btrim(${contacts.gender})), '')`, nullable: true };
+    case "cnic":
+      return { expression: sql`NULLIF(btrim(${contacts.cnic}), '')`, nullable: true };
+    case "dob":
+      return { expression: sql`${contacts.dob}`, nullable: true };
+    case "tag":
+      return { expression: firstTagSql(), nullable: true };
+    case "line1":
+    case "city":
+    case "state":
+    case "country":
+      return { expression: sql`NULLIF(btrim(${primaryAddressSql(field)}), '')`, nullable: true };
+    default:
+      return undefined;
   }
-  return sql`${contacts.id} asc`;
+}
+
+export function buildOrderBy(
+  sortField: string | undefined,
+  sortDir: "asc" | "desc" | "" | undefined,
+): SQL {
+  const field = sortField?.trim();
+  const resolved = field && CONTACT_SORT_FIELDS.has(field) ? sortExpression(field) : undefined;
+  if (!resolved) return sql`${contacts.id} asc`;
+  const dir = sortDir === "desc" ? sql.raw("desc") : sql.raw("asc");
+  const nulls = resolved.nullable ? sql.raw(" nulls last") : sql.raw("");
+  // Deterministic tiebreaker: SQL does not guarantee a stable order for rows
+  // with equal sort keys, so page-walking exports could skip or repeat rows
+  // across OFFSET pages without one.
+  return sql`${resolved.expression} ${dir}${nulls}, ${contacts.id} asc`;
 }
 
 export function buildListConditions(

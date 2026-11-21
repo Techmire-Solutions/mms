@@ -2775,6 +2775,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "contacts.resetLayout": "إعادة ضبط المخطط",
   "contacts.restoreContact": "استعادة جهة الاتصال",
   "contacts.restoreFailed": "تعذرت استعادة جهة الاتصال. حاول مرة أخرى.",
+  "contacts.deleteFailed": "تعذر حذف جهة الاتصال.",
   "contacts.restoreSuccessDescription": '"{name}" نشطة مرة أخرى.',
   "contacts.restoreSuccessDescriptionDefault": "تمت استعادة جهة الاتصال إلى الدليل.",
   "contacts.restoreSuccessTitle": "تمت استعادة جهة الاتصال",

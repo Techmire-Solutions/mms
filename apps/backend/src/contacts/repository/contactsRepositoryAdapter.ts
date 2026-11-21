@@ -25,7 +25,10 @@ import {
   aggregateContactsWidgetQueries,
 } from "../../db/repositories/contactRepositoryAggregates.js";
 import { withTenant } from "../../db/tenant-context.js";
-import { guardContactSoftDeleteDependents } from "../../db/repositories/studentDeleteGuard.js";
+import {
+  findContactDeleteBlockers,
+  guardContactSoftDeleteDependents,
+} from "../../db/repositories/studentDeleteGuard.js";
 import type { ContactsRepository } from "./contactsRepository.js";
 
 /**
@@ -82,6 +85,7 @@ function createContactsRepository(): ContactsRepository {
       aggregateContactsMonthlyCreatedCounts(tenant, years, monthCount, language),
     aggregateWidgetQueries: (tenant, queries) => aggregateContactsWidgetQueries(tenant, queries),
     guardDeleteDependents: (tenant, ids) => guardContactSoftDeleteDependents(tenant, ids),
+    findDeleteBlockers: (tenant, ids) => findContactDeleteBlockers(tenant, ids),
     isAttachmentReferenced: (tenant, url, alternateUrl) =>
       isContactAttachmentReferenced(tenant, url, alternateUrl),
   };

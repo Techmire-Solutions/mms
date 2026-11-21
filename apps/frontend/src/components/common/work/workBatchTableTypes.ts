@@ -33,6 +33,8 @@ export interface WorkBatchTableColumn<TData> {
   id: string;
   label: string;
   sortField?: string;
+  /** `false` renders a plain header (no sort button) for columns the server cannot order. */
+  sortable?: boolean;
   width?: number;
   /** Content kind: seeds the default width and floors stale stored widths (`MODULE_COLUMN_KIND_WIDTHS`). */
   kind?: ModuleColumnKind;

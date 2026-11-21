@@ -81,16 +81,20 @@ export function useContactsDirectoryFilters({
   const activeFilterCount =
     (filterGender ? 1 : 0) + (quickFilter !== "all" ? 1 : 0) + (search.trim() ? 1 : 0);
 
-  const handleSort = useCallback((field: string) => {
-    setSortField((currentField) => {
-      if (currentField === field) {
+  // Updaters must stay pure: setting the direction from inside the field updater
+  // queued the toggle twice under StrictMode/concurrent replays, so the second
+  // header click flipped asc→desc→asc and the list never reversed.
+  const handleSort = useCallback(
+    (field: string) => {
+      if (field === sortField) {
         setSortDir((dir) => (dir === "asc" ? "desc" : "asc"));
-        return currentField;
+        return;
       }
+      setSortField(field);
       setSortDir("asc");
-      return field;
-    });
-  }, []);
+    },
+    [sortField],
+  );
 
   const handleSortDir = useCallback((dir: "asc" | "desc") => {
     setSortDir(dir);

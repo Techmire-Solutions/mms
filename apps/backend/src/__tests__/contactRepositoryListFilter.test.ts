@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import { PgDialect } from "drizzle-orm/pg-core";
 import {
   CONTACT_SORT_FIELDS,
-  buildOrderBy,
-} from "../db/repositories/contactRepositoryListFilter.js";
+  DEFAULT_COLUMN_REGISTRY,
+  resolveContactColumnSortField,
+} from "@mms/shared";
+import { buildOrderBy } from "../db/repositories/contactRepositoryListFilter.js";
 
 const dialect = new PgDialect();
 
@@ -37,6 +39,24 @@ describe("contacts buildOrderBy", () => {
     expect(renderOrderBy("createdAt", "desc")).toBe(
       '"contacts"."created_at" desc, "contacts"."id" asc',
     );
+  });
+
+  it("orders by every sortable Work column instead of silently falling back to id", () => {
+    for (const entry of DEFAULT_COLUMN_REGISTRY.filter((column) => column.sortable)) {
+      const field = resolveContactColumnSortField(entry.key);
+      expect(field, entry.key).toBeDefined();
+      const asc = renderOrderBy(field, "asc");
+      const desc = renderOrderBy(field, "desc");
+      expect(asc, entry.key).not.toBe('"contacts"."id" asc');
+      expect(asc, entry.key).not.toBe(desc);
+    }
+  });
+
+  it("keeps empty values last in both directions for optional columns", () => {
+    for (const field of ["cnic", "dob", "city", "tag", "gender"]) {
+      expect(renderOrderBy(field, "asc"), field).toContain("nulls last");
+      expect(renderOrderBy(field, "desc"), field).toContain("nulls last");
+    }
   });
 
   it("keeps the default id sort unchanged", () => {

@@ -12,5 +12,6 @@ export function useContactsCrudNotify() {
 
 function messageKeyForBulkFailure(singleSuccessKey: AppTranslationKey): AppTranslationKey {
   if (singleSuccessKey === "contacts.restoreSuccessTitle") return "contacts.restoreFailed";
+  if (singleSuccessKey === "contacts.deletedTitle") return "contacts.deleteFailed";
   return "contacts.saveFailed";
 }

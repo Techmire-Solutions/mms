@@ -46,7 +46,10 @@ const mockContact: Contact = {
   updatedAt: "2024-01-01T00:00:00Z",
 };
 
-function renderTable(contacts: Contact[] = [mockContact]): string {
+function renderTable(
+  contacts: Contact[] = [mockContact],
+  columns: Array<{ id: string; label: string }> = [{ id: "name", label: "Name" }],
+): string {
   return renderToStaticMarkup(
     <ContactsListDesktopTable
       contacts={contacts}
@@ -58,7 +61,7 @@ function renderTable(contacts: Contact[] = [mockContact]): string {
       sortField="name"
       sortDir="asc"
       onSort={vi.fn()}
-      columns={[{ id: "name", label: "Name" }]}
+      columns={columns}
     />,
   );
 }
@@ -94,5 +97,23 @@ describe("ContactsListDesktopTable Component", () => {
 
     expect(html).not.toContain("Select row cnt-1");
     expect(html).not.toContain('aria-label="cnt-1"');
+  });
+
+  it("renders a sort button only for columns the server can order", () => {
+    const html = renderTable(
+      [mockContact],
+      [
+        { id: "name", label: "Name" },
+        { id: "phone", label: "Phone" },
+        { id: "lunarDob", label: "Lunar DOB" },
+      ],
+    );
+    const thead = html.slice(html.indexOf("<thead"), html.indexOf("</thead>"));
+    const sortIndicators = thead.match(/lucide-chevron-(up|down)/g) ?? [];
+
+    // Name and Lunar DOB (sorts by `dob`) are sortable; Phone is not.
+    expect(sortIndicators).toHaveLength(2);
+    expect(thead).toMatch(/>Phone</);
+    expect(thead).not.toMatch(/<button[^>]*>Phone/);
   });
 });

@@ -1,5 +1,9 @@
 import { useCallback, useMemo } from "react";
-import { DEFAULT_COLUMN_REGISTRY, type ColumnRegistryEntry } from "@mms/shared";
+import {
+  DEFAULT_COLUMN_REGISTRY,
+  resolveContactColumnSortField,
+  type ColumnRegistryEntry,
+} from "@mms/shared";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ModuleColumnCustomizerLabels } from "@/components/app/moduleColumnCustomizerTypes";
@@ -26,16 +30,14 @@ export function useContactsToolbarModel(): ContactsListFiltersModel {
   const { t } = useTranslation();
 
   const sortOptions = useMemo(() => {
-    const dynamicSorts: ContactsListFiltersSortOption[] = availableColumns
-      .filter((column): column is typeof column & { sortField: string } =>
-        Boolean(column.sortField),
-      )
-      .map((column) => ({
-        field: column.sortField,
-        label: column.label,
-      }));
-
-    const combined = [...dynamicSorts];
+    // One option per server sort key (Lunar DOB and Date of Birth share `dob`); only
+    // keys the list endpoint can order are offered, so the menu never lists a no-op.
+    const combined: ContactsListFiltersSortOption[] = [];
+    for (const column of availableColumns) {
+      const field = resolveContactColumnSortField(column.id);
+      if (!field || combined.some((option) => option.field === field)) continue;
+      combined.push({ field, label: column.label });
+    }
     systemSortOptions.forEach((systemSortOption) => {
       if (
         !combined.some((existingSortOption) => existingSortOption.field === systemSortOption.field)

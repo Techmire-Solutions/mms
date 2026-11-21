@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { type Contact, getDisplayName } from "@mms/shared";
+import { type Contact, getDisplayName, resolveContactColumnSortField } from "@mms/shared";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { buildContactsMap } from "@/lib/contacts/contactI18n";
@@ -68,32 +68,38 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
   });
 
   const finalColumns = useMemo<WorkBatchTableColumn<Contact>[]>(() => {
-    return columns.map((col) => ({
-      id: col.id,
-      label: col.label,
-      sortField: col.id,
-      width: col.width,
-      kind: col.kind,
-      render: (row, idx) => {
-        return renderContactTableCell({
-          col,
-          contact: row,
-          displayName: getDisplayName(row),
-          getColumnWidth,
-          prefs,
-          countryCodesMap,
-          countryCodes,
-          contactsMap,
-          allContacts,
-          showArchived,
-          isSelected: false,
-          t,
-          onView,
-          onWhatsApp,
-          rowIndex: idx,
-        });
-      },
-    }));
+    return columns.map((col) => {
+      // Only columns the server can order get a sort button: an unsupported key
+      // fell back to id order, so the header toggled but the rows never moved.
+      const sortField = resolveContactColumnSortField(col.id);
+      return {
+        id: col.id,
+        label: col.label,
+        sortField,
+        sortable: Boolean(sortField),
+        width: col.width,
+        kind: col.kind,
+        render: (row, idx) => {
+          return renderContactTableCell({
+            col,
+            contact: row,
+            displayName: getDisplayName(row),
+            getColumnWidth,
+            prefs,
+            countryCodesMap,
+            countryCodes,
+            contactsMap,
+            allContacts,
+            showArchived,
+            isSelected: false,
+            t,
+            onView,
+            onWhatsApp,
+            rowIndex: idx,
+          });
+        },
+      };
+    });
   }, [
     columns,
     getColumnWidth,

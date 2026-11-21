@@ -2809,6 +2809,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "contacts.resetLayout": "بازنشانی چیدمان",
   "contacts.restoreContact": "بازیابی مخاطب",
   "contacts.restoreFailed": "بازیابی مخاطب ممکن نشد. دوباره تلاش کنید.",
+  "contacts.deleteFailed": "حذف مخاطب ممکن نشد.",
   "contacts.restoreSuccessDescription": "«{name}» دوباره فعال است.",
   "contacts.restoreSuccessDescriptionDefault": "مخاطب به فهرست بازگردانده شد.",
   "contacts.restoreSuccessTitle": "مخاطب بازیابی شد",
