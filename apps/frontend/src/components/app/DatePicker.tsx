@@ -20,6 +20,9 @@ export function DatePicker({
   placeholder,
   className,
   disabled,
+  readOnly,
+  calendarOnly = true,
+  allowManualInput = false,
   min,
   max,
   id,
@@ -38,6 +41,7 @@ export function DatePicker({
 }: DatePickerProps) {
   const { t } = useTranslation();
   const rootRef = React.useRef<HTMLDivElement>(null);
+  const isCalendarOnly = (calendarOnly && !allowManualInput) || Boolean(readOnly);
   const state = useDatePickerState({
     value,
     onChange,
@@ -60,13 +64,27 @@ export function DatePicker({
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (isImeSafeEnter(event)) {
       event.preventDefault();
-      state.handleBlur();
-      state.setOpen(false);
+      if (isCalendarOnly && !state.open) {
+        state.setOpen(true);
+      } else {
+        if (!isCalendarOnly) {
+          state.handleBlur();
+        }
+        state.setOpen(false);
+      }
     } else if (event.key === "Escape") {
       state.setOpen(false);
-    } else if (event.key === "ArrowDown" && (event.altKey || !state.open)) {
+    } else if (
+      (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === " ") &&
+      (event.altKey || !state.open)
+    ) {
       event.preventDefault();
       state.setOpen(true);
+    } else if (isCalendarOnly && (event.key === "Backspace" || event.key === "Delete")) {
+      event.preventDefault();
+      if (!disabled) {
+        state.handleClear();
+      }
     }
   };
 
@@ -125,7 +143,9 @@ export function DatePicker({
               handleSelect={state.handleSelect}
               handleClear={state.handleClear}
               handleSelectToday={state.handleSelectToday}
+              handleSelectYesterday={state.handleSelectYesterday}
               isTodayAllowed={state.isTodayAllowed}
+              isYesterdayAllowed={state.isYesterdayAllowed}
               hasValue={Boolean(value)}
               disabled={disabled}
               t={t}
@@ -138,18 +158,27 @@ export function DatePicker({
         ref={ref}
         type="text"
         dir="ltr"
-        inputMode="numeric"
+        inputMode={isCalendarOnly ? "none" : state.isYearMode ? "numeric" : "numeric"}
         maxLength={state.isYearMode ? 4 : undefined}
         id={resolvedId}
         name={resolvedName}
         value={state.inputValue}
+        readOnly={isCalendarOnly}
         onChange={state.handleInputChange}
-        onBlur={state.handleBlur}
+        onBlur={isCalendarOnly ? onBlur : state.handleBlur}
+        onClick={() => {
+          if (!disabled) {
+            state.setOpen((prev) => !prev);
+          }
+        }}
         autoComplete={autoComplete}
         onKeyDown={handleInputKeyDown}
         placeholder={resolvedPlaceholder}
         disabled={disabled}
-        className="min-h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-start text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+        className={cn(
+          "min-h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-start text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+          isCalendarOnly && !disabled && "cursor-pointer select-none",
+        )}
         role="combobox"
         aria-haspopup="dialog"
         aria-expanded={state.open}

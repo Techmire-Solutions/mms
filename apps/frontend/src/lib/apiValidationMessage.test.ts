@@ -20,4 +20,24 @@ describe("getApiValidationMessage", () => {
     expect(getApiValidationMessage(new ApiError(500, "boom", "server_error"))).toBeUndefined();
     expect(getApiValidationMessage(new Error("nope"))).toBeUndefined();
   });
+
+  it("parses stringified Zod JSON issues array into clean message and validation errors", () => {
+    const rawZodJson = JSON.stringify([
+      {
+        code: "custom",
+        message: "Pakistan (+92) phone number must be exactly 10 digits",
+        path: ["phones", 0, "number"],
+      },
+    ]);
+    const error = new ApiError(400, rawZodJson, "validation_error");
+    expect(getApiValidationMessage(error)).toBe(
+      "Pakistan (+92) phone number must be exactly 10 digits",
+    );
+    const errors = getApiValidationErrors(error);
+    expect(errors).toHaveLength(1);
+    expect(errors?.[0]?.tabId).toBe("phones");
+    expect(errors?.[0]?.index).toBe(0);
+    expect(errors?.[0]?.fieldId).toBe("number");
+    expect(errors?.[0]?.message).toBe("Pakistan (+92) phone number must be exactly 10 digits");
+  });
 });

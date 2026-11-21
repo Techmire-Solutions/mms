@@ -1,0 +1,168 @@
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  normalizeStudentsSettings,
+  setStudentFieldRequired,
+  type FieldDefinition,
+  type StudentsSettings,
+} from "@mms/shared";
+import { useStudentsRequiredFieldsSetup } from "@/tenant/features/students/hooks/useStudentsRequiredFieldsSetup";
+
+const mocks = vi.hoisted(() => ({
+  fieldConfigMutate: vi.fn(),
+  auditMutate: vi.fn(),
+  query: {
+    data: undefined as StudentsSettings | undefined,
+    isSuccess: true,
+    isPlaceholderData: false,
+    isError: false,
+  },
+}));
+
+vi.mock("@/hooks/useTranslation", () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
+}));
+
+vi.mock("@/lib/notify", () => ({
+  notify: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() },
+}));
+
+vi.mock("@/lib/safeAudit", () => ({ safeAudit: vi.fn() }));
+
+vi.mock("@/tenant/features/students/hooks/useStudentSetupConfig", () => ({
+  useStudentFieldConfigQuery: () => mocks.query,
+  useStudentFieldConfigMutation: () => ({ mutateAsync: mocks.fieldConfigMutate }),
+}));
+
+vi.mock("@/tenant/features/students/hooks/useStudentMutations", () => ({
+  useStudentMutations: () => ({ logSetupAudit: { mutateAsync: mocks.auditMutate } }),
+}));
+
+const { notify } = await import("@/lib/notify");
+
+function requiredOf(config: StudentsSettings, key: string): boolean | undefined {
+  return Object.values(config.fields as Record<string, FieldDefinition[]>)
+    .flat()
+    .find((field) => field.key === key)?.required;
+}
+
+describe("useStudentsRequiredFieldsSetup", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  let state: ReturnType<typeof useStudentsRequiredFieldsSetup>;
+
+  function renderHook(): void {
+    function TestComponent() {
+      state = useStudentsRequiredFieldsSetup();
+      return null;
+    }
+    act(() => {
+      root.render(<TestComponent />);
+    });
+  }
+
+  beforeEach(() => {
+    const saved = normalizeStudentsSettings(null);
+    mocks.query = {
+      data: {
+        ...saved,
+        fields: setStudentFieldRequired(
+          saved.fields as Record<string, FieldDefinition[]>,
+          "dob",
+          false,
+        ),
+      },
+      isSuccess: true,
+      isPlaceholderData: false,
+      isError: false,
+    };
+    mocks.fieldConfigMutate.mockImplementation(async (config: StudentsSettings) => config);
+    mocks.auditMutate.mockResolvedValue({ status: 200, body: {} });
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it("given DOB is optional in saved Setup, should report the custom preset and a clean draft", () => {
+    // Arrange / Act
+    renderHook();
+
+    // Assert
+    expect(state.preset).toBe("custom");
+    expect(state.isDirty).toBe(false);
+    expect(state.rows.find((row) => row.key === "dob")?.required).toBe(false);
+  });
+
+  it("given the recommended preset is picked, should save DOB as required", async () => {
+    // Arrange
+    renderHook();
+
+    // Act
+    act(() => state.selectPreset("recommended"));
+    await act(async () => {
+      await state.save();
+    });
+
+    // Assert
+    expect(mocks.fieldConfigMutate).toHaveBeenCalledTimes(1);
+    const sent = mocks.fieldConfigMutate.mock.calls[0][0] as StudentsSettings;
+    expect(requiredOf(sent, "dob")).toBe(true);
+    expect(requiredOf(sent, "contactId")).toBe(true);
+    expect(notify.success).toHaveBeenCalledWith("students.setup.requiredFieldsSaved");
+  });
+
+  it("given a custom toggle, should persist that single field and keep others", async () => {
+    // Arrange
+    renderHook();
+
+    // Act
+    act(() => state.setRequired("notes", true));
+    await act(async () => {
+      await state.save();
+    });
+
+    // Assert
+    const sent = mocks.fieldConfigMutate.mock.calls[0][0] as StudentsSettings;
+    expect(requiredOf(sent, "notes")).toBe(true);
+    expect(requiredOf(sent, "dob")).toBe(false);
+  });
+
+  it("given the saved config has not loaded yet, should block edits and saves", async () => {
+    // Arrange
+    mocks.query = { ...mocks.query, isPlaceholderData: true };
+    renderHook();
+
+    // Act
+    act(() => state.setRequired("notes", true));
+    await act(async () => {
+      await state.save();
+    });
+
+    // Assert
+    expect(state.ready).toBe(false);
+    expect(state.isDirty).toBe(false);
+    expect(mocks.fieldConfigMutate).not.toHaveBeenCalled();
+  });
+
+  it("given the save fails, should keep the draft and show an error", async () => {
+    // Arrange
+    mocks.fieldConfigMutate.mockRejectedValue(new Error("boom"));
+    renderHook();
+
+    // Act
+    act(() => state.setRequired("notes", true));
+    await act(async () => {
+      await state.save();
+    });
+
+    // Assert
+    expect(notify.error).toHaveBeenCalledWith("students.setup.saveFailed");
+    expect(state.isDirty).toBe(true);
+  });
+});

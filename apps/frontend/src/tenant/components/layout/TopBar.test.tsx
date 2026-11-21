@@ -49,7 +49,25 @@ describe("TopBar and TopBarActions", () => {
     );
 
     expect(html).toContain("nav.globalSearchPlaceholder");
-    expect(html).toContain("ps-9 pe-3");
+  });
+
+  it("keeps the search icon in flow so it cannot overlap the placeholder", () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <TopBar onOpenCommandPalette={vi.fn()} />
+      </MemoryRouter>,
+    );
+    const trigger =
+      html.match(/<button[^>]*aria-keyshortcuts="Control\+K Meta\+K"[^>]*>/)?.[0] ?? "";
+    const icon = html.match(/<svg[^>]*lucide-search[^>]*>/)?.[0] ?? "";
+
+    // Button nests children in a `relative` span, so an absolute icon would anchor
+    // to that span (where the text starts) instead of the button padding.
+    expect(icon).not.toBe("");
+    expect(icon).not.toMatch(/\babsolute\b/);
+    expect(trigger).toContain("[&amp;_[data-slot=button-content]]:w-full");
+    expect(trigger).toContain("[&amp;_[data-slot=button-content]]:justify-start");
+    expect(trigger).not.toMatch(/\bps-9\b/);
   });
 
   it("renders topbar actions including sync status, notifications, and user nav", () => {

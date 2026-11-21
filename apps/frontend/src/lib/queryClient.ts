@@ -70,7 +70,7 @@ export const STATIC_LOOKUP_STALE_TIME = 30 * 60_000; // 30m: branding, static en
  * Shared React Query client — server state defaults for tenant REST resources.
  * Features 3-attempt exponential backoff, 24h gcTime for offline readiness, and online-mode pausing.
  */
-export const queryClientInstance = new SessionQueryClient({
+export const queryClientInstance: SessionQueryClient = new SessionQueryClient({
   // A module-gate 403 anywhere means access changed mid-session: refetch the snapshot.
   queryCache: new QueryCache({
     onError: (error) => refreshModuleAccessOnDenial(queryClientInstance, error),

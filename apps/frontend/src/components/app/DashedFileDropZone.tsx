@@ -108,11 +108,15 @@ export function DashedFileDropZone({
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.target;
+    const files = input.files;
     if (onFileChange) {
       onFileChange(event);
+      input.value = "";
       return;
     }
-    onFiles(event.target.files);
+    onFiles(files);
+    input.value = "";
   };
 
   const draggingClass = isDragging
@@ -122,7 +126,7 @@ export function DashedFileDropZone({
   const iconNode = (
     <div
       className={cn(
-        "flex items-center justify-center text-primary",
+        "flex items-center justify-center text-primary pointer-events-none",
         browseLabel ? "h-12 w-12 rounded-2xl bg-primary/10" : "opacity-40",
       )}
     >
@@ -138,20 +142,26 @@ export function DashedFileDropZone({
   );
 
   const copy = (
-    <div className="text-center">
+    <div className="text-center pointer-events-none">
       <p className="text-sm font-semibold text-foreground text-balance">{title}</p>
       <p className="mt-1 text-xs text-muted-foreground text-pretty">{description}</p>
     </div>
   );
 
+  const effectiveInputId = inputId ?? (onOpenPicker ? undefined : "dashed-dropzone-file-input");
+  const effectiveInputName = inputName ?? (onOpenPicker ? undefined : "file");
+
   const fileInput =
-    inputId && inputName ? (
+    effectiveInputId && effectiveInputName ? (
       <input
-        id={inputId}
-        name={inputName}
+        id={effectiveInputId}
+        name={effectiveInputName}
         type="file"
         ref={setInputRef}
         onChange={handleInputChange}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
         multiple={multiple}
         accept={accept}
         className="hidden"
@@ -164,11 +174,12 @@ export function DashedFileDropZone({
     return (
       <div
         role="presentation"
+        onClick={openPicker}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          "flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed p-8 text-center transition-all",
+          "flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed p-8 text-center transition-all cursor-pointer",
           isDragging && "scale-102 motion-reduce:scale-100",
           draggingClass,
           className,
@@ -179,7 +190,10 @@ export function DashedFileDropZone({
         {fileInput}
         <Button
           disabled={disabled || isUploading}
-          onClick={openPicker}
+          onClick={(e) => {
+            e.stopPropagation();
+            openPicker();
+          }}
           className="mt-2 min-h-11 rounded-xl bg-primary px-6 text-xs font-bold text-primary-foreground shadow-none transition-all hover:scale-105 active:scale-95 motion-reduce:transform-none cursor-pointer disabled:cursor-not-allowed"
           type="button"
           // WCAG 2.5.3: the accessible name must contain the visible label.

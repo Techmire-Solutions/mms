@@ -100,7 +100,7 @@ export function renderStudentsListDesktopTableCell({
           tone="primary"
           className="px-1.5 py-0.5 rounded font-bold uppercase tracking-wider"
         >
-          {t("students.grPrefix")}: {studentRow.grNumber}
+          {studentRow.grNumber}
         </Badge>
       ) : (
         <span className="text-sm text-muted-foreground">{emptyDash}</span>

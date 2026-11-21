@@ -1,6 +1,11 @@
 import type { Contact, ContactPreferences } from "./contactTypes.js";
 import { cleanName, getEmails, getPhoneNumbers } from "../core/utils.js";
 import { filterActiveContacts } from "./contactSoftDelete.js";
+import {
+  areSiblingsSharingParent,
+  isParentChildOrGuardianPair,
+  PARENT_CHILD_GUARDIAN_RELATIONSHIP_TERMS,
+} from "./contactDuplicateFamilyRules.js";
 
 export type ContactDuplicateReasonKey =
   "cnic" | "cnicName" | "phoneEmail" | "namePhone" | "phone" | "nameEmail" | "email" | "name";
@@ -63,9 +68,17 @@ function pairKey(contactA: Contact, contactB: Contact): string {
   return idA < idB ? `${idA}-${idB}` : `${idB}-${idA}`;
 }
 
-function getContactCleanName(contact: Contact, namePrefixesToIgnore?: string[]): string {
-  return cleanName(contact.name || contact.firstName, namePrefixesToIgnore);
+export function getContactCleanName(contact: Contact, namePrefixesToIgnore?: string[]): string {
+  const fullName =
+    contact.name?.trim() || [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim();
+  return cleanName(fullName, namePrefixesToIgnore);
 }
+
+export {
+  areSiblingsSharingParent,
+  isParentChildOrGuardianPair,
+  PARENT_CHILD_GUARDIAN_RELATIONSHIP_TERMS,
+};
 
 function getContactCleanCnic(contact: Contact): string {
   if (!contact.cnic) return "";
@@ -142,6 +155,10 @@ function evaluatePair(
   keys1?: { phones: string[]; emails: string[]; name: string; cnic: string },
   keys2?: { phones: string[]; emails: string[]; name: string; cnic: string },
 ): ContactDuplicatePair | null {
+  if (isParentChildOrGuardianPair(contact1, contact2)) {
+    return null;
+  }
+
   const k1 = keys1 ?? getContactDuplicateCandidateKeys(contact1, preferences);
   const k2 = keys2 ?? getContactDuplicateCandidateKeys(contact2, preferences);
 
@@ -151,6 +168,10 @@ function evaluatePair(
   const cnicMatch = Boolean(k1.cnic && k2.cnic && k1.cnic === k2.cnic);
 
   if (!phoneMatch && !emailMatch && !nameMatch && !cnicMatch) return null;
+
+  if (!nameMatch && areSiblingsSharingParent(contact1, contact2)) {
+    return null;
+  }
 
   const { confidence, reasonKey } = scorePair(
     phoneMatch,

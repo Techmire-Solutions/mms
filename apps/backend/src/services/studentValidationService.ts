@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { type z } from "zod";
 import {
   buildDynamicStudentSchema,
@@ -12,7 +13,9 @@ import {
 import { loadStudentsSettingsCombined } from "../students/use-cases/studentConfigService.js";
 import { loadContactsSummaryByIdsForTenant } from "./contactService.js";
 
-// Cache compiled schema by tenant and config version: `${tenant}:${configVersion}:${language}`
+// Cache compiled schema by tenant, language and a digest of the blueprint inputs. The settings
+// `version` is the document migration version (constant after normalization), so it cannot tell
+// two Setup states apart: keying on it alone kept enforcing stale required flags after a save.
 const schemaCache = new Map<string, z.ZodTypeAny>();
 const SCHEMA_CACHE_MAX_ENTRIES = 100;
 
@@ -75,6 +78,19 @@ function toFieldIssues(error: z.ZodError): StudentValidationIssue[] {
   }));
 }
 
+/** Stable digest of every settings input `buildDynamicStudentSchema` reads. */
+function blueprintDigest(settings: StudentsSettings): string {
+  const inputs = JSON.stringify([
+    settings.version ?? 0,
+    settings.autoGenerateId ?? null,
+    settings.enabledTabs ?? [],
+    settings.requiredTabs ?? [],
+    settings.formTabs ?? [],
+    settings.fields ?? {},
+  ]);
+  return createHash("sha256").update(inputs).digest("base64url");
+}
+
 interface PreparedValidation {
   schema: z.ZodTypeAny;
   subject: unknown;
@@ -95,7 +111,7 @@ async function prepareValidation(
   const submittedBlueprintId = getSubmittedBlueprintId(student);
   verifyBlueprintVersion(submittedBlueprintId, settings.version || 0);
 
-  const cacheKey = `${tenant}:${settings.version || 0}:${language}`;
+  const cacheKey = `${tenant}:${language}:${blueprintDigest(settings)}`;
   let schema = schemaCache.get(cacheKey);
 
   if (!schema) {

@@ -29,6 +29,12 @@ export interface ModuleTableHeaderCellProps {
   truncate?: boolean;
   align?: TableCellAlign;
   variant?: TableCellVariant;
+  /** Drop indicator marker during column header drag-to-reorder. */
+  dropIndicator?: React.ReactNode;
+  /** Ref to suppress sort onClick if header was dragged. */
+  suppressSortClick?: React.RefObject<boolean>;
+  /** Additional props forwarded to the <th> element (e.g. pointer listeners, data attributes). */
+  thProps?: React.ThHTMLAttributes<HTMLTableCellElement>;
 }
 
 export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
@@ -46,6 +52,9 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
   truncate,
   align,
   variant,
+  dropIndicator,
+  suppressSortClick,
+  thProps,
 }: ModuleTableHeaderCellProps): React.JSX.Element {
   const sortable = Boolean(sortKey);
   const isSorted = sortable && activeSortField === sortKey;
@@ -53,6 +62,7 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
   const isEnd =
     align === "end" || align === "right" || variant === "number" || variant === "currency";
   const isCenter = align === "center" || variant === "badge" || variant === "action";
+  const { align: _thAlign, className: thClassName, ...restThProps } = thProps ?? {};
 
   return (
     <ResizableTableHead
@@ -65,12 +75,17 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
       truncate={truncate}
       align={align}
       variant={variant}
-      className={cn(MODULE_TABLE_HEAD_CLASS, className)}
+      className={cn(MODULE_TABLE_HEAD_CLASS, className, thClassName)}
+      {...restThProps}
     >
+      {dropIndicator}
       {sortable && onSort ? (
         <button
           type="button"
-          onClick={() => onSort(sortKey as string)}
+          onClick={() => {
+            if (suppressSortClick?.current) return;
+            onSort(sortKey as string);
+          }}
           className={cn(
             // The 16px text keeps the header dense, but a 44px `::after` overlay
             // makes the whole header cell the sort target (WCAG 2.2 2.5.8 / the

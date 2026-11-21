@@ -83,7 +83,7 @@ export const STUDENTS_MODULE_MANIFEST = {
     directoryViews: ["table", "cards"] as const,
     bulkActions: ["whatsapp", "sms", "email", "export", "delete", "status"] as const,
   },
-  setupSubTabs: ["preferences", "card_template"] as const,
+  setupSubTabs: ["preferences", "required_fields", "card_template"] as const,
   defaultExportFilename: "students.csv",
   searchableFieldKeys: [
     "name",
