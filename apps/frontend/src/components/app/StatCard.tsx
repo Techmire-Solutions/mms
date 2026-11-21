@@ -82,12 +82,14 @@ export const StatCard = function StatCard({
         {...buttonProps}
         {...motionProps}
         onClick={onClick}
-        className={cn("w-full text-start", onClick && "cursor-pointer")}
+        className={cn("h-full w-full text-start", onClick && "cursor-pointer")}
       >
         <Card
           accentColor={accent}
           className={cn(
-            "flex items-center justify-between gap-3 px-4 py-3 min-h-11 w-full",
+            // `h-full` lets every card in a metrics row match the tallest one when a
+            // long label wraps to two lines, instead of leaving a ragged strip.
+            "flex h-full items-center justify-between gap-3 px-4 py-3 min-h-11 w-full",
             CARD_STRIPE_INSET,
             onClick && "hover:border-primary/40 hover:bg-card/75",
             isActive && "ring-2 ring-primary/60 border-primary/60 bg-primary/5",

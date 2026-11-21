@@ -41,4 +41,25 @@ describe("AppPageShell", () => {
     expect(html).toContain('aria-live="polite"');
     expect(html).toContain("animate-pulse");
   });
+
+  it("given a header and metrics, should group them so the KPI strip sits close under the header", () => {
+    // Arrange
+    const html = renderToStaticMarkup(
+      <AppPageShell
+        headerSlot={<header id="custom-header">Header</header>}
+        metricsSlot={<div id="metrics-strip">Metrics</div>}
+      >
+        <div id="tiers">Tiers</div>
+      </AppPageShell>,
+    );
+
+    // Act
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const group = doc.getElementById("custom-header")?.parentElement;
+
+    // Assert
+    expect(group?.className).toBe("space-y-4 sm:space-y-5");
+    expect(doc.getElementById("metrics-strip")?.parentElement).toBe(group);
+    expect(doc.getElementById("tiers")?.parentElement).not.toBe(group);
+  });
 });

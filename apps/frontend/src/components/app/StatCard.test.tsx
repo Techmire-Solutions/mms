@@ -94,4 +94,19 @@ describe("StatCard Component", () => {
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain('type="button"');
   });
+
+  it("given the compact variant, should fill its grid cell so a wrapped label does not leave a ragged row", () => {
+    // Arrange
+    const html = renderToStaticMarkup(
+      <StatCard variant="compact" label="Potential Duplicates" value={0} icon={Users} />,
+    );
+
+    // Act
+    const wrapper = new DOMParser().parseFromString(html, "text/html").body.firstElementChild;
+    const card = wrapper?.firstElementChild;
+
+    // Assert
+    expect(wrapper?.classList.contains("h-full")).toBe(true);
+    expect(card?.classList.contains("h-full")).toBe(true);
+  });
 });

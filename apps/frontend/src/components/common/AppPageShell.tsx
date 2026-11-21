@@ -49,8 +49,19 @@ export function AppPageShell({
       >
         {seoTitle ? <title>{seoTitle}</title> : null}
         {seoDescription ? <meta name="description" content={seoDescription} /> : null}
-        {headerSlot}
-        {metricsSlot}
+        {headerSlot && metricsSlot ? (
+          // Header and KPI strip read as one command centre: a tight inner gap,
+          // with the shell's larger rhythm only between that group and the tiers.
+          <div className="space-y-4 sm:space-y-5">
+            {headerSlot}
+            {metricsSlot}
+          </div>
+        ) : (
+          <>
+            {headerSlot}
+            {metricsSlot}
+          </>
+        )}
         {tabsSlot}
         {children}
       </div>

@@ -68,7 +68,10 @@ describe("AppShell — Universal Layout Shell", () => {
     expect(html).toContain('id="desktop-bar"');
     expect(html).toContain('id="mobile-bar"');
     expect(html).toContain('role="banner"');
-    expect(html).toContain("pt-14 lg:pt-16");
+    // The mobile header is sticky (in flow) and reserves its own height, so only
+    // the fixed desktop bar needs a main-content offset; `pt-14` double-counted it.
+    expect(html).toContain("lg:pt-16");
+    expect(html).not.toContain("pt-14");
   });
 
   it("applies lg:ps-sidebar class when sidebar is active and sidebarCollapsed=false", () => {
