@@ -4,6 +4,7 @@
 
 import type { Contact } from "../contacts/contactTypes.js";
 import { COUNTRY_CODES } from "../contacts/contactPreferenceConstants.js";
+export * from "./phoneCountryRules.js";
 
 /**
  * Extract country code and local number parts from a raw phone number.

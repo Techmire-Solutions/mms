@@ -102,6 +102,7 @@ export function useContactFormDraft({
     formInstanceId,
     defaultCountryCode,
     validationErrors,
+    setValidationErrors,
     contactDraft,
     setContactDraft,
     isTabFieldEnabled: config.isTabFieldEnabled,

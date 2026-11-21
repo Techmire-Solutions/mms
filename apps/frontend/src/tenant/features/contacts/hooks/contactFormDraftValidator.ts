@@ -1,6 +1,7 @@
 import {
   findContactUniqueFieldConflicts,
   isChronologicalDateRangeValid,
+  validatePhoneNumberByCountry,
   type Contact,
   type FieldDefinition,
   type ValidationError,
@@ -15,6 +16,7 @@ export interface ValidateContactDraftOptions {
   isFieldRequired: (tabId: string, fieldId: string) => boolean;
   validateBase: (draft: Partial<Contact>) => ValidationError[];
   t: TranslationFunction;
+  defaultCountryCode?: string;
 }
 
 export function validateContactDraftErrors({
@@ -24,6 +26,7 @@ export function validateContactDraftErrors({
   isFieldRequired,
   validateBase,
   t,
+  defaultCountryCode = "",
 }: ValidateContactDraftOptions): ValidationError[] {
   const formErrors = validateBase(cleanedDraft);
 
@@ -64,6 +67,30 @@ export function validateContactDraftErrors({
             index: idx,
             message: t("contacts.form.startDateBeforeEndDate"),
           });
+        }
+      }
+    });
+  }
+
+  if (Array.isArray(cleanedDraft.phones)) {
+    cleanedDraft.phones.forEach((phone, idx) => {
+      if (phone?.number && phone.number.trim()) {
+        const country = phone.countryCode || defaultCountryCode;
+        const res = validatePhoneNumberByCountry(phone.number, country, { language, t });
+        if (!res.isValid) {
+          const existing = formErrors.find(
+            (err) => err.tabId === "phones" && err.fieldId === "number" && err.index === idx,
+          );
+          if (existing) {
+            existing.message = res.error || existing.message;
+          } else {
+            formErrors.push({
+              fieldId: "number",
+              tabId: "phones",
+              index: idx,
+              message: res.error || t("contacts.validation.phoneInvalidGeneric"),
+            });
+          }
         }
       }
     });

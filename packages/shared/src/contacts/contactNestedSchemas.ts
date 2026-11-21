@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { WHATSAPP_STATUS_VALUES } from "./contactEntityTypes.js";
+import { validatePhoneNumberByCountry } from "../core/phoneCountryRules.js";
 
 export const whatsappStatusSchema = z.enum(WHATSAPP_STATUS_VALUES);
 
@@ -27,7 +28,18 @@ export const phoneNumberSchema = z
     isPrimary: z.boolean().optional(),
     whatsappStatus: whatsappStatusOptionalSchema,
   })
-  .strict();
+  .strict()
+  .superRefine((data, ctx) => {
+    if (!data.number || !data.number.trim()) return;
+    const res = validatePhoneNumberByCountry(data.number, data.countryCode);
+    if (!res.isValid) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: res.error,
+        path: ["number"],
+      });
+    }
+  });
 
 export const emailAddressSchema = z
   .object({

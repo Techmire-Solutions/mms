@@ -68,6 +68,7 @@ export function useContactFormSave({
         isFieldRequired: isTabFieldRequired,
         validateBase: validate,
         t,
+        defaultCountryCode,
       });
 
       if (formErrors.length > 0) {
