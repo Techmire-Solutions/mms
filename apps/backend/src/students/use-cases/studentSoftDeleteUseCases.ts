@@ -55,33 +55,47 @@ export async function bulkSoftDeleteStudents(
           deletedBy,
           deletionReason: trimmedReason || undefined,
         });
-        succeeded += 1;
       } else {
         failed += 1;
       }
     }
 
     if (toSave.length > 0) {
+      // Only rows this request actually wrote may be cascaded or audited. The single-statement
+      // UPDATE can skip a row a concurrent writer already deleted/restored; the pre-read snapshot
+      // must not fabricate DELETE audit/outbox evidence for it.
+      let written = toSave;
       if (repo.bulkSoftDelete) {
-        await repo.bulkSoftDelete(
+        const write = await repo.bulkSoftDelete(
           tenant,
           toSave.map((s) => String(s.id)),
           deletedBy,
           trimmedReason,
         );
+        written = write.deletedIds
+          ? toSave.filter((s) => write.deletedIds!.includes(String(s.id)))
+          : toSave.slice(0, write.succeeded);
+        succeeded = write.succeeded;
+        failed = uniqueIds.length - write.succeeded;
       } else {
         await repo.bulkSave(tenant, toSave);
+        succeeded = toSave.length;
+        failed = uniqueIds.length - succeeded;
       }
+      if (written.length === 0) {
+        return { succeeded, failed };
+      }
+
       await cascadeSoftDeleteEnrollmentsForStudents(
         activeDb(),
         tenant,
-        toSave.map((s) => String(s.id)),
+        written.map((s) => String(s.id)),
         deletedBy,
         trimmedReason,
         new Date(now),
       );
 
-      for (const s of toSave) {
+      for (const s of written) {
         await emitOutboxEvent("entity.soft_deleted", {
           entityType: "students",
           entityId: String(s.id),
@@ -104,7 +118,7 @@ export async function bulkSoftDeleteStudents(
       }
       await reconcileContactSystemTags(
         tenant,
-        toSave.flatMap((s) => [
+        written.flatMap((s) => [
           s.contactId,
           s.fatherContactId,
           s.motherContactId,

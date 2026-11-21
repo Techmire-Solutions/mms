@@ -37,7 +37,7 @@ export function StudentCardPrintPreview({
   guardianName,
   emergencyPhone,
   bloodGroup,
-  madrasaName = "Madrasa Management System",
+  madrasaName,
   className = "",
 }: StudentCardPrintPreviewProps): React.JSX.Element {
   const branding = useBranding();
@@ -60,7 +60,7 @@ export function StudentCardPrintPreview({
       cnic?: string;
       identificationNumber?: string;
     };
-    const institutionAddress = formatBrandingAddress(branding) || "Seminary Road";
+    const institutionAddress = formatBrandingAddress(branding) || "";
     const oneYearLater = new Date();
     oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
 
@@ -83,7 +83,7 @@ export function StudentCardPrintPreview({
       card_terms: t("students.idCard.termsDefault"),
       authorized_signature: t("students.idCard.principalSign"),
       expiry_date: formatDate(oneYearLater),
-      institution_name: madrasaName || branding.madrasaName || "Madrasa",
+      institution_name: madrasaName || branding.madrasaName || "",
       institution_phone: branding.phone || "—",
       institution_email: branding.email || "—",
       institution_address: institutionAddress,

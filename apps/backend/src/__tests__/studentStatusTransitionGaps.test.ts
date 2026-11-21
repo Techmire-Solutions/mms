@@ -208,13 +208,19 @@ describe("GAP-S1/S2: graduated/transferred students can be re-set to active with
     vi.clearAllMocks();
     mockGetRequestTenant.mockReturnValue("demo");
     mockWithdraw.mockResolvedValue({ ended: 0, billing: { cancelled: [], review: [] } });
-    mockBulkUpdateStatus.mockResolvedValue(1);
+    mockBulkUpdateStatus.mockImplementation(async (_tenant: string, ids: string[]) => ({
+      succeeded: ids.length,
+      updatedIds: ids,
+    }));
     mockAudit.mockResolvedValue({ id: 1 });
   });
 
   it("does NOT call withdrawEnrollmentsForStudentStatus when re-activating a graduated student", async () => {
     const repo = fakeRepo([student("s-grad", "graduated")]);
-    mockBulkUpdateStatus.mockResolvedValue(1);
+    mockBulkUpdateStatus.mockImplementation(async (_tenant: string, ids: string[]) => ({
+      succeeded: ids.length,
+      updatedIds: ids,
+    }));
 
     await bulkUpdateStudentStatus(["s-grad"], "active", repo, admin);
 
@@ -225,7 +231,10 @@ describe("GAP-S1/S2: graduated/transferred students can be re-set to active with
 
   it("does NOT call withdrawEnrollmentsForStudentStatus when re-activating a transferred student", async () => {
     const repo = fakeRepo([student("s-xfer", "transferred")]);
-    mockBulkUpdateStatus.mockResolvedValue(1);
+    mockBulkUpdateStatus.mockImplementation(async (_tenant: string, ids: string[]) => ({
+      succeeded: ids.length,
+      updatedIds: ids,
+    }));
 
     await bulkUpdateStudentStatus(["s-xfer"], "active", repo, admin);
 
@@ -234,7 +243,10 @@ describe("GAP-S1/S2: graduated/transferred students can be re-set to active with
 
   it("still records an audit row when moving from graduated → active", async () => {
     const repo = fakeRepo([student("s-grad", "graduated")]);
-    mockBulkUpdateStatus.mockResolvedValue(1);
+    mockBulkUpdateStatus.mockImplementation(async (_tenant: string, ids: string[]) => ({
+      succeeded: ids.length,
+      updatedIds: ids,
+    }));
 
     await bulkUpdateStudentStatus(["s-grad"], "active", repo, admin);
 

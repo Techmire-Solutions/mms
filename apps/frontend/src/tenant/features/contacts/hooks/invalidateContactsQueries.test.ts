@@ -19,4 +19,17 @@ describe("invalidateContactsQueries", () => {
     expect(keys).toContain(JSON.stringify(STUDENTS_QUERY_KEY));
     expect(keys).toContain(JSON.stringify(STUDENTS_METRICS_QUERY_KEY));
   });
+
+  it("can skip the student echo when the caller already invalidated them", () => {
+    const invalidateQueries = vi.fn();
+    const queryClient = { invalidateQueries } as unknown as QueryClient;
+
+    invalidateContactsQueries(queryClient, { includeStudents: false });
+
+    const keys = invalidateQueries.mock.calls.map(([arg]) =>
+      JSON.stringify((arg as { queryKey?: unknown }).queryKey),
+    );
+    expect(keys).not.toContain(JSON.stringify(STUDENTS_QUERY_KEY));
+    expect(keys).not.toContain(JSON.stringify(STUDENTS_METRICS_QUERY_KEY));
+  });
 });

@@ -57,14 +57,27 @@ export const Card = ({
   interactive = false,
   tabIndex,
   role,
+  onClick,
+  onKeyDown,
   ...props
 }: CardProps & { ref?: React.Ref<HTMLDivElement> }) => {
   const hasStripe = accentColor && accentColor !== "none";
+  // `interactive` adds role="button" + tabIndex 0, so it must be keyboard-activatable
+  // (WCAG 2.5.7 / 2.1.1): Enter and Space fire the card's onClick.
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    onKeyDown?.(event);
+    if (interactive && (event.key === "Enter" || event.key === " ") && onClick) {
+      event.preventDefault();
+      onClick(event as unknown as React.MouseEvent<HTMLDivElement>);
+    }
+  };
   return (
     <div
       ref={ref}
       tabIndex={interactive ? (tabIndex ?? 0) : tabIndex}
       role={interactive ? (role ?? "button") : role}
+      onClick={onClick}
+      onKeyDown={interactive ? handleKeyDown : onKeyDown}
       className={cn(
         CARD_SURFACE,
         interactive &&

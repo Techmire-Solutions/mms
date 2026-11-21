@@ -1962,6 +1962,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "common.clearSearch": "تلاش صاف کریں",
   "common.noMatchingOptions": "کوئی مماثل اختیار نہیں",
   "common.close": "بند کریں",
+  "common.confirm": "تصدیق کریں",
   "common.discardUnsavedDescription": "آپ کے غیر محفوظ تبدیلیاں ہیں۔ کیا آپ انہیں مسترد کر کے بند کریں؟",
   "common.call": "کال",
   "common.emailAction": "ای میل",

@@ -82,7 +82,7 @@ describe("bulkRestoreStudentsSql", () => {
 
     const result = await bulkSoftDeleteStudentsSql("Demo", ["a", "a", "b"], "u-1", "cleanup");
 
-    expect(result).toEqual({ succeeded: 2, failed: 0 });
+    expect(result).toEqual({ succeeded: 2, failed: 0, deletedIds: ["a", "b"] });
     expect(mocks.set).toHaveBeenCalledWith(
       expect.objectContaining({ deletedBy: "u-1", deletionReason: "cleanup" }),
     );

@@ -121,7 +121,11 @@ export async function createStudent(
     }
 
     try {
-      await repo.save(tenant, normalized);
+      if (repo.saveInsertOnly) {
+        await repo.saveInsertOnly(tenant, normalized);
+      } else {
+        await repo.save(tenant, normalized);
+      }
     } catch (error: unknown) {
       throwGrUniqueConflict(error);
     }

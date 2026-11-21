@@ -1942,6 +1942,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "common.clearSearch": "مسح البحث",
   "common.noMatchingOptions": "لا توجد خيارات مطابقة",
   "common.close": "إغلاق",
+  "common.confirm": "تأكيد",
   "common.discardUnsavedDescription": "لديك تغييرات غير محفوظة. هل تريد تجاهلها وإغلاق النموذج؟",
   "common.call": "اتصال",
   "common.emailAction": "بريد",

@@ -1969,6 +1969,7 @@ export const APP_TRANSLATIONS_EN = {
   "common.clearSearch": "Clear Search",
   "common.noMatchingOptions": "No matching options",
   "common.close": "Close",
+  "common.confirm": "Confirm",
   "common.discardUnsavedDescription": "You have unsaved changes. Discard them and close?",
   "common.call": "Call",
   "common.emailAction": "Email",

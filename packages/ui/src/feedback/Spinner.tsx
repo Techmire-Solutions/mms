@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "../utils";
+import { useUiConfig } from "../theme/UiConfigContext";
 
 export type SpinnerSize = "xs" | "sm" | "md" | "lg" | "xl";
 export type SpinnerVariant = "primary" | "current" | "muted" | "white";
@@ -41,22 +42,24 @@ const variantClasses: Record<SpinnerVariant, string> = {
 export function Spinner({
   size = "md",
   variant = "primary",
-  label = "Loading",
+  label,
   showLabel = false,
   className,
   ref,
   ...props
 }: SpinnerProps): React.JSX.Element {
+  const { labels } = useUiConfig();
+  const resolvedLabel = label ?? labels.loading;
   return (
     <div
       ref={ref}
       role="status"
-      aria-label={showLabel ? undefined : label}
+      aria-label={showLabel ? undefined : resolvedLabel}
       className={cn("inline-flex items-center gap-2", className)}
       {...props}
     >
       <progress
-        aria-label={label}
+        aria-label={resolvedLabel}
         data-loading-spinner=""
         className={cn(
           "loading-spinner shrink-0 rounded-full animate-spin motion-reduce:animate-[spin_3s_linear_infinite] transition-colors",
@@ -65,9 +68,11 @@ export function Spinner({
         )}
       />
       {showLabel ? (
-        <span className="text-sm font-medium text-muted-foreground select-none">{label}</span>
+        <span className="text-sm font-medium text-muted-foreground select-none">
+          {resolvedLabel}
+        </span>
       ) : (
-        <span className="sr-only">{label}</span>
+        <span className="sr-only">{resolvedLabel}</span>
       )}
     </div>
   );

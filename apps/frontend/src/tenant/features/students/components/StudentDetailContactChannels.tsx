@@ -41,7 +41,9 @@ export function StudentDetailContactChannels({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Phone className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden />
-                <span className="font-mono text-foreground truncate">{phone.number}</span>
+                <span dir="auto" className="font-mono text-foreground truncate">
+                  {phone.number}
+                </span>
                 {phone.label && (
                   <span className="text-2xs text-muted-foreground font-medium uppercase tracking-tight">
                     {phone.label}
@@ -87,7 +89,9 @@ export function StudentDetailContactChannels({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden />
-                <span className="text-foreground truncate">{email.address}</span>
+                <span dir="auto" className="text-foreground truncate">
+                  {email.address}
+                </span>
                 {email.label && (
                   <span className="text-2xs text-muted-foreground font-medium uppercase tracking-tight">
                     {email.label}

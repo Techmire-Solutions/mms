@@ -65,7 +65,7 @@ export const PersonIdentityMeta = function PersonIdentityMeta({
           className={cn(
             "gap-1 text-xs font-semibold capitalize",
             badgePadding,
-            onGenderClick && "cursor-pointer hover:opacity-80 transition-opacity",
+            onGenderClick && "cursor-pointer hover:opacity-80 transition-opacity min-h-11 min-w-11",
           )}
         >
           <GenderIcon gender={gender} className={cn(iconSize, "inline shrink-0")} />
@@ -83,7 +83,7 @@ export const PersonIdentityMeta = function PersonIdentityMeta({
           className={cn(
             "gap-1 text-xs font-semibold",
             badgePadding,
-            onSyedClick && "cursor-pointer hover:opacity-80 transition-opacity",
+            onSyedClick && "cursor-pointer hover:opacity-80 transition-opacity min-h-11 min-w-11",
           )}
         >
           <CheckCircle2 className={cn(iconSize, "text-success inline shrink-0")} aria-hidden />

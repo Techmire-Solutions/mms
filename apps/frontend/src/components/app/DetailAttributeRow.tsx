@@ -29,6 +29,10 @@ export function DetailAttributeRow({
   iconClassName,
   className,
 }: DetailAttributeRowProps): React.JSX.Element {
+  // User-entered string values get bidi isolation (names/phones/emails); complex
+  // nodes (links, buttons) keep the surrounding direction.
+  const valueDir = typeof value === "string" ? "auto" : undefined;
+
   if (variant === "list") {
     return (
       <div
@@ -44,7 +48,9 @@ export function DetailAttributeRow({
         )}
         <div className="min-w-0 flex-1">
           <p className={cn(FORM_LABEL, "mb-0")}>{label}</p>
-          <div className="mt-0.5 text-sm font-medium text-foreground">{value}</div>
+          <div dir={valueDir} className="mt-0.5 text-sm font-medium text-foreground">
+            {value}
+          </div>
         </div>
       </div>
     );
@@ -68,7 +74,9 @@ export function DetailAttributeRow({
           <span className="mb-1 block text-xs font-bold uppercase leading-none tracking-tight text-muted-foreground">
             {label}
           </span>
-          <span className="block truncate text-sm font-semibold text-foreground">{value}</span>
+          <span dir={valueDir} className="block truncate text-sm font-semibold text-foreground">
+            {value}
+          </span>
         </div>
       </div>
     );
@@ -95,7 +103,9 @@ export function DetailAttributeRow({
       )}
       <div className="min-w-0 flex-1">
         <p className={cn(FORM_LABEL, "mb-0")}>{label}</p>
-        <div className="mt-0.5 text-sm font-semibold text-foreground">{value}</div>
+        <div dir={valueDir} className="mt-0.5 text-sm font-semibold text-foreground">
+          {value}
+        </div>
       </div>
     </div>
   );

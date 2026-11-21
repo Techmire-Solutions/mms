@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "../utils";
+import { useUiConfig } from "../theme/UiConfigContext";
 
 export interface TableSkeletonProps {
   /** Number of columns — must match the real table to reserve identical geometry. Defaults to 5. */
@@ -30,15 +31,17 @@ export function TableSkeleton({
   cols,
   rows = 5,
   columnWidths,
-  loadingLabel = "Loading...",
+  loadingLabel,
   className,
 }: TableSkeletonProps): React.JSX.Element {
+  const { labels } = useUiConfig();
+  const resolvedLoadingLabel = loadingLabel ?? labels.loading;
   const resolvedCols = columns ?? cols ?? 5;
   const colIndices = Array.from({ length: resolvedCols }, (_, i) => i);
   return (
     <div
       role="status"
-      aria-label={loadingLabel}
+      aria-label={resolvedLoadingLabel}
       className={cn("relative w-full max-w-full overflow-x-auto", className)}
     >
       <table
@@ -79,7 +82,7 @@ export function TableSkeleton({
           ))}
         </tbody>
       </table>
-      <span className="sr-only">{loadingLabel}</span>
+      <span className="sr-only">{resolvedLoadingLabel}</span>
     </div>
   );
 }

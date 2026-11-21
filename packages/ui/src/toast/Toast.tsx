@@ -2,6 +2,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import { cn } from "../utils";
+import { useUiConfig } from "../theme/UiConfigContext";
 
 export const toastVariants = cva(
   "group pointer-events-auto relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-md border p-4 shadow-lg transition-all",
@@ -41,6 +42,7 @@ export function Toast({
   popover,
   ...props
 }: ToastProps): React.JSX.Element {
+  const { labels } = useUiConfig();
   return (
     <div
       role={variant === "destructive" ? "alert" : "status"}
@@ -64,7 +66,7 @@ export function Toast({
           onClick={onClose}
           popoverTargetAction={popover ? "hide" : undefined}
           className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 cursor-pointer"
-          aria-label="Close"
+          aria-label={labels.close}
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -137,10 +139,13 @@ export function ToastDescription({
 
 export function ToastClose({
   className,
+  "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<"button">): React.JSX.Element {
+  const { labels } = useUiConfig();
   return (
     <button
+      aria-label={ariaLabel ?? labels.close}
       className={cn(
         "absolute end-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-current opacity-50 transition-opacity hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-current/40 cursor-pointer",
         className,

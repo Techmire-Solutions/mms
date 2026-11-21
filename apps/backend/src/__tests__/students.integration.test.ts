@@ -69,6 +69,20 @@ vi.mock("../students/use-cases/studentUseCases.js", async (importOriginal) => {
   };
 });
 
+vi.mock("../students/repository/studentScopingRepository.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../students/repository/studentScopingRepository.js")>();
+  return {
+    ...actual,
+    resolveStudentAccessScope: async (_tenant: string, user: { role?: string }) =>
+      user?.role === "teacher"
+        ? { isUnrestricted: false, assignedSectionIds: ["sec-1"] }
+        : { isUnrestricted: true, assignedSectionIds: [] },
+    isStudentInAssignedSections: async () => true,
+    filterStudentIdsInAssignedSections: async (_tenant: string, ids: string[]) => ids,
+  };
+});
+
 vi.mock("../services/studentValidationService.js", () => ({
   validateStudentDynamic: vi.fn().mockResolvedValue(undefined),
 }));
@@ -523,7 +537,7 @@ describe("students routes", () => {
       expect.objectContaining({ kind: "export" }),
       expect.objectContaining({
         allowDeleted: false,
-        query: { search: "ali" },
+        query: { search: "ali", scopedSectionIds: ["sec-1"] },
       }),
     );
     await app.close();

@@ -34,7 +34,7 @@ export function StudentIdCardModal({
   open,
   onClose,
   items,
-  madrasaName = "Madrasa Management System",
+  madrasaName,
 }: StudentIdCardModalProps): JSX.Element | null {
   const { t } = useTranslation();
   const printAreaRef = useRef<HTMLDivElement>(null);
@@ -95,7 +95,7 @@ export function StudentIdCardModal({
                 onClick={() => setShowEditor(true)}
                 className="flex items-center gap-2 min-h-11 px-4 font-medium me-auto"
               >
-                <Paintbrush className="w-4 h-4" />
+                <Paintbrush className="w-4 h-4" aria-hidden />
                 <span>{t("students.idCard.customize")}</span>
               </Button>
             )}
@@ -112,7 +112,7 @@ export function StudentIdCardModal({
               onClick={handlePrint}
               className="flex items-center gap-2 px-5 min-h-11 font-semibold"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-4 h-4" aria-hidden />
               <span>{t("students.idCard.print")}</span>
             </Button>
           </>

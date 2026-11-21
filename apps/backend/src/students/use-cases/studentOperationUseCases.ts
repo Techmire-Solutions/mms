@@ -88,10 +88,13 @@ export async function checkStudentRegistrationDuplicate(
   input: StudentDuplicateCheckInput,
   repo: StudentsRepository = studentsRepository,
   tenantOverride?: string,
+  options?: { scopedSectionIds?: string[] },
 ): Promise<{ reason: "contact" | "email" | "nameDob" | "grNumber" | null }> {
   const tenant = tenantOverride || getRequestTenant();
   if (!tenant) return { reason: null };
-  const reason = await repo.findRegistrationConflict(tenant, input);
+  const reason = options
+    ? await repo.findRegistrationConflict(tenant, input, options)
+    : await repo.findRegistrationConflict(tenant, input);
   return { reason };
 }
 
@@ -132,12 +135,16 @@ export async function bulkUpdateStudentStatus(
     const previousStatusById = new Map(
       affected.map((student) => [String(student.id), student.status as string | undefined]),
     );
-    const succeeded = userId
+    const statusWrite = userId
       ? await repo.bulkUpdateStatusSql(tenant, uniqueIds, normalizedStatus, userId)
       : await repo.bulkUpdateStatusSql(tenant, uniqueIds, normalizedStatus);
 
+    // The UPDATE filters deleted rows; derive transitions/audit/withdrawals only from the ids it
+    // actually wrote so a concurrent delete cannot produce a status-change audit for a dead row.
+    const updatedIds = new Set(statusWrite.updatedIds);
+    const writtenStudents = affected.filter((student) => updatedIds.has(String(student.id)));
     const transitions = collectStatusTransitions(
-      affected.map((student) => ({ id: String(student.id), status: student.status })),
+      writtenStudents.map((student) => ({ id: String(student.id), status: student.status })),
       normalizedStatus,
     );
     // Status-driven withdrawal is a student-lifecycle cascade (like the
@@ -155,7 +162,7 @@ export async function bulkUpdateStudentStatus(
     await recordStudentStatusAuditEvents(tenant, transitions, userId);
     await reconcileContactSystemTags(
       tenant,
-      affected.flatMap((s) => [
+      writtenStudents.flatMap((s) => [
         s.contactId,
         s.fatherContactId,
         s.motherContactId,
@@ -163,7 +170,10 @@ export async function bulkUpdateStudentStatus(
       ]),
       userId ? { actorId: userId } : undefined,
     );
-    return { succeeded, failed: uniqueIds.length - succeeded };
+    return {
+      succeeded: statusWrite.succeeded,
+      failed: uniqueIds.length - statusWrite.succeeded,
+    };
   });
 
   if (result.succeeded > 0) {

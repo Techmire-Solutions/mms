@@ -1971,6 +1971,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "common.clearSearch": "پاک کردن جستجو",
   "common.noMatchingOptions": "گزینه‌ای مطابق یافت نشد",
   "common.close": "بستن",
+  "common.confirm": "تأیید",
   "common.discardUnsavedDescription": "تغییرات ذخیره‌نشده‌ای دارید. آن‌ها را نادیده گرفته و ببندید؟",
   "common.call": "تماس تلفنی",
   "common.emailAction": "ارسال ایمیل",

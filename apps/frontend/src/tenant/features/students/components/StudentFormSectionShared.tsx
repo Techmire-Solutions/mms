@@ -64,6 +64,7 @@ export function ContactProfileValue({
         )}
       >
         <Icon
+          aria-hidden
           className={cn(
             "h-4 w-4 shrink-0",
             error ? "text-destructive" : iconClassName || "text-muted-foreground",

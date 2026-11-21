@@ -139,7 +139,7 @@ function createAtomicRepo(seed: Student[] = [], grConflictOnSecondCall = false) 
     findActiveStudentIdOwners: vi.fn(async () => new Map<string, string>()),
     findSoftDeletedByContactId: vi.fn(async () => null),
     listActiveMissingGrNumber: vi.fn(async () => []),
-    bulkUpdateStatusSql: vi.fn(async () => 0),
+    bulkUpdateStatusSql: vi.fn(async () => ({ succeeded: 0, updatedIds: [] })),
     bulkSoftDelete: vi.fn(async () => ({ succeeded: 0, failed: 0 })),
     bulkRestore: vi.fn(async () => ({ succeeded: 0, failed: 0 })),
   };
@@ -255,7 +255,10 @@ describe("GAP-C4: parallel bulkUpdateStudentStatus with overlapping id sets", ()
     // The import must be fresh since we're re-mocking auditTrailService in the outer vi.mock above.
     const { recordModernAuditEvent } = await import("../services/auditTrailService.js");
     const auditSpy = vi.mocked(recordModernAuditEvent);
-    mockBulkUpdateStatus.mockResolvedValue(1);
+    mockBulkUpdateStatus.mockImplementation(async (_tenant: string, ids: string[]) => ({
+      succeeded: ids.length,
+      updatedIds: ids,
+    }));
 
     await Promise.all([
       bulkUpdateStudentStatus(["s-shared", "s-only-a"], "suspended", makeRepo(), admin),

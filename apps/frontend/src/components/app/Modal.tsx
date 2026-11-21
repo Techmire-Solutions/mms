@@ -14,6 +14,8 @@ export interface ModalProps<K extends string = string> {
   open: boolean;
   onClose: () => void;
   title?: React.ReactNode;
+  /** Accessible name for a dialog rendered without a `title` (WCAG 4.1.2). */
+  ariaLabel?: string;
   subtitle?: React.ReactNode;
   icon?: React.ComponentType<{ className?: string }>;
   size?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
@@ -68,6 +70,7 @@ export function Modal<K extends string = string>({
   open,
   onClose,
   title,
+  ariaLabel,
   subtitle,
   icon,
   size = "md",
@@ -175,6 +178,7 @@ export function Modal<K extends string = string>({
           onKeyDown={handlePanelKeyDown}
           aria-busy={busy || undefined}
           aria-labelledby={title ? titleId : undefined}
+          aria-label={title ? undefined : ariaLabel}
           data-print-unclamp
           className={cn(
             "relative @container bg-card rounded-2xl border border-foreground/12 shadow-surface-lg w-full z-elevated max-h-modal flex flex-col min-w-0",

@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { formatTemplateSequence, type StudentGrNumberSettings } from "@mms/shared";
 import { students, studentSequenceConfig } from "../schema.js";
 import { withTenant, type TenantTransaction } from "../tenant-context.js";
@@ -20,6 +20,59 @@ export function resolveGrYear(regDate: string | null | undefined): number {
   const prefix = typeof regDate === "string" ? regDate.trim().slice(0, 4) : "";
   const year = /^\d{4}$/.test(prefix) ? Number(prefix) : Number.NaN;
   return Number.isFinite(year) ? year : new Date().getFullYear();
+}
+
+/**
+ * Reserves `count` sequential GR numbers that collide with no active student.
+ *
+ * The annual rollover restarts at seq 1, so an out-of-band import/backfill that
+ * already owns low sequence numbers in the new year would collide. Each attempt
+ * probes the whole window; on a hit the window is advanced by its own size and
+ * re-probed (bounded) instead of returning a duplicate the create would 409 on.
+ */
+async function reserveCollisionFreeGrBatch(
+  tx: TenantTransaction,
+  subdomain: string,
+  startSeq: number,
+  count: number,
+  template: string,
+  digits: number,
+  year: number,
+): Promise<{ results: string[]; startSeq: number }> {
+  let seq = startSeq;
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const batch: string[] = [];
+    for (let i = 0; i < count; i += 1) {
+      batch.push(formatTemplateSequence(template, seq + i, digits, new Date(year, 0, 1)));
+    }
+
+    const collisions = await tx
+      .select({ grNumber: students.grNumber })
+      .from(students)
+      .where(
+        and(
+          eq(students.workspaceSubdomain, subdomain),
+          isNull(students.deletedAt),
+          inArray(
+            sql`lower(btrim(${students.grNumber}))`,
+            batch.map((gr) => gr.trim().toLowerCase()),
+          ),
+        ),
+      );
+
+    if (collisions.length === 0) return { results: batch, startSeq: seq };
+    seq += count;
+  }
+
+  const conflict = new Error("Unable to reserve a collision-free GR number sequence") as Error & {
+    statusCode: number;
+    type: string;
+    field: string;
+  };
+  conflict.statusCode = 409;
+  conflict.type = "conflict";
+  conflict.field = "grNumber";
+  throw conflict;
 }
 
 /**
@@ -105,7 +158,17 @@ export async function generateNextGrNumberBatchSql(
       yearToSave = year;
     }
 
-    const endSeq = startSeq + count - 1;
+    const reserved = await reserveCollisionFreeGrBatch(
+      tx,
+      subdomain,
+      startSeq,
+      count,
+      template,
+      digits,
+      yearToSave,
+    );
+    const results = reserved.results;
+    const endSeq = reserved.startSeq + results.length - 1;
 
     await tx
       .update(studentSequenceConfig)
@@ -116,10 +179,6 @@ export async function generateNextGrNumberBatchSql(
       })
       .where(eq(studentSequenceConfig.workspaceSubdomain, subdomain));
 
-    const results: string[] = [];
-    for (let seq = startSeq; seq <= endSeq; seq++) {
-      results.push(formatTemplateSequence(template, seq, digits, new Date(yearToSave, 0, 1)));
-    }
     return results;
   };
 

@@ -104,7 +104,7 @@ function createFakeRepo(seed: Student[] = []) {
     findActiveStudentIdOwners: vi.fn(async () => new Map<string, string>()),
     findSoftDeletedByContactId: vi.fn(async () => null),
     listActiveMissingGrNumber: vi.fn(async () => []),
-    bulkUpdateStatusSql: vi.fn(async () => 0),
+    bulkUpdateStatusSql: vi.fn(async () => ({ succeeded: 0, updatedIds: [] })),
     bulkSoftDelete: vi.fn(async () => ({ succeeded: 0, failed: 0 })),
     bulkRestore: vi.fn(async () => ({ succeeded: 0, failed: 0 })),
   };
@@ -136,6 +136,43 @@ describe("createStudent id-collision guard", () => {
 
     expect(fake.spies.save).not.toHaveBeenCalled();
     expect(fake.store.get("s-active")?.notes).toBe("keep me");
+  });
+
+  it("maps an insert-only primary-key collision to a 409 id conflict", async () => {
+    const fake = createFakeRepo();
+    fake.repo.saveInsertOnly = vi.fn(async () => {
+      throw Object.assign(new Error("duplicate key value violates unique constraint"), {
+        code: "23505",
+        constraint: "students_pkey",
+      });
+    });
+    const useCases = createStudentsUseCases(fake.repo);
+
+    await expect(
+      useCases.createStudent(
+        { id: "s-fresh", contactId: "c-new", notes: "race" } as never,
+        { user: admin } as never,
+      ),
+    ).rejects.toBeInstanceOf(StudentCreateIdConflictError);
+    expect(fake.spies.save).not.toHaveBeenCalled();
+  });
+
+  it("keeps the GR-specific message for a non-id unique violation on the insert-only path", async () => {
+    const fake = createFakeRepo();
+    fake.repo.saveInsertOnly = vi.fn(async () => {
+      throw Object.assign(new Error("duplicate key value violates unique constraint"), {
+        code: "23505",
+        constraint: "students_workspace_gr_number_active_uidx",
+      });
+    });
+    const useCases = createStudentsUseCases(fake.repo);
+
+    await expect(
+      useCases.createStudent(
+        { contactId: "c-new", notes: "gr collision" } as never,
+        { user: admin } as never,
+      ),
+    ).rejects.toMatchObject({ statusCode: 409, field: "grNumber" });
   });
 
   it("refuses to resurrect a soft-deleted id without delete permission", async () => {

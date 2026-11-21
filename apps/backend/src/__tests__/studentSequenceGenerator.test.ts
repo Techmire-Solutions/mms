@@ -6,19 +6,31 @@ import {
   resolveGrYear,
 } from "../db/repositories/studentRepositorySequence.js";
 
-function createFakeSequenceTx(initialSeq: number, initialYear: number) {
+function createFakeSequenceTx(
+  initialSeq: number,
+  initialYear: number,
+  probeQueue: Array<Array<{ grNumber: string }>> = [],
+) {
   let storedSeq = initialSeq;
   let storedYear = initialYear;
   const fakeTx = {
-    select: vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockImplementation(() => {
-          const rows = [{ currentSequence: storedSeq, lastYear: storedYear }];
-          return Object.assign(Promise.resolve(rows), {
-            for: vi.fn().mockImplementation(() => Promise.resolve(rows)),
-          });
+    select: vi.fn().mockImplementation((selection: Record<string, unknown>) => {
+      // The GR collision probe selects `grNumber`; the config read selects sequence columns.
+      if (selection && "grNumber" in selection) {
+        const rows =
+          probeQueue.length > 0 ? (probeQueue.shift() as Array<{ grNumber: string }>) : [];
+        return { from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(rows) }) };
+      }
+      return {
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockImplementation(() => {
+            const rows = [{ currentSequence: storedSeq, lastYear: storedYear }];
+            return Object.assign(Promise.resolve(rows), {
+              for: vi.fn().mockImplementation(() => Promise.resolve(rows)),
+            });
+          }),
         }),
-      }),
+      };
     }),
     update: vi.fn().mockReturnValue({
       set: vi.fn().mockImplementation((payload: { currentSequence: number; lastYear: number }) => {
@@ -91,6 +103,70 @@ describe("studentSequenceGenerator", () => {
 
     expect(grs).toEqual(["GR-0006/2026", "GR-0007/2026", "GR-0008/2026"]);
     expect(getStored()).toEqual({ storedSeq: 8, storedYear: 2026 });
+  });
+
+  it("skips an out-of-band same-year GR on annual rollover instead of colliding", async () => {
+    const { fakeTx, getStored } = createFakeSequenceTx(50, 2025, [[{ grNumber: "0001-2026" }]]);
+
+    const gr = await generateNextGrNumberSql(
+      "demo",
+      {
+        regDate: "2026-01-15",
+        settings: {
+          grNumberTemplate: "{seq}-{year}",
+          grNumberDigits: 4,
+          grNumberRestartAnnually: true,
+        },
+      },
+      fakeTx as unknown as Parameters<typeof generateNextGrNumberSql>[2],
+    );
+
+    expect(gr).toBe("0002-2026");
+    expect(getStored()).toEqual({ storedSeq: 2, storedYear: 2026 });
+  });
+
+  it("advances the whole batch window past a collision", async () => {
+    const { fakeTx, getStored } = createFakeSequenceTx(50, 2025, [[{ grNumber: "0001-2026" }]]);
+
+    const grs = await generateNextGrNumberBatchSql(
+      "demo",
+      2,
+      {
+        regDate: "2026-01-15",
+        settings: {
+          grNumberTemplate: "{seq}-{year}",
+          grNumberDigits: 4,
+          grNumberRestartAnnually: true,
+        },
+      },
+      fakeTx as unknown as Parameters<typeof generateNextGrNumberBatchSql>[3],
+    );
+
+    expect(grs).toEqual(["0003-2026", "0004-2026"]);
+    expect(getStored()).toEqual({ storedSeq: 4, storedYear: 2026 });
+  });
+
+  it("throws a 409 conflict when no collision-free window can be reserved", async () => {
+    const { fakeTx } = createFakeSequenceTx(
+      50,
+      2025,
+      Array.from({ length: 10 }, () => [{ grNumber: "0001-2026" }]),
+    );
+
+    await expect(
+      generateNextGrNumberSql(
+        "demo",
+        {
+          regDate: "2026-01-15",
+          settings: {
+            grNumberTemplate: "{seq}-{year}",
+            grNumberDigits: 4,
+            grNumberRestartAnnually: true,
+          },
+        },
+        fakeTx as unknown as Parameters<typeof generateNextGrNumberSql>[2],
+      ),
+    ).rejects.toMatchObject({ statusCode: 409, field: "grNumber" });
   });
 
   it("previews next sequence without mutating sequence configuration", async () => {

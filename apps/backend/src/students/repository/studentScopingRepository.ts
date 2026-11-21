@@ -1,5 +1,5 @@
-import { and, eq, gte, inArray, isNull, lte, or, type SQL } from "drizzle-orm";
-import type { User } from "@mms/shared";
+import { and, eq, gte, inArray, isNull, lte, notInArray, or } from "drizzle-orm";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES, dedupeTrimmedIds, type User } from "@mms/shared";
 import { withTenantRead } from "../../db/tenant-context.js";
 import { faculty } from "../../db/schema/faculty.js";
 import { sectionStaffAssignments } from "../../db/schema/sessionSections.js";
@@ -24,9 +24,16 @@ const UNRESTRICTED_ROLES = new Set([
 /** Roles subjected to section roster scoping. */
 const SECTION_SCOPED_ROLES = new Set(["teacher", "assistant_teacher", "staff"]);
 
+/** Statuses that no longer hold a seat, and therefore no longer grant roster visibility. */
+const INACTIVE_ENROLLMENT_STATUSES = [...SEAT_RELEASED_ENROLLMENT_STATUSES];
+
 /**
  * Resolves the student access scope for a given authenticated user.
  * Teachers are scoped strictly to the sections they are currently assigned to teach.
+ *
+ * Authorization is fail-closed: if the faculty/assignment lookup cannot be
+ * completed, a section-scoped role gets an empty scope (no roster visibility)
+ * rather than a tenant-wide one.
  */
 export async function resolveStudentAccessScope(
   subdomain: string,
@@ -38,59 +45,78 @@ export async function resolveStudentAccessScope(
     return { isUnrestricted: true, assignedSectionIds: [] };
   }
 
-  if (!SECTION_SCOPED_ROLES.has(normalizedRole)) {
-    // Non-faculty roles (auditor, accountant, librarian) keep standard role-permission behavior
-    return { isUnrestricted: true, assignedSectionIds: [] };
-  }
-
+  // Resolve the faculty profile for ANY non-administrative role, so a tenant-created
+  // role (e.g. "class_teacher") with section assignments is scoped exactly like the
+  // built-in `teacher` role instead of silently gaining tenant-wide visibility.
+  let profile: { found: boolean; sections: string[] };
   try {
-    return await withTenantRead(subdomain, async (tx) => {
-      // Resolve faculty profile for the user
-      const facultyConditions = [
-        eq(faculty.workspaceSubdomain, subdomain),
-        isNull(faculty.deletedAt),
-        user.id ? eq(faculty.userId, user.id) : undefined,
-      ].filter(Boolean) as (SQL | undefined)[];
-
-      const facultyMembers = await tx
-        .select({ id: faculty.id })
-        .from(faculty)
-        .where(and(...facultyConditions))
-        .limit(1);
-
-      if (facultyMembers.length === 0) {
-        return { isUnrestricted: false, assignedSectionIds: [] };
-      }
-
-      const facultyId = facultyMembers[0].id;
-      const todayStr = new Date().toISOString().slice(0, 10);
-
-      const activeAssignments = await tx
-        .select({ sectionId: sectionStaffAssignments.sectionId })
-        .from(sectionStaffAssignments)
-        .where(
-          and(
-            eq(sectionStaffAssignments.workspaceSubdomain, subdomain),
-            isNull(sectionStaffAssignments.deletedAt),
-            eq(sectionStaffAssignments.facultyId, facultyId),
-            lte(sectionStaffAssignments.startOn, todayStr),
-            or(isNull(sectionStaffAssignments.endOn), gte(sectionStaffAssignments.endOn, todayStr)),
-          ),
-        );
-
-      const assignedSectionIds = activeAssignments
-        .map((a) => a.sectionId)
-        .filter((id): id is string => Boolean(id));
-
-      return {
-        isUnrestricted: false,
-        assignedSectionIds,
-      };
-    });
+    profile = await lookupFacultySections(subdomain, user);
   } catch {
-    // Fallback safely if tenant DB context is uninitialized (e.g. fastify mock integration tests)
-    return { isUnrestricted: true, assignedSectionIds: [] };
+    // Fail closed: an authorization lookup failure must never widen a non-admin
+    // role to the tenant-wide directory. (Route tests inject the scope port.)
+    return { isUnrestricted: false, assignedSectionIds: [] };
   }
+
+  if (profile.found) {
+    return { isUnrestricted: false, assignedSectionIds: profile.sections };
+  }
+
+  // No faculty profile: built-in scoped roles stay scoped-empty; every other role
+  // (auditor, accountant, librarian, custom non-faculty roles) keeps unrestricted.
+  return SECTION_SCOPED_ROLES.has(normalizedRole)
+    ? { isUnrestricted: false, assignedSectionIds: [] }
+    : { isUnrestricted: true, assignedSectionIds: [] };
+}
+
+/**
+ * Returns the faculty profile's currently-active section assignments for a user,
+ * or `{ found: false }` when the user has no faculty profile (or no identity).
+ */
+async function lookupFacultySections(
+  subdomain: string,
+  user: User,
+): Promise<{ found: boolean; sections: string[] }> {
+  if (!user.id) return { found: false, sections: [] };
+
+  return withTenantRead(subdomain, async (tx) => {
+    const facultyMembers = await tx
+      .select({ id: faculty.id })
+      .from(faculty)
+      .where(
+        and(
+          eq(faculty.workspaceSubdomain, subdomain),
+          isNull(faculty.deletedAt),
+          eq(faculty.userId, user.id),
+        ),
+      )
+      .limit(1);
+
+    if (facultyMembers.length === 0) {
+      return { found: false, sections: [] };
+    }
+
+    const facultyId = facultyMembers[0].id;
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    const activeAssignments = await tx
+      .select({ sectionId: sectionStaffAssignments.sectionId })
+      .from(sectionStaffAssignments)
+      .where(
+        and(
+          eq(sectionStaffAssignments.workspaceSubdomain, subdomain),
+          isNull(sectionStaffAssignments.deletedAt),
+          eq(sectionStaffAssignments.facultyId, facultyId),
+          lte(sectionStaffAssignments.startOn, todayStr),
+          or(isNull(sectionStaffAssignments.endOn), gte(sectionStaffAssignments.endOn, todayStr)),
+        ),
+      );
+
+    const sections = activeAssignments
+      .map((a) => a.sectionId)
+      .filter((id): id is string => Boolean(id));
+
+    return { found: true, sections };
+  });
 }
 
 /**
@@ -114,6 +140,7 @@ export async function isStudentInAssignedSections(
             eq(enrollments.studentId, studentId),
             isNull(enrollments.deletedAt),
             inArray(enrollments.sectionId, assignedSectionIds),
+            notInArray(enrollments.status, INACTIVE_ENROLLMENT_STATUSES),
           ),
         )
         .limit(1);
@@ -121,6 +148,41 @@ export async function isStudentInAssignedSections(
       return activeEnrollments.length > 0;
     });
   } catch {
-    return true;
+    // Fail closed: an unverifiable membership must deny access.
+    return false;
+  }
+}
+
+/**
+ * Batch membership filter used by export/bulk paths (single query, no N+1).
+ * Returns the subset of `studentIds` that are currently enrolled in an assigned
+ * section; any lookup failure returns an empty set (fail closed).
+ */
+export async function filterStudentIdsInAssignedSections(
+  subdomain: string,
+  studentIds: string[],
+  assignedSectionIds: string[],
+): Promise<string[]> {
+  const ids = dedupeTrimmedIds(studentIds);
+  if (ids.length === 0 || assignedSectionIds.length === 0) return [];
+
+  try {
+    return await withTenantRead(subdomain, async (tx) => {
+      const rows = await tx
+        .selectDistinct({ studentId: enrollments.studentId })
+        .from(enrollments)
+        .where(
+          and(
+            eq(enrollments.workspaceSubdomain, subdomain),
+            inArray(enrollments.studentId, ids),
+            isNull(enrollments.deletedAt),
+            inArray(enrollments.sectionId, assignedSectionIds),
+            notInArray(enrollments.status, INACTIVE_ENROLLMENT_STATUSES),
+          ),
+        );
+      return rows.map((row) => String(row.studentId));
+    });
+  } catch {
+    return [];
   }
 }

@@ -80,10 +80,12 @@ export function Badge({
   ...props
 }: BadgeProps): React.JSX.Element {
   const isInteractive = Comp === "button" || Boolean(onClick);
-  const buttonType = Comp === "button" ? (type ?? "button") : undefined;
+  // A clickable badge must be a real <button>: rendering `<div onClick>` is mouse-only.
+  const ResolvedComp = onClick && Comp !== "button" ? "button" : Comp;
+  const buttonType = ResolvedComp === "button" ? (type ?? "button") : undefined;
 
   return (
-    <Comp
+    <ResolvedComp
       ref={ref as never}
       type={buttonType}
       onClick={onClick}
@@ -120,7 +122,7 @@ export function Badge({
           <X className="h-2.5 w-2.5" aria-hidden="true" />
         </button>
       )}
-    </Comp>
+    </ResolvedComp>
   );
 }
 Badge.displayName = "Badge";

@@ -23,6 +23,7 @@ vi.mock("../db/repositories/studentRepository.js", () => ({
   findStudentsByIds: vi.fn().mockResolvedValue([]),
   countStudentsByWorkspace: vi.fn().mockResolvedValue(0),
   saveStudent: (...args: unknown[]) => mockSave(...args),
+  saveStudentInsertOnly: (...args: unknown[]) => mockSave(...args),
   bulkSaveStudents: vi.fn().mockResolvedValue(undefined),
 }));
 

@@ -82,20 +82,20 @@ export const ModuleRowActionsMenu = function ModuleRowActionsMenu({
             "min-w-11 min-h-11 p-0 flex items-center justify-center rounded-lg border border-border/50 bg-background/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors shadow-none"
           }
         >
-          <MoreHorizontal className={iconClassName} />
+          <MoreHorizontal className={iconClassName} aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className={contentClassName ?? "w-44"}>
         {onView && !hideViewItem && viewLabel ? (
           <DropdownMenuItem onClick={onView}>
-            <Eye className="w-3.5 h-3.5 me-2" /> {viewLabel}
+            <Eye className="w-3.5 h-3.5 me-2" aria-hidden /> {viewLabel}
           </DropdownMenuItem>
         ) : null}
         {!archived ? (
           <>
             {canWrite && onEdit && editLabel ? (
               <DropdownMenuItem onClick={onEdit}>
-                <Edit2 className="w-3.5 h-3.5 me-2" /> {editLabel}
+                <Edit2 className="w-3.5 h-3.5 me-2" aria-hidden /> {editLabel}
               </DropdownMenuItem>
             ) : null}
             {extras}
@@ -106,7 +106,7 @@ export const ModuleRowActionsMenu = function ModuleRowActionsMenu({
                   onClick={onDelete}
                   className="text-destructive focus:text-destructive"
                 >
-                  <Trash2 className="w-3.5 h-3.5 me-2" /> {deleteLabel}
+                  <Trash2 className="w-3.5 h-3.5 me-2" aria-hidden /> {deleteLabel}
                 </DropdownMenuItem>
               </>
             ) : null}
@@ -114,7 +114,7 @@ export const ModuleRowActionsMenu = function ModuleRowActionsMenu({
         ) : null}
         {archived && canDelete && onRestore && restoreLabel ? (
           <DropdownMenuItem onClick={onRestore}>
-            <RotateCcw className="w-3.5 h-3.5 me-2" /> {restoreLabel}
+            <RotateCcw className="w-3.5 h-3.5 me-2" aria-hidden /> {restoreLabel}
           </DropdownMenuItem>
         ) : null}
       </DropdownMenuContent>

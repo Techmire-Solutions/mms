@@ -30,6 +30,8 @@ export interface ImportPipelineContext {
    * the first mislabels its rows.
    */
   offset?: number;
+  /** Total rows being persisted across all chunks (the file's validated row count). */
+  total?: number;
   updateProgress(current: number, total: number): Promise<void>;
 }
 
@@ -115,7 +117,7 @@ export async function runImportPipeline<TRow>(
     // Hand the chunk's absolute position to `persist` so its row-level errors can be reported
     // against the original file instead of restarting at 1 for every chunk.
     throwIfAborted();
-    const result = await persist(chunk, { ...ctx, offset });
+    const result = await persist(chunk, { ...ctx, offset, total: transformed.length });
     throwIfAborted();
     imported += result.imported;
     if (result.errors) allErrors.push(...result.errors);

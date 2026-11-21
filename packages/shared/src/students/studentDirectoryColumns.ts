@@ -253,6 +253,7 @@ export const STUDENT_SORT_FIELDS = [
   "gender",
   "registeredDate",
   "dob",
+  "studentId",
   "updatedAt",
 ] as const;
 

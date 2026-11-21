@@ -1,9 +1,13 @@
-import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import { withTenant } from "../../../db/tenant-context.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { canWriteCollection, canReadCollection } from "../../../services/rbacService.js";
 import { STUDENTS_MODULE_MANIFEST, type User, studentOperationsContract } from "@mms/shared";
-import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
+import {
+  filterStudentIdsInAssignedSections,
+  resolveStudentAccessScope,
+  studentUseCases,
+} from "../../../students/use-cases/studentUseCases.js";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { replyValidationError } from "../../../lib/zodRequest.js";
@@ -12,6 +16,19 @@ import { getModuleAccessDenial } from "../../../middleware/requireTenantModule.j
 
 import { handleContractError } from "../../../lib/contractError.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
+
+/**
+ * Restricts a bulk id list to the caller's section scope. Unrestricted roles keep
+ * the full list; a scoped role that verifies nothing returns an empty list
+ * (fail-closed) and the caller reports the denied ids as failed.
+ */
+async function filterScopedStudentIds(request: FastifyRequest, ids: string[]): Promise<string[]> {
+  const tenantId = String(request.tenant?.id ?? "");
+  const scope = await resolveStudentAccessScope(tenantId, request.user as User);
+  if (scope.isUnrestricted) return ids;
+  return filterStudentIdsInAssignedSections(tenantId, ids, scope.assignedSectionIds);
+}
+
 const s = initServer();
 
 /** Students operations — bulk status, bulk enroll, next GR, duplicate check, migrate GR. */
@@ -31,19 +48,30 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
+        const requestedIds = [...new Set(body.ids.map(String))];
+        const scopedIds = await filterScopedStudentIds(request, requestedIds);
+        if (scopedIds.length === 0) {
+          return {
+            status: 200 as const,
+            body: { success: true, succeeded: 0, failed: requestedIds.length },
+          };
+        }
         // Per-student subject-scoped audit rows are written by the transition pipeline itself;
         // a collection summary here would duplicate them under the bogus "students" subject.
         const result = await withTenant(
           String(request.tenant?.id),
           () =>
-            studentUseCases.bulkUpdateStudentStatus(
-              body.ids.map(String),
-              body.status,
-              request.user as User,
-            ),
+            studentUseCases.bulkUpdateStudentStatus(scopedIds, body.status, request.user as User),
           { readOnly: false },
         );
-        return { status: 200 as const, body: { success: true, ...result } };
+        return {
+          status: 200 as const,
+          body: {
+            success: true,
+            succeeded: result.succeeded,
+            failed: result.failed + (requestedIds.length - scopedIds.length),
+          },
+        };
       } catch (err: unknown) {
         if (
           err instanceof Error &&
@@ -102,12 +130,20 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
         };
       }
       try {
+        const requestedIds = [...new Set(body.studentIds.map(String))];
+        const scopedIds = await filterScopedStudentIds(request, requestedIds);
+        if (scopedIds.length === 0) {
+          return {
+            status: 200 as const,
+            body: { success: true, succeeded: 0, failed: requestedIds.length },
+          };
+        }
         const result = await withTenant(
           String(request.tenant?.id),
           () =>
             studentUseCases.bulkEnrollStudents({
               ...body,
-              studentIds: body.studentIds.map(String),
+              studentIds: scopedIds,
             }),
           { readOnly: false },
         );
@@ -116,7 +152,14 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
           "student.bulk_enroll",
           `Updated session enrollments (${body.mode}) for ${result.succeeded} student(s)`,
         );
-        return { status: 200 as const, body: { success: true, ...result } };
+        return {
+          status: 200 as const,
+          body: {
+            success: true,
+            succeeded: result.succeeded,
+            failed: result.failed + (requestedIds.length - scopedIds.length),
+          },
+        };
       } catch (error) {
         return handleContractError(request, error, {
           status: 500,
@@ -186,10 +229,17 @@ export const studentOperationRoutes: FastifyPluginAsync = async (fastify) => {
           body: { type: "forbidden", message: "This endpoint requires a tenant subdomain" },
         };
       }
+      const scope = await resolveStudentAccessScope(String(tenantId), user);
+      const scopedSectionIds = scope.isUnrestricted ? undefined : scope.assignedSectionIds;
       try {
         const result = await withTenant(
           tenantId,
-          () => studentUseCases.checkStudentRegistrationDuplicate(body, tenantId),
+          () =>
+            studentUseCases.checkStudentRegistrationDuplicate(
+              body,
+              tenantId,
+              scopedSectionIds ? { scopedSectionIds } : undefined,
+            ),
           { readOnly: true },
         );
         return { status: 200 as const, body: result };

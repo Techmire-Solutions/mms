@@ -30,7 +30,8 @@ const invalidateModuleQueries = createModuleQueryInvalidator({
  */
 export function invalidateStudentsQueries(queryClient: QueryClient): void {
   invalidateModuleQueries(queryClient);
-  invalidateContactsQueries(queryClient);
+  // Contact-derived tags still refresh; the student keys were invalidated above.
+  invalidateContactsQueries(queryClient, { includeStudents: false });
 }
 
 /** Bulk enrollment also changes session rosters and Enrollment records. */

@@ -164,6 +164,31 @@ describe("GAP-R2: PUT /api/students/:id with non-existent student → 404", () =
   });
 });
 
+describe("PUT /api/students/:id — malformed optimistic-concurrency header", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret";
+    vi.clearAllMocks();
+  });
+
+  it("returns 400 for a non-ISO x-expected-updated-at instead of a misleading 409", async () => {
+    const app = await buildApp();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/students/s-1",
+      headers: {
+        host: "demo.localhost",
+        authorization: `Bearer ${adminToken(app)}`,
+        "content-type": "application/json",
+        "x-expected-updated-at": "not-a-date",
+      },
+      payload: { status: "inactive" },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(mockUpdateStudentById).not.toHaveBeenCalled();
+    await app.close();
+  });
+});
+
 describe("GAP-R3: DELETE /api/students/:id by teacher → 403", () => {
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";

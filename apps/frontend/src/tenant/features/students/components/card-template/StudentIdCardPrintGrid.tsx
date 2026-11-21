@@ -11,7 +11,7 @@ export interface StudentIdCardPrintGridProps {
   items: StudentIdCardItem[];
   printMode: StudentCardPrintMode;
   template: StudentCardTemplate;
-  madrasaName: string;
+  madrasaName?: string;
   cutGuideClass: string;
   flippedCards: Record<string, boolean>;
   globalFlipped: boolean;

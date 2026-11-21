@@ -1,7 +1,7 @@
 import { sql, type SQL } from "drizzle-orm";
+import { STUDENT_SORT_FIELD_SET } from "@mms/shared";
 import { students, contacts } from "../schema.js";
 import {
-  STUDENT_SORT_FIELDS,
   grNumberExpr,
   statusExpr,
   linkedContactGenderExpr,
@@ -16,7 +16,7 @@ export function buildOrderBy(
 ): SQL {
   const dir = sortDir === "desc" ? "desc" : "asc";
   const field = sortField?.trim();
-  if (!field || !STUDENT_SORT_FIELDS.has(field)) {
+  if (!field || !STUDENT_SORT_FIELD_SET.has(field)) {
     return sql`${students.id} asc`;
   }
   if (field === "updatedAt") {

@@ -6,13 +6,16 @@ import { hydrateStudentsFromContacts } from "./studentHydrateUseCases.js";
 
 /** Active (or deleted-only) student count via SQL — avoids loading every row. */
 export async function countStudents(
-  options?: { includeDeleted?: boolean },
+  options?: { includeDeleted?: boolean; scopedSectionIds?: string[] },
   repo: StudentsRepository = studentsRepository,
 ): Promise<number> {
   const tenant = getRequestTenant();
   if (!tenant) return 0;
   const deleted = options?.includeDeleted ? "deleted" : "active";
-  return repo.countByWorkspace(tenant, { deleted });
+  return repo.countByWorkspace(tenant, {
+    deleted,
+    ...(options?.scopedSectionIds ? { scopedSectionIds: options.scopedSectionIds } : {}),
+  });
 }
 
 export async function loadStudentsPage(

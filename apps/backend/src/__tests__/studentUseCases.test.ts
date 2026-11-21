@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Student, StudentsListQuery } from "@mms/shared";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
+import { emitOutboxEvent } from "../services/outboxEventService.js";
+import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { cascadeSoftDeleteEnrollmentsForStudents } from "../db/repositories/studentEnrollmentCascade.js";
 
 const mockGetRequestTenant = vi.fn();
 const mockBroadcastCollection = vi.fn();
@@ -136,7 +139,7 @@ function createFakeRepo() {
       findActiveStudentIdOwners: vi.fn(async () => new Map()),
       findSoftDeletedByContactId: vi.fn(async () => null),
       listActiveMissingGrNumber: vi.fn(async () => []),
-      bulkUpdateStatusSql: vi.fn(async () => 0),
+      bulkUpdateStatusSql: vi.fn(async () => ({ succeeded: 0, updatedIds: [] })),
     } as unknown as StudentsRepository,
   };
 }
@@ -216,6 +219,21 @@ describe("createStudentsUseCases (DI composition root)", () => {
       expect.objectContaining({ grNumber: "GR-NEW", excludeId: "archived" }),
     );
     expect(repo.save).toHaveBeenCalledWith("demo", expect.objectContaining({ id: "archived" }));
+  });
+
+  it("forwards the section scope to the duplicate probe", async () => {
+    const { repo } = createFakeRepo();
+    const useCases = createStudentsUseCases(repo);
+
+    await useCases.checkStudentRegistrationDuplicate({ grNumber: "GR-1" }, "demo", {
+      scopedSectionIds: ["sec-1"],
+    });
+
+    expect(repo.findRegistrationConflict).toHaveBeenCalledWith(
+      "demo",
+      { grNumber: "GR-1" },
+      { scopedSectionIds: ["sec-1"] },
+    );
   });
 
   it("createStudent rejects with StudentRestoreConflictError when the restored GR collides", async () => {
@@ -325,6 +343,21 @@ describe("createStudentsUseCases (DI composition root)", () => {
 
     expect(result).toEqual({ succeeded: 1, failed: 0 });
     expect(repo.bulkSave).toHaveBeenCalledWith("demo", [expect.objectContaining({ id: "a" })]);
+  });
+
+  it("does not cascade or audit rows the bulk UPDATE did not write", async () => {
+    const { repo, store } = createFakeRepo();
+    store.set("a", fakeStudent("a"));
+    repo.bulkSoftDelete = vi.fn(async () => ({ succeeded: 0, failed: 1, deletedIds: [] }));
+    const useCases = createStudentsUseCases(repo);
+
+    const result = await useCases.bulkSoftDeleteStudents(["a"], "u-admin");
+
+    expect(result).toEqual({ succeeded: 0, failed: 1 });
+    expect(cascadeSoftDeleteEnrollmentsForStudents).not.toHaveBeenCalled();
+    expect(recordModernAuditEvent).not.toHaveBeenCalled();
+    expect(emitOutboxEvent).not.toHaveBeenCalled();
+    expect(mockBroadcastCollection).not.toHaveBeenCalled();
   });
 
   it("bulkRestoreStudents dedupes repeated ids instead of reporting a phantom conflict", async () => {
@@ -654,7 +687,7 @@ describe("createStudentsUseCases (DI composition root)", () => {
     const metrics = await useCases.loadStudentsCommandMetrics();
 
     expect(metrics.total).toBe(4);
-    expect(repo.aggregateCommandMetrics).toHaveBeenCalledWith("demo");
+    expect(repo.aggregateCommandMetrics).toHaveBeenCalledWith("demo", undefined, undefined);
   });
 
   it("loadStudentsWidgetAggregates passes queries to the injected repo", async () => {
@@ -663,14 +696,19 @@ describe("createStudentsUseCases (DI composition root)", () => {
 
     await useCases.loadStudentsWidgetAggregates([{ id: "w1", operation: "count" }]);
 
-    expect(repo.aggregateWidgetQueries).toHaveBeenCalledWith("demo", [
-      { id: "w1", operation: "count" },
-    ]);
+    expect(repo.aggregateWidgetQueries).toHaveBeenCalledWith(
+      "demo",
+      [{ id: "w1", operation: "count" }],
+      undefined,
+    );
   });
 
   it("bulkUpdateStudentStatus delegates to the SQL bulk update and broadcasts", async () => {
     const { repo } = createFakeRepo();
-    vi.mocked(repo.bulkUpdateStatusSql).mockResolvedValue(2);
+    vi.mocked(repo.bulkUpdateStatusSql).mockResolvedValue({
+      succeeded: 2,
+      updatedIds: ["s-1", "s-2"],
+    });
     const useCases = createStudentsUseCases(repo);
 
     const result = await useCases.bulkUpdateStudentStatus(["s-1", "s-2"], "inactive");

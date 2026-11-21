@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   STUDENTS_MODULE_MANIFEST,
   buildStudentWorkColumnRegistry,
@@ -9,19 +10,22 @@ import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 export function useStudentColumnLayout(settings: StudentsSettings) {
   const { t } = useTranslation();
 
-  const tenantRegistry = (() =>
-    buildStudentWorkColumnRegistry(settings, {
-      name: t("students.columns.name"),
-      grNumber: t("students.columns.grNumber"),
-      gender: t("students.columns.gender"),
-      phone: t("students.columns.phone"),
-      email: t("students.columns.email"),
-      dob: t("students.columns.dob"),
-      parents: t("students.columns.parents"),
-      status: t("students.columns.status"),
-      registeredDate: t("students.columns.registeredDate"),
-      notes: t("students.columns.notes"),
-    }))();
+  const tenantRegistry = useMemo(
+    () =>
+      buildStudentWorkColumnRegistry(settings, {
+        name: t("students.columns.name"),
+        grNumber: t("students.columns.grNumber"),
+        gender: t("students.columns.gender"),
+        phone: t("students.columns.phone"),
+        email: t("students.columns.email"),
+        dob: t("students.columns.dob"),
+        parents: t("students.columns.parents"),
+        status: t("students.columns.status"),
+        registeredDate: t("students.columns.registeredDate"),
+        notes: t("students.columns.notes"),
+      }),
+    [settings, t],
+  );
 
   const {
     customizerLabels: baseLabels,

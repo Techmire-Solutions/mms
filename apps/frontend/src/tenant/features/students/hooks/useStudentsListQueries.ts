@@ -1,5 +1,6 @@
 import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsListQuery } from "@mms/shared";
 import { apiContract, tsrClient } from "@/lib/api";
+import { assertContractOk } from "@/lib/apiContractError";
 import { useQuery } from "@tanstack/react-query";
 import {
   STUDENTS_QUERY_KEY,
@@ -14,6 +15,7 @@ export async function fetchAllStudentsForQuery(
   onProgress?: (fetched: number, total: number) => void,
 ): Promise<StudentRecord[]> {
   const limit = STUDENTS_MODULE_MANIFEST.maxPageSize;
+  const maxPages = 200;
   const all: StudentRecord[] = [];
   let page = 1;
   let total = 0;
@@ -25,14 +27,15 @@ export async function fetchAllStudentsForQuery(
       limit,
     };
     const response = await apiContract.students.list({ query: listQuery });
+    assertContractOk(response, "Failed to export students");
     const studentsPage = response.body as StudentsListPageResult;
-    all.push(...(studentsPage.students as StudentRecord[]));
-    total = studentsPage.total;
+    all.push(...((studentsPage.students ?? []) as StudentRecord[]));
+    total = studentsPage.total ?? 0;
     onProgress?.(all.length, total);
     if (!studentsPage.hasMore) break;
-    if (page >= 200) {
+    if (page >= maxPages) {
       throw new Error(
-        "Student export exceeds the 100,000-record safety limit; narrow the filters.",
+        `Student export exceeds the ${maxPages * limit}-record safety limit; narrow the filters.`,
       );
     }
     page += 1;

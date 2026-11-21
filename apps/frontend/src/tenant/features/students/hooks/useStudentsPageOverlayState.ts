@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toMessagingRecipient, type Student } from "@mms/shared";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,7 +13,10 @@ export function useStudentsPageOverlayState(options?: { statuses?: readonly stri
   const { t } = useTranslation();
   // The bulk-status menu reads its options from this config, so it must use the
   // tenant's configured statuses (S-02), not the global defaults.
-  const statusBadgeConfig = studentStatusBadgeConfig(t, options?.statuses);
+  const statusBadgeConfig = useMemo(
+    () => studentStatusBadgeConfig(t, options?.statuses),
+    [t, options?.statuses],
+  );
   const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
     useMessageComposerState();
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);

@@ -9,21 +9,30 @@ import {
   widgetFilterSql,
   widgetNeedsContactsJoin,
 } from "./studentRepositoryWidgetsSql.js";
+import { studentScopeExistsSql } from "./studentScopeSql.js";
 
 /** SQL widget aggregates for students (Contacts parity). */
 export async function aggregateStudentsWidgetQueries(
   tenant: string,
   queries: StudentsWidgetQuery[],
+  scopedSectionIds?: string[],
 ): Promise<Record<string, StudentsWidgetAggregateResult>> {
   const subdomain = tenant.trim().toLowerCase();
   const results: Record<string, StudentsWidgetAggregateResult> = {};
   if (queries.length === 0) return results;
 
   return withTenantRead(subdomain, async (tx) => {
+    const scopeClause = scopedSectionIds
+      ? studentScopeExistsSql(subdomain, scopedSectionIds)
+      : undefined;
+    const baseWhere = scopeClause
+      ? and(activeWorkspaceWhere(subdomain), scopeClause)
+      : activeWorkspaceWhere(subdomain);
+
     const totalRows = await tx
       .select({ count: sql<number>`count(*)::int` })
       .from(students)
-      .where(activeWorkspaceWhere(subdomain));
+      .where(baseWhere);
     const totalCount = Number(totalRows[0]?.count ?? 0);
 
     const contactsJoinOn = and(
@@ -35,9 +44,7 @@ export async function aggregateStudentsWidgetQueries(
       queries.map(async (query) => {
         const useJoined = widgetNeedsContactsJoin(query);
         const filterSql = widgetFilterSql(query, useJoined);
-        const whereClause = filterSql
-          ? and(activeWorkspaceWhere(subdomain), filterSql)
-          : activeWorkspaceWhere(subdomain);
+        const whereClause = filterSql ? and(baseWhere, filterSql) : baseWhere;
         const chartLimit = resolveChartLimit(query);
 
         let value = 0;

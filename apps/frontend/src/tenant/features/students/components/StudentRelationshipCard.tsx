@@ -124,7 +124,11 @@ export function StudentRelationshipCard({
                 </span>
               )}
             </div>
-            <h5 className="text-sm font-bold text-foreground truncate mt-0.5" title={name}>
+            <h5
+              dir="auto"
+              className="text-sm font-bold text-foreground truncate mt-0.5"
+              title={name}
+            >
               {name}
             </h5>
           </div>

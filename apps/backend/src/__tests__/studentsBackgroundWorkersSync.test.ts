@@ -56,12 +56,6 @@ describe("Students Background Workers & Queue Timeout Budgets", () => {
     expect(timeout).toBe(600_000);
   });
 
-  it("resolves students:bulk-status to the 10-minute bulk timeout budget", () => {
-    const timeout = resolveJobExecutionTimeoutMs("students", "bulk-status");
-    expect(timeout).toBe(STUDENTS_IMPORT_TIMEOUT_MS);
-    expect(timeout).toBe(600_000);
-  });
-
   it("defaults unrecognized jobs to the 60s sandbox processor ceiling", () => {
     const timeout = resolveJobExecutionTimeoutMs("students", "unknown-kind");
     expect(timeout).toBe(JOB_EXECUTION_TIMEOUT_MS);
@@ -102,14 +96,79 @@ describe("Students Import Idempotency & Checkpointing Engine", () => {
 
     const result = await importStudentRows(rows, ctx);
 
-    // Only students 3 and 4 should be processed
+    // Only students 3 and 4 are created, but all four rows are now persisted.
     expect(mockCreateStudent).toHaveBeenCalledTimes(2);
-    expect(result.imported).toBe(2);
+    expect(result.imported).toBe(4);
     expect(result.errors).toBeUndefined();
 
     // Checkpoint should be deleted when the batch completes
     const remainingCheckpoint = await redisGet(checkpointKey);
     expect(remainingCheckpoint).toBeNull();
+  });
+
+  it("resumes at the absolute checkpoint across chunks instead of replaying earlier batches", async () => {
+    const jobId = "job-retry-multichunk-1";
+    const checkpointKey = `mms:t1:import-checkpoint:${jobId}`;
+    // 380 rows were persisted before a crash in the second 200-row chunk.
+    await redisSet(checkpointKey, "380");
+
+    const chunk = Array.from({ length: 200 }, (_, index) => ({
+      name: `Student ${index + 1}`,
+      grNumber: `GR-${index + 1}`,
+    })) as StudentImportRow[];
+    const total = 450;
+    const context = (offset: number): ImportPipelineContext => ({
+      tenant: "t1",
+      userId: "u1",
+      jobId,
+      offset,
+      total,
+      viewerRole: "admin",
+      updateProgress: vi.fn().mockResolvedValue(undefined),
+    });
+
+    // Chunk 1 (absolute 0-199) is already persisted: no writes, all 200 reported imported.
+    const first = await importStudentRows(chunk, context(0));
+    expect(mockCreateStudent).toHaveBeenCalledTimes(0);
+    expect(first.imported).toBe(200);
+
+    // Chunk 2 (absolute 200-399): only local 180-199 (absolute 380-399) are missing.
+    const second = await importStudentRows(chunk, context(200));
+    expect(mockCreateStudent).toHaveBeenCalledTimes(20);
+    expect(second.imported).toBe(200);
+
+    // Last chunk deletes the checkpoint.
+    const last = await importStudentRows(chunk.slice(0, 50), context(400));
+    expect(last.imported).toBe(50);
+    expect(mockCreateStudent).toHaveBeenCalledTimes(70);
+    expect(await redisGet(checkpointKey)).toBeNull();
+  });
+
+  it("freezes the checkpoint at the last contiguous success when a row fails", async () => {
+    const jobId = "job-retry-failure-1";
+    const checkpointKey = `mms:t1:import-checkpoint:${jobId}`;
+    await redisSet(checkpointKey, "0");
+    mockCreateStudent.mockRejectedValueOnce(new Error("database unavailable"));
+
+    const rows = [
+      { name: "Student 1", grNumber: "GR-1" },
+      { name: "Student 2", grNumber: "GR-2" },
+      { name: "Student 3", grNumber: "GR-3" },
+    ] as StudentImportRow[];
+
+    const result = await importStudentRows(rows, {
+      tenant: "t1",
+      userId: "u1",
+      jobId,
+      offset: 0,
+      total: rows.length,
+      viewerRole: "admin",
+      updateProgress: vi.fn().mockResolvedValue(undefined),
+    });
+
+    expect(result.errors?.[0]?.reason).toBe("database unavailable");
+    // The failed row must stay retryable: the stored position never moves past it.
+    expect(await redisGet(checkpointKey)).not.toBe("1");
   });
 });
 

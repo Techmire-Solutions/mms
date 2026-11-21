@@ -48,11 +48,15 @@ export function GuardianContactCard({
           <SectionLabel toneClassName={badgeTone} className="mb-0.5 block bg-transparent border-0">
             {label}
           </SectionLabel>
-          <h5 title={name} className="text-xs font-bold text-foreground truncate">
+          <h5 dir="auto" title={name} className="text-xs font-bold text-foreground truncate">
             {name}
           </h5>
           {(phone || email) && (
-            <p title={phone || email} className="text-xs text-muted-foreground mt-0.5 truncate">
+            <p
+              dir="auto"
+              title={phone || email}
+              className="text-xs text-muted-foreground mt-0.5 truncate"
+            >
               {phone || email}
             </p>
           )}
