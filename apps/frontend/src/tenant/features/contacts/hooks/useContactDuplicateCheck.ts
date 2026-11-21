@@ -13,6 +13,7 @@ function contactCandidateSignature(draft: Partial<Contact>): string {
   return JSON.stringify({
     name: draft.name ?? "",
     firstName: draft.firstName ?? "",
+    lastName: draft.lastName ?? "",
     cnic: draft.cnic ?? "",
     phones: (draft.phones ?? []).map((phone) => phone.number ?? "").join("|"),
     emails: (draft.emails ?? []).map((email) => email.address ?? "").join("|"),
@@ -39,6 +40,7 @@ export function useContactDuplicateCheck({
     open &&
     (deferredDraft.name?.trim() ||
       deferredDraft.firstName?.trim() ||
+      deferredDraft.lastName?.trim() ||
       (deferredDraft.phones && deferredDraft.phones.some((p) => p.number?.trim())) ||
       (deferredDraft.emails && deferredDraft.emails.some((e) => e.address?.trim())) ||
       deferredDraft.cnic?.trim()),

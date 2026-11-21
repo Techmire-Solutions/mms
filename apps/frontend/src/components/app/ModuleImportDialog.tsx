@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Download, FileSpreadsheet, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { BackgroundJobRecord } from "@mms/shared";
 import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
@@ -41,6 +41,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
 }: ModuleImportDialogProps<TRow>): React.JSX.Element | null {
   const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (!open || !canWrite) return null;
 
@@ -60,6 +61,13 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
     handleStartImport,
     resetState,
   } = actions;
+
+  const handleReset = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    resetState();
+  };
 
   const onFiles = (files: FileList | null) => {
     if (files && files.length > 0) {
@@ -147,7 +155,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
                 ) : null}
               </div>
             ) : null}
-            <Button variant="outline" size="sm" onClick={resetState} className="cursor-pointer">
+            <Button variant="outline" size="sm" onClick={handleReset} className="cursor-pointer">
               {t("module.import.importAnother")}
             </Button>
           </div>
@@ -206,7 +214,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
               </div>
             ) : (
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="ghost" size="sm" onClick={resetState} className="cursor-pointer">
+                <Button variant="ghost" size="sm" onClick={handleReset} className="cursor-pointer">
                   {t("module.import.changeFile")}
                 </Button>
                 <Button
@@ -232,13 +240,15 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             isDragging={isDragging}
             onDraggingChange={setIsDragging}
             onFiles={onFiles}
+            fileInputRef={fileInputRef}
+            icon={Upload}
             title={t("module.import.dropHere")}
             description={t("module.import.dropDescription")}
             inputAriaLabel={t("module.import.inputAria")}
             inputId="module-csv-file-input"
             inputName="file"
             accept=".csv,text/csv"
-            className="bg-card"
+            className="bg-card cursor-pointer"
           />
         )}
       </div>

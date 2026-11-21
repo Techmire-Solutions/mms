@@ -122,10 +122,28 @@ export function useDatePickerDateMode({
     [minIsoStr, maxIsoStr],
   );
 
+  const yesterday = React.useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d;
+  }, []);
+
+  const isYesterdayAllowed = React.useMemo(
+    () => isDateWithinIsoBounds(yesterday, minIsoStr, maxIsoStr),
+    [yesterday, minIsoStr, maxIsoStr],
+  );
+
   const handleSelectToday = () => {
     const today = new Date();
     if (isTodayAllowed) {
       commitIso(formatDateToIso(today), today);
+      setOpen(false);
+    }
+  };
+
+  const handleSelectYesterday = () => {
+    if (isYesterdayAllowed) {
+      commitIso(formatDateToIso(yesterday), yesterday);
       setOpen(false);
     }
   };
@@ -145,10 +163,12 @@ export function useDatePickerDateMode({
     minIsoStr,
     maxIsoStr,
     isTodayAllowed,
+    isYesterdayAllowed,
     commitIso,
     clearValue,
     handleSelect,
     handleSelectToday,
+    handleSelectYesterday,
     handleClear,
   };
 }

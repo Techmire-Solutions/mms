@@ -157,10 +157,10 @@ export const buildNamePrefixRegex = (prefixesToIgnore?: string[]): string => {
 
 export const cleanName = (name: unknown, prefixesToIgnore?: string[]): string => {
   if (!name) return "";
-  const clean = String(name).trim().toLowerCase();
+  let clean = String(name).trim().toLowerCase();
   const prefixRegex = buildNamePrefixRegex(prefixesToIgnore);
   if (prefixRegex) {
-    return clean.replace(new RegExp(prefixRegex), "").replace(/\s+/g, "");
+    clean = clean.replace(new RegExp(prefixRegex), "").trim();
   }
-  return clean.replace(/\s+/g, "");
+  return clean.replace(/\s+/g, " ");
 };

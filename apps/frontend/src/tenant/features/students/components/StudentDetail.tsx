@@ -106,7 +106,7 @@ export const StudentDetail = function StudentDetail({
       subtitle={
         isArchived
           ? t("students.detail.archivedSubtitle")
-          : t("students.detail.grSubtitle", { gr: student.grNumber || t("common.notSpecified") })
+          : student.grNumber || t("common.notSpecified")
       }
       icon={GraduationCap}
       ariaLabel={t("students.detail.ariaLabel", {

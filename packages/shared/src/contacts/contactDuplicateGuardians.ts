@@ -59,3 +59,16 @@ export function collectContactGuardianIds(
   }
   return ids;
 }
+
+/**
+ * Two guardians sharing only a name are not flagged: one parent with several
+ * children (e.g. one guardian contact per admission) must not show up as a
+ * duplicate of itself. Any phone/email/CNIC match is still reported.
+ */
+export function isGuardianNameOnlyPair(
+  pair: { reasonKey: string; contacts: ReadonlyArray<Contact> },
+  guardianIds: ReadonlySet<string>,
+): boolean {
+  if (pair.reasonKey !== "name" || guardianIds.size === 0) return false;
+  return pair.contacts.every((row) => guardianIds.has(String(row.id)));
+}

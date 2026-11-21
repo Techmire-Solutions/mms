@@ -1,7 +1,16 @@
 import type { Contact, ContactPreferences } from "./contactTypes.js";
 import { cleanName, getEmails, getPhoneNumbers } from "../core/utils.js";
 import { filterActiveContacts } from "./contactSoftDelete.js";
-import { collectContactGuardianIds } from "./contactDuplicateGuardians.js";
+import { collectContactGuardianIds, isGuardianNameOnlyPair } from "./contactDuplicateGuardians.js";
+export {
+  areSiblingsSharingParent,
+  isParentChildOrGuardianPair,
+  PARENT_CHILD_GUARDIAN_RELATIONSHIP_TERMS,
+} from "./contactDuplicateFamilyRules.js";
+import {
+  areSiblingsSharingParent,
+  isParentChildOrGuardianPair,
+} from "./contactDuplicateFamilyRules.js";
 
 export type ContactDuplicateReasonKey =
   "cnic" | "cnicName" | "phoneEmail" | "namePhone" | "phone" | "nameEmail" | "email" | "name";
@@ -64,8 +73,10 @@ function pairKey(contactA: Contact, contactB: Contact): string {
   return idA < idB ? `${idA}-${idB}` : `${idB}-${idA}`;
 }
 
-function getContactCleanName(contact: Contact, namePrefixesToIgnore?: string[]): string {
-  return cleanName(contact.name || contact.firstName, namePrefixesToIgnore);
+export function getContactCleanName(contact: Contact, namePrefixesToIgnore?: string[]): string {
+  const fullName =
+    contact.name?.trim() || [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim();
+  return cleanName(fullName, namePrefixesToIgnore);
 }
 
 function getContactCleanCnic(contact: Contact): string {
@@ -143,6 +154,10 @@ function evaluatePair(
   keys1?: { phones: string[]; emails: string[]; name: string; cnic: string },
   keys2?: { phones: string[]; emails: string[]; name: string; cnic: string },
 ): ContactDuplicatePair | null {
+  if (isParentChildOrGuardianPair(contact1, contact2)) {
+    return null;
+  }
+
   const k1 = keys1 ?? getContactDuplicateCandidateKeys(contact1, preferences);
   const k2 = keys2 ?? getContactDuplicateCandidateKeys(contact2, preferences);
 
@@ -152,6 +167,10 @@ function evaluatePair(
   const cnicMatch = Boolean(k1.cnic && k2.cnic && k1.cnic === k2.cnic);
 
   if (!phoneMatch && !emailMatch && !nameMatch && !cnicMatch) return null;
+
+  if (!nameMatch && areSiblingsSharingParent(contact1, contact2)) {
+    return null;
+  }
 
   const { confidence, reasonKey } = scorePair(
     phoneMatch,
@@ -199,19 +218,6 @@ export interface FindContactDuplicatePairsOptions {
    * (SQL relationship/student links). Merged with links visible in the pool.
    */
   guardianContactIds?: Iterable<string | number>;
-}
-
-/**
- * Two guardians sharing only a name are not flagged: one parent with several
- * children (e.g. one guardian contact per admission) must not show up as a
- * duplicate of itself. Any phone/email/CNIC match is still reported.
- */
-function isGuardianNameOnlyPair(
-  pair: ContactDuplicatePair,
-  guardianIds: ReadonlySet<string>,
-): boolean {
-  if (pair.reasonKey !== "name" || guardianIds.size === 0) return false;
-  return pair.contacts.every((row) => guardianIds.has(String(row.id)));
 }
 
 /** Finds potential duplicate contact pairs (globle1 §2.2). Indexed scan for large directories. */

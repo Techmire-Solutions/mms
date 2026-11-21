@@ -118,6 +118,55 @@ describe("DashedFileDropZone", () => {
     expect(onFiles).toHaveBeenCalled();
   });
 
+  it("opens the system file picker when no fileInputRef is passed (module CSV import)", async () => {
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, "click").mockImplementation(() => {});
+    await act(async () => {
+      root.render(
+        <DashedFileDropZone
+          isDragging={false}
+          onDraggingChange={vi.fn()}
+          onFiles={vi.fn()}
+          title="Drop CSV here"
+          description="or click to browse"
+          inputAriaLabel="CSV file"
+          inputId="csv-input"
+          inputName="file"
+        />,
+      );
+    });
+    const zone = container.querySelector("button") as HTMLButtonElement;
+    await act(async () => {
+      zone.click();
+    });
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(clickSpy.mock.contexts[0]).toBe(container.querySelector("input#csv-input"));
+    clickSpy.mockRestore();
+  });
+
+  it("keeps the file input outside the zone button (no nested interactive content)", async () => {
+    const onFiles = vi.fn();
+    await act(async () => {
+      root.render(
+        <DashedFileDropZone
+          isDragging={false}
+          onDraggingChange={vi.fn()}
+          onFiles={onFiles}
+          title="Drop CSV here"
+          description="or click to browse"
+          inputAriaLabel="CSV file"
+          inputId="csv-input-2"
+          inputName="file"
+        />,
+      );
+    });
+    const fileInput = container.querySelector("input#csv-input-2") as HTMLInputElement;
+    expect(fileInput.closest("button")).toBeNull();
+    await act(async () => {
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(onFiles).toHaveBeenCalledTimes(1);
+  });
+
   it("names the dropzone with its visible copy (WCAG 2.5.3 label in name)", async () => {
     await act(async () => {
       root.render(
@@ -194,5 +243,46 @@ describe("DashedFileDropZone", () => {
 
     const button = container.querySelector("button") as HTMLButtonElement;
     expect(button.disabled).toBe(true);
+  });
+
+  it("clicks internal file input when dropzone button is clicked without external ref", async () => {
+    const onFiles = vi.fn();
+
+    await act(async () => {
+      root.render(
+        <DashedFileDropZone
+          isDragging={false}
+          onDraggingChange={vi.fn()}
+          onFiles={onFiles}
+          title="Drop CSV file here"
+          description="or click to browse from your device (.csv format)"
+          inputAriaLabel="Upload CSV file"
+          inputId="csv-input-internal"
+          inputName="file"
+        />,
+      );
+    });
+
+    const fileInput = container.querySelector("input#csv-input-internal") as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+
+    const clickSpy = vi.spyOn(fileInput, "click");
+    const zone = container.querySelector("button") as HTMLButtonElement;
+    expect(zone).not.toBeNull();
+
+    await act(async () => {
+      zone.click();
+    });
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+
+    const file = new File(["col1,col2\nval1,val2"], "data.csv", { type: "text/csv" });
+    await act(async () => {
+      Object.defineProperty(fileInput, "files", {
+        value: [file],
+      });
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(onFiles).toHaveBeenCalled();
+    expect(fileInput.value).toBe("");
   });
 });

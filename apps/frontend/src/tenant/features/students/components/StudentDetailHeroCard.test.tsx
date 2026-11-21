@@ -34,6 +34,7 @@ describe("StudentDetailHeroCard Component", () => {
 
     expect(html).toContain("Ali Raza");
     expect(html).toContain("GR-550");
+    expect(html).not.toContain("students.grPrefix");
     expect(html).toContain("Active");
   });
 
