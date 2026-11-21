@@ -181,4 +181,47 @@ describe("useContactFormSave", () => {
     expect(saved).toBe(false);
     expect(result.formError).toBe("contacts.form.saveConflict");
   });
+
+  it("handles stringified Zod phone validation errors cleanly with field error mapping", async () => {
+    const rawZodJson = JSON.stringify([
+      {
+        code: "custom",
+        message: "Pakistan (+92) phone number must be exactly 10 digits",
+        path: ["phones", 0, "number"],
+      },
+    ]);
+    const onSave = vi.fn().mockRejectedValueOnce(new Error(rawZodJson));
+    mocks.getApiValidationErrors.mockReturnValueOnce([
+      {
+        tabId: "phones",
+        fieldId: "number",
+        index: 0,
+        message: "Pakistan (+92) phone number must be exactly 10 digits",
+      },
+    ]);
+    mocks.getApiValidationMessage.mockReturnValueOnce(
+      "Pakistan (+92) phone number must be exactly 10 digits",
+    );
+    const onValidationTab = vi.fn();
+    renderHook(baseProps({ onSave, onValidationTab }));
+
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.handleSave();
+    });
+
+    expect(saved).toBe(false);
+    expect(result.validationErrors).toEqual([
+      {
+        tabId: "phones",
+        fieldId: "number",
+        index: 0,
+        message: "Pakistan (+92) phone number must be exactly 10 digits",
+      },
+    ]);
+    expect(onValidationTab).toHaveBeenCalledWith("phones", "number", 0);
+    expect(mocks.notifyError).toHaveBeenCalledWith("contacts.form.pleaseFixErrors", {
+      description: "Pakistan (+92) phone number must be exactly 10 digits",
+    });
+  });
 });

@@ -3,7 +3,10 @@ import { createModuleQueryInvalidator } from "@/lib/query/createModuleQueryInval
 import { invalidateContactsQueries } from "@/tenant/hooks/collections/contacts";
 import { ENROLLMENTS_QUERY_KEY } from "@/tenant/hooks/collections/enrollments";
 import { SESSIONS_QUERY_KEY } from "@/tenant/hooks/collections/sessions";
-import { STUDENTS_PREFERENCES_QUERY_KEY } from "@/tenant/features/students/hooks/useStudentSetupConfig";
+import {
+  STUDENTS_FIELD_CONFIG_QUERY_KEY,
+  STUDENTS_PREFERENCES_QUERY_KEY,
+} from "@/tenant/features/students/hooks/useStudentSetupConfig";
 import {
   STUDENTS_METRICS_QUERY_KEY,
   STUDENTS_QUERY_KEY,
@@ -17,6 +20,7 @@ const invalidateModuleQueries = createModuleQueryInvalidator({
   widgetAggregates: STUDENTS_WIDGET_AGGREGATES_QUERY_KEY,
   preferences: STUDENTS_PREFERENCES_QUERY_KEY,
   lookups: STUDENTS_LOOKUPS_QUERY_KEY,
+  related: [STUDENTS_FIELD_CONFIG_QUERY_KEY],
 });
 
 /**

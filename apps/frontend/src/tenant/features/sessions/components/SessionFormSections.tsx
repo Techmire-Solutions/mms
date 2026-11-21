@@ -127,6 +127,7 @@ export function SessionDetailsSection({
               max={sessionDraft.endDate || undefined}
               disabled={structureLocked}
               required
+              allowManualInput
             />
           </Field>
 
@@ -143,6 +144,7 @@ export function SessionDetailsSection({
               onChange={(dateStr) => onDraftChange({ endDate: dateStr })}
               min={sessionDraft.startDate || undefined}
               required
+              allowManualInput
             />
           </Field>
         </div>

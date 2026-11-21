@@ -79,7 +79,9 @@ function createFakeRepo(store: Map<string, Contact>) {
             const candidate = getContactDuplicateCandidateKeys(c, {});
             return (
               candidate.phones.some((p) => keys.phones.includes(p)) ||
-              candidate.emails.some((e) => keys.emails.includes(e))
+              candidate.emails.some((e) => keys.emails.includes(e)) ||
+              (Boolean(keys.name) && candidate.name === keys.name) ||
+              (Boolean(keys.cnic) && candidate.cnic === keys.cnic)
             );
           })
           .map((c) => String(c.id)),
@@ -188,6 +190,31 @@ describe("contactDuplicateScanService (SQL-scoped)", () => {
     const matchCount = await countContactDuplicateMatches(draft, repo);
 
     expect(matchCount).toBe(1);
+  });
+
+  it("countContactDuplicateMatches matches contact with exact same normalized full name", async () => {
+    const store = new Map<string, Contact>();
+    store.set("a", contact("a", "Ali Khan"));
+    const repo = createFakeRepo(store);
+    const draft = contact("b", "ali   khan");
+
+    const matchCount = await countContactDuplicateMatches(draft, repo);
+
+    expect(matchCount).toBe(1);
+  });
+
+  it("countContactDuplicateMatches excludes parent/child linked contacts even with exact same name", async () => {
+    const store = new Map<string, Contact>();
+    store.set("p-1", contact("p-1", "Ali Khan"));
+    const repo = createFakeRepo(store);
+    const childDraft: Contact = {
+      ...contact("c-1", "ali   khan"),
+      relationshipContacts: [{ contactId: "p-1", relationship: "Parent" }],
+    };
+
+    const matchCount = await countContactDuplicateMatches(childDraft, repo);
+
+    expect(matchCount).toBe(0);
   });
 
   it("runContactsDuplicateScan hydrates only blocked participants and persists the cache", async () => {
