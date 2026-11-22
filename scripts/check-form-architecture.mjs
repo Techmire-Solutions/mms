@@ -302,7 +302,9 @@ function renderInventory() {
 const rendered = renderInventory();
 let drift = false;
 if (fs.existsSync(INVENTORY)) {
-  drift = fs.readFileSync(INVENTORY, "utf8") !== rendered;
+  // Windows checkouts (core.autocrlf) hold the committed inventory with CRLF line
+  // endings; compare on LF so the same file is not reported as drift there.
+  drift = fs.readFileSync(INVENTORY, "utf8").replace(/\r\n/g, "\n") !== rendered;
 } else {
   drift = true;
 }
