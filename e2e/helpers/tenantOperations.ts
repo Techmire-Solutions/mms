@@ -253,10 +253,68 @@ export async function createTestContactJohnDoe(page: Page): Promise<void> {
 }
 
 /**
+ * Ensures student contact-profile requirements (relationships, address, education) do not
+ * block student registration in test flows that only register a single contact.
+ */
+export async function relaxStudentRequiredFields(page: Page): Promise<void> {
+  await test.step("Relax student contact-profile required fields via API", async () => {
+    const result = await page.evaluate(async () => {
+      const csrf = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/)?.[1];
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(csrf ? { "X-CSRF-Token": decodeURIComponent(csrf) } : {}),
+      };
+      const getRes = await fetch("/api/students/field-config", {
+        credentials: "include",
+        headers,
+      });
+      if (!getRes.ok) {
+        return { ok: false, status: getRes.status, text: await getRes.text() };
+      }
+      const data = (await getRes.json()) as { config?: { fields?: Record<string, unknown> } };
+      const config = data?.config;
+      if (config?.fields) {
+        for (const tabFields of Object.values(config.fields)) {
+          if (Array.isArray(tabFields)) {
+            for (const f of tabFields as Array<{ key?: string; required?: boolean }>) {
+              if (
+                f &&
+                (f.key === "contactRelationships" || f.key === "address" || f.key === "education")
+              ) {
+                f.required = false;
+              }
+            }
+          }
+        }
+        const putRes = await fetch("/api/students/field-config", {
+          method: "PUT",
+          credentials: "include",
+          headers,
+          body: JSON.stringify(config),
+        });
+        return { ok: putRes.ok, status: putRes.status, text: putRes.ok ? "" : await putRes.text() };
+      }
+      return { ok: true, status: 200, text: "" };
+    });
+    if (!result.ok) {
+      console.warn(
+        `[E2E] Could not relax student required fields: HTTP ${result.status} ${result.text}`,
+      );
+    }
+  });
+}
+
+/**
  * Registers student Jane Doe and links John Doe as Parent
  */
 export async function registerStudentJaneDoe(page: Page): Promise<void> {
   await test.step("Register student Jane Doe & link John Doe as Parent", async () => {
+    await relaxStudentRequiredFields(page);
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("h1").first()).toBeVisible();
+    await ensureWorkTierActive(page);
+
     // Exact name: the global search button ("Search students, sessions…") also matches
     // a substring "Student" and would open the command palette instead.
     await page.getByRole("button", { name: "Student", exact: true }).first().click();
