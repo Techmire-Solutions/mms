@@ -2,11 +2,18 @@ import type { FastifyRequest } from "fastify";
 import {
   buildStudentWriteSchema,
   collectStudentWriteExtraFieldKeys,
+  resolveStudentContactProfileGaps,
+  resolveStudentContactProfileRequirements,
+  resolveStudentGuardianLinks,
+  translateApp,
   verifyBlueprintVersion,
+  type AppTranslationKey,
+  type FieldDefinition,
   type StudentRecord,
 } from "@mms/shared";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { loadStudentsSettingsCombined } from "../../../students/use-cases/studentConfigService.js";
+import { loadContactsByIdsForTenant } from "../../../contacts/use-cases/contactLoadUseCases.js";
 import { collectStudentDynamicIssues } from "../../../services/studentValidationService.js";
 
 /** Languages the Setup blueprint can translate its validation messages into. */
@@ -125,6 +132,46 @@ export async function validateStudentWrite(
       throw new StudentBlueprintConflictError(error instanceof Error ? error.message : undefined);
     }
     if (issues.length > 0) throw new StudentWriteValidationError(issues);
+
+    // Layer 3 — contact-profile completeness. Relationships, address and education live
+    // on the linked contact, so the Setup required toggles are enforced from that record.
+    const profileRequirements = resolveStudentContactProfileRequirements(
+      (settings.fields ?? {}) as Record<string, FieldDefinition[]>,
+    );
+    if (
+      profileRequirements.relationships ||
+      profileRequirements.address ||
+      profileRequirements.education
+    ) {
+      const contactId = data.contactId != null ? String(data.contactId).trim() : "";
+      const [contact] = contactId ? await loadContactsByIdsForTenant(tenant, [contactId]) : [];
+      const triad = resolveStudentGuardianLinks(data, contact ?? null);
+      const gaps = resolveStudentContactProfileGaps(contact ?? null, profileRequirements, triad);
+      const language = requestLanguage(request);
+      const profileIssues: Array<{ field: string; message: string }> = [];
+      if (gaps.relationships) {
+        profileIssues.push({
+          field: "contactRelationships",
+          message: translateApp(
+            "students.form.relationshipsRequired" as AppTranslationKey,
+            language,
+          ),
+        });
+      }
+      if (gaps.address) {
+        profileIssues.push({
+          field: "address",
+          message: translateApp("students.form.addressRequired" as AppTranslationKey, language),
+        });
+      }
+      if (gaps.education) {
+        profileIssues.push({
+          field: "education",
+          message: translateApp("students.form.educationRequired" as AppTranslationKey, language),
+        });
+      }
+      if (profileIssues.length > 0) throw new StudentWriteValidationError(profileIssues);
+    }
   }
   return data;
 }

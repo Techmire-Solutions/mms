@@ -46,7 +46,7 @@ export function resolveAllStudentExportColumns(
   return mergeCustomStudentExportColumns([...ALL_STUDENT_EXPORT_COLUMNS], settings);
 }
 
-import { isStudentSeedFormTab } from "../settings/moduleFieldSetupStudents.js";
+import { isStudentSeedFormTab } from "../settings/moduleFieldSetupPersons.js";
 
 /** Merges custom fields from tenant settings into the given columns. */
 export function mergeCustomStudentExportColumns(

@@ -8982,12 +8982,16 @@ export const APP_TRANSLATIONS_EN = {
   "students.exportFailed": "Export failed",
   "students.exportFilename": "students.csv",
   "students.exportSuccess": "Export ready",
+  "students.fields.address": "Address",
+  "students.fields.addressDesc": "Read from the linked contact profile; the contact must have an address.",
   "students.fields.contactIdDesc":
     "Contact picker — links the canonical person record for this student.",
   "students.fields.contactRelationships": "Relationships",
   "students.fields.contactRelationshipsDesc":
-    "Shown from the linked contact’s Relationships in Contacts (Parent/Child, Husband/Wife, Guardian/Dependent).",
+    "At least 2 relationships: Parent (father & mother) and Guardian — read from the linked contact’s Relationships.",
   "students.fields.dobDesc": "Must be provided (not empty) on the linked contact profile.",
+  "students.fields.education": "Education",
+  "students.fields.educationDesc": "Read from the linked contact profile; the contact must have at least one education entry.",
   "students.fields.genderDesc": "Must be defined (not empty) on the linked contact profile.",
   "students.fields.grNumberDesc":
     "General register number — auto-assigned from Setup Preferences when enabled.",
@@ -9080,6 +9084,9 @@ export const APP_TRANSLATIONS_EN = {
   "students.form.status.suspended": "Suspended",
   "students.form.status.transferred": "Transferred",
   "students.form.statusRequired": "Status is required.",
+  "students.form.addressRequired": "The linked contact has no address. Add an address on the contact before saving.",
+  "students.form.educationRequired": "The linked contact has no education entry. Add education on the contact before saving.",
+  "students.form.relationshipsRequired": "At least 2 relationships are required: Parent (father & mother) and Guardian. Add them on the linked contact first.",
   "students.form.stepContact": "Contact",
   "students.form.stepGuardians": "Guardians",
   "students.form.stepNotes": "Notes",
@@ -9238,8 +9245,6 @@ export const APP_TRANSLATIONS_EN = {
   "students.setup.cannotDeleteSystemField":
     "Built-in fields cannot be removed. Disable the field instead.",
   "students.setup.cannotDeleteSystemTab": "Built-in tabs cannot be removed.",
-  "students.setup.discardUnsavedFieldsConfirm":
-    "You have unsaved field changes. Leave this tab and discard them?",
   "students.setup.discardUnsavedPreferencesConfirm":
     "You have unsaved preference changes. Leave this tab and discard them?",
   "students.setup.fieldHasStudentData":
@@ -9248,19 +9253,10 @@ export const APP_TRANSLATIONS_EN = {
   "students.setup.fieldsSaved": "Student field configuration saved",
   "students.setup.requiredFields": "Required fields",
   "students.setup.requiredFieldsDescription": "Choose which fields must be filled before a student can be saved. Enrollment checks date of birth and gender against admission rules, so requiring them up front avoids blocked enrollments later.",
-  "students.setup.requiredFieldsPresetLabel": "Required fields preset",
-  "students.setup.requiredFieldsPresetRecommended": "Recommended",
-  "students.setup.requiredFieldsPresetCustom": "Custom",
-  "students.setup.requiredFieldsRecommendedHint": "Recommended requires gender, date of birth, GR number and status, and keeps every other field optional. Switch to Custom to choose each field.",
-  "students.setup.requiredFieldsCustomHint": "Turn a field on to make it required, or leave it off to keep it optional.",
-  "students.setup.requiredFieldsAlwaysRequired": "Always required",
   "students.setup.requiredFieldsRecommendedBadge": "Recommended",
   "students.setup.requiredFieldsCustomFieldBadge": "Custom field",
-  "students.setup.requiredFieldsGrNumberHint": "Only enforced when GR numbers are entered manually.",
-  "students.setup.requiredFieldsContactHint": "Read from the linked contact profile; the contact must have this value.",
   "students.setup.requiredFieldsSaved": "Required fields saved",
   "students.setup.requiredFieldsLoadFailed": "Could not load the student field configuration.",
-  "students.setup.unsavedRequiredFieldsWarning": "You have unsaved changes in required fields.",
   "students.setup.fieldUsedInColumn":
     "This field is used in the Work column registry. Hide the column first.",
   "students.setup.lookups": "Lookups",
@@ -9278,7 +9274,7 @@ export const APP_TRANSLATIONS_EN = {
   "students.setup.saveFailed":
     "Could not save student settings. Check your connection and try again.",
   "students.setup.unsavedFieldsWarning": "You have unsaved changes in field configuration.",
-  "students.setup.unsavedPreferencesWarning": "You have unsaved changes in preferences.",
+  "students.setup.unsavedChanges": "You have unsaved changes. Save or discard them before leaving.",
   /** @deprecated use students.setup.readOnly */
   "students.setupReadOnly":
     "You can view Setup but need permission to edit fields and preferences.",

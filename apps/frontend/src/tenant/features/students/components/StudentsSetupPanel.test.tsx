@@ -15,6 +15,18 @@ vi.mock("@/tenant/features/students/hooks/useStudentsSetupPanelState", () => ({
   }),
 }));
 
+vi.mock("@/tenant/features/students/hooks/useStudentsRequiredFieldsSetup", () => ({
+  useStudentsRequiredFieldsSetup: () => ({
+    rows: [],
+    ready: true,
+    loadFailed: false,
+    isDirty: false,
+    saving: false,
+    setRequired: vi.fn(),
+    save: vi.fn(),
+  }),
+}));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,

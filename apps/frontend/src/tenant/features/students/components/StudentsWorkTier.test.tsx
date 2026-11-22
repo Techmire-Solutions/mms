@@ -128,11 +128,11 @@ describe("StudentsWorkTier Component", () => {
     expect(html).toContain("Zayd Harith");
   });
 
-  it("renders segmented quick-filter presets above the filters toolbar", () => {
+  it("does not render the redundant quick-filter preset strip (filters live in the toolbar menu)", () => {
     const html = renderToStaticMarkup(<StudentsWorkTier {...baseProps} />);
 
-    expect(html).toContain("students.filtersAll");
-    expect(html).toContain("students.filtersActive");
-    expect(html).toContain("students.filtersNew");
+    expect(html).not.toContain("students.filtersAll");
+    expect(html).not.toContain("students.filtersNew");
+    expect(html).not.toContain("students.filtersActive");
   });
 });

@@ -8921,11 +8921,15 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "students.exportFailed": "خروجی ناموفق بود",
   "students.exportFilename": "students.csv",
   "students.exportSuccess": "خروجی آماده است",
+  "students.fields.address": "نشانی",
+  "students.fields.addressDesc": "از پروفایل مخاطب مرتبط خوانده می‌شود؛ مخاطب باید نشانی داشته باشد.",
   "students.fields.contactIdDesc": "انتخاب مخاطب — پروندهٔ شخص اصلی این دانش‌آموز را پیوند می‌دهد.",
   "students.fields.contactRelationships": "روابط",
   "students.fields.contactRelationshipsDesc":
-    "از روابط مخاطب پیوندشده در مخاطبین نمایش داده می‌شود (والد/فرزند، شوهر/همسر، قیم/تحت تکفل).",
+    "حداقل ۲ رابطه: والدین (پدر و مادر) و سرپرست — از روابط مخاطب مرتبط خوانده می‌شود.",
   "students.fields.dobDesc": "باید در نمایهٔ مخاطب پیوندشده ارائه شود (خالی نباشد).",
+  "students.fields.education": "تحصیلات",
+  "students.fields.educationDesc": "از پروفایل مخاطب مرتبط خوانده می‌شود؛ مخاطب باید حداقل یک سابقه تحصیلی داشته باشد.",
   "students.fields.genderDesc": "باید در نمایهٔ مخاطب پیوندشده تعریف شده باشد (خالی نباشد).",
   "students.fields.grNumberDesc":
     "شماره ثبت عمومی — در صورت فعال بودن از ترجیحات راه‌اندازی به‌صورت خودکار.",
@@ -9018,6 +9022,9 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "students.form.status.suspended": "تعلیق شده",
   "students.form.status.transferred": "انتقال یافته",
   "students.form.statusRequired": "وضعیت الزامی است.",
+  "students.form.addressRequired": "مخاطب مرتبط نشانی ندارد. پیش از ذخیره، نشانی را در مخاطب اضافه کنید.",
+  "students.form.educationRequired": "مخاطب مرتبط سابقه تحصیلی ندارد. پیش از ذخیره، تحصیلات را در مخاطب اضافه کنید.",
+  "students.form.relationshipsRequired": "حداقل ۲ رابطه لازم است: والدین (پدر و مادر) و سرپرست. ابتدا آن‌ها را در مخاطب مرتبط اضافه کنید.",
   "students.form.stepContact": "مخاطب",
   "students.form.stepGuardians": "سرپرستان",
   "students.form.stepNotes": "یادداشت‌ها",
@@ -9175,8 +9182,6 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "students.setup.cannotDeleteSystemField":
     "فیلدهای داخلی را نمی‌توان حذف کرد. به‌جای آن فیلد را غیرفعال کنید.",
   "students.setup.cannotDeleteSystemTab": "زبانه‌های داخلی را نمی‌توان حذف کرد.",
-  "students.setup.discardUnsavedFieldsConfirm":
-    "تغییرات ذخیره‌نشده در فیلدها دارید. این زبانه را ترک کرده و آن‌ها را دور بریزید؟",
   "students.setup.discardUnsavedPreferencesConfirm":
     "تغییرات ذخیره‌نشده در ترجیحات دارید. این زبانه را ترک کرده و آن‌ها را دور بریزید؟",
   "students.setup.fieldHasStudentData":
@@ -9185,19 +9190,10 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "students.setup.fieldsSaved": "پیکربندی فیلدهای دانش‌آموز ذخیره شد",
   "students.setup.requiredFields": "فیلدهای الزامی",
   "students.setup.requiredFieldsDescription": "انتخاب کنید کدام فیلدها باید پیش از ذخیرهٔ دانش‌آموز پر شوند. ثبت‌نام، تاریخ تولد و جنسیت را با قوانین پذیرش بررسی می‌کند؛ بنابراین الزامی کردن آن‌ها از ابتدا از توقف ثبت‌نام در آینده جلوگیری می‌کند.",
-  "students.setup.requiredFieldsPresetLabel": "پیش‌تنظیم فیلدهای الزامی",
-  "students.setup.requiredFieldsPresetRecommended": "پیشنهادی",
-  "students.setup.requiredFieldsPresetCustom": "سفارشی",
-  "students.setup.requiredFieldsRecommendedHint": "حالت پیشنهادی جنسیت، تاریخ تولد، شمارهٔ ثبت و وضعیت را الزامی و سایر فیلدها را اختیاری نگه می‌دارد. برای انتخاب تک‌تک فیلدها به «سفارشی» بروید.",
-  "students.setup.requiredFieldsCustomHint": "فیلد را روشن کنید تا الزامی شود، یا خاموش بگذارید تا اختیاری بماند.",
-  "students.setup.requiredFieldsAlwaysRequired": "همیشه الزامی",
   "students.setup.requiredFieldsRecommendedBadge": "پیشنهادی",
   "students.setup.requiredFieldsCustomFieldBadge": "فیلد سفارشی",
-  "students.setup.requiredFieldsGrNumberHint": "فقط زمانی اعمال می‌شود که شماره‌های ثبت به‌صورت دستی وارد شوند.",
-  "students.setup.requiredFieldsContactHint": "از نمایهٔ مخاطب پیوندشده خوانده می‌شود؛ مخاطب باید این مقدار را داشته باشد.",
   "students.setup.requiredFieldsSaved": "فیلدهای الزامی ذخیره شد",
   "students.setup.requiredFieldsLoadFailed": "بارگذاری پیکربندی فیلدهای دانش‌آموز ممکن نشد.",
-  "students.setup.unsavedRequiredFieldsWarning": "تغییرات ذخیره‌نشده در فیلدهای الزامی دارید.",
   "students.setup.fieldUsedInColumn":
     "این فیلد در رجیستری ستون Work استفاده می‌شود. ابتدا ستون را پنهان کنید.",
   "students.setup.lookups": "فهرست‌ها",
@@ -9216,7 +9212,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "students.setup.saveFailed":
     "ذخیره تنظیمات دانش‌آموز ممکن نشد. اتصال را بررسی کنید و دوباره تلاش کنید.",
   "students.setup.unsavedFieldsWarning": "تغییرات ذخیره‌نشده در پیکربندی فیلدها دارید.",
-  "students.setup.unsavedPreferencesWarning": "تغییرات ذخیره‌نشده در ترجیحات دارید.",
+  "students.setup.unsavedChanges": "تغییرات ذخیره‌نشده دارید. پیش از ترک، ذخیره یا لغو کنید.",
   "students.setupReadOnly":
     "می‌توانید راه‌اندازی را ببینید، اما برای ویرایش فیلدها و ترجیحات به مجوز نیاز دارید.",
   "students.setup.readOnly":

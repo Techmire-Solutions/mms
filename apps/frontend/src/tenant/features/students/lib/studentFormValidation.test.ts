@@ -14,6 +14,13 @@ const linkedContact: Contact = {
   firstName: "Aisha",
   gender: "female",
   dob: "2010-01-01",
+  line1: "12 Madrasa Road",
+  education: [{ institution: "Al-Noor Madrasa" }],
+  relationshipContacts: [
+    { contactId: "f-1", name: "Father", gender: "male", relationship: "Parent" },
+    { contactId: "m-1", name: "Mother", gender: "female", relationship: "Parent" },
+    { contactId: "g-1", name: "Uncle", gender: "male", relationship: "Guardian" },
+  ],
 };
 
 function settings(overrides: Partial<StudentsSettings> = {}): StudentsSettings {
@@ -45,14 +52,12 @@ describe("student form validation", () => {
         grNumber: "GR-1",
         status: "active",
         customFields: { favoriteColor: "green" },
-        address: "legacy read-only address",
         rollNumber: "legacy roll",
       },
       fields: INITIAL_STUDENT_FIELD_SEED,
     });
 
     expect(draft).not.toHaveProperty("customFields");
-    expect(draft).not.toHaveProperty("address");
     expect(draft).not.toHaveProperty("rollNumber");
     expect(draft.grNumber).toBe("GR-1");
   });
@@ -120,6 +125,33 @@ describe("student form validation", () => {
     );
 
     expect(errors?.some((issue) => issue.fieldId === "grNumber")).toBe(true);
+  });
+
+  it("reports the contact-profile gaps when the linked contact is incomplete", () => {
+    const errors = validateStudentDraft(
+      { ...validDraft() },
+      {
+        settings: settings(),
+        enabledTabs: new Set(["basic", "registration"]),
+        requiredTabs: new Set(["basic", "registration"]),
+        fields: INITIAL_STUDENT_FIELD_SEED,
+        language: "en",
+        linkedGenderRaw: "female",
+        linkedDob: "2010-01-01",
+        linkedContact: {
+          id: "c-9",
+          name: "Bare",
+          firstName: "Bare",
+          gender: "female",
+          dob: "2010-01-01",
+        },
+      },
+    );
+
+    const fieldIds = (errors ?? []).map((issue) => issue.fieldId);
+    expect(fieldIds).toEqual(
+      expect.arrayContaining(["contactRelationships", "address", "education"]),
+    );
   });
 
   it("rejects unknown read-only keys before the blueprint layer", () => {

@@ -8,6 +8,7 @@ import { canViewContactTab, canViewContactField } from "../contacts/contactField
 import { STUDENT_REGISTRATION_SEED_FIELD_KEYS } from "../settings/moduleFieldSetupPersons.js";
 import { OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS } from "./studentSettingsMigrate.js";
 import { listEnabledCustomStudentFormFields } from "./studentFormCustomFields.js";
+import { STUDENT_CONTACT_PROFILE_NON_DRAFT_FIELD_KEYS } from "./studentRequiredFields.js";
 import { stripStudentClientSoftDeleteFields } from "./studentUtils.js";
 
 /** Top-level keys always accepted on student form drafts / writes (system model). */
@@ -131,7 +132,9 @@ export function buildDynamicStudentSchema(
       if (viewerRole && !canViewContactField(viewerRole, field)) {
         return;
       }
-      if (field.key === "contactRelationships") {
+      if (STUDENT_CONTACT_PROFILE_NON_DRAFT_FIELD_KEYS.has(field.key)) {
+        // Contact-profile checks (relationships / address / education) read the linked
+        // contact instead of the draft; enforcing them here would reject every write.
         return;
       }
       if (OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS.has(field.key)) {

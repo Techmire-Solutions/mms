@@ -4,10 +4,9 @@ import { normalizeStudentsSettings } from "./studentSettingsUtils.js";
 import { buildDynamicStudentSchema } from "./studentValidation.js";
 import {
   STUDENT_RECOMMENDED_REQUIRED_FIELD_KEYS,
-  applyRecommendedStudentRequiredFields,
-  applyStudentRequiredFieldKeys,
   listStudentRequirableFields,
-  resolveStudentRequiredFieldPreset,
+  resolveStudentContactProfileGaps,
+  resolveStudentContactProfileRequirements,
   setStudentFieldRequired,
 } from "./studentRequiredFields.js";
 
@@ -43,22 +42,24 @@ function requiredOf(fields: Record<string, FieldDefinition[]>, key: string): boo
 }
 
 describe("listStudentRequirableFields", () => {
-  it("lists enabled seed fields with the contact link locked and skips non-enforceable ones", () => {
+  it("lists only the contact-profile recommendations and skips system/registration rows", () => {
     const rows = listStudentRequirableFields(seedFields());
     const keys = rows.map((row) => row.key);
-    expect(keys).toEqual(["contactId", "gender", "dob", "grNumber", "status", "notes"]);
-    expect(rows.find((row) => row.key === "contactId")).toMatchObject({
-      locked: true,
-      required: true,
-    });
+    expect(keys).toEqual(["gender", "dob", "contactRelationships", "address", "education"]);
     expect(rows.find((row) => row.key === "dob")).toMatchObject({
       tabKey: "basic",
-      locked: false,
       recommended: true,
       isCustom: false,
     });
-    expect(keys).not.toContain("contactRelationships");
+    expect(keys).not.toContain("contactId");
     expect(keys).not.toContain("registeredDate");
+  });
+
+  it("keeps the contact link out of the requirable list", () => {
+    const contactId = listStudentRequirableFields([
+      { key: "contactId", label: "Student Contact", type: "text", enabled: true },
+    ]);
+    expect(contactId).toEqual([]);
   });
 
   it("includes enabled custom fields and omits disabled ones", () => {
@@ -72,11 +73,19 @@ describe("listStudentRequirableFields", () => {
     });
     const custom = listStudentRequirableFields(fields).filter((row) => row.isCustom);
     expect(custom.map((row) => row.key)).toEqual(["bFormNumber"]);
-    expect(custom[0]).toMatchObject({ recommended: false, required: false, locked: false });
+    expect(custom[0]).toMatchObject({ recommended: false, required: false });
+  });
+
+  it("carries the field description for the toggle hint", () => {
+    const rows = listStudentRequirableFields(seedFields());
+    const education = rows.find((row) => row.key === "education");
+    expect(education?.descriptionKey).toBe("students.fields.educationDesc");
+    const gender = rows.find((row) => row.key === "gender");
+    expect(gender?.descriptionKey).toBe("students.fields.genderDesc");
   });
 });
 
-describe("setStudentFieldRequired / applyStudentRequiredFieldKeys", () => {
+describe("setStudentFieldRequired", () => {
   it("toggles one field without mutating the input", () => {
     const fields = seedFields();
     const next = setStudentFieldRequired(fields, "dob", false);
@@ -85,44 +94,19 @@ describe("setStudentFieldRequired / applyStudentRequiredFieldKeys", () => {
   });
 
   it("never makes the contact link optional", () => {
-    const next = setStudentFieldRequired(seedFields(), "contactId", false);
+    const next = setStudentFieldRequired(seedFields(), "dob", false);
     expect(requiredOf(next, "contactId")).toBe(true);
-    const viaKeys = applyStudentRequiredFieldKeys(seedFields(), []);
-    expect(requiredOf(viaKeys, "contactId")).toBe(true);
   });
 
   it("leaves non-requirable fields untouched", () => {
     const fields = seedFields();
-    const next = applyStudentRequiredFieldKeys(fields, ["registeredDate"]);
+    const next = setStudentFieldRequired(fields, "registeredDate", true);
     expect(requiredOf(next, "registeredDate")).toBe(requiredOf(fields, "registeredDate"));
-    expect(requiredOf(next, "contactRelationships")).toBe(false);
   });
 
-  it("marks custom fields required by key", () => {
-    const next = applyStudentRequiredFieldKeys(withCustomField(seedFields()), ["bFormNumber"]);
+  it("marks a custom field required by key", () => {
+    const next = setStudentFieldRequired(withCustomField(seedFields()), "bFormNumber", true);
     expect(requiredOf(next, "bFormNumber")).toBe(true);
-    expect(requiredOf(next, "dob")).toBe(false);
-  });
-});
-
-describe("recommended preset", () => {
-  it("requires the enrollment-critical fields and makes the rest optional", () => {
-    const fields = applyStudentRequiredFieldKeys(withCustomField(seedFields()), [
-      "notes",
-      "bFormNumber",
-    ]);
-    const next = applyRecommendedStudentRequiredFields(fields);
-    for (const key of STUDENT_RECOMMENDED_REQUIRED_FIELD_KEYS) {
-      expect(requiredOf(next, key)).toBe(true);
-    }
-    expect(requiredOf(next, "notes")).toBe(false);
-    expect(requiredOf(next, "bFormNumber")).toBe(false);
-    expect(resolveStudentRequiredFieldPreset(next)).toBe("recommended");
-  });
-
-  it("detects a custom selection", () => {
-    const next = setStudentFieldRequired(seedFields(), "dob", false);
-    expect(resolveStudentRequiredFieldPreset(next)).toBe("custom");
   });
 });
 
@@ -154,10 +138,7 @@ describe("required flags drive the student blueprint", () => {
   });
 
   it("enforces a required custom field", () => {
-    const fields = applyStudentRequiredFieldKeys(withCustomField(seedFields()), [
-      ...STUDENT_RECOMMENDED_REQUIRED_FIELD_KEYS,
-      "bFormNumber",
-    ]);
+    const fields = setStudentFieldRequired(withCustomField(seedFields()), "bFormNumber", true);
     const result = parse(fields, { ...baseDraft, dob: "2015-01-01" });
     expect(result.error?.issues.some((issue) => issue.path[0] === "bFormNumber")).toBe(true);
   });
@@ -171,8 +152,8 @@ describe("required-field save body", () => {
     const settings = normalizeStudentsSettings(null);
     const fields = setStudentFieldRequired(
       settings.fields as Record<string, FieldDefinition[]>,
-      "notes",
-      true,
+      "education",
+      false,
     );
 
     // Act
@@ -181,5 +162,83 @@ describe("required-field save body", () => {
 
     // Assert
     expect(parsed.success).toBe(true);
+  });
+});
+
+describe("required-field list composition", () => {
+  it("lists the profile recommendations and hides registration/system rows", () => {
+    // Arrange / Act
+    const keys = listStudentRequirableFields(seedFields()).map((row) => row.key);
+
+    // Assert
+    expect(keys).toEqual(["gender", "dob", "contactRelationships", "address", "education"]);
+    expect(keys).not.toContain("contactId");
+    expect(keys).not.toContain("grNumber");
+    expect(keys).not.toContain("status");
+    expect(keys).not.toContain("notes");
+  });
+
+  it("marks exactly the recommended report rows on by default", () => {
+    // Arrange / Act
+    const rows = listStudentRequirableFields(seedFields());
+
+    // Assert
+    expect(rows.every((row) => row.required === row.recommended)).toBe(true);
+    expect(rows.filter((row) => row.recommended).map((row) => row.key)).toEqual([
+      ...STUDENT_RECOMMENDED_REQUIRED_FIELD_KEYS,
+    ]);
+  });
+});
+
+describe("contact-profile requirements", () => {
+  it("resolves the enabled checks from a saved field map", () => {
+    // Arrange / Act
+    const requirements = resolveStudentContactProfileRequirements(seedFields());
+
+    // Assert
+    expect(requirements).toEqual({ relationships: true, address: true, education: true });
+  });
+
+  it("reports every gap for an incomplete contact", () => {
+    // Act
+    const gaps = resolveStudentContactProfileGaps(
+      { id: "c-2", name: "Bare" },
+      { relationships: true, address: true, education: true },
+    );
+
+    // Assert
+    expect(gaps).toEqual({ relationships: true, address: true, education: true });
+  });
+
+  it("clears the gaps once the Parent pair, Guardian, address and education exist", () => {
+    // Arrange
+    const contact = {
+      id: "c-1",
+      name: "Aisha",
+      line1: "12 Madrasa Road",
+      education: [{ institution: "Al-Noor Madrasa" }],
+    };
+
+    // Act
+    const gaps = resolveStudentContactProfileGaps(
+      contact,
+      { relationships: true, address: true, education: true },
+      { fatherContactId: "f-1", motherContactId: "m-1", guardianContactId: "g-1" },
+    );
+
+    // Assert
+    expect(gaps).toEqual({ relationships: false, address: false, education: false });
+  });
+
+  it("treats a missing father or mother as an unmet relationship requirement", () => {
+    // Act
+    const gaps = resolveStudentContactProfileGaps(
+      { id: "c-1", line1: "Street" },
+      { relationships: true, address: false, education: false },
+      { fatherContactId: "f-1", guardianContactId: "g-1" },
+    );
+
+    // Assert
+    expect(gaps.relationships).toBe(true);
   });
 });

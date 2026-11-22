@@ -16,7 +16,7 @@ describe("normalizeStudentsSettings", () => {
       },
     });
 
-    expect(settings.version).toBe(5);
+    expect(settings.version).toBe(6);
     expect(settings.enabledTabs).toEqual(["registration"]);
     expect(Array.isArray(settings.fields?.basic)).toBe(true);
     expect(Array.isArray(settings.fields?.registration)).toBe(true);
@@ -51,7 +51,7 @@ describe("normalizeStudentsSettings", () => {
     });
 
     const fields = settings.fields as Record<string, FieldDefinition[]>;
-    expect(settings.version).toBe(5);
+    expect(settings.version).toBe(6);
     expect(fields.basic.map((field) => field.key)).toContain("studentCode");
     expect(fields.basic.find((field) => field.key === "studentCode")?.required).toBe(true);
     expect(fields.basic.find((field) => field.key === "contactRelationships")?.key).toBe(
@@ -131,7 +131,7 @@ describe("normalizeStudentsSettings", () => {
       },
     });
 
-    expect(settings.version).toBe(5);
+    expect(settings.version).toBe(6);
     expect(settings.enabledTabs).toEqual(["registration"]);
     expect(settings.fields?.guardian).toBeUndefined();
     expect(settings.fields?.academic).toBeUndefined();
@@ -144,6 +144,8 @@ describe("normalizeStudentsSettings", () => {
       "house",
       "emergencyNote",
       "contactRelationships",
+      "address",
+      "education",
     ]);
     expect(fields.basic.find((field) => field.key === "contactRelationships")?.enabled).toBe(true);
     expect(fields.registration.map((field) => field.key)).toEqual([
@@ -156,7 +158,7 @@ describe("normalizeStudentsSettings", () => {
     expect(settings.formTabs?.map((tab) => tab.key)).toEqual(["basic", "registration"]);
   });
 
-  it("injects missing form seed fields on v4 configs (v5)", () => {
+  it("injects missing form seed fields on v4 configs (v6)", () => {
     const settings = normalizeStudentsSettings({
       ...DEFAULT_STUDENTS_SETTINGS,
       version: 4,
@@ -200,13 +202,15 @@ describe("normalizeStudentsSettings", () => {
       },
     });
 
-    expect(settings.version).toBe(5);
+    expect(settings.version).toBe(6);
     const fields = settings.fields as Record<string, FieldDefinition[]>;
     expect(fields.basic.map((field) => field.key)).toEqual([
       "contactId",
       "gender",
       "dob",
       "contactRelationships",
+      "address",
+      "education",
     ]);
     expect(fields.registration.map((field) => field.key)).toEqual([
       "grNumber",
@@ -217,6 +221,58 @@ describe("normalizeStudentsSettings", () => {
     expect(fields.basic.find((field) => field.key === "contactId")?.enabled).toBe(true);
     expect(fields.basic.find((field) => field.key === "contactId")?.required).toBe(true);
     expect(fields.basic.find((field) => field.key === "gender")?.labelKey).toBe("students.gender");
+    // v6 defaults the newly-configurable contact-profile checks ON.
+    expect(fields.basic.find((field) => field.key === "contactRelationships")?.required).toBe(true);
+    expect(fields.basic.find((field) => field.key === "address")?.required).toBe(true);
+    expect(fields.basic.find((field) => field.key === "education")?.required).toBe(true);
+  });
+
+  it("defaults the contact-profile requirements on for v5 configs (v6)", () => {
+    const settings = normalizeStudentsSettings({
+      ...DEFAULT_STUDENTS_SETTINGS,
+      version: 5,
+      fields: {
+        basic: [
+          {
+            key: "gender",
+            label: "Gender",
+            type: "select",
+            enabled: true,
+            required: true,
+            order: 0,
+          },
+          {
+            key: "dob",
+            label: "Date of Birth",
+            type: "date",
+            enabled: true,
+            required: true,
+            order: 1,
+          },
+          {
+            key: "contactRelationships",
+            label: "Relationships",
+            type: "text",
+            enabled: true,
+            required: false,
+            order: 2,
+          },
+        ],
+        registration: [],
+      },
+    });
+
+    expect(settings.version).toBe(6);
+    const fields = settings.fields as Record<string, FieldDefinition[]>;
+    const byKey = (key: string) =>
+      Object.values(fields)
+        .flat()
+        .find((f) => f.key === key);
+    expect(byKey("contactRelationships")?.required).toBe(true);
+    expect(byKey("address")?.required).toBe(true);
+    expect(byKey("education")?.required).toBe(true);
+    // gender/dob keep their stored value (not force-reset by the v6 migration).
+    expect(byKey("gender")?.required).toBe(true);
   });
 
   it("strips retired preference keys from legacy students_settings", () => {
