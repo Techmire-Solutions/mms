@@ -4,8 +4,13 @@ import type { HasanatModulePreferences } from "@mms/shared";
 import { normalizeHasanatModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<HasanatModulePreferences>({
-  fetchPreferencesFn: async (_signal) => {
-    const res = await apiContract.hasanat.getPreferences({ query: undefined, extraHeaders: {} });
+  fetchPreferencesFn: async (signal) => {
+    const res = await apiContract.hasanat.getPreferences({
+      query: undefined,
+      extraHeaders: {},
+      signal,
+      fetchOptions: { signal },
+    });
     return (res.body as { preferences: HasanatModulePreferences }).preferences;
   },
   savePreferencesFn: async (prefs) => {

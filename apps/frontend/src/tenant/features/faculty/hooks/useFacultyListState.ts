@@ -18,7 +18,6 @@ export interface UseFacultyListStateOptions {
 
 export function useFacultyListState({
   faculty,
-  showDeleted: _showDeleted,
   selectedIds,
   onSelectOne,
   onSelectAll,

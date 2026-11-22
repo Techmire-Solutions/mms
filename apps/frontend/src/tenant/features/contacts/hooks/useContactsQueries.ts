@@ -91,7 +91,7 @@ export function contactsListQueryOptions(query: ContactsContractQueryParams = {}
       assertContractOk(response, "Failed to fetch contacts");
       return response;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
@@ -101,7 +101,7 @@ export function useContactsContractList(query: ContactsContractQueryParams, enab
   return tsrClient.contacts.list.useQuery({
     queryKey: contactsListQueryKey(query),
     queryData: { query },
-    placeholderData: (prev: unknown) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
     enabled: isAuthenticated && enabled,
   });

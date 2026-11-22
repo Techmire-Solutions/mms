@@ -6,6 +6,11 @@ import { queryClientInstance } from "@/lib/queryClient";
 import { PLATFORM_AUTH_PATHS } from "@/lib/apiClientHelpers";
 import { clearPersistedAuthUser } from "@/lib/contexts/authContextHelpers";
 import { useTenant } from "@/lib/contexts/TenantContext";
+import {
+  clearBackgroundJobStorageLocal,
+  registerBackgroundJobStorageKeyProvider,
+} from "@/lib/backgroundJobs/backgroundJobStore";
+import { clearPlatformNotificationAckStorage } from "@/platform/lib/platformNotificationAckStorage";
 import { PlatformSessionTimeoutWatcher } from "@/platform/components/PlatformSessionTimeoutWatcher";
 import type { PlatformAuthContextType, PlatformLoginOutcome } from "./platformAuthTypes";
 export type { PlatformAuthContextType, PlatformLoginOutcome } from "./platformAuthTypes";
@@ -148,10 +153,19 @@ export const PlatformAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } finally {
       queryClientInstance.clear();
       clearPersistedAuthUser();
+      clearPlatformNotificationAckStorage(platformUser?.id);
+      clearBackgroundJobStorageLocal();
       setPlatformUser(null);
       setIsPlatformAuthenticated(false);
       setPlatformAuthChecked(true);
     }
+  }, [platformUser?.id]);
+
+  // The apex console is single-admin per browser: scope the local job mirror to
+  // a platform-specific key so it never collides with any tenant console's
+  // store on the same origin.
+  useEffect(() => {
+    registerBackgroundJobStorageKeyProvider(() => "mms_platform_background_jobs_v2");
   }, []);
 
   useEffect(() => {

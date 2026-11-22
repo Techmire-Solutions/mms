@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   getFlatFieldsConfig,
   getSortedFields,
@@ -44,6 +44,11 @@ export interface CreateStandardModuleConfigHookOptions<
   useEnhance?: (core: StandardModuleConfigCore<TSettings>) => TExtra;
 }
 
+/**
+ * Factory that builds a module-settings hook from a settings source, an async
+ * updater, and optional lookups/custom-field/ordering enhancements. One
+ * factory per module (`useFacultyConfig`, `useStudentConfig`, …).
+ */
 export function createStandardModuleConfigHook<
   TSettings extends StandardModuleConfigSettingsLike,
   TExtra extends Record<string, unknown> = Record<string, never>,
@@ -78,8 +83,13 @@ export function createStandardModuleConfigHook<
     );
 
     const updateAsyncFn = useModuleUpdate();
+    // Latest-update ref: `updateSettingsAsync` keeps a stable identity while
+    // always awaiting the most recent updater. Written in an effect so render
+    // stays free of ref writes.
     const updateAsyncRef = useRef(updateAsyncFn);
-    updateAsyncRef.current = updateAsyncFn;
+    useEffect(() => {
+      updateAsyncRef.current = updateAsyncFn;
+    });
 
     const updateSettingsAsync = useCallback(async (settingsDraft: TSettings): Promise<void> => {
       if (updateAsyncRef.current) {

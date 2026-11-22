@@ -1,9 +1,14 @@
 import type { SmsIntegrationConfig } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 
-export async function fetchSmsIntegration(): Promise<SmsIntegrationConfig | null> {
+export async function fetchSmsIntegration(
+  signal?: AbortSignal,
+): Promise<SmsIntegrationConfig | null> {
   try {
-    return await apiJson<SmsIntegrationConfig>("/api/sms/integration");
+    return await apiJson<SmsIntegrationConfig>(
+      "/api/sms/integration",
+      signal ? { signal } : undefined,
+    );
   } catch {
     return null;
   }

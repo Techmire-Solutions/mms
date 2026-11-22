@@ -96,9 +96,13 @@ export function useStudentsWidgetAggregates(
 
   const query = useQuery({
     queryKey: [...STUDENTS_WIDGET_AGGREGATES_QUERY_KEY, querySignature] as const,
-    queryFn: async () =>
+    queryFn: async ({ signal }) =>
       fetchWidgetAggregatesBatched(queries, (batch) =>
-        apiContract.students.widgetAggregates({ body: { widgets: batch } }),
+        apiContract.students.widgetAggregates({
+          body: { widgets: batch },
+          signal,
+          fetchOptions: { signal },
+        }),
       ),
     enabled: isAuthenticated && enabled && queries.length > 0,
     staleTime: 30_000,

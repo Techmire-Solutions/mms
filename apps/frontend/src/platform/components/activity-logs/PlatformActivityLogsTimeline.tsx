@@ -17,6 +17,7 @@ export function PlatformActivityLogsTimeline({
   const scrollRef = useRef<HTMLDivElement>(null);
   const isVirtualized = logs.length > 30;
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual is not React-Compiler-compatible (upstream); this component intentionally stays uncompiled.
   const rowVirtualizer = useVirtualizer({
     count: logs.length,
     getScrollElement: () => scrollRef.current,

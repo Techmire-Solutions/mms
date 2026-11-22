@@ -1,4 +1,4 @@
-import React, { useCallback, type ReactNode } from "react";
+import React, { useCallback, useEffect, useRef, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import type { AppTranslationKey } from "@mms/shared";
@@ -96,14 +96,17 @@ export function ContactLabeledValueSubListTab({
   const allowAdd = resolveSubListAllowAdd([showLabel, showValue]);
   const items = (contactDraft[listKey] as ListItem[] | undefined) ?? [];
 
-  const makeEmpty = useCallback(
-    () => emptyItem(resolveLabel(undefined, options, t)),
-    // We intentionally omit `emptyItem` and `resolveLabel` from deps since they are inline prop functions
-    // that change on every render (e.g. from ContactPhonesTab). Including them causes `ensureItem` to
-    // be unstable, which caused maximum update depth infinite loops in ContactSubListShell.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [options, t],
-  );
+  // `emptyItem` / `resolveLabel` arrive as inline prop functions from each tab
+  // (Phones/Emails/Socials), so their identity changes on every render. Reading
+  // them through a ref kept fresh by an effect makes `makeEmpty` permanently
+  // stable (previously unstable `ensureItem` caused infinite update loops in
+  // ContactSubListShell) while still consuming the latest props at call time.
+  const emptyFactoryRef = useRef(() => emptyItem(resolveLabel(undefined, options, t)));
+  useEffect(() => {
+    emptyFactoryRef.current = () => emptyItem(resolveLabel(undefined, options, t));
+  });
+
+  const makeEmpty = useCallback(() => emptyFactoryRef.current(), []);
 
   const addItem = useCallback(() => {
     addSubListItem(listKey, makeEmpty());

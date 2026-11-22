@@ -89,10 +89,13 @@ export function useWorkshopFormController({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  // The page remounts the modal (new `key`) on every open, so the snapshot is set once here.
-  const initialValues = useRef(
+  // The page remounts the modal (new `key`) on every open, so the snapshot is
+  // captured once here. Lazy state initialisers (not a ref read during render)
+  // keep the compiler-clean guarantee: first-render props seed both the pristine
+  // copy used for `isDirty` and the editable values.
+  const [initialValues] = useState<WorkshopFormValues>(() =>
     initialData ? fromWorkshop(initialData) : fromDefaults(defaults),
-  ).current;
+  );
   const [values, setValues] = useState<WorkshopFormValues>(initialValues);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);

@@ -7,6 +7,11 @@ export interface UseLocalPaginationOptions<T> {
   filterFn?: (item: T, query: string) => boolean;
 }
 
+/**
+ * Client-side pagination + text search over an in-memory list. Page bounds are
+ * derived during render (never adjusted in effects), so callers may pass
+ * freshly computed arrays without setState loops.
+ */
 export function useLocalPagination<T>({
   items,
   pageSize = 5,
@@ -44,14 +49,14 @@ export function useLocalPagination<T>({
   })();
 
   const totalPages = (() => {
-    return Math.max(1, Math.ceil(filteredItems.length / pageSize));
+    return Math.max(1, Math.ceil(filteredItems.length / Math.max(1, pageSize)));
   })();
 
   const safeCurrentPage = Math.max(1, Math.min(currentPage, totalPages));
 
   const paginatedItems = (() => {
     const startIndex = (safeCurrentPage - 1) * pageSize;
-    return filteredItems.slice(startIndex, startIndex + pageSize);
+    return filteredItems.slice(startIndex, startIndex + Math.max(1, pageSize));
   })();
 
   return {

@@ -4,6 +4,7 @@ import {
   type SmsIntegrationSecrets,
   type SmsProviderId,
 } from "@mms/shared";
+import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import {
   getPlatformSmsIntegrationRow,
   upsertPlatformSmsIntegrationConfigRow,
@@ -28,46 +29,27 @@ function rowToConfig(row: PlatformSmsIntegrationRow): SmsIntegrationConfig {
   return mergeSmsIntegrationConfig(overrides);
 }
 
-export async function loadPlatformSmsIntegrationConfig(): Promise<SmsIntegrationConfig> {
-  const row = await getPlatformSmsIntegrationRow();
-  if (!row) return mergeSmsIntegrationConfig(null);
-  return rowToConfig(row);
-}
+const service = createIntegrationConfigService<
+  SmsIntegrationConfig,
+  SmsIntegrationSecrets,
+  PlatformSmsIntegrationRow
+>({
+  rowToConfig,
+  emptyConfig: () => mergeSmsIntegrationConfig(null),
+  mergeConfig: (config) => mergeSmsIntegrationConfig(config),
+  loadRow: () => getPlatformSmsIntegrationRow(),
+  upsertConfig: (config) => upsertPlatformSmsIntegrationConfigRow(config),
+  upsertSecrets: (secrets) => upsertPlatformSmsIntegrationSecretsRow(secrets),
+  secretsFromRow: (row) => {
+    const secrets: SmsIntegrationSecrets = {};
+    if (row.accountSecret) secrets.accountSecret = row.accountSecret;
+    return secrets;
+  },
+  tenantScoped: false,
+});
 
-export async function savePlatformSmsIntegrationConfig(
-  config: SmsIntegrationConfig,
-): Promise<SmsIntegrationConfig> {
-  const merged = mergeSmsIntegrationConfig(config);
-  await upsertPlatformSmsIntegrationConfigRow(merged);
-  return merged;
-}
-
-export async function loadPlatformSmsIntegrationSecrets(): Promise<SmsIntegrationSecrets> {
-  const row = await getPlatformSmsIntegrationRow();
-  if (!row) return {};
-  const secrets: SmsIntegrationSecrets = {};
-  if (row.accountSecret) secrets.accountSecret = row.accountSecret;
-  return secrets;
-}
-
-export async function savePlatformSmsIntegrationSecrets(
-  secrets: SmsIntegrationSecrets,
-): Promise<void> {
-  await upsertPlatformSmsIntegrationSecretsRow(secrets);
-}
-
-export async function markPlatformSmsIntegrationTestResult(
-  ok: boolean,
-  errorMessage?: string,
-): Promise<SmsIntegrationConfig> {
-  const current = await loadPlatformSmsIntegrationConfig();
-  const updated = mergeSmsIntegrationConfig({
-    ...current,
-    connected: ok,
-    hasCredentials: current.hasCredentials,
-    lastTestAt: new Date().toISOString(),
-    lastTestOk: ok,
-    lastError: ok ? undefined : errorMessage,
-  });
-  return savePlatformSmsIntegrationConfig(updated);
-}
+export const loadPlatformSmsIntegrationConfig = service.loadConfig;
+export const savePlatformSmsIntegrationConfig = service.saveConfig;
+export const loadPlatformSmsIntegrationSecrets = service.loadSecrets;
+export const savePlatformSmsIntegrationSecrets = service.saveSecrets;
+export const markPlatformSmsIntegrationTestResult = service.markTestResult;

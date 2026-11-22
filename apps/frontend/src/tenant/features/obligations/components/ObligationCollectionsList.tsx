@@ -77,7 +77,6 @@ export function ObligationCollectionsList({
     onFilteredCountChange,
     onClearSelection,
     onDelete,
-    onRestore,
     onBulkDelete,
     onBulkRestore,
   });

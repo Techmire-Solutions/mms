@@ -89,10 +89,10 @@ export function useFacultyPageController() {
   const filters = useFacultyDirectoryFilters({ setActiveTab });
   const filterCatalog = useFacultyDirectoryFilterCatalog(effectiveTab === "faculties");
 
+  const { setListPage } = filters;
   useEffect(() => {
-    filters.setListPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- filters.setListPage is a stable setter; depending on the whole `filters` object would run this page reset on every render.
-  }, [viewMode, filters.setListPage]);
+    setListPage(1);
+  }, [viewMode, setListPage]);
 
   const formState = useFacultyPageFormState();
   const overlays = useFacultyPageOverlayState();

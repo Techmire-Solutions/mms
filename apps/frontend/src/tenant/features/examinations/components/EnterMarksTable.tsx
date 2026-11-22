@@ -46,12 +46,16 @@ export function EnterMarksTable({
   }, [students, deferredQuery]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
+  // Stable option callbacks: the virtualizer reads `listRef.current` at measure time, not render.
+  const getScrollElement = useCallback(() => listRef.current, []);
+  const estimateSize = useCallback(() => 72, []);
 
   const isVirtualized = filteredStudents.length > 30;
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual is not React-Compiler-compatible (upstream); this component intentionally stays uncompiled.
   const rowVirtualizer = useVirtualizer({
     count: filteredStudents.length,
-    getScrollElement: () => listRef.current,
-    estimateSize: () => 72,
+    getScrollElement,
+    estimateSize,
     overscan: 8,
     enabled: isVirtualized,
   });

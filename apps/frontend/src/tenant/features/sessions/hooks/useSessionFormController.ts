@@ -62,54 +62,57 @@ export function useSessionFormController({
     [session, defaultCurrency],
   );
 
-  const form = useZodDraftForm<SessionFormDraft, Session>(useMemo(buildDraft, [buildDraft]), {
-    schema: SessionSchema,
-    toRecord: (draft): Session => ({
-      id: session?.id || crypto.randomUUID(),
-      // OCC token: without it the server cannot reject a stale edit (silent overwrite).
-      updatedAt: session?.updatedAt,
-      name: (draft.name || "").trim(),
-      // Category/program are catalog ids; the server resolves defaults and the `type` snapshot.
-      type: session?.type ?? "",
-      categoryId: draft.categoryId || defaultCategoryId,
-      programId: draft.programId || "",
-      status: (draft.status as Session["status"]) || currentStatus,
-      startDate: draft.startDate || "",
-      endDate: draft.endDate || "",
-      workingDays: draft.workingDays ?? [],
-      baseFee: Number(draft.baseFee || 0),
-      currency: draft.currency || defaultCurrency,
-      description: draft.description || "",
-      minAttendancePct: draft.minAttendancePct ? Number(draft.minAttendancePct) : null,
-      requiresExamPass: draft.requiresExamPass ?? false,
-      faculty: draft.faculty || session?.faculty || [],
-      classes: draft.classes || session?.classes || [],
-    }),
-    resolveMessage: (message) => translateValidationMessage(message, t),
-    snapshot: sessionFormDraftSnapshot,
-    earlyRules: (draft) => {
-      const newErrors: Record<string, string> = {};
-      if (!draft.name?.trim()) {
-        newErrors.name = t("sessions.form.nameRequired");
-      }
-      if (!draft.startDate) {
-        newErrors.startDate = t("sessions.form.startDateRequired");
-      }
-      if (!draft.endDate) {
-        newErrors.endDate = t("sessions.form.endDateRequired");
-      } else if (draft.startDate && draft.endDate < draft.startDate) {
-        newErrors.endDate = t("sessions.form.endDateAfterStartDate");
-      }
-      if (draft.baseFee && Number(draft.baseFee) < 0) {
-        newErrors.baseFee = t("common.formPleaseFixErrors");
-      }
-      if (draft.minAttendancePct && Number(draft.minAttendancePct) > 100) {
-        newErrors.minAttendancePct = t("sessions.completion.minAttendanceInvalid");
-      }
-      return newErrors;
+  const form = useZodDraftForm<SessionFormDraft, Session>(
+    useMemo(() => buildDraft(), [buildDraft]),
+    {
+      schema: SessionSchema,
+      toRecord: (draft): Session => ({
+        id: session?.id || crypto.randomUUID(),
+        // OCC token: without it the server cannot reject a stale edit (silent overwrite).
+        updatedAt: session?.updatedAt,
+        name: (draft.name || "").trim(),
+        // Category/program are catalog ids; the server resolves defaults and the `type` snapshot.
+        type: session?.type ?? "",
+        categoryId: draft.categoryId || defaultCategoryId,
+        programId: draft.programId || "",
+        status: (draft.status as Session["status"]) || currentStatus,
+        startDate: draft.startDate || "",
+        endDate: draft.endDate || "",
+        workingDays: draft.workingDays ?? [],
+        baseFee: Number(draft.baseFee || 0),
+        currency: draft.currency || defaultCurrency,
+        description: draft.description || "",
+        minAttendancePct: draft.minAttendancePct ? Number(draft.minAttendancePct) : null,
+        requiresExamPass: draft.requiresExamPass ?? false,
+        faculty: draft.faculty || session?.faculty || [],
+        classes: draft.classes || session?.classes || [],
+      }),
+      resolveMessage: (message) => translateValidationMessage(message, t),
+      snapshot: sessionFormDraftSnapshot,
+      earlyRules: (draft) => {
+        const newErrors: Record<string, string> = {};
+        if (!draft.name?.trim()) {
+          newErrors.name = t("sessions.form.nameRequired");
+        }
+        if (!draft.startDate) {
+          newErrors.startDate = t("sessions.form.startDateRequired");
+        }
+        if (!draft.endDate) {
+          newErrors.endDate = t("sessions.form.endDateRequired");
+        } else if (draft.startDate && draft.endDate < draft.startDate) {
+          newErrors.endDate = t("sessions.form.endDateAfterStartDate");
+        }
+        if (draft.baseFee && Number(draft.baseFee) < 0) {
+          newErrors.baseFee = t("common.formPleaseFixErrors");
+        }
+        if (draft.minAttendancePct && Number(draft.minAttendancePct) > 100) {
+          newErrors.minAttendancePct = t("sessions.completion.minAttendanceInvalid");
+        }
+        return newErrors;
+      },
+      saveFailedMessage: "sessions.toast.saveFailed",
     },
-    saveFailedMessage: "sessions.toast.saveFailed",
-  });
+  );
   const {
     draft: sessionDraft,
     updateDraft,

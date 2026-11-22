@@ -156,11 +156,14 @@ describe("useStudentsPageController", () => {
   let root: Root;
   let view: ReturnType<typeof useStudentsPageController>;
 
+  function TestComponent() {
+    view = useStudentsPageController();
+    return null;
+  }
+
+  // Stable component identity so `renderController()` re-renders the same instance —
+  // the view-mode page reset is adjusted during render, not on remount.
   function renderController(): void {
-    function TestComponent() {
-      view = useStudentsPageController();
-      return null;
-    }
     act(() => {
       root.render(<TestComponent />);
     });
@@ -206,9 +209,9 @@ describe("useStudentsPageController", () => {
 
   it("resets the directory page when the view mode changes", () => {
     renderController();
-    expect(mocks.setListPage).toHaveBeenCalledWith(1);
+    // Adjusted during render, not in an effect: the initial mount keeps its page.
+    expect(mocks.setListPage).not.toHaveBeenCalled();
 
-    mocks.setListPage.mockClear();
     viewMode = "card";
     renderController();
 

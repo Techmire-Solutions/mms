@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-import type { RefObject } from "react";
 import type { AttendanceRow } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 import {
   rowMatchesBaseline,
@@ -14,12 +13,13 @@ import {
  */
 export function useRosterDirtyTracking(args: {
   rows: AttendanceRow[];
-  baseline: RefObject<Map<string, RowBaseline>>;
+  /** Seeded atomically with the rows (the controller keeps it in state, not a ref). */
+  baseline: Map<string, RowBaseline>;
   onDirtyChange?: (dirty: boolean) => void;
 }): boolean {
   const { rows, baseline, onDirtyChange } = args;
   const isDirty = useMemo(
-    () => rows.some((row) => !rowMatchesBaseline(row, baseline.current.get(row.studentId))),
+    () => rows.some((row) => !rowMatchesBaseline(row, baseline.get(row.studentId))),
     [rows, baseline],
   );
   useEffect(() => {

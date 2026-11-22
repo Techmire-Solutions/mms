@@ -36,6 +36,9 @@ export interface UseFacultyWorkTierStateInput {
   t: TranslationFunction;
 }
 
+/** Shared stable empty list — keeps downstream `useMemo` identities steady while loading. */
+const EMPTY_FACULTY: FacultyMember[] = [];
+
 export function useFacultyWorkTierState({
   effectiveTab,
   listPage,
@@ -101,7 +104,7 @@ export function useFacultyWorkTierState({
     useServerWork,
   );
 
-  const workFaculty = (workPageQuery.data?.body?.faculty ?? []) as FacultyMember[];
+  const workFaculty = (workPageQuery.data?.body?.faculty ?? EMPTY_FACULTY) as FacultyMember[];
   const shownCount = workPageQuery.data?.body?.total ?? workFaculty.length;
   const isWorkError = isContractQueryError(workPageQuery);
   const workPageData = contractBody<NonNullable<typeof workPageQuery.data>["body"]>(

@@ -10,6 +10,10 @@ export interface UseCurrencyOptions {
   decimalPlaces?: number;
 }
 
+/**
+ * Resolves currency metadata (symbol/name/code) for a code and returns a
+ * formatting function pinned to it and to the given decimal places.
+ */
 export function useCurrency({ currencyCode, decimalPlaces }: UseCurrencyOptions = {}) {
   const activeCurrency = (() => {
     const iso = currencyCode ? findIsoCurrency(currencyCode) : null;

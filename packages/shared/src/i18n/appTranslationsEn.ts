@@ -6948,8 +6948,6 @@ export const APP_TRANSLATIONS_EN = {
     "PostgreSQL database cluster and RLS policies running smoothly.",
   "platform.notificationSystemHealthTitle": "System Health Operational",
   "platform.notificationTimeActive": "Active",
-  "platform.notificationTimeNow": "Now",
-  "platform.notificationTimeToday": "Today",
   "platform.onboardCapability": "Onboarding Provisioning",
   "platform.onlySuperUserCanAddAdmins": "Only super-users can manage platform administrators",
   "platform.openSearchAria": "Search platform console (Cmd+K)",

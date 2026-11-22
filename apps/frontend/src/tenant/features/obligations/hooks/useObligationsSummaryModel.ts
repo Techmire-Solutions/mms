@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type {
   ObligationCollection,
   ObligationDistribution,
@@ -44,11 +44,17 @@ export function useObligationsSummaryModel(
   wakalaTypes = Array.isArray(wakalaTypes) ? wakalaTypes : [];
   distributions = Array.isArray(distributions) ? distributions : [];
   const { t } = useTranslation();
-  const receiverIds = (() => collections.map((collection) => collection.received_by))();
+  const receiverIds = useMemo(
+    () => collections.map((collection) => collection.received_by),
+    [collections],
+  );
   const usersRaw = useMergedObligationUsers(receiverIds);
-  const users = Array.isArray(usersRaw) ? usersRaw : [];
+  const users = useMemo(() => (Array.isArray(usersRaw) ? usersRaw : []), [usersRaw]);
   const { primary, secondary, charts } = useBrandPalette();
-  const COLORS = (() => [primary, charts[3], secondary, charts[4], charts[0], charts[2]])();
+  const COLORS = useMemo(
+    () => [primary, charts[3], secondary, charts[4], charts[0], charts[2]],
+    [primary, secondary, charts],
+  );
 
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -59,32 +65,46 @@ export function useObligationsSummaryModel(
 
   const debouncedSearch = useDebounce(search, 300);
 
-  const filtered = (() =>
-    collections.filter((collection) => {
-      if (typeFilter !== "all" && collection.obligation_type_id !== typeFilter) return false;
-      if (repFilter !== "all" && collection.mujtahid_representative_id !== repFilter) return false;
-      if (userFilter !== "all" && collection.received_by !== userFilter) return false;
-      if (dateFrom && (collection.received_date || "") < dateFrom) return false;
-      if (dateTo && (collection.received_date || "") > dateTo) return false;
-      if (debouncedSearch) {
-        const searchQuery = debouncedSearch.toLowerCase();
-        const repName =
-          reps
-            .find((rep) => rep.id === collection.mujtahid_representative_id)
-            ?.name?.toLowerCase() || "";
-        const typeName =
-          obligationTypes
-            .find((obligationType) => obligationType.id === collection.obligation_type_id)
-            ?.name?.toLowerCase() || "";
-        if (
-          !collection.receipt_no.toLowerCase().includes(searchQuery) &&
-          !repName.includes(searchQuery) &&
-          !typeName.includes(searchQuery)
-        )
+  const filtered = useMemo(
+    () =>
+      collections.filter((collection) => {
+        if (typeFilter !== "all" && collection.obligation_type_id !== typeFilter) return false;
+        if (repFilter !== "all" && collection.mujtahid_representative_id !== repFilter)
           return false;
-      }
-      return true;
-    }))();
+        if (userFilter !== "all" && collection.received_by !== userFilter) return false;
+        if (dateFrom && (collection.received_date || "") < dateFrom) return false;
+        if (dateTo && (collection.received_date || "") > dateTo) return false;
+        if (debouncedSearch) {
+          const searchQuery = debouncedSearch.toLowerCase();
+          const repName =
+            reps
+              .find((rep) => rep.id === collection.mujtahid_representative_id)
+              ?.name?.toLowerCase() || "";
+          const typeName =
+            obligationTypes
+              .find((obligationType) => obligationType.id === collection.obligation_type_id)
+              ?.name?.toLowerCase() || "";
+          if (
+            !collection.receipt_no.toLowerCase().includes(searchQuery) &&
+            !repName.includes(searchQuery) &&
+            !typeName.includes(searchQuery)
+          )
+            return false;
+        }
+        return true;
+      }),
+    [
+      collections,
+      obligationTypes,
+      reps,
+      typeFilter,
+      repFilter,
+      userFilter,
+      dateFrom,
+      dateTo,
+      debouncedSearch,
+    ],
+  );
 
   // Integer cents, like every other total in the module: a float reduce drifts by fractions of a
   // paisa and then disagrees with the sections that use cents (frontend audit).
@@ -93,26 +113,21 @@ export function useObligationsSummaryModel(
   const uniqueReps = new Set(filtered.map((collection) => collection.mujtahid_representative_id))
     .size;
 
-  const wakalaSummary = buildWakalaSummary(
-    filtered,
-    reps,
-    mujtahids,
-    wakalaTypes,
-    obligationTypes,
-    distributions,
-    t,
+  const wakalaSummary = useMemo(
+    () =>
+      buildWakalaSummary(filtered, reps, mujtahids, wakalaTypes, obligationTypes, distributions, t),
+    [filtered, reps, mujtahids, wakalaTypes, obligationTypes, distributions, t],
   );
-  const repSummary = buildRepSummary(
-    filtered,
-    reps,
-    mujtahids,
-    wakalaTypes,
-    obligationTypes,
-    distributions,
-    t,
+  const repSummary = useMemo(
+    () =>
+      buildRepSummary(filtered, reps, mujtahids, wakalaTypes, obligationTypes, distributions, t),
+    [filtered, reps, mujtahids, wakalaTypes, obligationTypes, distributions, t],
   );
-  const typeBreakdown = buildTypeBreakdown(filtered, obligationTypes, t);
-  const monthlyTrend = buildMonthlyTrend(filtered, t);
+  const typeBreakdown = useMemo(
+    () => buildTypeBreakdown(filtered, obligationTypes, t),
+    [filtered, obligationTypes, t],
+  );
+  const monthlyTrend = useMemo(() => buildMonthlyTrend(filtered, t), [filtered, t]);
 
   const hasFilters =
     dateFrom ||
@@ -122,35 +137,44 @@ export function useObligationsSummaryModel(
     userFilter !== "all" ||
     search;
 
-  const repOptions = (() => [
-    { value: "all", label: t("obligations.summary.filters.allReps") },
-    ...reps.map((rep) => ({ value: rep.id, label: rep.name })),
-  ])();
+  const repOptions = useMemo(
+    () => [
+      { value: "all", label: t("obligations.summary.filters.allReps") },
+      ...reps.map((rep) => ({ value: rep.id, label: rep.name })),
+    ],
+    [t, reps],
+  );
 
-  const typeOptions = (() => [
-    { value: "all", label: t("obligations.summary.filters.allTypes") },
-    ...obligationTypes.map((obligationType) => ({
-      value: obligationType.id,
-      label: obligationType.name,
-    })),
-  ])();
+  const typeOptions = useMemo(
+    () => [
+      { value: "all", label: t("obligations.summary.filters.allTypes") },
+      ...obligationTypes.map((obligationType) => ({
+        value: obligationType.id,
+        label: obligationType.name,
+      })),
+    ],
+    [t, obligationTypes],
+  );
 
-  const userOptions = (() => [
-    { value: "all", label: t("obligations.summary.filters.allCollectors") },
-    ...users.map((user) => ({
-      value: user.id,
-      label: user.name || user.loginEmail || String(user.id),
-    })),
-  ])();
+  const userOptions = useMemo(
+    () => [
+      { value: "all", label: t("obligations.summary.filters.allCollectors") },
+      ...users.map((user) => ({
+        value: user.id,
+        label: user.name || user.loginEmail || String(user.id),
+      })),
+    ],
+    [t, users],
+  );
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setDateFrom("");
     setDateTo("");
     setRepFilter("all");
     setTypeFilter("all");
     setUserFilter("all");
     setSearch("");
-  };
+  }, []);
 
   return {
     t,

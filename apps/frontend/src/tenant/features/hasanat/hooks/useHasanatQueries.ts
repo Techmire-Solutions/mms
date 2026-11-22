@@ -6,10 +6,13 @@ import type {
   HasanatReportComparisonQuery,
 } from "@mms/shared";
 import { HASANAT_MODULE_MANIFEST, normalizeHasanatReportComparisonQuery } from "@mms/shared";
+import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { apiContract, tsrClient } from "@/lib/api";
+import { assertContractOk } from "@/lib/apiContractError";
+import { invalidateHasanatWorkQueries } from "@/tenant/features/hasanat/hooks/invalidateHasanatQueries";
 import {
   HASANAT_DENOMS_QUERY_KEY,
   HASANAT_BATCHES_QUERY_KEY,
@@ -174,10 +177,6 @@ export function useHasanatMetrics(options?: { enabled?: boolean }) {
 
 // --- Contract-driven list queryOptions & mutation hooks ----------------------
 
-import { queryOptions, useQueryClient } from "@tanstack/react-query";
-import { invalidateHasanatQueries } from "@/tenant/features/hasanat/hooks/invalidateHasanatQueries";
-import { assertContractOk } from "@/lib/apiContractError";
-
 export function hasanatListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({
     queryKey: [...HASANAT_DISTRIBUTIONS_QUERY_KEY, "contract-list", query] as const,
@@ -190,7 +189,7 @@ export function hasanatListQueryOptions(query: Record<string, unknown> = {}) {
       assertContractOk(response, "Failed to fetch hasanat distributions");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
@@ -235,30 +234,32 @@ export function useHasanatContractRedemptions(enabled = true) {
   });
 }
 
+// Card lifecycle writes refresh work caches only (lists, metrics, dashboard) —
+// never setup preferences, which the full live-push union also refreshes.
 export function useHasanatContractBulkDelete() {
   const queryClient = useQueryClient();
   return tsrClient.hasanat.bulkDeleteDistributions.useMutation({
-    onSuccess: () => invalidateHasanatQueries(queryClient),
+    onSuccess: () => invalidateHasanatWorkQueries(queryClient),
   });
 }
 
 export function useHasanatContractBulkRestore() {
   const queryClient = useQueryClient();
   return tsrClient.hasanat.bulkRestoreDistributions.useMutation({
-    onSuccess: () => invalidateHasanatQueries(queryClient),
+    onSuccess: () => invalidateHasanatWorkQueries(queryClient),
   });
 }
 
 export function useHasanatContractDeleteDistribution() {
   const queryClient = useQueryClient();
   return tsrClient.hasanat.deleteDistribution.useMutation({
-    onSuccess: () => invalidateHasanatQueries(queryClient),
+    onSuccess: () => invalidateHasanatWorkQueries(queryClient),
   });
 }
 
 export function useHasanatContractRestoreDistribution() {
   const queryClient = useQueryClient();
   return tsrClient.hasanat.restoreDistribution.useMutation({
-    onSuccess: () => invalidateHasanatQueries(queryClient),
+    onSuccess: () => invalidateHasanatWorkQueries(queryClient),
   });
 }

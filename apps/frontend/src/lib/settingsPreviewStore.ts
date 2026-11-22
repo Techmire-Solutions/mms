@@ -11,7 +11,7 @@ import {
   isTenantHost,
   MMS_PLATFORM_BRANDING,
   MMS_PLATFORM_GLOBAL_SETTINGS,
-} from "@/platform/lib/themeScope";
+} from "@/lib/branding/platformThemeConfig";
 
 /** Tenant-persisted global settings + preview overlay (apex returns MMS platform defaults). */
 export function getEffectiveGlobalSettingsScoped(): GlobalSettings {

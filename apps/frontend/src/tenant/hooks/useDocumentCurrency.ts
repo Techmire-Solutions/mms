@@ -43,11 +43,11 @@ export function useDocumentCurrency({
 
   // Adjust state during render: a loaded functional currency (or a new document seed) re-seeds the
   // selected currency and rate override from the document's stored values.
-  const [prevSeedInputs, setPrevSeedInputs] = useState({
+  const [prevSeedInputs, setPrevSeedInputs] = useState(() => ({
     functionalCurrency,
     initialCurrency,
     initialRate,
-  });
+  }));
   if (
     prevSeedInputs.functionalCurrency !== functionalCurrency ||
     prevSeedInputs.initialCurrency !== initialCurrency ||

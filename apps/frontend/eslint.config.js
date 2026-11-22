@@ -25,12 +25,13 @@ const appFiles = [
 
 // React Compiler lint rules shipped by eslint-plugin-react-hooks v7
 // (`recommended-latest`). `set-state-in-effect` was burned down to zero on
-// 2026-10-29 (128 → 0, one documented disable in `useIdleTimer`, which owns its
-// deadline in refs) and is now gated at `error` — do not reintroduce it.
+// 2026-10-29 (128 → 0) and is now gated at `error` — do not reintroduce it.
+// The hooks audit (2026-11) restructured the remaining legitimate sites: the
+// only sanctioned `incompatible-library` exceptions are TanStack Virtual
+// call sites (upstream compiler incompatibility, documented per-site).
 // The remaining rules stay `warn` (each fix changes render semantics and has not
-// been triaged): a no-cache `eslint .` reports `refs` (45), `immutability` (11),
-// `incompatible-library` (13), `purity` (4), `preserve-manual-memoization` (4),
-// `use-memo` (3), `static-components` (2). `rules-of-hooks` and
+// been fully triaged): measure the live inventory with a no-cache `eslint .`
+// before trusting any historical counts. `rules-of-hooks` and
 // `exhaustive-deps` stay governed by the explicit `error` entries below.
 const reactCompilerRules = Object.fromEntries(
   Object.keys(pluginReactHooks.configs?.["recommended-latest"]?.rules ?? {})
@@ -122,9 +123,10 @@ export default tseslint.config(
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
       ...reactCompilerRules,
-      // Burned down to zero (one documented disable in `useIdleTimer`). A new
-      // synchronous `setState` in an effect is a regression: derive during render,
-      // lazy-initialise, or move the work to the event that causes it.
+      // Burned down to zero (hooks audit 2026-11 removed the last documented
+      // disable in `useIdleTimer`). A new synchronous `setState` in an effect is
+      // a regression: derive during render, lazy-initialise, or move the work to
+      // the event that causes it.
       "react-hooks/set-state-in-effect": "error",
       "react-hooks/globals": "error",
       "no-restricted-syntax": [

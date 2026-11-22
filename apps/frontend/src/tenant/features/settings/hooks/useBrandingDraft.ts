@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { useSavedFlash } from "@/tenant/hooks/useSavedFlash";
 import { isBrandingFieldsDirty, mergeBrandingSettings, type BrandingSettings } from "@mms/shared";
 import { getBrandingSettings, saveBrandingSettings } from "@/lib/db";
@@ -81,17 +81,23 @@ export function useBrandingDraft({
     return isBrandingFieldsDirty(data, baseline, trackKeys);
   })();
 
+  // Effect event: always reads the latest draft/flash state, so the listener
+  // below is registered once instead of per render (clearSaved identity churns).
+  const syncFromPersisted = useEffectEvent(() => {
+    if (isDirty) return;
+    const persistedBranding = loadPersistedBranding();
+    setBaseline(persistedBranding);
+    setData(persistedBranding);
+    clearSaved();
+  });
+
   useEffect(() => {
     const sync = (): void => {
-      if (isDirty) return;
-      const persistedBranding = loadPersistedBranding();
-      setBaseline(persistedBranding);
-      setData(persistedBranding);
-      clearSaved();
+      syncFromPersisted();
     };
     window.addEventListener("local-database-update", sync);
     return () => window.removeEventListener("local-database-update", sync);
-  }, [isDirty, clearSaved]);
+  }, []);
 
   useEffect(() => {
     const merged = mergeBrandingSettings(data);

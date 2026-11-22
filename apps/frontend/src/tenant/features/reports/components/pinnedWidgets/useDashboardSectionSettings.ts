@@ -20,8 +20,10 @@ export function readDashboardSwitchState(switchStateKey: string): boolean {
  * `local-database-update` event so all subscribers re-read.
  */
 export function toggleDashboardSwitchState(switchStateKey: string): void {
+  if (!switchStateKey) return;
   if (switchStateKey.startsWith("section_")) {
     const sectionKey = switchStateKey.replace("section_", "");
+    if (!sectionKey) return;
     const settings = getObject<Record<string, boolean>>(DASHBOARD_SECTION_KEY, {});
     settings[sectionKey] = !settings[sectionKey];
     saveObject(DASHBOARD_SECTION_KEY, settings);

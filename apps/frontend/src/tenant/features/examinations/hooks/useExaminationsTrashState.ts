@@ -4,6 +4,7 @@ export interface UseExaminationsTrashStateProps {
   showDeleted?: boolean;
   selectedIds?: string[];
   onDelete?: (id: string) => void | Promise<void>;
+  /** Accepted for props-spread symmetry; row restore in trash view bypasses the dialog upstream. */
   onRestore?: (id: string) => void | Promise<void>;
   onBulkDelete?: (ids: string[]) => void | Promise<void>;
   onBulkRestore?: (ids: string[]) => void | Promise<void>;
@@ -14,7 +15,6 @@ export function useExaminationsTrashState({
   showDeleted = false,
   selectedIds = [],
   onDelete,
-  onRestore: _onRestore,
   onBulkDelete,
   onBulkRestore,
   onClearSelection,

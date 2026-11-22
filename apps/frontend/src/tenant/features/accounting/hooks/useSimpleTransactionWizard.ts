@@ -1,5 +1,5 @@
 import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { isJournalRefUnique, type JournalEntry } from "@/lib/data/accountingData";
@@ -59,11 +59,12 @@ export function useSimpleTransactionWizard({
   // id and the server treats it as an idempotent replay (silently dropping it) or
   // refuses it as an immutable posted entry.
   const sessionEntryIdRef = useRef(generateClientEntityId("je"));
-  const sessionOpenRef = useRef(open);
-  if (sessionOpenRef.current !== open) {
-    sessionOpenRef.current = open;
+  // Re-mint the voucher identity on every open transition. The id never renders
+  // — it is only read when a save starts — so the write belongs in an effect
+  // (refs must not be written during render; the React Compiler forbids it).
+  useEffect(() => {
     if (open) sessionEntryIdRef.current = generateClientEntityId("je");
-  }
+  }, [open]);
   const inFlightRef = useRef(false);
 
   const {

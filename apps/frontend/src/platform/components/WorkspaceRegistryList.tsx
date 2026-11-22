@@ -9,7 +9,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BiDiText } from "@/components/app/BiDiText";
 import { useWorkspaceRegistry } from "@/platform/hooks/useWorkspaceRegistry";
 import { EmptyState, ErrorState, CardSkeleton, SectionLabel, WorkspaceLogo } from "@shared/ui";
-import { containerVariants, cardVariants } from "@/platform/lib/animations";
+import { containerVariants, cardVariants } from "@/lib/motion";
 import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +64,7 @@ export default function WorkspaceRegistryList({
       <m.ul
         variants={reducedMotion ? undefined : containerVariants}
         initial={reducedMotion ? false : "hidden"}
-        animate={reducedMotion ? undefined : "show"}
+        animate={reducedMotion ? undefined : "visible"}
         className="space-y-3"
       >
         <AnimatePresence>

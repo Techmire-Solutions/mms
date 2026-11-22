@@ -24,6 +24,9 @@ export function useJournalTemplates(accounts: readonly Account[]) {
   const { canEditSetup } = useModulePermissions(ACCOUNTING_MODULE_MANIFEST);
   const preferencesQuery = useAccountingPreferencesQuery();
   const preferencesMutation = useAccountingPreferencesMutation();
+  // v5 keeps `mutateAsync` stable across renders; depending on the whole
+  // mutation result would rebuild `seedTemplates` on every render.
+  const { mutateAsync: savePreferences } = preferencesMutation;
   const isReady = preferencesQuery.isSuccess && !preferencesQuery.isPlaceholderData;
 
   const templates: JournalTemplate[] = useMemo(
@@ -35,7 +38,7 @@ export function useJournalTemplates(accounts: readonly Account[]) {
   const seedTemplates = useCallback(async (): Promise<void> => {
     const preferences = normalizeAccountingModulePreferences(preferencesQuery.data ?? null);
     try {
-      await preferencesMutation.mutateAsync({
+      await savePreferences({
         ...preferences,
         journalTemplates: buildSeedJournalTemplates(accounts, t),
       });
@@ -45,7 +48,7 @@ export function useJournalTemplates(accounts: readonly Account[]) {
         description: error instanceof Error ? error.message : t("errors.module.description"),
       });
     }
-  }, [accounts, preferencesMutation, preferencesQuery.data, t]);
+  }, [accounts, savePreferences, preferencesQuery.data, t]);
 
   return {
     templates,

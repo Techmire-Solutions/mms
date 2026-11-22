@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleTierPageNav } from "@/tenant/hooks/useModuleTierPageNav";
@@ -167,7 +167,7 @@ export function useSessionsPageController() {
 
   const toggleFilter = <T>(
     selectedValues: T[],
-    setSelectedValues: React.Dispatch<React.SetStateAction<T[]>>,
+    setSelectedValues: Dispatch<SetStateAction<T[]>>,
     nextValue: T,
   ) => toggleFilterValue(selectedValues, setSelectedValues, nextValue);
 

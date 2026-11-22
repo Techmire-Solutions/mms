@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   filterAssignableRoles,
   inviteWorkspaceUserSchema,
@@ -56,7 +56,7 @@ export function InviteUserModal({
     },
   });
 
-  const watchedContactId = form.watch("contactId");
+  const watchedContactId = useWatch({ control: form.control, name: "contactId" });
   const { data: selectedContact, isLoading: isLoadingContact } = useContactById(
     watchedContactId ? String(watchedContactId) : undefined,
     Boolean(watchedContactId),

@@ -55,7 +55,7 @@ describe("document template query layer", () => {
       template: serverTemplate,
       updatedAt: VERSION,
     });
-    expect(api.fetchDocumentTemplateServer).toHaveBeenCalledWith("test_key");
+    expect(api.fetchDocumentTemplateServer).toHaveBeenCalledWith("test_key", undefined);
   });
 
   it("falls back to the factory layout when the server has no row", async () => {
@@ -269,6 +269,56 @@ describe("document template query layer", () => {
       updatedAt: VERSION,
     });
     expect(readCachedDocumentTemplate<SamplePayload>("test_key")?.updatedAt).toBe(VERSION);
+
+    root.unmount();
+    container.remove();
+  });
+
+  it("keeps the server layout when a later render passes a different fallback object", async () => {
+    writeCachedDocumentTemplate("test_key", {
+      template: { ...fallback, pageSize: "A4" },
+      updatedAt: VERSION,
+    });
+    vi.spyOn(api, "fetchDocumentTemplateServer").mockResolvedValue({
+      template: serverTemplate,
+      updatedAt: NEXT_VERSION,
+    } as never);
+
+    const changedFallback: DocumentTemplate<SamplePayload> = { ...fallback, pageSize: "A2" };
+
+    function Probe({ fallbackArg }: { fallbackArg: DocumentTemplate<SamplePayload> }) {
+      const { template } = useDocumentTemplate<SamplePayload>("test_key", fallbackArg);
+      return <span data-testid="size">{template.pageSize}</span>;
+    }
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const client = createTestQueryClient();
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <Probe fallbackArg={fallback} />
+        </QueryClientProvider>,
+      );
+    });
+
+    await vi.waitFor(() => {
+      expect(container.querySelector('[data-testid="size"]')?.textContent).toBe("A5");
+    });
+
+    // A branding/translation change re-renders with a brand-new fallback object —
+    // the server layout already on screen must survive the fallback churn.
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <Probe fallbackArg={changedFallback} />
+        </QueryClientProvider>,
+      );
+    });
+
+    expect(container.querySelector('[data-testid="size"]')?.textContent).toBe("A5");
 
     root.unmount();
     container.remove();

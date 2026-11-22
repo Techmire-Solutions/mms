@@ -596,4 +596,53 @@ describe("AuthContext", () => {
     });
     window.history.pushState({}, "", "/");
   });
+
+  it("keeps auth operation identities stable across provider re-renders", async () => {
+    // The context value lists the auth ops in its memo deps: if any op is
+    // recreated per render, every consumer re-renders on every provider render
+    // (this is what the previous exhaustive-deps disable papered over).
+    const loginIds: unknown[] = [];
+    const verify2FAIds: unknown[] = [];
+    const logoutIds: Array<{ fn: unknown; user: ReturnType<typeof useAuth>["user"] }> = [];
+    let capturedAuth: ReturnType<typeof useAuth> = undefined as unknown as never;
+
+    function Consumer() {
+      const auth = useAuth();
+      capturedAuth = auth;
+      loginIds.push(auth.login);
+      verify2FAIds.push(auth.verify2FA);
+      logoutIds.push({ fn: auth.logout, user: auth.user });
+      return <div>{auth.user?.name ?? "Guest"}</div>;
+    }
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <AuthProvider>
+          <Consumer />
+        </AuthProvider>,
+      );
+    });
+
+    // A login flow forces several provider re-renders (loading, user, checked).
+    await act(async () => {
+      await capturedAuth.login("admin@madrasa.test", "password");
+    });
+
+    expect(loginIds.length).toBeGreaterThan(1);
+    expect(new Set(loginIds).size).toBe(1);
+    expect(new Set(verify2FAIds).size).toBe(1);
+    // `logout` is memoized on `user` (already a dep of the context memo), so its
+    // identity may only change when the user changes — never on unrelated renders.
+    const logoutByUser = new Map<ReturnType<typeof useAuth>["user"], unknown>();
+    for (const { fn, user } of logoutIds) {
+      if (!logoutByUser.has(user)) logoutByUser.set(user, fn);
+      expect(logoutByUser.get(user)).toBe(fn);
+    }
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });

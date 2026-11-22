@@ -30,6 +30,7 @@ export function MarkAttendanceCardsView({
   const mobileParentRef = useRef<HTMLDivElement>(null);
   const isVirtualized = rows.length > 30;
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual is not React-Compiler-compatible (upstream); this component intentionally stays uncompiled.
   const mobileVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => mobileParentRef.current,

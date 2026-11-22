@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   SESSIONS_MODULE_MANIFEST,
   normalizeSessionModulePreferences,
@@ -27,8 +28,6 @@ const setupConfigHooks = createModuleSetupConfigHooks<SessionModulePreferences>(
 
 export const useSessionPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useSessionPreferencesMutation = setupConfigHooks.usePreferencesMutation;
-
-import { useMemo } from "react";
 
 /** Composed SessionsSettings from preferences queries. */
 export function useComposedSessionsSettings(): SessionsSettings {

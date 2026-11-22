@@ -16,7 +16,7 @@ export {
 // --- Contract-driven list & mutation hooks -------------------------------------------
 
 import { apiContract, tsrClient } from "@/lib/api";
-import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { assertContractOk } from "@/lib/apiContractError";
 import {
   studentsListQueryKey,
@@ -46,7 +46,7 @@ export function studentsListQueryOptions(query: StudentsContractQueryParams = {}
       assertContractOk(response, "Failed to fetch students");
       return response;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
@@ -57,7 +57,7 @@ export function useStudentsContractList(query: StudentsContractQueryParams, enab
     queryData: { query },
     // Keep the previous page visible while a new filter/page key loads — without this
     // every keystroke swapped the directory for a skeleton (2026-11-04 review, n9).
-    placeholderData: (previous: unknown) => previous,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
     enabled,
   });

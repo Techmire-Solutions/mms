@@ -1,6 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { notify } from "@/lib/notify";
 import { useMessagingTemplateEditor } from "./useMessagingTemplateEditor";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -84,5 +85,32 @@ describe("useMessagingTemplateEditor", () => {
     expect(editor.editingId).toBeNull();
     expect(editor.label).toBe("");
     expect(editor.body).toBe("");
+  });
+
+  it("clears the unknown-token error once the user edits the body", async () => {
+    await renderEditor();
+    await act(async () => {
+      editor.openCreate();
+      editor.handleLabelChange("Valid");
+      editor.handleBodyChange("Hello {unknown_token}");
+    });
+    await act(async () => editor.syncBodyTokenErrorOnBlur());
+    expect(editor.errors.body).toBe("messaging.unknownTokens");
+
+    await act(async () => editor.handleBodyChange("Hello {name}, welcome."));
+    expect(editor.errors.body).toBeUndefined();
+  });
+
+  it("survives a clipboard failure without an unhandled rejection", async () => {
+    await renderEditor();
+    const writeText = vi.fn().mockRejectedValue(new Error("NotAllowedError"));
+    Object.defineProperty(window.navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+
+    await act(async () => editor.handleCopy("Template body"));
+    expect(writeText).toHaveBeenCalledWith("Template body");
+    expect(vi.mocked(notify.success)).not.toHaveBeenCalled();
   });
 });

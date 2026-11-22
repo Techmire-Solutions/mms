@@ -44,10 +44,11 @@ export function useGenericSavedReportsSource(
 
   const reportsQuery = useQuery({
     queryKey,
-    queryFn: async ({ signal: _signal }) => {
+    queryFn: async ({ signal }) => {
       const response = await apiContract.savedReports.list({
         query: { category },
         extraHeaders: {},
+        fetchOptions: { signal },
       });
       if (response.status === 200) {
         return (response.body as { reports?: GenericSavedReport[] }).reports ?? [];

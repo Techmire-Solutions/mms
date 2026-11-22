@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   addIsoDays,
   defaultPromotionClassMap,
@@ -58,10 +58,11 @@ export function useSessionRolloverForm(session: Session, initialMode: RolloverMo
   const valid = parsedBody.success;
   const validationError = parsedBody.success ? null : (parsedBody.error.issues[0]?.message ?? null);
   // Dirty tracking covers everything the server sees, not only the target name.
-  const initialBodyRef = useRef<string | null>(null);
   const bodySignature = JSON.stringify(body);
-  if (initialBodyRef.current === null) initialBodyRef.current = bodySignature;
-  const isDirty = bodySignature !== initialBodyRef.current;
+  // Lazy-init captures the mount-time signature (the previous value a ref would hold);
+  // render-phase ref writes are React-Compiler-forbidden.
+  const [initialBodySignature] = useState(() => bodySignature);
+  const isDirty = bodySignature !== initialBodySignature;
 
   return {
     mode,

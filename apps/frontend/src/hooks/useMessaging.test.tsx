@@ -44,6 +44,7 @@ vi.mock("@tanstack/react-query", () => ({
   useQueryClient: () => ({
     invalidateQueries: vi.fn(),
   }),
+  keepPreviousData: (previous: unknown) => previous,
 }));
 
 vi.mock("@/lib/api", () => ({

@@ -30,6 +30,8 @@ export interface UseRosterRowNavigationOptions {
   studentIds: readonly string[];
   onSetStatus: (studentId: string, status: AttendanceRecord["status"]) => void;
   onOpenNotes?: (studentId: string) => void;
+  /** Current status of a row; Space advances from it (rows without one start at "present"). */
+  getStatus?: (studentId: string) => AttendanceRecord["status"] | undefined;
 }
 
 export interface RosterRowNavigation {
@@ -45,6 +47,7 @@ export function useRosterRowNavigation({
   studentIds,
   onSetStatus,
   onOpenNotes,
+  getStatus,
 }: UseRosterRowNavigationOptions): RosterRowNavigation {
   const [activeStudentId, setActiveStudentId] = useState<string | null>(null);
   const nodes = useRef(new Map<string, HTMLElement>());
@@ -94,9 +97,9 @@ export function useRosterRowNavigation({
 
       if (event.key === " " || event.key === "Spacebar") {
         event.preventDefault();
-        const rowIndex = STATUS_CYCLE.indexOf("present");
-        // Cycle from the row's current status is handled by the caller via onSetStatus below.
-        onSetStatus(current, STATUS_CYCLE[(rowIndex + 1) % STATUS_CYCLE.length]!);
+        // Advance from the row's CURRENT status; an unknown status starts the cycle at present.
+        const currentIndex = STATUS_CYCLE.indexOf(getStatus?.(current) ?? "present");
+        onSetStatus(current, STATUS_CYCLE[(currentIndex + 1) % STATUS_CYCLE.length]!);
         return;
       }
       const status = STATUS_BY_DIGIT[event.key];
@@ -112,7 +115,7 @@ export function useRosterRowNavigation({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [enabled, studentIds, activeStudentId, focusRow, onSetStatus, onOpenNotes]);
+  }, [enabled, studentIds, activeStudentId, focusRow, onSetStatus, onOpenNotes, getStatus]);
 
   const tabIndexFor = useCallback(
     (studentId: string) => {

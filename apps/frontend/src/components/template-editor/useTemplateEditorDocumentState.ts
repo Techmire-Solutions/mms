@@ -36,8 +36,6 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
   onSave,
   t,
 }: UseTemplateEditorDocumentStateOptions<TPayload>) {
-  const initialTemplateRef = useRef(initialTemplate ?? defaultTemplate);
-
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -48,14 +46,21 @@ export function useTemplateEditorDocumentState<TPayload = Record<string, unknown
     };
   }, []);
 
-  const [state, dispatch] = useReducer(documentReducer<TPayload>, {
-    template: initialTemplateRef.current,
-    baselineJson: JSON.stringify(initialTemplateRef.current),
-    history: [],
-    future: [],
-    activePresetKey: null,
-    lastCoalesce: null,
-  });
+  // Lazy reducer init freezes the first-render template (initial ?? default) as the
+  // document baseline without reading a ref during render; later prop changes hydrate
+  // through the effect below while the draft is still pristine.
+  const [state, dispatch] = useReducer(
+    documentReducer<TPayload>,
+    initialTemplate ?? defaultTemplate,
+    (initial) => ({
+      template: initial,
+      baselineJson: JSON.stringify(initial),
+      history: [],
+      future: [],
+      activePresetKey: null,
+      lastCoalesce: null,
+    }),
+  );
 
   // A parent that later supplies the persisted layout (server hydration, side switch)
   // replaces the draft only while it is still pristine.

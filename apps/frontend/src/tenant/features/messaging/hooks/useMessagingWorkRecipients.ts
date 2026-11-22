@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type {
   MessagingRoleFilter,
@@ -93,6 +94,10 @@ export function useMessagingWorkRecipients(
   });
 
   const data = query.data;
+  const { refetch: queryRefetch } = query;
+  const refetch = useCallback((): void => {
+    void queryRefetch();
+  }, [queryRefetch]);
 
   return {
     recipients: data?.recipients ?? [],
@@ -103,8 +108,6 @@ export function useMessagingWorkRecipients(
     isError: query.isError,
     isPending: query.isPending,
     isFetching: query.isFetching,
-    refetch: () => {
-      void query.refetch();
-    },
+    refetch,
   };
 }

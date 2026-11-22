@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import type { PlatformWorkspaceListResponse, PlatformWorkspacesListQuery } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
@@ -74,6 +74,7 @@ export function usePlatformWorkspaces(params: PlatformWorkspacesListParams = {})
     },
     enabled: isPlatformAuthenticated && canWorkspaces,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 
   return {

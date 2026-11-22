@@ -39,9 +39,8 @@ export function useContactDraftReset({
   setBaselineSnapshot,
   setValidationErrors,
 }: UseContactDraftResetParams): void {
-  useEffect(() => {
-    if (!open) return;
-    const nextDraft = buildInitialContactDraft({
+  const buildDraft = () =>
+    buildInitialContactDraft({
       contact,
       initialDraft,
       defaultCity,
@@ -51,13 +50,26 @@ export function useContactDraftReset({
       socialPlatforms,
       relationshipOptions,
     });
+
+  // Latest builder closure, refreshed after every commit. The reset effects below
+  // depend only on their true triggers (modal open / contact identity / lookups
+  // settle); the ref keeps them reading current option values without re-firing on
+  // every parent render — which would clobber in-progress edits.
+  const buildDraftRef = useRef(buildDraft);
+  useEffect(() => {
+    buildDraftRef.current = buildDraft;
+  });
+
+  // Reset only when the modal opens or the contact identity changes. `contact` is
+  // intentionally not a dep: its object identity changes on every server sync and
+  // a reset then would lose in-progress edits.
+  useEffect(() => {
+    if (!open) return;
+    const nextDraft = buildDraftRef.current();
     setContactDraft(nextDraft);
     setBaselineSnapshot(contactDraftSnapshot(nextDraft));
     setValidationErrors([]);
-    // Intentional dep-array: only reset when the modal opens or the contact identity changes.
-    // Including `contact` object would re-fire on every server sync and lose in-progress edits.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, contact?.id]);
+  }, [open, contact?.id, setContactDraft, setBaselineSnapshot, setValidationErrors]);
 
   // If the form opened before lookups resolved, the draft was built with empty
   // option defaults. Rebuild it once lookups finish loading — but only if the
@@ -67,21 +79,10 @@ export function useContactDraftReset({
     if (!open) return;
     const justFinishedLoading = prevLookupsLoading.current && !lookupsLoading;
     prevLookupsLoading.current = lookupsLoading;
-    if (!justFinishedLoading) return;
-    if (isDirty) return;
-    const nextDraft = buildInitialContactDraft({
-      contact,
-      initialDraft,
-      defaultCity,
-      defaultProvince,
-      defaultCountry,
-      optionDefaults,
-      socialPlatforms,
-      relationshipOptions,
-    });
+    if (!justFinishedLoading || isDirty) return;
+    const nextDraft = buildDraftRef.current();
     setContactDraft(nextDraft);
     setBaselineSnapshot(contactDraftSnapshot(nextDraft));
     setValidationErrors([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, lookupsLoading]);
+  }, [open, lookupsLoading, isDirty, setContactDraft, setBaselineSnapshot, setValidationErrors]);
 }

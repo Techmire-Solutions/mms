@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   DEFAULT_CURRENCIES,
   composeAccountingSettings,
@@ -74,20 +74,27 @@ export function useAccountingSetupPanelState({
   const settings = useMemo(() => composeAccountingSettings(null, preferences), [preferences]);
 
   /**
-   * TanStack's mutation object is re-created per render; the ref keeps the
-   * `updateSettings*` identities stable so `useModuleSettingsEditor` does not
-   * rebuild `saveSettingsAsync` (and its closure over the draft) every render.
+   * TanStack Query v5 keeps `mutate`/`mutateAsync` referentially stable across
+   * renders (`mutate` is memoized on the stable observer; `mutateAsync` is the
+   * observer's method), so the callbacks can depend on them directly. The
+   * previous `preferencesMutationRef.current = …` write happened during render,
+   * which the React Compiler forbids (refs are not render values).
    */
-  const preferencesMutationRef = useRef(preferencesMutation);
-  preferencesMutationRef.current = preferencesMutation;
+  const { mutate: savePreferences, mutateAsync: savePreferencesAsync } = preferencesMutation;
 
-  const updateSettings = useCallback((next: AccountingSettings): void => {
-    void preferencesMutationRef.current.mutate(toAccountingPreferencesPayload(next));
-  }, []);
+  const updateSettings = useCallback(
+    (next: AccountingSettings): void => {
+      void savePreferences(toAccountingPreferencesPayload(next));
+    },
+    [savePreferences],
+  );
 
-  const updateSettingsAsync = useCallback(async (next: AccountingSettings): Promise<void> => {
-    await preferencesMutationRef.current.mutateAsync(toAccountingPreferencesPayload(next));
-  }, []);
+  const updateSettingsAsync = useCallback(
+    async (next: AccountingSettings): Promise<void> => {
+      await savePreferencesAsync(toAccountingPreferencesPayload(next));
+    },
+    [savePreferencesAsync],
+  );
 
   const config = useMemo(
     () => ({ settings, updateSettings, updateSettingsAsync }),

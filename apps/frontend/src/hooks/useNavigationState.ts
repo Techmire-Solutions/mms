@@ -5,6 +5,7 @@ interface NavigationStateOptions {
   onCollapsedChange?: (collapsed: boolean) => void;
 }
 
+/** App-shell navigation UI state: sidebar collapse, mobile drawer, command palette. */
 export function useNavigationState({
   initialCollapsed = false,
   onCollapsedChange,

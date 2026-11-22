@@ -175,9 +175,13 @@ export function useTaskFormController({
     }
   };
 
-  const parentOptions = (parentCandidates?.tasks ?? [])
-    .filter((task) => task.id !== initialData?.id)
-    .map((task) => ({ value: task.id, label: task.title }));
+  const parentOptions = useMemo(
+    () =>
+      (parentCandidates?.tasks ?? [])
+        .filter((task) => task.id !== initialData?.id)
+        .map((task) => ({ value: task.id, label: task.title })),
+    [parentCandidates, initialData],
+  );
 
   const isDirty = useMemo(() => {
     if (!initialData) {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { EXAMINATIONS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/examinations/components/ExaminationsListFilters";
@@ -38,10 +38,13 @@ export function useExaminationsPageController() {
     canViewReports,
     workLabelKey: "nav.examinations",
   });
-  const OPS_SUB_TABS = (() => [
-    { id: "exams", label: t("examinations.exams"), icon: BookOpen },
-    { id: "results", label: t("examinations.results"), icon: FileText },
-  ])();
+  const OPS_SUB_TABS = useMemo(
+    () => [
+      { id: "exams", label: t("examinations.exams"), icon: BookOpen },
+      { id: "results", label: t("examinations.results"), icon: FileText },
+    ],
+    [t],
+  );
   const [activeTab, setActiveTab] = usePersistedTabState<string>("examinations_active_tab", "work");
   const [activeSubTab, setActiveSubTab] = useState("exams");
   const [showDeleted, setShowDeleted] = useDirectoryTrashState();

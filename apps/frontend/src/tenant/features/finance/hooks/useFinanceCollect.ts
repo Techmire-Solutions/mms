@@ -14,10 +14,6 @@ import { assertContractOk } from "@/lib/apiContractError";
 
 const CREDIT_NOTES_KEY = ["finance", "credit-notes"] as const;
 
-function invalidateFinance(queryClient: ReturnType<typeof useQueryClient>): void {
-  invalidateFinanceQueries(queryClient);
-}
-
 export function useFinanceCollectMutations() {
   const queryClient = useQueryClient();
   const collect = useMutation({
@@ -26,7 +22,7 @@ export function useFinanceCollectMutations() {
       assertContractOk(response, "Failed to collect invoices");
       return response.body as CollectInvoicesResult;
     },
-    onSuccess: () => invalidateFinance(queryClient),
+    onSuccess: () => invalidateFinanceQueries(queryClient),
   });
   const remind = useMutation({
     mutationFn: async (body: RemindInvoicesBody = {}) => {
@@ -34,7 +30,7 @@ export function useFinanceCollectMutations() {
       assertContractOk(response, "Failed to remind invoices");
       return response.body as RemindInvoicesResult;
     },
-    onSuccess: () => invalidateFinance(queryClient),
+    onSuccess: () => invalidateFinanceQueries(queryClient),
   });
   const cancel = useMutation({
     mutationFn: async (invoiceId: string) => {
@@ -42,7 +38,7 @@ export function useFinanceCollectMutations() {
       assertContractOk(response, "Failed to cancel invoice");
       return response.body as { invoice: Invoice };
     },
-    onSuccess: () => invalidateFinance(queryClient),
+    onSuccess: () => invalidateFinanceQueries(queryClient),
   });
   const credit = useMutation({
     mutationFn: async (body: CreditNoteInsert) => {
@@ -51,7 +47,7 @@ export function useFinanceCollectMutations() {
       return response.body as { note: CreditNote };
     },
     onSuccess: (_data, body) => {
-      invalidateFinance(queryClient);
+      invalidateFinanceQueries(queryClient);
       void queryClient.invalidateQueries({ queryKey: [...CREDIT_NOTES_KEY, body.invoiceId] });
     },
   });

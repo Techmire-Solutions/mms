@@ -5,8 +5,13 @@ import type { SessionModulePreferences } from "@mms/shared";
 import { normalizeSessionModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<SessionModulePreferences>({
-  fetchPreferencesFn: async (_signal) => {
-    const res = await apiContract.sessions.getPreferences({ query: undefined, extraHeaders: {} });
+  fetchPreferencesFn: async (signal) => {
+    const res = await apiContract.sessions.getPreferences({
+      query: undefined,
+      extraHeaders: {},
+      signal,
+      fetchOptions: { signal },
+    });
     assertContractOk(res, "Failed to load session preferences");
     return (res.body as { preferences: SessionModulePreferences }).preferences;
   },

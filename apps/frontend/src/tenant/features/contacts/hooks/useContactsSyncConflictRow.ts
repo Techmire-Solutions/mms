@@ -65,10 +65,13 @@ export function useContactsSyncConflictRow({
     }
   };
 
-  const diffs = (() => {
+  // Derived once per server record change; `effectiveFieldPicks` below would
+  // otherwise recompute its memo on every render because an inline diff array
+  // never compares equal.
+  const diffs = useMemo(() => {
     if (!local) return [];
     return diffContactForSync(local, serverContact);
-  })();
+  }, [local, serverContact]);
 
   const effectiveFieldPicks = useMemo(() => {
     if (Object.keys(fieldPicks).length > 0) return fieldPicks;

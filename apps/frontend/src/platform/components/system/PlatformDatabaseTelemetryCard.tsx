@@ -2,7 +2,7 @@ import React from "react";
 import { Database, ShieldCheck, Layers, Cpu, Clock, CheckCircle2, Server } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { PlatformTelemetryData } from "@/platform/hooks/usePlatformTelemetry";
-import { usePlatformLiveAnnouncer } from "@/platform/components/common/PlatformLiveRegion";
+import { useLiveAnnouncer } from "@shared/ui";
 
 export interface PlatformDatabaseTelemetryCardProps {
   telemetry?: PlatformTelemetryData;
@@ -14,7 +14,7 @@ export function PlatformDatabaseTelemetryCard({
   isLoading = false,
 }: PlatformDatabaseTelemetryCardProps): React.JSX.Element {
   const { t } = useTranslation();
-  const { announcePolite, announceAssertive } = usePlatformLiveAnnouncer();
+  const { announcePolite, announceAssertive } = useLiveAnnouncer();
 
   const platformDb = telemetry?.platformDb;
   const tenantDb = telemetry?.tenantDb;

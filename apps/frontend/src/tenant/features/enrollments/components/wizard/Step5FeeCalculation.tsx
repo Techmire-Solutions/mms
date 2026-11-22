@@ -29,12 +29,25 @@ export function Step5FeeCalculation({
   const { formatCurrency } = useFinanceCurrency();
   const baseFee = session?.baseFee || "0";
   // The authoritative fee rule uses the *class*'s discounts (mirrors `enrollmentFeeForClass`).
-  const classDiscounts = classFeeDiscounts({ discounts: classInfo?.discounts ?? [] });
-  const discountsKey = JSON.stringify(classDiscounts);
-  const fee = React.useMemo(() => {
-    return calcFee(toMoneyNumber(baseFee) ?? 0, student || {}, [], classDiscounts);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on stable granular fields + discountsKey; adding the `student`/`classDiscounts` object deps would recreate `fee` every render and re-fire the onFeeResult effect.
-  }, [baseFee, student?.id, student?.discountType, student?.discountPct, discountsKey]);
+  // `classInfo` is wizard state, so its `discounts` array is referentially stable between renders.
+  const classDiscounts = React.useMemo(
+    () => classFeeDiscounts({ discounts: classInfo?.discounts ?? [] }),
+    [classInfo?.discounts],
+  );
+  // `calcEnrollmentFee` only reads the student's discount fields — key the memo on those
+  // granular values so unrelated re-renders keep the previous `fee` and do not re-fire `onFeeResult`.
+  const studentDiscountType = student?.discountType;
+  const studentDiscountPct = student?.discountPct;
+  const fee = React.useMemo(
+    () =>
+      calcFee(
+        toMoneyNumber(baseFee) ?? 0,
+        { discountType: studentDiscountType, discountPct: studentDiscountPct },
+        [],
+        classDiscounts,
+      ),
+    [baseFee, studentDiscountType, studentDiscountPct, classDiscounts],
+  );
 
   // Notify parent
   React.useEffect(() => {

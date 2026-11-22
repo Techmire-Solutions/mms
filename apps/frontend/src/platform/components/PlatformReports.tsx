@@ -8,7 +8,7 @@ import { Button } from "@shared/ui";
 import { ExportToolbar, type ExportColumn } from "@/components/app/ExportToolbar";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { usePlatformWorkspaces } from "@/platform/hooks/usePlatformWorkspaces";
-import { containerVariantsConsole, itemVariants } from "@/platform/lib/animations";
+import { containerVariantsConsole, itemVariants } from "@/lib/motion";
 import { PlatformReportsMetrics } from "./reports/PlatformReportsMetrics";
 import { PlatformReportsGrowthChart } from "./reports/PlatformReportsGrowthChart";
 import { PlatformReportsPieCharts } from "./reports/PlatformReportsPieCharts";
@@ -70,7 +70,7 @@ export function PlatformReports(): React.JSX.Element {
     <m.div
       variants={reducedMotion ? undefined : containerVariantsConsole}
       initial={reducedMotion ? false : "hidden"}
-      animate="show"
+      animate="visible"
       className="space-y-6 text-start"
     >
       <m.div

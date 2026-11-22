@@ -6793,8 +6793,6 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "platform.notificationSystemHealthDesc": "قاعدة بيانات PostgreSQL وسياسات RLS تعمل بسلاسة.",
   "platform.notificationSystemHealthTitle": "صحة النظام تعمل",
   "platform.notificationTimeActive": "نشط",
-  "platform.notificationTimeNow": "الآن",
-  "platform.notificationTimeToday": "اليوم",
   "platform.onboardCapability": "إعداد وتأهيل",
   "platform.onlySuperUserCanAddAdmins": "يسمح فقط للمسؤول الخارق بإدارة المسؤولين",
   "platform.openSearchAria": "البحث في لوحة تحكم المنصة (Cmd+K)",

@@ -22,11 +22,13 @@ export function setUserPreferencesMemory(preferences: UserModulePreferences): vo
   memoryPreferences = normalizeUserModulePreferences(preferences);
 }
 
-export async function fetchUserFieldConfig(_signal?: AbortSignal): Promise<UsersSettings> {
+export async function fetchUserFieldConfig(signal?: AbortSignal): Promise<UsersSettings> {
   const response = await apiContract.users.getFieldConfig({
     query: {},
     params: {},
     extraHeaders: {},
+    signal,
+    fetchOptions: { signal },
   });
   const data = response.body as { config: UsersSettings | null };
   const merged = normalizeUsersSettings(data?.config ?? null);
@@ -46,11 +48,13 @@ export async function saveUserFieldConfigAsync(config: UsersSettings): Promise<U
   return saved;
 }
 
-export async function fetchUserPreferences(_signal?: AbortSignal): Promise<UserModulePreferences> {
+export async function fetchUserPreferences(signal?: AbortSignal): Promise<UserModulePreferences> {
   const response = await apiContract.users.getPreferences({
     query: {},
     params: {},
     extraHeaders: {},
+    signal,
+    fetchOptions: { signal },
   });
   const data = response.body as { preferences: UserModulePreferences };
   const normalized = normalizeUserModulePreferences(data?.preferences ?? null);

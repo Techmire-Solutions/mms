@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { useExamSelection } from "@/tenant/features/examinations/hooks/useExamSelection";
@@ -58,9 +58,16 @@ export default function ExaminationsList(props: ExaminationsListProps): React.JS
 
   const statusLabels = resolveExaminationStatusLabels(t);
 
+  // Latest-callback ref: `onNew` is an inline closure on the page, so including it in the effect
+  // deps would re-fire the open on every parent render while `createRequestKey > 0`. Writing the
+  // ref in an effect keeps render pure and lets the effect depend only on the trigger key.
+  const onNewRef = useRef(onNew);
   useEffect(() => {
-    if (createRequestKey > 0 && canWrite && !showDeleted) onNew();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- createRequestKey drives open
+    onNewRef.current = onNew;
+  });
+
+  useEffect(() => {
+    if (createRequestKey > 0 && canWrite && !showDeleted) onNewRef.current();
   }, [createRequestKey, canWrite, showDeleted]);
 
   const {

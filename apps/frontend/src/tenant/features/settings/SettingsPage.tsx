@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo } from "react";
+import React, { Suspense, useEffect, useEffectEvent, useMemo } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { m, AnimatePresence } from "framer-motion";
 import { Settings as SettingsIcon } from "lucide-react";
@@ -12,7 +12,7 @@ import { isSettingsSection, type SettingsSection } from "@/lib/config/routes";
 import { resolveSettingsSection } from "@/lib/config/settingsDeepLink";
 import { SETTINGS_NAV } from "@/lib/config/settingsNavConfig";
 import { SETTINGS_SECTION_COMPONENTS } from "@/lib/config/settingsSectionComponents";
-import { usePersistedTabState } from "@/hooks/usePersistedTabState";
+import { identityTabNormalizer, usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { SettingsTabProvider } from "@/lib/contexts/SettingsTabContext";
 import { SettingsBrandingDraftProvider } from "@/lib/contexts/SettingsBrandingDraftContext";
@@ -42,7 +42,7 @@ export default function Settings(): React.JSX.Element {
   const [tab, setTab] = usePersistedTabState<SettingsSection>(
     "mms-settings-tab",
     "global",
-    (id) => id,
+    identityTabNormalizer,
   );
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,10 +50,14 @@ export default function Settings(): React.JSX.Element {
 
   // Deep links (`?tab=` or navigation state) pick the section — e.g. "Open
   // Settings → Modules" from a disabled-module screen. Plain visits keep the
-  // persisted tab.
+  // persisted tab. An Effect Event keeps the setter out of the effect deps.
+  const applyRequestedTab = useEffectEvent((tabId: SettingsSection) => {
+    setTab(tabId);
+  });
+
   useEffect(() => {
-    if (requestedTab) setTab(requestedTab);
-  }, [requestedTab]); // eslint-disable-line react-hooks/exhaustive-deps -- setTab identity changes per render
+    if (requestedTab) applyRequestedTab(requestedTab);
+  }, [requestedTab]);
 
   const handleTabChange = (id: string) => {
     if (!isSettingsSection(id)) return;

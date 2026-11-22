@@ -39,6 +39,9 @@ export interface UseFacultyWorkTierActionsReturn {
   handleSortFieldChange: (field: FacultySortField) => void;
 }
 
+/** Shared stable empty list — keeps selection-target memoization steady while loading. */
+const EMPTY_FACULTY: Faculty[] = [];
+
 export function useFacultyWorkTierActions(
   props: UseFacultyWorkTierActionsProps,
 ): UseFacultyWorkTierActionsReturn {
@@ -156,7 +159,7 @@ export function useFacultyWorkTierActions(
     [sortField, sortDir, onSortChange],
   );
 
-  const members = useMemo(() => props.faculty ?? [], [props.faculty]);
+  const members = useMemo(() => props.faculty ?? EMPTY_FACULTY, [props.faculty]);
   const selectionTargets = useMemo(
     () =>
       computeFacultySelectionTargets({

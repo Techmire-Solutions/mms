@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@shared/ui";
 
 /** Tenant-only 404 — mounted only on madrasa subdomain routes. */
 export default function PageNotFound(): React.JSX.Element {
@@ -47,19 +48,17 @@ export default function PageNotFound(): React.JSX.Element {
           ) : null}
 
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              to={primaryLink}
-              className="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors"
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto bg-card border-border font-medium transition-colors"
             >
-              {primaryLabel}
-            </Link>
+              <Link to={primaryLink}>{primaryLabel}</Link>
+            </Button>
             {isAuthenticated ? (
-              <Link
-                to={ROUTES.settings}
-                className="inline-flex min-h-11 items-center px-4 py-2 text-sm font-medium text-primary hover:underline"
-              >
-                {t("page.notFound.openSettings")}
-              </Link>
+              <Button asChild variant="link" className="h-auto font-medium">
+                <Link to={ROUTES.settings}>{t("page.notFound.openSettings")}</Link>
+              </Button>
             ) : null}
           </div>
         </div>

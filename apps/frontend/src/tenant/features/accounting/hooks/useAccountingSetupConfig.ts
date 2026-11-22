@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   normalizeAccountingModulePreferences,
@@ -27,8 +28,6 @@ const setupConfigHooks = createModuleSetupConfigHooks<AccountingModulePreference
 
 export const useAccountingPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useAccountingPreferencesMutation = setupConfigHooks.usePreferencesMutation;
-
-import { useMemo } from "react";
 
 /** Composed AccountingSettings from preferences queries. */
 export function useComposedAccountingSettings(): AccountingSettings {

@@ -1,6 +1,7 @@
 import { PLATFORM_API_ERROR_TYPES, PLATFORM_MIN_PASSWORD_LENGTH } from "@mms/shared";
 import type { AppTranslationKey, PlatformApiErrorType } from "@mms/shared";
 import { ApiError } from "@/lib/apiClient";
+import { mapAuthError, type MapAuthErrorConfig } from "@/lib/mapAuthError";
 
 type TranslateFn = (key: AppTranslationKey, params?: Record<string, string>) => string;
 
@@ -41,6 +42,13 @@ const HTTP_STATUS_FALLBACK_KEYS: Partial<Record<number, AppTranslationKey>> = {
   429: "platform.rateLimited",
 };
 
+const PLATFORM_AUTH_ERROR_MAPPING: MapAuthErrorConfig = {
+  isErrorType: isPlatformApiErrorType,
+  keyMap: PLATFORM_AUTH_ERROR_KEYS,
+  statusMap: HTTP_STATUS_FALLBACK_KEYS,
+  fallbackKey: "errors.boundary.description",
+};
+
 /** Runtime type guard checking if an error code is a recognized PlatformApiErrorType. */
 export function isPlatformApiErrorType(value: unknown): value is PlatformApiErrorType {
   return (
@@ -54,21 +62,11 @@ export function mapPlatformAuthError(
   t: TranslateFn,
   params?: Record<string, string>,
 ): string {
-  if (isPlatformApiErrorType(apiError.type)) {
-    const key = PLATFORM_AUTH_ERROR_KEYS[apiError.type];
-    if (apiError.type === "password_too_short") {
-      return t(key, { min: String(PLATFORM_MIN_PASSWORD_LENGTH), ...params });
-    }
-    return t(key, params);
-  }
-
-  // Fallback to standard HTTP status mapping if error type code is unmapped or omitted
-  const statusKey = HTTP_STATUS_FALLBACK_KEYS[apiError.status];
-  if (statusKey) {
-    return t(statusKey, params);
-  }
-
-  return t("errors.boundary.description");
+  const resolvedParams =
+    isPlatformApiErrorType(apiError.type) && apiError.type === "password_too_short"
+      ? { min: String(PLATFORM_MIN_PASSWORD_LENGTH), ...params }
+      : params;
+  return mapAuthError(apiError, PLATFORM_AUTH_ERROR_MAPPING, t, resolvedParams);
 }
 
 /** Convenience wrapper to map any caught error (ApiError, TypeError, or generic Error) to a translated string. */

@@ -19,6 +19,7 @@ import { invalidateUsersQueries } from "./invalidateUsersQueries";
 
 const mockUseQuery = vi.fn();
 const mockUseMutation = vi.fn();
+const { mockAuthState } = vi.hoisted(() => ({ mockAuthState: { isAuthenticated: true } }));
 
 vi.mock("@tanstack/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-query")>();
@@ -29,6 +30,10 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
     }),
   };
 });
+
+vi.mock("@/lib/contexts/AuthContext", () => ({
+  useAuth: () => mockAuthState,
+}));
 
 vi.mock("@/lib/api", () => ({
   tsrClient: {
@@ -75,6 +80,7 @@ function renderTestHook<T>(hookFn: () => T): { result: { current: T }; unmount: 
 describe("useUsersContract", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuthState.isAuthenticated = true;
   });
 
   it("configures useUsersContractList with query params", () => {
@@ -89,6 +95,19 @@ describe("useUsersContract", () => {
       }),
     );
     expect(result.current.data.status).toBe(200);
+    unmount();
+  });
+
+  it("gates useUsersContractList behind authentication", () => {
+    mockUseQuery.mockReturnValue({ data: undefined });
+    mockAuthState.isAuthenticated = false;
+    const { unmount } = renderTestHook(() => useUsersContractList({ search: "test" }));
+
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: false,
+      }),
+    );
     unmount();
   });
 

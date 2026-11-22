@@ -4,8 +4,12 @@ import type { AttendanceModulePreferences } from "@mms/shared";
 import { normalizeAttendanceModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<AttendanceModulePreferences>({
-  fetchPreferencesFn: async (_signal) => {
-    const res = await apiContract.attendance.getPreferences({ query: undefined, extraHeaders: {} });
+  fetchPreferencesFn: async (signal) => {
+    const res = await apiContract.attendance.getPreferences({
+      query: undefined,
+      extraHeaders: {},
+      fetchOptions: { signal },
+    });
     return (res.body as { preferences: AttendanceModulePreferences }).preferences;
   },
   savePreferencesFn: async (prefs) => {

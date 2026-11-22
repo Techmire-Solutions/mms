@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
 import type {
   Invoice,
@@ -24,8 +23,6 @@ import {
 } from "@/tenant/features/finance/hooks/useFinanceQueries";
 
 export function useFinanceMutations() {
-  const _queryClient = useQueryClient();
-
   const createInvoice = useFinanceContractCreateInvoice();
   const updateInvoice = useFinanceContractUpdateInvoice();
   const deleteInvoice = useFinanceContractDeleteInvoice();

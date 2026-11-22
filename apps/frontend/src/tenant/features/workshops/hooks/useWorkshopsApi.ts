@@ -1,4 +1,10 @@
-import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryKey,
+} from "@tanstack/react-query";
 import {
   WORKSHOPS_MODULE_MANIFEST,
   workshopAttendanceRecordSchema,
@@ -118,6 +124,9 @@ export function useWorkshops(params: { includeDeleted: boolean; search: string }
       return read(response, workshopsPageResponseSchema, "Failed to load workshops");
     },
     staleTime: 15_000,
+    // Keep the current page visible while a search/trash key loads (same
+    // convention as the other module directories).
+    placeholderData: keepPreviousData,
   });
 }
 

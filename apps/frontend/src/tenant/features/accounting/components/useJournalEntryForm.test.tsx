@@ -461,6 +461,32 @@ describe("useJournalEntryForm validation", () => {
     expect(onSave).toHaveBeenCalledTimes(1);
   });
 
+  it("rejects a line referencing an account the picker would not offer", async () => {
+    const onSave = vi.fn();
+    await act(async () => {
+      root.render(<TestHarness onSave={onSave} onController={(c) => (controller = c)} />);
+    });
+    // A stale draft (or a hand edit) may still reference an account that is now
+    // inactive/summary; the picker filters those, but the save must refuse them.
+    await act(async () => {
+      controller!.setForm((current) => ({
+        ...current,
+        description: "Stale account draft",
+        lines: [
+          { ...current.lines[0]!, account_id: "a-stale", debit: "50", credit: "" },
+          { ...current.lines[1]!, account_id: "a-income", debit: "", credit: "50" },
+        ],
+      }));
+    });
+
+    await act(async () => {
+      await controller!.saveEntry("draft");
+    });
+
+    expect(controller!.errors.line0).toBe("accounting.journal.form.errorAccountInactive");
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
   it("initializes with isDirty false for new and existing entries, and marks dirty on edit", async () => {
     const onSave = vi.fn();
     await act(async () => {

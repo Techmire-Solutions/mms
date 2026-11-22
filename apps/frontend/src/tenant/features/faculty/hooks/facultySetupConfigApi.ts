@@ -10,8 +10,12 @@ import {
 } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<FacultyModulePreferences>({
-  fetchPreferencesFn: async (_signal) => {
-    const res = await apiContract.faculty.getPreferences({ query: undefined, extraHeaders: {} });
+  fetchPreferencesFn: async (signal) => {
+    const res = await apiContract.faculty.getPreferences({
+      query: undefined,
+      extraHeaders: {},
+      fetchOptions: { signal },
+    });
     assertContractOk(res, "Failed to load faculty preferences");
     return (res.body as { preferences: FacultyModulePreferences }).preferences;
   },
@@ -28,11 +32,12 @@ export const setFacultyPreferencesMemory = api.setPreferencesMemory;
 export const fetchFacultyPreferences = api.fetchPreferences;
 export const saveFacultyPreferencesAsync = api.savePreferencesAsync;
 
-export async function fetchFacultyFieldConfig(_signal?: AbortSignal): Promise<FacultySettings> {
+export async function fetchFacultyFieldConfig(signal?: AbortSignal): Promise<FacultySettings> {
   const response = await apiContract.faculty.getFieldConfig({
     query: {},
     params: {},
     extraHeaders: {},
+    fetchOptions: { signal },
   });
   assertContractOk(response, "Failed to load faculty field configuration");
   const data = response.body as { config: FacultySettings | null };

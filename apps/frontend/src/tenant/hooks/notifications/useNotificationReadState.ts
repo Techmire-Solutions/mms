@@ -1,5 +1,5 @@
 import { todayISO } from "@mms/shared";
-import { useUiPreference } from "@/lib/useUiStateStore";
+import { useUiPreference, useUiStateStore } from "@/lib/useUiStateStore";
 import type { DashboardNotificationItem } from "@/lib/buildDashboardNotifications";
 
 const READ_STATE_KEY = "notifications_read";
@@ -21,9 +21,13 @@ export function useNotificationReadState() {
   const readSet = new Set(readKeys);
 
   const persist = (items: ReadableNotification[]) => {
-    const added = items.map(notificationReadKey).filter((key) => !readSet.has(key));
+    // Merge against the freshest store state: two marks in the same tick
+    // (before the subscription re-renders) must not duplicate read keys.
+    const latest = useUiStateStore.getState().state[READ_STATE_KEY];
+    const base = Array.isArray(latest) ? (latest as string[]) : readKeys;
+    const added = items.map(notificationReadKey).filter((key) => !base.includes(key));
     if (added.length === 0) return;
-    setReadKeys([...readKeys, ...added].slice(-MAX_READ_KEYS));
+    setReadKeys([...base, ...added].slice(-MAX_READ_KEYS));
   };
 
   return {

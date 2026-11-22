@@ -10,15 +10,24 @@ import { useCallback, useEffect, useRef } from "react";
  * (2026-11-04 UI review: mobile printed 4 of N metrics and no secondary insights).
  * The `afterprint` listener keeps the expansion from leaking into the page state;
  * it is also torn down on unmount and before a second print, so a browser that
- * never fires `afterprint` cannot strand a stale listener.
+ * never fires `afterprint` cannot strand a stale listener. The deferred rAF is
+ * likewise cancelled on unmount: leaving the page before the frame fires must
+ * not open a print dialog for a page the user already navigated away from.
  */
 export function useDashboardPrintSnapshot(expand: () => void, restore: () => void): () => void {
   const pendingCleanupRef = useRef<(() => void) | null>(null);
+  const pendingRafRef = useRef<number | null>(null);
 
   useEffect(
     () => () => {
       pendingCleanupRef.current?.();
       pendingCleanupRef.current = null;
+      // Navigating away before the deferred frame must not open a print dialog
+      // for a page the user already left.
+      if (pendingRafRef.current !== null) {
+        window.cancelAnimationFrame(pendingRafRef.current);
+        pendingRafRef.current = null;
+      }
     },
     [],
   );
@@ -33,6 +42,9 @@ export function useDashboardPrintSnapshot(expand: () => void, restore: () => voi
     pendingCleanupRef.current?.();
     pendingCleanupRef.current = cleanup;
     window.addEventListener("afterprint", cleanup);
-    requestAnimationFrame(() => window.print());
+    pendingRafRef.current = requestAnimationFrame(() => {
+      pendingRafRef.current = null;
+      window.print();
+    });
   }, [expand, restore]);
 }

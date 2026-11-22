@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
 
 export interface UsePlatformWorkspaceSelectionResult {
   selectedSubdomains: ReadonlySet<string>;
@@ -12,10 +13,17 @@ export interface UsePlatformWorkspaceSelectionResult {
   clearSelection: () => void;
 }
 
+/**
+ * Workspace row selection for the Platform Workspaces directory — thin adapter
+ * over the shared `useWorkSelection` SSOT (mirrors `usePlatformAdminSelection`).
+ */
 export function usePlatformWorkspaceSelection(
   allWorkspaces: PlatformWorkspaceRowData[],
 ): UsePlatformWorkspaceSelectionResult {
-  const [selectedSubdomains, setSelectedSubdomains] = useState<Set<string>>(new Set());
+  const { selectedIds, toggleSelected, toggleSelectAll, clearSelection } =
+    useWorkSelection<string>();
+
+  const selectedSubdomains = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   const selectedWorkspaces = useMemo(
     () => allWorkspaces.filter((w) => selectedSubdomains.has(w.subdomain)),
@@ -27,40 +35,22 @@ export function usePlatformWorkspaceSelection(
     [selectedSubdomains],
   );
 
-  const toggleSelect = useCallback((subdomain: string) => {
-    setSelectedSubdomains((prev) => {
-      const next = new Set(prev);
-      if (next.has(subdomain)) {
-        next.delete(subdomain);
-      } else {
-        next.add(subdomain);
-      }
-      return next;
-    });
-  }, []);
+  const toggleSelect = useCallback(
+    (subdomain: string) => {
+      toggleSelected(subdomain, !selectedSubdomains.has(subdomain));
+    },
+    [toggleSelected, selectedSubdomains],
+  );
 
-  const toggleSelectAll = useCallback((visibleWorkspaces: PlatformWorkspaceRowData[]) => {
-    setSelectedSubdomains((prev) => {
-      const visibleSet = new Set(visibleWorkspaces.map((w) => w.subdomain));
-      const allVisibleSelected =
-        visibleWorkspaces.length > 0 && visibleWorkspaces.every((w) => prev.has(w.subdomain));
-      const next = new Set(prev);
-      if (allVisibleSelected) {
-        for (const sub of visibleSet) {
-          next.delete(sub);
-        }
-      } else {
-        for (const sub of visibleSet) {
-          next.add(sub);
-        }
-      }
-      return next;
-    });
-  }, []);
-
-  const clearSelection = useCallback(() => {
-    setSelectedSubdomains(new Set());
-  }, []);
+  const toggleSelectAllWorkspaces = useCallback(
+    (visibleWorkspaces: PlatformWorkspaceRowData[]) => {
+      const visibleIds = visibleWorkspaces.map((w) => w.subdomain);
+      const allSelected =
+        visibleIds.length > 0 && visibleIds.every((id) => selectedSubdomains.has(id));
+      toggleSelectAll(!allSelected, visibleIds);
+    },
+    [selectedSubdomains, toggleSelectAll],
+  );
 
   const isAllSelected = useMemo(
     () =>
@@ -75,7 +65,7 @@ export function usePlatformWorkspaceSelection(
     isAllSelected,
     isSelected,
     toggleSelect,
-    toggleSelectAll,
+    toggleSelectAll: toggleSelectAllWorkspaces,
     clearSelection,
   };
 }

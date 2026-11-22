@@ -10,7 +10,7 @@ import { formatDateTime } from "@/lib/utils";
 import {
   containerVariantsConsole as containerVariants,
   itemVariants as cardVariants,
-} from "@/platform/lib/animations";
+} from "@/lib/motion";
 import { PlatformMigrateRestartCard } from "@/platform/pages/account/PlatformMigrateRestartCard";
 import { PlatformLatencySparkline } from "@/platform/components/system/PlatformLatencySparkline";
 import { usePlatformTelemetry } from "@/platform/hooks/usePlatformTelemetry";
@@ -64,7 +64,7 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
     <m.div
       variants={reducedMotion ? undefined : containerVariants}
       initial={reducedMotion ? false : "hidden"}
-      animate="show"
+      animate="visible"
       className="space-y-6 text-start"
     >
       {/* System Maintenance Header Metrics */}

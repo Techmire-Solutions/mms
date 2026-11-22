@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useModuleTierPageNav } from "@/tenant/hooks/useModuleTierPageNav";
 import { STUDENTS_MODULE_MANIFEST, resolveStudentStatuses } from "@mms/shared";
@@ -56,9 +56,13 @@ export function useStudentsPageController() {
   const directory = useStudentsDirectoryFilters({ setActiveTab });
   const { setListPage } = directory;
 
-  useEffect(() => {
+  // A view-mode toggle reflows the directory grid; reset to the first page during
+  // render (React's adjust-state-during-render pattern) instead of an effect.
+  const [prevViewMode, setPrevViewMode] = useState(viewMode);
+  if (prevViewMode !== viewMode) {
+    setPrevViewMode(viewMode);
     setListPage(1);
-  }, [viewMode, setListPage]);
+  }
 
   useStudentsKeyboardShortcuts({
     selectedCount: directory.selectedIds.length,
@@ -122,17 +126,20 @@ export function useStudentsPageController() {
 
   const overlays = useStudentsPageOverlayState({ statuses: configuredStatuses });
 
+  // `columnRegistry` and `isColumnVisible` are memoized/stable in
+  // `useModuleColumnLayout`, so depending on them directly (not on the fresh
+  // `columnLayout` wrapper object) keeps this memo stable across renders.
+  const { columnRegistry, isColumnVisible } = columnLayout;
   const exportColumns = useMemo(() => {
-    const visible = columnLayout.columnRegistry.filter(
-      (col) => columnLayout.isColumnVisible(col.key) && col.key !== "sessions",
+    const visible = columnRegistry.filter(
+      (col) => isColumnVisible(col.key) && col.key !== "sessions",
     );
     if (visible.length === 0) return defaultStudentsExportColumns(t);
     return visible.map((col) => ({
       id: col.key,
       label: col.label || col.key,
     }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the column-registry slices; depending on the whole `columnLayout` object (new each render) would rebuild the export columns on every render.
-  }, [columnLayout.columnRegistry, columnLayout.isColumnVisible, t]);
+  }, [columnRegistry, isColumnVisible, t]);
 
   const { handleExportCSV, handleBulkExport } = useStudentsExportActions({
     tableColumns: exportColumns,

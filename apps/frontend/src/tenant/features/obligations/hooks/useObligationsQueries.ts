@@ -4,7 +4,7 @@
  */
 import { apiContract, tsrClient } from "@/lib/api";
 import type { ObligationsCollectionsQuery } from "@mms/shared";
-import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { invalidateObligationsQueries } from "@/tenant/features/obligations/hooks/invalidateObligationsQueries";
 import {
   OBLIGATIONS_TYPES_QUERY_KEY,
@@ -29,7 +29,7 @@ export function obligationsCollectionsListQueryOptions(query: ObligationsCollect
       assertContractOk(response, "Failed to fetch obligations collections");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }

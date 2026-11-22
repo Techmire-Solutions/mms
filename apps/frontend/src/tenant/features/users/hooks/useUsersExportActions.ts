@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import {
   mergeCustomUserExportColumns,
   type AppTranslationKey,
@@ -37,17 +38,25 @@ export function useUsersExportActions({
 }: UseUsersExportActionsOptions) {
   const { t } = useTranslation();
 
-  const buildFilteredQuery = (): UsersListQuery => ({
-    search: search.trim() || undefined,
-    status: statusFilter !== "all" ? statusFilter : undefined,
-    role: roleFilter !== "all" ? roleFilter : undefined,
-  });
+  // Stable callbacks keep the shared export hook's `runExport` (and therefore
+  // the toolbar handlers) stable across unrelated controller re-renders.
+  const buildFilteredQuery = useCallback(
+    (): UsersListQuery => ({
+      search: search.trim() || undefined,
+      status: statusFilter !== "all" ? statusFilter : undefined,
+      role: roleFilter !== "all" ? roleFilter : undefined,
+    }),
+    [search, roleFilter, statusFilter],
+  );
 
-  const onError = (err: unknown) => {
-    notify.error(t("users.exportFailed"), {
-      description: err instanceof Error ? err.message : String(err),
-    });
-  };
+  const onError = useCallback(
+    (err: unknown) => {
+      notify.error(t("users.exportFailed"), {
+        description: err instanceof Error ? err.message : String(err),
+      });
+    },
+    [t],
+  );
 
   return useModuleServerCsvExportActions<UserExportColumn, UsersListQuery>({
     canExport,

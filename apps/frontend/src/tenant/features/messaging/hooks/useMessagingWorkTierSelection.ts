@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import type { Message } from "@mms/shared";
 import type { MessagingSelectedLogsMap } from "../components/MessagingWorkTier";
 
@@ -28,11 +28,17 @@ export function useMessagingWorkTierSelection({
   // selection and the next toggle rewrites both.
   const [state, setState] = useState<SelectionState>({ scopeKey, byId: EMPTY_SELECTION });
   const selectedById = state.scopeKey === scopeKey ? state.byId : EMPTY_SELECTION;
+  // Shift-range anchor travels with its scope too: a stale anchor from a
+  // previous page must never widen a fresh selection.
   const lastSelectedLogRef = React.useRef<Message | null>(null);
+  const lastSelectedScopeRef = React.useRef<string | undefined>(undefined);
 
-  const setSelectedById = (next: MessagingSelectedLogsMap): void => {
-    setState({ scopeKey, byId: next });
-  };
+  const setSelectedById = useCallback(
+    (next: MessagingSelectedLogsMap): void => {
+      setState({ scopeKey, byId: next });
+    },
+    [scopeKey],
+  );
 
   const allVisibleSelected =
     logs.length > 0 && logs.every((log: Message) => Boolean(selectedById[String(log.id)]));
@@ -40,48 +46,55 @@ export function useMessagingWorkTierSelection({
   const selectedList = Object.values(selectedById);
   const selectedCount = selectedList.length;
 
-  const toggleLog = (log: Message, shiftKey?: boolean): void => {
-    const key = String(log.id);
-    const isCurrentlySelected = Boolean(selectedById[key]);
-
-    if (shiftKey && lastSelectedLogRef.current) {
-      const lastIndex = logs.findIndex(
-        (l: Message) => String(l.id) === String(lastSelectedLogRef.current?.id),
-      );
-      const currentIndex = logs.findIndex((l: Message) => String(l.id) === key);
-
-      if (lastIndex !== -1 && currentIndex !== -1) {
-        const start = Math.min(lastIndex, currentIndex);
-        const end = Math.max(lastIndex, currentIndex);
-        const next = { ...selectedById };
-
-        for (let i = start; i <= end; i++) {
-          const item = logs[i];
-          if (item) {
-            next[String(item.id)] = item;
-          }
-        }
-        setSelectedById(next);
-        return;
-      }
-    }
-
-    lastSelectedLogRef.current = isCurrentlySelected ? null : log;
-    const next = { ...selectedById };
-    if (next[key]) delete next[key];
-    else next[key] = log;
-    setSelectedById(next);
-  };
-
-  const toggleAllVisible = (checked: boolean): void => {
-    const next = { ...selectedById };
-    logs.forEach((log) => {
+  const toggleLog = useCallback(
+    (log: Message, shiftKey?: boolean): void => {
       const key = String(log.id);
-      if (checked) next[key] = log;
-      else delete next[key];
-    });
-    setSelectedById(next);
-  };
+      const isCurrentlySelected = Boolean(selectedById[key]);
+
+      if (shiftKey && lastSelectedLogRef.current && lastSelectedScopeRef.current === scopeKey) {
+        const lastIndex = logs.findIndex(
+          (l: Message) => String(l.id) === String(lastSelectedLogRef.current?.id),
+        );
+        const currentIndex = logs.findIndex((l: Message) => String(l.id) === key);
+
+        if (lastIndex !== -1 && currentIndex !== -1) {
+          const start = Math.min(lastIndex, currentIndex);
+          const end = Math.max(lastIndex, currentIndex);
+          const next = { ...selectedById };
+
+          for (let i = start; i <= end; i++) {
+            const item = logs[i];
+            if (item) {
+              next[String(item.id)] = item;
+            }
+          }
+          setSelectedById(next);
+          return;
+        }
+      }
+
+      lastSelectedLogRef.current = isCurrentlySelected ? null : log;
+      lastSelectedScopeRef.current = isCurrentlySelected ? undefined : scopeKey;
+      const next = { ...selectedById };
+      if (next[key]) delete next[key];
+      else next[key] = log;
+      setSelectedById(next);
+    },
+    [logs, scopeKey, selectedById, setSelectedById],
+  );
+
+  const toggleAllVisible = useCallback(
+    (checked: boolean): void => {
+      const next = { ...selectedById };
+      logs.forEach((log) => {
+        const key = String(log.id);
+        if (checked) next[key] = log;
+        else delete next[key];
+      });
+      setSelectedById(next);
+    },
+    [logs, selectedById, setSelectedById],
+  );
 
   return {
     selectedById,

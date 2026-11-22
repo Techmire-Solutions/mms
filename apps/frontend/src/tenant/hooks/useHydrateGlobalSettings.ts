@@ -7,6 +7,8 @@ import { hydrateGlobalSettingsFromServer } from "@/lib/globalSettingsHydration";
 
 /** One successful (or failed-open) hydration per tenant per page session. */
 const hydratedTenants = new Set<string>();
+/** In-flight hydrations per subdomain — StrictMode remounts reuse the running fetch. */
+const hydrationInFlight = new Map<string, Promise<void>>();
 
 /**
  * Hydrates localization fields from PostgreSQL once per authenticated tenant
@@ -33,11 +35,17 @@ export function useHydrateGlobalSettings(): { isHydrating: boolean } {
     if (!canHydrate || !subdomain || hydratedTenants.has(subdomain)) return;
 
     let active = true;
-    void hydrateGlobalSettingsFromServer()
+    // Single-flight per tenant: a remount (StrictMode, route churn) reuses the
+    // running hydration instead of racing a second fetch into the same store.
+    const pending = hydrationInFlight.get(subdomain) ?? hydrateGlobalSettingsFromServer();
+    hydrationInFlight.set(subdomain, pending);
+
+    void pending
       .catch(() => {
         // Fail open: device-local settings remain usable offline.
       })
       .finally(() => {
+        hydrationInFlight.delete(subdomain);
         hydratedTenants.add(subdomain);
         if (active) setCompletedSubdomain(subdomain);
       });

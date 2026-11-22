@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   type TaskRecord,
   type TaskListQuery,
@@ -76,6 +76,8 @@ export function useTasks(query?: Partial<TaskListQuery>, options: { enabled?: bo
     },
     enabled: options.enabled ?? true,
     staleTime: 15_000,
+    // Keep the previous page visible while the next page/filter key loads (like the other directories).
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -291,8 +293,7 @@ export function useUpdateTaskSettings() {
       assertContractOk(response, "Failed to update task settings");
       return response.body as TaskSettings;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: TASKS_SETTINGS_QUERY_KEY });
-    },
+    // Single line so the mutation object stays compact.
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: TASKS_SETTINGS_QUERY_KEY }),
   });
 }

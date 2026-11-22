@@ -24,8 +24,20 @@ vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
 }));
 
+const trashState = vi.hoisted(() => ({ setShowDeleted: vi.fn() }));
+
 vi.mock("@/hooks/useDirectoryTrashState", () => ({
-  useDirectoryTrashState: () => React.useState(false),
+  useDirectoryTrashState: () => {
+    const [showDeleted, setShowDeleted] = React.useState(false);
+    return [
+      showDeleted,
+      (value: boolean | ((prev: boolean) => boolean)) => {
+        trashState.setShowDeleted(value);
+        setShowDeleted(value);
+      },
+      () => {},
+    ];
+  },
 }));
 
 vi.mock("@/tenant/features/finance/hooks/useFinanceApi", () => ({
@@ -136,6 +148,42 @@ describe("useFinancePageController selection", () => {
       expect(result.current.invoiceSelection.selectedIds).toEqual([]);
       act(() => result.current.paymentSelection.toggleSelectAll(true, ["PAY-1", "PAY-2"]));
       expect(result.current.paymentSelection.selectedIds).toHaveLength(2);
+    } finally {
+      unmount();
+    }
+  });
+
+  it("clears the trash view when navigating away from the work tab", () => {
+    const { result, unmount } = renderFinanceControllerHook();
+    try {
+      act(() => result.current.setShowDeleted(true));
+      expect(result.current.showDeleted).toBe(true);
+      act(() => result.current.setActiveTab("reports"));
+      expect(result.current.showDeleted).toBe(false);
+    } finally {
+      unmount();
+    }
+  });
+
+  it("does not rewrite the trash URL state when leaving work with trash already off", () => {
+    const { result, unmount } = renderFinanceControllerHook();
+    try {
+      trashState.setShowDeleted.mockClear();
+      act(() => result.current.setActiveTab("reports"));
+      expect(trashState.setShowDeleted).not.toHaveBeenCalled();
+    } finally {
+      unmount();
+    }
+  });
+
+  it("keeps the trash view while staying on the work tab", () => {
+    const { result, unmount } = renderFinanceControllerHook();
+    try {
+      act(() => result.current.setShowDeleted(true));
+      trashState.setShowDeleted.mockClear();
+      act(() => result.current.setActiveSubTab("payments"));
+      expect(result.current.showDeleted).toBe(true);
+      expect(trashState.setShowDeleted).not.toHaveBeenCalled();
     } finally {
       unmount();
     }

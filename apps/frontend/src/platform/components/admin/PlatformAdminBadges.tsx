@@ -1,4 +1,4 @@
-import { PLATFORM_PERMISSION_CONFIG } from "@/platform/lib/platformPermissionConfig";
+import { platformPermissionEntries } from "@/platform/lib/platformPermissionConfig";
 import React from "react";
 import { StatusBadge } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -58,7 +58,7 @@ export function PlatformAdminPermissionsBadges({
   }
 
   const perms = admin.permissions;
-  const activePerms = PLATFORM_PERMISSION_CONFIG.filter(({ key }) => perms?.[key]);
+  const activePerms = platformPermissionEntries().filter(([key]) => perms?.[key]);
 
   if (activePerms.length === 0) {
     return (
@@ -68,13 +68,13 @@ export function PlatformAdminPermissionsBadges({
 
   return (
     <div className="flex flex-wrap gap-1.5">
-      {activePerms.map(({ key, labelKey }) => (
+      {activePerms.map(([key, cap]) => (
         <StatusBadge
           key={key}
           status={key}
           config={{
             [key]: {
-              label: t(labelKey),
+              label: t(cap.labelKey),
               cls: SEMANTIC_BADGE.primary,
             },
           }}

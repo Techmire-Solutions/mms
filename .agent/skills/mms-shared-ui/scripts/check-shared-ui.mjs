@@ -11,6 +11,8 @@
  *   5. `apps/frontend/src/components/ui/` serves exclusively as a clean typed facade re-exporting
  *      from `@shared/ui`, with zero duplicate local JSX component implementations.
  *   6. Zero orphaned imports referencing non-existent or deprecated UI modules.
+ *   7. Shared layer (src/lib, src/components, src/hooks, src/providers) never imports `@/platform/*`.
+ *   8. New components/ui basenames must re-export `@shared/ui` or be listed local composites.
  *
  * Usage:
  *   node scripts/check-shared-ui.mjs
@@ -309,7 +311,73 @@ for (const file of allFrontendFiles) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 6. Check: Single table engine in @shared/ui
+// 6. Check: Shared Layer Must Not Import Platform Console Code
+//    Files under src/lib, src/components, src/hooks, and src/providers are
+//    console-agnostic SSOT. They may never import @/platform/* — that dependency
+//    direction is inverted (themeScope inversion) and would entangle the consoles.
+//    Allowlist is empty by policy.
+// ─────────────────────────────────────────────────────────────────────────────
+const sharedLayerPlatformImports = [];
+const SHARED_LAYER_DIRS = ["lib", "components", "hooks", "providers"].map((dir) =>
+  path.join(FE_SRC, dir),
+);
+// Cross-console contract specs (e.g. the shared command-palette keyboard contract
+// that mounts both consoles) are allowed to span consoles; the ban targets
+// shared-layer production code (SSOT files must not depend on @/platform/*).
+const isSharedLayerSpec = (f) => /\.(test|spec)\.(ts|tsx)$/.test(f);
+const SHARED_LAYER_FILES = SHARED_LAYER_DIRS.flatMap((dir) =>
+  walkFiles(dir, (f) => isCodeFile(f) && !isSharedLayerSpec(f)),
+);
+
+const SHARED_LAYER_PLATFORM_IMPORT = /from\s+["']@\/platform\/([^"']+)["']/g;
+const SHARED_LAYER_PLATFORM_ALLOWLIST = new Set([]);
+
+for (const file of SHARED_LAYER_FILES) {
+  const content = fs.readFileSync(file, "utf8");
+  let match;
+  while ((match = SHARED_LAYER_PLATFORM_IMPORT.exec(content)) !== null) {
+    const spec = `@/platform/${match[1]}`;
+    const key = `${toRel(file)}:${spec}`;
+    if (!SHARED_LAYER_PLATFORM_ALLOWLIST.has(key)) {
+      sharedLayerPlatformImports.push({
+        file: toRel(file),
+        importSpecifier: spec,
+        rule: "Shared layer (src/lib, src/components, src/hooks, src/providers) must never import from Platform Console (@/platform/*)",
+      });
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. Check: New UI Facade Basenames Are Re-exports or Deliberate Local Composites
+//    Any basename under components/ui/ that is not an established shared
+//    primitive facade must either re-export from @shared/ui or be listed in
+//    LOCAL_COMPOSITE_ALLOWLIST (a deliberate, reviewed local composite).
+// ─────────────────────────────────────────────────────────────────────────────
+const newFacadeViolations = [];
+const LOCAL_COMPOSITE_ALLOWLIST = new Set([
+  "form.tsx",
+  "calendar.tsx",
+  "CalendarDropdown.tsx",
+  "formPrimitiveStyles.ts",
+  "formStyles.ts",
+]);
+
+for (const file of facadeFiles) {
+  const base = path.basename(file);
+  if (SHARED_PRIMITIVE_NAMES.has(base) || LOCAL_COMPOSITE_ALLOWLIST.has(base)) continue;
+
+  const content = fs.readFileSync(file, "utf8");
+  if (!content.includes('from "@shared/ui"') && !content.includes("from '@shared/ui'")) {
+    newFacadeViolations.push({
+      file: toRel(file),
+      issue: `New UI facade basename '${base}' must re-export from '@shared/ui' or be added to LOCAL_COMPOSITE_ALLOWLIST`,
+    });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8. Check: Single table engine in @shared/ui
 //    WorkBatchTable (apps/frontend/src/components/common/work) is the sole table
 //    engine across Tenant and Platform Consoles. @shared/ui ships only low-level
 //    table primitives; a second DataTable/Pagination-style engine is banned. New
@@ -358,6 +426,8 @@ const totalViolations =
   facadeViolations.length +
   duplicatePrimitiveFiles.length +
   orphanedImports.length +
+  sharedLayerPlatformImports.length +
+  newFacadeViolations.length +
   tablePrimitiveViolations.length;
 
 if (process.argv.includes("--json")) {
@@ -370,6 +440,8 @@ if (process.argv.includes("--json")) {
         facadeViolations,
         duplicatePrimitiveFiles,
         orphanedImports,
+        sharedLayerPlatformImports,
+        newFacadeViolations,
         tablePrimitiveViolations,
       },
       null,
@@ -441,6 +513,28 @@ if (orphanedImports.length > 0) {
   }
 } else {
   console.log("✅ Orphaned imports: zero unresolved UI imports across codebase (0 violations)");
+}
+
+if (sharedLayerPlatformImports.length > 0) {
+  passed = false;
+  console.error(
+    `❌ Shared layer imports from @/platform/* (${sharedLayerPlatformImports.length} violations):`,
+  );
+  for (const v of sharedLayerPlatformImports) {
+    console.error(`   - ${v.file}: ${v.importSpecifier} (${v.rule})`);
+  }
+} else {
+  console.log("✅ Shared layer: zero imports from Platform Console @/platform/* (0 violations)");
+}
+
+if (newFacadeViolations.length > 0) {
+  passed = false;
+  console.error(`❌ Unlisted UI facade basenames (${newFacadeViolations.length} violations):`);
+  for (const v of newFacadeViolations) {
+    console.error(`   - ${v.file}: ${v.issue}`);
+  }
+} else {
+  console.log("✅ UI facade basenames: all re-export @shared/ui or are listed local composites (0 violations)");
 }
 
 if (tablePrimitiveViolations.length > 0) {

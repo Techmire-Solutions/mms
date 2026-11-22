@@ -8,8 +8,9 @@ import type {
 import { apiContract } from "@/lib/api";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { assertContractOk } from "@/lib/apiContractError";
+import { PLATFORM_QUERY_KEYS } from "@/platform/lib/platformQueryKeys";
 
-const GROUPS_KEY = ["platform", "consolidation", "groups"] as const;
+const GROUPS_KEY = PLATFORM_QUERY_KEYS.consolidationGroups;
 const REPORT_KEY = ["platform", "consolidation", "report"] as const;
 
 export function useConsolidationGroups() {
@@ -64,7 +65,8 @@ export function useConsolidationReport(
 ) {
   const { isPlatformAuthenticated, canWorkspaces } = usePlatformPermissions();
   return useQuery({
-    queryKey: [...REPORT_KEY, groupId, period],
+    queryKey:
+      groupId && period ? PLATFORM_QUERY_KEYS.consolidationReport(groupId, period) : REPORT_KEY,
     queryFn: async ({ signal }) => {
       const response = await apiContract.platformConsolidation.getReport({
         params: { id: groupId as string },

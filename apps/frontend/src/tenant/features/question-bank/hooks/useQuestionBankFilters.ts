@@ -35,16 +35,19 @@ export function useQuestionBankFilters({
 
   const debouncedSearch = useDebounce(search, QUESTION_SEARCH_DEBOUNCE_MS);
 
-  // Server-side filter/page reset whenever a filter dimension changes.
+  // Server-side filter/page reset whenever a filter dimension changes. The reset
+  // uses React's documented adjust-state-during-render pattern; the query below
+  // already reads the corrected page so no stale-page request is ever issued.
   const filterKey = `${debouncedSearch}|${filterCats.join(",")}|${filterDiff.join(",")}|${filterStatus}|${filterType}|${String(showDeleted)}`;
   const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
+  const pageForQuery = previousFilterKey !== filterKey ? 1 : listPage;
   if (previousFilterKey !== filterKey) {
     setPreviousFilterKey(filterKey);
     setListPage(1);
   }
 
   const pageQuery = useQuestionBankContractList({
-    page: listPage,
+    page: pageForQuery,
     limit: QUESTION_BANK_MODULE_MANIFEST.defaultPageSize,
     search: debouncedSearch,
     categoryId: filterCats.length ? filterCats.join(",") : undefined,

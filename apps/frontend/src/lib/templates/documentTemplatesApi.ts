@@ -18,9 +18,11 @@ export class DocumentTemplateConflictError extends Error {
 /** Fetches a document template from the server by key. Returns null when not customized. */
 export async function fetchDocumentTemplateServer<TPayload = Record<string, unknown>>(
   key: string,
+  signal?: AbortSignal,
 ): Promise<DocumentTemplateRecord<TPayload> | null> {
   const res = await apiContract.templates.get({
     params: { key },
+    fetchOptions: { signal },
   });
   if (res.status === 200) {
     const body = res.body as {

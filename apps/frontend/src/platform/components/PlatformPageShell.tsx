@@ -14,8 +14,7 @@ import { PlatformAiDrawer } from "@/platform/components/intelligence/PlatformAiD
 import { PlatformInspectorDrawer } from "@/platform/components/inspector/PlatformInspectorDrawer";
 import { AppShell } from "@/components/common/AppShell";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
-import { PlatformLiveRegionProvider } from "@/platform/components/common/PlatformLiveRegion";
-import { AppFooter, TooltipProvider } from "@shared/ui";
+import { AppFooter, LiveRegionProvider, TooltipProvider } from "@shared/ui";
 
 /**
  * Page-level fault isolation for platform console pages.
@@ -120,7 +119,7 @@ export function PlatformPageShell({
   const footer = <AppFooter className="mt-auto" />;
 
   return (
-    <PlatformLiveRegionProvider>
+    <LiveRegionProvider>
       <TooltipProvider delayDuration={150}>
         <PlatformSidebarProvider>
           <PlatformBreadcrumbProvider>
@@ -146,7 +145,7 @@ export function PlatformPageShell({
           </PlatformBreadcrumbProvider>
         </PlatformSidebarProvider>
       </TooltipProvider>
-    </PlatformLiveRegionProvider>
+    </LiveRegionProvider>
   );
 }
 

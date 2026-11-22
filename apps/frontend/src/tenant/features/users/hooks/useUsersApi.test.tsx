@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { extractActivityLogs, useUsersByIds, useUsersMutations } from "./useUsersApi";
 import { invalidateUsersQueries } from "./invalidateUsersQueries";
 
@@ -25,6 +26,8 @@ vi.mock("@/lib/contexts/AuthContext", () => ({
   }),
 }));
 
+const { mockUsersList } = vi.hoisted(() => ({ mockUsersList: vi.fn() }));
+
 vi.mock("@/lib/api", () => ({
   tsrClient: {
     users: {
@@ -45,22 +48,34 @@ vi.mock("@/lib/api", () => ({
       exportAudit: { useMutation: () => ({ mutate: vi.fn(), mutateAsync: vi.fn() }) },
     },
   },
+  apiContract: {
+    users: {
+      list: (...args: unknown[]) => mockUsersList(...args),
+    },
+  },
 }));
 
 vi.mock("./invalidateUsersQueries", () => ({
   invalidateUsersQueries: vi.fn(),
 }));
 
-function renderTestHook<T>(hookFn: () => T): { result: { current: T }; unmount: () => void } {
+async function renderTestHook<T>(
+  hookFn: () => T,
+): Promise<{ result: { current: T }; unmount: () => void }> {
   const result = { current: null as unknown as T };
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   function TestComponent() {
     result.current = hookFn();
     return null;
   }
   const container = document.createElement("div");
   const root = createRoot(container);
-  act(() => {
-    root.render(<TestComponent />);
+  await act(async () => {
+    root.render(
+      <QueryClientProvider client={queryClient}>
+        <TestComponent />
+      </QueryClientProvider>,
+    );
   });
   return {
     result,
@@ -90,36 +105,78 @@ describe("useUsersApi", () => {
   });
 
   describe("useUsersByIds", () => {
-    it("requests and normalizes only the referenced users", () => {
-      mockUseQuery.mockReturnValue({
-        data: {
-          status: 200,
-          body: [{ id: "u1", name: "Alice", email: "alice@test.com", role: "admin" }],
-        },
-      });
+    beforeEach(() => {
+      mockUsersList.mockReset();
+    });
 
-      const { result, unmount } = renderTestHook(() => useUsersByIds(["u1", "u1"]));
-      expect(result.current.data).toHaveLength(1);
-      expect(result.current.data[0]?.name).toBe("Alice");
-      expect(result.current.data[0]?.role).toBe("admin");
-      expect(mockUseQuery).toHaveBeenCalledWith(
-        expect.objectContaining({
-          queryData: {
-            query: {
-              ids: "u1",
+    it("fetches in maxPageSize chunks and merges every resolved user", async () => {
+      const ids = Array.from({ length: 250 }, (_, index) => `u${index}`);
+      mockUsersList.mockImplementation(
+        async (args: { query: { ids: string } }): Promise<unknown> => {
+          const chunkIds = args.query.ids.split(",");
+          return {
+            status: 200,
+            body: {
+              users: chunkIds.map((id) => ({
+                id,
+                name: `User ${id}`,
+                email: `${id}@test.com`,
+                role: "teacher",
+              })),
+              total: chunkIds.length,
               page: 1,
-              limit: 1,
+              limit: chunkIds.length,
+              hasMore: false,
             },
-          },
-        }),
+          };
+        },
       );
+
+      const { result, unmount } = await renderTestHook(() => useUsersByIds(ids));
+
+      await act(async () => {
+        await vi.waitFor(() => {
+          expect(result.current.data).toHaveLength(250);
+        });
+      });
+      expect(mockUsersList).toHaveBeenCalledTimes(3);
+      const chunkSizes = mockUsersList.mock.calls.map(
+        (call) => (call[0] as { query: { ids: string } }).query.ids.split(",").length,
+      );
+      expect(chunkSizes).toEqual([100, 100, 50]);
+      expect(result.current.data.map((user) => user.id)).toEqual([...ids].sort());
+      expect(result.current.data[0]?.name).toBe("User u0");
       unmount();
     });
 
-    it("returns an empty data array when query data is errored", () => {
-      mockUseQuery.mockReturnValue({ data: { status: 500, body: null } });
-      const { result, unmount } = renderTestHook(() => useUsersByIds(["u1"]));
-      expect(result.current.data).toEqual([]);
+    it("passes the query signal to every chunk request", async () => {
+      mockUsersList.mockResolvedValue({
+        status: 200,
+        body: { users: [], total: 0, page: 1, limit: 0, hasMore: false },
+      });
+
+      const { unmount } = await renderTestHook(() => useUsersByIds(["u1"]));
+
+      await act(async () => {
+        await vi.waitFor(() => {
+          expect(mockUsersList).toHaveBeenCalledTimes(1);
+        });
+      });
+      const firstCall = mockUsersList.mock.calls[0]?.[0] as { signal?: unknown };
+      expect(firstCall.signal).toBeInstanceOf(AbortSignal);
+      unmount();
+    });
+
+    it("returns an empty data array when query data is errored", async () => {
+      mockUsersList.mockResolvedValue({ status: 500, body: null });
+
+      const { result, unmount } = await renderTestHook(() => useUsersByIds(["u1"]));
+
+      await act(async () => {
+        await vi.waitFor(() => {
+          expect(result.current.data).toEqual([]);
+        });
+      });
       unmount();
     });
   });
@@ -143,7 +200,7 @@ describe("useUsersApi", () => {
         };
       });
 
-      const { result, unmount } = renderTestHook(() => useUsersMutations());
+      const { result, unmount } = await renderTestHook(() => useUsersMutations());
 
       const created = await result.current.createUser.mutateAsync({ name: "Created User" });
       expect(created).toEqual({ id: "u-created", name: "Created User" });

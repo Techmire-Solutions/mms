@@ -25,28 +25,35 @@ export function useLiveCollection<T = unknown>(
 ): T[] {
   const enabled = options?.enabled ?? true;
   const serverSync = options?.serverSync ?? true;
+
+  const [data, setData] = useState<T[]>(() =>
+    enabled ? getCollection<T>(dbKey, defaultData) : (EMPTY_ARRAY as T[]),
+  );
+
+  // Latest-defaultData ref: `handleUpdate` must stay referentially stable
+  // (it is registered/unregistered by the effect below), so it reads the
+  // current seed through a ref that is only written outside render.
   const defaultDataRef = useRef(defaultData);
-  defaultDataRef.current = defaultData;
+  useEffect(() => {
+    defaultDataRef.current = defaultData;
+  });
 
   const handleUpdate = useCallback((): void => {
     setData(getCollection<T>(dbKey, defaultDataRef.current));
   }, [dbKey]);
-
-  const [data, setData] = useState<T[]>(() =>
-    enabled ? getCollection<T>(dbKey, defaultDataRef.current) : (EMPTY_ARRAY as T[]),
-  );
 
   // Real auth state from the provider (null outside an AuthProvider, e.g. in
   // tests), replacing the previous `localStorage['mms_user']` probe.
   const isAuthenticated = Boolean(useOptionalAuth()?.isAuthenticated);
 
   useEffect(() => {
-    if (!enabled) {
-      setData(EMPTY_ARRAY as T[]);
-      return;
-    }
+    // While disabled the hook returns EMPTY_ARRAY via the early return below;
+    // no state write is needed here (re-enabling re-reads via `handleUpdate`).
+    if (!enabled) return;
 
     handleUpdate();
+
+    let active = true;
 
     // Auth state comes from the auth context, not from probing the cached
     // `mms_user` localStorage key: a stale key outliving the session used to
@@ -57,6 +64,10 @@ export function useLiveCollection<T = unknown>(
           if (res.ok) {
             const fetched = (await res.json()) as T[];
             saveCollectionCacheOnly(dbKey, fetched);
+            // Publish the fetched rows: previously the response was cached but
+            // never re-read, so the seed data stayed on screen until some
+            // unrelated update event fired.
+            if (active) handleUpdate();
           }
         })
         .catch((error) => {
@@ -67,6 +78,7 @@ export function useLiveCollection<T = unknown>(
     window.addEventListener("local-database-update", handleUpdate);
     window.addEventListener("storage", handleUpdate);
     return () => {
+      active = false;
       window.removeEventListener("local-database-update", handleUpdate);
       window.removeEventListener("storage", handleUpdate);
     };

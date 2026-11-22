@@ -1,9 +1,9 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi } from "vitest";
-import { PlatformLiveRegionProvider, usePlatformLiveAnnouncer } from "./PlatformLiveRegion";
+import { LiveRegionProvider, useLiveAnnouncer } from "@shared/ui";
 
-describe("PlatformLiveRegionProvider & usePlatformLiveAnnouncer", () => {
+describe("LiveRegionProvider & useLiveAnnouncer (@shared/ui)", () => {
   it("renders dual live regions with correct ARIA roles and attributes", () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
@@ -11,9 +11,9 @@ describe("PlatformLiveRegionProvider & usePlatformLiveAnnouncer", () => {
 
     act(() => {
       root.render(
-        <PlatformLiveRegionProvider>
+        <LiveRegionProvider>
           <div>Content</div>
-        </PlatformLiveRegionProvider>,
+        </LiveRegionProvider>,
       );
     });
 
@@ -40,18 +40,18 @@ describe("PlatformLiveRegionProvider & usePlatformLiveAnnouncer", () => {
     document.body.appendChild(container);
     const root = createRoot(container);
 
-    let announcer!: ReturnType<typeof usePlatformLiveAnnouncer>;
+    let announcer!: ReturnType<typeof useLiveAnnouncer>;
 
     function TestConsumer() {
-      announcer = usePlatformLiveAnnouncer();
+      announcer = useLiveAnnouncer();
       return null;
     }
 
     act(() => {
       root.render(
-        <PlatformLiveRegionProvider>
+        <LiveRegionProvider>
           <TestConsumer />
-        </PlatformLiveRegionProvider>,
+        </LiveRegionProvider>,
       );
     });
 
@@ -61,8 +61,8 @@ describe("PlatformLiveRegionProvider & usePlatformLiveAnnouncer", () => {
       vi.advanceTimersByTime(100);
     });
 
-    const politeRegion = container.querySelector('[data-testid="platform-live-polite"]');
-    const alertRegion = container.querySelector('[data-testid="platform-live-assertive"]');
+    const politeRegion = container.querySelector('[data-testid="live-region-polite"]');
+    const alertRegion = container.querySelector('[data-testid="live-region-assertive"]');
 
     expect(politeRegion?.textContent).toBe("Telemetry refreshed");
     expect(alertRegion?.textContent).toBe("Database connection pool degraded");

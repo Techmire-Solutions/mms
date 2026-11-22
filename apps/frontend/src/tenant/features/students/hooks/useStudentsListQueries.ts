@@ -2,6 +2,8 @@ import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsListQuery } from "
 import { apiContract, tsrClient } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { uniqueRegistryIds } from "@/lib/registryResolve";
 import {
   STUDENTS_QUERY_KEY,
   type StudentRecord,
@@ -43,8 +45,6 @@ export async function fetchAllStudentsForQuery(
 
   return all;
 }
-import { useAuth } from "@/lib/contexts/AuthContext";
-import { uniqueRegistryIds } from "@/lib/registryResolve";
 
 export function useStudentLinkedContactIds(excludeId?: string, enabled = true) {
   const { isAuthenticated } = useAuth();
@@ -68,8 +68,12 @@ export function useStudentsByIds(ids: (string | number | null | undefined)[]) {
 
   const query = useQuery({
     queryKey: [...STUDENTS_QUERY_KEY, "resolve", normalized.join(",")] as const,
-    queryFn: async () => {
-      const res = await apiContract.students.resolve({ body: { ids: normalized } });
+    queryFn: async ({ signal }) => {
+      const res = await apiContract.students.resolve({
+        body: { ids: normalized },
+        signal,
+        fetchOptions: { signal },
+      });
       return (res.body as { students?: Student[] } | null)?.students;
     },
     enabled: isAuthenticated && normalized.length > 0,

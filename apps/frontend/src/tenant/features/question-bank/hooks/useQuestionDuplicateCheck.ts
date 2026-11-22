@@ -31,10 +31,12 @@ export function useQuestionDuplicateCheck(
     }
 
     let cancelled = false;
+    const controller = new AbortController();
     const timer = setTimeout(() => {
       void apiContract.questionBank
         .checkQuestionDuplicates({
           body: { text: trimmed, excludeId, limit },
+          signal: controller.signal,
         })
         .then((response) => {
           if (
@@ -55,6 +57,7 @@ export function useQuestionDuplicateCheck(
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      controller.abort();
     };
   }, [eligible, trimmed, excludeId, limit]);
 

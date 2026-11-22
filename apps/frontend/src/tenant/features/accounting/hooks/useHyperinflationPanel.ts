@@ -44,7 +44,13 @@ export function useHyperinflationPanel() {
   const update = <K extends keyof HyperinflationSettings>(
     field: K,
     value: HyperinflationSettings[K],
-  ) => setDraft({ ...current, [field]: value });
+  ) =>
+    // Functional update: two `update` calls in the same tick must not drop the
+    // first one (a plain `{ ...current }` spread reads a possibly-stale draft).
+    setDraft((previous) => ({
+      ...(previous ?? settings.data ?? DEFAULT_HYPERINFLATION_SETTINGS),
+      [field]: value,
+    }));
 
   const handleSaveSettings = async (): Promise<void> => {
     const { updatedAt: _updatedAt, ...body } = current;

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { keepPreviousData, queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   WorkspaceUser,
   ActivityLog,
@@ -14,6 +14,8 @@ import {
   USERS_METRICS_QUERY_KEY,
 } from "./usersQueryKeys";
 import { apiContract, tsrClient } from "@/lib/api";
+import { invalidateUsersQueries } from "@/tenant/features/users/hooks/invalidateUsersQueries";
+import { assertContractOk } from "@/lib/apiContractError";
 
 export { USERS_LIST_QUERY_KEY, USERS_METRICS_QUERY_KEY, ACTIVITY_LOGS_QUERY_KEY };
 
@@ -38,31 +40,43 @@ export function useUsersByIds(
   const idsKey = normalizedIds.join(",");
   const enabled = options?.enabled ?? true;
 
-  const query = tsrClient.users.list.useQuery({
+  // The list endpoint paginates every `ids` filter at `maxPageSize`, so a single
+  // request silently truncated batches larger than one page. Fetch in
+  // `maxPageSize` chunks and merge (mirrors `useContactsByIds`).
+  const query = useQuery({
     queryKey: [...USERS_LIST_QUERY_KEY, "resolve", idsKey] as const,
-    queryData: {
-      query: {
-        ids: idsKey,
-        page: 1,
-        limit: Math.max(1, Math.min(normalizedIds.length, USERS_MODULE_MANIFEST.maxPageSize)),
-      },
+    queryFn: async ({ signal }) => {
+      const chunkSize = USERS_MODULE_MANIFEST.maxPageSize;
+      const resolved: WorkspaceUser[] = [];
+      for (let index = 0; index < normalizedIds.length; index += chunkSize) {
+        const chunk = normalizedIds.slice(index, index + chunkSize);
+        const response = await apiContract.users.list({
+          query: { ids: chunk.join(","), page: 1, limit: chunk.length },
+          signal,
+          fetchOptions: { signal },
+        });
+        if (response.status !== 200) continue;
+        const body: unknown = response.body;
+        const rows = Array.isArray(body)
+          ? body
+          : ((body as { users?: unknown[] } | null)?.users ?? []);
+        resolved.push(
+          ...rows.map((user) =>
+            normalizeWorkspaceUser(
+              user as Partial<SystemUser> & { roles?: string[]; role?: string },
+            ),
+          ),
+        );
+      }
+      return resolved;
     },
     staleTime: 30_000,
     enabled: isAuthenticated && enabled && normalizedIds.length > 0,
   });
 
-  const responseData: unknown = query.data?.status === 200 ? query.data.body : undefined;
-  const normalizedUsers = useMemo(() => {
-    const rawUsers = Array.isArray(responseData)
-      ? responseData
-      : ((responseData as { users?: unknown[] } | null)?.users ?? []);
-    return rawUsers.map((user) =>
-      normalizeWorkspaceUser(user as Partial<SystemUser> & { roles?: string[]; role?: string }),
-    ) as WorkspaceUser[];
-  }, [responseData]);
   return {
     ...query,
-    data: normalizedUsers,
+    data: (query.data ?? []) as WorkspaceUser[],
   };
 }
 
@@ -86,10 +100,11 @@ export function extractActivityLogs(queryData: unknown): ActivityLog[] {
 }
 
 export function useActivityLogs(options?: { enabled?: boolean }) {
+  const { isAuthenticated } = useAuth();
   const enabled = options?.enabled ?? true;
   return tsrClient.users.activity.useQuery({
     queryKey: ACTIVITY_LOGS_QUERY_KEY,
-    enabled,
+    enabled: isAuthenticated && enabled,
     staleTime: 15_000,
   });
 }
@@ -100,10 +115,6 @@ export function useActivityLogsCollection(options?: { enabled?: boolean }): Acti
 }
 
 // --- Contract-driven list queryOptions & mutation hooks ----------------------
-
-import { queryOptions, useQueryClient } from "@tanstack/react-query";
-import { invalidateUsersQueries } from "@/tenant/features/users/hooks/invalidateUsersQueries";
-import { assertContractOk } from "@/lib/apiContractError";
 
 export function usersListQueryOptions(
   query: {
@@ -127,17 +138,18 @@ export function usersListQueryOptions(
       assertContractOk(response, "Failed to fetch users");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
 
 export function useUsersContractList(query: Record<string, unknown>, enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.users.list.useQuery({
     queryKey: [...USERS_LIST_QUERY_KEY, "contract", query],
     queryData: { query },
     staleTime: 15_000,
-    enabled,
+    enabled: isAuthenticated && enabled,
   });
 }
 

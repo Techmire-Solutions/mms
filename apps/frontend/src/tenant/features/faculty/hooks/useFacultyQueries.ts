@@ -111,9 +111,7 @@ export function facultyResolveQueryOptions(ids: (string | number | null | undefi
 export function useFacultyByIds(ids: (string | number | null | undefined)[]) {
   const { isAuthenticated } = useAuth();
   const options = facultyResolveQueryOptions(ids);
-  const query = useQuery({ ...options, enabled: isAuthenticated && options.enabled === true });
-
-  return { ...query, data: query.data };
+  return useQuery({ ...options, enabled: isAuthenticated && options.enabled === true });
 }
 
 export function useFacultyNextEmployeeId(params: FacultyNextEmployeeIdParams = {}) {

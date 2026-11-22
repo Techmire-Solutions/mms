@@ -1,6 +1,6 @@
 import { registerLanguagePack, APP_TRANSLATIONS_EN } from "@mms/shared";
 import { isEntryPath } from "@/lib/config/routes";
-import { shouldForcePlatformEnglish } from "@/platform/lib/themeScope";
+import { shouldForcePlatformEnglish } from "@/lib/branding/platformThemeConfig";
 
 /**
  * Keys already reported as missing, so a key rendered in a loop warns once

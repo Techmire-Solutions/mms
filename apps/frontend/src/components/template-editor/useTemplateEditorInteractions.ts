@@ -36,8 +36,8 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
   canvasScale,
   size,
   templateElements,
-  dragState,
-  resizeState,
+  dragState: dragStateRef,
+  resizeState: resizeStateRef,
   canvasViewportRef,
   updateElements,
   pushHistory,
@@ -52,7 +52,7 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
       return;
     }
 
-    const currentDrag = dragState.current;
+    const currentDrag = dragStateRef.current;
     if (currentDrag) {
       if (!exceedsDragThreshold(currentDrag, event)) return;
       currentDrag.hasMoved = true;
@@ -101,7 +101,7 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
       setActiveGuides([]);
     }
 
-    const currentResize = resizeState.current;
+    const currentResize = resizeStateRef.current;
     if (currentResize) {
       if (!exceedsDragThreshold(currentResize, event)) return;
       currentResize.hasMoved = true;
@@ -119,13 +119,13 @@ export function useTemplateEditorInteractions<TPayload = Record<string, unknown>
   const onPointerUp = useEffectEvent(() => {
     handlePanEnd();
     setActiveGuides([]);
-    if (dragState.current?.hasMoved) {
-      pushHistory(dragState.current.initialTemplate);
-    } else if (resizeState.current?.hasMoved) {
-      pushHistory(resizeState.current.initialTemplate);
+    if (dragStateRef.current?.hasMoved) {
+      pushHistory(dragStateRef.current.initialTemplate);
+    } else if (resizeStateRef.current?.hasMoved) {
+      pushHistory(resizeStateRef.current.initialTemplate);
     }
-    dragState.current = null;
-    resizeState.current = null;
+    dragStateRef.current = null;
+    resizeStateRef.current = null;
   });
 
   useEffect(() => {

@@ -5,7 +5,34 @@ import {
   upsertBackgroundJobRemote,
 } from "@/lib/backgroundJobs/backgroundJobApi";
 
-const STORAGE_KEY = "mms_background_jobs_v2";
+/** Unscoped fallback — the auth contexts register a tenant/user-scoped provider on sign-in. */
+const UNSCOPED_KEY = "mms_background_jobs_v2";
+
+let storageKeyProvider: () => string = () => UNSCOPED_KEY;
+
+/**
+ * Registers how the store's localStorage key is derived (workspace + user
+ * scope). Called by the tenant and platform auth contexts so each console and
+ * account keeps its own job mirror; re-registering updates the scope for the
+ * next store access.
+ */
+export function registerBackgroundJobStorageKeyProvider(provider: () => string): void {
+  storageKeyProvider = provider;
+}
+
+/** Removes the store under the currently registered scope (logout cleanup). */
+export function clearBackgroundJobStorageLocal(): void {
+  try {
+    localStorage.removeItem(storageKeyProvider());
+  } catch {
+    /* ignore */
+  }
+}
+
+function storageKey(): string {
+  return storageKeyProvider();
+}
+
 const MAX_JOBS_PER_MODULE = 20;
 export const BACKGROUND_JOBS_EVENT = "mms-background-jobs-changed";
 
@@ -16,7 +43,7 @@ type JobStore = Record<string, BackgroundJob[]>;
 
 function readStore(): JobStore {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (raw) return JSON.parse(raw) as JobStore;
   } catch {
     /* ignore */
@@ -25,7 +52,7 @@ function readStore(): JobStore {
 }
 
 function writeStore(store: JobStore): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  localStorage.setItem(storageKey(), JSON.stringify(store));
   window.dispatchEvent(new CustomEvent(BACKGROUND_JOBS_EVENT));
 }
 

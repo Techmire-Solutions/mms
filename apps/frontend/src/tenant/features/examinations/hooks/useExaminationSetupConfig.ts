@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   EXAMINATIONS_MODULE_MANIFEST,
   normalizeExaminationsModulePreferences,
@@ -27,8 +28,6 @@ const setupConfigHooks = createModuleSetupConfigHooks<ExaminationsModulePreferen
 
 export const useExaminationPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useExaminationPreferencesMutation = setupConfigHooks.usePreferencesMutation;
-
-import { useMemo } from "react";
 
 /** Composed ExaminationsSettings from preferences queries. */
 export function useComposedExaminationsSettings(): ExaminationsSettings {

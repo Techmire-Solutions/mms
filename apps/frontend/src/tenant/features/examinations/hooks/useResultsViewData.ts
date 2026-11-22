@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { resolveResultScore, rankInExam, type Exam, type ExamResult } from "@mms/shared";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import type { Student } from "@/lib/data/studentsData";
@@ -28,56 +28,53 @@ export function useResultsViewData({
   const { t } = useTranslation();
 
   const exam = exams.find((examOption) => examOption.id === selectedExam);
-  const examResults = exam ? results.filter((examResult) => examResult.examId === exam.id) : [];
+  const examResults = useMemo(
+    () => (exam ? results.filter((examResult) => examResult.examId === exam.id) : []),
+    [exam, results],
+  );
   const studentIdsForExam = examResults.map((examResult) => examResult.studentId);
 
   const { data: students = [] } = useStudentsByIds(studentIdsForExam);
   const sessions = useSessionsCollection();
   const enrollments = useEnrollmentsCollection();
 
-  const studentsById = (() => {
-    const map = new Map<string, Student>();
+  // Derive once per input change: the lookup maps and the scoring/ranking pass are memoized
+  // together so consumer re-renders (search, selection, certificates) do not re-run O(n) work.
+  const rankedResults = useMemo(() => {
+    const studentsMap = new Map<string, Student>();
     for (const student of students) {
-      map.set(String(student.id), student);
+      studentsMap.set(String(student.id), student);
     }
-    return map;
-  })();
 
-  const classNamesById = (() => {
-    const map = new Map<string, string>();
+    const classNames = new Map<string, string>();
     for (const session of sessions) {
       if (session.classes) {
         for (const sessionClass of session.classes) {
-          map.set(sessionClass.id, `${session.name} - ${sessionClass.name}`);
+          classNames.set(sessionClass.id, `${session.name} - ${sessionClass.name}`);
         }
       }
     }
-    return map;
-  })();
 
-  const classByStudentId = (() => {
-    const map = new Map<string, string>();
+    const classByStudent = new Map<string, string>();
     if (exam?.classIds && exam.classIds.length > 0) {
-      const classIds = new Set(exam.classIds);
+      const examClassIds = new Set(exam.classIds);
       for (const enrollment of enrollments) {
-        if (classIds.has(enrollment.classId)) {
-          map.set(String(enrollment.studentId), enrollment.classId);
+        if (examClassIds.has(enrollment.classId)) {
+          classByStudent.set(String(enrollment.studentId), enrollment.classId);
         }
       }
     }
-    return map;
-  })();
 
-  /**
-   * One scoring pass for the whole grid: raw-score grading (`resolveResultScore`) and competition
-   * ranking with a deterministic tie-break, overall and per class. Ties share a rank (1, 1, 3) and
-   * "class position" is the position inside the student's own class, not the exam-wide rank.
-   */
-  const rankedResults = (() => {
     if (!exam) return [] as RankedResult[];
+
+    /**
+     * One scoring pass for the whole grid: raw-score grading (`resolveResultScore`) and competition
+     * ranking with a deterministic tie-break, overall and per class. Ties share a rank (1, 1, 3) and
+     * "class position" is the position inside the student's own class, not the exam-wide rank.
+     */
     const scored = examResults.map((examResult) => {
-      const student = studentsById.get(String(examResult.studentId));
-      const classId = classByStudentId.get(String(examResult.studentId));
+      const student = studentsMap.get(String(examResult.studentId));
+      const classId = classByStudent.get(String(examResult.studentId));
       const score = resolveResultScore({
         marksObtained: examResult.marksObtained,
         totalMarks: exam.totalMarks,
@@ -92,7 +89,7 @@ export function useResultsViewData({
               rollNo: student.grNumber || String(student.id),
             }
           : undefined,
-        cls: classId ? { name: classNamesById.get(classId) || classId } : undefined,
+        cls: classId ? { name: classNames.get(classId) || classId } : undefined,
         classId: classId ?? "",
         pct: score.displayPercentage,
         percentage: score.percentage,
@@ -103,14 +100,12 @@ export function useResultsViewData({
       };
     });
 
-    const ranked = rankInExam(scored, {
+    return rankInExam(scored, {
       score: (row) => row.effectiveMarks,
       classId: (row) => row.classId,
       tieBreak: (row) => `${row.student?.rollNo ?? ""}|${row.studentId}`,
     });
-
-    return ranked;
-  })();
+  }, [exam, examResults, students, sessions, enrollments, t]);
 
   useEffect(() => {
     onFilteredCountChange?.(rankedResults.length);

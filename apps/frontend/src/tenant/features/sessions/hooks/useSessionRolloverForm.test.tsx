@@ -42,6 +42,11 @@ describe("useSessionRolloverForm", () => {
     container.remove();
   });
 
+  it("starts pristine (mount-time body signature is the dirty baseline)", async () => {
+    expect(form.isDirty).toBe(false);
+    expect(form.bodySignature).toContain('"target":{"name":""');
+  });
+
   it("invalidates a preview when the target dates change", async () => {
     await act(async () => {
       form.setPreview([

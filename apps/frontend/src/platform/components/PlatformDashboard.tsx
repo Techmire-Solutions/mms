@@ -9,7 +9,7 @@ import { usePlatformWorkspaceMetrics } from "@/platform/hooks/usePlatformWorkspa
 import { usePlatformActivityTrend } from "@/platform/hooks/usePlatformTelemetry";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { Button, EmptyState, ErrorState, StatsSkeleton } from "@shared/ui";
-import { containerVariantsConsole, itemVariants } from "@/platform/lib/animations";
+import { containerVariantsConsole, itemVariants } from "@/lib/motion";
 import { PlatformDashboardBanner } from "./dashboard/PlatformDashboardBanner";
 import { PlatformDashboardTelemetry } from "./dashboard/PlatformDashboardTelemetry";
 import { PlatformDashboardCharts } from "./dashboard/PlatformDashboardCharts";
@@ -48,7 +48,7 @@ export function PlatformDashboard(): React.JSX.Element {
     <m.div
       variants={reducedMotion ? undefined : containerVariantsConsole}
       initial={reducedMotion ? false : "hidden"}
-      animate="show"
+      animate="visible"
       className="space-y-8 text-start"
     >
       <PlatformDashboardBanner

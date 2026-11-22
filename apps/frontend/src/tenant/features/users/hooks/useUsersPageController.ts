@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
@@ -75,8 +76,12 @@ export function useUsersPageController() {
     enabled: useServerWork,
   });
 
-  const users = ((workPageQuery.data?.users ?? []) as unknown[]).map((user) =>
-    normalizeWorkspaceUser(user as Partial<SystemUser> & { roles?: string[]; role?: string }),
+  const users = useMemo(
+    () =>
+      ((workPageQuery.data?.users ?? []) as unknown[]).map((user) =>
+        normalizeWorkspaceUser(user as Partial<SystemUser> & { roles?: string[]; role?: string }),
+      ),
+    [workPageQuery.data?.users],
   );
   const shownCount = workPageQuery.data?.total ?? users.length;
   const listLoadFailed = workPageQuery.isError;
@@ -85,7 +90,7 @@ export function useUsersPageController() {
   const activityColumns = useUserActivityColumnLayout();
 
   const { logExportAudit } = useUsersMutations();
-  const exportColumns = defaultUsersExportColumns(t);
+  const exportColumns = useMemo(() => defaultUsersExportColumns(t), [t]);
   const { handleExportCSV } = useUsersExportActions({
     tableColumns: exportColumns,
     canExport,

@@ -6898,8 +6898,6 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
     "خوشه PostgreSQL و سیاست‌های RLS به‌درستی در حال اجرا هستند.",
   "platform.notificationSystemHealthTitle": "سلامت سیستم عملیاتی",
   "platform.notificationTimeActive": "فعال",
-  "platform.notificationTimeNow": "اکنون",
-  "platform.notificationTimeToday": "امروز",
   "platform.onboardCapability": "قابلیت راه‌اندازی",
   "platform.onlySuperUserCanAddAdmins": "فقط کاربر برتر می‌تواند مدیران را مدیریت کند",
   "platform.openSearchAria": "جستجو در کنسول پلتفرم (Cmd+K)",

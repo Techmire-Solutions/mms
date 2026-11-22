@@ -48,6 +48,7 @@ import {
 } from "@mms/shared";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
 
+/** Per-module defaults, field defs, and normalisers backing the standard config hooks. */
 export const STANDARD_MODULES_CONFIG_REGISTRY = {
   accounting: {
     settingsObjectKey: ACCOUNTING_MODULE_MANIFEST.settingsObjectKey,

@@ -9,12 +9,11 @@ import {
   redisKeys,
   type RedisBatchOp,
 } from "../lib/redis.js";
+import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS } from "@mms/shared";
 
 const REVOKED_TOKEN_PREFIX = "session:revoked:";
 const USER_REVOKED_AT_PREFIX = "user:revoked_at:";
 const TENANT_BLOCKED_PREFIX = "tenant:blocked:";
-
-const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 15 * 60; // 15 minutes
 
 /**
  * Revokes all session cache keys matching mms:session:${userId}:* in Redis.
@@ -30,7 +29,7 @@ export async function revokeUserSessionKeys(userId: string): Promise<void> {
  */
 export async function revokeToken(
   jti: string,
-  ttlSeconds: number = DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
+  ttlSeconds: number = ACCESS_TOKEN_TTL_SECONDS,
 ): Promise<void> {
   if (!jti) return;
   const key = `${REVOKED_TOKEN_PREFIX}${jti}`;
@@ -51,7 +50,7 @@ export async function isTokenRevoked(jti?: string): Promise<boolean> {
  */
 export async function revokeAllUserSessions(
   userId: string,
-  ttlSeconds: number = 7 * 24 * 60 * 60, // 7 days (max refresh token lifetime)
+  ttlSeconds: number = REFRESH_TOKEN_TTL_SECONDS, // 7 days (max refresh token lifetime)
 ): Promise<void> {
   if (!userId) return;
   const key = `${USER_REVOKED_AT_PREFIX}${userId}`;

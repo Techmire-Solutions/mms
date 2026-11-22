@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   parseCsvRows,
   mapCsvGridToObjects,
@@ -69,6 +69,10 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
   );
   const [isPreflighting, setIsPreflighting] = useState(false);
   const [preflightUnavailable, setPreflightUnavailable] = useState<string | null>(null);
+  // Monotonic selection token: `file.text()` and the optional preflight are async,
+  // so a slow read of a previously selected file must not overwrite the rows of a
+  // newer selection that resolved first.
+  const selectionTokenRef = useRef(0);
 
   const resetState = useCallback(() => {
     setFileName("");
@@ -94,6 +98,8 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
 
   const handleFileSelect = useCallback(
     async (file: File) => {
+      selectionTokenRef.current += 1;
+      const token = selectionTokenRef.current;
       resetState();
       setFileName(file.name);
       // Guard before reading: a multi-MB/100k-row CSV is parsed synchronously on the main
@@ -104,8 +110,10 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
         setRowErrors([{ row: 0, error: t("module.import.fileTooLarge") }]);
         return;
       }
+      const isCurrentSelection = (): boolean => selectionTokenRef.current === token;
       try {
         const text = await file.text();
+        if (!isCurrentSelection()) return;
         const result = schema
           ? schema.fromImportCsv(text)
           : mapCsvGridToObjects<TRow>(parseCsvRows(text), effectiveMappings);
@@ -125,15 +133,18 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
               preflightPath,
               { method: "POST", body: JSON.stringify({ rows: result.rows }) },
             );
+            if (!isCurrentSelection()) return;
             setPreflightErrors(preflight.errors ?? []);
           } catch {
+            if (!isCurrentSelection()) return;
             // A preflight outage must not lose the parsed file: the job still validates rows.
             setPreflightUnavailable(t("module.import.preflightFailed"));
           } finally {
-            setIsPreflighting(false);
+            if (isCurrentSelection()) setIsPreflighting(false);
           }
         }
       } catch (err) {
+        if (!isCurrentSelection()) return;
         const msg = err instanceof Error ? err.message : String(err);
         setRowErrors([{ row: 0, error: `${t("module.import.failed")}: ${msg}` }]);
       }

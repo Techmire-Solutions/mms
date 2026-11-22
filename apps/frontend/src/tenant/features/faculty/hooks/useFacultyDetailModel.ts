@@ -21,12 +21,11 @@ export function useFacultyDetailModel(faculty: Faculty) {
   const sessionsQuery = useSessions();
   const sessions = useSessionsCollection();
 
-  const assignedClasses: FacultyAssignedClassItem[] = (() => {
-    if (!faculty.id) return [];
-    return getFacultyAssignedClasses(faculty.id, sessions);
-  })();
+  const assignedClasses: FacultyAssignedClassItem[] = faculty.id
+    ? getFacultyAssignedClasses(faculty.id, sessions)
+    : [];
 
-  const detailFields = (() => listFacultyDetailAttributeFields(settings))();
+  const detailFields = listFacultyDetailAttributeFields(settings);
 
   const { phone: primaryPhone, email: primaryEmail } = resolveFacultyPrimaryChannels(
     faculty,

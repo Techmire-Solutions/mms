@@ -89,7 +89,10 @@ export function useDashboardData(
   useFacultyWidgetAggregates(aggregateWidgets, { enabled: sources.faculty });
   useSessionsWidgetAggregates(aggregateWidgets, { enabled: sources.sessions });
 
-  const { summary, isLoading, isPending, isError, refetch } = useDashboardSummaryQuery(todayISO());
+  // One date per render: the summary and attendance keys must never straddle
+  // midnight and point at two different days within the same render pass.
+  const today = todayISO();
+  const { summary, isLoading, isPending, isError, refetch } = useDashboardSummaryQuery(today);
   const summaryInFlight = isLoading || isPending;
   const canFallback = !summaryInFlight;
 
@@ -105,7 +108,7 @@ export function useDashboardData(
   const { data: individualSessionsMetrics } = useSessionsMetrics({
     enabled: sources.sessions && canFallback && !summary?.sessions,
   });
-  const { data: individualAttendanceMetrics } = useAttendanceMetrics(todayISO(), {
+  const { data: individualAttendanceMetrics } = useAttendanceMetrics(today, {
     enabled: sources.attendance && canFallback && !summary?.attendance,
   });
   const { data: individualFinanceMetrics } = useFinanceMetrics({

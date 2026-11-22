@@ -7,7 +7,7 @@
  * and would otherwise close an ESM import cycle.
  */
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import type { DashboardRole } from "@/lib/dashboardRole";
 import { fetchDashboardSummaryAsync } from "./dashboardApi";
@@ -23,23 +23,48 @@ export { DASHBOARD_SUMMARY_QUERY_KEY_ROOT };
 export const DASHBOARD_SUMMARY_QUERY_KEY = (date?: string) =>
   [...DASHBOARD_SUMMARY_QUERY_KEY_ROOT, { date }] as const;
 
+export interface DashboardSummaryQueryOptions {
+  date?: string;
+  role?: DashboardRole;
+  /** Caller gate (e.g. an explicit `enabled: false`). Defaults to true. */
+  enabled?: boolean;
+  /** Staleness bound when the realtime socket is unavailable. */
+  refetchInterval?: number;
+  /** Session gate; unauthenticated queries never execute. */
+  authenticated?: boolean;
+}
+
+/** Colocated queryOptions factory — reusable in `useQuery`/`prefetchQuery` call sites. */
+export function dashboardSummaryQueryOptions(options: DashboardSummaryQueryOptions = {}) {
+  const { date, role, enabled = true, refetchInterval = 60_000, authenticated = true } = options;
+  return queryOptions({
+    queryKey: DASHBOARD_SUMMARY_QUERY_KEY(date),
+    queryFn: ({ signal }) => fetchDashboardSummaryAsync(date, role, signal),
+    enabled: authenticated && enabled,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
+    // Realtime events also invalidate this root; the interval only bounds
+    // staleness when the socket is unavailable (workspace-local attendance).
+    refetchInterval,
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useDashboardSummaryQuery(
   date?: string,
   role?: DashboardRole,
   options?: { enabled?: boolean; refetchInterval?: number },
 ) {
   const { isAuthenticated } = useAuth();
-  const query = useQuery({
-    queryKey: DASHBOARD_SUMMARY_QUERY_KEY(date),
-    queryFn: ({ signal }) => fetchDashboardSummaryAsync(date, role, signal),
-    enabled: isAuthenticated && (options?.enabled ?? true),
-    staleTime: 30_000,
-    refetchOnWindowFocus: true,
-    // Realtime events also invalidate this root; the interval only bounds
-    // staleness when the socket is unavailable (workspace-local attendance).
-    refetchInterval: options?.refetchInterval ?? 60_000,
-    placeholderData: keepPreviousData,
-  });
+  const query = useQuery(
+    dashboardSummaryQueryOptions({
+      date,
+      role,
+      enabled: options?.enabled ?? true,
+      refetchInterval: options?.refetchInterval,
+      authenticated: isAuthenticated,
+    }),
+  );
 
   return {
     ...query,

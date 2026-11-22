@@ -5,7 +5,7 @@ import {
   FULL_PLATFORM_ADMIN_PERMISSIONS,
   type PlatformAdminPermissions,
 } from "@mms/shared";
-import { PLATFORM_PERMISSION_CONFIG } from "@/platform/lib/platformPermissionConfig";
+import { platformPermissionEntries } from "@/platform/lib/platformPermissionConfig";
 import { Button } from "@shared/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PlatformPermissionCheckboxItem } from "@/platform/components/admin/PlatformPermissionCheckboxItem";
@@ -80,13 +80,13 @@ export function PlatformAdminPermissionsFields({
         </div>
       </div>
 
-      {PLATFORM_PERMISSION_CONFIG.map(({ key, name, labelKey, descriptionKey, icon }) => (
+      {platformPermissionEntries().map(([key, cap]) => (
         <PlatformPermissionCheckboxItem
           key={key}
-          name={name}
-          label={t(labelKey)}
-          description={t(descriptionKey)}
-          icon={icon}
+          name={`perm${key.charAt(0).toUpperCase()}${key.slice(1)}`}
+          label={t(cap.labelKey)}
+          description={t(cap.descriptionKey)}
+          icon={cap.icon}
           checked={value[key]}
           disabled={disabled}
           onChange={(checked) => onChange({ ...value, [key]: checked })}

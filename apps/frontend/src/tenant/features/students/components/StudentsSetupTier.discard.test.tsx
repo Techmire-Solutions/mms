@@ -44,10 +44,12 @@ vi.mock("@/tenant/features/students/components/card-template/StudentCardTemplate
   }: {
     onDirtyChange?: (dirty: boolean) => void;
   }) {
+    // Latest-callback ref keeps the deps complete for the mount-once signal.
+    const onDirtyChangeRef = React.useRef(onDirtyChange);
+    onDirtyChangeRef.current = onDirtyChange;
     React.useEffect(() => {
       editorMounts.count += 1;
-      if (editorMounts.count === 1) onDirtyChange?.(true);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (editorMounts.count === 1) onDirtyChangeRef.current?.(true);
     }, []);
     return <div>card-editor-panel</div>;
   },

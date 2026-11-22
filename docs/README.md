@@ -32,6 +32,7 @@ Project-wide entry points live at the repo root:
 
 ## Audits & reviews (point-in-time)
 
+- [hooks-review-report.md](./hooks-review-report.md) — repo-wide React hook audit (2026-11-23): every hook reviewed one-by-one across the shared, platform, tenant, and 20 feature layers; B0 bug fixes with Red→Green regression tests, React 19 / TanStack Query v5 modernization, compiler-lint burn-down to 0 errors / 1 justified warning, and the full verification matrix.
 - [dashboard-module-review-2026-11-17.md](./dashboard-module-review-2026-11-17.md) — dashboard module review (tenant + platform, backend + frontend + UI/UX): re-verifies the 2026-11-04 findings (D1–D5, m1–m15) and surfaces new ones (N1–N3, P1–P9), with severity triage, rule citations, and a tiered resolution plan.
 - [dashboard-review-fixes-2026-11-17.md](./dashboard-review-fixes-2026-11-17.md) — consolidated record of every fix landed for the dashboard review: D1 (shared board + `settings.global.write` gate), m1 (drop dead `analytics.view`), m7/m8/m11–m15, N1–N3, P1–P9, U1, with the verification results (typecheck, suites, ratchets, axe gate).
 

@@ -1,4 +1,4 @@
-import { useQuery, queryOptions, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   Enrollment,
   EnrollmentsCommandMetricsSnapshot,
@@ -113,7 +113,7 @@ export function useEnrollmentsPaginated(params: EnrollmentsPaginatedParams) {
     },
     enabled: isAuthenticated && enabled,
     staleTime: 15_000,
-    placeholderData: (previousData: unknown) => previousData,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -192,9 +192,10 @@ export function useEnrollmentsWidgetAggregates(
 
   const query = useQuery({
     queryKey: enrollmentsKeys.widgets(querySignature),
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const res = await apiContract.enrollments.widgetAggregates({
         body: { widgets: enrollmentQueries },
+        fetchOptions: { signal },
       });
       const body = res.body as {
         results?: Record<string, EnrollmentsWidgetAggregateResult>;
@@ -225,7 +226,7 @@ export function enrollmentsListQueryOptions(query: Record<string, unknown> = {})
       assertContractOk(response, "Failed to fetch enrollments");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }

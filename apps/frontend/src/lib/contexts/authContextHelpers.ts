@@ -3,6 +3,7 @@ import type { IndustryType, TenantLoginResponse, User, Workspace } from "@mms/sh
 import { getCurrentSubdomain, isCurrentHostApex } from "@/lib/config/tenantConfig";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { contactsOutboxStorageKeys } from "@/lib/contacts/contactsOutboxKeys";
+import { backgroundJobStorageKey } from "@/lib/backgroundJobs/backgroundJobStorageKeys";
 
 export class AuthFailureError extends Error {
   constructor(readonly authError: AuthError) {
@@ -21,6 +22,9 @@ export function clearUserScopedCachesOnLogout(userId: string, prefix: string): v
     const contactsKeys = contactsOutboxStorageKeys(prefix, userId);
     localStorage.removeItem(contactsKeys.outbox);
     localStorage.removeItem(contactsKeys.conflicts);
+    // Local background-job mirror is per account — a signed-out device must not
+    // render (or replay) the previous user's jobs.
+    localStorage.removeItem(backgroundJobStorageKey(prefix, userId));
     // Dashboard notification dismissals are per user and per tab — do not hand
     // them to the next account signed in on this device.
     sessionStorage.removeItem(`${prefix}mms_dashboard_dismissed_notifs_u:${userId}`);

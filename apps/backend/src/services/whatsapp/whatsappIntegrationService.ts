@@ -5,6 +5,7 @@ import {
   type WhatsappProviderId,
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import { messagingRepository } from "../../messaging/repository/messagingRepositoryAdapter.js";
 import { type WhatsappIntegrationRow } from "../../db/schema/messaging.js";
 
@@ -26,56 +27,39 @@ function rowToConfig(row: WhatsappIntegrationRow): WhatsappIntegrationConfig {
   return mergeWhatsappIntegrationConfig(overrides);
 }
 
-export async function loadWhatsappIntegrationConfig(): Promise<WhatsappIntegrationConfig> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) return mergeWhatsappIntegrationConfig(null);
-  const row = await messagingRepository.getWhatsappIntegrationRow(subdomain);
-  if (!row) return mergeWhatsappIntegrationConfig(null);
+const service = createIntegrationConfigService<
+  WhatsappIntegrationConfig,
+  WhatsappIntegrationSecrets,
+  WhatsappIntegrationRow
+>({
+  rowToConfig,
+  emptyConfig: () => mergeWhatsappIntegrationConfig(null),
+  mergeConfig: (config) => mergeWhatsappIntegrationConfig(config),
+  loadRow: () => {
+    const subdomain = getRequestTenant();
+    if (!subdomain) return Promise.resolve(null);
+    return messagingRepository.getWhatsappIntegrationRow(subdomain);
+  },
+  upsertConfig: (config) => {
+    const subdomain = getRequestTenant();
+    if (!subdomain) throw new Error("Tenant context missing");
+    return messagingRepository.upsertWhatsappIntegrationConfigRow(subdomain, config);
+  },
+  upsertSecrets: (secrets) => {
+    const subdomain = getRequestTenant();
+    if (!subdomain) throw new Error("Tenant context missing");
+    return messagingRepository.upsertWhatsappIntegrationSecretsRow(subdomain, secrets);
+  },
+  secretsFromRow: (row) => {
+    const secrets: WhatsappIntegrationSecrets = {};
+    if (row.accountSecret) secrets.accountSecret = row.accountSecret;
+    return secrets;
+  },
+  tenantScoped: true,
+});
 
-  return rowToConfig(row);
-}
-
-export async function saveWhatsappIntegrationConfig(
-  config: WhatsappIntegrationConfig,
-): Promise<WhatsappIntegrationConfig> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error("Tenant context missing");
-  const merged = mergeWhatsappIntegrationConfig(config);
-  await messagingRepository.upsertWhatsappIntegrationConfigRow(subdomain, merged);
-  return merged;
-}
-
-export async function loadWhatsappIntegrationSecrets(): Promise<WhatsappIntegrationSecrets> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) return {};
-  const row = await messagingRepository.getWhatsappIntegrationRow(subdomain);
-  if (!row) return {};
-
-  const secrets: WhatsappIntegrationSecrets = {};
-  if (row.accountSecret) secrets.accountSecret = row.accountSecret;
-  return secrets;
-}
-
-export async function saveWhatsappIntegrationSecrets(
-  secrets: WhatsappIntegrationSecrets,
-): Promise<void> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error("Tenant context missing");
-  await messagingRepository.upsertWhatsappIntegrationSecretsRow(subdomain, secrets);
-}
-
-export async function markWhatsappIntegrationTestResult(
-  ok: boolean,
-  errorMessage?: string,
-): Promise<WhatsappIntegrationConfig> {
-  const current = await loadWhatsappIntegrationConfig();
-  const updated = mergeWhatsappIntegrationConfig({
-    ...current,
-    connected: ok,
-    hasCredentials: current.hasCredentials,
-    lastTestAt: new Date().toISOString(),
-    lastTestOk: ok,
-    lastError: ok ? undefined : errorMessage,
-  });
-  return saveWhatsappIntegrationConfig(updated);
-}
+export const loadWhatsappIntegrationConfig = service.loadConfig;
+export const saveWhatsappIntegrationConfig = service.saveConfig;
+export const loadWhatsappIntegrationSecrets = service.loadSecrets;
+export const saveWhatsappIntegrationSecrets = service.saveSecrets;
+export const markWhatsappIntegrationTestResult = service.markTestResult;

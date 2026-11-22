@@ -1,4 +1,4 @@
-import { useMemo, useDeferredValue } from "react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getActionCategory, type LogCategory } from "./activityLogMeta";
 import type { PlatformActivityLogItem } from "@/platform/hooks/usePlatformActivityLogs";
@@ -35,16 +35,19 @@ export function useActivityLogsFilter(logs: PlatformActivityLogItem[] | undefine
     );
   };
 
-  const setTimeframe = (time: LogTimeframe) => {
-    setSearchParams(
-      (p) => {
-        if (time === "all") p.delete("time");
-        else p.set("time", time);
-        return p;
-      },
-      { replace: true },
-    );
-  };
+  const setTimeframe = useCallback(
+    (time: LogTimeframe) => {
+      setSearchParams(
+        (p) => {
+          if (time === "all") p.delete("time");
+          else p.set("time", time);
+          return p;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
 
   const handleClearFilters = () => {
     setSearchParams(
@@ -60,10 +63,23 @@ export function useActivityLogsFilter(logs: PlatformActivityLogItem[] | undefine
 
   const isFiltered = Boolean(filterQuery || category !== "all" || timeframe !== "all");
 
+  // Wall-clock is read at the moment the filter changes (a user event), not
+  // during render: renders stay pure and the bucket boundary is stable for the
+  // whole selection, so list updates never re-bucket rows mid-view.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const setTimeframeStamped = useCallback(
+    (next: LogTimeframe) => {
+      setNowMs(Date.now());
+      setTimeframe(next);
+    },
+    [setTimeframe],
+  );
+
   const items = useMemo(() => {
     const raw = logs ?? [];
-    const now = Date.now();
     const q = deferredQuery.trim().toLowerCase();
+    const startOfTodayMs = new Date(nowMs);
+    startOfTodayMs.setHours(0, 0, 0, 0);
 
     return raw.filter((l) => {
       if (q) {
@@ -83,17 +99,17 @@ export function useActivityLogsFilter(logs: PlatformActivityLogItem[] | undefine
         const created = new Date(l.createdAt).getTime();
         if (!Number.isFinite(created)) return true;
         if (timeframe === "today") {
-          if (created < new Date().setHours(0, 0, 0, 0)) return false;
+          if (created < startOfTodayMs.getTime()) return false;
         } else if (timeframe === "7d") {
-          if (created < now - 7 * 24 * 60 * 60 * 1000) return false;
+          if (created < nowMs - 7 * 24 * 60 * 60 * 1000) return false;
         } else if (timeframe === "30d") {
-          if (created < now - 30 * 24 * 60 * 60 * 1000) return false;
+          if (created < nowMs - 30 * 24 * 60 * 60 * 1000) return false;
         }
       }
 
       return true;
     });
-  }, [logs, deferredQuery, category, timeframe]);
+  }, [logs, deferredQuery, category, timeframe, nowMs]);
 
   return {
     filterQuery,
@@ -101,7 +117,7 @@ export function useActivityLogsFilter(logs: PlatformActivityLogItem[] | undefine
     category,
     setCategory,
     timeframe,
-    setTimeframe,
+    setTimeframe: setTimeframeStamped,
     handleClearFilters,
     isFiltered,
     items,

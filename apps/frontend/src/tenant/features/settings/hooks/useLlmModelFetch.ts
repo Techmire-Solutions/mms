@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { apiContract } from "@/lib/api";
 import { getLlmProviderDefaultModel, type LlmConfig, type LlmProviderType } from "@mms/shared";
 
@@ -12,6 +12,34 @@ interface UseLlmModelFetchOptions {
   setFormModel: (value: string) => void;
 }
 
+interface FetchedModelsSnapshot {
+  list: string[];
+  /** Fetch inputs the list was produced for — a stale snapshot is never rendered. */
+  scope: string;
+}
+
+const EMPTY_MODELS_SNAPSHOT: FetchedModelsSnapshot = { list: [], scope: "" };
+const MODEL_FETCH_DEBOUNCE_MS = 800;
+
+function modelFetchScope(
+  configId: string | undefined,
+  key: string,
+  savedApiKey: string,
+  provider: LlmProviderType,
+  baseUrl: string,
+): string {
+  return `${configId ?? ""}|${key}|${savedApiKey}|${provider}|${baseUrl}`;
+}
+
+/**
+ * Debounced provider model listing for the LLM config modal.
+ *
+ * The fetched list is scoped to the exact inputs that produced it (trimmed key,
+ * saved key, config id, provider, base URL), so changed inputs immediately stop
+ * showing another configuration's models while the next request is debounced.
+ * In-flight requests are aborted when the inputs change — a late response can
+ * never overwrite the newer listing.
+ */
 export function useLlmModelFetch({
   formApiKey,
   formProvider,
@@ -21,67 +49,93 @@ export function useLlmModelFetch({
   editingConfig,
   setFormModel,
 }: UseLlmModelFetchOptions) {
-  const [fetchedModels, setFetchedModels] = useState<string[]>([]);
+  const [snapshot, setSnapshot] = useState<FetchedModelsSnapshot>(EMPTY_MODELS_SNAPSHOT);
   const [fetchingModels, setFetchingModels] = useState(false);
   const [showCustomModelInput, setShowCustomModelInput] = useState(false);
 
-  // Adjust state during render: without an API key (typed or saved) there is nothing to list.
-  const hasApiKey = Boolean(formApiKey.trim()) || Boolean(editingConfig?.apiKey);
-  if (!hasApiKey && fetchedModels.length > 0) setFetchedModels([]);
+  // Mirror the draft model for the async completion below (effect-only read)
+  // so typing in the model input never restarts the debounced fetch.
+  const formModelRef = useRef(formModel);
+  useEffect(() => {
+    formModelRef.current = formModel;
+  }, [formModel]);
+
+  // Effect event: the upstream setter identity changes per render; this keeps it
+  // out of the fetch effect's deps while always calling the latest one.
+  const applyFetchedModels = useEffectEvent(
+    (models: string[], fetchedScope: string, provider: LlmProviderType) => {
+      setSnapshot({ list: models, scope: fetchedScope });
+      setShowCustomModelInput(false);
+      const currentModel = formModelRef.current;
+      if (currentModel.trim() === "" || !models.includes(currentModel)) {
+        const defaultModel = getLlmProviderDefaultModel(provider);
+        if (models.includes(defaultModel)) {
+          setFormModel(defaultModel);
+        } else if (!currentModel) {
+          setFormModel(models[0]);
+        }
+      }
+    },
+  );
+
+  const key = formApiKey.trim();
+  const savedApiKey = editingConfig?.apiKey ?? "";
+  const configId = editingConfig?.id;
+  const baseUrl = formBaseUrl.trim();
+  const hasApiKey = Boolean(key) || Boolean(savedApiKey);
 
   useEffect(() => {
-    const key = formApiKey.trim();
-    if (!key && (!editingConfig || !editingConfig.apiKey)) {
-      return;
-    }
+    if (!modalOpen || !hasApiKey) return;
 
+    const controller = new AbortController();
     const timer = window.setTimeout(() => {
-      const fetchModels = async () => {
+      void (async () => {
         setFetchingModels(true);
         try {
+          const fetchedScope = modelFetchScope(configId, key, savedApiKey, formProvider, baseUrl);
           const res = await apiContract.ai.models({
             body: {
               provider: formProvider,
               apiKey: key || undefined,
-              configId: editingConfig?.id,
-              baseUrl: formBaseUrl.trim() || undefined,
+              configId,
+              baseUrl: baseUrl || undefined,
             },
+            signal: controller.signal,
           });
+          if (controller.signal.aborted) return;
           const status = res.status;
           const body = res.body as { success?: boolean; models?: string[] };
           if (status === 200 && body.success && body.models && body.models.length > 0) {
-            const models = body.models;
-            setFetchedModels(models);
-            setShowCustomModelInput(false);
-            if (formModel.trim() === "" || !models.includes(formModel)) {
-              const defaultModel = getLlmProviderDefaultModel(formProvider);
-              if (models.includes(defaultModel)) {
-                setFormModel(defaultModel);
-              } else if (!formModel) {
-                setFormModel(models[0]);
-              }
-            }
+            applyFetchedModels(body.models, fetchedScope, formProvider);
           } else {
-            setFetchedModels([]);
+            setSnapshot(EMPTY_MODELS_SNAPSHOT);
           }
         } catch {
-          setFetchedModels([]);
+          if (!controller.signal.aborted) {
+            setSnapshot(EMPTY_MODELS_SNAPSHOT);
+          }
         } finally {
           setFetchingModels(false);
         }
-      };
-      void fetchModels();
-    }, 800);
+      })();
+    }, MODEL_FETCH_DEBOUNCE_MS);
 
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formApiKey, formProvider, formBaseUrl, modalOpen]);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [modalOpen, hasApiKey, key, savedApiKey, configId, formProvider, baseUrl]);
+
+  const clearFetchedModels = useCallback(() => setSnapshot(EMPTY_MODELS_SNAPSHOT), []);
+
+  const currentScope = modelFetchScope(configId, key, savedApiKey, formProvider, baseUrl);
+  const fetchedModels = hasApiKey && snapshot.scope === currentScope ? snapshot.list : [];
 
   return {
     fetchedModels,
     fetchingModels,
     showCustomModelInput,
     setShowCustomModelInput,
-    clearFetchedModels: () => setFetchedModels([]),
+    clearFetchedModels,
   };
 }

@@ -1,19 +1,55 @@
 import React from "react";
 import { MessageSquare } from "lucide-react";
 import { type AppTranslationKey, type SmsProviderId } from "@mms/shared";
-import { FormSelect, Input, IntegrationPanelChrome, Label, PasswordInput } from "@shared/ui";
-import { usePlatformSmsIntegrationPanel } from "@/platform/components/settings/usePlatformSmsIntegrationPanel";
+import { FormSelect } from "@/components/app/FormSelect";
+import { PasswordInput } from "@/components/app/PasswordInput";
+import { Input, IntegrationPanelChrome, Label } from "@shared/ui";
+import {
+  useSmsIntegrationPanel,
+  type SmsIntegrationPanelHookOptions,
+} from "./useSmsIntegrationPanel";
 
-/** One active SMS provider at a time, for platform apex 2FA/alerts. */
-export function PlatformSmsIntegrationPanel(): React.JSX.Element {
+export interface SmsIntegrationPanelProps extends SmsIntegrationPanelHookOptions {
+  /** Field id prefix — platform passes `"platform-"` for `platform-sms-*` ids. */
+  idPrefix?: string;
+  /** Panel description key — `platformSms.integrationDesc` on apex. */
+  descriptionKey?: AppTranslationKey;
+  /** Read-only mode gates save/test and disables every input (tenant). */
+  canWrite?: boolean;
+  /** Console-specific test-button gating (platform requires a test phone). */
+  disableTest?: (testPhone: string) => boolean;
+  /** `name` attribute for the secret input (console-specific). */
+  secretFieldName?: string;
+}
+
+/**
+ * One-active-provider SMS setup panel (SSOT) shared by the Tenant and Platform
+ * consoles. Console-specific API, i18n description, ids, and write gating are
+ * props; validation comes from `@mms/shared`.
+ */
+export function SmsIntegrationPanel({
+  api,
+  idPrefix = "",
+  descriptionKey = "sms.integrationDesc",
+  canWrite = true,
+  disableTest,
+  secretFieldName = "smsAccountSecret",
+  seedTestTarget,
+  prepareSaveConfig,
+  resolveTestTarget,
+  testTargetRequiredKey,
+  validateTestTarget,
+  resolveActionError,
+  onConfigSaved,
+}: SmsIntegrationPanelProps): React.JSX.Element {
   const {
     t,
     providers,
     loading,
     saving,
     testing,
+    actionError,
     form,
-    formError,
     accountSecret,
     setAccountSecret,
     testPhone,
@@ -22,48 +58,60 @@ export function PlatformSmsIntegrationPanel(): React.JSX.Element {
     setField,
     handleSave,
     handleTest,
-  } = usePlatformSmsIntegrationPanel();
+  } = useSmsIntegrationPanel({
+    api,
+    seedTestTarget,
+    prepareSaveConfig,
+    resolveTestTarget,
+    testTargetRequiredKey,
+    validateTestTarget,
+    resolveActionError,
+    onConfigSaved,
+  });
 
   return (
     <IntegrationPanelChrome
       icon={MessageSquare}
       title={t("sms.integrationTitle")}
-      description={t("platformSms.integrationDesc")}
+      description={t(descriptionKey)}
       calloutText={t("sms.separateSaveNote")}
       connected={form.connected}
       lastTestOk={form.lastTestOk}
       statusConnectedText={t("sms.statusConnected")}
       statusNotConnectedText={t("sms.statusNotConnected")}
       loading={loading}
-      lastError={formError ?? form.lastError}
+      lastError={actionError ?? form.lastError}
       saving={saving}
       testing={testing}
-      testDisabled={!testPhone.trim()}
+      saveDisabled={!canWrite}
+      testDisabled={disableTest ? disableTest(testPhone) : !canWrite}
       saveLabel={t("sms.saveConnection")}
       testLabel={t("sms.sendTest")}
       onSave={() => void handleSave()}
       onTest={() => void handleTest()}
       footerContent={
         <div className="space-y-2">
-          <Label htmlFor="platform-sms-test-phone">{t("sms.testPhonePlaceholder")}</Label>
+          <Label htmlFor={`${idPrefix}sms-test-phone`}>{t("sms.testPhonePlaceholder")}</Label>
           <Input
-            id="platform-sms-test-phone"
+            id={`${idPrefix}sms-test-phone`}
             name="testPhone"
             type="tel"
             value={testPhone}
             onChange={(event) => setTestPhone(event.target.value)}
             placeholder="+923001234567"
+            disabled={!canWrite}
           />
         </div>
       }
     >
       <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor="platform-sms-provider">{t("sms.provider")}</Label>
+        <Label htmlFor={`${idPrefix}sms-provider`}>{t("sms.provider")}</Label>
         <FormSelect
-          id="platform-sms-provider"
+          id={`${idPrefix}sms-provider`}
           name="providerId"
           value={form.providerId}
           onChange={(v) => setField("providerId", v as SmsProviderId)}
+          disabled={!canWrite}
           options={providers.map((preset) => ({
             value: preset.id,
             label: t(preset.labelKey as AppTranslationKey),
@@ -75,31 +123,34 @@ export function PlatformSmsIntegrationPanel(): React.JSX.Element {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="platform-sms-account-id">{t("sms.accountId")}</Label>
+        <Label htmlFor={`${idPrefix}sms-account-id`}>{t("sms.accountId")}</Label>
         <Input
-          id="platform-sms-account-id"
+          id={`${idPrefix}sms-account-id`}
           name="accountId"
           value={form.accountId}
           onChange={(event) => setField("accountId", event.target.value)}
+          disabled={!canWrite}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="platform-sms-sender-id">{t("sms.senderId")}</Label>
+        <Label htmlFor={`${idPrefix}sms-sender-id`}>{t("sms.senderId")}</Label>
         <Input
-          id="platform-sms-sender-id"
+          id={`${idPrefix}sms-sender-id`}
           name="senderId"
           value={form.senderId}
           onChange={(event) => setField("senderId", event.target.value)}
+          disabled={!canWrite}
         />
       </div>
 
       <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor="platform-sms-account-secret">{t("sms.accountSecret")}</Label>
+        <Label htmlFor={`${idPrefix}sms-account-secret`}>{t("sms.accountSecret")}</Label>
         <PasswordInput
-          id="platform-sms-account-secret"
-          name="platformSmsAccountSecret"
+          id={`${idPrefix}sms-account-secret`}
+          name={secretFieldName}
           value={accountSecret}
           onChange={(event) => setAccountSecret(event.target.value)}
+          disabled={!canWrite}
           placeholder={
             form.hasCredentials
               ? t("sms.accountSecretPlaceholderSaved")
@@ -111,13 +162,14 @@ export function PlatformSmsIntegrationPanel(): React.JSX.Element {
 
       {selectedPreset.requiresBaseUrl && (
         <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="platform-sms-api-base-url">{t("sms.apiBaseUrl")}</Label>
+          <Label htmlFor={`${idPrefix}sms-api-base-url`}>{t("sms.apiBaseUrl")}</Label>
           <Input
-            id="platform-sms-api-base-url"
+            id={`${idPrefix}sms-api-base-url`}
             name="apiBaseUrl"
             value={form.apiBaseUrl ?? ""}
             onChange={(event) => setField("apiBaseUrl", event.target.value)}
             placeholder={selectedPreset.baseUrlPlaceholder}
+            disabled={!canWrite}
           />
         </div>
       )}

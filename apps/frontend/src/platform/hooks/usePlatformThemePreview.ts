@@ -1,22 +1,30 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ThemeMode } from "@mms/shared";
 import { applyDocumentTheme } from "@/lib/brandingThemeCore";
 import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
-import { MMS_PLATFORM_BRANDING, MMS_PLATFORM_GLOBAL_SETTINGS } from "@/platform/lib/themeScope";
+import {
+  MMS_PLATFORM_BRANDING,
+  MMS_PLATFORM_GLOBAL_SETTINGS,
+} from "@/lib/branding/platformThemeConfig";
+import { useSystemThemeListener } from "@/hooks/useSystemThemeListener";
 
 export function usePlatformThemePreview() {
   const [selectedMode, setSelectedMode] = useState<ThemeMode>(MMS_PLATFORM_GLOBAL_SETTINGS.theme);
 
+  const apply = useCallback(() => {
+    applyDocumentTheme(MMS_PLATFORM_BRANDING, selectedMode, "en");
+  }, [selectedMode]);
+
+  useSystemThemeListener(() => {
+    if (selectedMode === "system") apply();
+  });
+
   useEffect(() => {
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const apply = () => applyDocumentTheme(MMS_PLATFORM_BRANDING, selectedMode, "en");
     apply();
-    if (selectedMode === "system") media.addEventListener("change", apply);
     return () => {
-      media.removeEventListener("change", apply);
       applyApexPlatformTheme();
     };
-  }, [selectedMode]);
+  }, [apply]);
 
   return { selectedMode, setSelectedMode };
 }

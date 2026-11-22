@@ -14,10 +14,7 @@ export interface FacultyIjazahSectionProps {
 
 function newIjazah(): FacultyIjazah {
   return {
-    id:
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `ijz_${Date.now()}`,
+    id: crypto.randomUUID(),
     title: "",
     field: "quran",
     grantingAuthority: "",

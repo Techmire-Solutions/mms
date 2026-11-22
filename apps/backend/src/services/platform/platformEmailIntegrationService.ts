@@ -4,6 +4,7 @@ import {
   type EmailIntegrationSecrets,
   type EmailProviderId,
 } from "@mms/shared";
+import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import {
   getPlatformEmailIntegrationRow,
   upsertPlatformEmailIntegrationConfigRow,
@@ -31,46 +32,27 @@ function rowToConfig(row: PlatformEmailIntegrationRow): EmailIntegrationConfig {
   return mergeEmailIntegrationConfig(overrides);
 }
 
-export async function loadPlatformEmailIntegrationConfig(): Promise<EmailIntegrationConfig> {
-  const row = await getPlatformEmailIntegrationRow();
-  if (!row) return mergeEmailIntegrationConfig(null);
-  return rowToConfig(row);
-}
+const service = createIntegrationConfigService<
+  EmailIntegrationConfig,
+  EmailIntegrationSecrets,
+  PlatformEmailIntegrationRow
+>({
+  rowToConfig,
+  emptyConfig: () => mergeEmailIntegrationConfig(null),
+  mergeConfig: (config) => mergeEmailIntegrationConfig(config),
+  loadRow: () => getPlatformEmailIntegrationRow(),
+  upsertConfig: (config) => upsertPlatformEmailIntegrationConfigRow(config),
+  upsertSecrets: (secrets) => upsertPlatformEmailIntegrationSecretsRow(secrets),
+  secretsFromRow: (row) => {
+    const secrets: EmailIntegrationSecrets = {};
+    if (row.smtpPassword) secrets.smtpPassword = row.smtpPassword;
+    return secrets;
+  },
+  tenantScoped: false,
+});
 
-export async function savePlatformEmailIntegrationConfig(
-  config: EmailIntegrationConfig,
-): Promise<EmailIntegrationConfig> {
-  const merged = mergeEmailIntegrationConfig(config);
-  await upsertPlatformEmailIntegrationConfigRow(merged);
-  return merged;
-}
-
-export async function loadPlatformEmailIntegrationSecrets(): Promise<EmailIntegrationSecrets> {
-  const row = await getPlatformEmailIntegrationRow();
-  if (!row) return {};
-  const secrets: EmailIntegrationSecrets = {};
-  if (row.smtpPassword) secrets.smtpPassword = row.smtpPassword;
-  return secrets;
-}
-
-export async function savePlatformEmailIntegrationSecrets(
-  secrets: EmailIntegrationSecrets,
-): Promise<void> {
-  await upsertPlatformEmailIntegrationSecretsRow(secrets);
-}
-
-export async function markPlatformEmailIntegrationTestResult(
-  ok: boolean,
-  errorMessage?: string,
-): Promise<EmailIntegrationConfig> {
-  const current = await loadPlatformEmailIntegrationConfig();
-  const updated = mergeEmailIntegrationConfig({
-    ...current,
-    connected: ok,
-    hasCredentials: current.hasCredentials,
-    lastTestAt: new Date().toISOString(),
-    lastTestOk: ok,
-    lastError: ok ? undefined : errorMessage,
-  });
-  return savePlatformEmailIntegrationConfig(updated);
-}
+export const loadPlatformEmailIntegrationConfig = service.loadConfig;
+export const savePlatformEmailIntegrationConfig = service.saveConfig;
+export const loadPlatformEmailIntegrationSecrets = service.loadSecrets;
+export const savePlatformEmailIntegrationSecrets = service.saveSecrets;
+export const markPlatformEmailIntegrationTestResult = service.markTestResult;

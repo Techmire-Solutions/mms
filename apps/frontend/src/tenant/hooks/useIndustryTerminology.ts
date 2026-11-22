@@ -6,7 +6,10 @@
 import { getTerminologyForIndustry } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getCurrentSubdomain } from "@/lib/config/tenantConfig";
-import { useWorkspaceBySubdomain } from "@/tenant/hooks/useWorkspaceBySubdomain";
+import {
+  useWorkspaceBySubdomain,
+  type PublicWorkspace,
+} from "@/tenant/hooks/useWorkspaceBySubdomain";
 import type { ResolvedIndustryTerminology } from "@/lib/config/navLabels";
 
 export { resolveNavLabel, type ResolvedIndustryTerminology } from "@/lib/config/navLabels";
@@ -16,7 +19,7 @@ export function useIndustryTerminology(): ResolvedIndustryTerminology {
   const subdomain = getCurrentSubdomain();
   const { data } = useWorkspaceBySubdomain(subdomain, Boolean(subdomain));
   const industryType = data?.body?.workspace
-    ? (data.body.workspace as { industryType?: string }).industryType
+    ? (data.body.workspace as PublicWorkspace).industryType
     : undefined;
   const keys = getTerminologyForIndustry(industryType);
   return {

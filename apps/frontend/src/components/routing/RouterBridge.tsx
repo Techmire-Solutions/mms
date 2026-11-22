@@ -5,7 +5,7 @@ import { registerAppNavigate, unregisterAppNavigate } from "@/lib/routing/appNav
 import { revertSettingsPreviews } from "@/lib/settingsPreview";
 import { useScrollToTopOnNavigate } from "@/lib/routing/useScrollToTopOnNavigate";
 import { useTenant } from "@/lib/contexts/TenantContext";
-import { shouldForcePlatformEnglish } from "@/platform/lib/themeScope";
+import { shouldForcePlatformEnglish } from "@/lib/branding/platformThemeConfig";
 import { RouteAnnouncer } from "@/components/routing/RouteAnnouncer";
 
 /**

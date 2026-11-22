@@ -4,7 +4,6 @@ export interface UseDistributionsTrashStateProps {
   showDeleted?: boolean;
   selectedIds?: string[];
   onDelete?: (id: string) => void | Promise<void>;
-  onRestore?: (id: string) => void | Promise<void>;
   onBulkDelete?: (ids: string[]) => void | Promise<void>;
   onBulkRestore?: (ids: string[]) => void | Promise<void>;
   onClearSelection?: () => void;
@@ -14,7 +13,6 @@ export function useDistributionsTrashState({
   showDeleted = false,
   selectedIds = [],
   onDelete,
-  onRestore: _onRestore,
   onBulkDelete,
   onBulkRestore,
   onClearSelection,

@@ -5,6 +5,7 @@ import {
   type EmailProviderId,
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import {
   getEmailIntegrationRow,
   upsertEmailIntegrationConfigRow,
@@ -34,54 +35,39 @@ function rowToConfig(row: EmailIntegrationRow): EmailIntegrationConfig {
   return mergeEmailIntegrationConfig(overrides);
 }
 
-export async function loadEmailIntegrationConfig(): Promise<EmailIntegrationConfig> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) return mergeEmailIntegrationConfig(null);
-  const row = await getEmailIntegrationRow(subdomain);
-  if (!row) return mergeEmailIntegrationConfig(null);
+const service = createIntegrationConfigService<
+  EmailIntegrationConfig,
+  EmailIntegrationSecrets,
+  EmailIntegrationRow
+>({
+  rowToConfig,
+  emptyConfig: () => mergeEmailIntegrationConfig(null),
+  mergeConfig: (config) => mergeEmailIntegrationConfig(config),
+  loadRow: () => {
+    const subdomain = getRequestTenant();
+    if (!subdomain) return Promise.resolve(null);
+    return getEmailIntegrationRow(subdomain);
+  },
+  upsertConfig: (config) => {
+    const subdomain = getRequestTenant();
+    if (!subdomain) throw new Error("Tenant context missing");
+    return upsertEmailIntegrationConfigRow(subdomain, config);
+  },
+  upsertSecrets: (secrets) => {
+    const subdomain = getRequestTenant();
+    if (!subdomain) throw new Error("Tenant context missing");
+    return upsertEmailIntegrationSecretsRow(subdomain, secrets);
+  },
+  secretsFromRow: (row) => {
+    const secrets: EmailIntegrationSecrets = {};
+    if (row.smtpPassword) secrets.smtpPassword = row.smtpPassword;
+    return secrets;
+  },
+  tenantScoped: true,
+});
 
-  return rowToConfig(row);
-}
-
-export async function saveEmailIntegrationConfig(
-  config: EmailIntegrationConfig,
-): Promise<EmailIntegrationConfig> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error("Tenant context missing");
-  const merged = mergeEmailIntegrationConfig(config);
-  await upsertEmailIntegrationConfigRow(subdomain, merged);
-  return merged;
-}
-
-export async function loadEmailIntegrationSecrets(): Promise<EmailIntegrationSecrets> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) return {};
-  const row = await getEmailIntegrationRow(subdomain);
-  if (!row) return {};
-
-  const secrets: EmailIntegrationSecrets = {};
-  if (row.smtpPassword) secrets.smtpPassword = row.smtpPassword;
-  return secrets;
-}
-
-export async function saveEmailIntegrationSecrets(secrets: EmailIntegrationSecrets): Promise<void> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error("Tenant context missing");
-  await upsertEmailIntegrationSecretsRow(subdomain, secrets);
-}
-
-export async function markEmailIntegrationTestResult(
-  ok: boolean,
-  errorMessage?: string,
-): Promise<EmailIntegrationConfig> {
-  const current = await loadEmailIntegrationConfig();
-  const updated = mergeEmailIntegrationConfig({
-    ...current,
-    connected: ok,
-    hasCredentials: current.hasCredentials,
-    lastTestAt: new Date().toISOString(),
-    lastTestOk: ok,
-    lastError: ok ? undefined : errorMessage,
-  });
-  return saveEmailIntegrationConfig(updated);
-}
+export const loadEmailIntegrationConfig = service.loadConfig;
+export const saveEmailIntegrationConfig = service.saveConfig;
+export const loadEmailIntegrationSecrets = service.loadSecrets;
+export const saveEmailIntegrationSecrets = service.saveSecrets;
+export const markEmailIntegrationTestResult = service.markTestResult;

@@ -21,8 +21,6 @@ export function useClampedNumberField(args: {
   const { value, min, max, onChange } = args;
   const [text, setTextState] = useState(String(value));
   const focused = useRef(false);
-  const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
 
   // External updates (discard, refetch) must not fight the field the user is typing in.
   useEffect(() => {
@@ -33,6 +31,8 @@ export function useClampedNumberField(args: {
   const onFocus = useCallback(() => {
     focused.current = true;
   }, []);
+  // `onChange` is a plain dependency (not a render-mutated ref): the blur handler is recreated when
+  // the parent swaps the callback, which is exactly when it must call the new one.
   const onBlur = useCallback(() => {
     focused.current = false;
     const parsed = Number(text);
@@ -41,9 +41,9 @@ export function useClampedNumberField(args: {
       return;
     }
     const clamped = Math.min(max, Math.max(min, Math.round(parsed)));
-    onChangeRef.current(clamped);
+    onChange(clamped);
     setTextState(String(clamped));
-  }, [max, min, text, value]);
+  }, [max, min, onChange, text, value]);
 
   return { text, setText, onFocus, onBlur };
 }

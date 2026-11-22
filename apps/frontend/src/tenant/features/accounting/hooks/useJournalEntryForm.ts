@@ -197,7 +197,7 @@ export function useJournalEntryForm({
       // summary/header account; the picker filters those, but edits do not.
       const invalidAccountIndex = form.lines.findIndex(
         (journalLine) =>
-          journalLine.account_id && !activeAccountIds.has(String(journalLine.account_id)),
+          journalLine.account_id && !activeAccountIds.includes(String(journalLine.account_id)),
       );
       if (invalidAccountIndex >= 0) {
         setErrors({
@@ -258,10 +258,11 @@ export function useJournalEntryForm({
     () => accountOptions(accounts).map(({ value, label }) => ({ value, label })),
     [accounts],
   );
-  const activeAccountIds = useMemo(
-    () => new Set(accountOptions(accounts).map((option) => String(option.value))),
-    [accounts],
-  );
+  // Derived from the memoized option list (one `accountOptions` pass instead of
+  // two). Kept as a plain derivation: a second `useMemo` over the imported
+  // helper's result could not be preserved by the React Compiler, and the
+  // save-time lookup walks a handful of lines, so re-deriving per render is free.
+  const activeAccountIds = flattenedAccountOptions.map((option) => option.value);
   const errorMessages = (() => Object.values(errors).filter(Boolean))();
   return {
     t,

@@ -5,6 +5,7 @@ import {
   type SmsProviderId,
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import {
   getSmsIntegrationRow,
   upsertSmsIntegrationConfigRow,
@@ -31,54 +32,39 @@ function rowToConfig(row: SmsIntegrationRow): SmsIntegrationConfig {
   return mergeSmsIntegrationConfig(overrides);
 }
 
-export async function loadSmsIntegrationConfig(): Promise<SmsIntegrationConfig> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) return mergeSmsIntegrationConfig(null);
-  const row = await getSmsIntegrationRow(subdomain);
-  if (!row) return mergeSmsIntegrationConfig(null);
+const service = createIntegrationConfigService<
+  SmsIntegrationConfig,
+  SmsIntegrationSecrets,
+  SmsIntegrationRow
+>({
+  rowToConfig,
+  emptyConfig: () => mergeSmsIntegrationConfig(null),
+  mergeConfig: (config) => mergeSmsIntegrationConfig(config),
+  loadRow: () => {
+    const subdomain = getRequestTenant();
+    if (!subdomain) return Promise.resolve(null);
+    return getSmsIntegrationRow(subdomain);
+  },
+  upsertConfig: (config) => {
+    const subdomain = getRequestTenant();
+    if (!subdomain) throw new Error("Tenant context missing");
+    return upsertSmsIntegrationConfigRow(subdomain, config);
+  },
+  upsertSecrets: (secrets) => {
+    const subdomain = getRequestTenant();
+    if (!subdomain) throw new Error("Tenant context missing");
+    return upsertSmsIntegrationSecretsRow(subdomain, secrets);
+  },
+  secretsFromRow: (row) => {
+    const secrets: SmsIntegrationSecrets = {};
+    if (row.accountSecret) secrets.accountSecret = row.accountSecret;
+    return secrets;
+  },
+  tenantScoped: true,
+});
 
-  return rowToConfig(row);
-}
-
-export async function saveSmsIntegrationConfig(
-  config: SmsIntegrationConfig,
-): Promise<SmsIntegrationConfig> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error("Tenant context missing");
-  const merged = mergeSmsIntegrationConfig(config);
-  await upsertSmsIntegrationConfigRow(subdomain, merged);
-  return merged;
-}
-
-export async function loadSmsIntegrationSecrets(): Promise<SmsIntegrationSecrets> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) return {};
-  const row = await getSmsIntegrationRow(subdomain);
-  if (!row) return {};
-
-  const secrets: SmsIntegrationSecrets = {};
-  if (row.accountSecret) secrets.accountSecret = row.accountSecret;
-  return secrets;
-}
-
-export async function saveSmsIntegrationSecrets(secrets: SmsIntegrationSecrets): Promise<void> {
-  const subdomain = getRequestTenant();
-  if (!subdomain) throw new Error("Tenant context missing");
-  await upsertSmsIntegrationSecretsRow(subdomain, secrets);
-}
-
-export async function markSmsIntegrationTestResult(
-  ok: boolean,
-  errorMessage?: string,
-): Promise<SmsIntegrationConfig> {
-  const current = await loadSmsIntegrationConfig();
-  const updated = mergeSmsIntegrationConfig({
-    ...current,
-    connected: ok,
-    hasCredentials: current.hasCredentials,
-    lastTestAt: new Date().toISOString(),
-    lastTestOk: ok,
-    lastError: ok ? undefined : errorMessage,
-  });
-  return saveSmsIntegrationConfig(updated);
-}
+export const loadSmsIntegrationConfig = service.loadConfig;
+export const saveSmsIntegrationConfig = service.saveConfig;
+export const loadSmsIntegrationSecrets = service.loadSecrets;
+export const saveSmsIntegrationSecrets = service.saveSecrets;
+export const markSmsIntegrationTestResult = service.markTestResult;

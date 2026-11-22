@@ -21,7 +21,6 @@ export interface UseObligationCollectionsListModelProps {
   onFilteredCountChange?: (count: number) => void;
   onClearSelection?: () => void;
   onDelete?: (id: string) => void | Promise<void>;
-  onRestore?: (id: string) => void | Promise<void>;
   onBulkDelete?: (ids: string[]) => void | Promise<void>;
   onBulkRestore?: (ids: string[]) => void | Promise<void>;
 }
@@ -36,7 +35,6 @@ export function useObligationCollectionsListModel({
   onFilteredCountChange,
   onClearSelection,
   onDelete,
-  onRestore: _onRestore,
   onBulkDelete,
   onBulkRestore,
 }: UseObligationCollectionsListModelProps) {

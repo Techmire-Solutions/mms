@@ -89,6 +89,7 @@ export function useExaminationForm({ open, exam, onClose, onSave }: UseExaminati
   const classes = examinationClassOptions(sessions);
 
   const handleSave = async () => {
+    if (saving) return;
     setSubmitAttempted(true);
     setServerError(null);
     const allErrors = validateExamDraft(examDraft);

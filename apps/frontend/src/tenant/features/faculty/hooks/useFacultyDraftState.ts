@@ -29,6 +29,23 @@ export interface UseFacultyDraftStateInput {
   today?: string;
 }
 
+function buildInitialDraft({
+  faculty,
+  defaultSpecialization,
+  settings,
+  today,
+}: Pick<
+  UseFacultyDraftStateInput,
+  "faculty" | "defaultSpecialization" | "settings" | "today"
+>): Partial<FacultyMember> {
+  return getInitialFacultyDraft({
+    faculty,
+    defaultSpecialization,
+    fields: settings.fields as Record<string, FieldDefinition[]> | undefined,
+    today,
+  });
+}
+
 export function useFacultyDraftState({
   faculty,
   defaultSpecialization,
@@ -37,23 +54,13 @@ export function useFacultyDraftState({
   settings,
   today,
 }: UseFacultyDraftStateInput) {
+  // Seed both states from ONE draft build — the baseline snapshot must be the
+  // snapshot of the exact draft the form starts from.
   const [facultyDraft, setFacultyDraft] = useState<Partial<FacultyMember>>(() =>
-    getInitialFacultyDraft({
-      faculty,
-      defaultSpecialization,
-      fields: settings.fields as Record<string, FieldDefinition[]> | undefined,
-      today,
-    }),
+    buildInitialDraft({ faculty, defaultSpecialization, settings, today }),
   );
   const [baselineSnapshot, setBaselineSnapshot] = useState(() =>
-    facultyDraftSnapshot(
-      getInitialFacultyDraft({
-        faculty,
-        defaultSpecialization,
-        fields: settings.fields as Record<string, FieldDefinition[]> | undefined,
-        today,
-      }),
-    ),
+    facultyDraftSnapshot(facultyDraft),
   );
   const [userAccountDraft, setUserAccountDraft] = useState<FacultyUserAccountDraft>(
     DEFAULT_USER_ACCOUNT_DRAFT,
@@ -66,12 +73,7 @@ export function useFacultyDraftState({
     // Record identity changed (edit A → create, or edit A → edit B): full re-seed.
     setPrevFacultyId(facultyId);
     setPrevDefaultSpec(defaultSpecialization);
-    const nextDraft = getInitialFacultyDraft({
-      faculty,
-      defaultSpecialization,
-      fields: settings.fields as Record<string, FieldDefinition[]> | undefined,
-      today,
-    });
+    const nextDraft = buildInitialDraft({ faculty, defaultSpecialization, settings, today });
     setFacultyDraft(nextDraft);
     setBaselineSnapshot(facultyDraftSnapshot(nextDraft));
     setUserAccountDraft(DEFAULT_USER_ACCOUNT_DRAFT);

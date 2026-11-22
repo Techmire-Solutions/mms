@@ -83,6 +83,18 @@ export function useMessagingTemplateEditor() {
     });
   };
 
+  const handleBodyChange = (value: string): void => {
+    setBody(value);
+    // Mirrors `handleLabelChange`: a field error clears as soon as the user
+    // edits the field, so a stale blur-time token error cannot linger.
+    if (!errors.body) return;
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.body;
+      return next;
+    });
+  };
+
   const syncBodyTokenErrorOnBlur = (): void => {
     const unknown = findUnknownPersonalizationTokens(body);
     setErrors((prev) => {
@@ -179,8 +191,14 @@ export function useMessagingTemplateEditor() {
   };
 
   const handleCopy = async (templateBody: string): Promise<void> => {
-    await navigator.clipboard.writeText(templateBody);
-    notify.success(t("messaging.copySuccess"));
+    try {
+      await navigator.clipboard.writeText(templateBody);
+      notify.success(t("messaging.copySuccess"));
+    } catch {
+      // Clipboard can be unavailable (non-secure context, denied permission).
+      // Failing the copy must not surface as an unhandled rejection.
+      notify.error(t("errors.state.generic"));
+    }
   };
 
   return {
@@ -200,7 +218,7 @@ export function useMessagingTemplateEditor() {
     resetForm,
     openCreate,
     handleLabelChange,
-    handleBodyChange: setBody,
+    handleBodyChange,
     syncBodyTokenErrorOnBlur,
     save,
     handleEdit,

@@ -93,6 +93,7 @@ export function ContactDetailTimeline({
   };
 
   const isVirtualized = activities.length > 30;
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual is not React-Compiler-compatible (upstream); this component intentionally stays uncompiled.
   const rowVirtualizer = useVirtualizer({
     count: activities.length,
     getScrollElement: () => scrollRef.current,

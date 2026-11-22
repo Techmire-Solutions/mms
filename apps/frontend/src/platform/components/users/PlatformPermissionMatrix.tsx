@@ -1,4 +1,4 @@
-import { PLATFORM_PERMISSION_CONFIG } from "@/platform/lib/platformPermissionConfig";
+import { platformPermissionEntries } from "@/platform/lib/platformPermissionConfig";
 import React from "react";
 import { Check, X, Shield } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -79,13 +79,13 @@ export function PlatformPermissionMatrix(): React.JSX.Element {
         </Badge>
       ),
     },
-    ...PLATFORM_PERMISSION_CONFIG.map((cap): WorkBatchTableColumn<PlatformUserProfile> => ({
-      id: cap.key,
+    ...platformPermissionEntries().map(([key, cap]): WorkBatchTableColumn<PlatformUserProfile> => ({
+      id: key,
       label: t(cap.labelKey),
       headerClassName: "text-center",
       cellClassName: "text-center",
       render: (admin) => {
-        const granted = admin.role === "super_user" || Boolean(admin.permissions?.[cap.key]);
+        const granted = admin.role === "super_user" || Boolean(admin.permissions?.[key]);
         return (
           <Button
             type="button"
@@ -95,7 +95,7 @@ export function PlatformPermissionMatrix(): React.JSX.Element {
             disabled={
               !isSuperUser || admin.role === "super_user" || admin.id === currentUser?.id || busy
             }
-            onClick={() => handleToggle(admin, cap.key)}
+            onClick={() => handleToggle(admin, key)}
             aria-label={`${admin.name}: ${t(cap.labelKey)}`}
             className={cn(
               "rounded-lg",

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { PLATFORM_QUERY_KEYS } from "@/platform/lib/platformQueryKeys";
 
 export interface PlatformTelemetryData {
   platformDb?: {
@@ -50,8 +51,9 @@ export interface PlatformActivityTrendResponse {
   trend: PlatformActivityTrendItem[];
 }
 
-export const PLATFORM_TELEMETRY_QUERY_KEY = ["platform", "telemetry"] as const;
-export const PLATFORM_ACTIVITY_TREND_QUERY_KEY = ["platform", "activity-trend"] as const;
+/** SSOT keys registered in `platform/lib/platformQueryKeys.ts`; aliases kept for compatibility. */
+export const PLATFORM_TELEMETRY_QUERY_KEY = PLATFORM_QUERY_KEYS.telemetry;
+export const PLATFORM_ACTIVITY_TREND_QUERY_KEY = PLATFORM_QUERY_KEYS.activityTrend;
 
 export interface UsePlatformTelemetryOptions {
   refetchInterval?: number | false;

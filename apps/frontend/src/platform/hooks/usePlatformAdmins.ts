@@ -56,6 +56,7 @@ export function useAddPlatformAdmin() {
   return useMutation({
     mutationFn: async (adminData: PlatformCreateAdminInput) => {
       const res = await apiContract.platform.createAdmin({ body: adminData });
+      assertContractOk(res, "Failed to create admin");
       return res.body as { user: PlatformUserProfile };
     },
     onSuccess: () => {

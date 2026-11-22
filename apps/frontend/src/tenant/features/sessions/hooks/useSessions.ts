@@ -7,14 +7,6 @@ import { tsrClient, apiContract } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import { fetchWidgetAggregatesBatched } from "@/lib/reports/widgetAggregatesBatch";
 import type { Session } from "@/lib/data/sessionsData";
-
-export function sessionsCommandMetricsQueryOptions() {
-  return serverMetricsQueryOptions<SessionsCommandMetricsSnapshot>({
-    moduleId: SESSIONS_MODULE_MANIFEST.moduleId,
-    apiPath: SESSIONS_MODULE_MANIFEST.restBasePath,
-  });
-}
-
 import {
   SESSION_DETAIL_QUERY_KEY,
   SESSIONS_METRICS_QUERY_KEY,
@@ -22,6 +14,13 @@ import {
   SESSIONS_REPORT_AGGREGATES_QUERY_KEY,
   SESSIONS_WIDGET_AGGREGATES_QUERY_KEY,
 } from "./sessionsQueryKeys.js";
+
+export function sessionsCommandMetricsQueryOptions() {
+  return serverMetricsQueryOptions<SessionsCommandMetricsSnapshot>({
+    moduleId: SESSIONS_MODULE_MANIFEST.moduleId,
+    apiPath: SESSIONS_MODULE_MANIFEST.restBasePath,
+  });
+}
 
 export {
   SESSIONS_METRICS_QUERY_KEY,
@@ -55,9 +54,11 @@ export interface SessionsWidgetAggregateWidgetInput {
 
 export function useSessionsPaginated(params: SessionsPaginatedParams) {
   const { isAuthenticated } = useAuth();
-  const enabled = params.enabled ?? true;
+  // `enabled` is a behavioural flag, not server query data — exclude it from the cache key so
+  // toggling a tab does not partition the cache into fresh-key refetches.
+  const { enabled: paramsEnabled = true, ...queryParams } = params;
   return tsrClient.sessions.list.useQuery({
-    queryKey: [...SESSIONS_QUERY_KEY, "page", params],
+    queryKey: [...SESSIONS_QUERY_KEY, "page", queryParams],
     queryData: {
       query: {
         page: params.page,
@@ -72,7 +73,7 @@ export function useSessionsPaginated(params: SessionsPaginatedParams) {
         view: "summary",
       },
     },
-    enabled: isAuthenticated && enabled,
+    enabled: isAuthenticated && paramsEnabled,
     staleTime: 15_000,
   });
 }

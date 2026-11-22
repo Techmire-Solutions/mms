@@ -32,12 +32,13 @@ export function FacultyWorkTier(props: FacultyWorkTierProps): React.JSX.Element 
     props.workOverlays.setConfirmBulkRestoreOpen(true);
   }, [props.workOverlays]);
 
+  const { showDeleted, onToggleDeleted } = props;
+
   const handleShowActive = useCallback(() => {
-    if (props.showDeleted) {
-      props.onToggleDeleted();
+    if (showDeleted) {
+      onToggleDeleted();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- depending on the whole `props` object would recreate this callback on any prop change; the listed props are the only ones read.
-  }, [props.showDeleted, props.onToggleDeleted]);
+  }, [showDeleted, onToggleDeleted]);
 
   const handleBulkPrintIdCards = useCallback(() => {
     const selectedMembers = (props.faculty ?? []).filter((m) =>

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   ENROLLMENTS_MODULE_MANIFEST,
   normalizeEnrollmentModulePreferences,
@@ -27,8 +28,6 @@ const setupConfigHooks = createModuleSetupConfigHooks<EnrollmentModulePreference
 
 export const useEnrollmentPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useEnrollmentPreferencesMutation = setupConfigHooks.usePreferencesMutation;
-
-import { useMemo } from "react";
 
 /** Composed EnrollmentsSettings from preferences queries. */
 export function useComposedEnrollmentsSettings(): EnrollmentsSettings {

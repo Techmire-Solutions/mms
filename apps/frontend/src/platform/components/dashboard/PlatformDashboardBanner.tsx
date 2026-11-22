@@ -7,7 +7,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { Button } from "@shared/ui";
 import { WORK_SURFACE } from "@shared/ui";
 import { Badge } from "@shared/ui";
-import { itemVariants } from "@/platform/lib/animations";
+import { itemVariants } from "@/lib/motion";
 import { ROUTES } from "@/lib/config/routes";
 import { cn } from "@/lib/utils";
 import type { PlatformUser } from "@mms/shared";

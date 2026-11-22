@@ -19,7 +19,7 @@ export {
   FINANCE_METRICS_QUERY_KEY,
   FINANCE_REPORT_AGGREGATES_QUERY_KEY,
   FINANCE_FIELD_CONFIG_QUERY_KEY,
-  FINANCE_PREFERENCES_QUERY_KEY,
+  FINANCE_CONTRACT_PREFERENCES_QUERY_KEY,
 } from "@/tenant/features/finance/hooks/financeQueryKeys";
 
 /** Contract list hooks return the TanStack Query envelope; `data` is narrowed to the parsed page shape. */

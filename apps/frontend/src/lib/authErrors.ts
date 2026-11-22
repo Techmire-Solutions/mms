@@ -1,12 +1,34 @@
-import { TENANT_AUTH_ERROR_TYPES, type TenantAuthErrorType } from "@mms/shared";
+import {
+  TENANT_AUTH_ERROR_TYPES,
+  type AppTranslationKey,
+  type TenantAuthErrorType,
+} from "@mms/shared";
 import { ApiError } from "@/lib/apiClient";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { mapAuthError, type MapAuthErrorConfig } from "@/lib/mapAuthError";
 
 export interface AuthError {
   type: TenantAuthErrorType;
   message: string;
   retryAfterSeconds?: number;
 }
+
+const TENANT_AUTH_ERROR_KEYS: Partial<Record<TenantAuthErrorType, AppTranslationKey>> = {
+  invalid_credentials: "auth.invalidCredentials",
+  email_not_verified: "auth.emailNotVerified",
+  workspace_disabled: "errors.state.permission",
+  connection_error: "errors.state.network",
+  rate_limit_exceeded: "errors.rate_limit_exceeded",
+};
+
+const TENANT_AUTH_ERROR_MAPPING: MapAuthErrorConfig = {
+  isErrorType: isAuthErrorType,
+  keyMap: TENANT_AUTH_ERROR_KEYS,
+  statusMap: {},
+  fallbackKey: "auth.invalidCredentials",
+  messageFirstTypes: ["workspace_disabled"],
+  messageFirstOnUnknown: true,
+};
 
 function parseRetryAfterSeconds(header: string | null): number | undefined {
   if (!header) return undefined;
@@ -38,27 +60,6 @@ export async function parseAuthError(response: Response): Promise<AuthError> {
   }
 }
 
-function mapTenantAuthErrorType(
-  type: TenantAuthErrorType,
-  fallbackMessage: string,
-  t: TranslationFunction,
-): string {
-  switch (type) {
-    case "invalid_credentials":
-      return t("auth.invalidCredentials");
-    case "email_not_verified":
-      return t("auth.emailNotVerified");
-    case "workspace_disabled":
-      return fallbackMessage || t("errors.state.permission");
-    case "connection_error":
-      return t("errors.state.network");
-    case "rate_limit_exceeded":
-      return t("errors.rate_limit_exceeded");
-    default:
-      return fallbackMessage || t("auth.invalidCredentials");
-  }
-}
-
 /**
  * Maps tenant auth failures to localized copy, preventing raw backend English
  * strings from leaking into non-English locales (Arabic, Urdu, Persian).
@@ -70,7 +71,7 @@ export function getAuthErrorMessage(error: unknown, t: TranslationFunction): str
       : undefined;
 
   if (authErr) {
-    const message = mapTenantAuthErrorType(authErr.type, authErr.message, t);
+    const message = mapAuthError(authErr, TENANT_AUTH_ERROR_MAPPING, t);
     return authErr.type === "rate_limit_exceeded" && authErr.retryAfterSeconds !== undefined
       ? `${message} ${t("errors.retryAfterSeconds", { seconds: String(authErr.retryAfterSeconds) })}`
       : message;
@@ -78,7 +79,7 @@ export function getAuthErrorMessage(error: unknown, t: TranslationFunction): str
 
   if (error instanceof ApiError) {
     if (isAuthErrorType(error.type)) {
-      return mapTenantAuthErrorType(error.type, error.message, t);
+      return mapAuthError(error, TENANT_AUTH_ERROR_MAPPING, t);
     }
     if (error.status === 401) {
       return t("auth.invalidCredentials");

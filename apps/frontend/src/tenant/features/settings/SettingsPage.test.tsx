@@ -1,8 +1,11 @@
-import React from "react";
+import React, { act } from "react";
 import { describe, expect, it, vi } from "vitest";
+import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import Settings from "./SettingsPage";
+
+const { setTabMock } = vi.hoisted(() => ({ setTabMock: vi.fn() }));
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -17,7 +20,8 @@ vi.mock("@/hooks/useReducedMotion", () => ({
 }));
 
 vi.mock("@/hooks/usePersistedTabState", () => ({
-  usePersistedTabState: (_key: string, defaultTab: string) => [defaultTab, vi.fn()],
+  usePersistedTabState: (_key: string, defaultTab: string) => [defaultTab, setTabMock],
+  identityTabNormalizer: (value: string) => value,
 }));
 
 vi.mock("@/lib/contexts/SettingsBrandingDraftContext", () => ({
@@ -61,5 +65,30 @@ describe("SettingsPage", () => {
     expect(html).toContain("settings.title");
     expect(html).toContain("settings.subtitle");
     expect(html).toContain("settings-global-content");
+  });
+
+  it("applies a deep-link tab request to the persisted tab", async () => {
+    // Arrange
+    setTabMock.mockClear();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+
+    // Act
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/settings?tab=modules"]}>
+          <Settings />
+        </MemoryRouter>,
+      );
+    });
+
+    // Assert — the `?tab=modules` deep link selects the Modules section.
+    expect(setTabMock).toHaveBeenCalledWith("modules");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 });

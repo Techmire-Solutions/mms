@@ -15,6 +15,11 @@ export const PLATFORM_QUERY_KEYS = {
   profile: ["platform", "profile"] as const,
   setupStatus: ["platform", "setup", "status"] as const,
   erd: ["platform", "schema", "erd"] as const,
+  telemetry: ["platform", "telemetry"] as const,
+  activityTrend: ["platform", "activity-trend"] as const,
+  consolidationGroups: ["platform", "consolidation", "groups"] as const,
+  consolidationReport: (groupId: string, period: unknown) =>
+    ["platform", "consolidation", "report", groupId, period] as const,
 } as const;
 
 export const PLATFORM_WORKSPACES_QUERY_KEY = PLATFORM_QUERY_KEYS.workspaces;

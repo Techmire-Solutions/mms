@@ -248,4 +248,41 @@ describe("useModuleCsvImportActions", () => {
     });
     expect(hookResult.completedJob).toMatchObject({ id: "job-import-1" });
   });
+
+  it("ignores a stale file read when a newer file was selected while the first was parsing", async () => {
+    act(() => {
+      root.render(<HookTester />);
+    });
+
+    let resolveSlow!: (text: string) => void;
+    const slowText = new Promise<string>((resolve) => {
+      resolveSlow = resolve;
+    });
+    let resolveFast!: (text: string) => void;
+    const fastText = new Promise<string>((resolve) => {
+      resolveFast = resolve;
+    });
+
+    const slowFile = { name: "slow.csv", size: 100, text: () => slowText } as File;
+    const fastFile = { name: "fast.csv", size: 100, text: () => fastText } as File;
+
+    const slowSelect = hookResult.handleFileSelect(slowFile);
+    const fastSelect = hookResult.handleFileSelect(fastFile);
+
+    // The newer selection resolves first and wins the grid.
+    await act(async () => {
+      resolveFast('Name,Age\n"Zayd",24');
+      await fastSelect;
+    });
+    expect(hookResult.fileName).toBe("fast.csv");
+    expect(hookResult.parsedRows).toHaveLength(1);
+
+    // The stale read resolving later must not overwrite the newer selection.
+    await act(async () => {
+      resolveSlow('Name,Age\n"Sara",22\n"Bilal",30');
+      await slowSelect;
+    });
+    expect(hookResult.fileName).toBe("fast.csv");
+    expect(hookResult.parsedRows).toHaveLength(1);
+  });
 });

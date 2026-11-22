@@ -101,6 +101,11 @@ describe("PaperBlueprintPanel", () => {
       root.render(<PaperBlueprintPanel questions={questions} tests={tests} canWrite />);
     });
 
+  const renderWithTests = (nextTests: QuestionBankTest[]) =>
+    act(() => {
+      root.render(<PaperBlueprintPanel questions={questions} tests={nextTests} canWrite />);
+    });
+
   it("shows the available question count per bucket", () => {
     render();
     expect(container.textContent).toContain("questionBank.blueprintAvailable:2");
@@ -126,6 +131,27 @@ describe("PaperBlueprintPanel", () => {
       count!.dispatchEvent(new Event("input", { bubbles: true }));
     });
     expect(container.textContent).toContain("questionBank.blueprintInvalidCount");
+  });
+
+  it("excludes questions used by recent papers when a recency window is typed", () => {
+    const recentTests: QuestionBankTest[] = [
+      {
+        ...tests[0],
+        createdAt: new Date().toISOString(),
+        questionIds: ["q-1"],
+      },
+    ];
+    renderWithTests(recentTests);
+    expect(container.textContent).toContain("questionBank.blueprintAvailable:2");
+
+    const recencyInput = container.querySelector<HTMLInputElement>("input#qb-blueprint-recency");
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      setter?.call(recencyInput, "30");
+      recencyInput!.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+
+    expect(container.textContent).toContain("questionBank.blueprintAvailable:1");
   });
 
   it("surfaces an assembly failure", async () => {

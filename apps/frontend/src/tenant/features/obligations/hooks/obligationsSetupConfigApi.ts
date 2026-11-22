@@ -4,10 +4,12 @@ import type { ObligationsModulePreferences } from "@mms/shared";
 import { normalizeObligationsModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<ObligationsModulePreferences>({
-  fetchPreferencesFn: async (_signal) => {
+  fetchPreferencesFn: async (signal) => {
     const res = await apiContract.obligations.getPreferences({
       query: undefined,
       extraHeaders: {},
+      signal,
+      fetchOptions: { signal },
     });
     return (res.body as { preferences: ObligationsModulePreferences }).preferences;
   },

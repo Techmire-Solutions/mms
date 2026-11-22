@@ -25,6 +25,11 @@ export function useEnterMarksStudents(exam?: Exam) {
   const sessions = useSessionsCollection();
   const enrollments = useEnrollmentsCollection();
 
+  // Single hoisted derivation: every memo below keys off the same reference, so the compiler
+  // can preserve the manual memoization (previously each memo read `exam.classIds` through
+  // `exam`, a less specific inferred dependency than the listed `exam?.classIds`).
+  const classIds = exam?.classIds;
+
   const classNamesById = useMemo(() => {
     const map = new Map<string, string>();
     for (const session of sessions) {
@@ -38,12 +43,12 @@ export function useEnterMarksStudents(exam?: Exam) {
   }, [sessions]);
 
   const studentIds = useMemo(() => {
-    if (!exam?.classIds || exam.classIds.length === 0) return [];
-    const classIds = new Set(exam.classIds);
+    if (!classIds || classIds.length === 0) return [];
+    const examClassIds = new Set(classIds);
     const seen = new Set<string>();
     const ids: string[] = [];
     for (const enrollment of enrollments) {
-      if (classIds.has(enrollment.classId) && isRosterEnrollment(enrollment)) {
+      if (examClassIds.has(enrollment.classId) && isRosterEnrollment(enrollment)) {
         const idStr = String(enrollment.studentId);
         if (!seen.has(idStr)) {
           seen.add(idStr);
@@ -52,16 +57,16 @@ export function useEnterMarksStudents(exam?: Exam) {
       }
     }
     return ids;
-  }, [enrollments, exam?.classIds]);
+  }, [enrollments, classIds]);
 
   const { data: resolvedStudents = [] } = useStudentsByIds(studentIds);
 
   const students = useMemo((): ExamStudent[] => {
-    if (!exam?.classIds || exam.classIds.length === 0) return [];
-    const classIds = new Set(exam.classIds);
+    if (!classIds || classIds.length === 0) return [];
+    const examClassIds = new Set(classIds);
     const enrollmentByStudent = new Map<string, (typeof enrollments)[number]>();
     for (const enrollment of enrollments) {
-      if (classIds.has(enrollment.classId) && isRosterEnrollment(enrollment)) {
+      if (examClassIds.has(enrollment.classId) && isRosterEnrollment(enrollment)) {
         enrollmentByStudent.set(String(enrollment.studentId), enrollment);
       }
     }
@@ -78,21 +83,21 @@ export function useEnterMarksStudents(exam?: Exam) {
       }
     }
     return result;
-  }, [enrollments, exam?.classIds, resolvedStudents]);
+  }, [enrollments, classIds, resolvedStudents]);
 
   const sections = useMemo(() => {
-    const classIds = new Set(exam?.classIds ?? []);
+    const examClassIds = new Set(classIds ?? []);
     return sessions.flatMap((session) =>
       (session.classes ?? [])
-        .filter((sessionClass) => classIds.has(sessionClass.id))
+        .filter((sessionClass) => examClassIds.has(sessionClass.id))
         .flatMap((sessionClass) =>
           (sessionClass.sections ?? []).map((section) => ({
             ...section,
-            name: classIds.size > 1 ? `${sessionClass.name} – ${section.name}` : section.name,
+            name: examClassIds.size > 1 ? `${sessionClass.name} – ${section.name}` : section.name,
           })),
         ),
     );
-  }, [sessions, exam?.classIds]);
+  }, [sessions, classIds]);
 
   return {
     classNamesById,

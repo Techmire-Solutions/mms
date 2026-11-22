@@ -50,10 +50,13 @@ export function SessionRolloverModal({
 
   const id = String(session.id);
   // Latest-request-wins: a preview that resolves after the body changed must not replace the
-  // current state (or leak into a reopened wizard).
+  // current state (or leak into a reopened wizard). The signature ref mirrors the latest render
+  // in an effect — render-phase ref writes are React-Compiler-forbidden.
   const previewRequestRef = useRef(0);
   const bodySignatureRef = useRef(form.bodySignature);
-  bodySignatureRef.current = form.bodySignature;
+  useEffect(() => {
+    bodySignatureRef.current = form.bodySignature;
+  }, [form.bodySignature]);
   useEffect(
     () => () => {
       previewRequestRef.current += 1;

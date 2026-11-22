@@ -15,6 +15,7 @@ import {
   isDashboardAccountant,
   type DashboardRole,
 } from "@/lib/dashboardRole";
+import type { NotificationItem } from "@shared/ui";
 
 export type DashboardNotificationType =
   "fee" | "event" | "student" | "attendance" | "admission" | "tasks";
@@ -27,7 +28,7 @@ export type DashboardNotificationTarget =
   | { kind: "admissions" }
   | { kind: "tasks" };
 
-export interface DashboardNotificationItem {
+export interface DashboardNotificationItem extends NotificationItem {
   id: string;
   type: DashboardNotificationType;
   title: string;

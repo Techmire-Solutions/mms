@@ -1,4 +1,4 @@
-import React, { type JSX } from "react";
+import React, { useEffect, useRef, useState, type JSX } from "react";
 import { DensityToggle } from "@shared/ui";
 import { SearchBar } from "@/components/app/SearchBar";
 import { ModuleClearFiltersButton } from "@/components/app/ModuleClearFiltersButton";
@@ -8,11 +8,15 @@ import { ModuleColumnCustomizer } from "@/components/app/ModuleColumnCustomizer"
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useRovingToolbar } from "@/hooks/useRovingToolbar";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import type { ModuleWorkToolbarProps } from "@/components/app/moduleWorkToolbarTypes";
 
 export type { ModuleWorkToolbarProps };
+
+/** Work-tier search debounce — keystrokes stay local to the toolbar leaf (mms-hooks §5). */
+const SEARCH_DEBOUNCE_MS = 250;
 
 export const ModuleWorkToolbar = function ModuleWorkToolbar({
   shownCountLabel,
@@ -39,6 +43,27 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
 }: ModuleWorkToolbarProps): JSX.Element {
   const { t } = useTranslation();
   const layoutToolbarRef = useRovingToolbar<HTMLDivElement>({ selector: "button" });
+
+  // Keystrokes are local to the toolbar leaf: the page controller (metrics,
+  // directory, lazy tiers) only re-renders once the debounced value settles.
+  // `lastPushedRef` distinguishes our own pushes from external resets (clear
+  // filters, drill-down navigation) so resets adopt immediately and are never
+  // echoed back (mms-hooks §5).
+  const [searchDraft, setSearchDraft] = useState(search);
+  const debouncedSearch = useDebounce(searchDraft, SEARCH_DEBOUNCE_MS);
+  const lastPushedRef = useRef(search);
+
+  useEffect(() => {
+    if (debouncedSearch === lastPushedRef.current) return;
+    lastPushedRef.current = debouncedSearch;
+    onSearchChange(debouncedSearch);
+  }, [debouncedSearch, onSearchChange]);
+
+  useEffect(() => {
+    if (search === lastPushedRef.current) return;
+    lastPushedRef.current = search;
+    setSearchDraft(search);
+  }, [search]);
   const showChildren = Boolean(
     children && (!trashToggle?.viewingDeleted || showExportInTrash !== false),
   );
@@ -82,14 +107,14 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
         <div className="relative min-w-0 w-full flex-1 xl:min-w-80 xl:max-w-lg">
           <SearchBar
             id={searchId}
-            value={search}
-            onChange={onSearchChange}
+            value={searchDraft}
+            onChange={setSearchDraft}
             placeholder={searchPlaceholder}
             isSearching={isSearching}
             keyshortcuts={searchId && searchShortcutHint ? "/" : null}
             className="w-full min-w-0"
           />
-          {!search && searchShortcutHint && searchId && (
+          {!searchDraft && searchShortcutHint && searchId && (
             // Decorative hint — `aria-hidden` and non-interactive, so it is not a control
             // and not a touch target. (Not a fix for the toolbar's `target-size` failure:
             // axe attributes that to the active tab crowding the input on wide counts.)

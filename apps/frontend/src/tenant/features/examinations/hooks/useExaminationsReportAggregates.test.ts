@@ -18,13 +18,17 @@ vi.mock("@/lib/apiClient", () => ({
   }),
 }));
 
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: ({ queryKey, queryFn: _queryFn }: { queryKey: unknown; queryFn: unknown }) => ({
-    data: { totalExams: 10, averageScore: 78 },
-    isLoading: false,
-    queryKey,
-  }),
-}));
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
+  return {
+    ...actual,
+    useQuery: ({ queryKey, queryFn: _queryFn }: { queryKey: unknown; queryFn: unknown }) => ({
+      data: { totalExams: 10, averageScore: 78 },
+      isLoading: false,
+      queryKey,
+    }),
+  };
+});
 
 describe("useExaminationsReportAggregates Hook", () => {
   let container: HTMLDivElement | null = null;

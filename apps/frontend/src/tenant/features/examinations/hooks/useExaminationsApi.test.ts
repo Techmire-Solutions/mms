@@ -1,6 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
+import { useQuery } from "@tanstack/react-query";
+import { apiContract, tsrClient } from "@/lib/api";
 import {
   useExaminationsExams,
   useExaminationsExamsCollection,
@@ -23,13 +25,13 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
   return {
     ...actual,
     // The marks hook pages through the endpoint; the test asserts wiring, not pagination.
-    useQuery: () => ({
+    useQuery: vi.fn(() => ({
       data: {
         status: 200,
         body: { results: [{ id: "r-1", marksObtained: 90 }], hasMore: false },
       },
       isLoading: false,
-    }),
+    })),
     useQueryClient: () => ({
       invalidateQueries: vi.fn(),
     }),
@@ -41,20 +43,23 @@ vi.mock("@/lib/api", () => ({
     examinations: {
       listResults: vi.fn().mockResolvedValue({
         status: 200,
-        body: { results: [{ id: "r-1", marksObtained: 90 }], hasMore: false },
+        body: {
+          results: [{ id: "r-1", examId: "ex-1", studentId: "std-1", marksObtained: 90 }],
+          hasMore: false,
+        },
       }),
     },
   },
   tsrClient: {
     examinations: {
       listExams: {
-        useQuery: () => ({
+        useQuery: vi.fn(() => ({
           data: {
             status: 200,
             body: { exams: [{ id: "ex-1", name: "Tajweed" }] },
           },
           isLoading: false,
-        }),
+        })),
       },
       listResults: {
         useQuery: () => ({
@@ -86,6 +91,7 @@ describe("useExaminationsApi Hooks", () => {
   let container: HTMLDivElement | null = null;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     container = document.createElement("div");
     document.body.appendChild(container);
     return () => {
@@ -126,5 +132,53 @@ describe("useExaminationsApi Hooks", () => {
     expect(metricsResult.data?.total).toBe(1);
     expect(mutationsResult.replaceExams).toBeDefined();
     expect(mutationsResult.deleteExam).toBeDefined();
+  });
+
+  it("wires the exams query enabled gate from options and auth", async () => {
+    function TestComponent() {
+      useExaminationsExams({ enabled: false, includeDeleted: true });
+      return null;
+    }
+
+    const root = createRoot(container!);
+    await act(async () => {
+      root.render(React.createElement(TestComponent));
+    });
+
+    const listExamsUseQuery = vi.mocked(tsrClient.examinations.listExams.useQuery);
+    expect(listExamsUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: false, queryKey: expect.any(Array) }),
+    );
+  });
+
+  it("passes the abort signal through the paginated results walk", async () => {
+    const abort = new AbortController();
+
+    function TestComponent() {
+      useExaminationsResults();
+      return null;
+    }
+
+    const root = createRoot(container!);
+    await act(async () => {
+      root.render(React.createElement(TestComponent));
+    });
+
+    const captured = vi.mocked(useQuery).mock.calls[0]?.[0];
+    expect(captured?.queryFn).toBeTypeOf("function");
+    const queryFn = captured?.queryFn as unknown as
+      ((ctx: { signal: AbortSignal }) => Promise<unknown>) | undefined;
+    if (!queryFn) throw new Error("results queryFn was not captured");
+    await act(async () => {
+      await queryFn({ signal: abort.signal });
+    });
+
+    const listResultsMock = vi.mocked(apiContract.examinations.listResults);
+    expect(listResultsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        signal: abort.signal,
+        fetchOptions: { signal: abort.signal },
+      }),
+    );
   });
 });

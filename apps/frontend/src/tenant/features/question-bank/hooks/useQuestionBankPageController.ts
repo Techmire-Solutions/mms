@@ -119,8 +119,18 @@ export function useQuestionBankPageController() {
     [questions, replaceQuestions],
   );
 
-  const openAddQuestion = () => modalState.openAddQuestion(setActiveTab, setActiveSubTab);
-  const openCreatePaper = () => modalState.openCreatePaper(setActiveTab, setActiveSubTab);
+  // Stable now that usePersistedTabState returns memoized setters and the modal
+  // callbacks are useCallback'd — keeps the create-hotkey listener registered once.
+  const { openAddQuestion: openAddQuestionModal, openCreatePaper: openCreatePaperModal } =
+    modalState;
+  const openAddQuestion = useCallback(
+    () => openAddQuestionModal(setActiveTab, setActiveSubTab),
+    [openAddQuestionModal, setActiveTab, setActiveSubTab],
+  );
+  const openCreatePaper = useCallback(
+    () => openCreatePaperModal(setActiveTab, setActiveSubTab),
+    [openCreatePaperModal, setActiveTab, setActiveSubTab],
+  );
 
   const handleSetQuestionStatus = async (
     question: QuestionBankQuestion,

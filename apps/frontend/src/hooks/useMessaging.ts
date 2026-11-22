@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   MESSAGE_LOGS_DEFAULT_PAGE_SIZE,
@@ -41,6 +41,7 @@ export interface RecordDispatchesInput {
 const EMPTY_TEMPLATES: MessageTemplate[] = [];
 const EMPTY_LOGS: Message[] = [];
 
+/** Template list for the messaging composer (auth-gated, 30s stale time). */
 export function useMessageTemplates(options?: { enabled?: boolean }) {
   const { isAuthenticated } = useAuth();
   const query = tsrClient.messaging.listTemplates.useQuery({
@@ -59,6 +60,7 @@ export function useMessageTemplates(options?: { enabled?: boolean }) {
   return { ...query, templates };
 }
 
+/** Paginated message-log list with channel/category/status/date filters. */
 export function useMessageLogs(options?: {
   enabled?: boolean;
   /** Archived (soft-deleted) logs — a privileged view (`messaging.clearLogs`). */
@@ -105,7 +107,7 @@ export function useMessageLogs(options?: {
     },
     staleTime: 15_000,
     enabled: options?.enabled !== false && isAuthenticated,
-    placeholderData: (previous: unknown) => previous,
+    placeholderData: keepPreviousData,
   });
 
   const res = (query.data?.status === 200 ? query.data.body : {}) as {
@@ -126,6 +128,7 @@ export function useMessageLogs(options?: {
   };
 }
 
+/** Date-ranged messaging KPI metrics (auth-gated). */
 export function useMessagingMetrics(options?: {
   enabled?: boolean;
   startDate?: string;
@@ -152,6 +155,7 @@ export function useMessagingMetrics(options?: {
   return { ...query, data: metrics, metrics };
 }
 
+/** Template/log/record/clear/restore mutations with Query invalidation + error toasts. */
 export function useMessagingMutations() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();

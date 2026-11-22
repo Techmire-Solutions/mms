@@ -2,8 +2,9 @@ import { queryOptions, type QueryClient } from "@tanstack/react-query";
 import { tenantNotificationListSchema, type TenantNotificationList } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 
-/** Server-stored notifications (e.g. a freed waitlist seat), filtered by the caller's permissions. */
-export const STORED_NOTIFICATIONS_QUERY_KEY = ["notifications", "stored"] as const;
+/** Server-stored notifications (e.g. a freed waitlist seat), filtered by the caller's permissions.
+ * Auth-prefixed so the persisted Query cache never restores another account's list. */
+export const STORED_NOTIFICATIONS_QUERY_KEY = ["auth", "notifications", "stored"] as const;
 
 export function storedNotificationsQueryOptions() {
   return queryOptions({

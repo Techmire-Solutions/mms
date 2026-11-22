@@ -3,7 +3,7 @@ import { resolvePlatformSessionPolicy, type SessionTimeoutPolicy } from "@mms/sh
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdleTimer } from "@/hooks/useIdleTimer";
-import { SessionTimeoutModal } from "@shared/ui";
+import { SessionTimeoutModal } from "@/components/app/SessionTimeoutModal";
 import { apiContract } from "@/lib/api";
 
 interface PlatformSessionTimeoutOptions {
@@ -54,14 +54,28 @@ export function usePlatformSessionTimeout({
 
   const resolvedPolicy = policy ?? resolvePlatformSessionPolicy(30);
 
-  const handleTimeout = (): void => {
+  const endSession = (): void => {
     notify.info(t("platform.sessionEndedTitle"), {
       description: t("platform.sessionEndedDesc"),
     });
     onTimeout();
   };
 
+  // The idle deadline must not sign the admin out while a session extension is
+  // in flight: the extension's completion re-arms the idle window, so firing
+  // here would race the in-flight `/session/extend` and destroy a fresh session.
+  const handleTimeout = (): void => {
+    if (busy) return;
+    endSession();
+  };
+
+  // Explicit sign-out from the warning modal always wins, even mid-extension.
+  const handleSignOut = (): void => {
+    endSession();
+  };
+
   const handleExtend = (): void => {
+    if (busy) return; // one extension at a time
     void onExtend().then(
       () => reset(),
       () => reset(), // relax the client timer even if the extend call fails
@@ -81,13 +95,8 @@ export function usePlatformSessionTimeout({
       open={enabled && isWarning}
       remainingMs={remainingMs}
       onExtend={handleExtend}
-      onSignOut={handleTimeout}
+      onSignOut={handleSignOut}
       busy={busy}
-      title={t("session.timeoutTitle")}
-      subtitle={t("session.timeoutDesc")}
-      staySignedInLabel={t("session.staySignedIn")}
-      signOutNowLabel={t("session.signOutNow")}
-      countdownMessage={(sec) => t("session.timeoutCountdown", { seconds: String(sec) })}
     />
   );
 }
