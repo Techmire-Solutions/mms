@@ -10,6 +10,7 @@ import {
   type ContactsDuplicatePairsPageResult,
 } from "@mms/shared";
 import { getRequestTenant } from "../../lib/tenantContext.js";
+import { isReadOnlyTransaction } from "../../db/tenant-context.js";
 import { logger } from "../../lib/logger.js";
 import { deleteObject, getObject, saveObject } from "../../db/database.js";
 import { loadContactPreferences } from "./contactPreferencesService.js";
@@ -199,6 +200,11 @@ export async function loadDuplicatePairs(
   const versionAfter =
     tenant && repo.getLatestWriteAt ? await repo.getLatestWriteAt(tenant) : versionBefore;
   if (tenant && (!repo.getLatestWriteAt || versionBefore === versionAfter)) {
+    // Read-only transactions (e.g. GET /api/dashboard/summary) must not write cache
+    // into the database: PostgreSQL aborts read-only transactions on INSERT attempts.
+    if (isReadOnlyTransaction()) {
+      return pairs;
+    }
     // A cache-write failure must not fail the read.
     try {
       const contactCount = await repo.countByWorkspace(tenant, { deleted: "active" });
