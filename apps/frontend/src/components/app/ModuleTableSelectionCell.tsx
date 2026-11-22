@@ -12,6 +12,10 @@ export interface ModuleTableSelectionCellProps {
   className?: string;
   stopPropagation?: boolean;
   onClick?: (e: React.MouseEvent<HTMLTableCellElement>) => void;
+  /** Called instead of the single-row toggle when the user shift-clicks (range select). */
+  onShiftSelect?: () => void;
+  /** Padding override (row density). Defaults to `px-4 py-3`. */
+  paddingClassName?: string;
 }
 
 /** Shared selection checkbox table cell matching ModuleWorkTableHeader sticky layout. */
@@ -23,14 +27,34 @@ export const ModuleTableSelectionCell = React.memo(function ModuleTableSelection
   className,
   stopPropagation = false,
   onClick,
+  onShiftSelect,
+  paddingClassName = "px-4 py-3",
 }: ModuleTableSelectionCellProps): JSX.Element {
+  // Shift is captured on pointer-down (fires before Radix's click-driven
+  // `onCheckedChange`), so the single-row toggle is suppressed on shift+click and
+  // the range-select callback runs instead. Keyboard toggles never set this ref.
+  const shiftRef = React.useRef(false);
+
+  const handleCheckedChange = (next: boolean) => {
+    if (shiftRef.current) {
+      shiftRef.current = false;
+      onShiftSelect?.();
+      return;
+    }
+    onCheckedChange(next);
+  };
+
   const handleClick = (e: React.MouseEvent<HTMLTableCellElement>) => {
     if (stopPropagation) {
       e.stopPropagation();
     }
     const target = e.target as HTMLElement;
     if (!target.closest('button[role="checkbox"], input')) {
-      onCheckedChange(!checked);
+      if (e.shiftKey && onShiftSelect) {
+        onShiftSelect();
+      } else {
+        onCheckedChange(!checked);
+      }
     }
     onClick?.(e);
   };
@@ -40,13 +64,21 @@ export const ModuleTableSelectionCell = React.memo(function ModuleTableSelection
       noWrap
       onClick={handleClick}
       className={cn(
-        "w-12 min-w-12 px-4 py-3 transition-colors cursor-pointer",
+        "w-12 min-w-12 transition-colors cursor-pointer",
+        paddingClassName,
         sticky && "sticky start-0 z-sticky border-e border-border/30",
         sticky ? workTableStickyCellBg(checked) : undefined,
         className,
       )}
     >
-      <Checkbox checked={checked} onCheckedChange={onCheckedChange} aria-label={ariaLabel} />
+      <Checkbox
+        checked={checked}
+        onCheckedChange={handleCheckedChange}
+        onPointerDown={(e) => {
+          shiftRef.current = e.shiftKey;
+        }}
+        aria-label={ariaLabel}
+      />
     </TableCell>
   );
 });

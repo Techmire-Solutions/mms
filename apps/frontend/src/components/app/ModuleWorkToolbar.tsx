@@ -1,10 +1,12 @@
 import React, { type JSX } from "react";
+import { DensityToggle } from "@shared/ui";
 import { SearchBar } from "@/components/app/SearchBar";
 import { ModuleClearFiltersButton } from "@/components/app/ModuleClearFiltersButton";
 import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { WorkViewModeToggle } from "@/components/app/WorkViewModeToggle";
 import { ModuleColumnCustomizer } from "@/components/app/ModuleColumnCustomizer";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useRovingToolbar } from "@/hooks/useRovingToolbar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
@@ -30,6 +32,7 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
   trashToggle,
   viewModeToggle,
   columnCustomizer,
+  densityToggle,
   surface = "card",
   children,
   showExportInTrash = true,
@@ -48,6 +51,7 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
   );
   const hasLayoutControls = Boolean(
     viewModeToggle ||
+    densityToggle ||
     (columnCustomizer &&
       (Boolean(columnCustomizer.registry?.length) ||
         Boolean(columnCustomizer.entityType) ||
@@ -142,6 +146,17 @@ export const ModuleWorkToolbar = function ModuleWorkToolbar({
                   viewMode={viewModeToggle.viewMode}
                   onViewModeChange={viewModeToggle.onViewModeChange}
                 />
+              )}
+
+              {densityToggle && (
+                <TooltipProvider delayDuration={200}>
+                  <DensityToggle
+                    density={densityToggle.density}
+                    onChange={densityToggle.onChange}
+                    ariaLabel={densityToggle.ariaLabel}
+                    labels={densityToggle.labels}
+                  />
+                </TooltipProvider>
               )}
 
               {columnCustomizer &&

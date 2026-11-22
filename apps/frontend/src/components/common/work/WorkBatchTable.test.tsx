@@ -1,8 +1,14 @@
-import React from "react";
-import { describe, it, expect, vi } from "vitest";
+import React, { act } from "react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { createRoot, type Root } from "react-dom/client";
 import { WorkBatchTable } from "./WorkBatchTable";
 import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
+
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
+}
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const mockContext = {
   language: "en",
@@ -179,5 +185,77 @@ describe("WorkBatchTable", () => {
 
     const tableMarkup = /<table[\s\S]*?<\/table>/.exec(html)?.[0] ?? "";
     expect(tableMarkup).toContain("TOTAL-IN-TABLE");
+  });
+
+  describe("live-region announcements", () => {
+    let container: HTMLDivElement;
+    let root: Root;
+
+    beforeEach(() => {
+      container = document.createElement("div");
+      document.body.appendChild(container);
+      root = createRoot(container);
+    });
+
+    afterEach(async () => {
+      await act(async () => {
+        root.unmount();
+      });
+      container.remove();
+    });
+
+    it("announces sort changes via the sr-only live region", async () => {
+      const onSort = vi.fn();
+      const sortableColumns = [
+        {
+          id: "name",
+          label: "Name",
+          sortField: "name",
+          render: (row: SampleRow) => <span>{row.name}</span>,
+        },
+      ];
+
+      await act(async () => {
+        root.render(
+          <TestWrapper>
+            <WorkBatchTable
+              data={sampleData}
+              columns={sortableColumns}
+              sort={{ field: "name", dir: "asc", onSort }}
+            />
+          </TestWrapper>,
+        );
+      });
+
+      const sortButton = container.querySelector("th button") as HTMLElement;
+      expect(sortButton).toBeTruthy();
+
+      await act(async () => {
+        sortButton.click();
+      });
+
+      expect(onSort).toHaveBeenCalledWith("name");
+      const liveRegion = container.querySelector('[role="status"][aria-live="polite"]');
+      expect(liveRegion).toBeTruthy();
+      // mock t() returns the key verbatim, so the announcement is the composed key
+      expect(liveRegion?.textContent).toContain("table.sortedBy");
+    });
+
+    it("exposes the scroll container as a focusable region", async () => {
+      await act(async () => {
+        root.render(
+          <TestWrapper>
+            <WorkBatchTable data={sampleData} columns={columns} caption="People directory" />
+          </TestWrapper>,
+        );
+      });
+
+      const region = container.querySelector('[role="region"]') as HTMLElement;
+      expect(region).toBeTruthy();
+      expect(region.getAttribute("tabindex")).toBe("0");
+      expect(region.getAttribute("aria-label")).toBe("People directory");
+      // The scrollable container itself must be the focusable region (not the inner table).
+      expect(region.className).toContain("overflow-x-auto");
+    });
   });
 });

@@ -17,6 +17,8 @@ export interface ResizableTableHeadProps extends Omit<
   columnKey: string;
   width?: number;
   onResize?: (columnKey: string, width: number) => void;
+  /** SR announcement on resize completion (columnKey, resolved width in px). */
+  onResizeAnnounce?: (columnKey: string, width: number) => void;
   minWidth?: number;
   maxWidth?: number;
   noWrap?: boolean;
@@ -33,6 +35,7 @@ export function ResizableTableHead({
   columnKey,
   width,
   onResize,
+  onResizeAnnounce,
   minWidth = 80,
   maxWidth = 640,
   noWrap,
@@ -102,6 +105,7 @@ export function ResizableTableHead({
       );
       setDraftWidth(null);
       onResize(columnKey, nextWidth);
+      onResizeAnnounce?.(columnKey, nextWidth);
     };
 
     cleanupResizeRef.current = cleanup;
@@ -116,6 +120,41 @@ export function ResizableTableHead({
     const optimalWidth = measureColumnAutoFitWidth(thRef.current, minWidth, maxWidth);
     setDraftWidth(null);
     onResize(columnKey, optimalWidth);
+    onResizeAnnounce?.(columnKey, optimalWidth);
+  };
+
+  // Keyboard alternative for column resize (WCAG 2.2 2.1.1 / 2.5.7): the handle is
+  // a focusable separator; Arrow keys nudge the width, Shift amplifies the step,
+  // and Home/End jump to the min/max. Direction mirrors the RTL layout.
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
+    if (!onResize) return;
+    const currentWidth =
+      typeof resolvedWidth === "number"
+        ? resolvedWidth
+        : (thRef.current?.getBoundingClientRect().width ?? minWidth);
+    const step = event.shiftKey ? 32 : 8;
+    let nextWidth: number | null = null;
+    switch (event.key) {
+      case "ArrowLeft":
+        nextWidth = isRtl ? currentWidth + step : currentWidth - step;
+        break;
+      case "ArrowRight":
+        nextWidth = isRtl ? currentWidth - step : currentWidth + step;
+        break;
+      case "Home":
+        nextWidth = minWidth;
+        break;
+      case "End":
+        nextWidth = maxWidth;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const clampedWidth = clampModuleColumnWidth(Math.min(maxWidth, Math.max(minWidth, nextWidth)));
+    onResize(columnKey, clampedWidth);
+    onResizeAnnounce?.(columnKey, clampedWidth);
   };
 
   return (
@@ -139,16 +178,21 @@ export function ResizableTableHead({
     >
       {children}
       {onResize ? (
-        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
         <span
           role="separator"
           aria-orientation="vertical"
           aria-label={t("table.resizeColumn")}
           title={t("table.resizeColumn")}
+          tabIndex={0}
+          aria-valuemin={minWidth}
+          aria-valuemax={maxWidth}
+          aria-valuenow={Math.round(resolvedWidth ?? minWidth)}
           onPointerDown={handlePointerDown}
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={handleDoubleClick}
-          className="absolute inset-y-0 end-0 z-elevated flex w-11 min-w-11 cursor-col-resize select-none items-stretch justify-end after:absolute after:inset-y-1 after:end-0 after:w-px after:bg-border/70 hover:after:bg-primary/60"
+          onKeyDown={handleKeyDown}
+          className="absolute inset-y-0 end-0 z-elevated flex w-11 min-w-11 cursor-col-resize select-none items-stretch justify-end focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-sm after:absolute after:inset-y-1 after:end-0 after:w-px after:bg-border/70 hover:after:bg-primary/60"
         />
       ) : null}
     </th>

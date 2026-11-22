@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import type { Contact } from "@mms/shared";
 import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
 import { useContactsContractList } from "@/tenant/features/contacts/hooks/useContactsQueries";
 import { useContactsDirectoryFilters } from "@/tenant/features/contacts/hooks/useContactsDirectoryFilters";
 import { useContactsDirectoryLinks } from "@/tenant/features/contacts/hooks/useContactsDirectoryLinks";
 import { contractBody, isContractQueryError } from "@/lib/contractQuery";
+import { addRangeToSelection } from "@/lib/directorySelection";
 
 interface UseContactsDirectoryOptions {
   effectiveTab: string;
@@ -70,10 +71,47 @@ export function useContactsDirectory({
     viewContact,
   });
 
-  const { handleSelectAll: selectAllIds } = filters;
+  const {
+    handleSelectAll: selectAllIds,
+    handleSelect: toggleSelect,
+    setSelected: setSelectedIds,
+  } = filters;
   const handleSelectAll = useCallback(() => {
     selectAllIds(workContacts.map((contact) => contact.id));
   }, [selectAllIds, workContacts]);
+
+  // Shift-click range selection: the last plain (non-shift) selection acts as the
+  // range anchor; a shift+click extends selection contiguously in list order.
+  const anchorIdRef = useRef<string | number | null>(null);
+
+  const handleSelect = useCallback(
+    (id: string | number) => {
+      anchorIdRef.current = id;
+      toggleSelect(id);
+    },
+    [toggleSelect],
+  );
+
+  const handleSelectRange = useCallback(
+    (id: string | number) => {
+      const anchor = anchorIdRef.current;
+      if (anchor == null || anchor === id) {
+        handleSelect(id);
+        return;
+      }
+      const ids = workContacts.map((contact) => contact.id);
+      const anchorIdx = ids.indexOf(anchor);
+      const targetIdx = ids.indexOf(id);
+      if (anchorIdx === -1 || targetIdx === -1) {
+        handleSelect(id);
+        return;
+      }
+      const [lo, hi] = anchorIdx < targetIdx ? [anchorIdx, targetIdx] : [targetIdx, anchorIdx];
+      const range = ids.slice(lo, hi + 1);
+      setSelectedIds((selected) => addRangeToSelection(selected, range));
+    },
+    [workContacts, handleSelect, setSelectedIds],
+  );
 
   return {
     viewingDeleted: filters.viewingDeleted,
@@ -104,7 +142,8 @@ export function useContactsDirectory({
     activeFilterCount: filters.activeFilterCount,
     handleSort: filters.handleSort,
     handleSortDir: filters.handleSortDir,
-    handleSelect: filters.handleSelect,
+    handleSelect,
+    handleSelectRange,
     handleSelectAll,
     clearFilters: filters.clearFilters,
     clearSelection: filters.clearSelection,

@@ -47,7 +47,7 @@ describe("useColumnHeaderDrag", () => {
     const onReorder = vi.fn();
     const harness = renderHook({
       columns,
-      stickyColumnId: "name",
+      pinnedColumnIds: new Set(["name"]),
       onReorder,
     });
 
@@ -62,7 +62,7 @@ describe("useColumnHeaderDrag", () => {
   it("disables dragging when onReorder is not provided", () => {
     const harness = renderHook({
       columns,
-      stickyColumnId: "name",
+      pinnedColumnIds: new Set(["name"]),
     });
 
     expect(harness.result.canDrag("gender")).toBe(false);
@@ -74,7 +74,7 @@ describe("useColumnHeaderDrag", () => {
     const onReorder = vi.fn();
     const harness = renderHook({
       columns,
-      stickyColumnId: "name",
+      pinnedColumnIds: new Set(["name"]),
       onReorder,
     });
 
@@ -94,7 +94,7 @@ describe("useColumnHeaderDrag", () => {
     const onReorder = vi.fn();
     const harness = renderHook({
       columns,
-      stickyColumnId: "name",
+      pinnedColumnIds: new Set(["name"]),
       onReorder,
       isColumnDraggable: (id) => id !== "phone",
     });
@@ -116,7 +116,7 @@ describe("useColumnHeaderDrag", () => {
     function InteractiveComponent() {
       hookResult = useColumnHeaderDrag({
         columns,
-        stickyColumnId: "name",
+        pinnedColumnIds: new Set(["name"]),
         onReorder,
       });
       return (

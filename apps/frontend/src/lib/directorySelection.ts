@@ -33,6 +33,21 @@ export function toggleIdInSelection<T extends string | number>(selected: readonl
   return [...selected, id];
 }
 
+/**
+ * Add a contiguous range of ids (shift-click selection). Never removes ids, so
+ * shift+click always extends selection — matching the single-pointer
+ * "range select" convention and keeping the anchor semantics simple.
+ */
+export function addRangeToSelection<T extends string | number>(
+  selected: readonly T[],
+  range: readonly T[],
+): T[] {
+  if (range.length === 0) return [...selected];
+  const next = new Set(selected);
+  for (const id of range) next.add(id);
+  return [...next];
+}
+
 /** Toggle current-page ids into/out of selection (keeps other pages). */
 export function togglePageIdsInSelection<T extends string | number>(
   selected: readonly T[],

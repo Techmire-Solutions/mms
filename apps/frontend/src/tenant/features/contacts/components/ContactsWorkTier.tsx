@@ -8,6 +8,7 @@ import { ContactsBulkActionBar } from "@/tenant/features/contacts/components/Con
 import { ContactsList } from "@/tenant/features/contacts/components/ContactsList";
 import { useContactEntityDescriptor } from "@/tenant/features/contacts/hooks/useContactEntityDescriptor";
 import { useDescriptorFilterChips } from "@/components/common/useDescriptorFilterChips";
+import { useWorkTableDensity } from "@/hooks/useWorkTableDensity";
 import type { ContactsWorkTierProps } from "@/tenant/features/contacts/lib/contactsWorkTierTypes";
 
 export const ContactsWorkTier = React.memo(function ContactsWorkTier({
@@ -63,6 +64,7 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
 }: ContactsWorkTierProps): React.JSX.Element {
   const { t } = useTranslation();
   const descriptor = useContactEntityDescriptor();
+  const { density, setDensity } = useWorkTableDensity();
 
   const activeFilters = useMemo(
     () => ({
@@ -106,6 +108,8 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
           onViewModeChange={onViewModeChange}
           shownCount={shownCount}
           filterChips={<FilterChips chips={filterChips} onClearAll={onClearFilters} />}
+          density={density}
+          onDensityChange={setDensity}
         />
       </ErrorBoundary>
 
@@ -149,6 +153,7 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
         onPageChange={onPageChange}
         onCreate={onCreate}
         onImport={onImport}
+        density={density}
       />
     </ModuleTierMotion>
   );

@@ -18,7 +18,8 @@ describe("ModuleWorkTableHeader", () => {
           columns={columns}
           getColumnWidth={() => 120}
           setColumnWidth={vi.fn()}
-          stickyColumnId="name"
+          stickyColumnIds={["name"]}
+          stickyLeftOffsets={{ name: 0 }}
           actionsLabel="Actions"
         />
       </table>,
@@ -28,7 +29,7 @@ describe("ModuleWorkTableHeader", () => {
     expect(html).toContain("Gender");
     expect(html).toContain("Phone");
     expect(html).toContain("Actions");
-    expect(html).toContain("start-0");
+    expect(html).toContain("inset-inline-start:0");
   });
 
   it("renders selection checkbox and offsets sticky column with start-12", () => {
@@ -39,7 +40,8 @@ describe("ModuleWorkTableHeader", () => {
           columns={columns}
           getColumnWidth={() => 120}
           setColumnWidth={vi.fn()}
-          stickyColumnId="name"
+          stickyColumnIds={["name"]}
+          stickyLeftOffsets={{ name: 48 }}
           selection={{
             allSelected: false,
             someSelected: true,
@@ -50,7 +52,7 @@ describe("ModuleWorkTableHeader", () => {
       </table>,
     );
 
-    expect(html).toContain("start-12");
+    expect(html).toContain("inset-inline-start:48px");
     expect(html).toContain('aria-label="Select all"');
   });
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { ContactsQuickFilter } from "@mms/shared";
 import type { ContactsWorkViewMode } from "@/tenant/features/contacts/lib/contactsWorkTierTypes";
+import type { WorkTableDensity } from "@/hooks/useWorkTableDensity";
 import { ContactsFiltersMenuButton } from "@/tenant/features/contacts/components/ContactsFiltersMenuButton";
 import { useContactsToolbarModel } from "@/tenant/features/contacts/hooks/useContactsToolbarModel";
 import { CONTACTS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/contacts/hooks/useContactsKeyboardShortcuts";
@@ -31,6 +32,8 @@ export interface ContactsListFiltersProps {
   onViewModeChange: (mode: ContactsWorkViewMode) => void;
   shownCount?: number;
   filterChips?: React.ReactNode;
+  density?: WorkTableDensity;
+  onDensityChange?: (density: WorkTableDensity) => void;
 }
 
 export const ContactsListFilters = React.memo(function ContactsListFilters({
@@ -55,6 +58,8 @@ export const ContactsListFilters = React.memo(function ContactsListFilters({
   onViewModeChange,
   shownCount,
   filterChips,
+  density,
+  onDensityChange,
 }: ContactsListFiltersProps): React.JSX.Element {
   const {
     t,
@@ -148,6 +153,20 @@ export const ContactsListFilters = React.memo(function ContactsListFilters({
           onReset: handleResetColumnLayout,
           labels: columnCustomizerLabels,
         }}
+        densityToggle={
+          density && onDensityChange
+            ? {
+                density,
+                onChange: onDensityChange,
+                ariaLabel: t("table.densityLabel"),
+                labels: {
+                  compact: t("table.densityCompact"),
+                  standard: t("table.densityStandard"),
+                  comfortable: t("table.densityComfortable"),
+                },
+              }
+            : undefined
+        }
       />
       {viewMode === "cards" ? (
         <div className="flex justify-end px-1">

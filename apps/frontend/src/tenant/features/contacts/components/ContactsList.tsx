@@ -7,6 +7,7 @@ import ContactsListDesktopTable from "@/tenant/features/contacts/components/Cont
 import ContactsListCards from "@/tenant/features/contacts/components/ContactsListCards";
 import type { ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 import type { ContactsWorkViewMode } from "@/tenant/features/contacts/lib/contactsWorkTierTypes";
+import type { WorkTableDensity } from "@/hooks/useWorkTableDensity";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Upload } from "lucide-react";
@@ -31,6 +32,8 @@ export interface ContactsListProps {
   onPageChange: (page: number) => void;
   onCreate?: () => void;
   onImport?: () => void;
+  /** Row density for the desktop table (cards unaffected). */
+  density?: WorkTableDensity;
 }
 
 export const ContactsList = React.memo(function ContactsList({
@@ -53,6 +56,7 @@ export const ContactsList = React.memo(function ContactsList({
   onPageChange,
   onCreate,
   onImport,
+  density,
 }: ContactsListProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -129,7 +133,7 @@ export const ContactsList = React.memo(function ContactsList({
         <ContactsListCards {...commonDirectoryProps} />
       ) : (
         <div className="space-y-2">
-          <ContactsListDesktopTable {...tableProps} />
+          <ContactsListDesktopTable {...tableProps} density={density} />
         </div>
       )}
     </ModuleWorkListStateShell>
