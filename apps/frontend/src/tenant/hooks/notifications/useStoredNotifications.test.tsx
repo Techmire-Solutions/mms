@@ -136,6 +136,10 @@ describe("useStoredNotifications", () => {
   it("never re-posts a read receipt for an already-read notification", async () => {
     // Regression: the popover re-marked a read item on every click, re-POSTing
     // /read and churning the server unread state.
+    client.setQueryData(["auth", "notifications", "stored"], {
+      notifications: [record("n1", true), record("n2", false)],
+      unreadCount: 1,
+    });
     const { current, unmount } = renderHook(client);
     await flush();
 
@@ -149,6 +153,10 @@ describe("useStoredNotifications", () => {
   });
 
   it("posts a read receipt for an unread notification exactly once", async () => {
+    client.setQueryData(["auth", "notifications", "stored"], {
+      notifications: [record("n1", true), record("n2", false)],
+      unreadCount: 1,
+    });
     const { current, unmount } = renderHook(client);
     await flush();
 
@@ -164,6 +172,10 @@ describe("useStoredNotifications", () => {
   });
 
   it("marks all read only when an unread notification exists", async () => {
+    client.setQueryData(["auth", "notifications", "stored"], {
+      notifications: [record("n1", true), record("n2", false)],
+      unreadCount: 1,
+    });
     const { current, unmount } = renderHook(client);
     await flush();
 
