@@ -6,7 +6,7 @@ import {
   FINANCE_INVOICES_QUERY_KEY,
   FINANCE_METRICS_QUERY_KEY,
   FINANCE_PAYMENTS_QUERY_KEY,
-  FINANCE_PREFERENCES_QUERY_KEY,
+  FINANCE_CONTRACT_PREFERENCES_QUERY_KEY,
   FINANCE_REPORT_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/finance/hooks/financeQueryKeys";
 
@@ -23,7 +23,7 @@ const invalidateFinanceModuleQueries = createModuleQueryInvalidator({
     FINANCE_FEE_STRUCTURES_QUERY_KEY,
   ],
   metrics: FINANCE_METRICS_QUERY_KEY,
-  preferences: FINANCE_PREFERENCES_QUERY_KEY,
+  preferences: FINANCE_CONTRACT_PREFERENCES_QUERY_KEY,
 });
 
 /**

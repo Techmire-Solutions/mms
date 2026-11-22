@@ -53,6 +53,9 @@ describe("DataTable", () => {
   let root: Root;
 
   beforeEach(() => {
+    // The shared toolbar debounces search at the leaf (mms-hooks §5) — tests
+    // must advance the fake clock to observe the settled value.
+    vi.useFakeTimers();
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
@@ -61,6 +64,7 @@ describe("DataTable", () => {
   afterEach(async () => {
     await act(async () => root.unmount());
     container.remove();
+    vi.useRealTimers();
   });
 
   const renderTable = async (props: Partial<React.ComponentProps<typeof DataTable<Row>>> = {}) => {
@@ -92,10 +96,12 @@ describe("DataTable", () => {
     await renderTable();
     const input = container.querySelector<HTMLInputElement>("input")!;
     await act(async () => setInputValue(input, "inactive"));
+    await act(async () => vi.advanceTimersByTime(250));
     expect(container.querySelectorAll("tbody tr")).toHaveLength(1);
     expect(container.textContent).toContain("Beta");
 
     await act(async () => setInputValue(input, "zzz"));
+    await act(async () => vi.advanceTimersByTime(250));
     expect(container.textContent).toContain("common.dataTable.noMatches");
   });
 

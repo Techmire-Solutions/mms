@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import type { ContactsQuickFilter } from "@mms/shared";
 import type { ContactsWorkViewMode } from "@/tenant/features/contacts/lib/contactsWorkTierTypes";
 import type { WorkTableDensity } from "@/hooks/useWorkTableDensity";
@@ -8,7 +8,6 @@ import { CONTACTS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/contacts/hooks/
 import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
-import { useDebounce } from "@/hooks/useDebounce";
 
 export interface ContactsListFiltersProps {
   search: string;
@@ -71,28 +70,6 @@ export const ContactsListFilters = React.memo(function ContactsListFilters({
     columnCustomizerLabels,
   } = useContactsToolbarModel();
 
-  /**
-   * Keystrokes are local: the page controller (metrics, directory, overlays)
-   * only re-renders once the debounced value settles, instead of on every
-   * character. The ref distinguishes our own pushes from external resets
-   * (clear filters, drill-down navigation).
-   */
-  const [searchInput, setSearchInput] = useState(search);
-  const debouncedInput = useDebounce(searchInput, 250);
-  const lastPushedRef = useRef(search);
-
-  useEffect(() => {
-    if (debouncedInput === lastPushedRef.current) return;
-    lastPushedRef.current = debouncedInput;
-    onSearchChange(debouncedInput);
-  }, [debouncedInput, onSearchChange]);
-
-  useEffect(() => {
-    if (search === lastPushedRef.current) return;
-    lastPushedRef.current = search;
-    setSearchInput(search);
-  }, [search]);
-
   const sortLabel = sortOptions.find((option) => option.field === sortField)?.label ?? sortField;
   const directionLabel = t(
     sortDir === "asc" ? "contacts.sort.ascending" : "contacts.sort.descending",
@@ -107,8 +84,8 @@ export const ContactsListFilters = React.memo(function ContactsListFilters({
           shownCount != null ? t("contacts.shownCount", { count: shownCount }) : undefined
         }
         regionLabel={t("nav.contacts")}
-        search={searchInput}
-        onSearchChange={setSearchInput}
+        search={search}
+        onSearchChange={onSearchChange}
         searchPlaceholder={t("contacts.searchPlaceholder")}
         searchId={CONTACTS_WORK_SEARCH_INPUT_ID}
         isSearching={isSearching}

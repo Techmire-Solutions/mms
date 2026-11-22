@@ -9,4 +9,9 @@ export const FINANCE_REPORT_AGGREGATES_QUERY_KEY = [
   "report-aggregates",
 ] as const;
 export const FINANCE_FIELD_CONFIG_QUERY_KEY = ["finance", "field-config", "contract"] as const;
-export const FINANCE_PREFERENCES_QUERY_KEY = ["finance", "preferences", "contract"] as const;
+/** tsrClient contract envelope for preferences — distinct from the setup hooks' document-store key. */
+export const FINANCE_CONTRACT_PREFERENCES_QUERY_KEY = [
+  "finance",
+  "preferences",
+  "contract",
+] as const;

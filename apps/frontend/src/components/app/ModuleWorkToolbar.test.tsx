@@ -1,5 +1,6 @@
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import React, { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ModuleWorkToolbar } from "./ModuleWorkToolbar";
 
@@ -183,5 +184,85 @@ describe("ModuleWorkToolbar", () => {
 
     const plain = renderToStaticMarkup(<ModuleWorkToolbar {...baseProps} surface="plain" />);
     expect(plain).not.toContain("rounded-2xl");
+  });
+});
+
+describe("ModuleWorkToolbar search debounce", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(async () => {
+    await act(async () => root.unmount());
+    container.remove();
+    vi.useRealTimers();
+  });
+
+  function typeInto(input: HTMLInputElement, value: string): void {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    setter?.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function searchInput(): HTMLInputElement {
+    const input = container.querySelector<HTMLInputElement>("input");
+    if (!input) throw new Error("search input not rendered");
+    return input;
+  }
+
+  it("given rapid keystrokes, should push only the settled value once", () => {
+    // Arrange
+    const onSearchChange = vi.fn();
+    act(() => {
+      root.render(<ModuleWorkToolbar {...baseProps} onSearchChange={onSearchChange} />);
+    });
+
+    // Act — three keystrokes within the debounce window
+    act(() => {
+      typeInto(searchInput(), "a");
+      typeInto(searchInput(), "al");
+      typeInto(searchInput(), "ali");
+    });
+
+    // Assert — keystrokes stay local; the page controller has not been notified
+    expect(onSearchChange).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    expect(onSearchChange).toHaveBeenCalledTimes(1);
+    expect(onSearchChange).toHaveBeenCalledWith("ali");
+  });
+
+  it("given an external reset, should adopt it without echoing it back", () => {
+    // Arrange
+    const onSearchChange = vi.fn();
+    act(() => {
+      root.render(
+        <ModuleWorkToolbar {...baseProps} search="ali" onSearchChange={onSearchChange} />,
+      );
+    });
+    expect(searchInput().value).toBe("ali");
+
+    // Act — parent clears the search (clear filters / drill-down)
+    act(() => {
+      root.render(<ModuleWorkToolbar {...baseProps} search="" onSearchChange={onSearchChange} />);
+    });
+
+    // Assert — adopted immediately, never echoed
+    expect(searchInput().value).toBe("");
+    expect(onSearchChange).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    expect(onSearchChange).not.toHaveBeenCalled();
   });
 });

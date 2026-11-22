@@ -10,7 +10,7 @@ import {
   FINANCE_INVOICES_QUERY_KEY,
   FINANCE_METRICS_QUERY_KEY,
   FINANCE_PAYMENTS_QUERY_KEY,
-  FINANCE_PREFERENCES_QUERY_KEY,
+  FINANCE_CONTRACT_PREFERENCES_QUERY_KEY,
   FINANCE_REPORT_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/finance/hooks/financeQueryKeys";
 import { invalidateFinanceQueries } from "@/tenant/features/finance/hooks/invalidateFinanceQueries";
@@ -97,7 +97,7 @@ export function useFinanceContractFieldConfig(enabled = true) {
 
 export function useFinanceContractPreferences(enabled = true) {
   return tsrClient.finance.getPreferences.useQuery({
-    queryKey: FINANCE_PREFERENCES_QUERY_KEY,
+    queryKey: FINANCE_CONTRACT_PREFERENCES_QUERY_KEY,
     queryData: {},
     staleTime: 30_000,
     enabled,
@@ -118,7 +118,7 @@ export function useFinanceContractUpdatePreferences() {
   const queryClient = useQueryClient();
   return tsrClient.finance.updatePreferences.useMutation({
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: FINANCE_PREFERENCES_QUERY_KEY });
+      void queryClient.invalidateQueries({ queryKey: FINANCE_CONTRACT_PREFERENCES_QUERY_KEY });
       invalidateFinanceQueries(queryClient);
     },
   });
