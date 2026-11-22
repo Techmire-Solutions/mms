@@ -8,30 +8,6 @@ import {
 import { normalizeStudentsSettings } from "./studentSettingsUtils.js";
 import { moduleFieldConfigPutBodyBaseSchema } from "../schemas/moduleFieldConfig.dto.js";
 import { deepSanitizeStrings } from "../schemas/sanitize.js";
-
-/** PUT /api/students/field-config — field registry JSON without formTabs SSOT. */
-const studentFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
-  .extend({
-    columnRegistry: z.array(z.record(z.string(), z.unknown())).optional(),
-    customFields: z.array(z.record(z.string(), z.unknown())).optional(),
-  })
-  .strict();
-
-export const studentFieldConfigPutBodySchema = z.preprocess((raw) => {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  return deepSanitizeStrings(raw);
-}, studentFieldConfigPutBodyBaseSchema);
-
-/** PUT /api/students/preferences — GR / auto-id prefs only. */
-export const studentPreferencesPutBodySchema = z
-  .object({
-    autoGenerateId: z.boolean().optional(),
-    grNumberTemplate: z.string().optional(),
-    grNumberDigits: z.number().optional(),
-    grNumberRestartAnnually: z.boolean().optional(),
-  })
-  .passthrough();
-
 import {
   type StudentModulePreferences,
   STUDENT_MODULE_PREFERENCE_KEYS,
@@ -55,6 +31,30 @@ export function stripStudentFieldConfigForPersist(
   }
   return copy;
 }
+
+/** PUT /api/students/field-config — field registry JSON without formTabs SSOT. */
+const studentFieldConfigPutBodyBaseSchema = moduleFieldConfigPutBodyBaseSchema
+  .extend({
+    columnRegistry: z.array(z.record(z.string(), z.unknown())).optional(),
+    customFields: z.array(z.record(z.string(), z.unknown())).optional(),
+  })
+  .strict();
+
+export const studentFieldConfigPutBodySchema = z.preprocess((raw) => {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const stripped = stripStudentFieldConfigForPersist(raw as Record<string, unknown>);
+  return deepSanitizeStrings(stripped);
+}, studentFieldConfigPutBodyBaseSchema);
+
+/** PUT /api/students/preferences — GR / auto-id prefs only. */
+export const studentPreferencesPutBodySchema = z
+  .object({
+    autoGenerateId: z.boolean().optional(),
+    grNumberTemplate: z.string().optional(),
+    grNumberDigits: z.number().optional(),
+    grNumberRestartAnnually: z.boolean().optional(),
+  })
+  .passthrough();
 
 /** Split a legacy `students_settings` blob into typed field-config + preferences rows. */
 export function splitStudentsSettingsBlob(raw: unknown): {

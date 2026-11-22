@@ -68,6 +68,7 @@ export async function authenticateTenant(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
+  if (reply.sent) return;
   markRequestDiagnosticStage(request, "authentication_jwt");
   try {
     await request.jwtVerify();
@@ -277,7 +278,6 @@ export async function authenticateTenant(
   (request as AuthenticatedRequest).tenant = { id: tenant };
 
   bindRequestUserId(user.id ? String(user.id) : null);
-
   const traceparent =
     (request.telemetrySpan ? formatTraceParent(request.telemetrySpan.context) : null) ||
     (typeof request.headers["traceparent"] === "string"
