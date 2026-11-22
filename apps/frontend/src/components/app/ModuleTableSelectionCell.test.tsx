@@ -1,8 +1,14 @@
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import React, { act } from "react";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { createRoot, type Root } from "react-dom/client";
 import { ModuleTableSelectionCell } from "./ModuleTableSelectionCell";
 import { Table, TableBody, TableRow } from "@/components/ui/table";
+
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
+}
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 describe("ModuleTableSelectionCell", () => {
   it("renders a sticky selection cell with checkbox and aria-label", () => {
@@ -64,5 +70,117 @@ describe("ModuleTableSelectionCell", () => {
     expect(html).toContain("w-4");
     expect(html).not.toContain("h-6");
     expect(html).not.toContain("w-6");
+  });
+
+  describe("shift-click range selection", () => {
+    let container: HTMLDivElement;
+    let root: Root;
+
+    beforeEach(() => {
+      container = document.createElement("div");
+      document.body.appendChild(container);
+      root = createRoot(container);
+    });
+
+    afterEach(async () => {
+      await act(async () => {
+        root.unmount();
+      });
+      container.remove();
+    });
+
+    it("toggles normally on a plain click", async () => {
+      const onCheckedChange = vi.fn();
+      const onShiftSelect = vi.fn();
+      await act(async () => {
+        root.render(
+          <Table>
+            <TableBody>
+              <TableRow>
+                <ModuleTableSelectionCell
+                  checked={false}
+                  onCheckedChange={onCheckedChange}
+                  onShiftSelect={onShiftSelect}
+                  ariaLabel="Select Row"
+                />
+              </TableRow>
+            </TableBody>
+          </Table>,
+        );
+      });
+
+      const cell = container.querySelector("td") as HTMLElement;
+      await act(async () => {
+        cell.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+      });
+
+      expect(onCheckedChange).toHaveBeenCalledTimes(1);
+      expect(onShiftSelect).not.toHaveBeenCalled();
+    });
+
+    it("routes shift+click on the cell to onShiftSelect instead of toggling", async () => {
+      const onCheckedChange = vi.fn();
+      const onShiftSelect = vi.fn();
+      await act(async () => {
+        root.render(
+          <Table>
+            <TableBody>
+              <TableRow>
+                <ModuleTableSelectionCell
+                  checked={false}
+                  onCheckedChange={onCheckedChange}
+                  onShiftSelect={onShiftSelect}
+                  ariaLabel="Select Row"
+                />
+              </TableRow>
+            </TableBody>
+          </Table>,
+        );
+      });
+
+      const cell = container.querySelector("td") as HTMLElement;
+      await act(async () => {
+        cell.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, cancelable: true, shiftKey: true }),
+        );
+      });
+
+      expect(onShiftSelect).toHaveBeenCalledTimes(1);
+      expect(onCheckedChange).not.toHaveBeenCalled();
+    });
+
+    it("suppresses the toggle when the checkbox button is shift-clicked", async () => {
+      const onCheckedChange = vi.fn();
+      const onShiftSelect = vi.fn();
+      await act(async () => {
+        root.render(
+          <Table>
+            <TableBody>
+              <TableRow>
+                <ModuleTableSelectionCell
+                  checked={false}
+                  onCheckedChange={onCheckedChange}
+                  onShiftSelect={onShiftSelect}
+                  ariaLabel="Select Row"
+                />
+              </TableRow>
+            </TableBody>
+          </Table>,
+        );
+      });
+
+      const button = container.querySelector('button[role="checkbox"]') as HTMLElement;
+      expect(button).not.toBeNull();
+
+      await act(async () => {
+        button.dispatchEvent(
+          new PointerEvent("pointerdown", { bubbles: true, cancelable: true, shiftKey: true }),
+        );
+        button.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+      });
+
+      expect(onShiftSelect).toHaveBeenCalledTimes(1);
+      expect(onCheckedChange).not.toHaveBeenCalled();
+    });
   });
 });

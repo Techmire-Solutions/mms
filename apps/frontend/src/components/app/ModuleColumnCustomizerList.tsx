@@ -103,7 +103,7 @@ export const ModuleColumnCustomizerList = function ModuleColumnCustomizerList({
                       onMoveColumn?.(col.key, "down");
                     }
                   }}
-                  className="p-0 border-none bg-transparent text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded"
+                  className="min-h-11 min-w-11 p-0 border-none bg-transparent text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded flex items-center justify-center"
                 >
                   <GripVertical className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
                 </button>
@@ -124,7 +124,7 @@ export const ModuleColumnCustomizerList = function ModuleColumnCustomizerList({
                     e.stopPropagation();
                     toggle(col.key);
                   }}
-                  className="min-w-8 min-h-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md cursor-pointer"
+                  className="min-w-11 min-h-11 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md cursor-pointer"
                   aria-label={labels.hideColumn(col.label)}
                   title={labels.hideColumn(col.label)}
                 >
@@ -151,7 +151,7 @@ export const ModuleColumnCustomizerList = function ModuleColumnCustomizerList({
               }}
               aria-label={labels.showColumn ? labels.showColumn(col.label) : undefined}
               title={labels.showColumn ? labels.showColumn(col.label) : undefined}
-              className="flex items-center justify-between w-full px-2.5 min-h-8 rounded-lg border border-transparent hover:bg-muted/60 transition-colors text-start group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+              className="flex items-center justify-between w-full px-2.5 min-h-11 rounded-lg border border-transparent hover:bg-muted/60 transition-colors text-start group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <EyeOff

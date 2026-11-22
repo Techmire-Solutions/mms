@@ -66,7 +66,9 @@ export function useDuplicateDetectionState({
     page: dupPage,
     limit: 50,
   });
-  const serverPairs = data as ContactsDuplicatePairsPageResult | undefined;
+  // ts-rest resolves `data` to the `{ status, body, headers }` envelope, so the
+  // page result lives at `.body` (ADR-010 / api.ts tsr transport).
+  const serverPairs = (data as { body?: ContactsDuplicatePairsPageResult } | undefined)?.body;
   const [dismissedPairIds, setDismissedPairIds] = useState<Set<string>>(new Set());
   const [mergedPairIds, setMergedPairIds] = useState<Set<string>>(new Set());
   const [keepIndex, setKeepIndex] = useState<Record<string, number>>({});

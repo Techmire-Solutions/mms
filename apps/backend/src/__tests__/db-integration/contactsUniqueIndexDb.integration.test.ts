@@ -9,11 +9,11 @@ const TEST_SUBDOMAIN = "contact-unique-idx-test";
 const WORKSPACE_ID = "ws-contact-unique-idx-test";
 
 /**
- * Pins the recyclable-unique backstop restored by migration 0264: after 3NF
+ * Pins the recyclable-unique backstop restored by migrations 0264/0270: after 3NF
  * normalization dropped the legacy `contacts.phone`/`contacts.email` columns
  * (and their partial unique indexes), the child tables carried no DB-level
- * uniqueness. These indexes re-add it on `contact_emails.address` and
- * `contact_phones.number`, matching the app's normalization.
+ * uniqueness. 0264 re-added email + phone indexes; 0270 keyed the phone index on
+ * the full E.164 key (country_code + number) so distinct dial codes do not collide.
  */
 beforeAll(async () => {
   await requireDatabaseConnection();
@@ -106,6 +106,24 @@ describe("contact phone/email partial unique indexes (real Postgres)", () => {
         countryCode: "+92",
       });
       await expect(insert).rejects.toSatisfy((error) => extractPgErrorCode(error) === "23505");
+      await tx.rollback();
+    } catch (error) {
+      await tx.rollback().catch(() => undefined);
+      throw error;
+    }
+  });
+
+  it("allows the same national number under a different country code (distinct E.164)", async () => {
+    const tx = await beginLongLivedTenantTransaction(TEST_SUBDOMAIN);
+    try {
+      const insert = tx.tx.insert(contactPhones).values({
+        id: "p-3",
+        workspaceSubdomain: TEST_SUBDOMAIN,
+        contactId: "c-2",
+        number: "03001234567", // same national significant number as p-1
+        countryCode: "+1", // different dial code → different E.164 key
+      });
+      await expect(insert).resolves.toBeTruthy();
       await tx.rollback();
     } catch (error) {
       await tx.rollback().catch(() => undefined);

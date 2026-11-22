@@ -18,6 +18,7 @@ export interface ModuleTableHeaderCellProps {
   minWidth?: number;
   onResize?: (columnKey: string, width: number) => void;
   className?: string;
+  style?: React.CSSProperties;
   children: React.ReactNode;
   /** Sort key this column maps to. When provided, the cell renders sortable chrome (chevron + aria-sort). */
   sortKey?: string | null;
@@ -25,6 +26,10 @@ export interface ModuleTableHeaderCellProps {
   activeSortField?: string | null;
   sortDir?: "asc" | "desc";
   onSort?: (field: string) => void;
+  /** SR announcement when the sort direction changes (columnKey, next dir). */
+  onSortAnnounce?: (columnKey: string, dir: "asc" | "desc") => void;
+  /** SR announcement on column resize (forwarded to ResizableTableHead). */
+  onResizeAnnounce?: (columnKey: string, width: number) => void;
   noWrap?: boolean;
   truncate?: boolean;
   align?: TableCellAlign;
@@ -43,11 +48,14 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
   minWidth,
   onResize,
   className,
+  style,
   children,
   sortKey,
   activeSortField,
   sortDir = "asc",
   onSort,
+  onSortAnnounce,
+  onResizeAnnounce,
   noWrap,
   truncate,
   align,
@@ -70,6 +78,8 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
       width={width}
       minWidth={minWidth}
       onResize={onResize}
+      onResizeAnnounce={onResizeAnnounce}
+      style={style}
       aria-sort={ariaSort}
       noWrap={noWrap}
       truncate={truncate}
@@ -84,7 +94,9 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
           type="button"
           onClick={() => {
             if (suppressSortClick?.current) return;
+            const nextDir = isSorted ? (sortDir === "asc" ? "desc" : "asc") : "asc";
             onSort(sortKey as string);
+            onSortAnnounce?.(columnKey, nextDir);
           }}
           className={cn(
             // Preflight resets `text-transform` on buttons, so sortable headers

@@ -1891,6 +1891,13 @@
       "when": 1797850801406,
       "tag": "0269_romantic_squirrel_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 270,
+      "version": "7",
+      "when": 1797850801407,
+      "tag": "0270_cool_menace",
+      "breakpoints": true
     }
   ]
 }

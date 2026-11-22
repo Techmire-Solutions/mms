@@ -14,7 +14,10 @@ import {
 } from "./workBatchTableWidths";
 import type { WorkBatchTableColumn, WorkBatchTableProps } from "./workBatchTableTypes";
 import { useListRowMotion } from "@/hooks/useListRowMotion";
+import { WORK_TABLE_DENSITY_PADDING } from "@/hooks/useWorkTableDensity";
 import { useWorkBatchTableInternalState } from "./useWorkBatchTableInternalState";
+import { useWorkBatchTableAnnouncements } from "./useWorkBatchTableAnnouncements";
+import { useWorkBatchTableStickyOffsets } from "./useWorkBatchTableStickyOffsets";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
@@ -38,6 +41,10 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   actionsCellClassName,
   actionsWidth,
   stickyColumnId,
+  stickyColumnIds,
+  stickyEndColumnIds,
+  rowHeaderColumnId,
+  density = "standard",
   onReorderColumn,
   isColumnDraggable,
   optimisticDeletedIds,
@@ -61,6 +68,10 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   const { t } = useTranslation();
   const resolvedActionsLabel = actionsLabel ?? t("common.actions");
   const selectAllAriaLabel = selection?.selectAllAriaLabel ?? t("common.selectAll");
+
+  const { announcement, announceSort, announceResize, announceReorder } =
+    useWorkBatchTableAnnouncements(columns);
+
   const { sortedData, sortConfig, columnResizeConfig } = useWorkBatchTableInternalState({
     data,
     columns,
@@ -109,6 +120,22 @@ export function WorkBatchTable<TData extends { id: string | number }>({
 
   const virtualItems = isVirtualized ? rowVirtualizer.getVirtualItems() : [];
   const totalColSpan = columns.length + (selection ? 1 : 0) + (renderRowActions ? 1 : 0);
+  const resolvedRowHeaderColumnId = rowHeaderColumnId ?? stickyColumnId;
+  const { cell: cellPaddingClass, header: headerPaddingClass } =
+    WORK_TABLE_DENSITY_PADDING[density];
+
+  // Pinned columns: ordered left/right lists with cumulative sticky offsets
+  // (referentially stable so they don't defeat WorkBatchTableRow's React.memo).
+  const { leftPinnedIds, rightPinnedIds, stickyLeftOffsets, stickyRightOffsets } =
+    useWorkBatchTableStickyOffsets({
+      stickyColumnId,
+      stickyColumnIds,
+      stickyEndColumnIds,
+      resolvedWidths,
+      hasSelection: Boolean(selection),
+      hasRowActions: Boolean(renderRowActions),
+      actionsWidth,
+    });
 
   if (!isLoading && activeRows.length === 0 && emptyState) {
     return <>{emptyState}</>;
@@ -130,18 +157,26 @@ export function WorkBatchTable<TData extends { id: string | number }>({
 
   return (
     <div className={cn("space-y-2 pb-6", containerClassName)}>
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </span>
       <div
         ref={containerRef}
+        role="region"
+        aria-label={caption ?? t("table.scrollable")}
+        tabIndex={0}
         className={cn(
           "overflow-x-auto",
           // Keep keyboard-focused rows clear of the sticky header (WCAG 2.2 2.4.11).
           "scroll-pt-12",
           Boolean(maxHeightClassName) && cn(maxHeightClassName, "overflow-y-auto"),
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40",
           bordered && WORK_SURFACE,
         )}
       >
         <Table
           stickyHeader
+          scrollRegionLabel={false}
           containerClassName="overflow-visible max-w-full"
           className={cn("table-fixed w-full", className)}
           style={{ minWidth: tableMinWidth }}
@@ -166,9 +201,16 @@ export function WorkBatchTable<TData extends { id: string | number }>({
             }
             actionsLabel={renderRowActions ? resolvedActionsLabel : undefined}
             actionsClassName={actionsHeaderClassName}
-            stickyColumnId={stickyColumnId}
+            stickyColumnIds={leftPinnedIds}
+            stickyEndColumnIds={rightPinnedIds}
+            stickyLeftOffsets={stickyLeftOffsets}
+            stickyRightOffsets={stickyRightOffsets}
             onReorderColumn={onReorderColumn}
             isColumnDraggable={isColumnDraggable}
+            headerPaddingClass={headerPaddingClass}
+            onSortAnnounce={announceSort}
+            onResizeAnnounce={announceResize}
+            onReorderAnnounce={announceReorder}
           />
 
           <TableBody className={cn("divide-y divide-border/50", tableBodyClassName)}>
@@ -180,12 +222,16 @@ export function WorkBatchTable<TData extends { id: string | number }>({
                 totalColSpan={totalColSpan}
                 totalSize={rowVirtualizer.getTotalSize()}
                 columns={columns}
-                stickyColumnId={stickyColumnId}
+                stickyLeftOffsets={stickyLeftOffsets}
+                stickyRightOffsets={stickyRightOffsets}
+                rowHeaderColumnId={resolvedRowHeaderColumnId}
                 hasSelection={Boolean(selection)}
                 onSelectOne={selection?.onSelectOne}
+                onSelectRange={selection?.onSelectRange}
                 selectRowAriaLabel={selection?.selectRowAriaLabel}
                 renderRowActions={renderRowActions}
                 actionsCellClassName={actionsCellClassName}
+                cellPaddingClass={cellPaddingClass}
                 onRowClick={onRowClick}
                 onRowHover={onRowHover}
                 rowClassName={rowClassName}
@@ -207,11 +253,15 @@ export function WorkBatchTable<TData extends { id: string | number }>({
                       rowClassName={rowClassName}
                       hasSelection={Boolean(selection)}
                       onSelectOne={selection?.onSelectOne}
+                      onSelectRange={selection?.onSelectRange}
                       selectRowAriaLabel={selection?.selectRowAriaLabel}
                       columns={columns}
-                      stickyColumnId={stickyColumnId}
+                      stickyLeftOffsets={stickyLeftOffsets}
+                      stickyRightOffsets={stickyRightOffsets}
+                      rowHeaderColumnId={resolvedRowHeaderColumnId}
                       renderRowActions={renderRowActions}
                       actionsCellClassName={actionsCellClassName}
+                      cellPaddingClass={cellPaddingClass}
                     />
                   );
                 })}

@@ -1,4 +1,5 @@
 import type React from "react";
+import type { DensityMode } from "@shared/ui";
 import type { ModuleColumnRegistryEntry } from "@mms/shared";
 import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
@@ -17,6 +18,14 @@ export interface WorkToolbarTrashToggle {
 export interface WorkToolbarViewModeToggle {
   viewMode: WorkDirectoryViewMode;
   onViewModeChange: (mode: WorkDirectoryViewMode) => void;
+}
+
+/** Row-density toggle config (adapted onto `DensityToggle`). */
+export interface WorkToolbarDensityToggle {
+  density: DensityMode;
+  onChange: (density: DensityMode) => void;
+  ariaLabel?: string;
+  labels?: Partial<Record<DensityMode, string>>;
 }
 
 /** Column visibility/order/reset config (adapted onto `ModuleColumnCustomizer`). */
@@ -66,6 +75,7 @@ export interface ModuleWorkToolbarProps {
   trashToggle?: WorkToolbarTrashToggle;
   viewModeToggle?: WorkToolbarViewModeToggle;
   columnCustomizer?: WorkToolbarColumnCustomizer;
+  densityToggle?: WorkToolbarDensityToggle;
 
   // 5. Additional custom slot
   children?: React.ReactNode;

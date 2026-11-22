@@ -101,8 +101,12 @@ export function ContactPickerMenu({
                     {contactName}
                   </p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate mt-0.5">
-                    {contactPhone || t("contacts.table.emptyDash")}
-                    {contactCity && <span>· {contactCity}</span>}
+                    <bdi dir="ltr">{contactPhone || t("contacts.table.emptyDash")}</bdi>
+                    {contactCity && (
+                      <span className="flex items-center gap-1.5">
+                        · <bdi dir="auto">{contactCity}</bdi>
+                      </span>
+                    )}
                   </p>
                 </div>
               </Button>

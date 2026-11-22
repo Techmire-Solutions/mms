@@ -417,7 +417,6 @@
   "src/tenant/features/contacts/components/ContactMetadataCell.test.tsx": 1189,
   "src/tenant/features/contacts/components/ContactSyncPanel.test.tsx": 852,
   "src/tenant/features/contacts/components/ContactTableCells.test.tsx": 607,
-  "src/tenant/features/contacts/components/ContactTableRow.test.tsx": 1460,
   "src/tenant/features/contacts/components/ContactsBulkActionBar.test.tsx": 1205,
   "src/tenant/features/contacts/components/ContactsBulkTagModal.test.tsx": 923,
   "src/tenant/features/contacts/components/ContactsCommandMetrics.test.tsx": 516,

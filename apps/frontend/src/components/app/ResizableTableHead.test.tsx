@@ -134,5 +134,75 @@ describe("ResizableTableHead", () => {
 
       expect(onResize).toHaveBeenCalledWith("description", 150);
     });
+
+    it("resizes from the keyboard with Arrow keys (LTR)", async () => {
+      const onResize = vi.fn();
+
+      await act(async () => {
+        root.render(
+          <table>
+            <thead>
+              <tr>
+                <ResizableTableHead columnKey="title" width={120} onResize={onResize}>
+                  Title
+                </ResizableTableHead>
+              </tr>
+            </thead>
+          </table>,
+        );
+      });
+
+      const handle = container.querySelector('[role="separator"]') as HTMLElement;
+      expect(handle).not.toBeNull();
+      expect(handle.getAttribute("tabindex")).toBe("0");
+
+      await act(async () => {
+        handle.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true, cancelable: true }),
+        );
+      });
+      expect(onResize).toHaveBeenLastCalledWith("title", 128);
+
+      await act(async () => {
+        handle.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true, cancelable: true }),
+        );
+      });
+      expect(onResize).toHaveBeenLastCalledWith("title", 112);
+    });
+
+    it("jumps to min/max from Home/End keys", async () => {
+      const onResize = vi.fn();
+
+      await act(async () => {
+        root.render(
+          <table>
+            <thead>
+              <tr>
+                <ResizableTableHead columnKey="title" width={200} onResize={onResize}>
+                  Title
+                </ResizableTableHead>
+              </tr>
+            </thead>
+          </table>,
+        );
+      });
+
+      const handle = container.querySelector('[role="separator"]') as HTMLElement;
+
+      await act(async () => {
+        handle.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "End", bubbles: true, cancelable: true }),
+        );
+      });
+      expect(onResize).toHaveBeenLastCalledWith("title", 640);
+
+      await act(async () => {
+        handle.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "Home", bubbles: true, cancelable: true }),
+        );
+      });
+      expect(onResize).toHaveBeenLastCalledWith("title", 80);
+    });
   });
 });

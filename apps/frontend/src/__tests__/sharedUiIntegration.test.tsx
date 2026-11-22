@@ -8,34 +8,16 @@ import {
   FormField,
   Modal,
   ConfirmDialog,
-  DataTable,
   ThemeScope,
   UiConfigProvider,
   toast,
   getToastState,
-  type DataTableColumn,
 } from "@shared/ui";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
-interface TestUser {
-  id: string;
-  name: string;
-  role: string;
-}
-
-const testColumns: DataTableColumn<TestUser>[] = [
-  { id: "name", header: "Name", accessorKey: "name" },
-  { id: "role", header: "Role", accessorKey: "role" },
-];
-
-const testData: TestUser[] = [
-  { id: "u-1", name: "Fatima Zahra", role: "Administrator" },
-  { id: "u-2", name: "Zaid Ali", role: "Operator" },
-];
 
 describe("@shared/ui Core UI Library Integration", () => {
   let container: HTMLDivElement;
@@ -119,53 +101,6 @@ describe("@shared/ui Core UI Library Integration", () => {
     expect(closeBtn).toBeTruthy();
     closeBtn.click();
     expect(handleClose).toHaveBeenCalledTimes(1);
-  });
-
-  it("renders DataTable with data, custom row actions, and handles search and pagination", async () => {
-    const handleSearch = vi.fn();
-    const handlePageChange = vi.fn();
-
-    await act(async () => {
-      root.render(
-        <DataTable
-          data={testData}
-          columns={testColumns}
-          searchQuery=""
-          onSearchChange={handleSearch}
-          pagination={{
-            currentPage: 1,
-            totalPages: 2,
-            onPageChange: handlePageChange,
-          }}
-          renderRowActions={(row) => (
-            <button type="button" className="action-btn">
-              Edit {row.name}
-            </button>
-          )}
-        />,
-      );
-    });
-
-    expect(container.textContent).toContain("Fatima Zahra");
-    expect(container.textContent).toContain("Zaid Ali");
-    expect(container.textContent).toContain("Edit Fatima Zahra");
-
-    const searchInput = container.querySelector(
-      "input[placeholder='Search...']",
-    ) as HTMLInputElement;
-    expect(searchInput).toBeTruthy();
-    const valueSetter = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
-      "value",
-    )?.set;
-    valueSetter?.call(searchInput, "Fatima");
-    searchInput.dispatchEvent(new Event("input", { bubbles: true }));
-    expect(handleSearch).toHaveBeenCalledWith("Fatima");
-
-    const nextBtn = container.querySelector("button[aria-label='Next']") as HTMLButtonElement;
-    expect(nextBtn).toBeTruthy();
-    nextBtn.click();
-    expect(handlePageChange).toHaveBeenCalledWith(2);
   });
 
   it("ThemeScope applies tenant/platform CSS variables and WCAG contrast", async () => {

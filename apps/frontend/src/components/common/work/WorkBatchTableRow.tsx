@@ -19,11 +19,18 @@ export interface WorkBatchTableRowProps<TData extends { id: string | number }> {
   rowClassName?: (row: TData) => string | undefined;
   hasSelection: boolean;
   onSelectOne?: (id: string) => void;
+  onSelectRange?: (id: string | number) => void;
   selectRowAriaLabel?: (row: TData) => string;
   columns: WorkBatchTableColumn<TData>[];
-  stickyColumnId?: string;
+  /** Cumulative `inset-inline-start` offsets (px) keyed by left-pinned column id. */
+  stickyLeftOffsets?: Record<string, number>;
+  /** Cumulative `inset-inline-end` offsets (px) keyed by right-pinned column id. */
+  stickyRightOffsets?: Record<string, number>;
+  rowHeaderColumnId?: string;
   renderRowActions?: (row: TData, rowIndex: number) => React.ReactNode;
   actionsCellClassName?: string;
+  /** Data/selection/actions cell padding override (row density). Defaults to `px-4 py-3`. */
+  cellPaddingClass?: string;
 }
 
 function WorkBatchTableRowComponent<TData extends { id: string | number }>(
@@ -40,11 +47,15 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
     rowClassName,
     hasSelection,
     onSelectOne,
+    onSelectRange,
     selectRowAriaLabel,
     columns,
-    stickyColumnId,
+    stickyLeftOffsets,
+    stickyRightOffsets,
+    rowHeaderColumnId,
     renderRowActions,
     actionsCellClassName,
+    cellPaddingClass = "px-4 py-3",
   } = props;
 
   const idStr = String(row.id);
@@ -53,8 +64,22 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
   const hasNestedInteractive = hasSelection || Boolean(renderRowActions);
   // Clickable <tr role="button"> wrapping checkboxes/switches fails axe nested-interactive.
   // Keep mouse click activation; keyboard users use the selection control / row actions.
+  // The onClick guard ignores clicks on nested controls so row activation never double-fires
+  // against a name button, checkbox, or inline quick action.
   const trProps = {
-    onClick: () => onRowClick?.(row),
+    onClick: onRowClick
+      ? (e: React.MouseEvent) => {
+          const target = e.target as HTMLElement;
+          if (
+            target.closest(
+              'button, a, input, select, textarea, [contenteditable="true"], [role="button"], [role="checkbox"], [role="switch"], [role="menuitem"], [role="link"]',
+            )
+          ) {
+            return;
+          }
+          onRowClick(row);
+        }
+      : undefined,
     onKeyDown:
       onRowClick && !hasNestedInteractive
         ? (e: React.KeyboardEvent) => {
@@ -82,14 +107,20 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
         <ModuleTableSelectionCell
           checked={isSelected}
           onCheckedChange={() => onSelectOne(idStr)}
+          onShiftSelect={onSelectRange ? () => onSelectRange(row.id) : undefined}
           ariaLabel={rowAriaLabel}
           stopPropagation={Boolean(onRowClick)}
+          paddingClassName={cellPaddingClass}
         />
       )}
 
       {/* Columns */}
       {columns.map((col) => {
-        const isSticky = stickyColumnId === col.id;
+        const leftOffset = stickyLeftOffsets?.[col.id];
+        const rightOffset = stickyRightOffsets?.[col.id];
+        const isStickyStart = leftOffset !== undefined;
+        const isStickyEnd = rightOffset !== undefined;
+        const isRowHeader = Boolean(rowHeaderColumnId && rowHeaderColumnId === col.id);
         const customCellClass =
           typeof col.cellClassName === "function" ? col.cellClassName(row) : col.cellClassName;
 
@@ -100,11 +131,19 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
             truncate={col.truncate}
             align={col.align}
             variant={col.variant}
+            asHeader={isRowHeader}
+            style={
+              isStickyStart || isStickyEnd
+                ? { insetInlineStart: leftOffset, insetInlineEnd: rightOffset }
+                : undefined
+            }
             className={cn(
               // overflow-hidden: a cell never paints over its neighbours when content outgrows the column.
-              "px-4 py-3 text-sm text-foreground transition-colors text-wrap break-words overflow-hidden",
-              isSticky && "sticky start-12 z-elevated border-e border-border/30",
-              isSticky ? workTableStickyCellBg(isSelected) : undefined,
+              cellPaddingClass,
+              "text-sm text-foreground transition-colors text-wrap break-words overflow-hidden",
+              isStickyStart && "sticky z-elevated border-e border-border/30",
+              isStickyEnd && "sticky z-elevated border-s border-border/30",
+              isStickyStart || isStickyEnd ? workTableStickyCellBg(isSelected) : undefined,
               customCellClass,
             )}
           >
@@ -118,7 +157,11 @@ function WorkBatchTableRowComponent<TData extends { id: string | number }>(
         <TableCell
           noWrap
           className={cn(
-            "px-4 py-3 text-end",
+            // Sticky end-edge mirrors the sticky start identity column so the primary
+            // record actions stay reachable while the table scrolls horizontally.
+            cellPaddingClass,
+            "text-end sticky end-0 z-elevated border-s border-border/30",
+            workTableStickyCellBg(isSelected),
             actionsCellClassName ?? WORK_TABLE_ACTIONS_WIDTH_CLASS,
           )}
           onClick={(e) => e.stopPropagation()}

@@ -7,7 +7,8 @@ export type DropPosition = "before" | "after";
 
 export interface UseColumnHeaderDragOptions {
   columns?: Array<{ id: string; label: string }>;
-  stickyColumnId?: string;
+  /** Columns that cannot be dragged/reordered (pinned). */
+  pinnedColumnIds?: ReadonlySet<string>;
   onReorder?: (sourceId: string, targetId: string, position: DropPosition) => void;
   isColumnDraggable?: (columnId: string) => boolean;
 }
@@ -24,7 +25,7 @@ const ACTIVATION_DISTANCE = 5;
 
 export function useColumnHeaderDrag({
   columns: _columns,
-  stickyColumnId,
+  pinnedColumnIds,
   onReorder,
   isColumnDraggable,
 }: UseColumnHeaderDragOptions) {
@@ -45,15 +46,21 @@ export function useColumnHeaderDrag({
   const pointerStateRef = useRef<PointerDragState | null>(null);
   const suppressClickRef = useRef(false);
   const cleanupListenersRef = useRef<(() => void) | null>(null);
+  // Latest drop target, updated on pointer move so the pointer-up handler can
+  // fire `onReorder` outside the (pure) setState updater.
+  const latestDropRef = useRef<{ targetId: string | null; dropPosition: DropPosition | null }>({
+    targetId: null,
+    dropPosition: null,
+  });
 
   const canDrag = useCallback(
     (colId: string) => {
       if (!onReorder) return false;
-      if (stickyColumnId && colId === stickyColumnId) return false;
+      if (pinnedColumnIds?.has(colId)) return false;
       if (isColumnDraggable && !isColumnDraggable(colId)) return false;
       return true;
     },
-    [onReorder, stickyColumnId, isColumnDraggable],
+    [onReorder, pinnedColumnIds, isColumnDraggable],
   );
 
   const cleanup = useCallback(() => {
@@ -62,6 +69,7 @@ export function useColumnHeaderDrag({
       cleanupListenersRef.current = null;
     }
     pointerStateRef.current = null;
+    latestDropRef.current = { targetId: null, dropPosition: null };
     setDragState({
       draggedId: null,
       draggedLabel: null,
@@ -100,6 +108,7 @@ export function useColumnHeaderDrag({
         colLabel,
         isDragging: false,
       };
+      latestDropRef.current = { targetId: null, dropPosition: null };
 
       const handlePointerMove = (e: PointerEvent) => {
         const state = pointerStateRef.current;
@@ -124,13 +133,14 @@ export function useColumnHeaderDrag({
 
         if (th) {
           const thId = th.getAttribute("data-column-id");
-          if (thId && thId !== state.colId && thId !== stickyColumnId) {
+          if (thId && thId !== state.colId && !pinnedColumnIds?.has(thId)) {
             nextTargetId = thId;
             const rect = th.getBoundingClientRect();
             nextPos = e.clientX < rect.left + rect.width / 2 ? "before" : "after";
           }
         }
 
+        latestDropRef.current = { targetId: nextTargetId, dropPosition: nextPos };
         setDragState({
           draggedId: state.colId,
           draggedLabel: state.colLabel,
@@ -148,18 +158,12 @@ export function useColumnHeaderDrag({
             suppressClickRef.current = false;
           }, 120);
 
-          setDragState((curr) => {
-            if (curr.targetId && curr.dropPosition && curr.draggedId && onReorder) {
-              onReorder(curr.draggedId, curr.targetId, curr.dropPosition);
-            }
-            return {
-              draggedId: null,
-              draggedLabel: null,
-              targetId: null,
-              dropPosition: null,
-              pointerPos: null,
-            };
-          });
+          // Fire the reorder as a side effect outside the setState updater so the
+          // consumer's state updates never run during another component's render.
+          const { targetId, dropPosition } = latestDropRef.current;
+          if (targetId && dropPosition && onReorder) {
+            onReorder(state.colId, targetId, dropPosition);
+          }
         }
 
         document.body.style.userSelect = "";
@@ -177,7 +181,7 @@ export function useColumnHeaderDrag({
         document.body.style.cursor = "";
       };
     },
-    [canDrag, stickyColumnId, onReorder, cleanup],
+    [canDrag, pinnedColumnIds, onReorder, cleanup],
   );
 
   const getThDragProps = useCallback(

@@ -4,7 +4,8 @@ import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { buildContactsMap } from "@/lib/contacts/contactI18n";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
-import { type ContactsColumnConfig } from "@/tenant/features/contacts/components/ContactTableRow";
+import type { WorkTableDensity } from "@/hooks/useWorkTableDensity";
+import { type ContactsColumnConfig } from "@/tenant/features/contacts/lib/contactTableTypes";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { renderContactTableCell } from "@/tenant/features/contacts/components/ContactTableCells";
 import { ContactsRowActions } from "@/tenant/features/contacts/components/ContactsRowActions";
@@ -14,6 +15,7 @@ export interface ContactsListDesktopTableProps {
   contacts: Contact[];
   selected: (number | string)[];
   onSelect: (contactId: number | string) => void;
+  onSelectRange?: (contactId: number | string) => void;
   onSelectAll: () => void;
   onView?: (contact: Contact) => void;
   onEdit: (contact: Contact) => void;
@@ -37,12 +39,15 @@ export interface ContactsListDesktopTableProps {
     targetColumnId: string,
     position: "before" | "after",
   ) => void;
+  /** Row density (padding-based). Defaults to "standard". */
+  density?: WorkTableDensity;
 }
 
 export const ContactsListDesktopTable = React.memo(function ContactsListDesktopTable({
   contacts,
   selected,
   onSelect,
+  onSelectRange,
   onSelectAll,
   onView,
   onEdit,
@@ -62,6 +67,7 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
   allSelected = false,
   someSelected = false,
   onReorderColumn: propOnReorderColumn,
+  density = "standard",
 }: ContactsListDesktopTableProps): React.JSX.Element {
   const {
     prefs,
@@ -172,6 +178,7 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
       selection={{
         selectedIds: selected,
         onSelectOne: (id) => onSelect(id),
+        onSelectRange,
         onSelectAll,
         allSelected,
         someSelected,
@@ -207,6 +214,8 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
       stickyColumnId="name"
       onReorderColumn={handleReorderColumn}
       isColumnDraggable={(colId) => colId !== "name"}
+      onRowClick={onView ? (contact) => onView(contact) : undefined}
+      density={density}
       footerCount={{
         selectedCountLabel: t("contacts.selectedCount", { count: selected.length }),
         pageCountLabel,

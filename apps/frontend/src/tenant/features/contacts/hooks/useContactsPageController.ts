@@ -82,7 +82,6 @@ export function useContactsPageController() {
   });
 
   const { handleExportCSV, handleBulkExport, isExporting } = useContactsExportActions({
-    tableColumns,
     canExport,
     // Debounced: the export must cover exactly what the visible list was filtered by.
     search: directory.debouncedSearch,

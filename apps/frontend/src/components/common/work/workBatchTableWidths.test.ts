@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MODULE_COLUMN_KIND_WIDTHS } from "@mms/shared";
 import {
+  computeStickyOffsets,
   computeWorkTableMinWidth,
   resolveWorkColumnMinWidth,
   resolveWorkColumnWidth,
@@ -83,5 +84,17 @@ describe("workBatchTableWidths", () => {
 
     // Assert
     expect(minWidth).toBe(220);
+  });
+
+  it("computes cumulative sticky offsets from pinned ids and widths", () => {
+    const widths: Record<string, number> = { name: 200, phone: 160, status: 120 };
+    const getWidth = (id: string) => widths[id];
+
+    expect(computeStickyOffsets(["name", "phone"], getWidth, 48)).toEqual({
+      name: 48,
+      phone: 248,
+    });
+    expect(computeStickyOffsets(["status"], getWidth, 112)).toEqual({ status: 112 });
+    expect(computeStickyOffsets([], getWidth, 48)).toEqual({});
   });
 });

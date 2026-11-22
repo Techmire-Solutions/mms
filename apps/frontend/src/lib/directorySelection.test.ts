@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  addRangeToSelection,
   getDirectoryPageSelection,
   toggleIdInSelection,
   togglePageIdsInSelection,
@@ -27,5 +28,12 @@ describe("directorySelection", () => {
   it("merges and removes page ids without dropping other pages", () => {
     expect(togglePageIdsInSelection(["x"], ["a", "b"])).toEqual(["x", "a", "b"]);
     expect(togglePageIdsInSelection(["x", "a", "b"], ["a", "b"])).toEqual(["x"]);
+  });
+
+  it("adds a contiguous range without removing existing ids (shift-click)", () => {
+    expect(addRangeToSelection(["x"], ["a", "b", "c"])).toEqual(["x", "a", "b", "c"]);
+    // Re-selecting an already-selected range is idempotent (no duplicates).
+    expect(addRangeToSelection(["a", "b"], ["b", "c"])).toEqual(["a", "b", "c"]);
+    expect(addRangeToSelection(["a"], [])).toEqual(["a"]);
   });
 });

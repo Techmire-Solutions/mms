@@ -151,15 +151,10 @@ export function useContactMutations() {
     },
     bulkDeleteContacts: {
       mutateAsync: async (payload: { ids: string[]; deletionReason?: string }) => {
-        // Blocked (linked) ids come back on the post-success refetch.
-        const rollback = await hideContactsInListCaches(queryClient, payload.ids);
-        try {
-          const response = await bulkDeleteMutation.mutateAsync({ body: payload });
-          return unwrapContactMutationBody<ContactBulkDeleteResult>(response);
-        } catch (error) {
-          rollback();
-          throw error;
-        }
+        // No optimistic hide on bulk writes (mms-query-factories): the settle
+        // invalidation refetches the list; blocked/linked ids re-appear there.
+        const response = await bulkDeleteMutation.mutateAsync({ body: payload });
+        return unwrapContactMutationBody<ContactBulkDeleteResult>(response);
       },
       isPending: bulkDeleteMutation.isPending,
     },
