@@ -1,12 +1,9 @@
 import { useMemo, useRef, useState } from "react";
 import {
-  applyRecommendedStudentRequiredFields,
   listStudentRequirableFields,
-  resolveStudentRequiredFieldPreset,
   setStudentFieldRequired,
   type FieldDefinition,
   type StudentRequirableField,
-  type StudentRequiredFieldPreset,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
@@ -25,16 +22,13 @@ function requiredSignature(fields: FieldsMap): string {
 
 export interface StudentsRequiredFieldsSetupState {
   rows: StudentRequirableField[];
-  preset: StudentRequiredFieldPreset;
   /** False until the saved configuration has loaded; editing/saving is blocked before that. */
   ready: boolean;
   loadFailed: boolean;
   isDirty: boolean;
   saving: boolean;
-  selectPreset: (preset: StudentRequiredFieldPreset) => void;
   setRequired: (fieldKey: string, required: boolean) => void;
   save: () => Promise<void>;
-  discard: () => void;
 }
 
 /** Draft + save flow for Students Setup → Required fields. */
@@ -44,7 +38,6 @@ export function useStudentsRequiredFieldsSetup(): StudentsRequiredFieldsSetupSta
   const mutation = useStudentFieldConfigMutation();
   const { logSetupAudit } = useStudentMutations();
   const [draftFields, setDraftFields] = useState<FieldsMap | null>(null);
-  const [presetChoice, setPresetChoice] = useState<StudentRequiredFieldPreset | null>(null);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
 
@@ -56,23 +49,14 @@ export function useStudentsRequiredFieldsSetup(): StudentsRequiredFieldsSetupSta
   const rows = useMemo(() => listStudentRequirableFields(fields), [fields]);
   const isDirty =
     draftFields !== null && requiredSignature(draftFields) !== requiredSignature(savedFields);
-  const preset = presetChoice ?? resolveStudentRequiredFieldPreset(fields);
-
-  const selectPreset = (next: StudentRequiredFieldPreset): void => {
-    if (!ready) return;
-    setPresetChoice(next);
-    if (next === "recommended") setDraftFields(applyRecommendedStudentRequiredFields(fields));
-  };
 
   const setRequired = (fieldKey: string, required: boolean): void => {
     if (!ready) return;
-    setPresetChoice("custom");
     setDraftFields(setStudentFieldRequired(fields, fieldKey, required));
   };
 
   const discard = (): void => {
     setDraftFields(null);
-    setPresetChoice(null);
   };
 
   const save = async (): Promise<void> => {
@@ -101,14 +85,11 @@ export function useStudentsRequiredFieldsSetup(): StudentsRequiredFieldsSetupSta
 
   return {
     rows,
-    preset,
     ready,
     loadFailed: query.isError,
     isDirty,
     saving,
-    selectPreset,
     setRequired,
     save,
-    discard,
   };
 }

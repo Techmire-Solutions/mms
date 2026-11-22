@@ -8886,12 +8886,16 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "students.exportFailed": "ایکسپورٹ ناکام",
   "students.exportFilename": "students.csv",
   "students.exportSuccess": "ایکسپورٹ تیار ہے",
+  "students.fields.address": "پتہ",
+  "students.fields.addressDesc": "منسلک رابطہ پروفائل سے پڑھا جاتا ہے؛ رابطے کا پتہ ہونا ضروری ہے۔",
   "students.fields.contactIdDesc":
     "رابطہ منتخب کنندہ — اس طالب کے لیے مرکزی شخص کا ریکارڈ جوڑتا ہے۔",
   "students.fields.contactRelationships": "رشتے",
   "students.fields.contactRelationshipsDesc":
-    "منسلک رابطے کے Contacts میں رشتوں سے دکھایا جاتا ہے (والد/بچہ، شوہر/بیوی، سرپرست/زیرِ کفالت).",
+    "کم از کم 2 رشتے: والدین (والد اور والدہ) اور سرپرست — منسلک رابطے کے رشتوں سے پڑھے جاتے ہیں۔",
   "students.fields.dobDesc": "منسلک رابطہ پروفائل پر فراہم (خالی نہیں) ہونا چاہیے۔",
+  "students.fields.education": "تعلیم",
+  "students.fields.educationDesc": "منسلک رابطہ پروفائل سے پڑھی جاتی ہے؛ رابطے کا کم از کم ایک تعلیمی ریکارڈ ہونا ضروری ہے۔",
   "students.fields.genderDesc": "منسلک رابطہ پروفائل پر متعین (خالی نہیں) ہونا چاہیے۔",
   "students.fields.grNumberDesc": "جنرل رجسٹر نمبر — ترجیحات سیٹ اپ سے خود بخود تفویض جب فعال ہو۔",
   "students.fields.notesDesc": "اس طالب کے ریکارڈ کے لیے داخلی نوٹس۔",
@@ -8981,6 +8985,9 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "students.form.status.suspended": "معطل",
   "students.form.status.transferred": "منتقل شدہ",
   "students.form.statusRequired": "حیثیت لازمی ہے۔",
+  "students.form.addressRequired": "منسلک رابطے کا پتہ نہیں ہے۔ محفوظ کرنے سے پہلے رابطے میں پتہ شامل کریں۔",
+  "students.form.educationRequired": "منسلک رابطے کا تعلیمی ریکارڈ نہیں ہے۔ محفوظ کرنے سے پہلے رابطے میں تعلیم شامل کریں۔",
+  "students.form.relationshipsRequired": "کم از کم 2 رشتے درکار ہیں: والدین (والد اور والدہ) اور سرپرست۔ پہلے منسلک رابطے میں شامل کریں۔",
   "students.form.stepContact": "رابطہ",
   "students.form.stepGuardians": "سرپرست",
   "students.form.stepNotes": "نوٹس",
@@ -9138,8 +9145,6 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "students.setup.cannotDeleteSystemField":
     "بلٹ اِن فیلڈز نہیں ہٹائے جا سکتے۔ اس کی بجائے فیلڈ غیر فعال کریں۔",
   "students.setup.cannotDeleteSystemTab": "بلٹ اِن ٹیبز نہیں ہٹائے جا سکتے۔",
-  "students.setup.discardUnsavedFieldsConfirm":
-    "آپ کے فیلڈ میں غیر محفوظ تبدیلیاں ہیں۔ کیا آپ یہ ٹیب چھوڑ کر انہیں رد کرنا چاہتے ہیں؟",
   "students.setup.discardUnsavedPreferencesConfirm":
     "آپ کی ترجیحات میں غیر محفوظ تبدیلیاں ہیں۔ کیا آپ یہ ٹیب چھوڑ کر انہیں رد کرنا چاہتے ہیں؟",
   "students.setup.fieldHasStudentData":
@@ -9148,19 +9153,10 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "students.setup.fieldsSaved": "طالب علم فیلڈ کنفیگریشن محفوظ ہو گئی",
   "students.setup.requiredFields": "لازمی فیلڈز",
   "students.setup.requiredFieldsDescription": "منتخب کریں کہ طالب علم محفوظ کرنے سے پہلے کون سے فیلڈز بھرنا لازمی ہیں۔ داخلہ تاریخ پیدائش اور جنس کو داخلہ قواعد کے مطابق جانچتا ہے، اس لیے انہیں پہلے سے لازمی کرنے سے بعد میں داخلہ نہیں رکتا۔",
-  "students.setup.requiredFieldsPresetLabel": "لازمی فیلڈز کا سیٹ",
-  "students.setup.requiredFieldsPresetRecommended": "تجویز کردہ",
-  "students.setup.requiredFieldsPresetCustom": "حسبِ ضرورت",
-  "students.setup.requiredFieldsRecommendedHint": "تجویز کردہ سیٹ جنس، تاریخ پیدائش، جی آر نمبر اور حیثیت کو لازمی بناتا ہے اور باقی تمام فیلڈز اختیاری رکھتا ہے۔ ہر فیلڈ خود منتخب کرنے کے لیے «حسبِ ضرورت» پر جائیں۔",
-  "students.setup.requiredFieldsCustomHint": "فیلڈ کو لازمی بنانے کے لیے آن کریں، یا اختیاری رکھنے کے لیے آف رہنے دیں۔",
-  "students.setup.requiredFieldsAlwaysRequired": "ہمیشہ لازمی",
   "students.setup.requiredFieldsRecommendedBadge": "تجویز کردہ",
   "students.setup.requiredFieldsCustomFieldBadge": "حسبِ ضرورت فیلڈ",
-  "students.setup.requiredFieldsGrNumberHint": "صرف اس وقت لاگو ہوتا ہے جب جی آر نمبر دستی طور پر درج کیے جائیں۔",
-  "students.setup.requiredFieldsContactHint": "منسلک رابطہ پروفائل سے لیا جاتا ہے؛ رابطے میں یہ قدر موجود ہونی چاہیے۔",
   "students.setup.requiredFieldsSaved": "لازمی فیلڈز محفوظ ہو گئے",
   "students.setup.requiredFieldsLoadFailed": "طالب علم فیلڈ کنفیگریشن لوڈ نہیں ہو سکی۔",
-  "students.setup.unsavedRequiredFieldsWarning": "لازمی فیلڈز میں غیر محفوظ تبدیلیاں ہیں۔",
   "students.setup.fieldUsedInColumn":
     "یہ فیلڈ ورک کالم رجسٹری میں استعمال ہو رہی ہے۔ پہلے کالم چھپائیں۔",
   "students.setup.lookups": "فہرستیں",
@@ -9178,7 +9174,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "students.setup.saveFailed":
     "طالب علم کی ترتیبات محفوظ نہیں ہو سکیں۔ کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
   "students.setup.unsavedFieldsWarning": "فیلڈ کنفیگریشن میں غیر محفوظ تبدیلیاں موجود ہیں۔",
-  "students.setup.unsavedPreferencesWarning": "ترجیحات میں غیر محفوظ تبدیلیاں موجود ہیں۔",
+  "students.setup.unsavedChanges": "آپ کے پاس غیر محفوظ تبدیلیاں ہیں۔ روانہ ہونے سے پہلے محفوظ یا منسوخ کریں۔",
   "students.setupReadOnly":
     "آپ سیٹ اپ دیکھ سکتے ہیں لیکن فیلڈز اور ترجیحات میں ترمیم کے لیے اجازت درکار ہے۔",
   "students.setup.readOnly":

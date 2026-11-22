@@ -17,7 +17,10 @@ export const OBSOLETE_STUDENT_GUARDIAN_FIELD_KEYS = new Set([
   "motherLink",
   "guardianLink",
 ]);
-export const STUDENT_SETTINGS_VERSION = 5;
+export const STUDENT_SETTINGS_VERSION = 6;
+
+/** Contact-profile keys that became configurable in v6 — default them ON (no prior UI existed). */
+const NEW_REQUIRED_CONTACT_PROFILE_KEYS = new Set(["contactRelationships", "address", "education"]);
 
 function isLegacyFlatFields(fields: unknown): boolean {
   if (!fields || typeof fields !== "object") return false;
@@ -225,16 +228,21 @@ function ensureStudentSeedFields(
   return next;
 }
 
-/** Apply Setup Fields tab collapse + guardian triad → contactRelationships (v4) + full form seed (v5). */
+/** Apply Setup Fields tab collapse + guardian triad → contactRelationships (v4) + full form seed (v5) + contact-profile requirements default on (v6). */
 export function applyStudentSetupVersionMigrate(draft: Partial<StudentsSettings>): void {
   const storedVersion = typeof draft.version === "number" ? draft.version : 0;
+  const enableNewProfileRequirements = storedVersion < 6;
 
   if (draft.fields && typeof draft.fields === "object" && !isLegacyFlatFields(draft.fields)) {
     let fields = draft.fields as Record<string, FieldDefinition[]>;
     if (fields.guardian || fields.academic) {
       fields = migrateStudentSetupFieldsToTwoTabs(fields);
     }
-    draft.fields = ensureStudentSeedFields(migrateStudentGuardianLinkFields(fields));
+    let next = ensureStudentSeedFields(migrateStudentGuardianLinkFields(fields));
+    if (enableNewProfileRequirements) {
+      next = enableNewContactProfileRequirements(next);
+    }
+    draft.fields = next;
   }
 
   if (storedVersion >= STUDENT_SETTINGS_VERSION) {
@@ -245,6 +253,18 @@ export function applyStudentSetupVersionMigrate(draft: Partial<StudentsSettings>
   draft.requiredTabs = remapStudentRequiredTabs(draft.requiredTabs);
   draft.formTabs = rebuildStudentFormTabs(draft.formTabs);
   draft.version = STUDENT_SETTINGS_VERSION;
+}
+
+function enableNewContactProfileRequirements(
+  fields: Record<string, FieldDefinition[]>,
+): Record<string, FieldDefinition[]> {
+  const next: Record<string, FieldDefinition[]> = {};
+  for (const [tabKey, tabFields] of Object.entries(fields)) {
+    next[tabKey] = (tabFields ?? []).map((field) =>
+      NEW_REQUIRED_CONTACT_PROFILE_KEYS.has(field.key) ? { ...field, required: true } : field,
+    );
+  }
+  return next;
 }
 
 export { isLegacyFlatFields, normalizeTabs };

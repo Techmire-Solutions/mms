@@ -4,7 +4,10 @@ import {
   normalizeStoredStudent,
   getPrimaryEmail,
   listStudentContactRelationships,
+  resolveStudentContactProfileGaps,
+  resolveStudentContactProfileRequirements,
   resolveStudentGuardianLinks,
+  translateApp,
   type StudentDuplicateReason,
   type AppTranslationKey,
   buildDynamicStudentSchema,
@@ -92,6 +95,41 @@ export function validateStudentDraft(
         seen.add(key);
         errors.push(issue);
       }
+    }
+  }
+
+  // Layer 3 — contact-profile checks. Relationships, address and education live on
+  // the linked contact, so Setup's required toggles are enforced from the contact.
+  // Only run once a contact is linked: the blueprint already reports the missing
+  // contact, and reporting the profile gaps too would be noisy/redundant.
+  if (validationDraft.contactId != null && String(validationDraft.contactId).trim()) {
+    const profileRequirements = resolveStudentContactProfileRequirements(context.fields);
+    const profileGaps = resolveStudentContactProfileGaps(
+      context.linkedContact ?? null,
+      profileRequirements,
+      guardians,
+    );
+    const message = (key: AppTranslationKey) => translateApp(key, context.language);
+    if (profileGaps.relationships) {
+      errors.push({
+        fieldId: "contactRelationships",
+        tabId: "basic",
+        message: message("students.form.relationshipsRequired"),
+      });
+    }
+    if (profileGaps.address) {
+      errors.push({
+        fieldId: "address",
+        tabId: "basic",
+        message: message("students.form.addressRequired"),
+      });
+    }
+    if (profileGaps.education) {
+      errors.push({
+        fieldId: "education",
+        tabId: "basic",
+        message: message("students.form.educationRequired"),
+      });
     }
   }
 

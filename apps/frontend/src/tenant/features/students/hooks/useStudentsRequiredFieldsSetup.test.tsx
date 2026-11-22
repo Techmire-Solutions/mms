@@ -89,22 +89,21 @@ describe("useStudentsRequiredFieldsSetup", () => {
     container.remove();
   });
 
-  it("given DOB is optional in saved Setup, should report the custom preset and a clean draft", () => {
+  it("given DOB is optional in the saved Setup, should show it off with a clean draft", () => {
     // Arrange / Act
     renderHook();
 
     // Assert
-    expect(state.preset).toBe("custom");
     expect(state.isDirty).toBe(false);
     expect(state.rows.find((row) => row.key === "dob")?.required).toBe(false);
   });
 
-  it("given the recommended preset is picked, should save DOB as required", async () => {
+  it("given a recommended field is toggled on, should save it as required", async () => {
     // Arrange
     renderHook();
 
     // Act
-    act(() => state.selectPreset("recommended"));
+    act(() => state.setRequired("dob", true));
     await act(async () => {
       await state.save();
     });
@@ -117,20 +116,20 @@ describe("useStudentsRequiredFieldsSetup", () => {
     expect(notify.success).toHaveBeenCalledWith("students.setup.requiredFieldsSaved");
   });
 
-  it("given a custom toggle, should persist that single field and keep others", async () => {
+  it("given a single toggle, should persist that field and keep others", async () => {
     // Arrange
     renderHook();
 
-    // Act
-    act(() => state.setRequired("notes", true));
+    // Act — education defaults on (recommended), so turning it off is the edit.
+    act(() => state.setRequired("education", false));
     await act(async () => {
       await state.save();
     });
 
     // Assert
     const sent = mocks.fieldConfigMutate.mock.calls[0][0] as StudentsSettings;
-    expect(requiredOf(sent, "notes")).toBe(true);
-    expect(requiredOf(sent, "dob")).toBe(false);
+    expect(requiredOf(sent, "education")).toBe(false);
+    expect(requiredOf(sent, "gender")).toBe(true);
   });
 
   it("given the saved config has not loaded yet, should block edits and saves", async () => {
@@ -139,7 +138,7 @@ describe("useStudentsRequiredFieldsSetup", () => {
     renderHook();
 
     // Act
-    act(() => state.setRequired("notes", true));
+    act(() => state.setRequired("education", true));
     await act(async () => {
       await state.save();
     });
@@ -156,7 +155,7 @@ describe("useStudentsRequiredFieldsSetup", () => {
     renderHook();
 
     // Act
-    act(() => state.setRequired("notes", true));
+    act(() => state.setRequired("education", false));
     await act(async () => {
       await state.save();
     });

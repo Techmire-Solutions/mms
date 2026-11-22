@@ -70,7 +70,7 @@ describe("student field config API", () => {
     const settings = normalizeStudentsSettings(null);
     const fields = setStudentFieldRequired(
       settings.fields as Record<string, FieldDefinition[]>,
-      "notes",
+      "education",
       true,
     );
     vi.mocked(apiContract.students.updateFieldConfig).mockImplementation((async ({
@@ -91,10 +91,10 @@ describe("student field config API", () => {
     expect(studentFieldConfigPutBodySchema.safeParse(sent).success).toBe(true);
     expect(sent).not.toHaveProperty("formTabs");
     expect(sent).not.toHaveProperty("grNumberDigits");
-    const notes = (saved.fields as Record<string, FieldDefinition[]>).registration.find(
-      (field) => field.key === "notes",
+    const education = (saved.fields as Record<string, FieldDefinition[]>).basic.find(
+      (field) => field.key === "education",
     );
-    expect(notes?.required).toBe(true);
+    expect(education?.required).toBe(true);
   });
 
   it("rejects so the Setup tab cannot claim success on a 500", async () => {

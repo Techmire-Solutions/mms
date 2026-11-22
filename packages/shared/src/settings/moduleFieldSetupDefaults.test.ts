@@ -18,6 +18,8 @@ describe("moduleFieldSetupDefaults", () => {
       "gender",
       "dob",
       "contactRelationships",
+      "address",
+      "education",
     ]);
     expect(INITIAL_STUDENT_FIELD_SEED.registration?.map((field) => field.key)).toEqual([
       "grNumber",
