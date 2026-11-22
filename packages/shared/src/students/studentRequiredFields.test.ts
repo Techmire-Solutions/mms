@@ -56,9 +56,11 @@ describe("listStudentRequirableFields", () => {
   });
 
   it("keeps the contact link out of the requirable list", () => {
-    const contactId = listStudentRequirableFields([
-      { key: "contactId", label: "Student Contact", type: "text", enabled: true },
-    ]);
+    const contactId = listStudentRequirableFields({
+      basic: [
+        { key: "contactId", label: "Student Contact", type: "text", enabled: true, order: 0 },
+      ],
+    });
     expect(contactId).toEqual([]);
   });
 
@@ -202,7 +204,7 @@ describe("contact-profile requirements", () => {
   it("reports every gap for an incomplete contact", () => {
     // Act
     const gaps = resolveStudentContactProfileGaps(
-      { id: "c-2", name: "Bare" },
+      { id: "c-2", name: "Bare", firstName: "Bare" },
       { relationships: true, address: true, education: true },
     );
 
@@ -215,6 +217,7 @@ describe("contact-profile requirements", () => {
     const contact = {
       id: "c-1",
       name: "Aisha",
+      firstName: "Aisha",
       line1: "12 Madrasa Road",
       education: [{ institution: "Al-Noor Madrasa" }],
     };
@@ -233,7 +236,7 @@ describe("contact-profile requirements", () => {
   it("treats a missing father or mother as an unmet relationship requirement", () => {
     // Act
     const gaps = resolveStudentContactProfileGaps(
-      { id: "c-1", line1: "Street" },
+      { id: "c-1", name: "Street", firstName: "Street", line1: "Street" },
       { relationships: true, address: false, education: false },
       { fatherContactId: "f-1", guardianContactId: "g-1" },
     );
