@@ -32,9 +32,11 @@ vi.mock("@/components/app/TemplateEditor", () => ({
     onChange?: (next: unknown) => void;
     onDirtyChange?: (dirty: boolean) => void;
   }) => {
+    // Latest-callback ref keeps the deps complete for the mount-once signal.
+    const onDirtyChangeRef = React.useRef(onDirtyChange);
+    onDirtyChangeRef.current = onDirtyChange;
     React.useEffect(() => {
-      onDirtyChange?.(false);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      onDirtyChangeRef.current?.(false);
     }, []);
     return (
       <button

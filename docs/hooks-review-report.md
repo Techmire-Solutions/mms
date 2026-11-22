@@ -85,7 +85,13 @@ Repo-wide React hook audit — every hook reviewed one-by-one, bugs fixed with r
 
 Verdict: **no blocking findings**; two pre-existing non-regressions noted (silent fetch-error swallowing, OTP verify race) as candidates for future hardening.
 
+## Post-audit hardening (follow-up commits)
+
+- **Work search debounce moved to the shared leaf** — `ModuleWorkToolbar` now owns the 250 ms leaf debounce with the last-pushed guard (external resets adopt immediately, never echo back), so every module's page controller/metrics/directory stops re-rendering per keystroke; `ContactsListFilters` dropped its duplicate debounce. New toolbar contract tests + `DataTable` spec updated to advance the debounce clock.
+- **Finance query-key collision ended** — the tsrClient envelope key renamed `FINANCE_CONTRACT_PREFERENCES_QUERY_KEY` (the same identifier previously resolved to two different arrays via different import paths).
+- **Create-hotkey churn closed** — question-bank's `openAddQuestion`/`openCreatePaper` are `useCallback`-stable, so the `Cmd+N` listener registers once.
+- **All `exhaustive-deps` disables eliminated repo-wide** (29 → 0): the last two were mount-once test doubles, restructured to latest-callback refs with complete deps.
+
 ## Remaining deferred (documented, non-blocking)
 
-- 2 exhaustive-deps disables remain in `*.test.*` files (tests are compiler-exempt; kept to avoid churn).
 - `useDynamicChartVisualizer` keeps the single justified `react-hooks/refs` exception (event-only accessor; restructure would need a cross-layer handler redesign).
