@@ -9,10 +9,7 @@ import {
 } from "@mms/shared";
 import type { PlatformConsolidationRepository } from "../repository/platformConsolidationRepositoryAdapter.js";
 import { platformConsolidationRepository } from "../repository/platformConsolidationRepositoryAdapter.js";
-
-function httpError(message: string, statusCode: number, type: string): Error {
-  return Object.assign(new Error(message), { statusCode, type });
-}
+import { HttpDomainError } from "../../lib/httpErrors.js";
 
 export function listGroups(repo: PlatformConsolidationRepository): Promise<ConsolidationGroup[]> {
   return repo.listConsolidationGroups();
@@ -34,7 +31,7 @@ export async function saveGroup(
     metadataMessage: `${input.name}: ${input.members.length} member(s), ${input.presentationCurrency}`,
   });
   const saved = (await repo.listConsolidationGroups()).find((group) => group.id === id);
-  if (!saved) throw httpError("Consolidation group was not saved", 500, "server_error");
+  if (!saved) throw new HttpDomainError(500, "server_error", "Consolidation group was not saved");
   return saved;
 }
 
@@ -44,7 +41,7 @@ export async function deleteGroup(
   id: string,
 ): Promise<void> {
   if (!(await repo.deleteConsolidationGroup(id))) {
-    throw httpError("Consolidation group not found", 404, "not_found");
+    throw new HttpDomainError(404, "not_found", "Consolidation group not found");
   }
   await repo.insertPlatformActivityLog({
     userId: actor.id,
@@ -66,9 +63,9 @@ export async function buildConsolidationReport(
   query: ConsolidationReportQuery,
 ): Promise<ConsolidationReport> {
   const group = (await repo.listConsolidationGroups()).find((row) => row.id === groupId);
-  if (!group) throw httpError("Consolidation group not found", 404, "not_found");
+  if (!group) throw new HttpDomainError(404, "not_found", "Consolidation group not found");
   if (group.members.length === 0)
-    throw httpError("The group has no members", 422, "validation_error");
+    throw new HttpDomainError(422, "validation_error", "The group has no members");
 
   const translated = [];
   for (const member of group.members) {
@@ -84,10 +81,10 @@ export async function buildConsolidationReport(
     );
     const sameCurrency = ledger.functionalCurrency === group.presentationCurrency;
     if (!sameCurrency && (!member.closingRate || !member.averageRate || !member.historicalRate)) {
-      throw httpError(
-        `Enter closing, average and historical ${ledger.functionalCurrency}→${group.presentationCurrency} rates for ${member.memberSubdomain}`,
+      throw new HttpDomainError(
         422,
         "validation_error",
+        `Enter closing, average and historical ${ledger.functionalCurrency}→${group.presentationCurrency} rates for ${member.memberSubdomain}`,
       );
     }
     translated.push({

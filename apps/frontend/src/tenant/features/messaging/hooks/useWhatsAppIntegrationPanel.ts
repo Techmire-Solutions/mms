@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   DEFAULT_WHATSAPP_INTEGRATION,
@@ -14,10 +14,13 @@ import {
   testWhatsappIntegration,
 } from "@/lib/whatsappIntegrationApi";
 
+// Static provider catalog — resolved once per module, not per render.
+const WHATSAPP_PROVIDER_PRESETS = listWhatsappProviderPresets();
+
 export function useWhatsAppIntegrationPanel() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const providers = (() => listWhatsappProviderPresets())();
+  const providers = WHATSAPP_PROVIDER_PRESETS;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -27,9 +30,16 @@ export function useWhatsAppIntegrationPanel() {
   const [testPhone, setTestPhone] = useState("");
 
   // `loading` already starts true, so the mount fetch only has to clear it when it settles.
+  // Each load aborts the previous read and unmount aborts any pending one, so a
+  // slow response can never touch stale/unmounted state (sibling email/SMS panels).
+  const loadAbortRef = useRef<AbortController | null>(null);
   const load = useCallback(async (): Promise<void> => {
+    loadAbortRef.current?.abort();
+    const controller = new AbortController();
+    loadAbortRef.current = controller;
     try {
       const config = await fetchWhatsappIntegration();
+      if (controller.signal.aborted) return;
       if (config) {
         setForm(config);
         if (config.senderId) {
@@ -37,12 +47,13 @@ export function useWhatsAppIntegrationPanel() {
         }
       }
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void load();
+    return () => loadAbortRef.current?.abort();
   }, [load]);
 
   const selectedPreset = providers.find((p) => p.id === form.providerId) ?? providers[0];

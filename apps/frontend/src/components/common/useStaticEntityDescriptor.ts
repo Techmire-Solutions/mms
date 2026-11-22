@@ -28,21 +28,15 @@ export function useStaticEntityDescriptor<T>(
   baseConfig: StaticDescriptorInput<T>,
   /** Label resolver called once per field; receives (labelKey | field.key, field.label). */
   resolveLabel: (key: string, fallback: string) => string,
-  /** Optional additional memoization deps beyond the stable baseConfig reference. */
-  extraDeps: readonly unknown[] = [],
 ): EntityDescriptor<T> {
-  return useMemo(
-    () => {
-      const i18nFields = baseConfig.fields.map((field) => ({
-        ...field,
-        label: resolveLabel(field.labelKey ?? field.key, field.label),
-      }));
-      return createEntityDescriptor<T>({
-        ...baseConfig,
-        fields: i18nFields,
-      });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [baseConfig, resolveLabel, ...extraDeps],
-  );
+  return useMemo(() => {
+    const i18nFields = baseConfig.fields.map((field) => ({
+      ...field,
+      label: resolveLabel(field.labelKey ?? field.key, field.label),
+    }));
+    return createEntityDescriptor<T>({
+      ...baseConfig,
+      fields: i18nFields,
+    });
+  }, [baseConfig, resolveLabel]);
 }

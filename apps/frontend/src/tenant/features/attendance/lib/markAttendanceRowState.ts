@@ -53,6 +53,22 @@ export function pickLocalExtras(
 }
 
 /**
+ * True when two baselines describe the same persisted row (fields + server identity). Used to make
+ * `mergeServerRows` idempotent: re-merging an already-adopted snapshot must return the same array.
+ */
+function sameBaseline(a: RowBaseline | undefined, b: RowBaseline): boolean {
+  if (!a) return false;
+  return (
+    a.status === b.status &&
+    (a.timeIn || "") === (b.timeIn || "") &&
+    (a.timeOut || "") === (b.timeOut || "") &&
+    (a.notes || "") === (b.notes || "") &&
+    a.recordId === b.recordId &&
+    a.version === b.version
+  );
+}
+
+/**
  * Merges a fresh server snapshot into the editable rows without clobbering local edits.
  *
  * - clean rows adopt the server value (and refresh their baseline),
@@ -76,7 +92,10 @@ export function mergeServerRows(args: {
       if (!serverRecord) return row;
       const next = attendanceRowsFromRecords([serverRecord])[0];
       if (!next) return row;
-      baseline.set(row.studentId, baselineOf(next));
+      const nextBaseline = baselineOf(next);
+      // Already adopted: keep the current row so repeated merges over the same snapshot are a no-op.
+      if (sameBaseline(rowBaseline, nextBaseline)) return row;
+      baseline.set(row.studentId, nextBaseline);
       changed = true;
       return { ...next, ...pickLocalExtras(row, next) };
     }

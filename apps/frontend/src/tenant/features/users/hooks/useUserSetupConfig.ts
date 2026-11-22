@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   USERS_MODULE_MANIFEST,
   normalizeUserModulePreferences,
@@ -27,8 +28,6 @@ const setupConfigHooks = createModuleSetupConfigHooks<UserModulePreferences>({
 
 export const useUserPreferencesQuery = setupConfigHooks.usePreferencesQuery;
 export const useUserPreferencesMutation = setupConfigHooks.usePreferencesMutation;
-
-import { useMemo } from "react";
 
 /** Composed UsersSettings from preferences queries. */
 export function useComposedUsersSettings(): UsersSettings {

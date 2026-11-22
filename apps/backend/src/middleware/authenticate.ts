@@ -2,10 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import type { GlobalSettings, User, Workspace } from "@mms/shared";
 import { isWorkspaceEnabled, parseSessionTimeoutMinutes } from "@mms/shared";
 import { tenantSessionScope } from "../services/sessionClockService.js";
-import {
-  enforceTenantSessionClock,
-  SESSION_EXPIRY_RESPONSE,
-} from "../services/sessionGuardService.js";
+import { enforceTenantSessionClock } from "../services/sessionGuardService.js";
 import { tenantSessionPolicy } from "../services/sessionPolicyService.js";
 import {
   bindRequestTenant,
@@ -18,28 +15,14 @@ import { formatTraceParent } from "../config/telemetry.js";
 import { getWorkspaceBySubdomain } from "../services/workspaceService.js";
 import { loadGlobalSettings } from "../services/globalSettingsService.js";
 import { attachTenantRoleCatalog } from "../lib/attachTenantRoleCatalog.js";
-import { sendForbidden, sendServiceUnavailable, sendUnauthorized } from "../lib/httpErrors.js";
+import { sendForbidden, sendUnauthorized } from "../lib/httpErrors.js";
+import {
+  enforceSessionClockOrReply,
+  rejectOnAuthDependencyFailure,
+  verifyJwtOrUnauthorized,
+} from "../lib/authGuard.js";
 import { checkTenantAuthPipelineBatch } from "../services/authSessionService.js";
-import { RedisUnavailableError } from "../lib/redis.js";
 import { markRequestDiagnosticStage } from "../lib/requestDiagnostics.js";
-
-/**
- * Redis is the shared source of truth for revocation/blocklist/session-clock
- * state. When it is configured but unreachable, deny the request with a
- * retryable 503 instead of falling back to a per-process view that may still
- * consider a revoked session valid.
- */
-async function rejectOnAuthDependencyFailure(
-  reply: FastifyReply,
-  error: unknown,
-): Promise<boolean> {
-  if (!(error instanceof RedisUnavailableError)) return false;
-  await sendServiceUnavailable(
-    reply,
-    "Session validation is temporarily unavailable. Please retry.",
-  );
-  return true;
-}
 
 export interface AuthenticatedRequest extends FastifyRequest {
   user: User & {
@@ -70,12 +53,7 @@ export async function authenticateTenant(
 ): Promise<void> {
   if (reply.sent) return;
   markRequestDiagnosticStage(request, "authentication_jwt");
-  try {
-    await request.jwtVerify();
-  } catch {
-    await sendUnauthorized(reply);
-    return;
-  }
+  if (!(await verifyJwtOrUnauthorized(request, reply))) return;
 
   const user = request.user as User & {
     twoFactorVerified?: boolean;
@@ -114,7 +92,7 @@ export async function authenticateTenant(
       issuedAtMs: user.iat_ms ?? (user.iat ? user.iat * 1000 : undefined),
     });
   } catch (error) {
-    if (await rejectOnAuthDependencyFailure(reply, error)) return;
+    if (await rejectOnAuthDependencyFailure(reply, error, "tenant")) return;
     throw error;
   }
   const { tenantBlocked, tokenRevoked, userSessionRevoked, globalSettingsCached, workspaceCached } =
@@ -208,23 +186,15 @@ export async function authenticateTenant(
   );
   const idleScope = user.id ? tenantSessionScope(tenant, String(user.id)) : "";
 
-  let idleOutcome: Awaited<ReturnType<typeof enforceTenantSessionClock>>;
-  try {
-    idleOutcome = await enforceTenantSessionClock({
-      scope: idleScope,
-      policy: sessionPolicy,
-      jti: user.jti,
-      userId: user.id ? String(user.id) : undefined,
-    });
-  } catch (error) {
-    if (await rejectOnAuthDependencyFailure(reply, error)) return;
-    throw error;
-  }
-  if (idleOutcome !== "ok") {
-    const expiry = SESSION_EXPIRY_RESPONSE[idleOutcome];
-    await sendUnauthorized(reply, expiry.message, expiry.type);
-    return;
-  }
+  const clockOk = await enforceSessionClockOrReply(request, reply, {
+    scope: idleScope,
+    policy: sessionPolicy,
+    jti: user.jti,
+    userId: user.id ? String(user.id) : undefined,
+    enforce: enforceTenantSessionClock,
+    domain: "tenant",
+  });
+  if (!clockOk) return;
 
   markRequestDiagnosticStage(request, "authentication_workspace_lookup");
   let workspace: Workspace | null = null;

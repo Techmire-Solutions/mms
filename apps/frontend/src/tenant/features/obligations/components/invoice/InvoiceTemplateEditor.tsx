@@ -71,10 +71,11 @@ export function InvoiceTemplateEditor({
 
   const liveContacts = useMergedObligationContacts(contactIds);
 
-  const userIds = useMemo(() => {
-    if (!collection?.received_by) return [];
-    return [collection.received_by];
-  }, [collection?.received_by]);
+  // Derived first so the memo's dependency matches exactly what it reads
+  // (react-hooks/preserve-manual-memoization: dep was `collection?.received_by`,
+  // the compiler inferred `collection`).
+  const receivedBy = collection?.received_by;
+  const userIds = useMemo(() => (receivedBy ? [receivedBy] : []), [receivedBy]);
 
   const liveUsers = useMergedObligationUsers(userIds);
 

@@ -13,8 +13,13 @@ export const SESSIONS_LOOKUPS_QUERY_KEY = [
   "lookups",
 ] as const;
 
-export async function fetchSessionLookups(_signal?: AbortSignal): Promise<SessionLookupsMap> {
-  const res = await apiContract.sessions.getLookups({ query: undefined, extraHeaders: {} });
+export async function fetchSessionLookups(signal?: AbortSignal): Promise<SessionLookupsMap> {
+  const res = await apiContract.sessions.getLookups({
+    query: undefined,
+    extraHeaders: {},
+    signal,
+    fetchOptions: { signal },
+  });
   assertContractOk(res, "Failed to load session lookups");
   return (res.body as { lookups?: SessionLookupsMap }).lookups ?? emptySessionLookupsMap;
 }

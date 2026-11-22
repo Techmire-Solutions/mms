@@ -18,8 +18,12 @@ import {
   ToggleRow,
   CardSkeleton,
 } from "@shared/ui";
-import { PlatformEmailIntegrationPanel } from "@/platform/components/settings/PlatformEmailIntegrationPanel";
-import { PlatformSmsIntegrationPanel } from "@/platform/components/settings/PlatformSmsIntegrationPanel";
+import { EmailIntegrationPanel } from "@/components/app/IntegrationPanels/EmailIntegrationPanel";
+import { SmsIntegrationPanel } from "@/components/app/IntegrationPanels/SmsIntegrationPanel";
+import {
+  PLATFORM_EMAIL_INTEGRATION_API,
+  PLATFORM_SMS_INTEGRATION_API,
+} from "@/platform/components/settings/platformIntegrationAdapters";
 
 export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
   const { t } = useTranslation();
@@ -137,8 +141,25 @@ export function PlatformNotificationsSettingsPanel(): React.JSX.Element {
         <Alert tone="destructive" density="compact" role="alert" description={error} />
       ) : null}
 
-      {emailOn ? <PlatformEmailIntegrationPanel /> : null}
-      {smsOn ? <PlatformSmsIntegrationPanel /> : null}
+      {emailOn ? (
+        <EmailIntegrationPanel
+          api={PLATFORM_EMAIL_INTEGRATION_API}
+          idPrefix="platform-"
+          descriptionKey="platformEmail.integrationDesc"
+          secretFieldName="platformEmailSmtpPassword"
+        />
+      ) : null}
+      {smsOn ? (
+        <SmsIntegrationPanel
+          api={PLATFORM_SMS_INTEGRATION_API}
+          idPrefix="platform-"
+          descriptionKey="platformSms.integrationDesc"
+          secretFieldName="platformSmsAccountSecret"
+          disableTest={(testPhone) => !testPhone.trim()}
+          validateTestTarget
+          resolveTestTarget={(_config, testPhone) => testPhone.trim()}
+        />
+      ) : null}
     </div>
   );
 }

@@ -107,11 +107,8 @@ export function useMessageComposerDispatch({
       auditIdempotencyKeyRef,
     });
 
-  /**
-   * Submission idempotency key: a retry of the same composition reuses it (the
-   * server dedupes the partial delivery), while a new — or already completed —
-   * submission mints a fresh one so a deliberate repeat campaign still sends.
-   */
+  // Submission idempotency key: a retry reuses it (server dedupes the partial
+  // delivery); a new or completed submission mints a fresh one.
   const submissionKeyFor = (targetRecipients: ValidatedMessagingRecipient[]): string => {
     const activeTemplate = activeTemplates.find((template) => template.id === templateId);
     const digest = JSON.stringify({
@@ -133,22 +130,25 @@ export function useMessageComposerDispatch({
       submissionKeyRef.current = { ...submissionKeyRef.current, completed: true };
     }
   };
-  const dispatchViaGateway = createGatewayDispatch({
-    channel,
-    activeTemplates,
-    templateId,
-    message,
-    subject,
-    personalizeOptions,
-    submissionKeyFor,
-    markSubmissionCompleted,
-    dispatchServerSms,
-    dispatchServerEmail,
-    dispatchServerWhatsApp,
-    onSent,
-    onClose,
-    t,
-  });
+  // Built lazily at dispatch time (event context), never during render: the
+  // factory receives callbacks that close over refs (`submissionKeyRef`).
+  const dispatchViaGateway = (targetRecipients: ValidatedMessagingRecipient[]): Promise<void> =>
+    createGatewayDispatch({
+      channel,
+      activeTemplates,
+      templateId,
+      message,
+      subject,
+      personalizeOptions,
+      submissionKeyFor,
+      markSubmissionCompleted,
+      dispatchServerSms,
+      dispatchServerEmail,
+      dispatchServerWhatsApp,
+      onSent,
+      onClose,
+      t,
+    })(targetRecipients);
 
   const sendOne = async (recipient: MessagingRecipient): Promise<void> =>
     sendSingleRecipient({

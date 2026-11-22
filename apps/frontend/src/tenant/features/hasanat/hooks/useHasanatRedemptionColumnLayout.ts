@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { HASANAT_MODULE_MANIFEST, buildHasanatRedemptionWorkColumnRegistry } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
@@ -9,14 +10,19 @@ export function useHasanatRedemptionColumnLayout() {
 
   const storageModuleId = `${HASANAT_MODULE_MANIFEST.moduleId}_${STORAGE_SUFFIX}`;
 
-  const tenantRegistry = (() =>
-    buildHasanatRedemptionWorkColumnRegistry({
-      student: t("hasanat.columns.redemption.student"),
-      reward: t("hasanat.columns.redemption.reward"),
-      pointsUsed: t("hasanat.columns.redemption.pointsUsed"),
-      date: t("hasanat.columns.redemption.date"),
-      approvedBy: t("hasanat.columns.redemption.approvedBy"),
-    }))();
+  // Stable registry identity keeps `useModuleColumnLayout`'s overlay/column
+  // memo chain intact across unrelated controller re-renders.
+  const tenantRegistry = useMemo(
+    () =>
+      buildHasanatRedemptionWorkColumnRegistry({
+        student: t("hasanat.columns.redemption.student"),
+        reward: t("hasanat.columns.redemption.reward"),
+        pointsUsed: t("hasanat.columns.redemption.pointsUsed"),
+        date: t("hasanat.columns.redemption.date"),
+        approvedBy: t("hasanat.columns.redemption.approvedBy"),
+      }),
+    [t],
+  );
 
   return useModuleColumnLayout({
     moduleId: storageModuleId,

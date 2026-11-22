@@ -1,7 +1,12 @@
 import { randomBytes } from "node:crypto";
 import type { JWT } from "@fastify/jwt";
 import type { User } from "@mms/shared";
-import { resolveNotificationChannel, TENANT_OTP_MAX_ATTEMPTS } from "@mms/shared";
+import {
+  REFRESH_TOKEN_TTL_SECONDS,
+  resolveNotificationChannel,
+  TENANT_OTP_MAX_ATTEMPTS,
+  TWO_FACTOR_CHALLENGE_TTL_MS,
+} from "@mms/shared";
 import {
   authArtifactUserScopeKey,
   authArtifactWorkspaceScopeKey,
@@ -13,12 +18,11 @@ import {
   putAuthArtifact,
 } from "./authArtifactService.js";
 import {
-  generateOtpCode,
-  hashOtpCode,
-  verifyOtpCode,
-  createRefreshTokenValue,
-  hashRefreshToken,
-} from "./authCookieService.js";
+  createOtpChallengeService,
+  type OtpChallengePayload,
+  type OtpDispatchResult,
+} from "./otpChallengeService.js";
+import { createRefreshTokenValue, hashRefreshToken } from "./authCookieService.js";
 import { getPublicUserById } from "./userService.js";
 import { loadGlobalSettings } from "../globalSettingsService.js";
 import { sendTenantEmail } from "../email/emailService.js";
@@ -28,47 +32,22 @@ import { runWithTenant } from "../../lib/tenantContext.js";
 import { logger } from "../../lib/logger.js";
 import { isDevCredentialLoggingEnabled } from "../../lib/devLogging.js";
 
-const CHALLENGE_TTL_MS = 10 * 60 * 1000;
-const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const CHALLENGE_TTL_MS = TWO_FACTOR_CHALLENGE_TTL_MS;
+/** Refresh-token artifact lifetime mirrors the 7-day refresh cookie TTL. */
+const REFRESH_TTL_MS = REFRESH_TOKEN_TTL_SECONDS * 1000;
 
-export interface TwoFactorChallengePayload {
+export interface TwoFactorChallengePayload extends OtpChallengePayload {
   userId: string;
   email: string;
   /** Carried through so the SMS channel can resolve a phone via the linked contact. */
   contactId?: string | number;
   workspaceSubdomain: string;
-  codeHash: string;
-  /** Failed guesses against this challenge; the challenge dies at the shared ceiling. */
-  attempts: number;
 }
 
 export interface RefreshTokenPayload {
   userId: string;
   workspaceSubdomain: string;
   tokenHash: string;
-}
-
-export async function createTwoFactorChallenge(user: User): Promise<string> {
-  const code = generateOtpCode();
-  const challengeId = createArtifactId();
-  await putAuthArtifact<TwoFactorChallengePayload>(
-    "two_factor_challenge",
-    {
-      userId: user.id,
-      email: user.email,
-      contactId: user.contactId,
-      workspaceSubdomain: user.workspaceSubdomain,
-      codeHash: hashOtpCode(code),
-      attempts: 0,
-    },
-    CHALLENGE_TTL_MS,
-    {
-      id: challengeId,
-      scopeKey: authArtifactWorkspaceScopeKey(user.workspaceSubdomain),
-    },
-  );
-  await dispatchTwoFactorCode(user.email, user.contactId, code);
-  return challengeId;
 }
 
 function challengeMatchesTenant(
@@ -78,29 +57,71 @@ function challengeMatchesTenant(
   return payload.workspaceSubdomain.trim().toLowerCase() === expectedTenant.trim().toLowerCase();
 }
 
+const twoFactorChallenges = createOtpChallengeService<User, TwoFactorChallengePayload>({
+  kind: "two_factor_challenge",
+  ttlMs: CHALLENGE_TTL_MS,
+  maxAttempts: TENANT_OTP_MAX_ATTEMPTS,
+  buildPayload: (user, codeHash) => ({
+    userId: user.id,
+    email: user.email,
+    contactId: user.contactId,
+    workspaceSubdomain: user.workspaceSubdomain,
+    codeHash,
+    attempts: 0,
+  }),
+  persist: async (payload, id) => {
+    const target = id ?? createArtifactId();
+    await putAuthArtifact("two_factor_challenge", payload, CHALLENGE_TTL_MS, {
+      id: target,
+      scopeKey: authArtifactWorkspaceScopeKey(payload.workspaceSubdomain),
+    });
+    return target;
+  },
+  // Atomic claim: DELETE … RETURNING gives the challenge to exactly one caller,
+  // so parallel guesses cannot all read the same code before it is deleted.
+  loadForVerify: (challengeId) =>
+    consumeAuthArtifactWithPayload<TwoFactorChallengePayload>(challengeId, "two_factor_challenge"),
+  loadForResend: (challengeId) =>
+    getAuthArtifact<TwoFactorChallengePayload>(challengeId, "two_factor_challenge"),
+  // Re-arm the (single-use) challenge with the incremented counter for the time
+  // the artifact had left; a consumed challenge past its expiry stays dead.
+  rearm: async (entry, payload) => {
+    const remainingMs = entry.expiresAt.getTime() - Date.now();
+    if (remainingMs <= 0) return;
+    await putAuthArtifact("two_factor_challenge", payload, remainingMs, {
+      id: entry.id,
+      scopeKey: authArtifactWorkspaceScopeKey(payload.workspaceSubdomain),
+    });
+  },
+  remove: (entry) => deleteAuthArtifact(entry.id),
+  resolveUserOnSuccess: async (payload) => {
+    const user = await runWithTenant(payload.workspaceSubdomain, () =>
+      getPublicUserById(payload.userId),
+    );
+    if (!user) return null;
+    if (user.workspaceSubdomain !== payload.workspaceSubdomain) return null;
+    return user;
+  },
+  dispatch: (user, code) => dispatchTwoFactorCode(user.email, user.contactId, code),
+  dispatchOnResend: (_user, code, payload) =>
+    dispatchTwoFactorCode(payload.email, payload.contactId, code),
+});
+
+export async function createTwoFactorChallenge(user: User): Promise<string> {
+  const { challengeId } = await twoFactorChallenges.issue(user);
+  return challengeId;
+}
+
 export async function resendTwoFactorChallenge(
   challengeId: string,
   expectedTenant: string,
 ): Promise<boolean> {
-  const entry = await getAuthArtifact<TwoFactorChallengePayload>(
-    challengeId,
-    "two_factor_challenge",
-  );
-  if (!entry) return false;
   // A challenge minted in workspace A must never be re-sent from workspace B's
   // host; without this binding the flow is a cross-workspace login CSRF vector.
-  if (!challengeMatchesTenant(entry.payload, expectedTenant)) return false;
-
-  const code = generateOtpCode();
-  entry.payload.codeHash = hashOtpCode(code);
-  entry.payload.attempts = 0;
-  await deleteAuthArtifact(challengeId);
-  await putAuthArtifact("two_factor_challenge", entry.payload, CHALLENGE_TTL_MS, {
-    id: challengeId,
-    scopeKey: authArtifactWorkspaceScopeKey(entry.payload.workspaceSubdomain),
-  });
-  await dispatchTwoFactorCode(entry.payload.email, entry.payload.contactId, code);
-  return true;
+  const outcome = await twoFactorChallenges.resend(challengeId, (payload) =>
+    challengeMatchesTenant(payload, expectedTenant),
+  );
+  return outcome.ok;
 }
 
 export async function verifyTwoFactorChallenge(
@@ -108,47 +129,17 @@ export async function verifyTwoFactorChallenge(
   code: string,
   expectedTenant: string,
 ): Promise<User | null> {
-  // Atomic claim: DELETE … RETURNING gives the challenge to exactly one caller,
-  // so parallel guesses cannot all read the same code before it is deleted.
-  const entry = await consumeAuthArtifactWithPayload<TwoFactorChallengePayload>(
-    challengeId,
-    "two_factor_challenge",
+  const outcome = await twoFactorChallenges.verify(challengeId, code, (payload) =>
+    challengeMatchesTenant(payload, expectedTenant),
   );
-  if (!entry) return null;
-  if (!challengeMatchesTenant(entry.payload, expectedTenant)) return null;
-
-  if (!verifyOtpCode(code.replace(/\s/g, ""), entry.payload.codeHash)) {
-    const attempts = (entry.payload.attempts ?? 0) + 1;
-    const remainingMs = entry.expiresAt.getTime() - Date.now();
-    if (attempts >= TENANT_OTP_MAX_ATTEMPTS || remainingMs <= 0) return null;
-
-    // Re-arm the (single-use) challenge with the incremented counter so the
-    // caller can retry, bounded by the shared five-attempt ceiling.
-    await putAuthArtifact<TwoFactorChallengePayload>(
-      "two_factor_challenge",
-      { ...entry.payload, attempts },
-      remainingMs,
-      {
-        id: entry.id,
-        scopeKey: authArtifactWorkspaceScopeKey(entry.payload.workspaceSubdomain),
-      },
-    );
-    return null;
-  }
-
-  const user = await runWithTenant(entry.payload.workspaceSubdomain, () =>
-    getPublicUserById(entry.payload.userId),
-  );
-  if (!user) return null;
-  if (user.workspaceSubdomain !== entry.payload.workspaceSubdomain) return null;
-  return user;
+  return outcome.ok && outcome.user ? outcome.user : null;
 }
 
 async function dispatchTwoFactorCode(
   email: string,
   contactId: string | number | undefined,
   code: string,
-): Promise<void> {
+): Promise<OtpDispatchResult> {
   const settings = await loadGlobalSettings();
   const channel = resolveNotificationChannel(settings);
   const text = `Your MMS verification code is ${code}. It expires in 10 minutes.`;
@@ -190,6 +181,8 @@ async function dispatchTwoFactorCode(
       logger.info({ channel }, "2FA code generated");
     }
   }
+
+  return { sent: emailSent || smsSent };
 }
 
 export async function issueRefreshToken(user: User): Promise<string> {

@@ -39,7 +39,7 @@ export function facultyDepartmentsQueryOptions(input: {
 
 /**
  * Server-authoritative list of faculty departments.
- * Falls back to an empty array on parse failure so the UI never hard-crashes.
+ * A failed read surfaces as a query error; consumers fall back to `[]` via `?? []`.
  */
 export function useFacultyDepartments(options: { includeDeleted?: boolean } = {}) {
   const { t } = useTranslation();

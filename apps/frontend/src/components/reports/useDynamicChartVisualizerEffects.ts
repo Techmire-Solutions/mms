@@ -27,7 +27,7 @@ export function useDynamicChartVisualizerMetaEffects(input: {
     operation,
     activeMeta,
     metadataConfigs,
-    isInitialMount,
+    isInitialMount: isInitialMountRef,
     setXAxisField,
     setChartType,
     setTargetField,
@@ -36,7 +36,7 @@ export function useDynamicChartVisualizerMetaEffects(input: {
   } = input;
 
   useEffect(() => {
-    if (isInitialMount.current) {
+    if (isInitialMountRef.current) {
       return;
     }
     const meta = metadataConfigs[collectionKey];
@@ -56,7 +56,7 @@ export function useDynamicChartVisualizerMetaEffects(input: {
     setFilters([]);
   }, [
     collectionKey,
-    isInitialMount,
+    isInitialMountRef,
     metadataConfigs,
     setChartType,
     setFilters,
@@ -66,12 +66,12 @@ export function useDynamicChartVisualizerMetaEffects(input: {
   ]);
 
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
       return;
     }
     setChartType(isDateDimensionField(xAxisField) ? "line" : "bar");
-  }, [isInitialMount, setChartType, xAxisField]);
+  }, [isInitialMountRef, setChartType, xAxisField]);
 
   useEffect(() => {
     if (activeMeta.numericFields.length === 0 && operation !== "count") {

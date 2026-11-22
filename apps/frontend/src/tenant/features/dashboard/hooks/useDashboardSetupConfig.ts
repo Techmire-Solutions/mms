@@ -31,6 +31,9 @@ const DEFAULT_WIDGETS_PLACEHOLDER: CustomWidget[] = buildDefaultCustomWidgets();
  * grid-density toggle or a pin must not refetch the 10-way aggregation.
  * Domain collection changes invalidate the summary through
  * `invalidateModuleQueries`.
+ *
+ * Individual mutations invalidate precisely (only the document they wrote);
+ * this helper remains for cross-feature callers that touch the whole config.
  */
 export function invalidateDashboardConfigQueries(queryClient: QueryClient): void {
   queryClient.invalidateQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
@@ -115,7 +118,9 @@ export function useDashboardPreferencesMutation() {
       if (res.status === 200 && res.body?.preferences) {
         queryClient.setQueryData(DASHBOARD_PREFERENCES_QUERY_KEY, res);
       }
-      invalidateDashboardConfigQueries(queryClient);
+      // Precise invalidation: a preferences write never changes the widgets
+      // document, so only the prefs key refetches.
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
     },
   });
 }
@@ -148,7 +153,9 @@ export function useDashboardWidgetsMutation() {
       if (res.status === 200 && res.body?.widgets) {
         queryClient.setQueryData(DASHBOARD_WIDGETS_QUERY_KEY, res);
       }
-      invalidateDashboardConfigQueries(queryClient);
+      // Precise invalidation: a widgets write never changes the preferences
+      // document, so only the widgets key refetches.
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
     },
     onError: () => notify.error(t("dashboard.toast.saveFailed")),
   });
@@ -176,7 +183,9 @@ export function useDashboardWidgetDeleteMutation() {
           };
         });
       }
-      invalidateDashboardConfigQueries(queryClient);
+      // Precise invalidation: a widget delete never changes the preferences
+      // document, so only the widgets key refetches.
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
     },
     onError: () => notify.error(t("dashboard.toast.deleteFailed")),
   });

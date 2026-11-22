@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import { scopedStorageKey } from "@/lib/dbStorageCore";
@@ -37,37 +37,33 @@ interface GrMigrationResult {
   hasMore?: boolean;
 }
 
+interface GrMigrationOutcome {
+  completed: boolean;
+  updated: number;
+}
+
 /** Safety bound for one Work visit; the server's own cap is 100 rows per call. */
 const MAX_MIGRATION_CHUNKS = 20;
 
 /**
- * One-shot GR number backfill for legacy students missing `grNumber`.
- * Runs once per workspace (tenant-scoped localStorage gate) when a Setup writer
- * opens the Work tab — matches BE `setupWrite`. The POST goes through a `useMutation` so the
- * outcome surfaces via `notify.*` + `t()` instead of silent console warnings.
+ * Module-level single-flight: several mounted hooks share one in-flight backfill
+ * (mms-hooks §6). A per-instance `useRef` gate cannot coordinate instances — two
+ * simultaneous mounts (or StrictMode's double effect invoke) previously ran two
+ * bounded POST loops against the same workspace.
  */
-export function useGrMigration(activeTab: string, canEditSetup: boolean): void {
-  const queryClient = useQueryClient();
-  const { t } = useTranslation();
-  const [needsMigrationScan, setNeedsMigrationScan] = useState(() => !grMigrationAlreadyDone());
-  const migrationAppliedRef = useRef(false);
+let grMigrationInFlight: Promise<GrMigrationOutcome> | null = null;
 
-  useEffect(() => {
-    if (!canEditSetup || !needsMigrationScan || activeTab !== "work") return;
-    if (migrationAppliedRef.current) return;
-    migrationAppliedRef.current = true;
-
-    let cancelled = false;
-    void (async () => {
-      let updatedTotal = 0;
-      let completed = false;
+function runGrMigrationOnce(queryClient: QueryClient): Promise<GrMigrationOutcome> {
+  if (!grMigrationInFlight) {
+    grMigrationInFlight = (async () => {
       try {
+        let updatedTotal = 0;
+        let completed = false;
         // The route processes at most 100 students per call and reports `hasMore`, so
         // keep re-invoking (bounded) instead of gating after the first chunk — that left
         // every student past #100 without a GR number forever (2026-11-04 review, M5).
         for (let chunk = 0; chunk < MAX_MIGRATION_CHUNKS; chunk += 1) {
           const res = await apiContract.students.migrateGrNumbers({ body: {} });
-          if (cancelled) return;
           assertContractOk(res, "Failed to backfill GR numbers");
           const result = res.body as GrMigrationResult;
           updatedTotal += result.updated ?? 0;
@@ -77,25 +73,52 @@ export function useGrMigration(activeTab: string, canEditSetup: boolean): void {
           }
         }
         invalidateStudentsQueries(queryClient);
-        if (!completed) {
-          // More work remains: leave the one-shot gate unset so the next Work visit
-          // resumes instead of declaring the migration finished.
-          migrationAppliedRef.current = false;
-          return;
+        if (completed) {
+          markGrMigrationDone();
         }
-        markGrMigrationDone();
-        setNeedsMigrationScan(false);
-        if (updatedTotal > 0) {
-          notify.success(t("students.grMigrationCompleted"), {
-            description: t("students.grMigrationUpdated", { count: updatedTotal }),
-          });
-        }
-      } catch {
-        if (cancelled) return;
-        migrationAppliedRef.current = false;
-        notify.error(t("students.grMigrationFailed"));
+        return { completed, updated: updatedTotal };
+      } finally {
+        grMigrationInFlight = null;
       }
     })();
+  }
+  return grMigrationInFlight;
+}
+
+/**
+ * One-shot GR number backfill for legacy students missing `grNumber`.
+ * Runs once per workspace (tenant-scoped localStorage gate) when a Setup writer
+ * opens the Work tab — matches BE `setupWrite`. The POST goes through `apiContract`
+ * so the outcome surfaces via `notify.*` + `t()` instead of silent console warnings.
+ */
+export function useGrMigration(activeTab: string, canEditSetup: boolean): void {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const [needsMigrationScan, setNeedsMigrationScan] = useState(() => !grMigrationAlreadyDone());
+
+  useEffect(() => {
+    if (!canEditSetup || !needsMigrationScan || activeTab !== "work") return;
+
+    let cancelled = false;
+    void runGrMigrationOnce(queryClient)
+      .then((outcome) => {
+        if (cancelled) return;
+        if (!outcome.completed) {
+          // More work remains: leave the one-shot gate unset so the next Work visit
+          // resumes instead of declaring the migration finished.
+          return;
+        }
+        setNeedsMigrationScan(false);
+        if (outcome.updated > 0) {
+          notify.success(t("students.grMigrationCompleted"), {
+            description: t("students.grMigrationUpdated", { count: outcome.updated }),
+          });
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        notify.error(t("students.grMigrationFailed"));
+      });
 
     return () => {
       cancelled = true;

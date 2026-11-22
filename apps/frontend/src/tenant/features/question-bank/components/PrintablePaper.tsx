@@ -29,6 +29,36 @@ function renderAnswerLines(question: Question): React.ReactElement | null {
   );
 }
 
+interface NumberedSection {
+  section: PaperSection;
+  questions: Array<{ question: Question; number: number }>;
+}
+
+/**
+ * Flattens sections into per-question paper numbers (1-based, continuous across
+ * sections, skipping question ids missing from the bank). Kept as a pure module
+ * helper so numbering is derived without mutating render-scope variables.
+ */
+function buildNumberedSections(
+  sections: PaperSection[],
+  questionsById: Map<string, Question>,
+): NumberedSection[] {
+  const result: NumberedSection[] = [];
+  let nextNumber = 1;
+  for (const section of sections) {
+    const questions: Array<{ question: Question; number: number }> = [];
+    for (const questionId of section.questionIds) {
+      const question = questionsById.get(questionId);
+      if (question) {
+        questions.push({ question, number: nextNumber });
+        nextNumber += 1;
+      }
+    }
+    result.push({ section, questions });
+  }
+  return result;
+}
+
 function PaperQuestion({
   question,
   number,
@@ -142,7 +172,7 @@ export function PrintablePaper({
   const { t } = useTranslation();
   const title = config.name || t("questionBank.previewDefaultName");
   const instructions = config.instructions.trim() || t("questionBank.paperDefaultInstructions");
-  let questionNumber = 0;
+  const numberedSections = buildNumberedSections(sections, questionsById);
 
   return (
     <>
@@ -192,10 +222,7 @@ export function PrintablePaper({
           <strong>{t("questionBank.paperInstructions")}:</strong> {instructions}
         </section>
 
-        {sections.map((section) => {
-          const sectionQuestions = section.questionIds
-            .map((questionId) => questionsById.get(questionId))
-            .filter((question): question is Question => Boolean(question));
+        {numberedSections.map(({ section, questions: sectionQuestions }) => {
           if (sectionQuestions.length === 0) return null;
 
           return (
@@ -204,17 +231,9 @@ export function PrintablePaper({
               {section.instructions.trim() && (
                 <p className="qpaper-section-note">{section.instructions}</p>
               )}
-              {sectionQuestions.map((question) => {
-                questionNumber += 1;
-                return (
-                  <PaperQuestion
-                    key={question.id}
-                    question={question}
-                    number={questionNumber}
-                    mode={mode}
-                  />
-                );
-              })}
+              {sectionQuestions.map(({ question, number }) => (
+                <PaperQuestion key={question.id} question={question} number={number} mode={mode} />
+              ))}
             </section>
           );
         })}

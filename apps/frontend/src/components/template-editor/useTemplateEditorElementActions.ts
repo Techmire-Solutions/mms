@@ -3,7 +3,7 @@
  * @description Hook providing element lifecycle operations: add, delete, duplicate, layer, nudge, and patch.
  */
 
-import { useCallback, useMemo, useRef, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from "react";
 import type { ElementStyle, PageSizeInfo, TemplateElement } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useTemplateEditorAlignActions } from "./useTemplateEditorAlignActions";
@@ -46,7 +46,12 @@ export function useTemplateEditorElementActions<TPayload = Record<string, unknow
   t,
 }: UseTemplateEditorElementActionsOptions<TPayload>) {
   const elementsRef = useRef(elements);
-  elementsRef.current = elements;
+  // Latest-elements pattern for the add/duplicate sub-hooks' stable callbacks:
+  // synced in an effect (never during render) so event handlers always read the
+  // elements of the render they were invoked after.
+  useEffect(() => {
+    elementsRef.current = elements;
+  });
 
   const selectedId = selectedIds.length > 0 ? selectedIds[selectedIds.length - 1] : null;
 

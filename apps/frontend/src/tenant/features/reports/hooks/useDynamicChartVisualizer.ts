@@ -102,7 +102,9 @@ export function useDynamicChartVisualizer({
     handleExportPDF,
     handleSaveVisual,
   } = buildDynamicChartVisualizerHandlers({
-    chartRef,
+    // react-hooks/refs — the accessor is invoked only inside the PNG/PDF export
+    // event handlers; `chartRef.current` is never dereferenced during render.
+    getChartElement: () => chartRef.current,
     title,
     collectionKey,
     xAxisField,

@@ -6,6 +6,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { assertContractOk } from "@/lib/apiContractError";
+import { PLATFORM_SETTINGS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
+
+export { PLATFORM_SETTINGS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
 /** Default delay before migrate starts when the response omits delayMs. */
 const DEFAULT_MIGRATE_RESTART_DELAY_MS = 1_500;
@@ -16,13 +20,21 @@ const READY_POLL_TIMEOUT_MS = 60_000;
 /** Interval between `/ready` probes while waiting for the backend. */
 const READY_POLL_INTERVAL_MS = 750;
 
-import { PLATFORM_SETTINGS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
-
-export { PLATFORM_SETTINGS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("The operation was aborted.", "AbortError"));
+      return;
+    }
+    const onAbort = (): void => {
+      clearTimeout(timer);
+      reject(new DOMException("The operation was aborted.", "AbortError"));
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
 }
 
@@ -44,21 +56,28 @@ function updateSettingsCache(old: unknown, newSettings: PlatformSettings): unkno
 /**
  * Wait for the backend delay window, then poll `/ready` until OK (or timeout).
  * Preserves the platform session — callers should soft-reload, not log out.
+ * Pass an `AbortSignal` to cancel the wait (rejects with `AbortError`).
  */
-export async function waitForBackendReadyAfterMigrate(delayMs: number): Promise<void> {
+export async function waitForBackendReadyAfterMigrate(
+  delayMs: number,
+  signal?: AbortSignal,
+): Promise<void> {
   const waitMs =
     Number.isFinite(delayMs) && delayMs >= 0 ? delayMs : DEFAULT_MIGRATE_RESTART_DELAY_MS;
-  await sleep(waitMs);
+  await sleep(waitMs, signal);
 
   const deadline = Date.now() + READY_POLL_TIMEOUT_MS;
   while (Date.now() < deadline) {
+    if (signal?.aborted) {
+      throw new DOMException("The operation was aborted.", "AbortError");
+    }
     try {
       const response = await apiContract.health.ready({});
       if (response.status === 200) return;
     } catch {
       // Backend still restarting — keep polling.
     }
-    await sleep(READY_POLL_INTERVAL_MS);
+    await sleep(READY_POLL_INTERVAL_MS, signal);
   }
 }
 
@@ -99,6 +118,7 @@ export function useUpdatePlatformSettings() {
   return useMutation({
     mutationFn: async (patch: Partial<PlatformSettings>) => {
       const res = await apiContract.platform.updateSettings({ body: patch });
+      assertContractOk(res, "Failed to update platform settings");
       return res.body as { settings: PlatformSettings; success: boolean };
     },
     onSuccess: (data) => {
@@ -120,6 +140,7 @@ export function useMigrateAndRestartPlatform() {
   return useMutation({
     mutationFn: async (input: { confirm: string; password: string }) => {
       const res = await apiContract.platform.migrateAndRestart({ body: input });
+      assertContractOk(res, "Failed to start migration");
       return res.body as MigrateAndRestartAccepted;
     },
     onSuccess: () => {

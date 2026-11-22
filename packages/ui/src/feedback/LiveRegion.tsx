@@ -1,20 +1,20 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 
-export interface PlatformLiveAnnouncerContextValue {
+export interface LiveAnnouncerContextValue {
   announcePolite: (message: string) => void;
   announceAssertive: (message: string) => void;
 }
 
-const PlatformLiveAnnouncerContext = createContext<PlatformLiveAnnouncerContextValue>({
+const LiveAnnouncerContext = createContext<LiveAnnouncerContextValue>({
   announcePolite: () => {},
   announceAssertive: () => {},
 });
 
-export function usePlatformLiveAnnouncer(): PlatformLiveAnnouncerContextValue {
-  return useContext(PlatformLiveAnnouncerContext);
+export function useLiveAnnouncer(): LiveAnnouncerContextValue {
+  return useContext(LiveAnnouncerContext);
 }
 
-export interface PlatformLiveRegionProviderProps {
+export interface LiveRegionProviderProps {
   children: React.ReactNode;
 }
 
@@ -22,9 +22,7 @@ export interface PlatformLiveRegionProviderProps {
  * WCAG 2.2 Dual ARIA Live Region Provider.
  * Broadcasts asynchronous background updates (polite) and critical telemetry/service outages (assertive).
  */
-export function PlatformLiveRegionProvider({
-  children,
-}: PlatformLiveRegionProviderProps): React.JSX.Element {
+export function LiveRegionProvider({ children }: LiveRegionProviderProps): React.JSX.Element {
   const [politeMessage, setPoliteMessage] = useState("");
   const [assertiveMessage, setAssertiveMessage] = useState("");
 
@@ -45,14 +43,14 @@ export function PlatformLiveRegionProvider({
   );
 
   return (
-    <PlatformLiveAnnouncerContext.Provider value={value}>
+    <LiveAnnouncerContext.Provider value={value}>
       {children}
       <div
         role="status"
         aria-live="polite"
         aria-atomic="true"
         className="sr-only"
-        data-testid="platform-live-polite"
+        data-testid="live-region-polite"
       >
         {politeMessage}
       </div>
@@ -61,10 +59,10 @@ export function PlatformLiveRegionProvider({
         aria-live="assertive"
         aria-atomic="true"
         className="sr-only"
-        data-testid="platform-live-assertive"
+        data-testid="live-region-assertive"
       >
         {assertiveMessage}
       </div>
-    </PlatformLiveAnnouncerContext.Provider>
+    </LiveAnnouncerContext.Provider>
   );
 }

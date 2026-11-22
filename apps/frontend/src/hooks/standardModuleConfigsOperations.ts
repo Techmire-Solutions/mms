@@ -53,6 +53,7 @@ const useUsersConfigImpl = createStandardModuleConfigHook<UsersSettings, Record<
   },
 });
 
+/** Users Setup settings. */
 export function useUsersConfig() {
   return useUsersConfigImpl() as StandardModuleConfigCore<UsersSettings> &
     StandardModuleConfigExtraMap["users"];
@@ -72,6 +73,7 @@ const useHasanatConfigImpl = createStandardModuleConfigHook<HasanatSettings, Rec
   },
 );
 
+/** Hasanat Setup settings. */
 export function useHasanatConfig() {
   return useHasanatConfigImpl() as StandardModuleConfigCore<HasanatSettings> &
     StandardModuleConfigExtraMap["hasanat"];
@@ -91,6 +93,7 @@ const useFinanceConfigImpl = createStandardModuleConfigHook<FinanceSettings, Rec
   },
 );
 
+/** Finance Setup settings (currency etc.). */
 export function useFinanceConfig() {
   return useFinanceConfigImpl() as StandardModuleConfigCore<FinanceSettings> &
     StandardModuleConfigExtraMap["finance"];
@@ -112,6 +115,7 @@ const useAccountingConfigImpl = createStandardModuleConfigHook<
   },
 });
 
+/** Accounting Setup settings. */
 export function useAccountingConfig() {
   return useAccountingConfigImpl() as StandardModuleConfigCore<AccountingSettings> &
     StandardModuleConfigExtraMap["accounting"];
@@ -140,6 +144,7 @@ const useAttendanceConfigImpl = createStandardModuleConfigHook<
   },
 });
 
+/** Attendance Setup settings + lookups (statuses). */
 export function useAttendanceConfig() {
   return useAttendanceConfigImpl() as StandardModuleConfigCore<AttendanceSettings> &
     StandardModuleConfigExtraMap["attendance"];

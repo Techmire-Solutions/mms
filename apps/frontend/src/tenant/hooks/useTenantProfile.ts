@@ -2,7 +2,11 @@ import { tsrClient } from "@/lib/api";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import type { Contact } from "@mms/shared";
 
-export const TENANT_PROFILE_KEY = ["tenant", "profile"] as const;
+/**
+ * Own-profile cache key carries the `auth` segment so `canPersistQuery` never
+ * writes the caller's profile to IndexedDB — profile payloads are user-scoped.
+ */
+export const TENANT_PROFILE_KEY = ["auth", "tenant", "profile"] as const;
 
 /** Own-account profile payload: user flags plus the linked Contact record. */
 export interface TenantProfileData {

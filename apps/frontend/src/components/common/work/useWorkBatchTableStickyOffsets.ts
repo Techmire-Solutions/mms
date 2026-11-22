@@ -39,39 +39,41 @@ export function useWorkBatchTableStickyOffsets({
 } {
   const leftPinnedIds = stickyColumnIds ?? (stickyColumnId ? [stickyColumnId] : []);
   const rightPinnedIds = stickyEndColumnIds ?? [];
-  const pinnedWidthsSignature = [...leftPinnedIds, ...rightPinnedIds]
-    .map((id) => `${id}:${resolvedWidths.get(id) ?? WORK_TABLE_UNSIZED_COLUMN_FLOOR}`)
-    .join("|");
-  const leftPinnedKey = leftPinnedIds.join("\u0000");
-  const rightPinnedKey = rightPinnedIds.join("\u0000");
+
+  // Encode the pinned ids and their resolved widths into a single primitive
+  // signature (JSON — collision-proof, unlike delimiter joins). The memo reads
+  // only this signature, so the `resolvedWidths` Map identity is intentionally
+  // not a dependency (it churns from un-memoized columnResize configs).
+  const offsetsSignature = JSON.stringify({
+    leftIds: leftPinnedIds,
+    rightIds: rightPinnedIds,
+    widths: [...leftPinnedIds, ...rightPinnedIds].map((id) => [
+      id,
+      resolvedWidths.get(id) ?? WORK_TABLE_UNSIZED_COLUMN_FLOOR,
+    ]),
+  });
 
   const { stickyLeftOffsets, stickyRightOffsets } = React.useMemo(() => {
-    const effectiveWidth = (id: string) =>
-      resolvedWidths.get(id) ?? WORK_TABLE_UNSIZED_COLUMN_FLOOR;
+    const { leftIds, rightIds, widths } = JSON.parse(offsetsSignature) as {
+      leftIds: string[];
+      rightIds: string[];
+      widths: [string, number][];
+    };
+    const widthsById = new Map(widths);
+    const effectiveWidth = (id: string) => widthsById.get(id) ?? WORK_TABLE_UNSIZED_COLUMN_FLOOR;
     return {
       stickyLeftOffsets: computeStickyOffsets(
-        leftPinnedIds,
+        leftIds,
         effectiveWidth,
         hasSelection ? WORK_TABLE_SELECTION_WIDTH : 0,
       ),
       stickyRightOffsets: computeStickyOffsets(
-        rightPinnedIds,
+        rightIds,
         effectiveWidth,
         hasRowActions ? (actionsWidth ?? WORK_TABLE_ACTIONS_WIDTH) : 0,
       ),
     };
-    // `pinnedWidthsSignature` encodes the resolvedWidths values; `leftPinnedKey` /
-    // `rightPinnedKey` encode the id lists. The resolvedWidths Map identity is
-    // intentionally not a dependency (it churns from un-memoized columnResize).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    leftPinnedKey,
-    rightPinnedKey,
-    pinnedWidthsSignature,
-    hasSelection,
-    hasRowActions,
-    actionsWidth,
-  ]);
+  }, [offsetsSignature, hasSelection, hasRowActions, actionsWidth]);
 
   return { leftPinnedIds, rightPinnedIds, stickyLeftOffsets, stickyRightOffsets };
 }

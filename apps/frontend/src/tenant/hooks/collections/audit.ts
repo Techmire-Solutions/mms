@@ -1,5 +1,12 @@
-import { useQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  queryOptions,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
+import { useAuth } from "@/lib/contexts/AuthContext";
 import type {
   AuditRetentionRegime,
   AuditActionType,
@@ -12,9 +19,14 @@ import type {
 } from "@mms/shared";
 import { assertContractOk } from "@/lib/apiContractError";
 
-export const AUDIT_EVENTS_QUERY_KEY = ["audit", "events"] as const;
-export const AUDIT_MERKLE_ROOTS_QUERY_KEY = ["audit", "merkle-roots"] as const;
-export const AUDIT_ANOMALIES_QUERY_KEY = ["audit", "anomalies"] as const;
+/**
+ * Audit cache keys carry the `auth` segment so `canPersistQuery` keeps them out
+ * of IndexedDB persistence — audit rows are session-sensitive and must never be
+ * restored from browser storage on re-login.
+ */
+export const AUDIT_EVENTS_QUERY_KEY = ["auth", "audit", "events"] as const;
+export const AUDIT_MERKLE_ROOTS_QUERY_KEY = ["auth", "audit", "merkle-roots"] as const;
+export const AUDIT_ANOMALIES_QUERY_KEY = ["auth", "audit", "anomalies"] as const;
 
 export interface AuditListFilters {
   limit?: number;
@@ -39,7 +51,15 @@ export interface ExecuteErasureParams {
   reason?: string;
 }
 
-export function auditEventsQueryOptions(filters: AuditListFilters = {}) {
+export interface AuditEventsQueryOptions {
+  /** Gates the query on the caller's session (default: enabled). */
+  enabled?: boolean;
+}
+
+export function auditEventsQueryOptions(
+  filters: AuditListFilters = {},
+  options: AuditEventsQueryOptions = {},
+) {
   const query = {
     ...(filters.limit ? { limit: filters.limit } : {}),
     ...(filters.offset ? { offset: filters.offset } : {}),
@@ -60,14 +80,18 @@ export function auditEventsQueryOptions(filters: AuditListFilters = {}) {
       return response.body as AuditListResponse;
     },
     staleTime: 30_000,
+    enabled: options.enabled ?? true,
+    placeholderData: keepPreviousData,
   });
 }
 
 export function useAuditEventsQuery(filters: AuditListFilters = {}) {
-  return useQuery(auditEventsQueryOptions(filters));
+  const { isAuthenticated } = useAuth();
+  return useQuery(auditEventsQueryOptions(filters, { enabled: isAuthenticated }));
 }
 
 export function useAuditMerkleRootsQuery() {
+  const { isAuthenticated } = useAuth();
   return useQuery({
     queryKey: AUDIT_MERKLE_ROOTS_QUERY_KEY,
     queryFn: async ({ signal }) => {
@@ -79,6 +103,7 @@ export function useAuditMerkleRootsQuery() {
       return response.body as AuditMerkleRootsResponse;
     },
     staleTime: 60_000,
+    enabled: isAuthenticated,
   });
 }
 
@@ -90,9 +115,9 @@ export function useAuditVerifyMutation() {
       assertContractOk(response, "Audit verification failed");
       return response.body as AuditVerificationResult;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: AUDIT_EVENTS_QUERY_KEY });
-    },
+    // Returned (not `void`ed) so `mutateAsync` resolves only once the audit
+    // caches have been refreshed — callers can close panels on completion.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: AUDIT_EVENTS_QUERY_KEY }),
   });
 }
 
@@ -104,13 +129,12 @@ export function useAuditErasureMutation() {
       assertContractOk(response, "Audit erasure failed");
       return response.body as AuditErasureResponse;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: AUDIT_EVENTS_QUERY_KEY });
-    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: AUDIT_EVENTS_QUERY_KEY }),
   });
 }
 
 export function useAuditAnomaliesQuery(windowHours = 24) {
+  const { isAuthenticated } = useAuth();
   return useQuery({
     queryKey: [...AUDIT_ANOMALIES_QUERY_KEY, windowHours] as const,
     queryFn: async ({ signal }) => {
@@ -123,5 +147,6 @@ export function useAuditAnomaliesQuery(windowHours = 24) {
       return response.body as AuditAnomalyReport;
     },
     staleTime: 60_000,
+    enabled: isAuthenticated,
   });
 }

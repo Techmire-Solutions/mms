@@ -5,7 +5,7 @@ import {
   isTenantHost,
   MMS_PLATFORM_BRANDING,
   MMS_PLATFORM_GLOBAL_SETTINGS,
-} from "@/platform/lib/themeScope";
+} from "@/lib/branding/platformThemeConfig";
 import {
   applyBrandingFromSettings,
   applyDocumentLanguageWithFonts,

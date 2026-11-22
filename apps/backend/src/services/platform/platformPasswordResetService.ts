@@ -12,12 +12,10 @@ import {
   putAuthArtifact,
 } from "../auth/authArtifactService.js";
 import { isDevCredentialLoggingEnabled } from "../../lib/devLogging.js";
-import { generateOtpCode, hashOtpCode, verifyOtpCode } from "../auth/authCookieService.js";
 import { hashPassword } from "../auth/passwordService.js";
 import { isPlatformSmtpConfigured, resolvePlatformAppOrigin } from "./platformEmailService.js";
-import { PlatformError } from "./platformErrorService.js";
-import { dispatchPlatformOtp } from "./platformOtpService.js";
-import { sendPlatformSms } from "./platformSmsService.js";
+import { PlatformError, throwPlatformSmtpRequiredError } from "./platformErrorService.js";
+import { dispatchPlatformOtpAcrossChannels } from "./platformOtpDispatch.js";
 import { getPlatformSettings } from "./platformSettingsService.js";
 import {
   findPlatformUserByEmail,
@@ -25,15 +23,17 @@ import {
   updatePlatformUserPassword,
 } from "./platformUserService.js";
 import { buildDevForgotResult } from "./platformValidationService.js";
-import { logger } from "../../lib/logger.js";
+import {
+  createOtpChallengeService,
+  type OtpChallengePayload,
+  type OtpDispatchResult,
+} from "../auth/otpChallengeService.js";
 
 const RESET_TTL_MS = PLATFORM_PASSWORD_RESET_TTL_MINUTES * 60 * 1000;
 
-export interface PlatformPasswordResetPayload {
+export interface PlatformPasswordResetPayload extends OtpChallengePayload {
   userId: string;
   email: string;
-  codeHash: string;
-  attempts: number;
 }
 
 function buildResetUrl(resetId: string): string {
@@ -45,51 +45,54 @@ async function dispatchResetCode(
   user: StoredPlatformUser,
   code: string,
   resetId: string,
-): Promise<{ sent: boolean; devCode?: string }> {
-  const channel = resolvePlatformNotificationChannel(getPlatformSettings());
-  let smsResult: { sent: boolean } = { sent: false };
-  let emailResult: { sent: boolean; devCode?: string } = { sent: false };
-
-  if ((channel === "both" || channel === "sms") && user.phone) {
-    smsResult = await sendPlatformSms({
-      to: user.phone,
-      body: `Your MMS platform password reset code is ${code}. It expires in ${PLATFORM_PASSWORD_RESET_TTL_MINUTES} minutes.`,
-    });
-    if (!smsResult.sent) {
-      logger.warn(
-        { channel, reason: (smsResult as { reason?: string }).reason },
-        "Platform password reset SMS dispatch failed",
-      );
-    }
-  }
-
-  if (
-    channel === "both" ||
-    channel === "email" ||
-    (channel === "sms" && !smsResult.sent) ||
-    channel === "none"
-  ) {
-    emailResult = await dispatchPlatformOtp({
-      email: user.email,
-      code,
-      subject: "Reset your MMS platform password",
-      bodyLines: [
-        "Use this verification code to reset your platform administrator password:",
-        "",
-        `Or open this link: ${buildResetUrl(resetId)}`,
-      ],
-      ttlMinutes: PLATFORM_PASSWORD_RESET_TTL_MINUTES,
-      logLabel: "Platform password reset code",
-    });
-  }
-
-  return {
-    sent: smsResult.sent || emailResult.sent,
-    devCode: emailResult.devCode,
-  };
+): Promise<OtpDispatchResult> {
+  return dispatchPlatformOtpAcrossChannels({
+    email: user.email,
+    phone: user.phone,
+    code,
+    ttlMinutes: PLATFORM_PASSWORD_RESET_TTL_MINUTES,
+    logLabel: "Platform password reset code",
+    smsBody: `Your MMS platform password reset code is ${code}. It expires in ${PLATFORM_PASSWORD_RESET_TTL_MINUTES} minutes.`,
+    smsFailWarnMessage: "Platform password reset SMS dispatch failed",
+    emailSubject: "Reset your MMS platform password",
+    emailBodyLines: [
+      "Use this verification code to reset your platform administrator password:",
+      "",
+      `Or open this link: ${buildResetUrl(resetId)}`,
+    ],
+  });
 }
 
-function assertResetDeliverable(dispatch: { sent: boolean; devCode?: string }): void {
+const resetOtps = createOtpChallengeService<StoredPlatformUser, PlatformPasswordResetPayload>({
+  kind: "platform_password_reset",
+  ttlMs: RESET_TTL_MS,
+  maxAttempts: PLATFORM_OTP_MAX_ATTEMPTS,
+  buildPayload: (user, codeHash) => ({ userId: user.id, email: user.email, codeHash, attempts: 0 }),
+  persist: async (payload, id) => {
+    const target = id ?? createArtifactId();
+    await putAuthArtifact("platform_password_reset", payload, RESET_TTL_MS, target);
+    return target;
+  },
+  loadForVerify: (resetId) =>
+    getAuthArtifact<PlatformPasswordResetPayload>(resetId, "platform_password_reset"),
+  loadForResend: (resetId) =>
+    getAuthArtifact<PlatformPasswordResetPayload>(resetId, "platform_password_reset"),
+  // The row was only read, not consumed — delete then re-put with the full TTL.
+  rearm: async (entry, payload) => {
+    await deleteAuthArtifact(entry.id);
+    await putAuthArtifact("platform_password_reset", payload, RESET_TTL_MS, entry.id);
+  },
+  remove: (entry) => deleteAuthArtifact(entry.id),
+  consumeOnSuccess: true,
+  resolveUserForResend: async (entry) => {
+    const user = await getStoredPlatformUserById(entry.payload.userId);
+    if (!user || user.disabledAt) return null;
+    return user;
+  },
+  dispatch: (user, code, resetId) => dispatchResetCode(user, code, resetId ?? ""),
+});
+
+function assertResetDeliverable(dispatch: OtpDispatchResult): void {
   if (dispatch.sent) return;
   if (isDevCredentialLoggingEnabled() && dispatch.devCode) return;
   throw new PlatformError(
@@ -102,10 +105,7 @@ function assertPlatformSmtpReady(): void {
   const channel = resolvePlatformNotificationChannel(getPlatformSettings());
   if (channel === "both" || channel === "email" || channel === "none") {
     if (process.env.NODE_ENV === "production" && !isPlatformSmtpConfigured()) {
-      throw new PlatformError(
-        "smtp_required",
-        "Platform email is not configured. Set PLATFORM_RESEND_API_KEY or PLATFORM_SMTP_* and PLATFORM_EMAIL_FROM.",
-      );
+      throwPlatformSmtpRequiredError();
     }
   }
 }
@@ -122,27 +122,13 @@ export async function requestPlatformPasswordReset(
     return { accepted: true };
   }
 
-  const code = generateOtpCode();
-  const resetId = createArtifactId();
-
-  await putAuthArtifact<PlatformPasswordResetPayload>(
-    "platform_password_reset",
-    {
-      userId: user.id,
-      email,
-      codeHash: hashOtpCode(code),
-      attempts: 0,
-    },
-    RESET_TTL_MS,
-    resetId,
-  );
-
+  const created = await resetOtps.createChallenge(user);
   try {
-    const dispatch = await dispatchResetCode(user, code, resetId);
+    const dispatch = await resetOtps.dispatch(user, created.code, created.challengeId);
     assertResetDeliverable(dispatch);
-    return buildDevForgotResult(dispatch, resetId);
+    return buildDevForgotResult(dispatch, created.challengeId);
   } catch (error) {
-    await deleteAuthArtifact(resetId);
+    await deleteAuthArtifact(created.challengeId);
     throw error;
   }
 }
@@ -152,30 +138,13 @@ export async function resendPlatformPasswordReset(
 ): Promise<PlatformPasswordForgotResult> {
   assertPlatformSmtpReady();
 
-  const entry = await getAuthArtifact<PlatformPasswordResetPayload>(
-    resetId,
-    "platform_password_reset",
-  );
-  if (!entry) {
+  const regenerated = await resetOtps.regenerate(resetId);
+  if (!regenerated.ok || !regenerated.user) {
     throw new PlatformError("invalid_reset", "Password reset session expired or not found");
   }
-
-  const user = await getStoredPlatformUserById(entry.payload.userId);
-  if (!user || user.disabledAt) {
-    throw new PlatformError("invalid_reset", "Password reset session expired or not found");
-  }
-
-  const code = generateOtpCode();
-  const updated: PlatformPasswordResetPayload = {
-    ...entry.payload,
-    codeHash: hashOtpCode(code),
-    attempts: 0,
-  };
-  await deleteAuthArtifact(resetId);
-  await putAuthArtifact("platform_password_reset", updated, RESET_TTL_MS, resetId);
 
   try {
-    const dispatch = await dispatchResetCode(user, code, resetId);
+    const dispatch = await resetOtps.dispatch(regenerated.user, regenerated.code, resetId);
     assertResetDeliverable(dispatch);
     return buildDevForgotResult(dispatch, resetId);
   } catch (error) {
@@ -189,36 +158,20 @@ export async function completePlatformPasswordReset(
   code: string,
   password: string,
 ): Promise<StoredPlatformUser> {
-  const entry = await getAuthArtifact<PlatformPasswordResetPayload>(
-    resetId,
-    "platform_password_reset",
-  );
-  if (!entry) {
-    throw new PlatformError("invalid_reset", "Password reset session expired or not found");
-  }
-
-  const normalizedCode = code.replace(/\s/g, "");
-  if (!verifyOtpCode(normalizedCode, entry.payload.codeHash)) {
-    const attempts = (entry.payload.attempts ?? 0) + 1;
-    if (attempts >= PLATFORM_OTP_MAX_ATTEMPTS) {
-      await deleteAuthArtifact(resetId);
+  const outcome = await resetOtps.verify(resetId, code);
+  if (!outcome.ok) {
+    if (outcome.reason === "not_found") {
+      throw new PlatformError("invalid_reset", "Password reset session expired or not found");
+    }
+    if (outcome.reason === "too_many_attempts") {
       throw new PlatformError(
         "too_many_attempts",
         "Too many invalid verification attempts. Request a new code.",
       );
     }
-    await deleteAuthArtifact(resetId);
-    await putAuthArtifact(
-      "platform_password_reset",
-      { ...entry.payload, attempts },
-      RESET_TTL_MS,
-      resetId,
-    );
     throw new PlatformError("invalid_code", "Invalid verification code");
   }
 
-  await deleteAuthArtifact(resetId);
-
   const passwordHash = await hashPassword(password);
-  return updatePlatformUserPassword(entry.payload.userId, passwordHash);
+  return updatePlatformUserPassword(outcome.payload.userId, passwordHash);
 }

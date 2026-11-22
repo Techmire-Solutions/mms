@@ -1,8 +1,7 @@
-import { randomUUID } from "node:crypto";
 import type { FastifyReply } from "fastify";
 import type { JWT } from "@fastify/jwt";
 import type { NotificationChannel, PlatformUser, PlatformUserProfile } from "@mms/shared";
-import { resolvePlatformNotificationChannel } from "@mms/shared";
+import { PLATFORM_ACCESS_TOKEN_TTL_SECONDS, resolvePlatformNotificationChannel } from "@mms/shared";
 import { verifyPassword, DUMMY_PASSWORD_HASH } from "../auth/passwordService.js";
 import { clearAuthCookies, setCsrfCookie } from "../auth/authCookieService.js";
 import {
@@ -15,11 +14,10 @@ import {
   createPlatformTwoFactorChallenge,
   isPlatformTwoFactorRequired,
 } from "./platformTwoFactorService.js";
-import { platformSessionScope, resetSessionClock } from "../sessionClockService.js";
+import { platformSessionScope } from "../sessionClockService.js";
 import { platformSessionPolicy } from "../sessionPolicyService.js";
+import { establishSession as establishSessionShared } from "../auth/sessionEstablishment.js";
 import { getPlatformSettings } from "./platformSettingsService.js";
-
-const PLATFORM_ACCESS_TTL = "8h";
 
 /** Minimal JWT claims for platform access cookies. */
 export interface PlatformAccessTokenPayload {
@@ -48,25 +46,29 @@ export async function issuePlatformSession(
   reply: FastifyReply,
   sessionVersion = 0,
 ): Promise<PlatformUser> {
-  clearAuthCookies(reply);
-  // Re-issue CSRF after clearing tenant cookies so platform mutations keep
-  // double-submit protection (Origin alone is not sufficient parity).
-  setCsrfCookie(reply);
-
-  // Minimal claims only — role/permissions reload from DB on each authenticatePlatform.
-  const accessToken = jwtSigner.sign(
-    {
+  await establishSessionShared({
+    domain: "platform",
+    jwtSigner,
+    reply,
+    // Minimal claims only — role/permissions reload from DB on each authenticatePlatform.
+    claims: {
       id: user.id,
       tokenType: "platform_access",
       sessionVersion,
-      jti: randomUUID(),
     } satisfies PlatformAccessTokenPayload,
-    { expiresIn: PLATFORM_ACCESS_TTL },
-  );
-  setPlatformAccessCookie(reply, accessToken);
-
-  const { idleMs } = platformSessionPolicy();
-  await resetSessionClock(platformSessionScope(user.id), idleMs);
+    // Canonical 8-hour platform token TTL (formerly spelled "8h" here and
+    // `8*60*60+300` at the logout revocation site — same TTL, plus grace there).
+    expiresIn: PLATFORM_ACCESS_TOKEN_TTL_SECONDS,
+    clearOtherDomainCookies: () => {
+      clearAuthCookies(reply);
+      // Re-issue CSRF after clearing tenant cookies so platform mutations keep
+      // double-submit protection (Origin alone is not sufficient parity).
+      setCsrfCookie(reply);
+    },
+    setDomainCookies: (accessToken) => setPlatformAccessCookie(reply, accessToken),
+    sessionScope: platformSessionScope(user.id),
+    idleMs: platformSessionPolicy().idleMs,
+  });
 
   return user;
 }

@@ -71,13 +71,17 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
     editorId,
   });
 
+  // Stable slices for the memoized callbacks below: depending on the whole
+  // `editor` object (a fresh hook return each render) would recreate every
+  // callback on every render.
+  const { t: editorT, setShowGuides, setIsPreviewMode } = editor;
+
   const confirmDiscardPrompt = useCallback(
     () =>
       typeof window.confirm === "function"
-        ? window.confirm(editor.t("templateEditor.discardUnsavedPrompt"))
+        ? window.confirm(editorT("templateEditor.discardUnsavedPrompt"))
         : true,
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- editor.t is the stable slice this callback needs; depending on the whole `editor` object (a fresh hook return each render) would recreate the callback every render.
-    [editor.t],
+    [editorT],
   );
 
   const hasSelection = editor.selectedIds.length > 0;
@@ -91,10 +95,13 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
     // second Escape with nothing selected leaves the editor.
     ignoreEscapeWhen: () => hasSelection,
   });
+  // Destructure once so the modal's ref-carrying return object is not accessed
+  // member-by-member during render.
+  const { isFullscreen, containerRef, handleClose, handleToggleFullscreen } = modal;
 
   useEffect(() => {
-    modalCloseRef.current = modal.handleClose;
-  }, [modal.handleClose]);
+    modalCloseRef.current = handleClose;
+  }, [handleClose]);
 
   /* Deleting unmounts the activated control, so recover focus and announce the change. */
   const deletionNonce = editor.deletionNotice?.nonce ?? 0;
@@ -120,15 +127,10 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
     },
   );
 
-  const handleToggleGuides = useCallback(
-    () => editor.setShowGuides((prev) => !prev),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- editor.setShowGuides is the stable setter slice; the whole `editor` object is a fresh hook return each render.
-    [editor.setShowGuides],
-  );
+  const handleToggleGuides = useCallback(() => setShowGuides((prev) => !prev), [setShowGuides]);
   const handleTogglePreview = useCallback(
-    () => editor.setIsPreviewMode((prev) => !prev),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- editor.setIsPreviewMode is the stable setter slice; the whole `editor` object is a fresh hook return each render.
-    [editor.setIsPreviewMode],
+    () => setIsPreviewMode((prev) => !prev),
+    [setIsPreviewMode],
   );
 
   const documentLabel = documentType
@@ -142,15 +144,15 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
 
   return (
     <div
-      ref={modal.containerRef}
+      ref={containerRef}
       tabIndex={-1}
-      role={modal.isFullscreen ? "dialog" : "region"}
-      aria-modal={modal.isFullscreen ? "true" : undefined}
+      role={isFullscreen ? "dialog" : "region"}
+      aria-modal={isFullscreen ? "true" : undefined}
       aria-labelledby={titleId}
       data-template-editor-root={editorId}
       data-print-unclamp
       className={
-        modal.isFullscreen
+        isFullscreen
           ? "fixed inset-0 z-modal flex flex-col bg-background outline-hidden print:static print:bg-white print:overflow-visible print:border-none print:p-0 print:m-0"
           : "flex flex-col bg-background rounded-xl border border-border overflow-hidden h-[calc(100dvh-14rem)] min-h-144 max-h-216 outline-hidden print:static print:bg-white print:h-auto print:max-h-none print:overflow-visible print:border-none print:p-0 print:m-0"
       }
@@ -174,7 +176,7 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
         saving={editor.saving}
         isDirty={editor.isDirty}
         showGuides={editor.showGuides}
-        fullscreen={modal.isFullscreen}
+        fullscreen={isFullscreen}
         presets={presets}
         canvasScale={editor.canvasScale}
         isPreviewMode={editor.isPreviewMode}
@@ -192,10 +194,10 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
         onImportJson={editor.importTemplateJson}
         onResetDefault={editor.resetToDefault}
         onApplyPreset={editor.applyPreset}
-        onToggleFullscreen={modal.handleToggleFullscreen}
+        onToggleFullscreen={handleToggleFullscreen}
         onSave={editor.handleSave}
         canSave={canSaveProp ?? Boolean(onSave)}
-        onClose={modal.handleClose}
+        onClose={handleClose}
         onExportTypst={onExportTypst ? handleExportTypst : undefined}
         onExportZoho={onExportZoho ? handleExportZoho : undefined}
         onPrint={handlePrint}

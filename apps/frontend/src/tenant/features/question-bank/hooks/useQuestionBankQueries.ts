@@ -3,7 +3,8 @@
  * query hooks, and contract mutations.
  */
 import { apiContract, tsrClient } from "@/lib/api";
-import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/contexts/AuthContext";
 import {
   QUESTION_BANK_QUESTIONS_QUERY_KEY,
   QUESTION_BANK_TESTS_QUERY_KEY,
@@ -32,35 +33,38 @@ export function questionBankQuestionsListQueryOptions(
       assertContractOk(response, "Failed to fetch question bank questions");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
 
 export function useQuestionBankContractList(query: Record<string, unknown> = {}, enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.questionBank.listQuestions.useQuery({
     queryKey: [...QUESTION_BANK_QUESTIONS_QUERY_KEY, "contract-list", query],
     queryData: { query },
     staleTime: 15_000,
-    enabled,
+    enabled: isAuthenticated && enabled,
   });
 }
 
 export function useQuestionBankContractTests(enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.questionBank.listTests.useQuery({
     queryKey: [...QUESTION_BANK_TESTS_QUERY_KEY, "contract-list"],
     queryData: { query: {} },
     staleTime: 30_000,
-    enabled,
+    enabled: isAuthenticated && enabled,
   });
 }
 
 export function useQuestionBankContractResults(enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.questionBank.listResults.useQuery({
     queryKey: [...QUESTION_BANK_RESULTS_QUERY_KEY, "contract-list"],
     queryData: { query: {} },
     staleTime: 30_000,
-    enabled,
+    enabled: isAuthenticated && enabled,
   });
 }
 

@@ -1,4 +1,11 @@
-import { useCallback, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 /**
  * Controller-owned Work directory row selection SSOT.
@@ -13,8 +20,13 @@ export function useWorkSelection<T extends string | number = string>(
   const [selectedIds, setSelectedIds] = useState<T[]>([]);
 
   const visibleIds = visibleItems ? visibleItems.map((item) => item.id) : [];
+  // Latest-visible-ids ref: `toggleSelectAll` stays referentially stable while
+  // always acting on the most recently rendered list. Written in an effect so
+  // render stays pure (ref access outside render only).
   const visibleIdsRef = useRef<T[]>(visibleIds);
-  visibleIdsRef.current = visibleIds;
+  useEffect(() => {
+    visibleIdsRef.current = visibleIds;
+  });
 
   const allVisibleSelected =
     visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));

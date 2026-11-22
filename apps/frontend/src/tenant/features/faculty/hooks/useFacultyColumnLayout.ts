@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   FACULTY_MODULE_MANIFEST,
   buildFacultyWorkColumnRegistry,
@@ -11,11 +12,17 @@ import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 export function useFacultyColumnLayout(settings: FacultySettings) {
   const { t } = useTranslation();
 
-  const tenantRegistry = (() =>
-    buildFacultyWorkColumnRegistry(
-      settings,
-      facultyWorkColumnLabelsFrom((key) => t(facultyColumnLabelKey(key))),
-    ))();
+  // Stable registry identity: useModuleColumnLayout memoizes the visible
+  // columns on this reference, so rebuilding it every render would cascade a
+  // full column-registry (and row-prop) recompute across unrelated re-renders.
+  const tenantRegistry = useMemo(
+    () =>
+      buildFacultyWorkColumnRegistry(
+        settings,
+        facultyWorkColumnLabelsFrom((key) => t(facultyColumnLabelKey(key))),
+      ),
+    [settings, t],
+  );
 
   const {
     customizerLabels: baseLabels,
@@ -28,11 +35,14 @@ export function useFacultyColumnLayout(settings: FacultySettings) {
     translationPrefix: "faculty.columns",
   });
 
-  const customizerLabels = (() => ({
-    ...baseLabels,
-    reset: t("faculty.resetLayout"),
-    searchPlaceholder: t("faculty.searchColumnsPlaceholder"),
-  }))();
+  const customizerLabels = useMemo(
+    () => ({
+      ...baseLabels,
+      reset: t("faculty.resetLayout"),
+      searchPlaceholder: t("faculty.searchColumnsPlaceholder"),
+    }),
+    [baseLabels, t],
+  );
 
   const resetColumnLayout = () => {
     updateUserColumnLayout(tenantRegistry);

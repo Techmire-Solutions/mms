@@ -10,8 +10,12 @@ import { attendanceQueryKeys } from "./attendanceQueryKeys.js";
 
 export const ATTENDANCE_LOOKUPS_QUERY_KEY = attendanceQueryKeys.lookups;
 
-export async function fetchAttendanceLookups(_signal?: AbortSignal): Promise<AttendanceLookupsMap> {
-  const res = await apiContract.attendance.getLookups({ query: undefined, extraHeaders: {} });
+export async function fetchAttendanceLookups(signal?: AbortSignal): Promise<AttendanceLookupsMap> {
+  const res = await apiContract.attendance.getLookups({
+    query: undefined,
+    extraHeaders: {},
+    fetchOptions: { signal },
+  });
   return (res.body as { lookups?: AttendanceLookupsMap }).lookups ?? emptyAttendanceLookupsMap;
 }
 

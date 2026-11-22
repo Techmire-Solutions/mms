@@ -24,6 +24,10 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+vi.mock("@/platform/lib/PlatformAuthContext", () => ({
+  usePlatformAuth: () => ({ isPlatformAuthenticated: true }),
+}));
+
 function renderWithClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: {

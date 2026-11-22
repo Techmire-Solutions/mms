@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   canManageTargetUser,
   editWorkspaceUserSchema,
@@ -81,8 +81,11 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
     },
   });
 
-  const customFieldsKey = customFields.map((cf) => `${cf.id}:${cf.defaultValue ?? ""}`).join(",");
-
+  // All three deps are stable while the modal is open: `form` (useForm returns a
+  // referentially stable object), `user` (the `editing` snapshot lives in modal-layer
+  // state), and `customFields` (memoized by `useUsersConfig` on the settings object,
+  // which TanStack Query keeps referentially stable via structural sharing). The reset
+  // therefore only fires when the edited user or the custom-field definitions change.
   useEffect(() => {
     form.reset({
       contactId: user.contactId ?? "",
@@ -93,10 +96,9 @@ export function EditUserModal({ user, onClose, onSave }: EditUserModalProps): Re
         customFields.map((cf) => [cf.id, user[cf.id] ?? cf.defaultValue ?? ""]),
       ),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the granular user fields + customFieldsKey; adding `user`/`customFields`/`form` would re-run form.reset on unrelated re-renders and wipe in-progress edits.
-  }, [user.id, user.contactId, user.role, user.status, user.twoFactorEnabled, customFieldsKey]);
+  }, [form, user, customFields]);
 
-  const watchedContactId = form.watch("contactId");
+  const watchedContactId = useWatch({ control: form.control, name: "contactId" });
   const { data: selectedContact, isLoading: isLoadingContact } = useContactById(
     watchedContactId ? String(watchedContactId) : undefined,
     Boolean(watchedContactId),

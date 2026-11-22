@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { tsrClient } from "@/lib/api";
 import type { QuestionBankSettings } from "@mms/shared";
@@ -26,33 +27,43 @@ export function useComposedQuestionBankSettings() {
   const updateFieldsMutation = tsrClient.questionBank.updateFieldConfig.useMutation();
   const updatePrefsMutation = tsrClient.questionBank.updatePreferences.useMutation();
 
-  const updateAsync = async (draft: QuestionBankSettings) => {
-    const fieldConfigOnly = stripQuestionBankFieldConfigForPersist(draft);
-    const prefsOnly = normalizeQuestionBankModulePreferences(draft);
+  // `mutateAsync` is the MutationObserver's bound `mutate` and stays stable for the
+  // lifetime of the observer, so the update callback keeps a stable identity too —
+  // `useQuestionBankConfig` memoizes on it (config object → form/section memos).
+  const { mutateAsync: updateFieldsAsync } = updateFieldsMutation;
+  const { mutateAsync: updatePrefsAsync } = updatePrefsMutation;
 
-    const [fieldsRes, prefsRes] = await Promise.all([
-      updateFieldsMutation.mutateAsync({ body: fieldConfigOnly }),
-      updatePrefsMutation.mutateAsync({ body: prefsOnly }),
-    ]);
+  const updateAsync = useCallback(
+    async (draft: QuestionBankSettings) => {
+      const fieldConfigOnly = stripQuestionBankFieldConfigForPersist(draft);
+      const prefsOnly = normalizeQuestionBankModulePreferences(draft);
 
-    assertContractOk(fieldsRes, "Failed to update question bank settings");
-    assertContractOk(prefsRes, "Failed to update question bank settings");
+      const [fieldsRes, prefsRes] = await Promise.all([
+        updateFieldsAsync({ body: fieldConfigOnly }),
+        updatePrefsAsync({ body: prefsOnly }),
+      ]);
 
-    const composedSettings = composeQuestionBankSettings(
-      normalizeQuestionBankFieldConfigOnly(fieldsRes.body),
-      normalizeQuestionBankModulePreferences(prefsRes.body),
-    );
+      assertContractOk(fieldsRes, "Failed to update question bank settings");
+      assertContractOk(prefsRes, "Failed to update question bank settings");
 
-    queryClient.setQueryData(QUERY_KEY_COMPOSED, composedSettings);
+      const composedSettings = composeQuestionBankSettings(
+        normalizeQuestionBankFieldConfigOnly(fieldsRes.body),
+        normalizeQuestionBankModulePreferences(prefsRes.body),
+      );
 
-    // Update the individual cached slices if they exist
-    const newFieldConfigOnly = stripQuestionBankFieldConfigForPersist(composedSettings);
-    const newPrefsOnly = normalizeQuestionBankModulePreferences(composedSettings);
-    queryClient.setQueryData(QUERY_KEY_FIELDS, newFieldConfigOnly);
-    queryClient.setQueryData(QUERY_KEY_PREFS, newPrefsOnly);
+      queryClient.setQueryData(QUERY_KEY_COMPOSED, composedSettings);
 
-    return composedSettings;
-  };
+      // Update the individual cached slices if they exist
+      const newFieldConfigOnly = stripQuestionBankFieldConfigForPersist(composedSettings);
+      const newPrefsOnly = normalizeQuestionBankModulePreferences(composedSettings);
+      queryClient.setQueryData(QUERY_KEY_FIELDS, newFieldConfigOnly);
+      queryClient.setQueryData(QUERY_KEY_PREFS, newPrefsOnly);
+
+      return composedSettings;
+    },
+    [queryClient, updateFieldsAsync, updatePrefsAsync],
+  );
+
   return {
     data: (query.data?.body ?? DEFAULT_QUESTION_BANK_SETTINGS) as QuestionBankSettings,
     isLoading: query.isLoading,

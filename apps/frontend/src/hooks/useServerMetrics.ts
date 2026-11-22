@@ -9,6 +9,7 @@ export interface ServerMetricsOptions {
   extraParam?: string;
 }
 
+/** Query options for a module's `/metrics` summary endpoint. */
 export function serverMetricsQueryOptions<T>({
   moduleId,
   apiPath,
@@ -35,6 +36,7 @@ export interface UseServerMetricsOptions extends ServerMetricsOptions {
   enabled?: boolean;
 }
 
+/** Auth-gated Query for a module's summary metrics (KPI cards). */
 export function useServerMetrics<T>({
   moduleId,
   apiPath,

@@ -6,8 +6,9 @@ import { notify } from "@/lib/notify";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
 import { updateAdminsCache } from "./platformAdminsCache";
 import { assertContractOk } from "@/lib/apiContractError";
+import { PLATFORM_ADMINS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
-export const PLATFORM_ADMINS_QUERY_KEY = ["platform", "admins"] as const;
+export { PLATFORM_ADMINS_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
 /** Soft-disable or re-enable a platform admin (password re-auth). */
 export function useSetPlatformAdminDisabled() {
@@ -25,6 +26,7 @@ export function useSetPlatformAdminDisabled() {
         params: { adminId },
         body: { disabled, password },
       });
+      assertContractOk(res, "Failed to update admin status");
       return res.body as { user: PlatformUserProfile };
     },
     onMutate: async ({ adminId, disabled }) => {
@@ -65,6 +67,7 @@ export function useDeletePlatformAdmin() {
         params: { adminId },
         body: { password },
       });
+      assertContractOk(res, "Failed to delete admin");
       return res.body as { deleted: true; id: string };
     },
     onSuccess: () => {

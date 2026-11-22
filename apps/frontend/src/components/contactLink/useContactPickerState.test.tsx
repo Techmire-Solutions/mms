@@ -111,6 +111,48 @@ describe("useContactPickerState (server mode)", () => {
     );
   });
 
+  it("keeps the picker query identity stable when a new excludeIds array carries the same ids", () => {
+    let excludeIds: (string | number | null)[] = ["c9", null, "c8"];
+    function TestComponent() {
+      latest = useContactPickerState({
+        value: null,
+        onChange: () => {},
+        filterGender: "male",
+        hasPhone: true,
+        excludeIds,
+      });
+      return null;
+    }
+    function renderWithExcludes(next: (string | number | null)[]): void {
+      excludeIds = next;
+      act(() => {
+        root.render(<TestComponent />);
+      });
+    }
+
+    renderWithExcludes(["c9", null, "c8"]);
+    const firstQuery = pickerMocks.search.mock.calls.at(-1)?.[0];
+
+    // New array literal, same ids: the memoized query must keep its identity so
+    // the picker does not refetch on every parent render.
+    renderWithExcludes(["c9", null, "c8"]);
+    const secondQuery = pickerMocks.search.mock.calls.at(-1)?.[0];
+
+    expect(secondQuery).toBe(firstQuery);
+
+    // Different contents: the query is rebuilt.
+    renderWithExcludes(["c7"]);
+    const thirdQuery = pickerMocks.search.mock.calls.at(-1)?.[0];
+    expect(thirdQuery).not.toBe(firstQuery);
+    expect(thirdQuery).toEqual({
+      search: "",
+      limit: 8,
+      gender: "male",
+      hasPhone: true,
+      excludeIds: "c7",
+    });
+  });
+
   it("resolves the selected contact from the picker option endpoint", () => {
     renderState({ value: "c1" });
 

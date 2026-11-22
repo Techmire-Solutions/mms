@@ -33,12 +33,13 @@ export {
 export const EXAMINATIONS_API = EXAMINATIONS_MODULE_MANIFEST.restBasePath;
 
 export function useExaminationsExams(options?: { enabled?: boolean; includeDeleted?: boolean }) {
-  const { isAuthenticated: _isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const includeDeleted = options?.includeDeleted ?? false;
   return tsrClient.examinations.listExams.useQuery({
     queryKey: [...EXAMINATIONS_EXAMS_QUERY_KEY, { includeDeleted }],
     queryData: { query: { includeDeleted: includeDeleted ? "true" : undefined } },
     staleTime: 30_000,
+    enabled: options?.enabled ?? isAuthenticated,
   });
 }
 
@@ -68,12 +69,14 @@ export function useExaminationsResults(options?: { enabled?: boolean }) {
     queryKey: EXAMINATIONS_RESULTS_QUERY_KEY,
     staleTime: 30_000,
     enabled: options?.enabled ?? isAuthenticated,
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const results: ExamResult[] = [];
       let cursor: string | undefined;
       for (let page = 0; page < RESULTS_MAX_PAGES; page += 1) {
         const response = await apiContract.examinations.listResults({
           query: { limit: RESULTS_PAGE_SIZE, ...(cursor ? { cursor } : {}) },
+          signal,
+          fetchOptions: { signal },
         });
         if (response.status !== 200) {
           // Preserve the status/type on the query error (the repo-wide contract ratchet).

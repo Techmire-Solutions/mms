@@ -28,34 +28,54 @@ export interface WorkTableDensityConfig {
   headerPaddingClass: string;
 }
 
-/** Per-user, persisted Work table density (SSOT for the WorkBatchTable stack). */
-export function useWorkTableDensity(): WorkTableDensityConfig {
-  const [density, setDensityState] = useState<WorkTableDensity>(() => {
-    if (typeof window === "undefined") return "standard";
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === "compact" || stored === "standard" || stored === "comfortable") {
-        return stored;
-      }
-    } catch {
-      // Ignore storage access errors.
-    }
-    return "standard";
-  });
+export interface WorkTableDensityOptions {
+  /** localStorage key; defaults to the shared Work-directory key. */
+  storageKey?: string;
+  /** Per-mode cell/header padding; defaults to `WORK_TABLE_DENSITY_PADDING`. */
+  padding?: Record<WorkTableDensity, { cell: string; header: string }>;
+}
 
-  const setDensity = useCallback((next: WorkTableDensity) => {
-    setDensityState(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // Ignore storage access errors.
+function readStoredDensity(storageKey: string): WorkTableDensity {
+  if (typeof window === "undefined") return "standard";
+  try {
+    const stored = localStorage.getItem(storageKey);
+    if (stored === "compact" || stored === "standard" || stored === "comfortable") {
+      return stored;
     }
-  }, []);
+  } catch {
+    // Ignore storage access errors.
+  }
+  return "standard";
+}
+
+/**
+ * Per-user, persisted table row density (SSOT for the WorkBatchTable stack).
+ * Consoles pass their own `storageKey`/`padding` to share one implementation.
+ */
+export function useWorkTableDensity(options?: WorkTableDensityOptions): WorkTableDensityConfig {
+  const storageKey = options?.storageKey ?? STORAGE_KEY;
+  const padding = options?.padding ?? WORK_TABLE_DENSITY_PADDING;
+
+  const [density, setDensityState] = useState<WorkTableDensity>(() =>
+    readStoredDensity(storageKey),
+  );
+
+  const setDensity = useCallback(
+    (next: WorkTableDensity) => {
+      setDensityState(next);
+      try {
+        localStorage.setItem(storageKey, next);
+      } catch {
+        // Ignore storage access errors.
+      }
+    },
+    [storageKey],
+  );
 
   return {
     density,
     setDensity,
-    cellPaddingClass: WORK_TABLE_DENSITY_PADDING[density].cell,
-    headerPaddingClass: WORK_TABLE_DENSITY_PADDING[density].header,
+    cellPaddingClass: padding[density].cell,
+    headerPaddingClass: padding[density].header,
   };
 }

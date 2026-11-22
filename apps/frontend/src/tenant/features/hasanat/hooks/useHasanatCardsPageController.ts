@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { HASANAT_WORK_SEARCH_INPUT_ID } from "@/tenant/features/hasanat/components/DistributionsListFilters";
@@ -46,8 +46,8 @@ export function useHasanatCardsPageController() {
     canViewReports,
     workLabelKey: "nav.hasanatCards",
   });
-  const SETUP_TABS = getHasanatSetupTabs(t);
-  const SUB_TABS = getHasanatSubTabs(t);
+  const SETUP_TABS = useMemo(() => getHasanatSetupTabs(t), [t]);
+  const SUB_TABS = useMemo(() => getHasanatSubTabs(t), [t]);
   const [activeTab, setActiveTab] = usePersistedTabState<string>("hasanat_active_tab", "work");
   const [activeSubTab, setActiveSubTab] = useState("overview");
   const [configSubTab, setConfigSubTab] = useState<string>("denominations");
@@ -57,9 +57,15 @@ export function useHasanatCardsPageController() {
 
   const distributionSelection = useWorkSelection<string>();
   const { clearSelection: clearDistributionSelection } = distributionSelection;
-  useEffect(() => {
+  // Trash view changes swap the visible rows, so a lingering selection would
+  // survive into unrelated bulk actions. Cleared during render (adjusting
+  // state on a prop/URL change) instead of an effect, which keeps this
+  // controller React-Compiler-friendly and covers URL-driven toggles too.
+  const [prevShowDeleted, setPrevShowDeleted] = useState(showDeleted);
+  if (prevShowDeleted !== showDeleted) {
+    setPrevShowDeleted(showDeleted);
     clearDistributionSelection();
-  }, [showDeleted, clearDistributionSelection]);
+  }
 
   const denomsResult = useHasanatDenoms();
   const batchesResult = useHasanatBatches();

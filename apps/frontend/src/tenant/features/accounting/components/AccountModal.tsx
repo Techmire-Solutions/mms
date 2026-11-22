@@ -4,7 +4,7 @@ import {
 } from "@/lib/forms/translateValidationMessage";
 import React, { useMemo, useState } from "react";
 import { BookOpen } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   ACCOUNT_SUBTYPES,
   ACCOUNT_TYPE_META,
@@ -71,7 +71,7 @@ export function AccountModal({ initial, onSave, onClose, existingCodes }: Accoun
     [t],
   );
 
-  const { watch, setValue, setError, handleSubmit, formState, reset } = useForm<Account>({
+  const { control, setValue, setError, handleSubmit, formState, reset } = useForm<Account>({
     resolver,
     defaultValues,
     mode: "onSubmit",
@@ -84,7 +84,10 @@ export function AccountModal({ initial, onSave, onClose, existingCodes }: Accoun
     setServerError(null);
   });
 
-  const form = watch();
+  // `useWatch` subscribes to the whole form reactively; RHF's `useForm().watch()`
+  // returns a function the React Compiler cannot memoize (stale-UI risk), so the
+  // subscription form is used instead of disabling the compiler for the component.
+  const form = useWatch({ control });
   const type = form.type as AccountType;
   const subtypes = type ? ACCOUNT_SUBTYPES[type] || [] : [];
 

@@ -3,7 +3,7 @@
  * contract query hooks, and contract mutations.
  */
 import { apiContract, tsrClient } from "@/lib/api";
-import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
 import {
   ACCOUNTING_ACCOUNTS_QUERY_KEY,
@@ -24,7 +24,7 @@ export function accountingAccountsListQueryOptions(query: Record<string, unknown
       assertContractOk(response, "Failed to fetch accounting accounts");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
@@ -41,7 +41,7 @@ export function accountingEntriesListQueryOptions(query: Record<string, unknown>
       assertContractOk(response, "Failed to fetch accounting entries");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
@@ -58,7 +58,7 @@ export function accountingFiscalYearsListQueryOptions(query: Record<string, unkn
       assertContractOk(response, "Failed to fetch accounting fiscal years");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }

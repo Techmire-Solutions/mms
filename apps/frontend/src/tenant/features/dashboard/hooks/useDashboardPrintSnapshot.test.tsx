@@ -19,14 +19,25 @@ describe("useDashboardPrintSnapshot", () => {
   let root: Root;
   let printSpy: ReturnType<typeof vi.fn>;
   let frameQueue: FrameRequestCallback[];
+  let cancelledFrames: Set<number>;
+
+  const flushFrames = () => {
+    frameQueue.forEach((callback, index) => {
+      if (!cancelledFrames.has(index + 1)) callback(0);
+    });
+  };
 
   beforeEach(() => {
     expand.mockReset();
     restore.mockReset();
     frameQueue = [];
+    cancelledFrames = new Set();
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
       frameQueue.push(callback);
       return frameQueue.length;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation((id) => {
+      cancelledFrames.add(id);
     });
     printSpy = vi.fn();
     Object.defineProperty(window, "print", {
@@ -56,9 +67,25 @@ describe("useDashboardPrintSnapshot", () => {
     expect(printSpy).not.toHaveBeenCalled();
 
     act(() => {
-      for (const callback of frameQueue) callback(0);
+      flushFrames();
     });
     expect(printSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancels the deferred print when the caller unmounts before the frame fires", async () => {
+    act(() => printSnapshot());
+    expect(expand).toHaveBeenCalledTimes(1);
+    expect(printSpy).not.toHaveBeenCalled();
+
+    await act(async () => root.unmount());
+
+    act(() => {
+      flushFrames();
+    });
+    // The frame was cancelled on unmount: no print dialog for a page the user left.
+    expect(printSpy).not.toHaveBeenCalled();
+    // The unmount cleanup still released the one-shot afterprint listener.
+    expect(restore).toHaveBeenCalledTimes(1);
   });
 
   it("restores the on-screen state after the print dialog closes", () => {
@@ -66,7 +93,7 @@ describe("useDashboardPrintSnapshot", () => {
     expect(restore).not.toHaveBeenCalled();
 
     act(() => {
-      for (const callback of frameQueue) callback(0);
+      flushFrames();
     });
     act(() => {
       window.dispatchEvent(new Event("afterprint"));

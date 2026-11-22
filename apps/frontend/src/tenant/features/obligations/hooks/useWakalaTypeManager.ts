@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { generateClientEntityId } from "@mms/shared";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -29,10 +29,13 @@ export function useWakalaTypeManager({
   const [deleteDistTargetId, setDeleteDistTargetId] = useState<string | null>(null);
   const emDash = t("obligations.wakala.emDash");
 
-  const distributionTypeConfig = (() => ({
-    Income: { label: t("obligations.distribution.income"), cls: SEMANTIC_BADGE.success },
-    Liability: { label: t("obligations.distribution.liability"), cls: SEMANTIC_BADGE.info },
-  }))() as Record<string, StatusBadgeConfigItem>;
+  const distributionTypeConfig = useMemo(
+    () => ({
+      Income: { label: t("obligations.distribution.income"), cls: SEMANTIC_BADGE.success },
+      Liability: { label: t("obligations.distribution.liability"), cls: SEMANTIC_BADGE.info },
+    }),
+    [t],
+  ) as Record<string, StatusBadgeConfigItem>;
 
   const getRep = (repId: string) => reps.find((rep) => rep.id === repId);
   const getMujtahid = (mujtahidId: string) =>

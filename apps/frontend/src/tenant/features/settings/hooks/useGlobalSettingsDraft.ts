@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MODULE_ACCESS_QUERY_KEY } from "@/lib/query/moduleAccessQuery";
 import {
@@ -72,17 +72,23 @@ export function useGlobalSettingsDraft(): UseGlobalSettingsDraftResult {
   const isModulesDirty = (() => isEnabledModulesDraftDirty(data, baseline))();
   const isDirty = isGlobalDirty || isModulesDirty;
 
+  // Effect event: always reads the latest draft/flash state, so the listener
+  // below is registered once instead of per render (clearSaved identity churns).
+  const syncFromPersisted = useEffectEvent(() => {
+    if (isDirty) return;
+    const persistedGlobalSettings = loadPersistedGlobal();
+    setBaseline(persistedGlobalSettings);
+    setData(persistedGlobalSettings);
+    clearSaved();
+  });
+
   useEffect(() => {
     const sync = (): void => {
-      if (isDirty) return;
-      const persistedGlobalSettings = loadPersistedGlobal();
-      setBaseline(persistedGlobalSettings);
-      setData(persistedGlobalSettings);
-      clearSaved();
+      syncFromPersisted();
     };
     window.addEventListener("local-database-update", sync);
     return () => window.removeEventListener("local-database-update", sync);
-  }, [clearSaved, isDirty]);
+  }, []);
 
   useEffect(() => {
     previewGlobalSettings(previewGlobalSettingsDraft(data));

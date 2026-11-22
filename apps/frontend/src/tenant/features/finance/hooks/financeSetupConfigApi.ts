@@ -4,10 +4,12 @@ import type { FinanceModulePreferences } from "@mms/shared";
 import { normalizeFinanceModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<FinanceModulePreferences>({
-  fetchPreferencesFn: async (_signal) => {
+  fetchPreferencesFn: async (signal) => {
     const res = await apiContract.finance.getPreferences({
       query: undefined,
       extraHeaders: {},
+      signal,
+      fetchOptions: { signal },
     });
     return (res.body as { preferences: FinanceModulePreferences }).preferences;
   },

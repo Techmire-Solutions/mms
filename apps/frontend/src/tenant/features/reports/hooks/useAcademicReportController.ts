@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   useExaminationsExams,
   useExaminationsExamsCollection,
@@ -39,8 +39,12 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
 
   // One row per (student, exam) scored by the shared engine; ranking and the class leaderboard use
   // the unrounded raw percentage (ranked/averaged rounded values created artificial ties).
-  const scoredRows = scoreAcademicRows(exams, examResults, students);
-  const rankedRows = rankAcademicRows(scoredRows);
+  // Scoring + ranking runs once per data snapshot — filter/selection toggles only re-filter.
+  const scoredRows = useMemo(
+    () => scoreAcademicRows(exams, examResults, students),
+    [exams, examResults, students],
+  );
+  const rankedRows = useMemo(() => rankAcademicRows(scoredRows), [scoredRows]);
 
   let academicResults = toAcademicResultItems(rankedRows);
   if (filters.class !== "all") {
@@ -55,13 +59,14 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
   }
   const academicResultsData = academicResults as AcademicResultItem[];
 
-  let classRankingItems = summarizeClassRankings(scoredRows);
+  const classRankings = useMemo(() => summarizeClassRankings(scoredRows), [scoredRows]);
+  let classRankingItems = classRankings;
   if (filters.class !== "all") {
     classRankingItems = classRankingItems.filter(
       (classRankingItem) => classRankingItem.class === filters.class,
     );
   }
-  const classRankings = classRankingItems as ClassRankingItem[];
+  const classRankingItemsData = classRankingItems as ClassRankingItem[];
 
   const filteredAcademicResultsData = (() => {
     let filteredAcademicResults = academicResultsData;
@@ -80,8 +85,8 @@ export function useAcademicReportController({ filters }: AcademicReportProps) {
 
   const filteredClassRankings = (() =>
     selectedClass
-      ? classRankings.filter((classRanking) => classRanking.class === selectedClass)
-      : classRankings)();
+      ? classRankingItemsData.filter((classRanking) => classRanking.class === selectedClass)
+      : classRankingItemsData)();
 
   const toggleClassFilter = (className: string): void => {
     setSelectedClass((currentClass) => (currentClass === className ? null : className));

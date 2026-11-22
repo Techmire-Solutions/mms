@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ModuleCustomField } from "@mms/shared";
 import { notify } from "@/lib/notify";
@@ -80,7 +80,16 @@ export function useMarkAttendancePersistence({
   const [saving, setSaving] = useState(false);
   // Ref guard: state disables the buttons only after a re-render.
   const inFlightRef = useRef(false);
+  // "Synced" toast timer, cleared on unmount so it never fires after the grid is gone.
+  const syncedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { t } = useTranslation();
+
+  useEffect(
+    () => () => {
+      if (syncedTimerRef.current !== null) clearTimeout(syncedTimerRef.current);
+    },
+    [],
+  );
 
   const buildRecords = useCallback(
     (
@@ -128,12 +137,6 @@ export function useMarkAttendancePersistence({
     await saveWithIntent("draft");
   };
 
-  /**
-   * Saves with an optional override justification, then applies the action's success effects.
-   *
-   * When the API refuses the save because it needs a justification, the page is asked to collect one
-   * and the same intent is retried — so a locked/past day is not a dead end.
-   */
   /**
    * Client-side checks the policy would reject anyway.
    *
@@ -277,7 +280,8 @@ export function useMarkAttendancePersistence({
       saveQueue([]);
       setOfflineQueue([]);
       setSyncedMsg(true);
-      setTimeout(() => setSyncedMsg(false), 3000);
+      if (syncedTimerRef.current !== null) clearTimeout(syncedTimerRef.current);
+      syncedTimerRef.current = setTimeout(() => setSyncedMsg(false), 3000);
     } catch (error) {
       notify.error(t("attendance.toast.syncFailed"), {
         description: error instanceof Error ? error.message : String(error),

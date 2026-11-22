@@ -32,6 +32,7 @@ export function OutstandingFeesTableDesktopBody({
   const parentRef = useRef<HTMLDivElement | null>(null);
   const isVirtualized = rows.length > 30;
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual is not React-Compiler-compatible (upstream); this component intentionally stays uncompiled.
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,

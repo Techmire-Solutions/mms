@@ -81,16 +81,20 @@ export function useContactPickerState({
   const avatarInputId = `${resolvedId}-avatar`;
   const menuStyle = useAnchorMenuStyle(open, anchorRef);
 
+  // Keyed memoization: `excludeIds` is usually a fresh array literal from the
+  // parent, so the memo depends on a joined primitive key instead of the array
+  // identity — otherwise the picker query would rebuild (and refetch) on every
+  // parent render. The backend contract joins excludeIds with "," anyway.
+  const excludeIdsKey = excludeIds
+    .filter(
+      (excludeId): excludeId is string | number =>
+        excludeId != null && String(excludeId).length > 0,
+    )
+    .map(String)
+    .join(",");
   const normalizedExcludeIds = useMemo(
-    () =>
-      excludeIds
-        .filter(
-          (excludeId): excludeId is string | number =>
-            excludeId != null && String(excludeId).length > 0,
-        )
-        .map(String),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on excludeIds.join(",") to keep identity stable; depending on excludeIds would recompute (and refetch) on every new array literal.
-    [excludeIds.join(",")],
+    () => (excludeIdsKey === "" ? [] : excludeIdsKey.split(",")),
+    [excludeIdsKey],
   );
 
   const debouncedQuery = useDebounce(query, 250);

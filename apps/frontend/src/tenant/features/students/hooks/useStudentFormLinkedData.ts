@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { formatDate, todayISO, type Student } from "@mms/shared";
@@ -48,8 +49,13 @@ export function useStudentFormLinkedData({
     student?.id ? String(student.id) : undefined,
   );
 
+  // Stamp "today" once per form mount (lazy init) instead of calling `todayISO()`
+  // (Date.now) during every render — the registration-date fallback is fixed when
+  // the form opens, and render-time clock reads break React Compiler purity.
+  const [fallbackRegisteredDate] = useState(() => todayISO().split("T")[0]);
+
   const { data: nextGrNumber } = useStudentNextGrNumber({
-    registeredDate: (studentDraft.registeredDate || todayISO()).split("T")[0],
+    registeredDate: (studentDraft.registeredDate || fallbackRegisteredDate).split("T")[0],
     template: settings.grNumberTemplate,
     digits: settings.grNumberDigits,
     restartAnnually: settings.grNumberRestartAnnually,

@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
 import type {
+  PaperBlueprint,
   QuestionBankQuestion,
   QuestionBankTest,
   QuestionBankResult,
@@ -127,8 +128,8 @@ export function useQuestionBankMutations() {
     },
     assemblePaper: {
       ...assemblePaper,
-      mutateAsync: (id: string, blueprint: Record<string, unknown>) =>
-        assemblePaper.mutateAsync({ params: { id }, body: blueprint as never }),
+      mutateAsync: (id: string, blueprint: PaperBlueprint) =>
+        assemblePaper.mutateAsync({ params: { id }, body: blueprint }),
     },
     addQuestionAttachment: {
       ...addQuestionAttachment,

@@ -43,29 +43,29 @@ export function useMessagingWorkTierBulkActions({
 }: UseMessagingWorkTierBulkActionsParams) {
   const [exporting, setExporting] = useState(false);
 
-  const handleBulkResendLogs = (
-    targetLogs: Message[],
-    targetChannel?: "whatsapp" | "sms" | "email",
-  ): void => {
-    if (targetLogs.length === 0) return;
-    const selectedRecipients: MessagingRecipient[] = targetLogs.map((log) => {
-      const rec = getRecipient(log.contactId);
-      return (
-        rec ?? {
-          id: log.contactId,
-          name: getRecipientName(log.contactId),
-          phone: "",
-          email: "",
-        }
-      );
-    });
-    if (onBulkResend) {
-      onBulkResend(targetLogs, selectedRecipients, targetChannel);
-    } else {
-      const first = targetLogs[0];
-      if (first) onResend(first, selectedRecipients[0]!);
-    }
-  };
+  const handleBulkResendLogs = useCallback(
+    (targetLogs: Message[], targetChannel?: "whatsapp" | "sms" | "email"): void => {
+      if (targetLogs.length === 0) return;
+      const selectedRecipients: MessagingRecipient[] = targetLogs.map((log) => {
+        const rec = getRecipient(log.contactId);
+        return (
+          rec ?? {
+            id: log.contactId,
+            name: getRecipientName(log.contactId),
+            phone: "",
+            email: "",
+          }
+        );
+      });
+      if (onBulkResend) {
+        onBulkResend(targetLogs, selectedRecipients, targetChannel);
+      } else {
+        const first = targetLogs[0];
+        if (first) onResend(first, selectedRecipients[0]!);
+      }
+    },
+    [getRecipient, getRecipientName, onResend, onBulkResend],
+  );
 
   const handleExportLogs = useCallback(async (): Promise<void> => {
     if (!canWrite || exporting) return;

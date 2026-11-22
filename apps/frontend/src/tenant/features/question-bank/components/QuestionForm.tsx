@@ -2,9 +2,9 @@ import {
   translateApiMessage,
   translateValidationMessage,
 } from "@/lib/forms/translateValidationMessage";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BookOpen } from "lucide-react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
@@ -71,23 +71,40 @@ export function QuestionForm({
   );
 
   const [defaultValues] = useState(() => buildQuestionValues(question, language));
-  const { watch, setValue, setError, clearErrors, handleSubmit, reset, formState } =
+  const { setValue, setError, clearErrors, handleSubmit, reset, control, formState } =
     useForm<QuestionFormValues>({
       resolver,
       defaultValues,
       mode: "onSubmit",
     });
 
-  // Re-sync the draft when editing another question record or reopening. The app
-  // language is not part of the identity: switching locale must not discard edits.
+  // The locale is read through a ref so it is NOT part of the reset identity:
+  // switching language must not discard in-progress edits. The ref updates on
+  // every locale change, so the next open/question change still resets with the
+  // current language.
+  const languageRef = useRef(language);
+  useEffect(() => {
+    languageRef.current = language;
+  }, [language]);
+
+  // Banner cleanup is a render adjustment (React's adjust-state pattern): when the
+  // form target changes, the previous server error no longer applies. Keeping it
+  // out of effects avoids a cascading setState-in-effect render.
+  const [lastResetTarget, setLastResetTarget] = useState({ open, question });
+  if (lastResetTarget.open !== open || lastResetTarget.question !== question) {
+    setLastResetTarget({ open, question });
+    setServerError(null);
+  }
+
+  // Re-sync the draft when editing another question record or reopening.
   useEffect(() => {
     if (!open) return;
-    reset(buildQuestionValues(question, language));
-    setServerError(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- locale is intentionally excluded
+    reset(buildQuestionValues(question, languageRef.current));
   }, [open, question, reset]);
 
-  const questionDraft = watch();
+  // `useWatch` subscribes through useSyncExternalStore (React-Compiler-safe)
+  // where `watch()` would recreate the values object on every render.
+  const questionDraft = useWatch({ control }) as QuestionFormValues;
 
   const errors = useMemo(() => {
     const map: Record<string, string> = {};

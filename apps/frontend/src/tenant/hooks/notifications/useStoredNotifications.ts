@@ -1,6 +1,8 @@
+import { useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatRelativeTime, type TenantNotificationRecord } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAuth } from "@/lib/contexts/AuthContext";
 import type { DashboardNotificationItem } from "@/lib/buildDashboardNotifications";
 import {
   invalidateStoredNotificationsQueries,
@@ -107,19 +109,43 @@ export function toStoredNotificationItem(
 /** Server-stored notifications addressed to the caller's permissions, with server read receipts. */
 export function useStoredNotifications() {
   const { t, language } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const { data } = useQuery(storedNotificationsQueryOptions());
-  const onSettled = () => invalidateStoredNotificationsQueries(queryClient);
-  const markOne = useMutation({ mutationFn: markStoredNotificationRead, onSettled });
-  const markAll = useMutation({ mutationFn: markAllStoredNotificationsRead, onSettled });
+  const pendingReadRef = useRef<string | null>(null);
+  const pendingReadAllRef = useRef(false);
+  const { data } = useQuery({ ...storedNotificationsQueryOptions(), enabled: isAuthenticated });
+  const markOne = useMutation({
+    mutationFn: markStoredNotificationRead,
+    onSettled: () => {
+      pendingReadRef.current = null;
+      invalidateStoredNotificationsQueries(queryClient);
+    },
+  });
+  const markAll = useMutation({
+    mutationFn: markAllStoredNotificationsRead,
+    onSettled: () => {
+      pendingReadAllRef.current = false;
+      invalidateStoredNotificationsQueries(queryClient);
+    },
+  });
 
   return {
     items: (data?.notifications ?? []).map((record) =>
       toStoredNotificationItem(record, t, language),
     ),
-    markRead: (storedId: string) => markOne.mutate(storedId),
+    // Read receipts are idempotent: an already-read item — or one whose POST is
+    // still in flight — is never re-POSTed, so double-clicks stay no-ops.
+    markRead: (storedId: string) => {
+      const record = data?.notifications.find((n) => n.id === storedId);
+      if (!record || record.read || pendingReadRef.current !== null) return;
+      pendingReadRef.current = storedId;
+      markOne.mutate(storedId);
+    },
     markAllRead: () => {
-      if ((data?.unreadCount ?? 0) > 0) markAll.mutate();
+      if ((data?.unreadCount ?? 0) > 0 && !pendingReadAllRef.current) {
+        pendingReadAllRef.current = true;
+        markAll.mutate();
+      }
     },
   };
 }

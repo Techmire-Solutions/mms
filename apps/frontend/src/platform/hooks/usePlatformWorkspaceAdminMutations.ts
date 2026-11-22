@@ -4,8 +4,9 @@ import { ApiError } from "@/lib/apiClient";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { PLATFORM_WORKSPACES_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
-export const PLATFORM_WORKSPACES_QUERY_KEY = ["platform", "workspaces"] as const;
+export { PLATFORM_WORKSPACES_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
 export function useResetWorkspaceAdminPassword() {
   const queryClient = useQueryClient();

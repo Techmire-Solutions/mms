@@ -1,6 +1,8 @@
 import { createHmac, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS } from "@mms/shared";
 import { secureCookieBase } from "../../lib/cookieOptions.js";
+import { extractTokenFromCookie } from "../../lib/attachTokenFromCookie.js";
 
 const ACCESS_COOKIE = "mms_access";
 const REFRESH_COOKIE = "mms_refresh";
@@ -13,10 +15,6 @@ const CSRF_COOKIE = "csrf_token";
  */
 const REFRESH_PATH = "/api/auth/refresh";
 
-const ACCESS_TTL_SEC = 15 * 60;
-const REFRESH_TTL_SEC = 7 * 24 * 60 * 60;
-const CSRF_TTL_SEC = 7 * 24 * 60 * 60;
-
 export function generateCsrfToken(): string {
   return randomBytes(32).toString("hex");
 }
@@ -26,14 +24,9 @@ function extractBearerToken(request: FastifyRequest): string | null {
   if (header?.startsWith("Bearer ")) {
     return header.slice(7).trim() || null;
   }
-  const cookies = request.cookies as Record<string, string | undefined> | undefined;
-  if (cookies?.[ACCESS_COOKIE]) return cookies[ACCESS_COOKIE];
-  const rawCookie = request.headers.cookie;
-  if (rawCookie) {
-    const match = rawCookie.match(new RegExp(`(?:^|;\\s*)${ACCESS_COOKIE}=([^;]*)`));
-    if (match?.[1]) return decodeURIComponent(match[1]);
-  }
-  return null;
+  // Cookie fallback shares the SSOT cookie-lookup helper (parsed cookies, then
+  // raw Cookie-header regex with URI decoding) with the platform cookie service.
+  return extractTokenFromCookie(request, ACCESS_COOKIE);
 }
 
 export function attachAccessTokenFromCookie(request: FastifyRequest): void {
@@ -62,7 +55,7 @@ export function setCsrfCookie(reply: FastifyReply, token?: string): string {
     httpOnly: false, // Required for double-submit client read
     secure: base.secure,
     sameSite: "lax",
-    maxAge: CSRF_TTL_SEC,
+    maxAge: REFRESH_TOKEN_TTL_SECONDS,
   });
   return csrfToken;
 }
@@ -79,14 +72,14 @@ export function setAuthCookies(
     httpOnly: true,
     secure: base.secure,
     sameSite: "lax",
-    maxAge: ACCESS_TTL_SEC,
+    maxAge: ACCESS_TOKEN_TTL_SECONDS,
   });
   reply.setCookie(REFRESH_COOKIE, refreshToken, {
     path: REFRESH_PATH,
     httpOnly: true,
     secure: base.secure,
     sameSite: "lax",
-    maxAge: REFRESH_TTL_SEC,
+    maxAge: REFRESH_TOKEN_TTL_SECONDS,
   });
   setCsrfCookie(reply, csrfToken);
 }

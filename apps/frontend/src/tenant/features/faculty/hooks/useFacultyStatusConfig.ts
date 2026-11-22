@@ -14,7 +14,7 @@ const resolveSpecs = resolveFacultySpecializations;
 export function useFacultyStatusConfig(): Record<string, StatusBadgeConfigItem> {
   const { t } = useTranslation();
   const { statuses } = useFacultyConfig();
-  return (() => facultyStatusBadgeConfig(t, statuses))();
+  return facultyStatusBadgeConfig(t, statuses);
 }
 
 /**
@@ -26,8 +26,8 @@ export function useFacultyLookupOptions(): {
   specializationOptions: string[];
 } {
   const { statuses, specializations } = useFacultyConfig();
-  return (() => ({
+  return {
     statusOptions: [...resolveStatuses(statuses)],
     specializationOptions: [...resolveSpecs(specializations)],
-  }))();
+  };
 }

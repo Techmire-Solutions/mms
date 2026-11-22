@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type AttendanceRecord, type ClassStudent } from "@/lib/data/attendanceData";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
@@ -13,32 +13,26 @@ import {
 } from "@/tenant/features/attendance/lib/markAttendanceQueue";
 import {
   isEnrollmentInAttendanceRoster,
-  existingRecordsForRoster,
   resolveSessionAndClassInfo,
-} from "@/tenant/features/attendance/lib/markAttendanceRowUtils"; // roster + session helpers
+} from "@/tenant/features/attendance/lib/markAttendanceRowUtils";
 import {
   loadQueue,
   useMarkAttendancePersistence,
 } from "@/tenant/features/attendance/hooks/useMarkAttendancePersistence";
 import { useAttendanceDaySubmission } from "@/tenant/features/attendance/hooks/useAttendanceDaySubmission";
 import { useRosterDirtyTracking } from "@/tenant/features/attendance/hooks/useRosterDirtyTracking";
+import { useRosterGridState } from "@/tenant/features/attendance/hooks/useRosterGridState";
 import type {
-  AttendanceRow,
   GeoData,
   MarkAttendanceProps,
   OfflinePayload,
 } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 import {
-  applyPersistedRows,
-  baselineOf,
-  mergeServerRows,
   computeRosterStats,
   filterRowsByName,
-  rowSignature,
   setRowStatus,
   resolveRosterStudents,
   seedRowsFor,
-  type RowBaseline,
 } from "@/tenant/features/attendance/lib/markAttendanceRowState";
 
 export function useMarkAttendanceController({
@@ -60,7 +54,7 @@ export function useMarkAttendanceController({
     sessionId: filters.sessionId || undefined,
     classId: filters.classId || undefined,
   });
-  const studentIds = (() => {
+  const studentIds = useMemo(() => {
     if (!filters.classId) return [];
     return enrollments
       .filter((enrollment) =>
@@ -72,42 +66,37 @@ export function useMarkAttendanceController({
         ),
       )
       .map((enrollment) => enrollment.studentId);
-  })();
+  }, [enrollments, filters.classId, filters.sectionId, filters.date]);
 
   const { data: enrolledStudents = [] } = useStudentsByIds(studentIds);
 
-  const { classInfo, sessionInfo } = resolveSessionAndClassInfo(sessions, filters.classId);
-  const students: ClassStudent[] = resolveRosterStudents({
-    classId: filters.classId,
-    sectionId: filters.sectionId,
-    date: filters.date,
-    enrollments,
-    students: enrolledStudents,
-    fallbackName: t("common.unnamedStudent"),
-  });
+  const { classInfo, sessionInfo } = useMemo(
+    () => resolveSessionAndClassInfo(sessions, filters.classId),
+    [sessions, filters.classId],
+  );
+  const students: ClassStudent[] = useMemo(
+    () =>
+      resolveRosterStudents({
+        classId: filters.classId,
+        sectionId: filters.sectionId,
+        date: filters.date,
+        enrollments,
+        students: enrolledStudents,
+        fallbackName: t("common.unnamedStudent"),
+      }),
+    [filters.classId, filters.sectionId, filters.date, enrollments, enrolledStudents, t],
+  );
 
-  const baselineRef = useRef<Map<string, RowBaseline>>(new Map());
-  const [conflictCount, setConflictCount] = useState(0);
-  const [rowErrors, setRowErrors] = useState<Array<{ studentId?: string; message: string }>>([]);
-  const daySubmission = useAttendanceDaySubmission(filters.classId, filters.date);
-  const [rows, setRows] = useState<AttendanceRow[]>(() => {
-    if (!filters.classId || !filters.date) return [];
-    return seedRowsFor({ records, filters, students, customFields });
-  });
-  /** Seeds rows from a server snapshot and resets the dirty baseline. */
-  const seedRows = (nextRows: AttendanceRow[]): void => {
-    baselineRef.current = new Map(nextRows.map((row) => [row.studentId, baselineOf(row)]));
-    setRows(nextRows);
-    setConflictCount(0);
-  };
   const [search, setSearch] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isDraft, setIsDraft] = useState(false);
+  const [rowErrors, setRowErrors] = useState<Array<{ studentId?: string; message: string }>>([]);
   const [geo, setGeo] = useState<GeoData | "loading" | null>(null);
   const [offlineQueue, setOfflineQueue] = useState<OfflinePayload[]>(loadQueue);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [showFaceAI, setShowFaceAI] = useState(false);
   const [syncedMsg, setSyncedMsg] = useState(false);
+  const daySubmission = useAttendanceDaySubmission(filters.classId, filters.date);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -124,62 +113,22 @@ export function useMarkAttendanceController({
 
   const studentRosterKey = students.map((student) => `${student.id}-${student.name}`).join("|");
   const stableKey = `${filters.classId}:${filters.sectionId ?? ""}:${filters.date}:${studentRosterKey}`;
-
-  // Rebuild during render when class/date/roster changes, so the old roster is never editable under
-  // the new filters (stableKey is the only input needed).
-  const [prevStableKey, setPrevStableKey] = useState(stableKey);
-  if (prevStableKey !== stableKey) {
-    setPrevStableKey(stableKey);
-    if (filters.classId && filters.date) {
-      seedRows(seedRowsFor({ records, filters, students, customFields }));
-      setSubmitted(false);
-      setIsDraft(false);
-      setGeo(null);
-      setShowFaceAI(false);
-    }
+  const { grid, setGrid, rows, seedRows, applyPersisted, reseeded } = useRosterGridState({
+    filters,
+    records,
+    students,
+    customFields,
+    rosterKey: stableKey,
+  });
+  // A roster reseed starts the day over: no submission state, no draft badge, no geo, no face AI.
+  if (reseeded) {
+    setSubmitted(false);
+    setIsDraft(false);
+    setGeo(null);
+    setShowFaceAI(false);
   }
 
-  /**
-   * Adopt server changes (refetch after save, stale-write recovery, another instructor's save)
-   * **without** clobbering rows the user has edited: clean rows take the server value, dirty rows keep
-   * their local value and drop the OCC token (the next save is then an explicit last-writer-wins).
-   */
-  const recordsSignature = useMemo(
-    () =>
-      existingRecordsForRoster(records, filters, students)
-        .map((r) => rowSignature(r))
-        .join("|"),
-    // The signature (not the array identity) is what matters: parents recreate `records` freely.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [records, filters.classId, filters.date, filters.sectionId, students.length],
-  );
-
-  useEffect(() => {
-    if (!filters.classId || !filters.date || !recordsSignature) return;
-    const serverRecords = existingRecordsForRoster(records, filters, students);
-    setRows((currentRows) => {
-      const result = mergeServerRows({
-        currentRows,
-        serverRecords,
-        baseline: baselineRef.current,
-      });
-      setConflictCount((previous) =>
-        result.conflicts > 0 && previous !== result.conflicts ? result.conflicts : previous,
-      );
-      return result.rows;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recordsSignature]);
-
-  const isDirty = useRosterDirtyTracking({ rows, baseline: baselineRef, onDirtyChange });
-  /** Applies the server's persisted rows after a save (ids + versions) and clears the baseline. */
-  const applyPersisted = (persisted: AttendanceRecord[]): void => {
-    if (persisted.length === 0) return;
-    setRows((currentRows) =>
-      applyPersistedRows({ currentRows, persisted, baseline: baselineRef.current }),
-    );
-    setConflictCount(0);
-  };
+  const isDirty = useRosterDirtyTracking({ rows, baseline: grid.baseline, onDirtyChange });
 
   // Server truth plus local submit; derived so no effect has to setState.
   const submittedForUi = submitted || daySubmission.submission?.locked === true;
@@ -190,9 +139,12 @@ export function useMarkAttendanceController({
   const setRow = useCallback(
     (studentId: string, key: string, value: unknown) => {
       const before = rows.find((row) => row.studentId === studentId);
-      setRows((previousRows) =>
-        previousRows.map((row) => (row.studentId === studentId ? { ...row, [key]: value } : row)),
-      );
+      setGrid((current) => ({
+        ...current,
+        rows: current.rows.map((row) =>
+          row.studentId === studentId ? { ...row, [key]: value } : row,
+        ),
+      }));
       if (filters.classId && filters.date && before) {
         queueAuditEntry(filters.classId, filters.date, {
           action: "edit",
@@ -204,12 +156,15 @@ export function useMarkAttendanceController({
         });
       }
     },
-    [filters.classId, filters.date, role, rows],
+    [setGrid, filters.classId, filters.date, role, rows],
   );
 
   const markAll = useCallback(
     (status: AttendanceRecord["status"]) => {
-      setRows((previousRows) => previousRows.map((row) => ({ ...row, status })));
+      setGrid((current) => ({
+        ...current,
+        rows: current.rows.map((row) => ({ ...row, status })),
+      }));
       queueAuditEntry(filters.classId, filters.date, {
         action: "bulk_mark",
         status,
@@ -217,13 +172,16 @@ export function useMarkAttendanceController({
         by: role,
       });
     },
-    [filters.classId, filters.date, role, rows.length],
+    [setGrid, filters.classId, filters.date, role, rows.length],
   );
 
   const setStatus = useCallback(
     (studentId: string, status: AttendanceRecord["status"]) =>
-      setRows((previousRows) => setRowStatus(previousRows, studentId, status)),
-    [],
+      setGrid((current) => ({
+        ...current,
+        rows: setRowStatus(current.rows, studentId, status),
+      })),
+    [setGrid],
   );
 
   const requestGeo = () => {
@@ -287,8 +245,9 @@ export function useMarkAttendanceController({
     handleSync,
     handleSubmit,
     isDirty,
-    conflictCount,
-    dismissConflicts: () => setConflictCount(0),
+    conflictCount: grid.conflicts,
+    dismissConflicts: () =>
+      setGrid((current) => (current.conflicts === 0 ? current : { ...current, conflicts: 0 })),
     resetToServer: () => seedRows(seedRowsFor({ records, filters, students, customFields })),
     canReopenDay: canReopenDay === true,
     daySubmission,

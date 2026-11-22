@@ -15,21 +15,18 @@ export function useAccountProfilePageController() {
   const [showCropper, setShowCropper] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const loginVerified = (() => Boolean(profile?.emailVerifiedAt))();
+  const loginVerified = Boolean(profile?.emailVerifiedAt);
 
-  const completeness = (() => {
-    if (!profile?.contact) return 0;
-    return calculateProfileCompleteness(profile.contact, {
-      fields: {},
-      version: 1,
-      enabledTabs: [],
-      requiredTabs: [],
-    } satisfies FieldConfig);
-  })();
+  const completeness = profile?.contact
+    ? calculateProfileCompleteness(profile.contact, {
+        fields: {},
+        version: 1,
+        enabledTabs: [],
+        requiredTabs: [],
+      } satisfies FieldConfig)
+    : 0;
 
-  const avatarGradient = (() => {
-    return genderAvatarGradient(profile?.contact?.gender ?? "");
-  })();
+  const avatarGradient = genderAvatarGradient(profile?.contact?.gender ?? "");
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

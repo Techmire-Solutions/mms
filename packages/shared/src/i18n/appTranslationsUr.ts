@@ -6871,8 +6871,6 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
     "PostgreSQL ڈیٹا بیس کلسٹر اور RLS پالیسیاں بخیر چل رہی ہیں۔",
   "platform.notificationSystemHealthTitle": "سسٹم صحت فعال",
   "platform.notificationTimeActive": "فعال",
-  "platform.notificationTimeNow": "ابھی",
-  "platform.notificationTimeToday": "آج",
   "platform.onboardCapability": "آن بورڈنگ صلاحیت",
   "platform.onlySuperUserCanAddAdmins": "صرف سپر یوزر ہی منتظمین کا انتظام کر سکتا ہے",
   "platform.openSearchAria": "پلیٹ فارم کنسول تلاش کریں (Cmd+K)",

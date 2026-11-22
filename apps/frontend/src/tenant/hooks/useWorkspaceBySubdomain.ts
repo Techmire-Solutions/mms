@@ -24,6 +24,7 @@ export function isWorkspaceNotFoundError(error: unknown): boolean {
 
 const WORKSPACE_CACHE_PREFIX = "mms_ws_lookup_";
 
+/** Public workspace lookup cached under `mms_ws_lookup_{subdomain}` (public branding data only). */
 export function getCachedWorkspaceLookup(
   subdomain: string | null,
 ): { status: 200; body: WorkspaceLookupResult } | undefined {
@@ -41,6 +42,7 @@ export function getCachedWorkspaceLookup(
   }
 }
 
+/** Stores a public workspace lookup for fast subsequent boots on the same browser. */
 export function cacheWorkspaceLookup(subdomain: string, data: WorkspaceLookupResult): void {
   if (!subdomain || typeof window === "undefined") return;
   try {
@@ -53,6 +55,11 @@ export function cacheWorkspaceLookup(subdomain: string, data: WorkspaceLookupRes
   }
 }
 
+/**
+ * Public workspace lookup by subdomain. A 404 resolves to `{ status: 404,
+ * body: null }` (missing tenant); other failures reject with a status-bearing
+ * error so the query retry policy can distinguish them.
+ */
 export async function fetchWorkspaceBySubdomain(
   subdomain: string,
   signal?: AbortSignal,
@@ -74,6 +81,11 @@ export async function fetchWorkspaceBySubdomain(
   return { status: 200, body: response.body as WorkspaceLookupResult };
 }
 
+/**
+ * Public workspace + branding for a subdomain, seeded from the local lookup
+ * cache and refreshed from the server (the seed is marked stale so a mount
+ * always revalidates). 404s are data, not errors, and never retried.
+ */
 export function useWorkspaceBySubdomain(subdomain: string | null, enabled: boolean) {
   return useQuery<{ status: number; body: WorkspaceLookupResult | null }>({
     queryKey: [...WORKSPACE_BY_SUBDOMAIN_KEY, subdomain],
@@ -81,7 +93,9 @@ export function useWorkspaceBySubdomain(subdomain: string | null, enabled: boole
     enabled: enabled && Boolean(subdomain),
     staleTime: 5 * 60_000,
     gcTime: 10 * 60_000,
-    initialData: enabled && subdomain ? getCachedWorkspaceLookup(subdomain) : undefined,
+    // Function form: the localStorage seed is only read when the query first
+    // mounts for this subdomain, not on every render.
+    initialData: () => (enabled && subdomain ? getCachedWorkspaceLookup(subdomain) : undefined),
     initialDataUpdatedAt: 0,
     retry: (failureCount: number, error: unknown) =>
       !isWorkspaceNotFoundError(error) && failureCount < 3,

@@ -26,6 +26,7 @@ vi.mock("@/lib/api", () => ({
 
 import {
   fetchFacultyFieldConfig,
+  fetchFacultyPreferences,
   saveFacultyFieldConfigAsync,
   saveFacultyPreferencesAsync,
 } from "./facultySetupConfigApi";
@@ -74,5 +75,33 @@ describe("facultySetupConfigApi status guards", () => {
     await expect(
       saveFacultyFieldConfigAsync({ fields: {}, formTabs: [] } as never),
     ).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("passes the query abort signal through on the preferences fetch", async () => {
+    mocks.getPreferences.mockResolvedValue({
+      status: 200,
+      body: { preferences: {} },
+    });
+    const controller = new AbortController();
+
+    await fetchFacultyPreferences(controller.signal);
+
+    expect(mocks.getPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ fetchOptions: { signal: controller.signal } }),
+    );
+  });
+
+  it("passes the query abort signal through on the field-config fetch", async () => {
+    mocks.getFieldConfig.mockResolvedValue({
+      status: 200,
+      body: { config: null },
+    });
+    const controller = new AbortController();
+
+    await fetchFacultyFieldConfig(controller.signal);
+
+    expect(mocks.getFieldConfig).toHaveBeenCalledWith(
+      expect.objectContaining({ fetchOptions: { signal: controller.signal } }),
+    );
   });
 });

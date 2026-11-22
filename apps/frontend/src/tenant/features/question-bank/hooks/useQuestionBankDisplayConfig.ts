@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   QUESTION_TYPE_ICONS,
   isQuestionSourceFieldId,
@@ -10,22 +11,33 @@ type QuestionBankConfig = ReturnType<typeof useQuestionBankConfig>;
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export function useQuestionBankDisplayConfig(config: QuestionBankConfig) {
-  const difficultyConfig = (() => ({
-    easy: { label: config.difficultyLabel("easy"), cls: SEMANTIC_BADGE.success },
-    medium: { label: config.difficultyLabel("medium"), cls: SEMANTIC_BADGE.warning },
-    hard: { label: config.difficultyLabel("hard"), cls: SEMANTIC_BADGE.destructive },
-  }))() as Record<string, StatusBadgeConfigItem>;
+  const { difficultyLabel, typeLabel } = config;
 
-  const typeConfig = (() =>
-    Object.fromEntries(
-      Object.keys(QUESTION_TYPE_ICONS).map((typeId) => [
-        typeId,
-        {
-          label: `${QUESTION_TYPE_ICONS[typeId as keyof typeof QUESTION_TYPE_ICONS]} ${config.typeLabel(typeId)}`,
-          cls: SEMANTIC_BADGE.muted,
-        },
-      ]),
-    ))() as Record<string, StatusBadgeConfigItem>;
+  // Stable identities: QuestionsListDesktopTable memoizes its columns (and therefore
+  // the StatusBadge configs baked into the column render callbacks) on these values.
+  const difficultyConfig = useMemo(
+    () =>
+      ({
+        easy: { label: difficultyLabel("easy"), cls: SEMANTIC_BADGE.success },
+        medium: { label: difficultyLabel("medium"), cls: SEMANTIC_BADGE.warning },
+        hard: { label: difficultyLabel("hard"), cls: SEMANTIC_BADGE.destructive },
+      }) as Record<string, StatusBadgeConfigItem>,
+    [difficultyLabel],
+  );
+
+  const typeConfig = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.keys(QUESTION_TYPE_ICONS).map((typeId) => [
+          typeId,
+          {
+            label: `${QUESTION_TYPE_ICONS[typeId as keyof typeof QUESTION_TYPE_ICONS]} ${typeLabel(typeId)}`,
+            cls: SEMANTIC_BADGE.muted,
+          },
+        ]),
+      ) as Record<string, StatusBadgeConfigItem>,
+    [typeLabel],
+  );
 
   return { difficultyConfig, typeConfig };
 }

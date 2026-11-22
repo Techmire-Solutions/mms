@@ -1,20 +1,23 @@
 import type { CommandItem } from "@/components/app/commandPaletteItems";
 import type { AppTranslationKey } from "@mms/shared";
+import { createRecentStore } from "@/lib/createRecentStore";
 
 export const RECENTS_KEY = "cmd:recents";
 export const MAX_RECENTS = 5;
 
+const recentCommandsStore = createRecentStore(
+  RECENTS_KEY,
+  MAX_RECENTS,
+  (value): value is string => typeof value === "string",
+  (id) => id,
+);
+
 export function getRecents(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(RECENTS_KEY) ?? "[]") as string[];
-  } catch {
-    return [];
-  }
+  return recentCommandsStore.load();
 }
 
 export function pushRecent(id: string): void {
-  const prev = getRecents().filter((r) => r !== id);
-  localStorage.setItem(RECENTS_KEY, JSON.stringify([id, ...prev].slice(0, MAX_RECENTS)));
+  recentCommandsStore.push(id);
 }
 
 /** Trigram similarity — returns 0-1 score; tolerates single-char typos. */

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ReceiptText, CreditCard } from "lucide-react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
@@ -92,6 +92,23 @@ export function useFinancePageController() {
     clearPaymentSelection();
   }, [activeSubTab, showDeleted, clearInvoiceSelection, clearPaymentSelection]);
 
+  // Stable callback so the shared shortcuts engine does not re-register its
+  // window keydown listener on every render (its effect depends on this identity).
+  const { setViewInvoice, setRecordInvoice, setCreatingInvoice } = modalState;
+  const clearSelection = useCallback(() => {
+    setViewInvoice(null);
+    setRecordInvoice(null);
+    setCreatingInvoice(false);
+    clearInvoiceSelection();
+    clearPaymentSelection();
+  }, [
+    setViewInvoice,
+    setRecordInvoice,
+    setCreatingInvoice,
+    clearInvoiceSelection,
+    clearPaymentSelection,
+  ]);
+
   useModuleShortcuts({
     enabled: activeTab === "work",
     canWrite,
@@ -103,19 +120,14 @@ export function useFinancePageController() {
     },
     searchInputId: FINANCE_INVOICES_WORK_SEARCH_INPUT_ID,
     selectedCount: invoiceSelection.selectedIds.length + paymentSelection.selectedIds.length,
-    clearSelection: () => {
-      modalState.setViewInvoice(null);
-      modalState.setRecordInvoice(null);
-      modalState.setCreatingInvoice(false);
-      clearInvoiceSelection();
-      clearPaymentSelection();
-    },
+    clearSelection,
   });
 
   useEffect(() => {
-    if (activeTab !== "work") setShowDeleted(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- setShowDeleted is URL-backed and not guaranteed stable; depending on it could re-run this URL write every render.
-  }, [activeTab]);
+    if (activeTab !== "work" && showDeleted) {
+      setShowDeleted(false);
+    }
+  }, [activeTab, showDeleted, setShowDeleted]);
 
   const { handleRecordPayment, handleCreateInvoice, openCreateInvoice } = useFinanceFormActions({
     createPayment,

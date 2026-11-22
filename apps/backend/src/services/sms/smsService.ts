@@ -1,79 +1,24 @@
-import { canSendSmsNotifications, type GlobalSettings } from "@mms/shared";
+import {
+  canSendSmsNotifications,
+  type GlobalSettings,
+  type SendSmsInput,
+  type SendSmsResult,
+} from "@mms/shared";
 import { loadSmsIntegrationConfig, loadSmsIntegrationSecrets } from "./smsIntegrationService.js";
 import { loadGlobalSettings as loadTenantGlobalSettings } from "../globalSettingsService.js";
-import { sendTwilioSms } from "./providers/twilioProvider.js";
-import { sendVonageSms } from "./providers/vonageProvider.js";
-import { sendMsg91Sms } from "./providers/msg91Provider.js";
-import { sendInfobipSms } from "./providers/infobipProvider.js";
-import { sendTelesignSms } from "./providers/telesignProvider.js";
-import { sendLogiqueuesSms } from "./providers/logiqueuesProvider.js";
-import { sendGenericOutboundMessage } from "../messagingOutboundProvider.js";
-import type { SmsProviderSender } from "./providers/types.js";
+import { sendSmsViaProvider } from "./sendSmsViaProvider.js";
 
-export interface SendSmsInput {
-  to: string;
-  body: string;
-}
-
-export interface SendSmsResult {
-  sent: boolean;
-  reason?: "notifications_disabled" | "not_configured" | "transport_error";
-  message?: string;
-}
-
-const PROVIDER_SENDERS: Record<string, SmsProviderSender> = {
-  twilio: sendTwilioSms,
-  vonage: sendVonageSms,
-  msg91: sendMsg91Sms,
-  infobip: sendInfobipSms,
-  telesign: sendTelesignSms,
-  logiqueues: sendLogiqueuesSms,
-  custom: sendGenericOutboundMessage,
-};
-
-function sanitizeDispatchPhone(raw: string): string {
-  const trimmed = raw.trim();
-  const hasPlus = trimmed.startsWith("+");
-  const digitsOnly = trimmed.replace(/\D/g, "");
-  return hasPlus ? `+${digitsOnly}` : digitsOnly;
-}
+// Re-exported for consumers that imported the tenant-local names.
+export type { SendSmsInput, SendSmsResult };
 
 async function dispatchViaActiveProvider(to: string, body: string): Promise<SendSmsResult> {
-  const config = await loadSmsIntegrationConfig();
-  const secrets = await loadSmsIntegrationSecrets();
-  const accountSecret = secrets.accountSecret ?? "";
-
-  const requiresSenderId = config.providerId !== "custom" && config.providerId !== "logiqueues";
-  if (!accountSecret || (requiresSenderId && !config.senderId)) {
-    return { sent: false, reason: "not_configured" };
-  }
-
-  const send = PROVIDER_SENDERS[config.providerId];
-  if (!send) {
-    return {
-      sent: false,
-      reason: "not_configured",
-      message: `Unsupported SMS provider: ${config.providerId}`,
-    };
-  }
-
-  const cleanPhone = sanitizeDispatchPhone(to);
-
-  try {
-    const result = await send(cleanPhone, body, {
-      accountId: config.accountId,
-      accountSecret,
-      senderId: config.senderId,
-      apiBaseUrl: config.apiBaseUrl,
-    });
-    if (!result.success) {
-      return { sent: false, reason: "transport_error", message: result.error };
-    }
-    return { sent: true };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to send SMS";
-    return { sent: false, reason: "transport_error", message };
-  }
+  return sendSmsViaProvider(
+    async () => ({
+      config: await loadSmsIntegrationConfig(),
+      secrets: await loadSmsIntegrationSecrets(),
+    }),
+    { to, body },
+  );
 }
 
 /**

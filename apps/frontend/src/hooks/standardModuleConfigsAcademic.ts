@@ -93,6 +93,7 @@ const useFacultyConfigImpl = createStandardModuleConfigHook<
   },
 });
 
+/** Faculty Setup settings + lookups (statuses, specializations, gender filters). */
 export function useFacultyConfig() {
   return useFacultyConfigImpl() as StandardModuleConfigCore<FacultySettings> &
     StandardModuleConfigExtraMap["faculty"];
@@ -122,6 +123,7 @@ const useStudentConfigImpl = createStandardModuleConfigHook<
   },
 });
 
+/** Students Setup settings + lookups (statuses, gender filters, discount types). */
 export function useStudentConfig() {
   return useStudentConfigImpl() as StandardModuleConfigCore<StudentsSettings> &
     StandardModuleConfigExtraMap["students"];
@@ -152,6 +154,7 @@ const useSessionConfigImpl = createStandardModuleConfigHook<
   },
 });
 
+/** Sessions Setup settings + lookups (statuses, active program types). */
 export function useSessionConfig() {
   return useSessionConfigImpl() as StandardModuleConfigCore<SessionsSettings> &
     StandardModuleConfigExtraMap["sessions"];
@@ -173,6 +176,7 @@ const useEnrollmentConfigImpl = createStandardModuleConfigHook<
   },
 });
 
+/** Enrollments Setup settings. */
 export function useEnrollmentConfig() {
   return useEnrollmentConfigImpl() as StandardModuleConfigCore<EnrollmentsSettings> &
     StandardModuleConfigExtraMap["enrollments"];
@@ -194,6 +198,7 @@ const useExaminationConfigImpl = createStandardModuleConfigHook<
   },
 });
 
+/** Examinations Setup settings. */
 export function useExaminationConfig() {
   return useExaminationConfigImpl() as StandardModuleConfigCore<ExaminationsSettings> &
     StandardModuleConfigExtraMap["examinations"];

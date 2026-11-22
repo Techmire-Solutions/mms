@@ -1,4 +1,3 @@
-import type { RefObject } from "react";
 import type { FilterRule, CustomWidget } from "@/components/reports/dynamicChartVisualizerTypes";
 import type { VisualizerConfig } from "@/lib/reports/reportMetadata";
 import {
@@ -21,7 +20,8 @@ import type {
 import type { CollectionMeta } from "@/components/reports/dynamicChartVisualizerTypes";
 
 interface BuildVisualizerHandlersOptions {
-  chartRef: RefObject<HTMLDivElement | null>;
+  /** Event-time accessor for the chart DOM node — the handlers never touch a ref during render. */
+  getChartElement: () => HTMLDivElement | null;
   title: string;
   collectionKey: string;
   xAxisField: string;
@@ -43,7 +43,7 @@ interface BuildVisualizerHandlersOptions {
 }
 
 export function buildDynamicChartVisualizerHandlers({
-  chartRef,
+  getChartElement,
   title,
   collectionKey,
   xAxisField,
@@ -91,8 +91,9 @@ export function buildDynamicChartVisualizerHandlers({
   };
 
   const handleExportPNG = () => {
-    if (!chartRef.current) return;
-    void exportVisualizerPng({ chartElement: chartRef.current, title }).catch(() => {
+    const chartElement = getChartElement();
+    if (!chartElement) return;
+    void exportVisualizerPng({ chartElement, title }).catch(() => {
       onExportFailed();
     });
   };
@@ -104,9 +105,10 @@ export function buildDynamicChartVisualizerHandlers({
   };
 
   const handleExportPDF = () => {
-    if (!chartRef.current) return;
+    const chartElement = getChartElement();
+    if (!chartElement) return;
     void exportVisualizerPdf({
-      chartElement: chartRef.current,
+      chartElement,
       title,
       processedData,
       operation,

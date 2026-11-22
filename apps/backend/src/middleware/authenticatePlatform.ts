@@ -2,10 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import type { PlatformAdminPermissionKey, PlatformUser } from "@mms/shared";
 import { platformUserCan } from "@mms/shared";
 import { platformSessionScope } from "../services/sessionClockService.js";
-import {
-  enforcePlatformSessionClock,
-  SESSION_EXPIRY_RESPONSE,
-} from "../services/sessionGuardService.js";
+import { enforcePlatformSessionClock } from "../services/sessionGuardService.js";
 import { platformSessionPolicy } from "../services/sessionPolicyService.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { attachPlatformTokenFromCookie } from "../services/platform/platformCookieService.js";
@@ -15,8 +12,8 @@ import {
   toPublicPlatformUser,
 } from "../services/platform/platformUserService.js";
 import { sendForbidden, sendServiceUnavailable, sendUnauthorized } from "../lib/httpErrors.js";
+import { enforceSessionClockOrReply, isAuthDependencyUnavailable } from "../lib/authGuard.js";
 import { isTokenRevoked } from "../services/authSessionService.js";
-import { RedisUnavailableError } from "../lib/redis.js";
 
 export interface PlatformAuthenticatedRequest extends FastifyRequest {
   platformUser: PlatformUser;
@@ -76,7 +73,7 @@ export async function resolvePlatformUser(
     try {
       revoked = await isTokenRevoked(payload.jti);
     } catch (error) {
-      if (error instanceof RedisUnavailableError) {
+      if (isAuthDependencyUnavailable(error)) {
         return { ok: false, reason: "dependency_unavailable" };
       }
       throw error;
@@ -150,27 +147,14 @@ export async function authenticatePlatform(
   const sessionPolicy = platformSessionPolicy();
   const idleScope = platformSessionScope(resolved.user.id);
   const jti = (request.user as PlatformAccessTokenPayload | undefined)?.jti;
-  let idleOutcome: Awaited<ReturnType<typeof enforcePlatformSessionClock>>;
-  try {
-    idleOutcome = await enforcePlatformSessionClock({
-      scope: idleScope,
-      policy: sessionPolicy,
-      jti,
-    });
-  } catch (error) {
-    if (error instanceof RedisUnavailableError) {
-      await sendServiceUnavailable(
-        reply,
-        "Platform session validation is temporarily unavailable. Please retry.",
-      );
-      return;
-    }
-    throw error;
-  }
-  if (idleOutcome !== "ok") {
-    const expiry = SESSION_EXPIRY_RESPONSE[idleOutcome];
-    return sendUnauthorized(reply, expiry.message, expiry.type);
-  }
+  const clockOk = await enforceSessionClockOrReply(request, reply, {
+    scope: idleScope,
+    policy: sessionPolicy,
+    jti,
+    enforce: enforcePlatformSessionClock,
+    domain: "platform",
+  });
+  if (!clockOk) return;
 
   (request as PlatformAuthenticatedRequest).platformUser = resolved.user;
 }

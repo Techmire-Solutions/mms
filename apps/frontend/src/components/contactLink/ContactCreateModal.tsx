@@ -49,13 +49,14 @@ export default function ContactCreateModal({
   const { upsertContact } = useContactMutations();
   const { canWrite } = useModulePermissions(CONTACTS_MODULE_MANIFEST);
 
+  const genderOverride = createDefaults?.gender;
   const initialDraft = useMemo(() => {
     const draft = nameToDraft(initialName);
-    if (createDefaults?.gender) {
-      draft.gender = createDefaults.gender;
+    if (genderOverride) {
+      draft.gender = genderOverride;
     }
     return draft;
-  }, [initialName, createDefaults?.gender]);
+  }, [initialName, genderOverride]);
 
   useEffect(() => {
     if (!open || canWrite) return;

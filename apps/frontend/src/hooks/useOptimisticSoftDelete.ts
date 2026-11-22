@@ -10,6 +10,10 @@ export interface UseOptimisticSoftDeleteOptions<TData> {
   notifyArchivedWithUndo: (onUndo: () => void | Promise<void>, recordName?: string) => void;
 }
 
+/**
+ * Single soft-delete with instant Query-cache hide, rollback on failure, and an
+ * undo toast that restores on click (the shared optimistic pattern).
+ */
 export function useOptimisticSoftDelete<TData>({
   queryClient,
   queryKey,

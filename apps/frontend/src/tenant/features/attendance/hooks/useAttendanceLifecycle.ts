@@ -4,6 +4,7 @@ import { tsrClient } from "@/lib/api";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { invalidateAttendanceQueries } from "@/tenant/features/attendance/hooks/invalidateAttendanceQueries";
+import { attendanceQueryKeys } from "./attendanceQueryKeys.js";
 
 /**
  * Excuse / leave workflow + chronic-absence alerts.
@@ -12,7 +13,7 @@ import { invalidateAttendanceQueries } from "@/tenant/features/attendance/hooks/
  * key prefix and invalidate together after any decision.
  */
 
-export const ATTENDANCE_LIFECYCLE_QUERY_KEY = ["attendance", "lifecycle"] as const;
+export const ATTENDANCE_LIFECYCLE_QUERY_KEY = attendanceQueryKeys.lifecycle;
 
 /** Chronic-absence alert row as the contract returns it. */
 export interface AttendanceAlertRow {

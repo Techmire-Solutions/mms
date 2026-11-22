@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import {
   DEFAULT_OBLIGATIONS_SETTINGS,
   normalizeObligationsModulePreferences,
+  type ObligationsModulePreferences,
   type ObligationsSettings,
 } from "@mms/shared";
 import {
@@ -16,19 +17,30 @@ import {
 
 export const OBLIGATIONS_SETTINGS_CHANGED_EVENT = "mms:obligations-settings-changed";
 
-export function loadObligationsSettings(): ObligationsSettings {
-  return getObligationsSettingsMemoryFallback();
-}
-
-export function saveObligationsSettings(settings: ObligationsSettings): void {
+/**
+ * Optimistic local publish: update the memory cache and notify window listeners.
+ * Deliberately performs no network write — callers own the server write so an
+ * update never hits the API twice (the mutation and the fire-and-forget helper
+ * used to race the same PUT).
+ */
+function publishObligationsSettings(settings: ObligationsSettings): ObligationsModulePreferences {
   const normalized = normalizeObligationsModulePreferences(settings);
   setObligationsPreferencesMemory(normalized);
-  void saveObligationsPreferencesAsync(normalized).catch(() => undefined);
   if (typeof window !== "undefined") {
     window.dispatchEvent(
       new CustomEvent(OBLIGATIONS_SETTINGS_CHANGED_EVENT, { detail: normalized }),
     );
   }
+  return normalized;
+}
+
+export function loadObligationsSettings(): ObligationsSettings {
+  return getObligationsSettingsMemoryFallback();
+}
+
+export function saveObligationsSettings(settings: ObligationsSettings): void {
+  const normalized = publishObligationsSettings(settings);
+  void saveObligationsPreferencesAsync(normalized).catch(() => undefined);
 }
 
 export interface UseObligationsSettingsReturn {
@@ -46,7 +58,7 @@ export function useObligationsSettings(): UseObligationsSettingsReturn {
 
   const updateSettings = useCallback(
     (next: ObligationsSettings) => {
-      saveObligationsSettings(next);
+      publishObligationsSettings(next);
       mutation.mutate(next);
     },
     [mutation],
@@ -55,13 +67,13 @@ export function useObligationsSettings(): UseObligationsSettingsReturn {
   const updateSettingsAsync = useCallback(
     async (next: ObligationsSettings) => {
       await mutation.mutateAsync(next);
-      saveObligationsSettings(next);
+      publishObligationsSettings(next);
     },
     [mutation],
   );
 
   const resetSettings = useCallback(() => {
-    saveObligationsSettings(DEFAULT_OBLIGATIONS_SETTINGS);
+    publishObligationsSettings(DEFAULT_OBLIGATIONS_SETTINGS);
     mutation.mutate(DEFAULT_OBLIGATIONS_SETTINGS);
   }, [mutation]);
 

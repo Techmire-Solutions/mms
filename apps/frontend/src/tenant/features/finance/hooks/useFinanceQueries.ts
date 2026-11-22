@@ -4,7 +4,7 @@
  * per-feature hooks layer on top of this file.
  */
 import { apiContract, tsrClient } from "@/lib/api";
-import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
 import {
   FINANCE_FIELD_CONFIG_QUERY_KEY,
   FINANCE_INVOICES_QUERY_KEY,
@@ -28,7 +28,7 @@ export function financeInvoicesListQueryOptions(query: Record<string, unknown> =
       assertContractOk(response, "Failed to fetch finance invoices");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
@@ -45,7 +45,7 @@ export function financePaymentsListQueryOptions(query: Record<string, unknown> =
       assertContractOk(response, "Failed to fetch finance payments");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }

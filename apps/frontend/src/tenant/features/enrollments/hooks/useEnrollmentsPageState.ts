@@ -104,11 +104,14 @@ export function useEnrollmentsPageState() {
   const [confirmBulkRestoreOpen, setConfirmBulkRestoreOpen] = useState(false);
   const columnLayout = useEnrollmentColumnLayout();
   const selection = useWorkSelection(enrollments);
+  // `clearSelection` is a stable `useCallback` (empty deps) — depend on the
+  // granular ref so the effect only re-runs when a filter dimension changes,
+  // not on every re-render of the `selection` object.
+  const { clearSelection } = selection;
 
   useEffect(() => {
-    selection.setSelectedIds([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- selection.setSelectedIds is a stable useState setter; depending on the whole `selection` object would re-run this clear on every render.
-  }, [debouncedSearch, statusFilter, sessionFilter, showDeleted, selection.setSelectedIds]);
+    clearSelection();
+  }, [debouncedSearch, statusFilter, sessionFilter, showDeleted, clearSelection]);
 
   const exportColumns = useMemo(() => defaultEnrollmentsExportColumns(t), [t]);
   const exportActions = useEnrollmentsExportActions({

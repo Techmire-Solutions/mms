@@ -58,6 +58,49 @@ describe("useMessagingWorkTierKeyboardNav", () => {
     });
   });
 
+  it("drops keyboard focus when the visible log set is replaced after navigation", () => {
+    const toggleLog = vi.fn();
+    const handleOpenDetail = vi.fn();
+    let currentFocused = -1;
+
+    function TestComponent({ logs }: { logs: Message[] }) {
+      const { focusedIndex } = useMessagingWorkTierKeyboardNav({
+        logs,
+        toggleLog,
+        handleOpenDetail,
+      });
+      currentFocused = focusedIndex;
+      return <div>{focusedIndex}</div>;
+    }
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(<TestComponent logs={[dummyLog1, dummyLog2]} />);
+    });
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    });
+    expect(currentFocused).toBe(0);
+
+    // A different visible set invalidates the row index…
+    act(() => {
+      root.render(<TestComponent logs={[dummyLog2]} />);
+    });
+    expect(currentFocused).toBe(-1);
+
+    // …and navigation restarts from the top of the new set.
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    });
+    expect(currentFocused).toBe(0);
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("handles keyboard navigation (ArrowDown, ArrowUp, Space, Enter)", () => {
     const toggleLog = vi.fn();
     const handleOpenDetail = vi.fn();

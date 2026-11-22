@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -47,6 +47,7 @@ export function useExaminationsReportAggregates(options?: {
       return response.body as ExaminationsReportAggregates;
     },
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
     enabled,
   });
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { attendancePreferencesPutBodySchema, type AttendanceSettings } from "@mms/shared";
 import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -39,13 +39,13 @@ export function useAttendanceSetupSaveActions({
   const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
 
-  const isPrefsDirty = (() => {
+  const isPrefsDirty = useMemo(() => {
     return PREF_KEYS.some(
       (key) =>
         JSON.stringify(Reflect.get(settingsDraft, key)) !==
         JSON.stringify(Reflect.get(settings, key)),
     );
-  })();
+  }, [settings, settingsDraft]);
 
   const handleSave = async (): Promise<void> => {
     if (!isPrefsDirty || saving) return;

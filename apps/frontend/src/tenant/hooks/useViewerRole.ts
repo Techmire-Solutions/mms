@@ -22,7 +22,7 @@ export function normalizeEnrollmentViewerRole(role: string | undefined): Enrollm
 /** Active viewer dashboardRole from RBAC — prefer over raw JWT role string. */
 export function useViewerRole(): ViewerRole {
   const { can } = usePermissions();
-  return (() => resolveDashboardRole(can))();
+  return resolveDashboardRole(can);
 }
 
 /** Whether the signed-in viewer has admin privileges (gates Users config/analytics). */
@@ -33,5 +33,5 @@ export function useIsAdminViewer(): boolean {
 
 export function useEnrollmentViewerRole(): EnrollmentViewerRole {
   const role = useViewerRole();
-  return (() => normalizeEnrollmentViewerRole(role))();
+  return normalizeEnrollmentViewerRole(role);
 }

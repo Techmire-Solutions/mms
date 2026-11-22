@@ -17,6 +17,7 @@ import { serverSyncErrorKey } from "@/lib/serverSyncErrors";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSettingsBrandingDraft } from "@/lib/contexts/SettingsBrandingDraftContext";
+import { useSystemThemeListener } from "@/hooks/useSystemThemeListener";
 
 export interface UseThemeSettingsDraftResult {
   data: BrandingSettings;
@@ -56,20 +57,10 @@ export function useThemeSettingsDraft(
   const [themeBaseline, setThemeBaseline] = useState(loadPersistedThemeMode);
   const [displayMode, setDisplayModeState] = useState(loadEffectiveThemeMode);
   const [themeSaving, setThemeSaving] = useState(false);
-  const [systemPrefersDark, setSystemPrefersDark] = useState(
-    () =>
-      typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches,
-  );
+  const systemPrefersDark = useSystemThemeListener();
 
   const displayModeDirty = displayMode !== themeBaseline;
   const isDirty = branding.isThemeFieldsDirty || displayModeDirty;
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = (): void => setSystemPrefersDark(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
 
   useEffect(() => {
     const sync = (): void => {

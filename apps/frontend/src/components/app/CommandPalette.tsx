@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveNavLabel, type ResolvedIndustryTerminology } from "@/lib/config/navLabels";
 import type { AppTranslationKey } from "@mms/shared";
@@ -8,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { COMMAND_ITEMS, type CommandItem } from "@/components/app/commandPaletteItems";
 import { CommandPaletteModal } from "@/components/app/CommandPaletteModal";
 import { useCommandPaletteSearch } from "@/components/app/useCommandPaletteSearch";
+import { CommandResultsList, groupCommandResults } from "@/components/app/CommandResultsList";
 import { getRecents, pushRecent, filterCommandItems } from "@/components/app/commandPaletteUtils";
 import { prefetchRoute } from "@/lib/routing/routePrefetch";
 
@@ -78,22 +78,14 @@ export function CommandPalette({
   /** Build grouped sections for display */
   const sections = useMemo(() => {
     if (!isEmptyQuery) {
-      const groups = new Map<string, CommandItem[]>();
-      for (const item of activeFilteredItems) {
-        const cat = translate(item.categoryKey);
-        if (!groups.has(cat)) groups.set(cat, []);
-        groups.get(cat)!.push(item);
-      }
-      return Array.from(groups.entries()).map(([category, items]) => ({ category, items }));
+      return groupCommandResults(activeFilteredItems, (item) => translate(item.categoryKey));
     }
-    const groups = new Map<string, CommandItem[]>();
-    if (recentItems.length > 0) groups.set("__recents__", recentItems);
-    for (const item of items) {
-      const cat = translate(item.categoryKey);
-      if (!groups.has(cat)) groups.set(cat, []);
-      groups.get(cat)!.push(item);
-    }
-    return Array.from(groups.entries()).map(([category, items]) => ({ category, items }));
+    return [
+      ...(recentItems.length > 0
+        ? [{ category: "__recents__", items: recentItems as readonly CommandItem[] }]
+        : []),
+      ...groupCommandResults(items, (item) => translate(item.categoryKey)),
+    ];
   }, [isEmptyQuery, activeFilteredItems, recentItems, items, translate]);
 
   // Flat ordered list matching keyboard navigation
@@ -117,77 +109,50 @@ export function CommandPalette({
       }
       footerTitle="MMS"
     >
-      <div
-        className="max-h-[min(60vh,20rem)] scroll-py-2 overflow-y-auto p-2 pb-3"
-        role="listbox"
-        id="tenant-command-listbox"
-      >
-        {flatItems.length === 0 ? (
+      <CommandResultsList<CommandItem>
+        listboxId="tenant-command-listbox"
+        flatItems={flatItems}
+        sections={sections}
+        selectedIndex={selectedIndex}
+        getItemId={(item) => `tenant-cmd-item-${item.id}`}
+        onSelect={handleSelect}
+        onHoverIndex={setSelectedIndex}
+        onHoverItem={(item) => {
+          // Warm the target chunk on explicit hover intent (not on every
+          // arrow-key selection, which is noisy and test-hostile).
+          prefetchRoute(item.path);
+        }}
+        recentsCategoryKey="__recents__"
+        recentsLabel={t("nav.recentItems")}
+        emptyState={
           <div className="px-4 py-8 text-center text-sm text-muted-foreground">
             {t("nav.globalSearchNoResults", { query })}
           </div>
-        ) : (
-          sections.map(({ category, items }) => {
-            const isRecents = category === "__recents__";
-            return (
-              <div key={category} className="mb-1">
-                <div
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-3xs font-bold uppercase tracking-wider text-muted-foreground select-none"
-                  aria-hidden="true"
-                >
-                  {isRecents && <Clock className="h-3 w-3" aria-hidden="true" />}
-                  {isRecents ? t("nav.recentItems") : category}
-                </div>
-                {items.map((item) => {
-                  const globalIndex = flatItems.indexOf(item);
-                  const isSelected = globalIndex === selectedIndex;
-                  const Icon = item.icon;
-                  const translatedLabel = translate(item.labelKey);
-                  return (
-                    <button
-                      key={item.id}
-                      id={`tenant-cmd-item-${item.id}`}
-                      type="button"
-                      role="option"
-                      aria-selected={isSelected}
-                      onClick={() => handleSelect(item)}
-                      onMouseEnter={() => {
-                        setSelectedIndex(globalIndex);
-                        // Warm the target chunk on explicit hover intent (not on every
-                        // arrow-key selection, which is noisy and test-hostile).
-                        prefetchRoute(item.path);
-                      }}
-                      className={cn(
-                        "flex w-full min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-start text-sm transition-colors cursor-pointer",
-                        isSelected
-                          ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                          : "text-foreground hover:bg-muted/70",
-                      )}
-                    >
-                      <Icon
-                        className={cn(
-                          "h-4.5 w-4.5 shrink-0",
-                          isSelected ? "text-primary-foreground" : "text-muted-foreground",
-                        )}
-                        aria-hidden="true"
-                      />
-                      <span className="flex-1 truncate">{translatedLabel}</span>
-                      <span
-                        className={cn(
-                          "text-xs font-mono",
-                          isSelected ? "text-primary-foreground/90" : "text-muted-foreground",
-                        )}
-                      >
-                        {item.path}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            );
-          })
-        )}
-      </div>
+        }
+        renderRow={(item, isSelected) => {
+          const Icon = item.icon;
+          return (
+            <>
+              <Icon
+                className={cn(
+                  "h-4.5 w-4.5 shrink-0",
+                  isSelected ? "text-primary-foreground" : "text-muted-foreground",
+                )}
+                aria-hidden="true"
+              />
+              <span className="flex-1 truncate">{translate(item.labelKey)}</span>
+              <span
+                className={cn(
+                  "text-xs font-mono",
+                  isSelected ? "text-primary-foreground/90" : "text-muted-foreground",
+                )}
+              >
+                {item.path}
+              </span>
+            </>
+          );
+        }}
+      />
     </CommandPaletteModal>
   );
 }

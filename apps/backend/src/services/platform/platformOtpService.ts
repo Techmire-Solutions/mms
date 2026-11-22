@@ -1,5 +1,5 @@
 import { dispatchPlatformVerificationEmail } from "./platformEmailService.js";
-import { PlatformError } from "./platformErrorService.js";
+import { PlatformError, throwPlatformSmtpRequiredError } from "./platformErrorService.js";
 import { isDevCredentialLoggingEnabled } from "../../lib/devLogging.js";
 
 export interface DispatchPlatformOtpOptions {
@@ -24,10 +24,7 @@ export async function dispatchPlatformOtp(
     return await dispatchPlatformVerificationEmail(options);
   } catch (error) {
     if (error instanceof Error && error.message.includes("not configured")) {
-      throw new PlatformError(
-        "smtp_required",
-        "Platform email is not configured. Set PLATFORM_RESEND_API_KEY or PLATFORM_SMTP_* and PLATFORM_EMAIL_FROM (GitHub Actions secrets are merged on deploy).",
-      );
+      throwPlatformSmtpRequiredError("(GitHub Actions secrets are merged on deploy)");
     }
     throw new PlatformError(
       "email_send_failed",

@@ -9,7 +9,7 @@ import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
 import { ErrorState, CardSkeleton } from "@shared/ui";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 
-import { containerVariants, itemVariants as cardVariants } from "@/platform/lib/animations";
+import { containerVariants, itemVariants as cardVariants } from "@/lib/motion";
 import { PlatformProfileCard } from "./account/PlatformProfileCard";
 import { PlatformProfileNameForm } from "./account/PlatformProfileNameForm";
 import { PlatformProfilePasswordForm } from "./account/PlatformProfilePasswordForm";
@@ -76,7 +76,7 @@ export default function PlatformAccount(): React.JSX.Element {
                   <m.div
                     variants={containerVariants}
                     initial={reducedMotion ? false : "hidden"}
-                    animate="show"
+                    animate="visible"
                     className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"
                   >
                     <m.div variants={cardVariants}>
@@ -96,7 +96,7 @@ export default function PlatformAccount(): React.JSX.Element {
                   <m.div
                     variants={containerVariants}
                     initial={reducedMotion ? false : "hidden"}
-                    animate="show"
+                    animate="visible"
                     className="max-w-3xl"
                   >
                     <m.div variants={cardVariants}>

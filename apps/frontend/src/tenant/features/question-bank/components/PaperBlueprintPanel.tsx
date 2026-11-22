@@ -36,12 +36,17 @@ interface AssembleResult {
   deficits: Array<{ bucketIndex: number; requestedCount: number; selectedCount: number }>;
 }
 
+// Monotonic fallback for environments without `crypto.randomUUID`; the row id is
+// only a React key / row identity, so a counter is sufficient and keeps render pure.
+let blueprintRowFallbackId = 0;
+
 function createBlueprintRow(): BlueprintRow {
+  blueprintRowFallbackId += 1;
   return {
     id:
       typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
-        : `bp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        : `bp_${blueprintRowFallbackId}`,
     categoryId: "",
     difficulty: "",
     type: "",
@@ -79,6 +84,10 @@ export function PaperBlueprintPanel({
   const { assemblePaper } = useQuestionBankMutations();
   const [paperId, setPaperId] = useState("");
   const [recencyDays, setRecencyDays] = useState("0");
+  // `Date.now()` is stamped at the input event, not during render, so the candidate
+  // preview stays pure. The preview window is an approximation anyway: the server
+  // stamps its own window authoritatively when the paper is assembled.
+  const [recencyStamp, setRecencyStamp] = useState(0);
   const [rows, setRows] = useState<BlueprintRow[]>(() => [createBlueprintRow()]);
   const [result, setResult] = useState<AssembleResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -88,13 +97,18 @@ export function PaperBlueprintPanel({
     [tests],
   );
 
+  const handleRecencyChange = (value: string): void => {
+    setRecencyDays(value);
+    setRecencyStamp(Date.now());
+  };
+
   const recency = Math.max(0, Math.min(365, Number(recencyDays) || 0));
   const invalidRows = rows.some((row) => parseCount(row.count) === null);
 
   // Approved, non-deleted candidates with the same recency exclusion the server applies
   // (`tests.createdAt` within the window).
   const candidates = useMemo<BlueprintCandidate[]>(() => {
-    const cutoff = recency > 0 ? Date.now() - recency * DAY_MS : null;
+    const cutoff = recency > 0 && recencyStamp > 0 ? recencyStamp - recency * DAY_MS : null;
     const recentlyUsed = new Set<string>();
     if (cutoff) {
       for (const test of tests) {
@@ -116,7 +130,7 @@ export function PaperBlueprintPanel({
         marks: question.marks ?? 1,
         categoryIds: question.categoryIds,
       }));
-  }, [questions, tests, recency]);
+  }, [questions, tests, recency, recencyStamp]);
 
   const preview = useMemo(() => {
     if (!paperId || invalidRows) return null;
@@ -207,7 +221,7 @@ export function PaperBlueprintPanel({
             max={365}
             className={FORM_INPUT}
             value={recencyDays}
-            onChange={(event) => setRecencyDays(event.target.value)}
+            onChange={(event) => handleRecencyChange(event.target.value)}
           />
         </Field>
       </div>

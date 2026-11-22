@@ -13,8 +13,8 @@ export interface UseTemplateEditorElementSelectionOptions<TPayload> {
 export function useTemplateEditorElementSelection<TPayload>({
   elements,
   canvasRef,
-  dragState,
-  resizeState,
+  dragState: dragStateRef,
+  resizeState: resizeStateRef,
   template,
 }: UseTemplateEditorElementSelectionOptions<TPayload>) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -60,7 +60,7 @@ export function useTemplateEditorElementSelection<TPayload>({
       const itemsToDrag = template.elements
         .filter((el) => activeIdSet.has(el.id))
         .map((el) => ({ id: el.id, origX: el.x, origY: el.y }));
-      dragState.current = {
+      dragStateRef.current = {
         items: itemsToDrag.length > 0 ? itemsToDrag : [{ id: elementId, origX: 0, origY: 0 }],
         startX: event.clientX,
         startY: event.clientY,
@@ -68,7 +68,7 @@ export function useTemplateEditorElementSelection<TPayload>({
         hasMoved: false,
       };
     },
-    [canvasRef, dragState, selectedIds, selectedSet, template],
+    [canvasRef, dragStateRef, selectedIds, selectedSet, template],
   );
 
   const onMouseDownResize = useCallback(
@@ -78,7 +78,7 @@ export function useTemplateEditorElementSelection<TPayload>({
       event.stopPropagation();
       const el = template.elements.find((e) => e.id === elementId);
       if (!el) return;
-      resizeState.current = {
+      resizeStateRef.current = {
         id: elementId,
         handle,
         startX: event.clientX,
@@ -91,7 +91,7 @@ export function useTemplateEditorElementSelection<TPayload>({
         hasMoved: false,
       };
     },
-    [resizeState, template],
+    [resizeStateRef, template],
   );
 
   return {

@@ -46,6 +46,8 @@ export function useEmployeeIdMigration(activeTab: string, canEditSetup: boolean)
   const [needsMigrationScan, setNeedsMigrationScan] = useState(
     () => !employeeIdMigrationAlreadyDone(),
   );
+  // react-hooks/refs — safe: single-flight guard for the mutation effect; written/read
+  // only inside the effect and the mutation callbacks, never during render.
   const migrationAppliedRef = useRef(false);
 
   const { mutate } = useMutation({

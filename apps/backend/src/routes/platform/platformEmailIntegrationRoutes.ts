@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import type { EmailIntegrationConfig, EmailIntegrationSecrets, EmailProviderId } from "@mms/shared";
 import {
   isEmailProviderId,
   mergeEmailIntegrationConfig,
@@ -19,82 +20,93 @@ import {
   requirePlatformPermission,
   type PlatformAuthenticatedRequest,
 } from "../../middleware/authenticatePlatform.js";
-import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
-import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
-import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
+import { registerIntegrationRoutes } from "../../lib/registerIntegrationRoutes.js";
+
+interface EmailIntegrationPutBody {
+  providerId: string;
+  fromAddress: string;
+  fromName?: string;
+  smtpUsername: string;
+  smtpPassword?: string;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpSecure?: boolean;
+}
 
 export default async function platformEmailIntegrationRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ): Promise<void> {
-  fastify.addHook("preHandler", authenticatePlatform);
-  fastify.addHook("preHandler", requirePlatformPermission("settings"));
+  registerIntegrationRoutes<
+    EmailIntegrationConfig,
+    EmailIntegrationSecrets,
+    EmailIntegrationPutBody,
+    undefined
+  >(
+    fastify,
+    {
+      integrationBodySchema: emailIntegrationBodySchema,
+      isProviderId: isEmailProviderId,
+      unsupportedProviderMessage: "Unsupported email provider",
+      load: loadPlatformEmailIntegrationConfig,
+      save: savePlatformEmailIntegrationConfig,
+      saveSecrets: savePlatformEmailIntegrationSecrets,
+      buildNext: (current, body) =>
+        mergeEmailIntegrationConfig({
+          // Guarded by isEmailProviderId in the shared registry.
+          providerId: body.providerId as EmailProviderId,
+          fromAddress: body.fromAddress,
+          fromName: body.fromName,
+          smtpUsername: body.smtpUsername,
+          smtpHost: body.smtpHost,
+          smtpPort: body.smtpPort,
+          smtpSecure: body.smtpSecure,
+          connected: current.connected,
+          hasCredentials: current.hasCredentials || Boolean(body.smtpPassword?.trim()),
+          lastTestAt: current.lastTestAt,
+          lastTestOk: current.lastTestOk,
+          lastError: current.lastError,
+        }),
+      secretFromBody: (body) => body.smtpPassword?.trim() || undefined,
+      secretsFromSecret: (secret) => ({ smtpPassword: secret }),
+      // The platform test-send ignores the request body and targets the
+      // session platform user — preserved from the original handler.
+      testSend: async (request) => {
+        const { platformUser } = request as PlatformAuthenticatedRequest;
 
-  const sendLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
+        const verify = await verifyPlatformEmailTransport();
+        if (!verify.sent) {
+          return {
+            sent: false,
+            reason: verify.reason,
+            markMessage: verify.message,
+            replyMessage: verify.message ?? "Email is not configured",
+          };
+        }
 
-  fastify.get("/integration", async (_request, reply) => {
-    const config = await loadPlatformEmailIntegrationConfig();
-    return reply.send(config);
-  });
-
-  fastify.put("/integration", async (request, reply) => {
-    const parsed = parseRequest(emailIntegrationBodySchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
-    const body = parsed.data;
-
-    if (!isEmailProviderId(body.providerId)) {
-      return replyValidationError(reply, "Unsupported email provider");
-    }
-
-    const current = await loadPlatformEmailIntegrationConfig();
-    const next = mergeEmailIntegrationConfig({
-      providerId: body.providerId,
-      fromAddress: body.fromAddress,
-      fromName: body.fromName,
-      smtpUsername: body.smtpUsername,
-      smtpHost: body.smtpHost,
-      smtpPort: body.smtpPort,
-      smtpSecure: body.smtpSecure,
-      connected: current.connected,
-      hasCredentials: current.hasCredentials || Boolean(body.smtpPassword?.trim()),
-      lastTestAt: current.lastTestAt,
-      lastTestOk: current.lastTestOk,
-      lastError: current.lastError,
-    });
-
-    if (body.smtpPassword?.trim()) {
-      await savePlatformEmailIntegrationSecrets({ smtpPassword: body.smtpPassword.trim() });
-      next.hasCredentials = true;
-    }
-
-    const saved = await savePlatformEmailIntegrationConfig(next);
-    return reply.send(saved);
-  });
-
-  fastify.post("/integration/test", { preHandler: sendLimit }, async (request, reply) => {
-    const verify = await verifyPlatformEmailTransport();
-    if (!verify.sent) {
-      await markPlatformEmailIntegrationTestResult(false, verify.message ?? verify.reason);
-      return replyValidationError(reply, verify.message ?? "Email is not configured", {
-        reason: verify.reason,
-      });
-    }
-
-    const { platformUser } = request as PlatformAuthenticatedRequest;
-    const testSend = await sendPlatformEmail({
-      to: platformUser.email,
-      subject: "MMS platform email test",
-      text: "Your MMS platform email integration is working.",
-    });
-
-    if (!testSend.sent) {
-      await markPlatformEmailIntegrationTestResult(false, testSend.message ?? testSend.reason);
-      return replyValidationError(reply, testSend.message ?? "Test email could not be sent", {
-        reason: testSend.reason,
-      });
-    }
-
-    const saved = await markPlatformEmailIntegrationTestResult(true);
-    return reply.send({ success: true, config: saved });
-  });
+        const result = await sendPlatformEmail({
+          to: platformUser.email,
+          subject: "MMS platform email test",
+          text: "Your MMS platform email integration is working.",
+        });
+        if (!result.sent) {
+          return {
+            sent: false,
+            reason: result.reason,
+            markMessage: result.message,
+            replyMessage: result.message ?? "Test email could not be sent",
+          };
+        }
+        return { sent: true };
+      },
+      markTestResult: markPlatformEmailIntegrationTestResult,
+      // Authorization is enforced by the platform pre-handler hooks below.
+      authGate: () => true,
+      testFailureMessage: "Test email could not be sent",
+    },
+    (instance) => {
+      instance.addHook("preHandler", authenticatePlatform);
+      instance.addHook("preHandler", requirePlatformPermission("settings"));
+    },
+  );
 }

@@ -70,4 +70,21 @@ describe("useClampedNumberField", () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(input().value).toBe("75");
   });
+
+  it("commits through the latest onChange after the parent swaps the callback", async () => {
+    const firstOnChange = vi.fn();
+    await act(async () => root.render(<Harness onChange={firstOnChange} />));
+    const field = input();
+
+    const secondOnChange = vi.fn();
+    await act(async () => root.render(<Harness onChange={secondOnChange} />));
+
+    await act(async () => {
+      field.focus();
+      setValue(field, "42");
+    });
+    await act(async () => field.blur());
+    expect(firstOnChange).not.toHaveBeenCalled();
+    expect(secondOnChange).toHaveBeenCalledWith(42);
+  });
 });

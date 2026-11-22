@@ -6,17 +6,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { DirectoryCardsSelectAllBar } from "@/components/app/DirectoryCardsSelectAllBar";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { MEDIA_SM_UP } from "@/lib/breakpoints";
+import { containerVariants } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-    },
-  },
-};
 
 const COLS_MAP = {
   1: "grid-cols-1",
@@ -85,6 +76,7 @@ export function ModuleDirectoryCards<T = unknown>({
     return groups;
   }, [items, isVirtualized, groupSize]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual is not React-Compiler-compatible (upstream); this component intentionally stays uncompiled.
   const rowVirtualizer = useVirtualizer({
     count: itemGroups.length,
     getScrollElement: () => parentRef.current,

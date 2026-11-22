@@ -13,7 +13,7 @@
  * failing instead of overwriting the other edit.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import {
   useMutation,
   useQuery,
@@ -65,8 +65,9 @@ export function invalidateDocumentTemplatesQueries(queryClient: QueryClient, key
 export function fetchDocumentTemplateLayout<TPayload>(
   key: string,
   fallback: DocumentTemplate<TPayload>,
+  signal?: AbortSignal,
 ): Promise<DocumentTemplateRecord<TPayload>> {
-  return fetchDocumentTemplateServer<TPayload>(key).then((stored) => {
+  return fetchDocumentTemplateServer<TPayload>(key, signal).then((stored) => {
     if (!stored) return { template: fallback, updatedAt: null };
     const parsed = documentTemplateSchema.safeParse(stored.template);
     return parsed.success
@@ -94,21 +95,17 @@ export function useDocumentTemplate<TPayload>(
   key: string,
   fallback: DocumentTemplate<TPayload>,
 ): UseDocumentTemplateResult<TPayload> {
-  // The initial record is captured once per key: a new fallback object on a later
-  // render (branding/translation change) must not discard a layout that is already
-  // on screen.
-  const initialRef = useRef<{ key: string; record: DocumentTemplateRecord<TPayload> } | null>(null);
-  if (initialRef.current === null || initialRef.current.key !== key) {
-    initialRef.current = {
-      key,
-      record: readCachedDocumentTemplate<TPayload>(key) ?? { template: fallback, updatedAt: null },
-    };
-  }
-  const initialRecord = initialRef.current.record;
+  // The seed record is frozen per key (and per fallback identity) instead of being
+  // captured in a render-mutated ref: `readCachedDocumentTemplate` re-parses
+  // localStorage, so a plain per-render call would mint a fresh object identity on
+  // every render and cascade re-renders into every consumer of the hook.
+  const cachedRecord = useMemo(() => readCachedDocumentTemplate<TPayload>(key), [key]);
+  const fallbackRecord = useMemo(() => ({ template: fallback, updatedAt: null }), [fallback]);
+  const initialRecord = cachedRecord ?? fallbackRecord;
 
   const query = useQuery({
     queryKey: documentTemplateQueryKey(key),
-    queryFn: () => fetchDocumentTemplateLayout<TPayload>(key, fallback),
+    queryFn: ({ signal }) => fetchDocumentTemplateLayout<TPayload>(key, fallback, signal),
     initialData: initialRecord,
     // Seed data is always treated as stale so the mount fetches the server copy.
     initialDataUpdatedAt: 0,

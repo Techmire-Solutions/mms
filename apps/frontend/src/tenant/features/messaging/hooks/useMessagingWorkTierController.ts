@@ -175,7 +175,10 @@ export function useMessagingWorkTierController({
     return () => onExportLogsRegister?.(null);
   }, [onExportLogsRegister, handleExportLogs]);
 
-  const failedLogs = logsQuery.logs.filter((l: Message) => l.status === "failed");
+  const failedLogs = useMemo(
+    () => logsQuery.logs.filter((l: Message) => l.status === "failed"),
+    [logsQuery.logs],
+  );
 
   const handleFilterContact = (contactName: string): void => {
     filters.setSearch(contactName);
@@ -204,33 +207,44 @@ export function useMessagingWorkTierController({
     ],
   );
 
+  // Individual memoized setters (not the whole filters object, which is fresh
+  // per render) so the chip remover keeps a stable identity.
+  const {
+    setSearch: clearSearch,
+    setChannel: clearChannel,
+    setStatus: clearStatus,
+    setCategory: clearCategory,
+    setStartDate: clearStartDate,
+    setEndDate: clearEndDate,
+  } = filters;
+
   const onRemoveChip = useCallback(
     (fieldKey: string) => {
       if (fieldKey === "search") {
-        filters.setSearch("");
+        clearSearch("");
         return;
       }
       if (fieldKey === "channel") {
-        filters.setChannel("all");
+        clearChannel("all");
         return;
       }
       if (fieldKey === "status") {
-        filters.setStatus("all");
+        clearStatus("all");
         return;
       }
       if (fieldKey === "category") {
-        filters.setCategory("all");
+        clearCategory("all");
         return;
       }
       if (fieldKey === "startDate") {
-        filters.setStartDate("");
+        clearStartDate("");
         return;
       }
       if (fieldKey === "endDate") {
-        filters.setEndDate("");
+        clearEndDate("");
       }
     },
-    [filters],
+    [clearSearch, clearChannel, clearStatus, clearCategory, clearStartDate, clearEndDate],
   );
 
   const filterChips = useDescriptorFilterChips(descriptor, activeFilters, onRemoveChip);

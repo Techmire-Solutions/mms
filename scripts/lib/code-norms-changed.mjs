@@ -17,6 +17,18 @@ import {
 
 const EMPTY = { anySites: [], arbitrarySites: [], hasHex: false, lineCount: 0 };
 
+/**
+ * Sanctioned colour-source modules: the only files allowed to introduce NEW
+ * raw hex literals (reviewed exception, mirrors the eslint "Colour-source
+ * modules" block in apps/frontend/eslint.config.js).
+ * - Platform branding seed: the apex theme config holds the MMS platform brand
+ *   palette as literal hex BrandingSettings values (runtime branding engine,
+ *   not CSS tokens).
+ */
+const SANCTIONED_HEX_SOURCE_MODULES = new Set([
+  "apps/frontend/src/lib/branding/platformThemeConfig.ts",
+]);
+
 function sourceRegressions(rel) {
   const current = readCurrent(rel);
   if (current === null) return [];
@@ -32,7 +44,9 @@ function sourceRegressions(rel) {
   if (now.arbitrarySites.length > before.arbitrarySites.length) {
     found.push(`Tailwind arbitrary colour: ${now.arbitrarySites.slice(0, 3).join(", ")}`);
   }
-  if (now.hasHex && !before.hasHex) found.push(`Raw hex colour added to ${rel}`);
+  if (now.hasHex && !before.hasHex && !SANCTIONED_HEX_SOURCE_MODULES.has(rel)) {
+    found.push(`Raw hex colour added to ${rel}`);
+  }
   const overNow = now.lineCount > HARD_LIMIT && !/\.(test|spec)\.(ts|tsx)$/.test(rel);
   if (overNow && before.lineCount <= HARD_LIMIT) {
     found.push(`${rel} grew past the ${HARD_LIMIT}-line hard ceiling (${now.lineCount} lines)`);

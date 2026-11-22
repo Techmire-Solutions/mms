@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import type { FacultyMember } from "@mms/shared";
 import type { Class } from "@/lib/data/sessionsData";
 import { EMPTY_CLASS } from "./classDetailDraftDefaults";
@@ -24,9 +24,11 @@ export function useClassDetailDraft({
 
   // Re-seed only when the modal opens or the edited class identity changes. A parent refetch
   // returns a new object with the same id; that must not wipe the in-progress draft.
-  const prevRef = useRef({ open, id: sessionClass?.id ?? null });
-  if (prevRef.current.open !== open || prevRef.current.id !== (sessionClass?.id ?? null)) {
-    prevRef.current = { open, id: sessionClass?.id ?? null };
+  // Previous-value comparison lives in state (the documented "adjust state during render"
+  // pattern) instead of a render-mutated ref, which the React Compiler forbids.
+  const [prevSeed, setPrevSeed] = useState({ open, id: sessionClass?.id ?? null });
+  if (prevSeed.open !== open || prevSeed.id !== (sessionClass?.id ?? null)) {
+    setPrevSeed({ open, id: sessionClass?.id ?? null });
     if (open) {
       setClassDraft(
         sessionClass ? { ...sessionClass } : { ...EMPTY_CLASS, id: crypto.randomUUID() },

@@ -1,6 +1,6 @@
 import { ChartAreaGradient } from "@/components/dashboard-widgets/charts/chartPrimitives";
 import { PlatformCountTooltip } from "@/platform/components/reports/platformChartTooltips";
-import React, { useId, useState } from "react";
+import React, { useId, useMemo, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ReportChartCard } from "@/components/reports/ReportChartCard";
@@ -19,18 +19,24 @@ export function PlatformReportsGrowthChart({
   const { t } = useTranslation();
   const gradientId = useId();
   const [timeframe, setTimeframe] = useState<Timeframe>("all");
+  // Wall-clock is stamped when the user picks a timeframe (an event), keeping
+  // render pure and the bucket threshold stable across data refreshes.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const changeTimeframe = (next: Timeframe): void => {
+    setNowMs(Date.now());
+    setTimeframe(next);
+  };
 
-  const filteredWorkspaces = (() => {
+  const filteredWorkspaces = useMemo(() => {
     if (!workspaces) return [];
     if (timeframe === "all") return workspaces;
-    const now = Date.now();
     const days = timeframe === "30d" ? 30 : timeframe === "90d" ? 90 : 365;
-    const threshold = now - days * 24 * 60 * 60 * 1000;
+    const threshold = nowMs - days * 24 * 60 * 60 * 1000;
     return workspaces.filter((w) => {
       const created = new Date(w.createdAt).getTime();
       return Number.isFinite(created) && created >= threshold;
     });
-  })();
+  }, [workspaces, timeframe, nowMs]);
 
   const growthTrendData = (() => {
     if (!filteredWorkspaces.length) return [];
@@ -72,7 +78,7 @@ export function PlatformReportsGrowthChart({
             { key: "30d", label: t("platform.reports.timeframe30d") },
           ]}
           value={timeframe}
-          onChange={(k) => setTimeframe(k as Timeframe)}
+          onChange={(k) => changeTimeframe(k as Timeframe)}
         />
       }
     >

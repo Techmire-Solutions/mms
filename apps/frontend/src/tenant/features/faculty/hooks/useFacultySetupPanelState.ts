@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
 import { type FacultySettings } from "@mms/shared";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
@@ -18,15 +17,8 @@ export function useFacultySetupPanelState() {
     setSaved,
   });
 
-  const dirtyRef = useRef({ prefs: false });
-
-  useEffect(() => {
-    dirtyRef.current.prefs = isPrefsDirty;
-  }, [isPrefsDirty]);
-
   const discardSetupDrafts = () => {
     discardDrafts();
-    dirtyRef.current = { prefs: false };
     setSaved(true);
   };
 
@@ -38,7 +30,6 @@ export function useFacultySetupPanelState() {
     saving,
     isPrefsDirty,
     isDirty: isPrefsDirty,
-    dirtyRef,
     handleSave,
     discardSetupDrafts,
   };

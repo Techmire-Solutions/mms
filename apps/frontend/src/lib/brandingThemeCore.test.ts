@@ -6,7 +6,10 @@ import {
 } from "@mms/shared";
 import { applyDocumentTheme } from "./brandingThemeCore";
 import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
-import { MMS_PLATFORM_BRANDING, MMS_PLATFORM_GLOBAL_SETTINGS } from "@/platform/lib/themeScope";
+import {
+  MMS_PLATFORM_BRANDING,
+  MMS_PLATFORM_GLOBAL_SETTINGS,
+} from "@/lib/branding/platformThemeConfig";
 
 vi.mock("@/lib/localeFonts", () => ({ ensureLocaleFontsLoaded: vi.fn() }));
 

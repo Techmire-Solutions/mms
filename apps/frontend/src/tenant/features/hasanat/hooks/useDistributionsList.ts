@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Distribution, DistributionWrite } from "@/lib/data/hasanatData";
 import { HASANAT_MODULE_MANIFEST } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -29,16 +29,28 @@ export function useDistributionsList({
   createRequestKey = 0,
 }: UseDistributionsListStateOptions) {
   const { t } = useTranslation();
-  const statusLabels = (() => ({
-    active: t("hasanat.status.active"),
-    redeemed: t("hasanat.status.redeemed"),
-    returned: t("hasanat.status.returned"),
-  }))();
-  const statusConfig = (() => ({
-    active: { label: statusLabels.active, cls: SEMANTIC_BADGE.info },
-    redeemed: { label: statusLabels.redeemed, cls: "bg-primary/10 text-primary border-primary/20" },
-    returned: { label: statusLabels.returned, cls: SEMANTIC_BADGE.muted },
-  }))() as Record<DistributionStatus, StatusBadgeConfigItem>;
+  // Stable label/config identity keeps the table-column memo chain (and the
+  // filters) from rebuilding on every keystroke or selection toggle.
+  const statusLabels = useMemo(
+    () => ({
+      active: t("hasanat.status.active"),
+      redeemed: t("hasanat.status.redeemed"),
+      returned: t("hasanat.status.returned"),
+    }),
+    [t],
+  );
+  const statusConfig = useMemo(
+    () =>
+      ({
+        active: { label: statusLabels.active, cls: SEMANTIC_BADGE.info },
+        redeemed: {
+          label: statusLabels.redeemed,
+          cls: "bg-primary/10 text-primary border-primary/20",
+        },
+        returned: { label: statusLabels.returned, cls: SEMANTIC_BADGE.muted },
+      }) as Record<DistributionStatus, StatusBadgeConfigItem>,
+    [statusLabels],
+  );
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<DistributionStatus[]>([]);

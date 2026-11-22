@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { SetURLSearchParams } from "react-router-dom";
 import { isValidIsoDate, type MessagingStatusFilter } from "@mms/shared";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -101,35 +101,58 @@ export function useMessagingWorkFilters({
   /**
    * Any filter change starts a new result set, so the page must return to 1 —
    * otherwise the directory shows an empty page for the narrowed filters.
+   * Setters are memoized: the controller builds its filter-chip remover on
+   * their identities, so fresh functions per render would cascade.
    */
-  const setSearchFilter = (value: string): void => {
-    setSearch(value);
-    setLogsPage(1);
-  };
-  const setChannelFilter = (value: MessagingChannelFilter): void => {
-    setChannel(value);
-    setLogsPage(1);
-  };
-  const setCategoryFilter = (value: string): void => {
-    setCategory(value);
-    setLogsPage(1);
-  };
-  const setStatusFilter = (value: MessagingStatusFilter): void => {
-    setStatus(value);
-    setLogsPage(1);
-  };
-  const setStartDateFilter = (value: string): void => {
-    setStartDate(value);
-    setLogsPage(1);
-  };
-  const setEndDateFilter = (value: string): void => {
-    setEndDate(value);
-    setLogsPage(1);
-  };
-  const setShowArchived = (value: boolean): void => {
-    setShowArchivedState(canViewArchived && value);
-    setLogsPage(1);
-  };
+  const setSearchFilter = useCallback(
+    (value: string): void => {
+      setSearch(value);
+      setLogsPage(1);
+    },
+    [setSearch, setLogsPage],
+  );
+  const setChannelFilter = useCallback(
+    (value: MessagingChannelFilter): void => {
+      setChannel(value);
+      setLogsPage(1);
+    },
+    [setChannel, setLogsPage],
+  );
+  const setCategoryFilter = useCallback(
+    (value: string): void => {
+      setCategory(value);
+      setLogsPage(1);
+    },
+    [setCategory, setLogsPage],
+  );
+  const setStatusFilter = useCallback(
+    (value: MessagingStatusFilter): void => {
+      setStatus(value);
+      setLogsPage(1);
+    },
+    [setStatus, setLogsPage],
+  );
+  const setStartDateFilter = useCallback(
+    (value: string): void => {
+      setStartDate(value);
+      setLogsPage(1);
+    },
+    [setStartDate, setLogsPage],
+  );
+  const setEndDateFilter = useCallback(
+    (value: string): void => {
+      setEndDate(value);
+      setLogsPage(1);
+    },
+    [setEndDate, setLogsPage],
+  );
+  const setShowArchived = useCallback(
+    (value: boolean): void => {
+      setShowArchivedState(canViewArchived && value);
+      setLogsPage(1);
+    },
+    [canViewArchived, setShowArchivedState, setLogsPage],
+  );
 
   const hasActiveFilters =
     channel !== "all" ||
@@ -148,7 +171,7 @@ export function useMessagingWorkFilters({
     (endDate ? 1 : 0) +
     (canViewArchived && showArchived ? 1 : 0);
 
-  const clearFilters = (): void => {
+  const clearFilters = useCallback((): void => {
     setChannel("all");
     setCategory("all");
     setStatus("all");
@@ -157,7 +180,16 @@ export function useMessagingWorkFilters({
     setSearch("");
     setShowArchivedState(false);
     setLogsPage(1);
-  };
+  }, [
+    setChannel,
+    setCategory,
+    setStatus,
+    setStartDate,
+    setEndDate,
+    setSearch,
+    setShowArchivedState,
+    setLogsPage,
+  ]);
 
   return {
     search,

@@ -1,9 +1,14 @@
 import type { EmailIntegrationConfig } from "@mms/shared";
 import { apiJson } from "@/lib/apiClient";
 
-export async function fetchEmailIntegration(): Promise<EmailIntegrationConfig | null> {
+export async function fetchEmailIntegration(
+  signal?: AbortSignal,
+): Promise<EmailIntegrationConfig | null> {
   try {
-    return await apiJson<EmailIntegrationConfig>("/api/email/integration");
+    return await apiJson<EmailIntegrationConfig>(
+      "/api/email/integration",
+      signal ? { signal } : undefined,
+    );
   } catch {
     return null;
   }

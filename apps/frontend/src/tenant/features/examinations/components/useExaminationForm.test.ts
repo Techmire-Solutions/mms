@@ -185,4 +185,48 @@ describe("useExaminationForm Hook", () => {
       root.unmount();
     });
   });
+
+  it("ignores a second save while a save is in flight", async () => {
+    let resolveSave!: (value: void | PromiseLike<void>) => void;
+    const onSave = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSave = resolve;
+        }),
+    );
+    let hookResult!: ReturnType<typeof useExaminationForm>;
+    function TestComponent() {
+      hookResult = useExaminationForm({
+        open: true,
+        exam: mockExam,
+        onClose: vi.fn(),
+        onSave,
+      });
+      return null;
+    }
+    const root = createRoot(container!);
+    await act(async () => {
+      root.render(React.createElement(TestComponent));
+    });
+    let firstSave!: Promise<void>;
+    await act(async () => {
+      hookResult.updateDraft({ name: "Updated" });
+      firstSave = hookResult.handleSave();
+    });
+    let secondSave!: Promise<void>;
+    await act(async () => {
+      secondSave = hookResult.handleSave();
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveSave();
+      await firstSave;
+      await secondSave;
+    });
+    expect(onSave).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      root.unmount();
+    });
+  });
 });

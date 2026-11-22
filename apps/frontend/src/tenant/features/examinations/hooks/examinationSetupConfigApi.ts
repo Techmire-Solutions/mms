@@ -4,10 +4,12 @@ import type { ExaminationsModulePreferences } from "@mms/shared";
 import { normalizeExaminationsModulePreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<ExaminationsModulePreferences>({
-  fetchPreferencesFn: async (_signal) => {
+  fetchPreferencesFn: async (signal) => {
     const res = await apiContract.examinations.getPreferences({
       query: undefined,
       extraHeaders: {},
+      signal,
+      fetchOptions: { signal },
     });
     return (res.body as { preferences: ExaminationsModulePreferences }).preferences;
   },

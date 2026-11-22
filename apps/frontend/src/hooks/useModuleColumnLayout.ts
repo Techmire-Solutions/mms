@@ -37,6 +37,11 @@ function toStoredPreferences(registry: ModuleColumnRegistryEntry[]): ModuleColum
   });
 }
 
+/**
+ * Per-user column visibility/order/width for a module table. The user overlay
+ * is persisted via the unified `useUiPreference` store and applied over the
+ * module registry (`applyModuleColumnOverlay`).
+ */
 export function useModuleColumnLayout({
   moduleId,
   tenantRegistry,

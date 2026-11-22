@@ -18,8 +18,12 @@ export function useGlobalShortcut(
   handler: (event: KeyboardEvent) => void,
   { ctrl = true, meta = true }: GlobalShortcutOptions = {},
 ): void {
+  // Latest-handler ref: written after render so the listener never goes stale
+  // while its subscription stays stable across unrelated re-renders.
   const handlerRef = useRef(handler);
-  handlerRef.current = handler;
+  useEffect(() => {
+    handlerRef.current = handler;
+  });
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {

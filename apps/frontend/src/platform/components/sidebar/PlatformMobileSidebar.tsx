@@ -1,15 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { usePlatformSidebar } from "@/platform/lib/PlatformSidebarContext";
 import { getVisiblePlatformNavSections } from "@/platform/lib/platformNav";
-import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
+import { MobileSidebarDrawer } from "@/components/common/MobileSidebarDrawer";
 import { PlatformSignOutDialog } from "@/platform/components/common/PlatformSignOutDialog";
 import { TooltipProvider } from "@shared/ui";
-import { cn } from "@/lib/utils";
-import { OVERLAY_BACKDROP } from "@shared/ui";
 import { PlatformSidebarNav } from "@/platform/components/PlatformSidebarNav";
 import { PlatformSidebarBrand } from "@/platform/components/sidebar/PlatformSidebarBrand";
 import { PlatformSidebarFooter } from "@/platform/components/sidebar/PlatformSidebarFooter";
@@ -26,21 +24,6 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
   const { isPlatformAuthenticated, isSuperUser } = perms;
   const { mobileOpen, closeMobileSidebar } = usePlatformSidebar();
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
-  const openGestureActiveRef = useRef(false);
-
-  useEffect(() => {
-    if (!mobileOpen) return;
-    openGestureActiveRef.current = true;
-    const id = setTimeout(() => {
-      openGestureActiveRef.current = false;
-    }, 0);
-    return () => clearTimeout(id);
-  }, [mobileOpen]);
-
-  const drawerRef = useOverlayBehavior<HTMLDivElement>({
-    open: mobileOpen,
-    onClose: closeMobileSidebar,
-  });
 
   if (!isPlatformAuthenticated || !mobileOpen) return null;
 
@@ -49,31 +32,20 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
   return (
     <>
       <div className="lg:hidden fixed inset-0 z-sidebar-mobile flex">
-        <div
-          data-overlay-backdrop
-          className={cn("fixed inset-0", OVERLAY_BACKDROP, "transition-opacity duration-300")}
-          onClick={() => {
-            if (!openGestureActiveRef.current) {
-              closeMobileSidebar();
-            }
-          }}
-          aria-hidden
-        />
-        <div
-          ref={drawerRef}
-          role="dialog"
-          aria-modal="true"
-          aria-label={t("platform.navAria")}
-          className="relative w-sidebar-mobile max-w-sheet bg-sidebar h-full shadow-drawer flex flex-col z-elevated border-e border-sidebar-border"
-        >
-          <div className="flex flex-col justify-between h-full w-full">
+        <MobileSidebarDrawer
+          open={mobileOpen}
+          onClose={closeMobileSidebar}
+          ariaLabel={t("platform.navAria")}
+          touchGuardMs={0}
+          brand={
             <PlatformSidebarBrand
               isMobile
               collapsed={false}
               reducedMotion={reducedMotion}
               onCloseMobile={closeMobileSidebar}
             />
-
+          }
+          nav={
             <TooltipProvider delayDuration={150}>
               <PlatformSidebarNav
                 sections={sections}
@@ -83,7 +55,8 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
                 closeMobileSidebar={closeMobileSidebar}
               />
             </TooltipProvider>
-
+          }
+          footer={
             <PlatformSidebarFooter
               isMobile
               collapsed={false}
@@ -93,8 +66,8 @@ export function PlatformMobileSidebar(): React.JSX.Element | null {
               onToggleCollapsed={() => {}}
               onCloseMobile={closeMobileSidebar}
             />
-          </div>
-        </div>
+          }
+        />
       </div>
 
       <PlatformSignOutDialog

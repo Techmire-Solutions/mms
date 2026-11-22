@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 /**
  * Identity-aware dirty tracking for hand-rolled forms. The baseline resets when `resetKey`
@@ -18,14 +18,26 @@ export function useDirtySnapshot<T>(
   isDirty: boolean;
   resetBaseline: () => void;
 } {
-  const keyRef = useRef(resetKey);
-  const baselineRef = useRef(JSON.stringify(resetBaselineValue ?? value));
-  if (keyRef.current !== resetKey) {
-    keyRef.current = resetKey;
-    baselineRef.current = JSON.stringify(resetBaselineValue ?? value);
+  const [snapshot, setSnapshot] = useState(() => ({
+    key: resetKey,
+    baseline: JSON.stringify(resetBaselineValue ?? value),
+  }));
+
+  // Re-baseline when the record identity changes. Adjusted during render (React's
+  // documented "adjust state when props change" pattern, same as `useIdentityReset`)
+  // so the committed render never reports the previous record's draft as dirty.
+  if (snapshot.key !== resetKey) {
+    setSnapshot({
+      key: resetKey,
+      baseline: JSON.stringify(resetBaselineValue ?? value),
+    });
   }
+
+  const serialized = useMemo(() => JSON.stringify(value), [value]);
+
   const resetBaseline = useCallback(() => {
-    baselineRef.current = JSON.stringify(value);
+    setSnapshot((prev) => ({ key: prev.key, baseline: JSON.stringify(value) }));
   }, [value]);
-  return { isDirty: JSON.stringify(value) !== baselineRef.current, resetBaseline };
+
+  return { isDirty: serialized !== snapshot.baseline, resetBaseline };
 }

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import type { PlatformWorkspaceRow } from "@mms/shared";
 import { apiContract } from "@/lib/api";
 import { ApiError, isApiError } from "@/lib/apiClient";
@@ -12,7 +12,7 @@ import {
   PLATFORM_WORKSPACE_METRICS_QUERY_KEY,
 } from "@/platform/lib/platformQueryKeys";
 
-function invalidateWorkspaceQueries(queryClient: ReturnType<typeof useQueryClient>): void {
+function invalidateWorkspaceQueries(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: PLATFORM_WORKSPACES_QUERY_KEY });
   void queryClient.invalidateQueries({ queryKey: PLATFORM_WORKSPACE_METRICS_QUERY_KEY });
   void queryClient.invalidateQueries({ queryKey: WORKSPACE_REGISTRY_QUERY_KEY });

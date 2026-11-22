@@ -41,6 +41,7 @@ export function MessageComposerRecipientsList({
   const listParentRef = useRef<HTMLDivElement>(null);
   const isListVirtualized = displayedRecipients.length > 25;
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual is not React-Compiler-compatible (upstream); this component intentionally stays uncompiled.
   const rowVirtualizer = useVirtualizer({
     count: displayedRecipients.length,
     getScrollElement: () => listParentRef.current,

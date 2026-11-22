@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useState, type RefObject } from "react";
 import { useBodyScrollLock } from "./useBodyScrollLock";
 import { useFocusTrap } from "./useFocusTrap";
 import { isAnotherLayerFocused, isTopmostOverlayLayer, useOverlayLayer } from "@/lib/overlayStack";
@@ -40,11 +40,13 @@ export function useOverlayBehavior<T extends HTMLElement = HTMLElement>({
 }: UseOverlayBehaviorOptions): RefObject<T | null> {
   useBodyScrollLock(open && lockScroll);
   const containerRef = useFocusTrap<T>(open);
-  const layerIdRef = useRef<symbol>(Symbol("overlay-layer"));
+  // Stable layer identity: lazy-initialised state (never a render-time ref
+  // read) so the layer stack key survives every re-render of the overlay.
+  const [layerId] = useState(() => Symbol("overlay-layer"));
 
   // A non-dismissible overlay still participates in the layer stack: it blocks
   // Escape from reaching the overlays underneath it.
-  useOverlayLayer(layerIdRef.current, open && dismissible);
+  useOverlayLayer(layerId, open && dismissible);
 
   useEffect(() => {
     if (!open || !onClose || !dismissible) return;
@@ -52,7 +54,7 @@ export function useOverlayBehavior<T extends HTMLElement = HTMLElement>({
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== "Escape") return;
       // A nested overlay opened later owns the key.
-      if (!isTopmostOverlayLayer(layerIdRef.current)) return;
+      if (!isTopmostOverlayLayer(layerId)) return;
       // Radix layers (AlertDialog, menus, popovers) portal to <body> and move
       // focus out of this container; an Escape aimed at one of those must not
       // reach us even though they are not in the registry.
@@ -62,7 +64,7 @@ export function useOverlayBehavior<T extends HTMLElement = HTMLElement>({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose, containerRef, dismissible]);
+  }, [open, onClose, containerRef, dismissible, layerId]);
 
   return containerRef;
 }

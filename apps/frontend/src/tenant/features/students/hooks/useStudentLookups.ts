@@ -12,8 +12,13 @@ export const STUDENTS_LOOKUPS_QUERY_KEY = [
   "lookups",
 ] as const;
 
-async function fetchStudentLookups(_signal?: AbortSignal): Promise<StudentLookupsMap> {
-  const res = await apiContract.students.getLookups({ query: undefined, extraHeaders: {} });
+async function fetchStudentLookups(signal?: AbortSignal): Promise<StudentLookupsMap> {
+  const res = await apiContract.students.getLookups({
+    query: undefined,
+    extraHeaders: {},
+    signal,
+    fetchOptions: { signal },
+  });
   return (res.body as { lookups?: StudentLookupsMap }).lookups ?? emptyStudentLookupsMap();
 }
 

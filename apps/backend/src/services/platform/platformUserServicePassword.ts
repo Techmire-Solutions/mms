@@ -15,13 +15,18 @@ export async function verifyPlatformUserPassword(
   return verifyPassword(password, stored.passwordHash);
 }
 
-export async function updatePlatformUserPassword(
-  userId: string,
+/**
+ * Single persistence path for every platform password write: bumps
+ * `sessionVersion` (invalidating every outstanding apex token) and re-syncs the
+ * super-user credentials into tenant workspaces. `updatePlatformUserPassword`
+ * and `changePlatformUserPassword` used to carry duplicate copies of this
+ * block (mms-dry §2).
+ */
+async function applyPlatformUserPasswordUpdate(
+  existing: StoredPlatformUser,
   passwordHash: string,
 ): Promise<StoredPlatformUser> {
-  const existing = await findPlatformUserRowById(userId);
-  if (!existing) throw new PlatformError("user_not_found", "Platform user not found");
-  const updated = await updatePlatformUserRow(userId, {
+  const updated = await updatePlatformUserRow(existing.id, {
     passwordHash,
     sessionVersion: existing.sessionVersion + 1,
   });
@@ -32,6 +37,15 @@ export async function updatePlatformUserPassword(
     await syncPlatformSuperUserToTenants(updated);
   }
   return updated;
+}
+
+export async function updatePlatformUserPassword(
+  userId: string,
+  passwordHash: string,
+): Promise<StoredPlatformUser> {
+  const existing = await findPlatformUserRowById(userId);
+  if (!existing) throw new PlatformError("user_not_found", "Platform user not found");
+  return applyPlatformUserPasswordUpdate(existing, passwordHash);
 }
 
 export async function changePlatformUserPassword(
@@ -45,15 +59,5 @@ export async function changePlatformUserPassword(
   const ok = await verifyPassword(currentPassword, stored.passwordHash);
   if (!ok) throw new PlatformError("invalid_current_password", "Current password is incorrect");
 
-  const updated = await updatePlatformUserRow(userId, {
-    passwordHash: await hashPassword(newPassword),
-    sessionVersion: stored.sessionVersion + 1,
-  });
-  if (!updated) throw new PlatformError("user_not_found", "Platform user not found");
-  if (updated.role === "super_user") {
-    const { syncPlatformSuperUserToTenants } =
-      await import("./platformSuperUserTenantSyncService.js");
-    await syncPlatformSuperUserToTenants(updated);
-  }
-  return updated;
+  return applyPlatformUserPasswordUpdate(stored, await hashPassword(newPassword));
 }

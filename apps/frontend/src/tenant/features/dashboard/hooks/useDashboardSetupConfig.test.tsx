@@ -9,7 +9,21 @@ const api = vi.hoisted(() => ({
   widgetsQuery: {} as Record<string, unknown>,
   mutatePreferences: vi.fn(),
   preferencesMutationOptions: undefined as
-    { onMutate?: (variables: { body: unknown }) => Promise<unknown> } | undefined,
+    | {
+        onMutate?: (variables: { body: unknown }) => Promise<unknown>;
+        onSuccess?: (res: { status: number; body?: { preferences?: unknown } }) => void;
+      }
+    | undefined,
+  widgetsMutationOptions: undefined as
+    | {
+        onSuccess?: (res: { status: number; body?: { widgets?: unknown } }) => void;
+      }
+    | undefined,
+  deleteMutationOptions: undefined as
+    | {
+        onSuccess?: (_data: unknown, variables: { params?: { id?: string } }) => void;
+      }
+    | undefined,
   seed: vi.fn(),
 }));
 
@@ -24,8 +38,18 @@ vi.mock("@/lib/api", () => ({
           return { mutate: api.mutatePreferences };
         },
       },
-      putWidgets: { useMutation: () => ({ mutate: vi.fn(), mutateAsync: vi.fn() }) },
-      deleteWidget: { useMutation: () => ({ mutate: vi.fn() }) },
+      putWidgets: {
+        useMutation: (options: typeof api.widgetsMutationOptions) => {
+          api.widgetsMutationOptions = options;
+          return { mutate: vi.fn(), mutateAsync: vi.fn() };
+        },
+      },
+      deleteWidget: {
+        useMutation: (options: typeof api.deleteMutationOptions) => {
+          api.deleteMutationOptions = options;
+          return { mutate: vi.fn() };
+        },
+      },
       reorderWidgets: { useMutation: () => ({ mutate: vi.fn() }) },
     },
   },
@@ -62,6 +86,8 @@ import {
   useDashboardPreferencesQuery,
   useDashboardPreferencesMutation,
   useDashboardWidgetsQuery,
+  useDashboardWidgetsMutation,
+  useDashboardWidgetDeleteMutation,
 } from "./useDashboardSetupConfig";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -75,6 +101,8 @@ function Probe(): null {
   latestPrefs = useDashboardPreferencesQuery();
   latestWidgets = useDashboardWidgetsQuery();
   useDashboardPreferencesMutation();
+  useDashboardWidgetsMutation();
+  useDashboardWidgetDeleteMutation();
   return null;
 }
 
@@ -105,6 +133,8 @@ describe("useDashboardSetupConfig", () => {
     api.mutatePreferences.mockReset();
     api.seed.mockReset();
     api.preferencesMutationOptions = undefined;
+    api.widgetsMutationOptions = undefined;
+    api.deleteMutationOptions = undefined;
     api.prefsQuery = { data: undefined, isSuccess: false };
     api.widgetsQuery = { data: undefined, isSuccess: false };
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -187,5 +217,41 @@ describe("useDashboardSetupConfig", () => {
 
     api.seed.mockResolvedValueOnce({ status: 500, body: { message: "boom" } });
     await expect(seedDashboardWidgets([])).resolves.toBe(false);
+  });
+
+  it("invalidates only the preferences document after a preferences save", () => {
+    render();
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+
+    api.preferencesMutationOptions?.onSuccess?.({
+      status: 200,
+      body: { preferences: { gridMode: "compact" } },
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
+    expect(invalidateSpy).toHaveBeenCalledTimes(1);
+    expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
+  });
+
+  it("invalidates only the widgets document after a widget upsert", () => {
+    render();
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+
+    api.widgetsMutationOptions?.onSuccess?.({ status: 200, body: { widgets: [] } });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
+    expect(invalidateSpy).toHaveBeenCalledTimes(1);
+    expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
+  });
+
+  it("invalidates only the widgets document after a widget delete", () => {
+    render();
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+
+    api.deleteMutationOptions?.onSuccess?.(undefined, { params: { id: "w-9" } });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: DASHBOARD_WIDGETS_QUERY_KEY });
+    expect(invalidateSpy).toHaveBeenCalledTimes(1);
+    expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: DASHBOARD_PREFERENCES_QUERY_KEY });
   });
 });

@@ -15,6 +15,7 @@ import {
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { PLATFORM_QUERY_KEYS } from "@/platform/lib/platformQueryKeys";
+import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 
 const DEFAULT_DOMAIN: ErdDomainId = "accounting";
 const ALL_TABLES = "";
@@ -38,6 +39,7 @@ export function useErdPageController(): {
   setFocusTable: (table: string) => void;
 } {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isPlatformAuthenticated } = usePlatformAuth();
 
   const { data: dynamicData, isLoading } = useQuery<PlatformErdResponse>({
     queryKey: PLATFORM_QUERY_KEYS.erd,
@@ -53,6 +55,7 @@ export function useErdPageController(): {
       }
       return response.body as PlatformErdResponse;
     },
+    enabled: isPlatformAuthenticated,
     staleTime: 60_000,
     retry: 1,
   });

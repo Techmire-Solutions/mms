@@ -12,13 +12,18 @@ import {
   findAuthArtifactByLookupKey,
   putAuthArtifact,
   updateAuthArtifactPayload,
+  type AuthArtifactRecord,
 } from "./authArtifactService.js";
+import { createOtpChallengeService, type OtpChallengePayload } from "./otpChallengeService.js";
 import { revokeAllUserSessions } from "../authSessionService.js";
-import { generateOtpCode, hashOtpCode, verifyOtpCode } from "./authCookieService.js";
 import { hashPassword } from "./passwordService.js";
 import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
 import { activateInvitedTenantUserRow } from "../../db/repositories/tenantUserRepository.js";
-import { findUserByLoginEmailAndWorkspace, getPublicUserById } from "./userService.js";
+import {
+  findUserByLoginEmailAndWorkspace,
+  getPublicUserById,
+  type StoredUser,
+} from "./userService.js";
 import { establishSession, type AuthResult } from "./authService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { usersRepository } from "../../users/repository/usersRepositoryAdapter.js";
@@ -29,12 +34,10 @@ export { sendTenantWelcomeEmail };
 const OTP_TTL_MS = TENANT_PASSWORD_OTP_TTL_MINUTES * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60_000;
 
-export interface TenantPasswordOtpPayload {
+export interface TenantPasswordOtpPayload extends OtpChallengePayload {
   userId: string;
   workspaceSubdomain: string;
   email: string;
-  codeHash: string;
-  attempts: number;
   createdAt: string;
 }
 
@@ -55,10 +58,41 @@ function otpLookupKey(workspaceSubdomain: string, email: string): string {
   return `tenant-otp:${workspaceSubdomain.trim().toLowerCase()}:${email.trim().toLowerCase()}`;
 }
 
-interface OtpArtifact {
-  id: string;
-  payload: TenantPasswordOtpPayload;
+interface TenantPasswordOtpUserContext {
+  userId: string;
+  workspaceSubdomain: string;
+  email: string;
+  user: StoredUser;
 }
+
+const tenantPasswordOtps = createOtpChallengeService<
+  TenantPasswordOtpUserContext,
+  TenantPasswordOtpPayload
+>({
+  kind: "tenant_password_otp",
+  ttlMs: OTP_TTL_MS,
+  maxAttempts: TENANT_OTP_MAX_ATTEMPTS,
+  buildPayload: (ctx, codeHash) => ({
+    userId: ctx.userId,
+    workspaceSubdomain: ctx.workspaceSubdomain,
+    email: ctx.email,
+    codeHash,
+    attempts: 0,
+    createdAt: new Date().toISOString(),
+  }),
+  persist: (payload) =>
+    putAuthArtifact("tenant_password_otp", payload, OTP_TTL_MS, {
+      lookupKey: otpLookupKey(payload.workspaceSubdomain, payload.email),
+    }),
+  loadForVerify: (lookupKey) =>
+    findAuthArtifactByLookupKey<TenantPasswordOtpPayload>("tenant_password_otp", lookupKey),
+  loadForResend: (lookupKey) =>
+    findAuthArtifactByLookupKey<TenantPasswordOtpPayload>("tenant_password_otp", lookupKey),
+  // The verify/reset steps do not consume; a failed guess updates the payload
+  // in place (TTL unchanged) so the ceiling is shared across both steps.
+  rearm: (entry, payload) => updateAuthArtifactPayload(entry.id, payload),
+  remove: (entry) => deleteAuthArtifact(entry.id),
+});
 
 /**
  * Single attempt-counting path for every OTP check.
@@ -70,20 +104,18 @@ interface OtpArtifact {
  * once the shared ceiling is reached, deleting the artifact so the code is
  * dead even if a later call re-reads it.
  */
-async function verifyOtpWithAttempts(entry: OtpArtifact, code: string): Promise<void> {
-  const normalizedCode = code.replace(/\s/g, "");
-  if (verifyOtpCode(normalizedCode, entry.payload.codeHash)) return;
-
-  const attempts = entry.payload.attempts + 1;
-  if (attempts >= TENANT_OTP_MAX_ATTEMPTS) {
-    await deleteAuthArtifact(entry.id);
+async function verifyOtpWithAttempts(
+  entry: AuthArtifactRecord<TenantPasswordOtpPayload>,
+  code: string,
+): Promise<void> {
+  const outcome = await tenantPasswordOtps.verifyEntry(entry, code);
+  if (outcome.ok) return;
+  if (outcome.reason === "too_many_attempts") {
     throw new TenantPasswordOtpError(
       "too_many_attempts",
       "Too many invalid attempts. Request a new code.",
     );
   }
-
-  await updateAuthArtifactPayload(entry.id, { ...entry.payload, attempts });
   throw new TenantPasswordOtpError("invalid_code", "Invalid or expired code");
 }
 
@@ -130,22 +162,13 @@ export async function requestTenantPasswordReset(input: {
     await deleteAuthArtifact(existing.id);
   }
 
-  const code = generateOtpCode();
-  await putAuthArtifact<TenantPasswordOtpPayload>(
-    "tenant_password_otp",
-    {
-      userId: user.id,
-      workspaceSubdomain: input.workspaceSubdomain,
-      email,
-      codeHash: hashOtpCode(code),
-      attempts: 0,
-      createdAt: new Date().toISOString(),
-    },
-    OTP_TTL_MS,
-    { lookupKey },
-  );
-
-  await dispatchTenantPasswordOtp(email, user, code);
+  const created = await tenantPasswordOtps.createChallenge({
+    userId: user.id,
+    workspaceSubdomain: input.workspaceSubdomain,
+    email,
+    user,
+  });
+  await dispatchTenantPasswordOtp(email, user, created.code);
 
   return { accepted: true };
 }

@@ -1,5 +1,9 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
+  PLATFORM_ACCESS_TOKEN_REVOKE_GRACE_SECONDS,
+  PLATFORM_ACCESS_TOKEN_TTL_SECONDS,
+} from "@mms/shared";
+import {
   issuePlatformSession,
   loginPlatformUser,
   logoutPlatformUser,
@@ -112,7 +116,13 @@ export async function handlePlatformLogout(
   if (token) {
     try {
       const decoded = fastify.jwt.decode(token) as PlatformAccessTokenPayload | null;
-      if (decoded?.jti) await revokeToken(decoded.jti, 8 * 60 * 60 + 300);
+      // Token TTL + clock-skew grace so the revocation always outlives the JWT.
+      if (decoded?.jti) {
+        await revokeToken(
+          decoded.jti,
+          PLATFORM_ACCESS_TOKEN_TTL_SECONDS + PLATFORM_ACCESS_TOKEN_REVOKE_GRACE_SECONDS,
+        );
+      }
     } catch {
       // Best effort — logout still clears cookies.
     }

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { useListRowMotion } from "@/hooks/useListRowMotion";
 import {
@@ -42,10 +42,16 @@ export function MarkAttendanceGrid({
     () => orderedFields.filter((field) => isFieldEnabled(field.id)),
     [orderedFields, isFieldEnabled],
   );
+  // Stable per roster change: Space advances from the row's CURRENT status (not always "absent").
+  const getStatus = useCallback(
+    (studentId: string) => rows.find((row) => row.studentId === studentId)?.status,
+    [rows],
+  );
   const navigation = useRosterRowNavigation({
     enabled: Boolean(onSetStatus),
     studentIds: useMemo(() => rows.map((row) => row.studentId), [rows]),
     onSetStatus: onSetStatus ?? (() => {}),
+    getStatus,
   });
 
   return (

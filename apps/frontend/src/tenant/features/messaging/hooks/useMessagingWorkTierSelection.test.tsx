@@ -76,6 +76,40 @@ describe("useMessagingWorkTierSelection", () => {
     expect(seen.at(-1)?.count).toBe(0);
   });
 
+  it("does not extend a shift-range from the previous scope's anchor", () => {
+    const seen: Array<{
+      count: number;
+      toggle: (index: number, shiftKey?: boolean) => void;
+    }> = [];
+
+    function Host({ scopeKey }: { scopeKey: string }) {
+      const selection = useMessagingWorkTierSelection({ logs: LOGS, scopeKey });
+      seen.push({
+        count: selection.selectedCount,
+        toggle: (index: number, shiftKey?: boolean) => {
+          const log = LOGS[index];
+          if (log) selection.toggleLog(log, shiftKey);
+        },
+      });
+      return null;
+    }
+
+    const { root } = renderHost(() => <Host scopeKey="active|page1" />);
+    // Select the first row on page 1 — this anchors the shift-range.
+    act(() => seen.at(-1)?.toggle(0));
+    expect(seen.at(-1)?.count).toBe(1);
+
+    // Page 2 reads as an empty selection (scope mismatch)…
+    act(() => {
+      root.render(<Host scopeKey="active|page2" />);
+    });
+    expect(seen.at(-1)?.count).toBe(0);
+
+    // …and a shift-click must not resurrect page 1's anchor into a range.
+    act(() => seen.at(-1)?.toggle(2, true));
+    expect(seen.at(-1)?.count).toBe(1);
+  });
+
   it("keeps the selection while the scope is unchanged", () => {
     const counts: number[] = [];
 

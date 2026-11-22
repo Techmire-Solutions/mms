@@ -1,8 +1,9 @@
 import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { NotificationItem } from "@shared/ui";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ROUTES } from "@/lib/config/routes";
 
-export interface PlatformNotificationItem {
+export interface PlatformNotificationItem extends NotificationItem {
   id: string;
   type: "workspace" | "security" | "system";
   title: string;
@@ -34,7 +35,7 @@ export function buildPlatformNotifications(
       type: "workspace",
       title: t("platform.notificationDisabledTitle"),
       desc: t("platform.notificationDisabledDesc", { disabled: disabledCount, total }),
-      time: t("platform.notificationTimeNow"),
+      time: t("notifications.timeNow"),
       urgent: true,
       href: ROUTES.platformWorkspaces,
     });
@@ -46,7 +47,7 @@ export function buildPlatformNotifications(
       type: "workspace",
       title: t("platform.notificationActiveTitle"),
       desc: t("platform.notificationActiveDesc", { active: activeCount }),
-      time: t("platform.notificationTimeToday"),
+      time: t("notifications.timeToday"),
       urgent: false,
       href: ROUTES.platformWorkspaces,
     });
@@ -69,7 +70,7 @@ export function buildPlatformNotifications(
     type: "system",
     title: t("platform.notificationSystemHealthTitle"),
     desc: t("platform.notificationSystemHealthDesc"),
-    time: t("platform.notificationTimeToday"),
+    time: t("notifications.timeToday"),
     urgent: false,
     href: ROUTES.platformSystem,
   });

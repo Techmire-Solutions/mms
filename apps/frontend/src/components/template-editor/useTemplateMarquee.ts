@@ -117,8 +117,9 @@ export function useTemplateMarquee({
     setMarquee(null);
   });
 
+  const marqueeActive = marquee !== null;
   React.useEffect(() => {
-    if (!marquee) return;
+    if (!marqueeActive) return;
     window.addEventListener("pointermove", handleMarqueeMove, { passive: true });
     window.addEventListener("pointerup", handleMarqueeUp);
     window.addEventListener("pointercancel", handleMarqueeUp);
@@ -127,8 +128,9 @@ export function useTemplateMarquee({
       window.removeEventListener("pointerup", handleMarqueeUp);
       window.removeEventListener("pointercancel", handleMarqueeUp);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marquee != null]);
+    // Keyed on the boolean: listeners re-attach when a marquee starts/ends, and the
+    // effect events stay stable while it runs.
+  }, [marqueeActive]);
 
   return {
     marquee,

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
@@ -77,15 +77,29 @@ export function UsersList({
   // Selection survives page changes, so the row objects must too. Intersecting the
   // current page with `selectedIds` silently dropped recipients chosen on an earlier
   // page from the bulk message while the bar still reported them as selected.
-  const selectedUserSnapshots = useRef(new Map<string, (typeof users)[number]>());
-  for (const user of users) {
-    if (selectedSet.has(user.id)) selectedUserSnapshots.current.set(user.id, user);
-  }
-  for (const id of [...selectedUserSnapshots.current.keys()]) {
-    if (!selectedSet.has(id)) selectedUserSnapshots.current.delete(id);
+  // Snapshots are synced with the render-adjust pattern (previous value kept in
+  // state, compared conditionally — https://react.dev/reference/react/useState) so
+  // render stays free of ref reads/writes (react-hooks/refs).
+  const [selectedUserSnapshots, setSelectedUserSnapshots] = useState(
+    () => new Map<string, (typeof users)[number]>(),
+  );
+  const [prevSnapshotSync, setPrevSnapshotSync] = useState(() => ({ selectedIds, users }));
+  if (prevSnapshotSync.selectedIds !== selectedIds || prevSnapshotSync.users !== users) {
+    setPrevSnapshotSync({ selectedIds, users });
+    setSelectedUserSnapshots((previous) => {
+      const next = new Map<string, (typeof users)[number]>();
+      for (const id of selectedIds) {
+        const existing = previous.get(id);
+        if (existing) next.set(id, existing);
+      }
+      for (const user of users) {
+        if (selectedSet.has(user.id)) next.set(user.id, user);
+      }
+      return next;
+    });
   }
   const selectedUsers = [...selectedSet]
-    .map((id) => selectedUserSnapshots.current.get(id))
+    .map((id) => selectedUserSnapshots.get(id))
     .filter((user): user is (typeof users)[number] => Boolean(user));
 
   const pageData = workPageData

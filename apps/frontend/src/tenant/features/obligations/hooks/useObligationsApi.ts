@@ -13,13 +13,6 @@ import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMe
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";
 import { tsrClient } from "@/lib/api";
-
-export function obligationsCommandMetricsQueryOptions() {
-  return serverMetricsQueryOptions<ObligationsCommandMetricsSnapshot>({
-    moduleId: OBLIGATIONS_MODULE_MANIFEST.moduleId,
-    apiPath: OBLIGATIONS_MODULE_MANIFEST.restBasePath,
-  });
-}
 import {
   OBLIGATIONS_TYPES_QUERY_KEY,
   OBLIGATIONS_MUJTAHIDS_QUERY_KEY,
@@ -30,6 +23,13 @@ import {
   OBLIGATIONS_METRICS_QUERY_KEY,
   OBLIGATIONS_REPORT_AGGREGATES_QUERY_KEY,
 } from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
+
+export function obligationsCommandMetricsQueryOptions() {
+  return serverMetricsQueryOptions<ObligationsCommandMetricsSnapshot>({
+    moduleId: OBLIGATIONS_MODULE_MANIFEST.moduleId,
+    apiPath: OBLIGATIONS_MODULE_MANIFEST.restBasePath,
+  });
+}
 
 export {
   OBLIGATIONS_TYPES_QUERY_KEY,
@@ -152,11 +152,15 @@ export function useObligationsCollections(options?: {
   enabled?: boolean;
   includeDeleted?: boolean;
 }) {
-  const { isAuthenticated: _isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const enabled = options?.enabled ?? true;
   const includeDeleted = options?.includeDeleted ?? false;
   return tsrClient.obligations.listCollections.useQuery({
     queryKey: [...OBLIGATIONS_COLLECTIONS_QUERY_KEY, { includeDeleted }],
     queryData: { query: { includeDeleted: includeDeleted ? "true" : undefined } },
+    // Gate like the sibling lookups: the `enabled` option was previously ignored
+    // and the query ran even before authentication.
+    enabled: isAuthenticated && enabled,
     staleTime: 30_000,
   });
 }

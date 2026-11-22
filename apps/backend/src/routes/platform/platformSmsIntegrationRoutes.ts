@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import type { SmsIntegrationConfig, SmsIntegrationSecrets, SmsProviderId } from "@mms/shared";
 import {
   isSmsProviderId,
   mergeSmsIntegrationConfig,
@@ -16,68 +17,71 @@ import {
   authenticatePlatform,
   requirePlatformPermission,
 } from "../../middleware/authenticatePlatform.js";
-import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
-import { createStrictRateLimitGuard } from "../../lib/rateLimitGuard.js";
-import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";
+import { registerIntegrationRoutes } from "../../lib/registerIntegrationRoutes.js";
+
+interface SmsIntegrationPutBody {
+  providerId: string;
+  accountId?: string;
+  senderId: string;
+  apiBaseUrl?: string;
+  accountSecret?: string;
+}
+
+interface SmsTestBody {
+  testPhone: string;
+}
 
 export default async function platformSmsIntegrationRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ): Promise<void> {
-  fastify.addHook("preHandler", authenticatePlatform);
-  fastify.addHook("preHandler", requirePlatformPermission("settings"));
-
-  const sendLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
-
-  fastify.get("/integration", async (_request, reply) => {
-    const config = await loadPlatformSmsIntegrationConfig();
-    return reply.send(config);
-  });
-
-  fastify.put("/integration", async (request, reply) => {
-    const parsed = parseRequest(smsIntegrationBodySchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
-    const body = parsed.data;
-
-    if (!isSmsProviderId(body.providerId)) {
-      return replyValidationError(reply, "Unsupported SMS provider");
-    }
-
-    const current = await loadPlatformSmsIntegrationConfig();
-    const next = mergeSmsIntegrationConfig({
-      providerId: body.providerId,
-      accountId: body.accountId,
-      senderId: body.senderId,
-      apiBaseUrl: body.apiBaseUrl,
-      connected: current.connected,
-      hasCredentials: current.hasCredentials || Boolean(body.accountSecret?.trim()),
-      lastTestAt: current.lastTestAt,
-      lastTestOk: current.lastTestOk,
-      lastError: current.lastError,
-    });
-
-    if (body.accountSecret?.trim()) {
-      await savePlatformSmsIntegrationSecrets({ accountSecret: body.accountSecret.trim() });
-      next.hasCredentials = true;
-    }
-
-    const saved = await savePlatformSmsIntegrationConfig(next);
-    return reply.send(saved);
-  });
-
-  fastify.post("/integration/test", { preHandler: sendLimit }, async (request, reply) => {
-    const parsed = parseRequest(smsTestBodySchema, request.body);
-    if (!parsed.ok) return replyValidationError(reply, parsed.message);
-
-    const testSend = await verifyPlatformSmsTransport(parsed.data.testPhone);
-    if (!testSend.sent) {
-      await markPlatformSmsIntegrationTestResult(false, testSend.message ?? testSend.reason);
-      return replyValidationError(reply, testSend.message ?? "Test SMS could not be sent", {
-        reason: testSend.reason,
-      });
-    }
-
-    const saved = await markPlatformSmsIntegrationTestResult(true);
-    return reply.send({ success: true, config: saved });
-  });
+  registerIntegrationRoutes<
+    SmsIntegrationConfig,
+    SmsIntegrationSecrets,
+    SmsIntegrationPutBody,
+    SmsTestBody
+  >(
+    fastify,
+    {
+      integrationBodySchema: smsIntegrationBodySchema,
+      testBodySchema: smsTestBodySchema,
+      isProviderId: isSmsProviderId,
+      unsupportedProviderMessage: "Unsupported SMS provider",
+      load: loadPlatformSmsIntegrationConfig,
+      save: savePlatformSmsIntegrationConfig,
+      saveSecrets: savePlatformSmsIntegrationSecrets,
+      buildNext: (current, body) =>
+        mergeSmsIntegrationConfig({
+          // Guarded by isSmsProviderId in the shared registry.
+          providerId: body.providerId as SmsProviderId,
+          accountId: body.accountId,
+          senderId: body.senderId,
+          apiBaseUrl: body.apiBaseUrl,
+          connected: current.connected,
+          hasCredentials: current.hasCredentials || Boolean(body.accountSecret?.trim()),
+          lastTestAt: current.lastTestAt,
+          lastTestOk: current.lastTestOk,
+          lastError: current.lastError,
+        }),
+      secretFromBody: (body) => body.accountSecret?.trim() || undefined,
+      secretsFromSecret: (secret) => ({ accountSecret: secret }),
+      testSend: async (_request, body) => {
+        const result = await verifyPlatformSmsTransport(body.testPhone);
+        return {
+          sent: result.sent,
+          reason: result.reason,
+          markMessage: result.message,
+          replyMessage: result.message,
+        };
+      },
+      markTestResult: markPlatformSmsIntegrationTestResult,
+      // Authorization is enforced by the platform pre-handler hooks below.
+      authGate: () => true,
+      testFailureMessage: "Test SMS could not be sent",
+    },
+    (instance) => {
+      instance.addHook("preHandler", authenticatePlatform);
+      instance.addHook("preHandler", requirePlatformPermission("settings"));
+    },
+  );
 }

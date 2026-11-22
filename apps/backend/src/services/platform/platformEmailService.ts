@@ -1,8 +1,13 @@
-import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
-import { getEmailProviderPreset, type EmailIntegrationConfig } from "@mms/shared";
+import { type SendEmailInput, type SendEmailResult } from "@mms/shared";
 import { fetchWithTimeout, isBlockedHostname } from "../../lib/outboundUrl.js";
-import { SMTP_TIMEOUT_OPTIONS } from "../../lib/outboundTimeouts.js";
+import {
+  buildHtmlFallback,
+  createSmtpTransporter,
+  resolveSmtpTransportOptions,
+  sendMailViaSmtp,
+  verifySmtpConnection,
+} from "../../lib/smtpTransport.js";
 import { logger } from "../../lib/logger.js";
 import { isDevCredentialLoggingEnabled, maskEmail } from "../../lib/devLogging.js";
 import {
@@ -10,18 +15,13 @@ import {
   loadPlatformEmailIntegrationSecrets,
 } from "./platformEmailIntegrationService.js";
 
-export interface PlatformEmailInput {
-  to: string;
-  subject: string;
-  text: string;
-  html?: string;
-}
-
-export interface PlatformEmailResult {
-  sent: boolean;
-  reason?: "not_configured" | "transport_error";
-  message?: string;
-}
+/**
+ * Platform send types are the shared superset shapes; the platform path simply
+ * never produces the `notifications_disabled` reason (the caller owns the
+ * channel toggle). Names kept for backward compatibility.
+ */
+export type PlatformEmailInput = SendEmailInput;
+export type PlatformEmailResult = SendEmailResult;
 
 import {
   readEnv,
@@ -54,7 +54,8 @@ async function sendViaResend(input: PlatformEmailInput): Promise<PlatformEmailRe
         to: [input.to],
         subject: input.subject,
         text: input.text,
-        html: input.html ?? `<p>${input.text.replace(/\n/g, "<br/>")}</p>`,
+        // Shared HTML fallback — always escaped (see lib/smtpTransport.ts).
+        html: input.html ?? buildHtmlFallback(input.text),
       }),
     });
 
@@ -84,7 +85,8 @@ function createPlatformTransporter(): Transporter | null {
   const port = Number(readEnv("PLATFORM_SMTP_PORT") || "587");
   const secure = readEnv("PLATFORM_SMTP_SECURE") === "true";
 
-  return nodemailer.createTransport({
+  // Shared transporter creation (explicit SMTP timeout budget included).
+  return createSmtpTransporter({
     host,
     port: Number.isFinite(port) && port > 0 ? port : 587,
     secure,
@@ -92,8 +94,6 @@ function createPlatformTransporter(): Transporter | null {
       user: readEnv("PLATFORM_SMTP_USER"),
       pass: readEnv("PLATFORM_SMTP_PASS"),
     },
-    // Explicit budget — nodemailer's socketTimeout default is 10 minutes.
-    ...SMTP_TIMEOUT_OPTIONS,
   });
 }
 
@@ -103,61 +103,44 @@ async function sendViaSmtp(input: PlatformEmailInput): Promise<PlatformEmailResu
     return { sent: false, reason: "not_configured" };
   }
 
-  try {
-    await transporter.sendMail({
+  const outcome = await sendMailViaSmtp(
+    transporter,
+    {
       from: platformFromHeader(),
       to: input.to,
       subject: input.subject,
       text: input.text,
-      html: input.html ?? `<p>${input.text.replace(/\n/g, "<br/>")}</p>`,
-    });
-    return { sent: true };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to send platform email";
-    return { sent: false, reason: "transport_error", message };
+      html: input.html,
+    },
+    "Failed to send platform email",
+  );
+  if (!outcome.sent) {
+    return { sent: false, reason: "transport_error", message: outcome.message };
   }
-}
-
-function resolveDbSmtpOptions(
-  config: EmailIntegrationConfig,
-  password: string,
-): { host: string; port: number; secure: boolean; auth: { user: string; pass: string } } | null {
-  if (!config.smtpUsername || !password || !config.fromAddress) return null;
-
-  const preset = getEmailProviderPreset(config.providerId);
-  const host = config.providerId === "custom_smtp" ? config.smtpHost?.trim() : preset.smtp.host;
-  const port =
-    config.providerId === "custom_smtp"
-      ? Number(config.smtpPort ?? preset.smtp.port)
-      : preset.smtp.port;
-  const secure =
-    config.providerId === "custom_smtp" ? config.smtpSecure === true : preset.smtp.secure;
-
-  if (!host || !Number.isFinite(port) || port < 1 || isBlockedHostname(host)) return null;
-
-  return { host, port, secure, auth: { user: config.smtpUsername, pass: password } };
+  return { sent: true };
 }
 
 async function sendViaDbConfig(input: PlatformEmailInput): Promise<PlatformEmailResult> {
   const config = await loadPlatformEmailIntegrationConfig();
   const secrets = await loadPlatformEmailIntegrationSecrets();
-  const smtp = resolveDbSmtpOptions(config, secrets.smtpPassword ?? "");
+  const smtp = resolveSmtpTransportOptions(config, secrets.smtpPassword ?? "");
   if (!smtp) return { sent: false, reason: "not_configured" };
 
-  try {
-    const transporter = nodemailer.createTransport({ ...smtp, ...SMTP_TIMEOUT_OPTIONS });
-    await transporter.sendMail({
+  const outcome = await sendMailViaSmtp(
+    createSmtpTransporter(smtp),
+    {
       from: config.fromName ? `"${config.fromName}" <${config.fromAddress}>` : config.fromAddress,
       to: input.to,
       subject: input.subject,
       text: input.text,
-      html: input.html ?? `<p>${input.text.replace(/\n/g, "<br/>")}</p>`,
-    });
-    return { sent: true };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to send platform email";
-    return { sent: false, reason: "transport_error", message };
+      html: input.html,
+    },
+    "Failed to send platform email",
+  );
+  if (!outcome.sent) {
+    return { sent: false, reason: "transport_error", message: outcome.message };
   }
+  return { sent: true };
 }
 
 /** Sends apex platform email: DB-configured provider first (Settings → Platform Notifications), then falls back to env Resend/SMTP. */
@@ -175,16 +158,16 @@ export async function sendPlatformEmail(input: PlatformEmailInput): Promise<Plat
 export async function verifyPlatformEmailTransport(): Promise<PlatformEmailResult> {
   const config = await loadPlatformEmailIntegrationConfig();
   const secrets = await loadPlatformEmailIntegrationSecrets();
-  const smtp = resolveDbSmtpOptions(config, secrets.smtpPassword ?? "");
+  const smtp = resolveSmtpTransportOptions(config, secrets.smtpPassword ?? "");
   if (!smtp) return { sent: false, reason: "not_configured" };
-  try {
-    const transporter = nodemailer.createTransport({ ...smtp, ...SMTP_TIMEOUT_OPTIONS });
-    await transporter.verify();
-    return { sent: true };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "SMTP verification failed";
-    return { sent: false, reason: "transport_error", message };
+  const outcome = await verifySmtpConnection(
+    createSmtpTransporter(smtp),
+    "SMTP verification failed",
+  );
+  if (!outcome.ok) {
+    return { sent: false, reason: "transport_error", message: outcome.message };
   }
+  return { sent: true };
 }
 
 export interface PlatformVerificationEmailInput {

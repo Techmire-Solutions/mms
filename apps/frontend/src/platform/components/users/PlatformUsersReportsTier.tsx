@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES } from "@mms/shared";
 import { getPlatformAdminMetrics } from "@/platform/lib/platformAdminMetrics";
-import { PLATFORM_PERMISSION_CONFIG } from "@/platform/lib/platformPermissionConfig";
+import { platformPermissionEntries } from "@/platform/lib/platformPermissionConfig";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import {
   Badge,
@@ -42,9 +42,9 @@ export function PlatformUsersReportsTier(): React.JSX.Element {
 
   const { total, superUsers, standardAdmins, active, disabled, verified, verifiedPct } =
     getPlatformAdminMetrics(admins);
-  const capabilityStats = PLATFORM_PERMISSION_CONFIG.map(({ key, labelKey }) => ({
+  const capabilityStats = platformPermissionEntries().map(([key, cap]) => ({
     key,
-    label: t(labelKey),
+    label: t(cap.labelKey),
     count: admins.filter((admin) => admin.role === "super_user" || admin.permissions[key]).length,
   }));
 

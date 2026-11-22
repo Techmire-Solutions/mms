@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import type { FastifyReply } from "fastify";
 import type { JWT } from "@fastify/jwt";
 import { requiresTwoFactor, type BrandingSocialLink } from "@mms/shared";
@@ -76,8 +76,9 @@ export interface OnboardResult extends AuthResult {
 }
 
 import { parseSessionTimeoutMinutes } from "@mms/shared";
-import { resetSessionClock, tenantSessionScope } from "../sessionClockService.js";
+import { tenantSessionScope } from "../sessionClockService.js";
 import { tenantSessionPolicy } from "../sessionPolicyService.js";
+import { establishSession as establishSessionShared } from "./sessionEstablishment.js";
 
 export async function establishSession(
   user: PublicUser,
@@ -86,19 +87,23 @@ export async function establishSession(
   twoFactorVerified = true,
 ): Promise<AuthResult> {
   const accessExpiresIn = await getJwtExpiresIn();
-  const jti = randomUUID();
-  const accessToken = jwtSigner.sign(
-    { ...user, twoFactorVerified, tokenType: "access", jti, iat_ms: Date.now() },
-    { expiresIn: accessExpiresIn },
-  );
-  const refreshToken = await issueRefreshToken(user);
-  clearPlatformAccessCookie(reply);
-  setAuthCookies(reply, accessToken, refreshToken);
-
   const scope = tenantSessionScope(user.workspaceSubdomain, String(user.id));
   const settings = await loadGlobalSettings(user.workspaceSubdomain);
   const sessionPolicy = tenantSessionPolicy(parseSessionTimeoutMinutes(settings.sessionTimeout));
-  await resetSessionClock(scope, sessionPolicy.idleMs);
+
+  await establishSessionShared({
+    domain: "tenant",
+    jwtSigner,
+    reply,
+    claims: { ...user, twoFactorVerified, tokenType: "access", iat_ms: Date.now() },
+    expiresIn: accessExpiresIn,
+    refreshTokenProvider: () => issueRefreshToken(user),
+    clearOtherDomainCookies: () => clearPlatformAccessCookie(reply),
+    setDomainCookies: (accessToken, refreshToken) =>
+      setAuthCookies(reply, accessToken, refreshToken ?? ""),
+    sessionScope: scope,
+    idleMs: sessionPolicy.idleMs,
+  });
 
   return { user };
 }

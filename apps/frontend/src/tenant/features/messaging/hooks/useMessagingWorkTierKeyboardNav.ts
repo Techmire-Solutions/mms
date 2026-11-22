@@ -12,20 +12,25 @@ interface UseMessagingWorkTierKeyboardNavParams {
   handleOpenDetail: (log: Message) => void;
 }
 
+/** Focus travels with the log set it belongs to (the selection hook's scope pattern). */
+interface KeyboardFocusState {
+  logs: Message[];
+  focusedLogId: string | null;
+}
+
 export function useMessagingWorkTierKeyboardNav({
   logs,
   toggleLog,
   handleOpenDetail,
 }: UseMessagingWorkTierKeyboardNavParams): { focusedIndex: number } {
-  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
-  const [previousLogs, setPreviousLogs] = useState(logs);
+  // Focus is scoped to the visible log set: a replaced set reads as no focus
+  // (-1) and the next key press rewrites both. This derives during render
+  // instead of resetting state from an effect or mid-render (compiler-safe).
+  const [focus, setFocus] = useState<KeyboardFocusState>({ logs, focusedLogId: null });
   const reducedMotion = useReducedMotion();
 
-  // Any change to the visible log set invalidates the row index - reset during render.
-  if (previousLogs !== logs) {
-    setPreviousLogs(logs);
-    setFocusedIndex(-1);
-  }
+  const focusedIndex =
+    focus.logs === logs ? logs.findIndex((log) => String(log.id) === focus.focusedLogId) : -1;
 
   // Keep the focused row visible without jarring scroll jumps.
   useEffect(() => {
@@ -54,10 +59,15 @@ export function useMessagingWorkTierKeyboardNav({
 
       if (e.key === "ArrowDown" || e.key === "j") {
         e.preventDefault();
-        setFocusedIndex((prev) => (prev < logs.length - 1 ? prev + 1 : 0));
+        const nextIndex =
+          focusedIndex >= 0 && focusedIndex < logs.length - 1 ? focusedIndex + 1 : 0;
+        const nextLog = logs[nextIndex];
+        if (nextLog) setFocus({ logs, focusedLogId: String(nextLog.id) });
       } else if (e.key === "ArrowUp" || e.key === "k") {
         e.preventDefault();
-        setFocusedIndex((prev) => (prev > 0 ? prev - 1 : logs.length - 1));
+        const nextIndex = focusedIndex > 0 ? focusedIndex - 1 : logs.length - 1;
+        const nextLog = logs[nextIndex];
+        if (nextLog) setFocus({ logs, focusedLogId: String(nextLog.id) });
       } else if (e.key === " " && focusedIndex >= 0 && focusedIndex < logs.length) {
         e.preventDefault();
         const targetLog = logs[focusedIndex];

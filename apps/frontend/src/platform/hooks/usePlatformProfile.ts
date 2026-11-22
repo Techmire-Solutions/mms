@@ -6,6 +6,7 @@ import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { getPlatformErrorMessage } from "@/platform/lib/platformAuthErrors";
+import { assertContractOk } from "@/lib/apiContractError";
 import { PLATFORM_PROFILE_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
 
 export { PLATFORM_PROFILE_QUERY_KEY } from "@/platform/lib/platformQueryKeys";
@@ -71,14 +72,8 @@ export function useUpdatePlatformProfileName() {
       if (patch.name !== undefined) body.name = patch.name.trim();
       if (patch.phone !== undefined) body.phone = patch.phone.trim();
       const res = await apiContract.platform.patchMe({ body });
-      const resBody =
-        res.body && typeof res.body === "object" && "user" in res.body
-          ? (res.body as { user: PlatformUserProfile })
-          : null;
-      if (!resBody?.user) {
-        throw new Error("Failed to update name");
-      }
-      return resBody.user;
+      assertContractOk(res, "Failed to update name");
+      return (res.body as { user: PlatformUserProfile }).user;
     },
     onSuccess: async (user) => {
       queryClient.setQueryData(PLATFORM_PROFILE_QUERY_KEY, (old) => updateProfileCache(old, user));
@@ -102,6 +97,7 @@ export function useUpdatePlatformPassword() {
       const res = await apiContract.platform.changePassword({
         body: { currentPassword, newPassword },
       });
+      assertContractOk(res, "Failed to change password");
       return res.body as { success: boolean };
     },
   });

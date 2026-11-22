@@ -48,4 +48,22 @@ describe("sessions setup API status handling", () => {
     h.updateLookupKind.mockResolvedValueOnce(forbidden);
     await expect(putSessionLookupKind("statuses", ["open"])).rejects.toBeInstanceOf(ApiError);
   });
+
+  it("forwards the query abort signal to getPreferences", async () => {
+    const controller = new AbortController();
+    h.getPreferences.mockResolvedValueOnce({ status: 200, body: { preferences: {} } });
+    await fetchSessionPreferences(controller.signal);
+    expect(h.getPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: controller.signal }),
+    );
+  });
+
+  it("forwards the query abort signal to getLookups", async () => {
+    const controller = new AbortController();
+    h.getLookups.mockResolvedValueOnce({ status: 200, body: { lookups: { statuses: [] } } });
+    await fetchSessionLookups(controller.signal);
+    expect(h.getLookups).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: controller.signal }),
+    );
+  });
 });

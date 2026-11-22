@@ -1,4 +1,4 @@
-import { useQueryClient, queryOptions } from "@tanstack/react-query";
+import { useQueryClient, queryOptions, keepPreviousData } from "@tanstack/react-query";
 import type { AttendanceCommandMetricsSnapshot, AttendanceListPageResult } from "@mms/shared";
 import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
@@ -81,7 +81,7 @@ export function useAttendancePaginated(params: AttendancePaginatedParams) {
     },
     enabled: isAuthenticated && (params.enabled ?? true),
     staleTime: 15_000,
-    placeholderData: (previousData: unknown) => previousData,
+    placeholderData: keepPreviousData,
   });
 
   return { ...query, data: query.data?.body as AttendanceListPageResult | undefined };
@@ -154,17 +154,18 @@ export function attendanceListQueryOptions(query: Record<string, unknown> = {}) 
       assertContractOk(response, "Failed to fetch attendance");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
 
 export function useAttendanceContractList(query: Record<string, unknown>, enabled = true) {
+  const { isAuthenticated } = useAuth();
   return tsrClient.attendance.list.useQuery({
     queryKey: [...ATTENDANCE_QUERY_KEY, query],
     queryData: { query },
     staleTime: 15_000,
-    enabled,
+    enabled: isAuthenticated && enabled,
   });
 }
 

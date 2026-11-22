@@ -3,7 +3,7 @@ import { Activity, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { m } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { itemVariants } from "@/platform/lib/animations";
+import { itemVariants } from "@/lib/motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { Button } from "@shared/ui";
@@ -26,7 +26,7 @@ export function PlatformDashboardTelemetry(): React.JSX.Element | null {
     <m.div
       variants={reducedMotion ? undefined : itemVariants}
       initial={reducedMotion ? false : "hidden"}
-      animate="show"
+      animate="visible"
       className={cn(
         WORK_SURFACE,
         "flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4",

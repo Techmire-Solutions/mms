@@ -18,8 +18,14 @@ export function useScrollSurfaceOnChange(
   const enabled = options.enabled ?? true;
   const behavior = options.behavior ?? "smooth";
   const block = options.block ?? "start";
-  const resolveMobileTargetRef = useRef(options.resolveMobileTarget);
-  resolveMobileTargetRef.current = options.resolveMobileTarget;
+  const resolveMobileTarget = options.resolveMobileTarget;
+  // Latest-callback ref, synced in an effect: listing `resolveMobileTarget` in the
+  // scroll effect's deps would re-scroll on every render when the caller passes an
+  // inline resolver, and writing the ref during render is banned (`react-hooks/refs`).
+  const resolveMobileTargetRef = useRef(resolveMobileTarget);
+  useEffect(() => {
+    resolveMobileTargetRef.current = resolveMobileTarget;
+  }, [resolveMobileTarget]);
   const skipInitialRef = useRef(true);
 
   useEffect(() => {

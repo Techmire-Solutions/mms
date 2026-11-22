@@ -69,17 +69,46 @@ export function FacultyFormDesignationSection(
     isFieldEnabled("employDesignationStatus") ||
     isFieldEnabled("profileStatus");
 
+  // Granular deps: destructure exactly the draft fields the resolver reads so the
+  // memo recomputes only when one of them changes (typing a name must not rebuild
+  // rows), and every read field — including `profileStatus`, the resolver's
+  // fallback when no explicit employ status is set — is tracked.
+  const {
+    designationId,
+    employDesignations,
+    employDesignationId,
+    designationStartDate,
+    designationEndDate,
+    employDesignationStatus,
+    profileStatus,
+  } = facultyDraft;
+
   const rows = useMemo(
-    () => (showAny ? resolveFormRows(facultyDraft, today) : []),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the specific draft fields the resolver reads; depending on the whole `facultyDraft` object (new each render) would recompute this on every keystroke.
+    () =>
+      showAny
+        ? resolveFormRows(
+            {
+              designationId,
+              employDesignations,
+              employDesignationId,
+              designationStartDate,
+              designationEndDate,
+              employDesignationStatus,
+              profileStatus,
+            },
+            today,
+          )
+        : [],
     [
       showAny,
-      facultyDraft.designationId,
-      facultyDraft.employDesignations,
-      facultyDraft.employDesignationId,
-      facultyDraft.designationStartDate,
-      facultyDraft.designationEndDate,
-      facultyDraft.employDesignationStatus,
+      designationId,
+      employDesignations,
+      employDesignationId,
+      designationStartDate,
+      designationEndDate,
+      employDesignationStatus,
+      profileStatus,
+      today,
     ],
   );
   const primaryClientId = pickPrimaryEmployDesignationRow(rows)?.clientId;

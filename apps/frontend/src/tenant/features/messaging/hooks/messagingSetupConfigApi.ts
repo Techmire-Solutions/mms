@@ -3,8 +3,12 @@ import { createModuleSetupConfigApi } from "@/lib/query/createModuleSetupConfigA
 import { normalizeMessagingPreferences, type MessagingPreferences } from "@mms/shared";
 
 const api = createModuleSetupConfigApi<MessagingPreferences>({
-  fetchPreferencesFn: async (_signal) => {
-    const res = await apiContract.messaging.getPreferences({ extraHeaders: {} });
+  fetchPreferencesFn: async (signal) => {
+    const res = await apiContract.messaging.getPreferences({
+      extraHeaders: {},
+      signal,
+      fetchOptions: { signal },
+    });
     return (res.body as { preferences: MessagingPreferences }).preferences;
   },
   savePreferencesFn: async (prefs) => {

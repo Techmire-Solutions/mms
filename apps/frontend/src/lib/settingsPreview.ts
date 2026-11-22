@@ -9,7 +9,7 @@ import {
   setBrandingPreview,
   setGlobalPreview,
 } from "@/lib/settingsPreviewStore";
-import { isTenantHost } from "@/platform/lib/themeScope";
+import { isTenantHost } from "@/lib/branding/platformThemeConfig";
 
 export {
   getEffectiveGlobalSettingsScoped as getEffectiveGlobalSettings,

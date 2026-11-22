@@ -2,9 +2,10 @@ import { BACKGROUND_JOBS_API_PATH, type BackgroundJobRecord } from "@mms/shared"
 import { apiFetch, apiJson } from "@/lib/apiClient";
 import { triggerFileDownload } from "@/lib/download";
 
-export async function fetchBackgroundJobs(): Promise<BackgroundJobRecord[]> {
+export async function fetchBackgroundJobs(signal?: AbortSignal): Promise<BackgroundJobRecord[]> {
   const jobsResponse = await apiJson<{ jobs: BackgroundJobRecord[] }>(BACKGROUND_JOBS_API_PATH, {
     priority: "low",
+    signal,
   });
   return jobsResponse?.jobs ?? [];
 }

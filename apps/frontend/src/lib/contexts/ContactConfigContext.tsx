@@ -13,7 +13,7 @@
  *   const columns = useContactColumns();         // dynamic table columns
  *   const schema  = useContactValidation();     // dynamic Zod-like validation
  */
-import React, { useCallback, useMemo, useRef, type ReactNode, useContext } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, type ReactNode, useContext } from "react";
 import {
   ContactConfigContext,
   type ContactConfigContextType,
@@ -57,11 +57,18 @@ export function ContactConfigProvider({ children }: { children: ReactNode }) {
   const { data: prefsData } = useContactPreferencesQuery();
   const { mutateAsync: updatePrefsAsync } = useContactPreferencesMutation();
 
+  // Latest-value refs: the stable ([ ]) update callbacks below read the newest
+  // mutation/data at call time. Refs are synced in effects — never during render
+  // (React Compiler / `react-hooks/refs`).
   const updatePrefsAsyncRef = useRef(updatePrefsAsync);
-  updatePrefsAsyncRef.current = updatePrefsAsync;
+  useEffect(() => {
+    updatePrefsAsyncRef.current = updatePrefsAsync;
+  }, [updatePrefsAsync]);
 
   const prefsDataRef = useRef(prefsData);
-  prefsDataRef.current = prefsData;
+  useEffect(() => {
+    prefsDataRef.current = prefsData;
+  }, [prefsData]);
 
   const updatePrefs = useCallback((newPrefs: Partial<ContactPreferences>) => {
     const fullPrefs: ContactPreferences = {
@@ -86,13 +93,17 @@ export function ContactConfigProvider({ children }: { children: ReactNode }) {
   const { mutateAsync: updateLookupKind } = useContactLookupMutation();
 
   const updateLookupKindRef = useRef(updateLookupKind);
-  updateLookupKindRef.current = updateLookupKind;
+  useEffect(() => {
+    updateLookupKindRef.current = updateLookupKind;
+  }, [updateLookupKind]);
 
   const { data: fieldConfigResponse } = useContactsContractFieldConfig(isAuthenticated);
   const { mutateAsync: updateFieldConfig } = useContactsContractUpdateFieldConfig();
 
   const updateFieldConfigRef = useRef(updateFieldConfig);
-  updateFieldConfigRef.current = updateFieldConfig;
+  useEffect(() => {
+    updateFieldConfigRef.current = updateFieldConfig;
+  }, [updateFieldConfig]);
 
   const updateConfigAsync = useCallback(async (nextConfig: FieldConfig) => {
     await updateFieldConfigRef.current({ body: nextConfig });

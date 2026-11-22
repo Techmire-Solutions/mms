@@ -66,6 +66,7 @@ pnpm test:e2e tests/responsive-shell.spec.ts
 ## References
 
 - Review checklist: `references/frontend-review.md`
+- Hook review checklist (every-hook audit): `references/hook-review-checklist.md`
 
 ## Related skills
 

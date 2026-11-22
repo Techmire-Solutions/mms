@@ -3,7 +3,7 @@
  * query hooks, and contract mutations.
  */
 import { apiContract, tsrClient } from "@/lib/api";
-import { queryOptions, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
 import {
   EXAMINATIONS_EXAMS_QUERY_KEY,
   EXAMINATIONS_RESULTS_QUERY_KEY,
@@ -23,7 +23,7 @@ export function examinationsExamsListQueryOptions(query: Record<string, unknown>
       assertContractOk(response, "Failed to fetch exams");
       return response.body;
     },
-    placeholderData: (prev) => prev,
+    placeholderData: keepPreviousData,
     staleTime: 15_000,
   });
 }
@@ -33,6 +33,7 @@ export function useExaminationsContractList(query: Record<string, unknown> = {},
     queryKey: [...EXAMINATIONS_EXAMS_QUERY_KEY, "contract-list", query],
     queryData: { query },
     staleTime: 15_000,
+    placeholderData: keepPreviousData,
     enabled,
   });
 }
@@ -45,6 +46,7 @@ export function useExaminationsContractResults(
     queryKey: [...EXAMINATIONS_RESULTS_QUERY_KEY, "contract-results", query],
     queryData: { query },
     staleTime: 15_000,
+    placeholderData: keepPreviousData,
     enabled,
   });
 }

@@ -1,42 +1,46 @@
 import { useState } from "react";
-
-const STORAGE_KEY = "mms_platform_notif_ack";
-
-function readAckedIds(): Set<string> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return new Set();
-    const parsed = JSON.parse(raw) as unknown;
-    if (Array.isArray(parsed)) return new Set(parsed as string[]);
-  } catch {
-    // ignore
-  }
-  return new Set();
-}
-
-function writeAckedIds(ids: Set<string>): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
-  } catch {
-    // ignore quota/private mode
-  }
-}
+import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import {
+  readPlatformNotificationAcks,
+  writePlatformNotificationAcks,
+} from "@/platform/lib/platformNotificationAckStorage";
 
 interface UsePlatformNotificationAckResult {
   ackedIds: Set<string>;
   ackAll: (ids: string[]) => void;
 }
 
-/** Persists acknowledged platform notification IDs in localStorage to clear the red dot. */
+/**
+ * Persists acknowledged platform notification IDs to localStorage to clear the
+ * red dot. The key is scoped per platform admin (`_u:<userId>`), so one
+ * operator's acks never suppress another operator's unread badges on a shared
+ * device; without a signed-in user the set stays in memory only.
+ */
 export function usePlatformNotificationAck(): UsePlatformNotificationAckResult {
-  const [ackedIds, setAckedIds] = useState<Set<string>>(() => readAckedIds());
+  const { platformUser } = usePlatformAuth();
+  const userId = platformUser?.id ?? null;
+
+  const [state, setState] = useState<{ userId: string | null; ids: Set<string> }>(() => ({
+    userId,
+    ids: readPlatformNotificationAcks(userId),
+  }));
+
+  // Re-hydrate when the signed-in admin changes (logout/login or account
+  // switch). Reset during render — never from an effect.
+  const [prevUserId, setPrevUserId] = useState(userId);
+  if (prevUserId !== userId) {
+    setPrevUserId(userId);
+    setState({ userId, ids: readPlatformNotificationAcks(userId) });
+  }
+
+  const ackedIds = state.userId === userId ? state.ids : readPlatformNotificationAcks(userId);
 
   const ackAll = (ids: string[]) => {
-    setAckedIds((prev) => {
-      const next = new Set(prev);
+    setState((prev) => {
+      const next = new Set(prev.ids);
       for (const id of ids) next.add(id);
-      writeAckedIds(next);
-      return next;
+      writePlatformNotificationAcks(prev.userId, next);
+      return { userId: prev.userId, ids: next };
     });
   };
 

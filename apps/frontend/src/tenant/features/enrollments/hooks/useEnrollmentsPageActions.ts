@@ -123,10 +123,13 @@ export function useEnrollmentsPageActions({
     event: string,
     patch: Partial<Enrollment>,
   ) => {
+    // One timestamp for both the optimistic row and the sent payload so the detail view
+    // and the server row agree on the entry.
+    const timelineEvent = { ts: new Date().toISOString(), event, by: role };
     const updated: Enrollment = {
       ...enrollment,
       ...patch,
-      timeline: [...(enrollment.timeline || []), { ts: new Date().toISOString(), event, by: role }],
+      timeline: [...(enrollment.timeline || []), timelineEvent],
     };
     // Send only what changed plus the new timeline event (the server appends entries without
     // an id). Sending the full row would carry the list projection's empty `notes` back.
@@ -135,7 +138,7 @@ export function useEnrollmentsPageActions({
         id: enrollment.id,
         enrollment: {
           ...patch,
-          timeline: [{ ts: new Date().toISOString(), event, by: role }],
+          timeline: [timelineEvent],
         },
       },
       {

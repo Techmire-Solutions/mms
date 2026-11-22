@@ -1,142 +1,62 @@
 import React from "react";
-import { MessageSquare } from "lucide-react";
-import { type AppTranslationKey, type SmsProviderId } from "@mms/shared";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Input, IntegrationPanelChrome, Label } from "@shared/ui";
-import { PasswordInput } from "@/components/app/PasswordInput";
-import { useSmsIntegrationPanel } from "../hooks/useSmsIntegrationPanel";
+import { useQueryClient } from "@tanstack/react-query";
+import { listSmsProviderPresets } from "@mms/shared";
+import { mapApiFormError } from "@/lib/forms/serverFormErrors";
+import { useTranslation } from "@/hooks/useTranslation";
+import { SmsIntegrationPanel as SharedSmsIntegrationPanel } from "@/components/app/IntegrationPanels/SmsIntegrationPanel";
+import type { SmsIntegrationApi } from "@/components/app/IntegrationPanels/types";
+import {
+  fetchSmsIntegration,
+  saveSmsIntegration,
+  testSmsIntegration,
+} from "@/lib/smsIntegrationApi";
+
+const TENANT_SMS_INTEGRATION_API: SmsIntegrationApi = {
+  fetchConfig: fetchSmsIntegration,
+  saveConfig: saveSmsIntegration,
+  testConfig: testSmsIntegration,
+};
+
+function resolveSelectedPresetBaseUrlPlaceholder(
+  configApiBaseUrl: string | undefined,
+  providerId: string,
+): string | undefined {
+  const presets = listSmsProviderPresets();
+  const preset = presets.find((p) => p.id === providerId) ?? presets[0];
+  return configApiBaseUrl?.trim() || preset.baseUrlPlaceholder || undefined;
+}
 
 /**
  * One active provider at a time — Twilio, Vonage, MSG91, Infobip, or Telesign.
- * Only mounted by the parent while SMS Notifications is enabled.
+ * Thin tenant adapter over the shared `IntegrationPanels` SmsIntegrationPanel.
  */
 export default function SmsIntegrationPanel({
   canWrite = true,
 }: {
   canWrite?: boolean;
 }): React.JSX.Element {
-  const {
-    t,
-    providers,
-    loading,
-    saving,
-    testing,
-    actionError,
-    form,
-    accountSecret,
-    setAccountSecret,
-    testPhone,
-    setTestPhone,
-    selectedPreset,
-    setField,
-    handleSave,
-    handleTest,
-  } = useSmsIntegrationPanel();
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return (
-    <IntegrationPanelChrome
-      icon={MessageSquare}
-      title={t("sms.integrationTitle")}
-      description={t("sms.integrationDesc")}
-      calloutText={t("sms.separateSaveNote")}
-      connected={form.connected}
-      lastTestOk={form.lastTestOk}
-      statusConnectedText={t("sms.statusConnected")}
-      statusNotConnectedText={t("sms.statusNotConnected")}
-      loading={loading}
-      lastError={actionError ?? form.lastError}
-      saving={saving}
-      testing={testing}
-      saveDisabled={!canWrite}
-      testDisabled={!canWrite}
-      saveLabel={t("sms.saveConnection")}
-      testLabel={t("sms.sendTest")}
-      onSave={() => void handleSave()}
-      onTest={() => void handleTest()}
-      footerContent={
-        <div className="space-y-2">
-          <Label htmlFor="sms-test-phone">{t("sms.testPhonePlaceholder")}</Label>
-          <Input
-            id="sms-test-phone"
-            name="testPhone"
-            type="tel"
-            value={testPhone}
-            onChange={(event) => setTestPhone(event.target.value)}
-            placeholder="+923001234567"
-            disabled={!canWrite}
-          />
-        </div>
-      }
-    >
-      <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor="sms-provider">{t("sms.provider")}</Label>
-        <FormSelect
-          id="sms-provider"
-          name="providerId"
-          value={form.providerId}
-          onChange={(v) => setField("providerId", v as SmsProviderId)}
-          disabled={!canWrite}
-          options={providers.map((preset) => ({
-            value: preset.id,
-            label: t(preset.labelKey as AppTranslationKey),
-          }))}
-        />
-        <p className="text-xs text-muted-foreground">
-          {t(selectedPreset.hintKey as AppTranslationKey)}
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="sms-account-id">{t("sms.accountId")}</Label>
-        <Input
-          id="sms-account-id"
-          name="accountId"
-          value={form.accountId}
-          onChange={(event) => setField("accountId", event.target.value)}
-          disabled={!canWrite}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="sms-sender-id">{t("sms.senderId")}</Label>
-        <Input
-          id="sms-sender-id"
-          name="senderId"
-          value={form.senderId}
-          onChange={(event) => setField("senderId", event.target.value)}
-          disabled={!canWrite}
-        />
-      </div>
-
-      <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor="sms-account-secret">{t("sms.accountSecret")}</Label>
-        <PasswordInput
-          id="sms-account-secret"
-          name="smsAccountSecret"
-          value={accountSecret}
-          onChange={(event) => setAccountSecret(event.target.value)}
-          disabled={!canWrite}
-          placeholder={
-            form.hasCredentials
-              ? t("sms.accountSecretPlaceholderSaved")
-              : t("sms.accountSecretPlaceholder")
-          }
-          autoComplete="new-password"
-        />
-      </div>
-
-      {selectedPreset.requiresBaseUrl && (
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="sms-api-base-url">{t("sms.apiBaseUrl")}</Label>
-          <Input
-            id="sms-api-base-url"
-            name="apiBaseUrl"
-            value={form.apiBaseUrl ?? ""}
-            onChange={(event) => setField("apiBaseUrl", event.target.value)}
-            placeholder={selectedPreset.baseUrlPlaceholder}
-            disabled={!canWrite}
-          />
-        </div>
-      )}
-    </IntegrationPanelChrome>
+    <SharedSmsIntegrationPanel
+      api={TENANT_SMS_INTEGRATION_API}
+      canWrite={canWrite}
+      seedTestTarget={(config) => config.senderId}
+      prepareSaveConfig={(config, accountSecret) => ({
+        ...config,
+        apiBaseUrl: resolveSelectedPresetBaseUrlPlaceholder(config.apiBaseUrl, config.providerId),
+        accountSecret: accountSecret.trim() || undefined,
+      })}
+      resolveTestTarget={(config, testPhone) => testPhone.trim() || config.senderId.trim()}
+      testTargetRequiredKey="sms.testPhonePlaceholder"
+      resolveActionError={(error, failedKey) => {
+        const mapped = mapApiFormError(error);
+        return { description: mapped.message, inlineMessage: mapped.message ?? t(failedKey) };
+      }}
+      onConfigSaved={() => {
+        void queryClient.invalidateQueries({ queryKey: ["sms-integration"] });
+      }}
+    />
   );
 }

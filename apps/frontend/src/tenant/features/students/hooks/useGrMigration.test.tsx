@@ -155,4 +155,26 @@ describe("useGrMigration", () => {
 
     expect(mocks.migrate).toHaveBeenCalledTimes(1);
   });
+
+  it("shares one in-flight backfill across simultaneously mounted hooks", async () => {
+    const client = createTestQueryClient();
+    function TestComponent() {
+      useGrMigration("work", true);
+      return null;
+    }
+    act(() => {
+      root.render(
+        withQueryClient(
+          <>
+            <TestComponent />
+            <TestComponent />
+          </>,
+          client,
+        ),
+      );
+    });
+
+    await vi.waitFor(() => expect(localStorage.getItem(MIGRATION_KEY)).toBe("1"));
+    expect(mocks.migrate).toHaveBeenCalledTimes(1);
+  });
 });

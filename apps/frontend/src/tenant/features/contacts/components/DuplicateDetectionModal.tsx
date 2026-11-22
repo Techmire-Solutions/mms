@@ -80,6 +80,7 @@ export function DuplicateDetectionModal({
   // Rule: lists > 30 items are virtualized. "Load more" appends 50 pairs at a
   // time, and each pair card is heavy — render only the visible window.
   const isVirtualized = activePairs.length > VIRTUALIZE_PAIR_THRESHOLD;
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual is not React-Compiler-compatible (upstream); this component intentionally stays uncompiled.
   const pairVirtualizer = useVirtualizer({
     count: activePairs.length,
     getScrollElement: () => listScrollRef.current,

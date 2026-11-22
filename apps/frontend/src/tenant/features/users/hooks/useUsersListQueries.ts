@@ -35,6 +35,7 @@ export function useUsersPaginated(params: UsersPaginatedParams) {
 export async function fetchAllUsersForQuery(
   params: Omit<UsersPaginatedParams, "page" | "enabled"> = {},
   onProgress?: (fetched: number, total: number) => void,
+  signal?: AbortSignal,
 ): Promise<UsersListPageResult["users"]> {
   const limit = USERS_MODULE_MANIFEST.maxPageSize;
   const all: UsersListPageResult["users"] = [];
@@ -44,6 +45,8 @@ export async function fetchAllUsersForQuery(
   for (;;) {
     const response = await apiContract.users.list({
       query: { ...params, page, limit },
+      signal,
+      fetchOptions: { signal },
     });
     const usersPage = response.body as UsersListPageResult;
     all.push(...usersPage.users);

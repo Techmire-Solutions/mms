@@ -61,17 +61,10 @@ export function NotificationsPanel({ items, onOpen }: NotificationsPanelProps): 
     getInitialDismissed(storageKey),
   );
 
-  const dismissedSet = (() => new Set(dismissed))();
-
-  const { visible, urgent } = (() => {
-    let urgentCount = 0;
-    const filtered = items.filter((item) => {
-      if (dismissedSet.has(item.id)) return false;
-      if (item.urgent) urgentCount += 1;
-      return true;
-    });
-    return { visible: filtered, urgent: urgentCount };
-  })();
+  const dismissedSet = new Set(dismissed);
+  // Pure derivation (no mutation during render): filter first, then count.
+  const visible = items.filter((item) => !dismissedSet.has(item.id));
+  const urgent = visible.reduce((count, item) => count + (item.urgent ? 1 : 0), 0);
 
   const handleDismiss = (id: string | number) => {
     setDismissed((prev) => {

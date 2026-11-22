@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { type BackupCredentials, type PendingDecrypt, type PendingRestore } from "@mms/shared";
 import { verifyAdminBackupPassword } from "@/lib/backupAuth";
 import { importDatabase } from "@/lib/db";
@@ -45,6 +46,15 @@ export function useBackupRestoreImportActions({
   safetyReady,
   queuePlaintextRestore,
 }: UseBackupRestoreImportActionsOptions) {
+  // Post-restore reload timer: cleared on unmount so navigating away before it
+  // fires never yanks the user back with a page reload.
+  const reloadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
+    };
+  }, []);
+
   /**
    * Step 1 of restore: re-authenticate the signed-in admin, then download an encrypted
    * safety copy of the current workspace. Only a completed download unlocks the wipe.
@@ -88,7 +98,7 @@ export function useBackupRestoreImportActions({
       // (session + public settings live in AuthContext). Only a full re-bootstrap
       // reapplies all of them, so we reload rather than just invalidate the cache.
       // Defer briefly so the success confirmation above is visible before reload.
-      setTimeout(() => window.location.reload(), 1200);
+      reloadTimerRef.current = setTimeout(() => window.location.reload(), 1200);
     } catch (err) {
       const error = err as Error;
       notify.error(t("backup.restoreFailed"), { description: errorDescription(error.message) });

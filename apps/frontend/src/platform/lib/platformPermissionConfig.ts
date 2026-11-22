@@ -1,46 +1,50 @@
 import { Building2, UserPlus, Settings, ShieldCheck, Server, type LucideIcon } from "lucide-react";
 import type { AppTranslationKey, PlatformAdminPermissionKey } from "@mms/shared";
 
-export const PLATFORM_PERMISSION_CONFIG: {
-  key: PlatformAdminPermissionKey;
+export interface PlatformPermissionConfigEntry {
   labelKey: AppTranslationKey;
   descriptionKey: AppTranslationKey;
   icon: LucideIcon;
-  name: string;
-}[] = [
-  {
-    key: "workspaces",
+}
+
+/** Typed entry iteration preserving the declaration order. */
+export function platformPermissionEntries(): [
+  PlatformAdminPermissionKey,
+  PlatformPermissionConfigEntry,
+][] {
+  return Object.entries(PLATFORM_PERMISSION_CONFIG) as [
+    PlatformAdminPermissionKey,
+    PlatformPermissionConfigEntry,
+  ][];
+}
+
+export const PLATFORM_PERMISSION_CONFIG: Record<
+  PlatformAdminPermissionKey,
+  PlatformPermissionConfigEntry
+> = {
+  workspaces: {
     labelKey: "platform.permWorkspaces",
     descriptionKey: "platform.permWorkspacesDesc",
     icon: Building2,
-    name: "permWorkspaces",
   },
-  {
-    key: "onboard",
+  onboard: {
     labelKey: "platform.permOnboard",
     descriptionKey: "platform.permOnboardDesc",
     icon: UserPlus,
-    name: "permOnboard",
   },
-  {
-    key: "settings",
+  settings: {
     labelKey: "platform.permSettings",
     descriptionKey: "platform.permSettingsDesc",
     icon: Settings,
-    name: "permSettings",
   },
-  {
-    key: "admins",
+  admins: {
     labelKey: "platform.permAdmins",
     descriptionKey: "platform.permAdminsDesc",
     icon: ShieldCheck,
-    name: "permAdmins",
   },
-  {
-    key: "system",
+  system: {
     labelKey: "platform.permSystem",
     descriptionKey: "platform.permSystemDesc",
     icon: Server,
-    name: "permSystem",
   },
-];
+};

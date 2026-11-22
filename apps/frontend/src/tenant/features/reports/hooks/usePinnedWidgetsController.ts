@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getObject, saveObject } from "@/lib/db";
 import {
   isRestWidgetCollection,
   persistWidgetRecordToggle,
 } from "@/lib/reports/widgetRecordToggle";
+import { toggleDashboardSwitchState } from "@/tenant/features/reports/components/pinnedWidgets/useDashboardSectionSettings";
 import { useWidgetCollections } from "@/lib/reports/useReportCollections";
 import { useDashboardConfig } from "@/hooks/useDashboardConfig";
 import { useContactsWidgetAggregates } from "@/tenant/hooks/collections/contacts";
@@ -43,6 +44,27 @@ export function usePinnedWidgetsController(category: string) {
       DEFAULT_SECTION_SETTINGS,
     );
   });
+
+  // Keep the local copy in sync when another surface (DashboardWidgets) toggles the
+  // same section keys and broadcasts `local-database-update` (same protocol as
+  // `useKpiSummaryCustomCards`).
+  useEffect(() => {
+    const syncSectionSettings = () => {
+      const stored = getObject<Record<string, boolean>>(
+        "dashboard_section_settings",
+        DEFAULT_SECTION_SETTINGS,
+      );
+      setSectionSettings((current) => {
+        const keys = new Set([...Object.keys(current), ...Object.keys(stored)]);
+        for (const key of keys) {
+          if (Boolean(current[key]) !== Boolean(stored[key])) return stored;
+        }
+        return current;
+      });
+    };
+    window.addEventListener("local-database-update", syncSectionSettings);
+    return () => window.removeEventListener("local-database-update", syncSectionSettings);
+  }, []);
   const normalizedCategory = (() => {
     if (category === "faculty") return "faculty";
     if (category === "finance" || category === "financial") return "financial";
@@ -135,19 +157,9 @@ export function usePinnedWidgetsController(category: string) {
   };
   const handleToggleSwitchStateLocal = (widget: CustomWidget) => {
     if (widget.switchActionType === "app_setting") {
-      const switchStateKey = widget.switchStateKey || "";
-      if (switchStateKey.startsWith("section_")) {
-        const sectionKey = switchStateKey.replace("section_", "");
-        const settings = getObject<Record<string, boolean>>("dashboard_section_settings", {});
-        settings[sectionKey] = !settings[sectionKey];
-        saveObject("dashboard_section_settings", settings);
-      } else {
-        const currentSwitchValue =
-          getObject<unknown>(switchStateKey, false) === true ||
-          getObject<unknown>(switchStateKey, "false") === "true";
-        saveObject(switchStateKey, !currentSwitchValue);
-      }
-      window.dispatchEvent(new Event("local-database-update"));
+      // Delegates to the shared helper — the same code path `DashboardWidgets` uses,
+      // so both surfaces read/write one section-settings record consistently.
+      toggleDashboardSwitchState(widget.switchStateKey || "");
       return;
     }
     const collectionName = widget.switchCollection;
