@@ -1,4 +1,4 @@
-import type { DocumentTemplate, TemplateFieldDefinition } from "@mms/shared";
+import type { DocumentTemplate } from "@mms/shared";
 
 /** Flat payload shape passed to TemplateElementContent when rendering student cards. */
 export interface StudentCardPayload {
@@ -30,4 +30,3 @@ export interface StudentCardPayload {
 
 export type CardSide = "front" | "back";
 export type StudentCardTemplate = DocumentTemplate<StudentCardPayload>;
-export type StudentCardFieldDefinition = TemplateFieldDefinition<StudentCardPayload>;

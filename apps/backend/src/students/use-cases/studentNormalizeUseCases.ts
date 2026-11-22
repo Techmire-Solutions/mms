@@ -28,6 +28,10 @@ export function throwGrUniqueConflict(error: unknown): never {
     } else if (constraint.includes("contact")) {
       message = "A student profile is already linked to this contact.";
       field = "contact";
+    } else if (constraint.includes("pkey") || constraint.includes("_pk")) {
+      // The create path is insert-only now; a primary-key collision means a
+      // concurrent writer claimed the id between probe and write.
+      throw new StudentCreateIdConflictError();
     }
     const conflict = new Error(message) as Error & {
       statusCode: number;

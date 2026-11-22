@@ -9,6 +9,8 @@ export interface ModalProps {
   open: boolean;
   onClose: () => void;
   title?: React.ReactNode;
+  /** Accessible name for a dialog rendered without a `title` (WCAG 4.1.2). */
+  ariaLabel?: string;
   subtitle?: React.ReactNode;
   icon?: React.ReactNode | React.ComponentType<{ className?: string }>;
   size?: "sm" | "md" | "lg" | "xl" | "2xl";
@@ -44,6 +46,7 @@ export function Modal({
   dismissible = true,
   priority = false,
   className,
+  ariaLabel,
   children,
 }: ModalProps): React.JSX.Element | null {
   const { labels } = useUiConfig();
@@ -128,6 +131,7 @@ export function Modal({
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
+      aria-label={title ? undefined : ariaLabel}
       {...(dismissible ? { closedby: "any" } : {})}
     >
       {/* Backdrop */}

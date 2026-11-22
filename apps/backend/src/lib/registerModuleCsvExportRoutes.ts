@@ -1,10 +1,10 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ZodTypeAny } from "zod";
 import type { User } from "@mms/shared";
 import { isSystemMetadataKey, moduleExportAuditBodySchema } from "@mms/shared";
 import { getRequestAuditContext, getRequestTenant } from "./tenantContext.js";
 import { enqueueCsvExportJob, normalizeExportQuery } from "./csvExportEnqueue.js";
-import { sendForbidden, sendServiceUnavailable } from "./httpErrors.js";
+import { ForbiddenError, sendForbidden, sendServiceUnavailable } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
 import {
   recordModernAuditEvent,
@@ -36,6 +36,17 @@ export type RegisterModuleCsvExportRoutesOptions = {
    * @default true
    */
   registerExportAudit?: boolean;
+  /**
+   * Server-side scope overrides merged into the export query after normalization.
+   * Used by modules whose rows must be limited to the caller's authorization scope
+   * (e.g. Students section scope). Throw `ForbiddenError` to reject the request
+   * (for example when an explicit id selection contains no permitted rows).
+   */
+  resolveQueryScope?: (args: {
+    user: User;
+    request: FastifyRequest;
+    query: Record<string, unknown>;
+  }) => Promise<Record<string, unknown> | undefined> | Record<string, unknown> | undefined;
 };
 
 /**
@@ -68,6 +79,16 @@ export function registerModuleCsvExportRoutes(
     const query = normalizeExportQuery(data.query, allowDeleted);
     if (data.ids && data.ids.length > 0) {
       query.includeIds = data.ids.map(String);
+    }
+
+    if (options.resolveQueryScope) {
+      try {
+        const scopeOverrides = await options.resolveQueryScope({ user, request, query });
+        if (scopeOverrides) Object.assign(query, scopeOverrides);
+      } catch (err) {
+        if (err instanceof ForbiddenError) return sendForbidden(reply, err.message);
+        throw err;
+      }
     }
 
     const safeColumns = data.columns

@@ -13,6 +13,7 @@ import {
 import { buttonVariants } from "../button/Button";
 import { Textarea } from "../input/Textarea";
 import { Field } from "../input/FormField";
+import { useUiConfig } from "../theme/UiConfigContext";
 
 export interface ConfirmAlertDialogOptionalReason {
   label: string;
@@ -47,13 +48,16 @@ export function ConfirmAlertDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Continue",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   destructive = false,
   optionalReason,
   children,
 }: ConfirmAlertDialogProps): React.JSX.Element {
+  const { labels } = useUiConfig();
+  const resolvedConfirmLabel = confirmLabel ?? labels.confirm;
+  const resolvedCancelLabel = cancelLabel ?? labels.cancel;
   const [reason, setReason] = useState("");
   const [confirming, setConfirming] = useState(false);
   const reasonInputId = useId();
@@ -103,7 +107,7 @@ export function ConfirmAlertDialog({
         )}
         {children}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={confirming}>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogCancel disabled={confirming}>{resolvedCancelLabel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={confirming}
@@ -115,7 +119,7 @@ export function ConfirmAlertDialog({
                 aria-hidden="true"
               />
             ) : null}
-            <span>{confirmLabel}</span>
+            <span>{resolvedConfirmLabel}</span>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

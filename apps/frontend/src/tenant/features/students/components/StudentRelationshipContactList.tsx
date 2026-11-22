@@ -40,7 +40,11 @@ export function StudentRelationshipContactList({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Phone className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden />
-                <span className="font-mono text-foreground truncate" title={phone.number}>
+                <span
+                  dir="auto"
+                  className="font-mono text-foreground truncate"
+                  title={phone.number}
+                >
                   {phone.number}
                 </span>
                 {phone.label && (
@@ -80,7 +84,7 @@ export function StudentRelationshipContactList({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden />
-                <span className="text-foreground truncate" title={email.address}>
+                <span dir="auto" className="text-foreground truncate" title={email.address}>
                   {email.address}
                 </span>
                 {email.label && (

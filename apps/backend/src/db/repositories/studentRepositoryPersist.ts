@@ -137,6 +137,33 @@ export async function saveStudent(tenant: string, student: Student): Promise<voi
 }
 
 /**
+ * Insert-only student persistence for the create path.
+ *
+ * The ordinary `saveStudent` upserts on `(workspace_subdomain, id)`; a create must
+ * never overwrite a row another writer claimed between its collision probe and the
+ * write, so it inserts and lets the caller map a unique-violation to a 409.
+ */
+export async function persistStudentTxInsertOnly(
+  tx: AppDb,
+  subdomain: string,
+  student: Student,
+): Promise<void> {
+  await tx.insert(students).values(studentWriteValues(subdomain, student));
+}
+
+export async function saveStudentInsertOnly(tenant: string, student: Student): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  await withTenant(subdomain, async (tx) => {
+    await persistStudentTxInsertOnly(tx, subdomain, student);
+  });
+  await invalidateMultiTierCache({
+    tenantId: subdomain,
+    domain: "students",
+    key: String(student.id),
+  });
+}
+
+/**
  * Conditional save for optimistic concurrency (`mms-api-interface` §6).
  *
  * The `updated_at` predicate lives in the UPDATE, so a writer that committed

@@ -1,6 +1,6 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./Card";
 
 declare global {
@@ -73,5 +73,30 @@ describe("Card component", () => {
     const card = container.firstElementChild as HTMLElement;
     expect(card.className).toContain("cursor-pointer");
     expect(card.className).toContain("focus-visible:ring-2");
+  });
+
+  it("activates an interactive card on Enter and Space", async () => {
+    const onClick = vi.fn();
+    await act(async () => {
+      root.render(
+        <Card interactive onClick={onClick}>
+          <CardContent>Interactive</CardContent>
+        </Card>,
+      );
+    });
+
+    const card = container.querySelector<HTMLDivElement>("[role='button']");
+    expect(card).toBeTruthy();
+    expect(card!.tabIndex).toBe(0);
+
+    await act(async () => {
+      card!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+    expect(onClick).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      card!.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+    });
+    expect(onClick).toHaveBeenCalledTimes(2);
   });
 });

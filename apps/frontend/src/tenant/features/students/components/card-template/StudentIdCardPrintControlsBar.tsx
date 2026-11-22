@@ -55,7 +55,7 @@ export function StudentIdCardPrintControlsBar({
             onClick={onToggleGlobalFlipped}
             className="flex items-center gap-1.5"
           >
-            <RotateCw className="w-3.5 h-3.5" />
+            <RotateCw className="w-3.5 h-3.5" aria-hidden />
             <span>{t("students.idCard.flipAll")}</span>
           </Button>
         )}
@@ -67,7 +67,7 @@ export function StudentIdCardPrintControlsBar({
           onClick={onToggleShowCutGuides}
           className="flex items-center gap-1.5"
         >
-          <Scissors className="w-3.5 h-3.5" />
+          <Scissors className="w-3.5 h-3.5" aria-hidden />
           <span>{t("students.idCard.cutGuides")}</span>
         </Button>
       </div>

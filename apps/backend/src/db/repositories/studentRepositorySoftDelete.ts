@@ -17,10 +17,10 @@ export async function bulkSoftDeleteStudentsSql(
   ids: string[],
   deletedBy?: string,
   deletionReason?: string,
-): Promise<{ succeeded: number; failed: number }> {
+): Promise<{ succeeded: number; failed: number; deletedIds: string[] }> {
   const subdomain = tenant.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
-  if (uniqueIds.length === 0) return { succeeded: 0, failed: 0 };
+  if (uniqueIds.length === 0) return { succeeded: 0, failed: 0, deletedIds: [] };
   const now = new Date();
   const res = await withTenant(subdomain, async (tx) => {
     // `deleted_at` participates in the RLS policy's USING clause, so the new row fails
@@ -58,6 +58,7 @@ export async function bulkSoftDeleteStudentsSql(
     return {
       succeeded: updated.length,
       failed: uniqueIds.length - updated.length,
+      deletedIds: updated.map((row) => String(row.id)),
     };
   });
   await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });

@@ -3,6 +3,7 @@ import type { User } from "@mms/shared";
 import {
   resolveStudentAccessScope,
   isStudentInAssignedSections,
+  filterStudentIdsInAssignedSections,
 } from "../students/repository/studentScopingRepository.js";
 import { buildListConditions } from "../db/repositories/studentRepositoryListQuery.js";
 import { resolveUserStudentClearance } from "../routes/tenant/students/studentRouteHelpers.js";
@@ -10,7 +11,7 @@ import { sanitizeStudentForViewer, maskNationalId } from "@mms/shared";
 
 // Mock the tenant-context instance
 const mockSelect = vi.fn();
-const fakeTx = { select: mockSelect };
+const fakeTx = { select: mockSelect, selectDistinct: mockSelect };
 
 vi.mock("../db/tenant-context.js", () => ({
   withTenantRead: vi.fn(async (_tenant: string, work: (tx: any) => Promise<any>) => work(fakeTx)),
@@ -117,6 +118,76 @@ describe("Student Security, Scoping & Privacy", () => {
       });
     });
 
+    it("scopes a custom role that has a faculty profile and assignments", async () => {
+      const customUser: User = {
+        id: "u-class-teacher",
+        email: "class@test.com",
+        name: "Class Teacher",
+        role: "class_teacher",
+        workspaceSubdomain: testSubdomain,
+      };
+
+      mockSelect
+        .mockReturnValueOnce({
+          from: () => ({
+            where: () => ({
+              limit: () => Promise.resolve([{ id: "fac-201" }]),
+            }),
+          }),
+        } as any)
+        .mockReturnValueOnce({
+          from: () => ({
+            where: () => Promise.resolve([{ sectionId: "sec-7a" }]),
+          }),
+        } as any);
+
+      await expect(resolveStudentAccessScope(testSubdomain, customUser)).resolves.toEqual({
+        isUnrestricted: false,
+        assignedSectionIds: ["sec-7a"],
+      });
+    });
+
+    it("keeps a custom role without a faculty profile unrestricted", async () => {
+      const customUser: User = {
+        id: "u-librarian",
+        email: "lib@test.com",
+        name: "Librarian",
+        role: "librarian",
+        workspaceSubdomain: testSubdomain,
+      };
+
+      mockSelect.mockReturnValueOnce({
+        from: () => ({
+          where: () => ({
+            limit: () => Promise.resolve([]),
+          }),
+        }),
+      } as any);
+
+      await expect(resolveStudentAccessScope(testSubdomain, customUser)).resolves.toEqual({
+        isUnrestricted: true,
+        assignedSectionIds: [],
+      });
+    });
+
+    it("fails closed when the scope lookup throws", async () => {
+      const teacherUser: User = {
+        id: "u-teacher-err",
+        email: "teacher-err@test.com",
+        name: "Teacher Error",
+        role: "teacher",
+        workspaceSubdomain: testSubdomain,
+      };
+      mockSelect.mockImplementationOnce(() => {
+        throw new Error("database unavailable");
+      });
+
+      await expect(resolveStudentAccessScope(testSubdomain, teacherUser)).resolves.toEqual({
+        isUnrestricted: false,
+        assignedSectionIds: [],
+      });
+    });
+
     it("resolves active section assignments for assigned teachers", async () => {
       const teacherUser: User = {
         id: "u-teacher-2",
@@ -170,6 +241,16 @@ describe("Student Security, Scoping & Privacy", () => {
       expect(allowed).toBe(true);
     });
 
+    it("fails closed when the membership lookup throws", async () => {
+      mockSelect.mockImplementationOnce(() => {
+        throw new Error("database unavailable");
+      });
+
+      await expect(isStudentInAssignedSections(testSubdomain, "s-err", ["sec-10a"])).resolves.toBe(
+        false,
+      );
+    });
+
     it("returns false when student is NOT enrolled in any assigned section", async () => {
       mockSelect.mockReturnValueOnce({
         from: () => ({
@@ -181,6 +262,30 @@ describe("Student Security, Scoping & Privacy", () => {
 
       const allowed = await isStudentInAssignedSections(testSubdomain, "s-2", ["sec-10a"]);
       expect(allowed).toBe(false);
+    });
+  });
+
+  describe("filterStudentIdsInAssignedSections", () => {
+    it("returns only the ids enrolled in an assigned section", async () => {
+      mockSelect.mockReturnValueOnce({
+        from: () => ({
+          where: () => Promise.resolve([{ studentId: "s-1" }, { studentId: "s-3" }]),
+        }),
+      } as any);
+
+      await expect(
+        filterStudentIdsInAssignedSections(testSubdomain, ["s-1", "s-2", "s-3"], ["sec-10a"]),
+      ).resolves.toEqual(["s-1", "s-3"]);
+    });
+
+    it("returns an empty list on lookup failure (fail closed)", async () => {
+      mockSelect.mockImplementationOnce(() => {
+        throw new Error("database unavailable");
+      });
+
+      await expect(
+        filterStudentIdsInAssignedSections(testSubdomain, ["s-1"], ["sec-10a"]),
+      ).resolves.toEqual([]);
     });
   });
 
@@ -202,6 +307,9 @@ describe("Student Security, Scoping & Privacy", () => {
       expect(enrollmentScope).toBeDefined();
       expect(enrollmentScope).toContain("sec-alpha");
       expect(enrollmentScope).toContain("sec-beta");
+      // Seat-released enrollments (withdrawn/completed/...) must not grant visibility.
+      expect(enrollmentScope).toContain("status");
+      expect(enrollmentScope).toContain("withdrawn");
     });
 
     it("binds tenant subdomain explicitly to search queries and subqueries", () => {

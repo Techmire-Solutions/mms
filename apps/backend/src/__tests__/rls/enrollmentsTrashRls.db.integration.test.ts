@@ -223,7 +223,7 @@ describe("enrollments trash under FORCE RLS", () => {
   it("archives a student's enrollments with it under the non-bypass role", async () => {
     await expect(
       bulkSoftDeleteStudentsSql(TENANT_A, ["stu-enr-rls-archived"], "u-rls", "left"),
-    ).resolves.toEqual({ succeeded: 1, failed: 0 });
+    ).resolves.toEqual({ succeeded: 1, failed: 0, deletedIds: ["stu-enr-rls-archived"] });
     expect((await readEnrollmentRow("enr-trash-a"))?.deletedAt).not.toBeNull();
   });
 

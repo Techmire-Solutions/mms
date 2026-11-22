@@ -11,6 +11,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { MessagingActionButton } from "@/components/app/MessagingActionButton";
 import { EntityMessagingButtonGroup } from "@/components/app/EntityMessagingButtonGroup";
 import { MESSAGING_ICON_BTN_TONES } from "@/components/app/messagingActionStyles";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 
 export type EntityMessagingVariant = "dropdown" | "icon-row" | "button-group";
@@ -69,6 +70,7 @@ export function EntityMessagingActions({
   showArchived = false,
   className,
 }: EntityMessagingActionsProps): React.JSX.Element | null {
+  const { t } = useTranslation();
   if (showArchived) return null;
 
   const telHref = primaryPhone ? sanitizePhoneForTel(primaryPhone) : null;
@@ -85,27 +87,27 @@ export function EntityMessagingActions({
 
   if (!showCall && !showWhatsApp && !showSms && !showEmail) return null;
 
-  const callLabel = callAriaLabel ?? labels.call ?? "Call";
-  const whatsappLabel = whatsappAriaLabel ?? labels.whatsapp ?? "WhatsApp";
-  const smsLabel = smsAriaLabel ?? labels.sms ?? "SMS";
-  const emailLabel = emailAriaLabel ?? labels.email ?? "Email";
+  const callLabel = callAriaLabel ?? labels.call ?? t("common.call");
+  const whatsappLabel = whatsappAriaLabel ?? labels.whatsapp ?? t("messaging.channel.whatsapp");
+  const smsLabel = smsAriaLabel ?? labels.sms ?? t("messaging.channel.sms");
+  const emailLabel = emailAriaLabel ?? labels.email ?? t("messaging.channel.email");
 
   if (variant === "dropdown") {
     return (
       <>
         {showWhatsApp && (
           <DropdownMenuItem onClick={onWhatsApp}>
-            <MessageCircle className="w-3.5 h-3.5 me-2 text-success" /> {whatsappLabel}
+            <MessageCircle className="w-3.5 h-3.5 me-2 text-success" aria-hidden /> {whatsappLabel}
           </DropdownMenuItem>
         )}
         {showSms && (
           <DropdownMenuItem onClick={onSms}>
-            <MessageSquare className="w-3.5 h-3.5 me-2 text-info" /> {smsLabel}
+            <MessageSquare className="w-3.5 h-3.5 me-2 text-info" aria-hidden /> {smsLabel}
           </DropdownMenuItem>
         )}
         {showEmail && (
           <DropdownMenuItem onClick={onEmail}>
-            <Mail className="w-3.5 h-3.5 me-2 text-primary" /> {emailLabel}
+            <Mail className="w-3.5 h-3.5 me-2 text-primary" aria-hidden /> {emailLabel}
           </DropdownMenuItem>
         )}
       </>

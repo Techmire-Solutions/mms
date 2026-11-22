@@ -52,7 +52,7 @@ export function StudentDetailSiblingsSection({
               className={cn(
                 "p-3 transition-colors w-full text-start block",
                 isInteractive &&
-                  "hover:bg-muted/60 cursor-pointer focus:outline-none focus-visible:bg-muted/60",
+                  "hover:bg-muted/60 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               )}
             >
               <div className="flex items-center justify-between gap-3">
@@ -66,6 +66,7 @@ export function StudentDetailSiblingsSection({
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span
+                        dir="auto"
                         className="text-xs font-bold text-foreground truncate"
                         title={sibling.name}
                       >

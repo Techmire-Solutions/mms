@@ -30,7 +30,10 @@ interface StudentGrSequenceInput {
  * `db/repositories/studentRepository*` functions.
  */
 export interface StudentsRepository {
-  countByWorkspace(tenant: string, options?: ListStudentsOptions): Promise<number>;
+  countByWorkspace(
+    tenant: string,
+    options?: ListStudentsOptions & { scopedSectionIds?: string[] },
+  ): Promise<number>;
   listPage(
     tenant: string,
     query: StudentsListQuery & { afterId?: string; skipCount?: boolean },
@@ -51,6 +54,8 @@ export interface StudentsRepository {
     options?: { includeDeleted?: boolean },
   ): Promise<Student[]>;
   save(tenant: string, student: Student | StudentRecord): Promise<void>;
+  /** Insert-only create path: rejects (via unique-violation) instead of upserting an existing id. */
+  saveInsertOnly?(tenant: string, student: Student | StudentRecord): Promise<void>;
   /**
    * Compare-and-set save keyed on the client's `updatedAt` token
    * (`mms-api-interface` §6). Returns false on a stale token or removed row.
@@ -64,10 +69,12 @@ export interface StudentsRepository {
   aggregateCommandMetrics(
     tenant: string,
     periodDays?: number,
+    scopedSectionIds?: string[],
   ): Promise<StudentsCommandMetricsSnapshot>;
   aggregateWidgetQueries(
     tenant: string,
     queries: StudentsWidgetQuery[],
+    scopedSectionIds?: string[],
   ): Promise<Record<string, StudentsWidgetAggregateResult>>;
   /**
    * Contact ids linked to active students. `onlyContactIds` bounds the probe to a candidate set
@@ -96,6 +103,7 @@ export interface StudentsRepository {
   findRegistrationConflict(
     tenant: string,
     input: StudentDuplicateCheckInput,
+    options?: { scopedSectionIds?: string[] },
   ): Promise<StudentDuplicateReason | null>;
   /** Active GR → student id map for bulk-restore conflict checks. */
   findActiveGrNumberOwners(tenant: string, grNumbers: string[]): Promise<Map<string, string>>;
@@ -109,13 +117,13 @@ export interface StudentsRepository {
     ids: string[],
     status: string,
     updatedBy?: string,
-  ): Promise<number>;
+  ): Promise<{ succeeded: number; updatedIds: string[] }>;
   bulkSoftDelete?(
     tenant: string,
     ids: string[],
     deletedBy?: string,
     deletionReason?: string,
-  ): Promise<{ succeeded: number; failed: number }>;
+  ): Promise<{ succeeded: number; failed: number; deletedIds?: string[] }>;
   bulkRestore?(
     tenant: string,
     ids: string[],

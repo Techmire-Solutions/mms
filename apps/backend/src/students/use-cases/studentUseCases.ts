@@ -22,6 +22,7 @@ export * from "./studentSanitizeUseCases.js";
 export {
   resolveStudentAccessScope,
   isStudentInAssignedSections,
+  filterStudentIdsInAssignedSections,
   type StudentAccessScope,
 } from "../repository/studentScopingRepository.js";
 
@@ -33,7 +34,7 @@ export {
  */
 export function createStudentsUseCases(repo: StudentsRepository = studentsRepository) {
   return {
-    countStudents: (options?: { includeDeleted?: boolean }) =>
+    countStudents: (options?: { includeDeleted?: boolean; scopedSectionIds?: string[] }) =>
       loadEntity.countStudents(options, repo),
     loadStudentsPage: (query: Parameters<typeof loadEntity.loadStudentsPage>[0]) =>
       loadEntity.loadStudentsPage(query, repo),
@@ -42,10 +43,13 @@ export function createStudentsUseCases(repo: StudentsRepository = studentsReposi
     loadStudentsByIds: (ids: string[]) => loadEntity.loadStudentsByIds(ids, repo),
     loadStudentLinkedContactIds: (excludeStudentId?: string) =>
       loadEntity.loadStudentLinkedContactIds(excludeStudentId, repo),
-    loadStudentsCommandMetrics: () => loadAggregate.loadStudentsCommandMetrics(repo),
+    loadStudentsCommandMetrics: (
+      options?: Parameters<typeof loadAggregate.loadStudentsCommandMetrics>[0],
+    ) => loadAggregate.loadStudentsCommandMetrics(options, repo),
     loadStudentsWidgetAggregates: (
       queries: Parameters<typeof loadAggregate.loadStudentsWidgetAggregates>[0],
-    ) => loadAggregate.loadStudentsWidgetAggregates(queries, repo),
+      options?: Parameters<typeof loadAggregate.loadStudentsWidgetAggregates>[1],
+    ) => loadAggregate.loadStudentsWidgetAggregates(queries, options, repo),
     createStudent: (
       record: Parameters<typeof write.createStudent>[0],
       options?: Parameters<typeof write.createStudent>[1],
@@ -74,7 +78,8 @@ export function createStudentsUseCases(repo: StudentsRepository = studentsReposi
     checkStudentRegistrationDuplicate: (
       input: Parameters<typeof operation.checkStudentRegistrationDuplicate>[0],
       tenantOverride?: string,
-    ) => operation.checkStudentRegistrationDuplicate(input, repo, tenantOverride),
+      options?: Parameters<typeof operation.checkStudentRegistrationDuplicate>[3],
+    ) => operation.checkStudentRegistrationDuplicate(input, repo, tenantOverride, options),
     migrateStudentsMissingGrNumbers: (userId?: string) =>
       operation.migrateStudentsMissingGrNumbers(repo, userId),
     sanitizeStudentForViewer: (

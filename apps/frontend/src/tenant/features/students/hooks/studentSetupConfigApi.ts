@@ -26,7 +26,6 @@ const api = createModuleSetupConfigApi<StudentModulePreferences>({
 export const setStudentPreferencesMemory = api.setPreferencesMemory;
 export const fetchStudentPreferences = api.fetchPreferences;
 export const saveStudentPreferencesAsync = api.savePreferencesAsync;
-export const getStudentSettingsMemoryFallback = api.getSettingsMemoryFallback;
 
 /** GET /api/students/field-config — composed settings, or seed defaults when never saved. */
 export async function fetchStudentFieldConfig(_signal?: AbortSignal): Promise<StudentsSettings> {

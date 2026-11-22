@@ -8,6 +8,7 @@ import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
 
 export async function loadStudentsCommandMetrics(
+  options?: { scopedSectionIds?: string[] },
   repo: StudentsRepository = studentsRepository,
 ): Promise<StudentsCommandMetricsSnapshot> {
   const tenant = getRequestTenant();
@@ -20,14 +21,15 @@ export async function loadStudentsCommandMetrics(
       newThisPeriod: 0,
     };
   }
-  return repo.aggregateCommandMetrics(tenant);
+  return repo.aggregateCommandMetrics(tenant, undefined, options?.scopedSectionIds);
 }
 
 export async function loadStudentsWidgetAggregates(
   queries: StudentsWidgetQuery[],
+  options?: { scopedSectionIds?: string[] },
   repo: StudentsRepository = studentsRepository,
 ): Promise<Record<string, StudentsWidgetAggregateResult>> {
   const tenant = getRequestTenant();
   if (!tenant) return {};
-  return repo.aggregateWidgetQueries(tenant, queries);
+  return repo.aggregateWidgetQueries(tenant, queries, options?.scopedSectionIds);
 }

@@ -123,7 +123,7 @@ export function StudentsListDesktopTable({
           someSelected,
           selectAllAriaLabel: allSelected ? t("common.deselect") : t("students.table.selectAll"),
           selectRowAriaLabel: (student) =>
-            t("students.table.selectStudent", { name: student.name ?? "Student" }),
+            t("students.table.selectStudent", { name: student.name ?? t("students.form.student") }),
         }}
         sort={{
           field: sortField ?? undefined,

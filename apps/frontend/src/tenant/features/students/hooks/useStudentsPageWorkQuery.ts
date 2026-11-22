@@ -10,6 +10,7 @@ const SORT_FIELD_TO_API: Record<StudentsListContentSortField, string> = {
   grNumber: "grNumber",
   gender: "gender",
   registeredDate: "registeredDate",
+  studentId: "studentId",
   updatedAt: "updatedAt",
 };
 

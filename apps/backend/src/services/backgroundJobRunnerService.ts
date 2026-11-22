@@ -67,7 +67,6 @@ import { registerQuestionBankBackgroundJobRunners } from "./backgroundJobQuestio
 import { registerWorkshopImportJobRunner } from "../workshops/jobs/workshopImportJob.js";
 import { registerStudentsImportJobRunner } from "../students/studentsImportService.js";
 import { registerUsersImportJobRunner } from "./backgroundJobUsersRunners.js";
-import { registerStudentsBulkJobRunners } from "../students/studentsBulkStatusService.js";
 import { registerDocumentAndFinanceJobRunners } from "./backgroundJobDocumentFinanceRunners.js";
 import { registerAccountingBackgroundJobRunners } from "./backgroundJobAccountingRunners.js";
 export type {
@@ -92,7 +91,6 @@ export function registerDefaultBackgroundJobRunners(): void {
   registerSessionRolloverJobRunner();
   registerSessionImportJobRunner();
   registerSessionsBulkJobRunners();
-  registerStudentsBulkJobRunners();
   registerEnrollmentsImportJobRunner();
   registerWorkshopImportJobRunner();
   registerWorkshopsExportJobRunner();

@@ -5,6 +5,7 @@ import { studentRowToRecord } from "./studentRepositoryMappers.js";
 import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
 import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
 import { resolveGrYear } from "./studentRepositorySequence.js";
+import { studentScopeExistsSql } from "./studentScopeSql.js";
 
 export async function listStudentLinkedContactIdsSql(
   tenant: string,
@@ -83,6 +84,7 @@ export async function findStudentRegistrationConflictSql(
     dob?: string;
     grNumber?: string;
   },
+  options?: { scopedSectionIds?: string[] },
 ): Promise<"contact" | "email" | "nameDob" | "grNumber" | null> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
@@ -92,6 +94,10 @@ export async function findStudentRegistrationConflictSql(
       isNull(students.deletedAt),
     ];
     if (exclude) baseConditions.push(ne(students.id, exclude));
+    if (options?.scopedSectionIds) {
+      // A section-limited caller must not learn that an out-of-section student exists.
+      baseConditions.push(studentScopeExistsSql(subdomain, options.scopedSectionIds));
+    }
 
     if (input.contactId != null && String(input.contactId).trim() !== "") {
       const contactId = String(input.contactId).trim();

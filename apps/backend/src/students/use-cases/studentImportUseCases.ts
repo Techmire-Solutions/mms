@@ -104,30 +104,54 @@ function buildImportPayload(row: StudentImportRow, contactId: string): Record<st
  */
 export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, ctx) => {
   const checkpointKey = ctx.jobId ? `mms:${ctx.tenant}:import-checkpoint:${ctx.jobId}` : null;
-  let startOffset = 0;
+  const chunkStart = ctx.offset ?? 0;
+  const chunkSize = rows.length;
+
+  // The checkpoint stores the absolute count of rows processed for this job (not a
+  // chunk-local index): persist is called once per 200-row chunk under one job id, so a
+  // local index from a later chunk must never be applied to an earlier one.
+  let checkpoint = 0;
   if (checkpointKey) {
     try {
-      const saved = await redisGet(checkpointKey);
-      if (saved) {
-        startOffset = Math.min(Number(saved), rows.length);
-      }
+      const saved = Number(await redisGet(checkpointKey));
+      if (Number.isFinite(saved) && saved > 0) checkpoint = saved;
     } catch {
-      startOffset = 0;
+      checkpoint = 0;
     }
   }
 
-  const errors: ImportRowError[] = [];
-  let imported = 0;
+  if (checkpoint >= chunkStart + chunkSize) {
+    // A previous attempt already persisted this whole chunk.
+    return { imported: chunkSize };
+  }
 
-  for (let index = startOffset; index < rows.length; index += 1) {
+  const startIndex = checkpoint > chunkStart ? checkpoint - chunkStart : 0;
+  const errors: ImportRowError[] = [];
+  let imported = startIndex; // rows before startIndex were persisted by an earlier attempt
+  // A row-level persistence failure freezes the checkpoint at the last contiguous success:
+  // the retry then re-attempts that row instead of silently skipping it.
+  let blocked = false;
+
+  const advanceCheckpoint = async (absoluteProcessed: number): Promise<void> => {
+    if (!checkpointKey || blocked) return;
+    try {
+      await redisSet(checkpointKey, String(absoluteProcessed), 86400);
+    } catch {
+      // Non-fatal: the next success rewrites it.
+    }
+  };
+
+  for (let index = startIndex; index < chunkSize; index += 1) {
     throwIfBackgroundJobAborted(ctx.signal);
     const row = rows[index]!;
     // `ctx.offset` is the chunk's position in the original file: one persist call per 200 rows
     // would otherwise report every later chunk's errors as rows 1..200.
-    const rowNumber = (ctx.offset ?? 0) + index + 1;
+    const rowNumber = chunkStart + index + 1;
     const name = (row.name ?? "").trim();
     if (!name) {
       errors.push({ row: rowNumber, reason: "Name is required" });
+      // Deterministic validation failures never persist, so they count as processed.
+      await advanceCheckpoint(rowNumber);
       continue;
     }
     if (row.status && !STUDENT_STATUS_SET.has(row.status.trim().toLowerCase())) {
@@ -135,6 +159,7 @@ export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, c
         row: rowNumber,
         reason: `Invalid status "${row.status}". Allowed values: ${STUDENT_STATUS_VALUES.join(", ")}`,
       });
+      await advanceCheckpoint(rowNumber);
       continue;
     }
 
@@ -154,19 +179,14 @@ export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, c
         ),
       );
       imported += 1;
-
-      // Periodically update checkpoint to absorb worker interruptions
-      if (checkpointKey && (index + 1) % 20 === 0) {
-        try {
-          await redisSet(checkpointKey, String(index + 1), 86400);
-        } catch {
-          // Non-fatal
-        }
+      if ((index + 1) % 20 === 0) {
+        await advanceCheckpoint(rowNumber);
       }
       if (ctx.updateProgress && (index + 1) % 10 === 0) {
         void ctx.updateProgress(index + 1, rows.length).catch(() => {});
       }
     } catch (error: unknown) {
+      blocked = true;
       errors.push({
         row: rowNumber,
         reason: error instanceof Error ? error.message : "Import failed",
@@ -174,7 +194,13 @@ export const importStudentRows: ImportBatchFn<StudentImportRow> = async (rows, c
     }
   }
 
-  if (checkpointKey) {
+  // Persist the final contiguous position for this chunk so a crash between batches does not
+  // replay up to 19 already-imported rows.
+  if (!blocked) await advanceCheckpoint(chunkStart + chunkSize);
+
+  // Cleanup only when the whole file is done; earlier chunks keep the checkpoint for retries.
+  const isLastChunk = ctx.total === undefined || chunkStart + chunkSize >= ctx.total;
+  if (checkpointKey && isLastChunk && !blocked) {
     try {
       await redisDel(checkpointKey);
     } catch {

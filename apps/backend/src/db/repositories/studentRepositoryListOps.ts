@@ -41,10 +41,10 @@ export async function bulkUpdateStudentsStatusSql(
   ids: string[],
   status: string,
   updatedBy?: string,
-): Promise<number> {
+): Promise<{ succeeded: number; updatedIds: string[] }> {
   const subdomain = workspaceSubdomain.trim().toLowerCase();
   const uniqueIds = dedupeTrimmedIds(ids);
-  if (!subdomain || uniqueIds.length === 0) return 0;
+  if (!subdomain || uniqueIds.length === 0) return { succeeded: 0, updatedIds: [] };
   const normalizedStatus = status.trim().toLowerCase() || "active";
 
   return withTenant(subdomain, async (tx) => {
@@ -63,6 +63,9 @@ export async function bulkUpdateStudentsStatusSql(
         ),
       )
       .returning({ id: students.id });
-    return updated.length;
+    return {
+      succeeded: updated.length,
+      updatedIds: updated.map((row) => String(row.id)),
+    };
   });
 }

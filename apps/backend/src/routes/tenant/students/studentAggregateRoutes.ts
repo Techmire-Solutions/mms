@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import type { User } from "@mms/shared";
 import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import {
@@ -10,27 +10,50 @@ import {
 } from "../../../lib/crudRouter.js";
 import { sanitizeStudentsForUser } from "./studentRouteHelpers.js";
 import {
-  isStudentInAssignedSections,
+  filterStudentIdsInAssignedSections,
   resolveStudentAccessScope,
 } from "../../../students/use-cases/studentUseCases.js";
+
+/**
+ * Resolves the caller's section scope for read surfaces.
+ * `undefined` means unrestricted; an array (possibly empty) means section-limited.
+ */
+async function resolveScopedSections(request: FastifyRequest): Promise<string[] | undefined> {
+  const user = request.user as User;
+  const tenantId = String(request.tenant?.id ?? "");
+  const scope = await resolveStudentAccessScope(tenantId, user);
+  return scope.isUnrestricted ? undefined : scope.assignedSectionIds;
+}
 
 /** Count, metrics, resolve, and widget aggregates routes. */
 export const studentAggregateRoutes: FastifyPluginAsync = async (sub) => {
   registerCountRoute(sub, {
     collection: "students",
-    loadCountFn: () => studentUseCases.countStudents(),
+    loadCountFn: async (request) =>
+      studentUseCases.countStudents({
+        scopedSectionIds: await resolveScopedSections(request),
+      }),
     errorMessagePrefix: "students",
   });
 
   registerMetricsRoute(sub, {
     collection: "students",
-    loadMetricsFn: () => studentUseCases.loadStudentsCommandMetrics(),
+    loadMetricsFn: async (request) =>
+      studentUseCases.loadStudentsCommandMetrics({
+        scopedSectionIds: await resolveScopedSections(request),
+      }),
+    // Metrics are scope-filtered per caller; role-only keys would serve one teacher's
+    // section numbers to another teacher in the same role.
+    cacheVary: (request) => String((request.user as User | undefined)?.id ?? ""),
     errorMessagePrefix: "student",
   });
 
   registerWidgetAggregatesRoute(sub, {
     collection: "students",
-    loadAggregatesFn: (queries) => studentUseCases.loadStudentsWidgetAggregates(queries),
+    loadAggregatesFn: async (queries, request) =>
+      studentUseCases.loadStudentsWidgetAggregates(queries, {
+        scopedSectionIds: await resolveScopedSections(request),
+      }),
     errorMessagePrefix: "student",
   });
 
@@ -38,17 +61,13 @@ export const studentAggregateRoutes: FastifyPluginAsync = async (sub) => {
     collection: "students",
     loadByIdsFn: async (ids, request) => {
       const user = request.user as User;
-      const tenantId = String(request.tenant?.id);
-      const scope = await resolveStudentAccessScope(tenantId, user);
+      const tenantId = String(request.tenant?.id ?? "");
+      const scopedSections = await resolveScopedSections(request);
       let allowedIds = ids;
-      if (!scope.isUnrestricted) {
-        if (scope.assignedSectionIds.length === 0) return [];
-        const checks = await Promise.all(
-          ids.map(async (id) =>
-            (await isStudentInAssignedSections(tenantId, id, scope.assignedSectionIds)) ? id : null,
-          ),
-        );
-        allowedIds = checks.filter((id): id is string => id !== null);
+      if (scopedSections) {
+        if (scopedSections.length === 0) return [];
+        allowedIds = await filterStudentIdsInAssignedSections(tenantId, ids, scopedSections);
+        if (allowedIds.length === 0) return [];
       }
       const students = await studentUseCases.loadStudentsByIds(allowedIds);
       return sanitizeStudentsForUser(students, user);

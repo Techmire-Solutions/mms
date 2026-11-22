@@ -15,18 +15,9 @@ import {
   contactEmails,
   contactRelationships,
 } from "../schema.js";
+import { studentScopeExistsSql } from "./studentScopeSql.js";
 
 export { buildOrderBy } from "./studentRepositoryListSort.js";
-export const STUDENT_SORT_FIELDS = new Set([
-  "name",
-  "grNumber",
-  "status",
-  "gender",
-  "registeredDate",
-  "dob",
-  "studentId",
-  "updatedAt",
-]);
 
 export function statusExpr(): SQL {
   return sql`COALESCE(${students.status}, 'active')`;
@@ -224,22 +215,9 @@ export function buildListConditions(
   }
 
   if (query.scopedSectionIds) {
-    if (query.scopedSectionIds.length === 0) {
-      // Scoped user with no section allocations has zero roster visibility
-      conditions.push(sql`1 = 0`);
-    } else {
-      const sectionIds = sql.join(
-        query.scopedSectionIds.map((id) => sql`${id}`),
-        sql`, `,
-      );
-      conditions.push(sql`EXISTS (
-        SELECT 1 FROM ${enrollments} e
-        WHERE e.workspace_subdomain = ${subdomain}
-          AND e.student_id = ${students.id}
-          AND e.deleted_at IS NULL
-          AND e.section_id IN (${sectionIds})
-      )`);
-    }
+    // Empty scope emits 1 = 0 (zero roster visibility); active-membership rule is shared
+    // with the count/metrics/widget SQL so every read surface applies the same predicate.
+    conditions.push(studentScopeExistsSql(subdomain, query.scopedSectionIds));
   }
 
   return conditions;

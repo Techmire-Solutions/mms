@@ -1,48 +1,28 @@
 import { describe, expect, it, vi } from "vitest";
-import { QueryClient } from "@tanstack/react-query";
-import { CONTACTS_QUERY_KEY } from "@/tenant/hooks/collections/contacts";
-import { ENROLLMENTS_QUERY_KEY } from "@/tenant/hooks/collections/enrollments";
-import { SESSIONS_QUERY_KEY } from "@/tenant/hooks/collections/sessions";
-import {
-  invalidateStudentsBulkEnrollQueries,
-  invalidateStudentsQueries,
-} from "@/tenant/features/students/hooks/invalidateStudentsQueries";
+import type { QueryClient } from "@tanstack/react-query";
 import { STUDENTS_QUERY_KEY } from "@/tenant/features/students/hooks/studentsQueryKeys";
 
-function spyOnInvalidateQueries(): {
-  client: QueryClient;
-  keys: () => ReadonlyArray<readonly unknown[]>;
-} {
-  const client = new QueryClient();
-  const spy = vi.spyOn(client, "invalidateQueries");
-  return {
-    client,
-    keys: () =>
-      spy.mock.calls
-        .map(([filters]) => filters?.queryKey)
-        .filter((key): key is readonly unknown[] => Array.isArray(key)),
-  };
-}
+const mockInvalidateContacts = vi.fn();
+
+vi.mock("@/tenant/hooks/collections/contacts", () => ({
+  invalidateContactsQueries: (...args: unknown[]) => mockInvalidateContacts(...args),
+}));
+
+import { invalidateStudentsQueries } from "./invalidateStudentsQueries";
 
 describe("invalidateStudentsQueries", () => {
-  it("invalidates the contact-derived caches reconciled by every student write", () => {
-    const { client, keys } = spyOnInvalidateQueries();
+  it("invalidates the student list once and suppresses the contacts echo", () => {
+    const invalidateQueries = vi.fn();
+    const queryClient = { invalidateQueries } as unknown as QueryClient;
 
-    invalidateStudentsQueries(client);
+    invalidateStudentsQueries(queryClient);
 
-    expect(keys()).toContainEqual(STUDENTS_QUERY_KEY);
-    expect(keys()).toContainEqual(CONTACTS_QUERY_KEY);
-  });
-});
-
-describe("invalidateStudentsBulkEnrollQueries", () => {
-  it("invalidates students, sessions and enrollments", () => {
-    const { client, keys } = spyOnInvalidateQueries();
-
-    invalidateStudentsBulkEnrollQueries(client);
-
-    expect(keys()).toContainEqual(STUDENTS_QUERY_KEY);
-    expect(keys()).toContainEqual(SESSIONS_QUERY_KEY);
-    expect(keys()).toContainEqual(ENROLLMENTS_QUERY_KEY);
+    const studentListCalls = invalidateQueries.mock.calls.filter(
+      ([arg]) =>
+        JSON.stringify((arg as { queryKey?: unknown }).queryKey) ===
+        JSON.stringify(STUDENTS_QUERY_KEY),
+    );
+    expect(studentListCalls).toHaveLength(1);
+    expect(mockInvalidateContacts).toHaveBeenCalledWith(queryClient, { includeStudents: false });
   });
 });

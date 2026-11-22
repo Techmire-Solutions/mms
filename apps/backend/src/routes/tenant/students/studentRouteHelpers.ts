@@ -132,3 +132,29 @@ export function mapStudentWriteHttpError(
   }
   return null;
 }
+
+/** Parsed optimistic-concurrency token; a malformed header is a client error, not a conflict. */
+export type ExpectedUpdatedAtParseResult = {
+  value?: string;
+  error?: { status: 400; body: { type: "validation_error"; message: string } };
+};
+
+export function expectedUpdatedAtForUpdate(
+  headerValue: string | string[] | undefined,
+): ExpectedUpdatedAtParseResult {
+  const raw = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+  const value = raw?.trim();
+  if (!value) return { value: undefined };
+  if (Number.isNaN(Date.parse(value))) {
+    return {
+      error: {
+        status: 400,
+        body: {
+          type: "validation_error",
+          message: "x-expected-updated-at must be an ISO-8601 timestamp",
+        },
+      },
+    };
+  }
+  return { value };
+}

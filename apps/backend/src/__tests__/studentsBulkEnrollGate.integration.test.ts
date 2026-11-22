@@ -34,6 +34,8 @@ vi.mock("../students/use-cases/studentUseCases.js", () => ({
     bulkEnrollStudents: (...args: unknown[]) => bulkEnrollStudents(...args),
     bulkUpdateStudentStatus: (...args: unknown[]) => bulkUpdateStudentStatus(...args),
   },
+  resolveStudentAccessScope: async () => ({ isUnrestricted: true, assignedSectionIds: [] }),
+  filterStudentIdsInAssignedSections: async (_tenant: string, ids: string[]) => ids,
 }));
 vi.mock("../routes/tenant/students/studentRouteHelpers.js", () => ({
   auditStudent: vi.fn(),

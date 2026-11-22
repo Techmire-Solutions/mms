@@ -24,7 +24,10 @@ export const DirectoryCardMetaTile = function DirectoryCardMetaTile({
       <span className="text-xs font-bold text-muted-foreground uppercase tracking-tight text-wrap break-words leading-none">
         {label}
       </span>
-      <div className="text-xs font-semibold text-foreground text-wrap break-words mt-0.5">
+      <div
+        dir={typeof children === "string" ? "auto" : undefined}
+        className="text-xs font-semibold text-foreground text-wrap break-words mt-0.5"
+      >
         {children}
       </div>
     </div>

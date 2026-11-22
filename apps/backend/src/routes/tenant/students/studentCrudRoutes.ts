@@ -16,6 +16,7 @@ import {
   mapStudentWriteHttpError,
   sanitizeOneStudentForUser,
   sanitizeStudentsForUser,
+  expectedUpdatedAtForUpdate,
   withStudentTenantScope,
 } from "./studentRouteHelpers.js";
 import { validateStudentWrite } from "./studentWriteValidation.js";
@@ -23,9 +24,7 @@ import {
   isStudentInAssignedSections,
   resolveStudentAccessScope,
 } from "../../../students/use-cases/studentUseCases.js";
-
 const s = initServer();
-
 /** Main student CRUD — @ts-rest contract router. */
 export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
   const router = s.router(studentCrudContract, {
@@ -87,7 +86,6 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
         },
       };
     },
-
     get: async ({
       params: { id },
       query,
@@ -203,6 +201,8 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
           body: { type: "forbidden", message: "Insufficient permissions" },
         };
       }
+      const occ = expectedUpdatedAtForUpdate(request.headers["x-expected-updated-at"]);
+      if (occ.error) return occ.error;
       try {
         const updated = await withTenant(
           String(request.tenant?.id),
@@ -216,7 +216,7 @@ export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
               },
               {
                 user,
-                expectedUpdatedAt: request.headers["x-expected-updated-at"] as string | undefined,
+                expectedUpdatedAt: occ.value,
               },
             );
           },

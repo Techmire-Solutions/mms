@@ -3,6 +3,7 @@ import { Loader2, Search, X } from "lucide-react";
 import { Button } from "../button/Button";
 import { Input } from "./Input";
 import { cn } from "../utils";
+import { useUiConfig } from "../theme/UiConfigContext";
 
 export interface SearchBarProps {
   value: string;
@@ -33,8 +34,8 @@ export interface SearchBarProps {
 export function SearchBar({
   value,
   onChange,
-  placeholder = "Search...",
-  clearLabel = "Clear search",
+  placeholder,
+  clearLabel,
   className,
   inputClassName,
   id,
@@ -46,6 +47,9 @@ export function SearchBar({
   keyshortcuts = "/",
   ref,
 }: SearchBarProps): React.JSX.Element {
+  const { labels } = useUiConfig();
+  const resolvedPlaceholder = placeholder ?? labels.searchPlaceholder;
+  const resolvedClearLabel = clearLabel ?? labels.clearSearch;
   const fallbackId = React.useId();
   const resolvedId = id || `search-input-${fallbackId.replace(/:/g, "")}`;
   const resolvedName = name || `searchQuery-${fallbackId.replace(/:/g, "")}`;
@@ -102,7 +106,7 @@ export function SearchBar({
             event.stopPropagation();
           }
         }}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         disabled={disabled}
         autoFocus={autoFocus}
         autoComplete="off"
@@ -121,7 +125,7 @@ export function SearchBar({
           variant="ghost"
           size="icon"
           onClick={handleClear}
-          aria-label={clearLabel}
+          aria-label={resolvedClearLabel}
           className="absolute end-1 top-1/2 -translate-y-1/2 h-8 w-8 touch-target-coarse rounded-lg text-muted-foreground hover:text-foreground"
         >
           <X className="w-3.5 h-3.5" aria-hidden="true" />

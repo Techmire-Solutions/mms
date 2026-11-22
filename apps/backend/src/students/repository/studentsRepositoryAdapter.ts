@@ -4,6 +4,7 @@ import {
   findStudentsByIds,
   resolveStudentsByIdentifiers,
   saveStudent,
+  saveStudentInsertOnly,
   saveStudentIfVersionMatches,
   bulkSaveStudents,
   bulkSoftDeleteStudentsSql,
@@ -48,12 +49,14 @@ function createStudentsRepository(): StudentsRepository {
     resolveByIdentifiers: (tenant, ids, options) =>
       resolveStudentsByIdentifiers(tenant, ids, options),
     save: (tenant, student) => saveStudent(tenant, student as Student),
+    saveInsertOnly: (tenant, student) => saveStudentInsertOnly(tenant, student as Student),
     saveIfVersionMatches: (tenant, student, expectedUpdatedAt) =>
       saveStudentIfVersionMatches(tenant, student as Student, expectedUpdatedAt),
     bulkSave: (tenant, students) => bulkSaveStudents(tenant, students as Student[]),
-    aggregateCommandMetrics: (tenant, periodDays) =>
-      aggregateStudentsCommandMetrics(tenant, periodDays),
-    aggregateWidgetQueries: (tenant, queries) => aggregateStudentsWidgetQueries(tenant, queries),
+    aggregateCommandMetrics: (tenant, periodDays, scopedSectionIds) =>
+      aggregateStudentsCommandMetrics(tenant, periodDays, scopedSectionIds),
+    aggregateWidgetQueries: (tenant, queries, scopedSectionIds) =>
+      aggregateStudentsWidgetQueries(tenant, queries, scopedSectionIds),
     listLinkedContactIds: (tenant, excludeStudentId, onlyContactIds) =>
       listStudentLinkedContactIdsSql(tenant, excludeStudentId, onlyContactIds),
     countNextGrNumber: (tenant, input) =>
@@ -62,7 +65,8 @@ function createStudentsRepository(): StudentsRepository {
     generateNextGrNumber: (tenant, input) => generateNextGrNumberSql(tenant, input),
     generateNextGrNumberBatch: (tenant, count, input) =>
       generateNextGrNumberBatchSql(tenant, count, input),
-    findRegistrationConflict: (tenant, input) => findStudentRegistrationConflictSql(tenant, input),
+    findRegistrationConflict: (tenant, input, options) =>
+      findStudentRegistrationConflictSql(tenant, input, options),
     findActiveGrNumberOwners: (tenant, grNumbers) => findActiveGrNumberOwnersSql(tenant, grNumbers),
     findActiveStudentIdOwners: (tenant, studentIds) =>
       findActiveStudentIdOwnersSql(tenant, studentIds),

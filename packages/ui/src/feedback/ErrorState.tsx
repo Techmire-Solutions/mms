@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 import { LoadingState } from "./LoadingState";
 import { Button } from "../button/Button";
 import { cn } from "../utils";
+import { useUiConfig } from "../theme/UiConfigContext";
 
 export interface ErrorStateProps {
   title?: string;
@@ -26,12 +27,14 @@ const DEFAULT_TITLES = {
 export function ErrorState({
   title,
   description,
-  retryLabel = "Try again",
+  retryLabel,
   onRetry,
   type = "generic",
   compact = false,
   className,
 }: ErrorStateProps): React.JSX.Element {
+  const { labels } = useUiConfig();
+  const resolvedRetryLabel = retryLabel ?? labels.retry;
   const configs = {
     generic: {
       icon: AlertTriangle,
@@ -86,7 +89,7 @@ export function ErrorState({
             className="flex min-h-11 items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium"
           >
             <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
-            {retryLabel}
+            {resolvedRetryLabel}
           </Button>
         )
       }

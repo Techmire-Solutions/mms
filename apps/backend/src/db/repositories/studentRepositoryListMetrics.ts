@@ -6,11 +6,13 @@ import {
 import { students } from "../schema.js";
 import { withTenantRead } from "../tenant-context.js";
 import { statusExpr } from "./studentRepositoryListQuery.js";
+import { studentScopeExistsSql } from "./studentScopeSql.js";
 
 /** SQL aggregates for Students command-centre metrics (active rows only). */
 export async function aggregateStudentsCommandMetrics(
   tenant: string,
   periodDays: number = MODULE_METRICS_DEFAULT_PERIOD_DAYS,
+  scopedSectionIds?: string[],
 ): Promise<StudentsCommandMetricsSnapshot> {
   const subdomain = tenant.trim().toLowerCase();
   return withTenantRead(subdomain, async (tx) => {
@@ -28,7 +30,13 @@ export async function aggregateStudentsCommandMetrics(
         ) >= ${sinceInterval})::int`,
       })
       .from(students)
-      .where(and(eq(students.workspaceSubdomain, subdomain), isNull(students.deletedAt)));
+      .where(
+        and(
+          eq(students.workspaceSubdomain, subdomain),
+          isNull(students.deletedAt),
+          ...(scopedSectionIds ? [studentScopeExistsSql(subdomain, scopedSectionIds)] : []),
+        ),
+      );
 
     const row = rows[0];
     return {

@@ -97,8 +97,8 @@ export function registerMetricsRoute(fastify: FastifyInstance, options: MetricsR
 export interface CountRouteOptions {
   path?: string;
   collection: string;
-  /** Prefer SQL/count helpers — avoids loading every row. */
-  loadCountFn: () => Promise<number>;
+  /** Prefer SQL/count helpers — avoids loading every row. Receives the request for per-caller scoping. */
+  loadCountFn: (request: FastifyRequest) => Promise<number>;
   errorMessagePrefix: string;
 }
 
@@ -121,7 +121,7 @@ export function registerCountRoute(fastify: FastifyInstance, options: CountRoute
       const user = request.user as User;
       if (!canReadCollection(user, collection)) return sendForbidden(reply);
       try {
-        const count = await loadCountFn();
+        const count = await loadCountFn(request);
         return reply.send({ count });
       } catch (error) {
         request.log.error(

@@ -25,17 +25,18 @@ describe("bulkUpdateStudentsStatusSql", () => {
       async (_tenant: unknown, fn: (tx: { update: typeof update }) => Promise<unknown>) =>
         fn({ update }),
     );
-    const succeeded = await bulkUpdateStudentsStatusSql("Demo", ["s-1", "s-2", "s-1"], "inactive");
+    const result = await bulkUpdateStudentsStatusSql("Demo", ["s-1", "s-2", "s-1"], "inactive");
 
     expect(mockWithTenantTransaction).toHaveBeenCalledWith("demo", expect.any(Function));
     expect(update).toHaveBeenCalledTimes(1);
     expect(set).toHaveBeenCalledWith(expect.objectContaining({ status: "inactive" }));
-    expect(succeeded).toBe(2);
+    expect(result.succeeded).toBe(2);
+    expect(result.updatedIds).toEqual(["s-1", "s-2"]);
   });
 
   it("returns 0 when ids are empty", async () => {
-    const succeeded = await bulkUpdateStudentsStatusSql("demo", ["  ", ""], "active");
-    expect(succeeded).toBe(0);
+    const result = await bulkUpdateStudentsStatusSql("demo", ["  ", ""], "active");
+    expect(result).toEqual({ succeeded: 0, updatedIds: [] });
     expect(mockWithTenantTransaction).not.toHaveBeenCalled();
   });
 });

@@ -37,17 +37,17 @@ export function ParentNamesSubtitle({
   return (
     <div className={className}>
       {hasFather ? (
-        <p className="truncate" title={fatherName}>
+        <p dir="auto" className="truncate" title={fatherName}>
           <span>{t("students.detail.father")}:</span> {fatherName}
         </p>
       ) : null}
       {hasMother ? (
-        <p className="truncate" title={motherName}>
+        <p dir="auto" className="truncate" title={motherName}>
           <span>{t("students.detail.mother")}:</span> {motherName}
         </p>
       ) : null}
       {showGuardianFallback ? (
-        <p className="truncate" title={guardianName}>
+        <p dir="auto" className="truncate" title={guardianName}>
           <span>{t("students.idCard.guardian")}:</span> {guardianName}
         </p>
       ) : null}

@@ -104,7 +104,10 @@ describe("student status transitions", () => {
     state.withdrawDepth = -1;
     mockGetRequestTenant.mockReturnValue("demo");
     mockWithdraw.mockResolvedValue({ ended: 1, billing: { cancelled: [], review: [] } });
-    mockBulkUpdateStatus.mockResolvedValue(2);
+    mockBulkUpdateStatus.mockImplementation(async (_tenant: string, ids: string[]) => ({
+      succeeded: ids.length,
+      updatedIds: ids,
+    }));
     mockAudit.mockResolvedValue({ id: 1 });
   });
 
@@ -149,7 +152,10 @@ describe("student status transitions", () => {
 
   it("does not withdraw when the next status keeps the enrollment live", async () => {
     const { repo } = fakeRepo([student("s-1")]);
-    mockBulkUpdateStatus.mockResolvedValue(1);
+    mockBulkUpdateStatus.mockImplementation(async (_tenant: string, ids: string[]) => ({
+      succeeded: ids.length,
+      updatedIds: ids,
+    }));
 
     await bulkUpdateStudentStatus(["s-1"], "suspended", repo, admin);
 
@@ -159,13 +165,27 @@ describe("student status transitions", () => {
 
   it("dedupes repeated ids before counting or withdrawing", async () => {
     const { repo } = fakeRepo([student("s-1")]);
-    mockBulkUpdateStatus.mockResolvedValue(1);
+    mockBulkUpdateStatus.mockImplementation(async (_tenant: string, ids: string[]) => ({
+      succeeded: ids.length,
+      updatedIds: ids,
+    }));
 
     const result = await bulkUpdateStudentStatus(["s-1", " s-1 "], "graduated", repo, admin);
 
     expect(result).toEqual({ succeeded: 1, failed: 0 });
     expect(mockBulkUpdateStatus).toHaveBeenCalledWith("demo", ["s-1"], "graduated", "u-admin");
     expect(mockWithdraw).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not audit or withdraw rows the UPDATE did not write", async () => {
+    const { repo } = fakeRepo([student("s-1")]);
+    mockBulkUpdateStatus.mockResolvedValueOnce({ succeeded: 0, updatedIds: [] });
+
+    const result = await bulkUpdateStudentStatus(["s-1"], "graduated", repo, admin);
+
+    expect(result).toEqual({ succeeded: 0, failed: 1 });
+    expect(mockWithdraw).not.toHaveBeenCalled();
+    expect(mockAudit).not.toHaveBeenCalled();
   });
 
   it("propagates a withdrawal failure without committing post-commit side effects", async () => {

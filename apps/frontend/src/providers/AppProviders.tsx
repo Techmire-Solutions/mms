@@ -7,6 +7,8 @@ import { TenantProvider } from "@/lib/contexts/TenantContext";
 import { TranslationProvider } from "@/lib/contexts/TranslationContext";
 import { DirectionProvider } from "@/providers/DirectionProvider";
 import { queryClientInstance } from "@/lib/queryClient";
+import { UiConfigProvider } from "@shared/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import RootErrorBoundary from "@/components/routing/RootErrorBoundary";
 import QueryDevtools from "@/components/dev/QueryDevtools";
 
@@ -16,6 +18,30 @@ const LazyToaster = React.lazy(() =>
 
 export interface AppProvidersProps {
   children: React.ReactNode;
+}
+
+/** Bridges tenant i18n `t()` into @shared/ui's label config (cancel/confirm/delete/close). */
+function UiConfigBridge({ children }: { children: React.ReactNode }): React.JSX.Element {
+  const { t, dir } = useTranslation();
+  return (
+    <UiConfigProvider
+      config={{
+        dir,
+        labels: {
+          cancel: t("common.cancel"),
+          confirm: t("common.confirm"),
+          delete: t("common.delete"),
+          close: t("common.close"),
+          retry: t("common.retry"),
+          searchPlaceholder: t("common.searchPlaceholder"),
+          clearSearch: t("common.clearSearch"),
+          loading: t("common.loading"),
+        },
+      }}
+    >
+      {children}
+    </UiConfigProvider>
+  );
 }
 
 /** Root provider composition — order must not change without reviewing auth/tenant boot. */
@@ -28,7 +54,9 @@ export function AppProviders({ children }: AppProvidersProps): React.JSX.Element
             <BrandingPaletteProvider>
               <TenantProvider>
                 <TranslationProvider>
-                  <DirectionProvider>{children}</DirectionProvider>
+                  <UiConfigBridge>
+                    <DirectionProvider>{children}</DirectionProvider>
+                  </UiConfigBridge>
                 </TranslationProvider>
               </TenantProvider>
             </BrandingPaletteProvider>

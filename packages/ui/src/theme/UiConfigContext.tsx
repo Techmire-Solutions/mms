@@ -7,6 +7,9 @@ export interface UiConfigLabels {
   confirm?: string;
   delete?: string;
   searchPlaceholder?: string;
+  retry?: string;
+  clearSearch?: string;
+  loading?: string;
   emptyTitle?: string;
   emptyDescription?: string;
   rowsPerPage?: string;
@@ -30,6 +33,9 @@ const DEFAULT_LABELS: Required<Omit<UiConfigLabels, "pageOf">> & {
   confirm: "Confirm",
   delete: "Delete",
   searchPlaceholder: "Search...",
+  retry: "Retry",
+  clearSearch: "Clear Search",
+  loading: "Loading…",
   emptyTitle: "No records found",
   emptyDescription: "Try adjusting your search or filters.",
   rowsPerPage: "Rows per page",

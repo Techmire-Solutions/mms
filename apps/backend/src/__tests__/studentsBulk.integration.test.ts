@@ -55,6 +55,20 @@ vi.mock("../students/use-cases/studentUseCases.js", async (importOriginal) => {
   };
 });
 
+vi.mock("../students/repository/studentScopingRepository.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../students/repository/studentScopingRepository.js")>();
+  return {
+    ...actual,
+    resolveStudentAccessScope: async (_tenant: string, user: { role?: string }) =>
+      user?.role === "teacher"
+        ? { isUnrestricted: false, assignedSectionIds: ["sec-1"] }
+        : { isUnrestricted: true, assignedSectionIds: [] },
+    isStudentInAssignedSections: async () => true,
+    filterStudentIdsInAssignedSections: async (_tenant: string, ids: string[]) => ids,
+  };
+});
+
 vi.mock("../services/auditTrailService.js", () => ({
   recordModernAuditEvent: (first: unknown, second?: unknown) => {
     const input = (second ?? first) as {

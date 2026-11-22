@@ -10,6 +10,7 @@ import { buildTenantSoftDeleteConditions } from "../../services/genericRelationa
 import { studentRowToRecord } from "./studentRepositoryMappers.js";
 import { getPreparedStudentById } from "../preparedStatements.js";
 import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
+import { studentScopeExistsSql } from "./studentScopeSql.js";
 
 export async function hydrateStudentsList(
   tx: AppDb,
@@ -158,13 +159,16 @@ export async function resolveStudentsByIdentifiers(
 
 export async function countStudentsByWorkspace(
   tenant: string,
-  options?: ListStudentsOptions,
+  options?: ListStudentsOptions & { scopedSectionIds?: string[] },
 ): Promise<number> {
   const subdomain = tenant.trim().toLowerCase();
   const deletedFilter = options?.deleted ?? (options?.includeDeleted ? "all" : "active");
   return withTenantRead(subdomain, async (tx) => {
     if (softDeleteFilterNeedsIncludeDeleted(deletedFilter)) await enableIncludeDeleted(tx);
     const conditions = buildTenantSoftDeleteConditions(students, subdomain, deletedFilter);
+    if (options?.scopedSectionIds) {
+      conditions.push(studentScopeExistsSql(subdomain, options.scopedSectionIds));
+    }
 
     const rows = await tx
       .select({ count: sql<number>`count(*)::int` })
