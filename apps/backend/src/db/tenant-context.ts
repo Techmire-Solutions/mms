@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { sql } from "drizzle-orm";
 import {
   activeDb,
@@ -20,6 +21,23 @@ import { logger } from "../lib/logger.js";
 
 export type TenantTransaction = Parameters<Parameters<DbClient["transaction"]>[0]>[0];
 export type AppDb = TenantTransaction;
+
+const readOnlyTxStorage = new AsyncLocalStorage<boolean>();
+
+/** Returns true if the active database transaction was opened with read-only access mode. */
+export function isReadOnlyTransaction(): boolean {
+  return readOnlyTxStorage.getStore() === true;
+}
+
+function resolveReadOnlyScope(requested: boolean | undefined): boolean {
+  const isOuter = isReadOnlyTransaction();
+  if (isOuter && requested === false) {
+    throw new Error(
+      "[withTenant] cannot execute write transaction inside an active read-only transaction.",
+    );
+  }
+  return requested !== undefined ? requested : isOuter;
+}
 
 export interface WithTenantOptions {
   readOnly?: boolean;
@@ -80,6 +98,7 @@ export async function withTenant<T>(
 
   if (typeof hasActiveTransaction === "function" && hasActiveTransaction()) {
     const active = activeDb();
+    const effectiveReadOnly = resolveReadOnlyScope(options.readOnly);
     // Capture the outer transaction's RLS context first: `SET LOCAL` persists
     // until the transaction ends, so without restoring it, queries the outer
     // callback runs *after* this nested block would execute under the nested
@@ -103,7 +122,9 @@ export async function withTenant<T>(
       lockTimeoutMs: options.lockTimeoutMs,
     });
     try {
-      return await callback(active as unknown as TenantTransaction);
+      return await readOnlyTxStorage.run(effectiveReadOnly, () =>
+        callback(active as unknown as TenantTransaction),
+      );
     } finally {
       try {
         const previousBypass = previous?.bypass;
@@ -139,11 +160,10 @@ export async function withTenant<T>(
     }
   }
   if (!pool) {
-    // Fail closed in production: running tenant work without a transaction/RLS
-    // boundary is a correctness and isolation hazard. Tests mock use cases but
-    // not the DB connection layer, so keep a no-op boundary there.
     if (process.env.NODE_ENV === "test" || process.env.VITEST) {
-      return callback({} as TenantTransaction);
+      return readOnlyTxStorage.run(resolveReadOnlyScope(options.readOnly), () =>
+        callback({} as TenantTransaction),
+      );
     }
     throw new Error(
       "[withTenant] no database client available — cannot run tenant work without a transaction boundary.",
@@ -153,7 +173,9 @@ export async function withTenant<T>(
 
   if (typeof pool.transaction !== "function") {
     if (process.env.NODE_ENV === "test" || process.env.VITEST) {
-      return callback({} as TenantTransaction);
+      return readOnlyTxStorage.run(resolveReadOnlyScope(options.readOnly), () =>
+        callback({} as TenantTransaction),
+      );
     }
     throw new Error(
       "[withTenant] active database client does not support transactions — cannot run tenant work without a transaction boundary.",
@@ -174,29 +196,31 @@ export async function withTenant<T>(
     async () => {
       let result: T;
       try {
-        result = await pool.transaction(
-          async (tx) => {
-            // Single source of truth for tenant RLS GUCs + statement/idle budgets.
-            await applyTenantTransactionGuards(tx as unknown as AppDb, resolvedTenantId, {
-              statementTimeoutMs: options.statementTimeoutMs,
-              lockTimeoutMs: options.lockTimeoutMs,
-            });
+        result = await readOnlyTxStorage.run(resolveReadOnlyScope(options.readOnly), () =>
+          pool.transaction(
+            async (tx) => {
+              // Single source of truth for tenant RLS GUCs + statement/idle budgets.
+              await applyTenantTransactionGuards(tx as unknown as AppDb, resolvedTenantId, {
+                statementTimeoutMs: options.statementTimeoutMs,
+                lockTimeoutMs: options.lockTimeoutMs,
+              });
 
-            // Register this transaction as the active one for the callback's async
-            // scope so nested runInTransaction()/activeDb() consumers join it rather
-            // than opening a second pool client and a second transaction.
-            return runInCommitScope(commitScope, () =>
-              withActiveTransaction(tx as unknown as DbClient, () =>
-                callback(tx as unknown as TenantTransaction),
-              ),
-            );
-          },
-          options.readOnly || options.isolation
-            ? {
-                ...(options.readOnly ? { accessMode: "read only" as const } : {}),
-                ...(options.isolation ? { isolationLevel: options.isolation } : {}),
-              }
-            : undefined,
+              // Register this transaction as the active one for the callback's async
+              // scope so nested runInTransaction()/activeDb() consumers join it rather
+              // than opening a second pool client and a second transaction.
+              return runInCommitScope(commitScope, () =>
+                withActiveTransaction(tx as unknown as DbClient, () =>
+                  callback(tx as unknown as TenantTransaction),
+                ),
+              );
+            },
+            options.readOnly || options.isolation
+              ? {
+                  ...(options.readOnly ? { accessMode: "read only" as const } : {}),
+                  ...(options.isolation ? { isolationLevel: options.isolation } : {}),
+                }
+              : undefined,
+          ),
         );
       } catch (error) {
         discardCommitScope(commitScope);

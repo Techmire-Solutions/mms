@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isReadOnlyTransaction,
   withTenant,
   withTenantRead,
   withGlobalTenant,
@@ -67,6 +68,56 @@ describe("withTenant fail-closed guard", () => {
     // environment there is no pool, so `withTenant` falls back to running the
     // callback directly (see tenant-context.ts) rather than bypassing RLS.
     await expect(withGlobalTenant(async () => "ran")).resolves.toBe("ran");
+  });
+});
+
+describe("isReadOnlyTransaction", () => {
+  it("returns false outside of any transaction", () => {
+    expect(isReadOnlyTransaction()).toBe(false);
+  });
+
+  it("returns true inside withTenant with readOnly: true", async () => {
+    await withTenant(
+      "demo",
+      async () => {
+        expect(isReadOnlyTransaction()).toBe(true);
+      },
+      { readOnly: true },
+    );
+    expect(isReadOnlyTransaction()).toBe(false);
+  });
+
+  it("returns true inside withTenantRead", async () => {
+    await withTenantRead("demo", async () => {
+      expect(isReadOnlyTransaction()).toBe(true);
+    });
+    expect(isReadOnlyTransaction()).toBe(false);
+  });
+
+  it("returns false inside standard withTenant", async () => {
+    await withTenant("demo", async () => {
+      expect(isReadOnlyTransaction()).toBe(false);
+    });
+    expect(isReadOnlyTransaction()).toBe(false);
+  });
+
+  it("maintains read-only state across nested withTenant blocks", async () => {
+    await withTenantRead("demo", async () => {
+      expect(isReadOnlyTransaction()).toBe(true);
+      await withTenant("demo", async () => {
+        expect(isReadOnlyTransaction()).toBe(true);
+      });
+      expect(isReadOnlyTransaction()).toBe(true);
+    });
+    expect(isReadOnlyTransaction()).toBe(false);
+  });
+
+  it("rejects an explicit write transaction nested inside a read-only transaction", async () => {
+    await withTenantRead("demo", async () => {
+      await expect(withTenant("demo", async () => "fail", { readOnly: false })).rejects.toThrow(
+        /cannot execute write transaction inside an active read-only transaction/,
+      );
+    });
   });
 });
 
