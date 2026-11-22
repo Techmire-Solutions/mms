@@ -286,18 +286,33 @@ export async function relaxStudentRequiredFields(page: Page): Promise<void> {
             }
           }
         }
+        const stripped: Record<string, unknown> = {
+          fields: config.fields,
+        };
+        for (const k of [
+          "columnRegistry",
+          "customFields",
+          "enabledTabs",
+          "requiredTabs",
+          "fieldOrder",
+          "version",
+        ]) {
+          if ((config as Record<string, unknown>)[k] !== undefined) {
+            stripped[k] = (config as Record<string, unknown>)[k];
+          }
+        }
         const putRes = await fetch("/api/students/field-config", {
           method: "PUT",
           credentials: "include",
           headers,
-          body: JSON.stringify(config),
+          body: JSON.stringify(stripped),
         });
         return { ok: putRes.ok, status: putRes.status, text: putRes.ok ? "" : await putRes.text() };
       }
       return { ok: true, status: 200, text: "" };
     });
     if (!result.ok) {
-      console.warn(
+      throw new Error(
         `[E2E] Could not relax student required fields: HTTP ${result.status} ${result.text}`,
       );
     }

@@ -45,6 +45,7 @@ import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
  * probe cannot bypass the deleted-user / deleted-faculty tombstone checks.
  */
 async function sendTenantSessionUser(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  if (reply.sent) return;
   const user = request.user as User & { deletedAt?: unknown; deleted_at?: unknown };
   if (user.deletedAt || user.deleted_at) {
     sendUnauthorized(reply, "Session revoked");
@@ -82,9 +83,12 @@ async function sendTenantSessionUser(request: FastifyRequest, reply: FastifyRepl
  * validate, so answer `200 { user: null }` and short-circuit `authenticateTenant`; otherwise let
  * the strict pipeline run unchanged (an invalid/revoked presented token still 401s).
  */
-async function softTenantSessionProbe(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+async function softTenantSessionProbe(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<FastifyReply | void> {
   if (hasTenantAccessToken(request)) return;
-  await reply.status(200).send({ user: null, isAuthenticated: false });
+  return reply.status(200).send({ user: null, isAuthenticated: false });
 }
 
 /** Session lifecycle, UI state, refresh, onboarding status, and handoff routes. */

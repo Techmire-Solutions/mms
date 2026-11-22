@@ -165,6 +165,18 @@ describe("required-field save body", () => {
     // Assert
     expect(parsed.success).toBe(true);
   });
+
+  it("strips formTabs and preference keys from unstripped StudentsSettings", async () => {
+    const { studentFieldConfigPutBodySchema } = await import("./studentSetupConfigTypes.js");
+    const settings = normalizeStudentsSettings(null);
+    const parsed = studentFieldConfigPutBodySchema.safeParse(settings);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect((parsed.data as Record<string, unknown>).formTabs).toBeUndefined();
+      expect((parsed.data as Record<string, unknown>).autoGenerateId).toBeUndefined();
+      expect((parsed.data as Record<string, unknown>).grNumberTemplate).toBeUndefined();
+    }
+  });
 });
 
 describe("required-field list composition", () => {
