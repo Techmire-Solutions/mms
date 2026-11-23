@@ -47,6 +47,7 @@ vi.mock("../platform/use-cases/platformContactsUseCases.js", () => ({
     create: vi.fn().mockResolvedValue({ id: "c1", name: "Ali", kind: "external" }),
     update: vi.fn().mockResolvedValue({ id: "c1", name: "Ali", kind: "external" }),
     softDelete: vi.fn().mockResolvedValue(undefined),
+    restore: vi.fn().mockResolvedValue(undefined),
     metrics: vi.fn().mockResolvedValue({
       total: 1,
       byKind: { external: 1 },
@@ -111,6 +112,16 @@ describe("platform contacts + messaging routes", () => {
     });
     expect(res.statusCode).toBe(200);
     expect(JSON.parse(res.body).metrics.total).toBe(1);
+  });
+
+  it("restores a soft-deleted platform contact", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/platform/contacts/c1/restore",
+      ...auth(),
+      payload: {},
+    });
+    expect(res.statusCode).toBe(200);
   });
 
   it("creates a platform contact", async () => {
