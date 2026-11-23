@@ -2,18 +2,17 @@ import type React from "react";
 import { UserCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Field } from "@/components/app/FormPrimitives";
-import { FormSelect } from "@/components/app/FormSelect";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { resolveRoleDisplayName, workspaceRoleDescription, type WorkspaceRole } from "@mms/shared";
-import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
-import { resolveInitialUserAccountRole } from "@/tenant/features/faculty/lib/facultyFormDraft";
+import {
+  resolveRoleDisplayName,
+  workspaceRoleDescription,
+  workspaceRoleLabel,
+  type WorkspaceRole,
+} from "@mms/shared";
 
 export interface FacultyLinkedUserCardProps {
   linkedUser: { email?: string; role?: string };
-  userAccountDraft: FacultyUserAccountDraft;
-  onUserAccountDraftChange: (draft: FacultyUserAccountDraft) => void;
-  roleOptions: Array<{ value: string; label: string }>;
   workspaceRoles: WorkspaceRole[];
   selectedRoleObj?: WorkspaceRole;
   errors: Record<string, string>;
@@ -21,9 +20,6 @@ export interface FacultyLinkedUserCardProps {
 
 export function FacultyLinkedUserCard({
   linkedUser,
-  userAccountDraft,
-  onUserAccountDraftChange,
-  roleOptions,
   workspaceRoles,
   selectedRoleObj,
   errors,
@@ -45,31 +41,21 @@ export function FacultyLinkedUserCard({
               {t("faculty.form.linkedUserAccountHint")}
             </p>
           </div>
-          <Badge pill tone="primary" className="px-2.5 font-bold">
-            {resolveRoleDisplayName(linkedUser.role || "teacher", workspaceRoles, t)}
-          </Badge>
         </div>
 
         <Field label={t("users.fieldRole")} id="linked-user-role" error={errors["user.role"]}>
-          <FormSelect
-            id="linked-user-role"
-            name="linkedUserRole"
-            value={resolveInitialUserAccountRole(userAccountDraft.role, linkedUser.role)}
-            onChange={(role) =>
-              onUserAccountDraftChange({ ...userAccountDraft, enabled: true, role })
-            }
-            options={roleOptions}
-          />
-          {roleOptions.length === 0 ? (
-            <p className="mt-1 text-xs text-destructive">
-              {t("faculty.designations.noAssignableRoles")}
-            </p>
-          ) : null}
-          {selectedRoleObj && workspaceRoleDescription(selectedRoleObj, t) ? (
-            <p className="text-xs text-muted-foreground mt-1">
-              {workspaceRoleDescription(selectedRoleObj, t)}
-            </p>
-          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="primary" size="sm">
+              {selectedRoleObj
+                ? workspaceRoleLabel(selectedRoleObj, t)
+                : resolveRoleDisplayName(linkedUser.role || "teacher", workspaceRoles, t)}
+            </Badge>
+            {selectedRoleObj && workspaceRoleDescription(selectedRoleObj, t) ? (
+              <span className="text-xs text-muted-foreground">
+                {workspaceRoleDescription(selectedRoleObj, t)}
+              </span>
+            ) : null}
+          </div>
         </Field>
       </div>
     </SectionCard>

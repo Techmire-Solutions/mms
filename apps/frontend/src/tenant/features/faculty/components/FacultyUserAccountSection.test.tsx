@@ -58,7 +58,7 @@ describe("FacultyUserAccountSection Component", () => {
     <QueryClientProvider client={queryClient}>{node}</QueryClientProvider>
   );
 
-  it("renders linked user account info and role selector when contact has an existing user", () => {
+  it("renders linked user account info and a read-only role when contact has an existing user", () => {
     const draft: FacultyUserAccountDraft = {
       enabled: false,
       role: "staff",
@@ -82,6 +82,8 @@ describe("FacultyUserAccountSection Component", () => {
     expect(html).toContain("faculty.form.linkedUserAccount");
     expect(html).toContain("faculty@madrasa.org");
     expect(html).toContain("users.fieldRole");
+    // The role is now designation-derived and read-only — no role <select>.
+    expect(html).not.toContain('name="linkedUserRole"');
   });
 
   it("renders grant login access toggle and provisioning options when no user is linked", () => {
@@ -111,5 +113,32 @@ describe("FacultyUserAccountSection Component", () => {
     expect(html).toContain("faculty.form.grantLoginAccess");
     expect(html).toContain("users.addAccountMethod");
     expect(html).toContain("auth.password");
+    // No role dropdown — the role is shown read-only.
+    expect(html).not.toContain('name="facultyUserRole"');
+  });
+
+  it("disables the login-access toggle and shows a hint when the designation has no assignable role", () => {
+    const draft: FacultyUserAccountDraft = {
+      enabled: false,
+      role: "staff",
+      setupMethod: "password",
+    };
+
+    const html = renderToStaticMarkup(
+      wrapWithQueryClient(
+        <FacultyUserAccountSection
+          facultyDraft={{ contactId: "cnt-2", designationAssignableRoles: [] }}
+          linkedContact={
+            { id: "cnt-2", name: "Ustadh Zayd", email: "zayd@madrasa.org" } as unknown as never
+          }
+          userAccountDraft={draft}
+          onUserAccountDraftChange={vi.fn()}
+          errors={{}}
+        />,
+      ),
+    );
+
+    expect(html).toContain("faculty.form.grantLoginAccess");
+    expect(html).toContain("faculty.designations.noAssignableRoles");
   });
 });

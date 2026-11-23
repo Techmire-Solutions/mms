@@ -240,19 +240,19 @@ export interface Contact<TCustom = Record<string, unknown>> extends SerializedEn
 /** True when the contact has a non-empty primary phone or at least one non-empty phone entry. */
 export function contactHasPhone(contact: Contact | null | undefined): boolean {
   if (!contact) return false;
-  if (typeof contact.phone === "string" && contact.phone.trim()) return true;
-  return Boolean(
-    contact.phones?.some((entry) => typeof entry.number === "string" && entry.number.trim()),
-  );
+  if (contact.phones?.some((entry) => typeof entry.number === "string" && entry.number.trim())) {
+    return true;
+  }
+  return typeof contact.phone === "string" && contact.phone.trim().length > 0;
 }
 
 /** True when the contact has a non-empty primary email or at least one non-empty email entry. */
 export function contactHasEmail(contact: Contact | null | undefined): boolean {
   if (!contact) return false;
-  if (typeof contact.email === "string" && contact.email.trim()) return true;
-  return Boolean(
-    contact.emails?.some((entry) => typeof entry.address === "string" && entry.address.trim()),
-  );
+  if (contact.emails?.some((entry) => typeof entry.address === "string" && entry.address.trim())) {
+    return true;
+  }
+  return typeof contact.email === "string" && contact.email.trim().length > 0;
 }
 
 /** Resolves normalized unique array of tag strings from a Contact (supporting tags array or comma-delimited tag string). */

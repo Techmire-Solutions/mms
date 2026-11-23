@@ -8,7 +8,6 @@ import { useUsersContractList } from "@/tenant/hooks/collections/users";
 import {
   DEFAULT_FACULTY_USER_ROLE,
   getPrimaryEmail,
-  workspaceRoleLabel,
   type Contact,
   type FacultyMember,
 } from "@mms/shared";
@@ -84,15 +83,12 @@ export function FacultyUserAccountSection(
     onUserAccountDraftChange({ ...userAccountDraft, role: accountRole });
   }, [linkedUser?.role, userAccountDraft, onUserAccountDraftChange]);
 
-  const roleOptions = useMemo(() => {
-    const allowedRoles = facultyDraft.designationAssignableRoles;
-    return workspaceRoles
-      .filter((role) => !facultyDraft.designationId || (allowedRoles ?? []).includes(role.id))
-      .map((role) => ({
-        value: role.id,
-        label: `${workspaceRoleLabel(role, t)}${!role.isSystem ? ` (${t("contacts.form.tabCustom")})` : ""}`,
-      }));
-  }, [workspaceRoles, facultyDraft.designationAssignableRoles, facultyDraft.designationId, t]);
+  const assignableRoles = useMemo(
+    () => facultyDraft.designationAssignableRoles ?? [],
+    [facultyDraft.designationAssignableRoles],
+  );
+  const hasAssignableRole = assignableRoles.length > 0;
+  const assignableRoleId = assignableRoles[0] ?? "";
 
   const selectedRoleObj = useMemo(() => {
     const roleId = linkedUser ? userAccountDraft.role || linkedUser.role : userAccountDraft.role;
@@ -103,9 +99,6 @@ export function FacultyUserAccountSection(
     return (
       <FacultyLinkedUserCard
         linkedUser={linkedUser}
-        userAccountDraft={userAccountDraft}
-        onUserAccountDraftChange={onUserAccountDraftChange}
-        roleOptions={roleOptions}
         workspaceRoles={workspaceRoles}
         selectedRoleObj={selectedRoleObj}
         errors={errors}
@@ -127,16 +120,19 @@ export function FacultyUserAccountSection(
               {t("faculty.form.grantLoginAccess")}
             </p>
             <p className="text-xs text-muted-foreground">
-              {t("faculty.form.grantLoginAccessHint")}
+              {hasAssignableRole
+                ? t("faculty.form.grantLoginAccessHint")
+                : t("faculty.designations.noAssignableRoles")}
             </p>
           </div>
           <Switch
             checked={userAccountDraft.enabled}
+            disabled={!hasAssignableRole}
             onCheckedChange={(checked) =>
               onUserAccountDraftChange({
                 ...userAccountDraft,
                 enabled: checked,
-                role: userAccountDraft.role || DEFAULT_FACULTY_USER_ROLE,
+                role: assignableRoleId || userAccountDraft.role || DEFAULT_FACULTY_USER_ROLE,
               })
             }
             aria-label={t("faculty.form.grantLoginAccess")}
@@ -148,7 +144,6 @@ export function FacultyUserAccountSection(
             primaryEmail={primaryEmail}
             userAccountDraft={userAccountDraft}
             onUserAccountDraftChange={onUserAccountDraftChange}
-            roleOptions={roleOptions}
             selectedRoleObj={selectedRoleObj}
             errors={errors}
           />
