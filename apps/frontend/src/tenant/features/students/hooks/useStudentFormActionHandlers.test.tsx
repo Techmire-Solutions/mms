@@ -186,6 +186,56 @@ describe("useStudentFormActionHandlers", () => {
     expect(props.updateContact.mutateAsync).not.toHaveBeenCalled();
   });
 
+  it("updates the contact dob, sets override, and clears dob validation errors", async () => {
+    const setContactDobOverride = vi.fn();
+    const setValidationErrors = vi.fn();
+    const props = baseProps({
+      setContactDobOverride,
+      setValidationErrors,
+      validationErrors: [{ fieldId: "dob", message: "Date of birth is required" }],
+    });
+    vi.mocked(props.updateContact.mutateAsync).mockResolvedValueOnce({ success: true });
+    renderHook(props);
+
+    await act(async () => {
+      await actions.handleStudentDobChange("2014-06-20");
+    });
+
+    expect(setContactDobOverride).toHaveBeenCalledWith("2014-06-20");
+    expect(props.updateContact.mutateAsync).toHaveBeenCalledWith({
+      id: "cnt-1",
+      contact: expect.objectContaining({ id: "cnt-1", dob: "2014-06-20" }),
+    });
+    expect(setValidationErrors).toHaveBeenCalledWith([]);
+  });
+
+  it("reports error when dob update fails", async () => {
+    const props = baseProps();
+    vi.mocked(props.updateContact.mutateAsync).mockRejectedValueOnce(new Error("network error"));
+    renderHook(props);
+
+    await act(async () => {
+      await actions.handleStudentDobChange("2014-06-20");
+    });
+
+    expect(mocks.notifyError).toHaveBeenCalledWith("students.saveFailed", undefined);
+    expect(mocks.reportClientError).toHaveBeenCalledWith(expect.any(Error), {
+      scope: "students.dob_update",
+    });
+  });
+
+  it("resets contactDobOverride when a new contact is selected", () => {
+    const setContactDobOverride = vi.fn();
+    const props = baseProps({ setContactDobOverride });
+    renderHook(props);
+
+    act(() => {
+      actions.handleContactSelect("cnt-99");
+    });
+
+    expect(setContactDobOverride).toHaveBeenCalledWith(null);
+  });
+
   it("derives the duplicate and validation summaries for the form chrome", () => {
     renderHook(
       baseProps({

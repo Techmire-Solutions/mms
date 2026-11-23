@@ -204,4 +204,30 @@ describe("runStudentSaveFlow", () => {
       expect.objectContaining({ contactId: "cnt-1", grNumber: "GR-007" }),
     );
   });
+
+  it("passes effectiveDob to validateStudentDraft and updates contact when changed", async () => {
+    const updateContact = { mutateAsync: vi.fn().mockResolvedValue({ success: true }) };
+    const onSave = vi.fn().mockResolvedValue(undefined);
+
+    const input = baseInput({
+      effectiveDob: "2015-08-20",
+      linkedContact: { id: "cnt-1", name: "Zayd Harith", firstName: "Zayd", dob: "" },
+      updateContact,
+      onSave,
+    });
+
+    const success = await runStudentSaveFlow(input);
+
+    expect(success).toBe(true);
+    expect(validateStudentDraft).toHaveBeenCalledWith(
+      input.studentDraft,
+      expect.objectContaining({
+        linkedDob: "2015-08-20",
+      }),
+    );
+    expect(updateContact.mutateAsync).toHaveBeenCalledWith({
+      id: "cnt-1",
+      contact: expect.objectContaining({ id: "cnt-1", dob: "2015-08-20" }),
+    });
+  });
 });

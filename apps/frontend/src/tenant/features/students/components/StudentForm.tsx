@@ -125,6 +125,7 @@ export const StudentForm = function StudentForm({
             linkedGenderRaw={form.linkedGenderRaw}
             linkedGenderLabel={form.linkedGenderLabel}
             linkedDob={form.linkedDob}
+            rawDob={form.rawDob}
             excludeIds={form.excludeIds}
             isGrAutoAssigned={form.isGrAutoAssigned}
             grInputDisabled={form.grInputDisabled}
@@ -140,6 +141,7 @@ export const StudentForm = function StudentForm({
             getFieldError={form.getFieldError}
             onContactSelect={form.handleContactSelect}
             onStudentAvatarChange={(avatarUrl) => setPendingAvatarUrl(avatarUrl)}
+            onStudentDobChange={form.handleStudentDobChange}
             onGrNumberChange={form.handleGrNumberChange}
             onDraftChange={form.updateDraft}
           />

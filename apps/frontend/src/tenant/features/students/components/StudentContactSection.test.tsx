@@ -10,6 +10,25 @@ vi.mock("@/components/contactLink/ContactPicker", () => ({
   ),
 }));
 
+vi.mock("@/components/app/DatePicker", () => ({
+  DatePicker: ({
+    value,
+    id,
+    onChange,
+  }: {
+    value?: string;
+    id?: string;
+    onChange?: (val: string) => void;
+  }) => (
+    <input
+      data-testid="dob-datepicker"
+      id={id}
+      defaultValue={value}
+      onChange={(e) => onChange?.(e.target.value)}
+    />
+  ),
+}));
+
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -46,5 +65,21 @@ describe("StudentContactSection Component", () => {
     );
 
     expect(html).toBe("");
+  });
+
+  it("renders editable DatePicker when onStudentDobChange is provided", () => {
+    const onStudentDobChange = vi.fn();
+    const html = renderToStaticMarkup(
+      <StudentContactSection
+        {...defaultProps}
+        rawDob="2016-04-12"
+        onStudentDobChange={onStudentDobChange}
+        formInstanceId="456"
+      />,
+    );
+
+    expect(html).toContain('data-testid="dob-datepicker"');
+    expect(html).toContain('id="sf-456-dob"');
+    expect(html).toContain('value="2016-04-12"');
   });
 });

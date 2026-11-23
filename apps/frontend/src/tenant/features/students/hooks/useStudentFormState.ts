@@ -11,7 +11,12 @@ import { useStudentFormLinkedData } from "@/tenant/features/students/hooks/useSt
 import { useStudentFormActionHandlers } from "@/tenant/features/students/hooks/useStudentFormActionHandlers";
 import { useStudentFormStatusOptions } from "@/tenant/features/students/hooks/useStudentFormStatusOptions";
 import { isStudentCreate } from "@/tenant/features/students/hooks/studentFormHandlers";
-import { type FieldDefinition, type Student, DEFAULT_STUDENT_ENABLED_TABS } from "@mms/shared";
+import {
+  type FieldDefinition,
+  type Student,
+  DEFAULT_STUDENT_ENABLED_TABS,
+  formatDate,
+} from "@mms/shared";
 
 interface UseStudentFormStateOptions {
   student?: Partial<Student> | null;
@@ -54,6 +59,7 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
   const [duplicateConfirmOpen, setDuplicateConfirmOpen] = useState(false);
   const [pendingSaveData, setPendingSaveData] = useState<Partial<Student> | null>(null);
   const [isGrManuallyEdited, setIsGrManuallyEdited] = useState(false);
+  const [contactDobOverride, setContactDobOverride] = useState<string | null>(null);
 
   const { statusBadgeConfig, statusSelectOptions, handleUpdateStatuses } =
     useStudentFormStatusOptions(t, configStatuses, studentDraft.status);
@@ -86,6 +92,7 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
       setValidationErrors([]);
       setFormError(null);
       setIsGrManuallyEdited(false);
+      setContactDobOverride(null);
     } else if (fieldsChanged) {
       setStudentDraft((prev) => {
         const nextDraft = getInitialStudentDraft({ student, fields });
@@ -146,6 +153,9 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
     }
   }
 
+  const rawDob = contactDobOverride !== null ? contactDobOverride : (linkedContact?.dob ?? "");
+  const effectiveLinkedDob = rawDob.trim() ? formatDate(rawDob.trim()) : linkedDob;
+
   const actions = useStudentFormActionHandlers({
     student,
     studentDraft,
@@ -171,6 +181,8 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
     setDuplicateConfirmOpen,
     formInstanceId,
     onBaselineReset: (data) => setBaselineSnapshot(studentDraftSnapshot(data)),
+    contactDobOverride,
+    setContactDobOverride,
   });
 
   return {
@@ -190,7 +202,8 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
     linkedContact,
     linkedGenderRaw,
     linkedGenderLabel,
-    linkedDob,
+    linkedDob: effectiveLinkedDob,
+    rawDob,
     duplicateConfirmOpen,
     typedDuplicateReason,
     excludeIds,

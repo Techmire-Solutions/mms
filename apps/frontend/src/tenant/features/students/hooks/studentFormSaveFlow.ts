@@ -20,6 +20,8 @@ interface StudentSaveFlowInput {
   student?: Partial<Student> | null;
   linkedContact?: Contact | null;
   linkedGenderRaw: string;
+  effectiveDob?: string;
+  updateContact?: { mutateAsync: (args: { id: string; contact: Contact }) => Promise<unknown> };
   validationContext: Omit<StudentValidationContext, "linkedGenderRaw" | "linkedDob">;
   blueprintVersion?: string | number | null;
   formInstanceId: string;
@@ -38,11 +40,11 @@ interface StudentSaveFlowInput {
 }
 
 function focusStudentValidationField(formInstanceId: string, fieldId: string): void {
-  const readOnlyFocusIds = new Set(["gender", "dob", "contactRelationships"]);
+  const readOnlyFocusIds = new Set(["gender", "contactRelationships"]);
   const candidates = [
     `sf-${formInstanceId}-${fieldId}`,
     fieldId,
-    fieldId === "gender" || fieldId === "dob" || fieldId === "contactId" ? "contactId" : "",
+    fieldId === "gender" || fieldId === "contactId" ? "contactId" : "",
     readOnlyFocusIds.has(fieldId) ? `sf-${formInstanceId}-guardians` : "",
   ].filter(Boolean);
 
@@ -70,10 +72,12 @@ export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<b
     input.setValidationErrors([]);
     input.setFormError(null);
 
+    const effectiveDob = input.effectiveDob ?? (input.linkedContact?.dob || "");
+
     const zodErrors = validateStudentDraft(input.studentDraft, {
       ...input.validationContext,
       linkedGenderRaw: input.linkedGenderRaw,
-      linkedDob: input.linkedContact?.dob || "",
+      linkedDob: effectiveDob,
       linkedContact: input.linkedContact,
     });
     if (zodErrors) {
@@ -84,6 +88,18 @@ export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<b
       }
       notify.error(input.t("common.formPleaseFixErrors"));
       return false;
+    }
+
+    if (
+      effectiveDob &&
+      input.linkedContact &&
+      input.linkedContact.dob !== effectiveDob &&
+      input.updateContact
+    ) {
+      await input.updateContact.mutateAsync({
+        id: String(input.linkedContact.id),
+        contact: { ...input.linkedContact, dob: effectiveDob },
+      });
     }
 
     const duplicateReason = await checkStudentFormDuplicate({
