@@ -6,6 +6,7 @@ import {
   PlatformConsolidationTier,
   type PlatformConsolidationTab,
 } from "@/platform/features/consolidation/components/PlatformConsolidationTier";
+import { PlatformConsolidationCommandMetrics } from "@/platform/features/consolidation/components/PlatformConsolidationCommandMetrics";
 import { usePlatformModuleTabs } from "@/platform/hooks/usePlatformModuleTabs";
 import { usePlatformModuleTabState } from "@/platform/hooks/usePlatformModuleTabState";
 import { PLATFORM_MODULE_CONSOLIDATION } from "@/platform/lib/platformModuleManifest";
@@ -25,6 +26,7 @@ export default function PlatformConsolidationPage(): React.JSX.Element {
       headerIcon={Layers}
       headerTitle={t("platform.consolidation.title")}
       headerSubtitle={t("platform.consolidation.subtitle")}
+      metricsStrip={<PlatformConsolidationCommandMetrics />}
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={handleTabChange}
