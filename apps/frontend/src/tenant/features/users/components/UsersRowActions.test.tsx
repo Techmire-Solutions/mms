@@ -127,7 +127,7 @@ describe("UsersRowActions", () => {
       id: "u-self",
       name: "Self User",
       email: "self@example.com",
-      role: "super_admin",
+      role: "admin",
       status: "active",
     });
 
@@ -216,5 +216,37 @@ describe("UsersRowActions", () => {
     act(() => {
       root.unmount();
     });
+  });
+
+  it("treats the platform-managed apex account as read-only in the tenant users module", () => {
+    mockActor = { id: "u-self", role: "super_admin" };
+    const apexUser = normalizeWorkspaceUser({
+      id: "u-self",
+      name: "Apex Owner",
+      email: "apex@example.com",
+      role: "super_admin",
+      status: "active",
+    });
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    act(() => {
+      root.render(
+        <UsersRowActions
+          user={apexUser}
+          canWrite
+          canDelete
+          showDeleted={false}
+          onView={vi.fn()}
+          onEdit={vi.fn()}
+          onDelete={vi.fn()}
+          onRestore={vi.fn()}
+          onResetPassword={vi.fn()}
+        />,
+      );
+    });
+
+    // Only View remains: the platform console owns the apex account.
+    expect(container.querySelectorAll("button").length).toBe(1);
   });
 });

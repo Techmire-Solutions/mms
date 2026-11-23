@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   INITIAL_STUDENT_FIELD_SEED,
+  setStudentFieldRequired,
   type Contact,
   type FieldDefinition,
   type StudentsSettings,
@@ -170,5 +171,46 @@ describe("student form validation", () => {
     );
 
     expect(errors?.some((issue) => issue.fieldId === "address")).toBe(true);
+  });
+
+  it("reports phone/email gaps only when the contact-detail checks are enabled", () => {
+    const bareContact: Contact = {
+      id: "c-9",
+      name: "Bare",
+      firstName: "Bare",
+      gender: "female",
+      dob: "2010-01-01",
+      line1: "12 Madrasa Road",
+      education: [{ institution: "Al-Noor Madrasa" }],
+      relationshipContacts: [
+        { contactId: "f-1", name: "Father", gender: "male", relationship: "Parent" },
+        { contactId: "m-1", name: "Mother", gender: "female", relationship: "Parent" },
+        { contactId: "g-1", name: "Uncle", gender: "male", relationship: "Guardian" },
+      ],
+    };
+    const context = {
+      settings: settings(),
+      enabledTabs: new Set(["basic", "registration"]),
+      requiredTabs: new Set(["basic", "registration"]),
+      fields: INITIAL_STUDENT_FIELD_SEED,
+      language: "en",
+      linkedGenderRaw: "female",
+      linkedDob: "2010-01-01",
+      linkedContact: bareContact,
+    };
+
+    // Seed default: both checks are OFF, so no phone/email errors.
+    expect(validateStudentDraft({ ...validDraft() }, context)).toBeNull();
+
+    // Enabled: the linked contact is missing both values.
+    const enabledFields = setStudentFieldRequired(
+      setStudentFieldRequired(INITIAL_STUDENT_FIELD_SEED, "phone", true),
+      "email",
+      true,
+    );
+    const errors = validateStudentDraft({ ...validDraft() }, { ...context, fields: enabledFields });
+    expect((errors ?? []).map((issue) => issue.fieldId)).toEqual(
+      expect.arrayContaining(["phone", "email"]),
+    );
   });
 });

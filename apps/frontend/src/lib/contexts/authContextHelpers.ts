@@ -53,6 +53,9 @@ export function readUserIdFromStoredAuth(raw: string | null): string | undefined
 export interface OnboardResult {
   user: User;
   workspace: Workspace;
+  /** Email-activation mode: whether the activation link was dispatched. */
+  inviteEmailSent?: boolean;
+  inviteEmailError?: string;
 }
 
 export interface OnboardPayload {
@@ -69,6 +72,10 @@ export interface OnboardPayload {
   secondaryColor?: string;
   logoUrl?: string;
   adminPhone?: string;
+  /** Gender collected by the wizard; stored on the tenant's linked first contact. */
+  adminGender: "male" | "female";
+  /** How the super admin receives their first credential. */
+  adminPasswordMode: "email" | "temporary";
   website?: string;
   footerText?: string;
   city?: string;

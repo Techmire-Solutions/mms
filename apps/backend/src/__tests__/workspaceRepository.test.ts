@@ -45,7 +45,9 @@ import {
   listWorkspaceRows,
   updateWorkspaceBrandingRow,
   updateWorkspaceEnabledRow,
+  upsertWorkspaceBranding,
 } from "../db/repositories/workspaceRepository.js";
+import { DEFAULT_BRANDING_SETTINGS, type BrandingSettings } from "@mms/shared";
 
 describe("workspaceRepository", () => {
   beforeEach(() => {
@@ -156,5 +158,104 @@ describe("workspaceRepository", () => {
     await deleteWorkspaceRow("demo");
     expect(mockDelete).toHaveBeenCalled();
     expect(mockDeleteWhere).toHaveBeenCalled();
+  });
+
+  it("stores the provisioning admin snapshot with the workspace row", async () => {
+    await insertWorkspaceRow({
+      id: "ws-3",
+      subdomain: "al-noor",
+      madrasaName: "Al-Noor Academy",
+      provisionedAdmin: { name: "Ali Raza", email: "admin@alnoor.test", gender: "male" },
+    });
+
+    expect(mockInsertValues).toHaveBeenCalledWith({
+      id: "ws-3",
+      subdomain: "al-noor",
+      madrasaName: "Al-Noor Academy",
+      tagline: null,
+      country: null,
+      enabled: true,
+      adminName: "Ali Raza",
+      adminEmail: "admin@alnoor.test",
+      adminGender: "male",
+    });
+  });
+
+  it("never writes madrasa_name for tenant-scoped branding when preserveMadrasaName is set", async () => {
+    await updateWorkspaceBrandingRow(
+      "demo",
+      { madrasaName: "Hijacked", tagline: "  New Tagline  " },
+      { preserveMadrasaName: true },
+    );
+    expect(mockSet).toHaveBeenCalledWith({ tagline: "New Tagline" });
+
+    mockSet.mockClear();
+    await upsertWorkspaceBranding(
+      "demo",
+      { madrasaName: "Hijacked" } as Parameters<typeof upsertWorkspaceBranding>[1],
+      { preserveMadrasaName: true },
+    );
+    const setArg = mockSet.mock.calls[0]![0] as Record<string, unknown>;
+    expect(setArg).not.toHaveProperty("madrasaName");
+    expect(setArg).toHaveProperty("tagline");
+  });
+
+  it("persists every institution field from BrandingSettings to its column", async () => {
+    const branding: BrandingSettings = {
+      ...DEFAULT_BRANDING_SETTINGS,
+      madrasaName: "Al-Noor Academy",
+      tagline: "Excellence in Islamic Education",
+      primaryColor: "#123456",
+      secondaryColor: "#654321",
+      cornerStyle: "pill",
+      logoUrl: "https://cdn.example.test/logo.png",
+      faviconUrl: "https://cdn.example.test/favicon.png",
+      footerText: "© Al-Noor Academy",
+      email: "info@alnoor.test",
+      phone: "+92 300 1234567",
+      website: "https://alnoor.test",
+      legalName: "Al-Noor Education Trust",
+      registrationNumber: "REG-2026-0042",
+      addressLine1: "12 Knowledge Road",
+      addressLine2: "Block B",
+      city: "Karachi",
+      region: "Sindh",
+      postalCode: "75500",
+      country: "Pakistan",
+      socialLinks: [
+        { platform: "LinkedIn", url: "https://linkedin.com/company/al-noor" },
+        { platform: "YouTube", url: "https://youtube.com/@alnoor" },
+      ],
+    };
+
+    await upsertWorkspaceBranding("demo", branding);
+
+    expect(mockSet).toHaveBeenCalledTimes(1);
+    expect(mockSet).toHaveBeenCalledWith({
+      madrasaName: "Al-Noor Academy",
+      tagline: "Excellence in Islamic Education",
+      primaryColor: "#123456",
+      secondaryColor: "#654321",
+      cornerStyle: "pill",
+      logoUrl: "https://cdn.example.test/logo.png",
+      faviconUrl: "https://cdn.example.test/favicon.png",
+      footerText: "© Al-Noor Academy",
+      email: "info@alnoor.test",
+      phone: "+92 300 1234567",
+      website: "https://alnoor.test",
+      legalName: "Al-Noor Education Trust",
+      registrationNumber: "REG-2026-0042",
+      addressLine1: "12 Knowledge Road",
+      addressLine2: "Block B",
+      city: "Karachi",
+      region: "Sindh",
+      postalCode: "75500",
+      country: "Pakistan",
+      socialLinks: [
+        { platform: "LinkedIn", url: "https://linkedin.com/company/al-noor" },
+        { platform: "YouTube", url: "https://youtube.com/@alnoor" },
+      ],
+    });
+    expect(mockWhere).toHaveBeenCalled();
   });
 });

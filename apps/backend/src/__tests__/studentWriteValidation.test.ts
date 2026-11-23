@@ -4,6 +4,7 @@ import type { FastifyRequest } from "fastify";
 const mockLoadSettings = vi.fn();
 const mockCollectIssues = vi.fn();
 const mockGetRequestTenant = vi.fn((): string | undefined => "demo");
+const mockLoadContacts = vi.fn();
 
 vi.mock("../students/use-cases/studentConfigService.js", () => ({
   loadStudentsSettingsCombined: () => mockLoadSettings(),
@@ -11,6 +12,10 @@ vi.mock("../students/use-cases/studentConfigService.js", () => ({
 
 vi.mock("../services/studentValidationService.js", () => ({
   collectStudentDynamicIssues: (...args: unknown[]) => mockCollectIssues(...args),
+}));
+
+vi.mock("../contacts/use-cases/contactLoadUseCases.js", () => ({
+  loadContactsByIdsForTenant: (...args: unknown[]) => mockLoadContacts(...args),
 }));
 
 vi.mock("../lib/tenantContext.js", () => ({
@@ -48,6 +53,7 @@ describe("validateStudentWrite", () => {
     vi.clearAllMocks();
     mockLoadSettings.mockResolvedValue(null);
     mockCollectIssues.mockResolvedValue([]);
+    mockLoadContacts.mockResolvedValue([]);
   });
 
   it("rejects unknown keys that the Setup registry does not publish", async () => {
@@ -165,5 +171,67 @@ describe("validateStudentWrite", () => {
     await expect(validateStudentWrite(request, { contactId: "c-1" })).rejects.toBeInstanceOf(
       StudentWriteValidationError,
     );
+  });
+
+  describe("contact-profile requirements", () => {
+    function settingsWithRequiredBasicFields(keys: string[]) {
+      return {
+        version: 9,
+        enabledTabs: ["basic", "registration"],
+        requiredTabs: [],
+        formTabs: [],
+        fields: {
+          basic: keys.map((key) => ({
+            key,
+            label: key,
+            type: "text",
+            enabled: true,
+            required: true,
+          })),
+        },
+      };
+    }
+
+    it("rejects a linked contact without a required phone or email", async () => {
+      mockLoadSettings.mockResolvedValue(settingsWithRequiredBasicFields(["phone", "email"]));
+      mockLoadContacts.mockResolvedValue([
+        { id: "c-1", name: "Bare", firstName: "Bare", line1: "12 Road" },
+      ]);
+
+      await expect(
+        validateStudentWrite(fakeRequest(), { contactId: "c-1", grNumber: "GR-1" }),
+      ).rejects.toMatchObject({
+        type: "validation_error",
+        validationErrors: [{ field: "phone" }, { field: "email" }] as never,
+      });
+      expect(mockLoadContacts).toHaveBeenCalledWith("demo", ["c-1"]);
+    });
+
+    it("accepts a contact that carries both values", async () => {
+      mockLoadSettings.mockResolvedValue(settingsWithRequiredBasicFields(["phone", "email"]));
+      mockLoadContacts.mockResolvedValue([
+        {
+          id: "c-1",
+          name: "Complete",
+          firstName: "Complete",
+          line1: "12 Road",
+          phones: [{ label: "mobile", number: "03001234567" }],
+          emails: [{ label: "home", address: "complete@example.com" }],
+        },
+      ]);
+
+      await expect(
+        validateStudentWrite(fakeRequest(), { contactId: "c-1", grNumber: "GR-1" }),
+      ).resolves.toMatchObject({ contactId: "c-1" });
+    });
+
+    it("skips the contact read when no contact-profile check is required", async () => {
+      mockLoadSettings.mockResolvedValue(settingsWithFields(["grNumber"]));
+
+      await expect(
+        validateStudentWrite(fakeRequest(), { contactId: "c-1", grNumber: "GR-1" }),
+      ).resolves.toBeDefined();
+      expect(mockLoadContacts).not.toHaveBeenCalled();
+    });
   });
 });

@@ -43,6 +43,10 @@ describe("InstitutionSetupFormSections", () => {
     const madrasaInput = container.querySelector("#setup-madrasaName") as HTMLInputElement;
     expect(madrasaInput).not.toBeNull();
     expect(madrasaInput.value).toBe("Al-Hadi Academy");
+    // The madrasa name is platform-owned: the setup wizard can only display it.
+    expect(madrasaInput.readOnly).toBe(true);
+    expect(madrasaInput.disabled).toBe(true);
+    expect(container.textContent).toContain("branding.madrasaNameManaged");
 
     const emailInput = container.querySelector("#setup-email") as HTMLInputElement;
     expect(emailInput.value).toBe("admin@alhadi.edu");
@@ -51,7 +55,26 @@ describe("InstitutionSetupFormSections", () => {
     expect(cityInput.value).toBe("Chicago");
   });
 
-  it("triggers updateField callback when input values change", () => {
+  it("triggers updateField callback when editable input values change", () => {
+    const updateField = vi.fn();
+    const container = document.createElement("div");
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <InstitutionSetupFormSections data={initialData} errors={{}} updateField={updateField} />,
+      );
+    });
+
+    const taglineInput = container.querySelector("#setup-tagline") as HTMLInputElement;
+    act(() => {
+      changeInput(taglineInput, "Updated Tagline");
+    });
+
+    expect(updateField).toHaveBeenCalledWith("tagline", "Updated Tagline");
+  });
+
+  it("never lets the setup form rename the madrasa", () => {
     const updateField = vi.fn();
     const container = document.createElement("div");
     const root = createRoot(container);
@@ -64,10 +87,10 @@ describe("InstitutionSetupFormSections", () => {
 
     const madrasaInput = container.querySelector("#setup-madrasaName") as HTMLInputElement;
     act(() => {
-      changeInput(madrasaInput, "Updated Madrasa");
+      changeInput(madrasaInput, "Hijacked Madrasa");
     });
 
-    expect(updateField).toHaveBeenCalledWith("madrasaName", "Updated Madrasa");
+    expect(updateField).not.toHaveBeenCalledWith("madrasaName", expect.anything());
   });
 
   it("renders error messages when validation errors are present", () => {
@@ -76,7 +99,6 @@ describe("InstitutionSetupFormSections", () => {
     const root = createRoot(container);
 
     const errors = {
-      madrasaName: "Name is required",
       email: "Invalid email address",
       phone: "Phone is required",
       addressLine1: "Address line 1 is required",
@@ -96,7 +118,8 @@ describe("InstitutionSetupFormSections", () => {
       );
     });
 
-    expect(container.textContent).toContain("Name is required");
+    // The name is platform-owned and can no longer surface a validation error.
+    expect(container.textContent).not.toContain("Name is required");
     expect(container.textContent).toContain("Invalid email address");
     expect(container.textContent).toContain("Phone is required");
     expect(container.textContent).toContain("Address line 1 is required");

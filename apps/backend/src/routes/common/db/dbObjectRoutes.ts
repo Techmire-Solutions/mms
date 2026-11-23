@@ -160,8 +160,14 @@ export const dbObjectRoutes: FastifyPluginAsync = async (fastify) => {
           }
 
           if (key === "branding") {
-            await syncWorkspaceFromBranding(tenant, objectValueToSave as BrandingSettings);
-            await upsertWorkspaceBranding(tenant, objectValueToSave as BrandingSettings);
+            // The madrasa name is platform-owned: tenant branding writes never touch
+            // `madrasa_name` (see renamePlatformWorkspace for the only rename path).
+            await syncWorkspaceFromBranding(tenant, objectValueToSave as BrandingSettings, {
+              preserveMadrasaName: true,
+            });
+            await upsertWorkspaceBranding(tenant, objectValueToSave as BrandingSettings, {
+              preserveMadrasaName: true,
+            });
           } else if (key === "global_settings") {
             await saveGlobalSettings(objectValueToSave as GlobalSettings, tenant);
           }

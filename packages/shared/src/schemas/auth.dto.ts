@@ -14,6 +14,12 @@ const onboardBodyBaseSchema = z
     madrasaName: z.string().min(1),
     adminName: z.string().min(1),
     email: z.string().min(3),
+    /**
+     * How the tenant super admin receives their first credential:
+     * - `email`: an activation link is emailed (no password supplied);
+     * - `temporary`: the operator sets a temporary password handed over directly.
+     */
+    adminPasswordMode: z.enum(["email", "temporary"]),
     password: z.string().min(6).optional(),
     /** Platform operator password step-up (caller must hold platform session). */
     currentPassword: z.string().min(1),
@@ -24,6 +30,8 @@ const onboardBodyBaseSchema = z
     secondaryColor: z.string().optional(),
     logoUrl: z.string().optional(),
     adminPhone: z.string().optional(),
+    /** Provisioning admin gender — stored on the tenant's linked first contact. */
+    adminGender: z.enum(["male", "female"]),
     website: z.string().optional(),
     footerText: z.string().optional(),
     // Extended Institution Fields
@@ -39,7 +47,26 @@ const onboardBodyBaseSchema = z
     modules: z.array(z.string()).optional(),
     industryType: z.string().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.adminPasswordMode === "temporary") {
+      if (!value.password || !value.password.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["password"],
+          message: "onboarding.errorPasswordRequired",
+        });
+      }
+      return;
+    }
+    if (value.password !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["password"],
+        message: "onboarding.errorPasswordNotAllowed",
+      });
+    }
+  });
 
 export const onboardBodySchema = z.preprocess((raw) => {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;

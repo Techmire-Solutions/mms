@@ -161,6 +161,7 @@ export default function PlatformWorkspaceList(): React.JSX.Element {
             onOpenDelete={isSuperUser ? deleteState.handleOpenDelete : undefined}
             onOpenResetPassword={modalState.handleOpenResetPassword}
             onOpenCreateAdmin={modalState.handleOpenCreateAdmin}
+            onOpenRename={modalState.handleOpenRename}
             onInspect={modalState.handleOpenInspect}
             selectedSubdomains={selection.selectedSubdomains}
             onToggleSelect={selection.toggleSelect}

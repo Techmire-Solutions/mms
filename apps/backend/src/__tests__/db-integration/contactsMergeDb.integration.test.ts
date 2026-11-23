@@ -45,12 +45,15 @@ function baseContact(id: string, name: string, phone: string, email: string): Co
 beforeAll(async () => {
   await requireDatabaseConnection();
   await withTenant(tenant, async (tx) => {
-    await tx.insert(workspaces).values({
-      id: tenant,
-      subdomain: tenant,
-      madrasaName: "Contacts merge test",
-      enabled: true,
-    });
+    await tx
+      .insert(workspaces)
+      .values({
+        id: tenant,
+        subdomain: tenant,
+        madrasaName: "Contacts merge test",
+        enabled: true,
+      })
+      .onConflictDoNothing();
   });
   await runWithTenant(tenant, async () => {
     await contactUseCases.upsertContact(baseContact(keepId, "Aisha", "3001000001", "keep@x.com"));

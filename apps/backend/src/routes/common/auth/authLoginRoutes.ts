@@ -111,6 +111,7 @@ export const authLoginRoutes: FastifyPluginAsync = async (fastify) => {
           const result = await onboardUser({
             email: body.email,
             adminName: body.adminName,
+            adminPasswordMode: body.adminPasswordMode,
             password: body.password,
             origin,
             subdomain: body.subdomain,
@@ -121,6 +122,7 @@ export const authLoginRoutes: FastifyPluginAsync = async (fastify) => {
             secondaryColor: body.secondaryColor,
             logoUrl: body.logoUrl,
             adminPhone: body.adminPhone,
+            adminGender: body.adminGender,
             website: body.website,
             footerText: body.footerText,
             faviconUrl: body.faviconUrl,
@@ -148,8 +150,14 @@ export const authLoginRoutes: FastifyPluginAsync = async (fastify) => {
         } catch (error: unknown) {
           const err = error as Error & { statusCode?: number };
           const statusCode = err.statusCode ?? 500;
+          const errorType =
+            statusCode === 409
+              ? "conflict"
+              : statusCode === 400
+                ? "validation_error"
+                : "server_error";
           return reply.status(statusCode).send({
-            type: statusCode === 409 ? "conflict" : "server_error",
+            type: errorType,
             message: err.message || "Onboarding failed",
           });
         }

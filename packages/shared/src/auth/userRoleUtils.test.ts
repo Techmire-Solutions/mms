@@ -182,12 +182,14 @@ describe("userRoleUtils", () => {
       expect(canManageRole("principal", "teacher")).toBe(false);
     });
 
-    it("canAssignRole: super_admin can assign any role, admin can assign any except super_admin", () => {
-      expect(canAssignRole("super_admin", "super_admin")).toBe(true);
+    it("canAssignRole: the platform-managed Super Admin role is never assignable", () => {
+      // Changed intent: the apex super admin is created by the platform console only.
+      expect(canAssignRole("super_admin", "super_admin")).toBe(false);
+      expect(canAssignRole("admin", "super_admin")).toBe(false);
+      expect(canAssignRole("super_admin", "super_user")).toBe(false);
+
       expect(canAssignRole("super_admin", "admin")).toBe(true);
       expect(canAssignRole("super_admin", "teacher")).toBe(true);
-
-      expect(canAssignRole("admin", "super_admin")).toBe(false);
       expect(canAssignRole("admin", "admin")).toBe(true);
       expect(canAssignRole("admin", "teacher")).toBe(true);
 
@@ -206,12 +208,13 @@ describe("userRoleUtils", () => {
       expect(canManageTargetUser("teacher", "teacher")).toBe(false);
     });
 
-    it("filterAssignableRoles filters out super_admin for admin actor and empties for non-admin", () => {
+    it("filterAssignableRoles excludes the platform-managed role for every actor and empties for non-admin", () => {
       const roles = DEFAULT_WORKSPACE_ROLES;
 
+      // Changed intent: nobody assigns the apex role from the tenant console.
       const superAdminFiltered = filterAssignableRoles(roles, "super_admin");
-      expect(superAdminFiltered.some((r) => r.id === "super_admin")).toBe(true);
-      expect(superAdminFiltered.length).toBe(roles.length);
+      expect(superAdminFiltered.some((r) => r.id === "super_admin")).toBe(false);
+      expect(superAdminFiltered.length).toBe(roles.length - 1);
 
       const adminFiltered = filterAssignableRoles(roles, "admin");
       expect(adminFiltered.some((r) => r.id === "super_admin")).toBe(false);

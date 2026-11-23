@@ -48,16 +48,15 @@ export function InstitutionSetupFormSections({
           <Field
             id="setup-madrasaName"
             label={t("branding.madrasaName")}
-            required
-            error={errors.madrasaName}
-            hint={!errors.madrasaName ? t("branding.madrasaNameHint") : undefined}
+            hint={t("branding.madrasaNameManaged")}
           >
             <Input
               id="setup-madrasaName"
               name="madrasaName"
               className={FORM_INPUT}
               value={data.madrasaName}
-              onChange={(e) => updateField("madrasaName", e.target.value)}
+              readOnly
+              disabled
               placeholder={t("branding.madrasaNamePlaceholder")}
             />
           </Field>

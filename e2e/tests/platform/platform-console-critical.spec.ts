@@ -278,16 +278,16 @@ test.describe("Platform Console Critical Workspace Lifecycle", () => {
       await page.locator("#firstName").fill("Platform");
       await page.locator("#lastName").fill("E2E");
       await page.locator("#email").fill(tenantOwnerEmail);
-      if (
-        await page
-          .locator("#password")
-          .isVisible()
-          .catch(() => false)
-      ) {
-        await page.locator("#password").fill(tenantOwnerTempPassword);
-        await page.locator("#confirmPassword").fill(tenantOwnerTempPassword);
+      await page.locator("#gender").selectOption("male");
+      // Temporary-password mode: the operator sets the tenant owner's first credential.
+      const temporaryPasswordMode = page.getByRole("button", {
+        name: /set temporary password/i,
+      });
+      if (await temporaryPasswordMode.isVisible().catch(() => false)) {
+        await temporaryPasswordMode.click();
+        await page.locator("#admin-password").fill(tenantOwnerTempPassword);
+        await page.locator("#admin-password-confirm").fill(tenantOwnerTempPassword);
       }
-      await page.locator("#terms").check();
 
       // Step 5 Review + create
       await page.getByRole("button", { name: "Continue" }).click();

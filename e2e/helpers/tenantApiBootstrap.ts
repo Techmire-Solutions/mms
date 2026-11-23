@@ -71,6 +71,11 @@ export async function bootstrapAuthenticatedTenantViaApi(
     madrasaName: "Responsive Shell Madrasa",
     tagline: DEFAULT_BRANDING_SETTINGS.tagline,
     adminName: "Resp Admin",
+    adminGender: "male",
+    // The helper supplies and then uses a known credential (login + forced change), so
+    // this is temporary-password mode. The modes are mutually exclusive: `password` is
+    // rejected by `onboardBodySchema` in email-activation mode.
+    adminPasswordMode: "temporary",
     email: adminEmail,
     password: adminPassword,
     currentPassword: platformPassword,

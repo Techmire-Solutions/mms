@@ -210,6 +210,9 @@ export const platformWorkspaceRowDtoSchema = z
     createdAt: z.string(),
     requireEmailVerification: z.boolean().optional(),
     adminEmail: z.string().optional(),
+    /** Provisioning snapshot of the tenant's apex admin (name + gender). */
+    adminName: z.string().optional(),
+    adminGender: z.string().optional(),
   })
   .strict();
 

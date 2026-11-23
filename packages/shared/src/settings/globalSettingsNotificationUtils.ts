@@ -1,6 +1,16 @@
 import type { GlobalSettings } from "./globalSettingsTypes.js";
 
 /**
+ * Administrative tenant roles for workspace-wide 2FA. Kept local (not the auth
+ * role-helper module) to avoid a settings → auth → settings import cycle.
+ */
+const ADMINISTRATIVE_ROLES = new Set(["admin", "super_admin", "super_user"]);
+
+function isAdministrativeRole(role: string): boolean {
+  return ADMINISTRATIVE_ROLES.has(role.trim().toLowerCase());
+}
+
+/**
  * Whether the signed-in user must complete 2FA before accessing the app.
  * Global `twoFactor` enforces admin logins; per-user flag can extend later.
  */
@@ -10,7 +20,7 @@ export function requiresTwoFactor(
 ): boolean {
   if (!user) return false;
   if (user.twoFactorEnabled) return true;
-  return settings.twoFactor === true && user.role === "admin";
+  return settings.twoFactor === true && isAdministrativeRole(user.role);
 }
 
 /** Master email notifications gate from global settings. */

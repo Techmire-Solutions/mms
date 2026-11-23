@@ -4,6 +4,7 @@ import { normalizeBrandingCornerStyle } from "./brandingCornerStyle.js";
 import { normalizeToE164, parsePhoneNumber } from "../core/phoneUtils.js";
 import {
   BRANDING_FOOTER_MAX,
+  BRANDING_IDENTITY_FIELD_KEYS,
   BRANDING_NAME_MAX,
   BRANDING_SOCIAL_PLATFORMS,
   BRANDING_TAGLINE_MAX,
@@ -96,6 +97,45 @@ export function pickBrandingFields<K extends keyof BrandingSettings>(
     result[key] = settings[key];
   }
   return result;
+}
+
+/**
+ * Returns only the branding fields whose value differs between `draft` and `baseline`.
+ *
+ * Settings saves overlay these fields on a freshly fetched server record, so fields
+ * the user did not touch (possibly edited on another device) are never clobbered.
+ */
+export function pickDirtyBrandingFields<K extends keyof BrandingSettings>(
+  draft: BrandingSettings,
+  baseline: BrandingSettings,
+  keys: readonly K[],
+): Partial<Pick<BrandingSettings, K>> {
+  const result: Partial<Pick<BrandingSettings, K>> = {};
+  for (const key of keys) {
+    if (JSON.stringify(draft[key]) !== JSON.stringify(baseline[key])) {
+      result[key] = draft[key];
+    }
+  }
+  return result;
+}
+
+/**
+ * Composes a server-authoritative identity save.
+ *
+ * Only the identity fields the user changed between `draft` and `baseline` are
+ * overlaid on a freshly fetched server record, so untouched fields (possibly edited
+ * on another device, or never hydrated locally) are never clobbered. Used by both
+ * Settings → Institution and the first-run institution setup page.
+ */
+export function mergeBrandingIdentityOverServerBaseline(
+  draft: BrandingSettings,
+  baseline: BrandingSettings,
+  serverBaseline: BrandingSettings,
+): BrandingSettings {
+  return mergeBrandingSettings({
+    ...serverBaseline,
+    ...pickDirtyBrandingFields(draft, baseline, BRANDING_IDENTITY_FIELD_KEYS),
+  });
 }
 
 /** Returns whether any field in `keys` differs between draft and persisted baseline. */

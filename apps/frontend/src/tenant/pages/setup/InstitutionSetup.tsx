@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, Sparkles, CheckCircle2, ArrowRight } from "lucide-react";
-import { type BrandingSettings, mergeBrandingSettings } from "@mms/shared";
+import {
+  mergeBrandingIdentityOverServerBaseline,
+  mergeBrandingSettings,
+  type BrandingSettings,
+} from "@mms/shared";
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { saveBrandingSettings } from "@/lib/db";
+import { fetchBrandingFromServer } from "@/lib/brandingHydration";
 import { ROUTES } from "@/lib/config/routes";
 import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
@@ -23,6 +28,9 @@ export default function InstitutionSetup(): React.JSX.Element {
   const currentBranding = useBranding();
   const markInstitutionSetupComplete = useMarkInstitutionSetupComplete();
 
+  // Mount-time snapshot: fields the operator never edits are taken from the fresh
+  // server record at submit, so a late/absent hydration can never blank them.
+  const [baseline] = useState<BrandingSettings>(() => mergeBrandingSettings(currentBranding));
   const [data, setData] = useState<BrandingSettings>(() => mergeBrandingSettings(currentBranding));
   const [errors, setErrors] = useState<InstitutionSetupFieldErrors>({});
   const [saving, setSaving] = useState(false);
@@ -41,7 +49,6 @@ export default function InstitutionSetup(): React.JSX.Element {
     const nextErrors: InstitutionSetupFieldErrors = {};
     const reqKey = t("institutionSetup.fieldRequired");
 
-    if (!data.madrasaName.trim()) nextErrors.madrasaName = reqKey;
     if (!data.tagline.trim()) nextErrors.tagline = reqKey;
     if (!data.email.trim()) nextErrors.email = reqKey;
     if (!data.phone.trim()) nextErrors.phone = reqKey;
@@ -74,7 +81,14 @@ export default function InstitutionSetup(): React.JSX.Element {
 
     setSaving(true);
     try {
-      const merged = mergeBrandingSettings(data);
+      // Server-authoritative save: overlay only the identity fields the operator
+      // changed onto the freshly fetched record (same contract as Settings → Institution).
+      const serverBaseline = (await fetchBrandingFromServer()) ?? baseline;
+      const merged = mergeBrandingIdentityOverServerBaseline(
+        mergeBrandingSettings(data),
+        baseline,
+        serverBaseline,
+      );
       const res = await saveBrandingSettings(merged);
       if (!res.ok) {
         throw new Error("Failed to persist institution settings");

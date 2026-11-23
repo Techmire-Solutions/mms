@@ -889,6 +889,8 @@ describe("platform auth routes", () => {
       payload: {
         madrasaName: "Test Madrasa",
         adminName: "Admin",
+        adminGender: "male",
+        adminPasswordMode: "email",
         email: "admin@test.com",
         currentPassword: "wrong-operator-password",
         subdomain: "testmadrasa",

@@ -6,6 +6,12 @@ import StructureStep from "@/platform/pages/onboarding/steps/StructureStep";
 import AdminSetup from "@/platform/pages/onboarding/steps/AdminSetup";
 import CompleteStep from "@/platform/pages/onboarding/steps/CompleteStep";
 
+/** Provisioning admin gender values (tenant contact lookup values). */
+export type AdminGender = "male" | "female";
+
+/** How the tenant super admin receives their first credential. */
+export type AdminPasswordMode = "email" | "temporary";
+
 export interface OnboardingData {
   name: string;
   subdomain: string;
@@ -13,10 +19,13 @@ export interface OnboardingData {
   firstName: string;
   lastName: string;
   email: string;
+  adminGender: AdminGender | "";
+  adminPasswordMode: AdminPasswordMode;
+  /** Temporary-password mode only. */
   password?: string;
+  passwordConfirm?: string;
   /** Platform operator password for step-up on create. */
   currentPassword: string;
-  agreedTerms: boolean;
   modules: string[];
   industryType: IndustryType;
 }
@@ -98,9 +107,12 @@ export const ONBOARDING_INITIAL_DATA: OnboardingData = {
   firstName: "",
   lastName: "",
   email: "",
+  adminGender: "",
+  adminPasswordMode: "email",
   password: "",
+  passwordConfirm: "",
   currentPassword: "",
-  agreedTerms: false,
+
   modules: SYSTEM_MODULES.map((m) => m.id),
   industryType: "madrasa",
 };

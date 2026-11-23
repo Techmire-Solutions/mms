@@ -86,13 +86,14 @@ describe("moduleCommandMetrics", () => {
       { status: "active", role: "admin", twoFactorEnabled: true, activeSessions: 2 },
       { status: "active", role: "staff", twoFactorEnabled: false, activeSessions: 1 },
       { status: "suspended", role: "admin", twoFactorEnabled: true, activeSessions: 0 },
+      { status: "active", role: "super_admin", twoFactorEnabled: false, activeSessions: 0 },
     ];
 
     const metrics = computeUsersCommandMetrics(users);
-    expect(metrics.total).toBe(3);
-    expect(metrics.active).toBe(2);
+    expect(metrics.total).toBe(4);
+    expect(metrics.active).toBe(3);
     expect(metrics.suspended).toBe(1);
-    expect(metrics.admins).toBe(2);
+    expect(metrics.admins).toBe(3);
     expect(metrics.twoFaEnabled).toBe(2);
     expect(metrics.activeSessions).toBe(3);
   });

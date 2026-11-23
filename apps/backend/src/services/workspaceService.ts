@@ -37,6 +37,8 @@ export {
   getPlatformWorkspaceSummary,
   resetWorkspaceAdminPassword,
   createWorkspaceAdminUser,
+  listWorkspaceSuperAdminIds,
+  renamePlatformWorkspace,
   syncWorkspaceFromBranding,
   upsertWorkspaceBranding,
 } from "./workspacePresentationService.js";
@@ -178,6 +180,8 @@ export async function createWorkspace(workspaceInput: {
   tagline?: string;
   country?: string;
   industryType?: string;
+  /** Console-side snapshot of the admin created by provisioning (platform DB). */
+  provisionedAdmin?: { name: string; email: string; gender: string } | null;
 }): Promise<Workspace> {
   const subdomain = normalizeSubdomainInput(workspaceInput.subdomain);
   if (!isValidSubdomain(subdomain)) {
@@ -208,11 +212,15 @@ export async function createWorkspace(workspaceInput: {
       enabled: true,
     };
 
-    await insertWorkspaceRow(newWs);
+    await insertWorkspaceRow({
+      ...newWs,
+      provisionedAdmin: workspaceInput.provisionedAdmin,
+    });
 
-    const { syncPlatformSuperUserToTenant } =
-      await import("./platform/platformSuperUserTenantSyncService.js");
-    await syncPlatformSuperUserToTenant(subdomain);
+    // A new workspace is never seeded with a platform user: the admin created by
+    // provisioning (`provisionWorkspaceAdmin`) is the tenant's only super_admin.
+    // The opt-in `PLATFORM_SYNC_SUPERUSER_TO_TENANTS` mirror intentionally does not
+    // cover creation — see platformSuperUserTenantSyncService.ts.
 
     const created: Workspace = {
       id: newWs.id,

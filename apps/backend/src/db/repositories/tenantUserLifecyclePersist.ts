@@ -139,6 +139,11 @@ export async function resetTenantUserPasswordRow(
       .set({
         passwordHash,
         mustChangePassword: true,
+        // An administrator who issues a temporary password has vouched for the
+        // address (mirrors create-with-password). Without this, accounts created
+        // before that rule — or any unverified account — stay blocked by the
+        // workspace email-verification policy no matter how often the password is reset.
+        emailVerifiedAt: new Date(),
         updatedAt: new Date(),
       })
       .where(tenantUserIdWhere(id, tenant));

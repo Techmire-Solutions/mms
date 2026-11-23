@@ -75,6 +75,41 @@ export function useSetWorkspaceEnabled() {
   });
 }
 
+export function useRenameWorkspace() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+
+  return useMutation<
+    { workspace: PlatformWorkspaceRow },
+    Error,
+    { subdomain: string; madrasaName: string }
+  >({
+    mutationFn: async ({ subdomain, madrasaName }) => {
+      const res = await apiContract.platform.renameWorkspace({
+        params: { subdomain },
+        body: { madrasaName },
+      });
+      if (res.status >= 400) {
+        const errorBody = res.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          res.status,
+          errorBody?.message || t("platform.renameFailed"),
+          errorBody?.type,
+        );
+      }
+      return res.body as { workspace: PlatformWorkspaceRow };
+    },
+    onSuccess: (res) => {
+      notify.success(t("platform.workspaceRenamedToast"), {
+        description: res.workspace.madrasaName,
+      });
+    },
+    onSettled: () => {
+      invalidateWorkspaceQueries(queryClient);
+    },
+  });
+}
+
 export function useDeleteWorkspace() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();

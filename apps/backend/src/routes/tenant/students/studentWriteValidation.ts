@@ -133,15 +133,18 @@ export async function validateStudentWrite(
     }
     if (issues.length > 0) throw new StudentWriteValidationError(issues);
 
-    // Layer 3 — contact-profile completeness. Relationships, address and education live
-    // on the linked contact, so the Setup required toggles are enforced from that record.
+    // Layer 3 — contact-profile completeness. Relationships, address, education, phone
+    // and email live on the linked contact, so the Setup required toggles are enforced
+    // from that record.
     const profileRequirements = resolveStudentContactProfileRequirements(
       (settings.fields ?? {}) as Record<string, FieldDefinition[]>,
     );
     if (
       profileRequirements.relationships ||
       profileRequirements.address ||
-      profileRequirements.education
+      profileRequirements.education ||
+      profileRequirements.phone ||
+      profileRequirements.email
     ) {
       const contactId = data.contactId != null ? String(data.contactId).trim() : "";
       const [contact] = contactId ? await loadContactsByIdsForTenant(tenant, [contactId]) : [];
@@ -168,6 +171,18 @@ export async function validateStudentWrite(
         profileIssues.push({
           field: "education",
           message: translateApp("students.form.educationRequired" as AppTranslationKey, language),
+        });
+      }
+      if (gaps.phone) {
+        profileIssues.push({
+          field: "phone",
+          message: translateApp("students.form.phoneRequired" as AppTranslationKey, language),
+        });
+      }
+      if (gaps.email) {
+        profileIssues.push({
+          field: "email",
+          message: translateApp("students.form.emailRequired" as AppTranslationKey, language),
         });
       }
       if (profileIssues.length > 0) throw new StudentWriteValidationError(profileIssues);

@@ -7,21 +7,22 @@ import { listWorkspaceRows } from "../../db/repositories/workspaceRepository.js"
 import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";
 
 /**
- * SECURITY NOTE: syncing the platform super-user into every tenant replicates the
- * super-user's scrypt password hash into each tenant's `tenant_users` table and
- * grants `super_admin` access in every workspace. This is intentional (single
- * sign-on / break-glass across tenants), but a single tenant DB compromise exposes
- * the platform super-user's hash and the account can sign into every tenant.
+ * SECURITY NOTE: the platform→tenant super-user mirror is OPT-IN
+ * (`PLATFORM_SYNC_SUPERUSER_TO_TENANTS=true`). It replays the platform super-user's
+ * scrypt password hash into each tenant's `tenant_users` table and grants
+ * `super_admin` in every workspace — a single tenant DB compromise then exposes the
+ * platform super-user hash and the account can sign into every tenant.
  *
- * Default remains enabled (`PLATFORM_SYNC_SUPERUSER_TO_TENANTS` unset or not
- * `false`) so existing break-glass keeps working. Production deployments that do
- * not need mirrored tenant super-admins MUST set
- * `PLATFORM_SYNC_SUPERUSER_TO_TENANTS=false` and keep tenant DBs strongly isolated.
- * A compromised tenant DB exposes the platform super-user hash and the mirrored
- * account can authenticate into every workspace.
+ * The secure default is therefore disabled: no platform user is ever added as any
+ * role in a tenant. Workspace provisioning never mirrors the platform user even when
+ * this flag is enabled — the admin created during onboarding is the tenant's only
+ * super_admin (`workspaceAdminProvisioningService.ts`).
+ *
+ * Enable the flag only for deployments that explicitly require mirrored
+ * break-glass tenant super-admins and keep tenant DBs strongly isolated.
  */
 function isSuperUserTenantSyncEnabled(): boolean {
-  return process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS !== "false";
+  return process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS === "true";
 }
 
 /**

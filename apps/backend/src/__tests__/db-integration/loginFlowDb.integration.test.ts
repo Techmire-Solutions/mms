@@ -132,25 +132,66 @@ describe("POST /api/auth/login DB Integration", () => {
     expect(body.user.email).toBe(TEST_TENANT_EMAIL);
   });
 
-  it("logs in platform superuser via tenant sync", async () => {
-    const [superRow] = await getRootDb()
-      .select()
-      .from(platformUsers)
-      .where(eq(platformUsers.role, "super_user"))
-      .limit(1);
-    const targetEmail = superRow?.email;
+  it("rejects platform superuser tenant login when tenant sync is disabled (default)", async () => {
+    const prior = process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS;
+    delete process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS;
+    try {
+      const [superRow] = await getRootDb()
+        .select()
+        .from(platformUsers)
+        .where(eq(platformUsers.role, "super_user"))
+        .limit(1);
+      const targetEmail = superRow?.email;
 
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/auth/login",
-      headers: { host: `${TEST_SUBDOMAIN}.localhost` },
-      payload: {
-        email: targetEmail,
-        password: TEST_PASSWORD,
-      },
-    });
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        headers: { host: `${TEST_SUBDOMAIN}.localhost` },
+        payload: {
+          email: targetEmail,
+          password: TEST_PASSWORD,
+        },
+      });
 
-    expect(res.statusCode).toBe(200);
+      expect(res.statusCode).toBe(401);
+    } finally {
+      if (prior === undefined) {
+        delete process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS;
+      } else {
+        process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS = prior;
+      }
+    }
+  });
+
+  it("logs in platform superuser via tenant sync when opted in", async () => {
+    const prior = process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS;
+    process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS = "true";
+    try {
+      const [superRow] = await getRootDb()
+        .select()
+        .from(platformUsers)
+        .where(eq(platformUsers.role, "super_user"))
+        .limit(1);
+      const targetEmail = superRow?.email;
+
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        headers: { host: `${TEST_SUBDOMAIN}.localhost` },
+        payload: {
+          email: targetEmail,
+          password: TEST_PASSWORD,
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+    } finally {
+      if (prior === undefined) {
+        delete process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS;
+      } else {
+        process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS = prior;
+      }
+    }
   });
 
   it("test VALUES with ::text in Postgres", async () => {

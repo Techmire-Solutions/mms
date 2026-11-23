@@ -164,4 +164,43 @@ describe("useStudentsRequiredFieldsSetup", () => {
     expect(notify.error).toHaveBeenCalledWith("students.setup.saveFailed");
     expect(state.isDirty).toBe(true);
   });
+
+  it("lists phone/email as off-by-default contact checks and omits gender", () => {
+    // Arrange / Act
+    renderHook();
+
+    // Assert
+    expect(state.rows.map((row) => row.key)).toEqual([
+      "dob",
+      "contactRelationships",
+      "address",
+      "education",
+      "phone",
+      "email",
+    ]);
+    expect(state.rows.find((row) => row.key === "phone")).toMatchObject({
+      required: false,
+      recommended: false,
+    });
+    expect(state.rows.find((row) => row.key === "email")).toMatchObject({
+      required: false,
+      recommended: false,
+    });
+  });
+
+  it("saves an enabled phone contact-detail check without touching email", async () => {
+    // Arrange
+    renderHook();
+
+    // Act
+    act(() => state.setRequired("phone", true));
+    await act(async () => {
+      await state.save();
+    });
+
+    // Assert
+    const sent = mocks.fieldConfigMutate.mock.calls[0][0] as StudentsSettings;
+    expect(requiredOf(sent, "phone")).toBe(true);
+    expect(requiredOf(sent, "email")).toBe(false);
+  });
 });

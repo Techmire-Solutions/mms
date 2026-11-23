@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { applyTitleCaseRecursive } from "@mms/shared";
+import { applyTitleCaseRecursive, isAdminRole, isSuperAdminRole } from "@mms/shared";
 import { withTenant } from "../tenant-context.js";
 import { tenantUsers } from "../schema.js";
 import {
@@ -55,7 +55,9 @@ export async function replaceTenantUsersForWorkspace(
     }
 
     if (columns.passwordHash) {
-      if (columns.role === "admin" && !columns.deletedAt) adminCredentialSurvives = true;
+      if ((isAdminRole(columns.role) || isSuperAdminRole(columns.role)) && !columns.deletedAt) {
+        adminCredentialSurvives = true;
+      }
       return columns;
     }
 

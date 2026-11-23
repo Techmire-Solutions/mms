@@ -44,6 +44,8 @@ export function PlatformDashboardFleetRowMenu({
               enabled: row.enabled,
               createdAt: row.createdAt,
               adminEmail: row.adminEmail,
+              adminName: row.adminName,
+              adminGender: row.adminGender,
             })
           }
         >

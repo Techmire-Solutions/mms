@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { Eye, KeyRound, Pencil, RotateCcw, Trash2 } from "lucide-react";
-import { canManageTargetUser, type SystemUser } from "@mms/shared";
+import { canManageTargetUser, isPlatformManagedRole, type SystemUser } from "@mms/shared";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useOptionalAuth } from "@/lib/contexts/AuthContext";
@@ -37,9 +37,12 @@ export function UsersRowActions({
 
   const isSelf = authUser ? String(user.id) === String(authUser.id) : false;
   const canManageTarget = authUser ? canManageTargetUser(authUser.role, user.role) : true;
-  const canMutateTarget = canWrite && canManageTarget;
-  const canDeleteTarget = canDelete && !isSelf && canManageTarget;
-  const canRestoreTarget = canDelete && canManageTarget;
+  // The apex super admin is created/managed by the platform console: the tenant
+  // Users module never edits, deletes or resets it (profile edits live in Account).
+  const isPlatformManaged = isPlatformManagedRole(user.role);
+  const canMutateTarget = canWrite && canManageTarget && !isPlatformManaged;
+  const canDeleteTarget = canDelete && !isSelf && canManageTarget && !isPlatformManaged;
+  const canRestoreTarget = canDelete && canManageTarget && !isPlatformManaged;
   const canResetTarget = canMutateTarget && !isSelf;
 
   return (

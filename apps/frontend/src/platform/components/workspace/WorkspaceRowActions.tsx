@@ -1,5 +1,5 @@
 import React from "react";
-import { Blocks, ExternalLink, KeyRound, Trash2, UserPlus } from "lucide-react";
+import { Blocks, ExternalLink, KeyRound, Pencil, Trash2, UserPlus } from "lucide-react";
 import { Button } from "@shared/ui";
 import { Switch } from "@shared/ui";
 import { Label } from "@shared/ui";
@@ -19,6 +19,7 @@ interface WorkspaceRowActionsProps {
   onOpenDelete?: () => void;
   onOpenResetPassword?: () => void;
   onOpenCreateAdmin?: () => void;
+  onOpenRename?: () => void;
 }
 
 export function WorkspaceRowActions({
@@ -35,6 +36,7 @@ export function WorkspaceRowActions({
   onOpenDelete,
   onOpenResetPassword,
   onOpenCreateAdmin,
+  onOpenRename,
 }: WorkspaceRowActionsProps): React.JSX.Element {
   const { t } = useTranslation();
 
@@ -91,6 +93,19 @@ export function WorkspaceRowActions({
           className="min-w-11 text-muted-foreground hover:text-warning hover:bg-warning/10"
           title={t("platform.tooltipResetPassword", { subdomain })}
           aria-label={t("platform.tooltipResetPassword", { subdomain })}
+        />
+      ) : null}
+
+      {onOpenRename ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={busy}
+          onClick={onOpenRename}
+          icon={Pencil}
+          className="min-w-11 text-muted-foreground hover:text-primary hover:bg-primary/10"
+          title={`${t("platform.renameWorkspace")} (${subdomain})`}
+          aria-label={`${t("platform.renameWorkspace")} (${subdomain})`}
         />
       ) : null}
 

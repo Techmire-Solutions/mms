@@ -29,6 +29,7 @@ import {
   FACULTY_LEGACY_SETUP_OBJECT_KEYS,
 } from "../db/hydrateFacultySetupFromLegacyBackup.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
+import { isAdminRole, isSuperAdminRole } from "@mms/shared";
 import { throwIfSyncAborted } from "../lib/syncLimits.js";
 import { acquireTenantRestoreLock, RestoreInProgressError } from "../lib/restoreLock.js";
 import { clearTenantBackgroundJobs } from "./backgroundJobService.js";
@@ -62,7 +63,11 @@ async function restoreSpecialTenantObject(
   if (key === "branding") {
     const { upsertWorkspaceBranding } = await import("../db/repositories/workspaceRepository.js");
     const { mergeBrandingSettings } = await import("@mms/shared");
-    await upsertWorkspaceBranding(tenant, mergeBrandingSettings(record));
+    // A restore may rebuild branding but must not rename the madrasa: the name is
+    // platform-owned and only the platform console can change it.
+    await upsertWorkspaceBranding(tenant, mergeBrandingSettings(record), {
+      preserveMadrasaName: true,
+    });
   } else if (key === "global_settings") {
     const { upsertWorkspaceGlobalSettings } =
       await import("../db/repositories/workspaceRepository.js");
@@ -82,7 +87,9 @@ async function verifyPostRestoreIntegrity(subdomain: string): Promise<void> {
     await import("../db/repositories/tenantUserRepository.js");
   const users = await listAllTenantUsersByWorkspace(subdomain);
   if (users.length > 0) {
-    const hasAdmin = users.some((u) => u.role === "admin" && !u.deletedAt);
+    const hasAdmin = users.some(
+      (u) => (isAdminRole(u.role) || isSuperAdminRole(u.role)) && !u.deletedAt,
+    );
     if (!hasAdmin) {
       throw new Error("backup.missingAdminUser");
     }

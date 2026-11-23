@@ -153,6 +153,7 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
       "/api/platform/workspaces",
       "/api/platform/workspaces/:subdomain",
       "/api/platform/workspaces/:subdomain/modules",
+      "/api/platform/workspaces/:subdomain/name",
       "/api/platform/workspaces/:subdomain/email-verification",
       "/api/platform/workspaces/:subdomain/admin-users",
       "/api/platform/workspaces/:subdomain/reset-admin-password",

@@ -94,6 +94,8 @@ export async function insertWorkspaceRow(values: {
   tagline?: string | null;
   country?: string | null;
   enabled?: boolean;
+  /** Provisioning snapshot of the tenant's apex admin (platform console record). */
+  provisionedAdmin?: { name: string; email: string; gender: string } | null;
 }): Promise<void> {
   await activeDb()
     .insert(workspacesTable)
@@ -104,6 +106,13 @@ export async function insertWorkspaceRow(values: {
       tagline: values.tagline || null,
       country: values.country || null,
       enabled: values.enabled ?? true,
+      ...(values.provisionedAdmin
+        ? {
+            adminName: values.provisionedAdmin.name,
+            adminEmail: values.provisionedAdmin.email,
+            adminGender: values.provisionedAdmin.gender,
+          }
+        : {}),
     });
   invalidateWorkspaceCache(values.subdomain);
 }

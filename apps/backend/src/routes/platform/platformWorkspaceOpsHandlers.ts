@@ -6,6 +6,7 @@ import {
   getWorkspaceGrantedModules,
   listPlatformWorkspaces,
   getPlatformWorkspaceMetrics,
+  renamePlatformWorkspace,
   getPlatformWorkspaceSummary,
   setWorkspaceEmailVerification,
   setWorkspaceEnabled,
@@ -195,4 +196,30 @@ export async function handleDeleteWorkspace({
   });
 
   return { status: 200 as const, body: { deleted: true as const, subdomain: removed.subdomain } };
+}
+
+export async function handleRenameWorkspace({
+  params,
+  body,
+  request,
+}: ContractRouteArgs<(typeof platformWorkspacesContract)["renameWorkspace"]>): Promise<
+  ContractRouteResponse<(typeof platformWorkspacesContract)["renameWorkspace"]>
+> {
+  const { platformUser } = request as PlatformAuthenticatedRequest;
+  const updated = await renamePlatformWorkspace(params.subdomain, body.madrasaName);
+  if (!updated) {
+    return { status: 404 as const, body: { type: "not_found", message: "Workspace not found" } };
+  }
+
+  await insertPlatformActivityLog({
+    userId: platformUser.id,
+    userEmail: platformUser.email,
+    action: "rename_workspace",
+    targetResource: "workspace",
+    targetId: params.subdomain,
+    metadataMessage: `madrasaName="${body.madrasaName}"`,
+    ipAddress: request.ip,
+  });
+
+  return { status: 200 as const, body: { workspace: updated } };
 }

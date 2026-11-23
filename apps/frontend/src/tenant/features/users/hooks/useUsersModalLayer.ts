@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { canManageTargetUser, type SystemUser } from "@mms/shared";
+import { canManageTargetUser, isPlatformManagedRole, type SystemUser } from "@mms/shared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { notify } from "@/lib/notify";
@@ -32,6 +32,10 @@ export function useUsersModalLayer({
   const actorId = authUser?.id ?? "system";
 
   const handleOpenEdit = (user: SystemUser): void => {
+    if (isPlatformManagedRole(user.role)) {
+      notify.error(t("users.errorPlatformManagedRole"));
+      return;
+    }
     if (!canManageTargetUser(authUser?.role, user.role)) {
       notify.error(t("users.errors.cannotModifySuperAdmin"));
       return;
@@ -44,6 +48,10 @@ export function useUsersModalLayer({
       notify.info(t("users.resetPasswordSelfTitle"), {
         description: t("users.resetPasswordSelfDescription"),
       });
+      return;
+    }
+    if (isPlatformManagedRole(user.role)) {
+      notify.error(t("users.errorPlatformManagedRole"));
       return;
     }
     if (!canManageTargetUser(authUser?.role, user.role)) {

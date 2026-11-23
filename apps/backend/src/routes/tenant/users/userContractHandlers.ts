@@ -98,7 +98,11 @@ export async function handleUserBulkUpdate({
     };
   }
   try {
-    const updated = await usersUseCases.upsertWorkspaceUsers(body as WorkspaceUser[], user.role);
+    const updated = await usersUseCases.upsertWorkspaceUsers(
+      body as WorkspaceUser[],
+      user.role,
+      String(user.id),
+    );
     return { status: 200 as const, body: { users: updated } };
   } catch (err: unknown) {
     return handleUserRouterError(err, request, "Failed to update workspace users");

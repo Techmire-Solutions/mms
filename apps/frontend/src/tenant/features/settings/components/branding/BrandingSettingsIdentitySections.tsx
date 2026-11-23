@@ -48,9 +48,10 @@ export function BrandingSettingsProfileSection({
               maxLength={NAME_MAX}
               placeholder={t("branding.madrasaNamePlaceholder")}
               aria-describedby="madrasaName-hint"
-              onChange={(event) => upd("madrasaName", event.target.value)}
+              readOnly
+              disabled
             />
-            <FieldHint id="madrasaName-hint">{t("branding.madrasaNameHint")}</FieldHint>
+            <FieldHint id="madrasaName-hint">{t("branding.madrasaNameManaged")}</FieldHint>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">

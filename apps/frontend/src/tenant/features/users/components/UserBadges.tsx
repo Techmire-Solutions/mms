@@ -1,6 +1,7 @@
 import React from "react";
 import {
   activityActionMeta,
+  isPlatformManagedRole,
   resolveWorkspaceRole,
   userStatusMeta,
   workspaceRoleLabel,
@@ -35,9 +36,16 @@ export function UserRoleBadge({ roleId }: { roleId: string }): React.JSX.Element
     return <span className="text-xs text-muted-foreground">{roleId}</span>;
   }
   return (
-    <Badge as="span" tone={VARIANT_TO_TONE[role.badgeVariant] ?? "muted"} size="sm">
-      {workspaceRoleLabel(role, t)}
-    </Badge>
+    <span className="inline-flex flex-wrap items-center gap-1">
+      <Badge as="span" tone={VARIANT_TO_TONE[role.badgeVariant] ?? "muted"} size="sm">
+        {workspaceRoleLabel(role, t)}
+      </Badge>
+      {isPlatformManagedRole(roleId) ? (
+        <Badge as="span" tone="muted" size="sm" title={t("users.platformManagedRoleHint")}>
+          {t("users.platformManagedRole")}
+        </Badge>
+      ) : null}
+    </span>
   );
 }
 

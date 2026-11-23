@@ -356,8 +356,9 @@ describe("usersService activity log upsert", () => {
       avatarInitials: "NS",
     };
 
+    // Changed intent: platform-managed roles can never be assigned from the tenant console.
     await expect(upsertWorkspaceUsers([superAdminUser], "admin")).rejects.toThrow(
-      "Only Super Admin can assign the Super Admin role",
+      /platform console/i,
     );
   });
 });

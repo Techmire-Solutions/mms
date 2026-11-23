@@ -40,6 +40,7 @@ export function WorkspaceListCards({
   onOpenDelete,
   onOpenResetPassword,
   onOpenCreateAdmin,
+  onOpenRename,
   onInspect,
   selectedSubdomains,
   onToggleSelect,
@@ -129,6 +130,7 @@ export function WorkspaceListCards({
                   onOpenCreateAdmin={
                     onOpenCreateAdmin ? () => onOpenCreateAdmin(workspace) : undefined
                   }
+                  onOpenRename={onOpenRename ? () => onOpenRename(workspace) : undefined}
                 />
               </div>
             }

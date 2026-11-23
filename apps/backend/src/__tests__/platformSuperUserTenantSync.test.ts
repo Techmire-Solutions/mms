@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { StoredPlatformUser } from "@mms/shared";
 import type { Workspace } from "@mms/shared";
 import type { TenantUserRow } from "../db/repositories/tenantUserRepositoryHydrate.js";
@@ -320,6 +320,11 @@ describe("Platform Superuser to Tenant Synchronization", () => {
     mockWorkspaces.length = 0;
     mockTenantUsers.length = 0;
 
+    // The platform→tenant super-user mirror is now OPT-IN: legacy paths below
+    // exercise the explicit escape hatch (`PLATFORM_SYNC_SUPERUSER_TO_TENANTS=true`),
+    // while dedicated tests assert the secure default (no tenant mirroring).
+    process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS = "true";
+
     const passwordHash = await hashPassword(testPassword);
 
     mockPlatformUsers.push({
@@ -335,6 +340,10 @@ describe("Platform Superuser to Tenant Synchronization", () => {
     });
   });
 
+  afterEach(() => {
+    delete process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS;
+  });
+
   it("findActivePlatformSuperUser returns the seeded platform superuser", async () => {
     const superUser = await findActivePlatformSuperUser();
     expect(superUser).not.toBeNull();
@@ -342,7 +351,11 @@ describe("Platform Superuser to Tenant Synchronization", () => {
     expect(superUser?.role).toBe("super_user");
   });
 
-  it("automatically syncs platform superuser to newly created workspaces", async () => {
+  it("does not mirror the platform superuser into newly created workspaces by default", async () => {
+    // Secure default: provisioning a madrasa must never add a platform user
+    // as any tenant role. (Changed intent: previously this asserted the auto-sync.)
+    delete process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS;
+
     const subdomain = "darululoom";
     await createWorkspace({
       subdomain,
@@ -350,12 +363,22 @@ describe("Platform Superuser to Tenant Synchronization", () => {
     });
 
     const tenantUsersList = await listTenantUsersByWorkspace(subdomain);
-    expect(tenantUsersList.length).toBeGreaterThan(0);
+    expect(tenantUsersList).toEqual([]);
+  });
 
-    const superInTenant = tenantUsersList.find((u) => u.loginEmail === testSuperEmail);
-    expect(superInTenant).toBeDefined();
-    expect(superInTenant?.role).toBe("super_admin");
-    expect(superInTenant?.name).toBe("Global Apex Superuser");
+  it("never adds a platform user to a newly created workspace even when the mirror is opted in", async () => {
+    // The opt-in escape hatch covers bulk paths (boot, password change) — workspace
+    // creation itself must never seed a tenant with a platform user.
+    process.env.PLATFORM_SYNC_SUPERUSER_TO_TENANTS = "true";
+
+    const subdomain = "darululoom-opted-in";
+    await createWorkspace({
+      subdomain,
+      madrasaName: "Darul Uloom Opted In",
+    });
+
+    const tenantUsersList = await listTenantUsersByWorkspace(subdomain);
+    expect(tenantUsersList).toEqual([]);
   });
 
   it("syncPlatformSuperUserToTenants syncs across multiple workspaces", async () => {
@@ -411,6 +434,9 @@ describe("Platform Superuser to Tenant Synchronization", () => {
   it("prevents regular tenant admins from deleting or mutating the platform super user in a tenant", async () => {
     const subdomain = "protection-test";
     await createWorkspace({ subdomain, madrasaName: "Protection Test" });
+    // Changed setup: creation no longer mirrors the platform user, so the opt-in
+    // escape hatch seeds the row the guards below must protect.
+    await syncPlatformSuperUserToTenants();
 
     const tenantUsersList = await listTenantUsersByWorkspace(subdomain);
     const superTenantUser = tenantUsersList.find((u) => u.loginEmail === testSuperEmail);

@@ -41,10 +41,13 @@ interface StudentSaveFlowInput {
 
 function focusStudentValidationField(formInstanceId: string, fieldId: string): void {
   const readOnlyFocusIds = new Set(["gender", "contactRelationships"]);
+  // Contact-profile values (gender/phone/email) are read-only on the student form:
+  // focus the contact picker section that owns them.
+  const contactSectionFields = new Set(["contactId", "gender", "phone", "email"]);
   const candidates = [
     `sf-${formInstanceId}-${fieldId}`,
     fieldId,
-    fieldId === "gender" || fieldId === "contactId" ? "contactId" : "",
+    contactSectionFields.has(fieldId) ? "contactId" : "",
     readOnlyFocusIds.has(fieldId) ? `sf-${formInstanceId}-guardians` : "",
   ].filter(Boolean);
 

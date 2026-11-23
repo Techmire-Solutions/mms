@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../app.js";
+import { insertPlatformActivityLog } from "../db/repositories/platformActivityLogsRepository.js";
 
-const { mockSuperUser, mockWorkspaces } = vi.hoisted(() => {
+const { mockSuperUser, mockLimitedUser, mockWorkspaces } = vi.hoisted(() => {
   const mockSuperUser = {
     id: "p-super",
     email: "admin@platform.com",
@@ -10,6 +11,22 @@ const { mockSuperUser, mockWorkspaces } = vi.hoisted(() => {
     passwordHash: "$2b$10$abcdefghijklmnopqrstuvwxyz123456",
     role: "super_user" as const,
     permissions: { workspaces: true, onboard: true, settings: true, admins: true, system: true },
+    sessionVersion: 0,
+    createdAt: "2026-01-01T00:00:00.000Z",
+  };
+  const mockLimitedUser = {
+    id: "p-limited",
+    email: "limited@platform.com",
+    name: "Limited Admin",
+    passwordHash: "$2b$10$abcdefghijklmnopqrstuvwxyz123456",
+    role: "admin" as const,
+    permissions: {
+      workspaces: false,
+      onboard: false,
+      settings: false,
+      admins: false,
+      system: false,
+    },
     sessionVersion: 0,
     createdAt: "2026-01-01T00:00:00.000Z",
   };
@@ -25,7 +42,7 @@ const { mockSuperUser, mockWorkspaces } = vi.hoisted(() => {
     },
   ];
 
-  return { mockSuperUser, mockWorkspaces };
+  return { mockSuperUser, mockLimitedUser, mockWorkspaces };
 });
 
 vi.mock("../db/database.js", () => ({
@@ -36,6 +53,7 @@ vi.mock("../db/database.js", () => ({
 vi.mock("../db/repositories/platformUserRepository.js", () => ({
   findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => {
     if (id === "p-super") return mockSuperUser;
+    if (id === "p-limited") return mockLimitedUser;
     return null;
   }),
   findPlatformUserRowByEmail: vi.fn().mockImplementation(async (email: string) => {
@@ -82,6 +100,14 @@ vi.mock("../services/workspaceService.js", () => ({
   getWorkspaceGrantedModules: vi.fn().mockResolvedValue([]),
   updateWorkspaceModules: vi.fn().mockResolvedValue([]),
   deleteWorkspace: vi.fn().mockResolvedValue(true),
+  renamePlatformWorkspace: vi
+    .fn()
+    .mockImplementation(async (subdomain: string, madrasaName: string) => {
+      const ws = mockWorkspaces.find((w) => w.subdomain === subdomain);
+      if (!ws) return null;
+      ws.name = madrasaName;
+      return { ...ws, madrasaName };
+    }),
 }));
 
 vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
@@ -104,6 +130,14 @@ describe("platformWorkspaces REST API integration routes", () => {
   function signPlatformToken(): string {
     return app.jwt.sign({
       id: "p-super",
+      tokenType: "platform_access",
+      sessionVersion: 0,
+    });
+  }
+
+  function signLimitedPlatformToken(): string {
+    return app.jwt.sign({
+      id: "p-limited",
       tokenType: "platform_access",
       sessionVersion: 0,
     });
@@ -236,5 +270,71 @@ describe("platformWorkspaces REST API integration routes", () => {
     const bodyOn = resOn.json();
     expect(bodyOn.workspace).toBeDefined();
     expect(bodyOn.workspace.enabled).toBe(true);
+  });
+
+  it("rejects unauthenticated PATCH /api/platform/workspaces/:subdomain/name with 401", async () => {
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/api/platform/workspaces/demo/name",
+      payload: { madrasaName: "New Name" },
+    });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it("renames a workspace from the platform console and records an activity log", async () => {
+    const token = signPlatformToken();
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/api/platform/workspaces/demo/name",
+      headers: { origin: "http://localhost" },
+      payload: { madrasaName: "  Renamed Madrasa  " },
+      cookies: { mms_platform_access: token },
+    });
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.workspace.madrasaName).toBe("Renamed Madrasa");
+    expect(insertPlatformActivityLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "rename_workspace",
+        targetResource: "workspace",
+        targetId: "demo",
+      }),
+    );
+  });
+
+  it("returns 404 when renaming a non-existent workspace", async () => {
+    const token = signPlatformToken();
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/api/platform/workspaces/missing/name",
+      headers: { origin: "http://localhost" },
+      payload: { madrasaName: "New Name" },
+      cookies: { mms_platform_access: token },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it("rejects a blank madrasa name with 400", async () => {
+    const token = signPlatformToken();
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/api/platform/workspaces/demo/name",
+      headers: { origin: "http://localhost" },
+      payload: { madrasaName: "   " },
+      cookies: { mms_platform_access: token },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("rejects rename without the workspaces platform grant with 403", async () => {
+    const token = signLimitedPlatformToken();
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/api/platform/workspaces/demo/name",
+      headers: { origin: "http://localhost" },
+      payload: { madrasaName: "New Name" },
+      cookies: { mms_platform_access: token },
+    });
+    expect(res.statusCode).toBe(403);
   });
 });
