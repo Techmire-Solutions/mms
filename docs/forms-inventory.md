@@ -55,8 +55,8 @@ Totals: **219** form-like `.tsx` files · **77** files with a `<FormModal>` (**7
 | `components/reports/SavedReports.tsx` | components/reports | modal-form | ok | ok | ok | — | — |
 | `platform/features/consolidation/components/ConsolidationGroupForm.tsx` | platform/features | modal-form | ok | ok | ok | — | — |
 | `platform/features/contacts/components/ContactFormModal.tsx` | platform/features | modal-form | ok | ok | ok | — | — |
+| `platform/features/messaging/components/MessagingComposeModal.tsx` | platform/features | modal-form | ok | ok | ok | — | — |
 | `platform/features/messaging/components/MessagingSetupTier.tsx` | platform/features | modal-form | ok | ok | ok | — | — |
-| `platform/features/messaging/components/MessagingWorkTier.tsx` | platform/features | modal-form | ok | ok | ok | — | — |
 | `platform/features/users/components/admin/PlatformEditAdminAccessDialog.tsx` | platform/features | modal-form | ok | ok | ok | — | — |
 | `platform/features/users/components/PlatformPermissionMatrix.tsx` | platform/features | modal-form | ok | ok | ok | — | — |
 | `platform/features/users/PlatformAddAdminForm.tsx` | platform/features | modal-form | ok | ok | ok | — | — |

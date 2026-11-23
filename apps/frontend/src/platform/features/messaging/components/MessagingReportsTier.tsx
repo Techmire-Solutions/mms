@@ -5,15 +5,12 @@ import { StatCard } from "@/components/app/StatCard";
 import { SectionCard } from "@/components/app/SectionCard";
 import { ReportChartCard } from "@/components/reports/ReportChartCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { AppTranslationKey } from "@mms/shared";
 import { usePlatformMessagingMetrics } from "@/platform/features/messaging/hooks/usePlatformMessaging";
 
-const CHANNELS = ["sms", "whatsapp", "email"] as const;
-const CHANNEL_LABEL_KEYS: Record<(typeof CHANNELS)[number], AppTranslationKey> = {
-  sms: "platform.messaging.channel.sms",
-  whatsapp: "platform.messaging.channel.whatsapp",
-  email: "platform.messaging.channel.email",
-};
+import {
+  PLATFORM_MESSAGING_CHANNELS,
+  PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS,
+} from "@/platform/features/messaging/lib/platformMessagingChannels";
 const CHANNEL_COLORS: Record<string, string> = {
   sms: "hsl(var(--primary))",
   whatsapp: "hsl(var(--success))",
@@ -30,8 +27,8 @@ export function MessagingReportsTier(): React.JSX.Element {
     byChannel?: Record<string, number>;
   };
 
-  const channelData = CHANNELS.map((channel) => ({
-    name: t(CHANNEL_LABEL_KEYS[channel]),
+  const channelData = PLATFORM_MESSAGING_CHANNELS.map((channel) => ({
+    name: t(PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS[channel]),
     value: metrics.byChannel?.[channel] ?? 0,
     color: CHANNEL_COLORS[channel] ?? "hsl(var(--muted-foreground))",
   })).filter((entry) => entry.value > 0);

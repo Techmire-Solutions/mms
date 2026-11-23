@@ -9,19 +9,17 @@ import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import type { AppTranslationKey, PlatformMessageTemplateDto } from "@mms/shared";
+import type { PlatformMessageTemplateDto } from "@mms/shared";
 import {
   useDeletePlatformMessageTemplate,
   usePlatformMessageTemplates,
   useSavePlatformMessageTemplate,
 } from "@/platform/features/messaging/hooks/usePlatformMessaging";
 
-const CHANNEL_OPTIONS = ["sms", "whatsapp", "email"] as const;
-const CHANNEL_LABEL_KEYS: Record<(typeof CHANNEL_OPTIONS)[number], AppTranslationKey> = {
-  sms: "platform.messaging.channel.sms",
-  whatsapp: "platform.messaging.channel.whatsapp",
-  email: "platform.messaging.channel.email",
-};
+import {
+  PLATFORM_MESSAGING_CHANNELS,
+  PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS,
+} from "@/platform/features/messaging/lib/platformMessagingChannels";
 
 /** Messaging → Setup: message templates. */
 export function MessagingSetupTier(): React.JSX.Element {
@@ -155,7 +153,7 @@ function TemplateModal({
             name="channel"
             value={channel}
             onChange={(value) => setChannel(value as typeof channel)}
-            options={CHANNEL_OPTIONS.map((c) => ({ value: c, label: t(CHANNEL_LABEL_KEYS[c]) }))}
+            options={PLATFORM_MESSAGING_CHANNELS.map((c) => ({ value: c, label: t(PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS[c]) }))}
           />
         </Field>
         <Field id="t-subject" label={t("platform.messaging.subject")}>
