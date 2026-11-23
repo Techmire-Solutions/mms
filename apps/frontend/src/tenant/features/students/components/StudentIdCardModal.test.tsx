@@ -1,7 +1,6 @@
-import React from "react";
+import React, { act } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { act } from "react";
 import { createRoot } from "react-dom/client";
 import type { Student } from "@mms/shared";
 import { StudentIdCardModal } from "./StudentIdCardModal";
@@ -14,6 +13,19 @@ vi.mock("../hooks/useStudentsListQueries", () => ({
     data: undefined,
     refetch: mockRefetchStudents,
   })),
+}));
+
+vi.mock("./card-template/StudentCardTemplateEditor", () => ({
+  default: function MockStudentCardTemplateEditor({ onClose }: { onClose: () => void }) {
+    return (
+      <div data-testid="student-card-template-editor">
+        <span>Template Editor Content</span>
+        <button type="button" onClick={onClose}>
+          Close Editor
+        </button>
+      </div>
+    );
+  },
 }));
 
 vi.mock("@/lib/templates/documentTemplatesApi", () => ({
@@ -51,20 +63,25 @@ vi.mock("@/tenant/hooks/useBranding", () => ({
 
 vi.mock("@/components/app/Modal", () => ({
   Modal: ({
+    open,
     title,
     children,
     footer,
   }: {
+    open?: boolean;
     title: string;
     children: React.ReactNode;
     footer?: React.ReactNode;
-  }) => (
-    <div data-testid="modal">
-      <h1>{title}</h1>
-      <div>{children}</div>
-      <div>{footer}</div>
-    </div>
-  ),
+  }) => {
+    if (open === false) return null;
+    return (
+      <div data-testid="modal">
+        <h1>{title}</h1>
+        <div>{children}</div>
+        <div>{footer}</div>
+      </div>
+    );
+  },
 }));
 
 const mockStudent: Student = {
@@ -85,7 +102,7 @@ describe("StudentIdCardModal Component", () => {
     window.print = vi.fn();
   });
 
-  it("renders printable ID card preview with student details and photo placeholder", () => {
+  it("renders printable ID card preview with student details, photo placeholder and standard print styles", () => {
     const html = renderToStaticMarkup(
       withQueryClient(
         <StudentIdCardModal
@@ -116,6 +133,8 @@ describe("StudentIdCardModal Component", () => {
     expect(html).toContain("O+");
     expect(html).toContain("STUDENT PHOTO");
     expect(html).toContain("STUDENT IDENTITY CARD");
+    expect(html).toContain("@page");
+    expect(html).toContain("size: 324px 204px landscape");
   });
 
   it("returns null when closed or items empty", () => {
@@ -189,6 +208,56 @@ describe("StudentIdCardModal Component", () => {
     });
 
     expect(container.textContent).toContain("STUDENT IDENTITY CARD");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("opens template editor and hides modal when Customize Design is clicked", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        withQueryClient(
+          <StudentIdCardModal
+            open={true}
+            onClose={vi.fn()}
+            items={[{ student: mockStudent, sessionNames: [] }]}
+          />,
+        ),
+      );
+    });
+
+    expect(container.querySelector('[data-testid="modal"]')?.tagName).toBe("DIV");
+
+    const customizeBtn = Array.from(container.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("students.idCard.customize"),
+    );
+    expect(customizeBtn?.tagName).toBe("BUTTON");
+
+    await act(async () => {
+      customizeBtn?.click();
+    });
+
+    // Modal is hidden and Template Editor is displayed
+    expect(container.querySelector('[data-testid="modal"]')).toBe(null);
+    expect(container.textContent).toContain("Template Editor Content");
+
+    // Clicking close in editor restores modal
+    const closeEditorBtn = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent === "Close Editor",
+    );
+    expect(closeEditorBtn?.tagName).toBe("BUTTON");
+
+    await act(async () => {
+      closeEditorBtn?.click();
+    });
+
+    expect(container.querySelector('[data-testid="modal"]')?.tagName).toBe("DIV");
 
     await act(async () => {
       root.unmount();

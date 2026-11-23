@@ -227,6 +227,7 @@ export function Modal<K extends string = string>({
 
           {resolvedFooter && (
             <div
+              data-slot="modal-footer"
               data-print-hide
               className="relative z-20 px-4 py-3 sm:px-6 border-t border-border/40 bg-muted/20 flex items-center justify-end rounded-b-2xl print:hidden"
             >

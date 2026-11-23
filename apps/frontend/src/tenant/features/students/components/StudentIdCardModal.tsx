@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, lazy, Suspense, type JSX } from "react";
 import { Printer, IdCard, Paintbrush, Loader2 } from "lucide-react";
-import { STUDENTS_MODULE_MANIFEST, type Student } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, getPageDimensions, type Student } from "@mms/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   type StudentCardPrintMode,
 } from "./card-template/StudentIdCardPrintControlsBar";
 import { StudentIdCardPrintGrid } from "./card-template/StudentIdCardPrintGrid";
+import { StudentIdCardPrintStyles } from "./card-template/StudentIdCardPrintStyles";
 
 const StudentCardTemplateEditor = lazy(() => import("./card-template/StudentCardTemplateEditor"));
 
@@ -50,6 +51,11 @@ export function StudentIdCardModal({
   const [isPrinting, setIsPrinting] = useState(false);
   const { canEditSetup } = useModulePermissions(STUDENTS_MODULE_MANIFEST);
   const { template } = useStudentCardTemplate();
+
+  const cardDimensions = useMemo(
+    () => getPageDimensions(template.pageSize || "CR80", template.orientation || "landscape"),
+    [template.pageSize, template.orientation],
+  );
 
   const studentIds = useMemo(() => items.map((item) => item.student.id), [items]);
   const { data: freshStudents, refetch: refetchStudents } = useStudentsByIds(studentIds);
@@ -127,8 +133,14 @@ export function StudentIdCardModal({
 
   return (
     <>
+      <StudentIdCardPrintStyles
+        width={cardDimensions.width}
+        height={cardDimensions.height}
+        orientation={template.orientation || "landscape"}
+      />
+
       <Modal
-        open={open}
+        open={open && !showEditor}
         onClose={onClose}
         title={
           isBatch
@@ -206,7 +218,12 @@ export function StudentIdCardModal({
       {showEditor && (
         <Suspense fallback={null}>
           <StudentCardTemplateEditor
-            onClose={() => setShowEditor(false)}
+            onClose={() => {
+              setShowEditor(false);
+              void queryClient.invalidateQueries({
+                queryKey: documentTemplateQueryKey(STUDENT_CARD_TEMPLATE_KEY),
+              });
+            }}
             sampleStudent={resolvedItems[0]?.student}
             sessionNames={resolvedItems[0]?.sessionNames}
             guardianName={resolvedItems[0]?.guardianName}

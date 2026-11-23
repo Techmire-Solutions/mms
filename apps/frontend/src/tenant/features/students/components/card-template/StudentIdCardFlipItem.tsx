@@ -109,7 +109,7 @@ export function StudentIdCardFlipItem({
       </div>
 
       {/* Clean 2D print output for paper and print preview */}
-      <div className="hidden print:block print:break-inside-avoid">
+      <div className="id-card-print-page hidden print:block print:break-inside-avoid">
         <StudentCardPrintPreview
           template={template}
           student={student}

@@ -102,6 +102,8 @@ export function StudentCardPrintPreview({
       style={{
         position: "relative",
         width: size.width,
+        height: size.height,
+        minWidth: size.width,
         minHeight: size.height,
         maxWidth: "100%",
         background: printTokens.paper,
