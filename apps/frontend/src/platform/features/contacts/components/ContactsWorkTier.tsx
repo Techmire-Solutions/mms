@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Download, Plus, RotateCcw, Search, Users } from "lucide-react";
+import { Download, Plus, RotateCcw, Search, Upload, Users } from "lucide-react";
 import { Badge, Button } from "@shared/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
@@ -24,6 +24,7 @@ import {
   type ContactFormState,
 } from "@/platform/features/contacts/components/ContactFormModal";
 import { ContactDetailDrawer } from "@/platform/features/contacts/components/ContactDetailDrawer";
+import { ContactImportDialog } from "@/platform/features/contacts/components/ContactImportDialog";
 import {
   PLATFORM_CONTACT_KINDS,
   PLATFORM_CONTACT_KIND_LABEL_KEYS,
@@ -36,6 +37,7 @@ export function ContactsWorkTier(): React.JSX.Element {
   const { viewingDeleted, toggleTrash } = useDirectoryTrashState();
   const [editing, setEditing] = useState<PlatformContactDto | "new" | null>(null);
   const [selected, setSelected] = useState<PlatformContactDto | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const {
     data: contacts,
@@ -147,6 +149,15 @@ export function ContactsWorkTier(): React.JSX.Element {
               >
                 {t("platform.contacts.exportCsv")}
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                icon={Upload}
+                onClick={() => setImportOpen(true)}
+              >
+                {t("platform.contacts.import")}
+              </Button>
             </>
           ) : null}
           <ModuleTrashToggle
@@ -221,6 +232,16 @@ export function ContactsWorkTier(): React.JSX.Element {
           }}
         />
       )}
+
+      {importOpen ? (
+        <ContactImportDialog
+          onClose={() => setImportOpen(false)}
+          onImported={(count) => {
+            setImportOpen(false);
+            notify.success(t("platform.contacts.importSuccess", { count: String(count) }));
+          }}
+        />
+      ) : null}
 
       {selected && !editing ? (
         <ContactDetailDrawer
