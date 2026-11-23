@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PlatformUserProfile } from "@mms/shared";
 import { platformUserCan } from "@mms/shared";
-import { usePlatformPermissions } from "./usePlatformPermissions";
-import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 
-vi.mock("@/platform/lib/PlatformAuthContext", () => ({
+vi.mock("@/platform/features/auth/lib/PlatformAuthContext", () => ({
   usePlatformAuth: vi.fn(),
 }));
 

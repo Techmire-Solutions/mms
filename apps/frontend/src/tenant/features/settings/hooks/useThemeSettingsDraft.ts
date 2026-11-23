@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSavedFlash } from "@/tenant/hooks/useSavedFlash";
+import { useSavedFlash } from "@/hooks/useSavedFlash";
 import {
   DEFAULT_BRANDING_SETTINGS,
   DEFAULT_GLOBAL_SETTINGS,

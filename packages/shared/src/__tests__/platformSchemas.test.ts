@@ -55,6 +55,8 @@ describe("platformSchemas", () => {
         settings: false,
         admins: false,
         system: false,
+        contacts: false,
+        messaging: false,
       });
     }
     expect(PLATFORM_MIN_PASSWORD_LENGTH).toBeGreaterThanOrEqual(10);

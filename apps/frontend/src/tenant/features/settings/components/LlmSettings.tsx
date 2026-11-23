@@ -1,10 +1,10 @@
 import React from "react";
 import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import { SettingsPanel } from "@/components/app/SettingsShell";
-import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
+import { SettingsAdminOnlyNotice } from "@/components/app/SettingsAdminOnlyNotice";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
-import { LlmConfigListSection } from "./LlmConfigListSection";
-import { LlmConfigModal } from "./LlmConfigModal";
+import { LlmConfigListSection } from "@/components/llm/LlmConfigListSection";
+import { LlmConfigModal } from "@/components/llm/LlmConfigModal";
 import { LlmSandboxPanel } from "./LlmSandboxPanel";
 import { useLlmSettingsController } from "../hooks/useLlmSettingsController";
 

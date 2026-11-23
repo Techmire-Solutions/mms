@@ -21,6 +21,9 @@ interface ModuleToggleCardProps {
   label: string;
   description: string;
   requiredLabel: string;
+  lockedLabel?: string;
+  lockedHint?: string;
+  locked?: boolean;
   onToggle: (enabled: boolean) => void;
 }
 
@@ -30,6 +33,9 @@ function ModuleToggleCard({
   label,
   description,
   requiredLabel,
+  lockedLabel,
+  lockedHint,
+  locked = false,
   onToggle,
 }: ModuleToggleCardProps): React.JSX.Element {
   const toggleId = `module-toggle-${module.id}`;
@@ -67,10 +73,17 @@ function ModuleToggleCard({
             <p id={descId} className="mt-0.5 text-xs leading-snug text-muted-foreground">
               {description}
             </p>
+            {locked && lockedHint ? (
+              <p className="mt-1 text-3xs leading-snug text-warning">{lockedHint}</p>
+            ) : null}
           </div>
           {module.required ? (
             <Badge as="span" tone="muted" size="sm">
               {requiredLabel}
+            </Badge>
+          ) : locked ? (
+            <Badge as="span" tone="warning" size="sm">
+              {lockedLabel}
             </Badge>
           ) : (
             <Switch
@@ -90,6 +103,8 @@ function ModuleToggleCard({
 interface ModuleSettingsNavGridProps {
   enabledModules: Record<string, boolean>;
   grantedModules?: Record<string, boolean>;
+  /** Module ids the platform operator disabled for every workspace. */
+  platformDisabledModules?: ReadonlySet<string>;
   onToggleModule: (moduleId: string, enabled: boolean) => void;
 }
 
@@ -97,11 +112,14 @@ interface ModuleSettingsNavGridProps {
 export default function ModuleSettingsNavGrid({
   enabledModules,
   grantedModules,
+  platformDisabledModules,
   onToggleModule,
 }: ModuleSettingsNavGridProps): React.JSX.Element {
   const { t, language } = useTranslation();
 
   const requiredLabel = t("module.system.required");
+  const lockedLabel = t("module.system.platformManaged");
+  const lockedHint = t("module.system.platformManagedHint");
 
   const blocks = (() => {
     const moduleLabel = (mod: ModuleDefinition): string =>
@@ -117,6 +135,7 @@ export default function ModuleSettingsNavGrid({
       if (grantedModules && grantedModules[moduleId] === false) return null;
       const mod = SYSTEM_MODULES_BY_ID[moduleId];
       if (!mod) return null;
+      const locked = platformDisabledModules?.has(moduleId) ?? false;
       return (
         <ModuleToggleCard
           key={moduleId}
@@ -124,6 +143,9 @@ export default function ModuleSettingsNavGrid({
           label={moduleLabel(mod)}
           description={moduleDesc(mod)}
           requiredLabel={requiredLabel}
+          lockedLabel={lockedLabel}
+          lockedHint={lockedHint}
+          locked={locked}
           enabled={isEnabled(moduleId)}
           onToggle={(value) => onToggleModule(moduleId, value)}
         />

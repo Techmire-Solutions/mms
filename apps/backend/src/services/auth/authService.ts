@@ -3,6 +3,8 @@ import type { FastifyReply } from "fastify";
 import type { JWT } from "@fastify/jwt";
 import { requiresTwoFactor } from "@mms/shared";
 import type { OnboardInput } from "./onboardInput.js";
+import { findPlatformBlockedModule, resolvePlatformProvisionedModuleIds } from "@mms/shared";
+import { getPlatformSettings } from "../platform/platformSettingsService.js";
 import {
   findUserByLoginEmailAndWorkspace,
   validateCredentials,
@@ -145,6 +147,18 @@ export async function isOnboardingAvailable(): Promise<boolean> {
 }
 
 export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
+  const platformSettings = getPlatformSettings();
+  const blockedModule = findPlatformBlockedModule(input.modules, platformSettings);
+  if (blockedModule) {
+    throw Object.assign(
+      new Error(`Module "${blockedModule}" is disabled platform-wide by the operator`),
+      { statusCode: 400, type: "validation_error" },
+    );
+  }
+  const requestedModules = input.modules?.length
+    ? input.modules
+    : resolvePlatformProvisionedModuleIds(platformSettings);
+
   const workspace = await createWorkspace({
     subdomain: input.subdomain,
     madrasaName: input.madrasaName,
@@ -164,11 +178,11 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
     await runWithTenant(workspace.subdomain, async () => {
       await seedTenantDefaults();
 
-      if (input.modules) {
+      if (requestedModules.length > 0) {
         const { SYSTEM_MODULES } = await import("@mms/shared");
         const globalSettings = await loadGlobalSettings(workspace.subdomain);
         const enabledModules: Record<string, boolean> = {};
-        const inputModulesSet = new Set(input.modules);
+        const inputModulesSet = new Set(requestedModules);
 
         for (const mod of SYSTEM_MODULES) {
           if (mod.required) {

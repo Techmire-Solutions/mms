@@ -1,4 +1,5 @@
 export * from "./platform.js";
+export * from "./platformBranding.js";
 export * from "./system.js";
 export * from "./contacts.js";
 export * from "./students.js";
@@ -25,6 +26,8 @@ export * from "./accountingVoucherNumbering.js";
 export * from "./accountingFx.js";
 export * from "./accountingFxRevaluation.js";
 export * from "./platformConsolidation.js";
+export * from "./platformContacts.js";
+export * from "./platformMessaging.js";
 export * from "./accountingFxExchangeability.js";
 export * from "./examinations.js";
 export * from "./obligations.js";

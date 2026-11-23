@@ -5,6 +5,7 @@ import {
   MIGRATE_AND_RESTART_CONFIRM,
   resolvePlatformNotificationChannel,
   DEFAULT_PLATFORM_SETTINGS,
+  mergePlatformSettings,
 } from "../auth/platformSettingsTypes.js";
 import { resolveNotificationChannel } from "../settings/globalSettingsNotificationUtils.js";
 import { DEFAULT_GLOBAL_SETTINGS } from "../settings/globalSettingsCore.js";
@@ -160,5 +161,53 @@ describe("platformSettingsValidation", () => {
         }),
       ).toBe("none");
     });
+  });
+});
+
+describe("platformSettings extended fields", () => {
+  it("merges stored settings with defaults for legacy shapes", () => {
+    const merged = mergePlatformSettings({ id: "global", certbotEmail: "a@b.test" });
+    expect(merged.timezone).toBe("UTC");
+    expect(merged.dateFormat).toBe("DD/MM/YYYY");
+    expect(merged.themeMode).toBe("system");
+    expect(merged.disabledModules).toEqual([]);
+    expect(merged.idleSessionMinutes).toBe(30);
+    expect(merged.llmProvider).toBe("none");
+    expect(merged.emailNotifications).toBe(true);
+  });
+
+  it("accepts the extended update payload", () => {
+    const parsed = platformSettingsUpdateSchema.safeParse({
+      timezone: "Asia/Karachi",
+      dateFormat: "YYYY-MM-DD",
+      themeMode: "dark",
+      idleSessionMinutes: 45,
+      disabledModules: ["finance"],
+      defaultEnabledModules: { tasks: false },
+      llmProvider: "openai",
+      llmApiKey: "****abcd",
+      llmConfigs: [
+        {
+          id: "c1",
+          name: "Primary",
+          provider: "openai",
+          apiKey: "****abcd",
+          model: "gpt-4o-mini",
+          isDefaultText: true,
+        },
+      ],
+      whatsAppNotifications: true,
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects invalid regional/security values and unknown module ids", () => {
+    expect(platformSettingsUpdateSchema.safeParse({ timezone: "Not/AZone" }).success).toBe(false);
+    expect(platformSettingsUpdateSchema.safeParse({ dateFormat: "YYYY" }).success).toBe(false);
+    expect(platformSettingsUpdateSchema.safeParse({ themeMode: "sepia" }).success).toBe(false);
+    expect(platformSettingsUpdateSchema.safeParse({ idleSessionMinutes: 1 }).success).toBe(false);
+    expect(platformSettingsUpdateSchema.safeParse({ disabledModules: ["nope"] }).success).toBe(
+      false,
+    );
   });
 });

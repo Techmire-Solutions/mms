@@ -1,6 +1,6 @@
 ---
 description: Shared UI component architecture governance — @shared/ui SSOT, cross-console duplicate ban, pre-deletion verification gates, and orphaned import detection
-globs: packages/ui/**,apps/frontend/src/components/ui/**,apps/frontend/src/platform/components/**,apps/frontend/src/tenant/components/**
+globs: packages/ui/**,apps/frontend/src/components/ui/**,apps/frontend/src/platform/**,apps/frontend/src/tenant/components/**
 alwaysApply: false
 ---
 

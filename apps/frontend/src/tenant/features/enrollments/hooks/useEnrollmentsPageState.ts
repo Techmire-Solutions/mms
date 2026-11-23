@@ -4,7 +4,7 @@ import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { ENROLLMENTS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/enrollments/components/EnrollmentsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { ClipboardList, UserCheck, Inbox } from "lucide-react";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { type Enrollment } from "@/lib/data/enrollmentData";

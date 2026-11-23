@@ -4,7 +4,7 @@ paths:
   - "apps/frontend/src/lib/reports/**"
   - "apps/frontend/src/tenant/features/**/*Report*"
   - "apps/frontend/src/tenant/features/**/*Reports*"
-  - "apps/frontend/src/platform/components/reports/**"
+  - "apps/frontend/src/platform/features/reports/components/**"
   - "apps/frontend/src/tenant/features/dashboard*/**"
   - "apps/frontend/src/platform/**/*Report*"
   - "apps/frontend/src/components/app/ExportToolbar.tsx"

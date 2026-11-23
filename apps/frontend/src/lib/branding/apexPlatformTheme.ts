@@ -1,9 +1,14 @@
 import { applyDocumentTheme } from "@/lib/brandingThemeCore";
 import {
-  MMS_PLATFORM_BRANDING,
-  MMS_PLATFORM_GLOBAL_SETTINGS,
-} from "@/lib/branding/platformThemeConfig";
+  getEffectivePlatformThemeMode,
+  getPlatformBrandingAsBrandingSettings,
+} from "@/lib/branding/platformBrandingStore";
 
+/** Applies the instance's white-label branding + saved display mode to the apex document. */
 export function applyApexPlatformTheme(language = "en"): void {
-  applyDocumentTheme(MMS_PLATFORM_BRANDING, MMS_PLATFORM_GLOBAL_SETTINGS.theme, language);
+  applyDocumentTheme(
+    getPlatformBrandingAsBrandingSettings(),
+    getEffectivePlatformThemeMode(),
+    language,
+  );
 }

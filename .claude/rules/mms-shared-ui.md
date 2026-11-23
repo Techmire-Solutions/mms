@@ -3,7 +3,7 @@ description: Shared UI component architecture governance — @shared/ui SSOT, cr
 paths:
   - "packages/ui/**"
   - "apps/frontend/src/components/ui/**"
-  - "apps/frontend/src/platform/components/**"
+  - "apps/frontend/src/platform/**"
   - "apps/frontend/src/tenant/components/**"
 ---
 

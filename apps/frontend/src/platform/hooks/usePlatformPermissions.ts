@@ -1,5 +1,5 @@
 import { platformUserCan, type PlatformAdminPermissionKey } from "@mms/shared";
-import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 
 /** Platform capability checks from the live session user (DB-backed permissions). */
 export function usePlatformPermissions() {
@@ -17,6 +17,8 @@ export function usePlatformPermissions() {
     canSettings: can("settings"),
     canAdmins: can("admins"),
     canSystem: can("system"),
+    canContacts: can("contacts"),
+    canMessaging: can("messaging"),
     can,
   };
 }

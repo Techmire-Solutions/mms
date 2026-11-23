@@ -2,7 +2,10 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNavigationState, type NavigationState } from "./useNavigationState";
-import { PlatformSidebarProvider, usePlatformSidebar } from "@/platform/lib/PlatformSidebarContext";
+import {
+  PlatformSidebarProvider,
+  usePlatformSidebar,
+} from "@/platform/features/shell/lib/PlatformSidebarContext";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 

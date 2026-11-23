@@ -73,8 +73,28 @@ export function setDocumentAppleTouchIcon(href: string | null): void {
   link.href = next;
 }
 
-/** Platform apex — MMS product favicon & touch icon. */
-export function applyPlatformDocumentFavicon(): void {
+export interface PlatformFaviconInput {
+  faviconUrl?: string | null;
+  logoUrl?: string | null;
+  productName?: string | null;
+  primaryColor?: string | null;
+}
+
+/** Platform apex — white-label favicon/touch icon, falling back to the MMS product icon. */
+export function applyPlatformDocumentFavicon(input?: PlatformFaviconInput): void {
+  const custom = (input?.faviconUrl || input?.logoUrl || "").trim();
+  if (custom) {
+    setDocumentFavicon(custom);
+    setDocumentAppleTouchIcon(custom);
+    return;
+  }
+  const name = input?.productName?.trim();
+  if (name) {
+    const initialsUrl = buildInitialsFaviconDataUrl(name, input?.primaryColor || undefined);
+    setDocumentFavicon(initialsUrl);
+    setDocumentAppleTouchIcon(initialsUrl);
+    return;
+  }
   setDocumentFavicon(PLATFORM_FAVICON_HREF);
   setDocumentAppleTouchIcon(PLATFORM_APPLE_TOUCH_ICON_HREF);
 }

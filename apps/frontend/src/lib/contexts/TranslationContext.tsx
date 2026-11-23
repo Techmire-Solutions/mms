@@ -1,9 +1,20 @@
-import React, { createContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useSyncExternalStore,
+} from "react";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useHydrateGlobalSettings } from "@/tenant/hooks/useHydrateGlobalSettings";
 import { useHydrateBranding } from "@/tenant/hooks/useHydrateBranding";
 import { useLocation } from "react-router-dom";
 import { useTenant } from "@/lib/contexts/TenantContext";
+import {
+  getPlatformBrandingState,
+  subscribePlatformBranding,
+} from "@/lib/branding/platformBrandingStore";
 import {
   translateAppParams,
   getLanguageDirection,
@@ -116,14 +127,26 @@ export function TranslationProvider({
     ensureLocaleFontsLoaded(activeLanguage);
   }, [activeLanguage]);
 
+  // White-label product/console names on the apex only; tenant hosts keep their
+  // own institution branding and platform translation copy.
+  const platformBranding = useSyncExternalStore(
+    subscribePlatformBranding,
+    getPlatformBrandingState,
+    getPlatformBrandingState,
+  );
+  const platformProductName = isApex ? platformBranding.branding.productName.trim() : "";
+  const platformConsoleTitle = isApex ? platformBranding.branding.consoleTitle.trim() : "";
+
   // Stable identity per active language so `useTranslation` consumers don't
   // re-render on every provider render (navigation, settings events, tenant churn).
   const t = useCallback(
     <K extends AppTranslationKey>(key: K, ...args: TranslationArgs<K>): string => {
       warnIfKeyMissingAtRuntime(key);
+      if (key === "entry.productName" && platformProductName) return platformProductName;
+      if (key === "platform.consoleTitle" && platformConsoleTitle) return platformConsoleTitle;
       return translateAppParams(key, activeLanguage, ...args);
     },
-    [activeLanguage],
+    [activeLanguage, platformProductName, platformConsoleTitle],
   );
 
   const dir = getLanguageDirection(activeLanguage);

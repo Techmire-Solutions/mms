@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
 
 const mockLimit = vi.fn();
 const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
@@ -67,7 +68,7 @@ describe("platformSettingsRepository", () => {
       ]);
 
       const result = await findPlatformSettingsRow();
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         id: GLOBAL_SETTINGS_ID,
         syncTlsOnCreate: true,
         tlsExtraSans: "*.madrasa.local",
@@ -102,7 +103,7 @@ describe("platformSettingsRepository", () => {
         certbotEmail: "",
       });
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         id: GLOBAL_SETTINGS_ID,
         syncTlsOnCreate: false,
         tlsExtraSans: "",
@@ -114,23 +115,11 @@ describe("platformSettingsRepository", () => {
 
   describe("upsertPlatformSettingsRow", () => {
     it("persists and returns updated platform settings", async () => {
-      const current = {
-        id: GLOBAL_SETTINGS_ID,
-        syncTlsOnCreate: true,
-        tlsExtraSans: "*.old.local",
-        certbotEmail: "old@madrasa.local",
-        emailNotifications: true,
-        smsNotifications: false,
-        updatedAt: "2026-01-01T00:00:00.000Z",
-      };
-
-      const result = await upsertPlatformSettingsRow(
-        {
-          certbotEmail: "new@madrasa.local",
-          tlsExtraSans: "*.new.local",
-        },
-        current,
-      );
+      const result = await upsertPlatformSettingsRow({
+        ...DEFAULT_PLATFORM_SETTINGS,
+        certbotEmail: "new@madrasa.local",
+        tlsExtraSans: "*.new.local",
+      });
 
       expect(result.certbotEmail).toBe("new@madrasa.local");
       expect(result.tlsExtraSans).toBe("*.new.local");

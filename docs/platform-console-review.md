@@ -109,3 +109,12 @@ Audited `apps/frontend/src/platform` against `mms-core` Baseline (§19), `mms-ui
 | Settings → Institution persists everything to PostgreSQL | Branding writers hydrate the full record from `GET /api/db/objects/branding` at tenant boot (`useHydrateBranding`); branding is no longer title-cased client-side; identity/theme saves merge only the fields the user changed onto a freshly fetched server record (no clobbering of untouched or not-yet-hydrated fields) |
 | Tenant admin-created users can sign in with their temporary password | Password-mode creation now marks the address verified (admin-vouched, like invite activation), rejects a password-mode create without a password, and an admin password reset also verifies the address; platform-created admins are verified for the same reason |
 | Only the platform console owns the apex super admin | `canAssignRole`/`filterAssignableRoles` reject platform-managed roles for every actor; tenant create/invite/bulk/import/update reject creating, promoting to, or demoting from `super_admin`; the Users module shows the apex account read-only with a "Platform-managed" badge |
+
+
+## Update 2026-11-23 (3) — Settings parity and runtime white-label
+
+`/platform/settings` now mirrors the tenant section set (General, Branding, Theme, Modules, LLM, Backup) at
+platform scope. See `docs/platform-settings.md` for the information architecture, `platform_settings` /
+`platform_branding` storage, public branding + manifest endpoints, module feature-flag enforcement, the
+platform AI provider, and the configuration-only backup boundary. All writes are audited; module/LLM/backup
+writes require the super-user role, backup additionally requires a password step-up.

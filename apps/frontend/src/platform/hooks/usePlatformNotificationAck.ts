@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 import {
   readPlatformNotificationAcks,
   writePlatformNotificationAcks,
-} from "@/platform/lib/platformNotificationAckStorage";
+} from "@/platform/features/shell/lib/platformNotificationAckStorage";
 
 interface UsePlatformNotificationAckResult {
   ackedIds: Set<string>;

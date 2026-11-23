@@ -5,6 +5,8 @@ import type {
   PlatformAiSuggestion,
 } from "@mms/shared";
 import { getPlatformTelemetry } from "./platformTelemetryService.js";
+import { getPlatformDefaultLlmConfig } from "./platformSettingsService.js";
+import { generateCompletion } from "../llmService.js";
 
 export async function synthesizePlatformAiDiagnostics(
   request: PlatformAiQueryRequest,
@@ -13,6 +15,40 @@ export async function synthesizePlatformAiDiagnostics(
   const promptLower = request.prompt.toLowerCase();
   const route = request.context?.currentRoute ?? "";
   const telemetry = await getPlatformTelemetry();
+
+  const llmConfig = getPlatformDefaultLlmConfig();
+  if (llmConfig) {
+    try {
+      const analysis = await generateCompletion(request.prompt, {
+        systemInstruction:
+          "You are the MMS platform operations assistant. Answer using only the supplied telemetry. Be concise and name the exact next action.",
+        customConfig: llmConfig,
+      });
+      return {
+        success: true,
+        analysis,
+        suggestions: [
+          {
+            id: "goto-dashboard",
+            label: "Platform Overview",
+            actionType: "navigate",
+            target: "/platform/dashboard",
+          },
+          {
+            id: "goto-system",
+            label: "System & Health Matrix",
+            actionType: "navigate",
+            target: "/platform/system",
+          },
+        ],
+        confidence: 0.9,
+        latencyMs: Math.round(performance.now() - startTime),
+        mode: "llm",
+      };
+    } catch {
+      // Fall through to the deterministic telemetry synthesizer.
+    }
+  }
 
   const suggestions: PlatformAiSuggestion[] = [];
   let analysis: string;
@@ -98,5 +134,6 @@ export async function synthesizePlatformAiDiagnostics(
     suggestions,
     confidence: 0.98,
     latencyMs,
+    mode: "heuristic",
   };
 }

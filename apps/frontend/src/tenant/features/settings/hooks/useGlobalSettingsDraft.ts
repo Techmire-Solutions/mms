@@ -15,7 +15,7 @@ import { clearGlobalSettingsPreview, previewGlobalSettings } from "@/lib/setting
 import { serverSyncErrorKey } from "@/lib/serverSyncErrors";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useSavedFlash } from "@/tenant/hooks/useSavedFlash";
+import { useSavedFlash } from "@/hooks/useSavedFlash";
 import {
   isEnabledModulesDraftDirty,
   isGlobalPreferencesDirty,

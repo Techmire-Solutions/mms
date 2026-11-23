@@ -46,6 +46,7 @@ vi.mock("@/tenant/hooks/useModuleAccess", () => ({
       students: { granted: true },
       finance: { granted: true },
       inventory: { granted: false },
+      tasks: { granted: true, platformDisabled: true },
     },
   }),
 }));
@@ -53,12 +54,15 @@ vi.mock("@/tenant/hooks/useModuleAccess", () => ({
 vi.mock("@/tenant/features/settings/components/modules/ModuleSettingsNavGrid", () => ({
   default: ({
     onToggleModule,
+    platformDisabledModules,
   }: {
     enabledModules: Record<string, boolean>;
     grantedModules?: Record<string, boolean>;
+    platformDisabledModules?: ReadonlySet<string>;
     onToggleModule: (id: string, enabled: boolean) => void;
   }) => (
     <div data-testid="nav-grid">
+      <span data-testid="locked-count">{platformDisabledModules?.size ?? 0}</span>
       <button
         type="button"
         data-testid="toggle-inventory"
@@ -96,6 +100,15 @@ describe("SystemModulesSettings", () => {
       root.render(<SystemModulesSettings />);
     });
     expect(container.textContent).toContain("settings.adminOnly");
+  });
+
+  it("passes platform-disabled modules to the grid", async () => {
+    mockCanWrite = true;
+    mockIsDirty = false;
+    await act(async () => {
+      root.render(<SystemModulesSettings />);
+    });
+    expect(container.querySelector('[data-testid="locked-count"]')?.textContent).toBe("1");
   });
 
   it("renders system modules settings panel and nav grid", async () => {

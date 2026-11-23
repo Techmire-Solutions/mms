@@ -54,6 +54,8 @@ export function isModuleAccessDenialCode(value: unknown): value is ModuleAccessD
 export interface ModuleAvailability {
   granted: boolean;
   enabled: boolean;
+  /** True when the operator disabled the module platform-wide (feature flag). */
+  platformDisabled?: boolean;
 }
 export type ModuleAvailabilityMap = Record<string, ModuleAvailability>;
 
@@ -150,14 +152,21 @@ export function getModuleActionPermission(
 export function buildModuleAvailability(
   grantedModules: Record<string, boolean> | null | undefined,
   enabledModules: Record<string, boolean> | null | undefined,
+  platformDisabledModules?: readonly string[] | null,
 ): ModuleAvailabilityMap {
   const grants = grantedModules ?? {};
   const grantAll = Object.keys(grants).length === 0;
   const enabled = normalizeEnabledModules(enabledModules);
+  const platformDisabled = new Set(platformDisabledModules ?? []);
   const map: ModuleAvailabilityMap = {};
   for (const mod of SYSTEM_MODULES) {
     const granted = mod.required === true || grantAll || grants[mod.id] !== false;
-    map[mod.id] = { granted, enabled: granted && enabled[mod.id] !== false };
+    const isPlatformDisabled = platformDisabled.has(mod.id);
+    map[mod.id] = {
+      granted,
+      enabled: granted && enabled[mod.id] !== false && !isPlatformDisabled,
+      ...(isPlatformDisabled ? { platformDisabled: true } : {}),
+    };
   }
   return map;
 }

@@ -47,6 +47,8 @@ export const ROUTES = {
   platformSystem: "/platform/system",
   platformErd: "/platform/erd",
   platformDesignSystem: "/platform/design-system",
+  platformContacts: "/platform/contacts",
+  platformMessaging: "/platform/messaging",
   twoFactor: "/2fa",
   onboarding: "/onboarding",
   /** Apex-only: unknown tenant host redirected here with `?subdomain=` */

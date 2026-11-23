@@ -38,6 +38,8 @@ export * from "../core/serverPorts.js";
 export * from "../schemas/uiState.dto.js";
 export * from "../schemas/platformAi.dto.js";
 export * from "../schemas/moduleImport.dto.js";
+export * from "../schemas/platformContacts.dto.js";
+export * from "../schemas/platformMessaging.dto.js";
 
 // ---------------------------------------------------------------------------
 // 3. Global Settings, Theme & Branding
@@ -45,6 +47,7 @@ export * from "../schemas/moduleImport.dto.js";
 export * from "../i18n/appTranslations.js";
 export * from "../backup/backupCrypto.js";
 export * from "../backup/backupTypes.js";
+export * from "../backup/platformConfigBackupTypes.js";
 export * from "../branding/brandingChartPalette.js";
 export * from "../branding/brandingColorContrast.js";
 export { MAX_RESTING_TINT_BY_MODE } from "../branding/brandingCssContrast.js";
@@ -70,6 +73,7 @@ export * from "../messaging/whatsappProviderRegistry.js";
 export * from "../schemas/whatsapp.dto.js";
 export * from "../settings/globalSettingsTypes.js";
 export * from "../settings/globalSettingsUtils.js";
+export * from "../settings/platformModuleCatalog.js";
 export * from "../sessions/sessionPolicy.js";
 export * from "../core/imageOptimizationUtils.js";
 export * from "../core/languageUtils.js";

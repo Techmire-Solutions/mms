@@ -9,12 +9,12 @@ import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import BrandingIdentityPreview from "@/components/branding/BrandingIdentityPreview";
 import { SettingsPanel } from "@/components/app/SettingsShell";
 import { SocialLinksEditor } from "@/components/branding/BrandingShared";
-import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
+import { SettingsAdminOnlyNotice } from "@/components/app/SettingsAdminOnlyNotice";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import {
   BrandingSettingsContactSection,
   BrandingSettingsProfileSection,
-} from "@/tenant/features/settings/components/branding/BrandingSettingsIdentitySections";
+} from "@/components/branding/BrandingIdentitySections";
 
 /**
  * Institution identity — name, logo, contact, address, and social profiles.

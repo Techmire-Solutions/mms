@@ -22,6 +22,8 @@ describe("PLATFORM_ADMIN_PERMISSION_KEYS", () => {
       "settings",
       "admins",
       "system",
+      "contacts",
+      "messaging",
     ]);
     expect(Object.keys(DEFAULT_PLATFORM_ADMIN_PERMISSIONS).sort()).toEqual(
       [...PLATFORM_ADMIN_PERMISSION_KEYS].sort(),
@@ -48,6 +50,8 @@ describe("platformUserCan", () => {
         settings: false,
         admins: false,
         system: false,
+        contacts: false,
+        messaging: false,
       },
     };
     expect(platformUserCan(user, "workspaces")).toBe(true);
@@ -69,6 +73,8 @@ describe("normalizePlatformAdminPermissions", () => {
       settings: false,
       admins: false,
       system: false,
+      contacts: false,
+      messaging: false,
     });
   });
 });
@@ -105,6 +111,8 @@ describe("platform admin permission schemas", () => {
         settings: false,
         admins: false,
         system: false,
+        contacts: false,
+        messaging: false,
       },
       password: "OperatorPass123",
     });

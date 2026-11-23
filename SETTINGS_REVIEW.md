@@ -1,7 +1,7 @@
 # Settings Module Review
 
 **Scope:** app-wide tenant `/settings` (Workspace Settings) — routing, six section panels, draft/preview state, backend `global_settings`/`branding` persistence, RBAC, and the shared `settings`/`branding`/`i18n` surface.
-**Out of scope (boundary only):** Platform-console settings (`apps/frontend/src/platform/**`, `routes/platform/**`) and per-module Setup-tier settings (`*ModuleSettings.ts`, `Accounting/Faculty/Attendance/…Settings.tsx`).
+**Out of scope (boundary only):** Platform-console settings (`apps/frontend/src/platform/**`, `routes/platform/**` — now documented in `docs/platform-settings.md`) and per-module Setup-tier settings (`*ModuleSettings.ts`, `Accounting/Faculty/Attendance/…Settings.tsx`).
 **Date:** 2026-11-17
 **Verification:** `pnpm typecheck` ✅ · `pnpm --filter mms-frontend lint` ✅ · `pnpm run check:i18n` ✅ (10,122 keys, 0 missing/EN-fallback across ar/ur/fa).
 

@@ -37,7 +37,7 @@ vi.mock("@/tenant/features/settings/hooks/useThemeSettingsDraft", () => ({
   }),
 }));
 
-vi.mock("@/tenant/hooks/useApplyLogoColors", () => ({
+vi.mock("@/hooks/useApplyLogoColors", () => ({
   useApplyLogoColors: () => ({
     applying: false,
     effectiveLogoUrl: "",

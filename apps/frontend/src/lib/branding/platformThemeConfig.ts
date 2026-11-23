@@ -1,21 +1,20 @@
 import {
-  DEFAULT_BRANDING_SETTINGS,
   DEFAULT_GLOBAL_SETTINGS,
-  mergeBrandingSettings,
+  DEFAULT_PLATFORM_BRANDING,
   mergeGlobalSettings,
+  platformBrandingToBrandingSettings,
   type BrandingSettings,
   type GlobalSettings,
 } from "@mms/shared";
 
 /**
- * Hardcoded MMS platform theme for the apex domain (marketing, console, onboarding).
- * Never reads tenant localStorage or customised institution branding.
- * Platform UI is English-only (LTR).
+ * Fallback platform branding used before the runtime white-label store hydrates
+ * (and by Server-rendered tests). Runtime code reads
+ * `@/lib/branding/platformBrandingStore` instead.
  */
-export const MMS_PLATFORM_BRANDING: BrandingSettings = mergeBrandingSettings({
-  ...DEFAULT_BRANDING_SETTINGS,
-  primaryColor: "#d99b00",
-  secondaryColor: "#5c3412",
+export const MMS_PLATFORM_BRANDING: BrandingSettings = platformBrandingToBrandingSettings({
+  ...DEFAULT_PLATFORM_BRANDING,
+  productName: "MMS",
   logoUrl: "/platform-logo.webp",
 });
 

@@ -52,6 +52,11 @@ const mockUsers = vi.hoisted(() => {
     noAdmins: user("p-admin-no-admins", "admin", { ...all, admins: false }),
     noSystem: user("p-admin-no-system", "admin", { ...all, system: false }),
     noOnboard: user("p-admin-no-onboard", "admin", { ...all, onboard: false }),
+    noSettingsNoOnboard: user("p-admin-no-settings-onboard", "admin", {
+      ...all,
+      settings: false,
+      onboard: false,
+    }),
   };
 });
 type MockUser = (typeof mockUsers)[keyof typeof mockUsers];
@@ -79,6 +84,7 @@ type Area =
   | "workspaces"
   | "onboard"
   | "settings"
+  | "settings_or_onboard"
   | "admins"
   | "system"
   | "authenticated"
@@ -109,7 +115,12 @@ const ROUTE_AREAS: ReadonlyArray<{ pattern: RegExp; area: Area }> = [
   // Areas.
   { pattern: /^\/api\/platform\/(users|admins)(\/|$)/, area: "admins" },
   { pattern: /^\/api\/platform\/(workspaces|consolidation)(\/|$)/, area: "workspaces" },
-  { pattern: /^\/api\/platform\/(email|sms|settings)(\/|$)/, area: "settings" },
+  { pattern: /^\/api\/platform\/modules\/catalog$/, area: "settings_or_onboard" },
+  {
+    pattern:
+      /^\/api\/platform\/(email|sms|settings|branding|llm|backup|modules(?!\/catalog))(\/|$)/,
+    area: "settings",
+  },
   { pattern: /^\/api\/platform\/(admin\/system|schema|ai|audit)(\/|$)/, area: "system" },
 ];
 
@@ -127,6 +138,12 @@ const SUPER_USER_ONLY = new Set([
   "DELETE /api/platform/users/:adminId",
   "PATCH /api/platform/users/:adminId/disabled",
   "PATCH /api/platform/users/:adminId/permissions",
+  "PUT /api/platform/modules",
+  "PUT /api/platform/llm",
+  "POST /api/platform/llm/test",
+  "POST /api/platform/llm/models",
+  "POST /api/platform/backup/export",
+  "POST /api/platform/backup/import",
 ]);
 
 /** Routes registered outside `/api/platform` that still carry a platform permission. */
@@ -233,6 +250,7 @@ describe("platform route security matrix", () => {
       workspaces: mockUsers.noWorkspaces,
       onboard: mockUsers.noOnboard,
       settings: mockUsers.noSettings,
+      settings_or_onboard: mockUsers.noSettingsNoOnboard,
       admins: mockUsers.noAdmins,
       system: mockUsers.noSystem,
     };

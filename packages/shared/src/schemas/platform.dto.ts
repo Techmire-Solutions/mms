@@ -184,21 +184,6 @@ export const platformSetupStatusDtoSchema = z
 
 export type PlatformSetupStatusDto = z.infer<typeof platformSetupStatusDtoSchema>;
 
-export const platformSettingsDtoSchema = z
-  .object({
-    id: z.string(),
-    syncTlsOnCreate: z.boolean(),
-    tlsExtraSans: z.string(),
-    certbotEmail: z.string(),
-    emailNotifications: z.boolean(),
-    smsNotifications: z.boolean(),
-    whatsAppNotifications: z.boolean().optional(),
-    updatedAt: z.string().optional(),
-  })
-  .strict();
-
-export type PlatformSettingsDto = z.infer<typeof platformSettingsDtoSchema>;
-
 export const platformWorkspaceRowDtoSchema = z
   .object({
     subdomain: z.string(),
@@ -290,3 +275,7 @@ export const platformErrorDtoSchema = z
   .strict();
 
 export type PlatformErrorDto = z.infer<typeof platformErrorDtoSchema>;
+
+export * from "./platformSettings.dto.js";
+
+export * from "./platformSettings.dto.js";

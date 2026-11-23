@@ -5,7 +5,7 @@ paths:
   - "apps/frontend/src/tenant/features/**/*Settings*"
   - "apps/frontend/src/platform/**"
   - "apps/frontend/src/lib/contexts/TranslationContext.tsx"
-  - "apps/frontend/src/platform/lib/themeScope.ts"
+  - "apps/frontend/src/platform/features/settings/lib/themeScope.ts"
   - "apps/frontend/src/lib/config/settings*"
   - "apps/frontend/src/lib/config/routes.ts"
   - "apps/frontend/src/lib/config/navConfig.tsx"

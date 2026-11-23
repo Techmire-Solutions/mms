@@ -10,7 +10,7 @@ vi.mock("@/tenant/hooks/usePermissions", () => ({
   useModulePermissions: () => mockUseModulePermissions(),
 }));
 
-vi.mock("@/tenant/hooks/useModuleTierTabs", () => ({
+vi.mock("@/hooks/useModuleTierTabs", () => ({
   useFilteredModuleTierTabs: (args: unknown) => mockUseFilteredModuleTierTabs(args),
 }));
 

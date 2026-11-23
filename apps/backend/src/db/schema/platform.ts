@@ -120,7 +120,7 @@ export const platformUserPermissions = pgTable(
     uniqueIndex("platform_user_perms_user_key_uidx").on(table.platformUserId, table.permissionKey),
     index("platform_user_perms_user_idx").on(table.platformUserId),
     // CHECK enforced in SQL migrations (platform_user_perms_key_check):
-    // permission_key IN ('workspaces','onboard','settings','admins','system').
+    // permission_key IN ('workspaces','onboard','settings','admins','system','contacts','messaging').
   ],
 );
 
@@ -135,6 +135,19 @@ export const platformSettings = pgTable("platform_settings", {
   certbotEmail: text("certbot_email").notNull().default(""),
   emailNotifications: boolean("email_notifications").notNull().default(true),
   smsNotifications: boolean("sms_notifications").notNull().default(false),
+  whatsAppNotifications: boolean("whatsapp_notifications").notNull().default(false),
+  /** Regional display defaults for the apex console (English/LTR is fixed). */
+  timezone: text("timezone").notNull().default("UTC"),
+  dateFormat: varchar("date_format", { length: 16 }).notNull().default("DD/MM/YYYY"),
+  themeMode: varchar("theme_mode", { length: 16 }).notNull().default("system"),
+  /** Modules enabled for newly provisioned workspaces (jsonb map). */
+  defaultEnabledModules: jsonb("default_enabled_modules").$type<Record<string, boolean> | null>(),
+  /** Platform-wide unavailable module ids (feature flags). */
+  disabledModules: jsonb("disabled_modules").$type<string[] | null>(),
+  llmProvider: varchar("llm_provider", { length: 32 }).notNull().default("none"),
+  llmApiKey: text("llm_api_key"),
+  llmConfigs: jsonb("llm_configs").$type<LlmConfig[] | null>(),
+  idleSessionMinutes: integer("idle_session_minutes"),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 

@@ -16,6 +16,12 @@ import {
   platformErrorDtoSchema as platformErrorSchema,
 } from "../schemas/platform.dto.js";
 import {
+  platformBrandingRoutes,
+  platformModuleRoutes,
+  platformLlmRoutes,
+  platformBackupRoutes,
+} from "./platformSettingsExtra.contract.js";
+import {
   loginBodySchema,
   challengeCodeBodySchema,
   challengeIdBodySchema,
@@ -72,6 +78,7 @@ export const platformSettingsRoutes = {
       400: platformErrorSchema,
       401: platformErrorSchema,
       403: platformErrorSchema,
+      409: platformErrorSchema,
     },
     summary: "Update global platform settings",
   },
@@ -201,6 +208,10 @@ export const platformContract = c.router({
   },
   // Settings
   ...platformSettingsRoutes,
+  ...platformBrandingRoutes,
+  ...platformModuleRoutes,
+  ...platformLlmRoutes,
+  ...platformBackupRoutes,
   // System admin
   migrateAndRestart: {
     method: "POST",

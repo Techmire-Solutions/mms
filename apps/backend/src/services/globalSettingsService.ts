@@ -8,6 +8,7 @@ import {
   type GlobalSettings,
 } from "@mms/shared";
 import { getRequestTenant } from "../lib/tenantContext.js";
+import { getPlatformSettings } from "./platform/platformSettingsService.js";
 import {
   getWorkspaceGlobalSettings,
   upsertWorkspaceGlobalSettings as upsertWorkspaceGlobalSettingsRepo,
@@ -142,6 +143,20 @@ export async function saveGlobalSettings(
     return config;
   });
   settings = { ...settings, llmConfigs };
+  // Platform-wide feature flags win over tenant toggles: a workspace can never
+  // re-enable a module the operator disabled for the whole instance.
+  const platformDisabled = getPlatformSettings().disabledModules;
+  if (platformDisabled.length > 0) {
+    settings = {
+      ...settings,
+      enabledModules: Object.fromEntries(
+        Object.entries(settings.enabledModules).map(([id, enabled]) => [
+          id,
+          platformDisabled.includes(id) ? false : enabled,
+        ]),
+      ),
+    };
+  }
   await upsertWorkspaceGlobalSettingsRepo(tenant, settings);
   await invalidateGlobalSettingsCache(tenant);
 }

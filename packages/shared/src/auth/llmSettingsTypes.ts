@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /** Registry metadata and default settings for supported AI completion providers. */
 export const LLM_PROVIDERS_META = {
   gemini: {
@@ -136,3 +138,19 @@ export function resolveLlmModel(
   const trimmed = model?.trim();
   return trimmed || getLlmProviderDefaultModel(provider);
 }
+
+/** Strict schema for a stored/transported LLM provider configuration. */
+export const llmConfigInputSchema = z
+  .object({
+    id: z.string().min(1).max(80),
+    name: z.string().min(1).max(100),
+    provider: z.enum(LLM_PROVIDER_KEYS),
+    apiKey: z.string().max(4096),
+    model: z.string().max(200),
+    baseUrl: z.string().max(2048).optional(),
+    isDefaultText: z.boolean(),
+    temperature: z.number().min(0).max(2).optional(),
+    maxTokens: z.number().int().min(1).max(100_000).optional(),
+    topP: z.number().min(0).max(1).optional(),
+  })
+  .strict();

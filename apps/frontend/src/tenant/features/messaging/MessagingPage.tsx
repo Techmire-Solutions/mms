@@ -11,7 +11,7 @@ import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useMessagingKeyboardShortcuts } from "./hooks/useMessagingKeyboardShortcuts";
 import { resolveActiveTab } from "./lib/resolveActiveTab";

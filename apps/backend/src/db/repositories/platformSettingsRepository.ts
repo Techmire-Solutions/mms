@@ -1,35 +1,88 @@
 import { eq } from "drizzle-orm";
-import type { PlatformSettings, PlatformSettingsUpdateInput } from "@mms/shared";
+import {
+  DEFAULT_PLATFORM_SETTINGS,
+  mergePlatformSettings,
+  type PlatformSettings,
+} from "@mms/shared";
 import { activeDb } from "../dbConnection.js";
 import { platformSettings } from "../schema.js";
+import {
+  decryptLlmApiKey,
+  decryptLlmConfigs,
+  encryptLlmApiKey,
+  encryptLlmConfigs,
+} from "./workspaceLlmSecrets.js";
 
 export const GLOBAL_SETTINGS_ID = "global";
 
-function rowToPlatformSettings(row: typeof platformSettings.$inferSelect): PlatformSettings {
-  return {
+/** Explicit projection — no wildcard selects (mms-performance). */
+const platformSettingsColumns = {
+  id: platformSettings.id,
+  syncTlsOnCreate: platformSettings.syncTlsOnCreate,
+  tlsExtraSans: platformSettings.tlsExtraSans,
+  certbotEmail: platformSettings.certbotEmail,
+  emailNotifications: platformSettings.emailNotifications,
+  smsNotifications: platformSettings.smsNotifications,
+  whatsAppNotifications: platformSettings.whatsAppNotifications,
+  timezone: platformSettings.timezone,
+  dateFormat: platformSettings.dateFormat,
+  themeMode: platformSettings.themeMode,
+  defaultEnabledModules: platformSettings.defaultEnabledModules,
+  disabledModules: platformSettings.disabledModules,
+  llmProvider: platformSettings.llmProvider,
+  llmApiKey: platformSettings.llmApiKey,
+  llmConfigs: platformSettings.llmConfigs,
+  idleSessionMinutes: platformSettings.idleSessionMinutes,
+  updatedAt: platformSettings.updatedAt,
+};
+
+type PlatformSettingsRowShape = {
+  id: string;
+  syncTlsOnCreate: boolean;
+  tlsExtraSans: string;
+  certbotEmail: string;
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  whatsAppNotifications: boolean;
+  timezone: string;
+  dateFormat: string;
+  themeMode: string;
+  defaultEnabledModules: Record<string, boolean> | null;
+  disabledModules: string[] | null;
+  llmProvider: string;
+  llmApiKey: string | null;
+  llmConfigs: Parameters<typeof decryptLlmConfigs>[0];
+  idleSessionMinutes: number | null;
+  updatedAt: Date | null;
+};
+
+function rowToPlatformSettings(row: PlatformSettingsRowShape): PlatformSettings {
+  return mergePlatformSettings({
     id: row.id,
     syncTlsOnCreate: row.syncTlsOnCreate,
     tlsExtraSans: row.tlsExtraSans,
     certbotEmail: row.certbotEmail,
     emailNotifications: row.emailNotifications,
     smsNotifications: row.smsNotifications,
-    updatedAt: row.updatedAt?.toISOString(),
-  };
+    whatsAppNotifications: row.whatsAppNotifications,
+    timezone: row.timezone,
+    dateFormat: row.dateFormat,
+    themeMode: row.themeMode as PlatformSettings["themeMode"],
+    defaultEnabledModules: row.defaultEnabledModules ?? undefined,
+    disabledModules: row.disabledModules ?? undefined,
+    llmProvider: row.llmProvider as PlatformSettings["llmProvider"],
+    llmApiKey: decryptLlmApiKey(row.llmApiKey) ?? "",
+    llmConfigs: decryptLlmConfigs(row.llmConfigs) ?? [],
+    idleSessionMinutes: row.idleSessionMinutes ?? DEFAULT_PLATFORM_SETTINGS.idleSessionMinutes,
+    ...(row.updatedAt ? { updatedAt: row.updatedAt.toISOString() } : {}),
+  });
 }
 
 export async function findPlatformSettingsRow(
   id = GLOBAL_SETTINGS_ID,
 ): Promise<PlatformSettings | null> {
   const rows = await activeDb()
-    .select({
-      id: platformSettings.id,
-      syncTlsOnCreate: platformSettings.syncTlsOnCreate,
-      tlsExtraSans: platformSettings.tlsExtraSans,
-      certbotEmail: platformSettings.certbotEmail,
-      emailNotifications: platformSettings.emailNotifications,
-      smsNotifications: platformSettings.smsNotifications,
-      updatedAt: platformSettings.updatedAt,
-    })
+    .select(platformSettingsColumns)
     .from(platformSettings)
     .where(eq(platformSettings.id, id))
     .limit(1);
@@ -57,55 +110,41 @@ export async function insertPlatformSettingsDefaultRow(defaults: {
       updatedAt: new Date(),
     })
     .onConflictDoNothing()
-    .returning();
+    .returning(platformSettingsColumns);
 
   return inserted[0] ? rowToPlatformSettings(inserted[0]) : null;
 }
 
+/** Persists the full merged settings record (LLM secrets encrypted at rest). */
 export async function upsertPlatformSettingsRow(
-  input: PlatformSettingsUpdateInput,
-  current: PlatformSettings,
+  next: PlatformSettings,
   id = GLOBAL_SETTINGS_ID,
 ): Promise<PlatformSettings> {
-  const syncTlsOnCreate = input.syncTlsOnCreate ?? current.syncTlsOnCreate;
-  const tlsExtraSans =
-    input.tlsExtraSans !== undefined ? input.tlsExtraSans.trim() : current.tlsExtraSans;
-  const certbotEmail =
-    input.certbotEmail !== undefined ? input.certbotEmail.trim() : current.certbotEmail;
-  const emailNotifications = input.emailNotifications ?? current.emailNotifications;
-  const smsNotifications = input.smsNotifications ?? current.smsNotifications;
   const updatedAt = new Date();
+  const values = {
+    id,
+    syncTlsOnCreate: next.syncTlsOnCreate,
+    tlsExtraSans: next.tlsExtraSans.trim(),
+    certbotEmail: next.certbotEmail.trim(),
+    emailNotifications: next.emailNotifications,
+    smsNotifications: next.smsNotifications,
+    whatsAppNotifications: next.whatsAppNotifications,
+    timezone: next.timezone,
+    dateFormat: next.dateFormat,
+    themeMode: next.themeMode,
+    defaultEnabledModules: next.defaultEnabledModules,
+    disabledModules: next.disabledModules,
+    llmProvider: next.llmProvider,
+    llmApiKey: encryptLlmApiKey(next.llmApiKey),
+    llmConfigs: encryptLlmConfigs(next.llmConfigs),
+    idleSessionMinutes: next.idleSessionMinutes,
+    updatedAt,
+  };
 
   await activeDb()
     .insert(platformSettings)
-    .values({
-      id,
-      syncTlsOnCreate,
-      tlsExtraSans,
-      certbotEmail,
-      emailNotifications,
-      smsNotifications,
-      updatedAt,
-    })
-    .onConflictDoUpdate({
-      target: platformSettings.id,
-      set: {
-        syncTlsOnCreate,
-        tlsExtraSans,
-        certbotEmail,
-        emailNotifications,
-        smsNotifications,
-        updatedAt,
-      },
-    });
+    .values(values)
+    .onConflictDoUpdate({ target: platformSettings.id, set: values });
 
-  return {
-    id,
-    syncTlsOnCreate,
-    tlsExtraSans,
-    certbotEmail,
-    emailNotifications,
-    smsNotifications,
-    updatedAt: updatedAt.toISOString(),
-  };
+  return mergePlatformSettings({ ...next, id, updatedAt: updatedAt.toISOString() });
 }

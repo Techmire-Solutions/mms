@@ -9,6 +9,7 @@ import {
 } from "../../middleware/authenticatePlatform.js";
 import {
   getPlatformSettings,
+  maskPlatformSettingsForClient,
   updatePlatformSettings,
 } from "../../services/platform/platformSettingsService.js";
 import { replyValidationError } from "../../lib/zodRequest.js";
@@ -27,7 +28,7 @@ export default async function platformSettingsRoutes(
     getSettings: async (): Promise<
       ContractRouteResponse<(typeof platformSettingsContract)["getSettings"]>
     > => {
-      const settings = getPlatformSettings();
+      const settings = maskPlatformSettingsForClient(getPlatformSettings());
       return { status: 200 as const, body: { settings } };
     },
 
@@ -37,6 +38,16 @@ export default async function platformSettingsRoutes(
     }: ContractRouteArgs<(typeof platformSettingsContract)["updateSettings"]>): Promise<
       ContractRouteResponse<(typeof platformSettingsContract)["updateSettings"]>
     > => {
+      const current = getPlatformSettings();
+      if (body.expectedUpdatedAt && (current.updatedAt ?? "") !== body.expectedUpdatedAt) {
+        return {
+          status: 409 as const,
+          body: {
+            type: "conflict",
+            message: "Platform settings changed elsewhere. Reload and try again.",
+          },
+        };
+      }
       const settings = await updatePlatformSettings(body);
       const { platformUser } = request as PlatformAuthenticatedRequest;
       await insertPlatformActivityLog({
@@ -47,7 +58,10 @@ export default async function platformSettingsRoutes(
         ipAddress: request.ip,
       });
 
-      return { status: 200 as const, body: { settings, success: true as const } };
+      return {
+        status: 200 as const,
+        body: { settings: maskPlatformSettingsForClient(settings), success: true as const },
+      };
     },
   } as unknown as RouterImplementation<typeof platformSettingsContract>);
 

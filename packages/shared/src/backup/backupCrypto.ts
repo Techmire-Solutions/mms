@@ -5,20 +5,23 @@ import type { BackupCryptoCredentials } from "./backupTypes.js";
 /** Encrypted on-disk backup wrapper (plaintext is a workspace backup envelope). */
 export const ENCRYPTED_BACKUP_FORMAT_ID = "mms-encrypted-workspace-backup" as const;
 
+/** Encrypted platform-configuration backup wrapper (settings + branding, no tenant data). */
+export const PLATFORM_BACKUP_FORMAT_ID = "mms-encrypted-platform-config-backup" as const;
+
+export type BackupEnvelopeFormatId =
+  typeof ENCRYPTED_BACKUP_FORMAT_ID | typeof PLATFORM_BACKUP_FORMAT_ID;
+
 export const ENCRYPTED_BACKUP_VERSION = 1;
 
 const BACKUP_KDF_ITERATIONS = 310_000;
 
-/** Accepted PBKDF2 work factor range — floor keeps brute force costly, ceiling stops a DoS envelope. */
 export const BACKUP_KDF_MIN_ITERATIONS = 100_000;
 export const BACKUP_KDF_MAX_ITERATIONS = 1_000_000;
 
-/** Base64 length caps for the fixed-size KDF/cipher parameters (16-byte salt, 12-byte IV). */
 const MAX_SALT_BASE64_LENGTH = 64;
 const MAX_IV_BASE64_LENGTH = 32;
-
-export interface EncryptedWorkspaceBackupFile {
-  format: typeof ENCRYPTED_BACKUP_FORMAT_ID;
+interface EncryptedBackupEnvelopeBase {
+  format: BackupEnvelopeFormatId;
   version: number;
   subdomain: string | null;
   tenantLabel: string | null;
@@ -32,8 +35,16 @@ export interface EncryptedWorkspaceBackupFile {
   ciphertext: string;
 }
 
-const encryptedWorkspaceBackupFileSchema = z.object({
-  format: z.literal(ENCRYPTED_BACKUP_FORMAT_ID),
+export interface EncryptedWorkspaceBackupFile extends EncryptedBackupEnvelopeBase {
+  format: typeof ENCRYPTED_BACKUP_FORMAT_ID;
+}
+
+export interface EncryptedPlatformBackupFile extends EncryptedBackupEnvelopeBase {
+  format: typeof PLATFORM_BACKUP_FORMAT_ID;
+}
+
+/** Envelope body shared by both formats (format-specific literal added by each schema). */
+const encryptedBackupEnvelopeShape = {
   version: z.number().int().min(1).max(ENCRYPTED_BACKUP_VERSION),
   subdomain: z.string().nullable(),
   tenantLabel: z.string().nullable(),
@@ -45,10 +56,24 @@ const encryptedWorkspaceBackupFileSchema = z.object({
   salt: z.string().min(1).max(MAX_SALT_BASE64_LENGTH),
   iv: z.string().min(1).max(MAX_IV_BASE64_LENGTH),
   ciphertext: z.string().min(1),
+} as const;
+
+const encryptedWorkspaceBackupFileSchema = z.object({
+  format: z.literal(ENCRYPTED_BACKUP_FORMAT_ID),
+  ...encryptedBackupEnvelopeShape,
+});
+
+const encryptedPlatformBackupFileSchema = z.object({
+  format: z.literal(PLATFORM_BACKUP_FORMAT_ID),
+  ...encryptedBackupEnvelopeShape,
 });
 
 export type BackupDecryptResult =
   | { ok: true; plaintext: string; meta: EncryptedWorkspaceBackupFile }
+  | { ok: false; errorKey: AppTranslationKey };
+
+export type PlatformBackupDecryptResult =
+  | { ok: true; plaintext: string; meta: EncryptedPlatformBackupFile }
   | { ok: false; errorKey: AppTranslationKey };
 
 function getSubtle(): SubtleCrypto {
@@ -134,6 +159,72 @@ export async function encryptWorkspaceBackup(
   credentials: BackupCryptoCredentials,
   meta?: { subdomain?: string | null; tenantLabel?: string | null },
 ): Promise<string> {
+  return encryptBackupEnvelope(plaintext, credentials, ENCRYPTED_BACKUP_FORMAT_ID, meta);
+}
+
+/** Parses an encrypted platform-configuration backup file. */
+export function parsePlatformBackupFile(text: string): EncryptedPlatformBackupFile | null {
+  try {
+    const parsed = JSON.parse(text);
+    const validated = encryptedPlatformBackupFileSchema.safeParse(parsed);
+    return validated.success ? validated.data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** True when the payload is an encrypted platform-configuration backup. */
+export function isPlatformBackupPayload(text: string): boolean {
+  try {
+    const parsed = JSON.parse(text) as Record<string, unknown>;
+    return parsed.format === PLATFORM_BACKUP_FORMAT_ID;
+  } catch {
+    return false;
+  }
+}
+
+/** Encrypts a platform-configuration snapshot with the operator's credentials. */
+export async function encryptPlatformBackup(
+  plaintext: string,
+  credentials: BackupCryptoCredentials,
+): Promise<string> {
+  return encryptBackupEnvelope(plaintext, credentials, PLATFORM_BACKUP_FORMAT_ID, {
+    tenantLabel: "platform",
+  });
+}
+
+/** Decrypts an encrypted backup file using admin email + password. */
+export async function decryptWorkspaceBackup(
+  fileJson: string,
+  credentials: BackupCryptoCredentials,
+): Promise<BackupDecryptResult> {
+  return decryptBackupEnvelope(
+    fileJson,
+    credentials,
+    ENCRYPTED_BACKUP_FORMAT_ID,
+    parseEncryptedBackupFile,
+  );
+}
+
+/** Decrypts an encrypted platform-configuration backup using operator credentials. */
+export async function decryptPlatformBackup(
+  fileJson: string,
+  credentials: BackupCryptoCredentials,
+): Promise<PlatformBackupDecryptResult> {
+  return decryptBackupEnvelope(
+    fileJson,
+    credentials,
+    PLATFORM_BACKUP_FORMAT_ID,
+    parsePlatformBackupFile,
+  );
+}
+
+async function encryptBackupEnvelope(
+  plaintext: string,
+  credentials: BackupCryptoCredentials,
+  format: BackupEnvelopeFormatId,
+  meta?: { subdomain?: string | null; tenantLabel?: string | null },
+): Promise<string> {
   const salt = randomBytes(16);
   const iv = randomBytes(12);
   const key = await deriveBackupKey(
@@ -149,8 +240,8 @@ export async function encryptWorkspaceBackup(
     new TextEncoder().encode(plaintext),
   );
 
-  const envelope: EncryptedWorkspaceBackupFile = {
-    format: ENCRYPTED_BACKUP_FORMAT_ID,
+  const envelope: EncryptedBackupEnvelopeBase = {
+    format,
     version: ENCRYPTED_BACKUP_VERSION,
     subdomain: meta?.subdomain ?? null,
     tenantLabel: meta?.tenantLabel ?? null,
@@ -167,13 +258,16 @@ export async function encryptWorkspaceBackup(
   return JSON.stringify(envelope);
 }
 
-/** Decrypts an encrypted backup file using admin email + password. */
-export async function decryptWorkspaceBackup(
+async function decryptBackupEnvelope<T extends EncryptedBackupEnvelopeBase>(
   fileJson: string,
   credentials: BackupCryptoCredentials,
-): Promise<BackupDecryptResult> {
-  const parsed = parseEncryptedBackupFile(fileJson);
-  if (!parsed) return { ok: false, errorKey: "backup.invalidFormat" };
+  expectedFormat: BackupEnvelopeFormatId,
+  parse: (text: string) => T | null,
+): Promise<{ ok: true; plaintext: string; meta: T } | { ok: false; errorKey: AppTranslationKey }> {
+  const parsed = parse(fileJson);
+  if (!parsed || parsed.format !== expectedFormat) {
+    return { ok: false, errorKey: "backup.invalidFormat" };
+  }
 
   const email = credentials.adminEmail.trim().toLowerCase();
   if (email !== parsed.adminEmail.trim().toLowerCase()) {

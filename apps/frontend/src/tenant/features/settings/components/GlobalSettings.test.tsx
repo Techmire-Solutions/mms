@@ -36,11 +36,11 @@ vi.mock("@/lib/contexts/SettingsGlobalDraftContext", () => ({
   }),
 }));
 
-vi.mock("@/tenant/features/settings/components/DateFormatSelect", () => ({
+vi.mock("@/components/app/DateFormatSelect", () => ({
   default: () => <div data-testid="date-format-select">DateFormatSelect</div>,
 }));
 
-vi.mock("@/tenant/features/settings/components/TimezoneSelect", () => ({
+vi.mock("@/components/app/TimezoneSelect", () => ({
   default: () => <div data-testid="timezone-select">TimezoneSelect</div>,
 }));
 

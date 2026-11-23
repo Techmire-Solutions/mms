@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from "react";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 

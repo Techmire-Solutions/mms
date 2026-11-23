@@ -40,7 +40,7 @@ vi.mock("@/components/branding/BrandingIdentityPreview", () => ({
   default: () => <div data-testid="identity-preview">IdentityPreview</div>,
 }));
 
-vi.mock("@/tenant/features/settings/components/branding/BrandingSettingsIdentitySections", () => ({
+vi.mock("@/components/branding/BrandingIdentitySections", () => ({
   BrandingSettingsProfileSection: () => <div data-testid="profile-section">ProfileSection</div>,
   BrandingSettingsContactSection: () => <div data-testid="contact-section">ContactSection</div>,
 }));

@@ -33,6 +33,26 @@
     }
     var theme = settings ? settings.theme : null;
 
+    // Apex platform console: use the instance-default display mode cached by the
+    // white-label store (mms_platform_branding) before first paint. Only on
+    // /platform* paths so tenant hosts are never affected.
+    if (location.pathname.indexOf("/platform") === 0) {
+      try {
+        var platformRaw = localStorage.getItem("mms_platform_branding");
+        if (platformRaw) {
+          var platformState = JSON.parse(platformRaw);
+          if (
+            platformState &&
+            (platformState.themeMode === "light" ||
+              platformState.themeMode === "dark" ||
+              platformState.themeMode === "system")
+          ) {
+            theme = platformState.themeMode;
+          }
+        }
+      } catch (_) {}
+    }
+
     var meta = document.querySelector('meta[name="color-scheme"]');
     if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
       d.classList.add("dark");
