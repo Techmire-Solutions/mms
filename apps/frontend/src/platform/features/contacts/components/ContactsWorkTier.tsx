@@ -25,6 +25,7 @@ import {
   ContactFormModal,
   type ContactFormState,
 } from "@/platform/features/contacts/components/ContactFormModal";
+import { ContactDetailDrawer } from "@/platform/features/contacts/components/ContactDetailDrawer";
 import {
   PLATFORM_CONTACT_KINDS,
   PLATFORM_CONTACT_KIND_LABEL_KEYS,
@@ -38,6 +39,7 @@ export function ContactsWorkTier(): React.JSX.Element {
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<PlatformContactDto["kind"] | "">("");
   const [editing, setEditing] = useState<PlatformContactDto | "new" | null>(null);
+  const [selected, setSelected] = useState<PlatformContactDto | null>(null);
 
   const {
     data: contacts,
@@ -227,6 +229,7 @@ export function ContactsWorkTier(): React.JSX.Element {
               </Badge>
             ),
           }}
+          onRowClick={(row) => setSelected(row)}
           selection={{
             selectedIds,
             onSelectOne: (id) => toggleSelected(id, !selectedIds.includes(id)),
@@ -236,6 +239,18 @@ export function ContactsWorkTier(): React.JSX.Element {
           }}
         />
       )}
+
+      {selected && !editing ? (
+        <ContactDetailDrawer
+          contact={selected}
+          onClose={() => setSelected(null)}
+          onEdit={(contact) => {
+            setSelected(null);
+            setEditing(contact);
+          }}
+          onDelete={(id) => void remove.mutateAsync(id)}
+        />
+      ) : null}
 
       {editing ? (
         <ContactFormModal
