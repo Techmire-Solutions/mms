@@ -1,7 +1,16 @@
 import type { PlatformMessageDto } from "@mms/shared";
 import { triggerFileDownload } from "@/lib/download";
 
-const HEADERS = ["ID", "Channel", "Subject", "Status", "Recipients", "Scheduled", "Sent", "Created"] as const;
+const HEADERS = [
+  "ID",
+  "Channel",
+  "Subject",
+  "Status",
+  "Recipients",
+  "Scheduled",
+  "Sent",
+  "Created",
+] as const;
 
 function escapeCell(value: string | number | null | undefined): string {
   return `"${String(value ?? "").replace(/"/g, '""')}"`;

@@ -6947,6 +6947,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "platform.messaging.subtitle": "پلیٹ فارم رابطوں کو اعلانات بھیجیں",
   "platform.messaging.log": "پیغامات",
   "platform.messaging.compose": "تحریر",
+  "platform.messaging.selectedCount": "{count} منتخب",
+  "platform.messaging.trash": "ٹریش",
   "platform.messaging.exportCsv": "CSV برآمد کریں",
   "platform.messaging.channel": "چینل",
   "platform.messaging.channel.sms": "ایس ایم ایس",

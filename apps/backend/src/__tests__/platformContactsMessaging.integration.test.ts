@@ -67,6 +67,8 @@ vi.mock("../platform/use-cases/platformMessagingUseCases.js", () => ({
       .mockResolvedValue({ id: "t1", name: "Welcome", channel: "email", body: "hi" }),
     deleteTemplate: vi.fn().mockResolvedValue(undefined),
     metrics: vi.fn().mockResolvedValue({ total: 0, byStatus: {}, byChannel: {} }),
+    deleteMessage: vi.fn().mockResolvedValue(undefined),
+    restoreMessage: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -143,6 +145,23 @@ describe("platform contacts + messaging routes", () => {
       ...auth(),
     });
     expect(metrics.statusCode).toBe(200);
+  });
+
+  it("soft-deletes and restores a platform message", async () => {
+    const del = await app.inject({
+      method: "DELETE",
+      url: "/api/platform/messages/m1",
+      ...auth(),
+      payload: {},
+    });
+    expect(del.statusCode).toBe(200);
+    const restore = await app.inject({
+      method: "POST",
+      url: "/api/platform/messages/m1/restore",
+      ...auth(),
+      payload: {},
+    });
+    expect(restore.statusCode).toBe(200);
   });
 
   it("sends a broadcast and manages templates", async () => {

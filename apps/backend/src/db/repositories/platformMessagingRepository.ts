@@ -1,4 +1,4 @@
-import { and, count, eq, isNull } from "drizzle-orm";
+import { and, count, eq, isNotNull, isNull } from "drizzle-orm";
 import type {
   PlatformMessageDto,
   PlatformMessageRecipient,
@@ -66,9 +66,10 @@ export async function listPlatformMessages(filters: {
   status?: string;
   limit: number;
   offset: number;
+  includeDeleted?: boolean;
 }): Promise<PlatformMessageDto[]> {
   return withGlobalTenant(async (tx) => {
-    const conditions = [isNull(platformMessages.deletedAt)];
+    const conditions = filters.includeDeleted ? [] : [isNull(platformMessages.deletedAt)];
     if (filters.channel) conditions.push(eq(platformMessages.channel, filters.channel));
     if (filters.status) conditions.push(eq(platformMessages.status, filters.status));
     const rows = await tx
@@ -104,6 +105,28 @@ export async function insertPlatformMessage(input: {
       })
       .returning();
     return toMessageDto(rows[0]);
+  });
+}
+
+export async function deletePlatformMessage(id: string): Promise<boolean> {
+  return withGlobalTenant(async (tx) => {
+    const rows = await tx
+      .update(platformMessages)
+      .set({ deletedAt: new Date() })
+      .where(and(eq(platformMessages.id, id), isNull(platformMessages.deletedAt)))
+      .returning({ id: platformMessages.id });
+    return rows.length > 0;
+  });
+}
+
+export async function restorePlatformMessage(id: string): Promise<boolean> {
+  return withGlobalTenant(async (tx) => {
+    const rows = await tx
+      .update(platformMessages)
+      .set({ deletedAt: null, updatedAt: new Date() })
+      .where(and(eq(platformMessages.id, id), isNotNull(platformMessages.deletedAt)))
+      .returning({ id: platformMessages.id });
+    return rows.length > 0;
   });
 }
 

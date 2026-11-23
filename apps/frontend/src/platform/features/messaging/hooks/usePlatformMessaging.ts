@@ -14,15 +14,21 @@ import { PLATFORM_QUERY_KEYS } from "@/platform/features/shell/lib/platformQuery
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { getPlatformErrorMessage } from "@/platform/features/auth/lib/platformAuthErrors";
 
-export function usePlatformMessages(params: { channel?: string; status?: string } = {}) {
+export function usePlatformMessages(
+  params: { channel?: string; status?: string; deleted?: boolean } = {},
+) {
   const { isPlatformAuthenticated, canMessaging } = usePlatformPermissions();
   return useQuery({
-    queryKey: PLATFORM_QUERY_KEYS.messages({ ...params }),
+    queryKey: PLATFORM_QUERY_KEYS.messages({
+      ...params,
+      deleted: params.deleted ? "true" : "false",
+    }),
     queryFn: async ({ signal }) => {
       const response = await apiContract.platformMessaging.listMessages({
         query: {
           channel: params.channel as PlatformMessageDto["channel"] | undefined,
           status: params.status as PlatformMessageDto["status"] | undefined,
+          deleted: params.deleted,
           limit: 100,
           offset: 0,
         },
@@ -65,6 +71,42 @@ export function useSendPlatformMessage() {
       const response = await apiContract.platformMessaging.send({ body: input });
       assertContractOk(response, "Failed to send message");
       return (response.body as { message: PlatformMessageDto }).message;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["platform", "messages"] });
+    },
+    onError: (error) => notify.error(getPlatformErrorMessage(error, t)),
+  });
+}
+
+export function useDeletePlatformMessage() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiContract.platformMessaging.deleteMessage({
+        params: { id },
+        body: {},
+      });
+      assertContractOk(response, "Failed to delete message");
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["platform", "messages"] });
+    },
+    onError: (error) => notify.error(getPlatformErrorMessage(error, t)),
+  });
+}
+
+export function useRestorePlatformMessage() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiContract.platformMessaging.restoreMessage({
+        params: { id },
+        body: {},
+      });
+      assertContractOk(response, "Failed to restore message");
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["platform", "messages"] });

@@ -8,6 +8,7 @@ export interface PlatformMessagingUseCases {
     status?: string;
     limit: number;
     offset: number;
+    includeDeleted?: boolean;
   }): ReturnType<typeof platformMessagingRepository.listMessages>;
   send(
     actor: { id: string; email: string },
@@ -26,6 +27,8 @@ export interface PlatformMessagingUseCases {
     input: Parameters<typeof platformMessagingRepository.saveTemplate>[1],
   ): ReturnType<typeof platformMessagingRepository.saveTemplate>;
   deleteTemplate(actor: { id: string; email: string }, id: string): Promise<void>;
+  deleteMessage(actor: { id: string; email: string }, id: string): Promise<void>;
+  restoreMessage(actor: { id: string; email: string }, id: string): Promise<void>;
   metrics(): ReturnType<typeof platformMessagingRepository.metrics>;
 }
 
@@ -73,6 +76,32 @@ async function sendMessage(
   return message;
 }
 
+async function deleteMessage(actor: { id: string; email: string }, id: string): Promise<void> {
+  if (!(await platformMessagingRepository.deleteMessage(id))) {
+    throw new HttpDomainError(404, "not_found", "Platform message not found");
+  }
+  await platformMessagingRepository.insertActivityLog({
+    userId: actor.id,
+    userEmail: actor.email,
+    action: "platform_message.delete",
+    targetResource: "platform_messages",
+    targetId: id,
+  });
+}
+
+async function restoreMessage(actor: { id: string; email: string }, id: string): Promise<void> {
+  if (!(await platformMessagingRepository.restoreMessage(id))) {
+    throw new HttpDomainError(404, "not_found", "Platform message not found");
+  }
+  await platformMessagingRepository.insertActivityLog({
+    userId: actor.id,
+    userEmail: actor.email,
+    action: "platform_message.restore",
+    targetResource: "platform_messages",
+    targetId: id,
+  });
+}
+
 async function deleteTemplate(actor: { id: string; email: string }, id: string): Promise<void> {
   if (!(await platformMessagingRepository.deleteTemplate(id))) {
     throw new HttpDomainError(404, "not_found", "Message template not found");
@@ -101,5 +130,7 @@ export const platformMessagingUseCases: PlatformMessagingUseCases = {
     return platformMessagingRepository.saveTemplate(id, input);
   },
   deleteTemplate,
+  deleteMessage,
+  restoreMessage,
   metrics: () => platformMessagingRepository.metrics(),
 };

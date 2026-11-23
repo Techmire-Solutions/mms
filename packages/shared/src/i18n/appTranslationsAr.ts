@@ -6868,6 +6868,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "platform.messaging.subtitle": "إرسال إعلانات إلى جهات اتصال المنصة",
   "platform.messaging.log": "الرسائل",
   "platform.messaging.compose": "إنشاء",
+  "platform.messaging.selectedCount": "{count} محدد",
+  "platform.messaging.trash": "المحذوفات",
   "platform.messaging.exportCsv": "تصدير CSV",
   "platform.messaging.channel": "القناة",
   "platform.messaging.channel.sms": "رسالة نصية",

@@ -59,7 +59,13 @@ export function MessagingReportsTier(): React.JSX.Element {
           accessibleSummary={channelData.map((entry) => `${entry.name}: ${entry.value}`).join(", ")}
         >
           <PieChart>
-            <Pie data={channelData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80}>
+            <Pie
+              data={channelData}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={50}
+              outerRadius={80}
+            >
               {channelData.map((entry) => (
                 <Cell key={entry.name} fill={entry.color} />
               ))}

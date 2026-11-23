@@ -40,7 +40,10 @@ export default async function platformMessagingRoutes(fastify: FastifyInstance):
     const query = parseRequest(platformMessagesListQuerySchema, request.query);
     if (!query.ok) return replyValidationError(reply, query.message);
     try {
-      const messages = await platformMessagingUseCases.listMessages(query.data);
+      const messages = await platformMessagingUseCases.listMessages({
+        ...query.data,
+        includeDeleted: query.data.deleted,
+      });
       return reply.send({ messages });
     } catch (error) {
       return sendError(reply, error, "Failed to list messages");
@@ -59,6 +62,36 @@ export default async function platformMessagingRoutes(fastify: FastifyInstance):
       return reply.status(201).send({ message });
     } catch (error) {
       return sendError(reply, error, "Failed to send message");
+    }
+  });
+
+  fastify.post("/api/platform/messages/:id/restore", guard, async (request, reply) => {
+    const params = parseRequest(resourceIdParamsSchema, request.params);
+    if (!params.ok) return replyValidationError(reply, params.message);
+    const user = (request as PlatformAuthenticatedRequest).platformUser;
+    try {
+      await platformMessagingUseCases.restoreMessage(
+        { id: user.id, email: user.email },
+        params.data.id,
+      );
+      return reply.send({ success: true });
+    } catch (error) {
+      return sendError(reply, error, "Failed to restore message");
+    }
+  });
+
+  fastify.delete("/api/platform/messages/:id", guard, async (request, reply) => {
+    const params = parseRequest(resourceIdParamsSchema, request.params);
+    if (!params.ok) return replyValidationError(reply, params.message);
+    const user = (request as PlatformAuthenticatedRequest).platformUser;
+    try {
+      await platformMessagingUseCases.deleteMessage(
+        { id: user.id, email: user.email },
+        params.data.id,
+      );
+      return reply.send({ success: true });
+    } catch (error) {
+      return sendError(reply, error, "Failed to delete message");
     }
   });
 

@@ -34,6 +34,22 @@ export const platformMessagingContract = c.router({
     responses: { 201: ok, 400: errorResponse, 401: errorResponse, 403: errorResponse },
     summary: "Send a platform broadcast message",
   },
+  deleteMessage: {
+    method: "DELETE",
+    path: "/api/platform/messages/:id",
+    pathParams: idParams,
+    body: z.unknown().optional(),
+    responses: { 200: ok, 401: errorResponse, 403: errorResponse, 404: errorResponse },
+    summary: "Soft-delete a platform message",
+  },
+  restoreMessage: {
+    method: "POST",
+    path: "/api/platform/messages/:id/restore",
+    pathParams: idParams,
+    body: z.unknown().optional(),
+    responses: { 200: ok, 401: errorResponse, 403: errorResponse, 404: errorResponse },
+    summary: "Restore a soft-deleted platform message",
+  },
   listTemplates: {
     method: "GET",
     path: "/api/platform/messages/templates",

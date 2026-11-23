@@ -1,9 +1,11 @@
 import {
+  deletePlatformMessage,
   deletePlatformMessageTemplate,
   insertPlatformMessage,
   listPlatformMessageTemplates,
   listPlatformMessages,
   platformMessagingMetrics,
+  restorePlatformMessage,
   savePlatformMessageTemplate,
 } from "../../db/repositories/platformMessagingRepository.js";
 import { listPlatformContacts } from "../../db/repositories/platformContactsRepository.js";
@@ -15,6 +17,7 @@ export interface PlatformMessagingRepository {
     status?: string;
     limit: number;
     offset: number;
+    includeDeleted?: boolean;
   }): ReturnType<typeof listPlatformMessages>;
   send(
     input: Parameters<typeof insertPlatformMessage>[0],
@@ -28,6 +31,8 @@ export interface PlatformMessagingRepository {
     input: Parameters<typeof savePlatformMessageTemplate>[1],
   ): ReturnType<typeof savePlatformMessageTemplate>;
   deleteTemplate(id: string): ReturnType<typeof deletePlatformMessageTemplate>;
+  deleteMessage(id: string): ReturnType<typeof deletePlatformMessage>;
+  restoreMessage(id: string): ReturnType<typeof restorePlatformMessage>;
   metrics(): ReturnType<typeof platformMessagingMetrics>;
   insertActivityLog(
     input: Parameters<typeof insertPlatformActivityLog>[0],
@@ -41,6 +46,8 @@ export const platformMessagingRepository: PlatformMessagingRepository = {
   listTemplates: listPlatformMessageTemplates,
   saveTemplate: savePlatformMessageTemplate,
   deleteTemplate: deletePlatformMessageTemplate,
+  deleteMessage: deletePlatformMessage,
+  restoreMessage: restorePlatformMessage,
   metrics: platformMessagingMetrics,
   insertActivityLog: insertPlatformActivityLog,
 };

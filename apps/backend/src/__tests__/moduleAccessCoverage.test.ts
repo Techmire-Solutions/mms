@@ -177,6 +177,8 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
       "/api/platform/messages/metrics",
       "/api/platform/messages/templates",
       "/api/platform/messages/templates/:id",
+      "/api/platform/messages/:id",
+      "/api/platform/messages/:id/restore",
     ],
   },
   {
