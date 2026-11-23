@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Award, Briefcase, User, type LucideIcon } from "lucide-react";
+import { Award, Briefcase, ShieldCheck, User, type LucideIcon } from "lucide-react";
 import type {
   Contact,
   FacultyMember,
@@ -15,7 +15,7 @@ import type {
   LinkedUserInfo,
 } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
-export type FacultyFormTabKey = "contact" | "employment" | "designation" | "notes";
+export type FacultyFormTabKey = "contact" | "employment" | "designation" | "account" | "notes";
 
 export const FACULTY_FIELD_TAB_MAP: Record<string, FacultyFormTabKey> = {
   contactId: "contact",
@@ -41,14 +41,14 @@ export const FACULTY_FIELD_TAB_MAP: Record<string, FacultyFormTabKey> = {
   reportingFacultyId: "designation",
   hierarchyRank: "designation",
   notes: "notes",
-  "user.role": "employment",
-  "user.email": "employment",
-  "user.password": "employment",
-  "user.create": "employment",
-  userPassword: "employment",
-  userEmail: "employment",
-  userRole: "employment",
-  userId: "employment",
+  "user.role": "account",
+  "user.email": "account",
+  "user.password": "account",
+  "user.create": "account",
+  userPassword: "account",
+  userEmail: "account",
+  userRole: "account",
+  userId: "account",
 };
 
 export interface FormTabItem {
@@ -126,6 +126,11 @@ export function useFacultyFormTabs(input: {
         label: t("faculty.form.tab.designation"),
       });
     }
+    list.push({
+      key: "account",
+      icon: ShieldCheck,
+      label: t("faculty.form.tab.account"),
+    });
     return list.map((item) => {
       const errCount = tabErrors[item.key];
       const hasErrors = Boolean(errCount && errCount > 0);

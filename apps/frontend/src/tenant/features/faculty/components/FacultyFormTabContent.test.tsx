@@ -17,6 +17,23 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+vi.mock("@/tenant/hooks/useWorkspaceRoles", () => ({
+  useWorkspaceRoles: () => [
+    {
+      id: "staff",
+      labelKey: "users.role.staff",
+      descriptionKey: "users.desc.staff",
+      isSystem: true,
+      badgeVariant: "muted",
+      permissions: {},
+    },
+  ],
+}));
+
+vi.mock("@/tenant/hooks/collections/users", () => ({
+  useUsersContractList: () => ({ data: { users: [] } }),
+}));
+
 const defaultProps = {
   formInstanceId: "inst-fac-1",
   facultyDraft: {
@@ -33,6 +50,8 @@ const defaultProps = {
   getFieldError: () => undefined,
   onDraftChange: vi.fn(),
 };
+
+const userAccountDraft = { enabled: false, role: "staff", setupMethod: "password" as const };
 
 describe("FacultyFormTabContent Component", () => {
   it("renders contact, employment, and designation without notes or user account", () => {
@@ -64,6 +83,35 @@ describe("FacultyFormTabContent Component", () => {
 
     expect(html).not.toContain("faculty.form.notesSection");
     expect(html).not.toContain("user-account-section");
+    expect(html).not.toContain("faculty.form.sectionUserAccount");
+  });
+
+  it("renders the System Account & Permissions card on the account tab", () => {
+    const html = renderToStaticMarkup(
+      <FacultyFormTabContent
+        {...defaultProps}
+        activeTab="account"
+        facultyDraft={{ ...defaultProps.facultyDraft, contactId: "cnt-1" }}
+        userAccountDraft={userAccountDraft}
+        onUserAccountDraftChange={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("faculty.form.sectionUserAccount");
+  });
+
+  it("no longer renders the System Account card on the employment tab", () => {
+    const html = renderToStaticMarkup(
+      <FacultyFormTabContent
+        {...defaultProps}
+        activeTab="employment"
+        facultyDraft={{ ...defaultProps.facultyDraft, contactId: "cnt-1" }}
+        userAccountDraft={userAccountDraft}
+        onUserAccountDraftChange={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("faculty.form.sectionEmployment");
     expect(html).not.toContain("faculty.form.sectionUserAccount");
   });
 });
