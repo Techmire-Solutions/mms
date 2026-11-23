@@ -21,7 +21,9 @@ const report: ConsolidationReport = {
   members: [],
   consolidated: {
     presentationCurrency: "USD",
-    rows: [{ code: "1000", name: "Cash", type: "asset", combined: 10, elimination: 0, balance: 10 }],
+    rows: [
+      { code: "1000", name: "Cash", type: "asset", combined: 10, elimination: 0, balance: 10 },
+    ],
     cta: 0,
     nonControllingInterest: 0,
     totals: { debit: 10, credit: 10 },

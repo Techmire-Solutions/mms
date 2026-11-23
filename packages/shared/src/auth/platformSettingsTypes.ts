@@ -30,7 +30,10 @@ export const PLATFORM_MAX_IDLE_SESSION_MINUTES = 480;
 
 export const platformConsolidationPrefsSchema = z
   .object({
-    defaultPresentationCurrency: z.string().trim().regex(/^[A-Z]{3}$/, "Use a 3-letter ISO code"),
+    defaultPresentationCurrency: z
+      .string()
+      .trim()
+      .regex(/^[A-Z]{3}$/, "Use a 3-letter ISO code"),
     fiscalYearStartMonth: z.number().int().min(1).max(12),
   })
   .strict();
@@ -168,7 +171,8 @@ export function mergePlatformSettings(
     llmConfigs: Array.isArray(partial?.llmConfigs)
       ? partial.llmConfigs
       : DEFAULT_PLATFORM_SETTINGS.llmConfigs,
-    consolidationPrefs: platformConsolidationPrefsSchema.safeParse(partial?.consolidationPrefs).success
+    consolidationPrefs: platformConsolidationPrefsSchema.safeParse(partial?.consolidationPrefs)
+      .success
       ? (partial?.consolidationPrefs as PlatformConsolidationPrefs)
       : DEFAULT_PLATFORM_CONSOLIDATION_PREFS,
     idleSessionMinutes,
