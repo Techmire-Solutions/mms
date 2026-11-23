@@ -744,6 +744,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "platform.consolidation.saved": "تم حفظ المجموعة",
   "platform.consolidation.saveFailed": "تعذّر حفظ المجموعة",
   "platform.consolidation.groupName": "اسم المجموعة",
+  "platform.consolidation.updatedAt": "آخر تحديث",
   "platform.consolidation.presentationCurrency": "عملة العرض",
   "platform.consolidation.intercompanyCodes": "رموز الحسابات البينية",
   "platform.consolidation.intercompanyHint": "تُستبعد الأرصدة على هذه الرموز؛ ويُنقل أي فرق صرف إلى احتياطي الترجمة.",

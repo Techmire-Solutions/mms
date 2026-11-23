@@ -756,6 +756,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "platform.consolidation.saved": "گروه ذخیره شد",
   "platform.consolidation.saveFailed": "ذخیره گروه ممکن نشد",
   "platform.consolidation.groupName": "نام گروه",
+  "platform.consolidation.updatedAt": "به‌روزرسانی",
   "platform.consolidation.presentationCurrency": "ارز گزارشگری",
   "platform.consolidation.intercompanyCodes": "کدهای حساب بین‌شرکتی",
   "platform.consolidation.intercompanyHint": "مانده این کدها حذف می‌شود؛ باقیمانده تسعیر به اندوخته تسعیر منتقل می‌شود.",

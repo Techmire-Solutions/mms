@@ -743,6 +743,7 @@ export const APP_TRANSLATIONS_EN = {
   "platform.consolidation.saved": "Group saved",
   "platform.consolidation.saveFailed": "Couldn't save the group",
   "platform.consolidation.groupName": "Group name",
+  "platform.consolidation.updatedAt": "Updated",
   "platform.consolidation.presentationCurrency": "Presentation currency",
   "platform.consolidation.intercompanyCodes": "Intercompany account codes",
   "platform.consolidation.intercompanyHint": "Balances on these codes are eliminated; any FX residual moves to the translation reserve.",

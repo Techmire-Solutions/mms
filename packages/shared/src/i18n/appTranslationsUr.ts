@@ -749,6 +749,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "platform.consolidation.saved": "گروپ محفوظ ہو گیا",
   "platform.consolidation.saveFailed": "گروپ محفوظ نہیں ہو سکا",
   "platform.consolidation.groupName": "گروپ کا نام",
+  "platform.consolidation.updatedAt": "اپڈیٹڈ",
   "platform.consolidation.presentationCurrency": "پیشکش کرنسی",
   "platform.consolidation.intercompanyCodes": "بین الادارتی اکاؤنٹ کوڈز",
   "platform.consolidation.intercompanyHint": "ان کوڈز کے بقایا جات ختم کیے جاتے ہیں؛ زرمبادلہ کا فرق ترجمہ ریزرو میں جاتا ہے۔",
