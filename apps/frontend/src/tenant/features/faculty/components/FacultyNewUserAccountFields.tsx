@@ -1,7 +1,8 @@
 import type React from "react";
-import { AlertCircle, Shield } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/app/PasswordInput";
@@ -9,6 +10,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import {
   DEFAULT_FACULTY_USER_ROLE,
   workspaceRoleDescription,
+  workspaceRoleLabel,
   type WorkspaceRole,
 } from "@mms/shared";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
@@ -17,7 +19,6 @@ export interface FacultyNewUserAccountFieldsProps {
   primaryEmail?: string | null;
   userAccountDraft: FacultyUserAccountDraft;
   onUserAccountDraftChange: (draft: FacultyUserAccountDraft) => void;
-  roleOptions: Array<{ value: string; label: string }>;
   selectedRoleObj?: WorkspaceRole;
   errors: Record<string, string>;
 }
@@ -26,7 +27,6 @@ export function FacultyNewUserAccountFields({
   primaryEmail,
   userAccountDraft,
   onUserAccountDraftChange,
-  roleOptions,
   selectedRoleObj,
   errors,
 }: FacultyNewUserAccountFieldsProps): React.JSX.Element {
@@ -47,24 +47,16 @@ export function FacultyNewUserAccountFields({
         required
         error={errors["user.role"]}
       >
-        <FormSelect
-          id="faculty-user-role"
-          name="facultyUserRole"
-          value={userAccountDraft.role || DEFAULT_FACULTY_USER_ROLE}
-          onChange={(role) => onUserAccountDraftChange({ ...userAccountDraft, role })}
-          options={roleOptions}
-        />
-        {roleOptions.length === 0 ? (
-          <p className="mt-1 text-xs text-destructive">
-            {t("faculty.designations.noAssignableRoles")}
-          </p>
-        ) : null}
-        {selectedRoleObj ? (
-          <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Shield className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span>{workspaceRoleDescription(selectedRoleObj, t)}</span>
-          </div>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone="primary" size="sm">
+            {selectedRoleObj ? workspaceRoleLabel(selectedRoleObj, t) : DEFAULT_FACULTY_USER_ROLE}
+          </Badge>
+          {selectedRoleObj && workspaceRoleDescription(selectedRoleObj, t) ? (
+            <span className="text-xs text-muted-foreground">
+              {workspaceRoleDescription(selectedRoleObj, t)}
+            </span>
+          ) : null}
+        </div>
       </Field>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
