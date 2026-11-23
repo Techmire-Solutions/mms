@@ -6955,6 +6955,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "platform.contacts.phone": "تلفن",
   "platform.contacts.notes": "یادداشت‌ها",
   "platform.contacts.add": "افزودن مخاطب",
+  "platform.contacts.selectedCount": "{count} انتخاب شده",
   "platform.contacts.exportCsv": "خروجی CSV",
   "platform.contacts.edit": "ویرایش مخاطب",
   "platform.contacts.saved": "مخاطب ذخیره شد",

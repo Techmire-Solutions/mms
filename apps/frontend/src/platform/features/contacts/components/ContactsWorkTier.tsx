@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Download, Plus, Search } from "lucide-react";
+import { Download, Plus, Search, Users } from "lucide-react";
 import { Button, Input } from "@shared/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
+import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { SectionCard } from "@/components/app/SectionCard";
@@ -9,6 +10,7 @@ import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { notify } from "@/lib/notify";
 import type { AppTranslationKey, PlatformContactDto } from "@mms/shared";
 import {
@@ -62,6 +64,21 @@ export function ContactsWorkTier(): React.JSX.Element {
   const create = useCreatePlatformContact();
   const update = useUpdatePlatformContact();
   const remove = useDeletePlatformContact();
+
+  const {
+    selectedIds,
+    visibleIds,
+    allVisibleSelected,
+    someVisibleSelected,
+    toggleSelected,
+    toggleSelectAll,
+    clearSelection,
+  } = useWorkSelection(contacts ?? []);
+
+  const handleBulkDelete = async (): Promise<void> => {
+    await Promise.all(selectedIds.map((id) => remove.mutateAsync(id)));
+    clearSelection();
+  };
 
   const columns: DataTableColumn<PlatformContactDto>[] = [
     { id: "name", kind: "identity", label: t("platform.contacts.name"), render: (row) => row.name },
@@ -146,6 +163,18 @@ export function ContactsWorkTier(): React.JSX.Element {
         </div>
       </SectionCard>
 
+      <BulkSelectionBar
+        selectedCount={selectedIds.length}
+        viewingDeleted={false}
+        canDelete
+        leadingIcon={Users}
+        i18nNamespace="platform.contacts"
+        onClearSelection={clearSelection}
+        deleteLabel={t("common.delete")}
+        onRequestBulkDelete={() => void handleBulkDelete()}
+        onRequestBulkRestore={() => undefined}
+      />
+
       {isError ? (
         <ErrorState
           description={t("platform.contacts.loadFailed")}
@@ -162,6 +191,13 @@ export function ContactsWorkTier(): React.JSX.Element {
           label={t("platform.contacts.directory")}
           data={contacts ?? []}
           columns={columns}
+          selection={{
+            selectedIds,
+            onSelectOne: (id) => toggleSelected(id, !selectedIds.includes(id)),
+            onSelectAll: () => toggleSelectAll(!allVisibleSelected, visibleIds),
+            allSelected: allVisibleSelected,
+            someSelected: someVisibleSelected,
+          }}
         />
       )}
 
