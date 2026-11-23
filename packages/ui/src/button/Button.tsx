@@ -199,10 +199,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
          * because it is busy. When `loadingText` is supplied it becomes the visible
          * label, so the old label is hidden from the accessibility tree instead.
          */}
-        <span className="relative inline-flex items-center justify-center gap-2">
+        {/* `min-w-0 max-w-full` bound the wrappers to the button so `truncate` /
+            `min-w-0` children (card headers with a long email) shrink inside it
+            instead of spilling past the button and its card. */}
+        <span className="relative inline-flex min-w-0 max-w-full items-center justify-center gap-2">
           <span
             data-slot="button-content"
-            className={cn("inline-flex items-center justify-center gap-2", isBusy && "opacity-0")}
+            className={cn(
+              "inline-flex min-w-0 max-w-full items-center justify-center gap-2",
+              isBusy && "opacity-0",
+            )}
             aria-hidden={isBusy && hasLoadingText ? true : undefined}
           >
             {leftIcon}

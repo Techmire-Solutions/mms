@@ -1,1 +1,6 @@
-export { getTableCellWrapClass, getTableCellAlignClass, getAriaSort } from "@shared/ui";
+export {
+  getTableCellWrapClass,
+  getTableCellAlignClass,
+  getTableHeadAlignClass,
+  getAriaSort,
+} from "@shared/ui";

@@ -17,6 +17,8 @@ export interface DateRangeFilterBarProps {
   className?: string;
   /** Sizing-only classes for each DatePicker. */
   pickerClassName?: string;
+  /** Classes for both labels, e.g. a shared min width so stacked From/To pickers line up. */
+  labelClassName?: string;
   children?: ReactNode;
   showFrom?: boolean;
   showTo?: boolean;
@@ -38,6 +40,7 @@ export function DateRangeFilterBar({
   toPlaceholder,
   className,
   pickerClassName = "w-full min-w-0 sm:w-40",
+  labelClassName,
   children,
   showFrom = true,
   showTo = true,
@@ -50,7 +53,10 @@ export function DateRangeFilterBar({
       {showFrom ? (
         <div className="flex min-w-0 flex-col gap-1 text-sm sm:flex-row sm:items-center sm:gap-2">
           {fromLabel ? (
-            <label htmlFor={fromId} className={cn(FORM_LABEL, "mb-0 cursor-pointer")}>
+            <label
+              htmlFor={fromId}
+              className={cn(FORM_LABEL, "mb-0 cursor-pointer", labelClassName)}
+            >
               {fromLabel}
             </label>
           ) : null}
@@ -68,7 +74,7 @@ export function DateRangeFilterBar({
       {showTo ? (
         <div className="flex min-w-0 flex-col gap-1 text-sm sm:flex-row sm:items-center sm:gap-2">
           {toLabel ? (
-            <label htmlFor={toId} className={cn(FORM_LABEL, "mb-0 cursor-pointer")}>
+            <label htmlFor={toId} className={cn(FORM_LABEL, "mb-0 cursor-pointer", labelClassName)}>
               {toLabel}
             </label>
           ) : null}

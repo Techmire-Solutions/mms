@@ -2,7 +2,7 @@ import * as React from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { cn } from "../utils";
 import type { TableHeadProps, TableSortDirection } from "./tableTypes";
-import { getAriaSort, getTableCellAlignClass, getTableCellWrapClass } from "./tableUtils";
+import { getAriaSort, getTableCellWrapClass, getTableHeadAlignClass } from "./tableUtils";
 
 export function TableHead({
   className,
@@ -29,7 +29,7 @@ export function TableHead({
   const ariaSort = getAriaSort(normalizedSortDirection);
 
   const wrapClass = getTableCellWrapClass(noWrap, truncate);
-  const alignClass = getTableCellAlignClass(align, variant);
+  const alignClass = getTableHeadAlignClass(align, variant);
   const isRightAligned =
     align === "end" || align === "right" || variant === "number" || variant === "currency";
 

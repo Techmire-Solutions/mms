@@ -29,6 +29,10 @@ export function WidgetCard({
       ref={ref}
       accentColor={accentColor}
       className={cn(
+        // WidgetCardHeader reserves the stripe inset itself (so its divider and tint
+        // reach the stripe) and bodies bring their own padding; Card's inset on top
+        // pushed widget content ~48px from the start edge vs ~20px from the end.
+        "ps-0",
         "hover:-translate-y-1 hover:shadow-surface-lg transition-all duration-300 text-start",
         accentColor === "destructive" && "border-destructive/30 hover:border-destructive/55",
         className,

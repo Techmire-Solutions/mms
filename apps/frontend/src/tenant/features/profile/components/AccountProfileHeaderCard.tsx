@@ -28,7 +28,8 @@ export function AccountProfileHeaderCard({
   const { t } = useTranslation();
 
   return (
-    <Card className="bg-gradient-to-r from-card via-card/90 to-background/50">
+    // CardContent pads itself; `ps-0` keeps Card from adding the stripe inset on top.
+    <Card className="bg-gradient-to-r from-card via-card/90 to-background/50 ps-0">
       <CardContent className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 justify-between">
         <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-start">
           <div className="relative group/avatar">

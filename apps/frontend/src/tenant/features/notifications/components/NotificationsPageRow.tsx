@@ -27,6 +27,10 @@ export function NotificationsPageRow({
       onClick={onOpen}
       disabled={!notification.target}
       className={cn(
+        // Button wraps children in shrink-to-fit inline-flex spans, so the text
+        // column's `flex-1` never grew and the chevron sat right after the text on
+        // wide rows. Stretch both wrappers so the chevron lands on the end edge.
+        "[&>span]:w-full [&_[data-slot=button-content]]:w-full [&_[data-slot=button-content]]:items-start [&_[data-slot=button-content]]:justify-start [&_[data-slot=button-content]]:gap-3",
         "flex h-auto min-h-11 w-full items-start justify-start gap-3 whitespace-normal rounded-none px-5 py-4 text-start transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring cursor-pointer disabled:cursor-not-allowed",
         !notification.read && "bg-primary/5",
       )}

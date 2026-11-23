@@ -56,7 +56,8 @@ export function AccountProfileLoginEmailCard({
   const id = useId();
 
   return (
-    <Card accentColor="primary" className="group/login-card">
+    // Title bar and content each reserve the stripe inset; `ps-0` stops Card stacking a second one.
+    <Card accentColor="primary" className="group/login-card ps-0">
       <CardTitleBar
         inset
         icon={<Mail className="h-4 w-4 text-primary" />}

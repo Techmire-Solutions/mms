@@ -41,7 +41,9 @@ export function SettingsPanel({
   const introDescKey = `${introKey}Desc` as AppTranslationKey;
 
   return (
-    <div className={cn(SETTINGS_WIDTH[width], "space-y-8 pb-2")}>
+    // Centre the capped column so a wide settings card keeps equal space on both
+    // sides instead of a ~100px gap on the end edge only.
+    <div className={cn(SETTINGS_WIDTH[width], "mx-auto w-full space-y-8 pb-2")}>
       <SettingsPanelIntro description={t(introDescKey)} />
       <SettingsStatusBadges isDirty={isDirty} saved={saved} />
       {footerSticky && footer ? (

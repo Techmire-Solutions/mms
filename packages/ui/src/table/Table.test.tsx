@@ -113,4 +113,37 @@ describe("Table component - Modern Web Guidance: responsive-table", () => {
     const thead = container.querySelector("thead");
     expect(thead?.className).toContain("sticky-scroll-state");
   });
+
+  it("given a currency column, should end-align the header without the cells' mono numeric typography", async () => {
+    // Arrange
+    const render = () =>
+      root.render(
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Student</TableHead>
+              <TableHead variant="currency">Amount</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>Aisha</TableCell>
+              <TableCell variant="currency">1,200</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>,
+      );
+
+    // Act
+    await act(async () => {
+      render();
+    });
+    const amountHead = container.querySelectorAll("th")[1] as HTMLTableCellElement;
+    const amountCell = container.querySelectorAll("td")[1] as HTMLTableCellElement;
+
+    // Assert
+    expect(amountHead.classList.contains("text-end")).toBe(true);
+    expect(amountHead.classList.contains("font-mono")).toBe(false);
+    expect(amountCell.classList.contains("font-mono")).toBe(true);
+  });
 });

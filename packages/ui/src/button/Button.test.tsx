@@ -227,4 +227,28 @@ describe("Button component", () => {
     expect(badge).toBeTruthy();
     expect(badge.textContent).toBe("Failed");
   });
+
+  it("given a long label inside a constrained button, should bound its content wrappers so children can truncate", async () => {
+    // Arrange
+    const render = () =>
+      root.render(
+        <Button className="w-40">
+          <span className="truncate">admin@a-very-long-workspace-subdomain.example.com</span>
+        </Button>,
+      );
+
+    // Act
+    await act(async () => {
+      render();
+    });
+    const button = container.querySelector("button") as HTMLButtonElement;
+    const outer = button.firstElementChild as HTMLElement;
+    const content = button.querySelector('[data-slot="button-content"]') as HTMLElement;
+
+    // Assert
+    expect(outer.classList.contains("min-w-0")).toBe(true);
+    expect(outer.classList.contains("max-w-full")).toBe(true);
+    expect(content.classList.contains("min-w-0")).toBe(true);
+    expect(content.classList.contains("max-w-full")).toBe(true);
+  });
 });

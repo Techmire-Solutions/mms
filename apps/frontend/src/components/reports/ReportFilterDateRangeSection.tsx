@@ -25,8 +25,10 @@ export function ReportFilterDateRangeSection({
 }: ReportFilterDateRangeSectionProps): React.JSX.Element {
   return (
     <div className="flex flex-col gap-1 min-w-filter-md flex-1">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+      {/* Wraps as a whole: the presets move below the label instead of the label
+          breaking over two lines and a lone preset dropping onto its own row. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        <span className="whitespace-nowrap text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           {t("reports.comparison.dateRanges")}
         </span>
         <div className="flex flex-wrap items-center gap-1">
@@ -108,8 +110,11 @@ export function ReportFilterDateRangeSection({
             </span>
           ) : undefined
         }
-        className="w-full gap-3"
+        // One full-width row per picker with a shared label width, so the From and
+        // To inputs start and end on the same lines.
+        className="grid w-full grid-cols-1 gap-3"
         pickerClassName="w-full min-w-0"
+        labelClassName="sm:min-w-14 sm:shrink-0"
       />
     </div>
   );

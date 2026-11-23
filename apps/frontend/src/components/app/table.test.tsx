@@ -14,6 +14,7 @@ import {
   TableSkeleton,
   getTableCellWrapClass,
   getTableCellAlignClass,
+  getTableHeadAlignClass,
   getAriaSort,
 } from "../ui/table";
 
@@ -40,6 +41,23 @@ describe("table SSOT system", () => {
       expect(getTableCellAlignClass(undefined, "action")).toBe("text-center");
       expect(getTableCellAlignClass("start")).toBe("text-start");
       expect(getTableCellAlignClass()).toBe("text-start");
+    });
+
+    it("given numeric or currency columns, should give headers the alignment only (no mono font)", () => {
+      // Arrange
+      const cases = [
+        [getTableHeadAlignClass("end"), "text-end"],
+        [getTableHeadAlignClass(undefined, "number"), "text-end"],
+        [getTableHeadAlignClass(undefined, "currency"), "text-end"],
+        [getTableHeadAlignClass(undefined, "badge"), "text-center"],
+        [getTableHeadAlignClass(), "text-start"],
+      ] as const;
+
+      // Act
+      const mismatches = cases.filter(([actual, expected]) => actual !== expected);
+
+      // Assert
+      expect(mismatches).toEqual([]);
     });
 
     it("resolves aria-sort mappings correctly", () => {

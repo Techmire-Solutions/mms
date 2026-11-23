@@ -4,8 +4,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { clampModuleColumnWidth } from "@mms/shared";
 import { measureColumnAutoFitWidth } from "@/components/app/measureColumnAutoFitWidth";
 import {
-  getTableCellAlignClass,
   getTableCellWrapClass,
+  getTableHeadAlignClass,
   type TableCellAlign,
   type TableCellVariant,
 } from "@/components/ui/table";
@@ -164,7 +164,7 @@ export function ResizableTableHead({
       role="columnheader"
       className={cn(
         "relative",
-        getTableCellAlignClass(align, variant),
+        getTableHeadAlignClass(align, variant),
         getTableCellWrapClass(noWrap, truncate),
         className,
       )}

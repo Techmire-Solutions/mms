@@ -47,12 +47,14 @@ export const ReportChartCard = function ReportChartCard({
       className={cn("p-4 space-y-3", CARD_STRIPE_INSET, className)}
       aria-label={ariaLabel || title}
     >
-      <div className="flex items-center justify-between gap-2">
+      {/* Wraps so a wide header action (e.g. a legend) drops below the title on
+          narrow cards instead of overflowing the card and squeezing the title out. */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-foreground truncate">{title}</h3>
           {subtitle && <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>}
         </div>
-        {headerAction && <div className="shrink-0">{headerAction}</div>}
+        {headerAction && <div className="min-w-0 max-w-full">{headerAction}</div>}
       </div>
 
       {empty && emptyNode ? (

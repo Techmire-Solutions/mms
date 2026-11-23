@@ -34,7 +34,12 @@ export { TableEmpty, type TableEmptyProps } from "./TableEmpty";
 export { DensityToggle, type DensityMode, type DensityToggleProps } from "./DensityToggle";
 export { TableCellLink, type TableCellLinkProps } from "./TableCellLink";
 export { useTableSort, type UseTableSortProps } from "./useTableSort";
-export { getTableCellWrapClass, getTableCellAlignClass, getAriaSort } from "./tableUtils";
+export {
+  getTableCellWrapClass,
+  getTableCellAlignClass,
+  getTableHeadAlignClass,
+  getAriaSort,
+} from "./tableUtils";
 export type {
   TableCellAlign,
   TableCellVariant,
