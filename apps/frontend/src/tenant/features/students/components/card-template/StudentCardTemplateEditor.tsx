@@ -213,14 +213,20 @@ export function StudentCardTemplateEditor({
       : t("students.cardTemplate.side.back");
 
   return (
-    <div className="relative w-full h-full flex flex-col">
+    <div
+      className={
+        fullscreen
+          ? "fixed inset-0 z-modal-priority flex flex-col bg-background outline-hidden"
+          : "relative w-full h-full flex flex-col"
+      }
+    >
       {conflict.blocked && (
         <div className="px-4 pt-2">
           <TemplateSaveConflictBanner onReload={handleReload} t={t} />
         </div>
       )}
       {/* Side Switcher Bar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-card border-b border-border text-xs">
+      <div className="flex items-center justify-between px-4 py-2 bg-card border-b border-border text-xs shrink-0">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-foreground">{t("students.cardTemplate.title")}</span>
           <span className="text-muted-foreground">({sideLabel})</span>
@@ -238,7 +244,7 @@ export function StudentCardTemplateEditor({
           presets={presets}
           documentType="student-card"
           sampleData={sampleData}
-          fullscreen={fullscreen}
+          fullscreen={false}
           branding={branding}
           canSave={!conflict.blocked}
           onChange={handleSideTemplateChange}

@@ -42,10 +42,10 @@ export function StudentIdCardPrintGrid({
           return (
             <div
               key={student.id}
-              className="id-card-both-sides col-span-full w-full flex flex-wrap md:flex-nowrap items-center justify-center gap-4 py-2 break-inside-avoid print:break-inside-avoid"
+              className="id-card-both-sides col-span-full w-full flex flex-wrap md:flex-nowrap items-center justify-center gap-4 py-2 break-inside-avoid print:contents"
             >
               {/* Front Side */}
-              <div className="relative group shrink-0 max-w-full">
+              <div className="id-card-print-page relative group shrink-0 max-w-full">
                 <StudentCardPrintPreview
                   template={template}
                   student={student}
@@ -63,7 +63,7 @@ export function StudentIdCardPrintGrid({
               </div>
 
               {/* Back Side */}
-              <div className="relative group shrink-0 max-w-full">
+              <div className="id-card-print-page relative group shrink-0 max-w-full">
                 <StudentCardPrintPreview
                   template={template}
                   student={student}
