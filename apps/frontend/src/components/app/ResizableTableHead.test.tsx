@@ -47,6 +47,30 @@ describe("ResizableTableHead", () => {
     expect(html).toContain("width:220px");
   });
 
+  it("given a currency column, should end-align the header without mono numeric typography", () => {
+    // Arrange
+    const html = renderToStaticMarkup(
+      <table>
+        <thead>
+          <tr>
+            <ResizableTableHead columnKey="amount" variant="currency">
+              Amount
+            </ResizableTableHead>
+          </tr>
+        </thead>
+      </table>,
+    );
+
+    // Act
+    const th = new DOMParser()
+      .parseFromString(`<table>${html}</table>`, "text/html")
+      .querySelector("th");
+
+    // Assert
+    expect(th?.classList.contains("text-end")).toBe(true);
+    expect(th?.classList.contains("font-mono")).toBe(false);
+  });
+
   describe("interactive resizing and auto-fit", () => {
     let container: HTMLDivElement;
     let root: Root;

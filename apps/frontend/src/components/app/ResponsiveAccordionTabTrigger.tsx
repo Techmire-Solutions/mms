@@ -16,8 +16,13 @@ export function TabTrigger({
   onTabChange: (id: string) => void;
 }): React.JSX.Element {
   const Icon = tab.icon;
+  // Top-align only when a description adds a second line; a lone title centres
+  // on the icon instead of sitting above its midline (Settings → General).
+  const hasDescription = Boolean(tab.description);
   const className = cn(
-    "flex min-h-11 w-full items-start gap-3 px-4 py-3.5 text-start transition-colors rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer",
+    "flex min-h-11 w-full gap-3",
+    hasDescription ? "items-start" : "items-center",
+    "px-4 py-3.5 text-start transition-colors rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 cursor-pointer",
     active ? "text-primary" : "text-foreground hover:bg-muted/40",
   );
   const body = (
@@ -25,7 +30,8 @@ export function TabTrigger({
       {Icon ? (
         <span
           className={cn(
-            "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+            hasDescription && "mt-0.5",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
             active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
           )}
         >
@@ -42,7 +48,8 @@ export function TabTrigger({
       </span>
       <ChevronDown
         className={cn(
-          "mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
+          hasDescription && "mt-1",
+          "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
           active && "rotate-180 text-primary",
         )}
         aria-hidden="true"

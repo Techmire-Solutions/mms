@@ -48,7 +48,8 @@ export function AccountProfileContactTab({
     name !== originalName || phone !== originalPhone || contactEmail !== originalEmail;
 
   return (
-    <Card accentColor="primary" className="group/profile-card">
+    // Title bar and content each reserve the stripe inset; `ps-0` stops Card stacking a second one.
+    <Card accentColor="primary" className="group/profile-card ps-0">
       <CardTitleBar
         inset
         icon={<User className="h-4 w-4 text-primary" />}

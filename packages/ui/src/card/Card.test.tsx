@@ -99,4 +99,65 @@ describe("Card component", () => {
     });
     expect(onClick).toHaveBeenCalledTimes(2);
   });
+
+  it("given a consumer start padding, should apply it at every breakpoint instead of keeping sm:ps-6", async () => {
+    // Arrange
+    const render = () => root.render(<Card className="p-0 overflow-hidden">Flush rows</Card>);
+
+    // Act
+    await act(async () => {
+      render();
+    });
+    const card = container.firstElementChild as HTMLElement;
+
+    // Assert
+    expect(card.classList.contains("p-0")).toBe(true);
+    expect(card.classList.contains("sm:ps-6")).toBe(false);
+    expect(card.classList.contains("ps-5")).toBe(false);
+  });
+
+  it("given no consumer padding, should reserve the responsive stripe inset", async () => {
+    // Arrange
+    const render = () => root.render(<Card className="space-y-3">Default</Card>);
+
+    // Act
+    await act(async () => {
+      render();
+    });
+    const card = container.firstElementChild as HTMLElement;
+
+    // Assert
+    expect(card.classList.contains("ps-5")).toBe(true);
+    expect(card.classList.contains("sm:ps-6")).toBe(true);
+  });
+
+  it("given a padding that does not touch the start edge, should keep the stripe inset", async () => {
+    // Arrange
+    const render = () => root.render(<Card className="pt-5">Top padded</Card>);
+
+    // Act
+    await act(async () => {
+      render();
+    });
+    const card = container.firstElementChild as HTMLElement;
+
+    // Assert
+    expect(card.classList.contains("pt-5")).toBe(true);
+    expect(card.classList.contains("sm:ps-6")).toBe(true);
+  });
+
+  it("given no accent stripe, should not add any stripe inset", async () => {
+    // Arrange
+    const render = () => root.render(<Card accentColor="none">Plain</Card>);
+
+    // Act
+    await act(async () => {
+      render();
+    });
+    const card = container.firstElementChild as HTMLElement;
+
+    // Assert
+    expect(card.classList.contains("ps-5")).toBe(false);
+    expect(card.classList.contains("sm:ps-6")).toBe(false);
+  });
 });

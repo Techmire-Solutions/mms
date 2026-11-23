@@ -42,7 +42,8 @@ export function AccountProfilePasswordCard({
   const id = useId();
 
   return (
-    <Card accentColor="success" className="group/password-card">
+    // Title bar and content each reserve the stripe inset; `ps-0` stops Card stacking a second one.
+    <Card accentColor="success" className="group/password-card ps-0">
       <CardTitleBar
         inset
         icon={<Lock className="h-4 w-4 text-primary" />}

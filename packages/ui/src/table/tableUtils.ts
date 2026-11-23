@@ -18,6 +18,18 @@ export function getTableCellAlignClass(align?: TableCellAlign, variant?: TableCe
   return "text-start";
 }
 
+/**
+ * Header alignment for a column: same edge as its cells, but none of the
+ * numeric cell typography. Headers reusing the cell class rendered "AMOUNT" in
+ * mono semibold next to sans "STUDENT" / "DUE DATE" in the same row.
+ */
+export function getTableHeadAlignClass(align?: TableCellAlign, variant?: TableCellVariant): string {
+  if (align === "end" || align === "right" || variant === "number" || variant === "currency") {
+    return "text-end";
+  }
+  return getTableCellAlignClass(align, variant);
+}
+
 export function getAriaSort(
   sortDirection?: TableSortDirection | boolean | null,
 ): "ascending" | "descending" | "none" | undefined {

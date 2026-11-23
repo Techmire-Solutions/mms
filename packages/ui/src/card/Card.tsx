@@ -6,6 +6,19 @@ export const CARD_STRIPE_WIDTH = "w-1.5";
 export const CARD_STRIPE_INSET = "ps-5 sm:ps-6";
 export const CARD_STRIPE_BASE = "absolute inset-y-0 start-0 w-1.5";
 
+/**
+ * The stripe inset is responsive (`ps-5 sm:ps-6`), but tailwind-merge only drops
+ * a class against one with the same variant: a consumer's `p-0` / `p-5` replaced
+ * `ps-5` while `sm:ps-6` survived, so from `sm` up flush cards gained 24px on the
+ * start edge only. When the consumer sets its own start padding, it wins at every
+ * breakpoint.
+ */
+function resolveStripeInset(className: string | undefined): string {
+  if (!className) return CARD_STRIPE_INSET;
+  const consumerOwnsStart = !cn("ps-5", className).split(" ").includes("ps-5");
+  return consumerOwnsStart ? "" : CARD_STRIPE_INSET;
+}
+
 export type CardAccentColor =
   "primary" | "success" | "destructive" | "warning" | "info" | "secondary" | "muted" | string;
 
@@ -62,6 +75,7 @@ export const Card = ({
   ...props
 }: CardProps & { ref?: React.Ref<HTMLDivElement> }) => {
   const hasStripe = accentColor && accentColor !== "none";
+  const stripeInset = hasStripe ? resolveStripeInset(className) : undefined;
   // `interactive` adds role="button" + tabIndex 0, so it must be keyboard-activatable
   // (WCAG 2.5.7 / 2.1.1): Enter and Space fire the card's onClick.
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -82,7 +96,7 @@ export const Card = ({
         CARD_SURFACE,
         interactive &&
           "cursor-pointer focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-hidden active:scale-tap-micro hover:border-foreground/20",
-        hasStripe && CARD_STRIPE_INSET,
+        stripeInset,
         className,
       )}
       {...props}

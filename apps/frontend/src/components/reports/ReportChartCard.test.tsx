@@ -38,4 +38,24 @@ describe("ReportChartCard Component", () => {
 
     expect(html).toContain("Export");
   });
+
+  it("given a wide header action such as a legend, should let it wrap below the title instead of overflowing the card", () => {
+    // Arrange
+    const html = renderToStaticMarkup(
+      <ReportChartCard title="Status Distribution" action={<span>Present 0 Absent 0 Late 0</span>}>
+        <div>Chart</div>
+      </ReportChartCard>,
+    );
+
+    // Act
+    const card = new DOMParser().parseFromString(html, "text/html").body.firstElementChild;
+    const headerRow = card?.querySelector("h3")?.parentElement?.parentElement;
+    const actionSlot = headerRow?.lastElementChild;
+
+    // Assert
+    expect(headerRow?.classList.contains("flex-wrap")).toBe(true);
+    expect(actionSlot?.textContent).toBe("Present 0 Absent 0 Late 0");
+    expect(actionSlot?.classList.contains("shrink-0")).toBe(false);
+    expect(actionSlot?.classList.contains("max-w-full")).toBe(true);
+  });
 });

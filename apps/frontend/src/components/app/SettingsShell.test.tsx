@@ -39,4 +39,21 @@ describe("SettingsPanel", () => {
 
     expect(html.indexOf("Save")).toBeGreaterThan(html.indexOf("settings-content"));
   });
+
+  it("given a wide settings card, should centre the capped column so both sides get equal space", () => {
+    // Arrange
+    const html = renderToStaticMarkup(
+      <SettingsPanel width="narrow" introKey="settings.introGlobal">
+        <div>Fields</div>
+      </SettingsPanel>,
+    );
+
+    // Act
+    const panel = new DOMParser().parseFromString(html, "text/html").body.firstElementChild;
+
+    // Assert
+    expect(panel?.classList.contains("max-w-2xl")).toBe(true);
+    expect(panel?.classList.contains("mx-auto")).toBe(true);
+    expect(panel?.classList.contains("w-full")).toBe(true);
+  });
 });
