@@ -22,6 +22,10 @@ const listBarrelSrc = readFileSync(
   join(process.cwd(), "src/db/repositories/facultyRepositoryList.ts"),
   "utf8",
 );
+const contactOpsSrc = readFileSync(
+  join(process.cwd(), "src/db/repositories/facultyRepositoryListContactOps.ts"),
+  "utf8",
+);
 
 describe("facultyRepositoryList Contacts SSOT", () => {
   it("sorts and searches display name from linked contacts via joined contact alias", () => {
@@ -60,5 +64,16 @@ describe("facultyRepositoryList Contacts SSOT", () => {
       "NULLIF(trim(COALESCE(${facultyEmployments.employeeId}, ''))",
     );
     expect(listBarrelSrc).toContain("listActiveFacultyMissingEmployeeId");
+  });
+
+  it("projects employment SSOT fields when probing for a soft-deleted contact match", () => {
+    // Re-registration restore-on-create must carry the real contact/employment
+    // fields (not facultyRowToRecord's "" fallback), otherwise the restored
+    // employment row loses contact_id and trips faculty_employments_contact_fk.
+    expect(contactOpsSrc).toContain("contactId: facultyEmployments.contactId");
+    expect(contactOpsSrc).toContain("employeeId: facultyEmployments.employeeId");
+    expect(contactOpsSrc).toContain("status: facultyEmployments.status");
+    expect(contactOpsSrc).toContain("employmentStartDate: facultyEmployments.employmentStartDate");
+    expect(contactOpsSrc).toContain("employmentEndDate: facultyEmployments.employmentEndDate");
   });
 });

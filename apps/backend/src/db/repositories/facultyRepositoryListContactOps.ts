@@ -55,7 +55,18 @@ export async function findSoftDeletedFacultyByContactIdSql(
   if (!trimmedContactId) return null;
   return withTenantRead(subdomain, async (tx) => {
     const rows = await tx
-      .select(FACULTY_PROJECTION_COLUMNS)
+      .select({
+        ...FACULTY_PROJECTION_COLUMNS,
+        // Employment-owned fields live on faculty_employments; include them so
+        // the restored record carries the real contact/employment SSOT instead
+        // of `facultyRowToRecord`'s `""` fallback (which loses the contact link
+        // on re-registration and trips faculty_employments_contact_fk).
+        contactId: facultyEmployments.contactId,
+        employeeId: facultyEmployments.employeeId,
+        status: facultyEmployments.status,
+        employmentStartDate: facultyEmployments.employmentStartDate,
+        employmentEndDate: facultyEmployments.employmentEndDate,
+      })
       .from(faculty)
       .innerJoin(
         facultyEmployments,
