@@ -3,6 +3,7 @@ import {
   DEFAULT_PLATFORM_SETTINGS,
   mergePlatformSettings,
   type PlatformConsolidationPrefs,
+  type PlatformContactPrefs,
   type PlatformSettings,
 } from "@mms/shared";
 import { activeDb } from "../dbConnection.js";
@@ -34,6 +35,7 @@ const platformSettingsColumns = {
   llmApiKey: platformSettings.llmApiKey,
   llmConfigs: platformSettings.llmConfigs,
   consolidationPrefs: platformSettings.consolidationPrefs,
+  contactPrefs: platformSettings.contactPrefs,
   idleSessionMinutes: platformSettings.idleSessionMinutes,
   updatedAt: platformSettings.updatedAt,
 };
@@ -55,6 +57,7 @@ type PlatformSettingsRowShape = {
   llmApiKey: string | null;
   llmConfigs: Parameters<typeof decryptLlmConfigs>[0];
   consolidationPrefs: PlatformConsolidationPrefs | null;
+  contactPrefs: PlatformContactPrefs | null;
   idleSessionMinutes: number | null;
   updatedAt: Date | null;
 };
@@ -77,6 +80,7 @@ function rowToPlatformSettings(row: PlatformSettingsRowShape): PlatformSettings 
     llmApiKey: decryptLlmApiKey(row.llmApiKey) ?? "",
     llmConfigs: decryptLlmConfigs(row.llmConfigs) ?? [],
     consolidationPrefs: row.consolidationPrefs ?? undefined,
+    contactPrefs: row.contactPrefs ?? undefined,
     idleSessionMinutes: row.idleSessionMinutes ?? DEFAULT_PLATFORM_SETTINGS.idleSessionMinutes,
     ...(row.updatedAt ? { updatedAt: row.updatedAt.toISOString() } : {}),
   });
@@ -142,6 +146,7 @@ export async function upsertPlatformSettingsRow(
     llmApiKey: encryptLlmApiKey(next.llmApiKey),
     llmConfigs: encryptLlmConfigs(next.llmConfigs),
     consolidationPrefs: next.consolidationPrefs,
+    contactPrefs: next.contactPrefs,
     idleSessionMinutes: next.idleSessionMinutes,
     updatedAt,
   };

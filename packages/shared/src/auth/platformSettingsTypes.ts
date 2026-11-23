@@ -45,6 +45,18 @@ export const DEFAULT_PLATFORM_CONSOLIDATION_PREFS: PlatformConsolidationPrefs = 
   fiscalYearStartMonth: 1,
 };
 
+export const platformContactPrefsSchema = z
+  .object({
+    defaultKind: z.enum(["platform_operator", "workspace_admin", "external"]),
+  })
+  .strict();
+
+export type PlatformContactPrefs = z.infer<typeof platformContactPrefsSchema>;
+
+export const DEFAULT_PLATFORM_CONTACT_PREFS: PlatformContactPrefs = {
+  defaultKind: "external",
+};
+
 export interface PlatformSettings {
   id: string;
   syncTlsOnCreate: boolean;
@@ -70,6 +82,8 @@ export interface PlatformSettings {
   llmConfigs: LlmConfig[];
   /** Consolidation preferences (default presentation currency + fiscal year start). */
   consolidationPrefs: PlatformConsolidationPrefs;
+  /** Contact directory preferences (default kind for new/imported contacts). */
+  contactPrefs: PlatformContactPrefs;
   /** Apex idle session timeout (minutes); env remains the fallback. */
   idleSessionMinutes: number;
   updatedAt?: string;
@@ -99,6 +113,7 @@ export const platformSettingsUpdateSchema = z
     llmApiKey: z.string().max(4096).optional(),
     llmConfigs: z.array(llmConfigInputSchema).max(20).optional(),
     consolidationPrefs: platformConsolidationPrefsSchema.optional(),
+    contactPrefs: platformContactPrefsSchema.optional(),
     idleSessionMinutes: z
       .number()
       .int()
@@ -129,6 +144,7 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   llmApiKey: "",
   llmConfigs: [],
   consolidationPrefs: DEFAULT_PLATFORM_CONSOLIDATION_PREFS,
+  contactPrefs: DEFAULT_PLATFORM_CONTACT_PREFS,
   idleSessionMinutes: PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES,
 };
 
@@ -175,6 +191,9 @@ export function mergePlatformSettings(
       .success
       ? (partial?.consolidationPrefs as PlatformConsolidationPrefs)
       : DEFAULT_PLATFORM_CONSOLIDATION_PREFS,
+    contactPrefs: platformContactPrefsSchema.safeParse(partial?.contactPrefs).success
+      ? (partial?.contactPrefs as PlatformContactPrefs)
+      : DEFAULT_PLATFORM_CONTACT_PREFS,
     idleSessionMinutes,
     ...(partial?.updatedAt === undefined ? {} : { updatedAt: partial.updatedAt }),
   };
