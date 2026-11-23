@@ -88,16 +88,6 @@ export const FacultyFormTabContent = function FacultyFormTabContent(
           errors={errors}
           onDraftChange={onDraftChange}
         />
-        {props.userAccountDraft && props.onUserAccountDraftChange ? (
-          <FacultyUserAccountSection
-            facultyDraft={effectiveDraft}
-            linkedContact={linkedContact}
-            linkedUser={props.linkedUser}
-            userAccountDraft={props.userAccountDraft}
-            onUserAccountDraftChange={props.onUserAccountDraftChange}
-            errors={errors}
-          />
-        ) : null}
       </>
     );
   } else if (activeTab === "designation") {
@@ -115,6 +105,18 @@ export const FacultyFormTabContent = function FacultyFormTabContent(
         onDraftChange={onDraftChange}
       />
     );
+  } else if (activeTab === "account") {
+    tabBody =
+      props.userAccountDraft && props.onUserAccountDraftChange ? (
+        <FacultyUserAccountSection
+          facultyDraft={effectiveDraft}
+          linkedContact={linkedContact}
+          linkedUser={props.linkedUser}
+          userAccountDraft={props.userAccountDraft}
+          onUserAccountDraftChange={props.onUserAccountDraftChange}
+          errors={errors}
+        />
+      ) : null;
   }
 
   if (tabBody) {

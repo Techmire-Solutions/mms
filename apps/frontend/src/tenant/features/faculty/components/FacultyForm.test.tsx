@@ -104,7 +104,7 @@ describe("FacultyForm Component", () => {
     expect(html).toContain("Faculty Tab Content: contact");
   });
 
-  it("provides tabs for contact, employment, and designation", () => {
+  it("provides tabs for contact, employment, designation, and account", () => {
     mockControllerState.errors = {};
     mockControllerState.isFieldEnabled = () => true;
 
@@ -113,8 +113,8 @@ describe("FacultyForm Component", () => {
     expect(html).toContain('data-tab-key="contact"');
     expect(html).toContain('data-tab-key="employment"');
     expect(html).toContain('data-tab-key="designation"');
+    expect(html).toContain('data-tab-key="account"');
     expect(html).not.toContain('data-tab-key="hierarchy"');
-    expect(html).not.toContain('data-tab-key="account"');
     expect(html).not.toContain('data-tab-key="notes"');
   });
 
@@ -142,6 +142,6 @@ describe("FacultyForm Component", () => {
     const html = renderToStaticMarkup(<FacultyForm onClose={vi.fn()} onSave={vi.fn()} />);
 
     expect(html).toContain('data-tab-key="designation" data-badge="1"');
-    expect(html).not.toContain('data-tab-key="account"');
+    expect(html).not.toContain('data-tab-key="account" data-badge');
   });
 });
