@@ -103,4 +103,11 @@ describe("print stylesheet", () => {
     // backdrop had to be explicitly hidden rather than left to the browser.
     expect(block).toMatch(/print-color-adjust:\s*exact/);
   });
+
+  it("suppresses the background app root when a modal dialog is active", () => {
+    // When printing from a modal (such as an ID card or voucher), the background
+    // app shell must not print as leading pages before the modal document.
+    expect(block).toMatch(/body:has\(\[role="dialog"\]\)\s+#root/);
+    expect(selectors).toContain("body[data-print-modal-active] #root");
+  });
 });

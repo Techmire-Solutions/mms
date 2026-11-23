@@ -35,8 +35,9 @@ export function ModalHeader({
 
   return (
     <div
+      data-print-hide
       className={cn(
-        "flex flex-col gap-2 p-4 sm:p-6 border-b border-border/40 flex-shrink-0",
+        "flex flex-col gap-2 p-4 sm:p-6 border-b border-border/40 flex-shrink-0 print:hidden",
         className,
       )}
     >

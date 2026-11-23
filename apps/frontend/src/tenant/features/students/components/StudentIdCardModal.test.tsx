@@ -216,6 +216,11 @@ describe("StudentIdCardModal Component", () => {
     // refetchStudents was called on modal open
     expect(mockRefetchStudents).toHaveBeenCalledTimes(1);
 
+    let activeDuringPrint = false;
+    window.print = vi.fn().mockImplementation(() => {
+      activeDuringPrint = document.body.getAttribute("data-print-modal-active") === "true";
+    });
+
     const printBtn = Array.from(container.querySelectorAll("button")).find(
       (b) => b.textContent?.trim() === "students.idCard.print",
     );
@@ -228,6 +233,8 @@ describe("StudentIdCardModal Component", () => {
     // refetchStudents called again on Print click
     expect(mockRefetchStudents).toHaveBeenCalledTimes(2);
     expect(window.print).toHaveBeenCalledTimes(1);
+    expect(activeDuringPrint).toBe(true);
+    expect(document.body.hasAttribute("data-print-modal-active")).toBe(false);
 
     await act(async () => {
       root.unmount();

@@ -98,7 +98,17 @@ export function StudentIdCardModal({
       ]);
     } finally {
       setIsPrinting(false);
-      window.print();
+      document.body.setAttribute("data-print-modal-active", "true");
+      const cleanup = () => {
+        document.body.removeAttribute("data-print-modal-active");
+        window.removeEventListener("afterprint", cleanup);
+      };
+      window.addEventListener("afterprint", cleanup);
+      try {
+        window.print();
+      } finally {
+        cleanup();
+      }
     }
   };
 

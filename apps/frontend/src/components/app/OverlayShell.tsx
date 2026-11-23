@@ -71,7 +71,7 @@ export function OverlayShell<T extends HTMLElement = HTMLElement>({
         <div
           data-print-unclamp
           className={cn(
-            "fixed inset-0",
+            "fixed inset-0 print:static print:inset-auto print:p-0 print:m-0 print:w-full print:h-auto print:overflow-visible",
             priority ? "z-modal-priority" : "z-modal",
             containerClassName,
           )}

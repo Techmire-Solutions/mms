@@ -33,7 +33,17 @@ export function FacultyIdCardModal({
   if (!open || items.length === 0) return null;
 
   const handlePrint = () => {
-    window.print();
+    document.body.setAttribute("data-print-modal-active", "true");
+    const cleanup = () => {
+      document.body.removeAttribute("data-print-modal-active");
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+    try {
+      window.print();
+    } finally {
+      cleanup();
+    }
   };
 
   const isBatch = items.length > 1;
