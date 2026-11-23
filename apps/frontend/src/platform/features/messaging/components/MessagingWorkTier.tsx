@@ -20,7 +20,10 @@ import {
 } from "@/platform/features/messaging/hooks/usePlatformMessaging";
 import { MessagingComposeModal } from "@/platform/features/messaging/components/MessagingComposeModal";
 import { MessagingDetailDrawer } from "@/platform/features/messaging/components/MessagingDetailDrawer";
-import { PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS } from "@/platform/features/messaging/lib/platformMessagingChannels";
+import {
+  PLATFORM_MESSAGING_CHANNELS,
+  PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS,
+} from "@/platform/features/messaging/lib/platformMessagingChannels";
 import { exportPlatformMessagesCsv } from "@/platform/features/messaging/lib/exportPlatformMessagesCsv";
 
 const STATUS_LABEL_KEYS: Record<PlatformMessageDto["status"], AppTranslationKey> = {
@@ -30,6 +33,8 @@ const STATUS_LABEL_KEYS: Record<PlatformMessageDto["status"], AppTranslationKey>
   delivered: "platform.messaging.status.delivered",
   failed: "platform.messaging.status.failed",
 };
+
+const STATUS_KEYS = Object.keys(STATUS_LABEL_KEYS) as PlatformMessageDto["status"][];
 
 /** Messaging → Work: broadcast log + composer (table/cards, selection, bulk, trash). */
 export function MessagingWorkTier(): React.JSX.Element {
@@ -210,6 +215,23 @@ export function MessagingWorkTier(): React.JSX.Element {
               </Badge>
             ),
           }}
+          filters={[
+            {
+              id: "channel",
+              label: t("platform.messaging.channel"),
+              options: PLATFORM_MESSAGING_CHANNELS.map((c) => ({
+                value: c,
+                label: t(PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS[c]),
+              })),
+              getValue: (row) => row.channel,
+            },
+            {
+              id: "status",
+              label: t("platform.messaging.status"),
+              options: STATUS_KEYS.map((s) => ({ value: s, label: t(STATUS_LABEL_KEYS[s]) })),
+              getValue: (row) => row.status,
+            },
+          ]}
           onRowClick={(row) => setSelected(row)}
           selection={{
             selectedIds,
