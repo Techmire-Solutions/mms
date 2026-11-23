@@ -34,76 +34,94 @@ export function StudentIdCardFlipItem({
   t,
 }: StudentIdCardFlipItemProps): React.JSX.Element {
   return (
-    <div className="relative group">
-      <button
-        type="button"
-        style={{ perspective: 1000 }}
-        className="relative cursor-pointer select-none w-full text-start p-0 bg-transparent border-0 block"
-        onClick={onToggleFlip}
-        aria-label={t("students.idCard.flipCard")}
-        title={t("students.idCard.flipCard")}
-      >
-        <div
-          style={{
-            transformStyle: "preserve-3d",
-            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-            transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-          }}
-          className="relative"
+    <div className="relative group break-inside-avoid print:break-inside-avoid">
+      {/* Interactive 3D flip card for screen */}
+      <div className="print:hidden">
+        <button
+          type="button"
+          style={{ perspective: 1000 }}
+          className="relative cursor-pointer select-none w-full text-start p-0 bg-transparent border-0 block"
+          onClick={onToggleFlip}
+          aria-label={t("students.idCard.flipCard")}
+          title={t("students.idCard.flipCard")}
         >
-          {/* Front face */}
-          <div style={{ backfaceVisibility: "hidden" }}>
-            <StudentCardPrintPreview
-              template={template}
-              student={student}
-              side="front"
-              sessionNames={sessionNames}
-              guardianName={guardianName}
-              emergencyPhone={emergencyPhone}
-              bloodGroup={bloodGroup}
-              madrasaName={madrasaName}
-              className={cutGuideClass}
-            />
-          </div>
-
-          {/* Back face */}
           <div
             style={{
-              backfaceVisibility: "hidden",
-              transform: "rotateY(180deg)",
-              position: "absolute",
-              inset: 0,
+              transformStyle: "preserve-3d",
+              transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+              transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
+            className="relative"
           >
-            <StudentCardPrintPreview
-              template={template}
-              student={student}
-              side="back"
-              sessionNames={sessionNames}
-              guardianName={guardianName}
-              emergencyPhone={emergencyPhone}
-              bloodGroup={bloodGroup}
-              madrasaName={madrasaName}
-              className={cutGuideClass}
-            />
-          </div>
-        </div>
-      </button>
+            {/* Front face */}
+            <div style={{ backfaceVisibility: "hidden" }}>
+              <StudentCardPrintPreview
+                template={template}
+                student={student}
+                side="front"
+                sessionNames={sessionNames}
+                guardianName={guardianName}
+                emergencyPhone={emergencyPhone}
+                bloodGroup={bloodGroup}
+                madrasaName={madrasaName}
+                className={cutGuideClass}
+              />
+            </div>
 
-      {/* Quick flip badge */}
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleFlip();
-        }}
-        className="absolute top-2 end-2 bg-background/80 hover:bg-background border border-border/80 shadow-2xs text-muted-foreground hover:text-foreground opacity-75 hover:opacity-100 transition-all print:hidden"
-        title={t("students.idCard.flipCard")}
-        aria-label={t("students.idCard.flipCard")}
-        icon={RotateCw}
-      />
+            {/* Back face */}
+            <div
+              style={{
+                backfaceVisibility: "hidden",
+                transform: "rotateY(180deg)",
+                position: "absolute",
+                inset: 0,
+              }}
+            >
+              <StudentCardPrintPreview
+                template={template}
+                student={student}
+                side="back"
+                sessionNames={sessionNames}
+                guardianName={guardianName}
+                emergencyPhone={emergencyPhone}
+                bloodGroup={bloodGroup}
+                madrasaName={madrasaName}
+                className={cutGuideClass}
+              />
+            </div>
+          </div>
+        </button>
+
+        {/* Quick flip badge */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFlip();
+          }}
+          className="absolute top-2 end-2 bg-background/80 hover:bg-background border border-border/80 shadow-2xs text-muted-foreground hover:text-foreground opacity-75 hover:opacity-100 transition-all print:hidden"
+          title={t("students.idCard.flipCard")}
+          aria-label={t("students.idCard.flipCard")}
+          icon={RotateCw}
+        />
+      </div>
+
+      {/* Clean 2D print output for paper and print preview */}
+      <div className="hidden print:block print:break-inside-avoid">
+        <StudentCardPrintPreview
+          template={template}
+          student={student}
+          side={isFlipped ? "back" : "front"}
+          sessionNames={sessionNames}
+          guardianName={guardianName}
+          emergencyPhone={emergencyPhone}
+          bloodGroup={bloodGroup}
+          madrasaName={madrasaName}
+          className={cutGuideClass}
+        />
+      </div>
     </div>
   );
 }

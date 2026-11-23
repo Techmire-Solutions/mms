@@ -1,12 +1,15 @@
-import { useRef, useState, lazy, Suspense, type JSX } from "react";
-import { Printer, IdCard, Paintbrush } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense, type JSX } from "react";
+import { Printer, IdCard, Paintbrush, Loader2 } from "lucide-react";
 import { STUDENTS_MODULE_MANIFEST, type Student } from "@mms/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { useStudentCardTemplate } from "../lib/studentCardTemplateStore";
+import { useStudentCardTemplate, STUDENT_CARD_TEMPLATE_KEY } from "../lib/studentCardTemplateStore";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";
+import { useStudentsByIds } from "../hooks/useStudentsListQueries";
+import { documentTemplateQueryKey } from "@/lib/templates/useDocumentTemplates";
 import {
   StudentIdCardPrintControlsBar,
   type StudentCardPrintMode,
@@ -37,14 +40,40 @@ export function StudentIdCardModal({
   madrasaName,
 }: StudentIdCardModalProps): JSX.Element | null {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const printAreaRef = useRef<HTMLDivElement>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [printMode, setPrintMode] = useState<StudentCardPrintMode>("front");
   const [globalFlipped, setGlobalFlipped] = useState(false);
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
   const [showCutGuides, setShowCutGuides] = useState(true);
+  const [isPrinting, setIsPrinting] = useState(false);
   const { canEditSetup } = useModulePermissions(STUDENTS_MODULE_MANIFEST);
   const { template } = useStudentCardTemplate();
+
+  const studentIds = useMemo(() => items.map((item) => item.student.id), [items]);
+  const { data: freshStudents, refetch: refetchStudents } = useStudentsByIds(studentIds);
+
+  useEffect(() => {
+    if (open && studentIds.length > 0) {
+      void refetchStudents();
+    }
+  }, [open, studentIds, refetchStudents]);
+
+  const resolvedItems = useMemo(() => {
+    if (!freshStudents || freshStudents.length === 0) return items;
+    const freshMap = new Map(freshStudents.map((s) => [String(s.id), s]));
+    return items.map((item) => {
+      const fresh = freshMap.get(String(item.student.id));
+      if (!fresh) return item;
+      return {
+        ...item,
+        student: { ...item.student, ...fresh },
+        guardianName: item.guardianName || fresh.fatherName,
+        emergencyPhone: item.emergencyPhone || fresh.phone,
+      };
+    });
+  }, [items, freshStudents]);
 
   // A different print batch must not inherit flips/guides/editor state.
   useIdentityReset(items.map((item) => String(item.student.id)).join(","), () => {
@@ -53,12 +82,24 @@ export function StudentIdCardModal({
     setGlobalFlipped(false);
     setFlippedCards({});
     setShowCutGuides(true);
+    setIsPrinting(false);
   });
 
   if (!open || items.length === 0) return null;
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    setIsPrinting(true);
+    try {
+      await Promise.allSettled([
+        refetchStudents(),
+        queryClient.invalidateQueries({
+          queryKey: documentTemplateQueryKey(STUDENT_CARD_TEMPLATE_KEY),
+        }),
+      ]);
+    } finally {
+      setIsPrinting(false);
+      window.print();
+    }
   };
 
   const isBatch = items.length > 1;
@@ -85,7 +126,7 @@ export function StudentIdCardModal({
             : t("students.idCard.title")
         }
         icon={IdCard}
-        size="lg"
+        size="xl"
         footer={
           <>
             {canEditSetup && (
@@ -110,9 +151,14 @@ export function StudentIdCardModal({
             <Button
               type="button"
               onClick={handlePrint}
+              disabled={isPrinting}
               className="flex items-center gap-2 px-5 min-h-11 font-semibold"
             >
-              <Printer className="w-4 h-4" aria-hidden />
+              {isPrinting ? (
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+              ) : (
+                <Printer className="w-4 h-4" aria-hidden />
+              )}
               <span>{t("students.idCard.print")}</span>
             </Button>
           </>
@@ -123,8 +169,8 @@ export function StudentIdCardModal({
             printMode={printMode}
             onSelectPrintMode={(mode) => {
               setPrintMode(mode);
-              if (mode === "front") setGlobalFlipped(false);
-              if (mode === "back") setGlobalFlipped(true);
+              setFlippedCards({});
+              setGlobalFlipped(false);
             }}
             onToggleGlobalFlipped={() => setGlobalFlipped((prev) => !prev)}
             showCutGuides={showCutGuides}
@@ -134,7 +180,7 @@ export function StudentIdCardModal({
 
           <StudentIdCardPrintGrid
             printAreaRef={printAreaRef}
-            items={items}
+            items={resolvedItems}
             printMode={printMode}
             template={template}
             madrasaName={madrasaName}
@@ -151,11 +197,11 @@ export function StudentIdCardModal({
         <Suspense fallback={null}>
           <StudentCardTemplateEditor
             onClose={() => setShowEditor(false)}
-            sampleStudent={items[0]?.student}
-            sessionNames={items[0]?.sessionNames}
-            guardianName={items[0]?.guardianName}
-            emergencyPhone={items[0]?.emergencyPhone}
-            bloodGroup={items[0]?.bloodGroup}
+            sampleStudent={resolvedItems[0]?.student}
+            sessionNames={resolvedItems[0]?.sessionNames}
+            guardianName={resolvedItems[0]?.guardianName}
+            emergencyPhone={resolvedItems[0]?.emergencyPhone}
+            bloodGroup={resolvedItems[0]?.bloodGroup}
           />
         </Suspense>
       )}
