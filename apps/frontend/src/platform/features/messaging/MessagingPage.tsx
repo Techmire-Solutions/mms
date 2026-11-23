@@ -6,6 +6,7 @@ import {
   MessagingTier,
   type PlatformMessagingTab,
 } from "@/platform/features/messaging/components/MessagingTier";
+import { PlatformMessagingCommandMetrics } from "@/platform/features/messaging/components/PlatformMessagingCommandMetrics";
 import { usePlatformModuleTabs } from "@/platform/hooks/usePlatformModuleTabs";
 import { usePlatformModuleTabState } from "@/platform/hooks/usePlatformModuleTabState";
 import { PLATFORM_MODULE_MESSAGING } from "@/platform/lib/platformModuleManifest";
@@ -22,6 +23,7 @@ export default function MessagingPage(): React.JSX.Element {
       headerIcon={MessageSquare}
       headerTitle={t("nav.messaging")}
       headerSubtitle={t("platform.messaging.subtitle")}
+      metricsStrip={<PlatformMessagingCommandMetrics />}
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={handleTabChange}

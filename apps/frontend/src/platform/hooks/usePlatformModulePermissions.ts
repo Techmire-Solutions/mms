@@ -23,8 +23,7 @@ export function usePlatformModulePermissions(
   const canWrite = canRead;
   const canReports =
     canRead && (isSuperUser || can(manifest.reportsPermissionKey ?? manifest.permissionKey));
-  const canViewSetup =
-    canRead && (isSuperUser || can(manifest.setupPermissionKey ?? "settings"));
+  const canViewSetup = canRead && (isSuperUser || can(manifest.setupPermissionKey ?? "settings"));
   const canEditSetup = canViewSetup;
 
   return { canRead, canWrite, canReports, canViewSetup, canEditSetup };

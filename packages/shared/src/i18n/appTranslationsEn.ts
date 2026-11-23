@@ -7298,6 +7298,7 @@ export const APP_TRANSLATIONS_EN = {
   "platform.visualizerSubtitle": "Workspace status breakdown and activation metrics",
   "platform.welcomeBack": "Welcome back, {name}",
   "platform.workspaceActive": "Active",
+  "platform.workspaceTotal": "Total workspaces",
   "platform.workspaceCreatedToast": "Madrasa workspace created successfully",
   "platform.workspaceDeletedToast": "Madrasa deleted successfully",
   "platform.workspaceDirectorySubtitle":

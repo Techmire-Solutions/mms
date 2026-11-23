@@ -22,6 +22,8 @@ const mockUser: PlatformUserProfile = {
     settings: true,
     admins: true,
     system: true,
+    contacts: true,
+    messaging: true,
   },
   createdAt: "2026-01-01T00:00:00Z",
   emailVerifiedAt: "2026-01-01T00:00:00Z",

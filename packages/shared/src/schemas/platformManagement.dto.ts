@@ -15,6 +15,8 @@ export const platformAdminPermissionsSchema = z
     settings: z.boolean(),
     admins: z.boolean(),
     system: z.boolean(),
+    contacts: z.boolean().default(false),
+    messaging: z.boolean().default(false),
   })
   .strict();
 

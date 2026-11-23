@@ -37,8 +37,12 @@ export interface PlatformAdminPermissions {
   messaging?: boolean;
 }
 
+export type ConcretePlatformAdminPermissions = {
+  [K in PlatformAdminPermissionKey]: boolean;
+};
+
 /** Default for new admins — account self-service only until a super-user grants access. */
-export const DEFAULT_PLATFORM_ADMIN_PERMISSIONS: PlatformAdminPermissions = {
+export const DEFAULT_PLATFORM_ADMIN_PERMISSIONS: ConcretePlatformAdminPermissions = {
   workspaces: false,
   onboard: false,
   settings: false,
@@ -49,7 +53,7 @@ export const DEFAULT_PLATFORM_ADMIN_PERMISSIONS: PlatformAdminPermissions = {
 };
 
 /** Full grants used for super_user rows / JWT hydration convenience. */
-export const FULL_PLATFORM_ADMIN_PERMISSIONS: PlatformAdminPermissions = {
+export const FULL_PLATFORM_ADMIN_PERMISSIONS: ConcretePlatformAdminPermissions = {
   workspaces: true,
   onboard: true,
   settings: true,

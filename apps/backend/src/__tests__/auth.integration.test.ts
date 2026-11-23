@@ -1041,6 +1041,8 @@ describe("platform auth routes", () => {
       settings: false,
       admins: false,
       system: false,
+      contacts: false,
+      messaging: false,
     });
     expect(res.json()).toMatchObject({
       user: {

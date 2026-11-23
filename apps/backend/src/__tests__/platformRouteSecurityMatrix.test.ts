@@ -19,7 +19,15 @@ import { buildApp } from "../app.js";
  */
 
 const mockUsers = vi.hoisted(() => {
-  const all = { workspaces: true, onboard: true, settings: true, admins: true, system: true };
+  const all = {
+    workspaces: true,
+    onboard: true,
+    settings: true,
+    admins: true,
+    system: true,
+    contacts: true,
+    messaging: true,
+  };
   const user = (id: string, role: "super_user" | "admin", permissions: typeof all) => ({
     id,
     email: `${id}@platform.test`,
@@ -39,6 +47,8 @@ const mockUsers = vi.hoisted(() => {
       settings: false,
       admins: false,
       system: false,
+      contacts: false,
+      messaging: false,
     }),
     onboardOnly: user("p-admin-onboard", "admin", {
       ...all,
@@ -46,6 +56,8 @@ const mockUsers = vi.hoisted(() => {
       settings: false,
       admins: false,
       system: false,
+      contacts: false,
+      messaging: false,
     }),
     noWorkspaces: user("p-admin-no-ws", "admin", { ...all, workspaces: false }),
     noSettings: user("p-admin-no-settings", "admin", { ...all, settings: false }),
@@ -57,6 +69,8 @@ const mockUsers = vi.hoisted(() => {
       settings: false,
       onboard: false,
     }),
+    noContacts: user("p-admin-no-contacts", "admin", { ...all, contacts: false }),
+    noMessaging: user("p-admin-no-messaging", "admin", { ...all, messaging: false }),
   };
 });
 type MockUser = (typeof mockUsers)[keyof typeof mockUsers];
@@ -87,6 +101,8 @@ type Area =
   | "settings_or_onboard"
   | "admins"
   | "system"
+  | "contacts"
+  | "messaging"
   | "authenticated"
   | "optional"
   | "public";
@@ -115,6 +131,8 @@ const ROUTE_AREAS: ReadonlyArray<{ pattern: RegExp; area: Area }> = [
   // Areas.
   { pattern: /^\/api\/platform\/(users|admins)(\/|$)/, area: "admins" },
   { pattern: /^\/api\/platform\/(workspaces|consolidation)(\/|$)/, area: "workspaces" },
+  { pattern: /^\/api\/platform\/contacts(\/|$)/, area: "contacts" },
+  { pattern: /^\/api\/platform\/messages(\/|$)/, area: "messaging" },
   { pattern: /^\/api\/platform\/modules\/catalog$/, area: "settings_or_onboard" },
   {
     pattern:
@@ -253,6 +271,8 @@ describe("platform route security matrix", () => {
       settings_or_onboard: mockUsers.noSettingsNoOnboard,
       admins: mockUsers.noAdmins,
       system: mockUsers.noSystem,
+      contacts: mockUsers.noContacts,
+      messaging: mockUsers.noMessaging,
     };
     for (const key of platformRoutes) {
       const area = areaFor(key.split(" ")[1] ?? "");

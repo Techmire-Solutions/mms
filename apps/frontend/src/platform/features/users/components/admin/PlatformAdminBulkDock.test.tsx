@@ -33,6 +33,8 @@ const mockAdmins: PlatformUserProfile[] = [
       settings: false,
       admins: false,
       system: false,
+      contacts: false,
+      messaging: false,
     },
     disabledAt: null,
     createdAt: "2026-01-01T00:00:00Z",

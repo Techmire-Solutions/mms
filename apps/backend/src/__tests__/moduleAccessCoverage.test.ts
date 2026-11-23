@@ -169,6 +169,13 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
       "/api/platform/workspaces/:subdomain/reset-admin-password",
       "/api/platform/workspaces/:subdomain/users/:userId/verify-email",
       "/api/platform/workspaces/metrics",
+      "/api/platform/contacts",
+      "/api/platform/contacts/metrics",
+      "/api/platform/contacts/:id",
+      "/api/platform/messages",
+      "/api/platform/messages/metrics",
+      "/api/platform/messages/templates",
+      "/api/platform/messages/templates/:id",
     ],
   },
   {

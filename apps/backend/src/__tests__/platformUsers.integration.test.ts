@@ -221,6 +221,8 @@ describe("platformUsers REST API integration routes", () => {
       settings: true,
       admins: true,
       system: true,
+      contacts: false,
+      messaging: false,
     });
 
     // 2. Fetch all users and verify permissions are loaded correctly from child table
@@ -238,6 +240,8 @@ describe("platformUsers REST API integration routes", () => {
       settings: true,
       admins: true,
       system: true,
+      contacts: false,
+      messaging: false,
     });
 
     // 3. Update permissions and verify the changes persist
@@ -264,6 +268,8 @@ describe("platformUsers REST API integration routes", () => {
       settings: false,
       admins: false,
       system: false,
+      contacts: false,
+      messaging: false,
     });
   });
 

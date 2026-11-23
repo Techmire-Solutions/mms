@@ -7241,6 +7241,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "platform.visualizerSubtitle": "جزئیات وضعیت فضای کاری و معیارهای فعال‌سازی",
   "platform.welcomeBack": "خوش آمدید، {name}",
   "platform.workspaceActive": "فعال",
+  "platform.workspaceTotal": "مجموع فضاهای کاری",
   "platform.workspaceCreatedToast": "فضای کاری مدرسه با موفقیت ایجاد شد",
   "platform.workspaceDeletedToast": "مدرسه حذف شد",
   "platform.workspaceDirectorySubtitle":

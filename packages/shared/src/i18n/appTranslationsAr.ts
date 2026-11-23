@@ -7135,6 +7135,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "platform.visualizerSubtitle": "تفاصيل حالة مساحة العمل ومقاييس التفعيل",
   "platform.welcomeBack": "مرحباً بعودتك، {name}",
   "platform.workspaceActive": "نشطة",
+  "platform.workspaceTotal": "إجمالي مساحات العمل",
   "platform.workspaceCreatedToast": "تم إنشاء مساحة عمل المدرسة بنجاح",
   "platform.workspaceDeletedToast": "تم حذف المدرسة",
   "platform.workspaceDirectorySubtitle":

@@ -4,6 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { PlatformOnboardingAction } from "@/platform/features/shell/components/common/PlatformOnboardingAction";
+import { PlatformWorkspacesCommandMetrics } from "@/platform/features/workspaces/components/PlatformWorkspacesCommandMetrics";
 import {
   PlatformWorkspacesTier,
   type PlatformWorkspacesTab,
@@ -34,6 +35,7 @@ export default function PlatformWorkspacesPage(): React.JSX.Element {
       headerTitle={t("platform.manageMadrasas")}
       headerSubtitle={subtitle}
       headerActions={headerActions}
+      metricsStrip={<PlatformWorkspacesCommandMetrics />}
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={handleTabChange}

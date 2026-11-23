@@ -7216,6 +7216,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "platform.visualizerSubtitle": "ورک اسپیس کی حیثیت اور ایکٹیویشن میٹرکس",
   "platform.welcomeBack": "خوش آمدید، {name}",
   "platform.workspaceActive": "فعال",
+  "platform.workspaceTotal": "کل ورک اسپیسز",
   "platform.workspaceCreatedToast": "مدرسہ ورک اسپیس کامیابی سے تخلیق ہو گئی",
   "platform.workspaceDeletedToast": "مدرسہ حذف ہو گیا",
   "platform.workspaceDirectorySubtitle":
