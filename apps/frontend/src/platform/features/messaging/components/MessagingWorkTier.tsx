@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { Button, Input, Checkbox } from "@shared/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -15,6 +15,7 @@ import {
   usePlatformMessages,
   useSendPlatformMessage,
 } from "@/platform/features/messaging/hooks/usePlatformMessaging";
+import { exportPlatformMessagesCsv } from "@/platform/features/messaging/lib/exportPlatformMessagesCsv";
 import { usePlatformContacts } from "@/platform/features/contacts/hooks/usePlatformContacts";
 
 const CHANNEL_OPTIONS = ["sms", "whatsapp", "email"] as const;
@@ -75,9 +76,22 @@ export function MessagingWorkTier(): React.JSX.Element {
   return (
     <div className="space-y-4 text-start">
       <SectionCard title={t("platform.messaging.log")} icon={Plus}>
-        <Button type="button" className="min-h-11" icon={Plus} onClick={() => setComposeOpen(true)}>
-          {t("platform.messaging.compose")}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" className="min-h-11" icon={Plus} onClick={() => setComposeOpen(true)}>
+            {t("platform.messaging.compose")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11"
+            icon={Download}
+            disabled={!messages || messages.length === 0}
+            onClick={() => exportPlatformMessagesCsv(messages ?? [])}
+            title={t("platform.messaging.exportCsv")}
+          >
+            {t("platform.messaging.exportCsv")}
+          </Button>
+        </div>
       </SectionCard>
 
       {isError ? (

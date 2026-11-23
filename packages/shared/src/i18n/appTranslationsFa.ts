@@ -6971,6 +6971,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "platform.messaging.subtitle": "ارسال اطلاعیه‌ها به مخاطبین پلتفرم",
   "platform.messaging.log": "پیام‌ها",
   "platform.messaging.compose": "نگارش",
+  "platform.messaging.exportCsv": "خروجی CSV",
   "platform.messaging.channel": "کانال",
   "platform.messaging.channel.sms": "پیامک",
   "platform.messaging.channel.whatsapp": "واتس‌اپ",

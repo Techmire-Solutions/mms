@@ -7025,6 +7025,7 @@ export const APP_TRANSLATIONS_EN = {
   "platform.messaging.subtitle": "Broadcast announcements to platform contacts",
   "platform.messaging.log": "Messages",
   "platform.messaging.compose": "Compose",
+  "platform.messaging.exportCsv": "Export CSV",
   "platform.messaging.channel": "Channel",
   "platform.messaging.channel.sms": "SMS",
   "platform.messaging.channel.whatsapp": "WhatsApp",
