@@ -153,7 +153,10 @@ function TemplateModal({
             name="channel"
             value={channel}
             onChange={(value) => setChannel(value as typeof channel)}
-            options={PLATFORM_MESSAGING_CHANNELS.map((c) => ({ value: c, label: t(PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS[c]) }))}
+            options={PLATFORM_MESSAGING_CHANNELS.map((c) => ({
+              value: c,
+              label: t(PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS[c]),
+            }))}
           />
         </Field>
         <Field id="t-subject" label={t("platform.messaging.subject")}>

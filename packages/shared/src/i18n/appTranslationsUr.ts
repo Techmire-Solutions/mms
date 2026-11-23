@@ -6963,6 +6963,8 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "platform.messaging.status.failed": "ناکام",
   "platform.messaging.recipients": "وصول کنندگان",
   "platform.messaging.createdAt": "بنایا گیا",
+  "platform.messaging.scheduledAt": "شیڈولڈ",
+  "platform.messaging.sentAt": "بھیجا گیا",
   "platform.messaging.body": "پیغام",
   "platform.messaging.send": "بھیجیں",
   "platform.messaging.sent": "پیغام قطار میں شامل ہو گیا",

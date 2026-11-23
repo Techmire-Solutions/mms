@@ -19,9 +19,8 @@ import {
   useSendPlatformMessage,
 } from "@/platform/features/messaging/hooks/usePlatformMessaging";
 import { MessagingComposeModal } from "@/platform/features/messaging/components/MessagingComposeModal";
-import {
-  PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS,
-} from "@/platform/features/messaging/lib/platformMessagingChannels";
+import { MessagingDetailDrawer } from "@/platform/features/messaging/components/MessagingDetailDrawer";
+import { PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS } from "@/platform/features/messaging/lib/platformMessagingChannels";
 import { exportPlatformMessagesCsv } from "@/platform/features/messaging/lib/exportPlatformMessagesCsv";
 
 const STATUS_LABEL_KEYS: Record<PlatformMessageDto["status"], AppTranslationKey> = {
@@ -37,8 +36,14 @@ export function MessagingWorkTier(): React.JSX.Element {
   const { t } = useTranslation();
   const { viewingDeleted, toggleTrash } = useDirectoryTrashState();
   const [composeOpen, setComposeOpen] = useState(false);
+  const [selected, setSelected] = useState<PlatformMessageDto | null>(null);
 
-  const { data: messages, isLoading, isError, refetch } = usePlatformMessages({
+  const {
+    data: messages,
+    isLoading,
+    isError,
+    refetch,
+  } = usePlatformMessages({
     deleted: viewingDeleted,
   });
   const send = useSendPlatformMessage();
@@ -182,9 +187,13 @@ export function MessagingWorkTier(): React.JSX.Element {
         />
       ) : isLoading ? null : messages && messages.length === 0 ? (
         <EmptyState
-          title={viewingDeleted ? t("platform.messaging.trash") : t("platform.messaging.emptyTitle")}
+          title={
+            viewingDeleted ? t("platform.messaging.trash") : t("platform.messaging.emptyTitle")
+          }
           description={
-            viewingDeleted ? t("platform.messaging.trash") : t("platform.messaging.emptyDescription")
+            viewingDeleted
+              ? t("platform.messaging.trash")
+              : t("platform.messaging.emptyDescription")
           }
         />
       ) : (
@@ -201,6 +210,7 @@ export function MessagingWorkTier(): React.JSX.Element {
               </Badge>
             ),
           }}
+          onRowClick={(row) => setSelected(row)}
           selection={{
             selectedIds,
             onSelectOne: (id) => toggleSelected(id, !selectedIds.includes(id)),
@@ -210,6 +220,14 @@ export function MessagingWorkTier(): React.JSX.Element {
           }}
         />
       )}
+
+      {selected ? (
+        <MessagingDetailDrawer
+          message={selected}
+          onClose={() => setSelected(null)}
+          onDelete={(id) => void remove.mutateAsync(id)}
+        />
+      ) : null}
 
       {composeOpen ? (
         <MessagingComposeModal

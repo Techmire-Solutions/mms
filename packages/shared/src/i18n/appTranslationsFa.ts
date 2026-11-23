@@ -6989,6 +6989,8 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "platform.messaging.status.failed": "ناموفق",
   "platform.messaging.recipients": "گیرندگان",
   "platform.messaging.createdAt": "ایجاد شد",
+  "platform.messaging.scheduledAt": "زمان‌بندی‌شده",
+  "platform.messaging.sentAt": "ارسال‌شده",
   "platform.messaging.body": "پیام",
   "platform.messaging.send": "ارسال",
   "platform.messaging.sent": "پیام در صف قرار گرفت",

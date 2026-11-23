@@ -6884,6 +6884,8 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "platform.messaging.status.failed": "فشل",
   "platform.messaging.recipients": "المستلمون",
   "platform.messaging.createdAt": "أُنشئ",
+  "platform.messaging.scheduledAt": "مجدولة",
+  "platform.messaging.sentAt": "أُرسلت",
   "platform.messaging.body": "الرسالة",
   "platform.messaging.send": "إرسال",
   "platform.messaging.sent": "تم وضع الرسالة في قائمة الانتظار",

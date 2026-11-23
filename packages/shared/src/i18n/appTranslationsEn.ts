@@ -7043,6 +7043,8 @@ export const APP_TRANSLATIONS_EN = {
   "platform.messaging.status.failed": "Failed",
   "platform.messaging.recipients": "Recipients",
   "platform.messaging.createdAt": "Created",
+  "platform.messaging.scheduledAt": "Scheduled",
+  "platform.messaging.sentAt": "Sent",
   "platform.messaging.body": "Message",
   "platform.messaging.send": "Send",
   "platform.messaging.sent": "Message queued",
