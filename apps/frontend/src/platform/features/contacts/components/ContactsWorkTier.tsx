@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { Download, Plus, RotateCcw, Search, Users } from "lucide-react";
-import { Badge, Button, Input } from "@shared/ui";
+import { Badge, Button } from "@shared/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { SectionCard } from "@/components/app/SectionCard";
-import { Field } from "@/components/app/FormPrimitives";
-import { FormSelect } from "@/components/app/FormSelect";
 import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
@@ -36,8 +34,6 @@ import { exportPlatformContactsCsv } from "@/platform/features/contacts/lib/expo
 export function ContactsWorkTier(): React.JSX.Element {
   const { t } = useTranslation();
   const { viewingDeleted, toggleTrash } = useDirectoryTrashState();
-  const [search, setSearch] = useState("");
-  const [kind, setKind] = useState<PlatformContactDto["kind"] | "">("");
   const [editing, setEditing] = useState<PlatformContactDto | "new" | null>(null);
   const [selected, setSelected] = useState<PlatformContactDto | null>(null);
 
@@ -47,8 +43,6 @@ export function ContactsWorkTier(): React.JSX.Element {
     isError,
     refetch,
   } = usePlatformContacts({
-    search: search || undefined,
-    kind: kind || undefined,
     deleted: viewingDeleted,
   });
   const create = useCreatePlatformContact();
@@ -132,29 +126,6 @@ export function ContactsWorkTier(): React.JSX.Element {
     <div className="space-y-4 text-start">
       <SectionCard title={t("platform.contacts.directory")} icon={Search}>
         <div className="flex flex-wrap items-end gap-3">
-          <Field id="contacts-search" label={t("platform.contacts.search")}>
-            <Input
-              id="contacts-search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t("platform.contacts.searchHint")}
-            />
-          </Field>
-          <Field id="contacts-kind" label={t("platform.contacts.kind")}>
-            <FormSelect
-              id="contacts-kind"
-              name="kind"
-              value={kind}
-              onChange={(value) => setKind(value as PlatformContactDto["kind"] | "")}
-              options={[
-                { value: "", label: t("common.all") },
-                ...PLATFORM_CONTACT_KINDS.map((o) => ({
-                  value: o,
-                  label: t(PLATFORM_CONTACT_KIND_LABEL_KEYS[o]),
-                })),
-              ]}
-            />
-          </Field>
           {!viewingDeleted ? (
             <>
               <Button
@@ -229,6 +200,17 @@ export function ContactsWorkTier(): React.JSX.Element {
               </Badge>
             ),
           }}
+          filters={[
+            {
+              id: "kind",
+              label: t("platform.contacts.kind"),
+              options: PLATFORM_CONTACT_KINDS.map((o) => ({
+                value: o,
+                label: t(PLATFORM_CONTACT_KIND_LABEL_KEYS[o]),
+              })),
+              getValue: (row) => row.kind,
+            },
+          ]}
           onRowClick={(row) => setSelected(row)}
           selection={{
             selectedIds,
