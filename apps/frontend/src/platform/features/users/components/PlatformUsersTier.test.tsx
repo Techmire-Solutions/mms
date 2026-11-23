@@ -3,58 +3,33 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformUsersTier } from "@/platform/features/users/components/PlatformUsersTier";
 
-vi.mock("@/hooks/useTranslation", () => ({
-  useTranslation: () => ({
-    t: (k: string) => k,
-  }),
-}));
-
 vi.mock("@/platform/features/users/components/PlatformUsersWorkTier", () => ({
-  PlatformUsersWorkTier: () => <div data-testid="users-work-tier">Work Content</div>,
+  PlatformUsersWorkTier: () => <div>Work Content</div>,
 }));
 
 vi.mock("@/platform/features/users/components/PlatformUsersReportsTier", () => ({
-  PlatformUsersReportsTier: () => <div data-testid="users-reports-tier">Reports Content</div>,
+  PlatformUsersReportsTier: () => <div>Reports Content</div>,
 }));
 
 vi.mock("@/platform/features/users/components/PlatformUsersSetupTier", () => ({
-  PlatformUsersSetupTier: () => <div data-testid="users-setup-tier">Setup Content</div>,
+  PlatformUsersSetupTier: () => <div>Setup Content</div>,
 }));
 
 describe("PlatformUsersTier", () => {
-  it("renders subtabs with Work, Reports, and Setup", () => {
-    const html = renderToStaticMarkup(
-      <PlatformUsersTier activeSubTab="work" onSubTabChange={vi.fn()} />,
-    );
-
-    expect(html).toContain("module.work");
-    expect(html).toContain("module.reports");
-    expect(html).toContain("module.setup");
+  it("renders the work tier for the work tab", () => {
+    const html = renderToStaticMarkup(<PlatformUsersTier activeTab="work" />);
     expect(html).toContain("Work Content");
+    expect(html).not.toContain("Reports Content");
+    expect(html).not.toContain("Setup Content");
   });
 
-  it("renders reports content when activeSubTab is reports", () => {
-    const html = renderToStaticMarkup(
-      <PlatformUsersTier activeSubTab="reports" onSubTabChange={vi.fn()} />,
-    );
-
+  it("renders the reports tier for the reports tab", () => {
+    const html = renderToStaticMarkup(<PlatformUsersTier activeTab="reports" />);
     expect(html).toContain("Reports Content");
   });
 
-  it("renders setup content when activeSubTab is setup", () => {
-    const html = renderToStaticMarkup(
-      <PlatformUsersTier activeSubTab="setup" onSubTabChange={vi.fn()} />,
-    );
-
+  it("renders the setup tier for the setup tab", () => {
+    const html = renderToStaticMarkup(<PlatformUsersTier activeTab="setup" />);
     expect(html).toContain("Setup Content");
-  });
-
-  it("hides subtab bar when showSubTabBar is false", () => {
-    const html = renderToStaticMarkup(
-      <PlatformUsersTier activeSubTab="work" showSubTabBar={false} />,
-    );
-
-    expect(html).not.toContain('role="tablist"');
-    expect(html).toContain("Work Content");
   });
 });

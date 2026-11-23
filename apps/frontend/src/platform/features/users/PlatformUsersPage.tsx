@@ -89,7 +89,7 @@ export default function PlatformUsersPage(): React.JSX.Element {
         <PlatformUsersCommandMetrics admins={admins} loading={isLoading} error={isError} />
       }
     >
-      <PlatformUsersTier activeSubTab={activeTab as PlatformUsersSubTab} showSubTabBar={false} />
+      <PlatformUsersTier activeTab={activeTab as PlatformUsersSubTab} />
     </ModulePageShell>
   );
 }
