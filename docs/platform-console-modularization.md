@@ -117,6 +117,19 @@ The platform console now applies the tenant universal module architecture: every
 - Backend: `routes/platform/platformContacts.ts` + `platformMessaging.ts`, repositories/adapters/use-cases,
   `contracts/platformContacts.contract.ts` + `platformMessaging.contract.ts`.
 
+## Gold-standard convergence (§0–§8)
+
+Every platform module now applies the tenant universal-module norms (`mms-module-architecture`):
+
+- **Manifest + permission hook** — `platformModuleManifest.ts` + `usePlatformModulePermissions` (5 manifests: workspaces, users, consolidation, contacts, messaging).
+- **Command metrics** — each page renders a `ModuleCommandMetricsGrid` strip via `metricsStrip`.
+- **Work directories** — Contacts/Messaging/Consolidation use the shared `DataTable` (table + cards, single filter menu, persisted column layout via `tableId`, selection + `BulkSelectionBar`, row-click `DetailDrawerShell`). Workspaces/Users keep their bespoke provisioning/permission directories (specialized admin surfaces predating the shared DataTable).
+- **Data transfer** — CSV export (workspaces/users/contacts/messaging/consolidation) + CSV import (contacts via `ContactImportDialog`).
+- **Soft-delete** — Contacts + Messaging trash/restore (`?view=trash`, `ModuleTrashToggle`, restore routes).
+- **Setup tiers** — dirty-gated preferences for Workspaces (provisioning defaults), Consolidation (`consolidation_prefs`), Contacts (`contact_prefs`); Users permissions matrix; Messaging templates. Persisted via `platform_settings` (migrations `0274` consolidation_prefs, `0275` contact_prefs).
+- **Reports tiers** — KPI StatCards everywhere; Recharts pie charts (contacts by kind, messaging by channel); Consolidation report builder + CSV export.
+- **Form lifecycle** — shared `FormModal` with dirty guard + server-error mapping; extracted `ContactFormModal`, `MessagingComposeModal`, `ContactImportDialog`.
+
 ## Verification
 
 - `pnpm --filter mms-frontend typecheck` ✅
