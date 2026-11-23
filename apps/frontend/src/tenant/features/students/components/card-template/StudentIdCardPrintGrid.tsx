@@ -35,14 +35,17 @@ export function StudentIdCardPrintGrid({
     <div
       ref={printAreaRef}
       data-print-unclamp
-      className="id-card-print-container grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-dialog-scroll overflow-y-auto p-2 print:grid-cols-2 print:gap-3 print:max-h-none print:overflow-visible print:p-0"
+      className="id-card-print-container grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-dialog-scroll overflow-y-auto overflow-x-hidden p-2 justify-items-center print:grid-cols-2 print:gap-3 print:max-h-none print:overflow-visible print:p-0"
     >
       {items.map(({ student, sessionNames, guardianName, emergencyPhone, bloodGroup }) => {
         if (printMode === "both") {
           return (
-            <React.Fragment key={student.id}>
+            <div
+              key={student.id}
+              className="id-card-both-sides col-span-full w-full flex flex-wrap md:flex-nowrap items-center justify-center gap-4 py-2 break-inside-avoid print:break-inside-avoid"
+            >
               {/* Front Side */}
-              <div className="relative group">
+              <div className="relative group shrink-0 max-w-full">
                 <StudentCardPrintPreview
                   template={template}
                   student={student}
@@ -60,7 +63,7 @@ export function StudentIdCardPrintGrid({
               </div>
 
               {/* Back Side */}
-              <div className="relative group">
+              <div className="relative group shrink-0 max-w-full">
                 <StudentCardPrintPreview
                   template={template}
                   student={student}
@@ -76,14 +79,13 @@ export function StudentIdCardPrintGrid({
                   {t("students.idCard.backSide")}
                 </span>
               </div>
-            </React.Fragment>
+            </div>
           );
         }
 
-        const isFlipped =
-          printMode === "back"
-            ? !flippedCards[student.id]
-            : Boolean(flippedCards[student.id] !== globalFlipped);
+        const baseFlipped = printMode === "back";
+        const baseSide = globalFlipped ? !baseFlipped : baseFlipped;
+        const isFlipped = flippedCards[student.id] ? !baseSide : baseSide;
 
         return (
           <StudentIdCardFlipItem

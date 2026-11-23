@@ -103,6 +103,7 @@ export function StudentCardPrintPreview({
         position: "relative",
         width: size.width,
         minHeight: size.height,
+        maxWidth: "100%",
         background: printTokens.paper,
       }}
       className={`id-card-preview relative border border-border/80 rounded-xl shadow-sm overflow-hidden break-inside-avoid print:break-inside-avoid print:shadow-none print:border-black/30 print:bg-white ${className}`}

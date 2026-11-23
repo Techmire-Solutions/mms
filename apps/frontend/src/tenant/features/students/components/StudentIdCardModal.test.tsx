@@ -1,9 +1,20 @@
 import React from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { act } from "react";
+import { createRoot } from "react-dom/client";
 import type { Student } from "@mms/shared";
 import { StudentIdCardModal } from "./StudentIdCardModal";
 import { withQueryClient } from "@/test/queryClientTestUtils";
+
+const mockRefetchStudents = vi.fn().mockResolvedValue({});
+
+vi.mock("../hooks/useStudentsListQueries", () => ({
+  useStudentsByIds: vi.fn().mockImplementation(() => ({
+    data: undefined,
+    refetch: mockRefetchStudents,
+  })),
+}));
 
 vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
@@ -18,8 +29,10 @@ vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string | number>) => {
       if (params?.count) return `Batch (${params.count})`;
+      if (key === "students.cardTemplate.field.photo") return "STUDENT PHOTO";
       return key;
     },
+    isRtl: false,
   }),
 }));
 
@@ -30,7 +43,9 @@ vi.mock("@/tenant/hooks/usePermissions", () => ({
 vi.mock("@/tenant/hooks/useBranding", () => ({
   useBranding: () => ({
     madrasaName: "Test Madrasa",
-    logoUrl: "https://example.com/logo.png",
+    phone: "+1 555-0000",
+    email: "info@testmadrasa.com",
+    address: "123 Main St",
   }),
 }));
 
@@ -65,7 +80,12 @@ const mockStudent: Student = {
 };
 
 describe("StudentIdCardModal Component", () => {
-  it("renders printable ID card preview with student details", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.print = vi.fn();
+  });
+
+  it("renders printable ID card preview with student details and photo placeholder", () => {
     const html = renderToStaticMarkup(
       withQueryClient(
         <StudentIdCardModal
@@ -94,6 +114,8 @@ describe("StudentIdCardModal Component", () => {
     expect(html).toContain("Quran Hifz 2025");
     expect(html).toContain("Abu Zayd");
     expect(html).toContain("O+");
+    expect(html).toContain("STUDENT PHOTO");
+    expect(html).toContain("STUDENT IDENTITY CARD");
   });
 
   it("returns null when closed or items empty", () => {
@@ -101,5 +123,140 @@ describe("StudentIdCardModal Component", () => {
       withQueryClient(<StudentIdCardModal open={false} onClose={vi.fn()} items={[]} />),
     );
     expect(htmlClosed).toBe("");
+  });
+
+  it("switches cleanly between FRONT ONLY, BACK ONLY, and BOTH SIDES", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        withQueryClient(
+          <StudentIdCardModal
+            open={true}
+            onClose={vi.fn()}
+            items={[
+              {
+                student: mockStudent,
+                sessionNames: ["Quran Hifz 2025"],
+                guardianName: "Abu Zayd",
+                bloodGroup: "O+",
+              },
+            ]}
+          />,
+        ),
+      );
+    });
+
+    // Default is FRONT ONLY: shows front content
+    expect(container.textContent).toContain("STUDENT IDENTITY CARD");
+
+    // Click BACK ONLY mode
+    const backBtn = Array.from(container.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("students.idCard.printBackOnly"),
+    );
+    expect(backBtn?.tagName).toBe("BUTTON");
+
+    await act(async () => {
+      backBtn?.click();
+    });
+
+    expect(container.textContent).toContain("TERMS & EMERGENCY INSTRUCTIONS");
+
+    // Click BOTH SIDES mode
+    const bothBtn = Array.from(container.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("students.idCard.printBothSides"),
+    );
+    expect(bothBtn?.tagName).toBe("BUTTON");
+
+    await act(async () => {
+      bothBtn?.click();
+    });
+
+    // In BOTH SIDES, both front and back sides are rendered simultaneously
+    expect(container.textContent).toContain("STUDENT IDENTITY CARD");
+    expect(container.textContent).toContain("TERMS & EMERGENCY INSTRUCTIONS");
+
+    // Switch back to FRONT ONLY mode
+    const frontBtn = Array.from(container.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("students.idCard.printFrontOnly"),
+    );
+    expect(frontBtn?.tagName).toBe("BUTTON");
+
+    await act(async () => {
+      frontBtn?.click();
+    });
+
+    expect(container.textContent).toContain("STUDENT IDENTITY CARD");
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("auto-fetches student data when Print ID Card button is clicked", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        withQueryClient(
+          <StudentIdCardModal
+            open={true}
+            onClose={vi.fn()}
+            items={[{ student: mockStudent, sessionNames: [] }]}
+          />,
+        ),
+      );
+    });
+
+    // refetchStudents was called on modal open
+    expect(mockRefetchStudents).toHaveBeenCalledTimes(1);
+
+    const printBtn = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent?.trim() === "students.idCard.print",
+    );
+    expect(printBtn?.tagName).toBe("BUTTON");
+
+    await act(async () => {
+      printBtn?.click();
+    });
+
+    // refetchStudents called again on Print click
+    expect(mockRefetchStudents).toHaveBeenCalledTimes(2);
+    expect(window.print).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it("handles empty optional fields cleanly with fallback values", () => {
+    const minimalStudent: Student = {
+      id: "std-minimal-1",
+      contactId: "cnt-minimal-1",
+      name: "Minimal Student",
+      status: "active",
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-01-01T00:00:00Z",
+    };
+
+    const html = renderToStaticMarkup(
+      withQueryClient(
+        <StudentIdCardModal
+          open={true}
+          onClose={vi.fn()}
+          items={[{ student: minimalStudent, sessionNames: [] }]}
+        />,
+      ),
+    );
+
+    expect(html).toContain("Minimal Student");
+    expect(html).toContain("STUDENT PHOTO");
+    expect(html).toContain("—");
   });
 });
