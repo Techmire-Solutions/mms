@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Download, Plus, RotateCcw, Search, Users } from "lucide-react";
-import { Button, Input } from "@shared/ui";
+import { Badge, Button, Input } from "@shared/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -219,6 +219,14 @@ export function ContactsWorkTier(): React.JSX.Element {
           label={t("platform.contacts.directory")}
           data={contacts ?? []}
           columns={columns}
+          card={{
+            title: (row) => row.name,
+            badge: (row) => (
+              <Badge tone="muted" size="sm">
+                {t(PLATFORM_CONTACT_KIND_LABEL_KEYS[row.kind])}
+              </Badge>
+            ),
+          }}
           selection={{
             selectedIds,
             onSelectOne: (id) => toggleSelected(id, !selectedIds.includes(id)),

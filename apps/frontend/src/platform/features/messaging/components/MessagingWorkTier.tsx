@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Download, Plus } from "lucide-react";
-import { Button, Input, Checkbox } from "@shared/ui";
+import { Badge, Button, Input, Checkbox } from "@shared/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -77,7 +77,12 @@ export function MessagingWorkTier(): React.JSX.Element {
     <div className="space-y-4 text-start">
       <SectionCard title={t("platform.messaging.log")} icon={Plus}>
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" className="min-h-11" icon={Plus} onClick={() => setComposeOpen(true)}>
+          <Button
+            type="button"
+            className="min-h-11"
+            icon={Plus}
+            onClick={() => setComposeOpen(true)}
+          >
             {t("platform.messaging.compose")}
           </Button>
           <Button
@@ -110,6 +115,14 @@ export function MessagingWorkTier(): React.JSX.Element {
           label={t("platform.messaging.log")}
           data={messages ?? []}
           columns={columns}
+          card={{
+            title: (row) => row.subject ?? row.channel,
+            badge: (row) => (
+              <Badge tone="muted" size="sm">
+                {t(STATUS_LABEL_KEYS[row.status])}
+              </Badge>
+            ),
+          }}
         />
       )}
 
