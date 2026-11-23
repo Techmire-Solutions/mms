@@ -48,6 +48,8 @@ interface UseStudentFormActionHandlersOptions {
   setDuplicateConfirmOpen: (value: boolean) => void;
   formInstanceId: string;
   onBaselineReset?: (data: Partial<Student>) => void;
+  contactDobOverride?: string | null;
+  setContactDobOverride?: (dob: string | null) => void;
 }
 
 export function useStudentFormActionHandlers({
@@ -75,6 +77,8 @@ export function useStudentFormActionHandlers({
   setDuplicateConfirmOpen,
   formInstanceId,
   onBaselineReset,
+  contactDobOverride,
+  setContactDobOverride,
 }: UseStudentFormActionHandlersOptions) {
   const clearDuplicatePrompt = useCallback(() => {
     setDuplicateConfirmOpen(false);
@@ -104,6 +108,8 @@ export function useStudentFormActionHandlers({
         student,
         linkedContact,
         linkedGenderRaw: linkedContact?.gender?.trim() || "",
+        effectiveDob: contactDobOverride ?? (linkedContact?.dob || ""),
+        updateContact,
         validationContext: {
           settings,
           enabledTabs,
@@ -155,6 +161,7 @@ export function useStudentFormActionHandlers({
   };
 
   const handleContactSelect = (id: string | number | null): void => {
+    setContactDobOverride?.(null);
     const patch = buildContactSelectPatch(id, student, studentDraft, nextGrNumber, autoGenerateId);
     if (patch) updateDraft(patch);
   };
@@ -176,6 +183,25 @@ export function useStudentFormActionHandlers({
     }
   };
 
+  const handleStudentDobChange = async (dob: string): Promise<void> => {
+    setContactDobOverride?.(dob);
+    if (!studentDraft.contactId || !linkedContact) return;
+    try {
+      await updateContact.mutateAsync({
+        id: String(studentDraft.contactId),
+        contact: { ...linkedContact, dob },
+      });
+      setValidationErrors(validationErrors.filter((err) => err.fieldId !== "dob"));
+    } catch (err) {
+      const validationMessage = getApiValidationMessage(err);
+      notify.error(
+        t("students.saveFailed"),
+        validationMessage ? { description: validationMessage } : undefined,
+      );
+      reportClientError(err, { scope: "students.dob_update" });
+    }
+  };
+
   const errorSummary = (() => {
     if (typedDuplicateReason) return t(DUPLICATE_ERROR_KEYS[typedDuplicateReason]);
     return "";
@@ -192,6 +218,7 @@ export function useStudentFormActionHandlers({
     confirmDuplicateSave,
     handleContactSelect,
     handleStudentAvatarChange,
+    handleStudentDobChange,
     errorSummary,
     validationErrorSummary,
     duplicateErrorKeys: DUPLICATE_ERROR_KEYS,

@@ -1,9 +1,18 @@
 import { Calendar, Mail, Phone, User } from "lucide-react";
 import ContactPicker from "@/components/contactLink/ContactPicker";
+import { DatePicker } from "@/components/app/DatePicker";
+import { Field } from "@/components/app/FormField";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
+import { cn } from "@/lib/utils";
 import { getGenderIcon, getGenderIconClass } from "@/lib/ui/genderUi";
-import { getPrimaryEmail, getPrimaryPhone, type Contact, type FieldDefinition } from "@mms/shared";
+import {
+  getPrimaryEmail,
+  getPrimaryPhone,
+  todayISO,
+  type Contact,
+  type FieldDefinition,
+} from "@mms/shared";
 import {
   ContactProfileValue,
   resolveStudentFieldLabel,
@@ -17,6 +26,7 @@ export interface StudentContactSectionProps {
   linkedGenderRaw?: string;
   linkedGenderLabel: string;
   linkedDob: string;
+  rawDob?: string;
   genderError?: string;
   dobError?: string;
   fields: Record<string, FieldDefinition[]>;
@@ -25,6 +35,8 @@ export interface StudentContactSectionProps {
   getFieldError: StudentFieldErrorGetter;
   onContactSelect: (id: string | number | null) => void;
   onStudentAvatarChange: (avatarUrl: string) => void | Promise<void>;
+  onStudentDobChange?: (dob: string) => void | Promise<void>;
+  formInstanceId?: string;
 }
 
 export function StudentContactSection({
@@ -34,6 +46,7 @@ export function StudentContactSection({
   linkedGenderRaw,
   linkedGenderLabel,
   linkedDob,
+  rawDob,
   genderError,
   dobError,
   fields,
@@ -42,6 +55,8 @@ export function StudentContactSection({
   getFieldError,
   onContactSelect,
   onStudentAvatarChange,
+  onStudentDobChange,
+  formInstanceId,
 }: StudentContactSectionProps): React.JSX.Element | null {
   const { t } = useTranslation();
   const showContact = isFieldEnabled("contactId");
@@ -119,12 +134,39 @@ export function StudentContactSection({
                 />
               ) : null}
               {showDob ? (
-                <ContactProfileValue
-                  label={dobLabel}
-                  value={linkedDob}
-                  icon={Calendar}
-                  error={dobError}
-                />
+                onStudentDobChange ? (
+                  <Field
+                    label={dobLabel}
+                    hint={t("students.form.contactFieldHint")}
+                    error={dobError}
+                    required={isFieldRequired("dob")}
+                    id={`sf-${formInstanceId || "new"}-dob`}
+                  >
+                    <DatePicker
+                      id={`sf-${formInstanceId || "new"}-dob`}
+                      name="dob"
+                      autoComplete="bday"
+                      value={rawDob ?? linkedContact?.dob ?? undefined}
+                      onChange={(dateStr) => {
+                        void onStudentDobChange(dateStr);
+                      }}
+                      required={isFieldRequired("dob")}
+                      max={todayISO()}
+                      allowManualInput
+                      className={cn(
+                        dobError &&
+                          "border-destructive focus-within:border-destructive focus-within:ring-destructive",
+                      )}
+                    />
+                  </Field>
+                ) : (
+                  <ContactProfileValue
+                    label={dobLabel}
+                    value={linkedDob}
+                    icon={Calendar}
+                    error={dobError}
+                  />
+                )
               ) : null}
             </div>
           ) : null}

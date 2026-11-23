@@ -19,6 +19,7 @@ export interface StudentFormTabContentProps {
   linkedGenderRaw?: string;
   linkedGenderLabel: string;
   linkedDob: string;
+  rawDob?: string;
   excludeIds: string[];
   isGrAutoAssigned: boolean;
   grInputDisabled: boolean;
@@ -34,6 +35,7 @@ export interface StudentFormTabContentProps {
   getFieldError: StudentFieldErrorGetter;
   onContactSelect: (id: string | number | null) => void;
   onStudentAvatarChange: (avatarUrl: string) => void | Promise<void>;
+  onStudentDobChange?: (dob: string) => void | Promise<void>;
   onGrNumberChange: (value: string) => void;
   onDraftChange: (patch: Partial<Student>) => void;
 }
@@ -45,6 +47,7 @@ export const StudentFormTabContent = function StudentFormTabContent({
   linkedGenderRaw,
   linkedGenderLabel,
   linkedDob,
+  rawDob,
   excludeIds,
   isGrAutoAssigned,
   grInputDisabled,
@@ -60,6 +63,7 @@ export const StudentFormTabContent = function StudentFormTabContent({
   getFieldError,
   onContactSelect,
   onStudentAvatarChange,
+  onStudentDobChange,
   onGrNumberChange,
   onDraftChange,
 }: StudentFormTabContentProps): React.JSX.Element {
@@ -75,6 +79,7 @@ export const StudentFormTabContent = function StudentFormTabContent({
         linkedGenderRaw={linkedGenderRaw}
         linkedGenderLabel={linkedGenderLabel}
         linkedDob={linkedDob}
+        rawDob={rawDob}
         genderError={getFieldError("gender")}
         dobError={getFieldError("dob")}
         fields={fields}
@@ -83,6 +88,8 @@ export const StudentFormTabContent = function StudentFormTabContent({
         getFieldError={getFieldError}
         onContactSelect={onContactSelect}
         onStudentAvatarChange={onStudentAvatarChange}
+        onStudentDobChange={onStudentDobChange}
+        formInstanceId={formInstanceId}
       />
       <StudentGuardianSection
         formInstanceId={formInstanceId}
