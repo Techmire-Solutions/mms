@@ -1403,6 +1403,14 @@
     display: none !important;
   }
 
+  /* Radix / React portals overlay to <body> outside #root. When an overlay dialog
+     is active, suppress the background application root (#root) so background tables,
+     pagination, and footers never bleed into the printed document. */
+  body:has([role="dialog"]) #root,
+  body[data-print-modal-active] #root {
+    display: none !important;
+  }
+
   /* Radix portals overlays to <body>, OUTSIDE the app tree, so the rules above
      never reach them. The backdrop is a full-viewport `bg-sidebar/90` scrim and
      `print-color-adjust: exact` (below) would force it to print as a solid dark

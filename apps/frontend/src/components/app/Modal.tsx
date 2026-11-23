@@ -164,7 +164,7 @@ export function Modal<K extends string = string>({
       onClose={onClose}
       dismissible={dismissible}
       priority={priority}
-      containerClassName="flex items-center justify-center p-3 sm:p-4"
+      containerClassName="flex items-center justify-center p-3 sm:p-4 print:p-0 print:m-0 print:block"
     >
       {({ containerRef }) => (
         <m.div
@@ -181,7 +181,7 @@ export function Modal<K extends string = string>({
           aria-label={title ? undefined : ariaLabel}
           data-print-unclamp
           className={cn(
-            "relative @container bg-card rounded-2xl border border-foreground/12 shadow-surface-lg w-full z-elevated max-h-modal flex flex-col min-w-0",
+            "relative @container bg-card rounded-2xl border border-foreground/12 shadow-surface-lg w-full z-elevated max-h-modal flex flex-col min-w-0 print:border-none print:shadow-none print:rounded-none print:bg-transparent print:p-0 print:m-0 print:max-h-none print:overflow-visible print:w-auto",
             SIZE[effectiveSize],
             panelClassName,
           )}
@@ -198,14 +198,19 @@ export function Modal<K extends string = string>({
               progressLabel={progressLabel}
               onClose={onClose}
               dismissible={dismissible}
+              className="print:hidden"
             />
           ) : null}
 
-          {errors.length > 0 && <FormErrorBanner errors={errors} onSelectError={onSelectError} />}
+          {errors.length > 0 && (
+            <div data-print-hide className="print:hidden">
+              <FormErrorBanner errors={errors} onSelectError={onSelectError} />
+            </div>
+          )}
 
           <div
             className={cn(
-              "flex-1 overscroll-contain p-4 sm:p-6",
+              "flex-1 overscroll-contain p-4 sm:p-6 print:p-0 print:m-0 print:overflow-visible print:space-y-0",
               tabs && activeTab !== undefined && onTabChange
                 ? "overflow-hidden flex flex-col min-h-0"
                 : "overflow-y-auto space-y-4",
@@ -221,7 +226,10 @@ export function Modal<K extends string = string>({
           </div>
 
           {resolvedFooter && (
-            <div className="relative z-20 px-4 py-3 sm:px-6 border-t border-border/40 bg-muted/20 flex items-center justify-end rounded-b-2xl">
+            <div
+              data-print-hide
+              className="relative z-20 px-4 py-3 sm:px-6 border-t border-border/40 bg-muted/20 flex items-center justify-end rounded-b-2xl print:hidden"
+            >
               {resolvedFooter}
             </div>
           )}

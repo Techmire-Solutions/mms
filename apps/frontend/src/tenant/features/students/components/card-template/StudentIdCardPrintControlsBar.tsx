@@ -36,7 +36,10 @@ export function StudentIdCardPrintControlsBar({
   );
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border text-xs print:hidden">
+    <div
+      data-print-hide
+      className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border text-xs print:hidden"
+    >
       {/* Side Mode Selector */}
       <CompactSegmentedControl
         options={options}
