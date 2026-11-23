@@ -743,6 +743,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "platform.consolidation.dateFrom": "من",
   "platform.consolidation.dateTo": "إلى",
   "platform.consolidation.run": "توحيد",
+  "platform.consolidation.exportCsv": "تصدير CSV",
   "platform.consolidation.deleted": "تم حذف المجموعة",
   "platform.consolidation.deleteFailed": "تعذّر حذف المجموعة",
   "platform.consolidation.reportFailed": "تعذّر إعداد التوحيد.",

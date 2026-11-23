@@ -748,6 +748,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "platform.consolidation.dateFrom": "سے",
   "platform.consolidation.dateTo": "تک",
   "platform.consolidation.run": "یکجا کریں",
+  "platform.consolidation.exportCsv": "CSV برآمد کریں",
   "platform.consolidation.deleted": "گروپ حذف ہو گیا",
   "platform.consolidation.deleteFailed": "گروپ حذف نہیں ہو سکا",
   "platform.consolidation.reportFailed": "استحکام تیار نہیں ہو سکا۔",

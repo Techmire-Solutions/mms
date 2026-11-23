@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Download } from "lucide-react";
 import { todayISO, type ConsolidationReportQuery } from "@mms/shared";
 import { Button } from "@shared/ui";
 import { DatePicker } from "@/components/app/DatePicker";
@@ -9,6 +9,7 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ConsolidationReportView } from "@/platform/features/consolidation/components/ConsolidationReportView";
+import { exportConsolidationReportCsv } from "@/platform/features/consolidation/lib/exportConsolidationReportCsv";
 import {
   useConsolidationGroups,
   useConsolidationReport,
@@ -72,6 +73,17 @@ export function PlatformConsolidationReportsTier(): React.JSX.Element {
               onClick={() => setPeriod({ dateFrom, dateTo })}
             >
               {t("platform.consolidation.run")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11"
+              icon={Download}
+              disabled={!report.data}
+              onClick={() => report.data && exportConsolidationReportCsv(report.data)}
+              title={t("platform.consolidation.exportCsv")}
+            >
+              {t("platform.consolidation.exportCsv")}
             </Button>
           </div>
         </SectionCard>

@@ -742,6 +742,7 @@ export const APP_TRANSLATIONS_EN = {
   "platform.consolidation.dateFrom": "From",
   "platform.consolidation.dateTo": "To",
   "platform.consolidation.run": "Consolidate",
+  "platform.consolidation.exportCsv": "Export CSV",
   "platform.consolidation.deleted": "Group deleted",
   "platform.consolidation.deleteFailed": "Couldn't delete the group",
   "platform.consolidation.reportFailed": "Couldn't build the consolidation.",

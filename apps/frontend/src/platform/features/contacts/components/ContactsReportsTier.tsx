@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { StatCard } from "@/components/app/StatCard";
 import { SectionCard } from "@/components/app/SectionCard";
 import { ReportChartCard } from "@/components/reports/ReportChartCard";
+import { chartTooltipStyle } from "@/components/app/ChartGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformContactsMetrics } from "@/platform/features/contacts/hooks/usePlatformContacts";
 import {
@@ -62,7 +63,7 @@ export function ContactsReportsTier(): React.JSX.Element {
                 <Cell key={entry.name} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip contentStyle={chartTooltipStyle()} />
           </PieChart>
         </ReportChartCard>
       </SectionCard>

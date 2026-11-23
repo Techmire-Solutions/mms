@@ -755,6 +755,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "platform.consolidation.dateFrom": "از",
   "platform.consolidation.dateTo": "تا",
   "platform.consolidation.run": "تلفیق",
+  "platform.consolidation.exportCsv": "خروجی CSV",
   "platform.consolidation.deleted": "گروه حذف شد",
   "platform.consolidation.deleteFailed": "حذف گروه ممکن نشد",
   "platform.consolidation.reportFailed": "تهیه تلفیق ممکن نشد.",
