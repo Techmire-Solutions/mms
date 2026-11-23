@@ -31,6 +31,17 @@ vi.mock("@/platform/features/workspaces/components/PlatformWorkspaceList", () =>
   default: () => <div data-testid="platform-workspaces-list">Workspaces Content</div>,
 }));
 
+vi.mock("@/platform/features/workspaces/hooks/usePlatformWorkspaceMetrics", () => ({
+  usePlatformWorkspaceMetrics: () => ({
+    data: { total: 0, active: 0, inactive: 0 },
+    isLoading: false,
+    isError: false,
+  }),
+}));
+vi.mock("@/platform/features/workspaces/components/PlatformWorkspacesCommandMetrics", () => ({
+  PlatformWorkspacesCommandMetrics: () => <div>workspaces-metrics</div>,
+}));
+
 describe("PlatformWorkspacesPage", () => {
   it("renders workspaces directory with header and onboarding action", () => {
     const html = renderToStaticMarkup(

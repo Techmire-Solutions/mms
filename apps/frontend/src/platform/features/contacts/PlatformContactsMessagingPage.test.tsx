@@ -28,6 +28,12 @@ vi.mock("@/platform/features/contacts/components/ContactsReportsTier", () => ({
 vi.mock("@/platform/features/contacts/components/ContactsSetupTier", () => ({
   ContactsSetupTier: () => <div>contacts-setup</div>,
 }));
+vi.mock("@/platform/features/contacts/components/PlatformContactsCommandMetrics", () => ({
+  PlatformContactsCommandMetrics: () => <div>contacts-metrics</div>,
+}));
+vi.mock("@/platform/features/messaging/components/PlatformMessagingCommandMetrics", () => ({
+  PlatformMessagingCommandMetrics: () => <div>messaging-metrics</div>,
+}));
 vi.mock("@/platform/features/messaging/components/MessagingWorkTier", () => ({
   MessagingWorkTier: () => <div>messaging-work</div>,
 }));
@@ -36,6 +42,21 @@ vi.mock("@/platform/features/messaging/components/MessagingReportsTier", () => (
 }));
 vi.mock("@/platform/features/messaging/components/MessagingSetupTier", () => ({
   MessagingSetupTier: () => <div>messaging-setup</div>,
+}));
+
+vi.mock("@/platform/features/contacts/hooks/usePlatformContacts", () => ({
+  usePlatformContactsMetrics: () => ({
+    data: { total: 0, reachableEmail: 0, reachablePhone: 0 },
+    isLoading: false,
+    isError: false,
+  }),
+}));
+vi.mock("@/platform/features/messaging/hooks/usePlatformMessaging", () => ({
+  usePlatformMessagingMetrics: () => ({
+    data: { total: 0, byStatus: {} },
+    isLoading: false,
+    isError: false,
+  }),
 }));
 
 describe("platform Contacts + Messaging module pages", () => {
