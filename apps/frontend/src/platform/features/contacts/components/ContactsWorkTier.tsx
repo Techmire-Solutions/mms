@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Download, Plus, Search } from "lucide-react";
 import { Button, Input } from "@shared/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -17,6 +17,7 @@ import {
   usePlatformContacts,
   useUpdatePlatformContact,
 } from "@/platform/features/contacts/hooks/usePlatformContacts";
+import { exportPlatformContactsCsv } from "@/platform/features/contacts/lib/exportPlatformContactsCsv";
 
 const KIND_OPTIONS = ["platform_operator", "workspace_admin", "external"] as const;
 
@@ -130,6 +131,17 @@ export function ContactsWorkTier(): React.JSX.Element {
           </Field>
           <Button type="button" className="min-h-11" icon={Plus} onClick={() => setEditing("new")}>
             {t("platform.contacts.add")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11"
+            icon={Download}
+            disabled={!contacts || contacts.length === 0}
+            onClick={() => exportPlatformContactsCsv(contacts ?? [])}
+            title={t("platform.contacts.exportCsv")}
+          >
+            {t("platform.contacts.exportCsv")}
           </Button>
         </div>
       </SectionCard>

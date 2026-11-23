@@ -6850,6 +6850,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "platform.contacts.phone": "الهاتف",
   "platform.contacts.notes": "ملاحظات",
   "platform.contacts.add": "إضافة جهة اتصال",
+  "platform.contacts.exportCsv": "تصدير CSV",
   "platform.contacts.edit": "تعديل جهة الاتصال",
   "platform.contacts.saved": "تم حفظ جهة الاتصال",
   "platform.contacts.loadFailed": "تعذّر تحميل جهات الاتصال",
