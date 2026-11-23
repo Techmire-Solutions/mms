@@ -1,5 +1,6 @@
 import type { FacultyRecord } from "@mms/shared";
 import type { FacultyWriteGuards } from "./facultyWriteHelpers.js";
+import type { FacultyContactRequirements } from "./facultyWriteGuards.js";
 
 export interface CreateFacultyResult {
   record: FacultyRecord;
@@ -40,6 +41,8 @@ export interface CreateFacultyOptions {
   guards?: FacultyWriteGuards;
   /** Present on batch writes: defers reconcile + broadcast to the caller. */
   batch?: FacultyBatchSideEffects;
+  /** Preloaded contact-eligibility requirements; batch writers load once and reuse. */
+  contactRequirements?: FacultyContactRequirements;
 }
 
 /** Options for the single-record update path (batch deferred side effects optional). */
@@ -51,4 +54,6 @@ export interface UpdateFacultyOptions {
   batch?: FacultyBatchSideEffects;
   /** `updatedAt` the client read — enforces the 409 compare-and-set path. */
   expectedUpdatedAt?: string;
+  /** Preloaded contact-eligibility requirements; batch writers load once and reuse. */
+  contactRequirements?: FacultyContactRequirements;
 }

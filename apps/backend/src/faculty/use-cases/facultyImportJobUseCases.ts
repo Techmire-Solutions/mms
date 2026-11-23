@@ -10,7 +10,10 @@ import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSys
 import { tenantUserHasPermission } from "../../lib/tenantRoleCatalog.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { logger } from "../../lib/logger.js";
-import type { FacultyBatchSideEffects } from "./facultyWriteUseCases.js";
+import {
+  loadFacultyContactRequirements,
+  type FacultyBatchSideEffects,
+} from "./facultyWriteUseCases.js";
 
 /** Cap recorded row errors so a fully-invalid file cannot grow the job payload. */
 const MAX_RECORDED_FAILURES = 5;
@@ -75,6 +78,9 @@ export async function runFacultyMembersImportJob(
     context.userId,
     "faculty.delete",
   );
+  // Load the contact-eligibility requirements once for the whole batch (the
+  // per-row create/update path would otherwise re-read them on every record).
+  const contactRequirements = await loadFacultyContactRequirements();
 
   for (let i = 0; i < total; i += 1) {
     const row = rows[i];
@@ -97,7 +103,7 @@ export async function runFacultyMembersImportJob(
 
       let savedId: string | undefined;
       if (existingId) {
-        const updated = await updateFacultyById(existingId, patch, { batch });
+        const updated = await updateFacultyById(existingId, patch, { batch, contactRequirements });
         savedId = updated ? String(updated.id) : undefined;
       } else {
         const contactId = row.contactId?.trim();
@@ -106,7 +112,7 @@ export async function runFacultyMembersImportJob(
         // preview probe, which exists for interactive forms only.
         const created = await createFaculty(
           { contactId, ...patch },
-          { batch, canRestore, skipEmployeeIdPreview: true },
+          { batch, canRestore, skipEmployeeIdPreview: true, contactRequirements },
         );
         savedId = String(created.record.id);
       }

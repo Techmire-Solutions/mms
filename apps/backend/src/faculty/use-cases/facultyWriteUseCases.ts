@@ -54,7 +54,7 @@ function collectFacultyBatchContacts(
  * the historical defaults (email required, phone not required) when preferences
  * cannot be read, so a transient config read failure never blocks a write.
  */
-async function loadFacultyContactRequirements(): Promise<FacultyContactRequirements> {
+export async function loadFacultyContactRequirements(): Promise<FacultyContactRequirements> {
   try {
     const settings = normalizeFacultyModulePreferences(await loadFacultyModulePreferences());
     return {
@@ -77,7 +77,8 @@ export async function createFaculty(
   options: CreateFacultyOptions = {},
 ): Promise<CreateFacultyResult> {
   const guards = options.guards ?? defaultFacultyWriteGuards;
-  const contactRequirements = await loadFacultyContactRequirements();
+  const contactRequirements =
+    options.contactRequirements ?? (await loadFacultyContactRequirements());
   const result = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) throw new Error("Tenant context required");
@@ -200,7 +201,8 @@ export async function updateFacultyById(
   options: UpdateFacultyOptions = {},
 ): Promise<FacultyRecord | null> {
   const guards = options.guards ?? defaultFacultyWriteGuards;
-  const contactRequirements = await loadFacultyContactRequirements();
+  const contactRequirements =
+    options.contactRequirements ?? (await loadFacultyContactRequirements());
   const saved = await runInTransaction(async () => {
     const tenant = getRequestTenant();
     if (!tenant) return null;
