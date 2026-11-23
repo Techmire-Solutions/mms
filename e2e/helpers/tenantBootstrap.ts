@@ -5,7 +5,13 @@ import { expect, type Page } from "@playwright/test";
 import { loginTenant } from "./moduleTiers.js";
 import { ensureE2ePlatformAdmin, setTenantAdminPassword } from "./platformAdminSeeder.js";
 
-export { ensureE2ePlatformAdmin, setTenantAdminPassword } from "./platformAdminSeeder.js";
+export {
+  assertBrandingIdentity,
+  assertTenantProvisioningInvariants,
+  assertWorkspaceMadrasaName,
+  ensureE2ePlatformAdmin,
+  setTenantAdminPassword,
+} from "./platformAdminSeeder.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const backendDir = path.resolve(__dirname, "../../apps/backend");
@@ -154,16 +160,13 @@ export async function bootstrapAuthenticatedTenant(
   await page.fill("#firstName", "Resp");
   await page.fill("#lastName", "Admin");
   await page.fill("#email", adminEmail);
-  if (
-    await page
-      .locator("#password")
-      .isVisible()
-      .catch(() => false)
-  ) {
-    await page.fill("#password", adminPassword);
-    await page.fill("#confirmPassword", adminPassword);
+  await page.selectOption("#gender", "male");
+  const temporaryPasswordMode = page.getByRole("button", { name: /set temporary password/i });
+  if (await temporaryPasswordMode.isVisible().catch(() => false)) {
+    await temporaryPasswordMode.click();
+    await page.fill("#admin-password", adminPassword);
+    await page.fill("#admin-password-confirm", adminPassword);
   }
-  await page.check("#terms");
 
   // Step 5 Review + create
   await page.getByRole("button", { name: /Continue/i }).click();

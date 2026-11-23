@@ -6,15 +6,17 @@
  */
 import type { Contact, FieldDefinition } from "../contacts/contactTypes.js";
 import { contactHasAddress, contactHasEducation } from "../contacts/contactProfilePresence.js";
+import { contactHasEmail, contactHasPhone } from "../contacts/contactEntityTypes.js";
 import { listStudentSystemFormFieldKeys } from "./studentFormCustomFields.js";
 
 /** Fields that are always required (a student row must link a contact). */
 export const STUDENT_ALWAYS_REQUIRED_FIELD_KEYS: ReadonlySet<string> = new Set(["contactId"]);
 
 /**
- * Fields Setup never lists as requirable: `contactId` is always required and the
+ * Fields Setup never lists as requirable: `contactId` is always required, the
  * registration/system columns (GR number, status, notes, registration date) are
- * owned by their own surfaces, not the required-fields list.
+ * owned by their own surfaces, and `gender` is already required by the Contacts
+ * module's field seed — the student card does not re-check it.
  */
 export const STUDENT_NON_REQUIRABLE_FIELD_KEYS: ReadonlySet<string> = new Set([
   "contactId",
@@ -22,6 +24,7 @@ export const STUDENT_NON_REQUIRABLE_FIELD_KEYS: ReadonlySet<string> = new Set([
   "status",
   "notes",
   "registeredDate",
+  "gender",
 ]);
 
 /**
@@ -34,6 +37,8 @@ export const STUDENT_CONTACT_PROFILE_FIELD_KEYS: ReadonlySet<string> = new Set([
   "contactRelationships",
   "address",
   "education",
+  "phone",
+  "email",
 ]);
 
 /**
@@ -44,15 +49,17 @@ export const STUDENT_CONTACT_PROFILE_NON_DRAFT_FIELD_KEYS: ReadonlySet<string> =
   "contactRelationships",
   "address",
   "education",
+  "phone",
+  "email",
 ]);
 
 /**
- * Recommended preset: the enrollment-critical profile checks. Gender and date of birth
- * drive admission rules; the Parent pair (father & mother) plus a Guardian give the
- * school two reachable adults; address and education complete the contact profile.
+ * Recommended preset: the enrollment-critical profile checks. Date of birth drives
+ * admission rules; the Parent pair (father & mother) plus a Guardian give the school
+ * two reachable adults; address and education complete the contact profile. Gender is
+ * omitted because the Contacts module already requires it.
  */
 export const STUDENT_RECOMMENDED_REQUIRED_FIELD_KEYS = [
-  "gender",
   "dob",
   "contactRelationships",
   "address",
@@ -139,6 +146,8 @@ export interface StudentContactProfileRequirements {
   relationships: boolean;
   address: boolean;
   education: boolean;
+  phone: boolean;
+  email: boolean;
 }
 
 /** Reads the required flags for the contact-profile checks from `settings.fields`. */
@@ -156,6 +165,8 @@ export function resolveStudentContactProfileRequirements(
     relationships: required.has("contactRelationships"),
     address: required.has("address"),
     education: required.has("education"),
+    phone: required.has("phone"),
+    email: required.has("email"),
   };
 }
 
@@ -181,11 +192,19 @@ export function resolveStudentContactProfileGaps(
   contact: Contact | null | undefined,
   requirements: StudentContactProfileRequirements,
   triad?: StudentRelationshipTriad,
-): { address: boolean; education: boolean; relationships: boolean } {
+): {
+  address: boolean;
+  education: boolean;
+  relationships: boolean;
+  phone: boolean;
+  email: boolean;
+} {
   return {
     address: requirements.address && !contactHasAddress(contact),
     education: requirements.education && !contactHasEducation(contact),
     relationships:
       requirements.relationships && !(triad ? studentRelationshipRequirementMet(triad) : false),
+    phone: requirements.phone && !contactHasPhone(contact),
+    email: requirements.email && !contactHasEmail(contact),
   };
 }

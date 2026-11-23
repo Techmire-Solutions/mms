@@ -24,6 +24,33 @@ export function rowToWorkspace(ws: {
   return item;
 }
 
+/** Console-side provisioning record of the tenant's apex admin. */
+export interface ProvisionedWorkspaceAdmin {
+  name?: string;
+  email?: string;
+  gender?: string;
+}
+
+/**
+ * Map the `workspaces` provisioning-admin columns. Returns null when the row has no
+ * provisioning record (legacy workspaces created before the columns existed).
+ */
+export function rowToProvisionedAdmin(ws: {
+  adminName?: string | null;
+  adminEmail?: string | null;
+  adminGender?: string | null;
+}): ProvisionedWorkspaceAdmin | null {
+  const name = ws.adminName?.trim() || undefined;
+  const email = ws.adminEmail?.trim() || undefined;
+  const gender = ws.adminGender?.trim() || undefined;
+  if (!name && !email && !gender) return null;
+  return {
+    ...(name ? { name } : {}),
+    ...(email ? { email } : {}),
+    ...(gender ? { gender } : {}),
+  };
+}
+
 /** Map nullable workspace columns back to a BrandingSettings shape. */
 export function rowToBranding(ws: typeof workspacesTable.$inferSelect): BrandingSettings {
   return {

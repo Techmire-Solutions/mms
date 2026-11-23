@@ -7,6 +7,7 @@ import {
   workspaceDeleteBodySchema,
   workspaceResetAdminPasswordBodySchema,
   workspaceCreateAdminUserBodySchema,
+  workspaceRenameBodySchema,
   platformWorkspaceRowDtoSchema as platformWorkspaceRowSchema,
   platformWorkspacesListQuerySchema,
   platformWorkspacesListResponseSchema,
@@ -52,6 +53,20 @@ export const platformWorkspacesRoutes = {
       404: platformErrorSchema,
     },
     summary: "Enable or disable a workspace",
+  },
+  renameWorkspace: {
+    method: "PATCH",
+    path: "/api/platform/workspaces/:subdomain/name",
+    pathParams: z.object({ subdomain: z.string() }),
+    body: workspaceRenameBodySchema,
+    responses: {
+      200: z.object({ workspace: platformWorkspaceRowSchema }),
+      400: platformErrorSchema,
+      401: platformErrorSchema,
+      403: platformErrorSchema,
+      404: platformErrorSchema,
+    },
+    summary: "Rename a workspace (platform-owned madrasa name)",
   },
   deleteWorkspace: {
     method: "DELETE",

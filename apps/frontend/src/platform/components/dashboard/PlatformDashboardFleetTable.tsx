@@ -135,6 +135,8 @@ export function PlatformDashboardFleetTable({
             enabled: row.enabled,
             createdAt: row.createdAt,
             adminEmail: row.adminEmail,
+            adminName: row.adminName,
+            adminGender: row.adminGender,
           })
         }
         tableFooter={footer}

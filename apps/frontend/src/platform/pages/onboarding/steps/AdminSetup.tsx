@@ -3,8 +3,10 @@ import type { Dispatch, SetStateAction } from "react";
 import type { OnboardingData } from "@/platform/pages/onboarding/OnboardingWizard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Mail } from "lucide-react";
-import { Alert, CheckboxField, Field, Input } from "@shared/ui";
-import { AuthEmailField } from "@/components/entry";
+import { DEFAULT_GLOBAL_SETTINGS, getPasswordPolicyHintKey } from "@mms/shared";
+import { Alert, CompactSegmentedControl, Field, FormSelect, Input } from "@shared/ui";
+import { AuthEmailField, AuthPasswordField } from "@/components/entry";
+import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 
 /** The subset of onboarding data used by this step. */
 export interface AdminSetupData {
@@ -12,7 +14,8 @@ export interface AdminSetupData {
   lastName?: string;
   email?: string;
   password?: string;
-  agreedTerms?: boolean;
+  adminGender?: string;
+  adminPasswordMode?: string;
 }
 
 interface AdminSetupProps {
@@ -20,11 +23,23 @@ interface AdminSetupProps {
   onChange: Dispatch<SetStateAction<OnboardingData>>;
 }
 
+const PASSWORD_MODES = [
+  { value: "email" as const, labelKey: "onboarding.admin.passwordModeEmail" as const },
+  { value: "temporary" as const, labelKey: "onboarding.admin.passwordModeTemporary" as const },
+];
+
 /**
  * AdminSetup step component for onboarding.
+ *
+ * The madrasa is created by a platform operator, so no terms acceptance is
+ * collected here; the operator chooses how the super admin receives their first
+ * credential (activation email vs temporary password) and the admin's gender is
+ * captured for the tenant contact record.
  */
 export default function AdminSetup({ data, onChange }: AdminSetupProps) {
   const { t } = useTranslation();
+  const passwordMode = data.adminPasswordMode;
+  const passwordHint = t(getPasswordPolicyHintKey(DEFAULT_GLOBAL_SETTINGS.passwordPolicy));
 
   const update = (field: keyof OnboardingData, fieldValue: unknown) => {
     onChange((prev) => ({ ...prev, [field]: fieldValue }) as OnboardingData);
@@ -70,17 +85,73 @@ export default function AdminSetup({ data, onChange }: AdminSetupProps) {
         onChange={(value) => update("email", value)}
       />
 
-      <Alert icon={Mail} tone="info" description={t("onboarding.admin.passwordEmailNotice")} />
+      <Field id="gender" label={t("onboarding.admin.gender")} required>
+        <FormSelect
+          id="gender"
+          name="gender"
+          required
+          value={data.adminGender || ""}
+          onChange={(value) => update("adminGender", value)}
+          options={[
+            { value: "male", label: t("contacts.gender.male") },
+            { value: "female", label: t("contacts.gender.female") },
+          ]}
+          placeholder={t("onboarding.admin.gender")}
+          className="h-11"
+        />
+      </Field>
 
-      <CheckboxField
-        id="terms"
-        name="terms"
-        checked={data.agreedTerms || false}
-        onCheckedChange={(checked) => update("agreedTerms", checked)}
-        label={t("onboarding.agreeTerms")}
-        className="rounded-lg pt-1"
-        labelClassName="text-xs font-normal leading-relaxed text-muted-foreground"
-      />
+      <Field
+        id="admin-password-mode"
+        label={t("onboarding.admin.passwordModeLabel")}
+        required
+        hint={t(
+          passwordMode === "temporary"
+            ? "onboarding.admin.passwordModeTemporaryDesc"
+            : "onboarding.admin.passwordModeEmailDesc",
+        )}
+      >
+        <CompactSegmentedControl
+          options={PASSWORD_MODES.map((mode) => ({ value: mode.value, label: t(mode.labelKey) }))}
+          value={passwordMode}
+          onChange={(value) => update("adminPasswordMode", value)}
+          tone="card"
+          layout="chips"
+          fill
+          ariaLabel={t("onboarding.admin.passwordModeLabel")}
+        />
+      </Field>
+
+      {passwordMode === "temporary" ? (
+        <div className="space-y-3">
+          <AuthPasswordField
+            id="admin-password"
+            name="password"
+            label={t("users.addTempPassword")}
+            value={data.password || ""}
+            onChange={(value) => update("password", value)}
+            autoComplete="new-password"
+            enterKeyHint="next"
+            placeholder={passwordHint}
+            describedBy="admin-password-policy"
+          />
+          <p id="admin-password-policy" className="text-xs text-muted-foreground">
+            {passwordHint}
+          </p>
+          <PasswordStrengthMeter password={data.password || ""} showChecks />
+          <AuthPasswordField
+            id="admin-password-confirm"
+            name="passwordConfirm"
+            label={t("onboarding.admin.confirmPassword")}
+            value={data.passwordConfirm || ""}
+            onChange={(value) => update("passwordConfirm", value)}
+            autoComplete="new-password"
+            enterKeyHint="done"
+          />
+        </div>
+      ) : (
+        <Alert icon={Mail} tone="info" description={t("onboarding.admin.passwordEmailNotice")} />
+      )}
     </div>
   );
 }

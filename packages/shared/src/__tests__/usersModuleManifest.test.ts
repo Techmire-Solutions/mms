@@ -57,6 +57,28 @@ describe("workspace user form schemas", () => {
     ).toBe(true);
   });
 
+  it("rejects password-method creation without a password", () => {
+    expect(
+      createWorkspaceUserSchema.safeParse({
+        contactId: "contact-2",
+        role: "admin",
+        status: "active",
+        setupMethod: "password",
+        twoFactorEnabled: true,
+      }).success,
+    ).toBe(false);
+    expect(
+      createWorkspaceUserSchema.safeParse({
+        contactId: "contact-2",
+        role: "admin",
+        status: "active",
+        setupMethod: "password",
+        password: "   ",
+        twoFactorEnabled: true,
+      }).success,
+    ).toBe(false);
+  });
+
   it("validates reset password input", () => {
     expect(
       resetWorkspaceUserPasswordSchema.safeParse({

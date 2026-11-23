@@ -46,6 +46,12 @@ export const workspaces = pgTable(
     region: varchar("region", { length: 100 }),
     postalCode: varchar("postal_code", { length: 20 }),
     socialLinks: jsonb("social_links").$type<{ platform: string; url: string }[]>(),
+    // Provisioning snapshot of the tenant's apex admin (captured when the platform
+    // console creates the madrasa). Tenant runtime identity stays in `tenant_users`
+    // and the linked `contacts` row; these columns are the console-side record.
+    adminName: varchar("admin_name", { length: 300 }),
+    adminEmail: varchar("admin_email", { length: 255 }),
+    adminGender: varchar("admin_gender", { length: 20 }),
     // Global settings (migrated from objects store in migration 0072)
     language: varchar("language", { length: 10 }),
     timezone: varchar("timezone", { length: 50 }),

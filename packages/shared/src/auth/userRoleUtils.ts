@@ -162,6 +162,17 @@ export function isSuperAdminRole(role: string | undefined): boolean {
   return normalized === "super_admin" || normalized === "super_user";
 }
 
+/**
+ * Whether the role is owned by the platform console rather than the tenant console.
+ *
+ * A tenant has exactly ONE apex account, created when the platform console
+ * provisions the madrasa; the tenant Users module must never create, promote to,
+ * or demote from it.
+ */
+export function isPlatformManagedRole(role: string | undefined): boolean {
+  return isSuperAdminRole(role);
+}
+
 /** Whether the given role ID corresponds to standard Admin. */
 export function isAdminRole(role: string | undefined): boolean {
   return (role ?? "").trim().toLowerCase() === "admin";
@@ -196,18 +207,22 @@ export function canManageRole(
 }
 
 /**
- * Whether the actor role can assign a specific role to a user.
- * - Super Admin can assign ANY role (including Super Admin).
- * - Admin can assign any role EXCEPT Super Admin.
- * - Other roles cannot assign roles.
+ * Whether the actor role can assign a specific role to a user through the tenant
+ * Users module.
+ *
+ * Platform-managed roles are NEVER assignable here — the apex tenant account is
+ * created only by the platform console (`createWorkspaceAdminUser`), regardless of
+ * the actor's role:
+ * - Super Admin / Admin can assign standard and custom roles.
+ * - `super_admin` / `super_user` are rejected for every actor.
+ * - Other roles cannot assign roles at all.
  */
 export function canAssignRole(
   actorRole: string | undefined,
   roleToAssign: string | undefined,
 ): boolean {
   if (!canAccessRolesAndPermissions(actorRole)) return false;
-  if (isSuperAdminRole(actorRole)) return true;
-  if (isSuperAdminRole(roleToAssign)) return false;
+  if (isPlatformManagedRole(roleToAssign)) return false;
   return true;
 }
 
@@ -229,8 +244,8 @@ export function canManageTargetUser(
 
 /**
  * Filters the list of assignable workspace roles according to the actor's authorization.
- * - Super Admin sees all roles (including Super Admin).
- * - Admin sees all roles except Super Admin.
+ * - Platform-managed roles (`super_admin`/`super_user`) are always excluded.
+ * - Super Admin and Admin see every other role.
  * - Other roles receive an empty list.
  */
 export function filterAssignableRoles(
@@ -238,7 +253,5 @@ export function filterAssignableRoles(
   actorRole: string | undefined,
 ): WorkspaceRole[] {
   if (!canAccessRolesAndPermissions(actorRole)) return [];
-  const visible = excludeFacultyManagedRoles(roles);
-  if (isSuperAdminRole(actorRole)) return [...visible];
-  return visible.filter((r) => !isSuperAdminRole(r.id));
+  return excludeFacultyManagedRoles(roles).filter((r) => !isPlatformManagedRole(r.id));
 }

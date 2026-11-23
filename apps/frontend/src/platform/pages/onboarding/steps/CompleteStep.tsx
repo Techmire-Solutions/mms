@@ -47,6 +47,18 @@ export default function CompleteStep({ data, onChange }: CompleteStepProps): Rea
           label={t("onboarding.stepAdminLabel")}
           value={`${data.firstName} ${data.lastName}`.trim() || "—"}
         />
+        <SummaryRow
+          label={t("onboarding.admin.passwordModeLabel")}
+          value={t(
+            data.adminPasswordMode === "temporary"
+              ? "onboarding.admin.passwordModeTemporary"
+              : "onboarding.admin.passwordModeEmail",
+          )}
+        />
+        <SummaryRow
+          label={t("onboarding.admin.gender")}
+          value={data.adminGender ? t(`contacts.gender.${data.adminGender}` as never) : "—"}
+        />
       </dl>
 
       <Field

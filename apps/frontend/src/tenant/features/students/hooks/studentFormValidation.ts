@@ -98,8 +98,9 @@ export function validateStudentDraft(
     }
   }
 
-  // Layer 3 — contact-profile checks. Relationships, address and education live on
-  // the linked contact, so Setup's required toggles are enforced from the contact.
+  // Layer 3 — contact-profile checks. Relationships, address, education, phone and
+  // email live on the linked contact, so Setup's required toggles are enforced from
+  // the contact.
   // Only run once a contact is linked: the blueprint already reports the missing
   // contact, and reporting the profile gaps too would be noisy/redundant.
   if (validationDraft.contactId != null && String(validationDraft.contactId).trim()) {
@@ -129,6 +130,20 @@ export function validateStudentDraft(
         fieldId: "education",
         tabId: "basic",
         message: message("students.form.educationRequired"),
+      });
+    }
+    if (profileGaps.phone) {
+      errors.push({
+        fieldId: "phone",
+        tabId: "basic",
+        message: message("students.form.phoneRequired"),
+      });
+    }
+    if (profileGaps.email) {
+      errors.push({
+        fieldId: "email",
+        tabId: "basic",
+        message: message("students.form.emailRequired"),
       });
     }
   }

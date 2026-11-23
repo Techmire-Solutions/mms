@@ -39,6 +39,7 @@ vi.mock("@/hooks/useTranslation", () => ({
 vi.mock("@/lib/notify", () => ({
   notify: {
     success: vi.fn(),
+    warning: vi.fn(),
     error: vi.fn(),
   },
 }));
@@ -71,7 +72,7 @@ describe("useOnboardingWizardController", () => {
     expect(ONBOARDING_INITIAL_DATA.name).toBe("");
     expect(ONBOARDING_INITIAL_DATA.subdomain).toBe("");
     expect(ONBOARDING_INITIAL_DATA.email).toBe("");
-    expect(ONBOARDING_INITIAL_DATA.agreedTerms).toBe(false);
+    expect(ONBOARDING_INITIAL_DATA.adminGender).toBe("");
     expect(ONBOARDING_INITIAL_DATA.industryType).toBe("madrasa");
   });
 
@@ -103,7 +104,7 @@ describe("useOnboardingWizardController", () => {
         firstName: "Ali",
         lastName: "Raza",
         email: "ali@test.com",
-        agreedTerms: true,
+        adminGender: "male",
         currentPassword: "operator-stepup-password",
       });
       controller.setStep(5);
@@ -119,6 +120,8 @@ describe("useOnboardingWizardController", () => {
         subdomain: "test-madrasa",
         adminName: "Ali Raza",
         email: "ali@test.com",
+        adminGender: "male",
+        adminPasswordMode: "email",
         password: undefined,
         currentPassword: "operator-stepup-password",
       }),
@@ -146,7 +149,7 @@ describe("useOnboardingWizardController", () => {
         firstName: "Ali",
         lastName: "Raza",
         email: "ali@test.com",
-        agreedTerms: true,
+        adminGender: "male",
         currentPassword: "",
       });
       controller.setStep(5);
@@ -158,5 +161,191 @@ describe("useOnboardingWizardController", () => {
 
     expect(mockOnboard).not.toHaveBeenCalled();
     expect(controller.submitError).toBe("platform.validationConfirmPlatformPassword");
+  });
+
+  it("blocks completion without an administrator gender", async () => {
+    let controller!: ReturnType<typeof useOnboardingWizardController>;
+
+    function TestComponent() {
+      controller = useOnboardingWizardController();
+      return null;
+    }
+
+    await act(async () => {
+      root!.render(React.createElement(TestComponent));
+    });
+
+    act(() => {
+      controller.setData({
+        ...ONBOARDING_INITIAL_DATA,
+        name: "Test Madrasa",
+        subdomain: "test-madrasa",
+        firstName: "Ali",
+        lastName: "Raza",
+        email: "ali@test.com",
+        adminGender: "",
+        currentPassword: "operator-stepup-password",
+      });
+      controller.setStep(5);
+    });
+
+    await act(async () => {
+      controller.handleNext();
+    });
+
+    expect(mockOnboard).not.toHaveBeenCalled();
+    expect(controller.submitError).toBe("onboarding.errorAdminGender");
+  });
+
+  it("requires a temporary password when the temporary mode is selected", async () => {
+    let controller!: ReturnType<typeof useOnboardingWizardController>;
+    function TestComponent() {
+      controller = useOnboardingWizardController();
+      return null;
+    }
+    await act(async () => {
+      root!.render(React.createElement(TestComponent));
+    });
+
+    act(() => {
+      controller.setData({
+        ...ONBOARDING_INITIAL_DATA,
+        name: "Test Madrasa",
+        subdomain: "test-madrasa",
+        firstName: "Ali",
+        lastName: "Raza",
+        email: "ali@test.com",
+        adminGender: "male",
+        adminPasswordMode: "temporary",
+        password: "",
+        passwordConfirm: "",
+        currentPassword: "operator-password",
+      });
+      controller.setStep(5);
+    });
+
+    await act(async () => {
+      controller.handleNext();
+    });
+
+    expect(mockOnboard).not.toHaveBeenCalled();
+    expect(controller.submitError).toBe("onboarding.errorPasswordRequired");
+  });
+
+  it("rejects a mismatched temporary-password confirmation", async () => {
+    let controller!: ReturnType<typeof useOnboardingWizardController>;
+    function TestComponent() {
+      controller = useOnboardingWizardController();
+      return null;
+    }
+    await act(async () => {
+      root!.render(React.createElement(TestComponent));
+    });
+
+    act(() => {
+      controller.setData({
+        ...ONBOARDING_INITIAL_DATA,
+        name: "Test Madrasa",
+        subdomain: "test-madrasa",
+        firstName: "Ali",
+        lastName: "Raza",
+        email: "ali@test.com",
+        adminGender: "male",
+        adminPasswordMode: "temporary",
+        password: "TempPassword123!",
+        passwordConfirm: "Different123!",
+        currentPassword: "operator-password",
+      });
+      controller.setStep(5);
+    });
+
+    await act(async () => {
+      controller.handleNext();
+    });
+
+    expect(mockOnboard).not.toHaveBeenCalled();
+    expect(controller.submitError).toBe("onboarding.errorPasswordMismatch");
+  });
+
+  it("submits the temporary password with its mode", async () => {
+    mockOnboard.mockResolvedValue({ user: { id: "u-1" }, workspace: { id: "w-1" } });
+    let controller!: ReturnType<typeof useOnboardingWizardController>;
+    function TestComponent() {
+      controller = useOnboardingWizardController();
+      return null;
+    }
+    await act(async () => {
+      root!.render(React.createElement(TestComponent));
+    });
+
+    act(() => {
+      controller.setData({
+        ...ONBOARDING_INITIAL_DATA,
+        name: "Test Madrasa",
+        subdomain: "test-madrasa",
+        firstName: "Ali",
+        lastName: "Raza",
+        email: "ali@test.com",
+        adminGender: "male",
+        adminPasswordMode: "temporary",
+        password: "TempPassword123!",
+        passwordConfirm: "TempPassword123!",
+        currentPassword: "operator-password",
+      });
+      controller.setStep(5);
+    });
+
+    await act(async () => {
+      controller.handleNext();
+    });
+
+    expect(mockOnboard).toHaveBeenCalledWith(
+      expect.objectContaining({
+        adminPasswordMode: "temporary",
+        password: "TempPassword123!",
+      }),
+    );
+  });
+
+  it("warns when the activation email could not be sent", async () => {
+    mockOnboard.mockResolvedValue({
+      user: { id: "u-1" },
+      workspace: { id: "w-1" },
+      inviteEmailSent: false,
+      inviteEmailError: "No outgoing mail server is configured",
+    });
+    const { notify } = await import("@/lib/notify");
+    let controller!: ReturnType<typeof useOnboardingWizardController>;
+    function TestComponent() {
+      controller = useOnboardingWizardController();
+      return null;
+    }
+    await act(async () => {
+      root!.render(React.createElement(TestComponent));
+    });
+
+    act(() => {
+      controller.setData({
+        ...ONBOARDING_INITIAL_DATA,
+        name: "Test Madrasa",
+        subdomain: "test-madrasa",
+        firstName: "Ali",
+        lastName: "Raza",
+        email: "ali@test.com",
+        adminGender: "male",
+        adminPasswordMode: "email",
+        currentPassword: "operator-password",
+      });
+      controller.setStep(5);
+    });
+
+    await act(async () => {
+      controller.handleNext();
+    });
+
+    expect(notify.warning).toHaveBeenCalledWith(
+      "onboarding.emailFailedTitle",
+      expect.objectContaining({ description: "No outgoing mail server is configured" }),
+    );
   });
 });

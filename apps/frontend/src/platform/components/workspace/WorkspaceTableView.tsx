@@ -46,6 +46,7 @@ export interface WorkspaceTableViewProps {
   onOpenDelete?: (workspace: PlatformWorkspaceRowData) => void;
   onOpenResetPassword?: (workspace: PlatformWorkspaceRowData) => void;
   onOpenCreateAdmin?: (workspace: PlatformWorkspaceRowData) => void;
+  onOpenRename?: (workspace: PlatformWorkspaceRowData) => void;
   onInspect?: (workspace: PlatformWorkspaceRowData) => void;
   selectedSubdomains?: ReadonlySet<string>;
   onToggleSelect?: (subdomain: string) => void;
@@ -72,6 +73,7 @@ export function WorkspaceTableView({
   onOpenDelete,
   onOpenResetPassword,
   onOpenCreateAdmin,
+  onOpenRename,
   onInspect,
   selectedSubdomains,
   onToggleSelect,
@@ -229,6 +231,7 @@ export function WorkspaceTableView({
             onOpenResetPassword ? () => onOpenResetPassword(workspace) : undefined
           }
           onOpenCreateAdmin={onOpenCreateAdmin ? () => onOpenCreateAdmin(workspace) : undefined}
+          onOpenRename={onOpenRename ? () => onOpenRename(workspace) : undefined}
         />
       )}
       rowClassName={(workspace) =>

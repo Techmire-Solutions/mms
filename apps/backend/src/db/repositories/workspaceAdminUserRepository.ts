@@ -1,4 +1,5 @@
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { isAdminRole, isSuperAdminRole } from "@mms/shared";
 import { randomBytes } from "node:crypto";
 import { tenantUsers } from "../schema.js";
 import { withGlobalTenant } from "../tenant-context.js";
@@ -16,6 +17,16 @@ import { normalizeSubdomainInput } from "../../services/workspaceService.js";
  * duplicate-email pre-checks); and reading through the root pool (`getDb()`)
  * escaped an ambient transaction instead of joining it.
  */
+
+/**
+ * Primary-admin ordering for platform flows: the tenant apex admin first, then
+ * standard admins, then everyone else; ties keep the earliest-created account.
+ */
+function adminPriority(role: string | undefined | null): number {
+  if (isSuperAdminRole(role ?? undefined)) return 0;
+  if (isAdminRole(role ?? undefined)) return 1;
+  return 2;
+}
 
 /** Cryptographically random temporary password for platform break-glass flows. */
 export function generateTemporaryAdminPassword(): string {
@@ -54,9 +65,8 @@ export async function getWorkspaceAdminEmailsMap(
         a: { role?: string; createdAt?: Date | null },
         b: { role?: string; createdAt?: Date | null },
       ) => {
-        const aIsAdmin = a.role === "admin" || a.role === "super_user" ? 0 : 1;
-        const bIsAdmin = b.role === "admin" || b.role === "super_user" ? 0 : 1;
-        if (aIsAdmin !== bIsAdmin) return aIsAdmin - bIsAdmin;
+        const byPriority = adminPriority(a.role) - adminPriority(b.role);
+        if (byPriority !== 0) return byPriority;
         return (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0);
       },
     );
@@ -97,9 +107,8 @@ export async function resetWorkspaceAdminPassword(
         a: { role?: string; createdAt?: Date | null },
         b: { role?: string; createdAt?: Date | null },
       ) => {
-        const aIsAdmin = a.role === "admin" || a.role === "super_user" ? 0 : 1;
-        const bIsAdmin = b.role === "admin" || b.role === "super_user" ? 0 : 1;
-        if (aIsAdmin !== bIsAdmin) return aIsAdmin - bIsAdmin;
+        const byPriority = adminPriority(a.role) - adminPriority(b.role);
+        if (byPriority !== 0) return byPriority;
         return (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0);
       },
     );
@@ -118,7 +127,10 @@ export async function resetWorkspaceAdminPassword(
         loginEmail: fallbackEmail,
         passwordHash,
         name: "Admin",
-        role: "admin",
+        // The recovery admin is the workspace's first user, so it takes the apex role.
+        role: "super_admin",
+        // Platform-vouched address: satisfies the workspace email-verification policy.
+        emailVerifiedAt: new Date(),
         mustChangePassword: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -164,20 +176,34 @@ export async function createWorkspaceAdminUser(
   const emailClean = input.email.trim().toLowerCase();
 
   return withGlobalTenant(async (db) => {
-    const existing = await db
-      .select({ id: tenantUsers.id })
-      .from(tenantUsers)
-      .where(
-        and(
-          eq(tenantUsers.workspaceSubdomain, normalized),
-          eq(tenantUsers.loginEmail, emailClean),
-          isNull(tenantUsers.deletedAt),
-        ),
-      );
+    // Serialize the first-admin decision per workspace: two concurrent "create admin"
+    // calls could otherwise both observe zero super_admins and mint two apex identities.
+    await db.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext(${normalized}), hashtext('workspace-admin-role'))`,
+    );
 
-    if (existing.length > 0) {
+    const activeUsers = await db
+      .select({
+        id: tenantUsers.id,
+        loginEmail: tenantUsers.loginEmail,
+        role: tenantUsers.role,
+        deletedAt: tenantUsers.deletedAt,
+      })
+      .from(tenantUsers)
+      .where(and(eq(tenantUsers.workspaceSubdomain, normalized), isNull(tenantUsers.deletedAt)));
+
+    // The SQL predicate already excludes trashed rows; keep the in-memory guard so a
+    // relaxed predicate can never bring a deleted account back into either decision.
+    const liveUsers = activeUsers.filter((row) => !row.deletedAt);
+
+    const existing = liveUsers.find((row) => row.loginEmail.trim().toLowerCase() === emailClean);
+    if (existing) {
       return { success: false, error: "USER_ALREADY_EXISTS" } as const;
     }
+
+    // A tenant's first admin is its ONLY super_admin; admins created later from the
+    // platform console stay plain `admin` so the apex tenant identity stays singular.
+    const role = liveUsers.some((row) => row.role === "super_admin") ? "admin" : "super_admin";
 
     const initialPassword = input.password?.trim() || generateTemporaryAdminPassword();
     const passwordHash = await hashPassword(initialPassword);
@@ -189,7 +215,9 @@ export async function createWorkspaceAdminUser(
       loginEmail: emailClean,
       passwordHash,
       name: input.name.trim(),
-      role: "admin",
+      role,
+      // Platform-vouched address: the operator hands the credentials over directly.
+      emailVerifiedAt: new Date(),
       mustChangePassword: true,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -202,5 +230,28 @@ export async function createWorkspaceAdminUser(
       name: input.name.trim(),
       initialPassword,
     } as const;
+  });
+}
+
+/**
+ * Active `super_admin` user ids for a workspace.
+ *
+ * Workspace provisioning uses this to verify the invariant that the freshly created
+ * admin is the tenant's one and only super admin (no platform user is mirrored in).
+ */
+export async function listWorkspaceSuperAdminIds(subdomain: string): Promise<string[]> {
+  const normalized = normalizeSubdomainInput(subdomain);
+  return withGlobalTenant(async (db) => {
+    const rows = await db
+      .select({
+        id: tenantUsers.id,
+        role: tenantUsers.role,
+        deletedAt: tenantUsers.deletedAt,
+      })
+      .from(tenantUsers)
+      .where(and(eq(tenantUsers.workspaceSubdomain, normalized), isNull(tenantUsers.deletedAt)));
+    return rows
+      .filter((row) => !row.deletedAt && row.role === "super_admin")
+      .map((row) => String(row.id));
   });
 }

@@ -192,8 +192,8 @@ export function createUsersUseCases(repo: UsersRepository = usersRepository) {
     // --- Users ---
     loadWorkspaceUsers,
 
-    upsertWorkspaceUsers: (records: WorkspaceUser[], actorRole?: string) =>
-      upsertWorkspaceUsersHelper(records, actorRole, loadWorkspaceUsers),
+    upsertWorkspaceUsers: (records: WorkspaceUser[], actorRole?: string, actorId?: string) =>
+      upsertWorkspaceUsersHelper(records, actorRole, loadWorkspaceUsers, actorId),
 
     createWorkspaceUser,
 

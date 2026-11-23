@@ -45,7 +45,9 @@ describe("listStudentRequirableFields", () => {
   it("lists only the contact-profile recommendations and skips system/registration rows", () => {
     const rows = listStudentRequirableFields(seedFields());
     const keys = rows.map((row) => row.key);
-    expect(keys).toEqual(["gender", "dob", "contactRelationships", "address", "education"]);
+    expect(keys).toEqual(["dob", "contactRelationships", "address", "education", "phone", "email"]);
+    // Gender is required by the Contacts module, so the card never lists it.
+    expect(keys).not.toContain("gender");
     expect(rows.find((row) => row.key === "dob")).toMatchObject({
       tabKey: "basic",
       recommended: true,
@@ -82,8 +84,24 @@ describe("listStudentRequirableFields", () => {
     const rows = listStudentRequirableFields(seedFields());
     const education = rows.find((row) => row.key === "education");
     expect(education?.descriptionKey).toBe("students.fields.educationDesc");
-    const gender = rows.find((row) => row.key === "gender");
-    expect(gender?.descriptionKey).toBe("students.fields.genderDesc");
+    const phone = rows.find((row) => row.key === "phone");
+    expect(phone?.descriptionKey).toBe("students.fields.phoneDesc");
+    const email = rows.find((row) => row.key === "email");
+    expect(email?.descriptionKey).toBe("students.fields.emailDesc");
+  });
+
+  it("defaults the new contact-detail checks off", () => {
+    const rows = listStudentRequirableFields(seedFields());
+    expect(rows.find((row) => row.key === "phone")).toMatchObject({
+      required: false,
+      recommended: false,
+      isCustom: false,
+    });
+    expect(rows.find((row) => row.key === "email")).toMatchObject({
+      required: false,
+      recommended: false,
+      isCustom: false,
+    });
   });
 });
 
@@ -185,7 +203,9 @@ describe("required-field list composition", () => {
     const keys = listStudentRequirableFields(seedFields()).map((row) => row.key);
 
     // Assert
-    expect(keys).toEqual(["gender", "dob", "contactRelationships", "address", "education"]);
+    expect(keys).toEqual(["dob", "contactRelationships", "address", "education", "phone", "email"]);
+    // Gender is required by the Contacts module, so the card never lists it.
+    expect(keys).not.toContain("gender");
     expect(keys).not.toContain("contactId");
     expect(keys).not.toContain("grNumber");
     expect(keys).not.toContain("status");
@@ -210,21 +230,33 @@ describe("contact-profile requirements", () => {
     const requirements = resolveStudentContactProfileRequirements(seedFields());
 
     // Assert
-    expect(requirements).toEqual({ relationships: true, address: true, education: true });
+    expect(requirements).toEqual({
+      relationships: true,
+      address: true,
+      education: true,
+      phone: false,
+      email: false,
+    });
   });
 
   it("reports every gap for an incomplete contact", () => {
     // Act
     const gaps = resolveStudentContactProfileGaps(
       { id: "c-2", name: "Bare", firstName: "Bare" },
-      { relationships: true, address: true, education: true },
+      { relationships: true, address: true, education: true, phone: true, email: true },
     );
 
     // Assert
-    expect(gaps).toEqual({ relationships: true, address: true, education: true });
+    expect(gaps).toEqual({
+      relationships: true,
+      address: true,
+      education: true,
+      phone: true,
+      email: true,
+    });
   });
 
-  it("clears the gaps once the Parent pair, Guardian, address and education exist", () => {
+  it("clears the gaps once the Parent pair, Guardian, address, education, phone and email exist", () => {
     // Arrange
     const contact = {
       id: "c-1",
@@ -232,24 +264,73 @@ describe("contact-profile requirements", () => {
       firstName: "Aisha",
       line1: "12 Madrasa Road",
       education: [{ institution: "Al-Noor Madrasa" }],
+      phones: [{ label: "mobile", number: "03001234567" }],
+      emails: [{ label: "home", address: "aisha@example.com" }],
     };
 
     // Act
     const gaps = resolveStudentContactProfileGaps(
       contact,
-      { relationships: true, address: true, education: true },
+      { relationships: true, address: true, education: true, phone: true, email: true },
       { fatherContactId: "f-1", motherContactId: "m-1", guardianContactId: "g-1" },
     );
 
     // Assert
-    expect(gaps).toEqual({ relationships: false, address: false, education: false });
+    expect(gaps).toEqual({
+      relationships: false,
+      address: false,
+      education: false,
+      phone: false,
+      email: false,
+    });
+  });
+
+  it("detects missing phone and email from collection and scalar contact values", () => {
+    const requirements = {
+      relationships: false,
+      address: false,
+      education: false,
+      phone: true,
+      email: true,
+    };
+
+    expect(
+      resolveStudentContactProfileGaps(
+        { id: "c-3", name: "Bare", firstName: "Bare" },
+        requirements,
+      ),
+    ).toMatchObject({ phone: true, email: true });
+    expect(
+      resolveStudentContactProfileGaps(
+        {
+          id: "c-4",
+          name: "Scalar",
+          firstName: "Scalar",
+          phone: "03001234567",
+          email: "scalar@example.com",
+        },
+        requirements,
+      ),
+    ).toMatchObject({ phone: false, email: false });
+    expect(
+      resolveStudentContactProfileGaps(
+        {
+          id: "c-5",
+          name: "Collections",
+          firstName: "Collections",
+          phones: [{ label: "work", number: "03007654321" }],
+          emails: [{ label: "work", address: "collections@example.com" }],
+        },
+        requirements,
+      ),
+    ).toMatchObject({ phone: false, email: false });
   });
 
   it("treats a missing father or mother as an unmet relationship requirement", () => {
     // Act
     const gaps = resolveStudentContactProfileGaps(
       { id: "c-1", name: "Street", firstName: "Street", line1: "Street" },
-      { relationships: true, address: false, education: false },
+      { relationships: true, address: false, education: false, phone: false, email: false },
       { fatherContactId: "f-1", guardianContactId: "g-1" },
     );
 

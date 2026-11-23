@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS } from "../auth/platformTypes.js";
+import { BRANDING_NAME_MAX } from "../branding/brandingSettingsTypes.js";
 import {
   validatePlatformSetupEmail,
   validatePlatformSetupName,
@@ -110,6 +111,23 @@ export const workspaceCreateAdminUserBodySchema = z.preprocess((raw) => {
 }, workspaceCreateAdminUserBodyBaseSchema);
 
 export type WorkspaceCreateAdminUserInput = z.infer<typeof workspaceCreateAdminUserBodyBaseSchema>;
+
+/**
+ * Platform-only madrasa rename. The name is console-owned: tenant admins can never
+ * change it (see the `preserveMadrasaName` write guard on the branding seams).
+ */
+const workspaceRenameBodyBaseSchema = z
+  .object({
+    madrasaName: z.string().trim().min(1).max(BRANDING_NAME_MAX),
+  })
+  .strict();
+
+export const workspaceRenameBodySchema = z.preprocess((raw) => {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  return deepSanitizeStrings(raw);
+}, workspaceRenameBodyBaseSchema);
+
+export type WorkspaceRenameInput = z.infer<typeof workspaceRenameBodyBaseSchema>;
 
 const platformCreateAdminBodyBaseSchema = z
   .object({

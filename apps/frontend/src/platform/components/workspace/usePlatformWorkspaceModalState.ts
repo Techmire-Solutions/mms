@@ -15,6 +15,10 @@ export function usePlatformWorkspaceModalState() {
   const [targetCreateWorkspace, setTargetCreateWorkspace] =
     useState<PlatformWorkspaceRowData | null>(null);
 
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [targetRenameWorkspace, setTargetRenameWorkspace] =
+    useState<PlatformWorkspaceRowData | null>(null);
+
   const [inspectWorkspace, setInspectWorkspace] = useState<PlatformWorkspaceRowData | null>(null);
 
   const handleOpenModules = (workspace: PlatformWorkspaceRowData): void => {
@@ -30,6 +34,11 @@ export function usePlatformWorkspaceModalState() {
   const handleOpenCreateAdmin = (workspace: PlatformWorkspaceRowData): void => {
     setTargetCreateWorkspace(workspace);
     setCreateAdminOpen(true);
+  };
+
+  const handleOpenRename = (workspace: PlatformWorkspaceRowData): void => {
+    setTargetRenameWorkspace(workspace);
+    setRenameOpen(true);
   };
 
   const handleOpenInspect = (workspace: PlatformWorkspaceRowData): void => {
@@ -53,6 +62,10 @@ export function usePlatformWorkspaceModalState() {
     setCreateAdminOpen,
     targetCreateWorkspace,
     handleOpenCreateAdmin,
+    renameOpen,
+    setRenameOpen,
+    targetRenameWorkspace,
+    handleOpenRename,
     inspectWorkspace,
     handleOpenInspect,
     handleCloseInspect,

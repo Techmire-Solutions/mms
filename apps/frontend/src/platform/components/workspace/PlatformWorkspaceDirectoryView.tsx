@@ -25,6 +25,7 @@ export function PlatformWorkspaceDirectoryView({
   onOpenDelete,
   onOpenResetPassword,
   onOpenCreateAdmin,
+  onOpenRename,
   onInspect,
   selectedSubdomains,
   onToggleSelect,
@@ -50,6 +51,7 @@ export function PlatformWorkspaceDirectoryView({
         onOpenDelete={onOpenDelete}
         onOpenResetPassword={onOpenResetPassword}
         onOpenCreateAdmin={onOpenCreateAdmin}
+        onOpenRename={onOpenRename}
         onInspect={onInspect}
         selectedSubdomains={selectedSubdomains}
         onToggleSelect={onToggleSelect}
@@ -72,6 +74,7 @@ export function PlatformWorkspaceDirectoryView({
       onOpenDelete={onOpenDelete}
       onOpenResetPassword={onOpenResetPassword}
       onOpenCreateAdmin={onOpenCreateAdmin}
+      onOpenRename={onOpenRename}
       onInspect={onInspect}
       selectedSubdomains={selectedSubdomains}
       onToggleSelect={onToggleSelect}

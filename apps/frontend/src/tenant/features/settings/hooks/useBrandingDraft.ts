@@ -1,12 +1,19 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { useSavedFlash } from "@/tenant/hooks/useSavedFlash";
-import { isBrandingFieldsDirty, mergeBrandingSettings, type BrandingSettings } from "@mms/shared";
+import {
+  BRANDING_IDENTITY_FIELD_KEYS,
+  BRANDING_THEME_FIELD_KEYS,
+  isBrandingFieldsDirty,
+  mergeBrandingIdentityOverServerBaseline,
+  mergeBrandingSettings,
+  pickDirtyBrandingFields,
+  type BrandingSettings,
+} from "@mms/shared";
+import { fetchBrandingFromServer } from "@/lib/brandingHydration";
 import { getBrandingSettings, saveBrandingSettings } from "@/lib/db";
 import { clearBrandingSettingsPreview, previewBrandingSettings } from "@/lib/settingsPreview";
 import { buildBrandingPreviewPatch } from "@/lib/brandingPreviewPatch";
 import {
-  mergeBrandingIdentityForSave,
-  mergeBrandingThemeForSave,
   retainIdentityDraftAfterThemeSave,
   retainThemeDraftAfterIdentitySave,
   sanitizeBrandingSocialLinks,
@@ -49,6 +56,21 @@ export interface UseBrandingDraftResult {
   handleSaveTheme: (toast?: UseBrandingDraftSaveToast) => Promise<boolean>;
   handleDiscardIdentity: () => void;
   applyPersisted: (brandingSettings: BrandingSettings) => void;
+}
+
+const ALL_BRANDING_FIELD_KEYS = [
+  ...BRANDING_IDENTITY_FIELD_KEYS,
+  ...BRANDING_THEME_FIELD_KEYS,
+] as const;
+
+/**
+ * Fresh server record used as the merge base for a save. Only the fields the user
+ * actually changed are overlayed, so untouched values (possibly edited on another
+ * device, or never hydrated locally) are preserved. Falls back to the hydrated local
+ * baseline when the read fails.
+ */
+async function resolveServerBaseline(fallback: BrandingSettings): Promise<BrandingSettings> {
+  return (await fetchBrandingFromServer()) ?? fallback;
 }
 
 function loadPersistedBranding(): BrandingSettings {
@@ -124,7 +146,11 @@ export function useBrandingDraft({
     setSaving(true);
     try {
       const cleanedData = sanitizeBrandingSocialLinks(data);
-      const merged = mergeBrandingSettings(cleanedData);
+      const serverBaseline = await resolveServerBaseline(baseline);
+      const merged = mergeBrandingSettings({
+        ...serverBaseline,
+        ...pickDirtyBrandingFields(cleanedData, baseline, ALL_BRANDING_FIELD_KEYS),
+      });
       const result = await saveBrandingSettings(merged);
       if (!result.ok) {
         notify.error(t("settings.serverSaveFailed"), {
@@ -151,7 +177,12 @@ export function useBrandingDraft({
     setSaving(true);
     try {
       const cleanedData = sanitizeBrandingSocialLinks(data);
-      const persisted = mergeBrandingIdentityForSave(cleanedData, baseline);
+      const serverBaseline = await resolveServerBaseline(baseline);
+      const persisted = mergeBrandingIdentityOverServerBaseline(
+        cleanedData,
+        baseline,
+        serverBaseline,
+      );
       const result = await saveBrandingSettings(persisted);
       if (!result.ok) {
         notify.error(t("settings.serverSaveFailed"), {
@@ -177,7 +208,11 @@ export function useBrandingDraft({
     setSaving(true);
     try {
       const cleanedData = sanitizeBrandingSocialLinks(data);
-      const persisted = mergeBrandingThemeForSave(cleanedData, baseline);
+      const serverBaseline = await resolveServerBaseline(baseline);
+      const persisted = mergeBrandingSettings({
+        ...serverBaseline,
+        ...pickDirtyBrandingFields(cleanedData, baseline, BRANDING_THEME_FIELD_KEYS),
+      });
       const result = await saveBrandingSettings(persisted);
       if (!result.ok) {
         notify.error(t("settings.serverSaveFailed"), {

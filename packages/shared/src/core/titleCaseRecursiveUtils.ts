@@ -243,6 +243,7 @@ export function applyTitleCaseToContact<T extends Record<string, unknown>>(conta
     "deletedBy",
     "deletionReason",
     "dob",
+    "gender",
     "rating",
     "aiSummary",
     "email",
@@ -258,7 +259,7 @@ export function applyTitleCaseToContact<T extends Record<string, unknown>>(conta
   ]);
 
   Object.keys(result).forEach((key) => {
-    if (!excludedKeys.has(key)) {
+    if (!excludedKeys.has(key) && !isKeyIgnored(key)) {
       const value = result[key];
       if (typeof value === "string") {
         if (

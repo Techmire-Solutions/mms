@@ -75,6 +75,24 @@ export function PlatformInspectorDrawer(): React.JSX.Element | null {
             </dd>
           </div>
         ) : null}
+        {target.adminName ? (
+          <div>
+            <dt className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
+              {t("platform.adminName")}
+            </dt>
+            <dd className="mt-1 font-semibold text-foreground">{target.adminName}</dd>
+          </div>
+        ) : null}
+        {target.adminGender === "male" || target.adminGender === "female" ? (
+          <div>
+            <dt className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">
+              {t("platform.adminGender")}
+            </dt>
+            <dd className="mt-1 font-semibold text-foreground">
+              {t(`contacts.gender.${target.adminGender}` as never)}
+            </dd>
+          </div>
+        ) : null}
         {target.adminEmail ? (
           <div>
             <dt className="text-3xs font-bold uppercase tracking-wide text-muted-foreground">

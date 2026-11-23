@@ -201,7 +201,7 @@ export async function aggregateUsersCommandMetrics(
         total: sql<number>`count(*)::int`,
         active: sql<number>`count(*) FILTER (WHERE ${statusExpr()} = 'active')::int`,
         suspended: sql<number>`count(*) FILTER (WHERE ${statusExpr()} = 'suspended')::int`,
-        admins: sql<number>`count(*) FILTER (WHERE lower(${tenantUsers.role}) = 'admin')::int`,
+        admins: sql<number>`count(*) FILTER (WHERE lower(${tenantUsers.role}) IN ('admin', 'super_admin', 'super_user'))::int`,
         twoFaEnabled: sql<number>`count(*) FILTER (WHERE COALESCE((${tenantUsers.profileJson}->>'twoFactorEnabled')::boolean, false))::int`,
         activeSessions: sql<number>`COALESCE(sum(COALESCE((${tenantUsers.profileJson}->>'activeSessions')::int, 0)), 0)::int`,
       })

@@ -1,9 +1,9 @@
 import { randomBytes } from "node:crypto";
 import type { FastifyReply } from "fastify";
 import type { JWT } from "@fastify/jwt";
-import { requiresTwoFactor, type BrandingSocialLink } from "@mms/shared";
+import { requiresTwoFactor } from "@mms/shared";
+import type { OnboardInput } from "./onboardInput.js";
 import {
-  createUser,
   findUserByLoginEmailAndWorkspace,
   validateCredentials,
   type PublicUser,
@@ -13,6 +13,7 @@ import { sendTenantWelcomeEmail } from "./tenantPasswordOtpDispatch.js";
 import { resolvePlatformAppOrigin } from "../platform/platformEmailConfig.js";
 import {
   createWorkspace,
+  deleteWorkspace,
   assertWorkspaceActive,
   upsertWorkspaceBranding,
 } from "../workspaceService.js";
@@ -26,6 +27,7 @@ import {
 } from "../globalSettingsService.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { seedTenantDefaults } from "../tenantSeedService.js";
+import { provisionWorkspaceAdmin } from "../workspaceAdminProvisioningService.js";
 import { createTwoFactorChallenge, issueRefreshToken } from "./twoFactorService.js";
 import { setAuthCookies } from "./authCookieService.js";
 import { clearPlatformAccessCookie } from "../platform/platformCookieService.js";
@@ -42,37 +44,11 @@ export interface AuthResult {
   token?: string;
 }
 
-export interface OnboardInput {
-  email: string;
-  adminName: string;
-  password?: string;
-  origin?: string;
-  subdomain: string;
-  madrasaName: string;
-  tagline?: string;
-  country?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  logoUrl?: string;
-  adminPhone?: string;
-  website?: string;
-  footerText?: string;
-  // Extended fields
-  faviconUrl?: string;
-  legalName?: string;
-  registrationNumber?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  region?: string;
-  postalCode?: string;
-  socialLinks?: BrandingSocialLink[];
-  modules?: string[];
-  industryType?: string;
-}
-
 export interface OnboardResult extends AuthResult {
   workspace: Workspace;
+  /** Email-activation mode: whether the activation link was actually dispatched. */
+  inviteEmailSent?: boolean;
+  inviteEmailError?: string;
 }
 
 import { parseSessionTimeoutMinutes } from "@mms/shared";
@@ -175,86 +151,103 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
     tagline: input.tagline,
     country: input.country,
     industryType: input.industryType,
+    provisionedAdmin: {
+      name: input.adminName,
+      email: input.email,
+      gender: input.adminGender,
+    },
   });
 
-  await unblockTenant(workspace.subdomain);
+  try {
+    await unblockTenant(workspace.subdomain);
 
-  await runWithTenant(workspace.subdomain, async () => {
-    await seedTenantDefaults();
+    await runWithTenant(workspace.subdomain, async () => {
+      await seedTenantDefaults();
 
-    if (input.modules) {
-      const { SYSTEM_MODULES } = await import("@mms/shared");
-      const globalSettings = await loadGlobalSettings(workspace.subdomain);
-      const enabledModules: Record<string, boolean> = {};
-      const inputModulesSet = new Set(input.modules);
+      if (input.modules) {
+        const { SYSTEM_MODULES } = await import("@mms/shared");
+        const globalSettings = await loadGlobalSettings(workspace.subdomain);
+        const enabledModules: Record<string, boolean> = {};
+        const inputModulesSet = new Set(input.modules);
 
-      for (const mod of SYSTEM_MODULES) {
-        if (mod.required) {
-          enabledModules[mod.id] = true;
-        } else {
-          enabledModules[mod.id] = inputModulesSet.has(mod.id);
+        for (const mod of SYSTEM_MODULES) {
+          if (mod.required) {
+            enabledModules[mod.id] = true;
+          } else {
+            enabledModules[mod.id] = inputModulesSet.has(mod.id);
+          }
         }
+
+        await saveGlobalSettings(
+          {
+            ...globalSettings,
+            enabledModules,
+          },
+          workspace.subdomain,
+        );
       }
 
-      await saveGlobalSettings(
-        {
-          ...globalSettings,
-          enabledModules,
-        },
-        workspace.subdomain,
-      );
-    }
+      const branding = buildBrandingFromOnboarding({
+        madrasaName: input.madrasaName,
+        tagline: input.tagline,
+        subdomain: workspace.subdomain,
+        primaryColor: input.primaryColor,
+        secondaryColor: input.secondaryColor,
+        logoUrl: input.logoUrl,
+        adminEmail: input.email,
+        adminPhone: input.adminPhone,
+        website: input.website,
+        footerText: input.footerText,
+        country: input.country,
+        faviconUrl: input.faviconUrl,
+        legalName: input.legalName,
+        registrationNumber: input.registrationNumber,
+        addressLine1: input.addressLine1,
+        addressLine2: input.addressLine2,
+        city: input.city,
+        region: input.region,
+        postalCode: input.postalCode,
+        socialLinks: input.socialLinks,
+      });
+      await upsertWorkspaceBranding(workspace.subdomain, branding);
 
-    const branding = buildBrandingFromOnboarding({
-      madrasaName: input.madrasaName,
-      tagline: input.tagline,
-      subdomain: workspace.subdomain,
-      primaryColor: input.primaryColor,
-      secondaryColor: input.secondaryColor,
-      logoUrl: input.logoUrl,
-      adminEmail: input.email,
-      adminPhone: input.adminPhone,
-      website: input.website,
-      footerText: input.footerText,
-      country: input.country,
-      faviconUrl: input.faviconUrl,
-      legalName: input.legalName,
-      registrationNumber: input.registrationNumber,
-      addressLine1: input.addressLine1,
-      addressLine2: input.addressLine2,
-      city: input.city,
-      region: input.region,
-      postalCode: input.postalCode,
-      socialLinks: input.socialLinks,
-    });
-    await upsertWorkspaceBranding(workspace.subdomain, branding);
+      await upsertContactModulePreferences(workspace.subdomain, {
+        defaultCountry: input.country?.trim() || "",
+        defaultProvince: input.region?.trim() || "",
+        defaultCity: input.city?.trim() || "",
+        showDetailedSolarAge: false,
+        showLunarDob: false,
+        showDetailedLunarAge: false,
+      });
 
-    await upsertContactModulePreferences(workspace.subdomain, {
-      defaultCountry: input.country?.trim() || "",
-      defaultProvince: input.region?.trim() || "",
-      defaultCity: input.city?.trim() || "",
-      showDetailedSolarAge: false,
-      showLunarDob: false,
-      showDetailedLunarAge: false,
+      let adminPassword: string;
+      let passwordPolicyChecked = false;
+      if (input.adminPasswordMode === "temporary") {
+        adminPassword = input.password ?? "";
+        // Password policy is enforced inside createUser.
+      } else {
+        adminPassword = randomBytes(32).toString("hex");
+        // Cryptographically random and force-reset on first login, so it is exempt
+        // from the human-entered password policy.
+        passwordPolicyChecked = true;
+      }
+      await provisionWorkspaceAdmin({
+        subdomain: workspace.subdomain,
+        email: input.email,
+        adminName: input.adminName,
+        password: adminPassword,
+        adminPhone: input.adminPhone,
+        adminGender: input.adminGender,
+        passwordPolicyChecked,
+      });
     });
-
-    const passwordCandidate = input.password?.trim();
-    let adminPassword: string;
-    let passwordPolicyChecked = false;
-    if (passwordCandidate) {
-      adminPassword = input.password ?? passwordCandidate;
-      // Password policy is enforced inside createUser.
-    } else {
-      adminPassword = randomBytes(32).toString("hex");
-      // Cryptographically random and force-reset on first login, so it is exempt
-      // from the human-entered password policy.
-      passwordPolicyChecked = true;
-    }
-    await createUser(input.email, input.adminName, adminPassword, "admin", workspace.subdomain, {
-      mustChangePassword: true,
-      passwordPolicyChecked,
-    });
-  });
+  } catch (error) {
+    // Compensating action (provisioning saga): a workspace row without its super admin
+    // cannot be completed through the wizard (a retry hits the 409 subdomain conflict),
+    // so purge the partial tenant and let the operator retry the same subdomain.
+    await deleteWorkspace(workspace.subdomain).catch(() => undefined);
+    throw error;
+  }
 
   const user = await runWithTenant(workspace.subdomain, async () => {
     const admin = await findUserByLoginEmailAndWorkspace(input.email, workspace.subdomain);
@@ -264,19 +257,23 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
     throw new Error("Failed to create workspace administrator.");
   }
 
-  if (!input.password?.trim()) {
+  let inviteEmailSent: boolean | undefined;
+  let inviteEmailError: string | undefined;
+  if (input.adminPasswordMode === "email") {
     const inviteOrigin = input.origin || resolvePlatformAppOrigin();
-    await sendTenantWelcomeEmail({
+    const dispatch = await sendTenantWelcomeEmail({
       workspaceSubdomain: workspace.subdomain,
       email: input.email,
       name: input.adminName,
       origin: inviteOrigin,
       phone: input.adminPhone,
     });
+    inviteEmailSent = dispatch.sent;
+    inviteEmailError = dispatch.error;
   }
 
   // Organization blueprints removed — industryType retained for module recommendations only.
   void input.industryType;
 
-  return { user, workspace };
+  return { user, workspace, inviteEmailSent, inviteEmailError };
 }

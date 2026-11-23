@@ -76,6 +76,7 @@ import { teacherToken, adminToken } from "./helpers/tokens.js";
 import {
   getWorkspaceGlobalSettings,
   getWorkspaceBranding,
+  updateWorkspaceBrandingRow,
   upsertWorkspaceGlobalSettings,
   upsertWorkspaceBranding,
 } from "../db/repositories/workspaceRepository.js";
@@ -84,6 +85,7 @@ const mockedGetGlobalSettings = vi.mocked(getWorkspaceGlobalSettings);
 const mockedGetBranding = vi.mocked(getWorkspaceBranding);
 const mockedUpsertGlobalSettings = vi.mocked(upsertWorkspaceGlobalSettings);
 const mockedUpsertBranding = vi.mocked(upsertWorkspaceBranding);
+const mockedUpdateBrandingRow = vi.mocked(updateWorkspaceBrandingRow);
 
 const storedGlobalSettings: GlobalSettings = {
   ...DEFAULT_GLOBAL_SETTINGS,
@@ -214,18 +216,28 @@ describe("settings field-level RBAC (global_settings / branding)", () => {
     await app.close();
   });
 
-  it("admin POST branding can change identity fields", async () => {
+  it("admin POST branding cannot rename the madrasa but can change other identity fields", async () => {
+    // Changed intent: the madrasa name is platform-owned (rename only from the
+    // platform console), so tenant admins can no longer rename it even though they
+    // keep the rest of the institution identity fields.
     const app = await buildApp();
     const token = adminToken(app);
     const res = await app.inject({
       method: "POST",
       url: "/api/db/objects/branding",
       headers: { host: "demo.localhost", authorization: `Bearer ${token}` },
-      payload: { ...storedBranding, madrasaName: "Renamed Madrasa" },
+      payload: {
+        ...storedBranding,
+        madrasaName: "Renamed Madrasa",
+        website: "https://new.example",
+      },
     });
     expect(res.statusCode).toBe(200);
     const saved = mockedUpsertBranding.mock.calls[0][1] as BrandingSettings;
-    expect(saved.madrasaName).toBe("Renamed Madrasa");
+    expect(saved.website).toBe("https://new.example");
+    // Both branding seams must omit madrasa_name from the SQL write.
+    expect(mockedUpsertBranding.mock.calls[0]![2]).toEqual({ preserveMadrasaName: true });
+    expect(mockedUpdateBrandingRow.mock.calls[0]![2]).toEqual({ preserveMadrasaName: true });
     await app.close();
   });
 });

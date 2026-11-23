@@ -30,4 +30,8 @@ export {
   ContactPermissionError,
   prepareContactRecord,
 } from "../contacts/use-cases/contactValidationUseCases.js";
+export {
+  createAdminFirstContact,
+  type CreateAdminFirstContactInput,
+} from "../contacts/use-cases/contactAdminSeedUseCases.js";
 export type { ContactRuntimeDefaults } from "../contacts/use-cases/contactUseCases.js";

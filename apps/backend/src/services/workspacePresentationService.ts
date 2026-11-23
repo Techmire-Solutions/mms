@@ -31,6 +31,7 @@ import {
 } from "../db/repositories/userModulePreferencesRepository.js";
 import { normalizeSubdomainInput, invalidateWorkspaceCache } from "./workspaceService.js";
 import { getWorkspaceAdminEmailsMap } from "../db/repositories/workspaceAdminUserRepository.js";
+import type { ProvisionedWorkspaceAdmin } from "../db/repositories/workspaceRowMappers.js";
 
 export * from "../db/repositories/workspaceAdminUserRepository.js";
 
@@ -45,11 +46,15 @@ function mapWorkspaceSummaryRow(
   branding: BrandingSettings | null | undefined,
   prefsRaw: Partial<UserModulePreferences> | Record<string, unknown> | null | undefined,
   adminEmailFromMap?: string,
+  provisionedAdmin?: ProvisionedWorkspaceAdmin | null,
 ): PlatformWorkspaceRow {
   const publicBranding = toPublicBranding(branding ? branding : mergeBrandingSettings(null));
   const prefs = normalizeUserModulePreferences(prefsRaw);
   const logoUrl = publicBranding.logoUrl?.trim();
-  const adminEmail = adminEmailFromMap || (branding?.email ? branding.email : undefined);
+  // The console-side provisioning snapshot wins; the legacy tenant scan and the
+  // institution email remain fallbacks for workspaces created before it existed.
+  const adminEmail =
+    provisionedAdmin?.email || adminEmailFromMap || (branding?.email ? branding.email : undefined);
   const createdAt =
     typeof workspace.createdAt === "string"
       ? workspace.createdAt
@@ -64,6 +69,8 @@ function mapWorkspaceSummaryRow(
     requireEmailVerification:
       prefs.requireEmailVerification ?? DEFAULT_USERS_SETTINGS.requireEmailVerification,
     adminEmail,
+    ...(provisionedAdmin?.name ? { adminName: provisionedAdmin.name } : {}),
+    ...(provisionedAdmin?.gender ? { adminGender: provisionedAdmin.gender } : {}),
   };
 }
 
@@ -106,7 +113,21 @@ export async function listPlatformWorkspaces(
 
   const pageSubdomains = pageRows.map(({ workspace }) => workspace.subdomain);
   const prefsBySubdomain = await getUserModulePreferencesByWorkspaces(pageSubdomains);
-  const adminEmailsBySubdomain = await getWorkspaceAdminEmailsMap(pageSubdomains);
+
+  const provisionedBySubdomain = new Map<string, ProvisionedWorkspaceAdmin>();
+  for (const row of pageRows) {
+    if (row.provisionedAdmin) {
+      provisionedBySubdomain.set(row.workspace.subdomain.toLowerCase(), row.provisionedAdmin);
+    }
+  }
+  // Legacy workspaces have no provisioning snapshot: only scan tenant users for those.
+  const missingAdminEmail = pageSubdomains.filter(
+    (subdomain) => !provisionedBySubdomain.get(subdomain.toLowerCase())?.email,
+  );
+  const adminEmailsBySubdomain =
+    missingAdminEmail.length > 0
+      ? await getWorkspaceAdminEmailsMap(missingAdminEmail)
+      : new Map<string, string>();
 
   const workspaces = pageRows.map(({ workspace, branding }) =>
     mapWorkspaceSummaryRow(
@@ -114,6 +135,7 @@ export async function listPlatformWorkspaces(
       branding,
       prefsBySubdomain.get(workspace.subdomain.toLowerCase()) ?? null,
       adminEmailsBySubdomain.get(workspace.subdomain.toLowerCase()),
+      provisionedBySubdomain.get(workspace.subdomain.toLowerCase()) ?? null,
     ),
   );
 
@@ -180,8 +202,12 @@ export async function getPlatformWorkspaceSummary(
     data.branding ? data.branding : mergeBrandingSettings(null),
   );
   const logoUrl = publicBranding.logoUrl?.trim();
-  const adminEmailsMap = await getWorkspaceAdminEmailsMap([normalized]);
+  const provisionedAdmin = data.provisionedAdmin;
+  const adminEmailsMap = provisionedAdmin?.email
+    ? new Map<string, string>()
+    : await getWorkspaceAdminEmailsMap([normalized]);
   const adminEmail =
+    provisionedAdmin?.email ||
     adminEmailsMap.get(normalized.toLowerCase()) ||
     (data.branding?.email ? data.branding.email : undefined);
   const createdAt = String(data.workspace.createdAt);
@@ -195,6 +221,8 @@ export async function getPlatformWorkspaceSummary(
     requireEmailVerification:
       prefs.requireEmailVerification ?? DEFAULT_USERS_SETTINGS.requireEmailVerification,
     adminEmail,
+    ...(provisionedAdmin?.name ? { adminName: provisionedAdmin.name } : {}),
+    ...(provisionedAdmin?.gender ? { adminGender: provisionedAdmin.gender } : {}),
   };
 }
 
@@ -202,9 +230,10 @@ export async function getPlatformWorkspaceSummary(
 export async function syncWorkspaceFromBranding(
   subdomain: string,
   branding: Pick<BrandingSettings, "madrasaName" | "tagline">,
+  options: { preserveMadrasaName?: boolean } = {},
 ): Promise<void> {
   const normalized = normalizeSubdomainInput(subdomain);
-  await updateWorkspaceBrandingRow(normalized, branding);
+  await updateWorkspaceBrandingRow(normalized, branding, options);
   await invalidateWorkspaceCache(normalized);
 }
 
@@ -212,10 +241,27 @@ export async function syncWorkspaceFromBranding(
 export async function upsertWorkspaceBranding(
   subdomain: string,
   branding: BrandingSettings,
+  options: { preserveMadrasaName?: boolean } = {},
 ): Promise<void> {
   const normalized = normalizeSubdomainInput(subdomain);
-  await upsertWorkspaceBrandingRepo(normalized, branding);
+  await upsertWorkspaceBrandingRepo(normalized, branding, options);
   await invalidateWorkspaceCache(normalized);
+}
+
+/**
+ * Platform-only madrasa rename. The name is console-owned: tenant branding writes
+ * always preserve `madrasa_name`, so this is the single path that updates it.
+ * Preserves the current tagline and re-broadcasts the tenant branding update.
+ */
+export async function renamePlatformWorkspace(
+  subdomain: string,
+  madrasaName: string,
+): Promise<PlatformWorkspaceRow | null> {
+  const normalized = normalizeSubdomainInput(subdomain);
+  const current = await getWorkspaceBranding(normalized);
+  if (!current) return null;
+  await syncWorkspaceFromBranding(normalized, { madrasaName, tagline: current.tagline });
+  return getPlatformWorkspaceSummary(normalized);
 }
 
 /**

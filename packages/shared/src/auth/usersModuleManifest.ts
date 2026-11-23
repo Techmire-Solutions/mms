@@ -90,7 +90,18 @@ export const createWorkspaceUserSchema = z
     forceReset: z.boolean().optional(),
     twoFactorEnabled: z.boolean(),
   })
-  .passthrough();
+  .passthrough()
+  .superRefine((value, ctx) => {
+    // A password-method account without a password would be created with an empty
+    // credential hash (unloggable), so the contract rejects it outright.
+    if (value.setupMethod === "password" && !value.password?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["password"],
+        message: "users.addErrorPassword",
+      });
+    }
+  });
 
 /** Values accepted by the workspace user create form. */
 export type CreateWorkspaceUserInput = z.infer<typeof createWorkspaceUserSchema>;

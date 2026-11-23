@@ -22,6 +22,7 @@ import {
   handleUpdateWorkspaceModules,
   handlePatchWorkspaceEmailVerification,
   handleDeleteWorkspace,
+  handleRenameWorkspace,
 } from "./platformWorkspaceOpsHandlers.js";
 
 const s = initServer();
@@ -51,6 +52,7 @@ export default async function platformWorkspaceRoutes(
     getWorkspaceModules: handleGetWorkspaceModules,
     updateWorkspaceModules: handleUpdateWorkspaceModules,
     patchWorkspaceEmailVerification: handlePatchWorkspaceEmailVerification,
+    renameWorkspace: handleRenameWorkspace,
     verifyTenantUserEmail: handleVerifyTenantUserEmail,
     resetWorkspaceAdminPassword: {
       hooks: {

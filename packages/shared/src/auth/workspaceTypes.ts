@@ -33,6 +33,9 @@ export interface PlatformWorkspaceRow extends PublicWorkspaceSummary {
   createdAt: string;
   requireEmailVerification?: boolean;
   adminEmail?: string;
+  /** Provisioning snapshot of the tenant's apex admin (console database record). */
+  adminName?: string;
+  adminGender?: string;
 }
 
 /** Response body for `GET /api/workspace/registry` (apex only). */

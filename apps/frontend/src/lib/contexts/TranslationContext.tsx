@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useHydrateGlobalSettings } from "@/tenant/hooks/useHydrateGlobalSettings";
+import { useHydrateBranding } from "@/tenant/hooks/useHydrateBranding";
 import { useLocation } from "react-router-dom";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import {
@@ -46,6 +47,8 @@ export function TranslationProvider({
   children: React.ReactNode;
 }): React.JSX.Element {
   const { isHydrating } = useHydrateGlobalSettings();
+  // Boot-time institution branding hydration for branding writers (fails open).
+  useHydrateBranding();
   const settings = useGlobalSettings();
   const { pathname } = useLocation();
   const { isApex, workspace, workspaceLoading, workspaceLookupFailed } = useTenant();

@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test";
 import {
+  assertBrandingIdentity,
+  assertTenantProvisioningInvariants,
+  assertWorkspaceMadrasaName,
   resetPlatformUsers,
   ensureE2ePlatformAdmin,
-  setTenantAdminPassword,
 } from "../../helpers/tenantBootstrap.js";
 
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
@@ -13,6 +15,9 @@ test.describe.serial(
   { tag: "@local-only" },
   () => {
     const subdomain = `testmadrasa${Date.now()}`;
+    const madrasaName = "Test Madrasa";
+    const adminName = "Test Admin";
+    const adminGender = "male" as const;
     const adminEmail = `admin@${subdomain}.com`;
     const adminPassword = "Madrasa@1234";
     const changedAdminPassword = "Madrasa@5678";
@@ -101,7 +106,7 @@ test.describe.serial(
       await page.waitForSelector("#wizard-step-title");
       await expect(page.locator("#wizard-step-title")).toContainText("Organization details");
 
-      await page.fill("#onboarding-name", "Test Madrasa");
+      await page.fill("#onboarding-name", madrasaName);
       await page.fill("#onboarding-subdomain", subdomain);
       await expect(page.locator("text=Your URL:")).toBeVisible();
 
@@ -120,16 +125,12 @@ test.describe.serial(
       await page.fill("#firstName", "Test");
       await page.fill("#lastName", "Admin");
       await page.fill("#email", adminEmail);
-      if (
-        await page
-          .locator("#password")
-          .isVisible()
-          .catch(() => false)
-      ) {
-        await page.fill("#password", adminPassword);
-        await page.fill("#confirmPassword", adminPassword);
-      }
-      await page.check("#terms");
+      await page.selectOption("#gender", adminGender);
+      // Temporary-password mode: the operator sets the credential handed to the super
+      // admin, and the account must be able to sign in with it on the first attempt.
+      await page.getByRole("button", { name: "Set temporary password" }).click();
+      await page.fill("#admin-password", adminPassword);
+      await page.fill("#admin-password-confirm", adminPassword);
 
       // Step 5 Complete + create
       await page.click('button:has-text("Continue")');
@@ -142,9 +143,31 @@ test.describe.serial(
       await page.waitForURL((url) => !url.pathname.includes("/onboarding"), { timeout: 45_000 });
       await expect(platformConsoleLanding.first()).toBeVisible({ timeout: 25_000 });
 
-      setTenantAdminPassword(subdomain, adminEmail, adminPassword);
+      // Provisioning contract: the new madrasa's admin is its ONLY super_admin, is the
+      // first linked contact (with gender), the console database stores the collected
+      // madrasa/admin data, and no platform user was mirrored into the tenant.
+      assertTenantProvisioningInvariants({
+        subdomain,
+        madrasaName,
+        adminName,
+        adminEmail,
+        adminGender,
+      });
 
-      // 5. Navigate to tenant login page & login with temporary password
+      // Platform-owned renaming: only the console can change the madrasa name, and the
+      // change lands in the console database immediately.
+      const renamedMadrasa = "Renamed Madrasa (E2E)";
+      await page.getByRole("searchbox", { name: /search/i }).fill(subdomain);
+      const renameBtn = page.getByRole("button", { name: `Rename Madrasa (${subdomain})` }).first();
+      await expect(renameBtn).toBeVisible({ timeout: 20_000 });
+      await renameBtn.click();
+      await page.fill('input[name="madrasaName"]', renamedMadrasa);
+      await page.keyboard.press("Enter");
+      await expect(page.getByText(renamedMadrasa).first()).toBeVisible({ timeout: 20_000 });
+      assertWorkspaceMadrasaName(subdomain, renamedMadrasa);
+
+      // 5. Navigate to tenant login page & login with the temporary password
+      // (no SQL override: this proves the created credential works on first attempt)
       const tenantLoginUrl = `http://${subdomain}.localhost:5173/login`;
       await page.goto(tenantLoginUrl);
       await page.waitForLoadState("domcontentloaded");
@@ -186,6 +209,18 @@ test.describe.serial(
         await page.fill("#setup-postalCode", "E1 6AN");
         await page.fill("#setup-country", "United Kingdom");
         await page.click('button[type="submit"]');
+
+        // Institution details are server-authoritative: every edited field must
+        // reach the workspaces typed columns in PostgreSQL.
+        assertBrandingIdentity(subdomain, {
+          tagline: "Learn with excellence",
+          email: adminEmail,
+          // Phone is normalised to E.164 by the shared branding merge.
+          addressLine1: "123 Test Lane",
+          city: "London",
+          postalCode: "E1 6AN",
+          country: "United Kingdom",
+        });
       }
 
       await page.waitForURL(`http://${subdomain}.localhost:5173/`);

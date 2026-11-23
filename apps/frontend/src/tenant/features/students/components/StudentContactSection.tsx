@@ -62,10 +62,18 @@ export function StudentContactSection({
   const showContact = isFieldEnabled("contactId");
   const showGender = isFieldEnabled("gender");
   const showDob = isFieldEnabled("dob");
+  const showPhone = isFieldEnabled("phone");
+  const showEmail = isFieldEnabled("email");
   const primaryPhone = linkedContact ? getPrimaryPhone(linkedContact) : null;
   const primaryEmail = linkedContact ? getPrimaryEmail(linkedContact) : null;
   const showProfileRow =
-    Boolean(contactId) && (showGender || showDob || Boolean(primaryPhone) || Boolean(primaryEmail));
+    Boolean(contactId) &&
+    (showGender ||
+      showDob ||
+      showPhone ||
+      showEmail ||
+      Boolean(primaryPhone) ||
+      Boolean(primaryEmail));
 
   if (!showContact && !showProfileRow) {
     return null;
@@ -81,6 +89,8 @@ export function StudentContactSection({
   );
   const genderLabel = resolveStudentFieldLabel(fields, "basic", "gender", "students.gender", t);
   const dobLabel = resolveStudentFieldLabel(fields, "basic", "dob", "students.form.fieldDob", t);
+  const phoneLabel = resolveStudentFieldLabel(fields, "basic", "phone", "students.fields.phone", t);
+  const emailLabel = resolveStudentFieldLabel(fields, "basic", "email", "students.fields.email", t);
 
   return (
     <div className="space-y-6">
@@ -110,18 +120,20 @@ export function StudentContactSection({
 
           {showProfileRow ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-border/40">
-              {primaryPhone ? (
+              {showPhone || primaryPhone ? (
                 <ContactProfileValue
-                  label={t("contacts.fields.phoneNumber")}
-                  value={primaryPhone}
+                  label={phoneLabel}
+                  value={primaryPhone ?? ""}
                   icon={Phone}
+                  error={getFieldError("phone")}
                 />
               ) : null}
-              {primaryEmail ? (
+              {showEmail || primaryEmail ? (
                 <ContactProfileValue
-                  label={t("contacts.fields.emailAddress")}
-                  value={primaryEmail}
+                  label={emailLabel}
+                  value={primaryEmail ?? ""}
                   icon={Mail}
+                  error={getFieldError("email")}
                 />
               ) : null}
               {showGender ? (

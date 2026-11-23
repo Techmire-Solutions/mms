@@ -3,6 +3,10 @@ import { dispatchLocalDatabaseUpdate, safeSetItem, scopedStorageKey } from "@/li
 import { reportClientError, reportClientWarn } from "@/lib/clientErrorReporting";
 
 const TITLE_CASE_EXCLUDED_KEYWORDS = [
+  // Branding (institution identity/theme) is display copy plus identifiers: title
+  // casing corrupts it ("Al-Noor" -> "Al-noor", "LinkedIn" -> "Linkedin"), and social
+  // platform IDs are validated against the Title-Case allowlist on the server.
+  "branding",
   "settings",
   "config",
   "widgets",

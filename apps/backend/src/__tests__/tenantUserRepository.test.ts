@@ -264,6 +264,41 @@ describe("replaceTenantUsersForWorkspace", () => {
     // No `salt:hash` separator, so `verifyPassword` can never accept a parked hash.
     expect(inserted[1]?.passwordHash).not.toContain(":");
   });
+
+  it("counts the provisioned super_admin as the surviving admin credential", async () => {
+    mockSelectWhere.mockResolvedValue([
+      { ...existingDbRow, id: "u-owner", loginEmail: "owner@workspace.local", role: "super_admin" },
+    ]);
+
+    await replaceTenantUsersForWorkspace("dar-ul-quran", [
+      {
+        id: "u-owner",
+        workspaceSubdomain: "dar-ul-quran",
+        loginEmail: "owner@workspace.local",
+        name: "Provisioned Owner",
+        role: "super_admin",
+      },
+      {
+        id: "u-unknown",
+        workspaceSubdomain: "dar-ul-quran",
+        loginEmail: "unknown@workspace.local",
+        name: "Unknown User",
+        role: "teacher",
+      },
+    ]);
+
+    const inserted = mockInsertValues.mock.calls[0]?.[0] as Array<{
+      id: string;
+      passwordHash: string;
+      mustChangePassword: boolean;
+    }>;
+    expect(inserted[0]).toMatchObject({
+      id: "u-owner",
+      passwordHash: "salt:existing-hash",
+      mustChangePassword: false,
+    });
+    expect(inserted[1]?.passwordHash).toMatch(/^!restore-/);
+  });
 });
 
 /**
@@ -469,6 +504,17 @@ describe("tenantUserLifecyclePersist operations", () => {
           mustChangePassword: true,
           updatedAt: expect.any(Date),
         }),
+      );
+    });
+
+    it("verifies the email so a vetted temporary password can actually sign in", async () => {
+      // Changed intent: resets previously left emailVerifiedAt untouched, so accounts
+      // created before the create-time fix stayed blocked by requireEmailVerification.
+      await expect(
+        resetTenantUserPasswordRow("dar-ul-quran", "u-1", "salt:new-hash"),
+      ).resolves.toBe(true);
+      expect(mockSet).toHaveBeenCalledWith(
+        expect.objectContaining({ emailVerifiedAt: expect.any(Date) }),
       );
     });
   });

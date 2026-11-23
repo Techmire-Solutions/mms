@@ -118,6 +118,28 @@ export const INITIAL_STUDENT_FIELD_SEED: Record<string, FieldDefinition[]> = {
         "Read from the linked contact profile; the contact must have at least one education entry.",
       descriptionKey: "students.fields.educationDesc",
     },
+    {
+      key: "phone",
+      label: "Phone Number",
+      labelKey: "students.fields.phone",
+      type: "text",
+      enabled: true,
+      order: 6,
+      required: false,
+      description: "Read from the linked contact profile; the contact must have a phone number.",
+      descriptionKey: "students.fields.phoneDesc",
+    },
+    {
+      key: "email",
+      label: "Email",
+      labelKey: "students.fields.email",
+      type: "text",
+      enabled: true,
+      order: 7,
+      required: false,
+      description: "Read from the linked contact profile; the contact must have an email address.",
+      descriptionKey: "students.fields.emailDesc",
+    },
   ],
   registration: [
     {

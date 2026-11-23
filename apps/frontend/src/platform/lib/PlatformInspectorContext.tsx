@@ -8,6 +8,8 @@ export interface PlatformInspectorWorkspace {
   enabled: boolean;
   createdAt?: string;
   adminEmail?: string;
+  adminName?: string;
+  adminGender?: string;
 }
 
 export type PlatformInspectorTarget = PlatformInspectorWorkspace;

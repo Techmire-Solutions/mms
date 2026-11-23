@@ -3,7 +3,12 @@ import type { Workspace, BrandingSettings } from "@mms/shared";
 import { activeDb } from "../dbConnection.js";
 import { workspaces as workspacesTable } from "../schema.js";
 import { loadWorkspaceRow, invalidateWorkspaceCache } from "./workspaceRepositoryCache.js";
-import { rowToWorkspace, rowToBranding } from "./workspaceRowMappers.js";
+import {
+  rowToWorkspace,
+  rowToBranding,
+  rowToProvisionedAdmin,
+  type ProvisionedWorkspaceAdmin,
+} from "./workspaceRowMappers.js";
 
 /**
  * Branding-bearing workspace columns projected by list/summary queries.
@@ -34,6 +39,9 @@ const WORKSPACE_BRANDING_PROJECTION = {
   region: workspacesTable.region,
   postalCode: workspacesTable.postalCode,
   socialLinks: workspacesTable.socialLinks,
+  adminName: workspacesTable.adminName,
+  adminEmail: workspacesTable.adminEmail,
+  adminGender: workspacesTable.adminGender,
   createdAt: workspacesTable.createdAt,
 } as const;
 
@@ -42,11 +50,13 @@ type WorkspaceBrandingRow = typeof workspacesTable.$inferSelect;
 function toWorkspaceWithBranding(ws: unknown): {
   workspace: Workspace;
   branding: BrandingSettings;
+  provisionedAdmin: ProvisionedWorkspaceAdmin | null;
 } {
   const row = ws as WorkspaceBrandingRow;
   return {
     workspace: rowToWorkspace(row),
     branding: rowToBranding(row),
+    provisionedAdmin: rowToProvisionedAdmin(row),
   };
 }
 
@@ -55,7 +65,11 @@ function toWorkspaceWithBranding(ws: unknown): {
  * N+1 pattern of fetching branding per workspace (used by the apex registry).
  */
 export async function listWorkspaceRowsWithBranding(): Promise<
-  Array<{ workspace: Workspace; branding: BrandingSettings }>
+  Array<{
+    workspace: Workspace;
+    branding: BrandingSettings;
+    provisionedAdmin: ProvisionedWorkspaceAdmin | null;
+  }>
 > {
   const rows = await activeDb()
     .select({ ...WORKSPACE_BRANDING_PROJECTION })
@@ -75,7 +89,11 @@ export interface WorkspaceRowsPageQuery {
 }
 
 export interface WorkspaceRowsPage {
-  rows: Array<{ workspace: Workspace; branding: BrandingSettings }>;
+  rows: Array<{
+    workspace: Workspace;
+    branding: BrandingSettings;
+    provisionedAdmin: ProvisionedWorkspaceAdmin | null;
+  }>;
   total: number;
 }
 
@@ -145,6 +163,7 @@ export async function getWorkspaceBranding(subdomain: string): Promise<BrandingS
 export async function getWorkspaceWithBranding(subdomain: string): Promise<{
   workspace: Workspace;
   branding: BrandingSettings;
+  provisionedAdmin: ProvisionedWorkspaceAdmin | null;
 } | null> {
   try {
     const ws = await loadWorkspaceRow(subdomain);
@@ -152,36 +171,51 @@ export async function getWorkspaceWithBranding(subdomain: string): Promise<{
     return {
       workspace: rowToWorkspace(ws),
       branding: rowToBranding(ws),
+      provisionedAdmin: rowToProvisionedAdmin(ws),
     };
   } catch {
     return null;
   }
 }
 
-/** Sync name/tagline columns — used for registry display; branding save uses upsertWorkspaceBranding. */
+/**
+ * Sync name/tagline columns — used for registry display; branding save uses
+ * upsertWorkspaceBranding.
+ *
+ * `preserveMadrasaName` omits `madrasa_name` from the UPDATE entirely: the madrasa
+ * name is platform-owned, so tenant-scoped writes can never change it (no
+ * read-then-write race with a concurrent platform rename).
+ */
 export async function updateWorkspaceBrandingRow(
   subdomain: string,
   branding: { madrasaName: string; tagline?: string | null },
+  options: { preserveMadrasaName?: boolean } = {},
 ): Promise<void> {
   await activeDb()
     .update(workspacesTable)
     .set({
-      madrasaName: branding.madrasaName.trim(),
+      ...(options.preserveMadrasaName ? {} : { madrasaName: branding.madrasaName.trim() }),
       tagline: branding.tagline?.trim() || null,
     })
     .where(eq(workspacesTable.subdomain, subdomain));
   invalidateWorkspaceCache(subdomain);
 }
 
-/** Write the full BrandingSettings into the workspaces typed columns. */
+/**
+ * Write the full BrandingSettings into the workspaces typed columns.
+ *
+ * `preserveMadrasaName` keeps the platform-owned `madrasa_name` untouched for
+ * tenant-scoped writes (settings, institution setup, backup restore).
+ */
 export async function upsertWorkspaceBranding(
   subdomain: string,
   b: BrandingSettings,
+  options: { preserveMadrasaName?: boolean } = {},
 ): Promise<void> {
   await activeDb()
     .update(workspacesTable)
     .set({
-      madrasaName: b.madrasaName.trim(),
+      ...(options.preserveMadrasaName ? {} : { madrasaName: b.madrasaName.trim() }),
       tagline: b.tagline?.trim() || null,
       primaryColor: b.primaryColor || null,
       secondaryColor: b.secondaryColor || null,

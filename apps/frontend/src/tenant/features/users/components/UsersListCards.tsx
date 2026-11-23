@@ -1,4 +1,4 @@
-import type { SystemUser } from "@mms/shared";
+import { isAdminRole, isSuperAdminRole, type SystemUser } from "@mms/shared";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -73,7 +73,7 @@ function UserCard({
       onEdit={onEdit}
       reducedMotion={reducedMotion}
       accentClassName={
-        user.role === "admin"
+        isAdminRole(user.role) || isSuperAdminRole(user.role)
           ? "bg-primary/80 group-hover:bg-primary"
           : "bg-primary/50 group-hover:bg-primary"
       }

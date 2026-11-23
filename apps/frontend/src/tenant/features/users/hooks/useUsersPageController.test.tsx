@@ -145,7 +145,9 @@ describe("useUsersPageController", () => {
       controller.workTierProps.onEditUser(superAdminUser);
     });
 
-    expect(notify.error).toHaveBeenCalledWith("users.errors.cannotModifySuperAdmin");
+    // Changed intent: the apex super admin is platform-managed, so the tenant
+    // Users module refuses to edit it with the platform-console hint.
+    expect(notify.error).toHaveBeenCalledWith("users.errorPlatformManagedRole");
     expect(controller.modalLayerProps.editing).toBeNull();
 
     const standardUser = normalizeWorkspaceUser({

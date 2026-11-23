@@ -271,6 +271,16 @@ describe("applyTitleCaseRecursive", () => {
     expect(result.name).toBe("Should Be Changed");
   });
 
+  it("applyTitleCaseToContact preserves lowercase gender invariant", () => {
+    const input = {
+      name: "fatima zahra",
+      gender: "female",
+    };
+    const result = applyTitleCaseToContact(input);
+    expect(result.name).toBe("Fatima Zahra");
+    expect(result.gender).toBe("female");
+  });
+
   it("ignores non-eligible strings like URLs, phone numbers, and dates", () => {
     const input = {
       website: "https://example.com/some-page",

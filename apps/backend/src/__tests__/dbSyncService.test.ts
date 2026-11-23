@@ -21,6 +21,9 @@ const loadRelationalSnapshotCollections = vi.fn();
 const getRequestTenant = vi.fn();
 const getWorkspaceBranding = vi.fn();
 const getWorkspaceGlobalSettings = vi.fn();
+const upsertWorkspaceBranding = vi.fn(
+  async (_subdomain: string, _branding: unknown, _options?: unknown) => undefined,
+);
 
 vi.mock("../db/database.js", () => ({
   getCollection: vi.fn(),
@@ -73,6 +76,8 @@ vi.mock("../db/repositories/workspaceRepository.js", async (importOriginal) => {
     ...actual,
     getWorkspaceBranding: (subdomain: string) => getWorkspaceBranding(subdomain),
     getWorkspaceGlobalSettings: (subdomain: string) => getWorkspaceGlobalSettings(subdomain),
+    upsertWorkspaceBranding: (subdomain: string, branding: unknown, options?: unknown) =>
+      upsertWorkspaceBranding(subdomain, branding, options),
   };
 });
 
@@ -427,6 +432,34 @@ describe("dbSyncService collection persistence", () => {
     listAllTenantUsersByWorkspace.mockReset();
     listAllTenantUsersByWorkspace.mockResolvedValue([]);
   });
+
+  it("accepts the provisioned apex super_admin as the surviving admin after a restore", async () => {
+    getRequestTenant.mockReturnValue("demo");
+    dbSaveCollection.mockResolvedValue(undefined);
+    dbSaveObject.mockResolvedValue(undefined);
+    dbDeleteObject.mockResolvedValue(undefined);
+    dbListTenantCollectionLogicalKeys.mockResolvedValue([]);
+    dbListTenantObjectLogicalKeys.mockResolvedValue([]);
+    listAllTenantUsersByWorkspace.mockResolvedValue([
+      { id: "u-owner", role: "super_admin", deletedAt: null },
+    ]);
+
+    await expect(
+      synchronizeData(
+        {
+          collections: { users: [{ id: "u-owner", role: "super_admin" }] },
+          objects: {},
+        },
+        undefined,
+        true,
+      ),
+    ).resolves.toBeUndefined();
+
+    expect(listAllTenantUsersByWorkspace).toHaveBeenCalledWith("demo");
+    getRequestTenant.mockReset();
+    listAllTenantUsersByWorkspace.mockReset();
+    listAllTenantUsersByWorkspace.mockResolvedValue([]);
+  });
 });
 
 describe("fetchDatabaseSnapshot", () => {
@@ -530,5 +563,21 @@ describe("fetchBackupSnapshot", () => {
 
     expect(loadRelationalSnapshotCollections).not.toHaveBeenCalled();
     expect(snapshot.collections?.students).toEqual([{ id: "stale-doc-store" }]);
+  });
+
+  it("restores branding without overwriting the platform-owned madrasa name", async () => {
+    getRequestTenant.mockReturnValue("demo");
+
+    await synchronizeData({
+      collections: {},
+      objects: { branding: { madrasaName: "Hijacked Madrasa" } },
+    });
+
+    expect(upsertWorkspaceBranding).toHaveBeenCalledTimes(1);
+    const [subdomain, branding, options] = upsertWorkspaceBranding.mock.calls[0]!;
+    expect(subdomain).toBe("demo");
+    expect((branding as { madrasaName: string }).madrasaName).toBe("Hijacked Madrasa");
+    // The tenant-visible name stays platform-owned even when the snapshot differs.
+    expect(options).toEqual({ preserveMadrasaName: true });
   });
 });

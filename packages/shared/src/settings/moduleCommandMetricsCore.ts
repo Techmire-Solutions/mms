@@ -1,5 +1,15 @@
 import { resolveFacultyStatusRoles, FACULTY_STATUS_VALUES } from "../faculty/facultyTypes.js";
 
+/**
+ * Administrative tenant roles for the users command-centre metric. Kept local (not
+ * the auth role-helper module) to avoid a settings → auth → settings import cycle.
+ */
+const ADMINISTRATIVE_ROLES = new Set(["admin", "super_admin", "super_user"]);
+
+function isAdministrativeRole(role: string | undefined): boolean {
+  return ADMINISTRATIVE_ROLES.has((role ?? "").trim().toLowerCase());
+}
+
 /** Default rolling window for "new records" command-centre metrics (globle1 §2.1). */
 export const MODULE_METRICS_DEFAULT_PERIOD_DAYS = 30;
 
@@ -200,7 +210,7 @@ export function computeUsersCommandMetrics(
     if (user.status === "active") active++;
     else if (user.status === "suspended") suspended++;
 
-    if (user.role === "admin") admins++;
+    if (isAdministrativeRole(user.role)) admins++;
     if (user.twoFactorEnabled) twoFaEnabled++;
     if (user.activeSessions) activeSessions += user.activeSessions;
   }

@@ -82,4 +82,39 @@ describe("StudentContactSection Component", () => {
     expect(html).toContain('id="sf-456-dob"');
     expect(html).toContain('value="2016-04-12"');
   });
+
+  it("renders Phone and Email rows with the not-set placeholder when the contact lacks them", () => {
+    const html = renderToStaticMarkup(<StudentContactSection {...defaultProps} />);
+
+    expect(html).toContain("students.fields.phone");
+    expect(html).toContain("students.fields.email");
+    expect(html).toContain("students.form.notSetOnContact");
+  });
+
+  it("shows the contact-profile error on the affected Phone/Email row", () => {
+    const html = renderToStaticMarkup(
+      <StudentContactSection
+        {...defaultProps}
+        getFieldError={(fieldId) =>
+          fieldId === "phone" ? "The linked contact has no phone number." : undefined
+        }
+      />,
+    );
+
+    expect(html).toContain("The linked contact has no phone number.");
+    expect(html).toContain("students.fields.phone");
+  });
+
+  it("hides Phone/Email rows when the fields are disabled and the contact has no values", () => {
+    const html = renderToStaticMarkup(
+      <StudentContactSection
+        {...defaultProps}
+        isFieldEnabled={(fieldId) => fieldId === "contactId"}
+      />,
+    );
+
+    expect(html).toContain("students.form.contactLabel");
+    expect(html).not.toContain("students.fields.phone");
+    expect(html).not.toContain("students.fields.email");
+  });
 });

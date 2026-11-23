@@ -1,4 +1,8 @@
 import { randomBytes } from "node:crypto";
+import {
+  buildTenantUserInitialCredential,
+  resolveTenantUserSetup,
+} from "./userCreationCredentials.js";
 import type { UsersRepository } from "../repository/usersRepository.js";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { broadcastCollection } from "../../lib/livePush.js";
@@ -6,8 +10,6 @@ import { getHydratedUsers, saveUsers } from "../../services/auth/userService.js"
 import { invalidateTenantRbac } from "../../services/rbacService.js";
 import { getRawUsers, type PersistedUser } from "../../services/auth/userServiceShared.js";
 import { sendTenantWelcomeEmail } from "../../services/auth/tenantPasswordOtpDispatch.js";
-import { hashPassword } from "../../services/auth/passwordService.js";
-import { assertPasswordMeetsPolicy } from "../../services/globalSettingsService.js";
 import { loadContactsByIds } from "../../services/contactService.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { findFacultyByContactId } from "../../db/repositories/facultyRepository.js";
@@ -20,6 +22,7 @@ import {
   type InviteWorkspaceUserInput,
   normalizeWorkspaceUser,
   canAssignRole,
+  isPlatformManagedRole,
   collectActiveTenureAssignableRoleIds,
   isFacultyProfileStatus,
   getDisplayName,
@@ -102,6 +105,9 @@ export async function createWorkspaceUserHelper(
 ): Promise<{ user: WorkspaceUser; inviteEmailSent?: boolean; inviteEmailError?: string }> {
   const tenant = requireTenant();
 
+  const setup = resolveTenantUserSetup(input);
+  const { setupMethod } = setup;
+
   let name = String(input.name || "").trim();
   let email = String(input.email || "")
     .trim()
@@ -137,6 +143,14 @@ export async function createWorkspaceUserHelper(
     }
   }
 
+  if (isPlatformManagedRole(effectiveRole)) {
+    throw new HttpDomainError(
+      403,
+      "platform_managed_role",
+      "The Super Admin role can only be assigned from the platform console",
+    );
+  }
+
   if (actorRole && !canAssignRole(actorRole, effectiveRole)) {
     throw new HttpDomainError(
       403,
@@ -166,19 +180,7 @@ export async function createWorkspaceUserHelper(
     );
   }
 
-  let passwordHash = "";
-  let mustChangePassword = false;
-  const setupMethod = (input as { setupMethod?: string }).setupMethod;
-  const password = (input as { password?: string }).password;
-  const forceReset = (input as { forceReset?: boolean }).forceReset;
-
-  if (setupMethod === "password" && password) {
-    await assertPasswordMeetsPolicy(password);
-    passwordHash = await hashPassword(password);
-    mustChangePassword = forceReset !== false;
-  } else if (setupMethod === "invite") {
-    passwordHash = await hashPassword(randomBytes(32).toString("hex"));
-  }
+  const credential = await buildTenantUserInitialCredential(setup);
 
   const userId = "id" in input && input.id ? String(input.id) : randomBytes(8).toString("hex");
   const userRecord: PersistedUser = {
@@ -198,8 +200,11 @@ export async function createWorkspaceUserHelper(
     failedLoginAttempts: 0,
     activeSessions: 0,
     avatarInitials: computeUserInitials(name || email),
-    passwordHash,
-    mustChangePassword,
+    passwordHash: credential.passwordHash,
+    mustChangePassword: credential.mustChangePassword,
+    // An administrator who sets the password directly has vouched for the address:
+    // mark it verified so the login verification gate cannot block the first sign-in.
+    ...(credential.emailVerifiedAt ? { emailVerifiedAt: credential.emailVerifiedAt } : {}),
     workspaceSubdomain: tenant,
   };
 

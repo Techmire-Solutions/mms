@@ -277,6 +277,7 @@ describe("users REST routes", () => {
         },
       ],
       "admin",
+      "u-admin",
     );
     await app.close();
   });

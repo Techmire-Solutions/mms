@@ -15,6 +15,7 @@ import {
   canAssignRole,
   canManageTargetUser,
   isAdminRole,
+  isPlatformManagedRole,
   isSuperAdminRole,
 } from "@mms/shared";
 import { recordUserActivityLog } from "./userActivityLogUseCases.js";
@@ -69,6 +70,7 @@ export async function upsertWorkspaceUsersHelper(
   records: WorkspaceUser[],
   actorRole?: string,
   loadWorkspaceUsers?: () => Promise<WorkspaceUser[]>,
+  actorId?: string,
 ): Promise<WorkspaceUser[]> {
   const parsed = workspaceUserListSchema.parse(records);
   // Authoritative allowlist: strip credential/lifecycle fields before any merge
@@ -81,9 +83,48 @@ export async function upsertWorkspaceUsersHelper(
   const existingById = new Map(existing.map((u) => [String(u.id), u] as const));
   const updatesById = new Map(sanitized.map((u) => [String(u.id), u] as const));
 
-  if (actorRole) {
-    for (const update of sanitized) {
-      const existingUser = existingById.get(String(update.id));
+  for (const update of sanitized) {
+    const existingUser = existingById.get(String(update.id));
+
+    // The apex tenant account is platform-owned: bulk upserts may neither create it
+    // nor change its role.
+    if (isPlatformManagedRole(update.role) && update.role !== existingUser?.role) {
+      throw new HttpDomainError(
+        403,
+        "platform_managed_role",
+        "The Super Admin role can only be assigned from the platform console",
+      );
+    }
+    if (
+      existingUser &&
+      isPlatformManagedRole(existingUser.role) &&
+      update.role !== existingUser.role
+    ) {
+      throw new HttpDomainError(
+        403,
+        "platform_managed_role",
+        "This account is managed from the platform console",
+      );
+    }
+
+    if (actorId && String(update.id) === String(actorId)) {
+      if (update.role !== undefined && update.role !== existingUser?.role) {
+        throw new HttpDomainError(
+          400,
+          "self_role_change",
+          "Use profile settings to change your own role",
+        );
+      }
+      if (update.status !== undefined && update.status !== "active") {
+        throw new HttpDomainError(
+          400,
+          "self_status_change",
+          "Use profile settings to change your own status",
+        );
+      }
+    }
+
+    if (actorRole) {
       if (existingUser && !canManageTargetUser(actorRole, existingUser.role)) {
         throw new HttpDomainError(
           403,
@@ -160,7 +201,21 @@ export async function updateWorkspaceUserHelper(
     );
   }
 
-  if (input.role && actorRole && !canAssignRole(actorRole, input.role)) {
+  if (input.role !== undefined && input.role !== existingRow.role) {
+    if (isPlatformManagedRole(input.role) || isPlatformManagedRole(existingRow.role)) {
+      throw new HttpDomainError(
+        403,
+        "platform_managed_role",
+        "The Super Admin role is managed from the platform console",
+      );
+    }
+  }
+  if (
+    input.role &&
+    input.role !== existingRow.role &&
+    actorRole &&
+    !canAssignRole(actorRole, input.role)
+  ) {
     throw new HttpDomainError(
       403,
       "forbidden_super_admin_assignment",

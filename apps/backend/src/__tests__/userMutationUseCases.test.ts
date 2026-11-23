@@ -36,6 +36,10 @@ vi.mock("../faculty/use-cases/facultyUserRoleGuards.js", () => ({
   isFacultyDesignationRoleLocked: mocks.isFacultyDesignationRoleLocked,
 }));
 
+vi.mock("../users/use-cases/userActivityLogUseCases.js", () => ({
+  recordUserActivityLog: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe("userMutationUseCases", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -201,6 +205,136 @@ describe("userMutationUseCases", () => {
           ),
         ),
       ).rejects.toMatchObject({ statusCode: 403, type: "last_admin_mutation" });
+    });
+  });
+
+  describe("platform-managed super admin role", () => {
+    const repo = {
+      findTenantUserRowById: vi.fn(),
+      bulkSaveActivityLogs: vi.fn().mockResolvedValue(undefined),
+    };
+
+    it("rejects promoting a user to the platform-managed role", async () => {
+      repo.findTenantUserRowById.mockResolvedValue({
+        id: "u-teacher",
+        workspaceSubdomain: "demo",
+        role: "teacher",
+        status: "active",
+        deletedAt: null,
+      });
+
+      await expect(
+        runWithTenant("demo", () =>
+          updateWorkspaceUserHelper(
+            repo as never,
+            "u-teacher",
+            { role: "super_admin" },
+            "u-owner",
+            "super_admin",
+          ),
+        ),
+      ).rejects.toMatchObject({ statusCode: 403, type: "platform_managed_role" });
+    });
+
+    it("rejects demoting the apex super admin from the tenant users module", async () => {
+      repo.findTenantUserRowById.mockResolvedValue({
+        id: "u-owner",
+        workspaceSubdomain: "demo",
+        role: "super_admin",
+        status: "active",
+        deletedAt: null,
+      });
+
+      await expect(
+        runWithTenant("demo", () =>
+          updateWorkspaceUserHelper(
+            repo as never,
+            "u-owner",
+            { role: "admin" },
+            "u-other-owner",
+            "super_admin",
+          ),
+        ),
+      ).rejects.toMatchObject({ statusCode: 403, type: "platform_managed_role" });
+    });
+
+    it("allows editing other fields of the apex account without changing its role", async () => {
+      repo.findTenantUserRowById.mockResolvedValue({
+        id: "u-owner",
+        workspaceSubdomain: "demo",
+        role: "super_admin",
+        status: "active",
+        deletedAt: null,
+      });
+      mocks.getRawUsers.mockResolvedValue([
+        { id: "u-owner", role: "super_admin", status: "active", name: "Owner" },
+        { id: "u-admin", role: "admin", status: "active", name: "Admin" },
+      ]);
+      mocks.saveUsers.mockResolvedValue(undefined);
+
+      await expect(
+        runWithTenant("demo", () =>
+          updateWorkspaceUserHelper(
+            repo as never,
+            "u-owner",
+            { twoFactorEnabled: true },
+            "u-owner",
+            "super_admin",
+          ),
+        ),
+      ).resolves.toBeDefined();
+    });
+
+    it("rejects creating or promoting a super admin through the bulk upsert", async () => {
+      mocks.getHydratedUsers.mockResolvedValue([
+        { id: "u-teacher", role: "teacher", status: "active" },
+      ]);
+
+      await expect(
+        runWithTenant("demo", () =>
+          upsertWorkspaceUsersHelper(
+            [
+              {
+                id: "u-teacher",
+                name: "Teacher",
+                email: "teacher@demo.local",
+                role: "super_admin",
+                status: "active",
+                twoFactorEnabled: false,
+              },
+            ] as never,
+            "super_admin",
+            undefined,
+            "u-owner",
+          ),
+        ),
+      ).rejects.toMatchObject({ statusCode: 403, type: "platform_managed_role" });
+    });
+
+    it("rejects mutating the apex super admin row through the bulk upsert", async () => {
+      mocks.getHydratedUsers.mockResolvedValue([
+        { id: "u-owner", role: "super_admin", status: "active" },
+      ]);
+
+      await expect(
+        runWithTenant("demo", () =>
+          upsertWorkspaceUsersHelper(
+            [
+              {
+                id: "u-owner",
+                name: "Owner",
+                email: "owner@demo.local",
+                role: "admin",
+                status: "active",
+                twoFactorEnabled: false,
+              },
+            ] as never,
+            "super_admin",
+            undefined,
+            "u-owner",
+          ),
+        ),
+      ).rejects.toMatchObject({ statusCode: 403, type: "platform_managed_role" });
     });
   });
 });

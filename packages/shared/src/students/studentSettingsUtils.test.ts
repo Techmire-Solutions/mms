@@ -146,6 +146,8 @@ describe("normalizeStudentsSettings", () => {
       "contactRelationships",
       "address",
       "education",
+      "phone",
+      "email",
     ]);
     expect(fields.basic.find((field) => field.key === "contactRelationships")?.enabled).toBe(true);
     expect(fields.registration.map((field) => field.key)).toEqual([
@@ -211,6 +213,8 @@ describe("normalizeStudentsSettings", () => {
       "contactRelationships",
       "address",
       "education",
+      "phone",
+      "email",
     ]);
     expect(fields.registration.map((field) => field.key)).toEqual([
       "grNumber",

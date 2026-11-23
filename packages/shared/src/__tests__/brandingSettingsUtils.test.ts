@@ -2,8 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   isInstitutionSetupComplete,
   formatBrandingAddress,
+  mergeBrandingIdentityOverServerBaseline,
+  pickDirtyBrandingFields,
   redactBrandingIdentityForClient,
 } from "../branding/brandingSettingsUtils.js";
+import {
+  BRANDING_IDENTITY_FIELD_KEYS,
+  DEFAULT_BRANDING_SETTINGS,
+} from "../branding/brandingSettingsTypes.js";
 
 describe("isInstitutionSetupComplete", () => {
   it("returns false for null or undefined input", () => {
@@ -106,5 +112,104 @@ describe("redactBrandingIdentityForClient", () => {
     expect(redacted.city).toBe("");
     expect(redacted.country).toBe("");
     expect(redacted.socialLinks).toEqual([]);
+  });
+});
+
+describe("pickDirtyBrandingFields", () => {
+  const baseline = {
+    ...DEFAULT_BRANDING_SETTINGS,
+    madrasaName: "Al-Noor Academy",
+    city: "Karachi",
+    socialLinks: [{ platform: "LinkedIn" as const, url: "https://linkedin.com/company/a" }],
+  };
+
+  it("returns only the fields the user changed", () => {
+    const draft = {
+      ...baseline,
+      city: "Lahore",
+      tagline: "New tagline",
+    };
+
+    expect(pickDirtyBrandingFields(draft, baseline, BRANDING_IDENTITY_FIELD_KEYS)).toEqual({
+      city: "Lahore",
+      tagline: "New tagline",
+    });
+  });
+
+  it("returns an empty patch when the draft matches the baseline", () => {
+    expect(pickDirtyBrandingFields(baseline, baseline, BRANDING_IDENTITY_FIELD_KEYS)).toEqual({});
+  });
+
+  it("detects social-link edits structurally", () => {
+    const draft = {
+      ...baseline,
+      socialLinks: [{ platform: "LinkedIn" as const, url: "https://linkedin.com/company/b" }],
+    };
+    expect(pickDirtyBrandingFields(draft, baseline, BRANDING_IDENTITY_FIELD_KEYS)).toEqual({
+      socialLinks: [{ platform: "LinkedIn", url: "https://linkedin.com/company/b" }],
+    });
+  });
+});
+
+describe("mergeBrandingIdentityOverServerBaseline", () => {
+  const baseline = {
+    ...DEFAULT_BRANDING_SETTINGS,
+    madrasaName: "Local Madrasa",
+    city: "",
+    email: "",
+    addressLine1: "",
+  };
+
+  const serverBaseline = {
+    ...DEFAULT_BRANDING_SETTINGS,
+    madrasaName: "Al-Noor Academy",
+    city: "Karachi",
+    email: "info@alnoor.test",
+    legalName: "Al-Noor Education Trust",
+    addressLine1: "12 Knowledge Road",
+    region: "Sindh",
+    socialLinks: [{ platform: "LinkedIn" as const, url: "https://linkedin.com/company/al-noor" }],
+  };
+
+  it("overlays only the edited identity fields on the server record", () => {
+    const draft = { ...baseline, city: "Lahore", tagline: "Edited tagline" };
+
+    const merged = mergeBrandingIdentityOverServerBaseline(draft, baseline, serverBaseline);
+
+    expect(merged.city).toBe("Lahore");
+    expect(merged.tagline).toBe("Edited tagline");
+    // Untouched identity fields come from the fresh server record.
+    expect(merged.email).toBe("info@alnoor.test");
+    expect(merged.legalName).toBe("Al-Noor Education Trust");
+    expect(merged.addressLine1).toBe("12 Knowledge Road");
+    expect(merged.region).toBe("Sindh");
+    expect(merged.madrasaName).toBe("Al-Noor Academy");
+    expect(merged.socialLinks).toEqual([
+      { platform: "LinkedIn", url: "https://linkedin.com/company/al-noor" },
+    ]);
+  });
+
+  it("recovers server values when the local baseline was never hydrated", () => {
+    // The draft matches its (empty) baseline: nothing is dirty, so the server wins.
+    const merged = mergeBrandingIdentityOverServerBaseline(baseline, baseline, serverBaseline);
+
+    expect(merged.email).toBe("info@alnoor.test");
+    expect(merged.addressLine1).toBe("12 Knowledge Road");
+    expect(merged.city).toBe("Karachi");
+  });
+
+  it("keeps server theme fields while applying identity edits", () => {
+    const themedServer = {
+      ...serverBaseline,
+      primaryColor: "#123456",
+      cornerStyle: "soft" as const,
+    };
+    const draft = { ...baseline, phone: "+92 300 1234567" };
+
+    const merged = mergeBrandingIdentityOverServerBaseline(draft, baseline, themedServer);
+
+    expect(merged.phone).toBe("+923001234567");
+    expect(merged.primaryColor).toBe("#123456");
+    expect(merged.cornerStyle).toBe("soft");
   });
 });

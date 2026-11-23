@@ -3,10 +3,12 @@ import { PlatformWorkspaceDeleteDialog } from "@/platform/components/PlatformWor
 import { PlatformWorkspaceModulesDialog } from "@/platform/components/PlatformWorkspaceModulesDialog";
 import { PlatformWorkspaceResetPasswordDialog } from "@/platform/components/PlatformWorkspaceResetPasswordDialog";
 import { PlatformWorkspaceCreateAdminDialog } from "@/platform/components/PlatformWorkspaceCreateAdminDialog";
+import { PlatformWorkspaceRenameDialog } from "@/platform/components/workspace/PlatformWorkspaceRenameDialog";
 import {
   useResetWorkspaceAdminPassword,
   useCreateWorkspaceAdmin,
 } from "@/platform/hooks/usePlatformWorkspaces";
+import { useRenameWorkspace } from "@/platform/hooks/usePlatformWorkspaceListMutations";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
@@ -50,10 +52,14 @@ export function PlatformWorkspaceDialogs({
     createAdminOpen,
     setCreateAdminOpen,
     targetCreateWorkspace,
+    renameOpen,
+    setRenameOpen,
+    targetRenameWorkspace,
   } = modalState;
 
   const resetAdminPasswordMutation = useResetWorkspaceAdminPassword();
   const createAdminMutation = useCreateWorkspaceAdmin();
+  const renameWorkspaceMutation = useRenameWorkspace();
   const inspect = modalState.inspectWorkspace;
 
   return (
@@ -108,6 +114,18 @@ export function PlatformWorkspaceDialogs({
               adminEmail: res.adminEmail,
               name: res.name,
             };
+          }}
+        />
+      ) : null}
+
+      {targetRenameWorkspace ? (
+        <PlatformWorkspaceRenameDialog
+          open={renameOpen}
+          onOpenChange={setRenameOpen}
+          workspace={targetRenameWorkspace}
+          renamePending={renameWorkspaceMutation.isPending}
+          onConfirm={async (subdomain, madrasaName) => {
+            await renameWorkspaceMutation.mutateAsync({ subdomain, madrasaName });
           }}
         />
       ) : null}
