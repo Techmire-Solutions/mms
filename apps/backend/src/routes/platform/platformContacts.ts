@@ -40,7 +40,10 @@ export default async function platformContactsRoutes(fastify: FastifyInstance): 
     const query = parseRequest(platformContactsListQuerySchema, request.query);
     if (!query.ok) return replyValidationError(reply, query.message);
     try {
-      const contacts = await platformContactsUseCases.list(query.data);
+      const contacts = await platformContactsUseCases.list({
+        ...query.data,
+        includeDeleted: query.data.deleted,
+      });
       return reply.send({ contacts });
     } catch (error) {
       return sendError(reply, error, "Failed to list contacts");
@@ -91,6 +94,18 @@ export default async function platformContactsRoutes(fastify: FastifyInstance): 
       return reply.send({ contact });
     } catch (error) {
       return sendError(reply, error, "Failed to update contact");
+    }
+  });
+
+  fastify.post("/api/platform/contacts/:id/restore", guard, async (request, reply) => {
+    const params = parseRequest(resourceIdParamsSchema, request.params);
+    if (!params.ok) return replyValidationError(reply, params.message);
+    const user = (request as PlatformAuthenticatedRequest).platformUser;
+    try {
+      await platformContactsUseCases.restore({ id: user.id, email: user.email }, params.data.id);
+      return reply.send({ success: true });
+    } catch (error) {
+      return sendError(reply, error, "Failed to restore contact");
     }
   });
 

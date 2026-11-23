@@ -48,6 +48,7 @@ export const platformContactsListQuerySchema = z
   .object({
     search: z.string().optional(),
     kind: platformContactKindSchema.optional(),
+    deleted: z.coerce.boolean().optional(),
     limit: z.coerce.number().int().min(1).max(500).default(100),
     offset: z.coerce.number().int().min(0).default(0),
   })

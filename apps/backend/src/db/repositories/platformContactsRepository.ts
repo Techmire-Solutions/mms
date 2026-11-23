@@ -1,4 +1,4 @@
-import { and, count, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import { and, count, eq, ilike, isNotNull, isNull, or, sql } from "drizzle-orm";
 import type { PlatformContactDto } from "@mms/shared";
 import { platformContacts } from "../schema.js";
 import { withGlobalTenant } from "../tenant-context.js";
@@ -9,6 +9,7 @@ interface ContactFilters {
   kind?: string;
   limit: number;
   offset: number;
+  includeDeleted?: boolean;
 }
 
 const contactColumns = {
@@ -43,7 +44,7 @@ function toDto(row: typeof platformContacts.$inferSelect): PlatformContactDto {
 
 export async function listPlatformContacts(filters: ContactFilters): Promise<PlatformContactDto[]> {
   return withGlobalTenant(async (tx) => {
-    const conditions = [isNull(platformContacts.deletedAt)];
+    const conditions = filters.includeDeleted ? [] : [isNull(platformContacts.deletedAt)];
     if (filters.kind) conditions.push(eq(platformContacts.kind, filters.kind));
     if (filters.search) {
       conditions.push(
@@ -137,6 +138,17 @@ export async function softDeletePlatformContact(id: string): Promise<boolean> {
       .update(platformContacts)
       .set({ deletedAt: new Date() })
       .where(and(eq(platformContacts.id, id), isNull(platformContacts.deletedAt)))
+      .returning({ id: platformContacts.id });
+    return rows.length > 0;
+  });
+}
+
+export async function restorePlatformContact(id: string): Promise<boolean> {
+  return withGlobalTenant(async (tx) => {
+    const rows = await tx
+      .update(platformContacts)
+      .set({ deletedAt: null, updatedAt: new Date() })
+      .where(and(eq(platformContacts.id, id), isNotNull(platformContacts.deletedAt)))
       .returning({ id: platformContacts.id });
     return rows.length > 0;
   });

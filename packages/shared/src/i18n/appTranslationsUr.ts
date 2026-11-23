@@ -6930,6 +6930,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "platform.contacts.notes": "نوٹس",
   "platform.contacts.add": "رابطہ شامل کریں",
   "platform.contacts.selectedCount": "{count} منتخب",
+  "platform.contacts.trash": "ٹریش",
   "platform.contacts.exportCsv": "CSV برآمد کریں",
   "platform.contacts.edit": "رابطہ میں ترمیم کریں",
   "platform.contacts.saved": "رابطہ محفوظ ہو گیا",

@@ -63,4 +63,12 @@ export const platformContactsContract = c.router({
     responses: { 200: ok, 401: errorResponse, 403: errorResponse, 404: errorResponse },
     summary: "Soft-delete a platform contact",
   },
+  restore: {
+    method: "POST",
+    path: "/api/platform/contacts/:id/restore",
+    pathParams: idParams,
+    body: z.unknown().optional(),
+    responses: { 200: ok, 401: errorResponse, 403: errorResponse, 404: errorResponse },
+    summary: "Restore a soft-deleted platform contact",
+  },
 });

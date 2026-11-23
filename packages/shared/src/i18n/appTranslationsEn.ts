@@ -7010,6 +7010,7 @@ export const APP_TRANSLATIONS_EN = {
   "platform.contacts.notes": "Notes",
   "platform.contacts.add": "Add contact",
   "platform.contacts.selectedCount": "{count} selected",
+  "platform.contacts.trash": "Trash",
   "platform.contacts.exportCsv": "Export CSV",
   "platform.contacts.edit": "Edit contact",
   "platform.contacts.saved": "Contact saved",

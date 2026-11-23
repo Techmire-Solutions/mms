@@ -1,53 +1,40 @@
 import React, { useState } from "react";
-import { Download, Plus, Search, Users } from "lucide-react";
+import { Download, Plus, RotateCcw, Search, Users } from "lucide-react";
 import { Button, Input } from "@shared/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { SectionCard } from "@/components/app/SectionCard";
-import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
+import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
+import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { notify } from "@/lib/notify";
-import type { AppTranslationKey, PlatformContactDto } from "@mms/shared";
+import type { PlatformContactDto } from "@mms/shared";
 import {
   useCreatePlatformContact,
   useDeletePlatformContact,
   usePlatformContacts,
+  useRestorePlatformContact,
   useUpdatePlatformContact,
 } from "@/platform/features/contacts/hooks/usePlatformContacts";
+import {
+  ContactFormModal,
+  type ContactFormState,
+} from "@/platform/features/contacts/components/ContactFormModal";
+import {
+  PLATFORM_CONTACT_KINDS,
+  PLATFORM_CONTACT_KIND_LABEL_KEYS,
+} from "@/platform/features/contacts/lib/platformContactKinds";
 import { exportPlatformContactsCsv } from "@/platform/features/contacts/lib/exportPlatformContactsCsv";
 
-const KIND_OPTIONS = ["platform_operator", "workspace_admin", "external"] as const;
-
-const KIND_LABEL_KEYS: Record<(typeof KIND_OPTIONS)[number], AppTranslationKey> = {
-  platform_operator: "platform.contacts.kind.platform_operator",
-  workspace_admin: "platform.contacts.kind.workspace_admin",
-  external: "platform.contacts.kind.external",
-};
-
-interface ContactFormState {
-  name: string;
-  email: string;
-  phone: string;
-  kind: PlatformContactDto["kind"];
-  notes: string;
-}
-
-const EMPTY_FORM: ContactFormState = {
-  name: "",
-  email: "",
-  phone: "",
-  kind: "external",
-  notes: "",
-};
-
-/** Contacts → Work: platform-wide contact directory. */
+/** Contacts → Work: platform-wide contact directory (table/cards, selection, bulk, trash). */
 export function ContactsWorkTier(): React.JSX.Element {
   const { t } = useTranslation();
+  const { viewingDeleted, toggleTrash } = useDirectoryTrashState();
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<PlatformContactDto["kind"] | "">("");
   const [editing, setEditing] = useState<PlatformContactDto | "new" | null>(null);
@@ -60,10 +47,12 @@ export function ContactsWorkTier(): React.JSX.Element {
   } = usePlatformContacts({
     search: search || undefined,
     kind: kind || undefined,
+    deleted: viewingDeleted,
   });
   const create = useCreatePlatformContact();
   const update = useUpdatePlatformContact();
   const remove = useDeletePlatformContact();
+  const restore = useRestorePlatformContact();
 
   const {
     selectedIds,
@@ -77,6 +66,11 @@ export function ContactsWorkTier(): React.JSX.Element {
 
   const handleBulkDelete = async (): Promise<void> => {
     await Promise.all(selectedIds.map((id) => remove.mutateAsync(id)));
+    clearSelection();
+  };
+
+  const handleBulkRestore = async (): Promise<void> => {
+    await Promise.all(selectedIds.map((id) => restore.mutateAsync(id)));
     clearSelection();
   };
 
@@ -98,27 +92,37 @@ export function ContactsWorkTier(): React.JSX.Element {
       id: "kind",
       kind: "status",
       label: t("platform.contacts.kind"),
-      render: (row) => t(KIND_LABEL_KEYS[row.kind]),
+      render: (row) => t(PLATFORM_CONTACT_KIND_LABEL_KEYS[row.kind]),
     },
     {
       id: "actions",
       width: 120,
       label: "",
-      render: (row) => (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setEditing(row)}>
-            {t("common.edit")}
-          </Button>
+      render: (row) =>
+        viewingDeleted ? (
           <Button
             variant="ghost"
             size="sm"
-            className="text-destructive"
-            onClick={() => void remove.mutateAsync(row.id)}
+            icon={RotateCcw}
+            onClick={() => void restore.mutateAsync(row.id)}
           >
-            {t("common.delete")}
+            {t("common.restore")}
           </Button>
-        </div>
-      ),
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setEditing(row)}>
+              {t("common.edit")}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive"
+              onClick={() => void remove.mutateAsync(row.id)}
+            >
+              {t("common.delete")}
+            </Button>
+          </div>
+        ),
     },
   ];
 
@@ -142,37 +146,59 @@ export function ContactsWorkTier(): React.JSX.Element {
               onChange={(value) => setKind(value as PlatformContactDto["kind"] | "")}
               options={[
                 { value: "", label: t("common.all") },
-                ...KIND_OPTIONS.map((o) => ({ value: o, label: t(KIND_LABEL_KEYS[o]) })),
+                ...PLATFORM_CONTACT_KINDS.map((o) => ({
+                  value: o,
+                  label: t(PLATFORM_CONTACT_KIND_LABEL_KEYS[o]),
+                })),
               ]}
             />
           </Field>
-          <Button type="button" className="min-h-11" icon={Plus} onClick={() => setEditing("new")}>
-            {t("platform.contacts.add")}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="min-h-11"
-            icon={Download}
-            disabled={!contacts || contacts.length === 0}
-            onClick={() => exportPlatformContactsCsv(contacts ?? [])}
-            title={t("platform.contacts.exportCsv")}
-          >
-            {t("platform.contacts.exportCsv")}
-          </Button>
+          {!viewingDeleted ? (
+            <>
+              <Button
+                type="button"
+                className="min-h-11"
+                icon={Plus}
+                onClick={() => setEditing("new")}
+              >
+                {t("platform.contacts.add")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                icon={Download}
+                disabled={!contacts || contacts.length === 0}
+                onClick={() => exportPlatformContactsCsv(contacts ?? [])}
+                title={t("platform.contacts.exportCsv")}
+              >
+                {t("platform.contacts.exportCsv")}
+              </Button>
+            </>
+          ) : null}
+          <ModuleTrashToggle
+            viewingDeleted={viewingDeleted}
+            onToggle={() => {
+              clearSelection();
+              toggleTrash();
+            }}
+            activeLabel={t("platform.contacts.directory")}
+            deletedLabel={t("platform.contacts.trash")}
+          />
         </div>
       </SectionCard>
 
       <BulkSelectionBar
         selectedCount={selectedIds.length}
-        viewingDeleted={false}
+        viewingDeleted={viewingDeleted}
         canDelete
         leadingIcon={Users}
         i18nNamespace="platform.contacts"
         onClearSelection={clearSelection}
         deleteLabel={t("common.delete")}
         onRequestBulkDelete={() => void handleBulkDelete()}
-        onRequestBulkRestore={() => undefined}
+        onRequestBulkRestore={() => void handleBulkRestore()}
+        restoreLabel={t("common.restore")}
       />
 
       {isError ? (
@@ -182,8 +208,10 @@ export function ContactsWorkTier(): React.JSX.Element {
         />
       ) : isLoading ? null : contacts && contacts.length === 0 ? (
         <EmptyState
-          title={t("platform.contacts.emptyTitle")}
-          description={t("platform.contacts.emptyDescription")}
+          title={viewingDeleted ? t("platform.contacts.trash") : t("platform.contacts.emptyTitle")}
+          description={
+            viewingDeleted ? t("platform.contacts.trash") : t("platform.contacts.emptyDescription")
+          }
         />
       ) : (
         <DataTable
@@ -206,7 +234,7 @@ export function ContactsWorkTier(): React.JSX.Element {
           initial={editing === "new" ? null : editing}
           saving={create.isPending || update.isPending}
           onClose={() => setEditing(null)}
-          onSave={async (form) => {
+          onSave={async (form: ContactFormState) => {
             if (editing === "new") {
               await create.mutateAsync({
                 name: form.name,
@@ -233,84 +261,5 @@ export function ContactsWorkTier(): React.JSX.Element {
         />
       ) : null}
     </div>
-  );
-}
-
-function ContactFormModal({
-  initial,
-  saving,
-  onClose,
-  onSave,
-}: {
-  initial: PlatformContactDto | null;
-  saving: boolean;
-  onClose: () => void;
-  onSave: (form: ContactFormState) => Promise<void>;
-}): React.JSX.Element {
-  const { t } = useTranslation();
-  const [form, setForm] = useState<ContactFormState>(
-    initial
-      ? {
-          name: initial.name,
-          email: initial.email ?? "",
-          phone: initial.phone ?? "",
-          kind: initial.kind,
-          notes: initial.notes ?? "",
-        }
-      : EMPTY_FORM,
-  );
-
-  return (
-    <FormModal
-      open
-      onClose={onClose}
-      title={initial ? t("platform.contacts.edit") : t("platform.contacts.add")}
-      saveLabel={t("common.save")}
-      onSave={() => onSave(form)}
-      isDirty={true}
-      discardUnsavedTitle={t("settings.unsavedChanges")}
-      discardUnsavedDescription={t("settings.unsavedChanges")}
-      saving={saving}
-    >
-      <div className="space-y-4">
-        <Field id="c-name" label={t("platform.contacts.name")}>
-          <Input
-            id="c-name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-        </Field>
-        <Field id="c-email" label={t("platform.contacts.email")}>
-          <Input
-            id="c-email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </Field>
-        <Field id="c-phone" label={t("platform.contacts.phone")}>
-          <Input
-            id="c-phone"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          />
-        </Field>
-        <Field id="c-kind" label={t("platform.contacts.kind")}>
-          <FormSelect
-            id="c-kind"
-            name="kind"
-            value={form.kind}
-            onChange={(value) => setForm({ ...form, kind: value as PlatformContactDto["kind"] })}
-            options={KIND_OPTIONS.map((o) => ({ value: o, label: t(KIND_LABEL_KEYS[o]) }))}
-          />
-        </Field>
-        <Field id="c-notes" label={t("platform.contacts.notes")}>
-          <Input
-            id="c-notes"
-            value={form.notes}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-          />
-        </Field>
-      </div>
-    </FormModal>
   );
 }

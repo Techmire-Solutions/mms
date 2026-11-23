@@ -172,6 +172,7 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
       "/api/platform/contacts",
       "/api/platform/contacts/metrics",
       "/api/platform/contacts/:id",
+      "/api/platform/contacts/:id/restore",
       "/api/platform/messages",
       "/api/platform/messages/metrics",
       "/api/platform/messages/templates",

@@ -7,6 +7,7 @@ export interface PlatformContactsUseCases {
     kind?: string;
     limit: number;
     offset: number;
+    includeDeleted?: boolean;
   }): ReturnType<typeof platformContactsRepository.list>;
   get(id: string): ReturnType<typeof platformContactsRepository.get>;
   create(
@@ -19,6 +20,7 @@ export interface PlatformContactsUseCases {
     input: Parameters<typeof platformContactsRepository.update>[1],
   ): Promise<NonNullable<Awaited<ReturnType<typeof platformContactsRepository.update>>>>;
   softDelete(actor: { id: string; email: string }, id: string): Promise<void>;
+  restore(actor: { id: string; email: string }, id: string): Promise<void>;
   metrics(): ReturnType<typeof platformContactsRepository.metrics>;
 }
 
@@ -37,6 +39,19 @@ async function updateContact(
     targetId: id,
   });
   return updated;
+}
+
+async function restoreContact(actor: { id: string; email: string }, id: string): Promise<void> {
+  if (!(await platformContactsRepository.restore(id))) {
+    throw new HttpDomainError(404, "not_found", "Platform contact not found");
+  }
+  await platformContactsRepository.insertActivityLog({
+    userId: actor.id,
+    userEmail: actor.email,
+    action: "platform_contact.restore",
+    targetResource: "platform_contacts",
+    targetId: id,
+  });
 }
 
 async function deleteContact(actor: { id: string; email: string }, id: string): Promise<void> {
@@ -67,5 +82,6 @@ export const platformContactsUseCases: PlatformContactsUseCases = {
   },
   update: updateContact,
   softDelete: deleteContact,
+  restore: restoreContact,
   metrics: () => platformContactsRepository.metrics(),
 };

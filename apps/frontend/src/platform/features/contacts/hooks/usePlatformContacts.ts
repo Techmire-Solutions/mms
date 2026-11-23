@@ -19,16 +19,21 @@ export function usePlatformContacts(
     kind?: string;
     limit?: number;
     offset?: number;
+    deleted?: boolean;
   } = {},
 ) {
   const { isPlatformAuthenticated, canContacts } = usePlatformPermissions();
   return useQuery({
-    queryKey: PLATFORM_QUERY_KEYS.contacts({ ...params }),
+    queryKey: PLATFORM_QUERY_KEYS.contacts({
+      ...params,
+      deleted: params.deleted ? "true" : "false",
+    }),
     queryFn: async ({ signal }) => {
       const response = await apiContract.platformContacts.list({
         query: {
           search: params.search,
           kind: params.kind as PlatformContactDto["kind"] | undefined,
+          deleted: params.deleted,
           limit: params.limit ?? 100,
           offset: params.offset ?? 0,
         },
@@ -90,6 +95,21 @@ export function useUpdatePlatformContact() {
       });
       assertContractOk(response, "Failed to update contact");
       return (response.body as { contact: PlatformContactDto }).contact;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["platform", "contacts"] });
+    },
+    onError: (error) => notify.error(getPlatformErrorMessage(error, t)),
+  });
+}
+
+export function useRestorePlatformContact() {
+  const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiContract.platformContacts.restore({ params: { id }, body: {} });
+      assertContractOk(response, "Failed to restore contact");
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["platform", "contacts"] });

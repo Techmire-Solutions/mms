@@ -3,6 +3,7 @@ import {
   getPlatformContact,
   listPlatformContacts,
   platformContactsMetrics,
+  restorePlatformContact,
   softDeletePlatformContact,
   updatePlatformContact,
 } from "../../db/repositories/platformContactsRepository.js";
@@ -14,6 +15,7 @@ export interface PlatformContactsRepository {
     kind?: string;
     limit: number;
     offset: number;
+    includeDeleted?: boolean;
   }): ReturnType<typeof listPlatformContacts>;
   get(id: string): ReturnType<typeof getPlatformContact>;
   create(
@@ -24,6 +26,7 @@ export interface PlatformContactsRepository {
     input: Parameters<typeof updatePlatformContact>[1],
   ): ReturnType<typeof updatePlatformContact>;
   softDelete(id: string): ReturnType<typeof softDeletePlatformContact>;
+  restore(id: string): ReturnType<typeof restorePlatformContact>;
   metrics(): ReturnType<typeof platformContactsMetrics>;
   insertActivityLog(
     input: Parameters<typeof insertPlatformActivityLog>[0],
@@ -36,6 +39,7 @@ export const platformContactsRepository: PlatformContactsRepository = {
   create: createPlatformContact,
   update: updatePlatformContact,
   softDelete: softDeletePlatformContact,
+  restore: restorePlatformContact,
   metrics: platformContactsMetrics,
   insertActivityLog: insertPlatformActivityLog,
 };
