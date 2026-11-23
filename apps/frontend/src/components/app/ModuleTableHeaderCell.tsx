@@ -11,7 +11,10 @@ export const MODULE_TABLE_HEAD_TYPOGRAPHY_CLASS =
 /** Canonical Work-table header cell chrome — SSOT for header typography/padding across module tables. */
 export const MODULE_TABLE_HEAD_CLASS = `px-4 py-3 text-start ${MODULE_TABLE_HEAD_TYPOGRAPHY_CLASS}`;
 
-export interface ModuleTableHeaderCellProps {
+export interface ModuleTableHeaderCellProps extends Omit<
+  React.ThHTMLAttributes<HTMLTableCellElement>,
+  "children" | "align"
+> {
   columnKey: string;
   width?: number;
   /** Narrowest width the resize handle allows (defaults to the global minimum). */
@@ -46,6 +49,7 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
   truncate,
   align,
   variant,
+  ...props
 }: ModuleTableHeaderCellProps): React.JSX.Element {
   const sortable = Boolean(sortKey);
   const isSorted = sortable && activeSortField === sortKey;
@@ -66,6 +70,7 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
       align={align}
       variant={variant}
       className={cn(MODULE_TABLE_HEAD_CLASS, className)}
+      {...props}
     >
       {sortable && onSort ? (
         <button

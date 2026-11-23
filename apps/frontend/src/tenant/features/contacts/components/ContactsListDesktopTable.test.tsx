@@ -11,6 +11,8 @@ vi.mock("@/lib/contexts/ContactConfigContext", () => ({
     countryCodes: [],
     getColumnWidth: () => 120,
     setColumnWidth: vi.fn(),
+    columnRegistry: [],
+    updateUserColumnLayout: vi.fn(),
   }),
 }));
 

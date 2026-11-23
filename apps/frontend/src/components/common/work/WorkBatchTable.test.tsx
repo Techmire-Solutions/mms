@@ -127,6 +127,16 @@ describe("WorkBatchTable", () => {
     expect(html).toContain("overflow-y-auto");
   });
 
+  it("passes overflow-x-visible to Table to prevent trapping the horizontal scrollbar", () => {
+    const html = renderToStaticMarkup(
+      <TestWrapper>
+        <WorkBatchTable data={sampleData} columns={columns} />
+      </TestWrapper>,
+    );
+
+    expect(html).toContain("overflow-x-visible");
+  });
+
   it("renders structured footerRow with alignment and colSpan", () => {
     const html = renderToStaticMarkup(
       <TestWrapper>

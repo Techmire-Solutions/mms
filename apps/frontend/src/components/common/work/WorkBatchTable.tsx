@@ -32,6 +32,7 @@ export function WorkBatchTable<TData extends { id: string | number }>({
   selection,
   sort,
   columnResize,
+  onReorderColumns,
   renderRowActions,
   actionsLabel,
   actionsHeaderClassName,
@@ -137,7 +138,12 @@ export function WorkBatchTable<TData extends { id: string | number }>({
           bordered && WORK_SURFACE,
         )}
       >
-        <Table className={cn("table-fixed w-full", className)} style={{ minWidth: tableMinWidth }}>
+        <Table
+          containerClassName="overflow-x-visible"
+          stickyHeader
+          className={cn("table-fixed w-full", className)}
+          style={{ minWidth: tableMinWidth }}
+        >
           {caption ? <caption className="sr-only">{caption}</caption> : null}
           <ModuleWorkTableHeader
             columns={headerColumns}
@@ -146,6 +152,7 @@ export function WorkBatchTable<TData extends { id: string | number }>({
             onSort={sortConfig.onSort}
             getColumnWidth={(key) => resolvedWidths.get(key)}
             setColumnWidth={(key, width) => columnResizeConfig.onColumnResize(key, width)}
+            onReorderColumns={onReorderColumns}
             selection={
               selection
                 ? {

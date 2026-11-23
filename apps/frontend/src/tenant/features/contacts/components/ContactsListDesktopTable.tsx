@@ -57,9 +57,30 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
   allSelected = false,
   someSelected = false,
 }: ContactsListDesktopTableProps): React.JSX.Element {
-  const { prefs, countryCodesMap, countryCodes, getColumnWidth, setColumnWidth } =
-    useContactConfig();
+  const {
+    prefs,
+    countryCodesMap,
+    countryCodes,
+    getColumnWidth,
+    setColumnWidth,
+    columnRegistry,
+    updateUserColumnLayout,
+  } = useContactConfig();
   const { t } = useTranslation();
+
+  const handleColumnReorder = React.useCallback(
+    (sourceId: string, targetId: string) => {
+      if (!columnRegistry || !updateUserColumnLayout) return;
+      const srcIdx = columnRegistry.findIndex((c) => c.key === sourceId);
+      const tgtIdx = columnRegistry.findIndex((c) => c.key === targetId);
+      if (srcIdx === -1 || tgtIdx === -1 || srcIdx === tgtIdx) return;
+      const next = [...columnRegistry];
+      const [removed] = next.splice(srcIdx, 1);
+      next.splice(tgtIdx, 0, removed);
+      updateUserColumnLayout(next);
+    },
+    [columnRegistry, updateUserColumnLayout],
+  );
 
   const contactsMap = useMemo(() => buildContactsMap(allContacts), [allContacts]);
   const pageCountLabel = formatDirectoryPageCountLabel(contacts.length, t, {
@@ -131,6 +152,7 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
         getColumnWidth,
         onColumnResize: setColumnWidth,
       }}
+      onReorderColumns={handleColumnReorder}
       renderRowActions={(contact) => (
         <ContactsRowActions
           contact={contact}

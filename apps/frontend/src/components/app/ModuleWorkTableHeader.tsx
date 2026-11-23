@@ -49,6 +49,9 @@ export interface ModuleWorkTableHeaderProps<
   // Optional name property to make it sticky beside the checkbox.
   // Defaults to "name" as the identifier for the sticky column if any.
   stickyColumnId?: string;
+
+  // Optional column drag-and-drop reorder callback
+  onReorderColumns?: (sourceId: string, targetId: string) => void;
 }
 
 export function ModuleWorkTableHeader<
@@ -75,7 +78,11 @@ export function ModuleWorkTableHeader<
   actionsLabel,
   actionsClassName = WORK_TABLE_ACTIONS_WIDTH_CLASS,
   stickyColumnId = "name",
+  onReorderColumns,
 }: ModuleWorkTableHeaderProps<TCol>): JSX.Element {
+  const [draggedColumnId, setDraggedColumnId] = React.useState<string | null>(null);
+  const [dragOverColumnId, setDragOverColumnId] = React.useState<string | null>(null);
+
   return (
     <TableHeader>
       <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
@@ -123,6 +130,10 @@ export function ModuleWorkTableHeader<
           }
 
           const width = getColumnWidth(col.id) ?? col.width;
+          const isSticky = col.id === stickyColumnId;
+          const canDrag = Boolean(onReorderColumns && !isSticky);
+          const isDragging = draggedColumnId === col.id;
+          const isDragOver = dragOverColumnId === col.id && draggedColumnId !== col.id;
 
           return (
             <ModuleTableHeaderCell
@@ -139,7 +150,67 @@ export function ModuleWorkTableHeader<
               truncate={col.truncate}
               align={col.align}
               variant={col.variant}
-              className={cn("px-4 py-3 text-wrap break-words", stickyClass, col.headerClassName)}
+              draggable={canDrag}
+              onDragStart={
+                canDrag
+                  ? (e: React.DragEvent) => {
+                      e.dataTransfer.setData("text/plain", col.id);
+                      e.dataTransfer.effectAllowed = "move";
+                      setDraggedColumnId(col.id);
+                    }
+                  : undefined
+              }
+              onDragOver={
+                canDrag
+                  ? (e: React.DragEvent) => {
+                      if (draggedColumnId && draggedColumnId !== col.id) {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                        if (dragOverColumnId !== col.id) {
+                          setDragOverColumnId(col.id);
+                        }
+                      }
+                    }
+                  : undefined
+              }
+              onDragLeave={
+                canDrag
+                  ? () => {
+                      if (dragOverColumnId === col.id) {
+                        setDragOverColumnId(null);
+                      }
+                    }
+                  : undefined
+              }
+              onDrop={
+                canDrag
+                  ? (e: React.DragEvent) => {
+                      e.preventDefault();
+                      const sourceId = e.dataTransfer.getData("text/plain") || draggedColumnId;
+                      if (sourceId && sourceId !== col.id && onReorderColumns) {
+                        onReorderColumns(sourceId, col.id);
+                      }
+                      setDraggedColumnId(null);
+                      setDragOverColumnId(null);
+                    }
+                  : undefined
+              }
+              onDragEnd={
+                canDrag
+                  ? () => {
+                      setDraggedColumnId(null);
+                      setDragOverColumnId(null);
+                    }
+                  : undefined
+              }
+              className={cn(
+                "px-4 py-3 text-wrap break-words transition-all",
+                stickyClass,
+                canDrag && "cursor-grab active:cursor-grabbing",
+                isDragging && "opacity-40",
+                isDragOver && "border-s-2 border-primary bg-primary/10",
+                col.headerClassName,
+              )}
             >
               {col.label}
             </ModuleTableHeaderCell>

@@ -98,6 +98,9 @@ export interface WorkBatchTableProps<TData extends { id: string | number }> {
   // Column Resizing
   columnResize?: WorkBatchTableColumnResize;
 
+  // Column Reordering (Drag and Drop in header)
+  onReorderColumns?: (sourceId: string, targetId: string) => void;
+
   // Row Actions
   renderRowActions?: (row: TData, index: number) => React.ReactNode;
   actionsLabel?: string;
