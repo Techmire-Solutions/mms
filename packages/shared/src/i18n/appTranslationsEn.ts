@@ -7021,6 +7021,7 @@ export const APP_TRANSLATIONS_EN = {
     "platform.contacts.importTitle": "Import contacts",
   "platform.contacts.import": "Import",
   "platform.contacts.importFile": "CSV file",
+  "platform.contacts.importHint": "Select or drop a CSV with name, email, phone, kind columns",
   "platform.contacts.downloadTemplate": "Download template",
   "platform.contacts.importPreview": "{count} contacts ready, {skipped} blank rows skipped",
   "platform.contacts.importRowError": "Row {row}",

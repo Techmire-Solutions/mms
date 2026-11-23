@@ -1,8 +1,9 @@
 import React, { useRef, useState } from "react";
-import { Download } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { Button } from "@shared/ui";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
+import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { triggerFileDownload } from "@/lib/download";
 import type { PlatformContactCreateInput } from "@mms/shared";
@@ -23,6 +24,7 @@ export function ContactImportDialog({
   const { t } = useTranslation();
   const create = useCreatePlatformContact();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [rows, setRows] = useState<PlatformContactCreateInput[]>([]);
   const [errors, setErrors] = useState<Array<{ row: number; error: string }>>([]);
@@ -66,14 +68,19 @@ export function ContactImportDialog({
     >
       <div className="space-y-4">
         <Field id="contact-import-file" label={t("platform.contacts.importFile")}>
-          <input
-            ref={inputRef}
-            id="contact-import-file"
-            type="file"
+          <DashedFileDropZone
+            isDragging={isDragging}
+            onDraggingChange={setIsDragging}
+            onFiles={(files) => void handleFile(files?.[0] ?? null)}
+            fileInputRef={inputRef}
+            icon={Upload}
+            title={t("platform.contacts.importFile")}
+            description={t("platform.contacts.importHint")}
+            inputAriaLabel={t("platform.contacts.importFile")}
+            inputId="contact-import-file"
+            inputName="file"
             accept=".csv,text/csv"
-            aria-label={t("platform.contacts.importFile")}
-            className="text-sm text-foreground"
-            onChange={(e) => void handleFile(e.target.files?.[0] ?? null)}
+            className="bg-card cursor-pointer"
           />
         </Field>
 

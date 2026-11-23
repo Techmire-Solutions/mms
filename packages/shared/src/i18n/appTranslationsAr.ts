@@ -6862,6 +6862,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
     "platform.contacts.importTitle": "استيراد جهات الاتصال",
   "platform.contacts.import": "استيراد",
   "platform.contacts.importFile": "ملف CSV",
+  "platform.contacts.importHint": "اختر أو أسقط ملف CSV يحتوي على أعمدة الاسم والبريد والهاتف والنوع",
   "platform.contacts.downloadTemplate": "تنزيل القالب",
   "platform.contacts.importPreview": "{count} جهة اتصال جاهزة، تم تخطي {skipped} صفوف فارغة",
   "platform.contacts.importRowError": "الصف {row}",

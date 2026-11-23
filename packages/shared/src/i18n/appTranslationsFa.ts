@@ -6967,6 +6967,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
     "platform.contacts.importTitle": "وارد کردن مخاطبان",
   "platform.contacts.import": "وارد کردن",
   "platform.contacts.importFile": "فایل CSV",
+  "platform.contacts.importHint": "یک فایل CSV با ستون‌های نام، ایمیل، تلفن و نوع انتخاب یا رها کنید",
   "platform.contacts.downloadTemplate": "دانلود الگو",
   "platform.contacts.importPreview": "{count} مخاطب آماده، {skipped} ردیف خالی رد شد",
   "platform.contacts.importRowError": "ردیف {row}",

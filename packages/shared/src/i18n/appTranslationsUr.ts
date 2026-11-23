@@ -6941,6 +6941,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
     "platform.contacts.importTitle": "رابطے درآمد کریں",
   "platform.contacts.import": "درآمد",
   "platform.contacts.importFile": "CSV فائل",
+  "platform.contacts.importHint": "name, email, phone, kind کالموں والی CSV منتخب یا ڈراپ کریں",
   "platform.contacts.downloadTemplate": "سانچہ ڈاؤن لوڈ کریں",
   "platform.contacts.importPreview": "{count} رابطے تیار، {skipped} خالی قطاریں چھوڑی گئیں",
   "platform.contacts.importRowError": "قطار {row}",
