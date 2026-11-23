@@ -28,6 +28,20 @@ import { PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES } from "./platformTypes.js";
 export const PLATFORM_MIN_IDLE_SESSION_MINUTES = 5;
 export const PLATFORM_MAX_IDLE_SESSION_MINUTES = 480;
 
+export const platformConsolidationPrefsSchema = z
+  .object({
+    defaultPresentationCurrency: z.string().trim().regex(/^[A-Z]{3}$/, "Use a 3-letter ISO code"),
+    fiscalYearStartMonth: z.number().int().min(1).max(12),
+  })
+  .strict();
+
+export type PlatformConsolidationPrefs = z.infer<typeof platformConsolidationPrefsSchema>;
+
+export const DEFAULT_PLATFORM_CONSOLIDATION_PREFS: PlatformConsolidationPrefs = {
+  defaultPresentationCurrency: "USD",
+  fiscalYearStartMonth: 1,
+};
+
 export interface PlatformSettings {
   id: string;
   syncTlsOnCreate: boolean;
@@ -51,6 +65,8 @@ export interface PlatformSettings {
   /** Masked in client responses; encrypted at rest. */
   llmApiKey: string;
   llmConfigs: LlmConfig[];
+  /** Consolidation preferences (default presentation currency + fiscal year start). */
+  consolidationPrefs: PlatformConsolidationPrefs;
   /** Apex idle session timeout (minutes); env remains the fallback. */
   idleSessionMinutes: number;
   updatedAt?: string;
@@ -79,6 +95,7 @@ export const platformSettingsUpdateSchema = z
     llmProvider: z.enum([...LLM_PROVIDER_KEYS, "none"]).optional(),
     llmApiKey: z.string().max(4096).optional(),
     llmConfigs: z.array(llmConfigInputSchema).max(20).optional(),
+    consolidationPrefs: platformConsolidationPrefsSchema.optional(),
     idleSessionMinutes: z
       .number()
       .int()
@@ -108,6 +125,7 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   llmProvider: "none",
   llmApiKey: "",
   llmConfigs: [],
+  consolidationPrefs: DEFAULT_PLATFORM_CONSOLIDATION_PREFS,
   idleSessionMinutes: PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES,
 };
 
@@ -150,6 +168,9 @@ export function mergePlatformSettings(
     llmConfigs: Array.isArray(partial?.llmConfigs)
       ? partial.llmConfigs
       : DEFAULT_PLATFORM_SETTINGS.llmConfigs,
+    consolidationPrefs: platformConsolidationPrefsSchema.safeParse(partial?.consolidationPrefs).success
+      ? (partial?.consolidationPrefs as PlatformConsolidationPrefs)
+      : DEFAULT_PLATFORM_CONSOLIDATION_PREFS,
     idleSessionMinutes,
     ...(partial?.updatedAt === undefined ? {} : { updatedAt: partial.updatedAt }),
   };

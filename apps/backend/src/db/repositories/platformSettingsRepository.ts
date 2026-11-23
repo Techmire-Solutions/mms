@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import {
   DEFAULT_PLATFORM_SETTINGS,
   mergePlatformSettings,
+  type PlatformConsolidationPrefs,
   type PlatformSettings,
 } from "@mms/shared";
 import { activeDb } from "../dbConnection.js";
@@ -32,6 +33,7 @@ const platformSettingsColumns = {
   llmProvider: platformSettings.llmProvider,
   llmApiKey: platformSettings.llmApiKey,
   llmConfigs: platformSettings.llmConfigs,
+  consolidationPrefs: platformSettings.consolidationPrefs,
   idleSessionMinutes: platformSettings.idleSessionMinutes,
   updatedAt: platformSettings.updatedAt,
 };
@@ -52,6 +54,7 @@ type PlatformSettingsRowShape = {
   llmProvider: string;
   llmApiKey: string | null;
   llmConfigs: Parameters<typeof decryptLlmConfigs>[0];
+  consolidationPrefs: PlatformConsolidationPrefs | null;
   idleSessionMinutes: number | null;
   updatedAt: Date | null;
 };
@@ -73,6 +76,7 @@ function rowToPlatformSettings(row: PlatformSettingsRowShape): PlatformSettings 
     llmProvider: row.llmProvider as PlatformSettings["llmProvider"],
     llmApiKey: decryptLlmApiKey(row.llmApiKey) ?? "",
     llmConfigs: decryptLlmConfigs(row.llmConfigs) ?? [],
+    consolidationPrefs: row.consolidationPrefs ?? undefined,
     idleSessionMinutes: row.idleSessionMinutes ?? DEFAULT_PLATFORM_SETTINGS.idleSessionMinutes,
     ...(row.updatedAt ? { updatedAt: row.updatedAt.toISOString() } : {}),
   });
@@ -137,6 +141,7 @@ export async function upsertPlatformSettingsRow(
     llmProvider: next.llmProvider,
     llmApiKey: encryptLlmApiKey(next.llmApiKey),
     llmConfigs: encryptLlmConfigs(next.llmConfigs),
+    consolidationPrefs: next.consolidationPrefs,
     idleSessionMinutes: next.idleSessionMinutes,
     updatedAt,
   };

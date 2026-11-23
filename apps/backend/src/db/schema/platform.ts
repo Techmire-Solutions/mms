@@ -11,7 +11,7 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import type { PlatformRole, LlmConfig } from "@mms/shared";
+import type { PlatformRole, LlmConfig, PlatformConsolidationPrefs } from "@mms/shared";
 
 /** Apex workspaces registry — not tenant-scoped. Branding fields migrated from objects store (migration 0071). */
 export const workspaces = pgTable(
@@ -147,6 +147,7 @@ export const platformSettings = pgTable("platform_settings", {
   llmProvider: varchar("llm_provider", { length: 32 }).notNull().default("none"),
   llmApiKey: text("llm_api_key"),
   llmConfigs: jsonb("llm_configs").$type<LlmConfig[] | null>(),
+  consolidationPrefs: jsonb("consolidation_prefs").$type<PlatformConsolidationPrefs | null>(),
   idleSessionMinutes: integer("idle_session_minutes"),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });

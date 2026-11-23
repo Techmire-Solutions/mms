@@ -1919,6 +1919,13 @@
       "when": 1797850801410,
       "tag": "0273_brave_gladiator",
       "breakpoints": true
+    },
+    {
+      "idx": 274,
+      "version": "7",
+      "when": 1795466212945,
+      "tag": "0274_pale_energizer",
+      "breakpoints": true
     }
   ]
 }

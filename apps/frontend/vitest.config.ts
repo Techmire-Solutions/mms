@@ -87,7 +87,7 @@ export default defineConfig({
         client: {
           enabled: true,
           include: ["@mms/shared", "framer-motion", "lucide-react", "react-day-picker"],
-          force: true,
+          force: false,
         },
       },
     },
