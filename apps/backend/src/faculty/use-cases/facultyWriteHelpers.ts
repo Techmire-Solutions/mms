@@ -106,6 +106,11 @@ export async function applyFacultyWriteGuards(
 ): Promise<{ record: FacultyRecord; departmentId: string | null }> {
   let next = record;
   const contactId = record.contactId != null ? String(record.contactId).trim() : "";
+  if (options.contactChanged && !contactId) {
+    // Contact link is product-compulsory; reject here so an empty link surfaces
+    // as a typed 400 instead of the faculty_employments FK violation (500).
+    throw new ValidationError("Contact is required");
+  }
   if (contactId && options.contactChanged) {
     const { userId } = await guards.validateContactLink(
       tenant,

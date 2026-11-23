@@ -98,6 +98,19 @@ describe("applyFacultyWriteGuards", () => {
       }),
     ).rejects.toThrow("Selected designation is required");
   });
+
+  it("rejects a create/contact-change with an empty contact link", async () => {
+    const guards = fakeGuards();
+
+    await expect(
+      applyFacultyWriteGuards("demo", { ...record, contactId: "" }, guards, {
+        designationChanged: true,
+        contactChanged: true,
+        contactRequirements: { requireEmail: true, requirePhone: false },
+      }),
+    ).rejects.toThrow("Contact is required");
+    expect(guards.validateContactLink).not.toHaveBeenCalled();
+  });
 });
 
 describe("syncPrimaryAppointment (faculty_assignments compatibility bridge)", () => {
