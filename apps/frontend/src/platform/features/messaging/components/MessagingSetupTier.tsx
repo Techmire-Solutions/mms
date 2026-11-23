@@ -31,6 +31,17 @@ export function MessagingSetupTier(): React.JSX.Element {
   const save = useSavePlatformMessageTemplate();
   const remove = useDeletePlatformMessageTemplate();
 
+  const renderTemplateRowActions = (template: PlatformMessageTemplateDto) => (
+    <div className="flex items-center gap-1.5" role="group" aria-label={template.name}>
+      <Button variant="outline" size="sm" onClick={() => setEditing(template)}>
+        {t("common.edit")}
+      </Button>
+      <Button variant="destructive" size="sm" onClick={() => void remove.mutateAsync(template.id)}>
+        {t("common.delete")}
+      </Button>
+    </div>
+  );
+
   const columns: DataTableColumn<PlatformMessageTemplateDto>[] = [
     {
       id: "name",
@@ -54,21 +65,7 @@ export function MessagingSetupTier(): React.JSX.Element {
       id: "actions",
       width: 120,
       label: "",
-      render: (row) => (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setEditing(row)}>
-            {t("common.edit")}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive"
-            onClick={() => void remove.mutateAsync(row.id)}
-          >
-            {t("common.delete")}
-          </Button>
-        </div>
-      ),
+      render: renderTemplateRowActions,
     },
   ];
 

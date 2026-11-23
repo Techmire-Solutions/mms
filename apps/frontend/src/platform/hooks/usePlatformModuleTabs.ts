@@ -1,5 +1,5 @@
 import { useFilteredModuleTierTabs, type ModuleTierTab } from "@/hooks/useModuleTierTabs";
-import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { usePlatformModulePermissions } from "@/platform/hooks/usePlatformModulePermissions";
 import type { PlatformModuleManifest } from "@/platform/lib/platformModuleManifest";
 
 /**
@@ -7,15 +7,10 @@ import type { PlatformModuleManifest } from "@/platform/lib/platformModuleManife
  * Reports, and Setup — gated on the module's platform capability.
  */
 export function usePlatformModuleTabs(manifest: PlatformModuleManifest): ModuleTierTab[] {
-  const { can, isSuperUser } = usePlatformPermissions();
-  const canViewModule = isSuperUser || can(manifest.permissionKey);
-  const canViewReports =
-    canViewModule && (isSuperUser || can(manifest.reportsPermissionKey ?? manifest.permissionKey));
-  const canViewSetup =
-    canViewModule && (isSuperUser || can(manifest.setupPermissionKey ?? "settings"));
+  const { canReports, canViewSetup } = usePlatformModulePermissions(manifest);
 
   return useFilteredModuleTierTabs({
-    canViewReports,
+    canViewReports: canReports,
     canViewSetup,
     workLabelKey: manifest.workLabelKey,
   });

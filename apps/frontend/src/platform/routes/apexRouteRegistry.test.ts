@@ -48,7 +48,16 @@ describe("apexRouteRegistry", () => {
 
   it("pins the permission groups (IA ratchet)", () => {
     expect(new Set(PLATFORM_CONSOLE_ENTRIES.map((entry) => entry.permission))).toEqual(
-      new Set([null, "workspaces", "onboard", "admins", "settings", "system"]),
+      new Set([
+        null,
+        "workspaces",
+        "onboard",
+        "admins",
+        "settings",
+        "system",
+        "contacts",
+        "messaging",
+      ]),
     );
   });
 });

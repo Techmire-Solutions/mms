@@ -290,7 +290,6 @@
   "src/platform/features/dashboard/PlatformDashboardPage.test.tsx": 1019,
   "src/platform/features/design-system/PlatformDesignSystemPage.test.tsx": 716,
   "src/platform/features/erd/PlatformErdPage.test.tsx": 1271,
-  "src/platform/features/reports/PlatformReportsPage.test.tsx": 1147,
   "src/platform/features/settings/PlatformSettingsPage.test.tsx": 1058,
   "src/platform/features/system/PlatformSystemPage.test.tsx": 808,
   "src/platform/features/users/PlatformUsersPage.test.tsx": 2019,

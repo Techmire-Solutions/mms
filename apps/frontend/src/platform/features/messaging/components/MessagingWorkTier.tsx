@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
-import { Button, Input } from "@shared/ui";
+import { Button, Input, Checkbox } from "@shared/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
@@ -172,17 +172,17 @@ function ComposeModal({
         <Field id="m-recipients" label={t("platform.messaging.recipients")}>
           <div className="max-h-48 space-y-2 overflow-y-auto">
             {contacts.map((contact) => (
-              <label key={contact.id} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
+              <div key={contact.id} className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  id={`m-recipient-${contact.id}`}
                   aria-label={contact.name}
                   checked={contactIds.includes(contact.id)}
-                  onChange={(e) => toggle(contact.id, e.target.checked)}
+                  onCheckedChange={(checked) => toggle(contact.id, Boolean(checked))}
                 />
                 <span>
                   {contact.name} ({contact.email ?? contact.phone ?? "—"})
                 </span>
-              </label>
+              </div>
             ))}
           </div>
         </Field>
