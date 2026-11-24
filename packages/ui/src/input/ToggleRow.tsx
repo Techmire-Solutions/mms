@@ -77,9 +77,7 @@ export function ToggleRow({
           isChecked
             ? "border-primary/20 bg-primary/5"
             : "border-border/60 bg-muted/10 hover:border-border hover:bg-muted/20",
-          disabled
-            ? "opacity-60 pointer-events-none cursor-not-allowed"
-            : "cursor-pointer select-none",
+          disabled ? "pointer-events-none cursor-not-allowed" : "cursor-pointer select-none",
           className,
         )}
       >
@@ -118,9 +116,7 @@ export function ToggleRow({
         onClick={handleContainerClick}
         className={cn(
           "flex items-center justify-between gap-4 p-3 rounded-lg border border-border bg-card/50 text-start",
-          disabled
-            ? "opacity-60 pointer-events-none cursor-not-allowed"
-            : "cursor-pointer select-none",
+          disabled ? "pointer-events-none cursor-not-allowed" : "cursor-pointer select-none",
           className,
         )}
       >
@@ -156,7 +152,7 @@ export function ToggleRow({
     <div
       className={cn(
         "flex min-h-11 items-center justify-between gap-3 py-1.5 text-start",
-        disabled && "opacity-60 pointer-events-none",
+        disabled && "pointer-events-none cursor-not-allowed",
         className,
       )}
     >

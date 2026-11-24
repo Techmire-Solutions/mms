@@ -51,8 +51,8 @@ module.exports = {
         "largest-contentful-paint": ["error", { maxNumericValue: 7200 }],
         // Measured baseline: TBT ≈ 40–150ms.
         "total-blocking-time": ["error", { maxNumericValue: 300 }],
-        // 600 KiB. Measured baseline: ≈ 575 KiB for the entry closure (deterministic).
-        "resource-summary:script:size": ["error", { maxNumericValue: 614400 }],
+        // 610 KiB. Measured baseline: ≈ 605 KiB for the entry closure (incorporates platform 3-tier modules + i18n).
+        "resource-summary:script:size": ["error", { maxNumericValue: 624640 }],
       },
     },
   },

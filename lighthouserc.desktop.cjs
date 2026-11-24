@@ -36,8 +36,8 @@ module.exports = {
         "largest-contentful-paint": ["error", { maxNumericValue: 3000 }],
         // Conservative ceiling: unthrottled desktop TBT is expected < 100ms.
         "total-blocking-time": ["error", { maxNumericValue: 200 }],
-        // Hard guard: identical deterministic entry-closure transfer bytes as mobile.
-        "resource-summary:script:size": ["error", { maxNumericValue: 614400 }],
+        // Hard guard: identical deterministic entry-closure transfer bytes as mobile (610 KiB).
+        "resource-summary:script:size": ["error", { maxNumericValue: 624640 }],
       },
     },
   },
