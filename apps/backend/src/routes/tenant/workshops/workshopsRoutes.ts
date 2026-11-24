@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { WORKSHOPS_MODULE_MANIFEST, workshopsCommandMetricsResponseSchema } from "@mms/shared";
+import { WORKSHOPS_MODULE_MANIFEST, workshopsCommandMetricsResponseSchema } from "@mms/contracts";
 import { authenticateTenant } from "../../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../../middleware/requireTenantModule.js";
 import { registerMetricsRoute } from "../../../lib/crudRouter.js";

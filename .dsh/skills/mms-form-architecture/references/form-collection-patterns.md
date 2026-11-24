@@ -26,7 +26,7 @@ import {
   FormListFieldCard,
   FormSelect,
 } from "@/components/app/FormPrimitives";
-import { Input } from "@shared/ui";
+import { Input } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useStableRowList } from "@/lib/forms/useStableRowList";
 
@@ -202,7 +202,7 @@ affordance with the owning write permission.
 import { useFormSubmission } from "@/lib/forms/useFormSubmission";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
-import { itemWriteSchema } from "@mms/shared";
+import { itemWriteSchema } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const { t } = useTranslation();

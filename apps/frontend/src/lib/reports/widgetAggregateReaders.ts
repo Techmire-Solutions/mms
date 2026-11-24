@@ -28,7 +28,7 @@ import {
   type EnrollmentsWidgetAggregateResult,
   formatMoney,
   formatNumber,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 function readWidgetAggregateFromCache<T>(
   queryKey: readonly unknown[],

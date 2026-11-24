@@ -1,10 +1,10 @@
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { ADMISSIONS_BROADCAST_KEY } from "./registrationPublicUseCases.js";
-import { runAfterCommit } from "../../db/commitScope.js";
-import { hasActiveTransaction } from "../../db/dbTransactions.js";
+import { runAfterCommit } from "@mms/db/client";
+import { hasActiveTransaction } from "@mms/db/client";
 
 /**
  * Waitlist offer lifecycle (leader-only, idempotent).

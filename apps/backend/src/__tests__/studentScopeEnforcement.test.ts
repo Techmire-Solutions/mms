@@ -98,7 +98,7 @@ vi.mock("../services/backgroundJobWorkerService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({
     hashPrevious: "0".repeat(64),
     hashCurrent: "1".repeat(64),

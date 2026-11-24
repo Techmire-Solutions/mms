@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { authArtifacts } from "../schema.js";
-import { activeDb } from "../dbConnection.js";
+import { authArtifacts } from "@mms/db/schema";
+import { activeDb } from "@mms/db/client";
 import {
   authArtifactUserScopeKey,
   authArtifactWorkspaceScopeKey,

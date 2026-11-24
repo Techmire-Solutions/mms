@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { JournalEntry } from "@/lib/data/accountingData";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import {
   EMPTY_JOURNAL_ENTRY_FILTERS,
   JOURNAL_PAGE_SIZE,

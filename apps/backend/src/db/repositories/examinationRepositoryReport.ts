@@ -10,9 +10,9 @@ import {
   type ExaminationsReportComparisonMonth,
   type ExaminationsReportComparisonQuery,
   type ExaminationsReportComparisonSession,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getQueryRows } from "../documentStoreKeys.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 import { loadExaminationsAnalytics } from "./examinationRepositoryAnalytics.js";
 
 function activeExamWhere(subdomain: string, alias = "e"): ReturnType<typeof sql> {

@@ -14,7 +14,7 @@ was deleted**; file-level deletions remain proposals.
 | Exported symbols | `export function/const/class/interface/type/enum` extraction + repo-wide reference counts bucketed into production / test / same-file | 165 files · 443 exports · **101 candidates** (10 unreferenced, 17 test-only, 74 file-local) |
 | Orphaned files | Import-graph resolution (`from`, `import()`, `require()`, `vi.mock()`) with alias handling (`@/`, `@mms/shared`, `@shared/ui`), 174 module files | **0 zero-reference files, 0 test-only files** |
 | Orphaned assets | Filename reference scan across `apps/`, `packages/`, `e2e/`, `docs/` (8 assets) | **0 orphaned** — `public/icon-512.png` is referenced by `site.webmanifest` + Workbox precache |
-| Unused dependencies | Direct deps of `apps/backend`, `apps/frontend`, `packages/shared`, `packages/ui`; quoted specifier scan + config/manifest check | 7 without a textual consumer, **all justified** → **0 actionable** |
+| Unused dependencies | Direct deps of `apps/backend`, `apps/frontend`, `packages/contracts`, `packages/ui`; quoted specifier scan + config/manifest check | 7 without a textual consumer, **all justified** → **0 actionable** |
 | Dynamic-import / reflection safeguards | Verified lazy route loaders, `vi.mock`, worker runners, legacy migration loader, PWA manifest; no variable/reflection imports in the module | No candidate relies on a missed dynamic import (examples in §3) |
 
 Concurrent-process note: unrelated files (dashboards, messaging, contacts, i18n, `index.css`) were being
@@ -100,10 +100,10 @@ Reference scan: production consumers / tests / same-file only. Barrel re-exports
 
 | Target File | Item to Remove | Reason |
 | --- | --- | --- |
-| `packages/shared/src/students/studentDirectoryColumns.ts` | `StudentDirectoryColumnKey`, `StudentWorkColumnKey`, `studentWorkColumnLabelsFrom`, `isStudentSortField` | No reference in any app/package/test. (`isStudentSortField` becomes used if the backend adopts the shared sort SSOT — recommended in the whole-module review R7) |
-| `packages/shared/src/students/studentFieldDependencies.ts` | `isStudentSeedFieldKey` | No reference |
-| `packages/shared/src/students/studentLookupTypes.ts` | `StudentLookupStringKind` | Obsolete type after the lookup tightening |
-| `packages/shared/src/students/studentsListQuery.ts` | `StudentsNextGrNumberQuery` | No reference |
+| `packages/contracts/src/students/studentDirectoryColumns.ts` | `StudentDirectoryColumnKey`, `StudentWorkColumnKey`, `studentWorkColumnLabelsFrom`, `isStudentSortField` | No reference in any app/package/test. (`isStudentSortField` becomes used if the backend adopts the shared sort SSOT — recommended in the whole-module review R7) |
+| `packages/contracts/src/students/studentFieldDependencies.ts` | `isStudentSeedFieldKey` | No reference |
+| `packages/contracts/src/students/studentLookupTypes.ts` | `StudentLookupStringKind` | Obsolete type after the lookup tightening |
+| `packages/contracts/src/students/studentsListQuery.ts` | `StudentsNextGrNumberQuery` | No reference |
 | `apps/frontend/src/tenant/features/students/components/StudentDetail.tsx` | `StudentDrawer` export | Component is consumed through the module’s default export; the named export is unreferenced |
 | `apps/frontend/src/tenant/features/students/hooks/studentSetupConfigApi.ts` | `getStudentSettingsMemoryFallback` | No reference |
 | `apps/frontend/src/tenant/features/students/lib/studentCardTemplateTypes.ts` | `StudentCardFieldDefinition` | No reference |

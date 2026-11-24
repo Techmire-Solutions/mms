@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { WizardStepIndicator, type WizardStepItem } from "@shared/ui";
+import { WizardStepIndicator, type WizardStepItem } from "@mms/ui";
 
 interface WakalaStepProgressBarProps {
   step: 1 | 2 | 3;

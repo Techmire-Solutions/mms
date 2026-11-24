@@ -1,4 +1,4 @@
-import { resolveBrandingChartPaletteHex, type BrandingChartPaletteHex } from "@mms/shared";
+import { resolveBrandingChartPaletteHex, type BrandingChartPaletteHex } from "@mms/contracts";
 import { getScopedBrandingSettings, getScopedGlobalSettings } from "@/lib/settingsPreviewStore";
 import { resolveThemeMode } from "@/lib/brandingThemeCore";
 

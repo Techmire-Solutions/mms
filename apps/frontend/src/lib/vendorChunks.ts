@@ -66,22 +66,22 @@ export const VENDOR_CHUNK_GROUPS: readonly VendorChunkGroup[] = [
   },
   {
     name: "mms-i18n-en",
-    test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsEn/,
+    test: /packages[\\/]contracts[\\/]dist[\\/]i18n[\\/]appTranslationsEn/,
     priority: 5,
   },
   {
     name: "mms-i18n-ar",
-    test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsAr/,
+    test: /packages[\\/]contracts[\\/]dist[\\/]i18n[\\/]appTranslationsAr/,
     priority: 5,
   },
   {
     name: "mms-i18n-ur",
-    test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsUr/,
+    test: /packages[\\/]contracts[\\/]dist[\\/]i18n[\\/]appTranslationsUr/,
     priority: 5,
   },
   {
     name: "mms-i18n-fa",
-    test: /packages[\\/]shared[\\/]dist[\\/]i18n[\\/]appTranslationsFa/,
+    test: /packages[\\/]contracts[\\/]dist[\\/]i18n[\\/]appTranslationsFa/,
     priority: 5,
   },
 ];

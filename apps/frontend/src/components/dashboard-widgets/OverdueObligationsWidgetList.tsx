@@ -4,7 +4,7 @@ import { Scale } from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DateText } from "@/components/app/DateText";
-import { formatMoney, formatDate } from "@mms/shared";
+import { formatMoney, formatDate } from "@mms/contracts";
 import { UserAvatar } from "@/components/app/UserAvatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SearchBar } from "@/components/app/SearchBar";

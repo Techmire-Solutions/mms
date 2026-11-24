@@ -12,10 +12,10 @@ import {
   generateClientEntityId,
   normalizeHasanatModulePreferences,
   type HasanatTransferEntity,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { registerModuleCsvImportJobRunner } from "../../lib/registerModuleCsvImportJobRunner.js";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import {
   findDistributionsByClientRequestIds,
   findStudentsByNames,

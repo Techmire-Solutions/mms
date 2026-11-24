@@ -1,0 +1,14 @@
+{
+  // Node.js preset — Fastify API, BullMQ worker, shared libraries and Playwright
+  // specs compiled with NodeNext resolution (explicit `.js` specifiers in source).
+  //
+  // `lib` is intentionally NOT set here: `@mms/contracts` needs `DOM` types while the
+  // backend and e2e rely on the ES2022 defaults, so each package keeps its own
+  // `lib` delta instead of inheriting the wrong one.
+  "extends": "./base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  }
+}

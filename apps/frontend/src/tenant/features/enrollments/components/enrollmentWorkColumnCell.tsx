@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { Enrollment } from "@/lib/data/enrollmentData";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { EnrollmentStatusPill } from "@/tenant/features/enrollments/components/EnrollmentStatusPill";
 import {
   findEnrollmentStudent,

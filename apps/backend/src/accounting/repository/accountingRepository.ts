@@ -1,5 +1,5 @@
 import type { PostableAccountLookup } from "../../db/repositories/accountingAccountsRepository.js";
-import type { PostingPeriod } from "@mms/shared";
+import type { PostingPeriod } from "@mms/contracts";
 import type {
   Account,
   JournalEntry,
@@ -12,7 +12,7 @@ import type {
   AccountingReportAggregates,
   AccountingReportQuery,
   LedgerPostingAccounts,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { AccountingFxRepository } from "./accountingFxRepository.js";
 
 /**

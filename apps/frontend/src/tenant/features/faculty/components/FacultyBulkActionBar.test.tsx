@@ -34,6 +34,17 @@ const defaultProps = {
   onClearSelection: vi.fn(),
 };
 
+vi.mock("@mms/fe-core/i18n", () => ({
+  useTranslation: () => ({
+    language: "en",
+    dir: "ltr",
+    isRtl: false,
+    isLoading: false,
+    t: (key: string, params?: Record<string, string | number>) =>
+      params?.count ? `${key}:${params.count}` : key,
+  }),
+}));
+
 describe("FacultyBulkActionBar Component", () => {
   it("renders bulk action bar with selected count and actions", () => {
     const html = renderToStaticMarkup(<FacultyBulkActionBar {...defaultProps} />);

@@ -1,10 +1,10 @@
 import React from "react";
-import { ACCOUNT_TYPES, type Account, type AccountType } from "@/lib/data/accountingData";
-import { CASH_FLOW_SECTIONS, type AppTranslationKey } from "@mms/shared";
-import { Input } from "@/components/ui/input";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Field } from "@/components/app/FormPrimitives";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { ACCOUNT_TYPES, type Account, type AccountType } from "@mms/mod-accounting/frontend/tenant";
+import { CASH_FLOW_SECTIONS, type AppTranslationKey } from "@mms/contracts";
+import { Input } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Field } from "@mms/ui";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
 
 export interface AccountModalFieldsProps {

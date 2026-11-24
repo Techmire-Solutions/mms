@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { CalendarClock, Ban, CopyPlus } from "lucide-react";
-import { canTransitionSession, normalizeSessionStatus, todayISO, type Session } from "@mms/shared";
+import {
+  canTransitionSession,
+  normalizeSessionStatus,
+  todayISO,
+  type Session,
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";

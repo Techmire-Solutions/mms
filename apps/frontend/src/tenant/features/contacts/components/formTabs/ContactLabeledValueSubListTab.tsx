@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { ContactSubListShell, resolveSubListAllowAdd } from "./ContactSubListCards";
 import type { ContactSubListKey, ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -7,7 +7,7 @@ import {
   type AcademicCalendarEvent,
   type AcademicCalendarEventKind,
   type AcademicCalendarEventWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { FORM_INPUT } from "@/components/ui/formStyles";

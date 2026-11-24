@@ -1,4 +1,4 @@
-import type { ActivityLog, UsersListQuery, UsersCommandMetricsSnapshot } from "@mms/shared";
+import type { ActivityLog, UsersListQuery, UsersCommandMetricsSnapshot } from "@mms/contracts";
 import type { TenantUserRow } from "../../db/repositories/tenantUserRepository.js";
 
 /**

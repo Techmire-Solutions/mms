@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { type Contact, getDisplayName, resolveContactColumnSortField } from "@mms/shared";
+import { type Contact, getDisplayName, resolveContactColumnSortField } from "@mms/contracts";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { buildContactsMap } from "@/lib/contacts/contactI18n";

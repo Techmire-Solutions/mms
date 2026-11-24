@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import { usePlatformWorkspaces } from "@/platform/features/workspaces/hooks/usePlatformWorkspaces";
-import { Button, DropdownMenuItem, UserNavDropdown } from "@shared/ui";
+import { Button, DropdownMenuItem, UserNavDropdown } from "@mms/ui";
 import { BackgroundJobsTray } from "@/components/app/BackgroundJobsTray";
 import { PlatformNotificationsPopover } from "@/platform/features/shell/components/header/PlatformNotificationsPopover";
 import { ROUTES } from "@/lib/config/routes";

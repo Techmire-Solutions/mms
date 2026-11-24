@@ -1,4 +1,4 @@
-import type { BrandingSocialLink } from "@mms/shared";
+import type { BrandingSocialLink } from "@mms/contracts";
 
 /** Input for platform-console tenant onboarding (madrasa + provisioned admin). */
 export interface OnboardInput {

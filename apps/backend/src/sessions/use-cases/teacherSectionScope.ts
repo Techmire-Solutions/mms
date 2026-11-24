@@ -1,4 +1,4 @@
-import { type User } from "@mms/shared";
+import { type User } from "@mms/contracts";
 import { sessionsAcademicRepository as repo } from "../repository/sessionsAcademicRepositoryAdapter.js";
 import type { ClassSectionDate } from "../repository/sessionsAcademicRepository.js";
 

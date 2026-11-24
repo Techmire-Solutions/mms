@@ -1,12 +1,12 @@
 import type React from "react";
-import { ACCOUNTING_MODULE_MANIFEST, formatMoney } from "@mms/shared";
-import { Alert } from "@/components/app/Alert";
-import { DocumentCurrencyFields } from "@/components/app/DocumentCurrencyFields";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { ACCOUNTING_MODULE_MANIFEST, formatMoney } from "@mms/contracts";
+import { Alert } from "@mms/ui";
+import { DocumentCurrencyFields } from "@mms/fe-core/components/DocumentCurrencyFields";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useAccountingPostingRules } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import type { JournalEntryCurrencyState } from "../hooks/useJournalEntryCurrency";
-import { functionalPreview } from "../lib/journalEntryCurrency";
+import { functionalPreview } from "@mms/mod-accounting/frontend/tenant";
 
 interface JournalEntryCurrencyFieldsProps {
   t: TranslationFunction;

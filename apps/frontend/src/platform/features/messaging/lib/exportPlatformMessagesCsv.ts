@@ -1,4 +1,4 @@
-import type { PlatformMessageDto } from "@mms/shared";
+import type { PlatformMessageDto } from "@mms/contracts";
 import { triggerFileDownload } from "@/lib/download";
 
 const HEADERS = [

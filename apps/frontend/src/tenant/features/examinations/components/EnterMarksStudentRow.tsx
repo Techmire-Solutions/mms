@@ -2,7 +2,7 @@ import React from "react";
 import { m } from "framer-motion";
 import { type Exam } from "@/lib/data/examinationData";
 import type { Student } from "@/lib/data/studentsData";
-import { resolveResultScore } from "@mms/shared";
+import { resolveResultScore } from "@mms/contracts";
 import { FORM_INPUT_COMPACT } from "@/components/ui/formStyles";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";

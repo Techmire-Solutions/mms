@@ -1,6 +1,6 @@
 import React from "react";
 import { Receipt, AlertCircle, Loader2, Printer, CheckCircle2 } from "lucide-react";
-import { formatDate, formatMoney } from "@mms/shared";
+import { formatDate, formatMoney } from "@mms/contracts";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

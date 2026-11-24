@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { USER_EXPORT_ARTIFACTS_OBJECT_KEY } from "@mms/shared";
+import { USER_EXPORT_ARTIFACTS_OBJECT_KEY } from "@mms/contracts";
 
 const { store, deleteStorageObject, mutex } = vi.hoisted(() => ({
   store: new Map<string, unknown>(),
@@ -13,7 +13,9 @@ vi.mock("../db/documentStoreObjects.js", () => ({
     store.set(key, value);
   },
 }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, callback: () => Promise<unknown>) => {
     // Serialize transactions the way a row lock does in Postgres.
     const run = mutex.tail.then(() => callback());

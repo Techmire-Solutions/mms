@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { type Account } from "@mms/shared";
+import { type Account } from "@mms/contracts";
 import { Landmark } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/app/DatePicker";
-import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
-import { SectionCard } from "@/components/app/SectionCard";
-import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
-import { todayISO } from "@mms/shared";
+import { Button } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Input } from "@mms/ui";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { Field, FieldErrorMessage } from "@mms/ui";
+import { SectionCard } from "@mms/ui";
+import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { notify } from "@mms/fe-core/notify";
+import { todayISO } from "@mms/contracts";
 import {
   hasAtMostTwoDecimals,
   parseMoneyInput,

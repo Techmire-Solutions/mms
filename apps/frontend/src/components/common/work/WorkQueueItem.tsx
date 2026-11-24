@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type { ListRowMotionProps } from "@/hooks/useListRowMotion";
 import {
   PRIORITY_BADGES,

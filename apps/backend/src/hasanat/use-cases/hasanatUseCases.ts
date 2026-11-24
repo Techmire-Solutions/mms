@@ -30,7 +30,7 @@ import {
   type Redemption,
   type ReverseRedemptionBody,
   type StockBatch,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createHasanatQueryUseCases } from "./hasanatQueryUseCases.js";
 import { issueHasanatCard } from "./hasanatIssuanceUseCases.js";
 import { replaceBatchesWithAudit, replaceDenomsWithAudit } from "./hasanatCatalogUseCases.js";

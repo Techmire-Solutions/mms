@@ -10,7 +10,7 @@ import {
 import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { FormListFieldCard } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type ContactBankDetail, DEFAULT_BANK_NAMES } from "@mms/shared";
+import { type ContactBankDetail, DEFAULT_BANK_NAMES } from "@mms/contracts";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 

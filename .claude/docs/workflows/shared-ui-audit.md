@@ -9,10 +9,10 @@ This workflow establishes and audits the Single Source of Truth (SSOT) policy fo
 ## Phase 1: Context & Discovery
 
 - [ ] **Load the owning rules**: Review `rules/mms-core.md`, `rules/mms-dry.md`, `rules/mms-ui-ux-design.md`, and `rules/mms-structure-naming.md`.
-- [ ] **Inspect SSOT shared package**: Audit `packages/ui/src/` (`@shared/ui`) before authoring any new component.
+- [ ] **Inspect SSOT shared package**: Audit `packages/ui/src/` (`@mms/ui`) before authoring any new component.
 - [ ] **Check import patterns**: Verify consuming consoles:
-  - Platform Console must import directly from `@shared/ui`.
-  - Tenant Console imports from `@shared/ui` or backward-compatible `@/components/ui/*` facades.
+  - Platform Console must import directly from `@mms/ui`.
+  - Tenant Console imports from `@mms/ui` or backward-compatible `@/components/ui/*` facades.
   - Zero cross-console imports between `tenant/` and `platform/`.
 
 ## Phase 2: Automated Governance Verification
@@ -28,19 +28,19 @@ This workflow establishes and audits the Single Source of Truth (SSOT) policy fo
   pnpm run check:frontend-structure
   ```
 - [ ] **Triage any reported violations**:
-  1. *Duplicate primitives*: Move local definitions into `@shared/ui`.
-  2. *Cross-console imports*: Decouple domain logic or promote shared presentation to `@shared/ui`.
-  3. *Non-conforming Platform imports*: Update `@/components/ui/*` to `@shared/ui`.
+  1. *Duplicate primitives*: Move local definitions into `@mms/ui`.
+  2. *Cross-console imports*: Decouple domain logic or promote shared presentation to `@mms/ui`.
+  3. *Non-conforming Platform imports*: Update `@/components/ui/*` to `@mms/ui`.
   4. *Orphaned imports*: Remove or repoint unresolvable import specifiers.
 
-## Phase 3: Extraction & Standardization in `@shared/ui`
+## Phase 3: Extraction & Standardization in `@mms/ui`
 
 - [ ] **Standardize in `packages/ui`**:
   - Keep components domain-agnostic (zero tenant/platform business logic).
   - Support cross-console variations via explicit props (`variant`, `tone`, `size`, `interactive`) or subcomponent composition.
   - Export from `packages/ui/src/index.ts`.
 - [ ] **Maintain facade purity in `apps/frontend/src/components/ui/`**:
-  - Primitives must only re-export from `@shared/ui`.
+  - Primitives must only re-export from `@mms/ui`.
   - Zero local JSX component declarations in facade files.
 
 ## Phase 4: Strict Pre-Deletion & Cleanup Protocol
@@ -56,7 +56,7 @@ Whenever deleting deprecated shims, duplicate component files, or dead code:
   Ensure the project builds cleanly before deleting files.
 - [ ] **Step 2: Safe deletion**:
   - Remove deprecated/duplicate file.
-  - Update all consuming call sites to `@shared/ui`.
+  - Update all consuming call sites to `@mms/ui`.
 - [ ] **Step 3: Post-deletion verification gate**:
   ```bash
   pnpm typecheck
@@ -86,4 +86,4 @@ Whenever deleting deprecated shims, duplicate component files, or dead code:
 
 > [!CAUTION]
 > **Zero Duplicate Primitives**
-> Never author parallel buttons, inputs, modals, cards, or overlays in `platform/` or `tenant/`. Always promote reusable UI controls to `@shared/ui`.
+> Never author parallel buttons, inputs, modals, cards, or overlays in `platform/` or `tenant/`. Always promote reusable UI controls to `@mms/ui`.

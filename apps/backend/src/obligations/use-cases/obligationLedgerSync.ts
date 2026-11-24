@@ -3,7 +3,7 @@
  * @description Keeps the general ledger aligned with obligation collection writes.
  */
 
-import type { ObligationCollection } from "@mms/shared";
+import type { ObligationCollection } from "@mms/contracts";
 import type { ObligationsRepository } from "../repository/obligationsRepository.js";
 import {
   syncObligationJournal,
@@ -11,7 +11,7 @@ import {
   tryPostObligationJournal,
   tryPostObligationRestoreJournal,
 } from "../../accounting/ledgerPosting/obligationPostingService.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { auditCollectionsDeleted, auditCollectionsRestored } from "./obligationAuditTrail.js";
 import { logger } from "../../lib/logger.js";
 

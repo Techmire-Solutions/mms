@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
-import type { StoredPlatformUser } from "@mms/shared";
-import { FULL_PLATFORM_ADMIN_PERMISSIONS } from "@mms/shared";
+import type { StoredPlatformUser } from "@mms/contracts";
+import { FULL_PLATFORM_ADMIN_PERMISSIONS } from "@mms/contracts";
 import {
   findPlatformUserRowByEmail,
   findPlatformUserRowByRole,

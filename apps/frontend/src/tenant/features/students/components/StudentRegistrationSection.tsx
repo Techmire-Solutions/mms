@@ -12,7 +12,7 @@ import {
   type FieldDefinition,
   type Student,
   type StudentStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   resolveStudentFieldLabel,
   type StudentFieldErrorGetter,

@@ -4,11 +4,11 @@ import type {
   WorkshopAttendanceMark,
   WorkshopScore,
   WorkshopScoresBody,
-} from "@mms/shared";
-import { workshopAttendance, workshopParticipants, workshopScores } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+} from "@mms/contracts";
+import { workshopAttendance, workshopParticipants, workshopScores } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import { auditRow } from "./workshopAudit.js";
-import { NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { NotFoundError, ValidationError } from "@mms/be-core/http/errors";
 import { findWorkshopRow } from "./workshopEventsRepository.js";
 import { listAttendance, listScores } from "./workshopActivityRepository.js";
 import { planAttendanceMarks, planScoreLines } from "./workshopUpsertPlanning.js";

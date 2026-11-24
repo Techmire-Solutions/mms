@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { attendancePreferencesPutBodySchema, type AttendanceSettings } from "@mms/shared";
+import { attendancePreferencesPutBodySchema, type AttendanceSettings } from "@mms/contracts";
 import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";

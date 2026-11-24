@@ -1,4 +1,4 @@
-import type { EmailIntegrationConfig } from "@mms/shared";
+import type { EmailIntegrationConfig } from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 export async function fetchPlatformEmailIntegration(

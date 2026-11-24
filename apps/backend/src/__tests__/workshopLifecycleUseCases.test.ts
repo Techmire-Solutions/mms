@@ -7,11 +7,15 @@ import {
   ValidationError,
 } from "../lib/httpErrors.js";
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn(async (_tenant, fn) => fn({} as any)),
 }));
 
-vi.mock("../db/commitScope.js", () => ({
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+
   runAfterCommit: vi.fn((fn) => fn()),
 }));
 
@@ -19,11 +23,11 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
 

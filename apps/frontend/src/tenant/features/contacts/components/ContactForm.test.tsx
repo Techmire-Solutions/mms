@@ -67,7 +67,7 @@ vi.mock("./ContactFormFooterStart", () => ({
   ContactFormFooterStart: () => <div data-testid="footer-start">Footer Start</div>,
 }));
 
-vi.mock("@/components/app/ConfirmAlertDialog", () => ({
+vi.mock("@mms/fe-core/components/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: () => null,
 }));
 

@@ -3,4 +3,4 @@ export {
   getTableCellAlignClass,
   getTableHeadAlignClass,
   getAriaSort,
-} from "@shared/ui";
+} from "@mms/ui";

@@ -1,4 +1,4 @@
-import { canTransitionExam, isExamPublished } from "@mms/shared";
+import { canTransitionExam, isExamPublished } from "@mms/contracts";
 import { ConflictError } from "../../lib/httpErrors.js";
 
 /**

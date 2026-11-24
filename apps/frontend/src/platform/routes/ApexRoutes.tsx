@@ -15,7 +15,7 @@ import {
   type ApexConsoleGroup,
 } from "@/platform/routes/apexRouteRegistry";
 
-// The platform shell pulls the `@shared/ui` barrel (tables, DatePicker, forms,
+// The platform shell pulls the `@mms/ui` barrel (tables, DatePicker, forms,
 // motion) — none of which the public apex entry routes need. Load it only when
 // an authenticated console route actually renders the shell.
 const PlatformPageShell = React.lazy(() =>

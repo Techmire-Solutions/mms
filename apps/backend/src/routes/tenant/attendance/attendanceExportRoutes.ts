@@ -3,7 +3,7 @@ import {
   ATTENDANCE_MODULE_MANIFEST,
   attendanceCsvExportBodySchema,
   attendanceImportBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
 import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
 import {

@@ -62,10 +62,10 @@ describe("no-cross-feature-imports", () => {
       ).toEqual([]);
     });
 
-    it("allows shared layers to import lib/ and @mms/shared", () => {
+    it("allows shared layers to import lib/ and @mms/contracts", () => {
       expect(
         lint(
-          `import { a } from "@/lib/utils";\nimport { b } from "@mms/shared";`,
+          `import { a } from "@/lib/utils";\nimport { b } from "@mms/contracts";`,
           "src/hooks/foo.ts",
         ),
       ).toEqual([]);

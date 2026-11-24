@@ -1,7 +1,7 @@
 import {
   normalizeEnrollmentModulePreferences,
   type EnrollmentModulePreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getEnrollmentModulePreferencesByWorkspace,
   upsertEnrollmentModulePreferences,

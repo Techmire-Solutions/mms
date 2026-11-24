@@ -4,7 +4,7 @@ import {
   BRANDING_THEME_FIELD_KEYS,
   isBrandingFieldsDirty,
   type BrandingSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   useBrandingDraft,
   type UseBrandingDraftOptions,

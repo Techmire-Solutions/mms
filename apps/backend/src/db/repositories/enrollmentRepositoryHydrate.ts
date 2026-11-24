@@ -1,8 +1,12 @@
 import { and, eq, inArray, isNull, notInArray } from "drizzle-orm";
-import { dedupeTrimmedIds, SEAT_RELEASED_ENROLLMENT_STATUSES, type Enrollment } from "@mms/shared";
-import { enrollments } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import {
+  dedupeTrimmedIds,
+  SEAT_RELEASED_ENROLLMENT_STATUSES,
+  type Enrollment,
+} from "@mms/contracts";
+import { enrollments } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
 import {
   ENROLLMENT_COLUMNS,
   enrollmentRowToRecord,

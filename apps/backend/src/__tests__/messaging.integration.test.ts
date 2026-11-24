@@ -20,8 +20,8 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
   authArtifactWorkspaceScopeKey: (subdomain: string) => `ws:${subdomain}`,
 }));
 
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+vi.mock("@mms/db/context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/context")>();
   return {
     ...actual,
     // Handler-owned transactions (clear/restore atomicity) run against a stub
@@ -86,12 +86,12 @@ vi.mock("../messaging/use-cases/messagingUseCases.js", () => ({
   },
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
   emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (first: unknown, second?: unknown) => {
     const input = (second ?? first) as {
       realUserId?: string;

@@ -20,7 +20,7 @@ import {
   sessionTypeI18nKey,
   type Session,
   type AppTranslationKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";

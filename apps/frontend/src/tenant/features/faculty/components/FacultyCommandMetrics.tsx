@@ -3,7 +3,7 @@ import { School, Filter, UserCheck, UserX, CalendarOff } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFacultyMetrics } from "@/tenant/features/faculty/hooks/useFaculty";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { resolveFacultyStatusRoles } from "@mms/shared";
+import { resolveFacultyStatusRoles } from "@mms/contracts";
 import { facultyStatusMetricAccent } from "@/lib/faculty/facultyStatusUi";
 
 export interface FacultyCommandMetricsProps {

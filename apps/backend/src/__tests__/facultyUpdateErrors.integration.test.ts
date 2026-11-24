@@ -18,7 +18,9 @@ vi.mock("../services/rbacService.js", () => ({
 vi.mock("../services/facultyValidationService.js", () => ({
   validateFacultyDynamic: (...args: unknown[]) => validateFacultyDynamic(...args),
 }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, work: () => Promise<unknown>) => work(),
 }));
 vi.mock("../faculty/use-cases/facultyUseCases.js", () => ({

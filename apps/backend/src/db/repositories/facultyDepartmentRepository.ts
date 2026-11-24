@@ -1,14 +1,14 @@
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import {
   resolveFacultyCatalogCode,
   validateDepartmentDeletion,
   validateFacultyDepartment,
 } from "./facultyDepartmentValidation.js";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { facultyDepartments } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
-import type { FacultyCatalogStatus, FacultyDepartmentEntity } from "@mms/shared";
+import { facultyDepartments } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
+import type { FacultyCatalogStatus, FacultyDepartmentEntity } from "@mms/contracts";
 
 export { FacultyCatalogConflictError } from "./facultyDepartmentValidation.js";
 

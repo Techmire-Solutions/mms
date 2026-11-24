@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FiscalYear, JournalEntry } from "@mms/shared";
+import type { FiscalYear, JournalEntry } from "@mms/contracts";
 import { postingYearIds } from "../accounting/ledgerPosting/fiscalYearPostingLock.js";
 
 /**

@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import {
   accountingAccounts,
@@ -14,9 +14,9 @@ import {
   financePayments,
   students,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { financeUseCases } from "../../finance/use-cases/financeUseCases.js";
-import type { PaymentCreateInput } from "@mms/shared";
+import type { PaymentCreateInput } from "@mms/contracts";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const SUFFIX = randomUUID().slice(0, 8);

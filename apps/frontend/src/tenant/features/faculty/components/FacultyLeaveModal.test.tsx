@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { FacultyMember } from "@mms/shared";
+import type { FacultyMember } from "@mms/contracts";
 import { FacultyLeaveModal } from "./FacultyLeaveModal";
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -25,7 +25,7 @@ vi.mock("@/tenant/features/faculty/hooks/useFacultyTsrQueries", () => ({
   }),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     open,
     title,

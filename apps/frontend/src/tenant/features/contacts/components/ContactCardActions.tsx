@@ -1,4 +1,4 @@
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import { DirectoryCardFooterActions } from "@/components/app/DirectoryCardFooterActions";
 import { ContactsRowActions } from "@/tenant/features/contacts/components/ContactsRowActions";

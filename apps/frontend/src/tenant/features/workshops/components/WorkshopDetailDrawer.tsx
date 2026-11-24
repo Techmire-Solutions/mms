@@ -9,7 +9,7 @@ import {
   type AppTranslationKey,
   type WorkshopEvent,
   type WorkshopStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";

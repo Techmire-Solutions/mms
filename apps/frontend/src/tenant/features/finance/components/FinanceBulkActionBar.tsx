@@ -1,6 +1,6 @@
 import React from "react";
 import { Printer, ReceiptText } from "lucide-react";
-import { FINANCE_MODULE_MANIFEST } from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { bulkActionDockActionClassName } from "@/components/app/bulkActionDockStyles";

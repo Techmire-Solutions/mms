@@ -6,9 +6,9 @@
  */
 
 import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
-import { generateClientEntityId } from "@mms/shared";
-import { hasanatDistributions, hasanatRedemptions, hasanatStudentAwards } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { generateClientEntityId } from "@mms/contracts";
+import { hasanatDistributions, hasanatRedemptions, hasanatStudentAwards } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
 import {
   toAward,
   type AwardRow,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type UsersSettings } from "@mms/shared";
+import { type UsersSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 

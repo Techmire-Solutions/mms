@@ -1,5 +1,5 @@
-import type { Faculty } from "@mms/shared";
-import { FACULTY_DIRECTORY_COLUMN_SURFACES, facultyFieldLabelKey } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
+import { FACULTY_DIRECTORY_COLUMN_SURFACES, facultyFieldLabelKey } from "@mms/contracts";
 import type {
   EntityDescriptor,
   FieldDefinition,

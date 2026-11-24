@@ -44,9 +44,15 @@ jobs:
           filters: |
             backend_db:
               - 'apps/backend/src/db/**'
+              # Target root (migration plan P0/P7): a no-op until apps/api exists,
+              # but it means the DB job cannot silently skip the moved code.
+              - 'apps/api/**'
+              - 'packages/be-core/**'
+              - 'packages/db/**'
+              - 'packages/modules/**'
               - 'apps/backend/src/examinations/**'
               - 'apps/backend/src/routes/tenant/examinations/**'
-              - 'apps/backend/drizzle.config.ts'
+              - 'packages/db/drizzle.config.ts'
               - 'apps/backend/src/**/repository/**'
               - 'apps/backend/src/**/ledgerPosting/**'
               - 'apps/backend/src/**/use-cases/**'
@@ -64,34 +70,67 @@ jobs:
               - 'apps/backend/src/__tests__/rls/**'
               - 'apps/backend/vitest.db.config.ts'
               - 'apps/backend/vitest.rls.config.ts'
-              - 'packages/shared/**'
+              - 'packages/contracts/**'
+              # Shared TS/ESLint presets affect the backend's compile/lint; keep
+              # them in the job's input set (migration plan P0 filter policy).
+              - 'tooling/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - '.github/**'
             frontend:
               - 'apps/frontend/**'
-              - 'packages/shared/**'
+              # Target roots (migration plan P0/P8) — no-ops until the split.
+              - 'apps/tenant-web/**'
+              - 'apps/platform-web/**'
+              - 'packages/contracts/**'
               - 'packages/ui/**'
+              - 'packages/fe-core/**'
+              - 'packages/modules/**'
+              # Shared design tokens, the React TS preset and the ESLint config
+              # change the frontend's build/test inputs (the contrast token test
+              # reads tooling/tailwind-config/theme.css).
+              - 'tooling/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - '.github/**'
             backend_unit:
               - 'apps/backend/**'
-              - 'packages/shared/**'
+              # Target root (migration plan P0/P7).
+              - 'apps/api/**'
+              - 'packages/contracts/**'
+              - 'packages/db/**'
+              - 'packages/be-core/**'
+              - 'packages/modules/**'
+              # Shared TS/ESLint presets affect the backend's compile/lint.
+              - 'tooling/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - '.github/**'
             e2e:
               - 'e2e/**'
               - 'apps/**'
-              - 'packages/shared/**'
+              - 'packages/modules/**'
+              - 'packages/contracts/**'
+              - 'packages/db/**'
               - 'packages/ui/**'
+              - 'packages/be-core/**'
+              - 'packages/fe-core/**'
+              # Rendered UI: Tailwind token/BiDi changes must run the browser suites.
+              - 'tooling/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - '.github/**'
             full_tests:
-              - 'packages/shared/**'
+              - 'packages/contracts/**'
+              - 'apps/api/**'
+              - 'apps/tenant-web/**'
+              - 'apps/platform-web/**'
+              - 'packages/modules/**'
+              - 'packages/db/**'
               - 'packages/ui/**'
+              - 'packages/be-core/**'
+              - 'packages/fe-core/**'
+              - 'tooling/**'
               - '**/package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
@@ -182,8 +221,8 @@ jobs:
       - name: Run Typecheck
         run: pnpm typecheck
 
-      # Lints every package that has a lint script (frontend, backend,
-      # @mms/shared, e2e) via turbo — shared/e2e were previously unlinted.
+      # Lints every package that has a lint script (apps, packages, modules and
+      # the shared tooling configs) via turbo.
       - name: Lint (all packages)
         run: pnpm lint
 
@@ -264,7 +303,7 @@ jobs:
         run: pnpm run check:examinations-route-security
 
       - name: Examinations scoring coverage
-        run: pnpm --filter @mms/shared run test:coverage:examinations
+        run: pnpm --filter @mms/contracts run test:coverage:examinations
 
       # Accounting route-injection/security parity with examinations. These do not
       # need Postgres: the matrix suite only asserts 401/403 denials, which the
@@ -359,21 +398,38 @@ jobs:
       - name: Shared UI architecture & governance
         run: pnpm run check:shared-ui
 
+      - name: Core package boundaries
+        run: pnpm run check:core-packages
+
+      - name: Module audience boundaries
+        run: pnpm run check:module-boundaries
+
+      # Migration ledger (docs/monorepo-migration-plan.md §9.1): a done move whose
+      # source still exists, or a todo move whose target already exists, fails.
+      - name: Migration move ledger
+        run: pnpm run check:move-manifest
+
+      # Topology (migration plan P0/P9): catches undeclared app/package/module
+      # drift, half-created module dirs, a module root export, and a dropped
+      # pnpm-workspace glob.
+      - name: Topology
+        run: pnpm run check:topology
+
       # Ratchet: form inventory freshness + the provable form-contract regressions
       # (missing `saving`, unguarded submit, missing dirty guard). Baselines live in the
       # script and may only decrease. Advisory findings are printed, not gated.
       - name: Form architecture & inventory
         run: pnpm run check:forms
 
-      # @mms/shared must stay an environment-agnostic leaf (no DOM/React/Fastify/
+      # @mms/contracts must stay an environment-agnostic leaf (no DOM/React/Fastify/
       # DB/Redis/Node builtins) so both the browser bundle and the Node backend
       # can safely import it. Comments/strings and test files are ignored.
-      - name: "@mms/shared purity & boundaries"
+      - name: "@mms/contracts purity & boundaries"
         run: pnpm run check:shared-purity
 
-      # Ratchet: @mms/shared stays de-flattened (domain folders, only index.ts at
+      # Ratchet: @mms/contracts stays de-flattened (domain folders, only index.ts at
       # src/ root) and consumers use the exported subpaths only.
-      - name: "@mms/shared structure"
+      - name: "@mms/contracts structure"
         run: pnpm run check:shared-structure
 
       # Guards the retired Teacher / FDA surface and asserts the canonical
@@ -528,6 +584,9 @@ jobs:
         with:
           build-shared: "true"
 
+      - name: Run UI & Fe-Core Package Tests
+        run: pnpm --filter @mms/ui test && pnpm --filter @mms/fe-core test
+
       # Changed-scope PRs skip the sharded coverage gate entirely, so a PR could
       # add untested source and merge green. Collect coverage for the files the
       # PR touched and enforce it with check-changed-coverage.mjs.
@@ -601,7 +660,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # Merging blob reports runs no tests, so @mms/shared need not be built and
+      # Merging blob reports runs no tests, so @mms/contracts need not be built and
       # only the frontend workspace project is installed (~20 s -> ~8 s).
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
@@ -653,10 +712,18 @@ jobs:
         with:
           build-shared: "true"
 
-      # Any packages/shared change forces full scope, so changed scope skips it.
+      - name: Run Be-Core Kernel Tests
+        run: pnpm --filter @mms/be-core test
+
+      # Data-layer guarantees (fail-closed tenant scope, audited bypass, migration runner).
+      # No database is needed; real-Postgres suites run in test-backend-db / test-backend-rls.
+      - name: Run Data Layer Tests
+        run: pnpm --filter @mms/db test
+
+      # Any packages/contracts change forces full scope, so changed scope skips it.
       - name: Run Shared Package Tests & Coverage
         if: matrix.shardIndex == 1 && needs.changes.outputs.test_scope == 'full'
-        run: pnpm --filter @mms/shared test:coverage
+        run: pnpm --filter @mms/contracts test:coverage
 
       - name: Run Backend Unit Tests (changed files only, with coverage)
         if: needs.changes.outputs.test_scope == 'changed'
@@ -799,6 +866,11 @@ jobs:
 
       - name: Run DB Migrations
         run: pnpm --filter mms-backend run db:migrate
+
+      # Real-Postgres suite for the accounting module (parallel-file deadlocks and
+      # the restore-attribution clock race were fixed; keep it serialized here).
+      - name: Run Accounting Module DB Tests
+        run: pnpm --filter @mms/mod-accounting run test:db
 
       - name: Run Backend DB Integration Tests (with Sessions coverage)
         run: pnpm --filter mms-backend run test:db:coverage
@@ -1096,6 +1168,10 @@ jobs:
           RLS_RESULT: ${{ needs.test-backend-rls.result }}
           E2E_MATCHED: ${{ needs.changes.outputs.e2e }}
           E2E_RESULT: ${{ needs.e2e.result }}
+          FRONTEND_MATCHED: ${{ needs.changes.outputs.frontend }}
+          FRONTEND_RESULT: ${{ needs.test-frontend.result }}
+          BACKEND_MATCHED: ${{ needs.changes.outputs.backend_unit }}
+          BACKEND_RESULT: ${{ needs.test-backend-unit.result }}
         run: |
           echo "==================== CI Gate Summary ===================="
           echo "Unit test scope:        ${TEST_SCOPE}"

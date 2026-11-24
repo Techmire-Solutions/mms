@@ -3,7 +3,9 @@ import { findStudentRegistrationConflictSql } from "../db/repositories/studentRe
 
 const mockWithTenantTransaction = vi.fn();
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (...args: unknown[]) => mockWithTenantTransaction(...args),
   // Read paths now go through withTenantRead (read replica + read-only tx).
   withTenantRead: (...args: unknown[]) => mockWithTenantTransaction(...args),

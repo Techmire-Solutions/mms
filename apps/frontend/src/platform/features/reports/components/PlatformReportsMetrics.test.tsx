@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformReportsMetrics } from "@/platform/features/reports/components/PlatformReportsMetrics";
-import { FULL_PLATFORM_ADMIN_PERMISSIONS } from "@mms/shared";
+import { FULL_PLATFORM_ADMIN_PERMISSIONS } from "@mms/contracts";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

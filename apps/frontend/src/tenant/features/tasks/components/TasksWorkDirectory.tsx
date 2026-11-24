@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import type { ModuleColumnRegistryEntry, TaskRecord, TaskStatus } from "@mms/shared";
+import type { ModuleColumnRegistryEntry, TaskRecord, TaskStatus } from "@mms/contracts";
 import { ErrorState } from "@/components/app/ErrorState";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";

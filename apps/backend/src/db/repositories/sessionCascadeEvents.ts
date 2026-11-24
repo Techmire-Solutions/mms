@@ -1,7 +1,7 @@
-import { enrollments } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvents } from "../../services/outboxEventService.js";
+import { enrollments } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvents } from "@mms/be-core/data/outbox";
 
 /**
  * Reads ids from an UPDATE ... RETURNING when the dialect/fake supports it. Production drizzle

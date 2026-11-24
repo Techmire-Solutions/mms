@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Users, Tag } from "lucide-react";
-import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -2,7 +2,7 @@ import type { ReportCollection } from "@/lib/reports/reportMetadata";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import { widgetMatchesDashboardRole, type DashboardRole } from "@/lib/dashboardRole";
 import { isSeededDashboardWidget, DASHBOARD_WIDGET_REGISTRY } from "@/lib/dashboardWidgets";
-import type { DashboardTrendMetric, DashboardMetricTrends, Permission } from "@mms/shared";
+import type { DashboardTrendMetric, DashboardMetricTrends, Permission } from "@mms/contracts";
 import {
   DASHBOARD_COLLECTION_MODULE_ID,
   DASHBOARD_ACCOUNTING_WIDGET_IDS,

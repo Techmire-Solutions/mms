@@ -1,4 +1,4 @@
-import type { QuestionBankQuestion } from "@mms/shared";
+import type { QuestionBankQuestion } from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { questionBankEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";

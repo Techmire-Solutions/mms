@@ -4,7 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Field } from "@/components/app/FormPrimitives";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Alert } from "@/components/app/Alert";
-import { Badge, Button, CardSkeleton, Input, ToggleRow } from "@shared/ui";
+import { Badge, Button, CardSkeleton, Input, ToggleRow } from "@mms/ui";
 import DateFormatSelect from "@/components/app/DateFormatSelect";
 import TimezoneSelect from "@/components/app/TimezoneSelect";
 import {
@@ -12,7 +12,7 @@ import {
   useUpdatePlatformSettings,
 } from "@/platform/features/settings/hooks/usePlatformSettings";
 import { getPlatformErrorMessage } from "@/platform/features/auth/lib/platformAuthErrors";
-import { PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES, type DateFormatId } from "@mms/shared";
+import { PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES, type DateFormatId } from "@mms/contracts";
 
 /** Regional display defaults + the enforceable apex session policy. */
 export function PlatformRegionalSecuritySection(): React.JSX.Element {

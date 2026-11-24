@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import {
   registerMetricsRoute,

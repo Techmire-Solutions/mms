@@ -1,13 +1,13 @@
 import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { Shield } from "lucide-react";
-import type { PlatformAdminPermissions, PlatformUserProfile } from "@mms/shared";
+import type { PlatformAdminPermissions, PlatformUserProfile } from "@mms/contracts";
 import {
   normalizePlatformAdminPermissions,
   platformUpdateAdminPermissionsBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FormModal } from "@/components/app/FormModal";
-import { Field, Input } from "@shared/ui";
+import { Field, Input } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getPlatformErrorMessage } from "@/platform/features/auth/lib/platformAuthErrors";
 import { useUpdatePlatformAdminPermissions } from "@/platform/features/users/hooks/usePlatformAdmins";

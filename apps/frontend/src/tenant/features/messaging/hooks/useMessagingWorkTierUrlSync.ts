@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { SetURLSearchParams } from "react-router-dom";
-import type { MessagingStatusFilter } from "@mms/shared";
+import type { MessagingStatusFilter } from "@mms/contracts";
 
 interface UseMessagingWorkTierUrlSyncParams {
   searchParams: URLSearchParams;

@@ -1,4 +1,4 @@
-import { HASANAT_MODULE_MANIFEST } from "@mms/shared";
+import { HASANAT_MODULE_MANIFEST } from "@mms/contracts";
 
 export const HASANAT_DENOMS_QUERY_KEY = ["hasanat", "denoms", "list"] as const;
 export const HASANAT_BATCHES_QUERY_KEY = ["hasanat", "batches", "list"] as const;

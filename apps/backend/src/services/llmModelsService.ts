@@ -1,4 +1,4 @@
-import { getLlmProviderModelsUrl, type LlmProviderType } from "@mms/shared";
+import { getLlmProviderModelsUrl, type LlmProviderType } from "@mms/contracts";
 import { fetchSafeExternal, safeOptionalExternalHttpUrl } from "../lib/outboundUrl.js";
 
 interface GeminiModelsResponse {

@@ -1,7 +1,7 @@
 import React from "react";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 
 export interface PlatformAdminActionButtonsProps {

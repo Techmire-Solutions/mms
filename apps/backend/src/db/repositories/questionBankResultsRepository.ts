@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
-import { dedupeTrimmedIds, type QuestionBankResult } from "@mms/shared";
-import { assessmentResults, assessmentAnswers } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type QuestionBankResult } from "@mms/contracts";
+import { assessmentResults, assessmentAnswers } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 // Re-export persistence functions for backward compatibility

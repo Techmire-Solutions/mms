@@ -1,10 +1,10 @@
 import React from "react";
 import { ShieldCheck, ShieldAlert, CheckCircle2, Award } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Badge, WidgetCard, WidgetCardHeader, WORK_SURFACE_INNER } from "@shared/ui";
+import { Badge, WidgetCard, WidgetCardHeader, WORK_SURFACE_INNER } from "@mms/ui";
 import { cn } from "@/lib/utils";
 import { BiDiText } from "@/components/app/BiDiText";
-import type { PlatformUser } from "@mms/shared";
+import type { PlatformUser } from "@mms/contracts";
 
 interface PlatformReportsOperatorCardProps {
   platformUser?: PlatformUser | null;

@@ -1,0 +1,59 @@
+{
+  "name": "@mms/mod-iam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "IAM vertical module: users, roles/permissions, organization invites and platform operator IAM. Audience-separated shared/backend/frontend exports.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./shared": {
+      "import": "./dist/shared/index.js",
+      "types": "./dist/shared/index.d.ts"
+    },
+    "./backend/tenant": {
+      "import": "./dist/backend/tenant.router.js",
+      "types": "./dist/backend/tenant.router.d.ts"
+    },
+    "./backend/platform": {
+      "import": "./dist/backend/platform.router.js",
+      "types": "./dist/backend/platform.router.d.ts"
+    },
+    "./frontend/tenant": "./src/frontend/tenant/index.ts",
+    "./frontend/platform": "./src/frontend/platform/index.ts",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && tsc --noEmit -p tsconfig.frontend.json",
+    "typecheck": "tsc --noEmit -p tsconfig.backend.json && tsc --noEmit -p tsconfig.frontend.json",
+    "lint": "node -r ../../../scripts/eslint-ts-compat.cjs node_modules/eslint/bin/eslint.js --cache --cache-strategy content --cache-location node_modules/.cache/eslint/ . --quiet",
+    "test": "vitest run --config vitest.backend.config.ts && vitest run --config vitest.frontend.config.ts"
+  },
+  "dependencies": {
+    "@mms/be-core": "workspace:*",
+    "@mms/contracts": "workspace:*",
+    "@mms/db": "workspace:*",
+    "@mms/fe-core": "workspace:*",
+    "@mms/ui": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "fastify": "^5.12.8",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@mms/eslint-config": "workspace:*",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^10.15.0",
+    "fastify": "catalog:",
+    "happy-dom": "^21.0.4",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "~7.0.2",
+    "vite": "catalog:",
+    "vitest": "5.1.0"
+  }
+}

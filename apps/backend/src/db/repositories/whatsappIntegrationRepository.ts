@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { withTenant } from "../tenant-context.js";
-import * as schema from "../schema.js";
-import { type WhatsappIntegrationRow } from "../schema/messaging.js";
-import type { WhatsappIntegrationConfig, WhatsappIntegrationSecrets } from "@mms/shared";
-import { DEFAULT_WHATSAPP_INTEGRATION } from "@mms/shared";
+import { withTenant } from "@mms/db/context";
+import * as schema from "@mms/db/schema";
+import { type WhatsappIntegrationRow } from "@mms/db/schema/messaging";
+import type { WhatsappIntegrationConfig, WhatsappIntegrationSecrets } from "@mms/contracts";
+import { DEFAULT_WHATSAPP_INTEGRATION } from "@mms/contracts";
 
 export async function getWhatsappIntegrationRow(
   workspaceSubdomain: string,

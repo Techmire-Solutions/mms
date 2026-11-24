@@ -1,7 +1,7 @@
 import type {
   SessionLifecycleState,
   SessionSortField as SharedSessionSortField,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /** Shared lifecycle union (legacy persisted aliases normalize to this on the server). */
 export type SessionStatus = SessionLifecycleState;

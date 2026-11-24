@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import {
   renderFacultyWorkColumnValue,
   type RenderFacultyWorkColumnOptions,

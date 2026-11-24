@@ -1,4 +1,4 @@
-import type { TaskInsert, TaskPriority, TaskRecord, TaskStatus } from "@mms/shared";
+import type { TaskInsert, TaskPriority, TaskRecord, TaskStatus } from "@mms/contracts";
 
 export interface TaskFormPayloadInput {
   title: string;

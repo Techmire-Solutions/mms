@@ -5,7 +5,7 @@ import {
   EXAMINATIONS_MODULE_MANIFEST,
   examBulkWriteSchema,
   examMarksWriteListSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   registerBulkRoutes,
   registerMetricsRoute,

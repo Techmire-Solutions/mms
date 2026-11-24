@@ -5,7 +5,7 @@ import { basename, join } from "node:path";
 import { tmpdir } from "node:os";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { isRtlText } from "@mms/shared";
+import { isRtlText } from "@mms/contracts";
 import { logger } from "../../lib/logger.js";
 
 const execFileAsync = promisify(execFile);

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ValidationError } from "../lib/httpErrors.js";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 
 const mockListFacultyDepartments = vi.fn();
 const mockSaveFacultyDepartment = vi.fn();

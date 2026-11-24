@@ -1,4 +1,4 @@
-import { FACULTY_MODULE_MANIFEST, type Faculty } from "@mms/shared";
+import { FACULTY_MODULE_MANIFEST, type Faculty } from "@mms/contracts";
 import { EntityArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 import { useTranslation } from "@/hooks/useTranslation";
 

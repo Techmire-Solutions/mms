@@ -1,9 +1,5 @@
-import { DEFAULT_CURRENCIES, findIsoCurrency, formatMoney } from "@mms/shared";
-import { useFinanceConfig, useAccountingConfig } from "./useStandardModuleConfig";
-import {
-  useAccountingCurrencySettings,
-  useAccountingPreferencesQuery,
-} from "@/tenant/hooks/collections/accounting";
+import { DEFAULT_CURRENCIES, findIsoCurrency, formatMoney } from "@mms/contracts";
+import { useFinanceConfig } from "./useStandardModuleConfig";
 
 export interface UseCurrencyOptions {
   currencyCode?: string;
@@ -55,32 +51,4 @@ export function useFinanceCurrency() {
   };
 }
 
-/**
- * Custom hook to get active currency metadata and a settings-aware formatting function for accounting.
- *
- * The formatting settings come from the **stored** accounting preferences, not
- * from the module-config stub (`useAccountingConfig()` returns `defaultSettings`
- * with a no-op setter, so every money figure in the module was rendered with the
- * built-in defaults even when the workspace had configured its own currency,
- * symbol, decimal separator or decimal places).
- *
- * The stub is still the fallback so a caller outside a preferences query — or a
- * render before the query resolves — keeps working.
- */
-export function useAccountingCurrency() {
-  const { settings: fallbackSettings } = useAccountingConfig();
-  const prefsQuery = useAccountingPreferencesQuery();
-  const settings = (prefsQuery.data ?? fallbackSettings) as typeof fallbackSettings;
-  // The IAS 21 functional currency is the SSOT for ledger amounts; the legacy
-  // preference only applies until the settings query resolves.
-  const fxSettings = useAccountingCurrencySettings();
-  const { activeCurrency, formatCurrency } = useCurrency({
-    currencyCode: fxSettings.data?.functionalCurrency ?? settings.currency,
-    decimalPlaces: settings.decimalPlaces,
-  });
-  return {
-    activeCurrency,
-    formatCurrency,
-    settings,
-  };
-}
+export { useAccountingCurrency } from "@mms/mod-accounting/frontend/tenant";

@@ -2,9 +2,9 @@
  * @file facultyEmploymentEntityAudit.ts
  * @description Shared modern audit + outbox for employment / employ-designation rows.
  */
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvents, type OutboxBatchEvent } from "../../services/outboxEventService.js";
-import type { AppDb } from "../tenant-context.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvents, type OutboxBatchEvent } from "@mms/be-core/data/outbox";
+import type { AppDb } from "@mms/db/context";
 
 type EmploymentEntityTable = "faculty_employments" | "faculty_employ_designations";
 

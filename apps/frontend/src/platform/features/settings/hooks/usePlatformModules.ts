@@ -3,7 +3,7 @@ import type {
   PlatformModuleCatalogDto,
   PlatformModulesUpdateInput,
   PlatformSettingsDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { assertContractOk } from "@/lib/apiContractError";

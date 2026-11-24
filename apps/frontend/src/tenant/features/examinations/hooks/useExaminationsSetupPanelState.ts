@@ -1,4 +1,4 @@
-import { type ExaminationsSettings } from "@mms/shared";
+import { type ExaminationsSettings } from "@mms/contracts";
 import { useExaminationConfig } from "@/hooks/useStandardModuleConfig";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useExaminationsSetupSaveActions } from "@/tenant/features/examinations/hooks/useExaminationsSetupSaveActions";

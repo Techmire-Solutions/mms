@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AppTranslationKey, Contact } from "@mms/shared";
+import type { AppTranslationKey, Contact } from "@mms/contracts";
 import {
   buildContactsMap,
   formatContactCellValue,

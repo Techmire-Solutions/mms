@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { WidgetCard } from "@/components/app/WidgetCard";
 import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
-import { getOutstandingAmountForInvoice } from "@mms/shared";
+import { getOutstandingAmountForInvoice } from "@mms/contracts";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";

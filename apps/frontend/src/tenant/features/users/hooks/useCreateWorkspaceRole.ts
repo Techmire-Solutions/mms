@@ -8,7 +8,7 @@ import {
   normalizePermissionMap,
   workspaceRoleLabel,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { usePermissions } from "@/tenant/hooks/usePermissions";

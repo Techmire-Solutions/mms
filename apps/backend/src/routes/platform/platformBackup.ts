@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { platformBackupExportBodySchema, platformBackupImportBodySchema } from "@mms/shared";
+import { platformBackupExportBodySchema, platformBackupImportBodySchema } from "@mms/contracts";
 import {
   authenticatePlatform,
   requirePlatformPermission,

@@ -6,7 +6,7 @@ import {
   type FieldDefinition,
   type AttendanceSettings,
   type TabDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleFieldConfigService } from "../lib/createModuleFieldConfigService.js";
 import {
   getAttendanceFieldConfig,

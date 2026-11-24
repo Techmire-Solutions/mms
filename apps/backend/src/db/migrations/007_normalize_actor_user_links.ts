@@ -17,7 +17,7 @@ import {
   type NamedEntity,
   type SessionLike,
   type Workspace,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,

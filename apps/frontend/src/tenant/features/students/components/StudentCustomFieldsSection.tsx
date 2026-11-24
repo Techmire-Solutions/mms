@@ -1,7 +1,7 @@
 import type React from "react";
 import { SlidersHorizontal } from "lucide-react";
-import type { FieldDefinition, Student } from "@mms/shared";
-import { listEnabledCustomStudentFormFields } from "@mms/shared";
+import type { FieldDefinition, Student } from "@mms/contracts";
+import { listEnabledCustomStudentFormFields } from "@mms/contracts";
 import { SectionCard } from "@/components/app/SectionCard";
 import { RegistryCustomFieldsGrid } from "@/components/app/RegistryCustomFieldsGrid";
 import { useTranslation } from "@/hooks/useTranslation";

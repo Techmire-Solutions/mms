@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import { runWithTenant } from "../lib/tenantContext.js";
 
 /**
@@ -33,7 +33,7 @@ vi.mock("../attendance/repository/attendanceLeaveAdapter.js", () => ({
     lockAttendanceStudents: mocks.lockStudents,
   },
 }));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mocks.audit,
 }));
 vi.mock("../sessions/repository/sessionsAcademicRepositoryAdapter.js", () => ({

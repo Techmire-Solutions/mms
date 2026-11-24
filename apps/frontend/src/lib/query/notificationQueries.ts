@@ -1,5 +1,5 @@
 import { queryOptions, type QueryClient } from "@tanstack/react-query";
-import { tenantNotificationListSchema, type TenantNotificationList } from "@mms/shared";
+import { tenantNotificationListSchema, type TenantNotificationList } from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 /** Server-stored notifications (e.g. a freed waitlist seat), filtered by the caller's permissions.

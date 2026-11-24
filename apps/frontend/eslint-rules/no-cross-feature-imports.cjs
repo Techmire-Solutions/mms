@@ -4,7 +4,7 @@
  * 1. Feature → feature: files inside `src/tenant/features/{module}/**` may not
  *    import another feature module's internals (`@/tenant/features/{other}/**`).
  *    Cross-module hooks/data go through `@/tenant/hooks/collections/*` facades;
- *    shared chrome lives in `components/ui` / `lib/` / `@mms/shared`. `reports`
+ *    shared chrome lives in `components/ui` / `lib/` / `@mms/contracts`. `reports`
  *    and `settings` are sanctioned cross-cutting feature targets.
  *
  * 2. Shared layer → feature: files in the non-feature layers (`src/hooks/**`,
@@ -42,9 +42,9 @@ module.exports = {
     },
     messages: {
       crossFeature:
-        "`{{from}}` may not import `@/tenant/features/{{target}}/...` directly (features are isolated). Route hooks/data through `@/tenant/hooks/collections/*`, or extract shared chrome to `components/ui` / logic to `lib/` / `@mms/shared`.",
+        "`{{from}}` may not import `@/tenant/features/{{target}}/...` directly (features are isolated). Route hooks/data through `@/tenant/hooks/collections/*`, or extract shared chrome to `components/ui` / logic to `lib/` / `@mms/contracts`.",
       sharedLayer:
-        "Shared-layer file `{{from}}` may not import `@/tenant/features/{{target}}/...`. Consume the module's `@/tenant/hooks/collections/*` facade, or extract shared logic to `lib/` / `@mms/shared`.",
+        "Shared-layer file `{{from}}` may not import `@/tenant/features/{{target}}/...`. Consume the module's `@/tenant/hooks/collections/*` facade, or extract shared logic to `lib/` / `@mms/contracts`.",
       stale:
         "Remove the resolved feature-internal exception for `{{target}}` from feature-internal-imports-baseline.json.",
     },

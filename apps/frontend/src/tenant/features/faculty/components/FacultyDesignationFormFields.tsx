@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FACULTY_DESIGNATION_NAME_MAX } from "@mms/shared";
+import { FACULTY_DESIGNATION_NAME_MAX } from "@mms/contracts";
 import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { FormSelect, type FormSelectOption } from "@/components/app/FormSelect";

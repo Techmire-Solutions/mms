@@ -38,7 +38,7 @@ metadata:
 
 ## 2. Request Handling & REST Contracts
 
-- **Zod Validation**: Validate incoming params, query, and body via `parseRequest` paired with strict `@mms/shared` Zod schemas.
+- **Zod Validation**: Validate incoming params, query, and body via `parseRequest` paired with strict `@mms/contracts` Zod schemas.
 - **Multi-Tenant Context**: Wrap tenant mutations inside `withTenant(async (tx) => ...)` enforcing transaction-scoped RLS (`SET LOCAL app.current_tenant`).
 - **Bulk PUTs**: Upsert only using `conflictTarget`. Wiping missing rows (`replaceForWorkspace`) on normal save paths is strictly banned.
 - **Standard CRUD Factories**: Use `registerResourceRoutes` and `registerSoftDeletableBulkTrashRoutes` for standard REST entities.

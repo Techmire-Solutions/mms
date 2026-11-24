@@ -5,7 +5,7 @@ import {
   type Workspace,
   type Exam,
   type ExamResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceExamsForWorkspace,

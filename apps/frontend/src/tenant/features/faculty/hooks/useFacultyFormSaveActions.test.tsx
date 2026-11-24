@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { QueryClient } from "@tanstack/react-query";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { FacultyMember } from "@mms/shared";
+import type { FacultyMember } from "@mms/contracts";
 import { ApiError } from "@/lib/apiError";
 import { useFacultyFormSaveActions } from "./useFacultyFormSaveActions";
 

@@ -1,5 +1,5 @@
 import type { Dispatch, JSX, SetStateAction } from "react";
-import type { QuestionStatus, QuestionType } from "@mms/shared";
+import type { QuestionStatus, QuestionType } from "@mms/contracts";
 import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import { FilterChips } from "@/components/app/FilterChips";
 import { WorkTaskToolbar } from "@/components/common/work";

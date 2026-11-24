@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { useLocation } from "react-router-dom";
-import { type BrandingSettings, type AppTranslationKey } from "@mms/shared";
+import { type BrandingSettings, type AppTranslationKey } from "@mms/contracts";
 import { applyAppTheme } from "@/lib/brandingTheme";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import { SETTINGS_PREVIEW_EVENT } from "@/lib/settingsPreview";

@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useContactDetailAttachments } from "@/tenant/features/contacts/hooks/useContactDetailAttachments";
 
 declare global {

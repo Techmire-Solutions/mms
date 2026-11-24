@@ -6,7 +6,7 @@ import {
   type FacultyDepartmentEntity,
   type FacultyDesignationDefinition,
   type FacultyMember,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Field, FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap } from "lucide-react";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";

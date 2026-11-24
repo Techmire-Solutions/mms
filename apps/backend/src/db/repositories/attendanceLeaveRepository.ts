@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, gte, inArray, lte, sql } from "drizzle-orm";
-import { attendanceLeaves } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { attendanceLeaves } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 
 /** Approved leave ranges of a student that overlap [fromOn, toOn]. */
 export async function findOverlappingApprovedLeaves(

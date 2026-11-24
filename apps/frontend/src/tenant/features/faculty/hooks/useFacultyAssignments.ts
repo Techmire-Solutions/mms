@@ -1,5 +1,5 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query";
-import type { FacultyAssignmentEntity } from "@mms/shared";
+import type { FacultyAssignmentEntity } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { apiContractError } from "@/lib/apiContractError";
 import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";

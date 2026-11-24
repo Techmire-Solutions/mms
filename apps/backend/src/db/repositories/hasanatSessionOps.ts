@@ -6,8 +6,8 @@
  */
 
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { sessionClasses, sessions } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { sessionClasses, sessions } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /** Status of the given academic sessions (`null` for missing ids), one query. */
 export async function findSessionStatuses(

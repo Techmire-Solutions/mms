@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { ThemeMode } from "@mms/shared";
+import type { ThemeMode } from "@mms/contracts";
 import { applyDocumentTheme } from "@/lib/brandingThemeCore";
 import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
 import {

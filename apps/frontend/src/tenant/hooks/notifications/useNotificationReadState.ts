@@ -1,4 +1,4 @@
-import { todayISO } from "@mms/shared";
+import { todayISO } from "@mms/contracts";
 import { useUiPreference, useUiStateStore } from "@/lib/useUiStateStore";
 import type { DashboardNotificationItem } from "@/lib/buildDashboardNotifications";
 

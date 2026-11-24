@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { QuestionAttachment, User } from "@mms/shared";
+import type { QuestionAttachment, User } from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { NotFoundError, ValidationError } from "../../lib/httpErrors.js";
 import { broadcastCollection } from "../../lib/livePush.js";

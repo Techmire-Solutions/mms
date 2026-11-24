@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { MESSAGING_MODULE_MANIFEST, buildMessagingHistoryWorkColumnRegistry } from "@mms/shared";
+import { MESSAGING_MODULE_MANIFEST, buildMessagingHistoryWorkColumnRegistry } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

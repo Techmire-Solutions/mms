@@ -18,7 +18,7 @@ const mockLedgerPosting = vi.hoisted(() => ({
   tryPostLateFeeReversalJournal: vi.fn(),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn(),
 }));
 
@@ -47,7 +47,7 @@ const mockWs = vi.hoisted(() => ({
 }));
 
 const mockRecordModernAuditEvent = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mockRecordModernAuditEvent,
 }));
 

@@ -1,4 +1,4 @@
-import type { QuestionBankPreferencesBlob } from "@mms/shared";
+import type { QuestionBankPreferencesBlob } from "@mms/contracts";
 import {
   getQuestionBankModulePreferencesForWorkspace,
   replaceQuestionBankModulePreferencesForWorkspace,

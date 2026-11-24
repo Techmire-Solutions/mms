@@ -45,7 +45,7 @@ if (!assigneesChanged(input)) {
   return base as TaskInsert;   // no `assignees` key
 }
 ```
-but `taskInsertSchema` (`packages/shared/src/tasks/tasksModuleManifest.ts`) declares
+but `taskInsertSchema` (`packages/contracts/src/tasks/tasksModuleManifest.ts`) declares
 `assignees: z.array(…).max(100).optional().default([])`, so `safeParse` on the omitted payload
 re-adds `assignees: []` (verified: `taskInsertSchema.safeParse({title,…})` → `{…, assignees: []}`).
 

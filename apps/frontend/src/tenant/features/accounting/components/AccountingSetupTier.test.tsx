@@ -3,19 +3,19 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AccountingSetupTier } from "./AccountingSetupTier";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
 }));
 
-vi.mock("@/components/app/ModuleTierMotion", () => ({
+vi.mock("@mms/ui/app/ModuleTierMotion", () => ({
   ModuleTierMotion: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="module-tier-motion">{children}</div>
   ),
 }));
 
-vi.mock("@/components/app/SetupReadOnlyMessage", () => ({
+vi.mock("@mms/ui/app/SetupReadOnlyMessage", () => ({
   SetupReadOnlyMessage: ({ title }: { title: string }) => (
     <div data-testid="setup-read-only-message">{title}</div>
   ),

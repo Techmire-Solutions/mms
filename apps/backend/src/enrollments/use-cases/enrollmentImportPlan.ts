@@ -4,9 +4,9 @@ import {
   parseEnrollmentStatus,
   type ImportRowError,
   type Session,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { z } from "zod";
-import type { enrollmentImportRowSchema } from "@mms/shared";
+import type { enrollmentImportRowSchema } from "@mms/contracts";
 import {
   getHydratedSessionForImport,
   lookupImportSessionsBulk,

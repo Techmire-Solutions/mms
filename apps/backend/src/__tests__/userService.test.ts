@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { loadContactsByIds } from "../services/contactService.js";
-import type { Contact } from "@mms/shared";
+import { loadContactsByIds } from "@mms/mod-contacts/backend/services";
+import type { Contact } from "@mms/contracts";
 
 const mockListTenantUsers = vi.fn();
 const mockFindTenantUserById = vi.fn();

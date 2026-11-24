@@ -8,8 +8,8 @@ import type {
   FacultyListQuery,
   FacultyWidgetAggregateResult,
   FacultyWidgetQuery,
-} from "@mms/shared";
-import type { TenantTransaction } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
 
 /**
  * Sole gateway to faculty storage.

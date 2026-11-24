@@ -4,7 +4,7 @@ import {
   CONTACTS_MODULE_MANIFEST,
   STUDENTS_MODULE_MANIFEST,
   type Permission,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import { resolveDashboardMetricSources } from "./dashboardMetricSources";
 

@@ -12,7 +12,7 @@ import {
   registerFinanceCurrencyProvider,
   registerFinanceLocaleProvider,
   registerSettingsProvider,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { syncToServer, type ServerSyncResult } from "@/lib/dbStorageCore";
 import { getObject, readObjectLocal, writeObjectLocal } from "@/lib/dbObjectStorage";
 import { reportClientError } from "@/lib/clientErrorReporting";

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { runWithTenant } from "../lib/tenantContext.js";
-import type { Invoice } from "@mms/shared";
+import type { Invoice } from "@mms/contracts";
 
 const mockRepo = vi.hoisted(() => ({
   saveCreditNote: vi.fn().mockResolvedValue(undefined),
@@ -21,7 +21,7 @@ const mockLivePush = vi.hoisted(() => ({ broadcastTenantUpdate: vi.fn() }));
 vi.mock("../db/repositories/financeCollectRepository.js", () => mockRepo);
 vi.mock("../accounting/ledgerPosting/ledgerPostingService.js", () => mockLedger);
 vi.mock("../finance/use-cases/financeUseCases.js", () => mockFinanceUseCases);
-vi.mock("../services/auditTrailService.js", () => ({ recordModernAuditEvent: mockAudit }));
+vi.mock("@mms/be-core/audit", () => ({ recordModernAuditEvent: mockAudit }));
 vi.mock("../lib/livePush.js", () => mockLivePush);
 
 import { createCreditNote } from "../finance/use-cases/financeCollectUseCases.js";

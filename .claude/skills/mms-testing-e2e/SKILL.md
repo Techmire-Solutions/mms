@@ -20,7 +20,7 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 
 ## 1. Monorepo Testing Tiers & Commands
 
-- **Shared Pure Helpers**: `pnpm --filter @mms/shared test` (Vitest unit tests for schemas, formatters, pure utils).
+- **Shared Pure Helpers**: `pnpm --filter @mms/contracts test` (Vitest unit tests for schemas, formatters, pure utils).
 - **Backend API & RBAC**: `pnpm --filter mms-backend test` (Fastify `inject()` + `vi.hoisted()` in-memory repository mocks).
 - **Database Integration**: `pnpm --filter mms-backend test:db` (Real PostgreSQL suite for RLS, transaction locks, and SQL aggregates).
 - **Frontend Components & Hooks**: `pnpm --filter mms-frontend test` (Vitest + happy-dom for TanStack Query facades, modals, and forms).
@@ -60,7 +60,7 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 
 ## Verification
 
-- Unit/integration: `pnpm --filter @mms/shared test`, `pnpm --filter mms-backend test`, `pnpm --filter mms-frontend test` — all suites green, no skipped files.
+- Unit/integration: `pnpm --filter @mms/contracts test`, `pnpm --filter mms-backend test`, `pnpm --filter mms-frontend test` — all suites green, no skipped files.
 - DB/RLS evidence: `pnpm --filter mms-backend test:db` (real PostgreSQL) or `pnpm ci:local --with-db` when schema/migrations/queries/derived projections changed.
 - Browser: `pnpm test:e2e` (or a single spec path); a11y smoke must report zero serious/critical axe violations. A self-skipping spec must log its reason and is reported as skipped, never as browser evidence.
 - New endpoints: pin forbidden, invalid/malformed, guarded/skipped, and success branches. Changed hooks/components: pin the new contract (lean DTO shape, relative upload URL, post-save unlink), not just render output.

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
-import type { Account, JournalEntry } from "@/lib/data/accountingData";
+import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import { OBLIGATIONS_VOUCHER_QUERY_KEY } from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
 
 export interface ObligationVoucherResult {

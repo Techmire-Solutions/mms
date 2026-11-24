@@ -3,7 +3,7 @@ description: Universal module architecture, page tabs (operational + required Re
 paths:
   - "apps/frontend/src/tenant/features/**"
   - "apps/frontend/src/platform/features/**"
-  - "packages/shared/src/**/*ModuleManifest.ts"
+  - "packages/contracts/src/**/*ModuleManifest.ts"
 ---
 
 # MMS Universal Module Architecture
@@ -16,7 +16,7 @@ paths:
 - **Write:** `FormModal` (+ form primitives) — create/edit/builder only; repeatable rows and catalog selects follow `mms-form-architecture.md` (control decision table, `FormCollectionShell` / `FormListFieldCard` / `FormCardTypeSelect`).
 
 ## 1. Monorepo Manifests & Domain Modeling
-- **Single Manifest SSOT:** Declare a single manifest in `packages/shared/src/*ModuleManifest.ts` defining `moduleId`, entity types, collection/REST keys, default filters, searchable/filterable fields, `setupSubTabs`, and `softDelete` policies.
+- **Single Manifest SSOT:** Declare a single manifest in `packages/contracts/src/*ModuleManifest.ts` defining `moduleId`, entity types, collection/REST keys, default filters, searchable/filterable fields, `setupSubTabs`, and `softDelete` policies.
 - **Zero Hardcoding:** UI controls, column registries, query keys, layout hooks, and export services import directly from manifest constants; hardcoded entity configurations are banned.
 
 ## 2. Page Shell & Tab Layout
@@ -47,7 +47,7 @@ paths:
 - **BullMQ Sandboxed Processing:** Long tasks (CSV import/export, bulk messaging, dedup scans, complex reports) offload to BullMQ worker process (`apps/backend/src/worker/index.ts`). Never run in the API request path.
 - **Live Progress Tray:** Stream execution status via global `BackgroundJobsTray` (`running | completed | failed`, percentage progress, error counts, download artifacts).
 - **Worker Job Contracts:** Jobs require idempotency keys, bounded retries with exponential backoff, execution-time tenant/user verification, and concurrency isolation. Auto-retrying message broadcasts or charging payments is banned.
-- **Data Transfer Standard:** Module CSV imports and exports must use unified `@mms/shared` transfer schemas (`createModuleTransferSchema`, `ModuleImportDialog`, `useModuleCsvImportActions`, `useModuleServerCsvExportActions`). Field Whitelist stripping of system metadata (`id`, `tenantId`, `createdAt`, etc.) and 1:1 bidirectional header symmetry are strictly required.
+- **Data Transfer Standard:** Module CSV imports and exports must use unified `@mms/contracts` transfer schemas (`createModuleTransferSchema`, `ModuleImportDialog`, `useModuleCsvImportActions`, `useModuleServerCsvExportActions`). Field Whitelist stripping of system metadata (`id`, `tenantId`, `createdAt`, etc.) and 1:1 bidirectional header symmetry are strictly required.
 - **Destructive Maintenance Jobs:** Sweeps, purges, and reconcilers are dry-run by default (`--apply` to mutate), honor `DRY_RUN` when scheduled, load the reference set before deleting, enforce an age floor, expose an env kill switch, and run under the leader lease. Deletion without a prior reference read is banned.
 
 ## 6. Security Boundaries & Soft-Delete Standards

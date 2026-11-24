@@ -4,7 +4,7 @@ import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useUiStateStore } from "@/lib/useUiStateStore";
-import type { UserUiState } from "@mms/shared";
+import type { UserUiState } from "@mms/contracts";
 
 /**
  * UI-state cache key carries the `auth` segment so `canPersistQuery` never

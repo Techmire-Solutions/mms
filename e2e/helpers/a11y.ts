@@ -57,7 +57,7 @@ const BLOCKING_IMPACTS: readonly Impact[] = ["serious", "critical"];
  * its bright fill (the test tenant resolved `--primary` to #db9d00, 2.37:1 on
  * white) and the token was unusable as text, on surfaces and on its own chip tint.
  * Fills are now fitted to all three roles; see
- * `packages/shared/src/brandingCssContrast.ts` and the three-role assertions in
+ * `packages/contracts/src/brandingCssContrast.ts` and the three-role assertions in
  * `brandingTheme.test.ts` / `apps/frontend/src/__tests__/designTokens.contrast.test.ts`.
  *
  * `aria-hidden-focus` — removed. This one described itself as "intermittent,

@@ -1,4 +1,4 @@
-import { getPrimaryEmail, getPrimaryPhone, hasWhatsApp, type Contact } from "@mms/shared";
+import { getPrimaryEmail, getPrimaryPhone, hasWhatsApp, type Contact } from "@mms/contracts";
 import { computeModuleMessagingSelectionTargets } from "@/lib/messaging/computeModuleMessagingSelectionTargets";
 
 interface ContactsSelectionTargets {

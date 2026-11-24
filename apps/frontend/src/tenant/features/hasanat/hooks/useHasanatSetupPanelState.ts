@@ -1,4 +1,4 @@
-import { type HasanatSettings } from "@mms/shared";
+import { type HasanatSettings } from "@mms/contracts";
 import { useHasanatConfig } from "@/hooks/useStandardModuleConfig";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useHasanatSetupSaveActions } from "@/tenant/features/hasanat/hooks/useHasanatSetupSaveActions";

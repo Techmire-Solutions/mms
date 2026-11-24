@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { DashboardWidgetDto } from "@mms/shared";
+import type { DashboardWidgetDto } from "@mms/contracts";
 import {
   listDashboardWidgetsByWorkspace,
   upsertDashboardWidgetsForWorkspace,
@@ -24,7 +24,9 @@ const mockTx = {
   delete: vi.fn(),
 };
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn((_subdomain: string, cb: (tx: typeof mockTx) => Promise<unknown>) =>
     cb(mockTx),
   ),

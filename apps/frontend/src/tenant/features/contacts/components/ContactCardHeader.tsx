@@ -1,4 +1,4 @@
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { ContactIdentityMeta } from "@/tenant/features/contacts/components/ContactIdentityMeta";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EntityCard } from "@/components/app/EntityCard";

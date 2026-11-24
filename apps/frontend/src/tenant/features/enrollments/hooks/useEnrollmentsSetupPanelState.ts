@@ -1,4 +1,4 @@
-import { type EnrollmentsSettings } from "@mms/shared";
+import { type EnrollmentsSettings } from "@mms/contracts";
 import { useEnrollmentConfig } from "@/hooks/useStandardModuleConfig";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useEnrollmentsSetupSaveActions } from "@/tenant/features/enrollments/hooks/useEnrollmentsSetupSaveActions";

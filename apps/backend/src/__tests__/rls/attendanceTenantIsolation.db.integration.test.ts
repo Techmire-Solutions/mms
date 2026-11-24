@@ -1,8 +1,8 @@
 import pg from "pg";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "@mms/db/client";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import {
   attendance,
   attendanceAbsenceAlerts,
@@ -14,7 +14,7 @@ import {
   sessions,
   students,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { requireDatabaseConnection } from "../db-integration/dbTestSupport.js";
 
 /**

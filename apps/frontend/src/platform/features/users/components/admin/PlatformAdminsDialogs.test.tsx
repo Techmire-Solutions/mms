@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformAdminsDialogs } from "@/platform/features/users/components/admin/PlatformAdminsDialogs";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 
 vi.mock("@/components/app/DetailDrawerShell", () => ({
   DetailDrawerShell: ({

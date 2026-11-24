@@ -1,5 +1,5 @@
 import type pg from "pg";
-import { getPool } from "../db/dbConnection.js";
+import { getPool } from "@mms/db/client";
 import { logger } from "../lib/logger.js";
 import { processOutboxCdcBatch } from "./processors/outboxCdcProcessor.js";
 import type { SearchIndexAdapter } from "./adapters/searchIndexAdapter.js";

@@ -1,7 +1,7 @@
 import type React from "react";
-import { ErrorState } from "@/components/app/ErrorState";
-import { SubTabBar } from "@/components/app/SubTabBar";
-import { useTranslation } from "@/hooks/useTranslation";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { SubTabBar } from "@mms/ui/app/SubTabBar";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { AccountingDashboard } from "@/tenant/features/accounting/components/AccountingDashboard";
 import { AccountingBankingPanel } from "@/tenant/features/accounting/components/AccountingBankingPanel";
 import { AccountingPeriodEndPanel } from "@/tenant/features/accounting/components/AccountingPeriodEndPanel";
@@ -12,8 +12,8 @@ import type {
   JournalEntriesListPaging,
   JournalEntryFilterState,
 } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
-import { TrialBalance } from "@/tenant/features/accounting/components/TrialBalance";
-import type { Account, AccountingSettings, FiscalYear, JournalEntry } from "@mms/shared";
+import { TrialBalance } from "@mms/mod-accounting/frontend/tenant";
+import type { Account, AccountingSettings, FiscalYear, JournalEntry } from "@mms/contracts";
 import type { JournalEntriesChange } from "../lib/journalEntriesTypes";
 
 type AccountingSubTab = {

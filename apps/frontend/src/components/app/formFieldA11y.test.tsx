@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it } from "vitest";
-import { CheckboxField } from "@shared/ui";
+import { CheckboxField } from "@mms/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
 

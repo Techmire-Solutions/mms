@@ -6,8 +6,8 @@ guard and module-action findings; this round re-verifies those and audits surfac
 reached, then closes the new P1/P2 defects in the same change.
 
 Scope (backend only): `apps/backend/src/routes/tenant/faculty/**`, `apps/backend/src/faculty/**`,
-`apps/backend/src/db/repositories/faculty*`, `apps/backend/src/db/schema/faculty*.ts`,
-`packages/shared/src/{faculty,schemas,contracts}/faculty*`, the faculty manifest / module-action table /
+`apps/backend/src/db/repositories/faculty*`, `packages/db/src/schema/faculty*.ts`,
+`packages/contracts/src/{faculty,schemas,contracts}/faculty*`, the faculty manifest / module-action table /
 registrars it depends on (`lib/registerModuleCsvImportRoutes.ts`, `lib/registerModuleCsvExportRoutes.ts`,
 `lib/registerModuleLookupRoutes.ts`, `lib/moduleRouteActions.ts`), plus the faculty frontend plumbing that
 the export-audit contract change reaches.
@@ -75,7 +75,7 @@ queue-level `<entity>.import` audit row used by students, users, tasks, attendan
 the rest. Department/designation imports (`facultyCatalogIoRoutes.ts`, pre-fix `:77-147`) had the identical
 hole. Batch writes deliberately skip per-row audit (`faculty/use-cases/facultyWriteUseCases.ts:148,171`),
 and their comment claims "CSV import records one queue-level `faculty.import` aggregate row instead" —
-`grep -rn "faculty.import" apps/backend/src packages/shared/src` returned **only those two comments**.
+`grep -rn "faculty.import" apps/backend/src packages/contracts/src` returned **only those two comments**.
 
 **Production path / consequence.** `POST /api/faculty/import` → job → `runFacultyMembersImportJob` →
 `createFaculty/updateFacultyById({ batch })`. Bulk creation/update of people records left zero audit rows:
@@ -264,7 +264,7 @@ facultyCrudRoutes,facultyBulkRouteHandlers,facultyRouteHelpers}.ts`, new `facult
 `faculty/use-cases/{facultyOperationUseCases,facultySoftDeleteGuards,facultySoftDeleteUseCases,
 facultyUseCases}.ts`, `db/repositories/{facultyAssignmentValidation,facultyAssignmentWriteRepository,
 facultyDepartmentValidation,facultyDesignationValidation,facultyHierarchySql}.ts`,
-`lib/registerModuleLookupRoutes.ts`, `packages/shared/src/contracts/faculty.contract.ts`,
+`lib/registerModuleLookupRoutes.ts`, `packages/contracts/src/contracts/faculty.contract.ts`,
 `apps/frontend/src/tenant/features/faculty/hooks/{useFacultyTsrMutations,useFacultyMutations,
 useFacultyPageController,useFacultyWorkTierState,useFacultyExportActions}.ts`.
 

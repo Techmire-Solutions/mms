@@ -10,7 +10,7 @@ import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
-import { todayISO, type TypstFeeReceiptPayload, type ZohoInvoicePayload } from "@mms/shared";
+import { todayISO, type TypstFeeReceiptPayload, type ZohoInvoicePayload } from "@mms/contracts";
 import {
   mapToTypstFeeReceipt,
   mapToZohoInvoice,

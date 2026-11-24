@@ -1,9 +1,9 @@
 import { randomBytes } from "node:crypto";
 import type { FastifyReply } from "fastify";
 import type { JWT } from "@fastify/jwt";
-import { requiresTwoFactor } from "@mms/shared";
+import { requiresTwoFactor } from "@mms/contracts";
 import type { OnboardInput } from "./onboardInput.js";
-import { findPlatformBlockedModule, resolvePlatformProvisionedModuleIds } from "@mms/shared";
+import { findPlatformBlockedModule, resolvePlatformProvisionedModuleIds } from "@mms/contracts";
 import { getPlatformSettings } from "../platform/platformSettingsService.js";
 import {
   findUserByLoginEmailAndWorkspace,
@@ -19,9 +19,9 @@ import {
   assertWorkspaceActive,
   upsertWorkspaceBranding,
 } from "../workspaceService.js";
-import { upsertContactModulePreferences } from "../../db/repositories/contactModulePreferencesRepository.js";
-import type { Workspace } from "@mms/shared";
-import { buildBrandingFromOnboarding } from "@mms/shared";
+import { upsertContactModulePreferences } from "@mms/mod-contacts/backend/repository";
+import type { Workspace } from "@mms/contracts";
+import { buildBrandingFromOnboarding } from "@mms/contracts";
 import {
   getJwtExpiresIn,
   loadGlobalSettings,
@@ -53,7 +53,7 @@ export interface OnboardResult extends AuthResult {
   inviteEmailError?: string;
 }
 
-import { parseSessionTimeoutMinutes } from "@mms/shared";
+import { parseSessionTimeoutMinutes } from "@mms/contracts";
 import { tenantSessionScope } from "../sessionClockService.js";
 import { tenantSessionPolicy } from "../sessionPolicyService.js";
 import { establishSession as establishSessionShared } from "./sessionEstablishment.js";
@@ -179,7 +179,7 @@ export async function onboardUser(input: OnboardInput): Promise<OnboardResult> {
       await seedTenantDefaults();
 
       if (requestedModules.length > 0) {
-        const { SYSTEM_MODULES } = await import("@mms/shared");
+        const { SYSTEM_MODULES } = await import("@mms/contracts");
         const globalSettings = await loadGlobalSettings(workspace.subdomain);
         const enabledModules: Record<string, boolean> = {};
         const inputModulesSet = new Set(requestedModules);

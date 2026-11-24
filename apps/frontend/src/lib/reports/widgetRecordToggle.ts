@@ -8,7 +8,7 @@ import {
   HASANAT_MODULE_MANIFEST,
   SESSIONS_MODULE_MANIFEST,
   STUDENTS_MODULE_MANIFEST,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ATTENDANCE_QUERY_KEY } from "@/tenant/hooks/collections/attendance";
 import { CONTACTS_QUERY_KEY } from "@/tenant/hooks/collections/contacts";
 import { FINANCE_INVOICES_QUERY_KEY } from "@/tenant/hooks/collections/finance";

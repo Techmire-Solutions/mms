@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { CardSkeleton } from "@shared/ui";
+import { CardSkeleton } from "@mms/ui";
 import { PlatformWorkspacesWorkTier } from "@/platform/features/workspaces/components/PlatformWorkspacesWorkTier";
 import { PlatformWorkspacesReportsTier } from "@/platform/features/workspaces/components/PlatformWorkspacesReportsTier";
 import { PlatformWorkspacesSetupTier } from "@/platform/features/workspaces/components/PlatformWorkspacesSetupTier";

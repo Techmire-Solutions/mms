@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/app/SectionCard";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { LlmConfig } from "@mms/shared";
+import type { LlmConfig } from "@mms/contracts";
 import type { SandboxMessage } from "../lib/llmSettingsTypes";
 
 import { cn } from "@/lib/utils";

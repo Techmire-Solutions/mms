@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { initializeDatabaseConnection, pingDatabase } from "../../db/dbConnection.js";
+import { initializeDatabaseConnection, pingDatabase } from "@mms/db/client";
+import { configureContactsKernelAdapters } from "../../modules/contacts/adapters.js";
 
 /**
  * Support for the OPT-IN real-Postgres suite (`vitest.db.config.ts`, run via
@@ -52,6 +53,11 @@ export async function requireDatabaseConnection(): Promise<void> {
         "  src/__tests__/db-integration/** entirely.",
     );
   }
+
+  // DB suites import module use-cases directly (not through `buildApp()`), so they must
+  // bind the contacts module's kernel deps exactly as the app composition root does;
+  // otherwise every contact write throws "Contacts kernel deps are not configured".
+  configureContactsKernelAdapters();
 }
 
 /** Random per-run tenant subdomain so a reused database cannot collide with stale rows. */

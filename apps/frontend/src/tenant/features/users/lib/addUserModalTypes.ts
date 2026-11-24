@@ -1,5 +1,5 @@
 import type React from "react";
-import type { UserStatus } from "@mms/shared";
+import type { UserStatus } from "@mms/contracts";
 
 export type AddUserFormValue = string | number | boolean | null | undefined;
 

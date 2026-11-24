@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { DateText } from "@/components/app/DateText";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

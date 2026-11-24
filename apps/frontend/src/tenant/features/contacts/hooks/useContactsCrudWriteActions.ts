@@ -1,4 +1,4 @@
-import type { Contact, AppTranslationKey } from "@mms/shared";
+import type { Contact, AppTranslationKey } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";
 import { reportClientError } from "@/lib/clientErrorReporting";

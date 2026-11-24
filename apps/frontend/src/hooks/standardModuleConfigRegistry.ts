@@ -45,7 +45,7 @@ import {
   type FacultySettings,
   type UsersSettings,
   type QuestionBankSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
 
 /** Per-module defaults, field defs, and normalisers backing the standard config hooks. */

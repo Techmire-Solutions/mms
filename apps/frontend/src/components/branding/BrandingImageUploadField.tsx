@@ -4,7 +4,7 @@ import {
   IMAGE_UPLOAD_MAX_INPUT_BYTES,
   type ImageUploadPurpose,
   type LogoBrandColors,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { prepareImageForUpload } from "@/lib/imageOptimization";
 import { useTranslation } from "@/hooks/useTranslation";
 import { extractLogoBrandColors } from "@/lib/ui/extractLogoBrandColors";

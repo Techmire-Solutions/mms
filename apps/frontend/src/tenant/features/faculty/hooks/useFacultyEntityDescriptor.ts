@@ -1,4 +1,4 @@
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import type { EntityDescriptor, FieldBadgeConfig } from "@/components/common/entityRegistryTypes";
 import { facultyEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";

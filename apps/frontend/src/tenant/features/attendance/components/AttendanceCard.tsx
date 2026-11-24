@@ -1,5 +1,5 @@
 import type React from "react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { TimePicker } from "@/components/app/TimePicker";
 import { FORM_ERROR } from "@/components/ui/formStyles";
 import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";

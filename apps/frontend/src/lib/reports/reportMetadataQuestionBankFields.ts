@@ -1,4 +1,4 @@
-import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/shared";
+import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/contracts";
 
 export const QUESTION_BANK_METADATA_FIELDS = {
   questions: {

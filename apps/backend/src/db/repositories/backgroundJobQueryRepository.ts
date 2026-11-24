@@ -1,7 +1,7 @@
 import { and, eq, gte, or, sql } from "drizzle-orm";
-import type { BackgroundJobRecord, BackgroundJobStatus } from "@mms/shared";
-import { withTenant } from "../tenant-context.js";
-import { backgroundJobs } from "../schema.js";
+import type { BackgroundJobRecord, BackgroundJobStatus } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
+import { backgroundJobs } from "@mms/db/schema";
 import { resolveEffectiveTenantUserId } from "./backgroundJobCleanupRepository.js";
 
 /**

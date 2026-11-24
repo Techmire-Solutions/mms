@@ -1,4 +1,4 @@
-import * as React from "react";
+import type * as React from "react";
 
 const TOAST_LIMIT = 5;
 const TOAST_REMOVE_DELAY = 1000;

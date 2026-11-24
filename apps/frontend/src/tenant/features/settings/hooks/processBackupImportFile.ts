@@ -4,7 +4,7 @@ import {
   parseEncryptedBackupFile,
   type AppTranslationKey,
   type PendingDecrypt,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import type { TranslateFn } from "./backupRestoreImportTypes";
 import { compareBackupSubdomains } from "./backupRestoreUtils";

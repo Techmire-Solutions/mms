@@ -1,5 +1,5 @@
-import type { TaskInsert, TaskStatus, TaskUpdate } from "@mms/shared";
-import { withTenant } from "../db/tenant-context.js";
+import type { TaskInsert, TaskStatus, TaskUpdate } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { lockFacultyHierarchy } from "../db/repositories/facultyAssignmentValidation.js";
 import {
   bulkUpdateTaskStatus,

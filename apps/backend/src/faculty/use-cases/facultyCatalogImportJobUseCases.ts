@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { FacultyDepartmentImportBody, FacultyDesignationImportBody } from "@mms/shared";
+import type { FacultyDepartmentImportBody, FacultyDesignationImportBody } from "@mms/contracts";
 import {
   listFacultyDepartments,
   saveFacultyDepartment,
@@ -8,7 +8,7 @@ import {
   listFacultyDesignations,
   saveFacultyDesignation,
 } from "../../db/repositories/facultyDesignationRepository.js";
-import { reconcileDesignationContacts } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileDesignationContacts } from "@mms/mod-contacts/backend/use-cases";
 import { logger } from "../../lib/logger.js";
 
 export interface CatalogImportJobContext {

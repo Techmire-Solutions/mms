@@ -60,11 +60,11 @@ vi.mock("../students/use-cases/studentPreferencesService.js", () => ({
   loadStudentModulePreferences: vi.fn().mockResolvedValue({}),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
   sanitizeAuditState: (v: unknown) => v,
 }));

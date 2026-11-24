@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
-import { isQueryFlagTrue, type User } from "@mms/shared";
-import { examinationContract } from "@mms/shared";
+import { isQueryFlagTrue, type User } from "@mms/contracts";
+import { examinationContract } from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
@@ -9,7 +9,7 @@ import {
   canDeleteCollection,
   canWriteCollection,
 } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { examinationsUseCases } from "../../../examinations/use-cases/examinationsUseCases.js";
 import { handleContractError } from "../../../lib/contractError.js";
 import { gateHandlers } from "./examinationGateHandlers.js";

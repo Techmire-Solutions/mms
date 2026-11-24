@@ -4,8 +4,8 @@ import type {
   FinanceListQuery,
   FinanceInvoicesListPageResult,
   FinancePaymentsListPageResult,
-} from "@mms/shared";
-import { normalizeFinanceReportComparisonQuery } from "@mms/shared";
+} from "@mms/contracts";
+import { normalizeFinanceReportComparisonQuery } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import {
   useFinanceContractInvoices,

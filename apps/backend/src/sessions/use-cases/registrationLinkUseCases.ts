@@ -2,7 +2,7 @@ import {
   registrationLinkWriteSchema,
   type RegistrationLink,
   type RegistrationLinkWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { sessionsAcademicRepository as repo } from "../repository/sessionsAcademicRepositoryAdapter.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";

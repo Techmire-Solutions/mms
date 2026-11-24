@@ -1,9 +1,9 @@
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { enrollments } from "../schema.js";
-import type { DbClient } from "../dbConnection.js";
+import { enrollments } from "@mms/db/schema";
+import type { DbClient } from "@mms/db/client";
 
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
 /**
  * Soft-deletes active enrollments for the given students and marks them as
  * cascade-deleted so restore can reverse only those rows.

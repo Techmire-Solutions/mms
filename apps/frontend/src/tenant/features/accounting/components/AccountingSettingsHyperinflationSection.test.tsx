@@ -1,10 +1,10 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Account } from "@mms/shared";
+import type { Account } from "@mms/contracts";
 import { AccountingSettingsHyperinflationSection } from "./AccountingSettingsHyperinflationSection";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 

@@ -4,7 +4,7 @@ import type {
   MessagingEmailDispatchDto,
   MessagingSmsDispatchDto,
   MessagingWhatsAppDispatchDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 import { invalidateMessagingQueries } from "@/hooks/useMessaging";
 import { useQueryClient } from "@tanstack/react-query";

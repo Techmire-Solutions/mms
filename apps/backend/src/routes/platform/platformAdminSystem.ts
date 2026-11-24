@@ -3,7 +3,7 @@ import {
   type MigrateAndRestartAccepted,
   migrateAndRestartSchema,
   platformActivityLogsQuerySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   authenticatePlatform,
   requirePlatformPermission,

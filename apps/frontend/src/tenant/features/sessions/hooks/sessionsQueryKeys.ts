@@ -1,4 +1,4 @@
-import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST } from "@mms/contracts";
 
 export {
   SESSIONS_QUERY_KEY,

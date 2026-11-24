@@ -6,7 +6,7 @@ import {
   type UseFacultyWorkTierActionsProps,
   type UseFacultyWorkTierActionsReturn,
 } from "./useFacultyWorkTierActions";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

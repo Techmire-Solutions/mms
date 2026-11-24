@@ -1,4 +1,4 @@
-import { DEFAULT_BRANDING_SETTINGS, mergeBrandingSettings } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, mergeBrandingSettings } from "@mms/contracts";
 import { getObject } from "@/lib/db";
 import type { BrandingInfo } from "./invoiceTemplateTypes";
 

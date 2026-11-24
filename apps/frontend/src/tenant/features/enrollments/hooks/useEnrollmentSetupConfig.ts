@@ -5,7 +5,7 @@ import {
   normalizeEnrollmentsSettings,
   type EnrollmentModulePreferences,
   type EnrollmentsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchEnrollmentPreferences,

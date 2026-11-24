@@ -1,5 +1,5 @@
 import type { ObligationsRepository } from "../repository/obligationsRepository.js";
-import type { ObligationCollection } from "@mms/shared";
+import type { ObligationCollection } from "@mms/contracts";
 import { assertReceiptHasWakala } from "../domain/obligationWriteGuards.js";
 import { ValidationError } from "../../lib/httpErrors.js";
 

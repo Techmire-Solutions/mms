@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { measureColumnAutoFitWidth } from "./measureColumnAutoFitWidth";
-import { MODULE_COLUMN_WIDTH_MIN } from "@mms/shared";
+import { MODULE_COLUMN_WIDTH_MIN } from "@mms/contracts";
 
 describe("measureColumnAutoFitWidth", () => {
   it("returns minWidth when thElement is null", () => {

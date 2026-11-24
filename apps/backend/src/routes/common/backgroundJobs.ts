@@ -1,10 +1,10 @@
 import { Readable } from "node:stream";
 import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 import { sendDatabaseError, sendNotFound } from "../../lib/httpErrors.js";
-import { resourceIdParamsSchema, backgroundJobUpsertSchema } from "@mms/shared";
+import { resourceIdParamsSchema, backgroundJobUpsertSchema } from "@mms/contracts";
 import {
   clearFinishedUserBackgroundJobs,
   dismissUserBackgroundJob,

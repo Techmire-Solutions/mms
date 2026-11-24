@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useCallback } from "react";
-import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/contracts";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";

@@ -1,12 +1,12 @@
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
-import { findFiscalYearForDate, type FiscalYear, type JournalEntry } from "@mms/shared";
+import { findFiscalYearForDate, type FiscalYear, type JournalEntry } from "@mms/contracts";
 import {
   bulkSaveEntries,
   findEntryIdBySource,
   lockPostableAccounts,
   saveEntry,
 } from "../../db/repositories/accountingRepository.js";
-import { recordJournalEntryAudit } from "../use-cases/accountingEntryAudit.js";
+import { recordJournalEntryAudit } from "@mms/mod-accounting/backend/use-cases";
 import { findClosedPostingPeriodForDate } from "../../db/repositories/accountingPostingPeriodsRepository.js";
 import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
 import {
@@ -15,9 +15,9 @@ import {
   assertPostingPeriodOpen,
   mapJournalEntryUniqueError,
   prepareJournalEntryForPersist,
-} from "../use-cases/accountingLedgerGuards.js";
+} from "@mms/mod-accounting/backend/use-cases";
 import { isUniqueViolation, uniqueViolationConstraint } from "../../lib/pgErrors.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { lockFiscalYearsForEntries } from "./fiscalYearPostingLock.js";
 
 /**

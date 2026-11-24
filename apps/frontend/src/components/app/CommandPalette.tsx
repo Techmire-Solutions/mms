@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveNavLabel, type ResolvedIndustryTerminology } from "@/lib/config/navLabels";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { cn } from "@/lib/utils";
 import { COMMAND_ITEMS, type CommandItem } from "@/components/app/commandPaletteItems";
 import { CommandPaletteModal } from "@/components/app/CommandPaletteModal";

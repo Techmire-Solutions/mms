@@ -1,35 +1,21 @@
-import { ensureFacultyContactIndex } from "./migrations/facultyContactIndex.js";
-import { ensureEnrollmentIntegrityIndexes } from "./migrations/enrollmentIntegrityIndexes.js";
-import { ensureAttendanceAnalyticsIndexes } from "./migrations/attendanceAnalyticsIndexes.js";
-import { ensureFinanceConcurrentIndexes } from "./migrations/financeConcurrentIndexes.js";
-import { prepareContactSystemTagsPreMigration } from "./contactSystemTagsPreMigration.js";
-import { dataMigrationsToRun } from "./dataMigrationRegistry.js";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
-import pg from "pg";
 import type { PoolClient } from "pg";
-import { resolveBackendRoot } from "../config/loadEnv.js";
-import { loadServerConfig } from "../config/serverConfig.js";
-import { purgeExpiredAuthArtifacts } from "../services/auth/authArtifactService.js";
-import { initPlatformSettings } from "../services/platform/platformSettingsService.js";
-import { initPlatformBranding } from "../services/platform/platformBrandingService.js";
-import { ensurePlatformSuperUserFromEnv } from "../services/platform/platformUserService.js";
 import {
+  assertRlsRuntimeRole,
   getPool,
   getRootDb,
   initializeDatabaseConnection,
   runInGlobalTransaction,
-} from "./dbConnection.js";
-import { runWithGlobalDocumentStore } from "./documentStoreScope.js";
-import { runWithGlobalTenantScope } from "./tenantScopeGuard.js";
-import { assertRlsRuntimeRole } from "./rlsRoleGuard.js";
-import { saveCollection, saveObject } from "./documentStore.js";
-import { getMinimalCollectionsForSeed, getMinimalObjects } from "./minimalSeeds.js";
-import * as schema from "./schema.js";
+} from "@mms/db/client";
+import { runWithGlobalTenantScope } from "@mms/db/context";
+import { applyDrizzleMigrations, resolveMigrationsFolder } from "@mms/db/migrations";
+import * as schema from "@mms/db/schema";
+import { getMinimalCollectionsForSeed, getMinimalObjects } from "@mms/db/seed";
+import type { PlatformBootServices } from "../bootstrap/bootServices.js";
 import { logger } from "../lib/logger.js";
+import { saveCollection, saveObject } from "./documentStore.js";
+import { runWithGlobalDocumentStore } from "./documentStoreScope.js";
+import { dataMigrationsToRun } from "./migrations/dataMigrationRegistry.js";
 
 const DATA_MIGRATION_LOCK_KEY = 2145836401;
 /**
@@ -39,60 +25,13 @@ const DATA_MIGRATION_LOCK_KEY = 2145836401;
  */
 const BOOT_INIT_LOCK_KEY = 2145836403;
 
-/** Resolve Drizzle SQL migrations folder (src in node --strip-types, dist in production). */
-export function resolveMigrationsFolder(): string {
-  const backendRoot = resolveBackendRoot();
-  const srcMigrations = join(backendRoot, "src/db/migrations_drizzle");
-  const distMigrations = join(backendRoot, "dist/db/migrations_drizzle");
-  if (process.env.NODE_ENV === "production" && existsSync(distMigrations)) {
-    return distMigrations;
-  }
-  return existsSync(srcMigrations) ? srcMigrations : distMigrations;
-}
-
 /**
- * Apply pending Drizzle DDL migrations only (no data migrations / seed).
- * Safe to call repeatedly — already-applied migrations are no-ops.
- * Schema conflicts fail closed (no “already exists” swallow).
- *
- * Uses a disposable `pg.Client` (never pool.connect/release) so session-scoped
- * `app.rls_bypass=on` cannot poison the shared pool under live traffic.
+ * The Drizzle DDL runner and migrations-folder resolution live in `@mms/db`
+ * (`@mms/db/migrations`). They stay re-exported here for the app-level migration
+ * script and the boot-wiring test; real-Postgres suites import the package entry
+ * point directly (`@mms/db/migrations`).
  */
-export async function applyDrizzleMigrations(): Promise<{ migrationsFolder: string }> {
-  initializeDatabaseConnection();
-  const migrationsFolder = resolveMigrationsFolder();
-  const { databaseUrl } = loadServerConfig();
-  const migrateClient = new pg.Client({ connectionString: databaseUrl });
-  await migrateClient.connect();
-
-  await using _clientDisposer = {
-    [Symbol.asyncDispose]: async () => {
-      await migrateClient.end().catch(() => undefined);
-    },
-  };
-
-  await migrateClient.query(`SELECT set_config('app.rls_bypass', 'on', false)`);
-  // Bound every migration's lock wait centrally: applied migrations are
-  // forward-only and some predate the lock_timeout preamble.
-  await migrateClient.query(`SET lock_timeout = '2s'`);
-  await prepareContactSystemTagsPreMigration(migrateClient);
-  const migrateDb = drizzle(migrateClient, { schema });
-  await migrate(migrateDb, { migrationsFolder });
-  await migrateClient.query(`SET lock_timeout = 0`);
-  await ensureFacultyContactIndex(migrateClient);
-  // Enrollments' unique/seat indexes are CONCURRENTLY-only (populated table) and were
-  // previously manual scripts; provisioning them here is what makes a fresh database
-  // and every existing deployment actually enforce them.
-  await ensureEnrollmentIntegrityIndexes(migrateClient);
-  // Attendance's analytics covering indexes are CONCURRENTLY-only for the same reason (populated
-  // table, migrator transaction); provisioning them here is what makes them exist at all.
-  await ensureAttendanceAnalyticsIndexes(migrateClient);
-  // Finance's directory indexes are same reason: finance_invoices/finance_payments are large tables,
-  // so their indexes are CONCURRENTLY-only and provisioned here (0248 audit).
-  await ensureFinanceConcurrentIndexes(migrateClient);
-
-  return { migrationsFolder };
-}
+export { applyDrizzleMigrations, resolveMigrationsFolder };
 
 let initDbPromise: Promise<void> | null = null;
 
@@ -100,10 +39,20 @@ export function resetDbInitStateForTesting(): void {
   initDbPromise = null;
 }
 
-export function initDb(options?: { force?: boolean }): Promise<void> {
-  if (initDbPromise && !options?.force) {
+/**
+ * Boot pipeline orchestrator. `services` is required so a caller can never
+ * silently skip platform seeding: the app passes `createPlatformBootServices()`
+ * via `bootstrap/initializeDatabase.ts`, and the boot test passes stubs.
+ * See docs/monorepo-migration-plan.md §8 P1a (U3).
+ */
+export function initDb(options: {
+  services: PlatformBootServices;
+  force?: boolean;
+}): Promise<void> {
+  if (initDbPromise && !options.force) {
     return initDbPromise;
   }
+  const { services } = options;
 
   initDbPromise = (async () => {
     // Every PM2 cluster instance runs initDb() at boot. Hold one session advisory
@@ -128,20 +77,21 @@ export function initDb(options?: { force?: boolean }): Promise<void> {
 
       // Keep the rolling monthly audit partitions ahead of the clock so the
       // DEFAULT partition stays empty and retention can still detach by month.
-      const { ensureAuditTrailPartitions } = await import("../services/auditPartitionService.js");
-      await ensureAuditTrailPartitions().catch((error: unknown) => {
-        // Never block boot on partition provisioning: writes still land in the
-        // DEFAULT partition, so this degrades retention rather than availability.
-        logger.error({ err: error }, "Audit partition provisioning failed at boot");
-      });
+      if (services.ensureAuditTrailPartitions) {
+        await services.ensureAuditTrailPartitions().catch((error: unknown) => {
+          // Never block boot on partition provisioning: writes still land in the
+          // DEFAULT partition, so this degrades retention rather than availability.
+          logger.error({ err: error }, "Audit partition provisioning failed at boot");
+        });
+      }
 
-      await purgeExpiredAuthArtifacts();
-      await ensurePlatformSuperUserFromEnv();
-      const { syncPlatformSuperUserToTenants } =
-        await import("../services/platform/platformSuperUserTenantSyncService.js");
-      await syncPlatformSuperUserToTenants();
-      await initPlatformSettings();
-      await initPlatformBranding();
+      // Platform bootstrap, in the order the pipeline has always used. Hooks are
+      // optional so a script can opt out explicitly (NO_PLATFORM_BOOT_SERVICES).
+      await services.purgeExpiredAuthArtifacts?.();
+      await services.ensurePlatformSuperUser?.();
+      await services.syncPlatformSuperUserToTenants?.();
+      await services.initPlatformSettings?.();
+      await services.initPlatformBranding?.();
 
       const results = await getRootDb()
         .select({ count: sql<number>`count(*)` })

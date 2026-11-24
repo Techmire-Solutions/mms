@@ -3,7 +3,7 @@ import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import { todayISOInTimeZone, ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { todayISOInTimeZone, ATTENDANCE_MODULE_MANIFEST } from "@mms/contracts";
 import { useAttendanceRoster } from "@/tenant/features/attendance/hooks/useAttendance";
 import { useAttendancePageActions } from "@/tenant/features/attendance/hooks/useAttendancePageActions";
 import { useAttendanceColumnLayout } from "@/tenant/features/attendance/hooks/useAttendanceColumnLayout";

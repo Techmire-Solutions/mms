@@ -2,13 +2,13 @@ import React from "react";
 import {
   SessionTimeoutModal as SharedSessionTimeoutModal,
   type SessionTimeoutModalProps as SharedSessionTimeoutModalProps,
-} from "@shared/ui";
+} from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export type SessionTimeoutModalProps = SharedSessionTimeoutModalProps;
 
 /**
- * Session timeout modal facade — adapts @shared/ui SessionTimeoutModal
+ * Session timeout modal facade — adapts @mms/ui SessionTimeoutModal
  * with localized copy from useTranslation().
  */
 export function SessionTimeoutModal({

@@ -1,6 +1,6 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { attendanceAbsenceAlerts } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { attendanceAbsenceAlerts } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 
 /**
  * Notification claims for chronic-absence alerts.

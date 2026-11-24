@@ -1,4 +1,4 @@
-import { getPrimaryPhone, hasWhatsApp, type Student } from "@mms/shared";
+import { getPrimaryPhone, hasWhatsApp, type Student } from "@mms/contracts";
 import { computeModuleMessagingSelectionTargets } from "@/lib/messaging/computeModuleMessagingSelectionTargets";
 
 export interface StudentsSelectionTargets {

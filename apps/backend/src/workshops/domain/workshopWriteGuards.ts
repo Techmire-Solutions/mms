@@ -7,7 +7,7 @@ import {
   workshopLastDay,
   type WorkshopDateInput,
   type WorkshopTransitionContext,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ConflictError, HttpDomainError, NotFoundError } from "../../lib/httpErrors.js";
 
 /**

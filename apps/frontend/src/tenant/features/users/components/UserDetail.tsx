@@ -5,7 +5,7 @@ import {
   formatDate,
   resolveWorkspaceRole,
   type SystemUser,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";

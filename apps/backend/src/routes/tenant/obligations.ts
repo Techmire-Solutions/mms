@@ -11,7 +11,7 @@ import {
   obligationCollectionListSchema,
   wakalaAggregateBodySchema,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   registerBulkRoutes,
   registerMetricsRoute,

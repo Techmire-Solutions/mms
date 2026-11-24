@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../app.js";
-import { MIGRATE_AND_RESTART_CONFIRM } from "@mms/shared";
+import { MIGRATE_AND_RESTART_CONFIRM } from "@mms/contracts";
 
 const scheduleMigrateAndRestart = vi.fn().mockReturnValue(true);
 const isRemoteMigrateRestartEnabled = vi.fn().mockReturnValue(true);

@@ -1,11 +1,15 @@
 import { and, asc, eq, isNotNull, isNull, ne, sql } from "drizzle-orm";
-import type { AcademicCatalogItem, AcademicCatalogKind, AcademicCatalogStatus } from "@mms/shared";
-import { programs, sessionCategories, subjects, type AcademicCatalogTable } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
-import { ConflictError } from "../../lib/httpErrors.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import type {
+  AcademicCatalogItem,
+  AcademicCatalogKind,
+  AcademicCatalogStatus,
+} from "@mms/contracts";
+import { programs, sessionCategories, subjects, type AcademicCatalogTable } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
+import { ConflictError } from "@mms/be-core/http/errors";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
 import { countAcademicCatalogReferencesTx } from "./academicCatalogReferences.js";
 
 export const ACADEMIC_CATALOG_TABLES: Record<

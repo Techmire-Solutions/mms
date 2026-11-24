@@ -4,7 +4,7 @@ import {
   handleImplicitRestore,
   type FacultyWriteGuards,
 } from "../faculty/use-cases/facultyWriteHelpers.js";
-import type { FacultyRecord } from "@mms/shared";
+import type { FacultyRecord } from "@mms/contracts";
 
 function record(overrides: Partial<FacultyRecord> = {}): FacultyRecord {
   return {

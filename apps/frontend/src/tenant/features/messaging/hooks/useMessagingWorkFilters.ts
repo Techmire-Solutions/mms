@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import type { SetURLSearchParams } from "react-router-dom";
-import { isValidIsoDate, type MessagingStatusFilter } from "@mms/shared";
+import { isValidIsoDate, type MessagingStatusFilter } from "@mms/contracts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { messagingExportEndDateBound } from "../lib/messagingReportsExport";
 import { useMessagingWorkTierUrlSync } from "./useMessagingWorkTierUrlSync";

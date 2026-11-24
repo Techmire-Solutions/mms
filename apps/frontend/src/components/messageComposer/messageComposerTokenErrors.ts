@@ -1,4 +1,4 @@
-import { findUnknownPersonalizationTokens } from "@mms/shared";
+import { findUnknownPersonalizationTokens } from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { findUnknownTokens } from "./messageComposerDispatchService";

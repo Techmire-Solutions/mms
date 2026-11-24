@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 
 const mockRecordModernAuditEvent = vi.fn().mockResolvedValue({
   hashPrevious: "0".repeat(64),
@@ -7,7 +7,7 @@ const mockRecordModernAuditEvent = vi.fn().mockResolvedValue({
   canonicalPayload: "{}",
 });
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => mockRecordModernAuditEvent(...args),
   mapActionStringToAuditType: (action: string) => {
     const lower = action.toLowerCase();

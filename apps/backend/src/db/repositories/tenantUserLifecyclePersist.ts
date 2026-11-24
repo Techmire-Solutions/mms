@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { withTenant } from "../tenant-context.js";
-import { tenantUsers } from "../schema.js";
+import { withTenant } from "@mms/db/context";
+import { tenantUsers } from "@mms/db/schema";
 import {
   findTenantUserRowById,
   findTenantUserRowByIdGlobal,

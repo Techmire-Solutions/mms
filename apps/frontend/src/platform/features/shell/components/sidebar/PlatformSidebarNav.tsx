@@ -5,7 +5,7 @@ import {
   type PlatformNavItem,
 } from "@/platform/features/shell/lib/platformNav";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { isNavPathActive } from "@/lib/config/routes";
 import { AppSidebarNav, type AppNavSection } from "@/components/common/AppSidebarNav";
 

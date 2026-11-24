@@ -1,6 +1,6 @@
 import React from "react";
 import { Brain } from "lucide-react";
-import { LLM_PROVIDERS_META } from "@mms/shared";
+import { LLM_PROVIDERS_META } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import { SettingsPanel } from "@/components/app/SettingsShell";
@@ -8,8 +8,8 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { Alert } from "@/components/app/Alert";
 import { FormSelect } from "@/components/app/FormSelect";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { Label } from "@shared/ui";
-import { CardSkeleton } from "@shared/ui";
+import { Label } from "@mms/ui";
+import { CardSkeleton } from "@mms/ui";
 import { LlmConfigListSection } from "@/components/llm/LlmConfigListSection";
 import { LlmConfigModal } from "@/components/llm/LlmConfigModal";
 import { usePlatformSettingsQuery } from "@/platform/features/settings/hooks/usePlatformSettings";

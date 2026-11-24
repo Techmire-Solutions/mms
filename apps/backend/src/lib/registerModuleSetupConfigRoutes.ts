@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodType, z } from "zod";
-import type { Permission, User } from "@mms/shared";
-import {} from "@mms/shared";
+import type { Permission, User } from "@mms/contracts";
+import {} from "@mms/contracts";
 import { sendDatabaseError, sendForbidden } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
 import { getRequestTenant } from "./tenantContext.js";

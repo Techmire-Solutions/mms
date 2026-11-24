@@ -1,4 +1,4 @@
-import type { AppTranslationKey, ContactDuplicateReasonKey } from "@mms/shared";
+import type { AppTranslationKey, ContactDuplicateReasonKey } from "@mms/contracts";
 
 export const DUPLICATE_REASON_I18N: Record<ContactDuplicateReasonKey, AppTranslationKey> = {
   cnic: "contacts.duplicates.reason.cnic",

@@ -9,7 +9,7 @@ import {
   type QuestionBankTest,
   getInitials,
   calcPercentage as pct,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { Button } from "@/components/ui/button";

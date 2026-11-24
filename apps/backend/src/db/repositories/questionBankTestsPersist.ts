@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { QuestionBankTest } from "@mms/shared";
-import { tests, testQuestions, testSections, testSectionQuestions } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import type { QuestionBankTest } from "@mms/contracts";
+import { tests, testQuestions, testSections, testSectionQuestions } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import { syncTestChildren } from "./questionBankTestsSync.js";
 import { assertPaperCompositionsEditable } from "./questionBankPaperCompositionGuard.js";
 

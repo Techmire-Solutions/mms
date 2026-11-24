@@ -5,12 +5,12 @@ import {
   DEFAULT_ATTENDANCE_SETTINGS as DEFAULT_ATT_SETTINGS,
   DEFAULT_ATTENDANCE_STATUSES,
   toTitleCase,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export type { AttendanceSettings, AttendanceRecord, AttendanceStatus };
 export { DEFAULT_ATT_SETTINGS };
 /**
- * The status display model is **shared** (`packages/shared/attendanceLookupTypes`). This module used
+ * The status display model is **shared** (`packages/contracts/attendanceLookupTypes`). This module used
  * to re-declare an identical array plus its own `AttendanceStatus` type and a positional `STATUS_MAP`
  * — three ways for the same mapping to drift from the enum.
  */

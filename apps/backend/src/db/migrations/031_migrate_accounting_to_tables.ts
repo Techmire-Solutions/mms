@@ -6,7 +6,7 @@ import {
   type Account,
   type JournalEntry,
   type FiscalYear,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceAccountsForWorkspace,

@@ -3,7 +3,7 @@ import { Users, Activity, Settings, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { PlatformAddAdminForm } from "@/platform/features/users/PlatformAddAdminForm";
 import { usePlatformAdmins } from "@/platform/features/users/hooks/usePlatformAdmins";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";

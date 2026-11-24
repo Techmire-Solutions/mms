@@ -10,7 +10,7 @@ import {
   type FacultyExportColumn,
   type FacultyListQuery,
   type FacultySettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createModuleExportService,
   type ModuleExportQueryInput,

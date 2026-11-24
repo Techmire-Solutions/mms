@@ -5,7 +5,7 @@ import {
   imageExtensionForMime,
   type ImageUploadPurpose,
   type ImageUploadResponse,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   blobHasImageSignature,
   canvasToOptimizedBlob,

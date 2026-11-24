@@ -37,7 +37,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import type { AccessControlledModuleId, AppTranslationKey, ModuleAction } from "@mms/shared";
+import type { AccessControlledModuleId, AppTranslationKey, ModuleAction } from "@mms/contracts";
 import { TENANT_PATHS, type TenantPathId } from "@/lib/routing/tenantPaths";
 
 export { TENANT_PATHS, type TenantPathId };

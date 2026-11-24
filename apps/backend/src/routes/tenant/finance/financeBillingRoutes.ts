@@ -5,7 +5,7 @@ import {
   generateInvoicesBodySchema,
   resourceIdParamsSchema,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   canManageFinance,
   canReadCollection,
@@ -17,7 +17,7 @@ import {
   sendDatabaseError,
 } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import {
   loadFeeStructures,
   removeFeeStructure,

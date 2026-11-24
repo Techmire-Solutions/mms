@@ -6,7 +6,7 @@ import {
   WORKSPACES_COLLECTION,
   type ContactLike,
   type Workspace,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,

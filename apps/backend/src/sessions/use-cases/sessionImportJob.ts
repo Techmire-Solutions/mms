@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { parseSessionStatus, type SessionTransferEntity } from "@mms/shared";
+import { parseSessionStatus, type SessionTransferEntity } from "@mms/contracts";
 import { registerModuleCsvImportJobRunner } from "../../lib/registerModuleCsvImportJobRunner.js";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { runWithTenant } from "../../lib/tenantContext.js";

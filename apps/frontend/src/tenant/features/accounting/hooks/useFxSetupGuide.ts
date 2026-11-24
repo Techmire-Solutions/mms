@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
-import { ACCOUNTING_MODULE_MANIFEST, todayISO } from "@mms/shared";
+import { ACCOUNTING_MODULE_MANIFEST, todayISO } from "@mms/contracts";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
   exchangeRateLookupQueryOptions,
   useAccountingCurrencySettings,
 } from "@/tenant/features/accounting/hooks/useAccountingFx";
 import { useAccountingPostingRules } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
-import { computeFxSetupReadiness } from "../lib/fxSetupReadiness";
+import { computeFxSetupReadiness } from "@mms/mod-accounting/frontend/tenant";
 
 /**
  * Live multi-currency readiness for the viewer: saved currencies, today's rate

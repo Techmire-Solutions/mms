@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { DEFAULT_CURRENCIES } from "@mms/shared";
+import { DEFAULT_CURRENCIES } from "@mms/contracts";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type {

@@ -13,7 +13,7 @@ import {
   getDisplayName,
   getInitials,
   IMAGE_UPLOAD_MAX_INPUT_BYTES,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ContactIdentityMeta } from "@/tenant/features/contacts/components/ContactIdentityMeta";
 import { genderAvatarGradient } from "@/lib/ui/semanticTone";
 import { Button } from "@/components/ui/button";

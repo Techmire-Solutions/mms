@@ -1,5 +1,5 @@
 import type React from "react";
-import { type Contact, hasWhatsApp } from "@mms/shared";
+import { type Contact, hasWhatsApp } from "@mms/contracts";
 import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { useTranslation } from "@/hooks/useTranslation";
 

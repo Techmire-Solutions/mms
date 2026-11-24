@@ -1,7 +1,7 @@
 import React from "react";
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { Exam } from "@mms/shared";
+import type { Exam } from "@mms/contracts";
 
 export interface ExaminationsRowActionsProps {
   exam: Exam;

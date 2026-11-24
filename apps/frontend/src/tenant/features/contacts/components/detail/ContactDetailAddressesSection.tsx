@@ -1,5 +1,5 @@
 import { MapPin } from "lucide-react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveAddressLabel } from "@/lib/contacts/contactI18n";
 import { ContactDetailExternalLinkSection } from "./ContactDetailExternalLinkSection";

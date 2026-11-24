@@ -4,7 +4,7 @@ import {
   DEFAULT_BRANDING_SETTINGS,
   type GlobalSettings,
   type BrandingSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -20,8 +20,8 @@ vi.mock("../db/database.js", () => ({
 // The audit append is now awaited inside the same transaction (no longer a
 // fire-and-forget `.catch()`), so stub the chain writer — this suite asserts the
 // RBAC field filtering, not the audit shard.
-vi.mock("../services/auditTrailService.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../services/auditTrailService.js")>();
+vi.mock("@mms/be-core/audit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/be-core/audit")>();
   return {
     ...actual,
     recordModernAuditEvent: vi.fn().mockResolvedValue({
@@ -32,8 +32,8 @@ vi.mock("../services/auditTrailService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+vi.mock("@mms/db/context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/context")>();
   return {
     ...actual,
     withTenant: (_tenant: string, cb: (tx: unknown) => Promise<unknown>) => cb({}),

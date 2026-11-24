@@ -1,6 +1,6 @@
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import { getRequestTenant } from "./tenantContext.js";
-import { type DbOrTransaction, recordModernAuditEvent } from "../services/auditTrailService.js";
+import { type DbOrTransaction, recordModernAuditEvent } from "@mms/be-core/audit";
 import { mapActionStringToAuditType } from "./auditState.js";
 import { logger } from "./logger.js";
 

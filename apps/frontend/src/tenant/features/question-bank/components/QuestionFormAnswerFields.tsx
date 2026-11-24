@@ -1,4 +1,4 @@
-import { type AppTranslationKey, type QuestionType } from "@mms/shared";
+import { type AppTranslationKey, type QuestionType } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Field, FieldErrorMessage, LABEL, RequiredMark } from "@/components/app/FormPrimitives";
 import { Textarea } from "@/components/ui/textarea";

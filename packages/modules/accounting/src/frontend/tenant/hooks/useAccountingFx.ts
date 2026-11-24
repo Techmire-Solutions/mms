@@ -1,0 +1,159 @@
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  AccountingCurrencySettings,
+  AccountingCurrencySettingsPut,
+  CurrencyExchangeability,
+  CurrencyExchangeabilityPut,
+  ExchangeRateListQuery,
+  ExchangeRateLookupResult,
+  ExchangeRatePutItem,
+  ExchangeRateRecord,
+  ExchangeRateType,
+} from "@mms/contracts";
+import { apiContract } from "@mms/fe-core/api/tsRest";
+import { invalidateAccountingQueries } from "./invalidateAccountingQueries";
+import { assertContractOk } from "@mms/fe-core/api/contractError";
+
+const FX_KEY = ["accounting", "fx"] as const;
+export const ACCOUNTING_CURRENCY_SETTINGS_QUERY_KEY = [...FX_KEY, "currency-settings"] as const;
+const RATES_KEY = [...FX_KEY, "exchange-rates"] as const;
+const LOOKUP_KEY = [...FX_KEY, "rate-lookup"] as const;
+
+export function useAccountingCurrencySettings(enabled = true) {
+  return useQuery({
+    queryKey: ACCOUNTING_CURRENCY_SETTINGS_QUERY_KEY,
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.accountingFx.getCurrencySettings({
+        signal,
+        fetchOptions: { signal },
+      });
+      assertContractOk(response, "Failed to load currency settings");
+      return (response.body as { settings: AccountingCurrencySettings }).settings;
+    },
+    enabled,
+  });
+}
+
+export function useSaveAccountingCurrencySettings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: AccountingCurrencySettingsPut) => {
+      const response = await apiContract.accountingFx.putCurrencySettings({ body });
+      assertContractOk(response, "Failed to save currency settings");
+      return (response.body as { settings: AccountingCurrencySettings }).settings;
+    },
+    onSuccess: (settings) => {
+      queryClient.setQueryData(ACCOUNTING_CURRENCY_SETTINGS_QUERY_KEY, settings);
+      invalidateAccountingQueries(queryClient);
+    },
+  });
+}
+
+export function useAccountingExchangeRates(query: ExchangeRateListQuery = {}, enabled = true) {
+  return useQuery({
+    queryKey: [...RATES_KEY, query],
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.accountingFx.listExchangeRates({
+        query,
+        signal,
+        fetchOptions: { signal },
+      });
+      assertContractOk(response, "Failed to load exchange rates");
+      return (response.body as { rates: ExchangeRateRecord[] }).rates;
+    },
+    enabled,
+  });
+}
+
+/**
+ * Everything a rate change can affect: the rate list/lookup, the FX report (which
+ * converts open balances at the as-of closing rate) and the module report caches.
+ */
+export function invalidateExchangeRateQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+): void {
+  void queryClient.invalidateQueries({ queryKey: RATES_KEY });
+  void queryClient.invalidateQueries({ queryKey: LOOKUP_KEY });
+  void queryClient.invalidateQueries({ queryKey: FX_KEY });
+  invalidateAccountingQueries(queryClient);
+}
+
+/** Money mutation: no optimistic update; lists and lookups refetch after the save. */
+export function useSaveAccountingExchangeRates() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (rates: ExchangeRatePutItem[]) => {
+      const response = await apiContract.accountingFx.putExchangeRates({ body: { rates } });
+      assertContractOk(response, "Failed to save exchange rates");
+      return (response.body as { rates: ExchangeRateRecord[] }).rates;
+    },
+    onSuccess: () => invalidateExchangeRateQueries(queryClient),
+  });
+}
+
+export interface ExchangeRateLookupInput {
+  fromCurrency: string;
+  toCurrency: string;
+  date: string;
+  rateType?: ExchangeRateType;
+}
+
+/** Rate-in-force lookup shared by forms and the setup guide; `null` when no rate is on file. */
+export function exchangeRateLookupQueryOptions(input: ExchangeRateLookupInput | null) {
+  return queryOptions({
+    queryKey: [...LOOKUP_KEY, input],
+    queryFn: async ({ signal }): Promise<ExchangeRateLookupResult | null> => {
+      if (!input) return null;
+      const response = await apiContract.accountingFx.lookupExchangeRate({
+        query: { ...input, rateType: input.rateType ?? "SPOT" },
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status === 404) return null;
+      assertContractOk(response, "Failed to look up exchange rate");
+      return (response.body as { rate: ExchangeRateLookupResult }).rate;
+    },
+    enabled: input !== null && input.fromCurrency !== input.toCurrency,
+  });
+}
+
+/**
+ * The rate in force on `date`; resolves to `null` (not an error) when none is on
+ * file so forms can ask the user for one instead of assuming 1.
+ */
+export function useExchangeRateLookup(input: ExchangeRateLookupInput | null) {
+  return useQuery(exchangeRateLookupQueryOptions(input));
+}
+
+const EXCHANGEABILITY_KEY = [...FX_KEY, "exchangeability"] as const;
+
+/** Currencies assessed as not exchangeable (IAS 21, 2025 amendment). */
+export function useCurrencyExchangeability(enabled = true) {
+  return useQuery({
+    queryKey: EXCHANGEABILITY_KEY,
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.accountingFx.listExchangeability({
+        signal,
+        fetchOptions: { signal },
+      });
+      assertContractOk(response, "Failed to load exchangeability assessments");
+      return (response.body as { currencies: CurrencyExchangeability[] }).currencies;
+    },
+    enabled,
+  });
+}
+
+export function useSaveCurrencyExchangeability() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: CurrencyExchangeabilityPut) => {
+      const response = await apiContract.accountingFx.putExchangeability({ body });
+      assertContractOk(response, "Failed to save exchangeability assessments");
+      return (response.body as { currencies: CurrencyExchangeability[] }).currencies;
+    },
+    onSuccess: (currencies) => {
+      queryClient.setQueryData(EXCHANGEABILITY_KEY, currencies);
+      void queryClient.invalidateQueries({ queryKey: LOOKUP_KEY });
+    },
+  });
+}

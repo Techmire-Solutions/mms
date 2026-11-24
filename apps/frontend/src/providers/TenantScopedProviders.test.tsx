@@ -23,8 +23,8 @@ vi.mock("@/tenant/hooks/useBranding", () => ({
   useBranding: vi.fn(),
 }));
 
-vi.mock("@mms/shared", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@mms/shared")>();
+vi.mock("@mms/contracts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/contracts")>();
   return {
     ...actual,
     isInstitutionSetupComplete: vi.fn(),
@@ -33,7 +33,7 @@ vi.mock("@mms/shared", async (importOriginal) => {
 
 import { useIsTenantHost } from "@/lib/host/useIsTenantHost";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { isInstitutionSetupComplete } from "@mms/shared";
+import { isInstitutionSetupComplete } from "@mms/contracts";
 
 function TestContactConsumer(): React.JSX.Element {
   const { formTabsReady, fields } = useContactConfig();

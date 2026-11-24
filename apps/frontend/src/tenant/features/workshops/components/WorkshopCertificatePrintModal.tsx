@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
-import { getPageDimensions, type WorkshopCompletionRow, type WorkshopEvent } from "@mms/shared";
+import { getPageDimensions, type WorkshopCompletionRow, type WorkshopEvent } from "@mms/contracts";
 import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
 import { TemplateDocumentPreview } from "@/components/template-editor/TemplateDocumentPreview";

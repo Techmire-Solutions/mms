@@ -1,4 +1,4 @@
-# Obligations Shared Contracts & Type Audit (`packages/shared`)
+# Obligations Shared Contracts & Type Audit (`packages/contracts`)
 
 Review of the shared DTOs, enums and runtime schemas behind the Obligations module.
 
@@ -48,7 +48,7 @@ What exists is one surface: the catalog + receipt schemas, the report aggregates
 
 ### 1.1 Canonical enum tuples (S2)
 
-New `packages/shared/src/obligations/obligationsEnums.ts` holds the three tuples and derives `obligationPaymentModeSchema` / `obligationDistributionTypeSchema` / `obligationDesignatedForSchema` from them. The manifest's six inline `z.enum([...])` literals are replaced by those schemas (wire-identical), the enums are exported through the operations barrel, and `obligationsData.ts` now **re-exports** the tuples under its existing names — so no consumer changed, but there is now one source.
+New `packages/contracts/src/obligations/obligationsEnums.ts` holds the three tuples and derives `obligationPaymentModeSchema` / `obligationDistributionTypeSchema` / `obligationDesignatedForSchema` from them. The manifest's six inline `z.enum([...])` literals are replaced by those schemas (wire-identical), the enums are exported through the operations barrel, and `obligationsData.ts` now **re-exports** the tuples under its existing names — so no consumer changed, but there is now one source.
 
 ### 1.2 Date validation on the write path (S3)
 

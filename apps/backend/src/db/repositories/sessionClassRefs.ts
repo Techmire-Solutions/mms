@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import { sessionClasses, sessions } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
-import { ValidationError } from "../../lib/httpErrors.js";
+import { sessionClasses, sessions } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
+import { ValidationError } from "@mms/be-core/http/errors";
 
 /** A class reference with the display names other modules snapshot. */
 interface SessionClassRef {

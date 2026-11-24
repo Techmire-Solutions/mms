@@ -1,4 +1,4 @@
-import { FINANCE_MODULE_MANIFEST } from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST } from "@mms/contracts";
 
 export const FINANCE_INVOICES_QUERY_KEY = ["finance", "invoices", "list"] as const;
 export const FINANCE_PAYMENTS_QUERY_KEY = ["finance", "payments", "list"] as const;

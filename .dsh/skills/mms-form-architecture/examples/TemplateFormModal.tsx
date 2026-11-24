@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { z } from "zod";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
-import { Input } from "@shared/ui";
+import { Input } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";

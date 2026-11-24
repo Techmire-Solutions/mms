@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getMessageCategoryLabelKey, MESSAGING_MODULE_MANIFEST } from "@mms/shared";
+import { getMessageCategoryLabelKey, MESSAGING_MODULE_MANIFEST } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";

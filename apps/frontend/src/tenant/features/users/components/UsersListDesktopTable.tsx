@@ -1,5 +1,5 @@
 import React, { type JSX } from "react";
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { UserAvatar } from "@/components/app/UserAvatar";
 import { UsersRowActions } from "@/tenant/features/users/components/UsersRowActions";

@@ -3,7 +3,7 @@ import {
   activeAcademicCatalogItems,
   type AcademicCatalogItem,
   type AcademicCatalogKind,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FormSelectWithQuickCreate } from "@/components/app/FormSelectWithQuickCreate";
 import { useTranslation } from "@/hooks/useTranslation";
 import {

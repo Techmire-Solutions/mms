@@ -1,10 +1,10 @@
-import type { PlatformPasswordForgotResult, StoredPlatformUser } from "@mms/shared";
+import type { PlatformPasswordForgotResult, StoredPlatformUser } from "@mms/contracts";
 import {
   normalizePlatformEmail,
   PLATFORM_OTP_MAX_ATTEMPTS,
   PLATFORM_PASSWORD_RESET_TTL_MINUTES,
   resolvePlatformNotificationChannel,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createArtifactId,
   deleteAuthArtifact,

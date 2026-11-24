@@ -1,4 +1,4 @@
-import type { AppTranslationKey, PlatformAdminPermissionKey } from "@mms/shared";
+import type { AppTranslationKey, PlatformAdminPermissionKey } from "@mms/contracts";
 
 export const PLATFORM_MODULE_TIERS = ["work", "reports", "setup"] as const;
 export type PlatformModuleTierId = (typeof PLATFORM_MODULE_TIERS)[number];

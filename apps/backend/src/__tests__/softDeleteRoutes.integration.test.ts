@@ -19,7 +19,9 @@ const mockTx = {
   returning: vi.fn().mockResolvedValue([]),
 };
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi
     .fn()
     .mockImplementation(
@@ -102,7 +104,7 @@ const mockBulkSoftDeleteContacts = vi.fn();
 const mockBulkRestoreContacts = vi.fn();
 
 vi.mock("../contacts/use-cases/contactUseCases.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../contacts/use-cases/contactUseCases.js")>();
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
   return {
     ...actual,
     contactUseCases: {

@@ -33,7 +33,10 @@ const mockDistributionsRepo = vi.hoisted(() => ({
 
 vi.mock("../db/repositories/accountingRepository.js", () => mockAccountingRepo);
 // Generated postings now append an audit row in the same transaction.
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
+  recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("../db/repositories/accountingLedgerOpsRepository.js", () => mockLedgerOpsRepo);
@@ -60,7 +63,7 @@ import {
   tryPostObligationRestoreJournal,
 } from "../accounting/ledgerPosting/obligationPostingService.js";
 import { obligationEntrySourceId } from "../accounting/ledgerPosting/obligationPostingSources.js";
-import type { ObligationCollection } from "@mms/shared";
+import type { ObligationCollection } from "@mms/contracts";
 
 const OPEN_YEAR = {
   id: "fy-1",

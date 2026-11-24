@@ -6,7 +6,7 @@ import {
   type QuestionBankTest,
   type FacultyMember,
   FINANCE_MODULE_MANIFEST,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";

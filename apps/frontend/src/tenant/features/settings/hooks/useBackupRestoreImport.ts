@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { summarizeWorkspaceBackup, type PendingDecrypt, type PendingRestore } from "@mms/shared";
+import { summarizeWorkspaceBackup, type PendingDecrypt, type PendingRestore } from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import type { UseBackupRestoreImportOptions } from "./backupRestoreImportTypes";
 import { useBackupRestoreImportActions } from "./useBackupRestoreImportActions";

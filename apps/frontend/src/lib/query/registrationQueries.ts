@@ -14,7 +14,7 @@ import {
   type RegistrationLinkWrite,
   type RegistrationReview,
   type RegistrationSubmit,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { z } from "zod";
 import { apiJson } from "@/lib/apiClient";
 

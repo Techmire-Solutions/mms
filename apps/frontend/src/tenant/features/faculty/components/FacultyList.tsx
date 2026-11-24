@@ -1,5 +1,5 @@
 import React from "react";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FacultyListContent } from "@/tenant/features/faculty/components/FacultyListContent";
 import type { FacultyListProps } from "@/tenant/features/faculty/lib/facultyListTypes";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ValidationError } from "@mms/shared";
+import type { ValidationError } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {
   buildContactFormVisibleTabs,

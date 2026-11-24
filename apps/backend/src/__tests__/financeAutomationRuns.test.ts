@@ -8,26 +8,27 @@ const mockAudit = vi.fn();
 const mockNotify = vi.fn();
 const mockSettings = vi.fn();
 
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+vi.mock("@mms/db/context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/context")>();
   return { ...actual, withTenant: (...args: unknown[]) => mockWithTenant(...args) };
 });
 
-vi.mock("../accounting/use-cases/fxRevaluationUseCases.js", () => ({
-  postFxRevaluation: (...args: unknown[]) => mockPostFx(...args),
-}));
+// All three facades now resolve to the one module barrel, so their partial
+// factories must be merged into a single mock of that specifier. The real
+// `fxRevaluationDeps` is still needed by the module under test.
+vi.mock("@mms/mod-accounting/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-accounting/backend/use-cases")>();
+  return {
+    ...actual,
+    postFxRevaluation: (...args: unknown[]) => mockPostFx(...args),
+    postIas29Restatement: (...args: unknown[]) => mockPostIas29(...args),
+    ias29Deps: {
+      store: { getHyperinflationSettings: (...args: unknown[]) => mockSettings(...args) },
+    },
+  };
+});
 
-vi.mock("../accounting/use-cases/ias29UseCases.js", () => ({
-  postIas29Restatement: (...args: unknown[]) => mockPostIas29(...args),
-}));
-
-vi.mock("../accounting/use-cases/ias29Deps.js", () => ({
-  ias29Deps: {
-    store: { getHyperinflationSettings: (...args: unknown[]) => mockSettings(...args) },
-  },
-}));
-
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => mockAudit(...args),
 }));
 

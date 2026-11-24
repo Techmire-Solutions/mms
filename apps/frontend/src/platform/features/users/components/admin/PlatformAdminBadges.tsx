@@ -1,9 +1,9 @@
 import { platformPermissionEntries } from "@/platform/features/users/lib/platformPermissionConfig";
 import React from "react";
-import { StatusBadge } from "@shared/ui";
+import { StatusBadge } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 
 export interface PlatformAdminStatusBadgesProps {
   admin: PlatformUserProfile;

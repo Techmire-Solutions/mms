@@ -1,4 +1,4 @@
-import { resolveLlmModel, type LlmProviderType } from "@mms/shared";
+import { resolveLlmModel, type LlmProviderType } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface LlmConfigValidationInput {

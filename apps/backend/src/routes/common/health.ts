@@ -1,5 +1,9 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
-import { healthResponseSchema, readyResponseSchema, readyErrorResponseSchema } from "@mms/shared";
+import {
+  healthResponseSchema,
+  readyResponseSchema,
+  readyErrorResponseSchema,
+} from "@mms/contracts";
 import { getPoolMetrics, pingDatabase } from "../../db/database.js";
 import { checkIsRedisConnected } from "../../lib/redis.js";
 import { isShuttingDown } from "../../lib/lifecycle.js";

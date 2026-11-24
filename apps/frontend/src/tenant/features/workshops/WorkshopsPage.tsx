@@ -7,7 +7,7 @@ import {
   type WorkshopEvent,
   type WorkshopEventCreate,
   type WorkshopStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";

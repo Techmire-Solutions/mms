@@ -1,5 +1,5 @@
 import type React from "react";
-import type { EnrollmentStatus } from "@mms/shared";
+import type { EnrollmentStatus } from "@mms/contracts";
 import { LegendChip } from "@/components/app/LegendChip";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";

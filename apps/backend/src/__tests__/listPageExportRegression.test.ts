@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sql } from "drizzle-orm";
-import { faculty } from "../db/schema/faculty.js";
+import { faculty } from "@mms/db/schema/faculty";
 import { runListPage } from "../db/repositories/listPageHelper.js";
 import { generateCsvStreamChunks } from "../lib/csvExportStreamFactory.js";
 

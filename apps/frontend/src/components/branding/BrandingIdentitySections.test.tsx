@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { BrandingSettingsProfileSection } from "./BrandingIdentitySections";
-import { DEFAULT_BRANDING_SETTINGS, type BrandingSettings } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, type BrandingSettings } from "@mms/contracts";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),

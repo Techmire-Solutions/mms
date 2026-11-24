@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
-import { dedupeTrimmedIds, type Invoice, type RepositoryListOptions } from "@mms/shared";
-import { financeInvoiceLines, financeInvoices } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { dedupeTrimmedIds, type Invoice, type RepositoryListOptions } from "@mms/contracts";
+import { financeInvoiceLines, financeInvoices } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { invoiceLineRowToRecord } from "./financeBillingRepository.js";
 import { canonicalStoredRate } from "./repositoryFxMappers.js";

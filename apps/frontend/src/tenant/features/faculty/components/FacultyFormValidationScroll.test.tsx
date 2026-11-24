@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { runFacultySaveFlow } from "@/tenant/features/faculty/lib/facultyFormSaveFlow";
 import * as formAutoScroll from "@/lib/forms/formAutoScroll";
-import type { Contact, FacultySettings } from "@mms/shared";
+import type { Contact, FacultySettings } from "@mms/contracts";
 
 vi.mock("@/lib/notify", () => ({
   notify: {

@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS } from "@mms/shared";
+import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS } from "@mms/contracts";
 import { secureCookieBase } from "../../lib/cookieOptions.js";
 import { extractTokenFromCookie } from "../../lib/attachTokenFromCookie.js";
 

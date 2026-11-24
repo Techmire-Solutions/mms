@@ -1,9 +1,9 @@
 import { and, count, eq, inArray, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type Denomination } from "@mms/shared";
-import { hasanatDenoms } from "../schema.js";
-import { hasanatDistributions } from "../schema.js";
-import { ConflictError } from "../../lib/httpErrors.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type Denomination } from "@mms/contracts";
+import { hasanatDenoms } from "@mms/db/schema";
+import { hasanatDistributions } from "@mms/db/schema";
+import { ConflictError } from "@mms/be-core/http/errors";
+import { withTenant, withTenantRead } from "@mms/db/context";
 
 type DenomRow = typeof hasanatDenoms.$inferSelect;
 export function denomRowToRecord(row: DenomRow): Denomination {

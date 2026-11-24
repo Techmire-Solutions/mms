@@ -24,7 +24,7 @@ Status: **Fixed** findings landed with this change; **Verified** items were exer
 
 ### P1 — fixed
 
-**F1 — the Finance manifest collapsed every action to `finance.write`.** `FINANCE_MODULE_MANIFEST.permissions` mapped `read`, `delete`, `export` and `reports` to `finance.write` (`packages/shared/src/finance/financeManifest.ts`), so an auditor or principal (granted only `finance.read`) was denied every finance read at the module gate and in handlers — `finance.read` was dead code and read-only roles could not inspect financial records. *Fixed:* `read/reports/export → finance.read`, `write → finance.write`, `delete → finance.delete`, plus the new `manage` capability.
+**F1 — the Finance manifest collapsed every action to `finance.write`.** `FINANCE_MODULE_MANIFEST.permissions` mapped `read`, `delete`, `export` and `reports` to `finance.write` (`packages/contracts/src/finance/financeManifest.ts`), so an auditor or principal (granted only `finance.read`) was denied every finance read at the module gate and in handlers — `finance.read` was dead code and read-only roles could not inspect financial records. *Fixed:* `read/reports/export → finance.read`, `write → finance.write`, `delete → finance.delete`, plus the new `manage` capability.
 
 **F2 — delete silently fell back to write.** `COLLECTION_DELETE_PERMISSION` had no finance/accounting entries and `computeCanDeleteCollection` fell back to `canWriteCollection`, so a write-only role could archive invoices, payments, ledger entries, accounts and fiscal years while a delete-only role could not. The module gate also mapped every non-GET route to `write` for these modules. *Fixed:* the five collection delete mappings, `DELETE`/restore/bulk route-action rules for both modules, and the existing handler `canDeleteCollection` checks now resolve the right permission.
 
@@ -86,9 +86,9 @@ Tenants express "Cashier/Billing" and "Finance Controller" through custom roles:
 
 | File | Change |
 |---|---|
-| `packages/shared/src/auth/permissions.ts`, `permissionRules.ts` | `finance.manage`, `accounting.manage` |
-| `packages/shared/src/finance/financeManifest.ts` | read/write/delete/export/reports fixed + `manage` |
-| `packages/shared/src/finance/accountingModuleManifest.ts` | `manage` |
+| `packages/contracts/src/auth/permissions.ts`, `permissionRules.ts` | `finance.manage`, `accounting.manage` |
+| `packages/contracts/src/finance/financeManifest.ts` | read/write/delete/export/reports fixed + `manage` |
+| `packages/contracts/src/finance/accountingModuleManifest.ts` | `manage` |
 | `apps/backend/src/lib/rbacPermissionMaps.ts` | delete mappings for invoices/payments/entries/accounts/fiscal years |
 | `apps/backend/src/lib/rbacCanModuleHelpers.ts` | `canManageFinance`, `canManageAccounting` |
 | `apps/backend/src/lib/moduleRouteActionRulesFinance.ts` (new) | delete/manage route-action rules |
@@ -96,10 +96,10 @@ Tenants express "Cashier/Billing" and "Finance Controller" through custom roles:
 | `apps/backend/src/finance/use-cases/financeAuditEvents.ts` | credit-note reason; archive/restore reason support |
 | `apps/backend/src/finance/use-cases/financeRecordLifecycle.ts` + new `…Ledger.ts` | archive/restore audit in-transaction (split for the length ceiling) |
 | `apps/backend/src/finance/use-cases/financeMutationOperations.ts` | bulk-status audit |
-| `apps/backend/src/accounting/use-cases/exchangeRateUseCases.ts` + repository/port | rate `oldState` |
-| `apps/backend/src/accounting/use-cases/accountingPostingPeriodUseCases.ts` + route + shared schema | reopen `reason` |
+| `packages/modules/accounting/src/backend/use-cases/exchangeRateUseCases.ts` + repository/port | rate `oldState` |
+| `packages/modules/accounting/src/backend/use-cases/accountingPostingPeriodUseCases.ts` + route + shared schema | reopen `reason` |
 | `apps/backend/src/services/auditPartitionService.ts` | RLS on newly provisioned partitions |
-| `apps/backend/src/db/migrations_drizzle/0250_audit_partition_rls.sql` (+ snapshot/journal) | partition RLS backfill |
+| `packages/db/migrations_drizzle/0250_audit_partition_rls.sql` (+ snapshot/journal) | partition RLS backfill |
 | `apps/frontend/.../InvoicesList.tsx`, `InvoiceCorrectionActions.tsx`, `useFinancePageController.ts` | `canManage` gating |
 
 ## 6. Evidence

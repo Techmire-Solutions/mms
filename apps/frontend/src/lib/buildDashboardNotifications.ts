@@ -8,14 +8,14 @@ import {
   DASHBOARD_URGENT_ATTENDANCE_THRESHOLD,
   OPEN_INVOICE_STATUSES,
   todayISO,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   isDashboardAdmin,
   isDashboardAdminOrAccountant,
   isDashboardAccountant,
   type DashboardRole,
 } from "@/lib/dashboardRole";
-import type { NotificationItem } from "@shared/ui";
+import type { NotificationItem } from "@mms/ui";
 
 export type DashboardNotificationType =
   "fee" | "event" | "student" | "attendance" | "admission" | "tasks";

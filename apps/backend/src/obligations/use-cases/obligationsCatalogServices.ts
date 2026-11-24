@@ -12,14 +12,14 @@ import type {
   ObligationDistribution,
   ObligationType,
   WakalaType,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   mujtahidListSchema,
   mujtahidRepListSchema,
   obligationDistributionListSchema,
   obligationTypeListSchema,
   wakalaTypeListSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { defineTenantBulkCollectionService } from "../../services/tenantBulkService.js";
 import type { ObligationsRepository } from "../repository/obligationsRepository.js";
 

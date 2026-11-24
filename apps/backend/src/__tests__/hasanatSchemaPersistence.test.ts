@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { resolveMigrationsFolder, resolveSchemaSourceDirectory } from "@mms/db/testing";
 
 /**
  * Guard rails for the Hasanat schema/persistence hardening (migrations 0225–0232).
@@ -11,7 +12,7 @@ import { join } from "node:path";
  * later migration/edit rather than a runtime branch in this process.
  */
 describe("Hasanat schema & persistence invariants (0225–0232)", () => {
-  const dir = join(process.cwd(), "src/db/migrations_drizzle");
+  const dir = resolveMigrationsFolder();
   const read = (name: string) => readFile(join(dir, name), "utf-8");
 
   const migrations = [
@@ -224,7 +225,7 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
 
   it("does not allow a client to set the card status on create or edit", async () => {
     const manifest = await readFile(
-      join(process.cwd(), "../../packages/shared/src/hasanat/hasanatModuleManifest.ts"),
+      join(process.cwd(), "../../packages/contracts/src/hasanat/hasanatModuleManifest.ts"),
       "utf-8",
     );
 
@@ -298,7 +299,7 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
 
   it("keeps idempotency keys and cascade internals out of read models", async () => {
     const manifest = await readFile(
-      join(process.cwd(), "../../packages/shared/src/hasanat/hasanatModuleManifest.ts"),
+      join(process.cwd(), "../../packages/contracts/src/hasanat/hasanatModuleManifest.ts"),
       "utf-8",
     );
     const recordSchemas = manifest.slice(
@@ -316,11 +317,11 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
 
   it("implements every route declared in the hasanat contract", async () => {
     const contract = await readFile(
-      join(process.cwd(), "../../packages/shared/src/contracts/hasanat.contract.ts"),
+      join(process.cwd(), "../../packages/contracts/src/contracts/hasanat.contract.ts"),
       "utf-8",
     );
     const tierBatch = await readFile(
-      join(process.cwd(), "../../packages/shared/src/contracts/hasanatTierBatch.contract.ts"),
+      join(process.cwd(), "../../packages/contracts/src/contracts/hasanatTierBatch.contract.ts"),
       "utf-8",
     );
     const router = await readFile(
@@ -460,7 +461,7 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
       HASANAT_RECIPIENT_TYPES,
       HASANAT_LEDGER_KINDS,
       HASANAT_AWARD_KINDS,
-    } = await import("@mms/shared");
+    } = await import("@mms/contracts");
 
     const readCheck = (source: string, name: string): string[] => {
       const match = source.match(new RegExp(`${name}[^\\n]*in \\(([^)]*)\\)`));
@@ -473,14 +474,14 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     };
 
     const distributions = await readFile(
-      join(process.cwd(), "src/db/schema/hasanatDistributions.ts"),
+      join(resolveSchemaSourceDirectory(), "hasanatDistributions.ts"),
       "utf-8",
     );
     const redemptions = await readFile(
-      join(process.cwd(), "src/db/schema/hasanatRedemptions.ts"),
+      join(resolveSchemaSourceDirectory(), "hasanatRedemptions.ts"),
       "utf-8",
     );
-    const tiers = await readFile(join(process.cwd(), "src/db/schema/hasanatTiers.ts"), "utf-8");
+    const tiers = await readFile(join(resolveSchemaSourceDirectory(), "hasanatTiers.ts"), "utf-8");
 
     expect(readCheck(distributions, "hasanat_dist_status_chk")).toEqual(
       [...HASANAT_CARD_STATUSES].sort(),
@@ -496,7 +497,7 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
 
   it("uses the canonical metrics snapshot schema instead of a second copy", async () => {
     const manifest = await readFile(
-      join(process.cwd(), "../../packages/shared/src/hasanat/hasanatModuleManifest.ts"),
+      join(process.cwd(), "../../packages/contracts/src/hasanat/hasanatModuleManifest.ts"),
       "utf-8",
     );
     expect(manifest).not.toMatch(/export const hasanatCommandMetricsSchema/);

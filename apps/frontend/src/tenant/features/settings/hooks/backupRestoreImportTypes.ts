@@ -1,5 +1,5 @@
 import type { useTranslation } from "@/hooks/useTranslation";
-import type { BackupCredentials } from "@mms/shared";
+import type { BackupCredentials } from "@mms/contracts";
 
 export type TranslateFn = ReturnType<typeof useTranslation>["t"];
 

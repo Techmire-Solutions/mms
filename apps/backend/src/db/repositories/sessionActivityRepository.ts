@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import type { SessionActivityItem } from "@mms/shared";
-import { withTenantRead } from "../tenant-context.js";
+import type { SessionActivityItem } from "@mms/contracts";
+import { withTenantRead } from "@mms/db/context";
 
 const ACTIVITY_LIMIT = 200;
 

@@ -1,6 +1,6 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/dbInit.js";
-import { closeDatabase } from "../db/dbConnection.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { closeDatabase } from "@mms/db/client";
 import {
   auditPartitionName,
   countAuditDefaultPartitionRows,
@@ -44,7 +44,7 @@ async function main(): Promise<void> {
   }
 
   console.log(`[create-audit-partition] Initializing database connection...`);
-  await initDb();
+  await initializeDatabase();
 
   // Reuse the shared provisioner so the CLI and the scheduled maintenance path
   // can never diverge on naming or range boundaries.

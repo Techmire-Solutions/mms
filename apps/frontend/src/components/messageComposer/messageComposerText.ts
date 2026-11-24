@@ -1,4 +1,4 @@
-import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface MessageComposerTextProps {

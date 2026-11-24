@@ -7,7 +7,8 @@
  *   pnpm --filter mms-backend exec tsx src/scripts/resetAllModulesExceptContacts.ts --execute   (MUTATE)
  */
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { closeDatabase, getPool, initDb } from "../db/database.js";
+import { closeDatabase, getPool } from "../db/database.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
 import {
   PRESERVED_CONTACT_COLLECTIONS,
   PRESERVED_CONTACT_OBJECTS,
@@ -31,7 +32,7 @@ async function main() {
   console.log(`Mode: ${isExecute ? "EXECUTE (HARD RESET)" : "DRY-RUN (PREVIEW ONLY)"}`);
   console.log(`======================================================\n`);
 
-  await initDb();
+  await initializeDatabase();
   const pool = getPool();
 
   // 1. List all active tenant workspaces

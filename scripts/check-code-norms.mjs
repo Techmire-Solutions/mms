@@ -28,6 +28,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { runChangedCheck } from "./lib/code-norms-changed.mjs";
+import { assertScanDirs, fromRoot } from "./lib/repo-paths.mjs";
 import {
   HARD_LIMIT,
   IGNORED,
@@ -41,6 +42,13 @@ import {
 if (process.argv.includes("--changed")) process.exit(runChangedCheck());
 
 const ROOT = process.cwd();
+
+// Fail closed: removing a scan root must fail, not lower every count to zero and
+// pass (the `--ratchet` step alone used to catch this).
+assertScanDirs(
+  SCAN_DIRS.filter((dir) => dir !== "tooling/tailwind-config").map((dir) => fromRoot(dir)),
+  "code norms",
+);
 
 /**
  * Baselines measured when the ratchet landed; only lower them.
@@ -84,6 +92,34 @@ function walk(dir, include, out = []) {
 
 const files = SCAN_DIRS.flatMap((dir) => walk(path.join(ROOT, dir), SOURCE_EXT));
 const cssFiles = SCAN_DIRS.flatMap((dir) => walk(path.join(ROOT, dir), /\.css$/));
+
+/**
+ * Compiled JS must live in `dist/`, never beside the sources it was built from.
+ * A stray `.js` next to a `.ts` (the NodeNext `.js`-specifier convention makes
+ * this easy to produce) shadows the source for Node ESM resolution and makes
+ * "which code actually ran?" ambiguous. Baseline 0 — it is never accepted debt.
+ */
+const packageSrcJs = [];
+const walkPackageSources = (dir) => {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === "node_modules" || entry.name === "dist" || entry.name === "coverage") {
+      continue;
+    }
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkPackageSources(full);
+    else if (entry.name.endsWith(".js")) {
+      const rel = path.relative(ROOT, full).split(path.sep).join("/");
+      if (/\/src\//.test(rel)) packageSrcJs.push(rel);
+    }
+  }
+};
+for (const packageDir of fs.existsSync(path.join(ROOT, "packages"))
+  ? fs.readdirSync(path.join(ROOT, "packages"), { withFileTypes: true })
+  : []) {
+  if (!packageDir.isDirectory()) continue;
+  walkPackageSources(path.join(ROOT, "packages", packageDir.name));
+}
 
 const anySites = [];
 const hexFiles = [];
@@ -163,6 +199,15 @@ const results = [
     count: inertThemeTokens.length,
     baseline: 0,
     sample: inertThemeTokens.slice(0, 5),
+  },
+  {
+    // Zero baseline: a compiled file beside its source is always a mistake (tsc
+    // emits to dist/); it silently shadows the source at Node ESM resolution.
+    name: "Compiled JS beside package sources (must live in dist/)",
+    norm: "mms-structure-naming.md §1",
+    count: packageSrcJs.length,
+    baseline: 0,
+    sample: packageSrcJs.slice(0, 5),
   },
 ];
 

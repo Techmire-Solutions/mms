@@ -1,18 +1,18 @@
 import type React from "react";
 import { Globe2 } from "lucide-react";
-import { ErrorState } from "@/components/app/ErrorState";
-import { EditableMultiSelect } from "@/components/app/EditableMultiSelect";
-import { Field } from "@/components/app/FormPrimitives";
-import { FormSelect } from "@/components/app/FormSelect";
-import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
-import { SectionCard } from "@/components/app/SectionCard";
-import { Alert } from "@/components/app/Alert";
-import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { useTranslation } from "@/hooks/useTranslation";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { EditableMultiSelect } from "@mms/fe-core/components/EditableMultiSelect";
+import { Field } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { ModuleSetupSaveFooter } from "@mms/fe-core/components/ModuleSetupSaveFooter";
+import { SectionCard } from "@mms/ui";
+import { Alert } from "@mms/ui";
+import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingFxSettingsDraft } from "@/tenant/features/accounting/hooks/useAccountingFxSettingsDraft";
 import { AccountingSettingsExchangeabilitySection } from "./AccountingSettingsExchangeabilitySection";
 import { FxSetupGuide } from "./FxSetupGuide";
-import { FX_SETUP_ANCHORS } from "../lib/fxSetupReadiness";
+import { FX_SETUP_ANCHORS } from "@mms/mod-accounting/frontend/tenant";
 
 interface AccountingSettingsFxSectionProps {
   canEditSetup: boolean;

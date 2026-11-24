@@ -1,13 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
-import { contacts, workshopEvents, workshopParticipants, workspaces } from "../../db/schema.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant, withTenantRead } from "@mms/db/context";
+import { contacts, workshopEvents, workshopParticipants, workspaces } from "@mms/db/schema";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { NotFoundError } from "../../lib/httpErrors.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { workshopsUseCases } from "../../workshops/use-cases/workshopsUseCases.js";
 import { workshopsCompletionUseCases } from "../../workshops/use-cases/workshopsCompletionUseCases.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";

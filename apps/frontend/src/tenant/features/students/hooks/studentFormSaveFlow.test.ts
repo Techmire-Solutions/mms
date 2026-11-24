@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student, ValidationError } from "@mms/shared";
+import type { Student, ValidationError } from "@mms/contracts";
 import { ApiError } from "@/lib/apiError";
 import * as formAutoScroll from "@/lib/forms/formAutoScroll";
 import {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import Fastify from "fastify";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import { z } from "zod";
 
 /**
@@ -22,7 +22,7 @@ vi.mock("../services/backgroundJobWorkerService.js", () => ({
   getUserBackgroundJobPayload: vi.fn(),
   QueueUnavailableError: class QueueUnavailableError extends Error {},
 }));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn(),
   mapActionStringToAuditType: () => "UPDATE",
 }));

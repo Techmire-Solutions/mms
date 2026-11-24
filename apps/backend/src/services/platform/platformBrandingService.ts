@@ -8,8 +8,8 @@ import {
   type PlatformSettings,
   type PublicPlatformBranding,
   type ThemeMode,
-} from "@mms/shared";
-import { runInGlobalTransaction } from "../../db/dbConnection.js";
+} from "@mms/contracts";
+import { runInGlobalTransaction } from "@mms/db/client";
 import {
   findPlatformBrandingRow,
   insertPlatformBrandingDefaultRow,

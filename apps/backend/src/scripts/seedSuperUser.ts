@@ -5,14 +5,15 @@ import {
   findPlatformUserRowByEmail,
   updatePlatformUserRow,
 } from "../db/repositories/platformUserRepository.js";
-import { initDb, closeDatabase } from "../db/database.js";
+import { closeDatabase } from "../db/database.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
 import { randomBytes } from "node:crypto";
-import { FULL_PLATFORM_ADMIN_PERMISSIONS } from "@mms/shared";
+import { FULL_PLATFORM_ADMIN_PERMISSIONS } from "@mms/contracts";
 
 loadBackendEnv();
 
 async function seed() {
-  await initDb();
+  await initializeDatabase();
   const email = process.env.PLATFORM_ADMIN_EMAIL?.trim();
   const password = process.env.PLATFORM_ADMIN_PASSWORD?.trim();
   const name = process.env.PLATFORM_ADMIN_NAME?.trim() || "Platform Admin";

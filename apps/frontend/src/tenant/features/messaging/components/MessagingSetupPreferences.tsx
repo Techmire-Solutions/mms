@@ -8,7 +8,7 @@ import {
   type MessageChannel,
   type MessagingSmsDispatchMode,
   type MessagingDispatchSpeed,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";

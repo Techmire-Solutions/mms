@@ -8,7 +8,7 @@ import {
   attendanceRecordStatusSchema,
   isoDateSchema,
   type AppTranslationKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { notify } from "@/lib/notify";

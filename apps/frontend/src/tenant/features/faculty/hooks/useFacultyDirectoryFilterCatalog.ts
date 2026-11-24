@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { isFacultyCatalogRowActive, type FacultyMember } from "@mms/shared";
+import { isFacultyCatalogRowActive, type FacultyMember } from "@mms/contracts";
 import { useFacultyDepartments } from "@/tenant/features/faculty/hooks/useFacultyDepartments";
 import { useFacultyDesignations } from "@/tenant/features/faculty/hooks/useFacultyDesignations";
 import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";

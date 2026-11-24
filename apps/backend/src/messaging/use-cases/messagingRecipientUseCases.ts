@@ -1,7 +1,7 @@
 import {
   loadContactsPageForTenant,
   loadContactsSummaryByIdsForTenant,
-} from "../../services/contactService.js";
+} from "@mms/mod-contacts/backend/services";
 import {
   type Contact,
   type MessagingRecipientsPageResponse,
@@ -17,8 +17,8 @@ import {
   getDisplayName,
   getPrimaryPhone,
   getPrimaryEmail,
-} from "@mms/shared";
-import { loadContactFieldConfig } from "../../contacts/use-cases/contactConfigService.js";
+} from "@mms/contracts";
+import { loadContactFieldConfig } from "@mms/mod-contacts/backend/use-cases";
 
 const MATCH_PAGE_SIZE = 500;
 

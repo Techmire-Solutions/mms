@@ -7,7 +7,7 @@
  * remain pure and shared by the editor, the print preview and the sample data hook.
  */
 
-import type { TemplateFieldDefinition } from "@mms/shared";
+import type { TemplateFieldDefinition } from "@mms/contracts";
 import type { IndexedFieldLookups, InvoiceReceiptPayload } from "./invoiceTemplateTypes";
 import { indexLookups, resolveField } from "./invoiceTemplateResolver";
 

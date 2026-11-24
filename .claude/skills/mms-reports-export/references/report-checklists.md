@@ -58,8 +58,8 @@ Extracted from `SKILL.md` so the skill body stays loadable in one pass; the owni
 
 ```
 - [ ] All chart labels, tooltips, legends via t()
-- [ ] Numbers via formatNumber() from @mms/shared
+- [ ] Numbers via formatNumber() from @mms/contracts
 - [ ] Currency via the settings-aware formatMoney helper
-- [ ] Month/date labels via formatMonthName() / formatDate() from @mms/shared
+- [ ] Month/date labels via formatMonthName() / formatDate() from @mms/contracts
 - [ ] Export column headers via t() — same keys as table column headers
 ```

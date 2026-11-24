@@ -1,6 +1,6 @@
 import React from "react";
 import { Building2, Pencil, RotateCcw, Trash2 } from "lucide-react";
-import type { FacultyDepartmentEntity } from "@mms/shared";
+import type { FacultyDepartmentEntity } from "@mms/contracts";
 import { EmptyCellDash } from "@/components/app/EmptyCellDash";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";

@@ -9,7 +9,7 @@ import {
   formatFacultyDisplayName,
   SESSIONS_MODULE_MANIFEST,
   type FacultyMember,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import type { Class } from "@/lib/data/sessionsData";

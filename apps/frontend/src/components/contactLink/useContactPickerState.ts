@@ -13,7 +13,7 @@ import {
   type ContactPickerOption,
   type ContactPickerSearchQuery,
   filterContactsForQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { uploadUserImage } from "@/lib/imageUpload";
 import { imageUploadErrorDetail, imageUploadErrorKey } from "@/lib/imageUploadErrors";
 import type { ContactCreateDefaults } from "./ContactCreateModal";

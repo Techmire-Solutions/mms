@@ -1,5 +1,5 @@
-import type { Session, Student } from "@mms/shared";
-import type { DerivedStudentGuardianLinks } from "@mms/shared";
+import type { Session, Student } from "@mms/contracts";
+import type { DerivedStudentGuardianLinks } from "@mms/contracts";
 import type { SiblingStudentItem } from "@/tenant/features/students/components/StudentDetailSiblingsSection";
 
 /**

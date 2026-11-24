@@ -1,9 +1,9 @@
 import type React from "react";
 import { Users } from "lucide-react";
-import type { ContactPreferences } from "@mms/shared";
+import type { ContactPreferences } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionCard } from "@/components/app/SectionCard";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";

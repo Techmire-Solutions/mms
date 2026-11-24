@@ -4,8 +4,8 @@ import type {
   ContactsSavedReport,
   ContactsSavedReportShareScope,
   ContactsWorkDrillDown,
-} from "@mms/shared";
-import { clampModuleColumnWidth } from "@mms/shared";
+} from "@mms/contracts";
+import { clampModuleColumnWidth } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient } from "@/lib/api";
 import {

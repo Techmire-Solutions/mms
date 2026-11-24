@@ -1,9 +1,13 @@
 import React from "react";
-import { formatMonthName, normalizeSessionsViewLayout, type SessionsSettings } from "@mms/shared";
+import {
+  formatMonthName,
+  normalizeSessionsViewLayout,
+  type SessionsSettings,
+} from "@mms/contracts";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { useTranslation } from "@/hooks/useTranslation";

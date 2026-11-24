@@ -16,7 +16,7 @@ import {
 import { Step5FeeCalculation } from "@/tenant/features/enrollments/components/wizard/Step5FeeCalculation";
 import { Step6Confirmation } from "@/tenant/features/enrollments/components/wizard/Step6Confirmation";
 import { suggestClass, runFullEligibility, type CalculatedFee } from "@/lib/data/enrollmentData";
-import { type EnrollmentInsert } from "@mms/shared";
+import { type EnrollmentInsert } from "@mms/contracts";
 import { resolveEnrollmentApiError } from "@/lib/forms/resolveEnrollmentApiError";
 import { parseEnrollmentInsertPayload } from "@/tenant/features/enrollments/lib/enrollmentWizardParse";
 import { type Student } from "@/lib/data/studentsData";

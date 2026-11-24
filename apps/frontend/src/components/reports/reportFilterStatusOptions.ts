@@ -5,7 +5,7 @@ import {
   ATTENDANCE_RECORD_STATUSES,
   type AppTranslationKey,
   toTitleCase,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface ReportFilterOption {

@@ -1,5 +1,5 @@
 import { BookOpen, Plus } from "lucide-react";
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import type { ModuleColumnRegistryEntry } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";

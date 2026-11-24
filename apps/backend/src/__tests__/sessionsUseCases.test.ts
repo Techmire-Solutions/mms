@@ -4,7 +4,7 @@ import { transitionSession } from "../sessions/use-cases/sessionTransitionServic
 import type { SessionsRepository } from "../sessions/repository/sessionsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { ConflictError, NotFoundError } from "../lib/httpErrors.js";
-import { SessionSchema } from "@mms/shared";
+import { SessionSchema } from "@mms/contracts";
 
 vi.mock("../sessions/use-cases/sessionTransitionService.js", () => ({
   transitionSession: vi.fn(),

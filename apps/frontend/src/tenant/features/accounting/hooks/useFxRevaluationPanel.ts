@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { todayISO, type FxRevaluationRun } from "@mms/shared";
+import { todayISO, type FxRevaluationRun } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {

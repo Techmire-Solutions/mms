@@ -1,6 +1,6 @@
 import React from "react";
-import type { AppTranslationKey } from "@mms/shared";
-import { normalizeSessionStatus } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
+import { normalizeSessionStatus } from "@mms/contracts";
 import { FormFooterEntityChip } from "@/components/app/FormFooterChip";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -1,5 +1,5 @@
 import { type QueryClient, queryOptions, useMutation, useQuery } from "@tanstack/react-query";
-import { facultyDesignationSchema, type FacultyDesignationWrite } from "@mms/shared";
+import { facultyDesignationSchema, type FacultyDesignationWrite } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";

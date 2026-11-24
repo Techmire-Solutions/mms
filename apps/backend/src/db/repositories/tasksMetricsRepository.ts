@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { type TaskListQuery } from "@mms/shared";
-import { tasks, workspaces } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { type TaskListQuery } from "@mms/contracts";
+import { tasks, workspaces } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { buildTaskFilterConditions } from "./tasksFilterConditions.js";
 
 export interface TaskMetricsRow {

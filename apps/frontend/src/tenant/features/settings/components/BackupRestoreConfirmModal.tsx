@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { AlertTriangle, CheckCircle2, ShieldCheck } from "lucide-react";
-import { formatDateTime, type WorkspaceBackupSummary } from "@mms/shared";
+import { formatDateTime, type WorkspaceBackupSummary } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";

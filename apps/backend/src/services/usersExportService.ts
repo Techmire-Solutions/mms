@@ -8,7 +8,7 @@ import {
   type UserExportColumn,
   type UsersListQuery,
   type WorkspaceUser,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createModuleExportService,
   type ModuleExportQueryInput,

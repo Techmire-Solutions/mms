@@ -1,7 +1,7 @@
 import type React from "react";
 import type { ChangeEvent, RefObject } from "react";
 import { Camera } from "lucide-react";
-import { getInitials, type TenantUserProfile } from "@mms/shared";
+import { getInitials, type TenantUserProfile } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";

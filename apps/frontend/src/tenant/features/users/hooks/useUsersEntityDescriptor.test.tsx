@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi } from "vitest";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { useUsersEntityDescriptor } from "./useUsersEntityDescriptor";
 
 vi.mock("@/hooks/useTranslation", () => ({

@@ -6,7 +6,7 @@ import {
   normalizeExaminationsReportComparisonQuery,
   type ExaminationsReportComparisonQuery,
   type ExaminationsReportAggregates,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 import { EXAMINATIONS_REPORT_AGGREGATES_QUERY_KEY } from "./examinationsQueryKeys";
 

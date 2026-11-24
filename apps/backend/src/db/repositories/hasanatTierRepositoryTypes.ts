@@ -2,7 +2,7 @@
  * Hasanat tier/badge persistence types & DTO mappers.
  */
 
-import type { HasanatTierAward } from "@mms/shared";
+import type { HasanatTierAward } from "@mms/contracts";
 
 export interface StudentPoints {
   studentId: string;

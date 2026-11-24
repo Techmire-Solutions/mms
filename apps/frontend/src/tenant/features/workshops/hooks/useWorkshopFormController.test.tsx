@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { WorkshopEvent, WorkshopPreferences } from "@mms/shared";
+import type { WorkshopEvent, WorkshopPreferences } from "@mms/contracts";
 import { useWorkshopFormController } from "./useWorkshopFormController";
 
 declare global {

@@ -1,4 +1,4 @@
-import { formatLlmSpeed } from "@mms/shared";
+import { formatLlmSpeed } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSettingsGlobalDraft } from "@/lib/contexts/SettingsGlobalDraftContext";
 import { useLlmHealthChecks } from "./useLlmHealthChecks";

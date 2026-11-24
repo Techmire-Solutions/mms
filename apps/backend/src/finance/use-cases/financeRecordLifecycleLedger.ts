@@ -1,4 +1,4 @@
-import type { Invoice, Payment } from "@mms/shared";
+import type { Invoice, Payment } from "@mms/contracts";
 import type { FinanceRepository } from "../repository/financeRepository.js";
 import {
   tryPostArchiveReversalJournal,

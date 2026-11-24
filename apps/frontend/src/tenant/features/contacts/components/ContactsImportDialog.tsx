@@ -1,6 +1,6 @@
 import React from "react";
 import { Upload } from "lucide-react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
 import { Modal } from "@/components/app/Modal";
 import { Alert } from "@/components/app/Alert";

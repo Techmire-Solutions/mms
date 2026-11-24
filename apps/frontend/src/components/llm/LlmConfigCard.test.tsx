@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, it, expect, vi } from "vitest";
 import { LlmConfigCard } from "./LlmConfigCard";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { LlmConfig } from "@mms/shared";
+import type { LlmConfig } from "@mms/contracts";
 
 describe("LlmConfigCard", () => {
   const mockConfig: LlmConfig = {

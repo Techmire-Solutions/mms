@@ -8,9 +8,9 @@ import {
   type Payment,
   type PaymentAllocation,
   type PaymentCreateInput,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { runInTransaction } from "../../db/database.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { replacePaymentAllocations } from "../../db/repositories/financeBillingRepository.js";
 import { tryPostPaymentJournal } from "../../accounting/ledgerPosting/ledgerPostingService.js";

@@ -1,5 +1,5 @@
-import type { Enrollment } from "@mms/shared";
-import type { enrollments } from "../schema.js";
+import type { Enrollment } from "@mms/contracts";
+import type { enrollments } from "@mms/db/schema";
 import { mapAuditToInsert } from "./repositoryMappers.js";
 import { requireDbDate } from "../../lib/dbDate.js";
 

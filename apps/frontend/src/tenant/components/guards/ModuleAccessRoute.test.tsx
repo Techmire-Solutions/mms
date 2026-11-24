@@ -7,7 +7,7 @@ import {
   evaluateModuleAccess,
   roleHasPermission,
   type ModuleAvailabilityMap,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ModuleAccessState } from "@/tenant/hooks/useModuleAccess";
 
 const { mockUseModuleAccess } = vi.hoisted(() => ({ mockUseModuleAccess: vi.fn() }));

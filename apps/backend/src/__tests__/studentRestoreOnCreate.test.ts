@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 
 const { canDeleteCollection, recordRestoreEvents, restoreCascaded } = vi.hoisted(() => ({
   canDeleteCollection: vi.fn(),

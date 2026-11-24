@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 
 const captured = vi.hoisted(() => ({ fields: null as Record<string, unknown> | null }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: async (_tenant: string, callback: (tx: unknown) => Promise<unknown>) =>
     callback({
       select: (fields: Record<string, unknown>) => {

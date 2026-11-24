@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getApiValidationMessage } from "@/lib/apiValidationMessage";
+import { getApiValidationMessage } from "@mms/fe-core/api/validationMessage";
 import { notify } from "@/lib/notify";
-import { accountingPreferencesPutBodySchema, type AccountingSettings } from "@mms/shared";
+import { accountingPreferencesPutBodySchema, type AccountingSettings } from "@mms/contracts";
 import {
   ACCOUNTING_PREFERENCES_KEYS,
   toAccountingPreferencesPayload,

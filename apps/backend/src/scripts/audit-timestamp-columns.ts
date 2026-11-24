@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { activeDb, closeDatabase, initializeDatabaseConnection } from "../db/dbConnection.js";
+import { activeDb, closeDatabase, initializeDatabaseConnection } from "@mms/db/client";
 import { logger } from "../lib/logger.js";
 import { summarizeTimestampColumns, type NaiveTimestampColumn } from "./timestampAuditCore.js";
 

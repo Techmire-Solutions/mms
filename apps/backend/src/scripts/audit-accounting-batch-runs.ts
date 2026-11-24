@@ -22,8 +22,8 @@
  * Exits non-zero when a partial run is found, so it can gate a deploy.
  */
 import { sql } from "drizzle-orm";
-import { closeDatabase, initializeDatabaseConnection } from "../db/dbConnection.js";
-import { withGlobalTenant } from "../db/tenant-context.js";
+import { closeDatabase, initializeDatabaseConnection } from "@mms/db/client";
+import { withGlobalTenant } from "@mms/db/context";
 import { loadBackendEnv } from "../config/loadEnv.js";
 import { logger } from "../lib/logger.js";
 

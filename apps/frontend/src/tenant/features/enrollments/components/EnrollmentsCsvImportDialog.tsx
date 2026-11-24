@@ -3,7 +3,7 @@ import {
   ENROLLMENTS_MODULE_MANIFEST,
   enrollmentsTransferSchema,
   type EnrollmentTransferEntity,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface EnrollmentsCsvImportDialogProps {

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { withTenant, withTenantRead, withGlobalTenant } from "../tenant-context.js";
-import { questionBankFieldConfigs } from "../schema.js";
-import type { QuestionBankSettings } from "@mms/shared";
+import { withTenant, withTenantRead, withGlobalTenant } from "@mms/db/context";
+import { questionBankFieldConfigs } from "@mms/db/schema";
+import type { QuestionBankSettings } from "@mms/contracts";
 
 export async function replaceQuestionBankFieldConfigsForWorkspace(
   workspaceSubdomain: string,

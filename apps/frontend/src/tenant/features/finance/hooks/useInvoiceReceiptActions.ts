@@ -7,7 +7,7 @@
  */
 
 import { useCallback } from "react";
-import { getOutstandingAmountForInvoice, type ZohoInvoicePayload } from "@mms/shared";
+import { getOutstandingAmountForInvoice, type ZohoInvoicePayload } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Invoice } from "@/lib/data/financeData";
 import { mapToZohoInvoice } from "@/components/template-editor/templatePayloadMappers";

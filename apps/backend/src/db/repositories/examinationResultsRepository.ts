@@ -1,7 +1,7 @@
 import { and, eq, gt, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type ExamResult } from "@mms/shared";
-import { examResults, exams } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type ExamResult } from "@mms/contracts";
+import { examResults, exams } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Read surface for exam marks. Writes, OCC, moderation and the publication lock live in

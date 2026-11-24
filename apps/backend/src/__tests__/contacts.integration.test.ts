@@ -66,7 +66,7 @@ const mockMatchContactIdentityIndex = vi.fn().mockResolvedValue({
 const mockBulkTagContacts = vi.fn();
 
 vi.mock("../contacts/use-cases/contactUseCases.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../contacts/use-cases/contactUseCases.js")>();
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
   return {
     ...actual,
     contactUseCases: {
@@ -150,7 +150,7 @@ vi.mock("../contacts/use-cases/contactGoogleSyncUseCases.js", () => ({
   },
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (first: unknown, second?: unknown) => {
     const input = (second ?? first) as {
       realUserId?: string;
@@ -186,9 +186,9 @@ vi.mock("../services/backgroundJobWorkerService.js", async (importOriginal) => {
 });
 
 import { buildApp } from "../app.js";
-import { ContactUniqueFieldError } from "../services/contactUniqueValidationService.js";
+import { ContactUniqueFieldError } from "@mms/mod-contacts/backend/services";
 import { accountantToken, adminToken, teacherToken, viewerToken } from "./helpers/tokens.js";
-import { DEFAULT_CONTACT_EXPORT_COLUMNS, filterNonMetadataColumns } from "@mms/shared";
+import { DEFAULT_CONTACT_EXPORT_COLUMNS, filterNonMetadataColumns } from "@mms/contracts";
 
 const sampleContact = {
   id: "c1",

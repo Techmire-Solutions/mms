@@ -4,11 +4,11 @@ import {
   DEFAULT_CHART_OF_ACCOUNTS,
   DEFAULT_CHART_RETAINED_EARNINGS_CODE,
   type Account,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { SeedAccountDefaults } from "../db/repositories/accountingAccountsSeed.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { ConflictError } from "../lib/httpErrors.js";
-import { seedDefaultChartOfAccountsUseCase } from "../accounting/use-cases/seedDefaultChartOfAccounts.js";
+import { seedDefaultChartOfAccountsUseCase } from "@mms/mod-accounting/backend/use-cases";
 
 describe("seedDefaultChartOfAccountsUseCase", () => {
   const applied = (retainedEarnings: boolean, cashAccount: boolean) => ({

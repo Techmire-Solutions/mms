@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/app/UserAvatar";

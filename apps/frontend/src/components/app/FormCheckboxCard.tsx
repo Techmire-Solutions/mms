@@ -1,1 +1,1 @@
-export { FormCheckboxCard, type FormCheckboxCardProps } from "@shared/ui";
+export { FormCheckboxCard, type FormCheckboxCardProps } from "@mms/ui";

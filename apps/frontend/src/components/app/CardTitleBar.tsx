@@ -1,2 +1,2 @@
-export { CardTitleBar, type CardTitleBarProps } from "@shared/ui";
-export { CardTitleBar as default } from "@shared/ui";
+export { CardTitleBar, type CardTitleBarProps } from "@mms/ui";
+export { CardTitleBar as default } from "@mms/ui";

@@ -5,7 +5,7 @@ import {
   type Contact,
   type FieldDefinition,
   type StudentsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getInitialStudentDraft } from "./studentFormDraft";
 import { validateStudentDraft } from "../hooks/studentFormValidation";
 

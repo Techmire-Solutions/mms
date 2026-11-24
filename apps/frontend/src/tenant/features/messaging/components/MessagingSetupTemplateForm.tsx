@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Edit3, Plus } from "lucide-react";
-import type { MessageCategory } from "@mms/shared";
+import type { MessageCategory } from "@mms/contracts";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";

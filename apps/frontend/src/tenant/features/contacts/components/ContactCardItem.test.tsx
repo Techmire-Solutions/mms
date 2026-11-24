@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/shared";
+import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/contracts";
 import { ContactCardItem } from "@/tenant/features/contacts/components/ContactCardItem";
 import { createEntityDescriptorFromFieldConfig } from "@/components/common/entityDescriptorFromFieldConfig";
 

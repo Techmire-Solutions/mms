@@ -4,7 +4,7 @@ import {
   getMessageCategoryLabelKey,
   type AppTranslationKey,
   type Message,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { ChannelBadge } from "@/components/app/ChannelBadge";

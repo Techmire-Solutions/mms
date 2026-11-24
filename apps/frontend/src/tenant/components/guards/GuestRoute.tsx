@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { requiresTwoFactor } from "@mms/shared";
+import { requiresTwoFactor } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { DEFAULT_AUTH_REDIRECT, ROUTES } from "@/lib/config/routes";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";

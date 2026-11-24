@@ -44,11 +44,11 @@ gate "Accounting route injection" pnpm run check:accounting-route-injection
 gate "Accounting route security matrix" pnpm run check:accounting-route-security
 gate "Examinations test matrix" pnpm run check:examinations-tests
 gate "Examinations route injection" pnpm run check:examinations-route-injection
-gate "Examinations scoring coverage" pnpm --filter @mms/shared run test:coverage:examinations
+gate "Examinations scoring coverage" pnpm --filter @mms/contracts run test:coverage:examinations
 gate "i18n completeness (en/ar/ur/fa)" pnpm run check:i18n
 gate "i18n unused keys" pnpm run check:i18n-unused
-gate "@mms/shared purity & boundaries" pnpm run check:shared-purity
-gate "@mms/shared structure" pnpm run check:shared-structure
+gate "@mms/contracts purity & boundaries" pnpm run check:shared-purity
+gate "@mms/contracts structure" pnpm run check:shared-structure
 gate "Faculty domain legacy surface" pnpm run check:faculty-domain
 gate "Migration index quality" pnpm run check:migration-indexes
 gate "Migration hygiene" pnpm run check:migration-hygiene

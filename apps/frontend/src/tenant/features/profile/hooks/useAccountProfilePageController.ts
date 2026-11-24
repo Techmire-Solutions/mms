@@ -1,5 +1,5 @@
 import { useRef, useState, type ChangeEvent } from "react";
-import { calculateProfileCompleteness, type FieldConfig } from "@mms/shared";
+import { calculateProfileCompleteness, type FieldConfig } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTenantProfile } from "@/tenant/hooks/useTenantProfile";
 import { genderAvatarGradient } from "@/lib/ui/semanticTone";

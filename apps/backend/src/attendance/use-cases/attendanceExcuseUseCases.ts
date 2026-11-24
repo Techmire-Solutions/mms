@@ -6,7 +6,7 @@ import {
   type AttendanceLeaveReview,
   type AttendanceLeaveStatus,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   attendanceLeaveRepository as repo,
   type AttendanceLeaveRecord,
@@ -19,8 +19,8 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../lib/httpErrors.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { withTenant } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { sessionsAcademicRepository } from "../../sessions/repository/sessionsAcademicRepositoryAdapter.js";
 import { auditLeave, notifyLeaveDecision, syncExcusedMarks } from "./attendanceExcuseAudit.js";
 

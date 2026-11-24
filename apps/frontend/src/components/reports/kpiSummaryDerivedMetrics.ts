@@ -1,11 +1,11 @@
-import { formatNumber } from "@mms/shared";
+import { formatNumber } from "@mms/contracts";
 import type {
   AttendanceCommandMetricsSnapshot,
   FinanceCommandMetricsSnapshot,
   HasanatCommandMetricsSnapshot,
   SessionsCommandMetricsSnapshot,
   ExaminationsCommandMetricsSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { ContactKPIAnalytics, EntityKPIMetrics } from "./kpiSummaryTypes";
 

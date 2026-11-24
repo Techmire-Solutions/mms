@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { instructionalDayDecision, weekdayIndexes, type CalendarEventLite } from "@mms/shared";
+import { instructionalDayDecision, weekdayIndexes, type CalendarEventLite } from "@mms/contracts";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useAcademicCalendarEvents } from "./useAcademicCalendar";
 
@@ -21,7 +21,7 @@ export interface InstructionalDayStatus {
   isLoading: boolean;
 }
 
-/** Same rule as the server guard (`@mms/shared` instructionalDayDecision) for the mark screen. */
+/** Same rule as the server guard (`@mms/contracts` instructionalDayDecision) for the mark screen. */
 export function useInstructionalDayStatus(input: InstructionalDayInput): InstructionalDayStatus {
   const { settings } = useAttendanceConfig();
   const valid = /^\d{4}-\d{2}-\d{2}$/.test(input.date);

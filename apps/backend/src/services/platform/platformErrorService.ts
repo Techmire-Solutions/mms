@@ -1,5 +1,5 @@
-import type { PlatformServiceErrorCode } from "@mms/shared";
-import { PLATFORM_SERVICE_ERROR_STATUSES } from "@mms/shared";
+import type { PlatformServiceErrorCode } from "@mms/contracts";
+import { PLATFORM_SERVICE_ERROR_STATUSES } from "@mms/contracts";
 
 export type PlatformErrorCode = PlatformServiceErrorCode;
 

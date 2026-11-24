@@ -1,22 +1,22 @@
 import React from "react";
 import { FileText } from "lucide-react";
-import { SubTabBar } from "@/components/app/SubTabBar";
-import { Button } from "@/components/ui/button";
+import { SubTabBar } from "@mms/ui/app/SubTabBar";
+import { Button } from "@mms/ui";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";
-import { ErrorState } from "@/components/app/ErrorState";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AccountingDateFilterBar } from "./AccountingDateFilterBar";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { Skeleton } from "@mms/ui";
+import { AccountingDateFilterBar } from "@mms/mod-accounting/frontend/tenant";
 import {
   BalanceSheetPanel,
   CashFlowStatementPanel,
   IncomeStatementPanel,
-} from "./FinancialStatementPanels";
+} from "@mms/mod-accounting/frontend/tenant";
 import { PinnedWidgets } from "@/tenant/components/reports";
 import { FxReportPanel } from "./FxReportPanel";
 import { ReceivablesAgingPanel } from "./ReceivablesAgingPanel";
 import { useFinancialReportsModel } from "../hooks/useFinancialReportsModel";
 import { useAccountingReportPdfExport } from "../hooks/useAccountingReportPdfExport";
-import { todayISO } from "@mms/shared";
+import { todayISO } from "@mms/contracts";
 
 /**
  * FinancialReports component.

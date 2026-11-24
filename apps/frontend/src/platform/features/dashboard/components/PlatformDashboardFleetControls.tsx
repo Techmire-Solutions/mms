@@ -1,9 +1,9 @@
 import React from "react";
 import { Search } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Switch, Label, LeadingIconInput, CompactSegmentedControl } from "@shared/ui";
+import { Switch, Label, LeadingIconInput, CompactSegmentedControl } from "@mms/ui";
 import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
-import { WORK_SURFACE } from "@shared/ui";
+import { WORK_SURFACE } from "@mms/ui";
 import { cn } from "@/lib/utils";
 
 export type FleetStatusFilter = "all" | "active" | "inactive";

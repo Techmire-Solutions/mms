@@ -48,8 +48,8 @@ PATHS=(
   apps/backend/src/__tests__/moduleAccessCoverage.test.ts
 
   # --- shared package ---
-  packages/shared/src/contracts/faculty.contract.ts
-  packages/shared/src/__tests__/facultyContract.test.ts
+  packages/contracts/src/contracts/faculty.contract.ts
+  packages/contracts/src/__tests__/facultyContract.test.ts
 
   # --- agent standards (canonical source + all mirrors) ---
   .agent/skills/mms-faculty-domain/SKILL.md

@@ -1,14 +1,14 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FileQuestion } from "lucide-react";
-import { platformUserCan } from "@mms/shared";
+import { platformUserCan } from "@mms/contracts";
 import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
 import EntryPageHead, { formatEntryTitle } from "@/components/entry/EntryPageHead";
 import { AuthCardShell, AuthPageFrame } from "@/components/entry/AuthPageShell";
 import { AuthStatusHeader } from "@/components/entry/AuthStatusBanner";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 
 /** 404 page for platform apex routes only — no tenant auth/RBAC coupling. */
 export default function ApexPageNotFound(): React.JSX.Element {

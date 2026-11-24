@@ -11,7 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
-const CONTRACT_DIR = path.join(ROOT, "packages/shared/src/contracts");
+const CONTRACT_DIR = path.join(ROOT, "packages/contracts/src/contracts");
 const MATRIX_FILE = path.join(ROOT, "scripts/ci/examinations-route-security.json");
 
 const routes = new Set();

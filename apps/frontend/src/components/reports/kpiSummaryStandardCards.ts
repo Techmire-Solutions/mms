@@ -24,7 +24,7 @@ import {
   type QuestionBankQuestion,
   type QuestionBankResult,
   type QuestionBankTest,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type {
   CategorizedKPIItem,

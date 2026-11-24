@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type ObligationCollection } from "@mms/shared";
+import { dedupeTrimmedIds, type ObligationCollection } from "@mms/contracts";
 import {
   obligationCollections,
   obligationDistributions,
@@ -7,12 +7,12 @@ import {
   wakalaTypes,
   mujtahidReps,
   mujtahids,
-} from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { getRequestUserId } from "../../lib/tenantContext.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { requireDbDateValue } from "../../lib/dbDate.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError } from "@mms/be-core/http/errors";
 
 /**
  * Optimistic-concurrency predicate for the upsert: write only when the caller's token still

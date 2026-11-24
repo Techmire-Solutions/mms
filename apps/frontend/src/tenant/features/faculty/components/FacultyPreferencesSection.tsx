@@ -5,7 +5,7 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { FormCheckboxCard } from "@/components/app/FormPrimitives";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { FacultySettings } from "@mms/shared";
+import type { FacultySettings } from "@mms/contracts";
 import { FacultyIdSettingsCard } from "./FacultyIdSettingsCard";
 
 export interface FacultyPreferencesSectionProps {

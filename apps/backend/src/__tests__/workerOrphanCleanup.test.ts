@@ -10,7 +10,7 @@ const fakeTx = {
   }),
 };
 
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
+vi.mock("@mms/db/context", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return { ...actual, withGlobalTenant: (fn: (tx: unknown) => unknown) => fn(fakeTx) };
 });

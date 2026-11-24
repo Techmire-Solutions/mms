@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { isJournalEntryBalanced, journalEntryRecordSchema, moneyAmountSchema } from "@mms/shared";
-import { parseMoneyInput } from "../lib/simpleTransactionMoney";
+import {
+  isJournalEntryBalanced,
+  journalEntryRecordSchema,
+  moneyAmountSchema,
+} from "@mms/contracts";
+import { parseMoneyInput } from "@mms/mod-accounting/frontend/tenant";
 
 describe("parseMoneyInput", () => {
   it.each([

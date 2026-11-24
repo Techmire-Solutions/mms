@@ -1,6 +1,10 @@
 import { useState, useMemo } from "react";
 import { useFacultyContractList, useFacultyByIds } from "@/tenant/hooks/collections/faculty";
-import { FACULTY_MODULE_MANIFEST, formatFacultyDisplayName, type FacultyMember } from "@mms/shared";
+import {
+  FACULTY_MODULE_MANIFEST,
+  formatFacultyDisplayName,
+  type FacultyMember,
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Session, SessionFaculty } from "@/lib/data/sessionsData";
 import { COMMON_FACULTY_ROLES } from "./facultyManagementShared";

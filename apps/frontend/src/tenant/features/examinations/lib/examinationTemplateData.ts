@@ -3,7 +3,7 @@ import {
   type DocumentTemplatePreset,
   type TemplateFieldDefinition,
   type TypstReportCardPayload,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   PRINT_SLATE_DARK,
   PRINT_SLATE_MEDIUM,

@@ -77,7 +77,7 @@ Status: **Fixed** findings landed with this change; **Verified** items were exer
 | `services/backgroundJobDocumentFinanceRunners.ts` | removed unreachable finance runners (+ `MAX_EXCEL_PAYLOAD_ENTRIES`) |
 | `db/repositories/financeCollectRepository.ts` | conditional late-fee UPDATE, candidate locking, reminder claim |
 | `finance/use-cases/financeCollectUseCases.ts`, `financeAuditEvents.ts` | applied-only posting/audit, summary audits, `lateFeeAmt` in the audit projection |
-| `packages/shared/src/dashboard/tenantNotifications.ts`, FE `useStoredNotifications`, 4 locale files | `finance_invoices_overdue` notification kind |
+| `packages/contracts/src/dashboard/tenantNotifications.ts`, FE `useStoredNotifications`, 4 locale files | `finance_invoices_overdue` notification kind |
 
 ## 6. Evidence
 

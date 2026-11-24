@@ -2,8 +2,8 @@
  * @file workshopsExportService.ts
  * @description Workshops (events) CSV export, wired to the shared data-transfer schema SSOT.
  */
-import { buildTenantExportFilename, type ExportColumn, type WorkshopEvent } from "@mms/shared";
-import { workshopsTransferSchema } from "@mms/shared";
+import { buildTenantExportFilename, type ExportColumn, type WorkshopEvent } from "@mms/contracts";
+import { workshopsTransferSchema } from "@mms/contracts";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { workshopsRepository } from "../workshops/repository/workshopsRepositoryAdapter.js";
 

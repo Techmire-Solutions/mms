@@ -27,8 +27,8 @@ All rules in MMS are either machine-enforced or explicitly labelled advisory (`m
 | `pnpm run check:code-norms` | `scripts/check-code-norms.mjs` | 300-line hard file limit, zero `any`, raw hex colors | Split files into focused components, use `@theme` CSS tokens |
 | `pnpm run check:db-projections` | `scripts/check-db-projections.mjs` | Prohibits unconstrained `select()` wildcard projections | Explicitly select required column sets in SQL/Drizzle queries |
 | `pnpm run check:work-directory` | `scripts/check-work-directory.mjs` | 6 Work directory invariants (no CSS dual render, `DataTable` SSOT) | Use `DataTable` / `WorkBatchTable` and `DirectoryCard` composites |
-| `pnpm run check:shared-ui` | `scripts/check-shared-ui.mjs` | Zero duplicate UI primitives across Tenant & Platform | Import primitives from `@shared/ui`; eliminate console forks |
-| `pnpm run check:shared-purity` | `.agent/skills/mms-shared-package/scripts/check-shared-exports.sh` | Pure TypeScript only in `@mms/shared` (no DOM/Node/React) | Move UI/runtime logic to consuming app packages |
+| `pnpm run check:shared-ui` | `scripts/check-shared-ui.mjs` | Zero duplicate UI primitives across Tenant & Platform | Import primitives from `@mms/ui`; eliminate console forks |
+| `pnpm run check:shared-purity` | `.agent/skills/mms-shared-package/scripts/check-shared-exports.sh` | Pure TypeScript only in `@mms/contracts` (no DOM/Node/React) | Move UI/runtime logic to consuming app packages |
 | `pnpm run check:faculty-domain` | `scripts/check-faculty-domain.mjs` | Prohibits retired legacy terms (`/api/teachers`, `FDA`) | Use `facultyDesignations`, `facultyAssignments`, `facultyDepartments` |
 | `pnpm run check:migrations-forward-only` | `scripts/check-migrations-forward-only.mjs` | Applied migrations are immutable | Only append new sequential forward DDL migrations |
 

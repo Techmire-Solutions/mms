@@ -1,7 +1,7 @@
 import React from "react";
 import { Layers } from "lucide-react";
-import { useTranslation } from "@/hooks/useTranslation";
-import { ModulePageShell } from "@/components/app/ModulePageShell";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ModulePageShell } from "@mms/fe-core/components/ModulePageShell";
 import {
   PlatformConsolidationTier,
   type PlatformConsolidationTab,

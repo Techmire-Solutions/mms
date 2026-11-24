@@ -10,7 +10,7 @@ import type {
   StudentsWidgetQuery,
   RepositoryListOptions,
   StudentGrNumberSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export type ListStudentsOptions = RepositoryListOptions;
 

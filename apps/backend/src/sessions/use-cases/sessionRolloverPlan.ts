@@ -5,7 +5,7 @@ import {
   type PromotionPreviewRow,
   type Session,
   type SessionRolloverBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 interface RolloverPlanCandidate {
   id: string;

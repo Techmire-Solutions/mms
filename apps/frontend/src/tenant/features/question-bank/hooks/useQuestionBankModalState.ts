@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import type { QuestionBankQuestion } from "@mms/shared";
+import type { QuestionBankQuestion } from "@mms/contracts";
 import type { PaperBuilderTab } from "@/tenant/features/question-bank/components/PaperBuilder";
 
 export function useQuestionBankModalState() {

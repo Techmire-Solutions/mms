@@ -5,7 +5,7 @@ import {
 } from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { INVOICE_STATUSES } from "@/lib/data/financeData";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 
 export interface InvoicesFiltersMenuButtonProps {
   filterStatus: string[];

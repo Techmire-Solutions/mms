@@ -4,7 +4,7 @@ import { Bar, BarChart, Cell, Pie, PieChart, Tooltip, XAxis, YAxis } from "recha
 import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import { ChartTooltip, ChartTooltipRow } from "@/components/app/ChartTooltip";
 import { buildChartTooltip } from "@/components/dashboard-widgets/charts/chartPrimitives";
-import { formatNumber } from "@mms/shared";
+import { formatNumber } from "@mms/contracts";
 import { ReportChartCard } from "@/components/reports/ReportChartCard";
 import { LegendChip } from "@/components/app/LegendChip";
 import { useTranslation } from "@/hooks/useTranslation";

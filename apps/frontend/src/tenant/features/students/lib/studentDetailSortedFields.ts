@@ -2,7 +2,7 @@ import {
   DEFAULT_STUDENT_ENABLED_TABS,
   type FieldDefinition,
   type StudentsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 /** Detail-drawer field row: registry field pinned to its enabled tab and sort position. */

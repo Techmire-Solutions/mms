@@ -1,4 +1,4 @@
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 
 export function getPlatformAdminMetrics(admins: readonly PlatformUserProfile[]) {
   const total = admins.length;

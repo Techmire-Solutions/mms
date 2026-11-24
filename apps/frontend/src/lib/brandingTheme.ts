@@ -1,4 +1,4 @@
-import { type BrandingSettings, type BrandingThemeMode, type GlobalSettings } from "@mms/shared";
+import { type BrandingSettings, type BrandingThemeMode, type GlobalSettings } from "@mms/contracts";
 import { getScopedBrandingSettings, getScopedGlobalSettings } from "@/lib/settingsPreviewStore";
 import { isEntryPath } from "@/lib/config/routes";
 import {

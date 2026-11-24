@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { type Student, type StudentsBulkEnrollPlacement } from "@mms/shared";
+import { type Student, type StudentsBulkEnrollPlacement } from "@mms/contracts";
 import {
   type useStudentMutations,
   type StudentRecord,

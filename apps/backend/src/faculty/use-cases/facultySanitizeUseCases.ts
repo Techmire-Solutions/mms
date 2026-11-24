@@ -4,7 +4,7 @@ import {
   type FieldDefinition,
   type Faculty,
   type FacultySettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { loadFacultyFieldConfig } from "./facultyConfigService.js";
 
 function settingsSnapshot(settings: FacultySettings | null) {

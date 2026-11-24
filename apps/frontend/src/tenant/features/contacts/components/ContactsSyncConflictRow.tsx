@@ -1,6 +1,6 @@
 import type React from "react";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import { formatDateTime } from "@mms/shared";
+import { formatDateTime } from "@mms/contracts";
 import type { ContactsSyncConflict } from "@/lib/contacts/contactsSyncOutbox";
 import { getSyncConflictKindLabel } from "@/lib/contacts/contactI18n";
 import { useTranslation } from "@/hooks/useTranslation";

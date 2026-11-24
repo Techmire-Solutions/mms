@@ -1,7 +1,7 @@
 import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
-import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
+import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/contracts";
 import { registerCountRoute, registerMetricsRoute } from "../../lib/crudRouter.js";
 
 import { enrollmentsUseCases } from "../../enrollments/use-cases/enrollmentsUseCases.js";

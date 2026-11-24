@@ -1,12 +1,12 @@
 import React, { useRef, useState } from "react";
 import { Download, Upload } from "lucide-react";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { triggerFileDownload } from "@/lib/download";
-import type { PlatformContactCreateInput } from "@mms/shared";
+import type { PlatformContactCreateInput } from "@mms/contracts";
 import { useCreatePlatformContact } from "@/platform/features/contacts/hooks/usePlatformContacts";
 import {
   CONTACTS_IMPORT_TEMPLATE_CSV,

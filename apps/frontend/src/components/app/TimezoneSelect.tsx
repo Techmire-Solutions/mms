@@ -7,7 +7,7 @@ import {
   getTimezoneOptions,
   groupTimezoneOptions,
   normalizeTimezone,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { notify } from "@/lib/notify";

@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
-import type { User } from "@mms/shared";
-import { isQueryFlagTrue, userContract } from "@mms/shared";
+import type { User } from "@mms/contracts";
+import { isQueryFlagTrue, userContract } from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";

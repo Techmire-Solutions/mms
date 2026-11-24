@@ -3,7 +3,7 @@ import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/Status
 import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
 import { Badge } from "@/components/ui/badge";
 import { getGenderCardAccent } from "@/lib/ui/genderUi";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 
 export interface StudentDetailHeroCardProps {
   student: Student;

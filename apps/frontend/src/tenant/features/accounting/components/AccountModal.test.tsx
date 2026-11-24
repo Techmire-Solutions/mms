@@ -5,7 +5,7 @@ import { AccountModal } from "./AccountModal";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key, dir: "ltr", language: "en" }),
 }));
 
@@ -23,7 +23,7 @@ vi.mock("@/hooks/useStandardModuleConfig", () => ({
   }),
 }));
 
-vi.mock("@/components/app/FormModal", () => ({
+vi.mock("@mms/fe-core/components/FormModal", () => ({
   FormModal: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 

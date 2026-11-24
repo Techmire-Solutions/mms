@@ -8,7 +8,7 @@
  * injection (`=`, `+`, `-`, `@`, `|`, `%`, leading tab/CR, whitespace-hidden formulas).
  */
 
-import { HASANAT_MODULE_MANIFEST, buildCsvContent, type Distribution } from "@mms/shared";
+import { HASANAT_MODULE_MANIFEST, buildCsvContent, type Distribution } from "@mms/contracts";
 import {
   createModuleExportService,
   type ModuleExportOptions,

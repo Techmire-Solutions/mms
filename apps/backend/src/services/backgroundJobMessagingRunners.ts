@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { MESSAGING_MODULE_MANIFEST } from "@mms/shared";
+import { MESSAGING_MODULE_MANIFEST } from "@mms/contracts";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
 import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 

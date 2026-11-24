@@ -3,7 +3,9 @@ import { bulkUpdateStudentsStatusSql } from "../db/repositories/studentRepositor
 
 const mockWithTenantTransaction = vi.fn();
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (...args: unknown[]) => mockWithTenantTransaction(...args),
 }));
 

@@ -2,7 +2,7 @@ import type { UsersRepository } from "../repository/usersRepository.js";
 import { usersRepository } from "../repository/usersRepositoryAdapter.js";
 import { getRequestTenant, requireTenant } from "../../lib/tenantContext.js";
 import { getHydratedUsers } from "../../services/auth/userService.js";
-import { loadContactsByIds } from "../../services/contactService.js";
+import { loadContactsByIds } from "@mms/mod-contacts/backend/services";
 import {
   type WorkspaceUser,
   type UsersListQuery,
@@ -14,7 +14,7 @@ import {
   createContactLookupMap,
   hydrateWorkspaceUserProfile,
   dedupeTrimmedIds,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createUserActivityLogService } from "./userActivityLogUseCases.js";
 import {
   executeUserPasswordReset,

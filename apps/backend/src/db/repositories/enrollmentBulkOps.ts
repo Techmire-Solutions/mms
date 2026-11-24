@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { enrollments } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { enrollments } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
 
 /** Students (of `studentIds`) that already hold a live, non-cancelled enrollment in the session. */

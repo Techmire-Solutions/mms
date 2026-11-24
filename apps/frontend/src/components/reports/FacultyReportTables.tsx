@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
-import { toTitleCase } from "@mms/shared";
+import { toTitleCase } from "@mms/contracts";
 import { FacultyReportWorkloadTable } from "@/components/reports/FacultyReportWorkloadTable";
 import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
 import type { ExportColumn } from "@/components/app/ExportToolbar";

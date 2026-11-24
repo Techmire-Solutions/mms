@@ -1,6 +1,6 @@
 import { PassThrough } from "node:stream";
 import { once } from "node:events";
-import { buildCsvContent, buildTenantExportFilename } from "@mms/shared";
+import { buildCsvContent, buildTenantExportFilename } from "@mms/contracts";
 import { NotFoundError } from "../lib/httpErrors.js";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { resolveTenantExportKey, uploadStreamToStorage } from "../config/storage.js";

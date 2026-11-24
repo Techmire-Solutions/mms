@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { mergeBrandingSettings, type BrandingSettings } from "@mms/shared";
+import { mergeBrandingSettings, type BrandingSettings } from "@mms/contracts";
 import {
   getPlatformBrandingState,
   subscribePlatformBranding,

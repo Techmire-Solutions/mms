@@ -1,17 +1,19 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("../lib/softDeleteHelpers.js", () => ({
+vi.mock("@mms/db/soft-delete", () => ({
   enableIncludeDeleted: vi.fn().mockResolvedValue(undefined),
   withIncludeDeletedScope: vi.fn(async (_tx: unknown, work: () => Promise<unknown>) => work()),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: vi.fn(async (_subdomain: string, cb: (tx: unknown) => Promise<unknown>) =>
     cb({ execute: vi.fn().mockResolvedValue({ rows: [] }) }),
   ),
 }));
 
-import { enableIncludeDeleted, withIncludeDeletedScope } from "../lib/softDeleteHelpers.js";
+import { enableIncludeDeleted, withIncludeDeletedScope } from "@mms/db/soft-delete";
 import {
   listEnrollmentPlacementsAsOfTx,
   listEnrollmentPlacementsForDates,

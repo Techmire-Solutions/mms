@@ -1,6 +1,6 @@
 import React from "react";
 import { BrainCircuit } from "lucide-react";
-import { type Contact, getDisplayName } from "@mms/shared";
+import { type Contact, getDisplayName } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ContactIdentityMeta } from "../ContactIdentityMeta";
 import { ContactTagList } from "../ContactTagBadge";

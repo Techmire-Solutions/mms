@@ -11,7 +11,7 @@ import type {
   WorkshopScoresBody,
   WorkshopsCommandMetricsSnapshot,
   WorkshopPreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { WorkshopsPage } from "../../db/repositories/workshopEventsRepository.js";
 import type {
   WorkshopCompletionInputs,

@@ -5,7 +5,7 @@ import {
   isRelationshipWorkColumnKey,
   type Contact,
   type ContactPreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ContactTagList } from "@/tenant/features/contacts/components/ContactTagBadge";
 import { BiDiText } from "@/components/app/BiDiText";

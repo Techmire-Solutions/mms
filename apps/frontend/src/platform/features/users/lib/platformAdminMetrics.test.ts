@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, type PlatformUserProfile } from "@mms/shared";
+import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, type PlatformUserProfile } from "@mms/contracts";
 import { getPlatformAdminMetrics } from "@/platform/features/users/lib/platformAdminMetrics";
 
 describe("operator metrics", () => {

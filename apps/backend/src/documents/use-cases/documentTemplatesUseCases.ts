@@ -1,11 +1,11 @@
-import { documentTemplateSchema, type DocumentTemplate, type User } from "@mms/shared";
+import { documentTemplateSchema, type DocumentTemplate, type User } from "@mms/contracts";
 import {
   documentsRepositoryAdapter,
   type StoredDocumentTemplate,
 } from "../repository/documentsRepositoryAdapter.js";
 import { broadcastCollection, broadcastTenantUpdate } from "../../lib/livePush.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { withTenant, withTenantRead } from "@mms/db/context";
 
 /** A save whose `expectedUpdatedAt` no longer matches the stored row. Maps to 409. */
 export class DocumentTemplateConflictError extends Error {

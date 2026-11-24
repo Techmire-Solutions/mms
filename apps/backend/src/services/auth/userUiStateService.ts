@@ -1,7 +1,7 @@
 import { eq, and } from "drizzle-orm";
-import { withTenant } from "../../db/tenant-context.js";
-import { userUiPreferences } from "../../db/schema/system.js";
-import type { UserUiState, PatchUserUiStateBody } from "@mms/shared";
+import { withTenant } from "@mms/db/context";
+import { userUiPreferences } from "@mms/db/schema/system";
+import type { UserUiState, PatchUserUiStateBody } from "@mms/contracts";
 
 export async function getUserUiState(subdomain: string, userId: string): Promise<UserUiState> {
   return withTenant(subdomain, async (tx) => {

@@ -5,7 +5,7 @@ import {
   isQueryFlagTrue,
   SESSIONS_MODULE_MANIFEST,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import { enforceSessionResponses } from "../../../lib/sessionContractResponses.js";

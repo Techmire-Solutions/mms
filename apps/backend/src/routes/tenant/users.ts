@@ -1,7 +1,7 @@
 import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
-import { USERS_MODULE_MANIFEST, activityLogListSchema, type User } from "@mms/shared";
+import { USERS_MODULE_MANIFEST, activityLogListSchema, type User } from "@mms/contracts";
 import {
   registerBulkRoutes,
   registerCountRoute,

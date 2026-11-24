@@ -6,7 +6,7 @@ import type {
   ExaminationsReportComparisonSession,
   FinanceReportComparisonSession,
   HasanatReportComparisonSession,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 import type { ComparisonDataItem } from "./comparisonModeTypes";
 

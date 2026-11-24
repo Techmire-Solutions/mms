@@ -1,5 +1,5 @@
 import React from "react";
-import { normalizeBrandingHex } from "@mms/shared";
+import { normalizeBrandingHex } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";

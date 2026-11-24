@@ -9,8 +9,8 @@ vi.mock("../db/database.js", () => ({
   getObject: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("../services/auditTrailService.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../services/auditTrailService.js")>();
+vi.mock("@mms/be-core/audit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/be-core/audit")>();
   return { ...actual, recordModernAuditEvent: vi.fn().mockResolvedValue(undefined) };
 });
 
@@ -42,8 +42,8 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
 }));
 
 // /backup and /sync now stream via the long-lived transaction + streaming producer.
-vi.mock("../db/dbConnection.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/dbConnection.js")>();
+vi.mock("@mms/db/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/client")>();
   return {
     ...actual,
     beginLongLivedTenantTransaction: vi.fn(),
@@ -154,7 +154,7 @@ describe("tenant JWT binding", () => {
   });
 
   it("allows admin backup download of the full tenant snapshot", async () => {
-    const { beginLongLivedTenantTransaction } = await import("../db/dbConnection.js");
+    const { beginLongLivedTenantTransaction } = await import("@mms/db/client");
     const { streamBackupSnapshot } = await import("../db/streamingSnapshotProducer.js");
     vi.mocked(beginLongLivedTenantTransaction).mockResolvedValue({
       tx: {},

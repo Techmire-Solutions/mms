@@ -1,5 +1,5 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { QuestionBankResult } from "@mms/shared";
+import type { QuestionBankResult } from "@mms/contracts";
 import {
   questions,
   questionCategories,
@@ -12,8 +12,8 @@ import {
   testSectionQuestions,
   assessmentResults,
   assessmentAnswers,
-} from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 
 async function syncResultChildren(
   tx: TenantTransaction,

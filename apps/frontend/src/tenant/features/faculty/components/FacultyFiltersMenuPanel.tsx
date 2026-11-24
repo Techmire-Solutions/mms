@@ -12,7 +12,7 @@ import {
   FACULTY_SORT_FIELD_SET,
   type FacultySortField,
   type FacultyQuickFilter,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDivider,

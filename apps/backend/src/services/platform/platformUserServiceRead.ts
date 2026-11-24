@@ -1,10 +1,10 @@
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import {
   findPlatformUserRowByEmail,
   findPlatformUserRowById,
   updatePlatformUserRow,
 } from "../../db/repositories/platformUserRepository.js";
-import type { StoredPlatformUser } from "@mms/shared";
+import type { StoredPlatformUser } from "@mms/contracts";
 import { PlatformError } from "./platformErrorService.js";
 import { toPlatformUserProfile } from "./platformUserServiceMappers.js";
 

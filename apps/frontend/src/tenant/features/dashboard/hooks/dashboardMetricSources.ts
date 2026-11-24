@@ -17,7 +17,7 @@ import {
   getModuleActionPermission,
   resolveAccessModuleId,
   type Permission,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 type AggregateCollection = "contacts" | "students" | "faculty" | "sessions";
 

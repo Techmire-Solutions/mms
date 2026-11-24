@@ -1,7 +1,7 @@
 import React from "react";
 import { Plus, Trash2, TrendingUp, TrendingDown } from "lucide-react";
-import { formatMoney } from "@mms/shared";
-import { SectionHeader } from "@shared/ui";
+import { formatMoney } from "@mms/contracts";
+import { SectionHeader } from "@mms/ui";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";

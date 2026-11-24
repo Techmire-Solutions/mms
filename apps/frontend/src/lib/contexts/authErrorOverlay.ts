@@ -1,4 +1,4 @@
-import type { TenantAuthErrorType } from "@mms/shared";
+import type { TenantAuthErrorType } from "@mms/contracts";
 import { isEntryPath, ROUTES } from "@/lib/config/routes";
 
 export interface UserNotRegisteredOverlayInput {

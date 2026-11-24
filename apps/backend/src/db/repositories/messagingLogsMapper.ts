@@ -1,5 +1,5 @@
-import type { Message } from "@mms/shared";
-import type { messageLogs } from "../schema.js";
+import type { Message } from "@mms/contracts";
+import type { messageLogs } from "@mms/db/schema";
 import { mapAuditTimestamps, toIsoString } from "./repositoryMappers.js";
 
 export type LogRow = typeof messageLogs.$inferSelect;

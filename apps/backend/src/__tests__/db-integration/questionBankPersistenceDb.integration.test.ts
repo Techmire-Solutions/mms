@@ -4,10 +4,10 @@ import {
   questionBankQuestionSnapshotSchema,
   type QuestionBankQuestion,
   type WidgetQuery,
-} from "@mms/shared";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
-import { withTenant } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
+import { withTenant } from "@mms/db/context";
 import {
   assessmentAnswers,
   assessmentResults,
@@ -23,14 +23,14 @@ import {
   testSections,
   tests,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import {
   bulkRestoreQuestions,
   bulkSoftDeleteQuestions,
   findQuestionById,
   saveQuestion,
 } from "../../db/repositories/questionBankQuestionsRepository.js";
-import { auditTrailEvents } from "../../db/schema.js";
+import { auditTrailEvents } from "@mms/db/schema";
 import {
   bindRequestAuditContext,
   bindRequestUserId,

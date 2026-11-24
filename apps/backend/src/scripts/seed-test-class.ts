@@ -1,6 +1,6 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/database.js";
-import { getDb } from "../db/dbClient.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { getDb } from "@mms/db/client";
 import {
   sessions,
   sessionClasses,
@@ -8,7 +8,7 @@ import {
   students,
   contacts,
   attendanceModulePreferences,
-} from "../db/schema.js";
+} from "@mms/db/schema";
 import { eq } from "drizzle-orm";
 
 loadBackendEnv();
@@ -21,7 +21,7 @@ async function main() {
   }
 
   console.log(`Seeding session, class, and enrollment for subdomain: "${subdomain}"...`);
-  await initDb();
+  await initializeDatabase();
   const db = getDb();
 
   // 1. Find contact Jane Doe

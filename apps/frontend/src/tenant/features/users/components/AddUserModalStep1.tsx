@@ -8,7 +8,7 @@ import {
   USER_STATUS_VALUES,
   type Contact,
   type UserStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { FormSelect } from "@/components/app/FormSelect";
 import { UserAvatar } from "@/components/app/UserAvatar";

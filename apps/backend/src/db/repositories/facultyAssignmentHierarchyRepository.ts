@@ -1,6 +1,6 @@
-import type { FacultyAssignmentTreeNode as AssignmentTreeNode } from "@mms/shared";
+import type { FacultyAssignmentTreeNode as AssignmentTreeNode } from "@mms/contracts";
 
-export type { FacultyAssignmentTreeNode as AssignmentTreeNode } from "@mms/shared";
+export type { FacultyAssignmentTreeNode as AssignmentTreeNode } from "@mms/contracts";
 
 /** Organization hierarchy removed — manager chains are empty. */
 export async function findAssignmentManagerChain(

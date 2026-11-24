@@ -5,7 +5,7 @@ import {
   exportBackupAssetsForSnapshot,
   restoreTenantAssets,
 } from "../services/backupAssetService.js";
-import type { TenantDatabaseSnapshot } from "@mms/shared";
+import type { TenantDatabaseSnapshot } from "@mms/contracts";
 import * as fsPromises from "node:fs/promises";
 import { join } from "node:path";
 

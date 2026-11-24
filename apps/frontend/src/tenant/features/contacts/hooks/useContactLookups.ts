@@ -3,7 +3,7 @@ import {
   type ContactLookupKind,
   type ContactLookupCountryCode,
   type ContactLookupsMap,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { createModuleLookupsHooks } from "@/lib/query/createModuleLookupsHooks";
 import { getContactConfigCollectionDefaults } from "@/lib/contacts/contactConfigSeeds";

@@ -6,7 +6,7 @@ import {
   type MujtahidRep,
   type Mujtahid,
 } from "@/lib/data/obligationsData";
-import { DEFAULT_CURRENCIES, type AppTranslationKey } from "@mms/shared";
+import { DEFAULT_CURRENCIES, type AppTranslationKey } from "@mms/contracts";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DatePicker } from "@/components/app/DatePicker";

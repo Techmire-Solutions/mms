@@ -5,7 +5,7 @@ import {
   facultyColumnLabelKey,
   facultyWorkColumnLabelsFrom,
   type FacultySettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

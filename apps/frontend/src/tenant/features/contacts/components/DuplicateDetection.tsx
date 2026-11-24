@@ -1,6 +1,6 @@
 import type React from "react";
 import { AnimatePresence } from "framer-motion";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { MergePreview } from "@/tenant/features/contacts/components/DuplicateMergePreview";
 import { DuplicateDetectionModal } from "@/tenant/features/contacts/components/DuplicateDetectionModal";
 import { useDuplicateDetectionState } from "@/tenant/features/contacts/hooks/useDuplicateDetectionState";

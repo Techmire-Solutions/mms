@@ -5,7 +5,7 @@ import {
   getPlatformPasswordError,
   getPlatformPasswordMatchError,
 } from "@/platform/features/shell/lib/platformValidation";
-import { createEmptyOtp, isOtpComplete } from "@shared/ui";
+import { createEmptyOtp, isOtpComplete } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useResendCountdown } from "@/hooks/useResendCountdown";
 import { getPlatformErrorMessage } from "@/platform/features/auth/lib/platformAuthErrors";

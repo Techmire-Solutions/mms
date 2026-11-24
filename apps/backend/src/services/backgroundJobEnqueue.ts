@@ -1,4 +1,4 @@
-import { BACKGROUND_JOBS_MAX_PER_USER, type BackgroundJobRecord } from "@mms/shared";
+import { BACKGROUND_JOBS_MAX_PER_USER, type BackgroundJobRecord } from "@mms/contracts";
 import { logger } from "../lib/logger.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { patchJob } from "./backgroundJobPatch.js";

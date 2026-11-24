@@ -5,7 +5,7 @@ import {
   type StudentDuplicateReason,
   type StudentsCommandMetricsSnapshot,
   studentsWidgetQueryFromWidget,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useMemo } from "react";

@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import { DEFAULT_BRANDING_SETTINGS } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS } from "@mms/contracts";
 import {
   SettingsBrandingDraftProvider,
   useSettingsBrandingDraft,
@@ -11,7 +11,7 @@ import { saveBrandingSettings } from "@/lib/db";
 import { useThemeSettingsDraft, type UseThemeSettingsDraftResult } from "./useThemeSettingsDraft";
 
 vi.mock("@/lib/db", async () => {
-  const shared = await import("@mms/shared");
+  const shared = await import("@mms/contracts");
   return {
     getBrandingSettings: vi.fn(() =>
       shared.mergeBrandingSettings(shared.DEFAULT_BRANDING_SETTINGS),

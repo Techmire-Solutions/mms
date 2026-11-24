@@ -5,7 +5,7 @@ import {
   exportJournalEntriesCsv,
   formatJournalAmount,
 } from "../lib/journalEntriesControllerActions";
-import type { JournalEntry } from "@/lib/data/accountingData";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import { runGridCsvExportJob } from "@/lib/backgroundJobs/runGridCsvExportJob";
 
 vi.mock("@/lib/backgroundJobs/runGridCsvExportJob", () => ({
@@ -158,7 +158,7 @@ describe("journalEntriesControllerActions", () => {
       expect(customFormat).toHaveBeenCalledWith(250);
     });
 
-    it("falls back to formatMoney from @mms/shared when formatCurrency is undefined", () => {
+    it("falls back to formatMoney from @mms/contracts when formatCurrency is undefined", () => {
       const result = formatJournalAmount(500);
       expect(result).toBeTruthy();
     });

@@ -7,9 +7,9 @@
  * selected set of papers into the same subject-table template.
  */
 
-import { type TypstReportCardPayload } from "@mms/shared";
+import { type TypstReportCardPayload } from "@mms/contracts";
 import { mapToTypstReportCard } from "@/components/template-editor/templatePayloadMappers";
-import { resolveResultScore } from "@mms/shared";
+import { resolveResultScore } from "@mms/contracts";
 
 /** Structural subset of `StudentResultItem` (avoids importing the component). */
 export interface ReportCardResultInput {

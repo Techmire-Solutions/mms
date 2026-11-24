@@ -22,7 +22,7 @@ import {
   getOutstandingAmountForInvoice,
   moneyToCents,
   parseIsoDate,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type {
   DiscountUsageByTypeItem,
   MonthlyFeeCollectionItem,

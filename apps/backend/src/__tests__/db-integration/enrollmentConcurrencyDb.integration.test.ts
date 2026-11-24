@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant } from "@mms/db/context";
 import {
   enrollmentPlacements,
   enrollments,
@@ -12,7 +12,7 @@ import {
   sessions,
   students,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { saveEnrollment } from "../../db/repositories/enrollmentRepositoryPersist.js";
 import { applyEnrollmentTransfer } from "../../db/repositories/enrollmentOperationsRepository.js";
 import { flagOldestWaitlistedApplication } from "../../db/repositories/registrationWaitlistRepository.js";

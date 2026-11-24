@@ -2,7 +2,9 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mockWithTenant = vi.fn();
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (subdomain: string, cb: (tx: any) => Promise<unknown>) =>
     mockWithTenant(subdomain, cb),
 }));

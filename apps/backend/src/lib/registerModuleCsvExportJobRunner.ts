@@ -1,5 +1,5 @@
 import { PassThrough } from "node:stream";
-import { buildTenantExportFilename } from "@mms/shared";
+import { buildTenantExportFilename } from "@mms/contracts";
 import {
   saveExportArtifact,
   saveStreamedExportArtifact,

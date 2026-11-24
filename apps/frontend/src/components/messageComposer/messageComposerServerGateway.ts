@@ -2,7 +2,7 @@ import {
   personalizeMessage,
   type MessageCategory,
   type StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type {

@@ -1,16 +1,19 @@
 import React from "react";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { useTranslation } from "@/hooks/useTranslation";
+import { WORK_SURFACE } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import {
   getJournalBalanceDifference,
   isJournalBalanced,
-} from "@/tenant/features/accounting/lib/journalEntriesListShared";
-import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
-import { StatGrid, StatRow } from "@/components/app/StatGrid";
+} from "@mms/mod-accounting/frontend/tenant";
+import { ModuleDirectoryCards } from "@mms/fe-core/components/ModuleDirectoryCards";
+import { StatGrid, StatRow } from "@mms/ui/app/StatGrid";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { cn } from "@/lib/utils";
-import { JournalEntryCard, type JournalEntriesListCardsProps } from "./JournalEntryCard";
+import { cn } from "@mms/ui";
+import {
+  JournalEntryCard,
+  type JournalEntriesListCardsProps,
+} from "@mms/mod-accounting/frontend/tenant";
 
 export type { JournalEntriesListCardsProps };
 

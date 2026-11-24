@@ -1,5 +1,5 @@
 import type { DistributionWrite } from "@/lib/data/hasanatData";
-import type { Distribution, DistributionCreate, DistributionUpdate } from "@mms/shared";
+import type { Distribution, DistributionCreate, DistributionUpdate } from "@mms/contracts";
 
 /**
  * Card fields the write API owns; sending them would be rejected by the strict create schema.

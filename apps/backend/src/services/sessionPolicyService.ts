@@ -3,7 +3,7 @@ import {
   resolvePlatformSessionPolicy,
   resolveTenantSessionPolicy,
   type SessionTimeoutPolicy,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getPlatformSettings } from "./platform/platformSettingsService.js";
 
 function envInt(name: string): number | undefined {

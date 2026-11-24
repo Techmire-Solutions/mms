@@ -11,7 +11,7 @@ inputs:
     required: false
     default: ""
   build-shared:
-    description: "Whether to compile @mms/shared"
+    description: "Whether to compile @mms/contracts"
     required: false
     default: "false"
   turbo-cache-scope:
@@ -72,7 +72,9 @@ runs:
           pnpm install --frozen-lockfile --prefer-offline
         fi
 
-    - name: Build shared package
+    - name: Build workspace libraries
       if: inputs.build-shared == 'true'
       shell: bash
-      run: pnpm --filter @mms/shared build
+      # `@mms/db` re-exports runtime schema/context used by the backend and its
+      # tests; both libraries are consumed from `dist`.
+      run: pnpm --filter @mms/contracts build && pnpm --filter @mms/db build && pnpm --filter @mms/be-core build && pnpm --filter @mms/mod-iam build && pnpm --filter @mms/mod-accounting build

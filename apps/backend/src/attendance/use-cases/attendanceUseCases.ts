@@ -14,7 +14,7 @@ import {
   type AttendanceMarkedDatesQuery,
   type AttendanceReportAggregatesQuery,
   type AttendanceListQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 import {
   createAttendanceForeignKeyValidators,
@@ -219,13 +219,13 @@ export function createAttendanceUseCases(
     ingestAttendanceCheckIns: checkIns.ingestCheckIns,
 
     loadAttendanceWidgetAggregates: async (
-      queries: import("@mms/shared").WidgetQuery[],
-    ): Promise<Record<string, import("@mms/shared").WidgetAggregateResult>> => {
+      queries: import("@mms/contracts").WidgetQuery[],
+    ): Promise<Record<string, import("@mms/contracts").WidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       const key = cacheKey(tenant, "attendance-widgets", queries);
       const cached =
-        await readCache<Record<string, import("@mms/shared").WidgetAggregateResult>>(key);
+        await readCache<Record<string, import("@mms/contracts").WidgetAggregateResult>>(key);
       if (cached) return cached;
       const fresh = await repo.aggregateAttendanceWidgetQueries(tenant, queries);
       await writeCache(key, fresh);

@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { hijriDayOfMonth, hijriMonthSpanLabel } from "@mms/shared";
+import { hijriDayOfMonth, hijriMonthSpanLabel } from "@mms/contracts";
 import { AcademicCalendarMonthView } from "./AcademicCalendarMonthView";
 
 const WORKING_DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];

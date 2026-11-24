@@ -5,7 +5,7 @@ import type {
 } from "@/components/reports/hasanatReportSectionTypes";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useHasanatStudentReport } from "@/tenant/hooks/collections/hasanat";
-import type { HasanatStudentReportRowDto } from "@mms/shared";
+import type { HasanatStudentReportRowDto } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/app/ErrorState";

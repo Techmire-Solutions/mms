@@ -1,6 +1,6 @@
 ---
 description: PostgreSQL database, Drizzle schema, migrations, transactions, and TanStack Query state authority
-globs: apps/backend/src/db/**,apps/backend/drizzle.config.ts,apps/backend/src/db/migrations/**,apps/backend/src/db/migrations_drizzle/**,apps/backend/src/worker/**,apps/backend/src/**/systemTags/**,apps/backend/src/lib/redis.ts,apps/backend/src/routes/common/db.ts,apps/backend/src/services/dbSyncService.ts,apps/backend/src/lib/tenantContext.ts,apps/frontend/src/lib/db.ts,apps/frontend/src/lib/queryClient.ts,packages/shared/src/**/apiSchemas.ts
+globs: apps/backend/src/db/**,packages/db/drizzle.config.ts,apps/backend/src/db/migrations/**,packages/db/migrations_drizzle/**,apps/backend/src/worker/**,packages/modules/contacts/src/backend/systemTags/**,apps/backend/src/lib/redis.ts,apps/backend/src/routes/common/db.ts,apps/backend/src/services/dbSyncService.ts,apps/backend/src/lib/tenantContext.ts,apps/frontend/src/lib/db.ts,apps/frontend/src/lib/queryClient.ts,packages/contracts/src/**/apiSchemas.ts
 alwaysApply: false
 ---
 
@@ -11,10 +11,10 @@ alwaysApply: false
 ## 1. Normalization, Multi-Tenancy & Drizzle Schema Standards
 1. **Normalization:** Strict 3NF/BCNF. Dedicated typed columns only; zero semi-structured storage (`json`/`array`) for domain fields. Zero EAV tables.
 2. **Tenant Isolation:** One tenant key per table — `workspaceSubdomain` on existing tables, or `tenantId: uuid("tenant_id")` on new ones (never both). Composite uniqueness must include the tenant column (`UNIQUE(tenant_id, ...)` / `UNIQUE(workspace_subdomain, ...)`). New tenant tables require `FORCE ROW LEVEL SECURITY`.
-3. **Data Typing:** Sequential **UUIDv7** via `uuidv7()` from `@mms/shared` (`packages/shared/src/core/uuidv7.ts`; PostgreSQL 16 has no built-in) for primary keys; `timestamptz` defaulting to `now()`; `varchar({ length: N })` for bounded fields; PostgreSQL `pgEnum` for state machines.
+3. **Data Typing:** Sequential **UUIDv7** via `uuidv7()` from `@mms/contracts` (`packages/contracts/src/core/uuidv7.ts`; PostgreSQL 16 has no built-in) for primary keys; `timestamptz` defaulting to `now()`; `varchar({ length: N })` for bounded fields; PostgreSQL `pgEnum` for state machines.
 4. **Indexing Invariants:** Every FK requires an explicit B-Tree index. Compound indexes match query pattern left-to-right, prefixed by the table's tenant column (`workspace_subdomain, status, created_at DESC`).
 5. **Drizzle Guidelines:** Every `pgTable` exports `$inferSelect`, `$inferInsert`, and bidirectional `relations(...)`.
-6. **Shared Zod Contracts:** Strict Zod schemas (`.strict()`) in `packages/shared/src/schemas/*` matching Drizzle tables 1:1.
+6. **Shared Zod Contracts:** Strict Zod schemas (`.strict()`) in `packages/contracts/src/schemas/*` matching Drizzle tables 1:1.
 7. **Deliverable Trinity:** Entity changes require (1) Drizzle table + relations, (2) Shared Zod DTOs, (3) Forward-only SQL migration.
 8. **Faculty Domain:** `faculty` links personal identity through `contacts`; `faculty_departments`, `faculty_designations`, and `faculty_assignments` own organization and dated roles. Preserve existing text/composite tenant keys through the teacher migration chain. Serialize assignment and department hierarchy mutations per workspace; validate primary date overlap in the same transaction as the write (no unique-primary index). Reporting CTEs emit a cycle marker and stop at a validated depth limit. Enforced by `facultyAssignmentValidation.test.ts`, `facultyAppointmentsDb.integration.test.ts`, and `facultyContactSqlSsot.test.ts`.
 
@@ -76,13 +76,13 @@ alwaysApply: false
 5. **Additive Defaults:** `NOT NULL` requires default value or two-phase backfill.
 6. **Forward-Only:** Schema migrations are forward-only; data backfills must be idempotent and resumable.
 7. **Ban `drizzle-kit push`:** Push is strictly banned against shared/staging/production databases.
-8. **Drizzle Meta Snapshot:** Every new migration must include its corresponding Drizzle meta snapshot under `apps/backend/src/db/migrations_drizzle/meta` to maintain zero gap in the snapshot chain (enforced by `check:migration-hygiene`).
+8. **Drizzle Meta Snapshot:** Every new migration must include its corresponding Drizzle meta snapshot under `packages/db/migrations_drizzle/meta` to maintain zero gap in the snapshot chain (enforced by `check:migration-hygiene`).
 
 ## 8. Business Dates & Timezone Semantics
 1. **Instants:** Always `timestamptz`. Never store naive local times for instants.
 2. **Calendar Days:** Store as `date` or `varchar(10)` `YYYY-MM-DD` in tenant timezone. Never truncate UTC `timestamptz`.
 3. **Authority:** Tenant workspace timezone is the authority for business dates; server resolves write dates.
-4. **Formatting:** Render via `@mms/shared` (`formatDate`, `formatMoney`).
+4. **Formatting:** Render via `@mms/contracts` (`formatDate`, `formatMoney`).
 5. **DST Safety:** Derive day boundaries from calendar date in tenant timezone, not `+ 24h`.
 6. **Filter Alignment:** Range filters must match storage representation (date vs instant).
 7. **Calendar Policy:** Stored data is Gregorian; Hijri/lunar display is a derived presentation layer.

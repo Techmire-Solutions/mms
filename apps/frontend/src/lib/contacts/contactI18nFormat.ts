@@ -7,7 +7,7 @@ import {
   toTitleCase,
   type AppTranslationKey,
   type Contact,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { DUPLICATE_FIELD_I18N } from "@/lib/contacts/contactI18nKeys";
 
 /** Formats contact Date of Birth with inline age or detailed solar age. */

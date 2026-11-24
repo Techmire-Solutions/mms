@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ShieldCheck, ShieldAlert, Lock, Unlock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import type { ExamEligibilityResponse } from "@mms/shared";
+import type { ExamEligibilityResponse } from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { invalidateExaminationsQueries } from "../hooks/invalidateExaminationsQueries";
 import { EXAMINATIONS_ELIGIBILITY_QUERY_KEY } from "../hooks/examinationsQueryKeys";

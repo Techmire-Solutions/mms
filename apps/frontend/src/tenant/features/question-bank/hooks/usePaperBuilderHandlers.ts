@@ -7,7 +7,7 @@ import {
   questionBankTestInsertSchema,
   type QuestionBankQuestion as Question,
   type QuestionBankTest,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   ALL_FILTER,
   createPaperDraftFromTest,

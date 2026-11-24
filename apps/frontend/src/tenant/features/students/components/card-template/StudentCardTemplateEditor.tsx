@@ -16,7 +16,7 @@ import { useTemplateSaveConflict } from "@/lib/templates/useTemplateSaveConflict
 import { SilentTemplateSaveError } from "@/components/template-editor/templateEditorSaveErrors";
 import { TemplateSaveConflictBanner } from "@/components/template-editor/TemplateSaveConflictBanner";
 import { notify } from "@/lib/notify";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type {
   CardSide,
   StudentCardPayload,

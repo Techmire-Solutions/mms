@@ -1,4 +1,4 @@
-import { CONTACT_TAB_COLLECTION_KEYS, type Contact, type ValidationError } from "@mms/shared";
+import { CONTACT_TAB_COLLECTION_KEYS, type Contact, type ValidationError } from "@mms/contracts";
 
 /** Snapshot of the server-reported field errors and the draft they were reported for. */
 export interface ContactServerErrorSnapshot {

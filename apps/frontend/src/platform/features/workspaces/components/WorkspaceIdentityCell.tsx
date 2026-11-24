@@ -1,7 +1,7 @@
 import React from "react";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import { tenantUrl } from "@/lib/config/tenantConfig";
-import { CopyButton, WorkspaceLogo } from "@shared/ui";
+import { CopyButton, WorkspaceLogo } from "@mms/ui";
 import { ExternalLink, Mail } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BiDiText } from "@/components/app/BiDiText";

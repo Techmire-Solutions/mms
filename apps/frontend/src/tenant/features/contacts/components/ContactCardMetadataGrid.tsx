@@ -5,7 +5,7 @@ import {
   isRelationshipWorkColumnKey,
   type Contact,
   type ContactPreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ContactArchivedBanner } from "@/tenant/features/contacts/components/ContactArchivedBanner";

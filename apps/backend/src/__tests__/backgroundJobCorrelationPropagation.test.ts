@@ -29,7 +29,9 @@ const { txMock } = vi.hoisted(() => {
   return { txMock: tx };
 });
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, callback: (tx: unknown) => Promise<unknown>) =>
     callback(txMock),
 }));

@@ -7,7 +7,7 @@ import {
   useObligationsSettings,
   type UseObligationsSettingsReturn,
 } from "./useObligationsSettings";
-import type { ObligationsSettings } from "@mms/shared";
+import type { ObligationsSettings } from "@mms/contracts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

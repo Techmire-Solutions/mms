@@ -31,7 +31,7 @@ Operational guide for authoring React 19 frontend features, UI components, hooks
 
 ## 1.1 Document Templates
 
-- **Server-backed layouts:** consume `useDocumentTemplate` / `useDocumentTemplateSave` (`apps/frontend/src/lib/templates/`); never persist layouts via `db.ts`, `useLiveCollection`, or localStorage.
+- **Server-backed layouts:** consume `useDocumentTemplate` / `useDocumentTemplateSave` (`packages/fe-core/src/documentTemplates/`); never persist layouts via `db.ts`, `useLiveCollection`, or localStorage.
 - **Concurrency:** saves send the cached `updatedAt`; a 409 keeps the draft, hides Save, shows one conflict toast + banner, and offers explicit reload (`useTemplateSaveConflict`).
 - **Render/print:** every preview/print uses `TemplateDocumentPreview` + `printTemplateDocument`; adapters supply payloads, never markup. Full workflow: `mms-document-templates`.
 

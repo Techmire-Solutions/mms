@@ -4,10 +4,10 @@
  */
 
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import type { TaskAssigneeRecord } from "@mms/shared";
-import { contacts, faculty, facultyEmployments, taskAssignees, tenantUsers } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import type { TaskAssigneeRecord } from "@mms/contracts";
+import { contacts, faculty, facultyEmployments, taskAssignees, tenantUsers } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 export async function fetchAssigneesByTaskIds(
   tx: TenantTransaction,

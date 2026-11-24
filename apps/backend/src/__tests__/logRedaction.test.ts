@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import pino from "pino";
-import { LOG_REDACT_CENSOR, LOG_REDACTION_OPTIONS, LOG_REDACT_PATHS } from "../lib/logRedaction.js";
+import { LOG_REDACT_CENSOR, LOG_REDACTION_OPTIONS, LOG_REDACT_PATHS } from "@mms/db";
 import {
   DEV_CREDENTIAL_LOGGING_ENV_VAR,
   isDevCredentialLoggingEnabled,

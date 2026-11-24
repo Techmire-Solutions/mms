@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant } from "../../db/tenant-context.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant } from "@mms/db/context";
 import {
   contacts,
   faculty,
@@ -13,7 +13,7 @@ import {
   facultyEmployments,
   tenantUsers,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { findEligibleTaskRecipientRows } from "../../db/repositories/taskRecipientRepository.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 

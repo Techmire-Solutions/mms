@@ -13,7 +13,7 @@ import {
   migrateEmergencyTabToRelationship,
   refreshModuleTierTabLabels,
   refreshModuleTierTabKeys,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function getContactFieldSystemDefaults(): FieldConfig {
   const fieldsClone = structuredClone(INITIAL_FIELD_SEED);

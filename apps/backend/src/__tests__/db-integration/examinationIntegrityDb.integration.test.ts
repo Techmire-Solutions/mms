@@ -1,10 +1,10 @@
-import { EXAM_STATUSES, type ExamStatus } from "@mms/shared";
+import { EXAM_STATUSES, type ExamStatus } from "@mms/contracts";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import type { Exam, ExamResult } from "@mms/shared";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
-import { withTenant } from "../../db/tenant-context.js";
+import type { Exam, ExamResult } from "@mms/contracts";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
+import { withTenant } from "@mms/db/context";
 import {
   auditTrailEvents,
   examClasses,
@@ -14,7 +14,7 @@ import {
   sessions,
   students,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import {
   applyExamResultModeration,
   bulkSaveExamResults,

@@ -3,9 +3,9 @@
  * @description Overlay employment SSOT fields onto faculty rows (expand dual-read).
  */
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { isFacultyStatus, type FacultyMember } from "@mms/shared";
-import { facultyEmployments } from "../schema.js";
-import type { AppDb } from "../tenant-context.js";
+import { isFacultyStatus, type FacultyMember } from "@mms/contracts";
+import { facultyEmployments } from "@mms/db/schema";
+import type { AppDb } from "@mms/db/context";
 
 /**
  * When `employment_id` is set, prefer contact / employee code / lifecycle status /

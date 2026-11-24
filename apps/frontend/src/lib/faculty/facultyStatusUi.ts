@@ -1,4 +1,4 @@
-import { resolveFacultyStatusRoles, resolveFacultyStatuses } from "@mms/shared";
+import { resolveFacultyStatusRoles, resolveFacultyStatuses } from "@mms/contracts";
 import type { AccentColor } from "@/components/app/statCardAccent";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { createModuleStatusUi } from "@/lib/ui/moduleStatusUi";

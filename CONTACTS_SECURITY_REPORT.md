@@ -62,7 +62,7 @@ All 10 inspection tasks and security controls have been rigorously evaluated aga
 
 ### D. Safe Handling of Contacts Form Data & API Responses
 
-- **Client-Side Validation:** All contact inputs (phones, emails, national identity numbers) are parsed and validated via `@mms/shared` Zod DTOs before submission.
+- **Client-Side Validation:** All contact inputs (phones, emails, national identity numbers) are parsed and validated via `@mms/contracts` Zod DTOs before submission.
 - **Server-Side Authorization & RLS:**
   - Every API endpoint requires `authenticateTenant` middleware and checks `can("contacts", "read")` / `can("contacts", "write")`.
   - Database queries execute under PostgreSQL Row-Level Security (`SET LOCAL app.current_tenant = ...`), strictly prohibiting Cross-Tenant Data Access (IDOR).

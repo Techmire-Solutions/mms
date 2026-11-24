@@ -30,7 +30,7 @@ Status: **Fixed** findings landed with this change; **Verified** items were exer
 **F3 — responses were not validated at runtime anywhere.** *Fixed.*
 `@ts-rest/fastify` defaults `responseValidation: false`, and neither the accounting nor the finance contract router enabled it; the five hand-written families sent unvalidated objects. *Fix, two mechanisms:*
 - **Contract routers:** `responseValidation: true` + the generalized `installContractErrorHandler` (a `ResponseValidationError` becomes a logged 500 `contract_violation` with `requestId`, matching the sessions pattern).
-- **Hand-written routes:** `lib/validatedReply.ts` (`sendValidated`) parses every payload against the new shared envelope schemas in `packages/shared/src/finance/accountingHttpResponses.ts` before sending it. A drifted payload is a 500 `contract_violation`, never a malformed body.
+- **Hand-written routes:** `lib/validatedReply.ts` (`sendValidated`) parses every payload against the new shared envelope schemas in `packages/contracts/src/finance/accountingHttpResponses.ts` before sending it. A drifted payload is a 500 `contract_violation`, never a malformed body.
 
 ### P2 — fixed
 
@@ -69,10 +69,10 @@ Status: **Fixed** findings landed with this change; **Verified** items were exer
 | `accountingContractRouter.ts` + `financeContractRouter.ts` | `responseValidation: true`, shared error handler; capped compatibility branch |
 | `apps/backend/src/db/repositories/accountingHedgesRepository.ts` (+ adapter) | `listHedgeRelationshipsPage` (limit + `truncated`) |
 | `finance/use-cases/financeMutationOperations.ts`, `accounting/use-cases/accountingEntryMutationUseCases.ts` | typed 422 domain errors |
-| `packages/shared/src/finance/accountingHttpResponses.ts` (new) | response envelopes + hedge record/valuation + reversal result schemas |
-| `packages/shared/src/finance/accountingHedgeSchemas.ts` | `hedgeListQuerySchema`, `hedgeRelationshipFieldsSchema` split |
-| `packages/shared/src/core/apiSchemas.ts`, `schemas/api.dto.ts` | `emptyQuerySchema`, `UNPAGINATED_LIST_CAP`, bounded id/cursor/sort fields |
-| `packages/shared/src/contracts/accounting.contract.ts` | `truncated` on the three compatibility list responses |
+| `packages/contracts/src/finance/accountingHttpResponses.ts` (new) | response envelopes + hedge record/valuation + reversal result schemas |
+| `packages/contracts/src/finance/accountingHedgeSchemas.ts` | `hedgeListQuerySchema`, `hedgeRelationshipFieldsSchema` split |
+| `packages/contracts/src/core/apiSchemas.ts`, `schemas/api.dto.ts` | `emptyQuerySchema`, `UNPAGINATED_LIST_CAP`, bounded id/cursor/sort fields |
+| `packages/contracts/src/contracts/accounting.contract.ts` | `truncated` on the three compatibility list responses |
 
 ## 4. Evidence
 

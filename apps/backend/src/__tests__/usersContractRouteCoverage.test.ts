@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { FastifyInstance, RouteOptions } from "fastify";
-import { userContract } from "@mms/shared";
+import { userContract } from "@mms/contracts";
 
 const collected: RouteOptions[] = [];
 

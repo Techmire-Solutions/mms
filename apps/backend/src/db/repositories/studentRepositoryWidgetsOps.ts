@@ -1,8 +1,8 @@
 import { and, eq, inArray, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
-import { students, contacts, contactEmails } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { students, contacts, contactEmails } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { studentRowToRecord } from "./studentRepositoryMappers.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
 import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
 import { resolveGrYear } from "./studentRepositorySequence.js";
 import { studentScopeExistsSql } from "./studentScopeSql.js";

@@ -2,10 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { m, AnimatePresence } from "framer-motion";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { getInitials } from "@mms/shared";
+import { getInitials } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ROUTES } from "@/lib/config/routes";
-import { WorkspaceLogo } from "@shared/ui";
+import { WorkspaceLogo } from "@mms/ui";
 
 interface SidebarBrandProps {
   collapsed: boolean;

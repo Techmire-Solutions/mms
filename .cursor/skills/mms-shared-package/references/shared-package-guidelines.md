@@ -1,12 +1,12 @@
-# @mms/shared Package Guidelines & Export Standards
+# @mms/contracts Package Guidelines & Export Standards
 
-This guide outlines runtime purity invariants, domain organization, schema declarations, and export conventions for `@mms/shared`.
+This guide outlines runtime purity invariants, domain organization, schema declarations, and export conventions for `@mms/contracts`.
 
 ---
 
 ## 1. Runtime Purity Invariants
 
-`@mms/shared` is consumed equally by Node.js backend processes and browser frontend bundles:
+`@mms/contracts` is consumed equally by Node.js backend processes and browser frontend bundles:
 - **Zero Framework Code**: No React (`useState`, `jsx`), no Fastify (`FastifyRequest`, `FastifyReply`), no Express.
 - **Zero DOM / Browser Globals**: Never reference `window`, `document`, `localStorage`, `sessionStorage`, or `navigator`.
 - **Zero Node Builtins**: Never import `node:fs`, `node:path`, `node:child_process`, or `node:crypto`.
@@ -19,14 +19,14 @@ Machine-enforced by `pnpm run check:shared-purity` and `scripts/check-shared-exp
 
 ## 2. Directory & Domain Organization
 
-The `packages/shared/src/` root contains ONLY `index.ts`. All code belongs to domain subdirectories:
-- `packages/shared/src/core/`: Common types, pagination, soft-delete, formatting utils.
-- `packages/shared/src/auth/`: User roles, permissions, token payloads.
-- `packages/shared/src/contacts/`: Contact DTOs, address schemas.
-- `packages/shared/src/finance/`: Monetary amounts, currency math, invoice schemas.
-- `packages/shared/src/messaging/`: SMS and WhatsApp campaign DTOs.
-- `packages/shared/src/settings/`: Tenant configuration, branding, navigation definitions.
-- `packages/shared/src/i18n/`: Translation key schemas and locale enumerations.
+The `packages/contracts/src/` root contains ONLY `index.ts`. All code belongs to domain subdirectories:
+- `packages/contracts/src/core/`: Common types, pagination, soft-delete, formatting utils.
+- `packages/contracts/src/auth/`: User roles, permissions, token payloads.
+- `packages/contracts/src/contacts/`: Contact DTOs, address schemas.
+- `packages/contracts/src/finance/`: Monetary amounts, currency math, invoice schemas.
+- `packages/contracts/src/messaging/`: SMS and WhatsApp campaign DTOs.
+- `packages/contracts/src/settings/`: Tenant configuration, branding, navigation definitions.
+- `packages/contracts/src/i18n/`: Translation key schemas and locale enumerations.
 
 ---
 

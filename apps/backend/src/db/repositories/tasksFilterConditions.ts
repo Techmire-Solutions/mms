@@ -6,8 +6,8 @@ import {
   type TaskListQuery,
   type TaskPriority,
   type TaskStatus,
-} from "@mms/shared";
-import { tasks } from "../schema.js";
+} from "@mms/contracts";
+import { tasks } from "@mms/db/schema";
 import { isIsoDateOnly, nextIsoDay, workspaceDayStartUtc } from "../../lib/workspaceDayBounds.js";
 
 function splitEnum<T extends string>(raw: string | undefined, allowed: readonly T[]): T[] {

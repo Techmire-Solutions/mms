@@ -3,7 +3,7 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { Field, FormCheckboxCard } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import type { ContactExperience } from "@mms/shared";
+import type { ContactExperience } from "@mms/contracts";
 
 export interface ContactExperienceDatesSectionProps {
   exp: ContactExperience;

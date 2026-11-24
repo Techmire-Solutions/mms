@@ -1,4 +1,4 @@
-import { resolveDistributionPoints } from "@mms/shared";
+import { resolveDistributionPoints } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import {

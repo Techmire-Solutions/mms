@@ -1,1 +1,1 @@
-export { useTableSort, type UseTableSortProps } from "@shared/ui";
+export { useTableSort, type UseTableSortProps } from "@mms/ui";

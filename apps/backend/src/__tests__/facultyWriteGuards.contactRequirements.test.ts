@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: vi.fn(),
 }));
 
 import { validateFacultyContactLink } from "../faculty/use-cases/facultyWriteGuards.js";
-import { withTenantRead } from "../db/tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 
 const mockedWithTenantRead = vi.mocked(withTenantRead);
 

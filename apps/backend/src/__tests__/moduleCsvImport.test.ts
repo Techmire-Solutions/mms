@@ -21,7 +21,7 @@ vi.mock("../lib/tenantContext.js", () => ({
   getRequestAuditContext: () => null,
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
   mapActionStringToAuditType: vi.fn().mockReturnValue("IMPORT"),
 }));

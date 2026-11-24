@@ -1,10 +1,10 @@
 import React from "react";
 import { MessageSquare, Trash2 } from "lucide-react";
-import { Badge, Button } from "@shared/ui";
+import { Badge, Button } from "@mms/ui";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { AppTranslationKey, PlatformMessageDto } from "@mms/shared";
+import type { AppTranslationKey, PlatformMessageDto } from "@mms/contracts";
 import { PLATFORM_MESSAGING_CHANNEL_LABEL_KEYS } from "@/platform/features/messaging/lib/platformMessagingChannels";
 
 const STATUS_LABEL_KEYS: Record<PlatformMessageDto["status"], AppTranslationKey> = {

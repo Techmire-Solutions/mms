@@ -2,7 +2,7 @@ import {
   parseCsvRows,
   type PlatformContactCreateInput,
   type PlatformContactDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 const VALID_KINDS: readonly PlatformContactDto["kind"][] = [
   "platform_operator",

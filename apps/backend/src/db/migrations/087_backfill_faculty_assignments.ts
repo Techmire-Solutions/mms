@@ -1,6 +1,6 @@
 import { backfillFacultyReporting } from "./facultyReportingBackfill.js";
 import { sql } from "drizzle-orm";
-import { withGlobalTenant, withTenant } from "../tenant-context.js";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
 import { lockFacultyHierarchy } from "../repositories/facultyAssignmentValidation.js";
 
 // Teachers are already renamed by 0112; preserve their original IDs and contact links.

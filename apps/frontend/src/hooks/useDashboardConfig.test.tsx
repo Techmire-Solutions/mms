@@ -68,7 +68,7 @@ vi.mock("@/tenant/hooks/usePermissions", () => ({
 }));
 
 vi.mock("@/tenant/hooks/collections/dashboard", async () => {
-  const { DEFAULT_DASHBOARD_PREFERENCES } = await import("@mms/shared");
+  const { DEFAULT_DASHBOARD_PREFERENCES } = await import("@mms/contracts");
   return {
     DASHBOARD_PREFERENCES_QUERY_KEY: ["dashboard", "preferences"],
     DASHBOARD_WIDGETS_QUERY_KEY: ["dashboard", "widgets"],

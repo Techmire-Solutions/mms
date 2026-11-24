@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import type { ActivityLog } from "@mms/shared";
+import type { ActivityLog } from "@mms/contracts";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { UsersCommandMetrics } from "@/tenant/components/reports/moduleReportAdapters";
 import { ActivityLogs } from "@/tenant/components/reports/moduleReportAdapters";

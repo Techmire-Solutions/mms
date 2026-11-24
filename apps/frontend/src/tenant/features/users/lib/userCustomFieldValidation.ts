@@ -1,4 +1,4 @@
-import type { FieldDefinition, ModuleCustomField } from "@mms/shared";
+import type { FieldDefinition, ModuleCustomField } from "@mms/contracts";
 import { validateCustomFieldValues } from "@/lib/forms/validateCustomFieldValues";
 
 /** Widen tenant user custom fields to the registry field shape used by the shared validator. */

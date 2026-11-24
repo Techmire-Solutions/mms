@@ -3,8 +3,8 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from "@mms/shared";
-import { getMinimalCollectionsForSeed, getMinimalObjects } from "../minimalSeeds.js";
+} from "@mms/contracts";
+import { getMinimalCollectionsForSeed, getMinimalObjects } from "@mms/db/seed";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { academicCalendarImportBodySchema, sessionTimetableImportBodySchema } from "@mms/shared";
+import { academicCalendarImportBodySchema, sessionTimetableImportBodySchema } from "@mms/contracts";
 
 describe("bulk calendar/timetable import schemas", () => {
   it("sanitizes bidi override characters and enforces time order", () => {

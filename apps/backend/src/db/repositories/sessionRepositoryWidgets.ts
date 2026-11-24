@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
-import type { SessionsWidgetAggregateResult, SessionsWidgetQuery } from "@mms/shared";
-import { sessions } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { SessionsWidgetAggregateResult, SessionsWidgetQuery } from "@mms/contracts";
+import { sessions } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { sessionTypeSql } from "./academicCatalogNameSql.js";
 
 function activeWorkspaceWhere(subdomain: string): SQL {

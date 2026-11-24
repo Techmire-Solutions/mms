@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { resolveBackendRoot } from "../../config/loadEnv.js";
-import { initDb } from "../../db/dbInit.js";
+import { initializeDatabase } from "../../bootstrap/initializeDatabase.js";
 import { logger } from "../../lib/logger.js";
 
 const execFileAsync = promisify(execFile);
@@ -52,7 +52,7 @@ export interface ReloadBackendResult {
  */
 export async function runMigrateAndReload(): Promise<{ ok: true }> {
   logger.info("Applying pending database migrations via initDb...");
-  await initDb();
+  await initializeDatabase();
   logger.info("Database migrations applied");
   const { reloaded } = await reloadBackendProcess();
   if (!reloaded) {

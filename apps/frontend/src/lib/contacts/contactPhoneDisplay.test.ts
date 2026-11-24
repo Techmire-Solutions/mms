@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Contact, ContactPreferences } from "@mms/shared";
+import type { Contact, ContactPreferences } from "@mms/contracts";
 import {
   formatContactPhoneDisplay,
   formatContactPhoneFull,

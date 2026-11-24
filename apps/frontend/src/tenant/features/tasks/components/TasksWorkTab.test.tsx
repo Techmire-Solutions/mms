@@ -1,7 +1,7 @@
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { TaskRecord } from "@mms/shared";
+import type { TaskRecord } from "@mms/contracts";
 import { TasksWorkTab } from "./TasksWorkTab";
 
 const viewModeState = { viewMode: "table" as "table" | "cards" };
@@ -152,6 +152,17 @@ const baseProps = {
   onPageChange: vi.fn(),
   onServerFiltersChange: vi.fn(),
 };
+
+vi.mock("@mms/fe-core/i18n", () => ({
+  useTranslation: () => ({
+    language: "en",
+    dir: "ltr",
+    isRtl: false,
+    isLoading: false,
+    t: (key: string, params?: Record<string, string | number>) =>
+      params?.count ? `${key}:${params.count}` : key,
+  }),
+}));
 
 describe("TasksWorkTab", () => {
   beforeEach(() => {

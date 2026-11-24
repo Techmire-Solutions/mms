@@ -15,7 +15,7 @@ import {
   type QuestionSourceBook,
   type QuestionDifficulty,
   type QuestionType,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useQuestionBankLabels } from "./useQuestionBankLabels";
 
 export interface QuestionBankConfig {

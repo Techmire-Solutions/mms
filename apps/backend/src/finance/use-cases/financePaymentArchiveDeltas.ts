@@ -1,5 +1,5 @@
-import { getOutstandingAmountForInvoice, moneyToCents } from "@mms/shared";
-import type { Invoice, Payment } from "@mms/shared";
+import { getOutstandingAmountForInvoice, moneyToCents } from "@mms/contracts";
+import type { Invoice, Payment } from "@mms/contracts";
 import type { FinanceRepository } from "../repository/financeRepository.js";
 
 type DeltaRepo = Pick<FinanceRepository, "findInvoicesByIds" | "saveInvoice">;

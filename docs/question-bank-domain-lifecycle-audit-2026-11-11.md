@@ -41,7 +41,7 @@ against the `examinations/domain/` pattern that this module lacked.
 | W9 | P2 | `routes/tenant/questionBank.ts` | No audit trail on question create/update/delete/restore. | Partly fixed — status moves and duplicates are audited; bulk content edits are not (recorded as a follow-up) |
 | W10 | P2 | `questionBankTestsSync.ts:66` | Paper composition was freely rewritable after results existed. | Fixed — `assertPaperCompositionsEditable` + `published_at` |
 | W11 | P2 | `examinationTestTables.ts:35` | `tests.total_marks` is independent of the linked questions' marks; percentages can exceed 100. | Open — recorded as D2 |
-| W12 | P3 | `packages/shared/src/schemas/questionBank.dto.ts` | A third, unused validation surface (`*CreateSchema`/`*UpdateSchemaSanitized`). | Open — confirm-then-remove |
+| W12 | P3 | `packages/contracts/src/schemas/questionBank.dto.ts` | A third, unused validation surface (`*CreateSchema`/`*UpdateSchemaSanitized`). | Open — confirm-then-remove |
 | W13 | P3 | `autoGradingShared.ts:4`, `performanceAnalyticsUtils.ts:8` | `sumScores` duplicated verbatim. | Open |
 | W14 | P3 | `questionBankCore.ts:32` | `\|\|\|` compound-answer encoding in a text column; an answer containing the delimiter is silently split. | Open |
 
@@ -68,9 +68,9 @@ API leaving stale options · duplicate categories · editing/retiring a question
 ## What shipped
 
 **Shared domain (pure, no I/O).**
-- `packages/shared/src/examinations/questionInvariants.ts` — `validateQuestionByType`, the exhaustive
+- `packages/contracts/src/examinations/questionInvariants.ts` — `validateQuestionByType`, the exhaustive
   per-type rule map, `QuestionInvariantCode` and the translation key for each code.
-- `packages/shared/src/examinations/questionLifecycle.ts` — `draft → under_review → approved → retired`
+- `packages/contracts/src/examinations/questionLifecycle.ts` — `draft → under_review → approved → retired`
   (retired reopens to draft), `canTransitionQuestion` failing closed, content-lock and
   approval-authority predicates.
 - `questionBankQuestionWriteSchema` now delegates to the invariant validator, so the browser and the

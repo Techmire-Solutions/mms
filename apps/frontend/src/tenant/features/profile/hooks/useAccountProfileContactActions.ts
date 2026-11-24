@@ -5,7 +5,7 @@ import {
   ownContactPatchBodySchema,
   type EmailAddress,
   type PhoneNumber,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTenantProfile, type TenantProfileData } from "@/tenant/hooks/useTenantProfile";
 

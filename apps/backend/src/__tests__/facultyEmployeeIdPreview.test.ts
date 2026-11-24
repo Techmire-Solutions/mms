@@ -3,9 +3,11 @@ import {
   previewNextEmployeeId,
   previewNextFacultyEmployeeId,
 } from "../faculty/use-cases/facultyEmployeeIdPreview.js";
-import { withTenantRead, type TenantTransaction } from "../db/tenant-context.js";
+import { withTenantRead, type TenantTransaction } from "@mms/db/context";
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: vi.fn(),
 }));
 

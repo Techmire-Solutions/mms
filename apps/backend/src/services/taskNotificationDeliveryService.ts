@@ -4,13 +4,13 @@ import {
   getPrimaryPhone,
   normalizeMessagingPreferences,
   toMessagingRecipient,
-} from "@mms/shared";
-import type { TaskNotifyPayload } from "./outboxEventService.js";
+} from "@mms/contracts";
+import type { TaskNotifyPayload } from "@mms/be-core/data/outbox";
 import { getTenantTaskSettingsBySubdomain, getWorkspaceLanguage } from "./taskSettingsService.js";
 import { notificationsUseCases } from "../notifications/use-cases/notificationsUseCases.js";
 import { usersUseCases } from "../users/use-cases/usersUseCases.js";
 import { messagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
-import { loadContactsSummaryByIdsForTenant } from "./contactService.js";
+import { loadContactsSummaryByIdsForTenant } from "@mms/mod-contacts/backend/services";
 import { dispatchMessagingCampaignDirect } from "./messagingDirectDispatch.js";
 import { localizeTaskMessage, localizeTaskStatus } from "../lib/taskNotificationI18n.js";
 import { logger } from "../lib/logger.js";

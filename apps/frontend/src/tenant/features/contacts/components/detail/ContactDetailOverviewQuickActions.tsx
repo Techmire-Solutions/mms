@@ -1,4 +1,4 @@
-import { type Contact, hasWhatsApp } from "@mms/shared";
+import { type Contact, hasWhatsApp } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 

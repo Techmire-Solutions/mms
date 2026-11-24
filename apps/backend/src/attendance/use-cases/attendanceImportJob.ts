@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { AttendanceRecordStatus, AttendanceTransferEntity, User } from "@mms/shared";
+import type { AttendanceRecordStatus, AttendanceTransferEntity, User } from "@mms/contracts";
 import { registerModuleCsvImportJobRunner } from "../../lib/registerModuleCsvImportJobRunner.js";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { attendanceUseCases } from "./attendanceUseCases.js";

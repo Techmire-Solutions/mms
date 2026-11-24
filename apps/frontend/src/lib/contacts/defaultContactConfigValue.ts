@@ -7,7 +7,7 @@ import {
   resolveRelationshipPairs,
   deriveRelationshipOptionsFromPairs,
   applyRelationshipOptionOrder,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ContactConfigContextType } from "./contactConfigContextTypes";
 import { getContactConfigCollectionDefaults } from "./contactConfigSeeds";
 import { getFallbackCountryCode } from "./contactI18n";

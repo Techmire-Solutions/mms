@@ -4,7 +4,7 @@ import {
   buildModuleAvailability,
   evaluateModuleAccess,
   roleHasPermission,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ROUTES } from "@/lib/config/routes";
 import { NAV_ITEMS } from "@/lib/config/navConfig";
 import {

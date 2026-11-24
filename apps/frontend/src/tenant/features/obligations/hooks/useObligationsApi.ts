@@ -7,8 +7,8 @@ import type {
   ObligationCollection,
   ObligationsCommandMetricsSnapshot,
   ObligationsReportQuery,
-} from "@mms/shared";
-import { OBLIGATIONS_MODULE_MANIFEST } from "@mms/shared";
+} from "@mms/contracts";
+import { OBLIGATIONS_MODULE_MANIFEST } from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";

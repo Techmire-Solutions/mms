@@ -1,22 +1,9 @@
+import "./documentStoreRepositoryLoader.js";
 import { RELATIONAL_REPLACE_MAPPING } from "./relationalReplaceMapping.js";
+import { loadDocumentStoreRepository } from "@mms/be-core/db-sync/documentStoreRepositoryLoader";
+import { stripCredentials } from "@mms/be-core/db-sync/stripCredentials";
 
-/** Credential columns that must never leave the server in a snapshot payload. */
-const CREDENTIAL_FIELDS = ["passwordHash"] as const;
-
-// Rows are freshly pulled from each table solely for the backup snapshot and are
-// not shared elsewhere, so remove credential columns in place — avoids cloning
-// every row (halving the snapshot's peak relational memory on large workspaces).
-export function stripCredentials(rows: unknown[]): unknown[] {
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    if (!row || typeof row !== "object" || Array.isArray(row)) continue;
-    const rec = row as Record<string, unknown>;
-    for (const field of CREDENTIAL_FIELDS) {
-      delete rec[field];
-    }
-  }
-  return rows;
-}
+export { stripCredentials };
 
 /**
  * Reads every REST-migrated collection straight from its relational table.
@@ -34,7 +21,7 @@ export async function loadRelationalSnapshotCollections(
   for (const [logicalKey, mapping] of Object.entries(RELATIONAL_REPLACE_MAPPING)) {
     if (!mapping.snapshotFnName) continue;
 
-    const repoModule = (await import(mapping.importPath)) as Record<string, unknown>;
+    const repoModule = await loadDocumentStoreRepository(mapping.importPath);
     const listRows = repoModule[mapping.snapshotFnName];
     if (typeof listRows !== "function") {
       throw new Error(

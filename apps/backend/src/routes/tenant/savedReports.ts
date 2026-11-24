@@ -15,7 +15,7 @@ import {
   QUESTION_BANK_MODULE_MANIFEST,
   SESSIONS_MODULE_MANIFEST,
   STUDENTS_MODULE_MANIFEST,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { handleContractError } from "../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../lib/contractRegistration.js";
@@ -38,7 +38,7 @@ const s = initServer();
  * modern finance module. obligations follows the FE report-collection mapping
  * (ModuleReportsToolPanels → finance_invoices), and messaging/users gate on
  * contacts — the module whose report panel hosts those categories. There is no
- * exported ModuleManifest type in @mms/shared (manifests are structural
+ * exported ModuleManifest type in @mms/contracts (manifests are structural
  * consts), so the gate declares the slice this router needs and `satisfies`
  * proves the map covers all 14 categories.
  */

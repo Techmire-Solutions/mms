@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import { isContactsQuickFilter, type ContactsQuickFilter } from "@mms/shared";
+import { isContactsQuickFilter, type ContactsQuickFilter } from "@mms/contracts";
 import {
   CONTACTS_WORK_DRILLDOWN_EVENT,
   consumeContactsWorkDrillDown,

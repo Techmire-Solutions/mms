@@ -5,7 +5,7 @@
  */
 
 import { sql } from "drizzle-orm";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 
 export interface HasanatStudentReportRow {
   studentId: string;

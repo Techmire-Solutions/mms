@@ -1,5 +1,5 @@
 import { useMemo, type ComponentProps } from "react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import type ContactsListCards from "@/tenant/features/contacts/components/ContactsListCards";
 import type ContactsListDesktopTable from "@/tenant/features/contacts/components/ContactsListDesktopTable";
 import { getDirectoryPageSelection } from "@/lib/directorySelection";

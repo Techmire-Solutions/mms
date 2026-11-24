@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
-import { type Contact, type ContactPreferences, getDisplayName } from "@mms/shared";
+import { type Contact, type ContactPreferences, getDisplayName } from "@mms/contracts";
 import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 import { ContactIdentityMeta } from "@/tenant/features/contacts/components/ContactIdentityMeta";
 import { UserAvatar } from "@/components/app/UserAvatar";

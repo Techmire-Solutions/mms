@@ -7,7 +7,7 @@ import {
   getQueue,
   closeAllQueues,
 } from "../worker/queues/index.js";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 
 describe("BullMQ 50 Concurrent Jobs Throughput Verification (Phase 5)", () => {
   it("dispatches 50 concurrent jobs across queues without failure", async () => {

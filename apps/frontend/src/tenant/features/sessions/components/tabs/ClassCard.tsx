@@ -1,5 +1,5 @@
 import { MessageCircle, MessageSquare, Users, DollarSign, Clock } from "lucide-react";
-import type { FacultyMember } from "@mms/shared";
+import type { FacultyMember } from "@mms/contracts";
 
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";

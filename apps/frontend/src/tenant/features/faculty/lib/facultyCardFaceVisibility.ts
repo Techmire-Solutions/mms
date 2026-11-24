@@ -1,4 +1,4 @@
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import type { ModuleColumnRegistryEntry } from "@mms/contracts";
 
 /**
  * Card face-chrome visibility for Faculty.

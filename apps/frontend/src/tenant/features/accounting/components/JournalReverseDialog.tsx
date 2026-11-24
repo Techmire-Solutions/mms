@@ -6,19 +6,19 @@ import {
   type FiscalYear,
   type JournalReversalRequest,
   type PostingPeriod,
-} from "@mms/shared";
-import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
-import { DatePicker } from "@/components/app/DatePicker";
-import { Field } from "@/components/app/FormField";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/app/Alert";
-import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
-import type { JournalEntry } from "@/lib/data/accountingData";
-import { useTranslation } from "@/hooks/useTranslation";
+} from "@mms/contracts";
+import { ConfirmAlertDialog } from "@mms/fe-core/components/ConfirmAlertDialog";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { Field } from "@mms/ui";
+import { Textarea } from "@mms/ui";
+import { Button } from "@mms/ui";
+import { Alert } from "@mms/ui";
+import { DetailAttributeRow } from "@mms/fe-core/components/DetailAttributeRow";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
-import { useAuth } from "@/lib/contexts/AuthContext";
-import { getJournalEntryLineTotals } from "@/tenant/features/accounting/lib/journalEntriesListShared";
+import { useAuth } from "@mms/fe-core/auth/AuthContext";
+import { getJournalEntryLineTotals } from "@mms/mod-accounting/frontend/tenant";
 import { useJournalReverseDialogState } from "@/tenant/features/accounting/hooks/useJournalReverseDialogState";
 
 interface JournalReverseDialogProps {

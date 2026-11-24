@@ -6,7 +6,7 @@ import {
   type MujtahidRep,
   type Mujtahid,
 } from "@/lib/data/obligationsData";
-import { DEFAULT_CURRENCIES } from "@mms/shared";
+import { DEFAULT_CURRENCIES } from "@mms/contracts";
 import {
   useMergedObligationContacts,
   useMergedObligationUsers,

@@ -6,7 +6,7 @@
 **Tests/CI:** coverage, concurrency and ratchets are audited in
 [workshops-test-audit-2026-11-12.md](workshops-test-audit-2026-11-12.md).
 
-**Scope:** `packages/shared/src/workshops/**` — DTOs, enums, Zod schemas and the static types
+**Scope:** `packages/contracts/src/workshops/**` — DTOs, enums, Zod schemas and the static types
 consumed by the Fastify routes, repositories and React client. Eighth in the series; companions:
 [schema](workshops-schema-persistence-audit-2026-11-12.md),
 [lifecycle](workshops-domain-lifecycle-audit-2026-11-12.md),
@@ -87,7 +87,7 @@ slot timestamp whose timezone could drift (D2; see the subsystems audit's slot d
 
 ## 4. Tests
 
-- `packages/shared/src/workshops/workshopsContracts.test.ts`: ISO-UTC accept/reject matrix, record
+- `packages/contracts/src/workshops/workshopsContracts.test.ts`: ISO-UTC accept/reject matrix, record
   date/timestamp rejection, participant/attendance status parsing, completion↔participant status
   set equality, all six registration-state branches and precedence.
 - `settingsDateFormatters.test.ts`: date-only calendar stability across four timezones plus the

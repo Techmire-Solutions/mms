@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { sql } from "drizzle-orm";
-import { closeDatabase, getRootDb } from "../../db/dbConnection.js";
+import { closeDatabase, getRootDb } from "@mms/db/client";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
-import { workspaces } from "../../db/schema.js";
-import { withTenantRead } from "../../db/tenant-context.js";
+import { workspaces } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Proves that every read path routed through `withTenantRead` really is
@@ -81,9 +81,9 @@ async function buildReadCases(): Promise<ReadCase[]> {
     questionBankQuestions,
     questionBankList,
   ] = await Promise.all([
-    import("../../db/repositories/contactRepositoryHydrate.js"),
-    import("../../db/repositories/contactRepositoryList.js"),
-    import("../../db/repositories/contactRepositoryMetrics.js"),
+    import("@mms/mod-contacts/backend/repository"),
+    import("@mms/mod-contacts/backend/repository"),
+    import("@mms/mod-contacts/backend/repository"),
     import("../../db/repositories/studentRepositoryHydrate.js"),
     import("../../db/repositories/studentRepositoryListPage.js"),
     import("../../db/repositories/facultyRepository.js"),

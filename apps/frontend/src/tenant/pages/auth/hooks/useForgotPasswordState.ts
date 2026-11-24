@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { DEFAULT_GLOBAL_SETTINGS, validatePasswordPolicy } from "@mms/shared";
+import { DEFAULT_GLOBAL_SETTINGS, validatePasswordPolicy } from "@mms/contracts";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { createEmptyOtp, isOtpComplete } from "@/components/app/OtpInput";
 import { useResendCountdown } from "@/hooks/useResendCountdown";

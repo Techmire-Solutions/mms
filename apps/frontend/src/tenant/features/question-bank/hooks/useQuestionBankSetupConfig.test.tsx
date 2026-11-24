@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { DEFAULT_QUESTION_BANK_SETTINGS } from "@mms/shared";
+import { DEFAULT_QUESTION_BANK_SETTINGS } from "@mms/contracts";
 
 const mutationSpies = vi.hoisted(() => ({
   updateFields: vi.fn(async () => ({ body: {} })),

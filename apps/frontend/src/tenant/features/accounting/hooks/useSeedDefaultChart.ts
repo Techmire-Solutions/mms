@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiContract } from "@/lib/api";
-import { ApiError } from "@/lib/apiClient";
+import { apiContract } from "@mms/fe-core/api/tsRest";
+import { ApiError } from "@mms/fe-core/api/client";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
 import { ACCOUNTING_POSTING_RULES_QUERY_KEY } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { ACCOUNTING_PREFERENCES_QUERY_KEY } from "@/tenant/features/accounting/hooks/useAccountingSetupConfig";

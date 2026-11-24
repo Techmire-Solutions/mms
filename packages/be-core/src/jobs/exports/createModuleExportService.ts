@@ -1,0 +1,194 @@
+/**
+ * @file createModuleExportService.ts
+ * @description Generic module export service factory with multi-format support (CSV/JSON/XLSX).
+ */
+import type { ExportFormat } from "@mms/contracts";
+import { buildTenantExportFilename, buildExportGrid } from "@mms/contracts";
+import {
+  buildCsvExportFromGenerator,
+  generateCsvStreamChunks,
+  streamCsvExportFromGenerator,
+} from "./csvExportStreamFactory.js";
+import { getSerializer } from "./exportSerializerResolver.js";
+
+/** JSON/XLSX materialize the result set; cap it at 10,000 to prevent worker heap OOM. */
+export const MAX_MATERIALIZED_EXPORT_ROWS = 10_000;
+import { getRequestTenant } from "../../http/tenantContext.js";
+import { xlsxSerializer } from "./xlsxExportSerializer.js";
+import {
+  normalizeExportColumns,
+  type CreateModuleExportServiceOptions,
+  type ModuleCsvExportColumn,
+  type ModuleExportOptions,
+  type ModuleExportResult,
+} from "./createModuleExportServiceTypes.js";
+
+export * from "./createModuleExportServiceTypes.js";
+
+function resolveFilename(rawFilename: string, ext: string): string {
+  const base = rawFilename.endsWith(ext) ? rawFilename : `${rawFilename}${ext}`;
+  return buildTenantExportFilename(getRequestTenant(), base);
+}
+
+function tooManyRowsError(): Error & { statusCode: number; type: string } {
+  const error = new Error(
+    `This export exceeds ${MAX_MATERIALIZED_EXPORT_ROWS.toLocaleString()} rows. ` +
+      "Narrow the filters or use CSV (streamed).",
+  ) as Error & { statusCode: number; type: string };
+  error.statusCode = 413;
+  error.type = "payload_too_large";
+  return error;
+}
+
+/**
+ * The module manifest is the SSOT for soft-delete export policy. `exportsIncludeDeleted:
+ * false` forbids archived rows in exports regardless of the caller's trash permission
+ * (`mms-reports.md` §7 · `docs/soft-delete.md` §5 & §7.6).
+ */
+function effectiveAllowDeleted(
+  manifest: { softDelete?: { exportsIncludeDeleted?: boolean } },
+  allowDeleted: boolean | undefined,
+): boolean {
+  return allowDeleted === true && manifest.softDelete?.exportsIncludeDeleted !== false;
+}
+
+export function createModuleExportService<
+  TRow,
+  TQuery,
+  TCol extends ModuleCsvExportColumn,
+  TContext = undefined,
+>(options: CreateModuleExportServiceOptions<TRow, TQuery, TCol, TContext>) {
+  async function* generateStreamChunks(
+    query: TQuery,
+    exportOptions: ModuleExportOptions & { columns?: TCol[] },
+  ): AsyncGenerator<string, { count: number; filename: string }, undefined> {
+    const normalized = options.normalizeQuery(
+      query,
+      effectiveAllowDeleted(options.manifest, exportOptions.allowDeleted),
+    );
+    const includeIds = normalized.includeIds?.map(String).filter(Boolean);
+    const prepared = await options.prepareExport(exportOptions);
+    const rawFilename = exportOptions.filename?.trim() || options.manifest.defaultExportFilename;
+    const filename = resolveFilename(rawFilename, ".csv");
+    const chunkSize = Math.max(1, exportOptions.chunkSize ?? options.manifest.exportChunkSize);
+
+    return yield* generateCsvStreamChunks({
+      filename,
+      chunkSize,
+      columns: prepared.columns,
+      includeIds,
+      loadByIds: options.loadByIds,
+      loadPage: async (page, limit, afterId) => options.loadPage(normalized, page, limit, afterId),
+      yieldDataChunks: (rows, cols, size) =>
+        options.yieldDataChunks(rows as TRow[], cols as TCol[], size, prepared.context),
+    });
+  }
+
+  function streamExport(query: TQuery, exportOptions: ModuleExportOptions & { columns?: TCol[] }) {
+    return streamCsvExportFromGenerator(generateStreamChunks(query, exportOptions));
+  }
+
+  async function loadAllExportRows(
+    query: TQuery,
+    exportOptions: ModuleExportOptions & { columns?: TCol[] },
+  ): Promise<TRow[]> {
+    const normalized = options.normalizeQuery(
+      query,
+      effectiveAllowDeleted(options.manifest, exportOptions.allowDeleted),
+    );
+    const includeIds = normalized.includeIds?.map(String).filter(Boolean);
+    const allRows: TRow[] = [];
+
+    if (includeIds && includeIds.length > 0) {
+      if (includeIds.length > MAX_MATERIALIZED_EXPORT_ROWS) {
+        throw tooManyRowsError();
+      }
+      const batchSize = options.manifest.exportChunkSize;
+      for (let i = 0; i < includeIds.length; i += batchSize) {
+        const chunk = await options.loadByIds(includeIds.slice(i, i + batchSize));
+        allRows.push(...chunk);
+      }
+    } else {
+      let page = 1;
+      let cursor: string | undefined;
+      for (;;) {
+        const pageResult = await options.loadPage(normalized, page, 250, cursor);
+        if (pageResult.hasMore && pageResult.rows.length === 0) {
+          throw new Error(
+            `Export pager reported hasMore=true with zero rows on page ${page}; ` +
+              "refusing to loop forever. Return hasMore=false or the next rows.",
+          );
+        }
+        allRows.push(...(pageResult.rows as TRow[]));
+        if (allRows.length > MAX_MATERIALIZED_EXPORT_ROWS) throw tooManyRowsError();
+        if (!pageResult.hasMore) break;
+        // Only advance a cursor when the pager emits one; otherwise stay on
+        // OFFSET paging so the caller's sort (e.g. contacts by name) is kept and
+        // no rows are dropped by an unexpected `ORDER BY id` keyset page.
+        cursor = pageResult.nextCursor;
+        page += 1;
+      }
+    }
+    return allRows;
+  }
+
+  async function buildExport(
+    query: TQuery,
+    exportOptions: ModuleExportOptions & { columns?: TCol[] },
+  ): Promise<ModuleExportResult> {
+    const format: ExportFormat = exportOptions.format ?? "csv";
+
+    if (format === "csv") {
+      const rawFilename = exportOptions.filename?.trim() || options.manifest.defaultExportFilename;
+      const filename = resolveFilename(rawFilename, ".csv");
+      const result = await buildCsvExportFromGenerator(
+        generateStreamChunks(query, exportOptions),
+        filename,
+      );
+      return {
+        content: result.csv,
+        csv: result.csv,
+        filename: result.filename,
+        count: result.count,
+        format: "csv",
+        contentType: "text/csv; charset=utf-8",
+      };
+    }
+
+    if (!options.extractCell) {
+      throw new Error(`Format "${format}" requires extractCell to be defined in options.`);
+    }
+
+    const allRows = await loadAllExportRows(query, exportOptions);
+    const prepared = await options.prepareExport(exportOptions);
+    const exportColumns = normalizeExportColumns(prepared.columns);
+    const serializer = getSerializer(format);
+    const rawFilename = exportOptions.filename?.trim() || options.manifest.defaultExportFilename;
+    const filename = resolveFilename(rawFilename, serializer.fileExtension);
+    const grid = buildExportGrid(allRows, exportColumns, options.extractCell);
+
+    if (format === "xlsx") {
+      const buf = await xlsxSerializer.serializeBufferAsync(grid);
+      return {
+        content: buf.toString("base64"),
+        csv: "",
+        filename,
+        count: allRows.length,
+        format: "xlsx",
+        contentType: serializer.contentType,
+      };
+    }
+
+    const content = serializer.serialize(grid);
+    return {
+      content,
+      csv: "",
+      filename,
+      count: allRows.length,
+      format,
+      contentType: serializer.contentType,
+    };
+  }
+
+  return { generateStreamChunks, streamExport, buildExport };
+}

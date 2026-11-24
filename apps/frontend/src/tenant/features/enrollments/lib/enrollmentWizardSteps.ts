@@ -1,5 +1,5 @@
 import { BookOpen, CheckCircle2, ClipboardCheck, DollarSign, Layers, User } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type { Step } from "@/tenant/features/enrollments/components/wizard/StepIndicator";
 
 /** Step chrome for the enrollment wizard (labels resolve through the caller's `t`). */

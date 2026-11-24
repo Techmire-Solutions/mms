@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { WorkshopEvent } from "@mms/shared";
+import type { WorkshopEvent } from "@mms/contracts";
 import { createWorkshopsCompletionUseCases } from "../workshops/use-cases/workshopsCompletionUseCases.js";
 import type { WorkshopsRepository } from "../workshops/repository/workshopsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";

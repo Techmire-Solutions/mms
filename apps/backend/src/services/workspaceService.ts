@@ -6,8 +6,10 @@ import {
   slugifySubdomain,
   isValidSubdomain,
   isWorkspaceEnabled,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { purgeTenantDataBySubdomain, runInGlobalTransaction } from "../db/database.js";
+import { deleteAuthArtifactsForWorkspace } from "./auth/authArtifactService.js";
+import { deleteStoragePrefix } from "../config/storage.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { redisGet, redisSet, redisDel, redisKeys } from "../lib/redis.js";
 import {
@@ -69,7 +71,10 @@ export async function deleteWorkspace(subdomain: string): Promise<Workspace | nu
   return runInGlobalTransaction(async () => {
     const ws = await getWorkspaceBySubdomain(normalized);
     if (!ws) return null;
-    await purgeTenantDataBySubdomain(normalized);
+    await purgeTenantDataBySubdomain(normalized, {
+      deleteAuthArtifacts: deleteAuthArtifactsForWorkspace,
+      deleteExportBlobs: (tenant) => deleteStoragePrefix(`tenants/${tenant}/exports/`),
+    });
     await deleteWorkspaceRow(normalized);
     return ws;
   });

@@ -8,7 +8,7 @@ import {
   type MessageTemplate,
   type Message,
   type WhatsAppTemplate,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   bulkSaveMessageTemplates,

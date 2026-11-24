@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { UserCardMetadata } from "./UserCardMetadata";
 
 vi.mock("@/hooks/useTranslation", () => ({

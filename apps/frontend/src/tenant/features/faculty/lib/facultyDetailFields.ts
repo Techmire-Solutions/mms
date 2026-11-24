@@ -6,7 +6,7 @@ import {
   resolveFacultyFieldsMapForColumnSync,
   type FieldDefinition,
   type FacultySettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export type FacultyDetailFieldRow = {
   key: string;

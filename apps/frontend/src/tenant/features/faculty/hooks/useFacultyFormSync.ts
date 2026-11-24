@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { DEFAULT_FACULTY_USER_ROLE } from "@mms/shared";
+import { DEFAULT_FACULTY_USER_ROLE } from "@mms/contracts";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
 export interface FacultyFormAssignableRolesSyncProps {

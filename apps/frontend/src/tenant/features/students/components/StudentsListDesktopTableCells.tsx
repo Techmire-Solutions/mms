@@ -1,4 +1,4 @@
-import { toMessagingRecipient, type ModuleColumnRegistryEntry, type Student } from "@mms/shared";
+import { toMessagingRecipient, type ModuleColumnRegistryEntry, type Student } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { ContactPhoneAction, ContactEmailAction } from "@/components/app/ContactAction";
 import { PersonIdentityMeta } from "@/components/app/PersonIdentityMeta";

@@ -3,7 +3,7 @@ import {
   type GlobalSettings,
   type SendSmsInput,
   type SendSmsResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { loadSmsIntegrationConfig, loadSmsIntegrationSecrets } from "./smsIntegrationService.js";
 import { loadGlobalSettings as loadTenantGlobalSettings } from "../globalSettingsService.js";
 import { sendSmsViaProvider } from "./sendSmsViaProvider.js";

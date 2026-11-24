@@ -2,11 +2,11 @@ import React from "react";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { Field } from "@/components/app/FormPrimitives";
-import { isExamGradingSystem } from "@mms/shared";
+import { isExamGradingSystem } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ExaminationsSettings } from "@mms/shared";
+import type { ExaminationsSettings } from "@mms/contracts";
 
 export interface ExaminationsPreferencesSectionProps {
   settingsDraft: ExaminationsSettings;

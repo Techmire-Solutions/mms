@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { roleHasPermission, type Permission } from "@mms/shared";
+import { roleHasPermission, type Permission } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { ROUTES } from "@/lib/config/routes";
 

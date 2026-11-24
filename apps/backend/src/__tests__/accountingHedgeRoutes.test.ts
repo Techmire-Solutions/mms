@@ -33,8 +33,8 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+vi.mock("@mms/db/context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/context")>();
   return { ...actual, withTenant: (_tenant: string, work: () => unknown) => work() };
 });
 
@@ -46,13 +46,13 @@ const mockPreview = vi.fn();
 const mockValuation = vi.fn();
 const mockReclassify = vi.fn();
 
-vi.mock("../accounting/use-cases/hedgeDeps.js", () => ({
+vi.mock("../../../../packages/modules/accounting/dist/backend/use-cases/hedgeDeps.js", () => ({
   hedgeDeps: {
     store: { listHedgeRelationshipsPage: (...args: unknown[]) => mockListPage(...args) },
   },
 }));
 
-vi.mock("../accounting/use-cases/hedgeUseCases.js", () => ({
+vi.mock("../../../../packages/modules/accounting/dist/backend/use-cases/hedgeUseCases.js", () => ({
   createHedgeRelationship: (...args: unknown[]) => mockCreate(...args),
   postHedgeValuation: (...args: unknown[]) => mockValuation(...args),
   previewHedgeValuation: (...args: unknown[]) => mockPreview(...args),

@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { attendance, sessionClasses, sessions, students, workspaces } from "../../db/schema.js";
-import { ATTENDANCE_RECORD_STATUSES } from "@mms/shared";
+import { closeDatabase, beginLongLivedTenantTransaction } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant } from "@mms/db/context";
+import { attendance, sessionClasses, sessions, students, workspaces } from "@mms/db/schema";
+import { ATTENDANCE_RECORD_STATUSES } from "@mms/contracts";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 /**

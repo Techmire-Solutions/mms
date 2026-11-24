@@ -24,7 +24,7 @@ paths:
 - **Hard Ban on REST Entities:** `useLiveCollection` and `getCollection` are banned for REST-migrated entities (Contacts, Students, Faculty, Finance). Restricted solely to non-migrated settings singletons (`branding`, `global_settings`).
 
 ## 3. Lookups, Settings & Module Config
-- **Lookups:** Use feature hooks (`useObligationLookups`, `useWorkspaceRoles`). Form fields consume `getSortedFields(defaultDefs, fieldOrder, fieldsConfig, customFields)` from `@mms/shared` (`moduleFieldSchema.ts`) rather than hardcoded lists.
+- **Lookups:** Use feature hooks (`useObligationLookups`, `useWorkspaceRoles`). Form fields consume `getSortedFields(defaultDefs, fieldOrder, fieldsConfig, customFields)` from `@mms/contracts` (`moduleFieldSchema.ts`) rather than hardcoded lists.
 - **Settings & Branding:** Use `useGlobalSettings`, `useBranding`, and draft hooks (`useSettingsDraft`) (`mms-settings-i18n.md`).
 - **Standard Module Config:** Modules build on `useStandardModuleConfig` (`createStandardModuleConfigHook`). Contacts uses `useContactConfigProviderValue` mounted once via `ContactConfigContext`.
 

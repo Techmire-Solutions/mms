@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { FacultyRecord } from "@mms/shared";
+import type { FacultyRecord } from "@mms/contracts";
 
 const mockGetRequestTenant = vi.fn();
 const mockBroadcastCollection = vi.fn();
@@ -18,10 +18,14 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
-  recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
-  sanitizeAuditState: (value: unknown) => value,
-}));
+vi.mock("@mms/be-core/audit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/be-core/audit")>();
+  return {
+    ...actual,
+    recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
+    sanitizeAuditState: (value: unknown) => value,
+  };
+});
 
 vi.mock("../faculty/use-cases/facultyWriteGuards.js", () => ({
   validateFacultyContactLink: vi.fn().mockResolvedValue({ userId: null }),

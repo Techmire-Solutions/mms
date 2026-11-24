@@ -7,7 +7,7 @@ import {
   listEnabledCustomFacultyFormFields,
   type FacultyMember,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 interface FacultyCustomFieldsSectionProps {
   fields: Record<string, FieldDefinition[]>;

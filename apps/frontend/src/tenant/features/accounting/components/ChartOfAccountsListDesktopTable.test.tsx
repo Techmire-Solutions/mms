@@ -2,9 +2,9 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ChartOfAccountsListDesktopTable } from "./ChartOfAccountsListDesktopTable";
-import type { Account } from "@/lib/data/accountingData";
+import type { Account } from "@mms/mod-accounting/frontend/tenant";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string, opts?: Record<string, unknown>) =>
       opts ? `${key}:${JSON.stringify(opts)}` : key,

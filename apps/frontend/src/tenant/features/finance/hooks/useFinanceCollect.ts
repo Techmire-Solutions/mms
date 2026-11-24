@@ -7,7 +7,7 @@ import type {
   Invoice,
   RemindInvoicesBody,
   RemindInvoicesResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { invalidateFinanceQueries } from "@/tenant/features/finance/hooks/invalidateFinanceQueries";
 import { assertContractOk } from "@/lib/apiContractError";

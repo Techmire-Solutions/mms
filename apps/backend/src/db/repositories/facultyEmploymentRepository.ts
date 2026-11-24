@@ -9,9 +9,9 @@ import {
   isFacultyStatus,
   type FacultyEmploymentFields,
   type FacultyMember,
-} from "@mms/shared";
-import { facultyEmployments } from "../schema.js";
-import type { AppDb } from "../tenant-context.js";
+} from "@mms/contracts";
+import { facultyEmployments } from "@mms/db/schema";
+import type { AppDb } from "@mms/db/context";
 import { auditEmploymentEntityUpdate } from "./facultyEmploymentEntityAudit.js";
 
 export {

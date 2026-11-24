@@ -4,7 +4,7 @@ import {
   buildBrandingCssVariables,
   resolveBrandingChartPaletteHex,
   type BrandingThemeMode,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { BrandingTokens } from "./brandColorPanelShared";
 import { BrandColorblindSvgFilters } from "./BrandColorblindSvgFilters";

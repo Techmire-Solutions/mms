@@ -23,11 +23,11 @@ const mockDb = {
   execute: vi.fn(),
 };
 
-vi.mock("../db/dbClient.js", () => ({
+vi.mock("@mms/db/client/db", () => ({
   getDb: () => mockDb,
 }));
 
-vi.mock("../db/dbConnection.js", () => ({
+vi.mock("@mms/db/client/connection", () => ({
   activeDb: () => mockDb,
   getRootDb: () => mockDb,
   getReadReplicaDb: () => mockDb,
@@ -47,7 +47,7 @@ import {
   updateWorkspaceEnabledRow,
   upsertWorkspaceBranding,
 } from "../db/repositories/workspaceRepository.js";
-import { DEFAULT_BRANDING_SETTINGS, type BrandingSettings } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, type BrandingSettings } from "@mms/contracts";
 
 describe("workspaceRepository", () => {
   beforeEach(() => {

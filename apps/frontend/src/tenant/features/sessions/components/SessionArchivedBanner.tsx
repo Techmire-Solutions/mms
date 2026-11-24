@@ -1,4 +1,4 @@
-import { SESSIONS_MODULE_MANIFEST, type Session } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST, type Session } from "@mms/contracts";
 import { EntityArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 import { useTranslation } from "@/hooks/useTranslation";
 

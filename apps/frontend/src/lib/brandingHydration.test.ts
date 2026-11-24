@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readObjectLocal, writeObjectLocal } from "./dbObjectStorage";
-import type { BrandingSettings } from "@mms/shared";
+import type { BrandingSettings } from "@mms/contracts";
 
 const mockApiFetch = vi.fn();
 

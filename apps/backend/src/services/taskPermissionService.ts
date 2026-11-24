@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import { roleHasPermission, type Permission, type User } from "@mms/shared";
+import { roleHasPermission, type Permission, type User } from "@mms/contracts";
 import { resolveCurrentTenantRole } from "../lib/currentTenantRole.js";
 import { getTenantUsersSettings } from "./users/usersSettingsService.js";
 

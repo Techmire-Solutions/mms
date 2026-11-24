@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { ClipboardList } from "lucide-react";
-import { QUESTION_BANK_MODULE_MANIFEST } from "@mms/shared";
+import { QUESTION_BANK_MODULE_MANIFEST } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 
 export interface QuestionBankBulkActionBarProps {

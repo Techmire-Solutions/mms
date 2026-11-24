@@ -5,7 +5,7 @@ import {
   type FieldDefinition,
   type UsersSettings,
   type TabDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleFieldConfigService } from "../lib/createModuleFieldConfigService.js";
 import {
   getUserFieldConfigByWorkspace,

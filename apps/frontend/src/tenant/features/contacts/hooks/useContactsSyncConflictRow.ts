@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import {
   defaultSyncFieldPicks,
   diffContactForSync,
   mergeContactForSync,
   resolveSyncConflictContactId,
   type SyncFieldPick,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ContactsSyncConflict } from "@/lib/contacts/contactsSyncOutbox";
 import {
   dismissContactsSyncConflict,

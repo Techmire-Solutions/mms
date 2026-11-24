@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, m } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { getPasswordPolicyHintKey } from "@mms/shared";
+import { getPasswordPolicyHintKey } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { CheckboxField } from "@/components/ui/checkbox";
 import { Input as UiInput } from "@/components/ui/input";

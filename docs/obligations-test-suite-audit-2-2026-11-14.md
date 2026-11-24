@@ -51,7 +51,7 @@ Two simultaneous `replaceWakalaAggregateForWorkspace` calls: the committed catal
 
 ### 3.3 `scripts/ci/check-obligations-route-injection.mjs`
 
-Contract paths from `packages/shared/src/contracts/obligations*.ts` vs `/api/obligations…` literals in the backend tests, `:param` segments matched as wildcards. **No baseline file**: the module starts at 20/20, so a new route without a test fails immediately. Wired as `check:obligations-route-injection` in `package.json`, `scripts/ci/local-ci.sh` and the CI workflow.
+Contract paths from `packages/contracts/src/contracts/obligations*.ts` vs `/api/obligations…` literals in the backend tests, `:param` segments matched as wildcards. **No baseline file**: the module starts at 20/20, so a new route without a test fails immediately. Wired as `check:obligations-route-injection` in `package.json`, `scripts/ci/local-ci.sh` and the CI workflow.
 
 ### 3.4 Matrix growth
 

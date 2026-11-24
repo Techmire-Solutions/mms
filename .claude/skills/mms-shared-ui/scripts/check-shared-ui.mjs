@@ -3,16 +3,16 @@
  * MMS Shared UI Component Architecture & Governance Ratchet.
  *
  * Enforces the Single Source of Truth (SSOT) policy for UI primitives:
- *   1. All reusable primitives live in `@shared/ui` (`packages/ui`).
+ *   1. All reusable primitives live in `@mms/ui` (`packages/ui`).
  *   2. Duplicate UI primitive definitions across Tenant Console and Platform Console are banned.
- *   3. Platform Console (`apps/frontend/src/platform/`) must import directly from `@shared/ui`,
+ *   3. Platform Console (`apps/frontend/src/platform/`) must import directly from `@mms/ui`,
  *      not from `@/components/ui/*`.
  *   4. Zero cross-console imports between `tenant/` and `platform/`.
  *   5. `apps/frontend/src/components/ui/` serves exclusively as a clean typed facade re-exporting
- *      from `@shared/ui`, with zero duplicate local JSX component implementations.
+ *      from `@mms/ui`, with zero duplicate local JSX component implementations.
  *   6. Zero orphaned imports referencing non-existent or deprecated UI modules.
  *   7. Shared layer (src/lib, src/components, src/hooks, src/providers) never imports `@/platform/*`.
- *   8. New components/ui basenames must re-export `@shared/ui` or be listed local composites.
+ *   8. New components/ui basenames must re-export `@mms/ui` or be listed local composites.
  *
  * Usage:
  *   node scripts/check-shared-ui.mjs
@@ -52,11 +52,24 @@ function walkFiles(dir, filter = () => true, out = []) {
 
 const isCodeFile = (f) => /\.(ts|tsx)$/.test(f) && !/\.d\.ts$/.test(f);
 
+/**
+ * Fail closed: this ratchet is the only automated guard for the console split, so
+ * a renamed or removed scan root must fail instead of reporting "0 violations"
+ * (docs/monorepo-migration-plan.md §2.7, U2). Mirrored as a skill script, so it
+ * carries this guard locally rather than importing scripts/lib/repo-paths.mjs.
+ */
+const scanErrors = [];
+function assertScanned(label, dir, files) {
+  if (!fs.existsSync(dir)) scanErrors.push(`${label}: missing ${toRel(dir)}`);
+  else if (files.length === 0) scanErrors.push(`${label}: no source files under ${toRel(dir)}`);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Check: Platform Console must not import from "@/components/ui/*"
 // ─────────────────────────────────────────────────────────────────────────────
 const platformUiImports = [];
 const platformFiles = walkFiles(PLATFORM_DIR, isCodeFile);
+assertScanned("Platform Console", PLATFORM_DIR, platformFiles);
 
 const FORBIDDEN_PLATFORM_UI_IMPORT = /from\s+["']@\/components\/ui\/([^"']+)["']/g;
 const FORBIDDEN_PLATFORM_UI_ROOT_IMPORT = /from\s+["']@\/components\/ui["']/g;
@@ -68,14 +81,14 @@ for (const file of platformFiles) {
     platformUiImports.push({
       file: toRel(file),
       importSpecifier: `@/components/ui/${match[1]}`,
-      rule: "Platform Console must import from '@shared/ui', not '@/components/ui/*'",
+      rule: "Platform Console must import from '@mms/ui', not '@/components/ui/*'",
     });
   }
   while ((match = FORBIDDEN_PLATFORM_UI_ROOT_IMPORT.exec(content)) !== null) {
     platformUiImports.push({
       file: toRel(file),
       importSpecifier: "@/components/ui",
-      rule: "Platform Console must import from '@shared/ui', not '@/components/ui'",
+      rule: "Platform Console must import from '@mms/ui', not '@/components/ui'",
     });
   }
 }
@@ -86,7 +99,12 @@ for (const file of platformFiles) {
 const crossConsoleImports = [];
 
 const TENANT_IMPORTING_PLATFORM = /from\s+["']@\/platform\/([^"']+)["']/g;
+// Dynamic `import()` / `require()` bypass `no-restricted-imports`, so the static
+// regex alone missed the one form a lazy route loader actually uses.
+const TENANT_IMPORTING_PLATFORM_DYNAMIC =
+  /(?:import\s*\(\s*|require\s*\(\s*)["']@\/platform\/([^"']+)["']/g;
 const tenantFiles = walkFiles(TENANT_DIR, isCodeFile);
+assertScanned("Tenant Console", TENANT_DIR, tenantFiles);
 
 // Zero cross-console imports between Tenant and Platform
 const CROSS_CONSOLE_ALLOWLIST = new Set([]);
@@ -105,9 +123,19 @@ for (const file of tenantFiles) {
       });
     }
   }
+  let dynamicMatch;
+  while ((dynamicMatch = TENANT_IMPORTING_PLATFORM_DYNAMIC.exec(content)) !== null) {
+    crossConsoleImports.push({
+      file: toRel(file),
+      importSpecifier: `@/platform/${dynamicMatch[1]}`,
+      rule: "Tenant Console must never dynamically import Platform Console (@/platform/*)",
+    });
+  }
 }
 
 const PLATFORM_IMPORTING_TENANT = /from\s+["']@\/tenant\/([^"']+)["']/g;
+const PLATFORM_IMPORTING_TENANT_DYNAMIC =
+  /(?:import\s*\(\s*|require\s*\(\s*)["']@\/tenant\/([^"']+)["']/g;
 for (const file of platformFiles) {
   const content = fs.readFileSync(file, "utf8");
   let match;
@@ -122,14 +150,23 @@ for (const file of platformFiles) {
       });
     }
   }
+  let dynamicMatch;
+  while ((dynamicMatch = PLATFORM_IMPORTING_TENANT_DYNAMIC.exec(content)) !== null) {
+    crossConsoleImports.push({
+      file: toRel(file),
+      importSpecifier: `@/tenant/${dynamicMatch[1]}`,
+      rule: "Platform Console must never dynamically import Tenant Console (@/tenant/*)",
+    });
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. Check: Facade Purity in apps/frontend/src/components/ui/
-//    Components that exist in @shared/ui must only re-export from @shared/ui.
+//    Components that exist in @mms/ui must only re-export from @mms/ui.
 // ─────────────────────────────────────────────────────────────────────────────
 const facadeViolations = [];
 const facadeFiles = walkFiles(UI_FACADE_DIR, (f) => f.endsWith(".tsx") || f.endsWith(".ts"));
+assertScanned("UI facade", UI_FACADE_DIR, facadeFiles);
 
 const SHARED_PRIMITIVE_NAMES = new Set([
   "alert-dialog.tsx",
@@ -169,23 +206,23 @@ for (const file of facadeFiles) {
   if (!SHARED_PRIMITIVE_NAMES.has(base)) continue;
 
   const content = fs.readFileSync(file, "utf8");
-  // A clean facade should re-export from "@shared/ui"
-  if (!content.includes('from "@shared/ui"') && !content.includes("from '@shared/ui'")) {
+  // A clean facade should re-export from "@mms/ui"
+  if (!content.includes('from "@mms/ui"') && !content.includes("from '@mms/ui'")) {
     facadeViolations.push({
       file: toRel(file),
-      issue: `Primitive facade ${base} must re-export from '@shared/ui'`,
+      issue: `Primitive facade ${base} must re-export from '@mms/ui'`,
     });
   }
 
   // A facade must not declare fresh JSX implementations (<div, <button, etc.)
-  // (allow Table's subcomponents if typed, but primitive implementation must come from @shared/ui)
+  // (allow Table's subcomponents if typed, but primitive implementation must come from @mms/ui)
   const hasLocalFunctionComponent =
     /const\s+[A-Z][A-Za-z0-9]+\s*=\s*\([^)]*\)\s*=>\s*<[a-z]+/m.test(content) &&
     base !== "table.tsx"; // table has helper subcomponents
   if (hasLocalFunctionComponent) {
     facadeViolations.push({
       file: toRel(file),
-      issue: `Primitive facade ${base} defines local JSX implementation instead of re-exporting from @shared/ui`,
+      issue: `Primitive facade ${base} defines local JSX implementation instead of re-exporting from @mms/ui`,
     });
   }
 }
@@ -272,7 +309,7 @@ for (const file of [...platformFiles, ...tenantFiles]) {
     const rel = toRel(file);
     duplicatePrimitiveFiles.push({
       file: rel,
-      issue: `Forbidden duplicate UI primitive file '${base}'. Reusable primitives must reside in '@shared/ui'.`,
+      issue: `Forbidden duplicate UI primitive file '${base}'. Reusable primitives must reside in '@mms/ui'.`,
     });
   }
 }
@@ -282,6 +319,9 @@ for (const file of [...platformFiles, ...tenantFiles]) {
 // ─────────────────────────────────────────────────────────────────────────────
 const orphanedImports = [];
 const allFrontendFiles = walkFiles(FE_SRC, isCodeFile);
+assertScanned("Frontend source", FE_SRC, allFrontendFiles);
+const sharedUiFiles = walkFiles(SHARED_UI_DIR, isCodeFile);
+assertScanned("Shared UI", SHARED_UI_DIR, sharedUiFiles);
 
 // Check if any file imports from non-existent @/components/ui/ files
 const UI_IMPORT_REGEX = /from\s+["']@\/components\/ui\/([^"']+)["']/g;
@@ -330,7 +370,19 @@ const SHARED_LAYER_FILES = SHARED_LAYER_DIRS.flatMap((dir) =>
 );
 
 const SHARED_LAYER_PLATFORM_IMPORT = /from\s+["']@\/platform\/([^"']+)["']/g;
+const SHARED_LAYER_PLATFORM_DYNAMIC_IMPORT =
+  /(?:import\s*\(\s*|require\s*\(\s*)["']@\/platform\/([^"']+)["']/g;
 const SHARED_LAYER_PLATFORM_ALLOWLIST = new Set([]);
+/**
+ * The only sanctioned dual-console bridge files. They exist solely until the P8
+ * split deletes them, and P9 removes this set — after which any dynamic platform
+ * import from the shared layer fails again. Static imports are never exempt.
+ */
+const TRANSITIONAL_DUAL_CONSOLE = new Set([
+  "components/routing/HostRoutes.tsx",
+  "lib/routing/routePrefetch.ts",
+]);
+const sanctionedDualConsole = [];
 
 for (const file of SHARED_LAYER_FILES) {
   const content = fs.readFileSync(file, "utf8");
@@ -346,12 +398,26 @@ for (const file of SHARED_LAYER_FILES) {
       });
     }
   }
+  // Allowlist keys are app-relative (`components/routing/HostRoutes.tsx`).
+  const feRel = path.relative(FE_SRC, file).split(path.sep).join("/");
+  if (TRANSITIONAL_DUAL_CONSOLE.has(feRel)) {
+    sanctionedDualConsole.push(feRel);
+    continue;
+  }
+  let dynamicMatch;
+  while ((dynamicMatch = SHARED_LAYER_PLATFORM_DYNAMIC_IMPORT.exec(content)) !== null) {
+    sharedLayerPlatformImports.push({
+      file: rel,
+      importSpecifier: `@/platform/${dynamicMatch[1]}`,
+      rule: "Shared layer must never dynamically import Platform Console (@/platform/*)",
+    });
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 7. Check: New UI Facade Basenames Are Re-exports or Deliberate Local Composites
 //    Any basename under components/ui/ that is not an established shared
-//    primitive facade must either re-export from @shared/ui or be listed in
+//    primitive facade must either re-export from @mms/ui or be listed in
 //    LOCAL_COMPOSITE_ALLOWLIST (a deliberate, reviewed local composite).
 // ─────────────────────────────────────────────────────────────────────────────
 const newFacadeViolations = [];
@@ -368,18 +434,18 @@ for (const file of facadeFiles) {
   if (SHARED_PRIMITIVE_NAMES.has(base) || LOCAL_COMPOSITE_ALLOWLIST.has(base)) continue;
 
   const content = fs.readFileSync(file, "utf8");
-  if (!content.includes('from "@shared/ui"') && !content.includes("from '@shared/ui'")) {
+  if (!content.includes('from "@mms/ui"') && !content.includes("from '@mms/ui'")) {
     newFacadeViolations.push({
       file: toRel(file),
-      issue: `New UI facade basename '${base}' must re-export from '@shared/ui' or be added to LOCAL_COMPOSITE_ALLOWLIST`,
+      issue: `New UI facade basename '${base}' must re-export from '@mms/ui' or be added to LOCAL_COMPOSITE_ALLOWLIST`,
     });
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 8. Check: Single table engine in @shared/ui
-//    WorkBatchTable (apps/frontend/src/components/common/work) is the sole table
-//    engine across Tenant and Platform Consoles. @shared/ui ships only low-level
+// 8. Check: Single table engine in @mms/ui
+//    WorkBatchTable (packages/fe-core/src/components) is the sole table
+//    engine across Tenant and Platform Consoles. @mms/ui ships only low-level
 //    table primitives; a second DataTable/Pagination-style engine is banned. New
 //    primitives require an explicit allowlist entry (a deliberate, reviewed change).
 // ─────────────────────────────────────────────────────────────────────────────
@@ -409,8 +475,8 @@ if (fs.existsSync(sharedTableDir)) {
       tablePrimitiveViolations.push({
         file: toRel(path.join(sharedTableDir, base)),
         issue:
-          `Unexpected table primitive '${base}' in @shared/ui. The single table engine is ` +
-          "WorkBatchTable (apps/frontend/src/components/common/work/WorkBatchTable.tsx); " +
+          `Unexpected table primitive '${base}' in @mms/ui. The single table engine is ` +
+          "WorkBatchTable (packages/fe-core/src/components/WorkBatchTable.tsx); " +
           "add new low-level primitives to SANCTIONED_TABLE_PRIMITIVES only as a deliberate decision.",
       });
     }
@@ -421,6 +487,7 @@ if (fs.existsSync(sharedTableDir)) {
 // Summary & Reporting
 // ─────────────────────────────────────────────────────────────────────────────
 const totalViolations =
+  scanErrors.length +
   platformUiImports.length +
   crossConsoleImports.length +
   facadeViolations.length +
@@ -435,6 +502,7 @@ if (process.argv.includes("--json")) {
     JSON.stringify(
       {
         totalViolations,
+        scanErrors,
         platformUiImports,
         crossConsoleImports,
         facadeViolations,
@@ -468,7 +536,7 @@ if (platformUiImports.length > 0) {
     console.error(`   - ${v.file}: ${v.importSpecifier}`);
   }
 } else {
-  console.log("✅ Platform Console imports: 100% direct from @shared/ui (0 violations)");
+  console.log("✅ Platform Console imports: 100% direct from @mms/ui (0 violations)");
 }
 
 if (crossConsoleImports.length > 0) {
@@ -490,7 +558,7 @@ if (facadeViolations.length > 0) {
     console.error(`   - ${v.file}: ${v.issue}`);
   }
 } else {
-  console.log("✅ UI Facades: all 18 primitives cleanly delegate to @shared/ui (0 violations)");
+  console.log("✅ UI Facades: all 18 primitives cleanly delegate to @mms/ui (0 violations)");
 }
 
 if (duplicatePrimitiveFiles.length > 0) {
@@ -534,19 +602,33 @@ if (newFacadeViolations.length > 0) {
     console.error(`   - ${v.file}: ${v.issue}`);
   }
 } else {
-  console.log("✅ UI facade basenames: all re-export @shared/ui or are listed local composites (0 violations)");
+  console.log("✅ UI facade basenames: all re-export @mms/ui or are listed local composites (0 violations)");
 }
 
 if (tablePrimitiveViolations.length > 0) {
   passed = false;
   console.error(
-    `❌ Unexpected table primitives in @shared/ui (${tablePrimitiveViolations.length} violations):`,
+    `❌ Unexpected table primitives in @mms/ui (${tablePrimitiveViolations.length} violations):`,
   );
   for (const v of tablePrimitiveViolations) {
     console.error(`   - ${v.file}: ${v.issue}`);
   }
 } else {
-  console.log("✅ Single table engine: @shared/ui ships only sanctioned table primitives (0 violations)");
+  console.log("✅ Single table engine: @mms/ui ships only sanctioned table primitives (0 violations)");
+}
+
+if (scanErrors.length > 0) {
+  passed = false;
+  console.error(`❌ Fail-closed scan roots (${scanErrors.length}):`);
+  for (const error of scanErrors) console.error(`   - ${error}`);
+} else {
+  console.log("✅ Scan roots: every scan root exists and contains source files (0 violations)");
+}
+
+if (sanctionedDualConsole.length > 0) {
+  console.log(
+    `ℹ Transitional dual-console bridge files (delete in P8): ${sanctionedDualConsole.join(", ")}`,
+  );
 }
 
 console.log("\n=======================================================");

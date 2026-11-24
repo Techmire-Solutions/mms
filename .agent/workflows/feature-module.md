@@ -10,8 +10,8 @@ This workflow guides the end-to-end implementation of a new or extended MMS feat
 
 - [ ] **Load core skills**: Invoke `mms-module-page`, `mms-module-work`, and `mms-module-setup`. Invoke `ui-ux-pro-max` for design system and style intelligence. Add `mms-backend-api` if building new REST endpoints, and `mms-fields-registry` if the module uses custom fields.
 - [ ] **Review architecture rules**: Read `rules/mms-module-architecture.md`, `rules/mms-api-interface.md`, `rules/mms-data-layer.md`, `rules/mms-ui-ux-design.md`, `rules/mms-settings-i18n.md`, and `rules/mms-fields.md`.
-- [ ] **Define the Manifest**: In `packages/shared`, define `{module}ModuleManifest`. Explicitly declare the `tiers` (Work, Reports, Setup), `setupSubTabs`, `softDelete` behavior, and required permissions.
-- [ ] **Define DTOs**: Create `.strict()` Zod schemas in `@mms/shared` for validation. Never fork schemas between frontend and backend.
+- [ ] **Define the Manifest**: In `packages/contracts`, define `{module}ModuleManifest`. Explicitly declare the `tiers` (Work, Reports, Setup), `setupSubTabs`, `softDelete` behavior, and required permissions.
+- [ ] **Define DTOs**: Create `.strict()` Zod schemas in `@mms/contracts` for validation. Never fork schemas between frontend and backend.
 
 ## Phase 2: Backend REST & Data Layer (Strict TDD)
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { AlertTriangle, Boxes, LayoutDashboard } from "lucide-react";
-import { SYSTEM_MODULES, type PlatformModuleCatalogEntry } from "@mms/shared";
+import { SYSTEM_MODULES, type PlatformModuleCatalogEntry } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSavedFlash } from "@/hooks/useSavedFlash";
 import { SectionCard } from "@/components/app/SectionCard";
@@ -8,7 +8,7 @@ import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import { SettingsPanel } from "@/components/app/SettingsShell";
 import { Alert } from "@/components/app/Alert";
 import { PlatformSettingsLoadError } from "@/platform/features/settings/components/PlatformSettingsLoadError";
-import { CardSkeleton } from "@shared/ui";
+import { CardSkeleton } from "@mms/ui";
 import { PlatformModuleSelectCard } from "@/platform/features/shell/components/PlatformModuleSelectCard";
 import { resolveModuleIcon } from "@/lib/config/moduleIcons";
 import {

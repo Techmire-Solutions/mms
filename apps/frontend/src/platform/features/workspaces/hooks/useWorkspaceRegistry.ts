@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { PublicWorkspaceSummary } from "@mms/shared";
+import type { PublicWorkspaceSummary } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { useTenant } from "@/lib/contexts/TenantContext";

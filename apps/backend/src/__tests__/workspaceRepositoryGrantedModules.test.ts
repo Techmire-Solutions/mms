@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { SYSTEM_MODULES } from "@mms/shared";
+import { SYSTEM_MODULES } from "@mms/contracts";
 
 const mockSelect = vi.fn();
-vi.mock("../db/dbConnection.js", () => ({
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+
   activeDb: () => ({
     select: mockSelect,
   }),

@@ -1,6 +1,6 @@
 # Question Bank Shared Contracts & TypeScript Definitions Audit (2026-11-12)
 
-**Scope.** `packages/shared`: the Question Bank DTOs, enums/taxonomy, Zod schemas and their alignment
+**Scope.** `packages/contracts`: the Question Bank DTOs, enums/taxonomy, Zod schemas and their alignment
 with the static types and the database columns.
 
 **Method.** Read the record/write/insert schemas, the entity interfaces, the invariant engine, the

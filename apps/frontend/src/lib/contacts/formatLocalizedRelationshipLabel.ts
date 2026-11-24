@@ -1,4 +1,4 @@
-import { formatRelationshipDisplayLabel, type AppTranslationKey } from "@mms/shared";
+import { formatRelationshipDisplayLabel, type AppTranslationKey } from "@mms/contracts";
 import { formatContactOptionLabel } from "@/lib/contacts/contactI18n";
 
 interface LocalizedRelationshipParts {

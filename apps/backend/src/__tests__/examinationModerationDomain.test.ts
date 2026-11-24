@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_GRACE_MARKS } from "@mms/shared";
+import { MAX_GRACE_MARKS } from "@mms/contracts";
 import {
   assertEffectiveWithinTotal,
   assertGraceWithinRange,

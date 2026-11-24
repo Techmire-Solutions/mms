@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { normalizeStudentsSettings } from "@mms/shared";
+import { normalizeStudentsSettings } from "@mms/contracts";
 import { ApiError } from "@/lib/apiError";
 import { useStudentsSetupSaveActions } from "@/tenant/features/students/hooks/useStudentsSetupSaveActions";
 

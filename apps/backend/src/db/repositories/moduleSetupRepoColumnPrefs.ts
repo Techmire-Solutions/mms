@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
-import { withTenant } from "../tenant-context.js";
+import { withTenant } from "@mms/db/context";
 
 type WorkspaceCol = PgColumn;
 

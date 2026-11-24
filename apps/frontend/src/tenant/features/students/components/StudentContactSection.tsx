@@ -12,7 +12,7 @@ import {
   todayISO,
   type Contact,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   ContactProfileValue,
   resolveStudentFieldLabel,

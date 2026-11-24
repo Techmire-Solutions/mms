@@ -13,7 +13,7 @@ import {
   changePlatformUserPassword as updatePlatformUserPassword,
   updatePlatformUserProfile,
 } from "../../services/platform/platformUserService.js";
-import { platformChangePasswordBodySchema, platformProfilePatchBodySchema } from "@mms/shared";
+import { platformChangePasswordBodySchema, platformProfilePatchBodySchema } from "@mms/contracts";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 import { insertPlatformActivityLog } from "../../platform/use-cases/platformUseCases.js";
 import { clearPlatformAccessCookie } from "../../services/platform/platformCookieService.js";

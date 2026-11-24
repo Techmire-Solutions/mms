@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { isFacultyQuickFilter, type FacultyQuickFilter } from "@mms/shared";
+import { isFacultyQuickFilter, type FacultyQuickFilter } from "@mms/contracts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { getDirectoryPageSelection } from "@/lib/directorySelection";

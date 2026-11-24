@@ -11,13 +11,13 @@ import type {
   HasanatStudentAwardDto,
   HasanatStudentSummaryDto,
   HasanatTierReconcileResultDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   evaluateTierChange,
   normalizeHasanatModulePreferences,
   tierProgress,
   type HasanatTier,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   findStudentsForCards,
   getHasanatModulePreferences,

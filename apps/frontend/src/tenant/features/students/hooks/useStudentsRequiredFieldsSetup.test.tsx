@@ -6,7 +6,7 @@ import {
   setStudentFieldRequired,
   type FieldDefinition,
   type StudentsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useStudentsRequiredFieldsSetup } from "@/tenant/features/students/hooks/useStudentsRequiredFieldsSetup";
 
 const mocks = vi.hoisted(() => ({

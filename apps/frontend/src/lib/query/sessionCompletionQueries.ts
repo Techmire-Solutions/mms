@@ -4,7 +4,7 @@ import {
   sessionCompletionRowSchema,
   type SessionCertificatesBody,
   type SessionCompletionRow,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 export { SESSION_COMPLETION_QUERY_KEY } from "./sessionQueryKeys.js";

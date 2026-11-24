@@ -6,7 +6,7 @@
  * import cannot over-allocate a batch.
  */
 
-import type { Denomination, HasanatTransferEntity } from "@mms/shared";
+import type { Denomination, HasanatTransferEntity } from "@mms/contracts";
 
 export interface ImportResolution {
   denomination: Denomination;

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildUsersWorkTierProps } from "./usersPageWorkTierProps";
 import { buildUsersModalLayerProps } from "./usersPageModalLayerProps";
-import { normalizeWorkspaceUser } from "@mms/shared";
+import { normalizeWorkspaceUser } from "@mms/contracts";
 
 describe("usersPagePropsBuilders", () => {
   it("builds UsersWorkTierProps object from domain slices", () => {

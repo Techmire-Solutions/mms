@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { Account, JournalEntry } from "@/lib/data/accountingData";
+import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import {
   isVoucherPrintable,
   resolveVoucherPrintKind,
   voucherPreparerName,
-} from "@/tenant/features/accounting/lib/paymentVoucherKind";
+} from "@mms/mod-accounting/frontend/tenant";
 import {
   buildPaymentVoucherModel,
   parseSalaryVoucherRef,
-} from "@/tenant/features/accounting/lib/paymentVoucherModel";
+} from "@mms/mod-accounting/frontend/tenant";
 import {
   PAYMENT_VOUCHER_LABEL_KEYS,
   buildPaymentVoucherBody,

@@ -1,8 +1,8 @@
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import type { ModuleColumnRegistryEntry } from "@mms/contracts";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Enrollment } from "@/lib/data/enrollmentData";
-import type { Student, toMessagingRecipient } from "@mms/shared";
+import type { Student, toMessagingRecipient } from "@mms/contracts";
 
 export type EnrollmentMessageChannel = "whatsapp" | "sms" | "email";
 

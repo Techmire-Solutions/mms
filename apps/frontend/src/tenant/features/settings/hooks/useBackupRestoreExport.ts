@@ -6,7 +6,7 @@ import {
   createBackupHistoryEntry,
   formatBackupSize,
   type WorkspaceBackupRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { exportEncryptedTenantBackup, saveCollection } from "@/lib/db";
 import { verifyAdminBackupPassword } from "@/lib/backupAuth";
 import { triggerFileDownload } from "@/lib/download";

@@ -8,7 +8,7 @@ import { runWithTenant } from "../lib/tenantContext.js";
  * injected repository seam, so no module-level adapter needs stubbing.
  */
 const mockRecordModernAuditEvent = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mockRecordModernAuditEvent,
 }));
 

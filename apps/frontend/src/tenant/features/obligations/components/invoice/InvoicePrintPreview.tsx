@@ -8,7 +8,7 @@
  * two disagreed (RTL, truncation, QR payload, and tables printed as the word "Table").
  */
 import React from "react";
-import type { DocumentTemplate } from "@mms/shared";
+import type { DocumentTemplate } from "@mms/contracts";
 import {
   resolveField,
   type InvoiceTemplate,

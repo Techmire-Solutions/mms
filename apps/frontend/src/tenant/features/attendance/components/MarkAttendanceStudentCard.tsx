@@ -6,7 +6,7 @@ import { useWorkCardAction } from "@/hooks/useWorkCardAction";
 import type { getAttendanceStatusInfo } from "@/lib/data/attendanceData";
 import { MarkAttendanceFieldControl } from "./MarkAttendanceFieldControl";
 import { cn } from "@/lib/utils";
-import type { ModuleFieldDef } from "@mms/shared";
+import type { ModuleFieldDef } from "@mms/contracts";
 import type { AttendanceRow } from "../lib/markAttendanceTypes";
 
 /** EntityCard tile (workshop) — not DirectoryEntityCard. */

@@ -1,9 +1,9 @@
 import React from "react";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Shield } from "lucide-react";
-import { type UsersSettings } from "@mms/shared";
+import { type UsersSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";

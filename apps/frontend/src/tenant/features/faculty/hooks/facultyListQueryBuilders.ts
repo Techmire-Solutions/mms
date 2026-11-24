@@ -3,7 +3,7 @@ import {
   type FacultyRecord,
   type FacultyListPageResult,
   type FacultyListQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleListQueryBuilders } from "@/lib/query/createModuleListQueryBuilders";
 import { FACULTY_API, FACULTY_QUERY_KEY } from "@/tenant/features/faculty/hooks/facultyQueryKeys";
 

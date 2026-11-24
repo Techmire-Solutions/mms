@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import type { useContactsCrudActions } from "@/tenant/features/contacts/hooks/useContactsCrudActions";
 import { useContactsPageDeleteActions } from "@/tenant/features/contacts/hooks/useContactsPageDeleteActions";
 import { useContactsPageWriteActions } from "@/tenant/features/contacts/hooks/useContactsPageWriteActions";

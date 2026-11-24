@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ContactPreferences } from "@mms/shared";
-import { DEFAULT_CONTACT_PREFERENCES } from "@mms/shared";
+import type { ContactPreferences } from "@mms/contracts";
+import { DEFAULT_CONTACT_PREFERENCES } from "@mms/contracts";
 import { getDuplicateThemeColors } from "@/tenant/features/contacts/lib/duplicateDetectionTypes";
 
 describe("getDuplicateThemeColors", () => {

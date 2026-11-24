@@ -1,4 +1,4 @@
-import type { LlmConfig } from "@mms/shared";
+import type { LlmConfig } from "@mms/contracts";
 import { decryptSecretAtRest, encryptSecretAtRest } from "../../lib/cryptoAtRest.js";
 
 const ENVELOPE_PREFIX = "enc:aes256gcm:";

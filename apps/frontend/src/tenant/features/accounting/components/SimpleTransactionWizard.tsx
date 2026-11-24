@@ -1,20 +1,24 @@
 import { useMemo } from "react";
 import { AnimatePresence, m } from "framer-motion";
-import { FormModal } from "@/components/app/FormModal";
+import { FormModal } from "@mms/fe-core/components/FormModal";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
-import { useTranslation } from "@/hooks/useTranslation";
-import { type Account, type FiscalYear, type JournalEntry } from "@/lib/data/accountingData";
+import { useTranslation } from "@mms/fe-core/i18n";
+import {
+  type Account,
+  type FiscalYear,
+  type JournalEntry,
+} from "@mms/mod-accounting/frontend/tenant";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
-import { SimpleTransactionWizardFooter } from "./SimpleTransactionWizardFooter";
-import { SimpleTransactionWizardSteps } from "./SimpleTransactionWizardSteps";
+import { SimpleTransactionWizardFooter } from "@mms/mod-accounting/frontend/tenant";
+import { SimpleTransactionWizardSteps } from "@mms/mod-accounting/frontend/tenant";
 import { StepTransactionForm } from "./SimpleTransactionStepForm";
-import { StepReview } from "./SimpleTransactionStepReview";
-import { StepTypeSelection } from "./SimpleTransactionStepTypeSelection";
-import { type QuickActionType } from "../lib/simpleTransactionWizardTypes";
+import { StepReview } from "@mms/mod-accounting/frontend/tenant";
+import { StepTypeSelection } from "@mms/mod-accounting/frontend/tenant";
+import { type QuickActionType } from "@mms/mod-accounting/frontend/tenant";
 import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import { useSimpleTransactionWizard } from "../hooks/useSimpleTransactionWizard";
 import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
-import { resolveWizardTransactionGroups } from "../lib/simpleTransactionTemplateGroups";
+import { resolveWizardTransactionGroups } from "@mms/mod-accounting/frontend/tenant";
 import { useJournalTemplates } from "@/tenant/features/accounting/hooks/useJournalTemplates";
 
 interface SimpleTransactionWizardProps {

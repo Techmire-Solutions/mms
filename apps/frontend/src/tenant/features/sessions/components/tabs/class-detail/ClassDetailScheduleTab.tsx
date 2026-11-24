@@ -17,7 +17,7 @@ import {
   formatFacultyDisplayName,
   SESSIONS_MODULE_MANIFEST,
   type FacultyMember,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { SessionClassSchedule, SessionClassTimetablePeriod } from "@/lib/data/sessionsData";
 
 interface ClassDetailScheduleTabProps {

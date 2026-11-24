@@ -5,7 +5,7 @@ import type {
   EnrollmentSuspendBody,
   EnrollmentTransferBody,
   EnrollmentWithdrawBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { isApiError } from "@/lib/apiError";
 import { notify } from "@/lib/notify";

@@ -3,7 +3,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { UsersListContent } from "@/tenant/features/users/components/UsersListContent";
 import { UsersListFilters } from "@/tenant/features/users/components/UsersListFilters";

@@ -3,7 +3,7 @@ import { Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { LogoColorProportion } from "@mms/shared";
+import type { LogoColorProportion } from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import { ThemeSettingsPaletteSection } from "./ThemeSettingsPaletteSection";
 

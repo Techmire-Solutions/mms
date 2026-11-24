@@ -1,4 +1,4 @@
-import { buildCsvContent, type Session, type SessionsTimetableExportQuery } from "@mms/shared";
+import { buildCsvContent, type Session, type SessionsTimetableExportQuery } from "@mms/contracts";
 import { streamIcalCalendar, type TimedIcalEvent } from "../../lib/icalFormat.js";
 import { zonedDateTimeToUtc } from "../../lib/zonedTime.js";
 import { ValidationError } from "../../lib/httpErrors.js";

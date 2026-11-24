@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { useTranslation } from "@/hooks/useTranslation";

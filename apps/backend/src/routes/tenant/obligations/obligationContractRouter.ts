@@ -5,7 +5,7 @@ import {
   obligationContract,
   OBLIGATIONS_MODULE_MANIFEST,
   normalizeObligationsModulePreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import {
   installContractErrorHandler,

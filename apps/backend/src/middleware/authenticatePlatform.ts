@@ -1,19 +1,21 @@
-import type { FastifyReply, FastifyRequest } from "fastify";
-import type { PlatformAdminPermissionKey, PlatformUser } from "@mms/shared";
-import { platformUserCan } from "@mms/shared";
-import { platformSessionScope } from "../services/sessionClockService.js";
-import { enforcePlatformSessionClock } from "../services/sessionGuardService.js";
-import { platformSessionPolicy } from "../services/sessionPolicyService.js";
-import { getRequestTenant } from "../lib/tenantContext.js";
+import type { FastifyRequest } from "fastify";
+import type { PlatformUser } from "@mms/contracts";
+import {
+  createPlatformAdminGuard,
+  platformSessionScope,
+  type PlatformAuthFailureReason,
+  type PlatformAuthResolveResult,
+} from "@mms/be-core/auth";
 import { attachPlatformTokenFromCookie } from "../services/platform/platformCookieService.js";
 import type { PlatformAccessTokenPayload } from "../services/platform/platformAuthService.js";
 import {
   getStoredPlatformUserById,
   toPublicPlatformUser,
 } from "../services/platform/platformUserService.js";
-import { sendForbidden, sendServiceUnavailable, sendUnauthorized } from "../lib/httpErrors.js";
-import { enforceSessionClockOrReply, isAuthDependencyUnavailable } from "../lib/authGuard.js";
+import { isAuthDependencyUnavailable } from "../lib/authGuard.js";
 import { isTokenRevoked } from "../services/authSessionService.js";
+import { platformSessionPolicy } from "../services/sessionPolicyService.js";
+import { enforcePlatformSessionClock } from "../services/sessionGuardService.js";
 
 export interface PlatformAuthenticatedRequest extends FastifyRequest {
   platformUser: PlatformUser;
@@ -23,29 +25,7 @@ export interface PlatformOptionalAuthRequest extends FastifyRequest {
   platformUser?: PlatformUser;
 }
 
-type PlatformAuthFailureReason =
-  | "auth_required"
-  | "invalid_session"
-  | "user_missing"
-  | "account_disabled"
-  | "session_revoked"
-  | "dependency_unavailable";
-
-type PlatformAuthResolveResult =
-  { ok: true; user: PlatformUser } | { ok: false; reason: PlatformAuthFailureReason };
-
-/**
- * Hook to enforce that the request is only allowed on the main domain (no tenant subdomain context).
- */
-export async function requireMainDomain(
-  _request: FastifyRequest,
-  reply: FastifyReply,
-): Promise<void> {
-  if (getRequestTenant()) {
-    await sendForbidden(reply, "Platform actions are only available on the main domain");
-    return;
-  }
-}
+export type { PlatformAuthFailureReason };
 
 /**
  * Resolve platform session from cookie without writing a response.
@@ -97,115 +77,22 @@ export async function resolvePlatformUser(
   return { ok: true, user: toPublicPlatformUser(stored) };
 }
 
-async function sendPlatformAuthFailure(
-  reply: FastifyReply,
-  reason: PlatformAuthFailureReason,
-): Promise<void> {
-  switch (reason) {
-    case "account_disabled":
-      await sendUnauthorized(reply, "Platform account has been disabled", "account_disabled");
-      return;
-    case "session_revoked":
-      await sendUnauthorized(reply, "Platform session has been revoked", "session_revoked");
-      return;
-    case "user_missing":
-      await sendUnauthorized(reply, "User no longer exists");
-      return;
-    case "invalid_session":
-      await sendUnauthorized(reply, "Invalid platform session");
-      return;
-    case "dependency_unavailable":
-      await sendServiceUnavailable(
-        reply,
-        "Platform session validation is temporarily unavailable. Please retry.",
-      );
-      return;
-    case "auth_required":
-    default:
-      await sendUnauthorized(reply, "Platform authentication is required");
-  }
-}
+const guard = createPlatformAdminGuard({
+  resolveUser: resolvePlatformUser,
+  sessionPolicy: platformSessionPolicy,
+  sessionScope: platformSessionScope,
+  enforceSessionClock: enforcePlatformSessionClock,
+  isDependencyUnavailable: isAuthDependencyUnavailable,
+});
 
 /**
  * Apex-only JWT for platform operators (separate from tenant madrasa sessions).
  * Reloads role + permissions from DB so permission edits apply without re-login.
  */
-export async function authenticatePlatform(
-  request: FastifyRequest,
-  reply: FastifyReply,
-): Promise<void> {
-  await requireMainDomain(request, reply);
-  if (reply.sent) return;
-
-  const resolved = await resolvePlatformUser(request);
-  if (!resolved.ok) {
-    await sendPlatformAuthFailure(reply, resolved.reason);
-    return;
-  }
-
-  // Server-authoritative inactivity + absolute lifetime enforcement for apex sessions.
-  const sessionPolicy = platformSessionPolicy();
-  const idleScope = platformSessionScope(resolved.user.id);
-  const jti = (request.user as PlatformAccessTokenPayload | undefined)?.jti;
-  const clockOk = await enforceSessionClockOrReply(request, reply, {
-    scope: idleScope,
-    policy: sessionPolicy,
-    jti,
-    enforce: enforcePlatformSessionClock,
-    domain: "platform",
-  });
-  if (!clockOk) return;
-
-  (request as PlatformAuthenticatedRequest).platformUser = resolved.user;
-}
-
-/**
- * Soft apex probe for GET `/me`: sets `platformUser` when valid, otherwise leaves unset.
- * Never writes 401 — callers return `200 { user: null }` when absent.
- */
-export async function optionalAuthenticatePlatform(
-  request: FastifyRequest,
-  reply: FastifyReply,
-): Promise<void> {
-  await requireMainDomain(request, reply);
-  if (reply.sent) return;
-
-  const resolved = await resolvePlatformUser(request);
-  if (resolved.ok) {
-    (request as PlatformOptionalAuthRequest).platformUser = resolved.user;
-  }
-}
-
-/**
- * Allows super-users always, or admins with the given grantable permission.
- */
-export function requirePlatformPermission(permission: PlatformAdminPermissionKey) {
-  return async function requirePlatformPermissionHook(
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ): Promise<void> {
-    if (reply.sent) return;
-    const req = request as PlatformAuthenticatedRequest;
-    if (!platformUserCan(req.platformUser, permission)) {
-      await sendForbidden(reply, `Missing platform permission: ${permission}`);
-    }
-  };
-}
-
-/**
- * Restricts an endpoint to the platform super-user role. Used for the most
- * sensitive operations (admin management, DB reset, migrate-and-restart) so a
- * grantable permission can never be escalated into full platform control.
- */
-export function requirePlatformSuperUser() {
-  return async function requirePlatformSuperUserHook(
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ): Promise<void> {
-    if (reply.sent) return;
-    const req = request as PlatformAuthenticatedRequest;
-    if (req.platformUser.role !== "super_user") {
-      await sendForbidden(reply, "Super-user privilege required");
-    }
-  };
-}
+export const authenticatePlatform = guard.authenticate;
+/** Canonical name for the extracted super-admin guard. */
+export const platformAdminGuard = guard.authenticate;
+export const requireMainDomain = guard.requireMainDomain;
+export const requirePlatformPermission = guard.requirePermission;
+export const requirePlatformSuperUser = guard.requireSuperUser;
+export const optionalAuthenticatePlatform = guard.optionalAuthenticate;

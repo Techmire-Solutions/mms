@@ -1,5 +1,5 @@
 import type React from "react";
-import type { TenantUserProfile } from "@mms/shared";
+import type { TenantUserProfile } from "@mms/contracts";
 import { AccountProfileLoginEmailCard } from "./AccountProfileLoginEmailCard";
 import { AccountProfilePasswordCard } from "./AccountProfilePasswordCard";
 

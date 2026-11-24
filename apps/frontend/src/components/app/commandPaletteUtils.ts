@@ -1,5 +1,5 @@
 import type { CommandItem } from "@/components/app/commandPaletteItems";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { createRecentStore } from "@/lib/createRecentStore";
 
 export const RECENTS_KEY = "cmd:recents";

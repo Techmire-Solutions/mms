@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { resolveResultScore, rankInExam, type Exam, type ExamResult } from "@mms/shared";
+import { resolveResultScore, rankInExam, type Exam, type ExamResult } from "@mms/contracts";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import type { Student } from "@/lib/data/studentsData";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";

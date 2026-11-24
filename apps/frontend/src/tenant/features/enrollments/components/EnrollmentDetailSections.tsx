@@ -8,7 +8,7 @@ import {
   ArrowRight,
   CircleDollarSign,
 } from "lucide-react";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { type Enrollment } from "@/lib/data/enrollmentData";
 import { Button } from "@/components/ui/button";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
@@ -18,7 +18,7 @@ import {
   enrollmentAllowsOperations,
   formatDate,
   formatDateTime,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";

@@ -11,7 +11,7 @@ import {
   resolveModuleTierTab,
   toMessagingRecipient,
   type Distribution,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useHasanatDistributionColumnLayout } from "./useHasanatDistributionColumnLayout";
 import { useHasanatRedemptionColumnLayout } from "./useHasanatRedemptionColumnLayout";
 import {

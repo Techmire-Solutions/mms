@@ -1,4 +1,4 @@
-import type { MessagingCsvExportQueryDto, MessagingStatusFilter } from "@mms/shared";
+import type { MessagingCsvExportQueryDto, MessagingStatusFilter } from "@mms/contracts";
 import { downloadBackgroundJobArtifact } from "@/lib/backgroundJobs/backgroundJobApi";
 import { startServerMessagingCsvExport } from "@/lib/backgroundJobs/startServerMessagingCsvExport";
 import { notify } from "@/lib/notify";

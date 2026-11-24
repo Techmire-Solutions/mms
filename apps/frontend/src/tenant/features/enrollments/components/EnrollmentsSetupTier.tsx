@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
+import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/contracts";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";

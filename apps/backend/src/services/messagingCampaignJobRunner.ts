@@ -1,5 +1,5 @@
-import type { MessageCategory } from "@mms/shared";
-import { personalizeMessage } from "@mms/shared";
+import type { MessageCategory } from "@mms/contracts";
+import { personalizeMessage } from "@mms/contracts";
 import {
   registerBackgroundJobRunner,
   type BackgroundJobRunContext,

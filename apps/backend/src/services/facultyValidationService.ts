@@ -4,7 +4,7 @@ import {
   resolveFacultyEnabledTabIds,
   resolveFacultyFieldsMapForColumnSync,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { loadFacultySettingsCombined } from "../faculty/use-cases/facultyConfigService.js";
 import { validateOrThrow } from "../lib/zodRequest.js";
 

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/contracts";
 import {
   validateMessagingRecipients,
   type ValidatedMessagingRecipient,

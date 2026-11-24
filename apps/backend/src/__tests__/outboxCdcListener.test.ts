@@ -21,7 +21,9 @@ const mockPool = {
   }),
 };
 
-vi.mock("../db/dbConnection.js", () => ({
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+
   getPool: () => mockPool,
 }));
 

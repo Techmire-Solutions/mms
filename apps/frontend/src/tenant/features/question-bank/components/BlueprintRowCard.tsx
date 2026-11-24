@@ -1,4 +1,4 @@
-import type { QuestionCategory } from "@mms/shared";
+import type { QuestionCategory } from "@mms/contracts";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";

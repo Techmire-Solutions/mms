@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attendanceContract } from "@mms/shared";
+import { attendanceContract } from "@mms/contracts";
 
 /** Flat route table (the contract is a single `c.router`, so each entry is a route). */
 const attendanceContractRoutes = Object.fromEntries(

@@ -33,8 +33,8 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+vi.mock("@mms/db/context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/context")>();
   return { ...actual, withTenant: (_tenant: string, work: () => unknown) => work() };
 });
 
@@ -42,7 +42,7 @@ const mockPost = vi.fn();
 const mockSaveIndices = vi.fn();
 const mockSaveSettings = vi.fn();
 
-vi.mock("../accounting/use-cases/ias29UseCases.js", () => ({
+vi.mock("../../../../packages/modules/accounting/dist/backend/use-cases/ias29UseCases.js", () => ({
   postIas29Restatement: (...args: unknown[]) => mockPost(...args),
   previewIas29Restatement: vi.fn(),
   savePriceIndices: (...args: unknown[]) => mockSaveIndices(...args),

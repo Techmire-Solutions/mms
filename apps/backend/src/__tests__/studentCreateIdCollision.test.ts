@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
 
 const mockGetRequestTenant = vi.fn(() => "demo");
@@ -32,14 +32,18 @@ vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
   reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
-  recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
-  sanitizeAuditState: (value: unknown) => value,
-}));
+vi.mock("@mms/be-core/audit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/be-core/audit")>();
+  return {
+    ...actual,
+    recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
+    sanitizeAuditState: (value: unknown) => value,
+  };
+});
 
 vi.mock("../students/use-cases/studentPreferencesService.js", () => ({
   loadStudentModulePreferences: vi.fn().mockResolvedValue({}),

@@ -1,8 +1,8 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { APP_TRANSLATIONS_EN } from "@mms/shared";
-import type { JournalEntry } from "@/lib/data/accountingData";
+import { APP_TRANSLATIONS_EN } from "@mms/contracts";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import { JournalEntriesList } from "./JournalEntriesList";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -12,7 +12,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
  * (`accounting.pagination.*`), so this test resolves them from the shipped
  * English pack: a missing key would render the key itself and fail here.
  */
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     language: "en",
     direction: "ltr",

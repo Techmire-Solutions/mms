@@ -6,8 +6,8 @@ import {
   sessions,
   type SessionReadRow,
   type StudentSelectRow,
-} from "./schema.js";
-import { getRootDb } from "./dbConnection.js";
+} from "@mms/db/schema";
+import { getRootDb } from "@mms/db/client";
 import {
   preparedTenantUserColumns,
   preparedContactColumns,

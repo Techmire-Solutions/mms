@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { FacultyDepartmentEntity, FacultyDesignationDefinition } from "@mms/shared";
+import type { FacultyDepartmentEntity, FacultyDesignationDefinition } from "@mms/contracts";
 import { FacultyDepartmentFormModal } from "@/tenant/features/faculty/components/FacultyDepartmentFormModal";
 import { FacultyDesignationFormModal } from "@/tenant/features/faculty/components/FacultyDesignationFormModal";
 import { useFacultyDepartmentsController } from "@/tenant/features/faculty/hooks/useFacultyDepartmentsController";

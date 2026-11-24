@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type Payment } from "@mms/shared";
+import { dedupeTrimmedIds, type Payment } from "@mms/contracts";
 import {
   financeFeeItems,
   financeFeeStructures,
@@ -7,8 +7,8 @@ import {
   financeInvoices,
   financePaymentAllocations,
   financePayments,
-} from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { requireDbDateValue } from "../../lib/dbDate.js";
 
 export async function bulkSavePayments(tenant: string, records: Payment[]): Promise<void> {

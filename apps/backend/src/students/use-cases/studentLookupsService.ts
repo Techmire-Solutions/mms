@@ -4,7 +4,7 @@ import {
   emptyStudentLookupsMap,
   type StudentLookupKind,
   type StudentLookupsMap,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleStringListLookupsService } from "../../lib/createModuleStringListLookupsService.js";
 import {
   listStudentLookupsByKind,

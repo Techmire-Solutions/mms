@@ -9,7 +9,7 @@ import {
   resolveFacultyDesignationRoleAssignment,
   type FacultyEmployDesignationWriteRow,
   type FacultyMember,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { findFacultyByContactId } from "../../db/repositories/facultyRepository.js";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 import { getTenantUsersSettings } from "../../services/users/usersSettingsService.js";

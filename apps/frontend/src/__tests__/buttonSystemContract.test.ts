@@ -40,7 +40,7 @@ describe("button primitives — shared component ownership", () => {
       "utf-8",
     );
     expect(facade.trim()).toBe(
-      'export { Button, buttonVariants, type ButtonProps } from "@shared/ui";',
+      'export { Button, buttonVariants, type ButtonProps } from "@mms/ui";',
     );
   });
 

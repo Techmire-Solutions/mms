@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ContactsFiltersMenuButton } from "./ContactsFiltersMenuButton";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { AppTranslationKey, ContactsQuickFilter } from "@mms/shared";
+import type { AppTranslationKey, ContactsQuickFilter } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

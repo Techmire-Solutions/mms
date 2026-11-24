@@ -9,7 +9,7 @@ import { useExaminationsResultsCollection } from "@/tenant/hooks/collections/exa
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { CONTACTS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST } from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST } from "@mms/contracts";
 import {
   buildContactsCustomReportFieldCatalog,
   buildCustomReportFieldCatalog,

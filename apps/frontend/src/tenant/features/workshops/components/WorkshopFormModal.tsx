@@ -1,5 +1,5 @@
 import React from "react";
-import type { WorkshopEvent, WorkshopEventCreate, WorkshopPreferences } from "@mms/shared";
+import type { WorkshopEvent, WorkshopEventCreate, WorkshopPreferences } from "@mms/contracts";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { DatePicker } from "@/components/app/DatePicker";

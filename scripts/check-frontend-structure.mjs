@@ -30,12 +30,20 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { assertScanDirs } from "./lib/repo-paths.mjs";
 
 const ROOT = process.cwd();
 const FE = path.join(ROOT, "apps/frontend/src");
 const UI_DIR = path.join(FE, "components/ui");
 const FEATURES_DIR = path.join(FE, "tenant/features");
 const LIB_DIR = path.join(FE, "lib");
+
+// Fail closed: a renamed/removed root must break the gate, not silently retire it
+// (docs/monorepo-migration-plan.md §2.7, U2).
+assertScanDirs(
+  { "frontend src": FE, "components/ui": UI_DIR, "tenant features": FEATURES_DIR, lib: LIB_DIR },
+  "frontend structure",
+);
 
 /**
  * Baselines measured when the ratchet landed; only lower them.

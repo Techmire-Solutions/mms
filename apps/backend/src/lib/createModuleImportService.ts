@@ -9,7 +9,7 @@
  *
  * This replaces the ad-hoc `importBatch` implementations in each module's
  * `*ImportJobUseCases.ts` file by moving the validate→sanitize→transform
- * orchestration into `runImportPipeline` (packages/shared/src/dataTransfer).
+ * orchestration into `runImportPipeline` (packages/contracts/src/dataTransfer).
  *
  * @example
  * // apps/backend/src/students/studentsImportService.ts
@@ -24,8 +24,8 @@
  * });
  * studentsImport.registerJobRunner();
  */
-import type { ImportSpec, ImportResult } from "@mms/shared";
-import { runImportPipeline, type ImportBatchFn, type ImportPipelineContext } from "@mms/shared";
+import type { ImportSpec, ImportResult } from "@mms/contracts";
+import { runImportPipeline, type ImportBatchFn, type ImportPipelineContext } from "@mms/contracts";
 import { registerModuleCsvImportJobRunner } from "./registerModuleCsvImportJobRunner.js";
 
 // ---------------------------------------------------------------------------

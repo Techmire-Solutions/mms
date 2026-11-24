@@ -16,16 +16,20 @@
  * 8. Zero unsized table columns: every `DataTableColumn` / `WorkBatchTableColumn` literal
  *    (`{ id: "…", …, render }`) declares a `kind` (preferred) or a `width`, so no column
  *    collapses to an equal share of the table. Registry-built columns are covered by
- *    `packages/shared/src/__tests__/moduleColumnRegistryKinds.test.ts`.
+ *    `packages/contracts/src/__tests__/moduleColumnRegistryKinds.test.ts`.
  *
  * Spec: docs/superpowers/specs/2026-09-24-work-directory-convergence-design.md §5
  * Norms: mms-module-architecture.mdc §3/§7, mms-dry.mdc §1.
  */
 import fs from "node:fs";
 import path from "node:path";
+import { assertScanDirs } from "./lib/repo-paths.mjs";
 
 const ROOT = process.cwd();
 const FE_SRC = path.join(ROOT, "apps/frontend/src");
+
+// Fail closed: never report a clean work-directory convergence on an empty scan.
+assertScanDirs({ "frontend src": FE_SRC }, "work directory");
 
 const IGNORED = /(^|\/)(node_modules|dist|coverage|\.turbo)\//;
 const SOURCE_EXT = /\.(ts|tsx)$/;

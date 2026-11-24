@@ -1,6 +1,6 @@
 /**
  * Low-level table primitives only. The single table *engine* for the whole app is
- * `WorkBatchTable` (apps/frontend/src/components/common/work/WorkBatchTable.tsx),
+ * `WorkBatchTable` (packages/fe-core/src/components/WorkBatchTable.tsx),
  * with the stateful shell `DataTable` (apps/frontend/src/components/common/data-table).
  * Do not add a second DataTable/Pagination-style table engine here — the
  * `check:shared-ui` ratchet enforces this allowlist.

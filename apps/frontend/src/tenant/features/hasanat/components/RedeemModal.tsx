@@ -10,7 +10,7 @@ import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
-import { generateClientEntityId, redeemCardBodySchema } from "@mms/shared";
+import { generateClientEntityId, redeemCardBodySchema } from "@mms/contracts";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";

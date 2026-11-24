@@ -1,5 +1,5 @@
 import type { CustomWidget } from "./pinnedWidgetTypes";
-import { DASHBOARD_WIDGETS_KEY, normalizeDashboardWidgets } from "@mms/shared";
+import { DASHBOARD_WIDGETS_KEY, normalizeDashboardWidgets } from "@mms/contracts";
 import { getObject, readObjectLocal, saveObject } from "@/lib/db";
 import { safeSetItem, scopedStorageKey } from "@/lib/dbStorageCore";
 import { getDefaultCustomWidgets, withDefaultI18nKeys } from "./widgetDefaultSeeds";

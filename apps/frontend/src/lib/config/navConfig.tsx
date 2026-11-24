@@ -1,5 +1,5 @@
 import { BookOpen, type LucideIcon } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import {
   ACADEMICS_GROUP_ORDER,
   TENANT_APP_ENTRIES,

@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS } from "@mms/shared";
+import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS } from "@mms/contracts";
 import { withQueryClient } from "@/test/queryClientTestUtils";
 import { useAddPlatformAdmin } from "@/platform/features/users/hooks/usePlatformAdmins";
 import {

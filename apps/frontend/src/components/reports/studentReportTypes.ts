@@ -1,4 +1,10 @@
-import { calcAge, formatDate, type Session, type Student, type StudentRecord } from "@mms/shared";
+import {
+  calcAge,
+  formatDate,
+  type Session,
+  type Student,
+  type StudentRecord,
+} from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export type StudentReportSubTab = "list" | "history";

@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { BackgroundJobRecord, Contact } from "@mms/shared";
-import { CONTACTS_IMPORT_MAX_BATCH, contactsTransferSchema } from "@mms/shared";
+import type { BackgroundJobRecord, Contact } from "@mms/contracts";
+import { CONTACTS_IMPORT_MAX_BATCH, contactsTransferSchema } from "@mms/contracts";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 import type {
   ModuleCsvImportProgress,

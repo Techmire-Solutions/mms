@@ -1,4 +1,4 @@
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import {
   useSetWorkspaceEmailVerification,
   useSetWorkspaceEnabled,

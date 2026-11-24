@@ -9,15 +9,15 @@ vi.mock("../services/users/usersSettingsService.js", () => ({
   getTenantUsersSettings: vi.fn(),
 }));
 
-vi.mock("@mms/shared", async () => {
-  const actual = await vi.importActual<typeof import("@mms/shared")>("@mms/shared");
+vi.mock("@mms/contracts", async () => {
+  const actual = await vi.importActual<typeof import("@mms/contracts")>("@mms/contracts");
   return {
     ...actual,
     roleHasPermission: vi.fn(),
   };
 });
 
-import { roleHasPermission } from "@mms/shared";
+import { roleHasPermission } from "@mms/contracts";
 import { resolveCurrentTenantRole } from "../lib/currentTenantRole.js";
 import { getTenantUsersSettings } from "../services/users/usersSettingsService.js";
 import { canPerformTaskAction } from "../services/taskPermissionService.js";

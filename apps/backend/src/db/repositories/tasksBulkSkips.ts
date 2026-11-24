@@ -3,8 +3,8 @@
  * @description Skip classification for Tasks bulk archive/restore.
  */
 import { and, eq, inArray, isNull, notInArray } from "drizzle-orm";
-import { taskAssignees, tasks } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { taskAssignees, tasks } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 export type TaskBulkSkipReason =
   | "not_found"

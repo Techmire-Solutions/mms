@@ -21,6 +21,9 @@ export interface UiConfigLabels {
 
 export interface UiConfig {
   dir?: "ltr" | "rtl";
+  language?: string;
+  /** Optional translated-key resolver for calendar/date primitives. */
+  translate?: (key: string) => string;
   labels?: UiConfigLabels;
 }
 
@@ -47,6 +50,8 @@ const DEFAULT_LABELS: Required<Omit<UiConfigLabels, "pageOf">> & {
 
 const UiConfigContext = createContext<UiConfig>({
   dir: "ltr",
+  language: "en",
+  translate: (key) => key,
   labels: DEFAULT_LABELS,
 });
 
@@ -63,6 +68,8 @@ export function UiConfigProvider({ config, children }: UiConfigProviderProps): R
   const mergedConfig = useMemo<UiConfig>(() => {
     return {
       dir: config?.dir ?? "ltr",
+      language: config?.language ?? "en",
+      translate: config?.translate ?? ((key: string) => key),
       labels: {
         ...DEFAULT_LABELS,
         ...(config?.labels ?? {}),
@@ -75,6 +82,8 @@ export function UiConfigProvider({ config, children }: UiConfigProviderProps): R
 
 export function useUiConfig(): {
   dir: "ltr" | "rtl";
+  language: string;
+  translate: (key: string) => string;
   labels: Required<Omit<UiConfigLabels, "pageOf">> & {
     pageOf: (page: number, total: number) => string;
   };
@@ -82,6 +91,8 @@ export function useUiConfig(): {
   const context = useContext(UiConfigContext);
   return {
     dir: context.dir ?? "ltr",
+    language: context.language ?? "en",
+    translate: context.translate ?? ((key: string) => key),
     labels: {
       ...DEFAULT_LABELS,
       ...(context.labels ?? {}),

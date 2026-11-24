@@ -1,4 +1,4 @@
-import type { AttendanceReportOverview } from "@mms/shared";
+import type { AttendanceReportOverview } from "@mms/contracts";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useAttendanceReportAggregates } from "@/tenant/hooks/collections/attendance";

@@ -5,16 +5,16 @@ import {
   formatDate,
   type FiscalYear,
   type PostingPeriod,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
-import { EmptyState } from "@/components/app/EmptyState";
-import { ErrorState } from "@/components/app/ErrorState";
-import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Field } from "@/components/app/FormPrimitives";
-import { SectionCard } from "@/components/app/SectionCard";
-import { Alert } from "@/components/app/Alert";
-import { useTranslation } from "@/hooks/useTranslation";
+import { EmptyState } from "@mms/ui";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { Button } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Field } from "@mms/ui";
+import { SectionCard } from "@mms/ui";
+import { Alert } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import {
   useClosePostingPeriod,

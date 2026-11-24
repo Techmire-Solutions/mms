@@ -2,7 +2,7 @@ import React from "react";
 import { Building2, CheckCircle2, CircleOff } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { StatsSkeleton } from "@shared/ui";
+import { StatsSkeleton } from "@mms/ui";
 import { usePlatformWorkspaceMetrics } from "@/platform/features/workspaces/hooks/usePlatformWorkspaceMetrics";
 
 /** Workspaces command metrics strip (fleet KPIs, visible across all tiers). */

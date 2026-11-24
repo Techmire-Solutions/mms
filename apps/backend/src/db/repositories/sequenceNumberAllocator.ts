@@ -6,8 +6,8 @@ import {
   sequenceNumberingIsUnambiguous,
   sequencePattern,
   type SequenceNumberingConfig,
-} from "@mms/shared";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+} from "@mms/contracts";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 
 /** Bound on catch-up rounds after hand-typed numbers are found ahead of the counter. */
 const MAX_COLLISION_ROUNDS = 5;

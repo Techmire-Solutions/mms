@@ -16,7 +16,7 @@ import type {
   AuditExportPayload,
   AuditMerkleRootsResponse,
   AuditErasureResponse,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { assertContractOk } from "@/lib/apiContractError";
 
 /**

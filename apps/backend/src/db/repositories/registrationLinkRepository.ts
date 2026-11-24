@@ -1,14 +1,14 @@
 import { randomBytes } from "node:crypto";
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
-import type { RegistrationLink } from "@mms/shared";
+import type { RegistrationLink } from "@mms/contracts";
 import {
   registrationApplications,
   registrationLinkClasses,
   sessionRegistrationLinks,
-} from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
-import { NotFoundError } from "../../lib/httpErrors.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+} from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
+import { NotFoundError } from "@mms/be-core/http/errors";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 const t = sessionRegistrationLinks;
 const columns = {

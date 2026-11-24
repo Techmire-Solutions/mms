@@ -1,7 +1,7 @@
 import { and, asc, eq, isNull, sql, type SQL } from "drizzle-orm";
-import type { FacultyMember } from "@mms/shared";
-import { faculty, facultyEmployments } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { FacultyMember } from "@mms/contracts";
+import { faculty, facultyEmployments } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { FACULTY_PROJECTION_COLUMNS, facultyRowToRecord } from "./facultyRepositoryColumns.js";
 
 export {

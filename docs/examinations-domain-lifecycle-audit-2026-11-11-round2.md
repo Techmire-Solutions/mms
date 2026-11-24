@@ -87,7 +87,7 @@ above so no requirement silently disappears.
 
 ## What shipped in this change set
 
-- **Shared state machine** ([`examLifecycle.ts`](../packages/shared/src/examinations/examLifecycle.ts)):
+- **Shared state machine** ([`examLifecycle.ts`](../packages/contracts/src/examinations/examLifecycle.ts)):
   `PUBLISHABLE_EXAM_STATUSES`, `isPublishableExamStatus`, `PUBLISH_TARGET_STATUS`,
   `UNPUBLISH_TARGET_STATUS`, `isExamArchived`, `publishExamRejection`, `unpublishExamRejection`;
   corrected the publication comment. 5 new shared tests (11 total).

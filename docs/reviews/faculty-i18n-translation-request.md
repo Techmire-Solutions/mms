@@ -5,7 +5,7 @@ translations before the code can be de-hardcoded. Until then they render English
 (same as today). English source + suggested key are given; the ar/ur/fa columns are to be filled by
 a bilingual reviewer.
 
-## m25 — Workload warnings (`packages/shared/src/faculty/facultyWorkload.ts`)
+## m25 — Workload warnings (`packages/contracts/src/faculty/facultyWorkload.ts`)
 
 | Key | en (source) | ar | ur | fa |
 |---|---|---|---|---|
@@ -22,7 +22,7 @@ a bilingual reviewer.
 | `faculty.validation.designationEndBeforeStart` | `Designation end date must not precede its start date` | | | |
 | `faculty.validation.endBeforeStart` | `End date must not precede start date` | | | |
 
-## m27 — Display-name fallback (`packages/shared/src/faculty/facultyUtils.ts`)
+## m27 — Display-name fallback (`packages/contracts/src/faculty/facultyUtils.ts`)
 
 | Key | en (source) | ar | ur | fa |
 |---|---|---|---|---|

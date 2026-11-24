@@ -5,7 +5,7 @@ import {
   listEnabledCustomContactFormFields,
   type Contact,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ContactBasicAvatarSection } from "@/tenant/features/contacts/components/formTabs/ContactBasicAvatarSection";
 import { ContactBasicIdentityFields } from "@/tenant/features/contacts/components/formTabs/ContactBasicIdentityFields";
 import { RegistryCustomFieldsGrid } from "@/components/app/RegistryCustomFieldsGrid";

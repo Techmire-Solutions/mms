@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Account, JournalEntry, JournalLine } from "@/lib/data/accountingData";
+import type { Account, JournalEntry, JournalLine } from "@mms/mod-accounting/frontend/tenant";
 import {
   buildCashbookFooterCells,
   buildCashbookRows,
@@ -9,7 +9,7 @@ import {
   isCashAccount,
   resolveCashAccountIds,
   sumCashbookTotals,
-} from "../lib/cashbookViewShared";
+} from "@mms/mod-accounting/frontend/tenant";
 
 const translate = (key: string) => `t:${key}`;
 

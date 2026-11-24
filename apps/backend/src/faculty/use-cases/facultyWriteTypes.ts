@@ -1,4 +1,4 @@
-import type { FacultyRecord } from "@mms/shared";
+import type { FacultyRecord } from "@mms/contracts";
 import type { FacultyWriteGuards } from "./facultyWriteHelpers.js";
 import type { FacultyContactRequirements } from "./facultyWriteGuards.js";
 

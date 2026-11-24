@@ -1,4 +1,4 @@
-import { type Contact, PuppeteerWhatsAppProvider } from "@mms/shared";
+import { type Contact, PuppeteerWhatsAppProvider } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatContactPhoneFull, resolvePhoneLabel } from "@/lib/contacts/contactI18n";
 import { CollectionRowItem } from "./ContactDetailShared";

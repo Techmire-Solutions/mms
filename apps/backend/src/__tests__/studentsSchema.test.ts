@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { studentRecordSchema } from "@mms/shared";
+import { studentRecordSchema } from "@mms/contracts";
 
 describe("studentRecordSchema write strip", () => {
   it("strips soft-delete keys on parse", () => {

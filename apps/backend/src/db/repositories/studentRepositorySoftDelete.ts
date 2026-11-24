@@ -1,9 +1,9 @@
 import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
-import { dedupeTrimmedIds } from "@mms/shared";
-import { students } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { dedupeTrimmedIds } from "@mms/contracts";
+import { students } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
 import {
   cascadeSoftDeleteEnrollmentsForStudents,
   restoreCascadedEnrollmentsForStudents,

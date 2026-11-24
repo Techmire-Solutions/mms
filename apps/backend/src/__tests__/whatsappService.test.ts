@@ -6,7 +6,7 @@ import {
 import * as whatsappIntegrationService from "../services/whatsapp/whatsappIntegrationService.js";
 import * as globalSettingsService from "../services/globalSettingsService.js";
 import * as outboundUrl from "../lib/outboundUrl.js";
-import { DEFAULT_GLOBAL_SETTINGS, DEFAULT_WHATSAPP_INTEGRATION } from "@mms/shared";
+import { DEFAULT_GLOBAL_SETTINGS, DEFAULT_WHATSAPP_INTEGRATION } from "@mms/contracts";
 
 describe("whatsappService", () => {
   beforeEach(() => {

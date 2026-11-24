@@ -1,4 +1,4 @@
-import { USER_STATUS_REGISTRY, type SystemUser } from "@mms/shared";
+import { USER_STATUS_REGISTRY, type SystemUser } from "@mms/contracts";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import type { EntityDescriptor, FieldBadgeConfig } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";

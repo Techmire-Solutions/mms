@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({
     hashPrevious: "",
     hashCurrent: "",
@@ -8,7 +8,7 @@ vi.mock("../services/auditTrailService.js", () => ({
   }),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 

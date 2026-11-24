@@ -4,7 +4,7 @@ import type {
   PlatformBackupExportResponse,
   PlatformBackupImportInput,
   PlatformConfigBackupApplyResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import { PLATFORM_QUERY_KEYS } from "@/platform/features/shell/lib/platformQueryKeys";

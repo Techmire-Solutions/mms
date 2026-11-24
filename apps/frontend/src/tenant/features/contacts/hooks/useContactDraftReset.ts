@@ -1,5 +1,5 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
-import type { Contact, ValidationError } from "@mms/shared";
+import type { Contact, ValidationError } from "@mms/contracts";
 import {
   buildInitialContactDraft,
   contactDraftSnapshot,

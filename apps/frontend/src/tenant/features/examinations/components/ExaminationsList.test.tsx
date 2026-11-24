@@ -66,7 +66,7 @@ vi.mock("@/components/app/ListPagination", () => ({
   ListPagination: () => <div data-testid="list-pagination">List Pagination</div>,
 }));
 
-vi.mock("@/components/app/ConfirmAlertDialog", () => ({
+vi.mock("@mms/fe-core/components/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: () => null,
 }));
 

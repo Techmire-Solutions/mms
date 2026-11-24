@@ -7,9 +7,9 @@
  */
 
 import React, { useMemo, useRef, useState } from "react";
-import { resolveResultScore } from "@mms/shared";
+import { resolveResultScore } from "@mms/contracts";
 import { FileStack, Printer } from "lucide-react";
-import { formatDate, getPageDimensions } from "@mms/shared";
+import { formatDate, getPageDimensions } from "@mms/contracts";
 import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";
 import { CheckboxField } from "@/components/ui/checkbox";

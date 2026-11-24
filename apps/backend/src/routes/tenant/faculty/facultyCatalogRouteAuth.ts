@@ -1,4 +1,4 @@
-import { FACULTY_MODULE_MANIFEST, type User } from "@mms/shared";
+import { FACULTY_MODULE_MANIFEST, type User } from "@mms/contracts";
 import {
   canDeleteCollection,
   canReadCollection,

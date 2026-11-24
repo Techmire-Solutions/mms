@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { TaskRecord } from "@mms/shared";
+import type { TaskRecord } from "@mms/contracts";
 import { TaskStatusMenu } from "./TaskStatusMenu";
 
 declare global {

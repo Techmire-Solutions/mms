@@ -1,4 +1,4 @@
-import { todayISOInTimeZone } from "@mms/shared";
+import { todayISOInTimeZone } from "@mms/contracts";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 
 /**

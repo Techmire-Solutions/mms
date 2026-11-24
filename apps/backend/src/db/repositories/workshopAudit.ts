@@ -1,6 +1,6 @@
-import type { AuditActionType } from "@mms/shared";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import type { AuditActionType } from "@mms/contracts";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import type { TenantTransaction } from "@mms/db/context";
 
 /**
  * Workshop audit appends.

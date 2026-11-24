@@ -8,7 +8,7 @@ import {
   WORKSHOPS_MODULE_MANIFEST,
   type AppTranslationKey,
   type ModuleColumnRegistryEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

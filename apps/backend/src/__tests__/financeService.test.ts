@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Invoice, Payment } from "@mms/shared";
+import type { Invoice, Payment } from "@mms/contracts";
 
 const mockFindInvoiceById = vi.fn();
 const mockFindPaymentById = vi.fn();
@@ -7,7 +7,7 @@ const mockSaveInvoice = vi.fn();
 const mockSavePayment = vi.fn();
 const mockRunInTransaction = vi.fn();
 const mockRecordModernAuditEvent = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mockRecordModernAuditEvent,
 }));
 

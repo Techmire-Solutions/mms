@@ -20,7 +20,7 @@ Advisory review checklist. Existing tests demonstrate only their asserted cases.
 
 Read assertions before relying on a filename:
 
-- `packages/shared/src/finance/accountingLedgerInvariants.test.ts`, `packages/shared/src/finance/accountingLedgerOps.test.ts`, `packages/shared/src/finance/accountingReportAggregates.test.ts` — shared contracts/helpers; not database or accounting-framework proof.
+- `packages/contracts/src/finance/accountingLedgerInvariants.test.ts`, `packages/contracts/src/finance/accountingLedgerOps.test.ts`, `packages/contracts/src/finance/accountingReportAggregates.test.ts` — shared contracts/helpers; not database or accounting-framework proof.
 - `apps/backend/src/__tests__/accountingUseCases.test.ts` — lifecycle and posted-content guards, create replay and lock-before-validation orchestration with fakes.
 - `apps/backend/src/__tests__/accountingPeriodClose.test.ts` — close orchestration and retained-earnings validation.
 - `apps/backend/src/__tests__/accountingLedgerGuards.test.ts`, `apps/backend/src/__tests__/ledgerPostingService.test.ts`, `apps/backend/src/__tests__/accountingLedgerOpsUseCases.test.ts` — inspect case-level coverage for the operation.
@@ -36,7 +36,7 @@ Run from the repository root; use the package names actually declared in the wor
 
 ```bash
 pnpm typecheck
-pnpm --filter @mms/shared test -- src/accountingLedgerInvariants.test.ts src/accountingLedgerOps.test.ts src/accountingReportAggregates.test.ts
+pnpm --filter @mms/contracts test -- src/accountingLedgerInvariants.test.ts src/accountingLedgerOps.test.ts src/accountingReportAggregates.test.ts
 pnpm --filter mms-backend test -- src/__tests__/accountingUseCases.test.ts src/__tests__/accountingPeriodClose.test.ts src/__tests__/accountingLedgerGuards.test.ts src/__tests__/accountingLedgerOpsUseCases.test.ts src/__tests__/ledgerPostingService.test.ts src/__tests__/accounting.integration.test.ts
 pnpm --filter mms-backend test:db -- src/__tests__/db-integration/accountingConcurrencyDb.integration.test.ts src/__tests__/db-integration/accountingReportDb.integration.test.ts
 ```

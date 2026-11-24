@@ -3,7 +3,7 @@ import { WorkListFiltersScaffold, type WorkListFilterChip } from "@/components/c
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { Session } from "@mms/shared";
+import type { Session } from "@mms/contracts";
 import { EnrollmentsFiltersMenuButton } from "@/tenant/features/enrollments/components/EnrollmentsFiltersMenuButton";
 
 export const ENROLLMENTS_WORK_SEARCH_INPUT_ID = "enrollments-work-search";

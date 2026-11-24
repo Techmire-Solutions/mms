@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
 import {
   normalizeAccountingSettings,
   normalizeAccountingModulePreferences,
   stripAccountingFieldConfigForPersist,
   parseTenantScopedStorageKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 const SETTINGS_KEY = "accounting_settings";
 

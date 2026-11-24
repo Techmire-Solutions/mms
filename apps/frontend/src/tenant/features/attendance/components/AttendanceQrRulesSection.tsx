@@ -1,9 +1,9 @@
 import React from "react";
 import { QrCode } from "lucide-react";
-import type { AttendanceSettings } from "@mms/shared";
+import type { AttendanceSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionCard } from "@/components/app/SectionCard";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 
 export interface AttendanceQrRulesSectionProps {

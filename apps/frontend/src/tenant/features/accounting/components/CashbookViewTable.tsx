@@ -1,31 +1,25 @@
-import { formatDate } from "@mms/shared";
-import { EmptyState } from "@/components/app/EmptyState";
-import { StatGrid, StatRow } from "@/components/app/StatGrid";
-import { ReportMoneyCard } from "@/components/reports/ReportMoneyCard";
-import { ReportMoneyCardsGrid } from "@/components/reports/ReportMoneyCardsGrid";
-import { ReportMoneySummaryTile } from "@/components/reports/ReportMoneySummaryTile";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
+import { formatDate } from "@mms/contracts";
+import { EmptyState } from "@mms/ui";
+import { StatGrid, StatRow } from "@mms/ui/app/StatGrid";
+import { ReportMoneyCard } from "@mms/fe-core/components/ReportMoneyCard";
+import { ReportMoneyCardsGrid } from "@mms/fe-core/components/ReportMoneyCardsGrid";
+import { ReportMoneySummaryTile } from "@mms/fe-core/components/ReportMoneySummaryTile";
+import { WORK_SURFACE } from "@mms/ui";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import {
   resolveVisibleColumns,
   toColumnResize,
   type DataTableColumnLayout,
 } from "@/components/common/data-table";
-import { useTranslation } from "@/hooks/useTranslation";
-import {
-  useWorkDirectoryViewMode,
-  type WorkDirectoryViewMode,
-} from "@/hooks/useWorkDirectoryViewMode";
-import {
-  buildCashbookFooterCells,
-  type CashbookRow,
-} from "@/tenant/features/accounting/lib/cashbookViewShared";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { buildCashbookFooterCells, type CashbookRow } from "@mms/mod-accounting/frontend/tenant";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
 import {
   useCashbookColumns,
   type CashbookVoucherAction,
 } from "@/tenant/features/accounting/components/useCashbookColumns";
-import { PaymentVoucherPrintButton } from "@/tenant/features/accounting/components/PaymentVoucherPrintButton";
+import { PaymentVoucherPrintButton } from "@mms/mod-accounting/frontend/tenant";
 
 /** ReportMoneyCard tile (report) — not DirectoryEntityCard. */
 interface CashbookViewTableProps {

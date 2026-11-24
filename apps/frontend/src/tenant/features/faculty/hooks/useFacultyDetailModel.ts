@@ -1,4 +1,4 @@
-import { hasWhatsApp, type Faculty } from "@mms/shared";
+import { hasWhatsApp, type Faculty } from "@mms/contracts";
 import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
 import { resolveFacultyPrimaryChannels } from "@/lib/faculty/facultyPrimaryChannels";
 import { useContactById } from "@/tenant/hooks/collections/contacts";

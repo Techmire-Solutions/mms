@@ -1,4 +1,4 @@
-import { type QuestionBankSettings } from "@mms/shared";
+import { type QuestionBankSettings } from "@mms/contracts";
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useQuestionBankSetupSaveActions } from "@/tenant/features/question-bank/hooks/useQuestionBankSetupSaveActions";

@@ -1,10 +1,10 @@
 import { TrendingUp, TrendingDown, Scale, DollarSign, CheckCircle2, Clock } from "lucide-react";
-import type { Account, JournalEntry } from "@/lib/data/accountingData";
-import { useTranslation } from "@/hooks/useTranslation";
+import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import type { MetricItem } from "@/components/app/ModuleCommandMetricsGrid";
-import { formatMonthName, moneyToCents } from "@mms/shared";
+import type { MetricItem } from "@mms/fe-core/components/ModuleCommandMetricsGrid";
+import { formatMonthName, moneyToCents } from "@mms/contracts";
 import {
   useAccountingMetrics,
   useAccountingReportAggregates,

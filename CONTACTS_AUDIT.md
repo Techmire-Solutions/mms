@@ -23,8 +23,8 @@ The Madrasa Management System (MMS) is a multi-tenant monorepo architecture mana
   - **Database:** PostgreSQL 16 Alpine.
   - **ORM & Query Builder:** Drizzle ORM (`drizzle-orm: ^0.45.4`) with forward-only SQL migrations (`drizzle-kit: ^0.31.11`).
   - **Multi-Tenancy & Security:** Multi-tenant single database enforced through PostgreSQL Row Level Security (`FORCE ROW LEVEL SECURITY`) with non-superuser role `mms_app` (`NOSUPERUSER NOBYPASSRLS`), scoped via `app.current_tenant` GUC and RFC 8785 JSON audit trails.
-- **Shared Package (`packages/shared/`):**
-  - Single Source of Truth (`@mms/shared`) for data contracts, Zod DTO schemas, module manifests, permissions, and domain utilities.
+- **Shared Package (`packages/contracts/`):**
+  - Single Source of Truth (`@mms/contracts`) for data contracts, Zod DTO schemas, module manifests, permissions, and domain utilities.
 
 ---
 
@@ -116,7 +116,7 @@ flowchart TD
 
 ## 4. API Endpoint Overview
 
-All endpoints are validated through `@ts-rest/core` contracts (`packages/shared/src/contracts/contacts.contract.ts`) and implemented in Fastify (`apps/backend/src/routes/tenant/contacts/`):
+All endpoints are validated through `@ts-rest/core` contracts (`packages/contracts/src/contracts/contacts.contract.ts`) and implemented in Fastify (`apps/backend/src/routes/tenant/contacts/`):
 
 | Method   | Path                         | Authentication / Guard  | Description                                                     |
 | :------- | :--------------------------- | :---------------------- | :-------------------------------------------------------------- |

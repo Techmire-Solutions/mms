@@ -1,4 +1,4 @@
-import { facultyFieldConfigs } from "../schema.js";
+import { facultyFieldConfigs } from "@mms/db/schema";
 import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({

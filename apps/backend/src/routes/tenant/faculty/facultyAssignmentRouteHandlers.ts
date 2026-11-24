@@ -8,10 +8,10 @@ import {
   type FacultyAssignmentEntity,
   type facultyContract,
   isQueryFlagTrue,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import type { FacultyAssignmentRow } from "../../../db/schema/facultyAssignmentTables.js";
-import { reconcileFacultyContactsByFacultyIds } from "../../../contacts/systemTags/contactSystemTagUseCases.js";
+import type { FacultyAssignmentRow } from "@mms/db/schema/facultyAssignmentTables";
+import { reconcileFacultyContactsByFacultyIds } from "@mms/mod-contacts/backend/use-cases";
 import {
   findFacultyAssignmentById,
   listFacultyAssignments,

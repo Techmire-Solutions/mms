@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { roundMoneyAmount, type ObligationsReportAggregates } from "@mms/shared";
-import { obligationCollections, obligationTypes, mujtahidReps } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { roundMoneyAmount, type ObligationsReportAggregates } from "@mms/contracts";
+import { obligationCollections, obligationTypes, mujtahidReps } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 export type ObligationsReportQuery = {
   dateFrom?: string;

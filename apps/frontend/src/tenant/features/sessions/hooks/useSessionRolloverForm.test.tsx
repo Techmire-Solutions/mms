@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { Session } from "@mms/shared";
+import type { Session } from "@mms/contracts";
 import { useSessionRolloverForm, type SessionRolloverForm } from "./useSessionRolloverForm";
 
 declare global {

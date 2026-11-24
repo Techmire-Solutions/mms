@@ -1,4 +1,4 @@
-import { type AppTranslationKey } from "@mms/shared";
+import { type AppTranslationKey } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormFooterEntityChip, FormFooterErrorChip } from "@/components/app/FormFooterChip";
 import { Badge } from "@/components/ui/badge";

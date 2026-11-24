@@ -1,7 +1,7 @@
 import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
-import { HASANAT_MODULE_MANIFEST, hasanatCommandMetricsResponseSchema } from "@mms/shared";
+import { HASANAT_MODULE_MANIFEST, hasanatCommandMetricsResponseSchema } from "@mms/contracts";
 import { registerMetricsRoute } from "../../lib/crudRouter.js";
 import { hasanatUseCases } from "../../hasanat/use-cases/hasanatUseCases.js";
 import { hasanatSetupConfigRoutes } from "./hasanatSetupConfigRoutes.js";

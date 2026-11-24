@@ -1,6 +1,6 @@
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
-import type { FacultyWidgetQuery } from "@mms/shared";
-import { faculty } from "../schema.js";
+import type { FacultyWidgetQuery } from "@mms/contracts";
+import { faculty } from "@mms/db/schema";
 import {
   joinedContactNameExpr,
   joinedPrimaryDepartmentNameExpr,

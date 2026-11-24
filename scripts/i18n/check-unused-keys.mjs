@@ -25,7 +25,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
-const EN_PACK = path.join(ROOT, "packages/shared/src/i18n/appTranslationsEn.ts");
+const EN_PACK = path.join(ROOT, "packages/contracts/src/i18n/appTranslationsEn.ts");
 
 /** Measured when the ratchet landed. Only ever lower this. */
 const BASELINE = 517;
@@ -34,7 +34,7 @@ const SCAN_ROOTS = [
   "apps/backend/src",
   "apps/frontend/src",
   "packages/ui/src",
-  "packages/shared/src", // excluding the translation packs themselves
+  "packages/contracts/src", // excluding the translation packs themselves
   "e2e/tests",
   "e2e/helpers",
 ];

@@ -1,6 +1,6 @@
 import React from "react";
 import { Eye, RotateCcw } from "lucide-react";
-import type { Message } from "@mms/shared";
+import type { Message } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { WorkBatchTable } from "@/components/common/work";

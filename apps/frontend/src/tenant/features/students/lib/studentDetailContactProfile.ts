@@ -7,7 +7,7 @@ import {
   type EmailAddress,
   type PhoneNumber,
   type Student,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { StudentContactProfileData } from "@/tenant/features/students/components/StudentDetailContactSection";
 

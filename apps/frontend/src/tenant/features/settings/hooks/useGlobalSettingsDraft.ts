@@ -8,7 +8,7 @@ import {
   normalizeSessionTimeout,
   parseSessionTimeoutMinutes,
   type GlobalSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { applyDocumentLanguage } from "@/lib/documentLanguage";
 import { getGlobalSettings, saveGlobalSettingsAsync } from "@/lib/db";
 import { clearGlobalSettingsPreview, previewGlobalSettings } from "@/lib/settingsPreview";

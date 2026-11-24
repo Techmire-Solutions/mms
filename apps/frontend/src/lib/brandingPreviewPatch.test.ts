@@ -4,7 +4,7 @@ import {
   BRANDING_THEME_FIELD_KEYS,
   DEFAULT_BRANDING_SETTINGS,
   mergeBrandingSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { buildBrandingPreviewPatch } from "@/lib/brandingPreviewPatch";
 
 describe("buildBrandingPreviewPatch", () => {

@@ -8,7 +8,7 @@ import {
   normalizeThemeMode,
   platformBrandingToBrandingSettings,
   resolveBrandingThemeMode,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSystemThemeListener } from "@/hooks/useSystemThemeListener";
 import { useApplyLogoColors } from "@/hooks/useApplyLogoColors";
@@ -22,7 +22,7 @@ import CornerStyleSelector from "@/components/branding/CornerStyleSelector";
 import { ThemeSettingsColoursSection } from "@/components/branding/ThemeSettingsColoursSection";
 import { ThemeSettingsFooterSection } from "@/components/branding/ThemeSettingsFooterSection";
 import { Alert } from "@/components/app/Alert";
-import { Button, CardSkeleton } from "@shared/ui";
+import { Button, CardSkeleton } from "@mms/ui";
 import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
 import {
   clearPlatformBrandingPreview,

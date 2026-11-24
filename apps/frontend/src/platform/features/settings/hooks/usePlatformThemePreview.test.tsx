@@ -7,7 +7,7 @@ import {
   getPlatformBrandingAsBrandingSettings,
   setPlatformBrandingState,
 } from "@/lib/branding/platformBrandingStore";
-import { DEFAULT_PLATFORM_BRANDING } from "@mms/shared";
+import { DEFAULT_PLATFORM_BRANDING } from "@mms/contracts";
 import { usePlatformThemePreview } from "@/platform/features/settings/hooks/usePlatformThemePreview";
 
 vi.mock("@/lib/brandingThemeCore", () => ({ applyDocumentTheme: vi.fn() }));

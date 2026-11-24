@@ -1,16 +1,16 @@
-import { withTenant } from "../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { logger } from "../lib/logger.js";
 import { notificationsUseCases } from "../notifications/use-cases/notificationsUseCases.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { FINANCE_AUTOMATION_REVALUE_TIMEOUT_MS } from "./queues/queueConfig.js";
-import { fxRevaluationDeps } from "../accounting/use-cases/fxRevaluationDeps.js";
-import { ias29Deps } from "../accounting/use-cases/ias29Deps.js";
-import { postFxRevaluation } from "../accounting/use-cases/fxRevaluationUseCases.js";
-import { postIas29Restatement } from "../accounting/use-cases/ias29UseCases.js";
+import { fxRevaluationDeps } from "@mms/mod-accounting/backend/use-cases";
+import { ias29Deps } from "@mms/mod-accounting/backend/use-cases";
+import { postFxRevaluation } from "@mms/mod-accounting/backend/use-cases";
+import { postIas29Restatement } from "@mms/mod-accounting/backend/use-cases";
 import { collectOverdueInvoices } from "../finance/use-cases/financeCollectUseCases.js";
 import { generateInvoices } from "../finance/use-cases/financeInvoiceGenerationUseCases.js";
-import type { FinanceModulePreferences } from "@mms/shared";
+import type { FinanceModulePreferences } from "@mms/contracts";
 
 /**
  * The individual finance automation steps.

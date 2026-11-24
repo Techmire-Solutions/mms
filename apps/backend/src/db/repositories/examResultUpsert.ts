@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
-import { MAX_MARKS_OBTAINED, type ExamResult } from "@mms/shared";
-import { examResults } from "../schema.js";
-import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+import { MAX_MARKS_OBTAINED, type ExamResult } from "@mms/contracts";
+import { examResults } from "@mms/db/schema";
+import { ConflictError, ValidationError } from "@mms/be-core/http/errors";
 
 /**
  * Planning helpers for the exam-result upsert.

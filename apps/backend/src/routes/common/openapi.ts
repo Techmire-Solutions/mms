@@ -1,6 +1,6 @@
 import { type FastifyInstance } from "fastify";
 import { generateOpenApi } from "@ts-rest/open-api";
-import { rootContract } from "@mms/shared";
+import { rootContract } from "@mms/contracts";
 
 export default async function openapiRoutes(app: FastifyInstance) {
   app.get("/api/openapi.json", async (_request, reply) => {

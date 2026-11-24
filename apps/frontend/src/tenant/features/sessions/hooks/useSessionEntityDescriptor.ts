@@ -1,4 +1,4 @@
-import type { Session } from "@mms/shared";
+import type { Session } from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { sessionsEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";

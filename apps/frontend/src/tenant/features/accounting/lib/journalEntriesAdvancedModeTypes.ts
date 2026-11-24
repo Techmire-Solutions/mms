@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import type { JournalReversalRequest } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
-import type { AccountingSettings } from "@mms/shared";
+import type { JournalReversalRequest } from "@mms/contracts";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import type { Account, FiscalYear, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { AccountingSettings } from "@mms/contracts";
 import type { JournalEntriesListPaging } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 import type { JournalModalMode } from "@/tenant/features/accounting/components/JournalEntriesModalLayer";
-import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
-import type { JournalEntrySave } from "./journalEntriesTypes";
+import type { ModuleColumnCustomizerProps } from "@mms/fe-core/components/moduleColumnCustomizerTypes";
+import type { JournalEntrySave } from "@mms/mod-accounting/frontend/tenant";
 
 export type JournalMode = "simple" | "advanced";
 

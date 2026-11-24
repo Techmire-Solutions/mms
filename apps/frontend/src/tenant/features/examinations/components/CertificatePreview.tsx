@@ -3,7 +3,7 @@ import { Printer } from "lucide-react";
 import { getRankSuffix } from "@/tenant/features/examinations/lib/gradeUtils";
 import { type StudentResultItem } from "@/tenant/features/examinations/components/StudentResultCard";
 import { type Exam } from "@/lib/data/examinationData";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,5 @@
 import React from "react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import type { WorkBatchTableColumn } from "@/components/common/work";

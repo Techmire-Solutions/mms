@@ -6,7 +6,7 @@ import {
   type AppTranslationKey,
   type EmailIntegrationConfig,
   type EmailIntegrationValidationError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import type { EmailIntegrationApi, ResolveActionError, ResolvedActionError } from "./types";
@@ -33,7 +33,7 @@ export interface EmailIntegrationPanelHookOptions {
 
 /**
  * Multi-provider SMTP setup panel state (SSOT) shared by the Tenant and
- * Platform consoles. Validation runs through the @mms/shared
+ * Platform consoles. Validation runs through the @mms/contracts
  * `validateEmailIntegrationConfig`; error codes map to `email.*` keys.
  */
 export function useEmailIntegrationPanel(options: EmailIntegrationPanelHookOptions) {

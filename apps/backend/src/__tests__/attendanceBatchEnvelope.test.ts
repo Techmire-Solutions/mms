@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { assertAttendanceWriteAllowed } from "../attendance/use-cases/attendancePolicyGuard.js";
-import type { AttendanceRecord, User } from "@mms/shared";
+import type { AttendanceRecord, User } from "@mms/contracts";
 
 /**
  * Batch rejection envelope: every failing row is reported, nothing is written.

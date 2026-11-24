@@ -1,14 +1,14 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { enrollmentPlacements, enrollments } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { enrollmentPlacements, enrollments } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import {
   closePlacementTx,
   insertTypedTimelineEventTx,
   movePlacementTx,
 } from "./enrollmentHistoryWrite.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
-import { ENROLLMENT_OPERABLE_STATUSES } from "@mms/shared";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ENROLLMENT_OPERABLE_STATUSES } from "@mms/contracts";
+import { ConflictError } from "@mms/be-core/http/errors";
 import {
   ENDED_EVENT_LABEL,
   NOT_OPERABLE,

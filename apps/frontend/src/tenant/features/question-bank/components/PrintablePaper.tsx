@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { QuestionBankQuestion as Question } from "@mms/shared";
+import type { QuestionBankQuestion as Question } from "@mms/contracts";
 import {
   ANSWER_LINE_COUNT_BY_TYPE,
   getPaperQuestionCount,

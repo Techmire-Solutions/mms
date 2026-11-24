@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockWithTenantTransaction = vi.fn();
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (...args: unknown[]) => mockWithTenantTransaction(...args),
   withTenantRead: (...args: unknown[]) => mockWithTenantTransaction(...args),
 }));

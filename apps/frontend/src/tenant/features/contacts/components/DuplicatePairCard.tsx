@@ -1,6 +1,6 @@
 import type React from "react";
 import { GitMerge, X } from "lucide-react";
-import type { ContactPreferences } from "@mms/shared";
+import type { ContactPreferences } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

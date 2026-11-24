@@ -5,7 +5,7 @@ import {
   type Workspace,
   type Invoice,
   type Payment,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceInvoicesForWorkspace,

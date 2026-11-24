@@ -1,4 +1,4 @@
-import { hasComparableStem } from "@mms/shared";
+import { hasComparableStem } from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { questionBankRepository } from "../repository/questionBankRepositoryAdapter.js";
 import type { SimilarQuestionMatch } from "../repository/questionBankRepository.js";

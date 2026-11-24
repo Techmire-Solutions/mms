@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
-import type { QuestionBankQuestion } from "@mms/shared";
-import { questions } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import type { QuestionBankQuestion } from "@mms/contracts";
+import { questions } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
+import { ConflictError } from "@mms/be-core/http/errors";
 
 /**
  * Question-bank OCC plumbing (migration 0240), extracted from `questionBankQuestionsPersist` so that

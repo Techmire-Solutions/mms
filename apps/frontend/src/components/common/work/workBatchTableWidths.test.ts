@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MODULE_COLUMN_KIND_WIDTHS } from "@mms/shared";
+import { MODULE_COLUMN_KIND_WIDTHS } from "@mms/contracts";
 import {
   computeStickyOffsets,
   computeWorkTableMinWidth,

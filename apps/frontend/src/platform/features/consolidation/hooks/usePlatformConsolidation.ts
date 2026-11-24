@@ -4,10 +4,10 @@ import type {
   ConsolidationGroupPut,
   ConsolidationReport,
   ConsolidationReportQuery,
-} from "@mms/shared";
-import { apiContract } from "@/lib/api";
+} from "@mms/contracts";
+import { apiContract } from "@mms/fe-core/api/tsRest";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
-import { assertContractOk } from "@/lib/apiContractError";
+import { assertContractOk } from "@mms/fe-core/api/contractError";
 import { PLATFORM_QUERY_KEYS } from "@/platform/features/shell/lib/platformQueryKeys";
 
 const GROUPS_KEY = PLATFORM_QUERY_KEYS.consolidationGroups;

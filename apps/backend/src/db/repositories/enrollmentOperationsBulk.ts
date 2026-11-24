@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { enrollmentPlacements, enrollments } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { enrollmentPlacements, enrollments } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { closePlacementTx, insertTypedTimelineEventTx } from "./enrollmentHistoryWrite.js";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import {

@@ -1,6 +1,6 @@
 import React from "react";
 import { BookOpen } from "lucide-react";
-import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
+import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 
 export interface ExaminationsBulkActionBarProps {

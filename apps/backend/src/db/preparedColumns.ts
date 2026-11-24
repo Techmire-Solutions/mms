@@ -1,4 +1,4 @@
-import { tenantUsers, contacts, sessions } from "./schema.js";
+import { tenantUsers, contacts, sessions } from "@mms/db/schema";
 
 export const preparedTenantUserColumns = {
   id: tenantUsers.id,

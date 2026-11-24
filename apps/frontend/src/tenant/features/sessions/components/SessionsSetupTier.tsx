@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useRef } from "react";
-import { SESSIONS_MODULE_MANIFEST, type AcademicCatalogKind } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST, type AcademicCatalogKind } from "@mms/contracts";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";

@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  AppFooter as SharedAppFooter,
-  type AppFooterProps as SharedAppFooterProps,
-} from "@shared/ui";
+import { AppFooter as SharedAppFooter, type AppFooterProps as SharedAppFooterProps } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export type AppFooterProps = SharedAppFooterProps;
@@ -10,7 +7,7 @@ export type AppFooterProps = SharedAppFooterProps;
 const CURRENT_YEAR = new Date().getFullYear();
 
 /**
- * Shared application footer facade — wraps @shared/ui AppFooter with
+ * Shared application footer facade — wraps @mms/ui AppFooter with
  * localized product and copyright defaults via useTranslation().
  */
 export function AppFooter({ text, name, className, ...rest }: AppFooterProps): React.JSX.Element {

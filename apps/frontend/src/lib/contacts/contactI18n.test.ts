@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import {
   formatContactOptionLabel,
   resolveRegistryLabel,

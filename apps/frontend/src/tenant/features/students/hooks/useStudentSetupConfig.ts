@@ -7,7 +7,7 @@ import {
   normalizeStudentsSettings,
   type StudentModulePreferences,
   type StudentsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SETUP_STALE_TIME } from "@/lib/queryClient";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import { useAuthOrNull, useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";

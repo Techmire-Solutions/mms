@@ -1,4 +1,4 @@
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";
 import { useUsersMutations } from "@/tenant/features/users/hooks/useUsersApi";

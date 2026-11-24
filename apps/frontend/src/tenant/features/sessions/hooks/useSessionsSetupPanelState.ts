@@ -1,4 +1,4 @@
-import { type SessionsSettings } from "@mms/shared";
+import { type SessionsSettings } from "@mms/contracts";
 import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useSessionsSetupSaveActions } from "@/tenant/features/sessions/hooks/useSessionsSetupSaveActions";

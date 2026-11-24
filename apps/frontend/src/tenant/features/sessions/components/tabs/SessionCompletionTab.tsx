@@ -7,7 +7,7 @@ import {
   type CompletionShortfall,
   type Session,
   type SessionCompletionRow,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   DataTable,
   DataTableRowActions,

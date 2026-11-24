@@ -8,7 +8,7 @@ import { DatePicker } from "@/components/app/DatePicker";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
-import { filterAssignableRoles, type FieldDefinition } from "@mms/shared";
+import { filterAssignableRoles, type FieldDefinition } from "@mms/contracts";
 import { FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { RegistryCustomFieldsGrid } from "@/components/app/RegistryCustomFieldsGrid";

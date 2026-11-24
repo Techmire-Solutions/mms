@@ -5,7 +5,7 @@ import {
   formatDateTime,
   getMessageCategoryLabelKey,
   type Message,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
 import { CopyBtn } from "@/components/app/CopyButton";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";

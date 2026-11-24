@@ -3,7 +3,7 @@ import {
   extractDominantWeightedSwatchesFromRgba,
   type LogoBrandColors,
   type LogoPaletteSamplingOptions,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiFetch, resolveApiUrl } from "@/lib/apiClient";
 
 export type ExtractLogoBrandColorsOptions = LogoPaletteSamplingOptions & {

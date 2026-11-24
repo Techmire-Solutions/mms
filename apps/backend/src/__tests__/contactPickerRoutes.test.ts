@@ -22,7 +22,7 @@ const mockLoadContactsPage = vi.fn();
 const mockGetContactById = vi.fn();
 
 vi.mock("../contacts/use-cases/contactUseCases.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../contacts/use-cases/contactUseCases.js")>();
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
   return {
     ...actual,
     contactUseCases: {
@@ -42,7 +42,7 @@ vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
 
 import { buildApp } from "../app.js";
 import { teacherToken, viewerToken } from "./helpers/tokens.js";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 
 const HOST = { host: "demo.localhost" };
 

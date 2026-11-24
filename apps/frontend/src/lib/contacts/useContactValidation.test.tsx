@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { FieldDefinition, ValidationError } from "@mms/shared";
+import type { FieldDefinition, ValidationError } from "@mms/contracts";
 import { useContactValidation } from "./useContactValidation";
 import { getDefaultContactConfigContextValue } from "./defaultContactConfigValue";
 import type { ContactConfigContextType } from "./contactConfigContextTypes";

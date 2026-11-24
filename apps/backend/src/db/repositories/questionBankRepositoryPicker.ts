@@ -1,4 +1,4 @@
-import type { QuestionBankListPageResult, QuestionBankListQuery } from "@mms/shared";
+import type { QuestionBankListPageResult, QuestionBankListQuery } from "@mms/contracts";
 import { listQuestionsPage } from "./questionBankRepositoryList.js";
 
 /**

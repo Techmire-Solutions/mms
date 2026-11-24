@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { registrationLinksContract, SESSIONS_MODULE_MANIFEST, type User } from "@mms/shared";
+import { registrationLinksContract, SESSIONS_MODULE_MANIFEST, type User } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import { enforceSessionResponses } from "../../../lib/sessionContractResponses.js";

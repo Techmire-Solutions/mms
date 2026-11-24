@@ -3,7 +3,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";
 import { ListPagination } from "@/components/app/ListPagination";
-import { TableSkeleton, CardSkeleton } from "@shared/ui";
+import { TableSkeleton, CardSkeleton } from "@mms/ui";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 export type ModuleWorkListViewMode = "table" | "cards";

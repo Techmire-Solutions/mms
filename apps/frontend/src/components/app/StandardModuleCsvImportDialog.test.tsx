@@ -6,6 +6,10 @@ vi.mock("@/hooks/useTranslation", async () => {
   const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
   return { useTranslation: useTranslationEnMock() };
 });
+vi.mock("@mms/fe-core/i18n", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
 
 const hookCalls: Array<Record<string, unknown>> = [];
 const hookState = {
@@ -24,7 +28,7 @@ const hookState = {
   handleStartImport: vi.fn(),
 };
 
-vi.mock("@/lib/backgroundJobs/useModuleCsvImportActions", () => ({
+vi.mock("@mms/fe-core/backgroundJobs", () => ({
   useModuleCsvImportActions: (options: Record<string, unknown>) => {
     hookCalls.push(options);
     return hookState;

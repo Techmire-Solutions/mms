@@ -11,8 +11,8 @@ import {
   type DistributionUpdate,
   validateRecipient,
   validateStatusTransition,
-} from "@mms/shared";
-import { withTenant } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { throwRuleViolation } from "./hasanatRuleErrors.js";
 import { auditCardMutation } from "./hasanatAudit.js";

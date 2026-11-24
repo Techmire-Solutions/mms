@@ -1,7 +1,7 @@
 import type { WorkspaceTableViewProps } from "@/platform/features/workspaces/components/WorkspaceTableView";
 import React from "react";
 import { Calendar } from "lucide-react";
-import { formatDate, type PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import { formatDate, type PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import { tenantUrl } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -11,7 +11,7 @@ import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
 import { WorkspaceIdentityCell } from "@/platform/features/workspaces/components/WorkspaceIdentityCell";
 import { WorkspaceStatusBadge } from "@/platform/features/workspaces/components/WorkspaceStatusBadge";
 import { WorkspaceRowActions } from "@/platform/features/workspaces/components/WorkspaceRowActions";
-import { Checkbox } from "@shared/ui";
+import { Checkbox } from "@mms/ui";
 import { cn } from "@/lib/utils";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 

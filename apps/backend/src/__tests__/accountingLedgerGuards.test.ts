@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { FiscalYear, JournalEntry } from "@mms/shared";
+import type { FiscalYear, JournalEntry } from "@mms/contracts";
 import {
   assertJournalAccountsWritable,
   assertJournalEntryPeriodOpen,
   prepareJournalEntryForPersist,
   journalEntryContentChanged,
   withServerOwnedSourceKeys,
-} from "../accounting/use-cases/accountingLedgerGuards.js";
+} from "@mms/mod-accounting/backend/use-cases";
 
 const years: FiscalYear[] = [
   {

@@ -26,7 +26,7 @@ adapters. Sharing their rendered chrome does not require sharing those policies.
 
 ## Ownership map
 
-- `packages/shared`: pure branding calculations, DTOs, domain types. Existing
+- `packages/contracts`: pure branding calculations, DTOs, domain types. Existing
   `buildBrandingCssVariables` remains the source of runtime branding values.
 - `index.css`: semantic HSL mappings, layout dimensions, typography and theme tokens.
 - `lib/accentTone.ts`: semantic accent names and legacy aliases, not tenant colors.

@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { ContactPickerSelected } from "@/components/contactLink/ContactPickerSelected";
 
 vi.mock("@/hooks/useTranslation", () => ({

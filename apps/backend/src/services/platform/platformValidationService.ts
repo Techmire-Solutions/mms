@@ -1,4 +1,4 @@
-import { type PlatformPasswordForgotResult } from "@mms/shared";
+import { type PlatformPasswordForgotResult } from "@mms/contracts";
 import { isDevCredentialLoggingEnabled } from "../../lib/devLogging.js";
 
 /**

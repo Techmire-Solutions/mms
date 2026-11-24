@@ -1,7 +1,7 @@
 import React, { Suspense, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import {
   ResponsiveAccordionTabs,

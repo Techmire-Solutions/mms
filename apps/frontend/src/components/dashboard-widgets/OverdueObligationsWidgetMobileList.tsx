@@ -1,7 +1,7 @@
 import React from "react";
 import { m } from "framer-motion";
 import { Scale } from "lucide-react";
-import { formatMoney, formatDate } from "@mms/shared";
+import { formatMoney, formatDate } from "@mms/contracts";
 import { EmptyState } from "@/components/app/EmptyState";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/app/StatGrid";

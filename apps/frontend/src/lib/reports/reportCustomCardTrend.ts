@@ -1,4 +1,4 @@
-import { resolveDistributionPoints, matchesWidgetFilter, type Denomination } from "@mms/shared";
+import { resolveDistributionPoints, matchesWidgetFilter, type Denomination } from "@mms/contracts";
 import type { CustomCard } from "./reportCollectionTypes";
 
 /** Compares the current 30-day window to the preceding 30 days for a custom card trend. */

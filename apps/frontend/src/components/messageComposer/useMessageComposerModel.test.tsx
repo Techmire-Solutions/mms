@@ -4,7 +4,7 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { notify } from "@/lib/notify";
 import { useMessageComposerModel } from "./useMessageComposerModel";
 import { clearComposerDraft } from "./messageComposerDraft";
-import type { MessageTemplate } from "@mms/shared";
+import type { MessageTemplate } from "@mms/contracts";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

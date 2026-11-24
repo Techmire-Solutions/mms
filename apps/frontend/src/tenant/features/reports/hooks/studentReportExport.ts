@@ -3,7 +3,7 @@ import {
   formatDate,
   type Enrollment,
   type Session,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { fetchAllStudentsForQuery } from "@/tenant/hooks/collections/students";
 import { mapStudentRow, type EnrollmentHistoryItem } from "@/components/reports/studentReportTypes";

@@ -5,7 +5,7 @@ import {
   type TemplateFieldDefinition,
   type WorkshopCompletionRow,
   type WorkshopEvent,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import { formatWorkshopDates } from "../components/workshopsWorkColumns";
 

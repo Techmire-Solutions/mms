@@ -14,7 +14,9 @@ const adapterState = vi.hoisted(() => ({
   insertCalls: 0,
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, fn: (tx: unknown) => Promise<unknown>) => fn({}),
   withTenantRead: async (_tenant: string, fn: (tx: unknown) => Promise<unknown>) => fn({}),
 }));
@@ -72,7 +74,7 @@ vi.mock("../hasanat/use-cases/hasanatBatchAwardUseCases.js", () => ({
 }));
 
 import { importHasanatRows } from "../hasanat/use-cases/hasanatImportJob.js";
-import type { HasanatTransferEntity } from "@mms/shared";
+import type { HasanatTransferEntity } from "@mms/contracts";
 import { runHasanatBulkAwardJob } from "../hasanat/use-cases/hasanatBatchAwardJob.js";
 import { registerHasanatJobRunners } from "../services/backgroundJobHasanatRunners.js";
 import { hasBackgroundJobRunner } from "../services/backgroundJobWorkerService.js";

@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import type { QuestionBankQuestion as Question } from "@mms/shared";
+import type { QuestionBankQuestion as Question } from "@mms/contracts";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useReducedMotion } from "@/hooks/useReducedMotion";

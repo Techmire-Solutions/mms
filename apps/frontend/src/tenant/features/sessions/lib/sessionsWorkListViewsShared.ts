@@ -1,4 +1,4 @@
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import type { ModuleColumnRegistryEntry } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Session } from "@/lib/data/sessionsData";
 

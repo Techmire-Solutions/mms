@@ -3,7 +3,7 @@ import {
   PasswordStrengthMeter as SharedPasswordStrengthMeter,
   type PasswordStrengthMeterProps as SharedPasswordStrengthMeterProps,
   type PasswordStrengthCheck,
-} from "@shared/ui";
+} from "@mms/ui";
 import { getPasswordStrength } from "@/lib/passwordStrength";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -17,7 +17,7 @@ export { type PasswordStrengthCheck, type SharedPasswordStrengthMeterProps };
 
 /**
  * Password strength meter facade providing app localization and entropy styling.
- * Delegates rendering to @shared/ui PasswordStrengthMeter.
+ * Delegates rendering to @mms/ui PasswordStrengthMeter.
  */
 export function PasswordStrengthMeter({
   password,

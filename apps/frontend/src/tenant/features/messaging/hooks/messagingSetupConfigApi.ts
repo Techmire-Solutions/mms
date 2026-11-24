@@ -1,6 +1,6 @@
 import { apiContract } from "@/lib/api";
 import { createModuleSetupConfigApi } from "@/lib/query/createModuleSetupConfigApi";
-import { normalizeMessagingPreferences, type MessagingPreferences } from "@mms/shared";
+import { normalizeMessagingPreferences, type MessagingPreferences } from "@mms/contracts";
 
 const api = createModuleSetupConfigApi<MessagingPreferences>({
   fetchPreferencesFn: async (signal) => {

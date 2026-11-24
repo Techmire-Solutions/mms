@@ -1,4 +1,4 @@
-import { QUESTION_BANK_MODULE_MANIFEST, type QuestionTransferRow } from "@mms/shared";
+import { QUESTION_BANK_MODULE_MANIFEST, type QuestionTransferRow } from "@mms/contracts";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
 import {

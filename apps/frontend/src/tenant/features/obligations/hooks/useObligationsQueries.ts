@@ -3,7 +3,7 @@
  * query hooks, and contract mutations.
  */
 import { apiContract, tsrClient } from "@/lib/api";
-import type { ObligationsCollectionsQuery } from "@mms/shared";
+import type { ObligationsCollectionsQuery } from "@mms/contracts";
 import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { invalidateObligationsQueries } from "@/tenant/features/obligations/hooks/invalidateObligationsQueries";
 import {

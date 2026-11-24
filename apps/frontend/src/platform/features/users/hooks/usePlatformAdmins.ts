@@ -3,7 +3,7 @@ import type {
   PlatformAdminPermissions,
   PlatformCreateAdminInput,
   PlatformUserProfile,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";

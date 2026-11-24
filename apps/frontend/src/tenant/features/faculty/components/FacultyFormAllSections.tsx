@@ -5,7 +5,7 @@ import type {
   FacultyDesignationDefinition,
   FacultyMember,
   FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   FacultyContactSection,
   FacultyEmploymentSection,

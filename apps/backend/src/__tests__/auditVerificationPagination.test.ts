@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { canonicalizeJson, formatAuditEventHashInput, GENESIS_AUDIT_HASH } from "@mms/shared";
+import { canonicalizeJson, formatAuditEventHashInput, GENESIS_AUDIT_HASH } from "@mms/contracts";
 
 const state = vi.hoisted(() => ({
   pages: [] as unknown[][],
@@ -17,7 +17,7 @@ interface Chain {
   limit: () => Promise<unknown[]>;
 }
 
-vi.mock("../db/dbConnection.js", () => {
+vi.mock("@mms/db/client", () => {
   const makeChain = (): Chain => {
     const chain: Chain = {
       select: () => chain,

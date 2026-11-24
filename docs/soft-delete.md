@@ -234,7 +234,7 @@ CREATE UNIQUE INDEX contacts_phone_active_unique
 In Drizzle schema definition:
 
 ```ts
-// packages/shared/src/schema/contacts.ts
+// packages/contracts/src/schema/contacts.ts
 (table) => [
   // ✅ Partial unique — soft-deleted rows do NOT block re-use of the same email
   uniqueIndex('contacts_email_active_unique')
@@ -417,7 +417,7 @@ In PostgreSQL, an `UPDATE` that sets `deleted_at = NOW()` writes a new row versi
 
 ### 3.1 Request Body Schemas
 
-Defined in [`packages/shared/src/schemas/api.dto.ts`](../packages/shared/src/schemas/api.dto.ts):
+Defined in [`packages/contracts/src/schemas/api.dto.ts`](../packages/contracts/src/schemas/api.dto.ts):
 
 ```ts
 // Single soft-delete — optional audit reason
@@ -446,7 +446,7 @@ Every module write schema (Create / Update) must reject client-supplied soft-del
 
 ```ts
 // Example verified by unit test:
-// packages/shared/src/__tests__/contactWriteSchema.test.ts
+// packages/contracts/src/__tests__/contactWriteSchema.test.ts
 expect(contactWriteSchema.parse({ ...payload, deletionReason: 'x' }))
   .not.toHaveProperty('deletionReason');
 ```
@@ -454,7 +454,7 @@ expect(contactWriteSchema.parse({ ...payload, deletionReason: 'x' }))
 Shared strip helper (contacts — each module has its own equivalent):
 
 ```ts
-// packages/shared/src/contactSoftDelete.ts
+// packages/contracts/src/contactSoftDelete.ts
 export const CONTACT_CLIENT_SOFT_DELETE_KEYS =
   ['deletedAt', 'deletedBy', 'deletionReason'] as const;
 
@@ -467,12 +467,12 @@ export function stripContactClientSoftDeleteFields<T extends Record<string, unkn
 }
 ```
 
-Tests in `packages/shared/src/__tests__/` verify the schema correctly rejects all three fields for every person-module.
+Tests in `packages/contracts/src/__tests__/` verify the schema correctly rejects all three fields for every person-module.
 
 ### 3.3 `isQueryFlagTrue` — Canonical `includeDeleted` Parsing
 
 ```ts
-// packages/shared/src/paginationUtils.ts
+// packages/contracts/src/paginationUtils.ts
 export function isQueryFlagTrue(value: unknown): boolean
 ```
 
@@ -483,7 +483,7 @@ Accepts `true`, `1`, `'true'`, `'True'`, `'TRUE'`, `'yes'`, `' 1 '`; all other v
 ### 3.4 Soft-Delete Predicate Helpers
 
 ```ts
-// packages/shared/src/contactSoftDelete.ts
+// packages/contracts/src/contactSoftDelete.ts
 export function isContactDeleted(contact: Contact): boolean {
   return Boolean(contact.deletedAt);
 }
@@ -650,7 +650,7 @@ Contacts, Students, and Faculty use dedicated route files for richer logic (uniq
 
 | Module | File |
 |---|---|
-| Contacts | [`contactSoftDeleteRoutes.ts`](../apps/backend/src/routes/tenant/contacts/contactSoftDeleteRoutes.ts) |
+| Contacts | [`contactSoftDeleteRoutes.ts`](../packages/modules/contacts/src/backend/routes/tenant/contactSoftDeleteRoutes.ts) |
 | Students | [`studentSoftDeleteRoutes.ts`](../apps/backend/src/routes/tenant/students/studentSoftDeleteRoutes.ts) |
 | Faculty | [`facultySoftDeleteRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultySoftDeleteRoutes.ts) |
 

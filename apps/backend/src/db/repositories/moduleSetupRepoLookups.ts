@@ -1,6 +1,6 @@
 import { and, asc, eq, getTableName } from "drizzle-orm";
 import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { redisDelPattern, redisKeys } from "../../lib/redis.js";
 import { getOrSetMultiTier, invalidateMultiTierCache } from "../../lib/cache/index.js";
 

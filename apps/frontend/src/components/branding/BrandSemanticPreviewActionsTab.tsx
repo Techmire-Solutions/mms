@@ -1,4 +1,4 @@
-import { brandingTokenToCss } from "@mms/shared";
+import { brandingTokenToCss } from "@mms/contracts";
 
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";

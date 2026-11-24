@@ -1,6 +1,7 @@
 import pg from "pg";
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb, closeDatabase } from "../db/database.js";
+import { closeDatabase } from "../db/database.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
 
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
@@ -67,7 +68,7 @@ async function resetAndRecreateDb() {
   console.log("[1/2] All objects cleared.");
 
   console.log("[2/2] Applying SQL migrations, data migrations, and seeding...");
-  await initDb();
+  await initializeDatabase();
   console.log("🎉 Local database successfully recreated and seeded!");
   await closeDatabase();
 }

@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { TaskRecord, TaskSettings } from "@mms/shared";
+import type { TaskRecord, TaskSettings } from "@mms/contracts";
 
 const emitOutboxEvent = vi.fn();
 const withTenant = vi.fn(async (_tenant: string, fn: (tx: unknown) => Promise<void>) => fn({}));
 
-vi.mock("../services/outboxEventService.js", () => ({ emitOutboxEvent }));
-vi.mock("../db/tenant-context.js", () => ({ withTenant }));
+vi.mock("@mms/be-core/data/outbox", () => ({ emitOutboxEvent }));
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+  withTenant,
+}));
 
 const { emitTaskNotificationIntents } = await import("../services/taskNotificationService.js");
 

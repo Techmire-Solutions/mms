@@ -1,6 +1,6 @@
 import React from "react";
 import { User, BookOpen, Layers, DollarSign, CheckCircle2 } from "lucide-react";
-import { formatDate, sessionTypeI18nKey } from "@mms/shared";
+import { formatDate, sessionTypeI18nKey } from "@mms/contracts";
 import { calcAge, type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
 import { type CalculatedFee } from "@/lib/data/enrollmentData";

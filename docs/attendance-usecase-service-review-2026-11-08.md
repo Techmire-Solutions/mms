@@ -71,7 +71,7 @@ is recorded as the reason the module cannot be driven by a scheduler without a r
 
 ## What changed (by subsystem)
 
-**Shared contracts** (`packages/shared/src/attendance/`)
+**Shared contracts** (`packages/contracts/src/attendance/`)
 - New `attendanceTransitions.ts` — the transition set, `attendanceStatusChanged`, `attendanceWriteAction`.
 - New `attendancePolicy.ts` — pure `evaluateAttendanceWrite` (P1 cut-off, P2 late grace, P3 note, P4 approved leave, P5 time sanity, P6 submitted day), clock helpers, `isPastAttendanceCutoff`.
 - `attendanceSetupPreferences.ts` — `HH:mm` + bounded-minute validation on the PUT body, cross-field refine, and `normalize` now sanitises stored values (unknown clock → school default; out-of-range minutes → clamped).

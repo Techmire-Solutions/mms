@@ -1,6 +1,6 @@
 import React from "react";
 import { Check, X } from "lucide-react";
-import { PERMISSION_ACTIONS, type PermissionAction, type RbacModuleDef } from "@mms/shared";
+import { PERMISSION_ACTIONS, type PermissionAction, type RbacModuleDef } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";

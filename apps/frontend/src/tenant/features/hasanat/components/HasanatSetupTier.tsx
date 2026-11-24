@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useRef } from "react";
-import type { Denomination } from "@mms/shared";
+import type { Denomination } from "@mms/contracts";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";

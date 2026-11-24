@@ -40,7 +40,7 @@ Residual Work SQL-page debt for **other** modules (not Faculty/Users/Sessions) l
 5. **Low**: Unimplemented scheduled retention hard-purge worker (`purgeExpiredArchivedRecords`) — **resolved 2026-09-18**: implemented in `apps/backend/src/worker/purgeArchivedRecordsJob.ts` and scheduled daily at 02:00 UTC by `apps/backend/src/worker/index.ts` (`scheduleNextDailyPurge`, single-leader lease); recorded in `references/resolved-register.md` and matches `docs/migration-milestones.md`.
 
 **Fix:**
-- Partial unique indexes (`WHERE deleted_at IS NULL`) already landed in `apps/backend/src/db/migrations_drizzle/0104_soft_delete_system_complete.sql`; verify remaining tables against the three-tier index strategy rather than adding a new migration by hand.
+- Partial unique indexes (`WHERE deleted_at IS NULL`) already landed in `packages/db/migrations_drizzle/0104_soft_delete_system_complete.sql`; verify remaining tables against the three-tier index strategy rather than adding a new migration by hand.
 - Category B/C partial indexes live in the same baseline — audit coverage with `pnpm run check:migration-indexes` and add missing pairs as forward-only DDL (`mms-data-layer.md` §7).
 - Add `deleted_with_cascade` column to enrollments; update session cascade soft-delete and restore logic (`docs/soft-delete.md` §2.2).
 - Standardize all query-flag parsing on `isQueryFlagTrue`.

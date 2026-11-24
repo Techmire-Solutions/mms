@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 /** Resolved, locale-aware industry terminology labels. */

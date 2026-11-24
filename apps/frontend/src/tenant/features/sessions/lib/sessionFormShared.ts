@@ -1,4 +1,4 @@
-import { DEFAULT_CURRENCIES, normalizeSessionStatus, todayISO } from "@mms/shared";
+import { DEFAULT_CURRENCIES, normalizeSessionStatus, todayISO } from "@mms/contracts";
 import type { Session } from "@/lib/data/sessionsData";
 
 export const SESSION_CURRENCIES = DEFAULT_CURRENCIES.map((currency) => currency.code);

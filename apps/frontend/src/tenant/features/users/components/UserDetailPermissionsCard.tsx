@@ -1,6 +1,6 @@
 import React from "react";
 import { Lock } from "lucide-react";
-import type { filterRbacModulesForSettings, PermissionAction } from "@mms/shared";
+import type { filterRbacModulesForSettings, PermissionAction } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";

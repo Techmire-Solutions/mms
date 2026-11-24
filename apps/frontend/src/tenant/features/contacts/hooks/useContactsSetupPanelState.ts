@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type ContactPreferences } from "@mms/shared";
+import { type ContactPreferences } from "@mms/contracts";
 import type { CountryCodeEntry } from "@/lib/contacts/countryCodeOptions";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useContactsPreferencesSave } from "@/tenant/features/contacts/hooks/useContactsPreferencesSave";

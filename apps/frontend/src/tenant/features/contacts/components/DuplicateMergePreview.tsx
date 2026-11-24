@@ -11,7 +11,7 @@ import {
   splitContactTags,
   type Contact,
   type ContactSystemTag,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/app/Modal";
 import { Alert } from "@/components/app/Alert";

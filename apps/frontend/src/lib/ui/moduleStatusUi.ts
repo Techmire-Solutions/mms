@@ -1,4 +1,4 @@
-import { toTitleCase, type AppTranslationKey } from "@mms/shared";
+import { toTitleCase, type AppTranslationKey } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { AccentColor } from "@/components/app/statCardAccent";
 

@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { exams } from "../schema.js";
-import type { AppDb } from "../tenant-context.js";
+import { exams } from "@mms/db/schema";
+import type { AppDb } from "@mms/db/context";
 import {
   examArchivedError,
   examCancelledError,

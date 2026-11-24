@@ -1,4 +1,4 @@
-import { normalizeUserModulePreferences, type UserModulePreferences } from "@mms/shared";
+import { normalizeUserModulePreferences, type UserModulePreferences } from "@mms/contracts";
 import {
   getUserModulePreferencesByWorkspace,
   upsertUserModulePreferences,

@@ -1,4 +1,4 @@
-import type { BackgroundJobRecord, ContactExportColumn, ContactsListQuery } from "@mms/shared";
+import type { BackgroundJobRecord, ContactExportColumn, ContactsListQuery } from "@mms/contracts";
 import { startServerModuleCsvExport } from "@/lib/backgroundJobs/startServerModuleCsvExport";
 
 export async function startServerContactsCsvExport(options: {

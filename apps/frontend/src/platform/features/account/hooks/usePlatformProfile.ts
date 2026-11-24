@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";

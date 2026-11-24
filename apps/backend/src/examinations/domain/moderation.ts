@@ -1,4 +1,4 @@
-import { MAX_GRACE_MARKS } from "@mms/shared";
+import { MAX_GRACE_MARKS } from "@mms/contracts";
 import { ValidationError } from "../../lib/httpErrors.js";
 
 /**

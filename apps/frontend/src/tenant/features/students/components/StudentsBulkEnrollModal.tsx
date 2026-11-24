@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
-import { isSessionEnrollable, type StudentsBulkEnrollPlacement } from "@mms/shared";
+import { isSessionEnrollable, type StudentsBulkEnrollPlacement } from "@mms/contracts";
 import { FormModal } from "@/components/app/FormModal";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";

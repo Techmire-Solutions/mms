@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 
 // Test the selection logic directly (pure state transitions) without DOM rendering.
 // usePlatformAdminSelection delegates to useWorkSelection which uses useState internally.

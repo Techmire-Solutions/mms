@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import {
   currentContactsSyncKeys,
   getContactsOutbox,

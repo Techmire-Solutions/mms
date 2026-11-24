@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import type { AttendanceRecord } from "@mms/shared";
-import type { attendance } from "../schema.js";
+import type { AttendanceRecord } from "@mms/contracts";
+import type { attendance } from "@mms/db/schema";
 
 import { mapAuditTimestamps, mapAuditToInsert } from "./repositoryMappers.js";
 import { requireDbDate } from "../../lib/dbDate.js";
-import { ValidationError } from "../../lib/httpErrors.js";
+import { ValidationError } from "@mms/be-core/http/errors";
 
 function attendanceDay(value: string | null | undefined): string {
   const day = requireDbDate(value, "Attendance date");

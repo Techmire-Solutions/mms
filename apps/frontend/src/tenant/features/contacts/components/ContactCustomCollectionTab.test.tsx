@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import type { FieldDefinition } from "@mms/shared";
+import type { FieldDefinition } from "@mms/contracts";
 import { ContactCustomCollectionTab } from "./ContactCustomCollectionTab";
 
 const fields: FieldDefinition[] = [

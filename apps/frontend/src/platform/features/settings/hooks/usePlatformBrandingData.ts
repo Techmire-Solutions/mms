@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { PlatformBrandingDto, PlatformBrandingSaveInput } from "@mms/shared";
+import type { PlatformBrandingDto, PlatformBrandingSaveInput } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { assertContractOk } from "@/lib/apiContractError";

@@ -2,7 +2,7 @@ import { notify } from "@/lib/notify";
 import { apiContract } from "@/lib/api";
 import { apiErrorMessage } from "@/lib/apiErrorMessage";
 import { isConflictError } from "@/lib/apiContractError";
-import { DEFAULT_FACULTY_USER_ROLE, type FacultyMember } from "@mms/shared";
+import { DEFAULT_FACULTY_USER_ROLE, type FacultyMember } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { reportClientError } from "@/lib/clientErrorReporting";

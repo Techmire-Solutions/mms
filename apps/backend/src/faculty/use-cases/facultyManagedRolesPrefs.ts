@@ -11,7 +11,7 @@ import {
   refreshFacultyManagedRolePermissions,
   type UserModulePreferences,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getUserModulePreferencesByWorkspace,
   upsertUserModulePreferences,

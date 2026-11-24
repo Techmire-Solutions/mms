@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import type { WorkshopCompletionStatus } from "@mms/shared";
-import { workshopParticipants } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import type { WorkshopCompletionStatus } from "@mms/contracts";
+import { workshopParticipants } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 import { auditRow } from "./workshopAudit.js";
 
 /**
@@ -10,7 +10,7 @@ import { auditRow } from "./workshopAudit.js";
  * `evaluateCompletion` used to read the roster in one transaction, persist in a second and re-read
  * in a third — a concurrent check-in or withdrawal could be evaluated against a stale snapshot, and
  * the write could downgrade a participant who already held a certificate. Both operations now run
- * against one locked snapshot; the pure rule stays in `@mms/shared`.
+ * against one locked snapshot; the pure rule stays in `@mms/contracts`.
  */
 
 /**

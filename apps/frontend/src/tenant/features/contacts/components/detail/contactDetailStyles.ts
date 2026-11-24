@@ -10,7 +10,7 @@ import {
   Zap,
   User,
 } from "lucide-react";
-import { DEFAULT_DETAIL_TABS } from "@mms/shared";
+import { DEFAULT_DETAIL_TABS } from "@mms/contracts";
 
 export const ICON_MAP: Record<string, LucideIcon> = {
   // tab keys

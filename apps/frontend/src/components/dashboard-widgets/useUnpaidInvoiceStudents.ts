@@ -1,4 +1,4 @@
-import { isOpenInvoiceStatus, FINANCE_MODULE_MANIFEST } from "@mms/shared";
+import { isOpenInvoiceStatus, FINANCE_MODULE_MANIFEST } from "@mms/contracts";
 import { useFinanceInvoicesPaginated } from "@/tenant/hooks/collections/finance";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { uniqueRegistryIds } from "@/lib/registryResolve";

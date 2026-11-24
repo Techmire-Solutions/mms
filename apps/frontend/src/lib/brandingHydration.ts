@@ -1,4 +1,4 @@
-import { mergeBrandingSettings, type BrandingSettings } from "@mms/shared";
+import { mergeBrandingSettings, type BrandingSettings } from "@mms/contracts";
 import { apiFetch } from "@/lib/apiClient";
 import { readObjectLocal, writeObjectLocal } from "@/lib/dbObjectStorage";
 

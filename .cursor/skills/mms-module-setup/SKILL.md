@@ -41,7 +41,7 @@ metadata:
 
 ## 4. Field Visibility Cascade
 
-Prefer deactivating fields over erasure. Before delete, run `get*FieldRemovalIssues()` from `@mms/shared`. Disabling a field must remove it from forms, drawers, directory columns/cards, filters, and CustomReportBuilder/export columns.
+Prefer deactivating fields over erasure. Before delete, run `get*FieldRemovalIssues()` from `@mms/contracts`. Disabling a field must remove it from forms, drawers, directory columns/cards, filters, and CustomReportBuilder/export columns.
 
 ## Verification
 

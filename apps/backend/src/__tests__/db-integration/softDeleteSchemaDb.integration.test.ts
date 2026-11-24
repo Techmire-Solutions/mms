@@ -8,9 +8,9 @@ import {
   pingDatabase,
   closeDatabase,
   beginLongLivedTenantTransaction,
-} from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { workspaces, students, tenantUsers, contacts } from "../../db/schema.js";
+} from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { workspaces, students, tenantUsers, contacts } from "@mms/db/schema";
 
 const TEST_SUBDOMAIN = "soft-delete-test";
 const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");

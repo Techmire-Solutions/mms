@@ -5,7 +5,7 @@ import { WorkTaskToolbar } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ExaminationsFiltersMenuButton } from "@/tenant/features/examinations/components/ExaminationsFiltersMenuButton";
-import { isExamStatus, type ExamStatus } from "@mms/shared";
+import { isExamStatus, type ExamStatus } from "@mms/contracts";
 
 export const EXAMINATIONS_WORK_SEARCH_INPUT_ID = "examinations-work-search";
 

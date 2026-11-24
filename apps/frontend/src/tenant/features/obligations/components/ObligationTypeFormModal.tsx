@@ -8,7 +8,7 @@ import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
 import { CheckboxField } from "@/components/ui/checkbox";
-import { obligationTypeInsertSchema } from "@mms/shared";
+import { obligationTypeInsertSchema } from "@mms/contracts";
 import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import type { ObligationType } from "@/lib/data/obligationsData";
 import {

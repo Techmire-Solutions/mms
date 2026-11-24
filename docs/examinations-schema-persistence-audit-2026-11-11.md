@@ -13,7 +13,7 @@
 sections, subjects and students, mark precision, soft-delete coverage, and the marks upsert
 (optimistic concurrency, finalization lock, audit trail).
 
-**Method:** read [`examinationExamTables.ts`](../apps/backend/src/db/schema/examinationExamTables.ts),
+**Method:** read [`examinationExamTables.ts`](../packages/db/src/schema/examinationExamTables.ts),
 every migration touching those tables (`0048`, `0068`, `0076`, `0091`, `0104`, `0108`, `0166`,
 `0171`, `0207`, `0222`), the `0235` Drizzle snapshot, both repository modules and their callers,
 the shared DTOs, the entry grid, and the CI ratchets
@@ -77,7 +77,7 @@ avoids `21000`, ordering avoids `40P01`); a primary-key collision is mapped to
 **Verified:** DB suite — "arbitrates on (exam, student), so a new id updates the existing row".
 
 ### F3 · **P0** · The 0222 unique index could be silently absent
-[`0222_exam_attendance_gate.sql:75-92`](../apps/backend/src/db/migrations_drizzle/0222_exam_attendance_gate.sql)
+[`0222_exam_attendance_gate.sql:75-92`](../packages/db/migrations_drizzle/0222_exam_attendance_gate.sql)
 created `exam_results_workspace_exam_student_uidx` only when no duplicate groups existed, and
 otherwise `RAISE WARNING`. A database that had duplicates therefore kept allowing them, and nothing
 since has checked.
@@ -94,10 +94,10 @@ publish path takes `FOR UPDATE` on the same row, so the two cannot interleave.
 **Verified:** DB suite — "refuses mark writes once results are published", "…for an archived exam".
 
 ### F5 · **P1** · Mark precision: integer column vs. a decimal entry grid
-`marks_obtained integer` ([`:109`](../apps/backend/src/db/schema/examinationExamTables.ts)) while
+`marks_obtained integer` ([`:109`](../packages/db/src/schema/examinationExamTables.ts)) while
 the grid sets `inputMode="decimal"` and the DTO accepts any number — `85.5` reached an `integer`
 column and failed with `22P02` (a 500). The sibling scoring column is `numeric(8,2)`
-([`examinationTestTables.ts:171`](../apps/backend/src/db/schema/examinationTestTables.ts)).
+([`examinationTestTables.ts:171`](../packages/db/src/schema/examinationTestTables.ts)).
 **Fixed:** `marks_obtained numeric(8,2)`, DTO bound `MAX_MARKS_OBTAINED`, and server-side
 normalization that rounds the *decimal text* (matching Postgres) instead of the binary double.
 **Verified:** DB suite — "stores marks exactly at numeric(8,2) scale".
@@ -152,7 +152,7 @@ longer writes those columns (the backup restore path still does).
 - Migration `0236_exams_results_integrity.sql` (+ `_journal.json` entry + meta snapshot; hand-authored
   because `drizzle-kit generate` is blocked by the 0216/0217 snapshot collision — a documented,
   reviewed exception).
-- Drizzle mirror in [`examinationExamTables.ts`](../apps/backend/src/db/schema/examinationExamTables.ts).
+- Drizzle mirror in [`examinationExamTables.ts`](../packages/db/src/schema/examinationExamTables.ts).
 - Split persistence: [`examResultUpsert.ts`](../apps/backend/src/db/repositories/examResultUpsert.ts)
   (pure planner), [`examinationResultsPersist.ts`](../apps/backend/src/db/repositories/examinationResultsPersist.ts)
   (tx, OCC, lock, audit), read surface in

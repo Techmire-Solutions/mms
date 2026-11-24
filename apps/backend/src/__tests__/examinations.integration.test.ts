@@ -21,8 +21,8 @@ vi.mock("../services/backgroundJobService.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/backgroundJobService.js")>();
   return { ...actual, findLiveBackgroundJobForEntity: mockLiveJob };
 });
-vi.mock("../services/auditTrailService.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../services/auditTrailService.js")>();
+vi.mock("@mms/be-core/audit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/be-core/audit")>();
   return { ...actual, recordAuditEventSafely: vi.fn() };
 });
 import {

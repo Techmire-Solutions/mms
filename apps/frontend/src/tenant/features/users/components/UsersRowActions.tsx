@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { Eye, KeyRound, Pencil, RotateCcw, Trash2 } from "lucide-react";
-import { canManageTargetUser, isPlatformManagedRole, type SystemUser } from "@mms/shared";
+import { canManageTargetUser, isPlatformManagedRole, type SystemUser } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useOptionalAuth } from "@/lib/contexts/AuthContext";

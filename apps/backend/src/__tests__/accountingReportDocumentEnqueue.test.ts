@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockEnqueue = vi.fn();
 const mockGetJob = vi.fn();
@@ -15,14 +15,15 @@ vi.mock("../lib/csvExportEnqueue.js", () => ({
   enqueueCsvExportJob: (...args: unknown[]) => mockEnqueueCsv(...args),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => mockAudit(...args),
 }));
 
 import {
   enqueueAccountingLedgerExport,
   enqueueAccountingReportPdf,
-} from "../routes/tenant/accounting/accountingReportDocumentEnqueue.js";
+} from "../../../../packages/modules/accounting/dist/backend/routes/accountingReportDocumentEnqueue.js";
+import { configureAccountingJobEnqueuer } from "../../../../packages/modules/accounting/dist/backend/jobs/enqueuer.js";
 
 const JOB = {
   id: "demo:u-1:key",
@@ -32,6 +33,15 @@ const JOB = {
   label: "Generating trial-balance PDF",
   createdAt: "2026-11-13T00:00:00.000Z",
 };
+
+beforeAll(() => {
+  configureAccountingJobEnqueuer({
+    getUserJob: (...args: unknown[]) => mockGetJob(...args),
+    enqueueJob: (...args: unknown[]) => mockEnqueue(...args),
+    enqueueCsvExport: (...args: unknown[]) => mockEnqueueCsv(...args),
+    isQueueUnavailable: () => false,
+  });
+});
 
 beforeEach(() => {
   vi.clearAllMocks();

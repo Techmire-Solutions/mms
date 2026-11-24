@@ -3,7 +3,7 @@ import {
   dashboardContract,
   normalizeDashboardPreferences,
   type DashboardWidgetDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../lib/contractRouterTypes.js";

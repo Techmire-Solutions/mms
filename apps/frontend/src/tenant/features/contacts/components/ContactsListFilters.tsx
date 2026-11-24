@@ -1,5 +1,5 @@
 import React from "react";
-import type { ContactsQuickFilter } from "@mms/shared";
+import type { ContactsQuickFilter } from "@mms/contracts";
 import type { ContactsWorkViewMode } from "@/tenant/features/contacts/lib/contactsWorkTierTypes";
 import type { WorkTableDensity } from "@/hooks/useWorkTableDensity";
 import { ContactsFiltersMenuButton } from "@/tenant/features/contacts/components/ContactsFiltersMenuButton";

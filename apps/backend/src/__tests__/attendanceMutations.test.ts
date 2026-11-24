@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AttendanceRecord, User } from "@mms/shared";
+import type { AttendanceRecord, User } from "@mms/contracts";
 import { createAttendanceMutationUseCases } from "../attendance/use-cases/attendanceMutationUseCases.js";
 import { createAttendanceMarkUseCases } from "../attendance/use-cases/attendanceMarkUseCases.js";
 import { createAttendanceTrashUseCases } from "../attendance/use-cases/attendanceTrashUseCases.js";

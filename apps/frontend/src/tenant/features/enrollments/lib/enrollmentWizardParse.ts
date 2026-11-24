@@ -1,4 +1,4 @@
-import { enrollmentRecordInsertSchema, type EnrollmentInsert } from "@mms/shared";
+import { enrollmentRecordInsertSchema, type EnrollmentInsert } from "@mms/contracts";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 
 export type EnrollmentPayloadParseResult =

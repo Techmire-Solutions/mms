@@ -1,8 +1,8 @@
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-import { listAuditEventsQuerySchema, type User } from "@mms/shared";
+import { listAuditEventsQuerySchema, type User } from "@mms/contracts";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
-import { recordAuditEventSafely, getLatestShardHash } from "../../../services/auditTrailService.js";
+import { recordAuditEventSafely, getLatestShardHash } from "@mms/be-core/audit";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { formatTraceParent } from "../../../config/telemetry.js";
 import {

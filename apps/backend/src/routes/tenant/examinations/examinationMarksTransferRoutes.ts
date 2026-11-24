@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import { randomUUID } from "node:crypto";
-import { examMarksImportBodySchema, resourceIdParamsSchema } from "@mms/shared";
+import { examMarksImportBodySchema, resourceIdParamsSchema } from "@mms/contracts";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import {
   sendDatabaseError,
@@ -24,7 +24,7 @@ import { findLiveBackgroundJobForEntity } from "../../../services/backgroundJobS
 import { buildBackgroundJobId, buildDeterministicJobKey } from "../../../lib/backgroundJobIds.js";
 import { examinationsUseCases } from "../../../examinations/use-cases/examinationsUseCases.js";
 import { assertMarksImportScope } from "../../../examinations/use-cases/examMarksImportScope.js";
-import { recordAuditEventSafely } from "../../../services/auditTrailService.js";
+import { recordAuditEventSafely } from "@mms/be-core/audit";
 
 const COLLECTION = "exams";
 

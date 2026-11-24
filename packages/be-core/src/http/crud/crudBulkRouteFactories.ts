@@ -1,0 +1,263 @@
+import type { FastifyInstance } from "fastify";
+
+import type { User } from "@mms/contracts";
+import { canDeleteCollection, canWriteCollection } from "../../rbac/helpers.js";
+import {
+  sendForbidden,
+  sendDatabaseError,
+  sendIfHttpDomainError,
+  sendConflict,
+} from "../errors/httpErrors.js";
+import { isUniqueViolation } from "../errors/pgErrors.js";
+import { parseRequest, replyValidationError } from "../routes/zodRequest.js";
+import { sendValidated } from "../routes/validatedReply.js";
+import { bulkIdsBodySchema } from "@mms/contracts";
+import {
+  handleBulkListGet,
+  shouldCaptureDeletionReason,
+  type BulkRoutesOptions,
+  type SoftDeletableBulkRoutesOptions,
+  type SoftDeletableBulkTrashRoutesOptions,
+} from "./crudBulkRouteHelpers.js";
+import { registerSingleDeleteRoute, registerSingleRestoreRoute } from "./crudResourceRoutes.js";
+import { registerIncludableBulkRoutes } from "./crudIncludableBulkRoutes.js";
+
+// Re-exported (not just imported) so every existing import path keeps working.
+export {
+  registerIncludableBulkRoutes,
+  type IncludableBulkRoutesOptions,
+} from "./crudIncludableBulkRoutes.js";
+
+/**
+ * Registers GET and PUT endpoints for a bulk list collection.
+ */
+export function registerBulkRoutes<T>(
+  fastify: FastifyInstance,
+  options: BulkRoutesOptions<T>,
+): void {
+  const {
+    path,
+    collection,
+    schema,
+    loadFn,
+    loadPageFn,
+    listQuerySchema,
+    defaultPageSize,
+    saveFn,
+    beforeSave,
+    responseKey,
+    errorMessagePrefix,
+    customGetRoute,
+    responseSchema,
+  } = options;
+
+  if (!customGetRoute && loadFn) {
+    fastify.get(path, async (request, reply) => {
+      return handleBulkListGet(request, reply, request.user as User, collection, {
+        loadFn,
+        loadPageFn,
+        listQuerySchema,
+        defaultPageSize,
+        responseKey,
+        errorMessagePrefix,
+      });
+    });
+  }
+
+  fastify.put(path === "/" ? "/bulk" : `${path}/bulk`, async (request, reply) => {
+    const user = request.user as User;
+    if (!canWriteCollection(user, collection)) return sendForbidden(reply);
+    const parsed = parseRequest(schema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    try {
+      const data = beforeSave ? await beforeSave(user, parsed.data, request) : parsed.data;
+      const updated = await saveFn(data);
+      const payload = { [responseKey]: updated };
+      return responseSchema
+        ? sendValidated(reply, 200, responseSchema, payload)
+        : reply.send(payload);
+    } catch (error: unknown) {
+      const mapped = sendIfHttpDomainError(reply, error);
+      if (mapped) return mapped;
+      return sendDatabaseError(reply, `Failed to update ${errorMessagePrefix}`, error);
+    }
+  });
+}
+
+/**
+ * Registers only POST `/bulk-delete` + `/bulk-restore` (Contacts/Students + soft-deletable modules).
+ * Use when single delete/restore are registered elsewhere (standard tenant routes / custom handlers).
+ */
+export function registerSoftDeletableBulkTrashRoutes(
+  fastify: FastifyInstance,
+  options: SoftDeletableBulkTrashRoutesOptions,
+): void {
+  const path = options.path ?? "/";
+  const bulkDeletePath = path === "/" ? "/bulk-delete" : `${path}/bulk-delete`;
+  const bulkRestorePath = path === "/" ? "/bulk-restore" : `${path}/bulk-restore`;
+  const bulkResponseSchema = options.bulkResponseSchema;
+  const bulkBodySchema = options.bulkBodySchema ?? bulkIdsBodySchema;
+  const canDelete =
+    options.canDelete ?? ((user: User) => canDeleteCollection(user, options.collection));
+
+  fastify.post(bulkDeletePath, async (request, reply) => {
+    const user = request.user as User;
+    if (!canDelete(user)) return sendForbidden(reply);
+    const parsed = parseRequest(bulkBodySchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    try {
+      const ids = parsed.data.ids.map(String);
+      const captureReason = shouldCaptureDeletionReason(
+        options.collection,
+        options.captureDeletionReason,
+      );
+      const reason = captureReason ? parsed.data.deletionReason : undefined;
+      const result = await options.bulkDeleteFn(ids, String(user.id), reason);
+      await options.onAfterBulkDelete?.(user, result, reason);
+      const payload = { success: true as const, ...result };
+      return bulkResponseSchema
+        ? sendValidated(reply, 200, bulkResponseSchema, payload)
+        : reply.send(payload);
+    } catch (error: unknown) {
+      const mapped = options.mapDeleteError?.(error);
+      if (mapped) return reply.status(mapped.statusCode).send(mapped.body);
+      const domainHandled = sendIfHttpDomainError(reply, error);
+      if (domainHandled) return domainHandled;
+      return sendDatabaseError(reply, `Failed to bulk delete ${options.errorMessagePrefix}`, error);
+    }
+  });
+
+  fastify.post(bulkRestorePath, async (request, reply) => {
+    const user = request.user as User;
+    if (!canDelete(user)) return sendForbidden(reply);
+    const parsed = parseRequest(bulkBodySchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    try {
+      const ids = parsed.data.ids.map(String);
+      const result = await options.bulkRestoreFn(ids, String(user.id));
+      await options.onAfterBulkRestore?.(user, result);
+      const payload = { success: true as const, ...result };
+      return bulkResponseSchema
+        ? sendValidated(reply, 200, bulkResponseSchema, payload)
+        : reply.send(payload);
+    } catch (error: unknown) {
+      if (isUniqueViolation(error)) {
+        return sendConflict(reply, "A record with this unique identifier already exists");
+      }
+      const mapped = options.mapRestoreError?.(error);
+      if (mapped) return reply.status(mapped.statusCode).send(mapped.body);
+      const domainHandled = sendIfHttpDomainError(reply, error);
+      if (domainHandled) return domainHandled;
+      return sendDatabaseError(
+        reply,
+        `Failed to bulk restore ${options.errorMessagePrefix}`,
+        error,
+      );
+    }
+  });
+}
+
+/**
+ * Registers GET(+trash)/PUT bulk/soft-delete/restore for a soft-deletable collection.
+ */
+export function registerSoftDeletableBulkRoutes<T>(
+  fastify: FastifyInstance,
+  options: SoftDeletableBulkRoutesOptions<T> & {
+    customGetRoute?: boolean;
+    customBulkTrashRoutes?: boolean;
+  },
+): void {
+  const {
+    path = "/",
+    collection,
+    schema,
+    loadFn,
+    saveFn,
+    deleteFn,
+    restoreFn,
+    bulkDeleteFn,
+    bulkRestoreFn,
+    responseKey,
+    errorMessagePrefix,
+    nameSingular,
+    bulkBodySchema = bulkIdsBodySchema,
+    mapDeleteError,
+    mapRestoreError,
+    customGetRoute,
+    customBulkTrashRoutes,
+    captureDeletionReason,
+    responseSchema,
+    bulkResponseSchema,
+  } = options;
+
+  const canDelete = options.canDelete ?? ((user: User) => canDeleteCollection(user, collection));
+
+  registerIncludableBulkRoutes(fastify, {
+    path,
+    collection,
+    schema,
+    loadFn,
+    loadPageFn: options.loadPageFn,
+    listQuerySchema: options.listQuerySchema,
+    defaultPageSize: options.defaultPageSize,
+    saveFn,
+    beforeSave: options.beforeSave,
+    canSave: options.canSave,
+    responseKey,
+    errorMessagePrefix,
+    customGetRoute,
+    canDelete,
+    responseSchema,
+  });
+
+  // Static bulk paths before /:id to avoid parametric capture.
+  if (!customBulkTrashRoutes) {
+    registerSoftDeletableBulkTrashRoutes(fastify, {
+      path,
+      collection,
+      errorMessagePrefix,
+      bulkBodySchema,
+      bulkDeleteFn,
+      bulkRestoreFn,
+      canDelete,
+      captureDeletionReason,
+      mapDeleteError,
+      mapRestoreError,
+      onAfterBulkDelete: options.onAfterBulkDelete,
+      onAfterBulkRestore: options.onAfterBulkRestore,
+      bulkResponseSchema,
+    });
+  }
+
+  const prefix = path === "/" ? "" : path;
+
+  // Cast to optional: options type requires them but the factory supports partial
+  // registration (e.g. Contacts registers single routes via registerResourceRoutes).
+  const optDeleteFn: typeof deleteFn | undefined = deleteFn;
+  const optRestoreFn: typeof restoreFn | undefined = restoreFn;
+
+  if (optDeleteFn) {
+    registerSingleDeleteRoute(fastify, {
+      prefix,
+      collection,
+      nameSingular,
+      deleteFn: optDeleteFn,
+      canDelete,
+      captureDeletionReason,
+      onAfterDelete: options.onAfterDelete,
+      mapDeleteError,
+    });
+  }
+
+  if (optRestoreFn) {
+    registerSingleRestoreRoute(fastify, {
+      prefix,
+      collection,
+      nameSingular,
+      restoreFn: optRestoreFn,
+      canDelete,
+      onAfterRestore: options.onAfterRestore,
+      mapRestoreError,
+    });
+  }
+}

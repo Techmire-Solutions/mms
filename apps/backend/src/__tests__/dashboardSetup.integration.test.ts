@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { adminToken, signTenantToken, teacherToken, viewerToken } from "./helpers/tokens.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -63,7 +63,7 @@ vi.mock("../services/dashboardSummaryService.js", () => ({
   loadDashboardSummary: (...args: unknown[]) => mockLoadDashboardSummary(...args),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
   mapActionStringToAuditType: (action: string) =>
     action.includes("delete") ? "DELETE" : action.includes("create") ? "CREATE" : "UPDATE",

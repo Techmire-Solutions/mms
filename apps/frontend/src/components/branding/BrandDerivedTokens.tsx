@@ -1,4 +1,4 @@
-import { brandingTokenToCss, brandingTokenToHex } from "@mms/shared";
+import { brandingTokenToCss, brandingTokenToHex } from "@mms/contracts";
 
 import { useTranslation } from "@/hooks/useTranslation";
 

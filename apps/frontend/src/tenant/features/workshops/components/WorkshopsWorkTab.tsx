@@ -5,7 +5,7 @@
 
 import React, { useState } from "react";
 import { Presentation } from "lucide-react";
-import { WORKSHOPS_MODULE_MANIFEST, type WorkshopEvent, type WorkshopStatus } from "@mms/shared";
+import { WORKSHOPS_MODULE_MANIFEST, type WorkshopEvent, type WorkshopStatus } from "@mms/contracts";
 import { WorkTaskToolbar } from "@/components/common/work/WorkTaskToolbar";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { ErrorState } from "@/components/app/ErrorState";

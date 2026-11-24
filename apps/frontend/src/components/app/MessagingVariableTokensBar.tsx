@@ -1,5 +1,9 @@
 import React from "react";
-import { MESSAGING_VARIABLE_TOKENS, type AppTranslationKey, type VariableToken } from "@mms/shared";
+import {
+  MESSAGING_VARIABLE_TOKENS,
+  type AppTranslationKey,
+  type VariableToken,
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 

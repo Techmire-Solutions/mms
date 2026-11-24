@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { IMAGE_UPLOAD_MAX_INPUT_BYTES } from "@mms/shared";
+import { IMAGE_UPLOAD_MAX_INPUT_BYTES } from "@mms/contracts";
 import { prepareAvatarPreview } from "./avatarPreview";
 
 describe("prepareAvatarPreview", () => {

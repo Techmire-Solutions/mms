@@ -1,6 +1,6 @@
 import React, { useId } from "react";
 import { LayoutDashboard, SlidersHorizontal } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/app/SectionLabel";

@@ -10,7 +10,7 @@ import {
   tasksBulkStatusBodySchema,
   taskUpdateSchema,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
 import { canPerformTaskAction } from "../../services/taskPermissionService.js";

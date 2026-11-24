@@ -3,7 +3,7 @@ import { Award, ChevronDown, ChevronUp, Scroll } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { FacultyIjazah, FacultyMember } from "@mms/shared";
+import type { FacultyIjazah, FacultyMember } from "@mms/contracts";
 
 export interface FacultyDetailIjazahSectionProps {
   faculty: FacultyMember;

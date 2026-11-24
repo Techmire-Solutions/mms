@@ -7,8 +7,8 @@ paths:
   - "apps/backend/src/services/platform/**"
   - "apps/backend/src/services/rbac*.ts"
   - "apps/backend/src/lib/tenantContext.ts"
-  - "packages/shared/src/**/platformApiErrors.ts"
-  - "packages/shared/src/**/moduleAccessPolicy.ts"
+  - "packages/contracts/src/**/platformApiErrors.ts"
+  - "packages/contracts/src/**/moduleAccessPolicy.ts"
   - "apps/frontend/src/lib/contexts/AuthContext.tsx"
   - "apps/frontend/src/platform/features/auth/lib/PlatformAuthContext.tsx"
   - "apps/frontend/src/platform/features/auth/lib/platformAuthErrors.ts"
@@ -38,7 +38,7 @@ paths:
 ## 3. Role-Based Access Control (RBAC)
 - **Frontend Gates:** Use `can('permission.string')` via `usePermissions`, or `useModulePermissions(MANIFEST)` (`canWrite`, `canDelete`, `canExport`, `canViewSetup`). Never OR write gates with `canEditSetup`. Omit unauthorized elements from DOM (no disabled placeholders).
 - **Backend Enforcement:** Enforce in route preHandlers (`canWriteCollection`). Denials return `403 { type: 'forbidden' }`. Soft-delete mutations and trash queries require delete privileges (`canDeleteCollection`).
-- **Module Access Gates:** Every module-owned route, UI entry point, and backend operation declares and enforces its module and action requirements; frontend visibility is not a security boundary. Policy SSOT is `@mms/shared` `moduleAccessPolicy.ts` (platform grant → tenant enablement → action permission; denial codes `MODULE_NOT_GRANTED` / `MODULE_DISABLED` / `PERMISSION_DENIED` / `MODULE_ACCESS_UNAVAILABLE`, sent as `403 { type: 'forbidden', code, moduleId }`).
+- **Module Access Gates:** Every module-owned route, UI entry point, and backend operation declares and enforces its module and action requirements; frontend visibility is not a security boundary. Policy SSOT is `@mms/contracts` `moduleAccessPolicy.ts` (platform grant → tenant enablement → action permission; denial codes `MODULE_NOT_GRANTED` / `MODULE_DISABLED` / `PERMISSION_DENIED` / `MODULE_ACCESS_UNAVAILABLE`, sent as `403 { type: 'forbidden', code, moduleId }`).
   - **Backend:** module plugins call `registerModuleAccess(fastify, moduleId)` right after `authenticateTenant`; actions default by method and are overridden only in `MODULE_ROUTE_ACTION_RULES` (`lib/moduleRouteActions.ts`) or `config.moduleAction`. Per-request modules use `getModuleAccessDenial` / `enforceModuleAccess`; jobs re-check at execution. Availability comes from the workspace row and the current role matrix, fails closed, and is invalidated through the live-update broadcast.
   - **Frontend:** every app-shell route is classified in `TENANT_APP_ROUTE_ACCESS`; `ModuleAccessRoute`, sidebar, command palette, quick actions, and dashboard widgets all evaluate `useModuleAccess()` (server snapshot, never persisted). Non-module routes are classified explicitly, never exempted by omission.
   - **Required Modules:** `required: true` entries in `globalSettingsModuleRegistry.ts` (`dashboard`, `contacts`, `messaging`, …) can never be disabled or un-granted, so they only ever produce `PERMISSION_DENIED`. A denial test for such a module must assert the reachable code — expecting `MODULE_DISABLED` from a required module yields a 500 from the un-gated handler, not a 403.

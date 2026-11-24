@@ -5,7 +5,7 @@ import {
   type PermissionAction,
   type PermissionMap,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function useRolesPermissionDraft(displayRole: WorkspaceRole | null) {
   const [permDraft, setPermDraft] = useState<PermissionMap | null>(null);

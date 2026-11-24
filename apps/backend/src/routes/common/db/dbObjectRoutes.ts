@@ -8,10 +8,10 @@ import {
   redactBrandingIdentityForClient,
   type BrandingSettings,
   type GlobalSettings,
-} from "@mms/shared";
-import type { User } from "@mms/shared";
+} from "@mms/contracts";
+import type { User } from "@mms/contracts";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import {
   getWorkspaceBranding,
   syncWorkspaceFromBranding,
@@ -25,8 +25,8 @@ import {
   sanitizeGlobalSettingsWrite,
 } from "../../../services/globalSettingsService.js";
 import { sanitizeBrandingWrite } from "../../../services/workspacePresentationService.js";
-import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
-import { resourceKeyParamsSchema } from "@mms/shared";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { resourceKeyParamsSchema } from "@mms/contracts";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
 

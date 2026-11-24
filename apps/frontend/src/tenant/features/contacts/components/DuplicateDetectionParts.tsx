@@ -1,7 +1,7 @@
 import type React from "react";
 import { Check } from "lucide-react";
-import type { Contact, ContactPreferences } from "@mms/shared";
-import { getDuplicateConfidenceBadgeStyle } from "@mms/shared";
+import type { Contact, ContactPreferences } from "@mms/contracts";
+import { getDuplicateConfidenceBadgeStyle } from "@mms/contracts";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getDuplicateFieldLabel, getDuplicateFieldValue } from "@/lib/contacts/contactI18n";

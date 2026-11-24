@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState } from "react";
 import { Copy } from "lucide-react";
-import type { ContactPreferences } from "@mms/shared";
+import type { ContactPreferences } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
 import { SectionCard } from "@/components/app/SectionCard";

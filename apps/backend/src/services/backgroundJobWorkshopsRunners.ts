@@ -1,4 +1,4 @@
-import { WORKSHOPS_MODULE_MANIFEST } from "@mms/shared";
+import { WORKSHOPS_MODULE_MANIFEST } from "@mms/contracts";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
 import { buildWorkshopsCsvExport } from "./workshopsExportService.js";
 

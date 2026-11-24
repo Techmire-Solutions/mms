@@ -1,7 +1,7 @@
 import type React from "react";
 import type { ChangeEvent, RefObject } from "react";
 import { ExternalLink, FileText, Trash2 } from "lucide-react";
-import { formatDate, type Contact } from "@mms/shared";
+import { formatDate, type Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

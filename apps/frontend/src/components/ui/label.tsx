@@ -1,1 +1,1 @@
-export { Label, type LabelProps } from "@shared/ui";
+export { Label, type LabelProps } from "@mms/ui";

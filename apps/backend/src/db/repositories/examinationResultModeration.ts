@@ -1,12 +1,12 @@
 import { and, eq, sql } from "drizzle-orm";
-import type { ExamResultModerationResult } from "@mms/shared";
+import type { ExamResultModerationResult } from "@mms/contracts";
 
 export type { ExamResultModerationResult };
-import { resolveResultScore } from "@mms/shared";
-import { examResults, exams } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
+import { resolveResultScore } from "@mms/contracts";
+import { examResults, exams } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { ConflictError, NotFoundError } from "@mms/be-core/http/errors";
 import {
   assertEffectiveWithinTotal,
   assertGraceWithinRange,

@@ -5,7 +5,7 @@ import {
   withTenantRead,
   withGlobalTenant,
   type WithTenantOptions,
-} from "../db/tenant-context.js";
+} from "@mms/db/context";
 
 /**
  * The runtime guard is unreachable through the typed API by design — a nullable

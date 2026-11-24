@@ -19,7 +19,7 @@ import {
   type HasanatBatchAwardResult,
   type HasanatBatchRecipient,
   type HasanatBatchTarget,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { throwRuleViolation } from "./hasanatRuleErrors.js";

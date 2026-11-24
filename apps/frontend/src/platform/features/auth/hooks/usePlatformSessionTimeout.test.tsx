@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { SessionTimeoutPolicy } from "@mms/shared";
+import type { SessionTimeoutPolicy } from "@mms/contracts";
 import { usePlatformSessionTimeout } from "@/platform/features/auth/hooks/usePlatformSessionTimeout";
 
 const apiContractMock = vi.hoisted(() => ({

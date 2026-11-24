@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, isNull, lte, or } from "drizzle-orm";
-import type { FacultyDesignationAssignment } from "@mms/shared";
-import { facultyAssignments, facultyDesignations } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { FacultyDesignationAssignment } from "@mms/contracts";
+import { facultyAssignments, facultyDesignations } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { listFacultyDesignations } from "./facultyDesignationRepository.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 

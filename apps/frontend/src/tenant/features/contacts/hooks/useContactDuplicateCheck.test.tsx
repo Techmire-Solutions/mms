@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useContactDuplicateCheck } from "./useContactDuplicateCheck";
 import { apiContract } from "@/lib/api";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

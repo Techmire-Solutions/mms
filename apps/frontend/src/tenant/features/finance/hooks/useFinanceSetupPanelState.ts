@@ -1,4 +1,4 @@
-import { type FinanceSettings } from "@mms/shared";
+import { type FinanceSettings } from "@mms/contracts";
 import { useFinanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useFinanceSetupSaveActions } from "@/tenant/features/finance/hooks/useFinanceSetupSaveActions";

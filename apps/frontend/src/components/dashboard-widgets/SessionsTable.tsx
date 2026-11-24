@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Users, MapPin } from "lucide-react";
 import { m } from "framer-motion";
-import type { SessionsReportTodaySession } from "@mms/shared";
+import type { SessionsReportTodaySession } from "@mms/contracts";
 import { useSessionsReportAggregates } from "@/tenant/hooks/collections/sessions";
 import { WidgetCard } from "@/components/app/WidgetCard";
 import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";

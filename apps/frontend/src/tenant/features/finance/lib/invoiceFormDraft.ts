@@ -6,7 +6,7 @@ import {
   type FinanceSettings,
   type FeeStructure,
   type InvoiceCreateInput,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export interface InvoiceDraft {
   studentId: string;

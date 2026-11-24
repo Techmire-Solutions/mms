@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ClassInsertSchema, ClassSchema } from "@mms/shared";
+import { ClassInsertSchema, ClassSchema } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { validateClassDraft } from "./classDetailValidation";
 

@@ -8,7 +8,7 @@ import {
   getCollectedAmountForInvoice,
   getOutstandingAmountForInvoice,
   type TypstFeeReceiptPayload,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { Invoice } from "@/lib/data/financeData";
 import { mapToTypstFeeReceipt } from "@/components/template-editor/templatePayloadMappers";
 

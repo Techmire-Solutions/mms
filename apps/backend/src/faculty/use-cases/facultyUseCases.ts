@@ -75,10 +75,10 @@ export function createFacultyUseCases(repo: FacultyRepository = facultyRepositor
   const checkFacultyRegistrationDuplicate = (
     input: Parameters<typeof operation.checkFacultyRegistrationDuplicate>[0],
   ) => operation.checkFacultyRegistrationDuplicate(input, repo);
-  const sanitizeFacultyForViewer = (member: import("@mms/shared").Faculty, viewerRole: string) =>
+  const sanitizeFacultyForViewer = (member: import("@mms/contracts").Faculty, viewerRole: string) =>
     sanitize.sanitizeFacultyForViewer(member, viewerRole);
   const sanitizeFacultyListForViewer = (
-    members: import("@mms/shared").Faculty[],
+    members: import("@mms/contracts").Faculty[],
     viewerRole: string,
   ) => sanitize.sanitizeFacultyListForViewer(members, viewerRole);
 

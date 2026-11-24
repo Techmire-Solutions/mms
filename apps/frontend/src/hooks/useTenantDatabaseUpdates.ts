@@ -2,7 +2,7 @@ import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { connectTenantDatabaseSocket } from "@/lib/tenantWebSocket";
-import { MODULE_ACCESS_INVALIDATION_KEYS, type BackgroundJobEventMessage } from "@mms/shared";
+import { MODULE_ACCESS_INVALIDATION_KEYS, type BackgroundJobEventMessage } from "@mms/contracts";
 import { MODULE_ACCESS_QUERY_KEY } from "@/lib/query/moduleAccessQuery";
 import {
   patchLocalBackgroundJobOnly,

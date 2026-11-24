@@ -3,7 +3,7 @@ import {
   formatQuestionSourcesCitation,
   getQuestionCategoryIds,
   type QuestionBankQuestion as Question,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";

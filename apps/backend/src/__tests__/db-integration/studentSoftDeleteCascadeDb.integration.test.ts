@@ -8,9 +8,9 @@ import {
   pingDatabase,
   closeDatabase,
   beginLongLivedTenantTransaction,
-} from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { workspaces, students, sessions, sessionClasses, enrollments } from "../../db/schema.js";
+} from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { workspaces, students, sessions, sessionClasses, enrollments } from "@mms/db/schema";
 import {
   cascadeSoftDeleteEnrollmentsForStudents,
   restoreCascadedEnrollmentsForStudents,

@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import { fxReferenceRates } from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
+import { fxReferenceRates } from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
 
 interface ReferenceRateSnapshot {
   provider: string;

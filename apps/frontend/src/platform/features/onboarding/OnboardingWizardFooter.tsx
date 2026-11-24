@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowLeft } from "lucide-react";
-import { Button, Alert } from "@shared/ui";
+import { Button, Alert } from "@mms/ui";
 import { ROUTES } from "@/lib/config/routes";
 import { tenantUrl } from "@/lib/config/tenantConfig";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

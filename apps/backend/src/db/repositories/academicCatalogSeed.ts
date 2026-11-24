@@ -1,5 +1,5 @@
-import { ACADEMIC_CATALOG_KINDS, DEFAULT_ACADEMIC_CATALOG_SEEDS, uuidv7 } from "@mms/shared";
-import { withTenant } from "../tenant-context.js";
+import { ACADEMIC_CATALOG_KINDS, DEFAULT_ACADEMIC_CATALOG_SEEDS, uuidv7 } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { ACADEMIC_CATALOG_TABLES } from "./academicCatalogRepository.js";
 
 /** Seeds system session categories, programs and subjects for a new workspace (idempotent). */

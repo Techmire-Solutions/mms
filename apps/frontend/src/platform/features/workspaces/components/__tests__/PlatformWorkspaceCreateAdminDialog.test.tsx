@@ -2,9 +2,9 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformWorkspaceCreateAdminDialog } from "@/platform/features/workspaces/components/PlatformWorkspaceCreateAdminDialog";
-import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     open,
     title,

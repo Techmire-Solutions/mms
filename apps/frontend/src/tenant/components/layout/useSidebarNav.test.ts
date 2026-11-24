@@ -4,7 +4,7 @@ import {
   evaluateModuleAccess,
   roleHasPermission,
   type Permission,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ROUTES } from "@/lib/config/routes";
 import { NAV_ITEMS, type NavItem } from "@/lib/config/navConfig";
 import { filterSidebarNavItems } from "@/lib/config/navAccess";

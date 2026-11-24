@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { genderBadgeClass, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 

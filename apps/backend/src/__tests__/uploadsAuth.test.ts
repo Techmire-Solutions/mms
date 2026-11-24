@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import {
   isContactAttachmentUploadPath,
   isCrossTenantRootUpload,

@@ -11,7 +11,7 @@ import { type VisualizerConfig } from "@/lib/reports/reportMetadata";
 import { useGenericSavedReportsSource } from "@/hooks/useSavedReportsSource";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { GENERIC_SAVED_REPORT_CATEGORIES, type GenericSavedReportCategory } from "@mms/shared";
+import { GENERIC_SAVED_REPORT_CATEGORIES, type GenericSavedReportCategory } from "@mms/contracts";
 
 export type ModuleReportCategory =
   | "students"

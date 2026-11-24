@@ -2,7 +2,7 @@ import { mutationOptions, useMutation, useQueryClient } from "@tanstack/react-qu
 import { apiContract } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import type { Session } from "@/lib/data/sessionsData";
-import type { SessionsBulkStatusBody } from "@mms/shared";
+import type { SessionsBulkStatusBody } from "@mms/contracts";
 import { SESSION_DETAIL_QUERY_KEY } from "@/lib/query/sessionQueryKeys";
 import { invalidateSessionDependents } from "@/tenant/features/sessions/hooks/invalidateSessionDependents";
 

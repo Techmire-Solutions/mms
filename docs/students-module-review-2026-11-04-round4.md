@@ -8,7 +8,7 @@ surfaces those commits changed. Line numbers are from the tree as reviewed; ever
 **Scope:** `apps/backend/src/routes/tenant/students.ts` + `routes/tenant/students/**`,
 `apps/backend/src/students/**` (use-cases, repository port/adapter, import), `db/repositories/student*.ts`,
 `db/schema/students.ts` + `studentSetupTables.ts`, `services/student{Validation,Export}Service.ts`,
-migrations `0162`–`0165` with the RLS/trigger DDL they rely on, `packages/shared/src/students/**` +
+migrations `0162`–`0165` with the RLS/trigger DDL they rely on, `packages/contracts/src/students/**` +
 `students.dto.ts` + `studentsContract`, and the students specs under `apps/backend/src/__tests__`.
 Contacts, enrollments, examinations, finance and faculty were inspected **only** where a students path calls them.
 Frontend was read only as a consumer of students contracts.
@@ -23,7 +23,7 @@ not re-reported as new), and an execution pass of the gate suite listed in §1. 
 - During the pass a **concurrent local process** began editing non-students files (dashboard, faculty, messaging,
   `moduleRouteActions.ts`). 31 paths are dirty as of this writing; **0 students-path changes**:
   `git status --porcelain -- apps/backend/src/students apps/backend/src/routes/tenant/students
-  apps/backend/src/db/repositories/student* apps/backend/src/db/schema/students.ts packages/shared/src/students`
+  apps/backend/src/db/repositories/student* packages/db/src/schema/students.ts packages/contracts/src/students`
   returned empty. The one dirty shared file that the students gate uses (`lib/moduleRouteActions.ts`) has a
   dashboard-comment-only diff; the students rules (`:23-43`) are unchanged.
 - Consequence: all students citations below are valid for the reviewed tree; gate numbers in §1 are from the clean

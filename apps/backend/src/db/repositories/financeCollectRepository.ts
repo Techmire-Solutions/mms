@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type CreditNote, type Invoice } from "@mms/shared";
-import { financeCreditNotes, financeInvoices } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type CreditNote, type Invoice } from "@mms/contracts";
+import { financeCreditNotes, financeInvoices } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { invoiceRowToRecord } from "./financeInvoicesRepository.js";
 
 const OPEN_STATUSES = ["pending", "overdue", "partial"] as const;
@@ -134,7 +134,7 @@ export async function applyLateFeeAmounts(
  *
  * The 24 h guard is part of the UPDATE, so two concurrent reminder runs (or a
  * retried job) cannot both decide to notify the same invoice: the loser matches
- * zero rows and must not send. Mirrors `wasRemindedRecently` in `@mms/shared`.
+ * zero rows and must not send. Mirrors `wasRemindedRecently` in `@mms/contracts`.
  */
 export async function claimInvoicesForReminder(
   tenant: string,

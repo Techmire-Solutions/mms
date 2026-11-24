@@ -1,5 +1,5 @@
-import type { AuditActionType, CreditNote, Invoice, Payment } from "@mms/shared";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import type { AuditActionType, CreditNote, Invoice, Payment } from "@mms/contracts";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /** Minimised invoice state for the audit chain — ids, status and amounts only. */
 export interface InvoiceAuditState {

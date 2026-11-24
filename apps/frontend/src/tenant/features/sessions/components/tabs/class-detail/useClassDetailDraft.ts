@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import type { FacultyMember } from "@mms/shared";
+import type { FacultyMember } from "@mms/contracts";
 import type { Class } from "@/lib/data/sessionsData";
 import { EMPTY_CLASS } from "./classDetailDraftDefaults";
 import { useClassDetailAcademicDraft } from "./useClassDetailAcademicDraft";

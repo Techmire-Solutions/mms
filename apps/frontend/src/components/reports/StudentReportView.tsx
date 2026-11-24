@@ -1,6 +1,6 @@
 import React from "react";
 import { History, Users } from "lucide-react";
-import { ENROLLMENTS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST, toTitleCase } from "@mms/shared";
+import { ENROLLMENTS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST, toTitleCase } from "@mms/contracts";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { ReportDataGridContainer } from "./ReportDataGridContainer";
 import { ErrorState } from "@/components/app/ErrorState";

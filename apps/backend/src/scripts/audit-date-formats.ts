@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import { isValidIsoDate } from "@mms/shared";
+import { isValidIsoDate } from "@mms/contracts";
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { activeDb, closeDatabase, initializeDatabaseConnection } from "../db/dbConnection.js";
+import { activeDb, closeDatabase, initializeDatabaseConnection } from "@mms/db/client";
 import { logger } from "../lib/logger.js";
 
 loadBackendEnv();

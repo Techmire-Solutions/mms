@@ -1,5 +1,5 @@
 import { sessionRolloverRepository } from "../sessions/repository/sessionRolloverRepositoryAdapter.js";
-import { recordModernAuditEvent } from "./auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /**
  * Terminal reconciliation for a rollover run whose background job exhausted its retries.

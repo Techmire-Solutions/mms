@@ -1,12 +1,23 @@
+vi.mock("@mms/fe-core/auth/AuthContext", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/fe-core/auth/AuthContext")>()),
+  useAuth: () => ({ user: { id: "u-1" }, isAuthenticated: true, token: "test-token" }),
+}));
+
+vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
+  VOUCHER_NUMBERING_QUERY_KEY: ["accounting", "voucher-numbering"],
+  useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
+  useSaveVoucherNumbering: () => ({ mutateAsync: async () => undefined, isPending: false }),
+}));
+
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
-import { journalEntryRecordSchema, type JournalEntry } from "@mms/shared";
+import { journalEntryRecordSchema, type JournalEntry } from "@mms/contracts";
 import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import { SimpleTransactionWizard } from "./SimpleTransactionWizard";
-import { StepReview } from "./SimpleTransactionStepReview";
-import { TRANSACTION_GROUPS } from "../lib/simpleTransactionWizardTypes";
-import type { Account } from "@/lib/data/accountingData";
+import { StepReview } from "@mms/mod-accounting/frontend/tenant";
+import { TRANSACTION_GROUPS } from "@mms/mod-accounting/frontend/tenant";
+import type { Account } from "@mms/mod-accounting/frontend/tenant";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -14,7 +25,7 @@ declare global {
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const journalTemplatesMock = vi.hoisted(() => ({
-  templates: [] as import("@mms/shared").JournalTemplate[],
+  templates: [] as import("@mms/contracts").JournalTemplate[],
 }));
 
 vi.mock("@/tenant/features/accounting/hooks/useJournalTemplates", () => ({
@@ -33,13 +44,15 @@ vi.mock("@/tenant/features/accounting/hooks/useAccountingLedgerOps", () => ({
 const ledgerMock = vi.hoisted(() => ({
   data: undefined as { closingBalance: number } | undefined,
 }));
-vi.mock("@/tenant/features/accounting/hooks/useAccountingQueries", () => ({
+vi.mock("@/tenant/features/accounting/hooks/useAccountingQueries", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("@/tenant/features/accounting/hooks/useAccountingQueries")
+  >()),
   useAccountingLedger: () => ({ data: ledgerMock.data }),
 }));
 
-vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@/tenant/features/accounting/hooks/useVoucherNumbering")>();
+vi.mock("@mms/mod-accounting/frontend/tenant", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-accounting/frontend/tenant")>();
   return {
     ...actual,
     useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
@@ -69,11 +82,11 @@ vi.mock("framer-motion", () => {
   };
 });
 
-vi.mock("@/lib/contexts/AuthContext", () => ({
+vi.mock("@mms/fe-core/auth/AuthContext", () => ({
   useAuth: () => ({ user: { name: "Amina Accountant" } }),
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
@@ -84,7 +97,7 @@ vi.mock("@/hooks/useCurrency", () => ({
   }),
 }));
 
-vi.mock("@/components/app/DatePicker", () => ({
+vi.mock("@mms/fe-core/components/DatePicker", () => ({
   DatePicker: ({
     id,
     value,
@@ -103,7 +116,7 @@ vi.mock("@/components/app/DatePicker", () => ({
 }));
 
 /** The real modal keeps the wizard mounted between openings; only its portal unmounts. */
-vi.mock("@/components/app/FormModal", () => ({
+vi.mock("@mms/fe-core/components/FormModal", () => ({
   FormModal: ({
     open,
     headerExtra,
@@ -124,9 +137,9 @@ vi.mock("@/components/app/FormModal", () => ({
     ) : null,
 }));
 
-import { notify } from "@/lib/notify";
+import { notify } from "@mms/fe-core/notify";
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     error: vi.fn(),
     success: vi.fn(),

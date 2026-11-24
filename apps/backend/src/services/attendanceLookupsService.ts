@@ -8,7 +8,7 @@ import {
   type AttendanceLookupsMap,
   type AttendanceRecordStatus,
   type AttendanceStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { broadcastCollection } from "../lib/livePush.js";
 import {

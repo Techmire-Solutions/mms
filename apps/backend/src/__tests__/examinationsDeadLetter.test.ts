@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from "vitest";
  */
 
 const auditSpy = vi.hoisted(() => vi.fn(async () => undefined));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordAuditEventSafely: auditSpy,
   recordModernAuditEvent: vi.fn(async () => ({ sequence: 1 })),
 }));

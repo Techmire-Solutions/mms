@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import React from "react";
 import { PermissionMatrix } from "./PermissionMatrix";
-import { RBAC_MODULE_REGISTRY } from "@mms/shared";
+import { RBAC_MODULE_REGISTRY } from "@mms/contracts";
 
 // Mock useTranslation
 vi.mock("@/hooks/useTranslation", () => ({

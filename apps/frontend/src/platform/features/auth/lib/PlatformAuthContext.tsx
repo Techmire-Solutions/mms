@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import type { PlatformLoginResponse, PlatformUserProfile } from "@mms/shared";
-import { normalizePlatformAdminPermissions } from "@mms/shared";
+import type { PlatformLoginResponse, PlatformUserProfile } from "@mms/contracts";
+import { normalizePlatformAdminPermissions } from "@mms/contracts";
 import { apiFetch, apiJson } from "@/lib/apiClient";
 import { queryClientInstance } from "@/lib/queryClient";
 import { PLATFORM_AUTH_PATHS } from "@/lib/apiClientHelpers";

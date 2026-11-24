@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Message } from "@mms/shared";
+import type { Message } from "@mms/contracts";
 import { MessagingListDesktopTable } from "./MessagingListDesktopTable";
 import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
 

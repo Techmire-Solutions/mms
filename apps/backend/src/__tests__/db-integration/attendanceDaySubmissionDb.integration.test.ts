@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
 import {
   attendance,
   attendanceModulePreferences,
@@ -10,8 +10,8 @@ import {
   sessions,
   sessionClasses,
   sessionClassSections,
-} from "../../db/schema.js";
-import type { AttendanceRecord, User } from "@mms/shared";
+} from "@mms/db/schema";
+import type { AttendanceRecord, User } from "@mms/contracts";
 import { bulkSaveAttendanceRecords } from "../../db/repositories/attendanceRepository.js";
 import {
   reopenSubmittedAttendanceDay,

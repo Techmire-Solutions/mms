@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import type { WorkshopDetail } from "@mms/shared";
+import type { WorkshopDetail } from "@mms/contracts";
 import { Field } from "@/components/app/FormPrimitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

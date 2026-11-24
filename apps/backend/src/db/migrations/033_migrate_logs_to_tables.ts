@@ -4,7 +4,7 @@ import {
   WORKSPACES_COLLECTION,
   type Workspace,
   type ActivityLog,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import { replaceActivityLogsForWorkspace } from "../repositories/logsRepository.js";
 

@@ -4,7 +4,7 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,

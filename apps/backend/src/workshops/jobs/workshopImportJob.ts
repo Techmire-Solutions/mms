@@ -1,4 +1,4 @@
-import { workshopParticipantsImportSchema } from "@mms/shared";
+import { workshopParticipantsImportSchema } from "@mms/contracts";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { NotFoundError } from "../../lib/httpErrors.js";
 import { importParticipantChunk } from "../../db/repositories/workshopParticipantImportRepository.js";

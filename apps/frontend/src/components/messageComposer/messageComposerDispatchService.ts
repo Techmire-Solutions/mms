@@ -8,7 +8,7 @@ import {
   type MessageLogCreateDto,
   type MessageTemplate,
   type StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { openDeviceSmsComposer } from "@/lib/deviceSms";
 
 export type DispatchSpeed = "safe" | "normal" | "express";

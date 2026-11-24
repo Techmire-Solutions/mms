@@ -23,7 +23,7 @@ const mockWorkspaceDay = vi.hoisted(() => ({
   workspaceTodayIso: vi.fn(async () => "2026-11-11"),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("../db/repositories/financeCollectRepository.js", () => mockRepo);
@@ -68,9 +68,7 @@ describe("overdue sweep day resolution", () => {
 
   it("uses one day for both the transition and its alert", async () => {
     mockRepo.markOverdueInvoices.mockResolvedValue(2);
-    const audit = vi.mocked(
-      (await import("../services/auditTrailService.js")).recordModernAuditEvent,
-    );
+    const audit = vi.mocked((await import("@mms/be-core/audit")).recordModernAuditEvent);
 
     await runWithTenant("ws-1", () =>
       collectOverdueInvoices({ applyLateFee: false }, { today: "2026-11-11" }),

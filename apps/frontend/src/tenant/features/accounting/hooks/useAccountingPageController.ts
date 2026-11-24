@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useAccountingPageShortcuts } from "@/tenant/features/accounting/hooks/useAccountingPageShortcuts";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
@@ -9,7 +9,7 @@ import { useAccountingJournalColumnLayout } from "@/tenant/features/accounting/h
 import { useAccountingAccountColumnLayout } from "@/tenant/features/accounting/hooks/useAccountingAccountColumnLayout";
 import { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
 import { useAccountingNavigationController } from "@/tenant/features/accounting/hooks/useAccountingNavigation";
-import type { AccountingSubTabId } from "@/tenant/features/accounting/accountingPageSubTabs";
+import type { AccountingSubTabId } from "@mms/mod-accounting/frontend/tenant";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import {
   ACCOUNTING_MODULE_MANIFEST,
@@ -18,7 +18,7 @@ import {
   type Account,
   type JournalEntry,
   type FiscalYear,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAccountingFiscalYearsPaginated, useAllAccountingAccounts } from "./useAccountingApi";
 import { useAccountingEntriesPage } from "./accountingListFetch";
 import { useJournalEntriesListQueryState } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
@@ -27,7 +27,7 @@ import {
   ACCOUNTING_SUB_TAB_ICONS,
   ACCOUNTING_SUB_TAB_IDS,
   ACCOUNTING_SUB_TAB_KEYS,
-} from "@/tenant/features/accounting/accountingPageSubTabs";
+} from "@mms/mod-accounting/frontend/tenant";
 
 export function useAccountingPageController() {
   const { t } = useTranslation();

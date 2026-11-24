@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { getDb } from "../dbClient.js";
+import { getDb } from "@mms/db/client";
 
 export async function runMigration082(): Promise<void> {
   const db = getDb();

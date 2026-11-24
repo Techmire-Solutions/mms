@@ -2,7 +2,7 @@ import type { EnrollmentsRepository } from "../repository/enrollmentsRepository.
 import { enrollmentsRepository } from "../repository/enrollmentsRepositoryAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { recordEnrollmentAudit } from "./enrollmentAudit.js";
 import { offerFreedSeatPostCommit } from "./admissionsWaitlistUseCases.js";
 import type { EnrollmentsUseCasesDependencies } from "./enrollmentAdmissionRules.js";
@@ -20,7 +20,7 @@ import {
   type EnrollmentsReportAggregates,
   type EnrollmentsReportComparisonQuery,
   type EnrollmentsWidgetQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * Enrollments use-cases — composition root binding an {@link EnrollmentsRepository}
@@ -152,7 +152,7 @@ export function createEnrollmentsUseCases(
     loadEnrollmentsWidgetAggregates: async (
       queries: EnrollmentsWidgetQuery[],
       _request?: unknown,
-    ): Promise<Record<string, import("@mms/shared").EnrollmentsWidgetAggregateResult>> => {
+    ): Promise<Record<string, import("@mms/contracts").EnrollmentsWidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateEnrollmentsWidgetQueries(tenant, queries);

@@ -1,12 +1,12 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/database.js";
-import { getDb } from "../db/dbClient.js";
-import { platformUsers } from "../db/schema.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { getDb } from "@mms/db/client";
+import { platformUsers } from "@mms/db/schema";
 
 loadBackendEnv();
 
 async function main() {
-  await initDb();
+  await initializeDatabase();
   const db = getDb();
   await db.delete(platformUsers);
   console.log("Successfully cleared platform users for E2E testing.");

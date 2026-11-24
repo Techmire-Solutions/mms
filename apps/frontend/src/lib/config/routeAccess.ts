@@ -1,4 +1,4 @@
-import type { AccessControlledModuleId, ModuleAccessDecision, ModuleAction } from "@mms/shared";
+import type { AccessControlledModuleId, ModuleAccessDecision, ModuleAction } from "@mms/contracts";
 import { isNavPathActive } from "@/lib/config/routes";
 import { TENANT_APP_ROUTE_ACCESS, type TenantRouteAccess } from "@/lib/routing/moduleRegistry";
 

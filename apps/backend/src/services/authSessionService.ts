@@ -9,7 +9,7 @@ import {
   redisKeys,
   type RedisBatchOp,
 } from "../lib/redis.js";
-import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS } from "@mms/shared";
+import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS } from "@mms/contracts";
 
 const REVOKED_TOKEN_PREFIX = "session:revoked:";
 const USER_REVOKED_AT_PREFIX = "user:revoked_at:";

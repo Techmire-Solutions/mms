@@ -1,5 +1,5 @@
 import { createModuleWorkDrillDown } from "@/lib/query/createModuleWorkDrillDown";
-import type { FacultyQuickFilter } from "@mms/shared";
+import type { FacultyQuickFilter } from "@mms/contracts";
 
 export const FACULTY_WORK_DRILLDOWN_EVENT = "faculty-work-drilldown";
 

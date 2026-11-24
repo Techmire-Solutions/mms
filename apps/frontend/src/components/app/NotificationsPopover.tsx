@@ -2,4 +2,4 @@ export {
   NotificationsPopover,
   type NotificationItem,
   type NotificationsPopoverProps,
-} from "@shared/ui";
+} from "@mms/ui";

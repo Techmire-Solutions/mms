@@ -5,7 +5,7 @@
 
 import React from "react";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
-import { formatDate, type TaskRecord, type TaskStatus } from "@mms/shared";
+import { formatDate, type TaskRecord, type TaskStatus } from "@mms/contracts";
 import { DataTableRowActions } from "@/components/common/data-table";
 import { DirectoryCardMetaTile } from "@/components/app/DirectoryCardMetaTile";
 import { DirectoryCardMetaGrid } from "@/components/app/DirectoryCardMetaGrid";

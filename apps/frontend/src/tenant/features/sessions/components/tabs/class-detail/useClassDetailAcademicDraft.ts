@@ -4,7 +4,7 @@ import {
   activeAcademicCatalogItems,
   formatFacultyDisplayName,
   type FacultyMember,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAcademicCatalogItems } from "@/hooks/useAcademicCatalog";
 import type {
   Class,

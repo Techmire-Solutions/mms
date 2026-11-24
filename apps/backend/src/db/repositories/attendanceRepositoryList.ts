@@ -3,9 +3,9 @@ import {
   type AttendanceListPageResult,
   type AttendanceListQuery,
   type AttendanceRecord,
-} from "@mms/shared";
-import { attendance, sessionClasses, sessions } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { attendance, sessionClasses, sessions } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import {
   attendanceRowToRecord as rowToRecord,
   type AttendanceRow,

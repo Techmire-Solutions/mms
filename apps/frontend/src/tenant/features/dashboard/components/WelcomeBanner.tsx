@@ -1,6 +1,6 @@
 import React from "react";
 import { m } from "framer-motion";
-import { formatDayName, formatLongDate, formatHijriDate } from "@mms/shared";
+import { formatDayName, formatLongDate, formatHijriDate } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";

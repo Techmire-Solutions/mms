@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/shared";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/contracts";
 import { studentScopeExistsSql } from "../db/repositories/studentScopeSql.js";
 
 /** Render a Drizzle SQL object into a comparable string (mirrors the scoping spec helper). */

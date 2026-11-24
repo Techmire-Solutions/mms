@@ -6,7 +6,7 @@ import { ContactAddressEntryCard } from "./ContactAddressEntryCard";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveAddressLabel } from "@/lib/contacts/contactI18n";
-import type { Address } from "@mms/shared";
+import type { Address } from "@mms/contracts";
 
 export interface ContactAddressesTabProps extends ContactSubListTabBaseProps {
   addressLabels: string[];

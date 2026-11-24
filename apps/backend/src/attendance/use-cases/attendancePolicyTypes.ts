@@ -1,5 +1,5 @@
 import { HttpDomainError } from "../../lib/httpErrors.js";
-import type { AttendancePolicyError } from "@mms/shared";
+import type { AttendancePolicyError } from "@mms/contracts";
 import type { AttendanceCalendarRepository } from "../repository/attendanceCalendarRepository.js";
 
 /**

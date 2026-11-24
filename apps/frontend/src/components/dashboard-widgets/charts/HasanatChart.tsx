@@ -3,7 +3,7 @@ import { WidgetCard } from "@/components/app/WidgetCard";
 import { WidgetChartHeader } from "@/components/app/WidgetChartHeader";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { LegendChip } from "@/components/app/LegendChip";
-import { formatNumber, formatPercent } from "@mms/shared";
+import { formatNumber, formatPercent } from "@mms/contracts";
 import { ChartPrefsControlGroup } from "@/components/dashboard-widgets/charts/ChartPrefsControlGroup";
 import { HasanatChartPlot } from "@/components/dashboard-widgets/charts/HasanatChartPlot";
 import { ChartEmptyState } from "@/components/dashboard-widgets/charts/ChartEmptyState";
@@ -12,7 +12,7 @@ import {
   DASHBOARD_HASANAT_CHART_TYPE_OPTIONS,
   HASANAT_CHART_COLOR_OPTIONS,
   type HasanatChartType,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function HasanatChart({ isEditMode = false }: { isEditMode?: boolean }): React.JSX.Element {
   const { t, chartType, colorTheme, updatePref, hasanatData, total, activeColors } =

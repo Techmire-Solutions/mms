@@ -6,7 +6,7 @@ import {
   throwIfSyncAborted,
   withSyncTimeout,
 } from "../lib/syncLimits.js";
-import { BACKUP_UPLOAD_MAX_BYTES } from "@mms/shared";
+import { BACKUP_UPLOAD_MAX_BYTES } from "@mms/contracts";
 
 describe("syncLimits", () => {
   afterEach(() => {

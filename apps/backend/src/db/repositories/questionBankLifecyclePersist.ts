@@ -1,8 +1,8 @@
 import { and, eq, sql } from "drizzle-orm";
-import type { QuestionBankQuestion, QuestionStatus } from "@mms/shared";
-import { questions } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
-import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
+import type { QuestionBankQuestion, QuestionStatus } from "@mms/contracts";
+import { questions } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
+import { ConflictError, NotFoundError } from "@mms/be-core/http/errors";
 import { assertQuestionTransition } from "../../questionBank/domain/questionWriteGuards.js";
 import {
   hydrateQuestionRecords,

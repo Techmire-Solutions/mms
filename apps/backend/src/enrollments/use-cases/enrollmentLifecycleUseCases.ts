@@ -6,7 +6,7 @@ import {
   type EnrollmentReadmitBody,
   type EnrollmentSuspendBody,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { enrollmentOperationsRepository as repo } from "../repository/enrollmentOperationsRepositoryAdapter.js";
 import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
 import { recordApprovedLeave } from "../../attendance/use-cases/attendanceLeaveUseCases.js";
@@ -19,7 +19,7 @@ import {
   loadOperable,
   recordOperationAudit,
 } from "./enrollmentOperationsSupport.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}/;
 

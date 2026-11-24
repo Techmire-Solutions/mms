@@ -1,6 +1,6 @@
 # Finance shared contracts & TypeScript definitions — audit and hardening
 
-Scope: every Finance/Accounting DTO in `packages/shared` (invoice/payment payloads, journal voucher lines, exchange-rate objects, report models), its Zod schemas, its consumers in `apps/backend` and `apps/frontend`, and the database enums behind them.
+Scope: every Finance/Accounting DTO in `packages/contracts` (invoice/payment payloads, journal voucher lines, exchange-rate objects, report models), its Zod schemas, its consumers in `apps/backend` and `apps/frontend`, and the database enums behind them.
 
 Method: inventoried the shared finance modules, traced each DTO to its frontend/backend consumers, compared the shared enums against the PostgreSQL check constraints (read live from the dev database), scanned the money paths for `parseFloat`/`Number()`/`any`, and inspected the packaging/version resolution.
 
@@ -13,7 +13,7 @@ Status: **Fixed** items ship with this change; **Verified** items were checked w
 | Guarantee | Evidence |
 |---|---|
 | **Zod is the SSOT; TypeBox is not used** | The repo has no TypeBox dependency. Shared finance modules are pure Zod + inferred types exported through the `@mms/shared` barrel; backend contracts (`finance.contract*`, `accounting.contract`) and frontend hooks import them. |
-| **Core DTOs already centralized** | `Invoice`, `Payment`, `InvoiceLine`, `JournalEntry`/`JournalLine`, `FiscalYear`, `ExchangeRateRecord`/`ExchangeRateLookupResult`, `AccountingReportAggregates`, FX report rows and the new ledger/aging schemas live only in `packages/shared`. `finance.dto.ts` composes the insert schemas instead of re-declaring them. |
+| **Core DTOs already centralized** | `Invoice`, `Payment`, `InvoiceLine`, `JournalEntry`/`JournalLine`, `FiscalYear`, `ExchangeRateRecord`/`ExchangeRateLookupResult`, `AccountingReportAggregates`, FX report rows and the new ledger/aging schemas live only in `packages/contracts`. `finance.dto.ts` composes the insert schemas instead of re-declaring them. |
 | **Stored statuses match shared sets** | `accounting_entries.status` = `draft|posted`; `finance_invoices.status` = `paid|pending|overdue|partial|cancelled`; `accounting_posting_periods.status` = `open|closed`; `accounting_fiscal_years.status` = `active|closed|upcoming`. Migration 0252 and the new parity test pin this. |
 | **Money columns are exact in Number** | Money columns that travel as numbers are `numeric(12,2)` (invoices/payments) / `numeric(14,2)` (journal lines): ≤ 10¹⁴ cents, well inside 2⁵³. The 4-dp transaction amounts and 10-dp rates are decimal strings. A DB test now asserts this bound so a future widening fails. |
 | **No version drift** | `zod` resolves to a single 4.6.7 (catalog) and TypeScript to a single `~7.0.2` across all four workspaces; both apps link `@mms/shared` as `workspace:*`. A new ratchet enforces all three. |
@@ -56,22 +56,22 @@ Status: **Fixed** items ship with this change; **Verified** items were checked w
 
 | Area | Change |
 |---|---|
-| `packages/shared/src/finance/accountingEnums.ts` (new) | account types, normal balances, journal lifecycle/status, fiscal-year/posting-period states, rate sources, payment methods + normalization, journal tags, reversal rule, `accountTypeFromDb` |
-| `packages/shared/src/finance/accountingLedgerInvariants.ts` | safe-cents bounds, `positiveMoneyAmountSchema`, `parseMoneyAmountNumber`/`tryParseMoneyAmountNumber`/`roundMoneyAmount` |
-| `packages/shared/src/money/fxConvert.ts` | `exchangeRateStringsEqual` (exact decimal compare) |
-| `packages/shared/src/finance/moneyFormatUtils.ts` | BigInt-based `formatAmountInWords` |
-| `packages/shared/src/finance/financeCollect.ts` | BigInt late-fee math |
+| `packages/contracts/src/finance/accountingEnums.ts` (new) | account types, normal balances, journal lifecycle/status, fiscal-year/posting-period states, rate sources, payment methods + normalization, journal tags, reversal rule, `accountTypeFromDb` |
+| `packages/contracts/src/finance/accountingLedgerInvariants.ts` | safe-cents bounds, `positiveMoneyAmountSchema`, `parseMoneyAmountNumber`/`tryParseMoneyAmountNumber`/`roundMoneyAmount` |
+| `packages/contracts/src/money/fxConvert.ts` | `exchangeRateStringsEqual` (exact decimal compare) |
+| `packages/contracts/src/finance/moneyFormatUtils.ts` | BigInt-based `formatAmountInWords` |
+| `packages/contracts/src/finance/financeCollect.ts` | BigInt late-fee math |
 | shared schemas | account/journal/fiscal-year/period/rate-source/payment-method enums wired; invoice/payment/line/report/opening balance money schemas tightened; trial-balance row enum + `subtype` |
-| `packages/shared/src/finance/accountingSpecializedEntries.ts`, `financeSetupConfigTypes.ts`, `financeModuleSettings.ts` | fee-entry → canonical method map; payment-method normalization; typed settings |
+| `packages/contracts/src/finance/accountingSpecializedEntries.ts`, `financeSetupConfigTypes.ts`, `financeModuleSettings.ts` | fee-entry → canonical method map; payment-method normalization; typed settings |
 | `apps/backend` report repository | account type narrowed via `accountTypeFromDb`; normal balance from shared; all aggregates summed in integer cents |
 | `apps/backend` FX/payment/collect/specialized-entry code | source coercion, exact rate comparison, percent parsing, exact amount parsing |
-| `apps/backend/src/db/migrations_drizzle/0252_finance_enum_checks.sql` | account-type + fiscal-year-status checks, journal-status validation |
+| `packages/db/migrations_drizzle/0252_finance_enum_checks.sql` | account-type + fiscal-year-status checks, journal-status validation |
 | `apps/frontend` report/receipt/payment code | shared trial-balance row (no duplicate/casts), shared normal balance, shared tags + reversal rule, shared payment methods/labels, exact money parsing |
 | `scripts/check-money-safety.mjs`, `scripts/check-finance-contract-parity.mjs` + package/CI wiring | backstop ratchets |
 
 ## 5. Evidence
 
-- `packages/shared/src/finance/accountingEnums.test.ts` (8): normal-balance coverage, `accountTypeFromDb` refusal, reversal rule, payment normalization/coercion, rate sources, backend tag inclusion.
+- `packages/contracts/src/finance/accountingEnums.test.ts` (8): normal-balance coverage, `accountTypeFromDb` refusal, reversal rule, payment normalization/coercion, rate sources, backend tag inclusion.
 - `accountingLedgerInvariants.test.ts` (+4): strict parse, null-returning UI parse, half-up rounding, safe-cents rejection.
 - `moneyFormatUtils.test.ts` (+2): 4-dp half-up, cents preserved beyond float precision.
 - `fxConvert.test.ts` (+2): exact rate equality including tenth-decimal changes.

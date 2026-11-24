@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceAlertsRulesSection } from "./AttendanceAlertsRulesSection";
-import type { AttendanceSettings } from "@mms/shared";
+import type { AttendanceSettings } from "@mms/contracts";
 
 describe("AttendanceAlertsRulesSection Component", () => {
   it("renders alerts section and its save button", () => {

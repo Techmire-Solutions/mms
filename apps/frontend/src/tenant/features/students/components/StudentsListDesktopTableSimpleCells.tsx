@@ -1,4 +1,4 @@
-import { calcAge, formatDate, type Student } from "@mms/shared";
+import { calcAge, formatDate, type Student } from "@mms/contracts";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { StudentsListContentTableProps } from "@/tenant/features/students/lib/studentsListTypes";

@@ -15,7 +15,9 @@ const mocks = vi.hoisted(() => ({
   sanitizeFacultyListForViewer: vi.fn(),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (...args: unknown[]) => mocks.withTenant(...args),
 }));
 

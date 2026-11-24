@@ -14,7 +14,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { ROUTES } from "@/lib/config/routes";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type { PlatformPermissionsState } from "@/platform/hooks/usePlatformPermissions";
 
 /** SaaS console nav sections — Overview → Workspaces → Access → Operations → Account. */

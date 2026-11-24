@@ -1,5 +1,5 @@
 import * as React from "react";
-import { combineIsoDateAndTime, splitIsoDateTime } from "@mms/shared";
+import { combineIsoDateAndTime, splitIsoDateTime } from "@mms/contracts";
 import { DatePicker } from "@/components/app/DatePicker";
 import { TimePicker } from "@/components/app/TimePicker";
 import { useTranslation } from "@/hooks/useTranslation";

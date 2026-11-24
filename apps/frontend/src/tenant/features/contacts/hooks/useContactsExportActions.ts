@@ -6,7 +6,7 @@ import {
   type ContactsQuickFilter,
   type AppTranslationKey,
   type FieldConfig,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { startServerContactsCsvExport } from "@/lib/backgroundJobs/startServerContactsCsvExport";

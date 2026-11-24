@@ -175,7 +175,7 @@ describe("obligations collections contract REST", () => {
   it("validates the response body against the declared collection schema", async () => {
     // With `responseValidation: true` a handler whose shape drifts from the contract must fail
     // loudly. The other list tests mock `[]`, which would hide exactly that drift.
-    const { obligationCollectionRecordSchema } = await import("@mms/shared");
+    const { obligationCollectionRecordSchema } = await import("@mms/contracts");
     const record = obligationCollectionRecordSchema.parse({
       id: "oc-1",
       receipt_no: "REC-1",

@@ -1,9 +1,9 @@
 import { vi } from "vitest";
-import { getContactDuplicateCandidateKeys, type Contact } from "@mms/shared";
+import { getContactDuplicateCandidateKeys, type Contact } from "@mms/contracts";
 import type {
   ContactDuplicateCandidateKeys,
   ContactsRepository,
-} from "../../contacts/repository/contactsRepository.js";
+} from "@mms/mod-contacts/backend/repository";
 
 /** Typed contact builder for duplicate-scan specs. */
 export function contact(id: string, name: string, phone?: string, email?: string): Contact {

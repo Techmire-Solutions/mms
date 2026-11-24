@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { ENROLLMENT_OPERABLE_STATUSES } from "@mms/shared";
-import { enrollments } from "../schema.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ENROLLMENT_OPERABLE_STATUSES } from "@mms/contracts";
+import { enrollments } from "@mms/db/schema";
+import { ConflictError } from "@mms/be-core/http/errors";
 
 /**
  * Status predicates for the enrollment operation repositories.

@@ -4,7 +4,7 @@ import {
   BRANDING_HARMONY_SCHEMES,
   type AppTranslationKey,
   type BrandingHarmonyScheme,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import {
   Select,

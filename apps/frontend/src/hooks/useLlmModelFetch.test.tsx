@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { LlmConfig, LlmProviderType } from "@mms/shared";
+import type { LlmConfig, LlmProviderType } from "@mms/contracts";
 import { useLlmModelFetch, type LlmModelFetcher } from "./useLlmModelFetch";
 
 const { modelsMock } = vi.hoisted(() => ({ modelsMock: vi.fn() }));

@@ -1,4 +1,4 @@
-import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { ATTENDANCE_MODULE_MANIFEST } from "@mms/contracts";
 import type { AttendanceFilterState } from "@/tenant/features/attendance/components/AttendanceFilters";
 
 /**

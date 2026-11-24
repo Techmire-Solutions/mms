@@ -1,12 +1,12 @@
 import { randomBytes } from "node:crypto";
 import type { JWT } from "@fastify/jwt";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import {
   REFRESH_TOKEN_TTL_SECONDS,
   resolveNotificationChannel,
   TENANT_OTP_MAX_ATTEMPTS,
   TWO_FACTOR_CHALLENGE_TTL_MS,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   authArtifactUserScopeKey,
   authArtifactWorkspaceScopeKey,
@@ -27,7 +27,7 @@ import { getPublicUserById } from "./userService.js";
 import { loadGlobalSettings } from "../globalSettingsService.js";
 import { sendTenantEmail } from "../email/emailService.js";
 import { sendTenantSms } from "../sms/smsService.js";
-import { getContactById } from "../../contacts/use-cases/contactLoadUseCases.js";
+import { getContactById } from "@mms/mod-contacts/backend/use-cases";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { logger } from "../../lib/logger.js";
 import { isDevCredentialLoggingEnabled } from "../../lib/devLogging.js";

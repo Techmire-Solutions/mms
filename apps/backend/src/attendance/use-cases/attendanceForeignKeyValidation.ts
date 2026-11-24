@@ -1,4 +1,4 @@
-import { dedupeTrimmedIds, type AttendanceRecord } from "@mms/shared";
+import { dedupeTrimmedIds, type AttendanceRecord } from "@mms/contracts";
 import type { AttendancePolicyStore } from "./attendancePolicyGuard.js";
 
 /**

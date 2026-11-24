@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import { SEAT_RELEASED_ENROLLMENT_STATUSES, type Session } from "@mms/shared";
-import { withTenantRead } from "../../db/tenant-context.js";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES, type Session } from "@mms/contracts";
+import { withTenantRead } from "@mms/db/context";
 import { findSessionById } from "../../db/repositories/sessionRepositoryHydrate.js";
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
 

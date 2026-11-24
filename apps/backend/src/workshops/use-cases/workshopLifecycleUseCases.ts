@@ -6,9 +6,9 @@ import {
   parseWorkshopStatus,
   type WorkshopEvent,
   type WorkshopTransitionBody,
-} from "@mms/shared";
-import { withTenant } from "../../db/tenant-context.js";
-import { runAfterCommit } from "../../db/commitScope.js";
+} from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
+import { runAfterCommit } from "@mms/db/client";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { isIsoUtcTimestamp } from "../../lib/occHeaders.js";
 import {
@@ -17,8 +17,8 @@ import {
   NotFoundError,
   ValidationError,
 } from "../../lib/httpErrors.js";
-import { emitOutboxEvents } from "../../services/outboxEventService.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { emitOutboxEvents } from "@mms/be-core/data/outbox";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { assertWorkshopTransitionAllowed } from "../domain/workshopWriteGuards.js";
 import { buildCompletionRows } from "../domain/workshopCompletionRules.js";
 import {

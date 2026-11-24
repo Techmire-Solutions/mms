@@ -5,7 +5,7 @@ import {
   type TaskInsert,
   type TaskRecord,
   type TaskStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AttendanceRecord } from "@mms/shared";
+import type { AttendanceRecord } from "@mms/contracts";
 import {
   createAttendanceForeignKeyValidators,
   type AttendanceReferenceLookups,

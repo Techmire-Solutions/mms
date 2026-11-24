@@ -6,7 +6,7 @@ import {
   type JournalEntry,
   FINANCE_MODULE_MANIFEST,
   ACCOUNTING_MODULE_MANIFEST,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useFinanceInvoicesPaginated } from "@/tenant/hooks/collections/finance";
 import {
   useAccountingEntriesPaginated,

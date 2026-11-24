@@ -4,8 +4,8 @@ import type {
   Distribution,
   HasanatCommandMetricsSnapshot,
   HasanatReportComparisonQuery,
-} from "@mms/shared";
-import { HASANAT_MODULE_MANIFEST, normalizeHasanatReportComparisonQuery } from "@mms/shared";
+} from "@mms/contracts";
+import { HASANAT_MODULE_MANIFEST, normalizeHasanatReportComparisonQuery } from "@mms/contracts";
 import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";

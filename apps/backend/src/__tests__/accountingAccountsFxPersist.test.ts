@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { type Account } from "@mms/shared";
+import { type Account } from "@mms/contracts";
 import {
   accountFxInsertValues,
   accountFxUpdateSet,
   applyExplicitAccountFxFlags,
 } from "../db/repositories/accountingAccountsFxPersist.js";
-import type { TenantTransaction } from "../db/tenant-context.js";
+import type { TenantTransaction } from "@mms/db/context";
 
 describe("accountingAccountsFxPersist", () => {
   describe("accountFxInsertValues", () => {

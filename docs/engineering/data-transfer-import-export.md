@@ -2,7 +2,7 @@
 
 **Owner:** Platform Architecture  
 **Status:** Active / Standard  
-**Package:** `@mms/shared` (`packages/shared/src/dataTransfer/`)  
+**Package:** `@mms/shared` (`packages/contracts/src/dataTransfer/`)  
 **Scope:** All Form-Containing Modules in MMS Monorepo  
 
 ---
@@ -45,8 +45,8 @@ Internal system metadata must never be exposed to users in CSV exports, nor acce
 ```
 
 **Enforcement Points:**
-- [`createModuleTransferSchema`](../../packages/shared/src/dataTransfer/core/moduleTransferSchema.ts): Automatically strips any fields whose key or label matches metadata keys.
-- [`buildExportGrid`](../../packages/shared/src/dataTransfer/export/buildExportGrid.ts#L33-L47) & [`yieldExportGridChunks`](../../packages/shared/src/dataTransfer/export/buildExportGrid.ts#L61-L77): Filter columns through `filterNonMetadataColumns()` at the root grid generation layer.
+- [`createModuleTransferSchema`](../../packages/contracts/src/dataTransfer/core/moduleTransferSchema.ts): Automatically strips any fields whose key or label matches metadata keys.
+- [`buildExportGrid`](../../packages/contracts/src/dataTransfer/export/buildExportGrid.ts#L33-L47) & [`yieldExportGridChunks`](../../packages/contracts/src/dataTransfer/export/buildExportGrid.ts#L61-L77): Filter columns through `filterNonMetadataColumns()` at the root grid generation layer.
 - [`runGridCsvExportJob`](../../apps/frontend/src/lib/backgroundJobs/runGridCsvExportJob.ts) & [`useModuleServerCsvExportActions`](../../apps/frontend/src/lib/backgroundJobs/useModuleServerCsvExportActions.ts): Sanitize columns before triggering downloads or server export jobs.
 - [`registerModuleCsvExportRoutes`](../../apps/backend/src/lib/registerModuleCsvExportRoutes.ts): Sanitizes incoming export columns on Fastify endpoints.
 
@@ -101,7 +101,7 @@ Each module declares a `TransferFieldDefinition<TEntity>` array defining:
 
 The **Faculty** module demonstrates full integration of this architecture for both primary entities and sub-catalogs.
 
-### 4.1 Schema Definitions ([`facultyTransferSchema.ts`](../../packages/shared/src/dataTransfer/schemas/facultyTransferSchema.ts))
+### 4.1 Schema Definitions ([`facultyTransferSchema.ts`](../../packages/contracts/src/dataTransfer/schemas/facultyTransferSchema.ts))
 - **`facultyTransferSchema`**: Full field whitelist for faculty members (name, employee ID, department, designation, specialization, phone, email, notes).
 - **`facultyDesignationTransferSchema`**: Consolidated SSOT schema for department designations.
 
@@ -159,7 +159,7 @@ export function FacultyCsvImportDialog({
 
 ## 5. Monorepo Coverage Catalog
 
-All 15 form-containing modules have implemented, registered transfer schemas in [`packages/shared/src/dataTransfer/schemas/`](../../packages/shared/src/dataTransfer/schemas):
+All 15 form-containing modules have implemented, registered transfer schemas in [`packages/contracts/src/dataTransfer/schemas/`](../../packages/contracts/src/dataTransfer/schemas):
 
 | Module | Title | Priority | SSOT Schema | Status |
 |:---|:---|:---:|:---|:---:|

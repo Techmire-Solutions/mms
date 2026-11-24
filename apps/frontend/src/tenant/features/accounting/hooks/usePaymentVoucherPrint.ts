@@ -1,23 +1,20 @@
 import { useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { formatAmountInWords, formatDate, getPageDimensions } from "@mms/shared";
-import { useTranslation } from "@/hooks/useTranslation";
+import { formatAmountInWords, formatDate, getPageDimensions } from "@mms/contracts";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
-import { useAuth } from "@/lib/contexts/AuthContext";
-import { notify } from "@/lib/notify";
+import { useAuth } from "@mms/fe-core/auth/AuthContext";
+import { notify } from "@mms/fe-core/notify";
 import { buildPrintWindowHtml, autoPrintWindow } from "@/lib/printWindowHtml";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import { useDocumentTemplate } from "@/lib/templates/useDocumentTemplates";
-import type { Account, JournalEntry } from "@/lib/data/accountingData";
+import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import { facultyResolveQueryOptions } from "@/tenant/hooks/collections/faculty";
-import {
-  VOUCHER_KIND_TITLE_KEY,
-  voucherPreparerName,
-} from "@/tenant/features/accounting/lib/paymentVoucherKind";
+import { VOUCHER_KIND_TITLE_KEY, voucherPreparerName } from "@mms/mod-accounting/frontend/tenant";
 import {
   buildPaymentVoucherModel,
   type SalaryVoucherRef,
-} from "@/tenant/features/accounting/lib/paymentVoucherModel";
+} from "@mms/mod-accounting/frontend/tenant";
 import type { PaymentVoucherPrintInput } from "@/tenant/features/accounting/lib/paymentVoucherHtml";
 import {
   ACCOUNTING_VOUCHER_TEMPLATE_KEY,

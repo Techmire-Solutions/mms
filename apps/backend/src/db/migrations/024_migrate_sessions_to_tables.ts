@@ -3,10 +3,10 @@ import {
   tenantCollectionKey,
   WORKSPACES_COLLECTION,
   type Workspace,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import { bulkSaveSessions } from "../repositories/sessionRepository.js";
-import type { SessionRecord } from "@mms/shared";
+import type { SessionRecord } from "@mms/contracts";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();

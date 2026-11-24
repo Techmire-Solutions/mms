@@ -14,10 +14,10 @@ The model in the brief is real, but it belongs to **Finance**, and that is where
 
 | Briefed concept | Where it actually lives |
 | --- | --- |
-| Draft / Pending / Partially Fulfilled / Fulfilled / Overdue / Waived / Cancelled | `INVOICE_STATUSES = paid \| pending \| overdue \| partial \| cancelled` ([financeInvoiceTypes.ts:8](../packages/shared/src/finance/financeInvoiceTypes.ts#L8)) |
-| `assessed − fulfilled − waived == outstanding ≥ 0` | `finalAmt + lateFee − credited − paid`, integer cents, clamped at 0 ([financeInvoiceAmounts.ts:29-41](../packages/shared/src/finance/financeInvoiceAmounts.ts#L29-L41)) |
+| Draft / Pending / Partially Fulfilled / Fulfilled / Overdue / Waived / Cancelled | `INVOICE_STATUSES = paid \| pending \| overdue \| partial \| cancelled` ([financeInvoiceTypes.ts:8](../packages/contracts/src/finance/financeInvoiceTypes.ts#L8)) |
+| `assessed − fulfilled − waived == outstanding ≥ 0` | `finalAmt + lateFee − credited − paid`, integer cents, clamped at 0 ([financeInvoiceAmounts.ts:29-41](../packages/contracts/src/finance/financeInvoiceAmounts.ts#L29-L41)) |
 | "Overdue Obligations" | a dashboard widget over **finance invoices** ([OverdueObligationsWidget.tsx:26-46](../apps/frontend/src/components/dashboard-widgets/OverdueObligationsWidget.tsx#L26-L46)) |
-| Obligations with `status` and `dueDate` | only in the CSV contract, which invented both — now removed ([obligationsTransferSchema.ts](../packages/shared/src/dataTransfer/schemas/obligationsTransferSchema.ts)) |
+| Obligations with `status` and `dueDate` | only in the CSV contract, which invented both — now removed ([obligationsTransferSchema.ts](../packages/contracts/src/dataTransfer/schemas/obligationsTransferSchema.ts)) |
 
 What Obligations actually is: **a receipt ledger**. A collection is money received from a contact, attributed to an obligation type and a mujtahid's representative, split across the wakala's distribution rules, and posted to the general ledger. Its state space is:
 
@@ -48,8 +48,8 @@ Everything below is audited against **that** model, and every question in the br
 | **A2** | HIGH | The **controller owned the transaction boundary** (4 read handlers opened `withTenant`) and reached into another module for the voucher lookup. | [obligationContractRouter.ts:49](../apps/backend/src/routes/tenant/obligations/obligationContractRouter.ts#L49) |
 | **A3** | HIGH | **Domain errors were flattened to 500**: 7 handlers were `try { … } catch { return 500 database_error }` with no log, and `assertDistributionAccountsValid` threw a bare `Error` with `statusCode` instead of an `HttpDomainError`. | [obligationContractRouter.ts:55](../apps/backend/src/routes/tenant/obligations/obligationContractRouter.ts#L55), [obligationDistributionAccounts.ts:31-35](../apps/backend/src/obligations/use-cases/obligationDistributionAccounts.ts#L31) |
 | **A4** | MEDIUM | The one real rule was **bypassed on one of three write paths**: save and replace validated the account mapping, the bulk upsert did not. | [obligationsCatalogUseCases.ts:199](../apps/backend/src/obligations/use-cases/obligationsCatalogUseCases.ts#L199) |
-| **A5** | MEDIUM | **Another module's domain lived in the obligations namespace**: the Tasks state machine (`TASK_STATUS_TRANSITIONS`, `isTaskStatusTransitionAllowed`) sat in `packages/shared/src/obligations/` and was imported by `moduleAccessPolicy`, `tasks.contract` and `csvExport.dto`. | [tasksModuleManifest.ts:18-42](../packages/shared/src/tasks/tasksModuleManifest.ts#L18) |
-| **A6** | MEDIUM | The **split calculation was duplicated with different normalisation**: the ledger renormalised by the sum of all rules, the frontend divided by the liability sum only — so the rep-dues figure and the posted liability diverged whenever a wakala's percentages ≠ 100. | [obligationPostingLogic.ts:129-130](../packages/shared/src/finance/obligationPostingLogic.ts#L129), [obligationsSummaryCalculations.ts:110-114](../apps/frontend/src/tenant/features/obligations/lib/obligationsSummaryCalculations.ts#L110) |
+| **A5** | MEDIUM | **Another module's domain lived in the obligations namespace**: the Tasks state machine (`TASK_STATUS_TRANSITIONS`, `isTaskStatusTransitionAllowed`) sat in `packages/contracts/src/obligations/` and was imported by `moduleAccessPolicy`, `tasks.contract` and `csvExport.dto`. | [tasksModuleManifest.ts:18-42](../packages/contracts/src/tasks/tasksModuleManifest.ts#L18) |
+| **A6** | MEDIUM | The **split calculation was duplicated with different normalisation**: the ledger renormalised by the sum of all rules, the frontend divided by the liability sum only — so the rep-dues figure and the posted liability diverged whenever a wakala's percentages ≠ 100. | [obligationPostingLogic.ts:129-130](../packages/contracts/src/finance/obligationPostingLogic.ts#L129), [obligationsSummaryCalculations.ts:110-114](../apps/frontend/src/tenant/features/obligations/lib/obligationsSummaryCalculations.ts#L110) |
 | **A7** | LOW | The preferences **audit row was written by the controller**. | [obligationContractRouter.ts:179](../apps/backend/src/routes/tenant/obligations/obligationContractRouter.ts#L179) |
 
 ### S. Lifecycle state machine
@@ -57,11 +57,11 @@ Everything below is audited against **that** model, and every question in the br
 | # | Sev | Finding | Evidence |
 | --- | --- | --- | --- |
 | **S1** | HIGH | **The briefed machine does not exist.** The real transitions are `active → archived` and `archived → active`, enforced as `already archived` / `already active` **404s from the generic service** — a transport-shaped rule, not a domain one. There is no "cannot cancel a settled obligation" analogue because nothing is settled. | [genericRelationalService.ts:103](../apps/backend/src/services/genericRelationalService.ts#L103) |
-| **S2** | HIGH | **The illegal transition this module really has: a receipt recorded for a type/representative pair with no wakala.** The browser filtered the picker; the API did not, and the posting engine then credited **100 % to income**, silently converting a wakala liability into income. | [obligationPostingLogic.ts:116](../packages/shared/src/finance/obligationPostingLogic.ts#L116) |
+| **S2** | HIGH | **The illegal transition this module really has: a receipt recorded for a type/representative pair with no wakala.** The browser filtered the picker; the API did not, and the posting engine then credited **100 % to income**, silently converting a wakala liability into income. | [obligationPostingLogic.ts:116](../packages/contracts/src/finance/obligationPostingLogic.ts#L116) |
 | **S3** | HIGH | **A catalogue replace could silently destroy split rules.** `mujtahids → mujtahid_reps → wakala_types → obligation_distributions` is a 3-level `ON DELETE CASCADE` (`0068`), and every `replace*ForWorkspace` deletes the rows the caller omitted — so `PUT /mujtahids/bulk` with a shortened list wiped wakalas *and* their rules. Past receipts kept their entries; every later receipt posted 100 % income. | [obligationWakalaRepository.ts:135](../apps/backend/src/db/repositories/obligationWakalaRepository.ts#L135) |
 | **S4** | MEDIUM | A wakala and its rules are **one aggregate split across two endpoints and two transactions**; between them the DB held a wakala with no rules. | [useWakalaTypeManager.ts:66](../apps/frontend/src/tenant/features/obligations/hooks/useWakalaTypeManager.ts#L66) |
 | **S5** | MEDIUM | **No set-level validation of percentages.** Individual rows are CHECKed 0–100 (migration 0258); nothing rejected a wakala totalling 40 % or 180 %, and the UI accumulated with `parseFloat`. | [useWakalaTypeManager.ts:48](../apps/frontend/src/tenant/features/obligations/hooks/useWakalaTypeManager.ts#L48) |
-| **S6** | LOW | Catalogue rows have **no OCC token** — wakala/rep/type edits are last-write-wins, unlike collections (which gained `version` in 0258). | [obligationCatalogTables.ts](../apps/backend/src/db/schema/obligationCatalogTables.ts) |
+| **S6** | LOW | Catalogue rows have **no OCC token** — wakala/rep/type edits are last-write-wins, unlike collections (which gained `version` in 0258). | [obligationCatalogTables.ts](../packages/db/src/schema/obligationCatalogTables.ts) |
 
 ### B. Balance invariants & transactional boundaries
 
@@ -152,15 +152,15 @@ so a `ValidationError` (400) or `ConflictError` (409) from a use case reached th
 
 ### 1.5 A5 — another module's domain in the obligations folder
 
-`packages/shared/src/tasks/tasksModuleManifest.ts` held the entire Tasks state machine and was imported by `moduleAccessPolicy`, `tasks.contract`, `csvExport.dto` and the shared barrel.
+`packages/contracts/src/tasks/tasksModuleManifest.ts` held the entire Tasks state machine and was imported by `moduleAccessPolicy`, `tasks.contract`, `csvExport.dto` and the shared barrel.
 
-**Refactor applied.** Moved to `packages/shared/src/tasks/tasksModuleManifest.ts` (with its two tests); four import sites updated.
+**Refactor applied.** Moved to `packages/contracts/src/tasks/tasksModuleManifest.ts` (with its two tests); four import sites updated.
 
 ### 1.6 A6 — one rule implemented twice
 
 The ledger's `buildObligationPostingLines` renormalised by the sum of all rules; the summary's `buildRepSummary` did `amount * (totalLiabilityPct / 100)`. Whenever a wakala's percentages did not total 100 the screen and the ledger disagreed about what a representative was owed.
 
-**Refactor applied.** `allocateWakalaSplits(totalCents, percentages)` in [obligationSplitAllocation.ts](../packages/shared/src/finance/obligationSplitAllocation.ts) is now the only allocation rule: the ledger builder and the frontend summary both call it, and the summary accumulates in integer cents (it used `+=` on floats). Seven allocator tests pin normalisation, the leftover cent, the sub-cent split and the degenerate all-zero set.
+**Refactor applied.** `allocateWakalaSplits(totalCents, percentages)` in [obligationSplitAllocation.ts](../packages/contracts/src/finance/obligationSplitAllocation.ts) is now the only allocation rule: the ledger builder and the frontend summary both call it, and the summary accumulates in integer cents (it used `+=` on floats). Seven allocator tests pin normalisation, the leftover cent, the sub-cent split and the degenerate all-zero set.
 
 ### 1.7 A7 — audit written by the controller
 

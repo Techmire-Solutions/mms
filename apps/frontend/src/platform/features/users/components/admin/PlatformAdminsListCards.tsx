@@ -1,6 +1,6 @@
 import React from "react";
-import type { PlatformUserProfile } from "@mms/shared";
-import { formatDate } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
+import { formatDate } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BiDiText } from "@/components/app/BiDiText";
@@ -12,7 +12,7 @@ import {
   PlatformAdminPermissionsBadges,
 } from "@/platform/features/users/components/admin/PlatformAdminBadges";
 import { PlatformAdminActionButtons } from "@/platform/features/users/components/admin/PlatformAdminActionButtons";
-import { Checkbox } from "@shared/ui";
+import { Checkbox } from "@mms/ui";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 export interface PlatformAdminsListCardsProps {

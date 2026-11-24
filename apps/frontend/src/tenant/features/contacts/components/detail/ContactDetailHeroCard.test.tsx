@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { ContactDetailHeroCard } from "./ContactDetailHeroCard";
 
 vi.mock("@/hooks/useTranslation", () => ({

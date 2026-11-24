@@ -7,14 +7,14 @@ import {
   canDownloadBulkSync,
   canResetTenantData,
 } from "../../../services/rbacService.js";
-import { type TenantDatabaseSnapshot, validateAndNormalizeSnapshot } from "@mms/shared";
-import type { User } from "@mms/shared";
+import { type TenantDatabaseSnapshot, validateAndNormalizeSnapshot } from "@mms/contracts";
+import type { User } from "@mms/contracts";
 import {
   SYNC_ABORTED_MESSAGE,
   SYNC_MAX_BODY_BYTES,
   withSyncTimeout,
 } from "../../../lib/syncLimits.js";
-import { tenantDatabaseSnapshotSchema as syncPayloadSchema } from "@mms/shared";
+import { tenantDatabaseSnapshotSchema as syncPayloadSchema } from "@mms/contracts";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { sendBadRequest, sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
 import {
@@ -28,8 +28,13 @@ import {
   clearActiveTransaction,
   enterActiveTransaction,
   type LongLivedTenantTransaction,
-} from "../../../db/dbConnection.js";
+} from "@mms/db/client";
 import { streamSyncSnapshot, streamBackupSnapshot } from "../../../db/streamingSnapshotProducer.js";
+import {
+  collectAssetUrlsFromValue,
+  readAssetBase64,
+} from "../../../services/backupAssetService.js";
+import { snapshotSettings } from "../../../services/dbSyncSnapshotService.js";
 import { createStreamAdmissionControl } from "../../../lib/streamAdmissionControl.js";
 
 /**
@@ -91,7 +96,14 @@ export const dbSyncRoutes: FastifyPluginAsync = async (fastify) => {
       enterActiveTransaction(txn.tx);
       reply.header("Content-Type", "application/json; charset=utf-8");
       return reply.send(
-        Readable.from(streamSnapshotRoute(txn, tenant, streamSyncSnapshot, releaseSlot)),
+        Readable.from(
+          streamSnapshotRoute(
+            txn,
+            tenant,
+            (t, n) => streamSyncSnapshot(t, n, snapshotSettings),
+            releaseSlot,
+          ),
+        ),
       );
     } catch (error: unknown) {
       releaseSlot();
@@ -120,7 +132,20 @@ export const dbSyncRoutes: FastifyPluginAsync = async (fastify) => {
       enterActiveTransaction(txn.tx);
       reply.header("Content-Type", "application/json; charset=utf-8");
       return reply.send(
-        Readable.from(streamSnapshotRoute(txn, tenant, streamBackupSnapshot, releaseSlot)),
+        Readable.from(
+          streamSnapshotRoute(
+            txn,
+            tenant,
+            (t, n) =>
+              streamBackupSnapshot(
+                t,
+                n,
+                { collectAssetUrlsFromValue, readAssetBase64 },
+                snapshotSettings,
+              ),
+            releaseSlot,
+          ),
+        ),
       );
     } catch (error: unknown) {
       releaseSlot();

@@ -20,7 +20,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@shared/ui";
+} from "@mms/ui";
 
 const PAGE_SIZE = 8;
 

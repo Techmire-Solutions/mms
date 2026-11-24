@@ -9,7 +9,7 @@ import {
   todayISO,
   type EligibilityReason,
   type PublicRegistrationView,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { isApiError } from "@/lib/apiError";
 import {
   PUBLIC_REGISTRATION_QUERY_KEY,

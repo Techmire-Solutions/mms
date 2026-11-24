@@ -1,5 +1,5 @@
 import React from "react";
-import type { ContactsSavedReportShareScope, WorkspaceUser } from "@mms/shared";
+import type { ContactsSavedReportShareScope, WorkspaceUser } from "@mms/contracts";
 import { CheckboxField } from "@/components/ui/checkbox";
 import { FormModal } from "@/components/app/FormModal";
 import { FORM_INPUT } from "@/components/ui/formStyles";

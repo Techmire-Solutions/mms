@@ -12,7 +12,7 @@ import {
   DEFAULT_TAG_LABELS,
   COUNTRY_CODES,
   RELATIONSHIPS,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /** Seeds Setup option collections from shared DEFAULT_* constants (SSOT). */
 export function getContactConfigCollectionDefaults(): {

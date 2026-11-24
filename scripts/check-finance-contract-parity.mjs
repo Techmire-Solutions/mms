@@ -3,11 +3,11 @@
  * Finance shared-contract parity ratchet.
  *
  * Two drifts are worth failing the build over:
- *  - a finance/accounting schema module that exists in `packages/shared/src/finance`
+ *  - a finance/accounting schema module that exists in `packages/contracts/src/finance`
  *    but is not exported from the shared barrel (backend and frontend then quietly
  *    grow their own copy), and
  *  - a workspace that stops consuming the catalogued single zod/TypeScript version
- *    or links `@mms/shared` through anything other than `workspace:*`.
+ *    or links `@mms/contracts` through anything other than `workspace:*`.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -16,8 +16,8 @@ const ROOT = process.cwd();
 const findings = [];
 
 // --- 1. Every finance module is exported from a shared entry file ---------------
-const financeDir = path.join(ROOT, "packages/shared/src/finance");
-const entryDir = path.join(ROOT, "packages/shared/src/entry");
+const financeDir = path.join(ROOT, "packages/contracts/src/finance");
+const entryDir = path.join(ROOT, "packages/contracts/src/entry");
 const financeModules = fs
   .readdirSync(financeDir)
   .filter((name) => name.endsWith(".ts") && !/\.test\.ts$/.test(name))
@@ -59,7 +59,7 @@ while (queue.length > 0) {
 for (const module of financeModules) {
   if (!reachable.has(module)) {
     findings.push(
-      `packages/shared/src/finance/${module}.ts is not exported (directly or through a barrel) from packages/shared/src/entry/*`,
+      `packages/contracts/src/finance/${module}.ts is not exported (directly or through a barrel) from packages/contracts/src/entry/*`,
     );
   }
 }
@@ -71,7 +71,7 @@ const catalogZod = workspace.match(/^\s{2}zod:\s*"?([^"\n]+)"?/m)?.[1];
 
 const packages = [
   "package.json",
-  "packages/shared/package.json",
+  "packages/contracts/package.json",
   "apps/backend/package.json",
   "apps/frontend/package.json",
 ];
@@ -90,9 +90,9 @@ if (tsVersions.size > 1) findings.push(`TypeScript versions drift: ${[...tsVersi
 
 for (const relative of ["apps/backend/package.json", "apps/frontend/package.json"]) {
   const pkg = readJson(relative);
-  const shared = pkg.dependencies?.["@mms/shared"];
+  const shared = pkg.dependencies?.["@mms/contracts"];
   if (shared !== "workspace:*") {
-    findings.push(`${relative}: @mms/shared must be "workspace:*" (found ${shared ?? "none"})`);
+    findings.push(`${relative}: @mms/contracts must be "workspace:*" (found ${shared ?? "none"})`);
   }
 }
 

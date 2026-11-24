@@ -1,4 +1,4 @@
-import { type TenantDatabaseSnapshot } from "@mms/shared";
+import { type TenantDatabaseSnapshot } from "@mms/contracts";
 import {
   getAllData as dbGetAllData,
   runInGlobalReadSnapshotTransaction,
@@ -7,13 +7,26 @@ import {
 import { loadRelationalSnapshotCollections } from "../db/relationalSnapshot.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { maskGlobalSettingsForClient } from "./globalSettingsService.js";
+import {
+  getWorkspaceBranding,
+  getWorkspaceGlobalSettings,
+} from "../db/repositories/workspaceRepository.js";
 
 /**
  * Fetches workspace branding and global settings concurrently for a tenant.
  */
+/**
+ * Branding/global-settings access injected into the streaming snapshot producers
+ * (U5 seam). Exposed here so a route never imports a repository directly
+ * (check:backend-boundaries).
+ */
+export const snapshotSettings = {
+  getWorkspaceBranding,
+  getWorkspaceGlobalSettings,
+  maskGlobalSettingsForClient,
+};
+
 async function fetchTenantMetadata(tenant: string) {
-  const { getWorkspaceBranding, getWorkspaceGlobalSettings } =
-    await import("../db/repositories/workspaceRepository.js");
   const [branding, globalSettings] = await Promise.all([
     getWorkspaceBranding(tenant),
     getWorkspaceGlobalSettings(tenant),

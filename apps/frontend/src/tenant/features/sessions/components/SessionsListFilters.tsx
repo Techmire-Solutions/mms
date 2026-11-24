@@ -1,4 +1,4 @@
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import type { ModuleColumnRegistryEntry } from "@mms/contracts";
 import { FilterChips } from "@/components/app/FilterChips";
 import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";

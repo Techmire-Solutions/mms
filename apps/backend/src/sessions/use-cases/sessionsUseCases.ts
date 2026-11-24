@@ -6,7 +6,7 @@ import { createGenericRelationalService } from "../../services/genericRelational
 import { ConflictError, HttpDomainError, ValidationError } from "../../lib/httpErrors.js";
 import { isIsoUtcTimestamp } from "../../lib/occHeaders.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import {
   assertSessionEditable,
   workspaceToday,
@@ -15,8 +15,8 @@ import {
 } from "./sessionLockGuard.js";
 import { transitionSession } from "./sessionTransitionService.js";
 import { createSessionTrashUseCases } from "./sessionTrashUseCases.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { runAfterCommit } from "../../db/commitScope.js";
+import { withTenant } from "@mms/db/context";
+import { runAfterCommit } from "@mms/db/client";
 import { sessionDateBoundsTx } from "../repository/sessionTransitionRepositoryAdapter.js";
 import { createSessionReadUseCases } from "./sessionReadUseCases.js";
 import {
@@ -30,13 +30,13 @@ import {
   type SessionRecord,
   type SessionCreateBody,
   type SessionUpdateBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   dedupeTrimmedIds,
   normalizeSessionStatus,
   normalizeStoredSession,
   type Session,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 interface SessionsUseCasesDependencies extends OverlapGuardDependencies {
   findFacultyByIds?: (

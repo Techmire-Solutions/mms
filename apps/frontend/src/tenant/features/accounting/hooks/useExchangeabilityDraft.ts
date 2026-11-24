@@ -5,7 +5,7 @@ import {
   todayISO,
   type AppTranslationKey,
   type CurrencyExchangeability,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {

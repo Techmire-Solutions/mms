@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { QuestionBankQuestion as Question } from "@mms/shared";
+import type { QuestionBankQuestion as Question } from "@mms/contracts";
 import type { QuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 import {
   buildQuestionsListMetaFields,

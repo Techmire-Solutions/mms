@@ -1,4 +1,4 @@
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { AUTH_USER_STORAGE_KEY, readUserIdFromStoredAuth } from "@/lib/contexts/authContextHelpers";
 import { getWorkspaceLocalStoragePrefix } from "@/lib/dbStorageCore";
 import {

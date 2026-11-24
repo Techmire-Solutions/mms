@@ -5,17 +5,19 @@ import {
   moneyToCents,
   type Account,
   type FiscalYear,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {
-  hasAtMostTwoDecimals,
-  parseMoneyInput,
   useOpeningBalances,
   usePostOpeningBalances,
   useSaveOpeningBalances,
-  type MoneySeparator,
 } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
+import {
+  hasAtMostTwoDecimals,
+  parseAccountingMoneyInput,
+  type MoneySeparator,
+} from "@mms/mod-accounting/frontend/tenant";
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
 
 function isPostableMoneyAmount(value: number | null): value is number {
@@ -122,8 +124,8 @@ export function useAccountingOpeningBalancesState({
 
   const handleAdd = async (): Promise<void> => {
     if (!fiscalYearId || !accountId || !rowsReady) return;
-    const debitValue = parseMoneyInput(debit, decimalSeparator);
-    const creditValue = parseMoneyInput(credit, decimalSeparator);
+    const debitValue = parseAccountingMoneyInput(debit, decimalSeparator);
+    const creditValue = parseAccountingMoneyInput(credit, decimalSeparator);
     if (!isPostableMoneyAmount(debitValue) || !isPostableMoneyAmount(creditValue)) {
       setFormError(t("accounting.settings.opening.invalidAmount"));
       return;

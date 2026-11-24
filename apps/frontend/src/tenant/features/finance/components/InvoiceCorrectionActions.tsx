@@ -8,7 +8,7 @@ import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
-import { tryParseMoneyAmountNumber } from "@mms/shared";
+import { tryParseMoneyAmountNumber } from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";
@@ -20,7 +20,7 @@ import {
   FINANCE_MODULE_MANIFEST,
   getOutstandingAmountForInvoice,
   type Invoice,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import {
   useFinanceCollectMutations,

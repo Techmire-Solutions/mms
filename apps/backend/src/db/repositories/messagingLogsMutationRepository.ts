@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNotNull, isNull, lt, sql } from "drizzle-orm";
-import { messageLogs } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { messageLogs } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 
 export { buildMessageLogClaimId } from "../../lib/messageLogClaimId.js";
 

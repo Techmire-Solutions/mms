@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
-import { enrollments, sessions } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { enrollments, sessions } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 /**
  * Store reads/writes the session transition service needs. Every function takes the ambient

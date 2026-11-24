@@ -1,27 +1,28 @@
 import React, { useState, useEffect, useDeferredValue, useMemo } from "react";
 import { Landmark } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import { summaryAccountIds } from "@mms/shared";
-import { ACCOUNT_TYPE_META, type Account, type AccountType } from "@/lib/data/accountingData";
+import { summaryAccountIds } from "@mms/contracts";
+import {
+  ACCOUNT_TYPE_META,
+  type Account,
+  type AccountType,
+} from "@mms/mod-accounting/frontend/tenant";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
-import { ChartOfAccountsListFilters } from "@/tenant/features/accounting/components/ChartOfAccountsListFilters";
+import { ChartOfAccountsListFilters } from "@mms/mod-accounting/frontend/tenant";
 import { ChartOfAccountsListDesktopTable } from "@/tenant/features/accounting/components/ChartOfAccountsListDesktopTable";
 import { runGridCsvExportJob } from "@/lib/backgroundJobs/runGridCsvExportJob";
-import { useTranslation } from "@/hooks/useTranslation";
-import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
-import { type AppTranslationKey } from "@mms/shared";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { type ModuleColumnCustomizerProps } from "@mms/fe-core/components/moduleColumnCustomizerTypes";
+import { type AppTranslationKey } from "@mms/contracts";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
-import { EmptyState } from "@/components/app/EmptyState";
-import { Button } from "@/components/ui/button";
-import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
+import { EmptyState } from "@mms/ui";
+import { Button } from "@mms/ui";
+import { ConfirmAlertDialog } from "@mms/fe-core/components/ConfirmAlertDialog";
 import { ChartOfAccountsSeedEmptyState } from "@/tenant/features/accounting/components/ChartOfAccountsSeedEmptyState";
 
 const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
-import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import {
-  useWorkDirectoryViewMode,
-  type WorkDirectoryViewMode,
-} from "@/hooks/useWorkDirectoryViewMode";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@mms/fe-core/tenant";
 
 interface ChartOfAccountsProps {
   accounts: Account[];

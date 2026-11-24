@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import type { Message } from "@mms/shared";
+import type { Message } from "@mms/contracts";
 import type { MessagingSelectedLogsMap } from "../components/MessagingWorkTier";
 
 interface UseMessagingWorkTierSelectionParams {

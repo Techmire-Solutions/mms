@@ -3,7 +3,7 @@ import { useDescriptorFilterChips } from "@/components/common/useDescriptorFilte
 import { computeFacultySelectionTargets } from "@/tenant/features/faculty/hooks/facultySelectionTargets";
 import { useFacultyEntityDescriptor } from "@/tenant/features/faculty/hooks/useFacultyEntityDescriptor";
 import { useFacultyStatusConfig } from "@/tenant/features/faculty/hooks/useFacultyStatusConfig";
-import type { Faculty, FacultySortField } from "@mms/shared";
+import type { Faculty, FacultySortField } from "@mms/contracts";
 import type { FilterChip } from "@/components/app/FilterChips";
 
 export interface UseFacultyWorkTierActionsProps {

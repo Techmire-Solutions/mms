@@ -1,4 +1,4 @@
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
 import { useTranslation } from "@/hooks/useTranslation";
 import { renderUserWorkColumnValue } from "@/tenant/features/users/components/userWorkColumnCell";

@@ -1,8 +1,8 @@
 import { and, desc, eq, gte } from "drizzle-orm";
-import type { AuditAnomalyReport, AuditAnomalyItem } from "@mms/shared";
-import { withTenantRead } from "../db/tenant-context.js";
-import { auditTrailEvents } from "../db/schema/auditTrail.js";
-import type { DbOrTransaction } from "./auditTrailService.js";
+import type { AuditAnomalyReport, AuditAnomalyItem } from "@mms/contracts";
+import { withTenantRead } from "@mms/db/context";
+import { auditTrailEvents } from "@mms/db/schema/auditTrail";
+import type { DbOrTransaction } from "@mms/be-core/audit";
 
 export interface DetectAnomaliesOptions {
   windowHours?: number;

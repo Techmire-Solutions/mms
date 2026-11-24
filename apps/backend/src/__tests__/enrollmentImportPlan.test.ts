@@ -17,7 +17,7 @@ import {
   planEnrollmentImport,
   type EnrollmentImportRow,
 } from "../enrollments/use-cases/enrollmentImportPlan.js";
-import type { Session } from "@mms/shared";
+import type { Session } from "@mms/contracts";
 
 describe("enrollmentImportPlan", () => {
   const tenant = "test-tenant";

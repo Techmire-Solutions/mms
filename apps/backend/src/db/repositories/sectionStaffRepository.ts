@@ -6,11 +6,11 @@ import {
   type SectionAssignmentEndBody,
   type SectionStaffAssignBody,
   type SectionStaffAssignment,
-} from "@mms/shared";
-import { faculty, sectionStaffAssignments, sessionClassSections } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
-import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+} from "@mms/contracts";
+import { faculty, sectionStaffAssignments, sessionClassSections } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
+import { ConflictError, NotFoundError, ValidationError } from "@mms/be-core/http/errors";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 const TABLE = "section_staff_assignments";
 

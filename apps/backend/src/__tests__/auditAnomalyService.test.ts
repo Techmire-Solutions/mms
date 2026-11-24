@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { detectAuditAnomalies } from "../services/auditAnomalyService.js";
-import type { DbOrTransaction } from "../services/auditTrailService.js";
+import type { DbOrTransaction } from "@mms/be-core/audit";
 
 describe("auditAnomalyService - Section 6 Anomaly Detection", () => {
   function createMockDb(mockEvents: unknown[]): DbOrTransaction {

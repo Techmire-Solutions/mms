@@ -4,9 +4,9 @@ import {
   WORKSPACES_COLLECTION,
   type Workspace,
   type Contact,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
-import { bulkSaveContacts } from "../repositories/contactRepository.js";
+import { bulkSaveContacts } from "@mms/mod-contacts/backend/repository";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {
   const subdomains = new Set<string>();

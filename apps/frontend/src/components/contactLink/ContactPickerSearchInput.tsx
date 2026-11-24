@@ -9,7 +9,7 @@ import { ContactPickerMenu } from "./ContactPickerMenu";
 import ContactCreateModal from "./ContactCreateModal";
 import type { ContactCreateDefaults } from "./ContactCreateModal";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 
 interface ContactPickerSearchInputProps {
   t: TranslationFunction;

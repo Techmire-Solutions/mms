@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { useTranslation } from "@/hooks/useTranslation";
-import { toTitleCase } from "@mms/shared";
+import { toTitleCase } from "@mms/contracts";
 import type { StudentReportTablesProps } from "./studentReportTypes";
 
 export const StudentReportTables = function StudentReportTables({

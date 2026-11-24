@@ -81,7 +81,7 @@ vi.mock("../services/platform/platformCookieService.js", () => ({
 
 import { onboardUser } from "../services/auth/authService.js";
 import { setPlatformSettingsCache } from "../services/platform/platformSettingsService.js";
-import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/contracts";
 
 const workspace = { id: "ws_1", subdomain: "demo", madrasaName: "Demo Madrasa", enabled: true };
 

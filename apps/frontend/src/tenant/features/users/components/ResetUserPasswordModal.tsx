@@ -4,7 +4,7 @@ import {
   resetWorkspaceUserPasswordSchema,
   validatePasswordPolicy,
   type SystemUser,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { KeyRound } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormField";

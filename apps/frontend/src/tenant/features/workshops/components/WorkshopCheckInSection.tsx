@@ -5,7 +5,7 @@ import {
   WORKSHOP_ATTENDANCE_STATUSES,
   type WorkshopAttendanceStatus,
   type WorkshopDetail,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Button } from "@/components/ui/button";

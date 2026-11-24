@@ -5,8 +5,8 @@ import {
   DEFAULT_PLATFORM_ADMIN_PERMISSIONS,
   platformCreateAdminBodySchema,
   type PlatformAdminPermissions,
-} from "@mms/shared";
-import { Button, PasswordInput, LeadingIconInput, Field, SectionCard } from "@shared/ui";
+} from "@mms/contracts";
+import { Button, PasswordInput, LeadingIconInput, Field, SectionCard } from "@mms/ui";
 import { FormModal } from "@/components/app/FormModal";
 import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { useTranslation } from "@/hooks/useTranslation";

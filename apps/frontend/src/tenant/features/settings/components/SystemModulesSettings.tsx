@@ -1,5 +1,5 @@
 import React from "react";
-import { normalizeEnabledModules, SYSTEM_MODULES_BY_ID } from "@mms/shared";
+import { normalizeEnabledModules, SYSTEM_MODULES_BY_ID } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSettingsGlobalDraft } from "@/lib/contexts/SettingsGlobalDraftContext";
 import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";

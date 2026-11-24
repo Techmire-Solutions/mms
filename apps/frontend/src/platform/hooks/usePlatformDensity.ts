@@ -1,4 +1,4 @@
-import type { DensityMode } from "@shared/ui";
+import type { DensityMode } from "@mms/ui";
 import { useWorkTableDensity } from "@/hooks/useWorkTableDensity";
 
 export type PlatformDensity = DensityMode;

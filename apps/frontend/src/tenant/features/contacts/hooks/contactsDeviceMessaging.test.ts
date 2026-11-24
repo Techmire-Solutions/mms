@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { buildContactDeviceChannelUri } from "@/tenant/features/contacts/hooks/contactsDeviceMessaging";
 
 function contact(overrides: Partial<Contact> = {}): Contact {

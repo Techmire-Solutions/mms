@@ -1,4 +1,4 @@
-import { isSessionReadOnly } from "@mms/shared";
+import { isSessionReadOnly } from "@mms/contracts";
 
 interface SessionClassLike {
   id: string;

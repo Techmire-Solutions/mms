@@ -14,7 +14,7 @@ import { useSessionsDirectoryFilters } from "@/tenant/features/sessions/hooks/us
 import { useSessionsKeyboardShortcuts } from "@/tenant/features/sessions/hooks/useSessionsKeyboardShortcuts";
 import { useSessionsDialogs } from "@/tenant/features/sessions/hooks/useSessionsDialogs";
 import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
-import { SESSIONS_MODULE_MANIFEST, type SessionsListPageResult } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST, type SessionsListPageResult } from "@mms/contracts";
 import { useSessionsPageCrudActions } from "@/tenant/features/sessions/hooks/useSessionsPageCrudActions";
 import {
   defaultSessionsExportColumns,

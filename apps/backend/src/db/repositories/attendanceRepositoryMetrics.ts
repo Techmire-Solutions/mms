@@ -3,9 +3,9 @@ import {
   ATTENDANCE_ATTENDED_STATUSES,
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   type AttendanceCommandMetricsSnapshot,
-} from "@mms/shared";
-import { attendance } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { attendance } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 import { getWorkspaceTimezone } from "../../lib/workspaceTimezone.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";

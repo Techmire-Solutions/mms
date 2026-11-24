@@ -1,5 +1,5 @@
 import type { Transporter } from "nodemailer";
-import { type SendEmailInput, type SendEmailResult } from "@mms/shared";
+import { type SendEmailInput, type SendEmailResult } from "@mms/contracts";
 import { fetchWithTimeout, isBlockedHostname } from "../../lib/outboundUrl.js";
 import {
   buildHtmlFallback,

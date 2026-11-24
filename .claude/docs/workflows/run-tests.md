@@ -4,7 +4,7 @@ description: Run all unit, integration, typecheck, lint, and E2E tests across MM
 
 # Workflow: Run Tests & Resolve Diagnostics
 
-This workflow provides a comprehensive, systematic procedure for executing test suites, type checking, and linting across the MMS monorepo (`apps/frontend`, `apps/backend`, `packages/shared`), diagnosing any failures, and applying root-cause fixes until all checks pass cleanly.
+This workflow provides a comprehensive, systematic procedure for executing test suites, type checking, and linting across the MMS monorepo (`apps/frontend`, `apps/backend`, `packages/contracts`), diagnosing any failures, and applying root-cause fixes until all checks pass cleanly.
 
 ## Phase 1: Environment & Context Gathering
 
@@ -13,10 +13,10 @@ This workflow provides a comprehensive, systematic procedure for executing test 
 
 | Scope | Command | Description |
 |---|---|---|
-| **Monorepo Typecheck** | `pnpm typecheck` | Strict TS check across `@mms/shared`, `mms-backend`, `mms-frontend`, `e2e-tests` |
-| **Full Unit/Integration** | `pnpm test` | Vitest execution across `@mms/shared`, `apps/backend`, and `apps/frontend` |
-| **Monorepo Lint** | `pnpm lint` | Complete ESLint check across all packages (`@mms/shared`, `mms-frontend`, `mms-backend`) |
-| **Isolated Test** | `pnpm --filter <pkg> test <file>` | Rapid Vitest run on a specific file (`@mms/shared`, `mms-backend`, `mms-frontend`) |
+| **Monorepo Typecheck** | `pnpm typecheck` | Strict TS check across `@mms/contracts`, `mms-backend`, `mms-frontend`, `e2e-tests` |
+| **Full Unit/Integration** | `pnpm test` | Vitest execution across `@mms/contracts`, `apps/backend`, and `apps/frontend` |
+| **Monorepo Lint** | `pnpm lint` | Complete ESLint check across all packages (`@mms/contracts`, `mms-frontend`, `mms-backend`) |
+| **Isolated Test** | `pnpm --filter <pkg> test <file>` | Rapid Vitest run on a specific file (`@mms/contracts`, `mms-backend`, `mms-frontend`) |
 | **E2E Playwright** | `pnpm --filter e2e-tests test` | Full browser integration via Playwright + axe-core a11y checks |
 | **All-in-One** | `pnpm typecheck && pnpm test && pnpm lint` | Complete single-command monorepo validation pass |
 
@@ -48,11 +48,11 @@ For any failed test or diagnostic error, follow these steps sequentially:
 
 - [ ] **Read log output in full**: Inspect exact failure traces, file paths, line numbers, and expected vs. actual values.
 - [ ] **Categorize failures against Project Rules**:
-  - **Type Errors (`TSxxxx`)**: Schema mismatches, missing properties, un-narrowed `unknown`. Check `@mms/shared` Zod exports.
+  - **Type Errors (`TSxxxx`)**: Schema mismatches, missing properties, un-narrowed `unknown`. Check `@mms/contracts` Zod exports.
   - **Assertion Failures**: Broken logic, invalid normalization. Verify backend tests include `inject()` allow/deny checks.
   - **Mock/Fixture Errors**: Outdated fixtures missing schema fields, missing RBAC context, unhandled async promises. Replace static `.json` fixtures with typed factories (`mms-testing-observability.md` §4).
   - **Lint & Boundaries**: Direct cross-feature imports (banned by `mms-dry.md`), missing `t()` keys, unused variables.
-- [ ] **Enforce strict invariants**: Address the root cause in the source logic or update test fixtures to match current `@mms/shared` Zod schemas.
+- [ ] **Enforce strict invariants**: Address the root cause in the source logic or update test fixtures to match current `@mms/contracts` Zod schemas.
 
 > [!CAUTION]
 > **Zero-Tolerance Anti-Patterns**
@@ -72,11 +72,11 @@ For any failed test or diagnostic error, follow these steps sequentially:
 - [ ] **Isolate & Patch**: Apply targeted fixes to the source file or test definition.
 - [ ] **Run fast isolated tests**: Provide rapid feedback loop on the specific file:
   ```bash
-  pnpm --filter @mms/shared test <filename>.test.ts
+  pnpm --filter @mms/contracts test <filename>.test.ts
   pnpm --filter mms-backend test <filename>.test.ts
   pnpm --filter mms-frontend test <filename>.test.tsx
   ```
-- [ ] **Verify adjacent scope**: Ensure the patch did not introduce regressions in shared utilities (`packages/shared`), hooks, or database queries.
+- [ ] **Verify adjacent scope**: Ensure the patch did not introduce regressions in shared utilities (`packages/contracts`), hooks, or database queries.
 
 ## Phase 5: Final Clean Pass Verification
 

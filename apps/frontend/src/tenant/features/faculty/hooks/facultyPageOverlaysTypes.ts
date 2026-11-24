@@ -1,4 +1,4 @@
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import type {
   FacultyDeleteTarget,

@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from "react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { TrendingUp, TrendingDown, ArrowUpDown, AlertTriangle } from "lucide-react";
-import { StatusBadge } from "@/components/app/StatusBadge";
+import { StatusBadge } from "@mms/fe-core/components/StatusBadge";
 import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { FLOW_TONE, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
-import { useTranslation } from "@/hooks/useTranslation";
-import type { CashbookRow } from "@/tenant/features/accounting/lib/cashbookViewShared";
-import type { JournalEntry } from "@/lib/data/accountingData";
-import { PaymentVoucherPrintButton } from "@/tenant/features/accounting/components/PaymentVoucherPrintButton";
+import { useTranslation } from "@mms/fe-core/i18n";
+import type { CashbookRow } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import { PaymentVoucherPrintButton } from "@mms/mod-accounting/frontend/tenant";
 
 /** Optional payment-voucher action; the column exists only when this is given. */
 export interface CashbookVoucherAction {

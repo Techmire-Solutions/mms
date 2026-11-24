@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { DashboardWidgetDto } from "@mms/shared";
+import type { DashboardWidgetDto } from "@mms/contracts";
 import { toDto, toRestoredDto, toRow } from "../db/repositories/dashboardWidgetMappers.js";
 
 const fullDto: DashboardWidgetDto = {

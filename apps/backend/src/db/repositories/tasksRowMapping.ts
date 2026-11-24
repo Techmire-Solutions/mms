@@ -1,5 +1,5 @@
-import type { TaskRecord, TaskPriority, TaskStatus } from "@mms/shared";
-import { tasks } from "../schema.js";
+import type { TaskRecord, TaskPriority, TaskStatus } from "@mms/contracts";
+import { tasks } from "@mms/db/schema";
 
 export const SELECT_COLS = {
   id: tasks.id,

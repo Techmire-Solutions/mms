@@ -12,11 +12,11 @@ sweep, and migrations `0201`/`0202`; #266 added a boot-time pre-migration cleanu
 covers that delta. This pass re-verifies all twelve round-2 P1/P2s and audits the new surfaces.
 
 **Scope.** `apps/backend/src/routes/tenant/contacts/**`, `apps/backend/src/contacts/**`,
-`apps/backend/src/db/repositories/contact*`, `apps/backend/src/db/schema/contact*`,
+`apps/backend/src/db/repositories/contact*`, `packages/db/src/schema/contact*`,
 `apps/backend/src/db/contactSystemTagsPreMigration.ts`, `apps/backend/src/db/dbInit.ts` (migration
 wiring only), `apps/backend/src/worker/contactSystemTagSweep.ts`, migrations `0200`–`0202`,
-`packages/shared/src/contacts/**`, `packages/shared/src/contracts/contacts*`,
-`packages/shared/src/schemas/contacts*`, `apps/frontend/src/tenant/features/contacts/**`,
+`packages/contracts/src/contacts/**`, `packages/contracts/src/contracts/contacts*`,
+`packages/contracts/src/schemas/contacts*`, `apps/frontend/src/tenant/features/contacts/**`,
 `apps/frontend/src/lib/contacts/**`, `apps/frontend/src/components/contactLink/**`, and the
 contacts unit/DB/e2e specs. Consumers (students/faculty/workshops/google sync) were inspected only
 at their contact call sites. Round-2 P3s were not re-audited (a spot check is in §7).
@@ -114,7 +114,7 @@ None.
   row whose `relationship` is `parent`/`guardian`, matched on the **related** contact:
   `apps/backend/src/db/contactSystemTagsPreMigration.ts:111-134`. It has no `students` join.
 - `0202` backfills only relationships whose **owner is a student contact**:
-  `apps/backend/src/db/migrations_drizzle/0202_backfill_relationship_role_tags.sql:18-23` —
+  `packages/db/migrations_drizzle/0202_backfill_relationship_role_tags.sql:18-23` —
   `JOIN students s ON … s.contact_id = cr.contact_id`.
 - The cleanup runs on every boot before migrations: `apps/backend/src/db/dbInit.ts:74`
   (`prepareContactSystemTagsPreMigration` → `migrate`).
@@ -209,7 +209,7 @@ student edit).
 - The sweep never repairs student/guardian contacts; it only visits faculty-tag/employment
   candidates (`contactSystemTagSweep.ts:28-59`).
 - Reachable through the editable CSV round-trip: the contacts export includes a `Contact ID`
-  column (`packages/shared/src/contacts/contactExportColumns.ts:30`) and the parser preserves it
+  column (`packages/contracts/src/contacts/contactExportColumns.ts:30`) and the parser preserves it
   (`contactsCsvParser.ts:118`), while `buildRelationships` always emits the parsed relationship
   list (`:139`). The Apple CSV import path posts those parsed contacts
   (`appleContactsFileParser.ts:28` → `useContactsCrudWriteActions.ts:103`), and `mergeContactPatch`
@@ -244,7 +244,7 @@ unless marked.
 | --- | --- | --- | --- |
 | N-04 | The three reconciliation reads issued via `Promise.all` (five selects in total) run concurrently on one transaction client; node-postgres emits `Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0` (observed in the system-tag DB suite) | `contactSystemTagReconcile.ts:145-149` | Await sequentially (or one query); acceptance: DB suite emits no warning |
 | N-05 | Audit is one aggregate row per reconcile with the synthetic `recordId: "system-tags"`; the sweep has no actor and writes no audit row, so date-triggered archives are untracked | `contactSystemTagReconcile.ts:250-269`; `contactSystemTagSweep.ts:55-58` | Audit per affected contact (or a system actor + real id); acceptance: sweep archive creates an audit row |
-| N-06 | Picker access is granted by any of students/faculty/workshops read, `search` is optional, and the cap is 20/page, so teacher/assistant/librarian can enumerate the whole contact directory (name/phone/email/city) without `contacts.read` | `apps/backend/src/lib/rbacCanModuleHelpers.ts:67-77`; `packages/shared/src/contacts/contactPicker.ts:13,31-32`; route test `contactPickerRoutes.test.ts:142` | Confirm with product; require a minimum search term or scope to the calling module, add a rate limit; acceptance: role enumeration test |
+| N-06 | Picker access is granted by any of students/faculty/workshops read, `search` is optional, and the cap is 20/page, so teacher/assistant/librarian can enumerate the whole contact directory (name/phone/email/city) without `contacts.read` | `apps/backend/src/lib/rbacCanModuleHelpers.ts:67-77`; `packages/contracts/src/contacts/contactPicker.ts:13,31-32`; route test `contactPickerRoutes.test.ts:142` | Confirm with product; require a minimum search term or scope to the calling module, add a rate limit; acceptance: role enumeration test |
 | N-07 | System tag names are English data displayed verbatim in ar/ur/fa; only the "Managed automatically"/"Former role" suffixes are translated | `apps/frontend/src/tenant/features/contacts/components/ContactTagBadge.tsx:35-78`; `appTranslationsEn.ts:2912-2913`; no `contacts.tags.student`-style keys | Map `systemKey`/label to i18n keys for the fixed six labels and localize the `Former ` prefix (keep raw values for export); acceptance: Arabic render test |
 | N-08 | `0201` uses `CURRENT_DATE` and ignores employment/designation start dates; runtime uses the workspace-local day plus `isActiveWindow`. Future-dated roles get an active tag at migration, and non-UTC tenants can archive a day early/late | `0201_contact_system_tags.sql:96-117`; `contactSystemTagCompute.ts:33-60`; `contactSystemTagReconcile.ts:48-60`; `contactSystemTagFacultyCompute.ts:140-149` | Use the workspace-local day and start windows in the backfill, or reconcile every affected contact immediately after migration; acceptance: future-start fixture + a negative-offset timezone fixture |
 | N-09 | Reconciliation writes one statement per tag row and one advisory-lock query per contact; the sweep materialises all candidates for a tenant before batching | `contactSystemTagReconcile.ts:139-143,166-232`; `contactSystemTagSweep.ts:30-58` | Batch the tag upserts and lock acquisition; measure a 5k-contact sweep; acceptance: bounded statement count |

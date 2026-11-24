@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { JournalEntry, User, WorkspaceRole } from "@mms/shared";
-import { assertEntriesPostable } from "../accounting/use-cases/accountingPostingGuard.js";
+import type { JournalEntry, User, WorkspaceRole } from "@mms/contracts";
+import { assertEntriesPostable } from "@mms/mod-accounting/backend/use-cases";
 import { setUserRoleCatalog } from "../lib/userPermissionContext.js";
 
 /**

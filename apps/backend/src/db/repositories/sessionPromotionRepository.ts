@@ -1,8 +1,8 @@
 import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import type { SessionRolloverRun } from "@mms/shared";
-import { enrollments, sessionPromotionClassMap, sessionPromotionRuns } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
-import { isUniqueViolation } from "../../lib/pgErrors.js";
+import type { SessionRolloverRun } from "@mms/contracts";
+import { enrollments, sessionPromotionClassMap, sessionPromotionRuns } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
+import { isUniqueViolation } from "@mms/be-core/http/errors";
 
 /** Patch shape for a run, including the execution phases (migration 0207). */
 export type PromotionRunPatch = Partial<

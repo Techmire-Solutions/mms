@@ -5,8 +5,8 @@ import {
   type AttendanceRecordInsert,
   type AttendanceRecordUpdate,
   type User,
-} from "@mms/shared";
-import { withTenant } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { assertTeacherSectionScope } from "../../sessions/use-cases/teacherSectionScope.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";

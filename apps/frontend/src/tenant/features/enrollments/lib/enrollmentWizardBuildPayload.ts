@@ -1,5 +1,5 @@
-import { todayISO, toMoneyNumber } from "@mms/shared";
-import type { EnrollmentInsert } from "@mms/shared";
+import { todayISO, toMoneyNumber } from "@mms/contracts";
+import type { EnrollmentInsert } from "@mms/contracts";
 import { type CalculatedFee } from "@/lib/data/enrollmentData";
 import { type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";

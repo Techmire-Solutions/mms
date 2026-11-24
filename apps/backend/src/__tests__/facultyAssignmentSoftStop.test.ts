@@ -15,11 +15,13 @@ vi.mock("../db/repositories/facultyAssignmentValidation.js", () => ({
   lockFacultyHierarchy: (...args: unknown[]) => lockFacultyHierarchy(...args),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => recordModernAuditEvent(...args),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (...args: unknown[]) => withTenant(...args),
 }));
 
@@ -29,7 +31,7 @@ vi.mock("../lib/workspaceDay.js", () => ({
   workspaceTodayIso: vi.fn().mockResolvedValue("2026-11-04"),
 }));
 
-vi.mock("../db/schema.js", () => ({
+vi.mock("@mms/db/schema", () => ({
   facultyAssignments: {
     workspaceSubdomain: "workspace_subdomain",
     id: "id",

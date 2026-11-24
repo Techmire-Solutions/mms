@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attendanceLeaveInsertSchema } from "@mms/shared";
+import { attendanceLeaveInsertSchema } from "@mms/contracts";
 import { serverFormError, validateAttendanceDraft } from "./attendanceFormValidation";
 
 describe("validateAttendanceDraft", () => {

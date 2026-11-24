@@ -2,13 +2,13 @@ import React from "react";
 import {
   TableSkeleton as SharedTableSkeleton,
   type TableSkeletonProps as SharedTableSkeletonProps,
-} from "@shared/ui";
+} from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export type TableSkeletonProps = SharedTableSkeletonProps;
 
 /**
- * Localized TableSkeleton facade delegating to `@shared/ui`.
+ * Localized TableSkeleton facade delegating to `@mms/ui`.
  */
 export function TableSkeleton({ loadingLabel, ...props }: TableSkeletonProps): React.JSX.Element {
   const { t } = useTranslation();

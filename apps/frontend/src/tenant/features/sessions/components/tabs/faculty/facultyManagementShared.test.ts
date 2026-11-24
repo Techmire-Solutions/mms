@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { COMMON_FACULTY_ROLES, facultyRoleLabel } from "./facultyManagementShared";
 
 describe("faculty role i18n", () => {

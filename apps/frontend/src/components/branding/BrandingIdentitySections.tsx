@@ -11,7 +11,7 @@ import {
   NAME_MAX,
   TAGLINE_MAX,
 } from "@/components/branding/BrandingShared";
-import { normalizePhoneInput, type BrandingSettings } from "@mms/shared";
+import { normalizePhoneInput, type BrandingSettings } from "@mms/contracts";
 
 import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 

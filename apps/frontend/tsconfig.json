@@ -1,10 +1,8 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tooling/typescript-config/react.json",
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@shared/ui": ["../../packages/ui/src/index.ts"],
-      "@shared/ui/*": ["../../packages/ui/src/*"],
       "react": ["./node_modules/@types/react"],
       "react/*": ["./node_modules/@types/react/*"],
       "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],

@@ -19,7 +19,7 @@ import {
   contactHasPhone,
   resolveFacultyEnabledTabIds,
   resolveFacultyFieldsMapForColumnSync,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   type FacultyFormControllerOptions,
   type UseFacultyFormControllerOptions,

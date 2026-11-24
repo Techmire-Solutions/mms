@@ -1,4 +1,4 @@
-import { generateClientEntityId } from "@mms/shared";
+import { generateClientEntityId } from "@mms/contracts";
 import type {
   ChartOperation,
   ChartType,

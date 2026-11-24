@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SequenceNumberingCard } from "./SequenceNumberingCard";
-import type { SequenceNumberingConfig } from "@mms/shared";
+import type { SequenceNumberingConfig } from "@mms/contracts";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

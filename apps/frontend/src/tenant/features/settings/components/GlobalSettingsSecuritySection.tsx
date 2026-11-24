@@ -8,7 +8,7 @@ import {
   SESSION_TIMEOUT_PRESETS,
   type AppTranslationKey,
   type PasswordPolicyLevel,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,7 @@ import {
   SettingsFieldGroup,
   SettingsToggleRow,
 } from "@/components/app/SettingsShell";
-import type { GlobalSettings } from "@mms/shared";
+import type { GlobalSettings } from "@mms/contracts";
 import { Badge } from "@/components/ui/badge";
 
 interface GlobalSettingsSecuritySectionProps {

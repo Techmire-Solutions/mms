@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { DEFAULT_GLOBAL_SETTINGS, type GlobalSettings } from "@mms/shared";
+import { DEFAULT_GLOBAL_SETTINGS, type GlobalSettings } from "@mms/contracts";
 import {
   globalSettingsPreviewPatch,
   globalSettingsSavePatch,

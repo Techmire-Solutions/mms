@@ -3,9 +3,9 @@ import type {
   PlatformMessageDto,
   PlatformMessageRecipient,
   PlatformMessageTemplateDto,
-} from "@mms/shared";
-import { platformMessages, platformMessageTemplates } from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
+} from "@mms/contracts";
+import { platformMessages, platformMessageTemplates } from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
 import { randomUUID } from "node:crypto";
 
 const messageColumns = {

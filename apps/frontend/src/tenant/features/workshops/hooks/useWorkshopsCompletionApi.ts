@@ -5,7 +5,7 @@ import {
   workshopPreferencesSchema,
   workshopReportRowSchema,
   type WorkshopPreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import {
   invalidateWorkshopActivityQueries,

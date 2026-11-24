@@ -5,7 +5,7 @@ import {
   toWorkshopParticipantSummary,
   workshopsContract,
   WORKSHOPS_MODULE_MANIFEST,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { parseOccHeaders } from "../../../lib/occHeaders.js";
 import { ValidationError } from "../../../lib/httpErrors.js";
 import { buildBackgroundJobId, buildDeterministicJobKey } from "../../../lib/backgroundJobIds.js";

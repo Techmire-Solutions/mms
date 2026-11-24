@@ -1,5 +1,5 @@
 import { apiContract } from "@/lib/api";
-import type { LlmConfig, LlmTestResult } from "@mms/shared";
+import type { LlmConfig, LlmTestResult } from "@mms/contracts";
 import { assertContractOk } from "@/lib/apiContractError";
 
 export function computeNextLlmConfigs(

@@ -17,7 +17,7 @@ import {
   isAdminRole,
   isPlatformManagedRole,
   isSuperAdminRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { recordUserActivityLog } from "./userActivityLogUseCases.js";
 import { assertFacultyRoleAllowed } from "./userCreationUseCases.js";
 import { sanitizeBulkUserRow } from "./userBulkUpsertSanitize.js";

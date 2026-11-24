@@ -7,7 +7,7 @@ import {
   usePlatformSettingsQuery,
   useUpdatePlatformSettings,
 } from "@/platform/features/settings/hooks/usePlatformSettings";
-import { DEFAULT_PLATFORM_SETTINGS, resolvePlatformNotificationChannel } from "@mms/shared";
+import { DEFAULT_PLATFORM_SETTINGS, resolvePlatformNotificationChannel } from "@mms/contracts";
 import {
   Badge,
   Card,
@@ -17,7 +17,7 @@ import {
   CardContent,
   ToggleRow,
   CardSkeleton,
-} from "@shared/ui";
+} from "@mms/ui";
 import { EmailIntegrationPanel } from "@/components/app/IntegrationPanels/EmailIntegrationPanel";
 import { SmsIntegrationPanel } from "@/components/app/IntegrationPanels/SmsIntegrationPanel";
 import {

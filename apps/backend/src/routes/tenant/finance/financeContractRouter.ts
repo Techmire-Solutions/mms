@@ -1,5 +1,10 @@
 import type { FastifyPluginAsync } from "fastify";
-import { FINANCE_MODULE_MANIFEST, type User, financeContract, isQueryFlagTrue } from "@mms/shared";
+import {
+  FINANCE_MODULE_MANIFEST,
+  type User,
+  financeContract,
+  isQueryFlagTrue,
+} from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { handleContractError } from "../../../lib/contractError.js";
 import {
@@ -7,7 +12,7 @@ import {
   standardRequestValidationErrorHandler,
 } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { financeUseCases } from "../../../finance/use-cases/financeUseCases.js";
 import {
   canDeleteCollection,

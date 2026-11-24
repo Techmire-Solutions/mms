@@ -1,4 +1,4 @@
-import { hasWhatsApp, toMessagingRecipient, type Student } from "@mms/shared";
+import { hasWhatsApp, toMessagingRecipient, type Student } from "@mms/contracts";
 import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";

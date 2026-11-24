@@ -4,11 +4,11 @@ import {
   resolveStudentGuardianLinks,
   type Contact,
   type Student,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   loadContactsByIdsForTenant,
   loadContactsSummaryByIdsForTenant,
-} from "../../services/contactService.js";
+} from "@mms/mod-contacts/backend/services";
 
 type ContactWithRelationships = Contact & {
   relationshipContacts?: Array<{

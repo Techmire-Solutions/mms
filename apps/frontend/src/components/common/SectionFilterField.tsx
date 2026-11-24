@@ -1,5 +1,5 @@
 import React from "react";
-import type { SessionClassSection } from "@mms/shared";
+import type { SessionClassSection } from "@mms/contracts";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAcademicTerms } from "@/hooks/useAcademicTerms";

@@ -21,7 +21,9 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (
     _tenant: string,
     fn: (tx: { update: typeof mocks.update; select: typeof mocks.select }) => Promise<unknown>,
@@ -32,11 +34,11 @@ vi.mock("../db/repositories/facultyAssignmentValidation.js", () => ({
   lockFacultyHierarchy: vi.fn(),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mocks.audit,
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvents: mocks.outbox,
 }));
 

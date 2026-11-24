@@ -3,7 +3,7 @@ import { requireTenant } from "../../lib/tenantContext.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateTenantRbac } from "../../services/rbacService.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";
-import { canManageTargetUser } from "@mms/shared";
+import { canManageTargetUser } from "@mms/contracts";
 import { recordUserActivityLog } from "./userActivityLogUseCases.js";
 
 export async function restoreUserByIdHelper(

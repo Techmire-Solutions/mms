@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { getLanguageDirection, isRtlLanguage, type AppLanguageCode } from "@mms/shared";
+import { getLanguageDirection, isRtlLanguage, type AppLanguageCode } from "@mms/contracts";
 import { applyDocumentLanguage } from "@/lib/documentLanguage";
 import { ensureLocaleFontsLoaded } from "@/lib/localeFonts";
 

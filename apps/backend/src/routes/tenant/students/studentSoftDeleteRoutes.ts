@@ -1,12 +1,12 @@
 import type { FastifyPluginAsync } from "fastify";
-import type { Student, User } from "@mms/shared";
-import { studentRecordSchema } from "@mms/shared";
+import type { Student, User } from "@mms/contracts";
+import { studentRecordSchema } from "@mms/contracts";
 import { registerResourceRoutes } from "../../../lib/crudResourceRoutes.js";
 import { registerSoftDeletableBulkTrashRoutes } from "../../../lib/crudBulkRoutes.js";
 import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import { StudentRestoreConflictError } from "../../../students/use-cases/studentNormalizeUseCases.js";
 import { canDeleteCollection } from "../../../services/rbacService.js";
-import { bulkIdsBodySchema as studentsBulkIdsSchema } from "@mms/shared";
+import { bulkIdsBodySchema as studentsBulkIdsSchema } from "@mms/contracts";
 import { auditStudent, sanitizeOneStudentForUser } from "./studentRouteHelpers.js";
 
 /**

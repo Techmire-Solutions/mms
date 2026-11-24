@@ -4,7 +4,7 @@ Defines platform apex administrative capabilities, distinct from tenant workspac
 
 ## 1. Platform Permission Keys
 
-Defined in `@mms/shared` and configured in `apps/frontend/src/platform/features/users/lib/platformPermissionConfig.ts`:
+Defined in `@mms/contracts` and configured in `apps/frontend/src/platform/features/users/lib/platformPermissionConfig.ts`:
 
 | Permission Key | Scope | Typical Admin Action |
 |---|---|---|

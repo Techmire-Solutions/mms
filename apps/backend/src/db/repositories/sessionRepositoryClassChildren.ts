@@ -1,5 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { type Class } from "@mms/shared";
+import { type Class } from "@mms/contracts";
 import { randomUUID } from "node:crypto";
 import {
   sessionClassFees,
@@ -12,8 +12,8 @@ import {
   scholarshipEligibilities,
   sessionClassScholarships,
   sessionClassTimetablePeriodStaff,
-} from "../schema.js";
-import { type TenantTransaction } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { type TenantTransaction } from "@mms/db/context";
 import { requireDbDate } from "../../lib/dbDate.js";
 
 interface ClassChildRows {

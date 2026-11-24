@@ -7,7 +7,7 @@
  */
 import React from "react";
 import { ChevronDown } from "lucide-react";
-import { taskStatusTransitionsFrom, type TaskRecord, type TaskStatus } from "@mms/shared";
+import { taskStatusTransitionsFrom, type TaskRecord, type TaskStatus } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

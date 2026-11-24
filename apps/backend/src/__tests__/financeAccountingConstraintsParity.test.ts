@@ -9,14 +9,15 @@ import {
   JOURNAL_ENTRY_STATUSES,
   JOURNAL_SOURCE_TYPES,
   POSTING_PERIOD_STATUSES,
-} from "@mms/shared";
+} from "@mms/contracts";
+import { resolveMigrationsFolder, resolveSchemaSourceDirectory } from "@mms/db/testing";
 
 /**
  * Pins the database CHECK constraints introduced by 0248 to the shared arrays.
  * Lives in the backend because only this package can read migration files; the
  * shared package stays pure.
  */
-const migrationDir = path.resolve(import.meta.dirname, "../db/migrations_drizzle");
+const migrationDir = resolveMigrationsFolder();
 
 describe("finance & accounting constraints ↔ shared enums", () => {
   const sql = readFileSync(
@@ -78,7 +79,7 @@ describe("finance & accounting constraints ↔ shared enums", () => {
  * model.
  */
 describe("accounting CHECK constraints are declared in the model", () => {
-  const schemaDir = path.resolve(import.meta.dirname, "../db/schema");
+  const schemaDir = resolveSchemaSourceDirectory();
   const modelSource = [
     readFileSync(path.join(schemaDir, "accounting.ts"), "utf-8"),
     readFileSync(path.join(schemaDir, "accountingAccounts.ts"), "utf-8"),

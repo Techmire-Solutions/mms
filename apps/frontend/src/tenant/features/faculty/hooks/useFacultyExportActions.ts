@@ -8,7 +8,7 @@ import {
   type FacultyQuickFilter,
   type FacultySettings,
   type FacultySortField,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { startServerFacultyCsvExport } from "@/lib/backgroundJobs/startServerFacultyCsvExport";
 import { useModuleServerCsvExportActions } from "@/lib/backgroundJobs/useModuleServerCsvExportActions";
 import { buildFacultyDirectoryQuery } from "@/tenant/features/faculty/hooks/facultyQueryShared";

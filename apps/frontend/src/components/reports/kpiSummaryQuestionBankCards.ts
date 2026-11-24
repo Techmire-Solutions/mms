@@ -4,7 +4,7 @@ import type {
   QuestionBankQuestion,
   QuestionBankResult,
   QuestionBankTest,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { CategorizedKPIItem } from "./kpiSummaryTypes";
 

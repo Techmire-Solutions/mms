@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Account, JournalTemplate } from "@mms/shared";
+import type { Account, JournalTemplate } from "@mms/contracts";
 import {
   buildTemplateTransactionGroups,
   resolveWizardTransactionGroups,
-} from "../lib/simpleTransactionTemplateGroups";
-import { TRANSACTION_GROUPS } from "../lib/simpleTransactionWizardGroups";
+} from "@mms/mod-accounting/frontend/tenant";
+import { TRANSACTION_GROUPS } from "@mms/mod-accounting/frontend/tenant";
 
 const account = (id: string, code: string, type: Account["type"], name: string): Account => ({
   id,

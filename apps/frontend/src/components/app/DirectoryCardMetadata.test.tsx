@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { DirectoryCardMetadata, resolveFieldLabel } from "@/components/app/DirectoryCardMetadata";
 import { createEntityDescriptor } from "@/components/common/entityRegistry";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => `t:${key}`, dir: "ltr", language: "en" }),
 }));
 

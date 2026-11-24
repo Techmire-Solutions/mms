@@ -1,19 +1,16 @@
 import { randomBytes } from "node:crypto";
 import type { UsersRepository } from "../repository/usersRepository.js";
 import { getRequestTenant, requireTenant } from "../../lib/tenantContext.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { defineTenantBulkCollectionService } from "../../services/tenantBulkService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import {
-  recordModernAuditEvent,
-  mapActionStringToAuditType,
-} from "../../services/auditTrailService.js";
+import { recordModernAuditEvent, mapActionStringToAuditType } from "@mms/be-core/audit";
 import {
   type ActivityLog,
   activityLogListSchema,
   activityLogRecordSchema,
   dedupeTrimmedIds,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export async function recordUserActivityLog(
   repo: UsersRepository,

@@ -1,6 +1,11 @@
 import React from "react";
 import { CheckCircle2, MapPin } from "lucide-react";
-import { type Contact, hasWhatsApp, getPrimaryAddress, type AppTranslationKey } from "@mms/shared";
+import {
+  type Contact,
+  hasWhatsApp,
+  getPrimaryAddress,
+  type AppTranslationKey,
+} from "@mms/contracts";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { GenderIcon } from "@/components/app/GenderIcon";
 import { StatusBadge } from "@/components/app/StatusBadge";

@@ -15,7 +15,7 @@ import {
   type QuestionBankQuestion,
   type QuestionBankTest,
   type QuestionStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useQuestionBankColumnLayout } from "@/tenant/features/question-bank/hooks/useQuestionBankColumnLayout";
 import {
   useQuestionBankQuestions,

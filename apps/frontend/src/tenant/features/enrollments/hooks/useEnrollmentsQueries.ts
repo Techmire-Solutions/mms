@@ -6,12 +6,12 @@ import type {
   EnrollmentsWidgetAggregateResult,
   EnrollmentsWidgetOperation,
   EnrollmentsWidgetFilterOperator,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   ENROLLMENTS_MODULE_MANIFEST,
   enrollmentsWidgetQueryFromWidget,
   normalizeEnrollmentsReportComparisonQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient, apiContract } from "@/lib/api";

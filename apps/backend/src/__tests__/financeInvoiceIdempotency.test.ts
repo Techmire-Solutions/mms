@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Invoice, InvoiceCreateInput } from "@mms/shared";
+import type { Invoice, InvoiceCreateInput } from "@mms/contracts";
 import { createFinanceUseCases } from "../finance/use-cases/financeUseCases.js";
 import type { FinanceRepository } from "../finance/repository/financeRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
@@ -29,7 +29,7 @@ vi.mock("../db/repositories/financeBillingRepository.js", () => mockBilling);
 vi.mock("../db/repositories/studentRepository.js", () => mockStudents);
 vi.mock("../finance/use-cases/financeDocumentFx.js", () => mockDocumentFx);
 vi.mock("../services/financePreferencesService.js", () => mockPrefs);
-vi.mock("../services/auditTrailService.js", () => ({ recordModernAuditEvent: mockAudit }));
+vi.mock("@mms/be-core/audit", () => ({ recordModernAuditEvent: mockAudit }));
 vi.mock("../lib/livePush.js", () => mockLivePush);
 vi.mock("../db/repositories/accountingRepository.js", () => ({
   findEntryIdBySource: vi.fn().mockResolvedValue(null),

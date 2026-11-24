@@ -7,9 +7,10 @@
  * (e.g. a session rollover resuming the same run) is handled by the runner's idempotency keys.
  */
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb, closeDatabase } from "../db/database.js";
-import { withTenant } from "../db/tenant-context.js";
-import { backgroundJobs } from "../db/schema.js";
+import { closeDatabase } from "../db/database.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { withTenant } from "@mms/db/context";
+import { backgroundJobs } from "@mms/db/schema";
 import { eq } from "drizzle-orm";
 import { patchJob } from "../services/backgroundJobPatch.js";
 import { rowToJobRecord } from "../services/backgroundJobService.js";
@@ -20,7 +21,7 @@ async function main(): Promise<void> {
   loadBackendEnv();
   const [tenant, jobId] = process.argv.slice(2);
   if (!tenant || !jobId) throw new Error("Usage: replay_dead_letter_job <tenant> <jobId>");
-  await initDb();
+  await initializeDatabase();
   const row = await withTenant(tenant, async (tx) => {
     const [found] = await tx
       .select({

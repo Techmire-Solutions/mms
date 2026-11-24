@@ -7,7 +7,7 @@ import {
   workspaceRoleDescription,
   workspaceRoleLabel,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";

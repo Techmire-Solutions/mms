@@ -3,7 +3,7 @@ import {
   FACULTY_MODULE_MANIFEST,
   facultyCsvExportBodySchema,
   moduleFieldsPrefsAuditBodySchema as facultySetupAuditSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
 import { registerModuleSetupAuditRoute } from "../../../lib/registerModuleSetupAuditRoute.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ImportPipelineContext } from "@mms/shared";
+import type { ImportPipelineContext } from "@mms/contracts";
 
 const mockRegisterRunner = vi.fn();
 const mockUpsertContact = vi.fn();
@@ -11,7 +11,9 @@ vi.mock("../lib/registerModuleCsvImportJobRunner.js", () => ({
   registerModuleCsvImportJobRunner: (...args: unknown[]) => mockRegisterRunner(...args),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, cb: () => Promise<unknown>) => cb(),
   withTenantRead: async (_tenant: string, cb: () => Promise<unknown>) => cb(),
 }));

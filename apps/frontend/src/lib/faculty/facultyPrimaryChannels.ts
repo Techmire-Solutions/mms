@@ -1,4 +1,4 @@
-import { getPrimaryEmail, getPrimaryPhone, type Contact, type FacultyMember } from "@mms/shared";
+import { getPrimaryEmail, getPrimaryPhone, type Contact, type FacultyMember } from "@mms/contracts";
 
 export type FacultyPrimaryChannels = {
   phone: string | null;

@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { BiDiText } from "@/components/app/BiDiText";
 import { usePlatformPermissionMatrix } from "@/platform/features/users/hooks/usePlatformPermissionMatrix";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import {
   Button,
   Badge,
@@ -15,7 +15,7 @@ import {
   CardSkeleton,
   Field,
   SearchBar,
-} from "@shared/ui";
+} from "@mms/ui";
 import { FormModal } from "@/components/app/FormModal";
 import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
 import { cn } from "@/lib/utils";

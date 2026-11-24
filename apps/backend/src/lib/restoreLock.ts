@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { activeDb } from "../db/dbConnection.js";
+import { activeDb } from "@mms/db/client";
 
 /**
  * Transaction-scoped advisory lock so only one wipe-restore can run per tenant at

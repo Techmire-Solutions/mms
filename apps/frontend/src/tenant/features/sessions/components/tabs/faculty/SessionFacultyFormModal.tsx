@@ -6,7 +6,7 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { Field } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatFacultyDisplayName, type FacultyMember } from "@mms/shared";
+import { formatFacultyDisplayName, type FacultyMember } from "@mms/contracts";
 import type { SessionFaculty } from "@/lib/data/sessionsData";
 import { COMMON_FACULTY_ROLES } from "./facultyManagementShared";
 

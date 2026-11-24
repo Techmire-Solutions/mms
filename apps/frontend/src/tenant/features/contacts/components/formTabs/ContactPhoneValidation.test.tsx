@@ -5,7 +5,7 @@ import {
   extractSubscriberDigits,
   validatePhoneNumberByCountry,
   type Contact,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 describe("Contact Phone Country-Specific Digit Length Validation", () => {
   const t = (key: string, params?: Record<string, unknown>) => {

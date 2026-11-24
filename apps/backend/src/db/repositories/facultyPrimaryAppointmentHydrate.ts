@@ -1,8 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import type { FacultyMember } from "@mms/shared";
-import { facultyDepartments, facultyDesignations } from "../schema.js";
-import type { AppDb } from "../tenant-context.js";
+import type { FacultyMember } from "@mms/contracts";
+import { facultyDepartments, facultyDesignations } from "@mms/db/schema";
+import type { AppDb } from "@mms/db/context";
 
 const parentDesignations = alias(facultyDesignations, "parent_designation");
 

@@ -5,7 +5,7 @@ import {
   toEffectiveModuleFlags,
   type ModuleAction,
   type ModuleAvailabilityMap,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { moduleAccessQueryOptions } from "@/lib/query/moduleAccessQuery";
 import type { ModuleAccessEvaluator } from "@/lib/config/routeAccess";

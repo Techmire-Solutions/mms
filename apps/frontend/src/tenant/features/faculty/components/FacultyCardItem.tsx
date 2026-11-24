@@ -11,7 +11,7 @@ import { resolveFacultyCardFaceVisibility } from "@/tenant/features/faculty/lib/
 import { facultyRowIdentity } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 import type { useFacultyEntityDescriptor } from "@/tenant/features/faculty/hooks/useFacultyEntityDescriptor";
 import type { FacultyListContentProps } from "@/tenant/features/faculty/lib/facultyListContentShared";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 
 export interface FacultyCardItemProps {
   faculty: Faculty;

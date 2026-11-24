@@ -28,7 +28,8 @@ function isAccountingFile(file) {
   return (
     normalized.includes("src/accounting/") ||
     normalized.includes("src/db/repositories/accounting") ||
-    normalized.includes("src/routes/tenant/accounting")
+    normalized.includes("src/routes/tenant/accounting") ||
+    normalized.includes("packages/modules/accounting/src/backend")
   );
 }
 

@@ -1,4 +1,4 @@
-import type { LlmTestMetrics } from "@mms/shared";
+import type { LlmTestMetrics } from "@mms/contracts";
 
 export interface SandboxMessage {
   id: string;

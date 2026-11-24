@@ -376,6 +376,6 @@ Status: **100% PASS** (352 automated module tests passed, 23 backend security in
 - **Preconditions:** All code changes and audits staged.
 - **Steps:** Run `pnpm typecheck`.
 - **Expected Result:** 6 packages typechecked with 0 errors.
-- **Actual Result:** 100% clean across `@mms/shared`, `@mms/ui`, `mms-frontend`, `mms-backend`, and `e2e-tests`.
+- **Actual Result:** 100% clean across `@mms/contracts`, `@mms/ui`, `mms-frontend`, `mms-backend`, and `e2e-tests`.
 - **Status:** **PASS**
 - **Evidence:** `pnpm typecheck` completed in 1m 4s with 0 errors.

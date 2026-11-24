@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Session } from "@mms/shared";
+import type { Session } from "@mms/contracts";
 import { StudentDetailSessionsSection } from "./StudentDetailSessionsSection";
 
 vi.mock("@/hooks/useTranslation", () => ({

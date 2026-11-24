@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
-import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
+import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/contracts";
 import { useExaminationsContractList } from "@/tenant/features/examinations/hooks/useExaminationsQueries";
 
 const EXAM_SEARCH_DEBOUNCE_MS = 300;

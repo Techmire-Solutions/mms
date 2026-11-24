@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Contact, AppTranslationKey } from "@mms/shared";
+import type { Contact, AppTranslationKey } from "@mms/contracts";
 import {
   renderGenderMetadata,
   renderSyedMetadata,

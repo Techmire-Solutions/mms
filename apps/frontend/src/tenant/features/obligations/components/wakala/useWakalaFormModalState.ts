@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { generateClientEntityId, obligationDistributionInsertSchema } from "@mms/shared";
+import { generateClientEntityId, obligationDistributionInsertSchema } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import type { Mujtahid, MujtahidRep, ObligationType } from "@/lib/data/obligationsData";

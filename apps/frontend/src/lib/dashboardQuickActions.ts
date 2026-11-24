@@ -1,4 +1,4 @@
-import type { AppTranslationKey, Permission } from "@mms/shared";
+import type { AppTranslationKey, Permission } from "@mms/contracts";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   ATTENDANCE_MODULE_MANIFEST,
@@ -6,7 +6,7 @@ import {
   FINANCE_MODULE_MANIFEST,
   HASANAT_MODULE_MANIFEST,
   SESSIONS_MODULE_MANIFEST,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   UserPlus,
   CalendarPlus,

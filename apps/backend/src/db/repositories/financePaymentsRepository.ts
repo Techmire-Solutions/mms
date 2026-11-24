@@ -4,9 +4,9 @@ import {
   dedupeTrimmedIds,
   type Payment,
   type RepositoryListOptions,
-} from "@mms/shared";
-import { financePayments } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { financePayments } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { canonicalStoredRate } from "./repositoryFxMappers.js";
 import { mapAuditTimestamps } from "./repositoryMappers.js";

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
-import { SYSTEM_MODULES } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
+import { SYSTEM_MODULES } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormModal } from "@/components/app/FormModal";
-import { CardSkeleton } from "@shared/ui";
+import { CardSkeleton } from "@mms/ui";
 import { PlatformModuleSelectCard } from "@/platform/features/shell/components/PlatformModuleSelectCard";
 import { PlatformModulePresetsBar } from "@/platform/features/workspaces/components/PlatformModulePresetsBar";
 import {

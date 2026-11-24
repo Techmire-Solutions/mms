@@ -9,14 +9,14 @@
  * `obligations/domain/obligationWriteGuards.assertNoCascadingLoss`.
  */
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { dedupeTrimmedIds } from "@mms/shared";
+import { dedupeTrimmedIds } from "@mms/contracts";
 import {
   mujtahidReps,
   obligationCollections,
   obligationDistributions,
   wakalaTypes,
-} from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /** Catalogue rows a delete of `kind` would cascade to. */
 export interface CatalogueDependents {

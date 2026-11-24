@@ -6,7 +6,7 @@ import {
   type Enrollment,
   type EnrollmentTimelineItem,
   type SessionDiscountItem,
-} from "@mms/shared";
+} from "@mms/contracts";
 export type { CalculatedFee, SessionDiscountItem };
 export type { Enrollment, EnrollmentTimelineItem };
 
@@ -18,7 +18,7 @@ export {
   type CheckResult,
 } from "./enrollmentEligibility";
 
-/** Fee rule lives in `@mms/shared` so server-side bulk enrollment applies the same discounts. */
+/** Fee rule lives in `@mms/contracts` so server-side bulk enrollment applies the same discounts. */
 export function calcFee(
   baseFee: number,
   student: Partial<Student>,

@@ -1,6 +1,6 @@
 import React from "react";
 import { BookOpen, School, Users, DoorOpen } from "lucide-react";
-import { sessionTypeI18nKey, type AppTranslationKey } from "@mms/shared";
+import { sessionTypeI18nKey, type AppTranslationKey } from "@mms/contracts";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";

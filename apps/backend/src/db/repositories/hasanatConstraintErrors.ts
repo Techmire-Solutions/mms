@@ -5,8 +5,8 @@
  * those constraint names into domain errors so routes answer 409 instead of a generic 500.
  */
 
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
+import { ConflictError } from "@mms/be-core/http/errors";
 
 export function rethrowHasanatViolation(error: unknown): never {
   const code = (error as { code?: string } | null)?.code;

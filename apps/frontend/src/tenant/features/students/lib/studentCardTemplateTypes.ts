@@ -1,4 +1,4 @@
-import type { DocumentTemplate } from "@mms/shared";
+import type { DocumentTemplate } from "@mms/contracts";
 
 /** Flat payload shape passed to TemplateElementContent when rendering student cards. */
 export interface StudentCardPayload {

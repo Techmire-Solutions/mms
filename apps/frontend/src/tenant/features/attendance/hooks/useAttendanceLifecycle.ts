@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import type { AttendanceLeave } from "@mms/shared";
+import type { AttendanceLeave } from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";

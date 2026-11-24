@@ -1,5 +1,5 @@
 import type React from "react";
-import { toMessagingRecipient } from "@mms/shared";
+import { toMessagingRecipient } from "@mms/contracts";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { getGenderAccentBarClass } from "@/lib/ui/directoryCardAccent";
 import { StudentArchivedBanner } from "@/tenant/features/students/components/StudentArchivedBanner";

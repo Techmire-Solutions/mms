@@ -8,7 +8,7 @@ import {
   type TaskAssigneeInput,
   type TaskInsert,
   type TasksImportBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { tenantUserHasPermission } from "../../lib/tenantRoleCatalog.js";
 import { getTenantTaskSettings } from "../../services/taskSettingsService.js";
 import { getEligibleTaskAssignees } from "../../services/taskEligibleAssigneesService.js";

@@ -3,11 +3,11 @@ import {
   type User,
   FACULTY_MODULE_MANIFEST,
   type facultyContract,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
 import { facultyUseCases } from "../../../faculty/use-cases/facultyUseCases.js";
 import { previewNextEmployeeId } from "../../../faculty/use-cases/facultyEmployeeIdService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";

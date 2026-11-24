@@ -1,7 +1,7 @@
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type ObligationType } from "@mms/shared";
-import { obligationTypes } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type ObligationType } from "@mms/contracts";
+import { obligationTypes } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 
 type ObligationTypeRow = typeof obligationTypes.$inferSelect;
 

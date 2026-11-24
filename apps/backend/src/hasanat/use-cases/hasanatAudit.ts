@@ -11,8 +11,8 @@
  * active tx). Snapshots carry ids, amounts and status only — never names or free-text PII.
  */
 
-import type { AuditActionType, Distribution, Redemption } from "@mms/shared";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import type { AuditActionType, Distribution, Redemption } from "@mms/contracts";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import type { HasanatStudentAwardView } from "./hasanatTierUseCases.js";
 
 export interface HasanatAuditInput {

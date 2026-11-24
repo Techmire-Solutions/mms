@@ -9,7 +9,7 @@ import {
   type SessionCancelResult,
   type SessionPostponeBody,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import { sessionsAcademicRepository } from "../repository/sessionsAcademicRepositoryAdapter.js";
 import {
@@ -19,15 +19,15 @@ import {
   ValidationError,
 } from "../../lib/httpErrors.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import {
   endLiveEnrollments,
   SYSTEM_ACTOR,
 } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
 import { assertSessionDateRange, workspaceToday } from "./sessionLockGuard.js";
 import { transitionSession } from "./sessionTransitionService.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { runAfterCommit } from "../../db/commitScope.js";
+import { withTenant } from "@mms/db/context";
+import { runAfterCommit } from "@mms/db/client";
 import {
   countLiveEnrollmentsTx,
   shiftSessionDependentDatesTx,

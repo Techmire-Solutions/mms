@@ -10,7 +10,7 @@ import {
   CreditCard,
   Clock,
 } from "lucide-react";
-import { formatMoney, formatDate } from "@mms/shared";
+import { formatMoney, formatDate } from "@mms/contracts";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";

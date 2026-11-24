@@ -1,6 +1,6 @@
 import { asc, desc, eq, ilike, isNotNull, isNull, or, type AnyColumn, type SQL } from "drizzle-orm";
-import { isQueryFlagTrue, toSqlSearchPattern, type FinanceListQuery } from "@mms/shared";
-import { financeInvoices, financePayments } from "../schema.js";
+import { isQueryFlagTrue, toSqlSearchPattern, type FinanceListQuery } from "@mms/contracts";
+import { financeInvoices, financePayments } from "@mms/db/schema";
 
 /**
  * WHERE/ORDER BY builders for the Finance invoice/payment list pages. Split out of

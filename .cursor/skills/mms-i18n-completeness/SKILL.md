@@ -24,11 +24,11 @@ Advisory: pair translation parity with [accounting policy applicability](../mms-
 
 | File | Role |
 |---|---|
-| `packages/shared/src/i18n/appTranslationsEn.ts` | **source of truth** — add the key here first |
-| `packages/shared/src/i18n/appTranslationsAr.ts` | Arabic |
-| `packages/shared/src/i18n/appTranslationsUr.ts` | Urdu |
-| `packages/shared/src/i18n/appTranslationsFa.ts` | Farsi |
-| `packages/shared/src/i18n/appTranslations.ts` | aggregation/lookup used by the runtime |
+| `packages/contracts/src/i18n/appTranslationsEn.ts` | **source of truth** — add the key here first |
+| `packages/contracts/src/i18n/appTranslationsAr.ts` | Arabic |
+| `packages/contracts/src/i18n/appTranslationsUr.ts` | Urdu |
+| `packages/contracts/src/i18n/appTranslationsFa.ts` | Farsi |
+| `packages/contracts/src/i18n/appTranslations.ts` | aggregation/lookup used by the runtime |
 
 Locales are `en`, `ar`, `ur`, `fa`; `ar`/`ur`/`fa` are RTL, `en` is LTR.
 

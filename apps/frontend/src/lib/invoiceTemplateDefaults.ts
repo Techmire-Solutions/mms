@@ -1,4 +1,4 @@
-import { mergeBrandingSettings } from "@mms/shared";
+import { mergeBrandingSettings } from "@mms/contracts";
 import { getInvoiceTemplateBranding } from "./invoiceTemplateBranding";
 import { buildDefaultInvoiceTemplateElements } from "./invoiceTemplateElements";
 import type { BrandingInfo, InvoiceTemplate, TemplateTranslate } from "./invoiceTemplateTypes";

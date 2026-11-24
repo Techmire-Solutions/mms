@@ -1,4 +1,4 @@
-import { type AttachmentUploadResponse } from "@mms/shared";
+import { type AttachmentUploadResponse } from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 /** Purpose-scoped uploads: the server authorises and content-type-filters per purpose. */

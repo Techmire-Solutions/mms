@@ -1,4 +1,4 @@
-import { financeFieldConfigs } from "../schema.js";
+import { financeFieldConfigs } from "@mms/db/schema";
 import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({

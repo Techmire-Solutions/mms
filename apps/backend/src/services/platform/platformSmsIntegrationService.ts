@@ -3,14 +3,14 @@ import {
   type SmsIntegrationConfig,
   type SmsIntegrationSecrets,
   type SmsProviderId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import {
   getPlatformSmsIntegrationRow,
   upsertPlatformSmsIntegrationConfigRow,
   upsertPlatformSmsIntegrationSecretsRow,
 } from "../../db/repositories/platformSmsIntegrationRepository.js";
-import { type PlatformSmsIntegrationRow } from "../../db/schema/platform.js";
+import { type PlatformSmsIntegrationRow } from "@mms/db/schema/platform";
 
 function rowToConfig(row: PlatformSmsIntegrationRow): SmsIntegrationConfig {
   const overrides: Partial<SmsIntegrationConfig> = {

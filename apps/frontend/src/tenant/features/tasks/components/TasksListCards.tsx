@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo } from "react";
-import type { TaskRecord, TaskStatus } from "@mms/shared";
+import type { TaskRecord, TaskStatus } from "@mms/contracts";
 import { EmptyState } from "@/components/app/EmptyState";
 import { LoadingState } from "@/components/app/LoadingState";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";

@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type { CustomCard } from "@/lib/reports/reportMetadata";
 
 export function areStringListsEqual(left: string[], right: string[]): boolean {

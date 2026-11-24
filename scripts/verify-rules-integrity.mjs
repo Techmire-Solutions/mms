@@ -436,7 +436,7 @@ for (const file of ruleFiles) {
 
 const AGENT_SKILLS_PREFIX = ".agent/skills";
 const PACKAGE_NAMES = new Set([
-  "@mms/shared",
+  "@mms/contracts",
   "@mms/backend",
   "mms-backend",
   "mms-frontend",
@@ -1168,7 +1168,7 @@ const coverageRule = fs.readFileSync(
 const coverageRows = [
   ["Frontend", "apps/frontend/vitest.config.ts"],
   ["Backend", "apps/backend/vitest.config.ts"],
-  ["`@mms/shared`", "packages/shared/vitest.config.ts"],
+  ["`@mms/contracts`", "packages/contracts/vitest.config.ts"],
 ];
 let coverageMismatch = 0;
 for (const [label, rel] of coverageRows) {

@@ -1,5 +1,5 @@
 import { Brain, Boxes, Database, Globe, Palette, Sparkles, type LucideIcon } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 
 /** Platform settings sections — ids mirror the tenant `/settings` sections. */
 export const PLATFORM_SETTINGS_SECTIONS = [

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { collectionSaveBodySchema } from "@mms/shared";
+import { collectionSaveBodySchema } from "@mms/contracts";
 import type { z } from "zod";
 
 /** Normalize a collection save body — mirrors the helper in dbCollectionRoutes. */

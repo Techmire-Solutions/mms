@@ -12,7 +12,7 @@ import {
   todayISO,
   getPrimaryEmail,
   getPrimaryPhone,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";

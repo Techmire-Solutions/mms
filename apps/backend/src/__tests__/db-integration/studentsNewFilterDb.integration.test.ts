@@ -8,9 +8,9 @@ import {
   pingDatabase,
   closeDatabase,
   beginLongLivedTenantTransaction,
-} from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { workspaces, students } from "../../db/schema.js";
+} from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { workspaces, students } from "@mms/db/schema";
 import { listStudentsPage } from "../../db/repositories/studentRepositoryList.js";
 import { buildListConditions } from "../../db/repositories/studentRepositoryListQuery.js";
 
@@ -136,7 +136,7 @@ describe("students 'new' quick filter (real Postgres)", () => {
     expect(ids).not.toContain(RECENT_DELETED);
   });
 
-  it("plans the filter against the existing date indexes instead of a sequential scan", async (ctx) => {
+  it("plans the filter through an index scan instead of a sequential scan", async (ctx) => {
     if (!dbAvailable) {
       ctx.skip();
       return;
@@ -153,8 +153,10 @@ describe("students 'new' quick filter (real Postgres)", () => {
         .map((row) => String(Object.values(row)[0] ?? ""))
         .join("\n");
 
-      // An index scan is planned against the tenant workspace index instead of a sequential scan.
-      expect(text).toMatch(/(?:Index Scan|Bitmap (?:Index|Heap) Scan) using students_/);
+      // A students_* index is used instead of a sequential scan. Accept every shape the planner
+      // can pick: small tables choose a Bitmap Index Scan (`… on students_…`), larger ones a plain
+      // Index Scan (`… using students_…`), and a covering index enables an Index Only Scan.
+      expect(text).toMatch(/Index(?: Only)? Scan (?:using|on) students_/);
       expect(text).not.toContain("Seq Scan");
       await planTx.commit();
     } catch (error) {

@@ -1,4 +1,4 @@
-import type { TenantNotificationList } from "@mms/shared";
+import type { TenantNotificationList } from "@mms/contracts";
 import type { NewTenantNotification } from "../../db/repositories/tenantNotificationsRepository.js";
 
 export type { NewTenantNotification };

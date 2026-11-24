@@ -5,7 +5,7 @@ import {
   TENANT_PASSWORD_OTP_TTL_MINUTES,
   TENANT_OTP_MAX_ATTEMPTS,
   type ActivityLog,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   deleteAuthArtifact,
   deleteRefreshTokensForUser,

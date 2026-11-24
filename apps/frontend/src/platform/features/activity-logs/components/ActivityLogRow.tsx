@@ -1,9 +1,9 @@
 import React from "react";
 import { User, Calendar, Code2 } from "lucide-react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
-import { Badge } from "@shared/ui";
+import { Button } from "@mms/ui";
+import { Badge } from "@mms/ui";
 import { getActionMeta } from "@/platform/features/activity-logs/components/activityLogMeta";
 import type { PlatformActivityLogItem } from "@/platform/features/activity-logs/hooks/usePlatformActivityLogs";
 

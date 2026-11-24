@@ -5,7 +5,7 @@ import {
   type FacultyDuplicateReason,
   type FacultyRecord,
   type FacultyCommandMetricsSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";

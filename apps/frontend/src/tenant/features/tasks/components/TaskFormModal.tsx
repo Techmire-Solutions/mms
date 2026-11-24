@@ -8,7 +8,7 @@ import {
   TASK_PRIORITIES,
   TASK_STATUSES,
   taskStatusTransitionsFrom,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";

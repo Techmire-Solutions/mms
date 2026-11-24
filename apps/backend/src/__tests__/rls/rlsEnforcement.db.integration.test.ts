@@ -1,9 +1,9 @@
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, inArray, sql } from "drizzle-orm";
-import type { User } from "@mms/shared";
-import { activeDb, beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
+import type { User } from "@mms/contracts";
+import { activeDb, beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
 import {
   auditMerkleRoots,
   auditTrailEvents,
@@ -14,13 +14,13 @@ import {
   workshopModulePreferences,
   workshopParticipants,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import {
   getDocumentTemplateUseCase,
   saveDocumentTemplateUseCase,
 } from "../../documents/use-cases/documentTemplatesUseCases.js";
-import { GENESIS_AUDIT_HASH } from "@mms/shared";
-import { getLatestShardHash } from "../../services/auditTrailService.js";
+import { GENESIS_AUDIT_HASH } from "@mms/contracts";
+import { getLatestShardHash } from "@mms/be-core/audit";
 import { listMerkleRoots } from "../../audit/repository/auditQueryAdapter.js";
 import { requireDatabaseConnection } from "../db-integration/dbTestSupport.js";
 
@@ -116,7 +116,10 @@ describe("RLS enforcement", () => {
         periodStart: new Date("2026-10-01T00:00:00.000Z"),
         periodEnd: new Date("2026-10-31T23:59:59.999Z"),
         shardCount: 2,
-        publishedAt: new Date("2026-11-01T00:00:00.000Z"),
+        // Newest checkpoint so the projection assertion below is deterministic on a
+        // database that already holds checkpoints from earlier runs (cleanup() removes
+        // this fixture by id). A fixed past date made the test depend on an empty table.
+        publishedAt: new Date(),
       });
     });
 

@@ -1,0 +1,19 @@
+{
+  // React preset — Vite apps and the shared UI package: bundler resolution, JSX
+  // transform, DOM libs and no emit (Vite owns the build).
+  //
+  // Packages keep their own `paths` (the `@/` alias and the pinned per-dependency
+  // paths for React/Radix) because those are resolved relative to the package
+  // tsconfig that declares them, not relative to this preset.
+  "extends": "./base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["esnext", "dom"],
+    "target": "esnext",
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
+  }
+}

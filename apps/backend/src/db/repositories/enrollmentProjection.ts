@@ -4,9 +4,9 @@ import {
   parseEnrollmentStatus,
   type Enrollment,
   type EnrollmentTimelineItem,
-} from "@mms/shared";
-import { enrollments, enrollmentTimelineEvents } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+} from "@mms/contracts";
+import { enrollments, enrollmentTimelineEvents } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 /** Full enrollment projection shared by every hydrate path. */

@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { SessionSchema } from "@mms/shared";
+import { SessionSchema } from "@mms/contracts";
 import { SessionClassSectionSelect, sessionIdForClass } from "./SessionClassSectionSelect";
 
 vi.mock("@/hooks/useAcademicTerms", () => ({

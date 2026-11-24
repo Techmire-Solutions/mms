@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ModuleCustomField } from "@mms/shared";
+import type { ModuleCustomField } from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import {
   addAuditEntry,

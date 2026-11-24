@@ -1,0 +1,127 @@
+import React from "react";
+import { Download, Plus } from "lucide-react";
+import { type AppTranslationKey } from "@mms/contracts";
+import {
+  ModuleFilterDivider,
+  ModuleFilterDropdown,
+  ModuleFilterRadioGroup,
+} from "@mms/ui/app/ModuleFiltersMenuButton";
+import { DropdownMenuCheckboxItem } from "@mms/ui";
+import { type ModuleColumnCustomizerProps } from "@mms/fe-core/components/moduleColumnCustomizerTypes";
+import { ModuleWorkToolbar } from "@mms/fe-core/components/ModuleWorkToolbar";
+import { Button } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ACCOUNT_TYPES, type AccountType } from "@mms/mod-accounting/frontend/tenant";
+import type { WorkDirectoryViewMode } from "@mms/fe-core/tenant";
+
+interface ChartOfAccountsListFiltersProps {
+  search: string;
+  setSearch: (search: string) => void;
+  typeFilter: AccountType | "all";
+  setTypeFilter: (typeFilter: AccountType | "all") => void;
+  showInactive: boolean;
+  setShowInactive: (showInactive: boolean) => void;
+  onExportCsv: () => void;
+  onAddAccount: () => void;
+  canWrite: boolean;
+  columnCustomizer?: ModuleColumnCustomizerProps;
+  viewMode: WorkDirectoryViewMode;
+  onViewModeChange: (mode: WorkDirectoryViewMode) => void;
+}
+
+export function ChartOfAccountsListFilters({
+  search,
+  setSearch,
+  typeFilter,
+  setTypeFilter,
+  showInactive,
+  setShowInactive,
+  onExportCsv,
+  onAddAccount,
+  canWrite,
+  columnCustomizer,
+  viewMode,
+  onViewModeChange,
+}: ChartOfAccountsListFiltersProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const activeFilterCount = Number(typeFilter !== "all") + Number(showInactive);
+  const hasActiveFilters = activeFilterCount > 0;
+  const handleClearFilters = (): void => {
+    setTypeFilter("all");
+    setShowInactive(false);
+  };
+
+  return (
+    <ModuleWorkToolbar
+      regionLabel={t("accounting.coa.controlsAria")}
+      search={search}
+      onSearchChange={setSearch}
+      searchPlaceholder={t("accounting.coa.searchAccounts")}
+      searchId="coa-search"
+      // No `/` handler targets this surface (the accounting shortcut owns the journals search).
+      searchShortcutHint={false}
+      hasActiveFilters={hasActiveFilters}
+      onClearFilters={handleClearFilters}
+      clearFiltersLabel={t("accounting.clearFilters")}
+      filterButton={
+        <ModuleFilterDropdown
+          label={t("common.filters")}
+          activeCount={activeFilterCount}
+          clearLabel={t("accounting.clearFilters")}
+          onClear={handleClearFilters}
+        >
+          <ModuleFilterRadioGroup
+            label={t("accounting.coa.filterTypeAria")}
+            value={typeFilter}
+            onValueChange={(accountTypeValue) =>
+              setTypeFilter(accountTypeValue as AccountType | "all")
+            }
+            options={[
+              { value: "all", label: t("accounting.ledger.allTypes") },
+              ...ACCOUNT_TYPES.map((type) => ({
+                value: type,
+                label: t(`accounting.type.${type}` as AppTranslationKey),
+              })),
+            ]}
+          />
+          <ModuleFilterDivider />
+          <DropdownMenuCheckboxItem
+            checked={showInactive}
+            onCheckedChange={(checked) => setShowInactive(checked === true)}
+          >
+            {t("accounting.coa.showInactive")}
+          </DropdownMenuCheckboxItem>
+        </ModuleFilterDropdown>
+      }
+      viewModeToggle={{ viewMode, onViewModeChange }}
+      primaryAction={
+        canWrite ? (
+          <Button type="button" onClick={onAddAccount} className="min-h-11 gap-1.5">
+            <Plus className="h-4 w-4" aria-hidden />
+            {t("accounting.coa.addAccount")}
+          </Button>
+        ) : undefined
+      }
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
+    >
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onExportCsv}
+        className="flex min-h-11 items-center gap-1.5 rounded-xl text-sm font-semibold text-muted-foreground"
+      >
+        <Download className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+        {t("accounting.journal.dashboard.export")}
+      </Button>
+    </ModuleWorkToolbar>
+  );
+}

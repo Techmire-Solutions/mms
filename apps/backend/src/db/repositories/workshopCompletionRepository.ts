@@ -1,18 +1,18 @@
 import { and, eq, getTableColumns, gte, inArray, isNull, lte, sql } from "drizzle-orm";
-import { DEFAULT_WORKSHOP_PREFERENCES, type WorkshopPreferences } from "@mms/shared";
+import { DEFAULT_WORKSHOP_PREFERENCES, type WorkshopPreferences } from "@mms/contracts";
 import {
   workshopAttendance,
   workshopEvents,
   workshopModulePreferences,
   workshopParticipants,
   workshopScores,
-} from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { auditRow } from "./workshopAudit.js";
-import { NotFoundError } from "../../lib/httpErrors.js";
+import { NotFoundError } from "@mms/be-core/http/errors";
 import { findWorkshopRow, workshopRowToRecord } from "./workshopEventsRepository.js";
 import { listActiveParticipants } from "./workshopParticipantsRepository.js";
-import type { WorkshopEvent, WorkshopParticipant } from "@mms/shared";
+import type { WorkshopEvent, WorkshopParticipant } from "@mms/contracts";
 
 export interface WorkshopCompletionInputs {
   workshop: WorkshopEvent;

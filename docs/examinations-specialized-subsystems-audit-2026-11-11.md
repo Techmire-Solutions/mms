@@ -41,7 +41,7 @@ finance holds are designed, not built.
 | A8 | P1 | Division by `totalMarks` was unguarded → `Infinity` → grade `A+`. | **Fixed** — zero total scores 0/F |
 | A9 | P2 | Class average was a mean of already-rounded percentages. | **Fixed** — averaged raw, rounded once |
 
-**Engine:** [`resultScoring.ts`](../packages/shared/src/examinations/resultScoring.ts) —
+**Engine:** [`resultScoring.ts`](../packages/contracts/src/examinations/resultScoring.ts) —
 `resolveResultScore` (raw-score percentage, 2-dp + integer display values, grade, pass/fail, grace),
 `rankResults`, `rankInExam`, `ordinalPosition`. Every surface now calls it: results grid
 (`useResultsViewData`), marks row, reports controller, report card (single + term), certificate,
@@ -93,7 +93,7 @@ comparisons, monthly report, command metrics.
 
 ## Delivered
 
-- `packages/shared/src/examinations/resultScoring.ts` (+ 8 tests), moderation DTO/contract route,
+- `packages/contracts/src/examinations/resultScoring.ts` (+ 8 tests), moderation DTO/contract route,
   results page envelope + query schema, capped bulk ids, module permissions.
 - Migration `0237_exam_scoring_moderation.sql` (+ snapshot/journal): attendance threshold `numeric(5,2)`,
   moderation columns/checks, effective-score bounds trigger.

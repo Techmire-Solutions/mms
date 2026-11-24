@@ -37,7 +37,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const migrationsDir = path.join(rootDir, "apps/backend/src/db/migrations_drizzle");
+const migrationsDir = path.join(rootDir, "packages/db/migrations_drizzle");
 const metaDir = path.join(migrationsDir, "meta");
 
 /** Measured 2026-10-28. These may only go down. */
@@ -91,7 +91,7 @@ function addedMigrationFiles() {
       "--diff-filter=A",
       `${baseRef}...HEAD`,
       "--",
-      "apps/backend/src/db/migrations_drizzle",
+      "packages/db/migrations_drizzle",
     ],
     { cwd: rootDir, encoding: "utf8" },
   );
@@ -161,18 +161,33 @@ if (!fs.existsSync(journalPath)) {
   const entries = Array.isArray(journal.entries) ? journal.entries : [];
   const journalTags = new Set();
   // Existing entries are immutable (forward-only). Validate only what the change set appends.
-  const journalRel = "apps/backend/src/db/migrations_drizzle/meta/_journal.json";
+  const journalRel = "packages/db/migrations_drizzle/meta/_journal.json";
+  // The journal moved with `packages/db`; a base commit that predates the move only
+  // has the legacy path. Try the current path first, then the historical locations, so
+  // the frozen-entry comparison still works across the relocation.
+  const journalCandidates = [
+    journalRel,
+    "apps/backend/src/db/migrations_drizzle/meta/_journal.json",
+  ];
   let frozenEntryCount = null;
-  try {
-    const baseJournal = JSON.parse(
-      execFileSync("git", ["show", `${baseRef}:${journalRel}`], {
-        cwd: rootDir,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }),
-    );
-    frozenEntryCount = Array.isArray(baseJournal.entries) ? baseJournal.entries.length : 0;
-  } catch {
+  let baseJournalRead = false;
+  for (const candidate of journalCandidates) {
+    try {
+      const baseJournal = JSON.parse(
+        execFileSync("git", ["show", `${baseRef}:${candidate}`], {
+          cwd: rootDir,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"],
+        }),
+      );
+      frozenEntryCount = Array.isArray(baseJournal.entries) ? baseJournal.entries.length : 0;
+      baseJournalRead = true;
+      break;
+    } catch {
+      // try the next candidate
+    }
+  }
+  if (!baseJournalRead) {
     journalIntegrity.push(`cannot read ${journalRel} at base ${baseRef}`);
   }
   for (let index = 0; index < entries.length; index += 1) {

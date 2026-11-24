@@ -51,7 +51,7 @@ validation, error envelopes and pagination.
 ## 3. What changed
 
 ### Error contract (`code`)
-`ACCOUNTING_ERROR_CODES` (`packages/shared/src/finance/accountingErrorCodes.ts`) plus an optional `code` that
+`ACCOUNTING_ERROR_CODES` (`packages/contracts/src/finance/accountingErrorCodes.ts`) plus an optional `code` that
 `ledgerError`, `ConflictError`, `ValidationError`, `NotFoundError` and `PolicyViolationError` attach to the
 error instance; `mapDomainError`, `handleContractError` and `installContractErrorHandler` read it
 structurally and put it in the envelope (the contacts subclasses that already declared their own `code`

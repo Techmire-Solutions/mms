@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, Building2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { type BrandingSettings } from "@mms/shared";
+import { type BrandingSettings } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";

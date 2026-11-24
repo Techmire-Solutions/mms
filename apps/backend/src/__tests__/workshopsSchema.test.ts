@@ -1,16 +1,17 @@
 import fs from "node:fs";
-import path from "node:path";
+import path, { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   WORKSHOP_ATTENDANCE_STATUSES,
   WORKSHOP_LIFECYCLE_STATES,
   WORKSHOP_PARTICIPANT_STATUSES,
-} from "@mms/shared";
+} from "@mms/contracts";
+import { resolveMigrationsFolder, resolveSchemaSourceDirectory } from "@mms/db/testing";
 
-const MIGRATIONS = path.join(process.cwd(), "src/db/migrations_drizzle");
+const MIGRATIONS = resolveMigrationsFolder();
 const SCHEMA_FILES = [
-  path.join(process.cwd(), "src/db/schema/workshops.ts"),
-  path.join(process.cwd(), "src/db/schema/workshopActivityTables.ts"),
+  join(resolveSchemaSourceDirectory(), "workshops.ts"),
+  join(resolveSchemaSourceDirectory(), "workshopActivityTables.ts"),
 ];
 
 function readMigration(name: string): string {

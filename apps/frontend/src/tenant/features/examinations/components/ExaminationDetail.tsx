@@ -10,7 +10,7 @@ import {
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { ExamEligibilitySection } from "@/tenant/features/examinations/components/ExamEligibilitySection";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 
 export interface ExaminationDetailProps {
   exam: Exam;

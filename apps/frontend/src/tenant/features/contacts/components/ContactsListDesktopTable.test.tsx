@@ -2,8 +2,8 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/shared";
-import { APP_TRANSLATIONS_AR } from "@mms/shared/translations/ar";
+import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/contracts";
+import { APP_TRANSLATIONS_AR } from "@mms/contracts/translations/ar";
 import { ContactsListDesktopTable } from "./ContactsListDesktopTable";
 
 const mockUpdateUserColumnLayout = vi.fn();

@@ -11,7 +11,7 @@ Method:
 
 1. Run the machine gate first: `node scripts/verify-rules-integrity.mjs` — it validates skill frontmatter, path existence (case-sensitively), example imports, script reachability, section citations, and Cursor glob matches. Anything it reports is a confirmed defect.
 2. Then check what it cannot see, by reading and grepping:
-   - **Symbols** named in prose (`useFoo`, `SomeComponent.tsx`, `registerX`) — grep `apps/` and `packages/shared/src` for each; a name with zero hits is drift.
+   - **Symbols** named in prose (`useFoo`, `SomeComponent.tsx`, `registerX`) — grep `apps/` and `packages/contracts/src` for each; a name with zero hits is drift.
    - **Commands** — every `pnpm <script>`, `--filter <pkg>`, and `bash <path>` must exist in the package it is attributed to (`@mms/` is only the shared package; the apps are `mms-frontend` / `mms-backend`).
    - **Numbers and config claims** — ratchet baselines, coverage thresholds, timeouts, ports. Compare against the script or config that owns them; never trust a number restated in prose.
    - **Norm ownership** — a norm restated in more than one rule/skill is a duplication defect; the owner is the file named in `.cursor/rules/README.md`.

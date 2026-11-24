@@ -19,7 +19,9 @@ vi.mock("../lib/tenantContext.js", async (importOriginal) => {
   return { ...actual, getRequestTenant: () => getRequestTenantMock() };
 });
 
-vi.mock("../db/dbConnection.js", () => ({
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+
   getActivePoolRole: () => "http",
   getActiveMaxPoolSize: () => 10,
   getPool: () => {
@@ -36,13 +38,13 @@ import {
   runInGlobalTransaction,
   runInReadSnapshotTransaction,
   runInTransaction,
-} from "../db/dbTransactions.js";
-import { resolveTenantScope, runWithGlobalTenantScope } from "../db/tenantScopeGuard.js";
+} from "@mms/db/client";
+import { resolveTenantScope, runWithGlobalTenantScope } from "@mms/db/context";
 import {
   assertRlsRuntimeRole,
   resolveRlsEnforcementMode,
   type RlsEnforcementMode,
-} from "../db/rlsRoleGuard.js";
+} from "@mms/db/client";
 
 describe("resolveTenantScope", () => {
   it("rejects an empty tenant instead of bypassing RLS", () => {

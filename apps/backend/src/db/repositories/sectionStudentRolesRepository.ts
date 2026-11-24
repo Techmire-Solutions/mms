@@ -4,11 +4,11 @@ import type {
   SectionAssignmentEndBody,
   SectionStudentRole,
   SectionStudentRoleBody,
-} from "@mms/shared";
-import { enrollments, sectionStudentRoles } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
-import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+} from "@mms/contracts";
+import { enrollments, sectionStudentRoles } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
+import { ConflictError, NotFoundError, ValidationError } from "@mms/be-core/http/errors";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 const TABLE = "section_student_roles";
 

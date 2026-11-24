@@ -4,7 +4,7 @@ import {
   type FacultyMember,
   type FacultySortField,
   type FacultyQuickFilter,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { contractBody, isContractQueryError } from "@/lib/contractQuery";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";

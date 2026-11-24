@@ -4,9 +4,9 @@ import { chartAxisTick, chartTooltipStyle } from "@/components/app/ChartGrid";
 import { ReportChartCard } from "@/tenant/components/moduleReports";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { ENROLLMENT_STATUSES } from "@mms/shared";
+import { ENROLLMENT_STATUSES } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { EnrollmentsReportAggregates } from "@mms/shared";
+import type { EnrollmentsReportAggregates } from "@mms/contracts";
 import { enrollmentStatusLabels } from "@/lib/ui/enrollmentStatusBadge";
 
 interface EnrollmentReportsChartsProps {

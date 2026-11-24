@@ -1,16 +1,16 @@
 import type React from "react";
 import { useId, useState } from "react";
 import { ChevronDown, CircleHelp, Compass } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useTranslation } from "@/hooks/useTranslation";
-import { cn } from "@/lib/utils";
+import { Button } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { cn } from "@mms/ui";
 import {
   useAccountingNavigate,
   type AccountingNavigationTarget,
 } from "@/tenant/features/accounting/hooks/useAccountingNavigation";
 import { useFxSetupGuide } from "@/tenant/features/accounting/hooks/useFxSetupGuide";
-import { FX_SETUP_ANCHORS, type FxSetupStepId } from "../lib/fxSetupReadiness";
-import { FxSetupGuideStep } from "./FxSetupGuideStep";
+import { FX_SETUP_ANCHORS, type FxSetupStepId } from "@mms/mod-accounting/frontend/tenant";
+import { FxSetupGuideStep } from "@mms/mod-accounting/frontend/tenant";
 
 const STEP_TARGETS: Record<FxSetupStepId, AccountingNavigationTarget> = {
   currencies: { tab: "setup", anchorId: FX_SETUP_ANCHORS.currencies },

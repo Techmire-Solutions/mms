@@ -1,4 +1,4 @@
-import type { QuestionBankFieldConfigBlob, QuestionBankSettings } from "@mms/shared";
+import type { QuestionBankFieldConfigBlob, QuestionBankSettings } from "@mms/contracts";
 import {
   getQuestionBankFieldConfigsForWorkspace,
   replaceQuestionBankFieldConfigsForWorkspace,

@@ -11,7 +11,7 @@ import {
 } from "@/hooks/useWorkDirectoryViewMode";
 import type { ObligationDistribution } from "@/lib/data/obligationsData";
 import { AlertCircle, Layers } from "lucide-react";
-import { SectionHeader } from "@shared/ui";
+import { SectionHeader } from "@mms/ui";
 import { ObligationsWakalaSummaryCardsView } from "./ObligationsWakalaSummaryCardsView";
 
 /** ReportMoneyCard tile (report) — not DirectoryEntityCard. */

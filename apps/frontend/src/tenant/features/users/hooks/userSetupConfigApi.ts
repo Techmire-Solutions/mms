@@ -8,7 +8,7 @@ import {
   stripUserFieldConfigForPersist,
   type UserModulePreferences,
   type UsersSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 
 let memoryFieldConfig: UsersSettings | null = null;

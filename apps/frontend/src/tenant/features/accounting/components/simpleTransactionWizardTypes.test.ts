@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Account } from "@/lib/data/accountingData";
+import type { Account } from "@mms/mod-accounting/frontend/tenant";
 import {
   TRANSACTION_GROUPS,
   buildWizardFormState,
@@ -8,7 +8,7 @@ import {
   wizardAccountOptions,
   wizardCategoryAccountOptions,
   type WizardFormState,
-} from "../lib/simpleTransactionWizardTypes";
+} from "@mms/mod-accounting/frontend/tenant";
 
 const translate = (key: string) => `t:${key}`;
 

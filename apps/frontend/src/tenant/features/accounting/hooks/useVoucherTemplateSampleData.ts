@@ -5,11 +5,11 @@ import {
   type AppTranslationKey,
   type BrandingSettings,
   type TemplateFieldDefinition,
-} from "@mms/shared";
-import { useTranslation } from "@/hooks/useTranslation";
+} from "@mms/contracts";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
-import { useAuth } from "@/lib/contexts/AuthContext";
-import { VOUCHER_KIND_TITLE_KEY } from "@/tenant/features/accounting/lib/paymentVoucherKind";
+import { useAuth } from "@mms/fe-core/auth/AuthContext";
+import { VOUCHER_KIND_TITLE_KEY } from "@mms/mod-accounting/frontend/tenant";
 import {
   voucherContactLine,
   type VoucherPrintPayload,

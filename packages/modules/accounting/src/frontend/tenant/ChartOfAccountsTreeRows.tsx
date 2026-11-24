@@ -1,0 +1,170 @@
+import React from "react";
+import { Eye, EyeOff, Pencil } from "lucide-react";
+
+import { Button } from "@mms/ui";
+import { Badge } from "@mms/ui";
+import { DirectoryEntityCard } from "@mms/fe-core/components/DirectoryEntityCard";
+import { EntityCard } from "@mms/fe-core/components/EntityCard";
+import { DirectoryCardMetaTile } from "@mms/ui/app/DirectoryCardMetaTile";
+import { cn } from "@mms/ui";
+import { StatusBadge, type StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ACCOUNT_TYPE_META, type Account } from "@mms/mod-accounting/frontend/tenant";
+
+export interface AccountRowActionsProps {
+  account: Account;
+  onEdit: (account: Account) => void;
+  onDelete: (id: string) => void;
+  onReactivate: (id: string) => void;
+}
+
+export function AccountRowActions({
+  account,
+  onEdit,
+  onDelete,
+  onReactivate,
+}: AccountRowActionsProps): React.JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label={t("accounting.coa.editAria", { name: account.name })}
+        onClick={() => onEdit(account)}
+        className="min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-foreground"
+      >
+        <Pencil className="h-4 w-4" aria-hidden="true" />
+      </Button>
+      {account.isActive === false ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t("accounting.coa.reactivateAria", { name: account.name })}
+          onClick={() => onReactivate(account.id)}
+          className="min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-success"
+        >
+          <Eye className="h-4 w-4" aria-hidden="true" />
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t("accounting.coa.deactivateAria", { name: account.name })}
+          onClick={() => onDelete(account.id)}
+          className="min-h-11 min-w-11 rounded-lg text-muted-foreground hover:text-destructive"
+        >
+          <EyeOff className="h-4 w-4" aria-hidden="true" />
+        </Button>
+      )}
+    </>
+  );
+}
+
+export interface AccountRecordProps {
+  account: Account;
+  /** True when the account carries sub-accounts (header/summary account). */
+  isHeaderAccount?: boolean;
+  balanceConfig: Record<string, StatusBadgeConfigItem>;
+  canWrite: boolean;
+  isColumnVisible: (key: string) => boolean;
+  onEdit: (account: Account) => void;
+  onDelete: (id: string) => void;
+  onReactivate: (id: string) => void;
+}
+
+/** Work/setup entity card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
+export function AccountMobileCard({
+  account,
+  isHeaderAccount = false,
+  balanceConfig,
+  canWrite,
+  isColumnVisible,
+  onEdit,
+  onDelete,
+  onReactivate,
+}: AccountRecordProps): React.JSX.Element {
+  const { t } = useTranslation();
+
+  return (
+    <DirectoryEntityCard
+      entity={account}
+      canSelect={false}
+      className={cn("space-y-3 p-4", account.isActive === false && "opacity-50")}
+      headerSlot={
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            {isColumnVisible("code") && (
+              <p className="m-0 font-mono text-xs font-bold text-muted-foreground">
+                {account.code}
+              </p>
+            )}
+            {isColumnVisible("name") && (
+              <h4 className="m-0 mt-0.5 text-sm font-semibold text-foreground">
+                {account.name}
+                {isHeaderAccount && (
+                  <Badge
+                    as="span"
+                    pill
+                    tone="info"
+                    className="ms-2 px-1.5"
+                    title={t("accounting.coa.headerHint")}
+                    data-account-kind="header"
+                  >
+                    {t("accounting.coa.headerAccount")}
+                  </Badge>
+                )}
+                {account.isActive === false && (
+                  <Badge as="span" pill tone="muted" className="ms-2 px-1.5">
+                    {t("accounting.coa.inactive")}
+                  </Badge>
+                )}
+              </h4>
+            )}
+          </div>
+          {isColumnVisible("normalBalance") && (
+            <StatusBadge
+              status={
+                ACCOUNT_TYPE_META[account.type]?.normalBalance === "debit" ? "debit" : "credit"
+              }
+              config={balanceConfig}
+              size="sm"
+            />
+          )}
+        </div>
+      }
+      metadataSlot={
+        <EntityCard.MetaGrid>
+          {isColumnVisible("subtype") && (
+            <DirectoryCardMetaTile label={t("accounting.columns.account.subtype")}>
+              {account.subtype || "—"}
+            </DirectoryCardMetaTile>
+          )}
+          {isColumnVisible("description") && (
+            <DirectoryCardMetaTile
+              label={t("accounting.columns.account.description")}
+              className="break-words"
+            >
+              {account.description || "—"}
+            </DirectoryCardMetaTile>
+          )}
+        </EntityCard.MetaGrid>
+      }
+      actions={
+        canWrite ? (
+          <AccountRowActions
+            account={account}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onReactivate={onReactivate}
+          />
+        ) : undefined
+      }
+    />
+  );
+}

@@ -3,12 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mockLoadAccountsPage = vi.fn();
 const mockUpsertAccounts = vi.fn();
 
-vi.mock("../accounting/use-cases/accountingUseCases.js", () => ({
-  accountingUseCases: {
-    loadAccountsPage: (...args: unknown[]) => mockLoadAccountsPage(...args),
-    upsertAccounts: (...args: unknown[]) => mockUpsertAccounts(...args),
-  },
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingUseCases.js",
+  () => ({
+    accountingUseCases: {
+      loadAccountsPage: (...args: unknown[]) => mockLoadAccountsPage(...args),
+      upsertAccounts: (...args: unknown[]) => mockUpsertAccounts(...args),
+    },
+  }),
+);
 
 vi.mock("../lib/logger.js", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },

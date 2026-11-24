@@ -3,11 +3,11 @@ import {
   SESSION_LOOKUP_LEGACY_COLLECTION_KEYS,
   isSessionLookupLegacyCollectionKey,
   type SessionLookupKind,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { and, eq } from "drizzle-orm";
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
 
 function slugifyLabel(label: string, index: number): string {
   const base = label

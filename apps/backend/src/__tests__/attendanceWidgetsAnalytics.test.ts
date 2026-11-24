@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { WidgetQuery } from "@mms/shared";
+import type { WidgetQuery } from "@mms/contracts";
 
 /**
  * Widget analytics: bounded range, index-friendly comparisons and capped concurrency.
@@ -10,7 +10,9 @@ import type { WidgetQuery } from "@mms/shared";
 
 const mockWithTenantRead = vi.fn();
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (...args: unknown[]) => mockWithTenantRead(...args),
   withTenantRead: (...args: unknown[]) => mockWithTenantRead(...args),
 }));

@@ -9,9 +9,9 @@ import {
   type Contact,
   type FieldDefinition,
   type StudentsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { loadStudentsSettingsCombined } from "../students/use-cases/studentConfigService.js";
-import { loadContactsSummaryByIdsForTenant } from "./contactService.js";
+import { loadContactsSummaryByIdsForTenant } from "@mms/mod-contacts/backend/services";
 
 // Cache compiled schema by tenant, language and a digest of the blueprint inputs. The settings
 // `version` is the document migration version (constant after normalization), so it cannot tell

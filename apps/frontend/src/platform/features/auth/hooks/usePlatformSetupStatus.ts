@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
-import type { PlatformSetupStatus } from "@mms/shared";
+import type { PlatformSetupStatus } from "@mms/contracts";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import { PLATFORM_SETUP_STATUS_QUERY_KEY } from "@/platform/features/shell/lib/platformQueryKeys";
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Contact, ContactsListPageResult } from "@mms/shared";
+import type { Contact, ContactsListPageResult } from "@mms/contracts";
 
 vi.mock("../db/repositories/messagingRepository.js", () => ({
   listMessageTemplatesByWorkspace: vi.fn(),

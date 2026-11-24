@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
-import type { WorkspaceUser, ActivityLog } from "@mms/shared";
+import type { WorkspaceUser, ActivityLog } from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { invalidateUsersQueries } from "./invalidateUsersQueries";
 import { assertContractOk } from "@/lib/apiContractError";

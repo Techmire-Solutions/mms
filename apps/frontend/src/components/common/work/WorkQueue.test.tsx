@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { WorkQueue, type WorkQueuePriority } from "./WorkQueue";
 import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { translateAppParams } from "@mms/shared";
+import { translateAppParams } from "@mms/contracts";
 
 const mockContext = {
   language: "en",

@@ -1,4 +1,4 @@
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import {
   bulkSaveFaculty,
   findFacultyById,

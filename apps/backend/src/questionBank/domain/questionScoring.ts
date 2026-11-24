@@ -1,4 +1,4 @@
-import { isQuestionAnswerCorrect, type QuestionType } from "@mms/shared";
+import { isQuestionAnswerCorrect, type QuestionType } from "@mms/contracts";
 
 /**
  * Server-side scoring for Question Bank assessment answers.

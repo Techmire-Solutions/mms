@@ -200,7 +200,7 @@ Set an explicit policy in `mms-agent-universal.md`: *a norm either has a machine
 
 Two structural causes:
 
-**(a) `mms-performance.mdc` globs match 97.4% of the source tree** (`apps/backend/**`, `apps/frontend/**`, `packages/shared/**` — 4,078 of 4,185 files) while declaring `alwaysApply: false`. **12 of the 18 "scoped" rules are strict subsets of it.** It is a fourth always-on rule in disguise, and it also matches build output (`dist/`).
+**(a) `mms-performance.mdc` globs match 97.4% of the source tree** (`apps/backend/**`, `apps/frontend/**`, `packages/contracts/**` — 4,078 of 4,185 files) while declaring `alwaysApply: false`. **12 of the 18 "scoped" rules are strict subsets of it.** It is a fourth always-on rule in disguise, and it also matches build output (`dist/`).
 Additionally **17 glob strings are byte-identical across 2–3 rules**; `apps/frontend/src/tenant/features/**` (1,502 files) is declared by three rules at once.
 **Fix:** narrow `mms-performance.mdc` to the paths where the performance norms actually apply (DB/repository/query files, virtualized tables, bundle entries), and delete duplicate globs so each path loads one owner.
 
@@ -277,7 +277,7 @@ Claude Code hooks are **portable to Cursor natively** (Cursor loads `.claude/set
 
 Recommended set:
 - `PostToolUse` matcher `Edit|Write` → prettier + `eslint --fix` on the edited file (the documented auto-format pattern; catches the formatting norms without prose).
-- `PreToolUse` → block writes to `.env*`, `.gitleaks.toml`, `apps/backend/src/db/migrations_drizzle/**` without explicit confirmation.
+- `PreToolUse` → block writes to `.env*`, `.gitleaks.toml`, `packages/db/migrations_drizzle/**` without explicit confirmation.
 - `PreToolUse` → block `git push` (the user handles pushes per `mms-agent-universal.md:56`).
 - Optional `Stop` hook (`type: "prompt"`) → "did the change run typecheck/lint?" — judgment-based gates. **Note:** exit code `2` blocks; exit code `1` does **not** — a policy hook that exits 1 silently allows the action.
 - `InstructionsLoaded` (Claude Code) → log which rule files actually loaded; this is the first-party way to prove scoping works.

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { StatsSkeleton } from "@shared/ui";
+import { StatsSkeleton } from "@mms/ui";
 
 const PlatformReports = lazy(() =>
   import("@/platform/features/reports/components/PlatformReports").then((module) => ({

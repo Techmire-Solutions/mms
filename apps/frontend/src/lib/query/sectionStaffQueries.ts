@@ -6,7 +6,7 @@ import {
   type SectionAssignmentEndBody,
   type SectionStaffAssignBody,
   type SectionStudentRoleBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 export const sectionStaffQueryKey = (sectionId: string) =>

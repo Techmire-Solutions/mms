@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, gte, inArray, lte, sql } from "drizzle-orm";
-import { attendanceLeaves, contacts, students } from "../schema.js";
-import type { AttendanceLeaveStatus, AttendanceLeaveType } from "@mms/shared";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { attendanceLeaves, contacts, students } from "@mms/db/schema";
+import type { AttendanceLeaveStatus, AttendanceLeaveType } from "@mms/contracts";
+import { withTenant, withTenantRead } from "@mms/db/context";
 
 /**
  * Excuse / leave workflow storage: submit, decide (guarded), cancel, and the retroactive mark

@@ -1,4 +1,4 @@
-import { ClassInsertSchema, isValidIsoDate, type Class } from "@mms/shared";
+import { ClassInsertSchema, isValidIsoDate, type Class } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { ClassDetailTabId } from "./types";
 

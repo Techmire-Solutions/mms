@@ -5,9 +5,9 @@ import {
   applyTitleCaseRecursive,
   normalizePlatformAdminPermissions,
   FULL_PLATFORM_ADMIN_PERMISSIONS,
-} from "@mms/shared";
-import { activeDb } from "../dbConnection.js";
-import { platformUsers, platformUserPermissions } from "../schema.js";
+} from "@mms/contracts";
+import { activeDb } from "@mms/db/client";
+import { platformUsers, platformUserPermissions } from "@mms/db/schema";
 import { PERMISSION_KEYS, findPlatformUserRowById } from "./platformUserQueries.js";
 
 export * from "./platformUserQueries.js";

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CalendarDays, CopyPlus, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
-import { formatDate, type AcademicCalendarEvent } from "@mms/shared";
+import { formatDate, type AcademicCalendarEvent } from "@mms/contracts";
 import {
   DataTable,
   DataTableRowActions,

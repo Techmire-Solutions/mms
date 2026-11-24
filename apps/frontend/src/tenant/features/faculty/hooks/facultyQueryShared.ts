@@ -1,4 +1,9 @@
-import type { Faculty, FacultyListQuery, FacultyQuickFilter, FacultySortField } from "@mms/shared";
+import type {
+  Faculty,
+  FacultyListQuery,
+  FacultyQuickFilter,
+  FacultySortField,
+} from "@mms/contracts";
 import { normalizeFacultyFilterValue } from "@/tenant/features/faculty/lib/facultyFilterValues";
 
 export {

@@ -8,7 +8,7 @@ import type {
   DistributionStatusChange,
   RedeemCardBody,
   ReverseRedemptionBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import {
   invalidateHasanatSetupQueries,

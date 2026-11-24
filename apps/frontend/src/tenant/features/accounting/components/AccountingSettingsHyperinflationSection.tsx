@@ -1,18 +1,18 @@
 import type React from "react";
 import { TrendingUp } from "lucide-react";
-import { type Account } from "@mms/shared";
-import { DatePicker } from "@/components/app/DatePicker";
-import { ErrorState } from "@/components/app/ErrorState";
-import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
-import { FormSelect } from "@/components/app/FormSelect";
-import { SectionCard } from "@/components/app/SectionCard";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { useTranslation } from "@/hooks/useTranslation";
+import { type Account } from "@mms/contracts";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { Field, FieldErrorMessage } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { SectionCard } from "@mms/ui";
+import { Button } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { Switch } from "@mms/ui";
+import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useHyperinflationPanel } from "@/tenant/features/accounting/hooks/useHyperinflationPanel";
-import { accountOptions } from "@/tenant/features/accounting/lib/accountOptions";
+import { accountOptions } from "@mms/mod-accounting/frontend/tenant";
 
 export interface AccountingSettingsHyperinflationSectionProps {
   accounts: Account[];

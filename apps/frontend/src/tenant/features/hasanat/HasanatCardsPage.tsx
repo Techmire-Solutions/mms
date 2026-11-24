@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
-import { hasanatTransferSchema } from "@mms/shared";
+import { hasanatTransferSchema } from "@mms/contracts";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import { HasanatCommandMetrics } from "@/tenant/features/hasanat/components/HasanatCommandMetrics";
 import { HasanatCsvImportDialog } from "@/tenant/features/hasanat/components/HasanatCsvImportDialog";

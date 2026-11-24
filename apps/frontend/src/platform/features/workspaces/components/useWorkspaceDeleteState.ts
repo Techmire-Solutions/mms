@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import { useDeleteWorkspace } from "@/platform/features/workspaces/hooks/usePlatformWorkspaces";
 import { getPlatformErrorMessage } from "@/platform/features/auth/lib/platformAuthErrors";
 import { useTranslation } from "@/hooks/useTranslation";

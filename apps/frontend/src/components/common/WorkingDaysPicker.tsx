@@ -1,5 +1,5 @@
 import React, { useId, useMemo } from "react";
-import { WEEKDAY_NAMES, type WeekdayName } from "@mms/shared";
+import { WEEKDAY_NAMES, type WeekdayName } from "@mms/contracts";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
 import { useTranslation } from "@/hooks/useTranslation";
 

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Settings } from "lucide-react";
-import { DEFAULT_PLATFORM_CONTACT_PREFS, type PlatformContactPrefs } from "@mms/shared";
+import { DEFAULT_PLATFORM_CONTACT_PREFS, type PlatformContactPrefs } from "@mms/contracts";
 import { SettingsPanel } from "@/components/app/SettingsShell";
 import { SectionCard } from "@/components/app/SectionCard";
 import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
-import { CardSkeleton } from "@shared/ui";
+import { CardSkeleton } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSavedFlash } from "@/hooks/useSavedFlash";
 import { PlatformSettingsLoadError } from "@/platform/features/settings/components/PlatformSettingsLoadError";

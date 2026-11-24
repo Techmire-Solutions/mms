@@ -1,6 +1,6 @@
 import React from "react";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
-import { getDisplayName, type Contact } from "@mms/shared";
+import { getDisplayName, type Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactDetailAttachments } from "@/tenant/features/contacts/hooks/useContactDetailAttachments";
 import { useContactDetailViewModel } from "@/tenant/features/contacts/hooks/useContactDetailViewModel";

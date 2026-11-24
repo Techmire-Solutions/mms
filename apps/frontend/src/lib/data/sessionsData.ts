@@ -23,7 +23,7 @@ import {
   type ScholarshipEligibility,
   type SessionClassScholarship,
   type Session,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export {
   ClassSchema,

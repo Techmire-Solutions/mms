@@ -9,8 +9,9 @@
  */
 import { sql } from "drizzle-orm";
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { closeDatabase, getPool, initDb } from "../db/database.js";
-import { withTenant } from "../db/tenant-context.js";
+import { closeDatabase, getPool } from "../db/database.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { withTenant } from "@mms/db/context";
 import { getQueryRows } from "../db/documentStoreKeys.js";
 import { assertPurgeAllowlistSafe } from "./purgeSelectedModulesAllowlist.js";
 import {
@@ -77,7 +78,7 @@ async function countProtected(tenant: string): Promise<{
 async function run(): Promise<void> {
   assertPurgeAllowlistSafe();
   const execute = parseExecuteFlag(process.argv.slice(2));
-  await initDb();
+  await initializeDatabase();
   const pool = getPool();
 
   const tenants = await listWorkspaceSubdomains(async (sqlText) => pool.query(sqlText));

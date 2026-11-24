@@ -1,4 +1,4 @@
-import { type User, ATTENDANCE_MODULE_MANIFEST, type attendanceContract } from "@mms/shared";
+import { type User, ATTENDANCE_MODULE_MANIFEST, type attendanceContract } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";

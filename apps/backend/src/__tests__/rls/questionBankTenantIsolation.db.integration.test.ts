@@ -1,15 +1,15 @@
 import pg from "pg";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
+import { beginLongLivedTenantTransaction } from "@mms/db/client";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import {
   questionAttachments,
   questionOptions,
   questionTags,
   questions,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { findQuestionById } from "../../db/repositories/questionBankQuestionsRepository.js";
 import { requireDatabaseConnection } from "../db-integration/dbTestSupport.js";
 

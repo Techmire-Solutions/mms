@@ -1,4 +1,4 @@
-import { normalizeContactDialCode } from "@mms/shared";
+import { normalizeContactDialCode } from "@mms/contracts";
 
 /** Merge phone dial-code option edits into tenant `{ country, code }` rows. */
 export type CountryCodeEntry = { country: string; code: string };

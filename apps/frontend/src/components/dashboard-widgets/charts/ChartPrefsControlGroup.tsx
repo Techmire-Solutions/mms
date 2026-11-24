@@ -12,7 +12,7 @@ import {
   DASHBOARD_CHART_COLOR_OPTIONS,
   type ChartColorOption,
   type ChartOption,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /** Shared container class for the edit-mode chart preference controls. */
 const PREFS_GROUP_CLASS =

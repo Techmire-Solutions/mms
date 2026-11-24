@@ -10,8 +10,8 @@ import {
   DASHBOARD_WIDGET_INDEXED_KEYS,
   normalizeDashboardWidget,
   type DashboardWidgetDto,
-} from "@mms/shared";
-import type { dashboardWidgets } from "../schema.js";
+} from "@mms/contracts";
+import type { dashboardWidgets } from "@mms/db/schema";
 
 export type DashboardWidgetRow = typeof dashboardWidgets.$inferSelect;
 

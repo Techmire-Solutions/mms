@@ -1,9 +1,9 @@
 import React from "react";
-import { ProgressRing as SharedProgressRing } from "@shared/ui";
+import { ProgressRing as SharedProgressRing } from "@mms/ui";
 
 /**
  * Standard or Compact Progress Circle Ring Component.
- * Delegates to @shared/ui ProgressRing for accessibility and design system consistency.
+ * Delegates to @mms/ui ProgressRing for accessibility and design system consistency.
  */
 export function ProgressRing({
   percentage,

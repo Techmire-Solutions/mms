@@ -1,6 +1,6 @@
 import { and, eq, lt } from "drizzle-orm";
-import { withGlobalTenant } from "../db/tenant-context.js";
-import { backgroundJobs } from "../db/schema.js";
+import { withGlobalTenant } from "@mms/db/context";
+import { backgroundJobs } from "@mms/db/schema";
 import { logger } from "../lib/logger.js";
 import { failPromotionRunFromDlq } from "../services/sessionRolloverFinalizer.js";
 

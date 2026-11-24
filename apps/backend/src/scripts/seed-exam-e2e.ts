@@ -1,6 +1,6 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/database.js";
-import { getDb } from "../db/dbClient.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { getDb } from "@mms/db/client";
 import {
   enrollments,
   examClasses,
@@ -8,7 +8,7 @@ import {
   sessionClasses,
   sessions,
   students,
-} from "../db/schema.js";
+} from "@mms/db/schema";
 
 loadBackendEnv();
 
@@ -22,7 +22,7 @@ async function main() {
     console.error("Missing subdomain argument");
     process.exit(1);
   }
-  await initDb();
+  await initializeDatabase();
   const db = getDb();
   const sessionId = "e2e-session";
   const classId = "e2e-class";

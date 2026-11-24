@@ -7,7 +7,7 @@ import {
   stripStudentFieldConfigForPersist,
   type StudentModulePreferences,
   type StudentsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 const api = createModuleSetupConfigApi<StudentModulePreferences>({
   fetchPreferencesFn: async (signal) => {

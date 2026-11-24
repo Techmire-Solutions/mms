@@ -1,6 +1,6 @@
 import React from "react";
 import { Banknote } from "lucide-react";
-import type { Payment } from "@mms/shared";
+import type { Payment } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {

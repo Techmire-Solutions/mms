@@ -8,8 +8,8 @@ import {
   pingDatabase,
   closeDatabase,
   beginLongLivedTenantTransaction,
-} from "../../db/dbConnection.js";
-import { workspaces, tenantUsers } from "../../db/schema.js";
+} from "@mms/db/client";
+import { workspaces, tenantUsers } from "@mms/db/schema";
 import { upsertTenantUsersBatch } from "../../db/repositories/tenantUserRepositoryPersist.js";
 import type { TenantUserRow } from "../../db/repositories/tenantUserRepositoryHydrate.js";
 

@@ -1,7 +1,7 @@
 import type { FastifyRequest } from "fastify";
 import type { ZodType } from "zod";
-import type { Permission, User } from "@mms/shared";
-import {} from "@mms/shared";
+import type { Permission, User } from "@mms/contracts";
+import {} from "@mms/contracts";
 import { handleContractError } from "./contractError.js";
 import { userHasPermission } from ".//userPermissionContext.js";
 

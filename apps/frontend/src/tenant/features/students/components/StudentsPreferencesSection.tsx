@@ -4,7 +4,7 @@ import {
   studentSettingsToSequenceConfig,
   type StudentsSettings,
   type SequenceNumberingConfig,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { SequenceNumberingCard } from "@/components/sequence-numbering";
 

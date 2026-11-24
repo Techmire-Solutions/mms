@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { signTenantToken } from "./helpers/tokens.js";
-import { DEFAULT_MESSAGING_PREFERENCES } from "@mms/shared";
+import { DEFAULT_MESSAGING_PREFERENCES } from "@mms/contracts";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),

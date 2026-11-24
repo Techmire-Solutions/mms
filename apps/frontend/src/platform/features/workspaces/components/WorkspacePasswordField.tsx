@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { RefreshCw } from "lucide-react";
-import { Button, Field, Input } from "@shared/ui";
+import { Button, Field, Input } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { generateTemporaryPassword } from "@/lib/generateTemporaryPassword";
 

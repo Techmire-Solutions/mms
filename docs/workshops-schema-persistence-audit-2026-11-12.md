@@ -212,7 +212,7 @@ Severity: **P0** broken behaviour, **P1** invariant breach / crash under load, *
   by exception: `drizzle-kit generate` aborts on a pre-existing snapshot collision
   (`0216`/`0217` point at the same parent) and reports several `meta/*_snapshot.json` files as
   malformed. The snapshot was derived from `0243` with the same definitions.
-- **Schema** `apps/backend/src/db/schema/workshops.ts` (+ `workshopActivityTables.ts`, split for the
+- **Schema** `packages/db/src/schema/workshops.ts` (+ `workshopActivityTables.ts`, split for the
   300-line band) — new index, all CHECKs mirrored from raw SQL, scoped unique index, 3-column child
   FKs, lowercase partial-index predicates. The platform ERD domain registry includes both modules.
 - **Repositories** `workshopEventListQuery.ts` (new), `workshopUpsertPlanning.ts` (new),
@@ -220,7 +220,7 @@ Severity: **P0** broken behaviour, **P1** invariant breach / crash under load, *
   `workshopParticipantsRepository.ts`, `workshopActivityRepository.ts`,
   `workshopCompletionRepository.ts`, `contactRepositoryDuplicateReparent.ts`, `studentDeleteGuard.ts`.
 - **Use-case / port / contract** `workshopsCompletionUseCases.ts`, `workshopsRepository.ts`,
-  `packages/shared/src/contracts/workshops.contract.ts`.
+  `packages/contracts/src/contracts/workshops.contract.ts`.
 - **Tests** `workshopsUpsertPlan.test.ts`, `workshopsSchema.test.ts`,
   `workshopsCapacityConcurrencyDb.integration.test.ts` (registered in
   `scripts/ci/run-concurrency-suite.mjs`), plus additions to `workshopsDb.integration.test.ts` and

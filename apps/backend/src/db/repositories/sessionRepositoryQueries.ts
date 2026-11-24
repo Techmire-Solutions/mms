@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
-import { type Session } from "@mms/shared";
-import { enrollments, sessions, sessionClasses, type SessionReadRow } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { type Session } from "@mms/contracts";
+import { enrollments, sessions, sessionClasses, type SessionReadRow } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
 import { hydrateSessionsList, hydrateSessionsListSummary } from "./sessionRepositoryHydrate.js";
 import { getPreparedSessionById } from "../preparedStatements.js";
 import { attachClassSectionsTx } from "./sessionSectionsHydrate.js";

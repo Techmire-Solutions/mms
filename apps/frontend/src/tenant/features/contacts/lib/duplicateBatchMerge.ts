@@ -1,4 +1,4 @@
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 
 export interface BatchMergePair {
   id: string;

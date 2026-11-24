@@ -1,9 +1,9 @@
 import React from "react";
-import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { ACCOUNT_TYPES, type Account } from "@/lib/data/accountingData";
-import { useTranslation } from "@/hooks/useTranslation";
-import { ChartOfAccountsTypeCountsBar } from "@/tenant/features/accounting/components/ChartOfAccountsTypeCountsBar";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import type { WorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { ACCOUNT_TYPES, type Account } from "@mms/mod-accounting/frontend/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ChartOfAccountsTypeCountsBar } from "@mms/mod-accounting/frontend/tenant";
 import { AccountTypeGroup } from "@/tenant/features/accounting/components/ChartOfAccountsTypeGroup";
 
 export interface ChartOfAccountsListDesktopTableProps {

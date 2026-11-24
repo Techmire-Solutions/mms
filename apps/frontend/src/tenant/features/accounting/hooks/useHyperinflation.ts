@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { HyperinflationSettings, Ias29Run, PriceIndexPoint } from "@mms/shared";
+import type { HyperinflationSettings, Ias29Run, PriceIndexPoint } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
-import { assertContractOk } from "@/lib/apiContractError";
+import { assertContractOk } from "@mms/fe-core/api/contractError";
 
 const SETTINGS_KEY = ["accounting", "ias29", "settings"] as const;
 const INDICES_KEY = ["accounting", "ias29", "priceIndices"] as const;

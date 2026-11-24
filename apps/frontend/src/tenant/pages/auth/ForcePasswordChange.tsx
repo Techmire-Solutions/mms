@@ -4,7 +4,7 @@ import {
   DEFAULT_GLOBAL_SETTINGS,
   getPasswordPolicyHintKey,
   validatePasswordPolicy,
-} from "@mms/shared";
+} from "@mms/contracts";
 import AuthLayout from "@/tenant/components/AuthLayout";
 import {
   AuthPasswordField,

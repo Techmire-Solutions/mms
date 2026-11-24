@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hashRefreshToken } from "../services/auth/authCookieService.js";
-import { ContactUniqueFieldError } from "../services/contactUniqueValidationService.js";
+import { ContactUniqueFieldError } from "@mms/mod-contacts/backend/services";
 import { signTenantToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({

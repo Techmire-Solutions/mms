@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_TASK_SETTINGS } from "@mms/shared";
+import { DEFAULT_TASK_SETTINGS } from "@mms/contracts";
 import { TasksSetupTab } from "./TasksSetupTab";
 
 const state = { isError: false };

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { buildInvoiceDraftFromEnrollment } from "@mms/shared";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
+import { buildInvoiceDraftFromEnrollment } from "@mms/contracts";
+import { beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
 import {
   accountingAccounts,
   accountingCurrencySettings,
@@ -14,14 +14,14 @@ import {
   sessions,
   students,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { listBillableEnrollments } from "../../db/repositories/financeInvoiceGenerationRepository.js";
 import { findEntryById } from "../../db/repositories/accountingRepository.js";
 import { sessionHasEnrollments } from "../../db/repositories/sessionRepository.js";
 import { generateInvoices } from "../../finance/use-cases/financeInvoiceGenerationUseCases.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { upsertExchangeRates } from "../../db/repositories/accountingExchangeRatesRepository.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { applyGeneratedInvoiceFx } from "../../finance/use-cases/financeDocumentFx.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 

@@ -10,7 +10,7 @@ import { getHydratedUsers, saveUsers } from "../../services/auth/userService.js"
 import { invalidateTenantRbac } from "../../services/rbacService.js";
 import { getRawUsers, type PersistedUser } from "../../services/auth/userServiceShared.js";
 import { sendTenantWelcomeEmail } from "../../services/auth/tenantPasswordOtpDispatch.js";
-import { loadContactsByIds } from "../../services/contactService.js";
+import { loadContactsByIds } from "@mms/mod-contacts/backend/services";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { findFacultyByContactId } from "../../db/repositories/facultyRepository.js";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
@@ -32,7 +32,7 @@ import {
   computeUserInitials,
   buildFacultyManagedRoleId,
   type FacultyEmployDesignationWriteRow,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { recordUserActivityLog } from "./userActivityLogUseCases.js";
 
 /** Dev-only fallback when a route handler couldn't resolve a trusted request origin. */

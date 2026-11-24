@@ -1,5 +1,5 @@
 import type React from "react";
-import type { FieldDefinition } from "@mms/shared";
+import type { FieldDefinition } from "@mms/contracts";
 import { RegistryCustomFieldControl } from "@/components/app/RegistryCustomFieldControl";
 
 export interface RegistryCustomFieldsGridProps {

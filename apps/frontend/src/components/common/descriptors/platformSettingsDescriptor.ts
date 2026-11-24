@@ -1,4 +1,4 @@
-import type { PlatformSettings } from "@mms/shared";
+import type { PlatformSettings } from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 

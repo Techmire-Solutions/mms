@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CreditNote, Invoice, Payment } from "@mms/shared";
+import type { CreditNote, Invoice, Payment } from "@mms/contracts";
 import {
   invoiceAuditState,
   paymentAuditState,
@@ -7,9 +7,9 @@ import {
   recordInvoiceAudit,
   recordPaymentAudit,
 } from "../finance/use-cases/financeAuditEvents.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn(),
 }));
 

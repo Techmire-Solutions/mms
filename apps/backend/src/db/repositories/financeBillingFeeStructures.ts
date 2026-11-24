@@ -3,9 +3,9 @@
  */
 
 import { and, eq } from "drizzle-orm";
-import { isFeeFrequency, type FeeStructure } from "@mms/shared";
-import { financeFeeItems, financeFeeStructures } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { isFeeFrequency, type FeeStructure } from "@mms/contracts";
+import { financeFeeItems, financeFeeStructures } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { resolveFeeStructureClassRefsTx } from "./feeStructureClassRefs.js";
 function feeStructureFromRows(
   structure: typeof financeFeeStructures.$inferSelect,

@@ -11,7 +11,7 @@ import {
   isTokenExpired,
 } from "../integrations/edtech/edtechWebhookVerifier.js";
 import { createHmac } from "node:crypto";
-import type { ImportPipelineContext } from "@mms/shared";
+import type { ImportPipelineContext } from "@mms/contracts";
 import type { StudentImportRow } from "../students/use-cases/studentImportUseCases.js";
 
 const mockCreateStudent = vi.fn();
@@ -19,7 +19,9 @@ const mockUpsertContact = vi.fn();
 const mockFindContacts = vi.fn();
 const mockBroadcastCollection = vi.fn();
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, cb: () => Promise<unknown>) => cb(),
   withTenantRead: async (_tenant: string, cb: () => Promise<unknown>) => cb(),
 }));

@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import TwoFactorAuth from "./TwoFactorAuth";
-import { normalizeWorkspaceUser } from "@mms/shared";
+import { normalizeWorkspaceUser } from "@mms/contracts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -38,8 +38,8 @@ vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
   }),
 }));
 
-vi.mock("@mms/shared", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@mms/shared")>();
+vi.mock("@mms/contracts", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@mms/contracts")>();
   return {
     ...original,
     requiresTwoFactor: () => mockRequiresTwoFactor,

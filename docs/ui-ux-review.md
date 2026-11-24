@@ -8,7 +8,7 @@
 **Scope:** `apps/frontend` (2,533 TS/TSX files, ~241k LOC) plus the design-token layer
 (`src/index.css`), the `@mms/shared` translation corpus, and the E2E a11y gate.
 **Method:** code reading plus measured checks — contrast computed with the project's own
-`getContrastRatio` (`packages/shared/src/brandingColorContrast.ts`), an independent
+`getContrastRatio` (`packages/contracts/src/brandingColorContrast.ts`), an independent
 regex sweep for banned classes, ESLint run over the whole frontend, and key-parity
 computation over the four locale bundles.
 
@@ -113,7 +113,7 @@ usages exist side by side:
 `--primary` has the same conflict (`text-primary` links/badges vs `bg-primary` buttons).
 
 **The project already owns the fix.** `ensureAccentButtonContrast()`
-(`packages/shared/src/brandingColorContrast.ts:60` — *"Darkens or saturates an accent
+(`packages/contracts/src/brandingColorContrast.ts:60` — *"Darkens or saturates an accent
 until white label text meets WCAG AA (4.5:1)"*) is applied to branding/logo-derived
 colours (`logoBrandPaletteDerive.ts:52`, `logoBrandHexUtils.ts:48`,
 `brandingColorSuggest.ts:58`) and unit-tested at `brandingTheme.test.ts:139`. It is

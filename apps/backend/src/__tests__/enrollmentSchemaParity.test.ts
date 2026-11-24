@@ -6,9 +6,10 @@ import {
   ENROLLMENT_STATUSES,
   REGISTRATION_APPLICATION_STATUSES,
   SEAT_RELEASED_ENROLLMENT_STATUSES,
-} from "@mms/shared";
+} from "@mms/contracts";
+import { resolveMigrationsFolder } from "@mms/db/testing";
 
-const MIGRATIONS = path.join(process.cwd(), "src/db/migrations_drizzle");
+const MIGRATIONS = resolveMigrationsFolder();
 
 function readMigration(name: string): string {
   return fs.readFileSync(path.join(MIGRATIONS, name), "utf8");

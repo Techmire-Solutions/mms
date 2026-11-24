@@ -3,7 +3,7 @@ import {
   consolidationGroupPutSchema,
   consolidationReportQuerySchema,
   resourceIdParamsSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   authenticatePlatform,
   requirePlatformPermission,

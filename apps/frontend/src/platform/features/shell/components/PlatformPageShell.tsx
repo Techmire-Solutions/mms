@@ -20,7 +20,7 @@ import { PlatformAiDrawer } from "@/platform/features/ai/components/PlatformAiDr
 import { PlatformInspectorDrawer } from "@/platform/features/shell/components/inspector/PlatformInspectorDrawer";
 import { AppShell } from "@/components/common/AppShell";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
-import { AppFooter, LiveRegionProvider, TooltipProvider } from "@shared/ui";
+import { AppFooter, LiveRegionProvider, TooltipProvider } from "@mms/ui";
 
 /**
  * Page-level fault isolation for platform console pages.

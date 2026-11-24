@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type { AggregateFn, DataSource, PreviewRow } from "./customReportBuilderFields";
 import { compilePreviewFieldExtractor, toCamelCase } from "./customReportBuilderExtractor";
 

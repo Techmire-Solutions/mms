@@ -26,7 +26,7 @@ import {
 } from "../db/repositories/workspaceRepository.js";
 import { saveObject } from "../db/database.js";
 import { setPlatformSettingsCache } from "../services/platform/platformSettingsService.js";
-import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/contracts";
 
 const mockedGet = vi.mocked(getWorkspaceGlobalSettings);
 const mockedUpsert = vi.mocked(upsertWorkspaceGlobalSettings);

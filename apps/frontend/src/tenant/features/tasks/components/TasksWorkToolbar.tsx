@@ -1,6 +1,6 @@
 import React from "react";
 import { Plus } from "lucide-react";
-import { TASK_PRIORITIES, TASK_STATUSES } from "@mms/shared";
+import { TASK_PRIORITIES, TASK_STATUSES } from "@mms/contracts";
 import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDropdown,

@@ -1,15 +1,15 @@
 import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
-import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/shared";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/contracts";
 import { randomUUID } from "node:crypto";
-import type { SessionClassSection } from "@mms/shared";
+import type { SessionClassSection } from "@mms/contracts";
 import {
   enrollments,
   sectionStaffAssignments,
   sectionStudentRoles,
   sessionClassSections,
-} from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
-import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+} from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
+import { ConflictError, ValidationError } from "@mms/be-core/http/errors";
 import { hasSectionAttendanceTx } from "./sessionClassReferenceGuard.js";
 import { lockSectionsForSeatsTx } from "./enrollmentSeatCountRepository.js";
 

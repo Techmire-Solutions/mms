@@ -4,7 +4,7 @@ import type {
   ExaminationsReportComparison,
   FinanceReportComparison,
   HasanatReportComparison,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 import { COMPARISON_MONTH_NAMES, getComparisonMonthIndex } from "./comparisonModeDateHelpers";
 import type { DateRange, DateRangeDataItem } from "./comparisonModeTypes";

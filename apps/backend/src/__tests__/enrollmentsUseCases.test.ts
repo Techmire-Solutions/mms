@@ -3,7 +3,7 @@ import { createEnrollmentsUseCases } from "../enrollments/use-cases/enrollmentsU
 import type { EnrollmentsRepository } from "../enrollments/repository/enrollmentsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
 

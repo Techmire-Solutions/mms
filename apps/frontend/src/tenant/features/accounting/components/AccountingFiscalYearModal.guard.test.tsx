@@ -9,11 +9,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  * `AccountingFiscalYearModal` must route every submit through `useSubmitGuard`.
  */
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock("@/components/app/FormModal", () => ({
+vi.mock("@mms/fe-core/components/FormModal", () => ({
   FormModal: ({
     children,
     onSave,
@@ -36,7 +36,7 @@ vi.mock("@/components/app/FormModal", () => ({
   ),
 }));
 
-vi.mock("@/components/app/DatePicker", () => ({
+vi.mock("@mms/fe-core/components/DatePicker", () => ({
   DatePicker: ({
     id,
     value,
@@ -50,7 +50,7 @@ vi.mock("@/components/app/DatePicker", () => ({
   ),
 }));
 
-vi.mock("@/components/app/FormSelect", () => ({
+vi.mock("@mms/fe-core/components/FormSelect", () => ({
   FormSelect: ({
     id,
     value,

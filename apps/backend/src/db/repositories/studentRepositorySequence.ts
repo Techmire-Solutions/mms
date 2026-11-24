@@ -1,8 +1,8 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { formatTemplateSequence, type StudentGrNumberSettings } from "@mms/shared";
-import { students, studentSequenceConfig } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { withIncludeDeletedScope } from "../../lib/softDeleteHelpers.js";
+import { formatTemplateSequence, type StudentGrNumberSettings } from "@mms/contracts";
+import { students, studentSequenceConfig } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
+import { withIncludeDeletedScope } from "@mms/db/soft-delete";
 
 export interface GenerateGrNumberInput {
   regDate: string;

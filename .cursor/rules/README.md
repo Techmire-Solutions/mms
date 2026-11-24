@@ -23,7 +23,7 @@ Project rules for the Madrasa Management System. Cursor loads `.mdc` files from 
 
 | Rule | Focus / Topic |
 |------|---------------|
-| `mms-dry.mdc` | DRY — single source of truth, extraction thresholds, `@mms/shared` exports |
+| `mms-dry.mdc` | DRY — single source of truth, extraction thresholds, `@mms/contracts` exports |
 | `mms-structure-naming.mdc` | Monorepo layout, colocation, **file-size cap (300 lines hard)**, Title Case on save, naming |
 | `mms-dependencies.mdc` | Latest stable Node, pnpm, and workspace dependency upgrades |
 | `mms-ops-infrastructure.mdc` | Local dev setup, environment variables, Docker backend ports, health endpoints, Linux compatibility, and CI orchestration |
@@ -42,7 +42,7 @@ Project rules for the Madrasa Management System. Cursor loads `.mdc` files from 
 
 | Rule | Focus / Topic |
 |------|---------------|
-| `mms-shared-ui.mdc` | @shared/ui SSOT, zero cross-console duplicates, pre-deletion gates, orphaned import detection |
+| `mms-shared-ui.mdc` | @mms/ui SSOT, zero cross-console duplicates, pre-deletion gates, orphaned import detection |
 | `mms-ui-ux-design.mdc` | UI primitives, design tokens, tabs, notifications, a11y (RTL / WCAG), and **§4 responsiveness** (FormModal chrome → `mms-form-architecture.mdc`) |
 | `mms-document-templates.mdc` | Printable document-template engine: server-authoritative layouts, CAS/409 conflict UX, one editor/renderer/print path, localized field/preset catalogs |
 | `mms-module-architecture.mdc` | Universal module manifest schemas, **§0 surface triad** (directory / DetailSheet / FormModal), three-tier tab layout, Work/Reports/Setup scopes, soft-delete, **gold-standard parity (§7)**, background jobs |
@@ -74,7 +74,7 @@ in the enforcement registry below are how the norm is actually held.
 | Test-first delivery, Red evidence | `mms-tdd.mdc` | `mms-testing-e2e` · `mms-code-review` |
 | Dependencies, engines, catalogs | `mms-dependencies.mdc` | `mms-dependency-upgrade` · `mms-vuln-response` |
 | File structure, naming, size bands | `mms-structure-naming.mdc` | `mms-frontend` · `mms-shared-package` · `mms-shared-ui` |
-| DRY, extraction, `@mms/shared` boundaries | `mms-dry.mdc` | `mms-shared-package` · `mms-shared-ui` |
+| DRY, extraction, `@mms/contracts` boundaries | `mms-dry.mdc` | `mms-shared-package` · `mms-shared-ui` |
 | Shared UI components & cross-console governance | `mms-shared-ui.mdc` (norm SSOT) · `mms-dry.mdc` §1,§4 · `mms-ui-ux-design.mdc` §1 | `mms-shared-ui` |
 | Auth, sessions, CSRF, RBAC, tenant isolation | `mms-auth-security.mdc` | `mms-backend-security` |
 | REST contracts, errors, pagination, bulk PUT | `mms-api-interface.mdc` | `mms-backend-api` · `mms-frontend` |
@@ -157,15 +157,15 @@ Update this table in the same change that adds or removes a check.
 | Tenant RLS enablement per table | `mms-schema-migrate/scripts/check-migrations.sh` | skill script |
 | Faculty hierarchy, temporal primary integrity, and tenant isolation | `facultyAssignmentValidation.test.ts`, `facultyAppointmentsDb.integration.test.ts` | test |
 | Faculty domain legacy surface (retired Teacher/FDA) + required schema | `pnpm run check:faculty-domain` (CI, `typecheck-lint`) | CI |
-| `@mms/shared` runtime purity | `pnpm run check:shared-purity` (CI, `typecheck-lint`) | CI |
+| `@mms/contracts` runtime purity | `pnpm run check:shared-purity` (CI, `typecheck-lint`) | CI |
 | a11y serious/critical violations | `e2e/tests/a11y/a11y-shell.spec.ts` (CI e2e job) | test |
 | Platform UI ownership (native controls, duplicate exports/JSX, semantic palette classes) | `apps/frontend/src/platform/platformUiArchitecture.test.ts` | test |
 | Configured coverage floors match the rule §5 snapshot | verifier parses each workspace `vitest.config.ts` and compares it with `mms-testing-observability.mdc` §5 | test + CI |
 | Standards mirrors regenerated and staged with their source before commit | `.githooks/pre-commit` (`sync-all.sh` + `scripts/check-standards-staged.mjs` + verifier when standards paths are staged) + CI drift diff over `.agent .cursor .claude .dsh` | hook + CI |
 | Work directory convergence (selection SSOT, two-layer bulk chrome, no dead adapters) | `pnpm run check:work-directory` | ratchet |
 | Data tables use `DataTable` / `WorkBatchTable` (no hand-rolled `<Table>` outside the report/ledger allowlist) | `pnpm run check:work-directory` | ratchet |
-| Every table column is sized by a content `kind` (`MODULE_COLUMN_KIND_WIDTHS`) or explicit `width`; stale stored widths floor at the kind minimum | `pnpm run check:work-directory` (column literals) + `packages/shared/src/__tests__/moduleColumnRegistryKinds.test.ts` (Work registries) | ratchet + test |
-| Shared UI component governance (zero duplicate components across consoles, `@shared/ui` SSOT, zero orphaned imports) | `mms-shared-ui.mdc` (norm) + `pnpm run check:shared-ui` (CI + pre-PR gate) | rule + ratchet |
+| Every table column is sized by a content `kind` (`MODULE_COLUMN_KIND_WIDTHS`) or explicit `width`; stale stored widths floor at the kind minimum | `pnpm run check:work-directory` (column literals) + `packages/contracts/src/__tests__/moduleColumnRegistryKinds.test.ts` (Work registries) | ratchet + test |
+| Shared UI component governance (zero duplicate components across consoles, `@mms/ui` SSOT, zero orphaned imports) | `mms-shared-ui.mdc` (norm) + `pnpm run check:shared-ui` (CI + pre-PR gate) | rule + ratchet |
 | Form contract architecture (no fire-and-forget `mutate`, no removed `lang` prop, no legacy live-collection store in form surfaces) | `apps/frontend/src/lib/forms/formContractArchitecture.test.ts` (frontend vitest, CI `test-frontend`) | test |
 | Form UI primitives (no raw `input`/`select`/`textarea`/`button`/`label`, no literal placeholder/aria-label, no physical direction classes in form files) | `apps/frontend/src/lib/forms/formUiPrimitives.test.ts` (frontend vitest) | test |
 | Form collection row identity (no index or index-derived keys in repeatable rows) | `apps/frontend/src/lib/forms/formCollectionKeys.test.ts` (frontend vitest, allowlist needs a reason) | test |
@@ -179,7 +179,7 @@ Update this table in the same change that adds or removes a check.
 | Every module-owned API route gated (`registerModuleAccess`), every route classified | `apps/backend/src/__tests__/moduleAccessCoverage.test.ts` | test |
 | Every tenant app-shell route classified in `TENANT_APP_ROUTE_ACCESS` | `apps/frontend/src/lib/config/routeAccess.test.ts` | test |
 | Tier structure, trunk tests, review criteria, UI/UX Pro Max design intelligence | none — **advisory** (review discipline) | advisory |
-| Contract DTO ↔ read-shape parity (a write body accepts the mapper's read shape) | reference test: `packages/shared/src/__tests__/contactWriteSchema.test.ts` (round-trip) — generalise when a second module lands | test |
+| Contract DTO ↔ read-shape parity (a write body accepts the mapper's read shape) | reference test: `packages/contracts/src/__tests__/contactWriteSchema.test.ts` (round-trip) — generalise when a second module lands | test |
 | Server-owned audit attribution (client `createdBy`/`updatedBy`/`createdAt` ignored) | reference test: `apps/backend/src/__tests__/contactUseCases.test.ts` (attribution stamping) | test |
 | Batched CDC outbox for bulk operations (audit stays per record) | reference test: `apps/backend/src/__tests__/softDeleteOutboxCdc.test.ts` | test |
 | Widget/aggregate field allowlist, `filters[]`, 400 on unsupported field | reference test: `apps/backend/src/__tests__/contactRepositoryWidgets.test.ts` | test |
@@ -204,7 +204,7 @@ All rules in this directory apply **equally** to tenant workspace code and platf
 | Design tokens (`@theme`, semantic colors, logical CSS) | ✅ Yes |
 | WCAG AA a11y, logical CSS (Platform apex LTR-locked per `mms-settings-i18n.mdc` §5), touch targets | ✅ Yes |
 | TanStack Query v5 factories, `AbortSignal` | ✅ Yes |
-| Zod `.strict()` DTOs via `@mms/shared` | ✅ Yes |
+| Zod `.strict()` DTOs via `@mms/contracts` | ✅ Yes |
 | File size cap (300 lines hard), naming | ✅ Yes |
 | `ErrorState` with hint description on list failures | ✅ Yes |
 | `notify.*` for all toasts | ✅ Yes |
@@ -235,7 +235,7 @@ Every rule starts with a **Workflow skills:** line; the full topic→rule→skil
 | Dep upgrades / catalogs | `mms-dependency-upgrade` |
 | axe / focus-return | `mms-a11y-smoke` |
 | UI design system / styles / palettes / UX guidelines | `ui-ux-pro-max` |
-| **Shared UI audit** — duplicate components, orphaned imports, `@shared/ui` SSOT, pre-deletion cleanup | **`mms-shared-ui`** (run `/shared-ui-audit` workflow) |
+| **Shared UI audit** — duplicate components, orphaned imports, `@mms/ui` SSOT, pre-deletion cleanup | **`mms-shared-ui`** (run `/shared-ui-audit` workflow) |
 | Soft-delete / trash lifecycle / hard-purge | `mms-soft-delete` |
 | Migration debt | `mms-migration-fixes` |
 | PR / self-review | `mms-code-review` |
@@ -280,7 +280,7 @@ node scripts/verify-rules-integrity.mjs
 - [ ] Work column widths persist (local + `/column-preferences`; merge preserves device widths) — `mms-module-architecture.mdc` §3
 - [ ] Dashboard/report KPI cards use `/metrics` where available — `mms-reports.mdc`
 - [ ] Setup Fields / form: tab enablement SSOT + enabled fields render in form **and** drawer — `mms-fields.mdc` / `mms-form-architecture.mdc`
-- [ ] Shared logic in `@mms/shared` if cross-app or 2+ modules
+- [ ] Shared logic in `@mms/contracts` if cross-app or 2+ modules
 - [ ] **Shared UI governance**: zero duplicate primitive files in `platform/` or `tenant/`; run `pnpm run check:shared-ui` to confirm no orphaned imports, cross-console leaks, or facade violations — `mms-dry.mdc` §1 · `mms-ui-ux-design.mdc` §1 · skill `mms-shared-ui`
 - [ ] **Legacy UI cleanup**: if deleting component files, run `pnpm typecheck && pnpm --filter mms-frontend lint && pnpm --filter mms-frontend build` **before** deletion, and the same suite + `pnpm run check:shared-ui` **after** — `mms-dry.mdc` §4
 - [ ] Touched app files stay under the hard 300 lines; splits keep public import barrels — `mms-structure-naming.mdc`
@@ -291,7 +291,7 @@ node scripts/verify-rules-integrity.mjs
 - [ ] Soft-delete: 3-tier indexes, partial unique indexes `WHERE deleted_at IS NULL`, URL sync `?view=trash`, 23505 conflict trap, session invalidation, outbox CDC — `mms-soft-delete`
 - [ ] New UI: `mms-ui-ux-design.mdc` keyboard + labels + §4 responsive checklist (375 / 768 / 1440)
 - [ ] Backend domain change: Red-phase evidence recorded in the PR body — `mms-tdd.mdc` §1–§2
-- [ ] New `@mms/shared` pure helpers: unit test per `mms-tdd.mdc`
+- [ ] New `@mms/contracts` pure helpers: unit test per `mms-tdd.mdc`
 
 ## Removed / Merged (History)
 

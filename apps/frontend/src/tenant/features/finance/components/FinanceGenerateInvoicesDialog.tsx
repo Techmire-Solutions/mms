@@ -11,7 +11,7 @@ import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import { billingPeriodFromDate, generateInvoicesBodySchema, todayISO } from "@mms/shared";
+import { billingPeriodFromDate, generateInvoicesBodySchema, todayISO } from "@mms/contracts";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useFinanceInvoiceGeneration } from "@/tenant/features/finance/hooks/useFinanceInvoiceGeneration";
 import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";

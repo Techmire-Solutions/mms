@@ -1,12 +1,17 @@
-import { ageOnDate, evaluateEligibility, remainingSeats, type EligibilityClass } from "@mms/shared";
+import {
+  ageOnDate,
+  evaluateEligibility,
+  remainingSeats,
+  type EligibilityClass,
+} from "@mms/contracts";
 import { type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
 import { normalizeGenderKey } from "@/lib/ui/genderUi";
 
 /**
- * Presentation adapter over the shared eligibility rule (`@mms/shared` `evaluateEligibility`).
+ * Presentation adapter over the shared eligibility rule (`@mms/contracts` `evaluateEligibility`).
  *
- * The age, gender and seat rules live in `@mms/shared` so public registration, staff enrollment
+ * The age, gender and seat rules live in `@mms/contracts` so public registration, staff enrollment
  * and promotion all decide the same way. This module only turns that verdict into the wizard
  * check rows, and adds the two checks the shared rule has no inputs for: duplicate enrollment
  * and sibling detection.

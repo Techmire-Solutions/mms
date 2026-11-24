@@ -9,14 +9,14 @@ import { ImageUploadField, SocialLinksEditor } from "@/components/branding/Brand
 import BrandingIdentityPreview from "@/components/branding/BrandingIdentityPreview";
 import { Alert } from "@/components/app/Alert";
 import { PlatformSettingsLoadError } from "@/platform/features/settings/components/PlatformSettingsLoadError";
-import { CardSkeleton, Input, Label } from "@shared/ui";
+import { CardSkeleton, Input, Label } from "@mms/ui";
 import { useSavedFlash } from "@/hooks/useSavedFlash";
 import {
   PLATFORM_BRANDING_IDENTITY_FIELD_KEYS,
   platformBrandingToBrandingSettings,
   pickPlatformBrandingFields,
   type PlatformBrandingDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   usePlatformBrandingQuery,
   useUpdatePlatformBranding,

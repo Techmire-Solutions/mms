@@ -27,7 +27,7 @@ import {
   QUESTION_ACCURACY_WEAK_THRESHOLD,
   questionAccuracyBarClass,
   questionAccuracyTextClass,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";

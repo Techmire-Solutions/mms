@@ -25,7 +25,9 @@ vi.mock("../services/rbacService.js", () => ({
 vi.mock("../middleware/requireTenantModule.js", () => ({
   getModuleAccessDenial: (...args: unknown[]) => getModuleAccessDenial(...args),
 }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, work: () => Promise<unknown>) => work(),
 }));
 vi.mock("../lib/tenantContext.js", () => ({ getRequestTenant: () => "demo" }));

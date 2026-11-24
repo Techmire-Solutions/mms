@@ -1,4 +1,4 @@
-import { facultyModulePreferences } from "../schema.js";
+import { facultyModulePreferences } from "@mms/db/schema";
 import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({

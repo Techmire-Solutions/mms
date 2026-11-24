@@ -3,11 +3,11 @@ import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { FacultyCsvImportDialog } from "./FacultyCsvImportDialog";
 
-vi.mock("@/lib/download", () => ({
+vi.mock("@mms/fe-core/api/download", () => ({
   triggerFileDownload: vi.fn(),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     success: vi.fn(),
     error: vi.fn(),
@@ -24,7 +24,7 @@ const FACULTY_IO_MAP: Record<string, string> = {
 };
 
 vi.mock("@/hooks/useTranslation", async () => {
-  const { translateAppParams } = await import("@mms/shared");
+  const { translateAppParams } = await import("@mms/contracts");
   const realT = (key: string, params?: Record<string, string | number>): string =>
     translateAppParams(key as never, "en", ...(params ? [params as never] : []));
   return {
@@ -34,6 +34,10 @@ vi.mock("@/hooks/useTranslation", async () => {
     }),
   };
 });
+vi.mock("@mms/fe-core/i18n", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
 
 const mockStartServerImport = vi.fn().mockResolvedValue({
   id: "job-faculty-1",
@@ -42,7 +46,7 @@ const mockStartServerImport = vi.fn().mockResolvedValue({
   progress: { current: 1, total: 1 },
 });
 
-vi.mock("@/lib/backgroundJobs/startServerModuleCsvImport", () => ({
+vi.mock("@mms/fe-core/backgroundJobs/startServerModuleCsvImport", () => ({
   startServerModuleCsvImport: (...args: unknown[]) => mockStartServerImport(...args),
 }));
 
@@ -80,7 +84,7 @@ describe("FacultyCsvImportDialog", () => {
   });
 
   it("renders faculty import modal and triggers template download from SSOT schema", async () => {
-    const { triggerFileDownload } = await import("@/lib/download");
+    const { triggerFileDownload } = await import("@mms/fe-core/api/download");
 
     act(() => {
       root.render(
@@ -104,7 +108,7 @@ describe("FacultyCsvImportDialog", () => {
   });
 
   it("renders designations import modal with appropriate title and template download", async () => {
-    const { triggerFileDownload } = await import("@/lib/download");
+    const { triggerFileDownload } = await import("@mms/fe-core/api/download");
 
     act(() => {
       root.render(

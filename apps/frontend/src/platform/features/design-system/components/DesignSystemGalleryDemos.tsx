@@ -11,7 +11,7 @@ import {
   DensityToggle,
   FormSelect,
   type DensityMode,
-} from "@shared/ui";
+} from "@mms/ui";
 import {
   Badge,
   EmptyState,
@@ -19,7 +19,7 @@ import {
   Alert,
   StatusBadge,
   CompactSegmentedControl,
-} from "@shared/ui";
+} from "@mms/ui";
 import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { Inbox } from "lucide-react";
 

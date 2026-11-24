@@ -2,9 +2,9 @@ import {
   STUDENTS_MODULE_MANIFEST,
   type StudentsListQuery,
   type StudentsWidgetQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 
-export type { StudentRecord, StudentsListPageResult } from "@mms/shared";
+export type { StudentRecord, StudentsListPageResult } from "@mms/contracts";
 
 export const STUDENTS_QUERY_KEY = [STUDENTS_MODULE_MANIFEST.collectionKey, "list"] as const;
 export const STUDENTS_METRICS_QUERY_KEY = [

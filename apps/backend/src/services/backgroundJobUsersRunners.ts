@@ -1,4 +1,4 @@
-import type { UserTransferEntity } from "@mms/shared";
+import type { UserTransferEntity } from "@mms/contracts";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { usersUseCases } from "../users/use-cases/usersUseCases.js";

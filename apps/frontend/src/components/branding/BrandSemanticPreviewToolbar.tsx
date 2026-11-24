@@ -1,6 +1,6 @@
 import React from "react";
 import { BarChart3, Eye, IdCard, LayoutGrid, Moon, Sparkles, Sun, Table } from "lucide-react";
-import type { BrandingThemeMode } from "@mms/shared";
+import type { BrandingThemeMode } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import {
   Select,

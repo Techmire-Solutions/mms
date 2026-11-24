@@ -1,9 +1,9 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: (props: {
     open: boolean;
     title: string;

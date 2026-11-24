@@ -4,8 +4,8 @@ import {
   DEFAULT_STUDENTS_SETTINGS,
   splitFacultySettingsBlob,
   DEFAULT_FACULTY_SETTINGS,
-} from "@mms/shared";
-import { getMinimalCollectionsForSeed, getMinimalObjects } from "../db/minimalSeeds.js";
+} from "@mms/contracts";
+import { getMinimalCollectionsForSeed, getMinimalObjects } from "@mms/db/seed";
 import { getCollection, getObject, saveCollection, saveObject } from "../db/database.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { upsertStudentFieldConfig } from "../db/repositories/studentFieldConfigRepository.js";

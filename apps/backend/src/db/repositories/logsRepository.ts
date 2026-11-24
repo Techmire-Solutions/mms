@@ -1,7 +1,7 @@
 import { and, eq, inArray, desc, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type ActivityLog, type RepositoryListOptions } from "@mms/shared";
-import { userActivityLogs } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { dedupeTrimmedIds, type ActivityLog, type RepositoryListOptions } from "@mms/contracts";
+import { userActivityLogs } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 
 type ActivityLogRow = typeof userActivityLogs.$inferSelect;
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Award } from "lucide-react";
-import type { FacultyIjazah } from "@mms/shared";
+import type { FacultyIjazah } from "@mms/contracts";
 import { Field, FormCollectionShell, FormListFieldCard } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";

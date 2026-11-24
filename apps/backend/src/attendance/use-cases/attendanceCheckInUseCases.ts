@@ -5,8 +5,8 @@ import {
   type AttendanceCheckInRow,
   type AttendanceRecord,
   type User,
-} from "@mms/shared";
-import { withTenant } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { stampAttendanceSections } from "./attendanceSectionStamp.js";
 import { attendanceCalendarRepository } from "../repository/attendanceCalendarRepositoryAdapter.js";

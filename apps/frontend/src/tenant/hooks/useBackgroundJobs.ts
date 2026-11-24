@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import { fetchBackgroundJobs } from "@/lib/backgroundJobs/backgroundJobApi";
 import {
   BACKGROUND_JOBS_EVENT,
@@ -15,7 +15,8 @@ import { useAuth } from "@/lib/contexts/AuthContext";
  * Background-job cache key carries the `auth` segment so `canPersistQuery` never
  * restores a previous session's job list from IndexedDB.
  */
-export const BACKGROUND_JOBS_QUERY_KEY = ["auth", "background-jobs"] as const;
+export { BACKGROUND_JOBS_QUERY_KEY } from "@mms/fe-core/backgroundJobs";
+import { BACKGROUND_JOBS_QUERY_KEY } from "@mms/fe-core/backgroundJobs";
 
 /**
  * Background jobs for the signed-in user: server list refreshed on store change

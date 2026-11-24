@@ -1,8 +1,8 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
-import type { QuestionAttachment } from "@mms/shared";
-import { questionAttachments } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { NotFoundError } from "../../lib/httpErrors.js";
+import type { QuestionAttachment } from "@mms/contracts";
+import { questionAttachments } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
+import { NotFoundError } from "@mms/be-core/http/errors";
 import { auditQuestionBankEntity } from "./questionBankAudit.js";
 
 /**

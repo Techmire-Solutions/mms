@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { formatDate, primaryResponsibleAdultDisplayName, type Student } from "@mms/shared";
+import { formatDate, primaryResponsibleAdultDisplayName, type Student } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {

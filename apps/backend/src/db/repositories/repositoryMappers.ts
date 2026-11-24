@@ -1,4 +1,4 @@
-import type { SerializedEntityAuditFields, SoftDeleteFields } from "@mms/shared";
+import type { SerializedEntityAuditFields, SoftDeleteFields } from "@mms/contracts";
 
 /**
  * Standard audit columns selected from Drizzle tables containing

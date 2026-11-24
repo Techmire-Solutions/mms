@@ -1,0 +1,28 @@
+import React from "react";
+import {
+  FormSelect as SharedFormSelect,
+  type FormSelectProps as SharedFormSelectProps,
+  type FormSelectOption,
+  type FormSelectSearchLabels,
+} from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+export type { FormSelectOption, FormSelectSearchLabels };
+export type FormSelectProps = SharedFormSelectProps;
+
+/**
+ * FormSelect facade — wraps @mms/ui FormSelect with localized
+ * search and empty-state defaults from useTranslation().
+ */
+export function FormSelect({ searchLabels, ...props }: FormSelectProps): React.JSX.Element {
+  const { t } = useTranslation();
+
+  const resolvedSearchLabels: FormSelectSearchLabels = {
+    search: searchLabels?.search ?? t("common.search"),
+    searchPlaceholder: searchLabels?.searchPlaceholder ?? t("common.searchPlaceholder"),
+    noMatchingOptions: searchLabels?.noMatchingOptions ?? t("common.noMatchingOptions"),
+    searching: searchLabels?.searching ?? t("common.loading"),
+  };
+
+  return <SharedFormSelect searchLabels={resolvedSearchLabels} {...props} />;
+}

@@ -1,8 +1,8 @@
-import { type attendanceContract, type User } from "@mms/shared";
+import { type attendanceContract, type User } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { attendanceEscalationUseCases } from "../../../attendance/use-cases/attendanceEscalationUseCases.js";
 import { getTenantId } from "./attendanceRecordHandlers.js";
 import {
@@ -11,7 +11,7 @@ import {
   QueueUnavailableError,
 } from "../../../services/backgroundJobWorkerService.js";
 import { buildBackgroundJobId, buildDeterministicJobKey } from "../../../lib/backgroundJobIds.js";
-import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /** Chronic-absence escalation routes: read the alert queue, re-scan, resolve. */
 

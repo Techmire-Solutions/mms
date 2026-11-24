@@ -10,7 +10,9 @@ import {
  * employments → tenant users), so the fake counts calls to decide which link
  * blocks.
  */
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: vi.fn(async (tenant: string, cb: (tx: unknown) => unknown) => {
     let call = 0;
     return cb({

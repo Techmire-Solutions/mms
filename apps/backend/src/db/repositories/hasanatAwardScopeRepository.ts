@@ -7,9 +7,9 @@
  */
 
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/shared";
-import { enrollments, faculty, sessionClasses, tenantUsers } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/contracts";
+import { enrollments, faculty, sessionClasses, tenantUsers } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 const RELEASED = [...SEAT_RELEASED_ENROLLMENT_STATUSES];
 

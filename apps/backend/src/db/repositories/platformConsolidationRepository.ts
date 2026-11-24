@@ -1,11 +1,11 @@
 import { eq, inArray } from "drizzle-orm";
-import type { ConsolidationGroup, ConsolidationGroupPut } from "@mms/shared";
+import type { ConsolidationGroup, ConsolidationGroupPut } from "@mms/contracts";
 import {
   consolidationGroupMembers,
   consolidationGroups,
   consolidationIntercompanyAccounts,
-} from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
 import { canonicalStoredRate } from "./repositoryFxMappers.js";
 
 const optionalRate = (value: string | null) => (value ? canonicalStoredRate(value) : undefined);

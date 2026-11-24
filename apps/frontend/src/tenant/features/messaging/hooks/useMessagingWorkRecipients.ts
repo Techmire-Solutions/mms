@@ -5,8 +5,8 @@ import type {
   MessagingGenderFilter,
   MessagingRecipientsPageResponse,
   StandardMessagingRecipient,
-} from "@mms/shared";
-import { MESSAGING_MODULE_MANIFEST } from "@mms/shared";
+} from "@mms/contracts";
+import { MESSAGING_MODULE_MANIFEST } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { useAuth } from "@/lib/contexts/AuthContext";

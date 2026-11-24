@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Gift, Star, TrendingDown, Users } from "lucide-react";
-import { formatNumber } from "@mms/shared";
+import { formatNumber } from "@mms/contracts";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 

@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { resolveMigrationsFolder } from "@mms/db/testing";
 
 const SRC = join(process.cwd(), "src");
 
@@ -29,7 +30,7 @@ describe("enrollment tenant boundary (static guards)", () => {
   });
 
   it("keeps every enrollment table under FORCE ROW LEVEL SECURITY", () => {
-    const migrationsDir = join(SRC, "db", "migrations_drizzle");
+    const migrationsDir = resolveMigrationsFolder();
     const sql = readdirSync(migrationsDir)
       .filter((file) => file.endsWith(".sql"))
       .map((file) => readFileSync(join(migrationsDir, file), "utf8"))

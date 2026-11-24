@@ -10,7 +10,7 @@ import {
   resolveBrandingThemeMode,
   type BrandingSettings,
   type ThemeMode,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getEffectiveGlobalSettings, getGlobalSettings, saveGlobalSettingsAsync } from "@/lib/db";
 import { clearGlobalSettingsPreview, previewGlobalSettings } from "@/lib/settingsPreview";
 import { serverSyncErrorKey } from "@/lib/serverSyncErrors";

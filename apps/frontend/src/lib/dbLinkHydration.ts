@@ -1,4 +1,4 @@
-import type { ContactLike } from "@mms/shared";
+import type { ContactLike } from "@mms/contracts";
 import { hydrateCollectionRows, normalizeCollectionRows } from "@/lib/contactLink/collectionSync";
 import { scopedStorageKey } from "@/lib/dbStorageCore";
 

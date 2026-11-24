@@ -1,15 +1,12 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ZodTypeAny } from "zod";
-import type { User } from "@mms/shared";
-import { isSystemMetadataKey, moduleExportAuditBodySchema } from "@mms/shared";
+import type { User } from "@mms/contracts";
+import { isSystemMetadataKey, moduleExportAuditBodySchema } from "@mms/contracts";
 import { getRequestAuditContext, getRequestTenant } from "./tenantContext.js";
 import { enqueueCsvExportJob, normalizeExportQuery } from "./csvExportEnqueue.js";
 import { ForbiddenError, sendForbidden, sendServiceUnavailable } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
-import {
-  recordModernAuditEvent,
-  mapActionStringToAuditType,
-} from "../services/auditTrailService.js";
+import { recordModernAuditEvent, mapActionStringToAuditType } from "@mms/be-core/audit";
 import {
   BackgroundJobLimitError,
   QueueUnavailableError,

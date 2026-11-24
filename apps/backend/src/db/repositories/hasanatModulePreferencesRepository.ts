@@ -1,4 +1,4 @@
-import { hasanatModulePreferences } from "../schema.js";
+import { hasanatModulePreferences } from "@mms/db/schema";
 import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({

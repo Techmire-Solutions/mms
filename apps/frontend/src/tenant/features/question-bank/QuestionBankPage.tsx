@@ -5,7 +5,7 @@ import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
-import { questionBankTransferSchema } from "@mms/shared";
+import { questionBankTransferSchema } from "@mms/contracts";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import { QuestionBankCommandMetrics } from "@/tenant/features/question-bank/components/QuestionBankCommandMetrics";
 import { QuestionBankModalLayer } from "@/tenant/features/question-bank/components/QuestionBankModalLayer";

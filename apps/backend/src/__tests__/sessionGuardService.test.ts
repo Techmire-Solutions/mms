@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { SessionTimeoutPolicy } from "@mms/shared";
+import type { SessionTimeoutPolicy } from "@mms/contracts";
 import {
   enforcePlatformSessionClock,
   enforceTenantSessionClock,

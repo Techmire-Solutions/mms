@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import type { EnrollmentBillingSource } from "@mms/shared";
-import { enrollments, financeInvoices, sessions } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { EnrollmentBillingSource } from "@mms/contracts";
+import { enrollments, financeInvoices, sessions } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 const BILLABLE_STATUSES = ["pending", "confirmed"] as const;
 const PAGE_SIZE = 100;

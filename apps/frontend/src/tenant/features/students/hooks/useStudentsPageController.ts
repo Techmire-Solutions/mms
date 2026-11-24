@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useModuleTierPageNav } from "@/tenant/hooks/useModuleTierPageNav";
-import { STUDENTS_MODULE_MANIFEST, resolveStudentStatuses } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, resolveStudentStatuses } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useStudentsMetrics } from "@/tenant/features/students/hooks/useStudentsAnalyticsQueries";
 import { useStudentMutations } from "@/tenant/features/students/hooks/useStudents";

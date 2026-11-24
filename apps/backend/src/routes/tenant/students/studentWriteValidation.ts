@@ -10,10 +10,10 @@ import {
   type AppTranslationKey,
   type FieldDefinition,
   type StudentRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { loadStudentsSettingsCombined } from "../../../students/use-cases/studentConfigService.js";
-import { loadContactsByIdsForTenant } from "../../../contacts/use-cases/contactLoadUseCases.js";
+import { loadContactsByIdsForTenant } from "@mms/mod-contacts/backend/use-cases";
 import { collectStudentDynamicIssues } from "../../../services/studentValidationService.js";
 
 /** Languages the Setup blueprint can translate its validation messages into. */

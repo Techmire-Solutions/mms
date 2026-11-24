@@ -20,9 +20,9 @@ import {
   type SessionsCommandMetricsSnapshot,
   type SessionsListPageResult,
   type SessionsListQuery,
-} from "@mms/shared";
-import { sessions } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { sessions } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { runListPage } from "./listPageHelper.js";
 import { findSessionsPageSummariesByIds, findSessionsSummaryByIds } from "./sessionRepository.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";

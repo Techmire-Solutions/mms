@@ -1,4 +1,4 @@
-import { DEFAULT_GLOBAL_SETTINGS, mergeGlobalSettings, type GlobalSettings } from "@mms/shared";
+import { DEFAULT_GLOBAL_SETTINGS, mergeGlobalSettings, type GlobalSettings } from "@mms/contracts";
 import { apiFetch } from "@/lib/apiClient";
 import { getObject, writeObjectLocal } from "@/lib/dbObjectStorage";
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Scale } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/shared";
+import { EXAMINATIONS_MODULE_MANIFEST } from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

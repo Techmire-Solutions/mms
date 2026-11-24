@@ -1,5 +1,5 @@
 import { getRedisClient } from "../../lib/redis.js";
-import type { BackgroundJobEventMessage } from "@mms/shared";
+import type { BackgroundJobEventMessage } from "@mms/contracts";
 import { logger } from "../../lib/logger.js";
 
 export async function publishJobEvent(eventPayload: BackgroundJobEventMessage): Promise<void> {

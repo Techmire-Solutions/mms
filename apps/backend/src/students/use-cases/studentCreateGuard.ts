@@ -1,4 +1,4 @@
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 
 /**

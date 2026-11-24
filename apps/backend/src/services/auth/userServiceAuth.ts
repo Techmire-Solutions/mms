@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { resolveTenantLoginEmail, type Contact, type TenantUserProfile } from "@mms/shared";
-import { getContactById } from "../contactService.js";
+import { resolveTenantLoginEmail, type Contact, type TenantUserProfile } from "@mms/contracts";
+import { getContactById } from "@mms/mod-contacts/backend/services";
 import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
 import { hashPassword, verifyPassword, DUMMY_PASSWORD_HASH } from "./passwordService.js";
 import {

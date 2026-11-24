@@ -1,6 +1,6 @@
 import { and, isNull, asc, eq, lt, sql } from "drizzle-orm";
-import { withGlobalTenant } from "../../db/tenant-context.js";
-import { outboxEvents } from "../../db/schema/outboxEvents.js";
+import { withGlobalTenant } from "@mms/db/context";
+import { outboxEvents } from "@mms/db/schema/outboxEvents";
 import { redisGet, redisSet, redisDelPattern, redisKeys } from "../../lib/redis.js";
 import { logger } from "../../lib/logger.js";
 import { deliverTaskNotification } from "../../services/taskNotificationDeliveryService.js";

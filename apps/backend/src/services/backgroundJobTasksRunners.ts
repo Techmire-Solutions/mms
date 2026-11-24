@@ -5,7 +5,7 @@
  * Tasks shipped its transfer routes with no `tasks:export` / `tasks:import`
  * runner, so every queued transfer failed with "No runner registered".
  */
-import { TASKS_MODULE_MANIFEST, type TasksImportBody } from "@mms/shared";
+import { TASKS_MODULE_MANIFEST, type TasksImportBody } from "@mms/contracts";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
 import { buildTasksCsvExport, generateTasksCsvStreamChunks } from "./tasksExportService.js";

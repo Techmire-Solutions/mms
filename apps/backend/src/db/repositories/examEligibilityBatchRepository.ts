@@ -4,8 +4,8 @@ import {
   attendancePctFromCounts,
   evaluateExamEligibility,
   type ExamEligibilityResult,
-} from "@mms/shared";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { withTenantRead } from "@mms/db/context";
 import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 
 /**

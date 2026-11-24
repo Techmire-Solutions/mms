@@ -6,10 +6,10 @@
  * Idempotent — safe to re-run.
  */
 import { eq } from "drizzle-orm";
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
-import { mergeBrandingSettings, parseTenantScopedStorageKey } from "@mms/shared";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
+import { mergeBrandingSettings, parseTenantScopedStorageKey } from "@mms/contracts";
 
 const BRANDING_KEY = "branding";
 

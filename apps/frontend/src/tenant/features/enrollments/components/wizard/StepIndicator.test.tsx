@@ -10,8 +10,8 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@shared/ui", async () => {
-  const actual = await vi.importActual<Record<string, unknown>>("@shared/ui");
+vi.mock("@mms/ui", async () => {
+  const actual = await vi.importActual<Record<string, unknown>>("@mms/ui");
   return {
     ...actual,
     WizardStepIndicator: ({ steps, current }: { steps: { label: string }[]; current: number }) => (

@@ -1,14 +1,14 @@
 import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useState } from "react";
 import { Link2 } from "lucide-react";
-import type { RegistrationLink, RegistrationLinkWrite, Session } from "@mms/shared";
-import { registrationLinkWriteSchema } from "@mms/shared";
+import type { RegistrationLink, RegistrationLinkWrite, Session } from "@mms/contracts";
+import { registrationLinkWriteSchema } from "@mms/contracts";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/app/DatePicker";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";

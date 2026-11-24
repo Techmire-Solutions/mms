@@ -1,5 +1,5 @@
 import { Users as UsersIcon, Activity } from "lucide-react";
-import { USERS_MODULE_MANIFEST, type AppTranslationKey } from "@mms/shared";
+import { USERS_MODULE_MANIFEST, type AppTranslationKey } from "@mms/contracts";
 import type { LucideIcon } from "lucide-react";
 
 export const SETUP_TAB_LABEL_KEYS: Record<

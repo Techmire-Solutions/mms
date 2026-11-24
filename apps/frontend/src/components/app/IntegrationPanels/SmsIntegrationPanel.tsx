@@ -1,9 +1,9 @@
 import React from "react";
 import { MessageSquare } from "lucide-react";
-import { type AppTranslationKey, type SmsProviderId } from "@mms/shared";
+import { type AppTranslationKey, type SmsProviderId } from "@mms/contracts";
 import { FormSelect } from "@/components/app/FormSelect";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { Input, IntegrationPanelChrome, Label } from "@shared/ui";
+import { Input, IntegrationPanelChrome, Label } from "@mms/ui";
 import {
   useSmsIntegrationPanel,
   type SmsIntegrationPanelHookOptions,
@@ -25,7 +25,7 @@ export interface SmsIntegrationPanelProps extends SmsIntegrationPanelHookOptions
 /**
  * One-active-provider SMS setup panel (SSOT) shared by the Tenant and Platform
  * consoles. Console-specific API, i18n description, ids, and write gating are
- * props; validation comes from `@mms/shared`.
+ * props; validation comes from `@mms/contracts`.
  */
 export function SmsIntegrationPanel({
   api,

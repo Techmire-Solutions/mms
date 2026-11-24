@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getQuestionCategoryIds, type QuestionBankQuestion as Question } from "@mms/shared";
+import { getQuestionCategoryIds, type QuestionBankQuestion as Question } from "@mms/contracts";
 import {
   ALL_FILTER,
   createPaperSection,

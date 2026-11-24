@@ -1,4 +1,4 @@
-import type { ContactsWidgetOperation, StudentsWidgetOperation } from "@mms/shared";
+import type { ContactsWidgetOperation, StudentsWidgetOperation } from "@mms/contracts";
 import { useReportCollectionRows } from "@/lib/reports/useReportCollections";
 import { useContactsWidgetAggregates } from "@/tenant/hooks/collections/contacts";
 import { useStudentsWidgetAggregates } from "@/tenant/hooks/collections/students";

@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { AlertTriangle, Check } from "lucide-react";
-import type { ContactPreferences } from "@mms/shared";
+import type { ContactPreferences } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Modal } from "@/components/app/Modal";

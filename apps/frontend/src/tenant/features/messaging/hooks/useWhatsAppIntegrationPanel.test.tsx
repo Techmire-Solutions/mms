@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_WHATSAPP_INTEGRATION, type WhatsappIntegrationConfig } from "@mms/shared";
+import { DEFAULT_WHATSAPP_INTEGRATION, type WhatsappIntegrationConfig } from "@mms/contracts";
 import { useWhatsAppIntegrationPanel } from "./useWhatsAppIntegrationPanel";
 
 const api = vi.hoisted(() => ({

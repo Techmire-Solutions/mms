@@ -1,4 +1,4 @@
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { EntityArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 import { useTranslation } from "@/hooks/useTranslation";
 

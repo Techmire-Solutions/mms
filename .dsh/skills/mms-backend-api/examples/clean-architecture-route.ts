@@ -4,7 +4,7 @@ import { authenticateTenant } from '../../middleware/authenticate.js';
 import { canWriteCollection, canReadCollection } from '../../services/rbac.js';
 import { contactUseCases } from '../../contacts/use-cases/index.js';
 import { registerStandardTenantRoutes } from '../crudResourceRoutes.js';
-import { insertContactSchema, updateContactSchema } from '@mms/shared';
+import { insertContactSchema, updateContactSchema } from '@mms/contracts';
 
 export const contactsRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', authenticateTenant);

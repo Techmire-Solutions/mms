@@ -7,8 +7,8 @@ import {
   type ExportColumn,
   type FinanceListQuery,
   type Invoice,
-} from "@mms/shared";
-import { financeTransferSchema, type FinanceTransferEntity } from "@mms/shared";
+} from "@mms/contracts";
+import { financeTransferSchema, type FinanceTransferEntity } from "@mms/contracts";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { financeRepository } from "../finance/repository/financeRepositoryAdapter.js";
 

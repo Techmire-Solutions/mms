@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { executeErasureBodySchema, retentionEvaluateBodySchema, type User } from "@mms/shared";
+import { executeErasureBodySchema, retentionEvaluateBodySchema, type User } from "@mms/contracts";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendBadRequest, sendForbidden } from "../../../lib/httpErrors.js";
 import {

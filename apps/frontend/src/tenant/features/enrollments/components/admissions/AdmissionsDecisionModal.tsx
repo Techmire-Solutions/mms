@@ -6,11 +6,11 @@ import {
   registrationReviewSchema,
   type RegistrationApplication,
   type RegistrationReview,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
 

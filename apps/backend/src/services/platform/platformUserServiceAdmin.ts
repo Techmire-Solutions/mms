@@ -4,12 +4,12 @@ import type {
   PlatformAdminPermissions,
   PlatformUserProfile,
   StoredPlatformUser,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   DEFAULT_PLATFORM_ADMIN_PERMISSIONS,
   FULL_PLATFORM_ADMIN_PERMISSIONS,
   normalizePlatformAdminPermissions,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   insertPlatformUser,
   updatePlatformUserRow,

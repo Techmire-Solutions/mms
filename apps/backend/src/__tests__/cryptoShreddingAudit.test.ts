@@ -8,11 +8,16 @@ const mocks = vi.hoisted(() => ({
   insert: vi.fn(),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({ withTenant: mocks.withTenant }));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+  withTenant: mocks.withTenant,
+}));
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mocks.recordModernAuditEvent,
 }));
-vi.mock("../db/dbConnection.js", () => ({
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+
   activeDb: () => ({ select: mocks.select, update: mocks.update, insert: mocks.insert }),
 }));
 

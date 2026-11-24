@@ -1,5 +1,5 @@
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import type { SessionsReportCapacityItem, SessionsReportTodaySession } from "@mms/shared";
+import type { SessionsReportCapacityItem, SessionsReportTodaySession } from "@mms/contracts";
 
 export type SessionCapacityItem = SessionsReportCapacityItem;
 export type CapacityChartItem = CapacityBarDatum;

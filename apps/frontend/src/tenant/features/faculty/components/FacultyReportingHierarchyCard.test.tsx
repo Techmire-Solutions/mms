@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { FacultyReportingHierarchyCard } from "./FacultyReportingHierarchyCard";
 
 declare global {

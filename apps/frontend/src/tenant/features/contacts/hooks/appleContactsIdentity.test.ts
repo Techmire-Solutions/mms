@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import {
   APPLE_IDENTITY_MATCH_CHUNK_SIZE,
   dedupeAppleImportPreview,

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import type { StoredPlatformUser } from "@mms/shared";
-import type { Workspace } from "@mms/shared";
+import type { StoredPlatformUser } from "@mms/contracts";
+import type { Workspace } from "@mms/contracts";
 import type { TenantUserRow } from "../db/repositories/tenantUserRepositoryHydrate.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { hashPassword } from "../services/auth/passwordService.js";
@@ -33,7 +33,9 @@ vi.mock("../db/database.js", () => ({
   runInGlobalTransaction: vi.fn().mockImplementation((cb) => cb()),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn().mockImplementation(async (tenantId: string | null | undefined, cb) => {
     const mockTx = {
       select: () => ({

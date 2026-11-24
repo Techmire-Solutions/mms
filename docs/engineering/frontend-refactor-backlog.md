@@ -59,7 +59,7 @@ and DateFormatContext tests verify default format, custom prop override, and pro
 - Consolidated local upload response types (`ImageUploadResponse`, `AttachmentUploadResponse`) and module column preference response types into `@mms/shared`.
 - Consolidated local audit API response envelopes (`AuditListResponse`, `AuditVerificationResult`, `AuditExportPayload`) into `@mms/shared` (`auditResponses.ts`).
 - Updated `apps/frontend/src/tenant/hooks/collections/audit.ts` to consume response types from `@mms/shared`.
-- Unit tests added in `packages/shared/src/accountingListQuery.test.ts` and `packages/shared/src/auditTypes.test.ts` (all 18 tests passing).
+- Unit tests added in `packages/contracts/src/accountingListQuery.test.ts` and `packages/contracts/src/auditTypes.test.ts` (all 18 tests passing).
 
 ## 1. Current inventory
 

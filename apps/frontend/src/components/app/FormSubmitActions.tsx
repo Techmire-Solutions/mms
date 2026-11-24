@@ -1,2 +1,2 @@
-export { FormSubmitActions, type FormSubmitActionsProps } from "@shared/ui";
-export { FormSubmitActions as default } from "@shared/ui";
+export { FormSubmitActions, type FormSubmitActionsProps } from "@mms/ui";
+export { FormSubmitActions as default } from "@mms/ui";

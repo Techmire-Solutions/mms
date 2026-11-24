@@ -1,4 +1,4 @@
-import { allocateWakalaSplits, formatMonthYear, moneyToCents } from "@mms/shared";
+import { allocateWakalaSplits, formatMonthYear, moneyToCents } from "@mms/contracts";
 import type {
   ObligationCollection,
   ObligationDistribution,

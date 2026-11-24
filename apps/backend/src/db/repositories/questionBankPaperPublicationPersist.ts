@@ -1,7 +1,7 @@
 import { and, eq, isNotNull, sql } from "drizzle-orm";
-import { assessmentResults, questions, testQuestions, tests } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
-import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
+import { assessmentResults, questions, testQuestions, tests } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
+import { ConflictError, NotFoundError } from "@mms/be-core/http/errors";
 import { auditQuestionBankEntity } from "./questionBankAudit.js";
 import { testSelectFields } from "./questionBankTestsHydrate.js";
 

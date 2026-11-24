@@ -6,7 +6,7 @@ import {
   type PermissionMap,
   type RbacModuleDef,
   type RbacPermissionMatrixGroup,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";

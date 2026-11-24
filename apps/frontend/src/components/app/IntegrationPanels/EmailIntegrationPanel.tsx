@@ -1,9 +1,9 @@
 import React from "react";
 import { Mail } from "lucide-react";
-import { type AppTranslationKey, type EmailProviderId } from "@mms/shared";
+import { type AppTranslationKey, type EmailProviderId } from "@mms/contracts";
 import { FormSelect } from "@/components/app/FormSelect";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { Input, IntegrationPanelChrome, Label } from "@shared/ui";
+import { Input, IntegrationPanelChrome, Label } from "@mms/ui";
 import {
   useEmailIntegrationPanel,
   type EmailIntegrationPanelHookOptions,
@@ -25,7 +25,7 @@ export interface EmailIntegrationPanelProps extends EmailIntegrationPanelHookOpt
 /**
  * Multi-provider SMTP setup panel (SSOT) shared by the Tenant and Platform
  * consoles. Console-specific API, i18n description, ids, and write gating are
- * props; validation comes from `@mms/shared`.
+ * props; validation comes from `@mms/contracts`.
  */
 export function EmailIntegrationPanel({
   api,

@@ -13,9 +13,9 @@
  *   GAP-S6  collectStatusTransitions no-op guard: same-status rows are filtered out
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
-import { studentStatusEndsEnrollments } from "@mms/shared";
+import { studentStatusEndsEnrollments } from "@mms/contracts";
 import { collectStatusTransitions } from "../students/use-cases/studentStatusTransitionUseCases.js";
 
 // ─── Shared mocks ───────────────────────────────────────────────────────────
@@ -50,7 +50,7 @@ vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
   reconcileContactSystemTags: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => mockAudit(...args),
   mapActionStringToAuditType: (action: string) => action,
   sanitizeAuditState: (v: unknown) => v,
@@ -60,7 +60,7 @@ vi.mock("../enrollments/use-cases/enrollmentEndUseCases.js", () => ({
   withdrawEnrollmentsForStudentStatus: (...args: unknown[]) => mockWithdraw(...args),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 

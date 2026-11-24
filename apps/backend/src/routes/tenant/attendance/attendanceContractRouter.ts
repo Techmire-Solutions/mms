@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { ATTENDANCE_BULK_MAX_BYTES, attendanceContract } from "@mms/shared";
+import { ATTENDANCE_BULK_MAX_BYTES, attendanceContract } from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import { putAttendanceLookupKind } from "./attendanceLookupKindPut.js";

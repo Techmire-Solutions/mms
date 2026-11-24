@@ -4,7 +4,7 @@ import {
   stripFacultyClientSoftDeleteFields,
   stripFacultyServerOwnedAuditFields,
   type FacultyRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /** Client-supplied soft-delete metadata must never reach storage. */
 export { normalizeStoredFaculty, stripFacultyClientSoftDeleteFields };

@@ -3,7 +3,7 @@ import {
   isServerOnlyObjectKey,
   BACKUP_EPHEMERAL_OBJECT_KEYS,
   type TenantDatabaseSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   deleteCollection as dbDeleteCollection,
   saveCollection as dbSaveCollection,
@@ -14,7 +14,7 @@ import {
   runInGlobalTransaction,
   runInTransaction,
 } from "../db/database.js";
-import { activeDb } from "../db/dbConnection.js";
+import { activeDb } from "@mms/db/client";
 import { sql } from "drizzle-orm";
 import {
   sortCollectionNamesForRestore,
@@ -23,13 +23,13 @@ import {
 import {
   hydrateStudentsSetupCollectionsFromLegacyObjects,
   STUDENTS_LEGACY_SETUP_OBJECT_KEYS,
-} from "../db/hydrateStudentsSetupFromLegacyBackup.js";
+} from "../db/migrations/hydrateStudentsSetupFromLegacyBackup.js";
 import {
   hydrateFacultySetupCollectionsFromLegacyObjects,
   FACULTY_LEGACY_SETUP_OBJECT_KEYS,
-} from "../db/hydrateFacultySetupFromLegacyBackup.js";
+} from "../db/migrations/hydrateFacultySetupFromLegacyBackup.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
-import { isAdminRole, isSuperAdminRole } from "@mms/shared";
+import { isAdminRole, isSuperAdminRole } from "@mms/contracts";
 import { throwIfSyncAborted } from "../lib/syncLimits.js";
 import { acquireTenantRestoreLock, RestoreInProgressError } from "../lib/restoreLock.js";
 import { clearTenantBackgroundJobs } from "./backgroundJobService.js";
@@ -62,7 +62,7 @@ async function restoreSpecialTenantObject(
 
   if (key === "branding") {
     const { upsertWorkspaceBranding } = await import("../db/repositories/workspaceRepository.js");
-    const { mergeBrandingSettings } = await import("@mms/shared");
+    const { mergeBrandingSettings } = await import("@mms/contracts");
     // A restore may rebuild branding but must not rename the madrasa: the name is
     // platform-owned and only the platform console can change it.
     await upsertWorkspaceBranding(tenant, mergeBrandingSettings(record), {
@@ -71,13 +71,13 @@ async function restoreSpecialTenantObject(
   } else if (key === "global_settings") {
     const { upsertWorkspaceGlobalSettings } =
       await import("../db/repositories/workspaceRepository.js");
-    const { mergeGlobalSettings } = await import("@mms/shared");
+    const { mergeGlobalSettings } = await import("@mms/contracts");
     await upsertWorkspaceGlobalSettings(tenant, mergeGlobalSettings(record));
     const { broadcastTenantUpdate } = await import("../lib/livePush.js");
     broadcastTenantUpdate(tenant, "object", "global_settings");
   } else if (key === "email_integration") {
     const { saveEmailIntegrationConfig } = await import("./email/emailIntegrationService.js");
-    const { mergeEmailIntegrationConfig } = await import("@mms/shared");
+    const { mergeEmailIntegrationConfig } = await import("@mms/contracts");
     await saveEmailIntegrationConfig(mergeEmailIntegrationConfig(record));
   }
 }

@@ -6,7 +6,7 @@ import {
   attendanceLeaveInsertSchema,
   type AppTranslationKey,
   type AttendanceLeaveInsert,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/app/FormPrimitives";

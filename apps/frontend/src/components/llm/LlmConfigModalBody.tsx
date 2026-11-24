@@ -12,7 +12,7 @@ import {
   type LlmConfig,
   type LlmProviderType,
   type LlmTestResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { LlmConfigModalHyperparameters } from "./LlmConfigModalHyperparameters";
 import { LlmModalTestResultBanner } from "./LlmModalTestResultBanner";
 

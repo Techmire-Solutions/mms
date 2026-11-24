@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
-import { messageLogs } from "../schema.js";
-import { dedupeTrimmedIds, type Message, type RepositoryListOptions } from "@mms/shared";
-import { withTenant } from "../tenant-context.js";
+import { messageLogs } from "@mms/db/schema";
+import { dedupeTrimmedIds, type Message, type RepositoryListOptions } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { mapAuditToInsert } from "./repositoryMappers.js";
 import {
   logRowToRecord,

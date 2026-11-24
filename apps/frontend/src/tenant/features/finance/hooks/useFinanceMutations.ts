@@ -5,7 +5,7 @@ import type {
   InvoicesBulkStatusBody,
   Payment,
   PaymentCreateInput,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   useFinanceContractCreateInvoice,
   useFinanceContractUpdateInvoice,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { computeFacultySelectionTargets } from "@/tenant/features/faculty/hooks/facultySelectionTargets";
 
 function createFaculty(partial: Partial<Faculty> & { id: string }): Faculty {

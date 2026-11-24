@@ -1,36 +1,48 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AccountingReportAggregates } from "@mms/shared";
+import type { AccountingReportAggregates } from "@mms/contracts";
 
 const mockWorkspace = vi.fn();
 const mockCurrency = vi.fn();
 const mockAggregates = vi.fn();
 const mockDocument = vi.fn();
 
-vi.mock("../services/workspaceService.js", () => ({
-  getWorkspaceBySubdomain: (...args: unknown[]) => mockWorkspace(...args),
+vi.mock("../../../../packages/modules/accounting/dist/backend/repository/workspaceName.js", () => ({
+  loadWorkspaceName: (...args: unknown[]) => mockWorkspace(...args),
 }));
 
-vi.mock("../db/repositories/accountingCurrencySettingsRepository.js", () => ({
-  getCurrencySettings: (...args: unknown[]) => mockCurrency(...args),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/repository/accountingCurrencySettingsRepository.js",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("../../../../packages/modules/accounting/dist/backend/repository/accountingCurrencySettingsRepository.js")
+    >()),
+    getCurrencySettings: (...args: unknown[]) => mockCurrency(...args),
+  }),
+);
 
-vi.mock("../db/repositories/accountingLedgerDocumentRepository.js", () => ({
-  loadLedgerDocument: (...args: unknown[]) => mockDocument(...args),
-  // The report-documents adapter imports both loaders; see the export-service suite.
-  listLedgerExportRows: vi.fn(),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/repository/accountingLedgerDocumentRepository.js",
+  () => ({
+    loadLedgerDocument: (...args: unknown[]) => mockDocument(...args),
+    // The report-documents adapter imports both loaders; see the export-service suite.
+    listLedgerExportRows: vi.fn(),
+  }),
+);
 
-vi.mock("../accounting/use-cases/accountingUseCases.js", () => ({
-  accountingUseCases: {
-    loadAccountingReportAggregates: (...args: unknown[]) => mockAggregates(...args),
-  },
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingUseCases.js",
+  () => ({
+    accountingUseCases: {
+      loadAccountingReportAggregates: (...args: unknown[]) => mockAggregates(...args),
+    },
+  }),
+);
 
 import { bindRequestTenant } from "../lib/tenantContext.js";
 import {
   buildAccountingReportDocument,
   buildTrialBalanceDocument,
-} from "../accounting/use-cases/accountingReportPdfUseCases.js";
+} from "@mms/mod-accounting/backend/use-cases";
 
 const aggregates = (): AccountingReportAggregates => ({
   revenue: 1000,

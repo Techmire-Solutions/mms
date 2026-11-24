@@ -1,8 +1,8 @@
 import React, { useId } from "react";
-import { Badge, FormCheckboxCard } from "@shared/ui";
+import { Badge, FormCheckboxCard } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
-import type { ModuleDefinition } from "@mms/shared";
+import type { ModuleDefinition } from "@mms/contracts";
 
 export interface PlatformModuleSelectCardProps {
   module: ModuleDefinition;

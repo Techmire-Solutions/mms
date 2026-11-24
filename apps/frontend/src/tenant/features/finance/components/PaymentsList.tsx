@@ -3,7 +3,7 @@ import { type Payment } from "@/lib/data/financeData";
 import { PAYMENT_METHOD_BADGE, SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
-import { moneyToCents, type AppTranslationKey } from "@mms/shared";
+import { moneyToCents, type AppTranslationKey } from "@mms/contracts";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { ModuleTrashConfirmDialogs } from "@/components/app/ModuleTrashConfirmDialogs";
 import {

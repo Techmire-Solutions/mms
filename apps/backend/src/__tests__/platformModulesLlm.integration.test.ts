@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/contracts";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../app.js";
 

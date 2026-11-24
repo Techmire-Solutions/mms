@@ -9,7 +9,7 @@ import {
   type SessionCancelBody,
   type SessionCancelResult,
   type SessionPostponeBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 export { SESSION_ACTIVITY_QUERY_KEY } from "./sessionQueryKeys.js";

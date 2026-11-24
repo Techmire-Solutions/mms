@@ -1,5 +1,5 @@
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import type { QuestionBankQuestion as Question, QuestionBankTest } from "@mms/shared";
+import type { QuestionBankQuestion as Question, QuestionBankTest } from "@mms/contracts";
 
 export function sumScores(scores: Record<string, number>): number {
   return Object.values(scores).reduce((sum, value) => sum + value, 0);

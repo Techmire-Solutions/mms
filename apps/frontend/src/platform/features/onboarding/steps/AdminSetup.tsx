@@ -3,8 +3,8 @@ import type { Dispatch, SetStateAction } from "react";
 import type { OnboardingData } from "@/platform/features/onboarding/OnboardingWizard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Mail } from "lucide-react";
-import { DEFAULT_GLOBAL_SETTINGS, getPasswordPolicyHintKey } from "@mms/shared";
-import { Alert, CompactSegmentedControl, Field, FormSelect, Input } from "@shared/ui";
+import { DEFAULT_GLOBAL_SETTINGS, getPasswordPolicyHintKey } from "@mms/contracts";
+import { Alert, CompactSegmentedControl, Field, FormSelect, Input } from "@mms/ui";
 import { AuthEmailField, AuthPasswordField } from "@/components/entry";
 import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 

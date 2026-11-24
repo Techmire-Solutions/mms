@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { isOverlayOpen } from "@/lib/ui/keyboardGuards";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import type { Message } from "@mms/shared";
+import type { Message } from "@mms/contracts";
 
 /** Class used to locate the keyboard-focused row/card for scroll-into-view. */
 export const MESSAGING_KB_FOCUS_CLASS = "messaging-kb-focus-row" as const;

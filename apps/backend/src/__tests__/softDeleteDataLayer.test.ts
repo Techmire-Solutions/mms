@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { User } from "@mms/shared";
-import { wrapDbWithRelationalGuardrails } from "../db/dbClient.js";
+import type { User } from "@mms/contracts";
+import { wrapDbWithRelationalGuardrails } from "@mms/db/client";
 import {
   buildTenantSoftDeleteConditions,
   createGenericRelationalService,
@@ -8,10 +8,7 @@ import {
   type TenantSoftDeleteTable,
 } from "../services/genericRelationalService.js";
 import { ConflictError, NotFoundError, ValidationError } from "../lib/httpErrors.js";
-import {
-  restoreContactById,
-  bulkRestoreContacts,
-} from "../contacts/use-cases/contactSoftDeleteUseCases.js";
+import { restoreContactById, bulkRestoreContacts } from "@mms/mod-contacts/backend/use-cases";
 import {
   restoreFacultyById,
   bulkRestoreFaculty,
@@ -27,12 +24,12 @@ import { createAttendanceUseCases } from "../attendance/use-cases/attendanceUseC
 
 const ACTOR = { id: "user-test", role: "admin" } as unknown as User;
 import { createSessionsUseCases } from "../sessions/use-cases/sessionsUseCases.js";
-import type { ContactsRepository } from "../contacts/repository/contactsRepository.js";
+import type { ContactsRepository } from "@mms/mod-contacts/backend/repository";
 import type { FacultyRepository } from "../faculty/repository/facultyRepository.js";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
 import type { EnrollmentsRepository } from "../enrollments/repository/enrollmentsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
-import { withTenant, withTenantRead } from "../db/tenant-context.js";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { z } from "zod";
 import {
   bulkSoftDeleteInvoices,
@@ -67,8 +64,8 @@ vi.mock("../db/repositories/studentEnrollmentCascade.js", () => ({
   restoreCascadedEnrollmentsForStudents: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../lib/softDeleteHelpers.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../lib/softDeleteHelpers.js")>();
+vi.mock("@mms/db/soft-delete", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/soft-delete")>();
   return {
     ...actual,
     enableIncludeDeleted: vi.fn().mockResolvedValue(undefined),
@@ -92,12 +89,12 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: vi.fn(),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
   emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({
     id: 1,
     hashPrevious: "0".repeat(64),
@@ -157,7 +154,9 @@ const defaultReadTx = {
   }),
 };
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn(),
   withTenantRead: vi.fn((_subdomain, cb) => cb?.(defaultReadTx as any)),
 }));

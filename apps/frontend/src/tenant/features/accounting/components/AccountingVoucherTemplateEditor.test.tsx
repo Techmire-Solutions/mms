@@ -12,7 +12,7 @@ vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   })),
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
@@ -33,11 +33,11 @@ vi.mock("@/hooks/useCurrency", () => ({
   }),
 }));
 
-vi.mock("@/lib/contexts/AuthContext", () => ({
+vi.mock("@mms/fe-core/auth/AuthContext", () => ({
   useAuth: () => ({ user: { id: "u-1", name: "Amina Accountant" } }),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: { success: vi.fn(), error: vi.fn() },
 }));
 

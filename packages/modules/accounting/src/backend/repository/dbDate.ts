@@ -1,0 +1,50 @@
+import { isValidIsoDate, todayISOInTimeZone } from "@mms/contracts";
+import { ValidationError } from "@mms/be-core/http/errors";
+
+/**
+ * Value for a Postgres `date` column (Drizzle `mode: 'string'`): the `YYYY-MM-DD` part of the input
+ * when it is a real calendar date, otherwise NULL. Empty strings must never reach a `date` column.
+ */
+export function toDbDate(value: string | null | undefined): string | null {
+  const day = (value ?? "").trim().slice(0, 10);
+  return isValidIsoDate(day) ? day : null;
+}
+
+/** Today's calendar day (`YYYY-MM-DD`) in an IANA timezone; unknown zones fall back to UTC. */
+export function todayInTimeZone(
+  timeZone: string | null | undefined,
+  now: Date = new Date(),
+): string {
+  return todayISOInTimeZone(timeZone, now);
+}
+
+/**
+ * Strict form of {@link toDbDate} for writes: empty → NULL, a real date → `YYYY-MM-DD`, anything
+ * else is rejected (400) instead of being stored as NULL, so no typed value is silently lost.
+ */
+export function requireDbDate(value: string | null | undefined, field: string): string | null {
+  if (!(value ?? "").trim()) return null;
+  const day = toDbDate(value);
+  if (!day) throw new ValidationError(`${field} must be a date (YYYY-MM-DD)`);
+  return day;
+}
+
+/** {@link requireDbDate} for NOT NULL `date` columns: an empty value is rejected (400) as well. */
+export function requireDbDateValue(value: string | null | undefined, field: string): string {
+  const day = requireDbDate(value, field);
+  if (!day) throw new ValidationError(`${field} is required`);
+  return day;
+}
+
+/**
+ * Naive `YYYY-MM-DD HH:mm:ss.SSS` render used by the optimistic-concurrency predicate:
+ * `date_trunc('milliseconds', updated_at) = ${naive}::timestamp`. Clients echo the
+ * JSON `updatedAt` (UTC ISO) while the column is `timestamptz`; comparing the
+ * millisecond-truncated value on both sides keeps the check exact.
+ */
+export function naiveTimestamp(date: Date): string {
+  const pad = (value: number, width = 2): string => String(value).padStart(width, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
+    date.getHours(),
+  )}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+}

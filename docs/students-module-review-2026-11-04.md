@@ -6,10 +6,10 @@ numbers below are from the tree as reviewed (`ab9874cab`); the resolution log (�
 that changed.
 
 Scope: `apps/backend/src/routes/tenant/students/**`, `apps/backend/src/students/**`,
-`apps/backend/src/db/repositories/student*`, `apps/backend/src/db/schema/students.ts` +
+`apps/backend/src/db/repositories/student*`, `packages/db/src/schema/students.ts` +
 `studentSetupTables.ts`, `apps/backend/src/services/student{Validation,Export}Service.ts`,
-`packages/shared/src/students/**`, `packages/shared/src/schemas/students.dto.ts`,
-`packages/shared/src/contracts/students*.ts`, `apps/frontend/src/tenant/features/students/**`, the
+`packages/contracts/src/students/**`, `packages/contracts/src/schemas/students.dto.ts`,
+`packages/contracts/src/contracts/students*.ts`, `apps/frontend/src/tenant/features/students/**`, the
 students module manifest/route registration, and the module-access route table. Contacts,
 enrollments and finance were inspected only where students calls them.
 
@@ -92,7 +92,7 @@ derived from has the missing branch (`db/repositories/listPageHelper.ts:100`) an
 the *job runner*; row completeness was never exercised.
 
 ### M1 — Major — `createdAt` forgeable on create
-`packages/shared/src/schemas/students.dto.ts:51` accepted `createdAt`; soft-delete stripping removes
+`packages/contracts/src/schemas/students.dto.ts:51` accepted `createdAt`; soft-delete stripping removes
 only `deleted*`/`restored*`; `prepareStudentRecord` passed it through; `repositoryMappers.ts:103-105`
 honoured it. `POST /api/students {"createdAt":"1999-01-01"}` stored the forged timestamp, corrupting
 the audit trail and the `COALESCE(registeredDate, createdAt)` metrics. (The form does not echo it —

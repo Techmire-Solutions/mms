@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import {
   ContactDetailAddressesSection,

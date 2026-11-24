@@ -4,9 +4,9 @@ import {
   DEFAULT_PLATFORM_ADMIN_PERMISSIONS,
   FULL_PLATFORM_ADMIN_PERMISSIONS,
   type PlatformAdminPermissions,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { platformPermissionEntries } from "@/platform/features/users/lib/platformPermissionConfig";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PlatformPermissionCheckboxItem } from "@/platform/features/users/components/admin/PlatformPermissionCheckboxItem";
 

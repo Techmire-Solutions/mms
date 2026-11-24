@@ -3,7 +3,7 @@ import {
   isOriginAllowedForAppDomain,
   isTrustedWorkspaceOrigin,
   isWorkspaceEnabled,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { resolveSubdomainFromRequest } from "../../lib/tenantContext.js";
 import { requestHostname } from "../../lib/requestHost.js";
 import {

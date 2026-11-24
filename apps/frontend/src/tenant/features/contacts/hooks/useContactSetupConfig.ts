@@ -1,5 +1,5 @@
-import type { ContactPreferences } from "@mms/shared";
-import { CONTACTS_MODULE_MANIFEST, DEFAULT_CONTACT_PREFERENCES } from "@mms/shared";
+import type { ContactPreferences } from "@mms/contracts";
+import { CONTACTS_MODULE_MANIFEST, DEFAULT_CONTACT_PREFERENCES } from "@mms/contracts";
 import {
   fetchPreferences,
   savePreferencesAsync,

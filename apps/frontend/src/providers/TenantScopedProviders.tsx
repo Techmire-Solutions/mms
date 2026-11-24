@@ -6,7 +6,7 @@ import { useTenantDatabaseUpdates } from "@/hooks/useTenantDatabaseUpdates";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 
-import { isInstitutionSetupComplete } from "@mms/shared";
+import { isInstitutionSetupComplete } from "@mms/contracts";
 import { useBranding } from "@/tenant/hooks/useBranding";
 
 function TenantLivePushSubscriber(): null {

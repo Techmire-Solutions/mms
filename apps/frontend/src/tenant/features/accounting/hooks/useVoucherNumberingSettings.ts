@@ -8,9 +8,9 @@ import {
   type VoucherNumbering,
   type VoucherNumberingUpdate,
   voucherNumberingUpdateSchema,
-} from "@mms/shared";
-import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
+} from "@mms/contracts";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { notify } from "@mms/fe-core/notify";
 import {
   useSaveVoucherNumbering,
   useVoucherNumbering,

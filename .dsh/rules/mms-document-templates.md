@@ -9,7 +9,7 @@ description: Printable document-template engine — server-authoritative layouts
 
 **Scope:** printable layouts designed in the shared editor and printed by module screens — invoices, fee receipts, student cards, examination report cards and Hasanat vouchers. Messaging templates are plain-text campaign content and belong to `mms-messaging.md`; analytics/PDF exports belong to `mms-reports.md`.
 
-**Ownership:** the editor engine lives in `apps/frontend/src/components/template-editor/`; server-backed hooks/API in `apps/frontend/src/lib/templates/`; the contract/schema in `packages/shared/src/contracts/documentTemplates.contract.ts` and `packages/shared/src/documents/`; the tenant route in `apps/backend/src/routes/tenant/templates/`; module adapters in `tenant/features/{module}/components/*TemplateEditor.tsx` with their data/presets/payloads in `lib/`. New printable module documents extend these layers — they do not add a second editor or print stack.
+**Ownership:** the editor engine lives in `packages/fe-core/src/components/template-editor/`; server-backed hooks/API in `packages/fe-core/src/documentTemplates/`; the contract/schema in `packages/contracts/src/contracts/documentTemplates.contract.ts` and `packages/contracts/src/documents/`; the tenant route in `apps/backend/src/routes/tenant/templates/`; module adapters in `tenant/features/{module}/components/*TemplateEditor.tsx` with their data/presets/payloads in `lib/`. New printable module documents extend these layers — they do not add a second editor or print stack.
 
 ## 1. Persistence & Concurrency
 
@@ -48,7 +48,7 @@ description: Printable document-template engine — server-authoritative layouts
 ## 5. Verification
 
 ```bash
-pnpm --filter @mms/shared build
+pnpm --filter @mms/contracts build
 pnpm --filter mms-frontend typecheck && pnpm --filter mms-frontend lint
 pnpm --filter mms-frontend exec vitest run src/components/template-editor src/lib/templates src/tenant/features/templateFieldI18n.test.ts
 pnpm --filter mms-backend exec vitest run src/__tests__/documentTemplatesContractRoutes.test.ts src/__tests__/documentTemplatesUseCases.test.ts

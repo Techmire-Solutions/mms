@@ -7,7 +7,7 @@ import {
   splitQuestionCompoundAnswer,
   type AppTranslationKey,
   type QuestionBankQuestion as Question,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FORM_INPUT, FORM_LABEL } from "@/components/ui/formStyles";
 import { QuestionMatchingFields } from "./QuestionMatchingFields";
 import { QuestionOrderingFields } from "./QuestionOrderingFields";

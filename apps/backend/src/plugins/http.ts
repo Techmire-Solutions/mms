@@ -6,7 +6,7 @@ import cookie from "@fastify/cookie";
 import jwt from "@fastify/jwt";
 import websocket from "@fastify/websocket";
 import compress from "@fastify/compress";
-import { isOriginAllowedForAppDomain, isTrustedWorkspaceOrigin } from "@mms/shared";
+import { isOriginAllowedForAppDomain, isTrustedWorkspaceOrigin } from "@mms/contracts";
 import type { ServerConfig } from "../config/serverConfig.js";
 import { getRedisClient, getRedisSubscriberClient } from "../lib/redis.js";
 import { startCacheInvalidationSubscriber } from "../lib/cache/index.js";

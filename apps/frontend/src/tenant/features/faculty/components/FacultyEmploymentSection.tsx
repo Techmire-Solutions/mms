@@ -11,7 +11,7 @@ import {
   type FieldDefinition,
   type FacultyMember,
   type FacultyContractType,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { resolveFacultyFieldLabel } from "@/tenant/features/faculty/components/FacultyFormSectionShared";
 import { FacultyEmploymentEmployeeIdField } from "@/tenant/features/faculty/components/FacultyEmploymentEmployeeIdField";
 

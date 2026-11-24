@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { renderEnrollmentWorkColumnValue } from "./enrollmentWorkColumnCell";
 import type { Enrollment } from "@/lib/data/enrollmentData";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 
 const mockEnrollment: Enrollment = {
   id: "enr-1",

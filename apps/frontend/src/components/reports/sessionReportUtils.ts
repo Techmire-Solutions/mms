@@ -7,7 +7,7 @@ import type {
 } from "./sessionReportTypes";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
-import { formatMonthYear } from "@mms/shared";
+import { formatMonthYear } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export function utilisationColour(rate: number): string {

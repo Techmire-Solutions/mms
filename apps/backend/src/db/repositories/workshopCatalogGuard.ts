@@ -1,7 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { programs, subjects } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
-import { ValidationError } from "../../lib/httpErrors.js";
+import { programs, subjects } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
+import { ValidationError } from "@mms/be-core/http/errors";
 
 /**
  * Active foreign-key guard for the workshop's catalog references (`mms-data-layer` §6.8).

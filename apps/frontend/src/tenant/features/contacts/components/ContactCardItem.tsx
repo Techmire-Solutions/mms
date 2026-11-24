@@ -4,7 +4,7 @@ import {
   type ContactPreferences,
   getDisplayName,
   getPrimaryEmail,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   resolveAllContactEmails,
   resolveAllContactPhones,

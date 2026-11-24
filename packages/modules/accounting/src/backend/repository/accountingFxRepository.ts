@@ -1,0 +1,46 @@
+import type {
+  AccountingCurrencySettings,
+  CurrencyExchangeability,
+  CurrencyExchangeabilityPut,
+  AccountingCurrencySettingsPut,
+  ExchangeRateListQuery,
+  ExchangeRateLookupQuery,
+  ExchangeRateLookupResult,
+  ExchangeRatePutItem,
+  ExchangeRateKey,
+  ExchangeRateRecord,
+} from "@mms/contracts";
+
+/** Storage gateway for IAS 21 currency settings and exchange rates. */
+export interface AccountingFxRepository {
+  getCurrencySettings(tenant: string): Promise<AccountingCurrencySettings>;
+  saveCurrencySettings(
+    tenant: string,
+    input: AccountingCurrencySettingsPut,
+    userId: string | null,
+  ): Promise<AccountingCurrencySettings>;
+  listExchangeRates(tenant: string, query: ExchangeRateListQuery): Promise<ExchangeRateRecord[]>;
+  /** Stored rates at exactly the given keys (before-state capture for the audit chain). */
+  findExchangeRatesByKeys(
+    tenant: string,
+    keys: readonly ExchangeRateKey[],
+  ): Promise<ExchangeRateRecord[]>;
+  upsertExchangeRates(
+    tenant: string,
+    items: readonly ExchangeRatePutItem[],
+    userId: string | null,
+  ): Promise<ExchangeRateRecord[]>;
+  /** Latest rate on or before the date; null when none applies (never a silent 1). */
+  lookupExchangeRate(
+    tenant: string,
+    query: ExchangeRateLookupQuery,
+  ): Promise<ExchangeRateLookupResult | null>;
+  findFxRoundingAccountId(tenant: string): Promise<string | null>;
+  /** IAS 21 (2025): currencies assessed as not exchangeable. */
+  listExchangeability(tenant: string): Promise<CurrencyExchangeability[]>;
+  saveExchangeability(
+    tenant: string,
+    input: CurrencyExchangeabilityPut,
+    userId: string | null,
+  ): Promise<CurrencyExchangeability[]>;
+}

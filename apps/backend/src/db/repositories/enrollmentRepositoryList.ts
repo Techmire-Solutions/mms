@@ -20,13 +20,13 @@ import {
   type EnrollmentsCommandMetricsSnapshot,
   type EnrollmentsListPageResult,
   type EnrollmentsListQuery,
-} from "@mms/shared";
-import { enrollments } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { enrollments } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { runListPage } from "./listPageHelper.js";
 import { enrollmentRowToRecord, type EnrollmentHydrateRow } from "./enrollmentProjection.js";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
 
 const ENROLLMENT_SORT_FIELDS = new Set([
   "studentName",

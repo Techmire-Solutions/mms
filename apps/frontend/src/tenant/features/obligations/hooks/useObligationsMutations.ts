@@ -6,7 +6,7 @@ import type {
   WakalaType,
   ObligationDistribution,
   ObligationCollection,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { invalidateObligationsQueries } from "@/tenant/features/obligations/hooks/invalidateObligationsQueries";
 import { contractBodyOrThrow } from "@/lib/apiContractError";
@@ -94,8 +94,8 @@ export function useObligationsMutations() {
   const replaceWakalaAggregate = {
     ..._replaceWakalaAggregate,
     mutateAsync: async (input: {
-      wakalaTypes: import("@mms/shared").WakalaType[];
-      distributions: import("@mms/shared").ObligationDistribution[];
+      wakalaTypes: import("@mms/contracts").WakalaType[];
+      distributions: import("@mms/contracts").ObligationDistribution[];
     }) => {
       const res = await _replaceWakalaAggregate.mutateAsync({ body: input });
       return contractBodyOrThrow(res, "Failed to save the wakala and its distributions");

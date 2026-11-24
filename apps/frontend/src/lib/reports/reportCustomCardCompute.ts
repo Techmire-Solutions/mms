@@ -8,7 +8,7 @@ import {
   type QuestionBankQuestion,
   type QuestionBankResult,
   type QuestionBankTest,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { Student } from "@/lib/data/studentsData";
 import type { Faculty } from "@/lib/data/facultyData";
 import type { Session } from "@/lib/data/sessionsData";

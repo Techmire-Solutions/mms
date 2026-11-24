@@ -3,7 +3,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 
-vi.mock("@/hooks/useTranslation", async () => {
+vi.mock("@mms/fe-core/i18n", async () => {
   const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
   return { useTranslation: useTranslationEnMock() };
 });

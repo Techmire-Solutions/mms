@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Session } from "@mms/shared";
+import type { Session } from "@mms/contracts";
 import {
   streamTimetableCsv,
   streamTimetableIcs,

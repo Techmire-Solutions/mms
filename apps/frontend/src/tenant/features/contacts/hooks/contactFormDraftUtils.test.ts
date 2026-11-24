@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildContactWriteSchema, cleanContactDraft, type Contact } from "@mms/shared";
+import { buildContactWriteSchema, cleanContactDraft, type Contact } from "@mms/contracts";
 import {
   buildInitialContactDraft,
   buildOptionDefaults,

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { listInstructionalDays, unmarkedInstructionalDays, weekdayIndexes } from "@mms/shared";
+import { listInstructionalDays, unmarkedInstructionalDays, weekdayIndexes } from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";

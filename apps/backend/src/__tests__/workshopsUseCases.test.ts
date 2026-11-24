@@ -3,7 +3,7 @@ import { createWorkshopsUseCases } from "../workshops/use-cases/workshopsUseCase
 import type { WorkshopsRepository } from "../workshops/repository/workshopsRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { ConflictError, NotFoundError } from "../lib/httpErrors.js";
-import type { WorkshopDetail, WorkshopEvent } from "@mms/shared";
+import type { WorkshopDetail, WorkshopEvent } from "@mms/contracts";
 
 vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn().mockResolvedValue(undefined),

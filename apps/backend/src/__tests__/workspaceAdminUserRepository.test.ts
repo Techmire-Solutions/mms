@@ -38,8 +38,8 @@ vi.mock("../db/database.js", () => ({ getDb: () => mockTenantDb }));
 
 // These are platform-admin operations; production wraps them in an explicit
 // global tenant transaction (see workspaceAdminUserRepository.ts).
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+vi.mock("@mms/db/context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/context")>();
   return {
     ...actual,
     withGlobalTenant: (cb: (db: typeof mockTenantDb) => Promise<unknown>) => cb(mockTenantDb),

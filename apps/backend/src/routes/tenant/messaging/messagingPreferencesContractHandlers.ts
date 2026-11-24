@@ -1,12 +1,12 @@
-import type { User } from "@mms/shared";
-import { MESSAGING_MODULE_MANIFEST, type messagingContract } from "@mms/shared";
+import type { User } from "@mms/contracts";
+import { MESSAGING_MODULE_MANIFEST, type messagingContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { logger } from "../../../lib/logger.js";
 import { canReadMessaging } from "../../../services/rbacService.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { messagingPreferencesService } from "../../../services/messagingPreferencesService.js";
-import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 function logHandlerFailure(operation: string, err: unknown): void {
   logger.error(

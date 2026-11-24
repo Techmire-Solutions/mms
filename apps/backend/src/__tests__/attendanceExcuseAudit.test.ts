@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 
 /** Excuse audit + notification emission: every decision leaves a reconstructable trail. */
 
@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   excuseAbsencesInRange: vi.fn(),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({ recordModernAuditEvent: mocks.audit }));
+vi.mock("@mms/be-core/audit", () => ({ recordModernAuditEvent: mocks.audit }));
 vi.mock("../notifications/use-cases/notificationsUseCases.js", () => ({
   notificationsUseCases: { notify: mocks.notify },
 }));

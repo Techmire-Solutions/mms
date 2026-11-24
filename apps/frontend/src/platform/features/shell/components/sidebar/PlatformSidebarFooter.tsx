@@ -2,11 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, LogOut, ShieldAlert } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button, SectionLabel, UserAvatar } from "@shared/ui";
+import { Button, SectionLabel, UserAvatar } from "@mms/ui";
 import { cn } from "@/lib/utils";
 import { BiDiText } from "@/components/app/BiDiText";
 import { ROUTES } from "@/lib/config/routes";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 
 export interface PlatformSidebarFooterProps {
   isMobile?: boolean;

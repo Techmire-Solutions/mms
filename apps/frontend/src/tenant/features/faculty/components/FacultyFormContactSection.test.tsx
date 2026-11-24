@@ -7,7 +7,7 @@
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { FieldDefinition } from "@mms/shared";
+import type { FieldDefinition } from "@mms/contracts";
 
 const captured = vi.hoisted(() => ({ props: null as Record<string, unknown> | null }));
 

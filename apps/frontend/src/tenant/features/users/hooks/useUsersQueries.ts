@@ -4,8 +4,8 @@ import type {
   ActivityLog,
   UsersCommandMetricsSnapshot,
   SystemUser,
-} from "@mms/shared";
-import { USERS_MODULE_MANIFEST, normalizeWorkspaceUser } from "@mms/shared";
+} from "@mms/contracts";
+import { USERS_MODULE_MANIFEST, normalizeWorkspaceUser } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import {

@@ -1,5 +1,5 @@
 import React from "react";
-import { studentsTransferSchema, type StudentTransferEntity } from "@mms/shared";
+import { studentsTransferSchema, type StudentTransferEntity } from "@mms/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 import { invalidateStudentsQueries } from "@/tenant/features/students/hooks/invalidateStudentsQueries";

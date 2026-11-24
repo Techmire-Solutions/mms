@@ -2,9 +2,9 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { JournalEntriesListCards } from "./JournalEntriesListCards";
-import type { JournalEntry } from "@/lib/data/accountingData";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string, params?: { ref?: string | number; count?: string | number }) => {
       if (params?.ref) return `${key}:${params.ref}`;

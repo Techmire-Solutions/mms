@@ -1,5 +1,5 @@
-import type { AuditActionType, AttendanceRecord, User } from "@mms/shared";
-import { recordModernAuditEvent, type DbOrTransaction } from "../../services/auditTrailService.js";
+import type { AuditActionType, AttendanceRecord, User } from "@mms/contracts";
+import { recordModernAuditEvent, type DbOrTransaction } from "@mms/be-core/audit";
 
 /**
  * Attendance audit emission.

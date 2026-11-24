@@ -11,9 +11,9 @@ import {
   financeSettingsToSequenceConfig,
   normalizeFinanceModulePreferences,
   type SequenceNumberingConfig,
-} from "@mms/shared";
-import { financeInvoiceCounters, financeInvoices, financeModulePreferences } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+} from "@mms/contracts";
+import { financeInvoiceCounters, financeInvoices, financeModulePreferences } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 import { allocateSequenceNumbers } from "./sequenceNumberAllocator.js";
 
 /** Reads the invoice-numbering config inside the write transaction. Unlike other modules,

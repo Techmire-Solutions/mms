@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { Badge } from "@/components/ui/badge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { UserRoleBadge, UserStatusBadge } from "@/tenant/features/users/components/UserBadges";

@@ -4,7 +4,7 @@ import {
   normalizeFinanceSettings,
   type FinanceModulePreferences,
   type FinanceSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchFinancePreferences,

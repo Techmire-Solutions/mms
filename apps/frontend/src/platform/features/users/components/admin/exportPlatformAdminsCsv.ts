@@ -1,4 +1,4 @@
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { triggerFileDownload } from "@/lib/download";
 import type { usePlatformUserDescriptor } from "@/platform/features/users/hooks/usePlatformUserDescriptor";
 

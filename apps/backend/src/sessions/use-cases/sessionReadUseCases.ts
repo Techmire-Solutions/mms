@@ -6,7 +6,7 @@ import type {
   SessionsWidgetQuery,
   SessionsReportAggregates,
   SessionsReportQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * Read-only sessions operations (Work page, counts, metrics, widgets, reports). Split from the
@@ -63,7 +63,7 @@ export function createSessionReadUseCases(repo: SessionsRepository) {
     loadSessionsWidgetAggregates: async (
       queries: SessionsWidgetQuery[],
       _request?: unknown,
-    ): Promise<Record<string, import("@mms/shared").SessionsWidgetAggregateResult>> => {
+    ): Promise<Record<string, import("@mms/contracts").SessionsWidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateSessionsWidgetQueries(tenant, queries);

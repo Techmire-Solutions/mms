@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Readable } from "node:stream";
 import { generateSnapshotJsonChunks } from "../routes/common/db/snapshotJsonStream.js";
-import type { TenantDatabaseSnapshot } from "@mms/shared";
+import type { TenantDatabaseSnapshot } from "@mms/contracts";
 
 describe("snapshotJsonStream", () => {
   it("streams valid JSON with identical structure to JSON.stringify", async () => {

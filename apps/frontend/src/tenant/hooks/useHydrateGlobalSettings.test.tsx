@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
-import { DEFAULT_GLOBAL_SETTINGS } from "@mms/shared";
+import { DEFAULT_GLOBAL_SETTINGS } from "@mms/contracts";
 import { mergeServerLocalization } from "@/lib/globalSettingsHydration";
 import { useHydrateGlobalSettings } from "./useHydrateGlobalSettings";
 

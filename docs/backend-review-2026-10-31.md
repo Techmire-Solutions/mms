@@ -92,7 +92,7 @@ const before = await repo.findInvoiceById(tenant, id, { forUpdate: true });
 const updated = await invoiceCrud.updateById(id, { ...rest, ... });
 ```
 
-`invoiceRecordUpdateSchema` is `invoiceRecordInsertSchema.partial().strict()`, which includes `status` (enum) and `creditedAmt` ([financeInvoiceTypes.ts:80](../packages/shared/src/finance/financeInvoiceTypes.ts#L80)). The route calls this use-case directly after a `canWriteCollection(user, FINANCE_COLLECTION)` check ([financeContractRouter.ts:121-151](../apps/backend/src/routes/tenant/finance/financeContractRouter.ts#L121-L151)), and the generic service persists both fields ([financeInvoicesPersist.ts:29](../apps/backend/src/db/repositories/financeInvoicesPersist.ts#L29), [:40](../apps/backend/src/db/repositories/financeInvoicesPersist.ts#L40)).
+`invoiceRecordUpdateSchema` is `invoiceRecordInsertSchema.partial().strict()`, which includes `status` (enum) and `creditedAmt` ([financeInvoiceTypes.ts:80](../packages/contracts/src/finance/financeInvoiceTypes.ts#L80)). The route calls this use-case directly after a `canWriteCollection(user, FINANCE_COLLECTION)` check ([financeContractRouter.ts:121-151](../apps/backend/src/routes/tenant/finance/financeContractRouter.ts#L121-L151)), and the generic service persists both fields ([financeInvoicesPersist.ts:29](../apps/backend/src/db/repositories/financeInvoicesPersist.ts#L29), [:40](../apps/backend/src/db/repositories/financeInvoicesPersist.ts#L40)).
 
 The sibling bulk writer deliberately refuses exactly these writes:
 
@@ -103,7 +103,7 @@ if (LEDGER_AFFECTING_INVOICE_STATUSES.has(status)) {
 }
 ```
 
-**Impact.** With finance write permission, `PUT {"status":"cancelled"}` marks a posted invoice cancelled with no `tryPostInvoiceReversalJournal` and no late-fee reversal — the receivable and income stay on the ledger while `getOutstandingAmountForInvoice` returns 0 for cancelled/paid ([financeInvoiceAmounts.ts:28-36](../packages/shared/src/finance/financeInvoiceAmounts.ts#L28-L36)), so the subledger and UI stop counting it. `PUT {"status":"paid"}` clears the outstanding balance the same way with no cash posting. `PUT {"creditedAmt":500}` reduces AR with no credit note and no journal. F4 fixed `POST` insert-only; this is the same defect through the sibling verb.
+**Impact.** With finance write permission, `PUT {"status":"cancelled"}` marks a posted invoice cancelled with no `tryPostInvoiceReversalJournal` and no late-fee reversal — the receivable and income stay on the ledger while `getOutstandingAmountForInvoice` returns 0 for cancelled/paid ([financeInvoiceAmounts.ts:28-36](../packages/contracts/src/finance/financeInvoiceAmounts.ts#L28-L36)), so the subledger and UI stop counting it. `PUT {"status":"paid"}` clears the outstanding balance the same way with no cash posting. `PUT {"creditedAmt":500}` reduces AR with no credit note and no journal. F4 fixed `POST` insert-only; this is the same defect through the sibling verb.
 
 **Fix.** Treat `status` transitions to `cancelled`/`paid` and any `creditedAmt` change as ledger-sensitive: reject them when a `("invoice", id)` posting exists and route callers to the cancel / payment / credit-note actions. Keep an internal-only escape hatch for `cancelInvoice` and `createCreditNote`, which already pass `{ audit: false }`, so the guard must key on the caller path (or move the guard to the route) rather than blocking all updates.
 
@@ -123,7 +123,7 @@ updatePaymentById: async (id, record) => {
 },
 ```
 
-`paymentRecordUpdateSchema = paymentRecordInsertSchema.partial().strict()` accepts `amount`, `invoiceId`, `date`, `currency`, `exchangeRate` and `allocations` ([financePaymentTypes.ts:54](../packages/shared/src/finance/financePaymentTypes.ts#L54)). The route ([financePaymentHandlers.ts:120-136](../apps/backend/src/routes/tenant/finance/financePaymentHandlers.ts#L120-L136)) gates only on `canWriteCollection(user, PAYMENT_COLLECTION)` and calls this use-case. The create path, by contrast, locks the invoice, updates `paidAmt`, posts the journal and writes the audit row in one transaction ([financeMutationOperations.ts:103-148](../apps/backend/src/finance/use-cases/financeMutationOperations.ts#L103-L148)). `updatePaymentById` has no unit test (only `vi.fn()` stubs elsewhere).
+`paymentRecordUpdateSchema = paymentRecordInsertSchema.partial().strict()` accepts `amount`, `invoiceId`, `date`, `currency`, `exchangeRate` and `allocations` ([financePaymentTypes.ts:54](../packages/contracts/src/finance/financePaymentTypes.ts#L54)). The route ([financePaymentHandlers.ts:120-136](../apps/backend/src/routes/tenant/finance/financePaymentHandlers.ts#L120-L136)) gates only on `canWriteCollection(user, PAYMENT_COLLECTION)` and calls this use-case. The create path, by contrast, locks the invoice, updates `paidAmt`, posts the journal and writes the audit row in one transaction ([financeMutationOperations.ts:103-148](../apps/backend/src/finance/use-cases/financeMutationOperations.ts#L103-L148)). `updatePaymentById` has no unit test (only `vi.fn()` stubs elsewhere).
 
 **Impact.** A posted payment can be changed from 100 to 1000 with the journal and `invoice.paidAmt` still on 100; a later archive subtracts the *new* amount and clamps at zero, silently losing collection state. Changing `invoiceId` moves cash between invoices with no reversal. Concurrent edits race `createPayment` because the update path takes no `FOR UPDATE` lock.
 
@@ -248,7 +248,7 @@ await recordAuditEventSafely({
 });
 ```
 
-`recordAuditEventSafely` catches and only logs ([auditTrailService.ts:289-296](../apps/backend/src/services/auditTrailService.ts#L289-L296)). The restore has already committed by then.
+`recordAuditEventSafely` catches and only logs ([auditTrailService.ts:289-296](../packages/be-core/src/audit/auditTrailService.ts#L289-L296)). The restore has already committed by then.
 
 **Impact.** F1 claimed audit writes share the mutation transaction. At the most destructive tenant operation — a whole-workspace restore — an audit failure or process death leaves no audit row, and the restore cannot be rolled back by the audit. `"unknown"` as a fallback tenant is itself wrong: a lost tenant context should fail the operation, not label the event.
 
@@ -297,7 +297,7 @@ await tryPostInvoiceJournals(tenant, invoices);
 
 ### B-13 — Audit immutability hardening never runs: role name mismatch
 
-`0102_modern_audit_trail.sql` REVOKEs `UPDATE/DELETE/TRUNCATE` on the audit tables only `IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'mms_app_user')` ([0102_modern_audit_trail.sql:95-99](../apps/backend/src/db/migrations_drizzle/0102_modern_audit_trail.sql#L95-L99)). The documented and provisioned role is `mms_app` (`provisionRlsRole.ts:25`, `docs/rls-operations.md`), so the block is inert on every real deployment. The verification anchor and the Merkle root are stored in the same database ([auditVerificationService.ts:66-76](../apps/backend/src/services/auditVerificationService.ts#L66-L76), `lib/auditCheckpoint.ts:92-100`), so an actor with application DB credentials can rewrite events, insert a matching verification run and republish the root, and the next verification returns VERIFIED. **Fix:** align the role name (or drop the role check for a table-level `REVOKE` in provisioning), and sign checkpoints with a key outside the database, rejecting unsigned anchors. **Test:** as `mms_app`, `UPDATE audit_trail_events` must fail; a forged anchor must not verify.
+`0102_modern_audit_trail.sql` REVOKEs `UPDATE/DELETE/TRUNCATE` on the audit tables only `IF EXISTS (SELECT FROM pg_roles WHERE rolname = 'mms_app_user')` ([0102_modern_audit_trail.sql:95-99](../packages/db/migrations_drizzle/0102_modern_audit_trail.sql#L95-L99)). The documented and provisioned role is `mms_app` (`provisionRlsRole.ts:25`, `docs/rls-operations.md`), so the block is inert on every real deployment. The verification anchor and the Merkle root are stored in the same database ([auditVerificationService.ts:66-76](../apps/backend/src/services/auditVerificationService.ts#L66-L76), `lib/auditCheckpoint.ts:92-100`), so an actor with application DB credentials can rewrite events, insert a matching verification run and republish the root, and the next verification returns VERIFIED. **Fix:** align the role name (or drop the role check for a table-level `REVOKE` in provisioning), and sign checkpoints with a key outside the database, rejecting unsigned anchors. **Test:** as `mms_app`, `UPDATE audit_trail_events` must fail; a forged anchor must not verify.
 
 ### B-14 — Session-gated uploads are served with a public cache header
 
@@ -313,15 +313,15 @@ await tryPostInvoiceJournals(tenant, invoices);
 
 ### B-17 — CI DB/RLS path filter omits `src/lib/**` and `middleware/**`
 
-The `backend_db` filter covers `src/db/**`, `**/repository/**`, `**/ledgerPosting/**`, `**/use-cases/**`, `services/**`, `accounting/**`, test configs and `packages/shared/**` ([ci.yml:45-60](../.github/workflows/ci.yml#L45-L60)), but not `src/lib/**` — which contains real Drizzle SQL (`lib/auditCheckpoint.ts:76,92`, `lib/subjectKeyService.ts:34,78`). `test-backend-db` and `test-backend-rls` run on a PR only when that filter matches ([ci.yml:671-676](../.github/workflows/ci.yml#L671-L676), [:749-752](../.github/workflows/ci.yml#L749-L752)); the gate policy legitimises the skip (`scripts/ci/ci-gate-policy.mjs:49-57`). A PR touching audit-checkpoint or crypto-shredding SQL can merge with zero real-Postgres and zero RLS coverage; main-branch CI runs them after merge. **Fix:** add `apps/backend/src/lib/**` (ideally any `apps/backend/**` change) to `backend_db`. **Test:** a paths-filter table test asserting `lib/auditCheckpoint.ts` matches.
+The `backend_db` filter covers `src/db/**`, `**/repository/**`, `**/ledgerPosting/**`, `**/use-cases/**`, `services/**`, `accounting/**`, test configs and `packages/contracts/**` ([ci.yml:45-60](../.github/workflows/ci.yml#L45-L60)), but not `src/lib/**` — which contains real Drizzle SQL (`lib/auditCheckpoint.ts:76,92`, `lib/subjectKeyService.ts:34,78`). `test-backend-db` and `test-backend-rls` run on a PR only when that filter matches ([ci.yml:671-676](../.github/workflows/ci.yml#L671-L676), [:749-752](../.github/workflows/ci.yml#L749-L752)); the gate policy legitimises the skip (`scripts/ci/ci-gate-policy.mjs:49-57`). A PR touching audit-checkpoint or crypto-shredding SQL can merge with zero real-Postgres and zero RLS coverage; main-branch CI runs them after merge. **Fix:** add `apps/backend/src/lib/**` (ideally any `apps/backend/**` change) to `backend_db`. **Test:** a paths-filter table test asserting `lib/auditCheckpoint.ts` matches.
 
 ### B-18 — Credit notes have no idempotency key
 
-`createCreditNote` generates `id: cn-${randomUUID()}` on every call ([financeCollectUseCases.ts:198-213](../apps/backend/src/finance/use-cases/financeCollectUseCases.ts#L198-L213)); `creditNoteInsertSchema` accepts only `invoiceId`, `amount`, `reason` ([financeCollect.ts:183-189](../packages/shared/src/finance/financeCollect.ts#L183-L189)), and journal idempotency is keyed on the credit-note id. A timeout + retry (or double-click) after commit creates a second note, doubles `creditedAmt` and posts a second reversal journal. **Fix:** accept a caller idempotency key/id, return the stored note on replay, and add a partial unique index. **Test:** same body + key twice → one row, one journal.
+`createCreditNote` generates `id: cn-${randomUUID()}` on every call ([financeCollectUseCases.ts:198-213](../apps/backend/src/finance/use-cases/financeCollectUseCases.ts#L198-L213)); `creditNoteInsertSchema` accepts only `invoiceId`, `amount`, `reason` ([financeCollect.ts:183-189](../packages/contracts/src/finance/financeCollect.ts#L183-L189)), and journal idempotency is keyed on the credit-note id. A timeout + retry (or double-click) after commit creates a second note, doubles `creditedAmt` and posts a second reversal journal. **Fix:** accept a caller idempotency key/id, return the stored note on replay, and add a partial unique index. **Test:** same body + key twice → one row, one journal.
 
 ### B-19 — Bank reconciliation stores unchecked ids
 
-`matchBankReconciliation` inserts caller-supplied `statementLineId`/`journalEntryId`/`journalLineId` with no amount comparison, no ownership check on the journal line, no FK on `journal_line_id`, no unmatch endpoint and no audit ([accountingLedgerOpsRepository.ts:265-290](../apps/backend/src/db/repositories/accountingLedgerOpsRepository.ts#L265-L290); schema [accountingLedgerOps.ts:114-120](../packages/shared/src/finance/accountingLedgerOps.ts#L114-L120)). A "reconciled" flag therefore cannot detect an amount difference, and any write-permitted user can pin a statement line to a line of another entry or a non-cash account. **Fix:** resolve the line by `(entry_id, account_id)`, require the statement's bank account, compare amounts (store `matched_amount`), add unmatch + audit. **Test:** mismatched amount → 422; unmatch releases the line.
+`matchBankReconciliation` inserts caller-supplied `statementLineId`/`journalEntryId`/`journalLineId` with no amount comparison, no ownership check on the journal line, no FK on `journal_line_id`, no unmatch endpoint and no audit ([accountingLedgerOpsRepository.ts:265-290](../apps/backend/src/db/repositories/accountingLedgerOpsRepository.ts#L265-L290); schema [accountingLedgerOps.ts:114-120](../packages/contracts/src/finance/accountingLedgerOps.ts#L114-L120)). A "reconciled" flag therefore cannot detect an amount difference, and any write-permitted user can pin a statement line to a line of another entry or a non-cash account. **Fix:** resolve the line by `(entry_id, account_id)`, require the statement's bank account, compare amounts (store `matched_amount`), add unmatch + audit. **Test:** mismatched amount → 422; unmatch releases the line.
 
 ### B-20 — Invoice numbering is a racy max-scan
 
@@ -329,7 +329,7 @@ The `backend_db` filter covers `src/db/**`, `**/repository/**`, `**/ledgerPostin
 
 ### B-21 — Crypto-shredding leaves the subject id in cleartext in the audit payload
 
-`executeSubjectErasure` records `oldState: { subjectId, status: "ACTIVE" }` / `newState: { subjectId, status: "SHREDDED" }` without passing the top-level `subjectId`, so `appendAuditEvent`'s subject-state encryption never runs ([cryptoShreddingService.ts:106-114](../apps/backend/src/services/cryptoShreddingService.ts#L106-L114); encryption gate at [auditTrailService.ts:151-165](../apps/backend/src/services/auditTrailService.ts#L151-L165)). The identifier survives the shred and is readable by anyone who can read the audit trail. **Fix:** pass `subjectId` so the state is encrypted, and keep only a pseudonymous record id. **Test:** erasure event's stored state is unreadable without the key.
+`executeSubjectErasure` records `oldState: { subjectId, status: "ACTIVE" }` / `newState: { subjectId, status: "SHREDDED" }` without passing the top-level `subjectId`, so `appendAuditEvent`'s subject-state encryption never runs ([cryptoShreddingService.ts:106-114](../apps/backend/src/services/cryptoShreddingService.ts#L106-L114); encryption gate at [auditTrailService.ts:151-165](../packages/be-core/src/audit/auditTrailService.ts#L151-L165)). The identifier survives the shred and is readable by anyone who can read the audit trail. **Fix:** pass `subjectId` so the state is encrypted, and keep only a pseudonymous record id. **Test:** erasure event's stored state is unreadable without the key.
 
 ### B-22 — Coverage and test-depth assurance
 
@@ -421,7 +421,7 @@ The `backend_db` filter covers `src/db/**`, `**/repository/**`, `**/ledgerPostin
 
 ```bash
 git rev-parse HEAD && git status --porcelain
-git diff --stat 1a9b1d942 cf69f9d17 -- apps/backend packages/shared docs
+git diff --stat 1a9b1d942 cf69f9d17 -- apps/backend packages/contracts docs
 pnpm --filter mms-backend typecheck
 pnpm --filter mms-backend lint
 pnpm --filter mms-backend test:coverage        # 320 files / 2,237 tests

@@ -3,13 +3,13 @@ import {
   normalizeObligationsModulePreferences,
   obligationsSettingsToSequenceConfig,
   type SequenceNumberingConfig,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   obligationCollections,
   obligationModulePreferences,
   obligationReceiptCounters,
-} from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+} from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 import { allocateSequenceNumbers } from "./sequenceNumberAllocator.js";
 
 /** Reads the receipt-numbering config inside the write transaction, or `null` when auto-numbering is off. */

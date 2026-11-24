@@ -1,7 +1,7 @@
 import type React from "react";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { cn } from "@/lib/utils";
-import type { LlmTestResult } from "@mms/shared";
+import type { LlmTestResult } from "@mms/contracts";
 
 interface LlmModalTestResultBannerProps {
   modalTestResult: LlmTestResult;

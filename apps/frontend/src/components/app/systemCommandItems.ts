@@ -1,6 +1,6 @@
 import type React from "react";
 import { UserCog, Settings, User } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface CommandItem {

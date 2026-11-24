@@ -5,11 +5,11 @@
  * one use case, map domain errors to status codes. No card rule is evaluated here.
  */
 
-import type { User } from "@mms/shared";
-import type { hasanatContract } from "@mms/shared";
+import type { User } from "@mms/contracts";
+import type { hasanatContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { hasanatUseCases } from "../../../hasanat/use-cases/hasanatUseCases.js";
 import { handleContractError } from "../../../lib/contractError.js";
 

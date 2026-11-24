@@ -1,0 +1,11 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    // @mms/ui is source-exported: `build` is `tsc --noEmit` and emits nothing.
+    // Replacing the root `dist/**` output avoids a "no output files found"
+    // warning and keeps the cache honest (logs only).
+    "build": {
+      "outputs": []
+    }
+  }
+}

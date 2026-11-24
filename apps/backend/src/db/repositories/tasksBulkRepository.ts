@@ -7,12 +7,12 @@
  * Rows that cannot change are returned with a reason instead of being dropped.
  */
 import { and, eq, inArray, isNotNull, isNull, or } from "drizzle-orm";
-import { isTaskStatusTransitionAllowed, type TaskStatus } from "@mms/shared";
-import { tasks } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { isTaskStatusTransitionAllowed, type TaskStatus } from "@mms/contracts";
+import { tasks } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvents, type OutboxBatchEvent } from "../../services/outboxEventService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvents, type OutboxBatchEvent } from "@mms/be-core/data/outbox";
 import { hasActiveChild, hasActiveParent } from "./tasksBulkPredicates.js";
 import {
   classifyDeleteSkips,

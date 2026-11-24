@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import crypto from "node:crypto";
-import { canonicalizeJson, formatAuditEventHashInput, GENESIS_AUDIT_HASH } from "@mms/shared";
+import { canonicalizeJson, formatAuditEventHashInput, GENESIS_AUDIT_HASH } from "@mms/contracts";
 
 import {
   recordModernAuditEvent,
   sanitizeAuditState,
   type DbOrTransaction,
-} from "../services/auditTrailService.js";
+} from "@mms/be-core/audit";
 import { buildMerkleRoot } from "../services/auditVerificationService.js";
 import { tracer, parseTraceParent } from "../config/telemetry.js";
 import { bindRequestUserId, bindRequestAuditContext } from "../lib/tenantContext.js";

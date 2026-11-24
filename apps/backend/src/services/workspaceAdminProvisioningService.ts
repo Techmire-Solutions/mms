@@ -1,5 +1,5 @@
 import { listWorkspaceSuperAdminIds } from "./workspaceService.js";
-import { createAdminFirstContact } from "./contactService.js";
+import { createAdminFirstContact } from "@mms/mod-contacts/backend/services";
 import { createUser, type PublicUser } from "./auth/userService.js";
 
 export interface ProvisionWorkspaceAdminInput {

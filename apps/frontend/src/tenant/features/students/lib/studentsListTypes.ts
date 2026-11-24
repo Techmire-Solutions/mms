@@ -1,5 +1,5 @@
-import type { Student, StudentSortField } from "@mms/shared";
-import { type toMessagingRecipient, type ModuleColumnRegistryEntry } from "@mms/shared";
+import type { Student, StudentSortField } from "@mms/contracts";
+import { type toMessagingRecipient, type ModuleColumnRegistryEntry } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 

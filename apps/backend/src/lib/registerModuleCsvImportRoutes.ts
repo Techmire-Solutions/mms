@@ -1,13 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeAny } from "zod";
-import { canonicalizeJson, type User } from "@mms/shared";
+import { canonicalizeJson, type User } from "@mms/contracts";
 import { getRequestAuditContext, getRequestTenant } from "./tenantContext.js";
 import { sendForbidden, sendServiceUnavailable } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
-import {
-  recordModernAuditEvent,
-  mapActionStringToAuditType,
-} from "../services/auditTrailService.js";
+import { recordModernAuditEvent, mapActionStringToAuditType } from "@mms/be-core/audit";
 import {
   BackgroundJobLimitError,
   enqueueBackgroundJob,

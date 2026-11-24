@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { CONTACT_CARD_FACE_COLUMN_IDS, getVisibleWorkColumns, type Contact } from "@mms/shared";
+import { CONTACT_CARD_FACE_COLUMN_IDS, getVisibleWorkColumns, type Contact } from "@mms/contracts";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { buildContactsMap } from "@/lib/contacts/contactI18n";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";

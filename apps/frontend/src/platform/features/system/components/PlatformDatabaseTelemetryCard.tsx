@@ -2,7 +2,7 @@ import React from "react";
 import { Database, ShieldCheck, Layers, Cpu, Clock, CheckCircle2, Server } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { PlatformTelemetryData } from "@/platform/features/system/hooks/usePlatformTelemetry";
-import { useLiveAnnouncer } from "@shared/ui";
+import { useLiveAnnouncer } from "@mms/ui";
 
 export interface PlatformDatabaseTelemetryCardProps {
   telemetry?: PlatformTelemetryData;

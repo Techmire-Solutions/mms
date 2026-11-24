@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import type { ModuleColumnRegistryEntry } from "@mms/contracts";
 import {
   buildFacultyCustomFieldsById,
   getFacultyVisibleWorkColumns,

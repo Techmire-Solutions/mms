@@ -1,8 +1,8 @@
 import { toDbDate } from "../../lib/dbDate.js";
 import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type Exam } from "@mms/shared";
-import { exams, examClasses } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { dedupeTrimmedIds, type Exam } from "@mms/contracts";
+import { exams, examClasses } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { resolveCatalogRefsTx } from "./academicCatalogSnapshot.js";
 import { assertExamDeletable } from "../../examinations/domain/examWriteGuards.js";
 import { auditCollectionReplacement, auditExamArchiveChange } from "./examinationExamsAudit.js";

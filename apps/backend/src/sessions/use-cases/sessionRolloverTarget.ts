@@ -5,12 +5,12 @@ import {
   type RolloverIdMaps,
   type Session,
   type SessionRolloverBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import { sessionRolloverRepository as runs } from "../repository/sessionRolloverRepositoryAdapter.js";
 import { sessionsAcademicRepository as academic } from "../repository/sessionsAcademicRepositoryAdapter.js";
 import { copySessionCalendarEvents } from "../../attendance/use-cases/academicCalendarCopyUseCases.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
 import type { SessionRolloverJobPayload } from "./sessionRolloverUseCases.js";
 

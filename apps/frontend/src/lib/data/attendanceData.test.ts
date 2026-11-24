@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AttendanceRecord } from "@mms/shared";
+import type { AttendanceRecord } from "@mms/contracts";
 import { getMonthlyTrend } from "./attendanceData";
 
 function attendanceRecord(

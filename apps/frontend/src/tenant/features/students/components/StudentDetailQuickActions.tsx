@@ -1,6 +1,6 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
-import { toMessagingRecipient, type Student } from "@mms/shared";
+import { toMessagingRecipient, type Student } from "@mms/contracts";
 
 type MessageChannel = "whatsapp" | "sms" | "email";
 

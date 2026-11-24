@@ -1,4 +1,4 @@
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 
 export const SEED_10_CONTACTS_PART1: Omit<Contact, "id">[] = [
   {

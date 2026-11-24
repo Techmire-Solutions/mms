@@ -1,5 +1,5 @@
 import { validateSessions } from "@/lib/data/sessionsData";
-import { applyTitleCaseRecursive } from "@mms/shared";
+import { applyTitleCaseRecursive } from "@mms/contracts";
 import {
   dispatchLocalDatabaseUpdate,
   safeSetItem,

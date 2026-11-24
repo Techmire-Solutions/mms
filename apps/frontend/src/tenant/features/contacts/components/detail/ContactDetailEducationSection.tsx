@@ -1,6 +1,6 @@
 import React from "react";
 import { GraduationCap, School, Calendar, Award } from "lucide-react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { Badge } from "@/components/ui/badge";

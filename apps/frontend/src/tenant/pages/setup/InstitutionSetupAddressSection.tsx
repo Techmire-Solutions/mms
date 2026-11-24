@@ -1,6 +1,6 @@
 import React from "react";
 import { MapPin } from "lucide-react";
-import type { BrandingSettings } from "@mms/shared";
+import type { BrandingSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/app/FormField";

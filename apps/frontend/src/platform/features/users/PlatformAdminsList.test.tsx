@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { PlatformAdminsList } from "@/platform/features/users/PlatformAdminsList";
 
 vi.mock("@/hooks/useTranslation", () => ({

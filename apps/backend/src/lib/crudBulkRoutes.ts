@@ -1,12 +1,1 @@
-export type {
-  BulkRoutesOptions,
-  SoftDeleteRouteErrorMapper,
-  SoftDeletableBulkRoutesOptions,
-  SoftDeletableBulkTrashRoutesOptions,
-} from "./crudBulkRouteHelpers.js";
-export {
-  registerBulkRoutes,
-  registerIncludableBulkRoutes,
-  registerSoftDeletableBulkTrashRoutes,
-  registerSoftDeletableBulkRoutes,
-} from "./crudBulkRouteFactories.js";
+export * from "@mms/be-core/http/crud";

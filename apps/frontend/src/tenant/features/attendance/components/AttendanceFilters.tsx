@@ -10,7 +10,7 @@ import { Field } from "@/components/app/FormField";
 import { FormSelect } from "@/components/app/FormSelect";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useFacultyContractList } from "@/tenant/hooks/collections/faculty";
-import { FACULTY_MODULE_MANIFEST, todayISOInTimeZone, type FacultyMember } from "@mms/shared";
+import { FACULTY_MODULE_MANIFEST, todayISOInTimeZone, type FacultyMember } from "@mms/contracts";
 import { activeFacultyForAssignment, resolveClassFacultyId } from "@/lib/faculty/facultyAssignment";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";

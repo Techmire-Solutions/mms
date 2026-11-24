@@ -1,11 +1,11 @@
-import { ENROLLMENT_ERROR_CODES } from "@mms/shared";
+import { ENROLLMENT_ERROR_CODES } from "@mms/contracts";
 import {
   addDeadlineError,
   enrollmentFeeForClass,
   isSessionReadOnly,
   staffEligibilityReasons,
   type EnrollmentRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { HttpDomainError, ValidationError } from "../../lib/httpErrors.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { enrollmentsRepository } from "../repository/enrollmentsRepositoryAdapter.js";

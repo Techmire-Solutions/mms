@@ -1,4 +1,4 @@
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import { buildBackgroundJobId, buildDeterministicJobKey } from "./backgroundJobIds.js";
 import {
   enqueueBackgroundJob,

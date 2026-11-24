@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student, StudentsListQuery } from "@mms/shared";
+import type { Student, StudentsListQuery } from "@mms/contracts";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
-import { emitOutboxEvent } from "../services/outboxEventService.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { cascadeSoftDeleteEnrollmentsForStudents } from "../db/repositories/studentEnrollmentCascade.js";
 
 const mockGetRequestTenant = vi.fn();
@@ -30,8 +30,8 @@ vi.mock("../db/repositories/studentEnrollmentCascade.js", () => ({
   restoreCascadedEnrollmentsForStudents: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../lib/softDeleteHelpers.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../lib/softDeleteHelpers.js")>();
+vi.mock("@mms/db/soft-delete", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/soft-delete")>();
   return {
     ...actual,
     enableIncludeDeleted: vi.fn().mockResolvedValue(undefined),
@@ -42,19 +42,23 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
-  recordModernAuditEvent: vi.fn().mockResolvedValue({
-    id: 1,
-    hashPrevious: "0".repeat(64),
-    hashCurrent: "a".repeat(64),
-    canonicalPayload: "{}",
-  }),
-  sanitizeAuditState: (v: unknown) => v,
-}));
+vi.mock("@mms/be-core/audit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/be-core/audit")>();
+  return {
+    ...actual,
+    recordModernAuditEvent: vi.fn().mockResolvedValue({
+      id: 1,
+      hashPrevious: "0".repeat(64),
+      hashCurrent: "a".repeat(64),
+      canonicalPayload: "{}",
+    }),
+    sanitizeAuditState: (v: unknown) => v,
+  };
+});
 
 vi.mock("../students/use-cases/studentHydrateUseCases.js", () => ({
   hydrateStudentsFromContacts: async (_tenant: unknown, rows: unknown) => rows,

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import {
   buildInitialContactDraft,
   contactDraftSnapshot,

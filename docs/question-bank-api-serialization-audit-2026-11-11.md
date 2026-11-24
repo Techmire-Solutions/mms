@@ -50,7 +50,7 @@ running route tests for request validation and payload shape.
 
 ## What shipped
 
-**Contract (`packages/shared/src/contracts/`)**
+**Contract (`packages/contracts/src/contracts/`)**
 - New `questionBankActionRoutes.ts` holds the seven lifecycle/authoring routes (status, duplicate,
   duplicate-check, attachments, assemble, publish) so the main contract stays under the 300-line
   ceiling; every one now declares `pathParams: questionIdParamsSchema` /

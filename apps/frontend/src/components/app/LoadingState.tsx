@@ -1,1 +1,1 @@
-export { LoadingState, type LoadingStateProps } from "@shared/ui";
+export { LoadingState, type LoadingStateProps } from "@mms/ui";

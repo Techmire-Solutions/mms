@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { EnrollmentStatus } from "@mms/shared";
+import type { EnrollmentStatus } from "@mms/contracts";
 import { ENROLLMENTS_QUERY_KEY } from "./enrollmentsQueryKeys.js";
 
 type Row = { id?: unknown; status?: unknown } & Record<string, unknown>;

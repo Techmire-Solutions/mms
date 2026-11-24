@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mapTaskRow } from "../db/repositories/tasksRowMapping.js";
 import type { SELECT_COLS } from "../db/repositories/tasksRowMapping.js";
-import type { tasks } from "../db/schema.js";
+import type { tasks } from "@mms/db/schema";
 
 type Row = { [K in keyof typeof SELECT_COLS]: (typeof tasks.$inferSelect)[K] };
 

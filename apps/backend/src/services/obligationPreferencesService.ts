@@ -2,7 +2,7 @@ import {
   normalizeObligationsModulePreferences,
   type ObligationsModulePreferences,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { obligationsRepository } from "../obligations/repository/obligationsRepositoryAdapter.js";
 import { createModulePreferencesService } from "../lib/createModulePreferencesService.js";
 import { createCollectionAuditHelper } from "../lib/createCollectionAuditHelper.js";

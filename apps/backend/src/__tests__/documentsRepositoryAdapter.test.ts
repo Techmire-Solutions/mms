@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DocumentTemplate } from "@mms/shared";
+import type { DocumentTemplate } from "@mms/contracts";
 
 const repo = vi.hoisted(() => ({
   getDocumentTemplateRepo: vi.fn(),

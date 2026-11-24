@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import { Heart } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
-import { getDisplayName, getPrimaryPhone, type RelationshipContact } from "@mms/shared";
+import { getDisplayName, getPrimaryPhone, type RelationshipContact } from "@mms/contracts";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import {
   FormCardTypeSelect,

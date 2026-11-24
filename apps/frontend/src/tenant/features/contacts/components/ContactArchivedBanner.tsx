@@ -1,5 +1,5 @@
 import type React from "react";
-import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { EntityArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 

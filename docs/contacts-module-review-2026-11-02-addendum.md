@@ -44,16 +44,16 @@ limits); the duplicate SQL is tenant-scoped and correct, but its cache lifecycle
 - That use case returns `loadContactsPageForTenant(...)` — a `ContactsListPageResult` of hydrated
   contacts ([messagingRecipientUseCases.ts:21-59](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts)).
 - The response schema is the **full** `contactListPageResponseSchema`
-  ([messaging.contract.ts:59-64](../packages/shared/src/contracts/messaging.contract.ts),
-  [contacts.contract.schemas.ts:20-28](../packages/shared/src/contracts/contacts.contract.schemas.ts)).
+  ([messaging.contract.ts:59-64](../packages/contracts/src/contracts/messaging.contract.ts),
+  [contacts.contract.schemas.ts:20-28](../packages/contracts/src/contracts/contacts.contract.schemas.ts)).
 - Summary hydration still includes top-level scalars (notes, DOB, CNIC, aiSummary) plus
   phones/emails/addresses/tags/socials/relationships
-  ([contactRepositoryHydrate.ts:51-77](../apps/backend/src/db/repositories/contactRepositoryHydrate.ts),
-  [contactRepositoryMappers.ts:84-95](../apps/backend/src/db/repositories/contactRepositoryMappers.ts)).
+  ([contactRepositoryHydrate.ts:51-77](../packages/modules/contacts/src/backend/repository/contactRepositoryHydrate.ts),
+  [contactRepositoryMappers.ts:84-95](../packages/modules/contacts/src/backend/repository/contactRepositoryMappers.ts)).
   No `sanitizeContactsForViewer` call exists in the messaging path.
 - Role defaults grant `messaging: ["read"]` with **no `contacts` grant** to `teacher`,
   `assistant_teacher`, and `librarian`
-  ([userRbacDefaultRoles.ts:95-155](../packages/shared/src/auth/userRbacDefaultRoles.ts)).
+  ([userRbacDefaultRoles.ts:95-155](../packages/contracts/src/auth/userRbacDefaultRoles.ts)).
 
 **Reproduced.** A read-only probe against seeded tenant `a11ypopd…` calling the real loader returned
 contacts whose payload included `notes: "Father of Quran student…"`, `dob`, `addresses[1]`, `phones[1]`,
@@ -117,7 +117,7 @@ messaging.write, …) or add a per-tenant upload budget.
 ### B-03 — P3 — Orphaned attachment files
 
 Removing an attachment deletes the contact child row only
-([contactPersistEngagementChildren.ts:72-90](../apps/backend/src/db/repositories/contactPersistEngagementChildren.ts),
+([contactPersistEngagementChildren.ts:72-90](../packages/modules/contacts/src/backend/repository/contactPersistEngagementChildren.ts),
 [useContactDetailAttachments.ts:90-110](../apps/frontend/src/tenant/features/contacts/hooks/useContactDetailAttachments.ts));
 the file under `/uploads/tenants/<t>/attachments/` remains. Upload-then-save-failure leaves one too. No
 sweeper exists. Fix: unlink on explicit remove and add an orphan reconciler (list-by-prefix vs rows).
@@ -135,16 +135,16 @@ contact write), or render a non-navigating preview.
 ## 4. Lane C — Duplicate scan
 
 Positive checks: blocked-id and candidate SQL are tenant-scoped and exclude soft-deleted contacts
-([contactRepositoryDuplicateFind.ts](../apps/backend/src/db/repositories/contactRepositoryDuplicateFind.ts));
+([contactRepositoryDuplicateFind.ts](../packages/modules/contacts/src/backend/repository/contactRepositoryDuplicateFind.ts));
 pair ordering/pagination is capped at `LIST_PAGE_MAX_LIMIT`
-([contactsDuplicatesQuery.ts:14-27](../packages/shared/src/contacts/contactsDuplicatesQuery.ts)); cache keys
+([contactsDuplicatesQuery.ts:14-27](../packages/contracts/src/contacts/contactsDuplicatesQuery.ts)); cache keys
 are tenant-scoped through `resolveObjectStorageKey`.
 
 ### C-01 — P3 — Stale duplicate cache after preferences change
 
 `saveContactPreferences` saves and mirrors relationships but never calls `invalidateDuplicateScanCache`
-([contactPreferencesService.ts:58-63](../apps/backend/src/contacts/use-cases/contactPreferencesService.ts)).
-The scan depends on `namePrefixesToIgnore` ([contactDuplicateScanUseCases.ts:97-107](../apps/backend/src/contacts/use-cases/contactDuplicateScanUseCases.ts)),
+([contactPreferencesService.ts:58-63](../packages/modules/contacts/src/backend/use-cases/contactPreferencesService.ts)).
+The scan depends on `namePrefixesToIgnore` ([contactDuplicateScanUseCases.ts:97-107](../packages/modules/contacts/src/backend/use-cases/contactDuplicateScanUseCases.ts)),
 and `computedAt` is written but never read, so cached pairs survive until some unrelated contact write
 invalidates them. Fix: invalidate on preferences save and enforce a max age (e.g., 24 h) in
 `getDuplicateScanCache`; add a test.
@@ -184,16 +184,16 @@ point-in-time review record.
 
 | ID | Status | Fix | Key tests |
 | --- | --- | --- | --- |
-| A-01 | Closed | `listRecipients` now returns a lean `{recipients,total,page,limit,hasMore}` page; frontend picker consumes it directly ([messagingRecipientUseCases.ts](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts), [messagingModuleManifest.ts](../packages/shared/src/messaging/messagingModuleManifest.ts)). Live probe returned only `id/name/phone/email`. | `messagingRecipientsService.test.ts`, `messaging.integration.test.ts` |
+| A-01 | Closed | `listRecipients` now returns a lean `{recipients,total,page,limit,hasMore}` page; frontend picker consumes it directly ([messagingRecipientUseCases.ts](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts), [messagingModuleManifest.ts](../packages/contracts/src/messaging/messagingModuleManifest.ts)). Live probe returned only `id/name/phone/email`. | `messagingRecipientsService.test.ts`, `messaging.integration.test.ts` |
 | A-02 | Closed | List/resolve/match apply `sanitizeContactsForViewer` with the session role; hidden channels are dropped from channel-required queries ([messagingRecipientUseCases.ts](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts), [messagingRecipientContractHandlers.ts](../apps/backend/src/routes/tenant/messaging/messagingRecipientContractHandlers.ts)). | `messagingRecipientsService.test.ts` |
-| A-03 | Closed | Recipient listing uses a two-collection projection (phones/emails only) via `recipientProjection`; no addresses/socials/relationships queries ([contactRepositoryRecipientHydrate.ts](../apps/backend/src/db/repositories/contactRepositoryRecipientHydrate.ts), [contactRepositoryList.ts](../apps/backend/src/db/repositories/contactRepositoryList.ts)). | `contactsConcurrencyDb.integration.test.ts` |
+| A-03 | Closed | Recipient listing uses a two-collection projection (phones/emails only) via `recipientProjection`; no addresses/socials/relationships queries ([contactRepositoryRecipientHydrate.ts](../packages/modules/contacts/src/backend/repository/contactRepositoryRecipientHydrate.ts), [contactRepositoryList.ts](../packages/modules/contacts/src/backend/repository/contactRepositoryList.ts)). | `contactsConcurrencyDb.integration.test.ts` |
 | A-04 | Closed | Resolve uses `loadContactsSummaryByIdsForTenant` instead of full hydration ([messagingRecipientUseCases.ts](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts)). | `messagingRecipientsService.test.ts` |
 | B-01 | Closed | Tenant sessions are denied root-level non-public uploads via `isCrossTenantRootUpload` ([staticAssets.ts](../apps/backend/src/plugins/staticAssets.ts)). | `uploadsAuth.test.ts` |
 | B-02 | Closed | `/attachment` uploads require `contacts.write`; image/branding uploads unchanged ([uploads.ts](../apps/backend/src/routes/common/uploads.ts)). | `uploadsHardening.test.ts` |
 | B-03 | Closed | Explicit removal unlinks the file after a successful save, and the nightly retention cycle (02:00 UTC, leader-leased) sweeps files older than 24 h that no attachment row references; `MMS_ORPHAN_ATTACHMENT_SWEEP=off` disables it ([attachmentStorageService.ts](../apps/backend/src/services/attachmentStorageService.ts), [attachmentSweepService.ts](../apps/backend/src/services/attachmentSweepService.ts), [retentionPurgeScheduler.ts](../apps/backend/src/worker/retentionPurgeScheduler.ts)). Manual dry-run: `pnpm --filter mms-backend purge:orphaned-attachments`. | `attachmentStorageService.test.ts`, `attachmentSweepService.test.ts`, `purgeArchivedRecordsWorker.test.ts` |
-| B-04 | Closed | New/changed attachment URLs must be relative `/uploads/tenants/<tenant>/attachments/…`; unchanged legacy absolute URLs are grandfathered on update/merge ([contactAttachmentUrls.ts](../apps/backend/src/contacts/use-cases/contactAttachmentUrls.ts), [contactWriteUseCases.ts](../apps/backend/src/contacts/use-cases/contactWriteUseCases.ts)). The frontend now stores relative upload URLs. | `contactAttachmentUrls.test.ts`, `contactUseCases.test.ts` |
-| C-01 | Closed | Duplicate cache has a 24 h TTL and contact preferences saves invalidate it best-effort ([contactDuplicateScanUseCases.ts](../apps/backend/src/contacts/use-cases/contactDuplicateScanUseCases.ts), [contactSetupConfigRoutes.ts](../apps/backend/src/routes/tenant/contacts/contactSetupConfigRoutes.ts)). | `contactDuplicateScanService.test.ts`, `contactSetupConfigRoutes.test.ts` |
-| C-02 | Closed | Uncached page reads persist the computed pairs, blocked participants hydrate through the summary projection, and both the scan and the on-demand fill are guarded by a tenant `MAX(updated_at)` write version: a write during the scan skips the save, and a write after the save deletes the cache ([contactDuplicateScanUseCases.ts](../apps/backend/src/contacts/use-cases/contactDuplicateScanUseCases.ts), [contactRepositoryPersist.ts](../apps/backend/src/db/repositories/contactRepositoryPersist.ts)). | `contactDuplicateScanService.test.ts`, `contactsConcurrencyDb.integration.test.ts` |
+| B-04 | Closed | New/changed attachment URLs must be relative `/uploads/tenants/<tenant>/attachments/…`; unchanged legacy absolute URLs are grandfathered on update/merge ([contactAttachmentUrls.ts](../packages/modules/contacts/src/backend/use-cases/contactAttachmentUrls.ts), [contactWriteUseCases.ts](../packages/modules/contacts/src/backend/use-cases/contactWriteUseCases.ts)). The frontend now stores relative upload URLs. | `contactAttachmentUrls.test.ts`, `contactUseCases.test.ts` |
+| C-01 | Closed | Duplicate cache has a 24 h TTL and contact preferences saves invalidate it best-effort ([contactDuplicateScanUseCases.ts](../packages/modules/contacts/src/backend/use-cases/contactDuplicateScanUseCases.ts), [contactSetupConfigRoutes.ts](../packages/modules/contacts/src/backend/routes/tenant/contactSetupConfigRoutes.ts)). | `contactDuplicateScanService.test.ts`, `contactSetupConfigRoutes.test.ts` |
+| C-02 | Closed | Uncached page reads persist the computed pairs, blocked participants hydrate through the summary projection, and both the scan and the on-demand fill are guarded by a tenant `MAX(updated_at)` write version: a write during the scan skips the save, and a write after the save deletes the cache ([contactDuplicateScanUseCases.ts](../packages/modules/contacts/src/backend/use-cases/contactDuplicateScanUseCases.ts), [contactRepositoryPersist.ts](../packages/modules/contacts/src/backend/repository/contactRepositoryPersist.ts)). | `contactDuplicateScanService.test.ts`, `contactsConcurrencyDb.integration.test.ts` |
 
 **Remaining residuals**
 

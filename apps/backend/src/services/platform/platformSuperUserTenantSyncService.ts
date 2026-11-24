@@ -1,7 +1,7 @@
 import { and, eq, or } from "drizzle-orm";
-import type { StoredPlatformUser } from "@mms/shared";
-import { withTenant } from "../../db/tenant-context.js";
-import { tenantUsers } from "../../db/schema.js";
+import type { StoredPlatformUser } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
+import { tenantUsers } from "@mms/db/schema";
 import { findPlatformUserRowByRole } from "../../db/repositories/platformUserRepository.js";
 import { listWorkspaceRows } from "../../db/repositories/workspaceRepository.js";
 import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";

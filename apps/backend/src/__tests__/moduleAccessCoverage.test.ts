@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { FastifyInstance, RouteOptions } from "fastify";
-import { ACCESS_CONTROLLED_MODULE_IDS, type ModuleAction } from "@mms/shared";
+import { ACCESS_CONTROLLED_MODULE_IDS, type ModuleAction } from "@mms/contracts";
 
 const collected: RouteOptions[] = [];
 
@@ -44,6 +44,7 @@ const MODULE_ROUTE_PREFIXES: Readonly<Record<string, string>> = {
   "/api/students": "students",
   "/api/tasks": "tasks",
   "/api/users": "users",
+  "/api/iam": "users",
 };
 
 /**
@@ -155,6 +156,10 @@ const NON_MODULE_ROUTES: ReadonlyArray<{
       "/api/platform/backup/import",
       "/api/platform/sms/integration",
       "/api/platform/sms/integration/test",
+      "/api/platform/iam/impersonations",
+      "/api/platform/iam/organizations",
+      "/api/platform/iam/users",
+      "/api/platform/iam/users/:tenant/:userId/status",
       "/api/platform/users",
       "/api/platform/users/:adminId",
       "/api/platform/users/:adminId/disabled",

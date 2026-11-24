@@ -7,7 +7,7 @@ import {
   workspaceLlmSecretsNeedEncryption,
 } from "../db/repositories/workspaceLlmSecrets.js";
 import { maskGlobalSettingsForClient, maskSecret } from "../services/globalSettingsService.js";
-import type { LlmConfig } from "@mms/shared";
+import type { LlmConfig } from "@mms/contracts";
 
 const sampleConfig = (apiKey: string): LlmConfig => ({
   id: "cfg-1",

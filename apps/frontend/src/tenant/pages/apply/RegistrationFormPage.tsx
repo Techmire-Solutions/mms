@@ -2,7 +2,7 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, ClipboardList, Send } from "lucide-react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { AuthPageFrame } from "@/components/entry";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

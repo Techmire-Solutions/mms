@@ -1,25 +1,22 @@
 import { AlertCircle, BookOpen, CheckCircle2 } from "lucide-react";
-import { type Account } from "@/lib/data/accountingData";
-import { moneyToCents } from "@mms/shared";
-import { CheckboxField } from "@/components/ui/checkbox";
-import { FieldErrorMessage } from "@/components/app/FormField";
-import { FormCollectionShell } from "@/components/app/FormPrimitives";
-import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
-import { Table, TableBody, TableHeader } from "@/components/ui/table";
+import { type Account } from "@mms/mod-accounting/frontend/tenant";
+import { moneyToCents } from "@mms/contracts";
+import { CheckboxField } from "@mms/ui";
+import { FieldErrorMessage } from "@mms/ui";
+import { FormCollectionShell } from "@mms/ui/app/FormCollectionShell";
+import { ModuleTableHeaderCell } from "@mms/fe-core/components/ModuleTableHeaderCell";
+import { Table, TableBody, TableHeader } from "@mms/ui";
 import { MutedTableHeaderRow } from "@/components/reports/FinancialDebitCreditTableChrome";
 import { WorkBatchTableFooter } from "@/components/common/work/WorkBatchTableFooter";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useMemo } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@mms/ui";
 import { balanceToneClass } from "@/lib/ui/semanticTone";
-import type { DraftLine } from "../lib/journalEntryFormTypes";
-import { JournalEntryLineRow } from "./JournalEntryLineRow";
-import { JournalEntryLinesEditorMobile } from "./JournalEntryLinesEditorMobile";
+import type { DraftLine } from "@mms/mod-accounting/frontend/tenant";
+import { JournalEntryLineRow } from "@mms/mod-accounting/frontend/tenant";
+import { JournalEntryLinesEditorMobile } from "@mms/mod-accounting/frontend/tenant";
 import type { JournalAmountSide } from "../hooks/useJournalLineAssist";
-import {
-  useWorkDirectoryViewMode,
-  type WorkDirectoryViewMode,
-} from "@/hooks/useWorkDirectoryViewMode";
+import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@mms/fe-core/tenant";
 
 interface JournalEntryLinesEditorProps {
   accounts: readonly Account[];

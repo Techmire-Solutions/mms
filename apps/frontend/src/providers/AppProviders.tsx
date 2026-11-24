@@ -7,7 +7,7 @@ import { TenantProvider } from "@/lib/contexts/TenantContext";
 import { TranslationProvider } from "@/lib/contexts/TranslationContext";
 import { DirectionProvider } from "@/providers/DirectionProvider";
 import { queryClientInstance } from "@/lib/queryClient";
-import { UiConfigProvider } from "@shared/ui";
+import { UiConfigProvider } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import RootErrorBoundary from "@/components/routing/RootErrorBoundary";
 import QueryDevtools from "@/components/dev/QueryDevtools";
@@ -20,13 +20,15 @@ export interface AppProvidersProps {
   children: React.ReactNode;
 }
 
-/** Bridges tenant i18n `t()` into @shared/ui's label config (cancel/confirm/delete/close). */
+/** Bridges tenant i18n `t()` into @mms/ui's label config (cancel/confirm/delete/close). */
 function UiConfigBridge({ children }: { children: React.ReactNode }): React.JSX.Element {
-  const { t, dir } = useTranslation();
+  const { t, dir, language } = useTranslation();
   return (
     <UiConfigProvider
       config={{
         dir,
+        language,
+        translate: t as unknown as (key: string) => string,
         labels: {
           cancel: t("common.cancel"),
           confirm: t("common.confirm"),

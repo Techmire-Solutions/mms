@@ -1,5 +1,5 @@
-import { DEFAULT_SESSION_CATEGORY_CODE, type Session } from "@mms/shared";
-import type { TenantTransaction } from "../tenant-context.js";
+import { DEFAULT_SESSION_CATEGORY_CODE, type Session } from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
 import { findAcademicCatalogIdByCodeTx } from "./academicCatalogReferences.js";
 import { resolveCatalogRefsTx } from "./academicCatalogSnapshot.js";
 

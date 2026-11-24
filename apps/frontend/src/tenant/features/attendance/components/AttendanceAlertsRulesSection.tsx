@@ -3,10 +3,10 @@ import { Bell } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useClampedNumberField } from "@/tenant/features/attendance/hooks/useClampedNumberField";
 import { cn } from "@/lib/utils";
-import type { AttendanceSettings } from "@mms/shared";
+import type { AttendanceSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionCard } from "@/components/app/SectionCard";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 

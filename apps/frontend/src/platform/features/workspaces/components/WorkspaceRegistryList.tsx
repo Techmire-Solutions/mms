@@ -1,14 +1,14 @@
 import React from "react";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
-import type { AppTranslationKey, PublicWorkspaceSummary } from "@mms/shared";
+import type { AppTranslationKey, PublicWorkspaceSummary } from "@mms/contracts";
 import { ROUTES } from "@/lib/config/routes";
 import { getAppDomain, tenantUrl } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BiDiText } from "@/components/app/BiDiText";
 import { useWorkspaceRegistry } from "@/platform/features/workspaces/hooks/useWorkspaceRegistry";
-import { EmptyState, ErrorState, CardSkeleton, SectionLabel, WorkspaceLogo } from "@shared/ui";
+import { EmptyState, ErrorState, CardSkeleton, SectionLabel, WorkspaceLogo } from "@mms/ui";
 import { containerVariants, cardVariants } from "@/lib/motion";
 import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";

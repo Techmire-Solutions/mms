@@ -7,7 +7,7 @@ import {
   staffEligibilityReasons,
   type Enrollment,
   type StudentsBulkEnrollBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
 import {
   ConflictError,
@@ -21,11 +21,11 @@ import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { endLiveEnrollments } from "./enrollmentEndUseCases.js";
 import { assertNoStudentScheduleCollision } from "./enrollmentTimetableGuard.js";
 import { releaseOffersIfClassFullPostCommit } from "./admissionsWaitlistExpiry.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { recordEnrollmentAudit } from "./enrollmentAudit.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
-import { hasActiveTransaction } from "../../db/dbTransactions.js";
-import { withSavepoint } from "../../db/transactionSideEffects.js";
+import { hasActiveTransaction } from "@mms/db/client";
+import { withSavepoint } from "@mms/db/transactionSideEffects";
 
 export type BulkEnrollInput = Omit<StudentsBulkEnrollBody, "studentIds"> & { studentIds: string[] };
 

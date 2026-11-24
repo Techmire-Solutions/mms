@@ -13,7 +13,7 @@ import {
   type PlatformBrandingSettings,
   type PublicPlatformBranding,
   type ThemeMode,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiFetch } from "@/lib/apiClient";
 import { isTenantHost } from "@/lib/config/tenantConfig";
 

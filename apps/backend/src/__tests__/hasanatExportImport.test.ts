@@ -4,7 +4,7 @@ import {
   buildHasanatExportCsvChunk,
 } from "../services/hasanatExportService.js";
 import { resolveImportRows } from "../hasanat/use-cases/hasanatImportResolve.js";
-import type { Denomination, Distribution, HasanatTransferEntity } from "@mms/shared";
+import type { Denomination, Distribution, HasanatTransferEntity } from "@mms/contracts";
 
 vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: () => "demo",

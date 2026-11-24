@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { withTenant } from "../tenant-context.js";
-import * as schema from "../schema.js";
-import { type SmsIntegrationRow } from "../schema/messaging.js";
-import type { SmsIntegrationConfig, SmsIntegrationSecrets } from "@mms/shared";
-import { DEFAULT_SMS_INTEGRATION } from "@mms/shared";
+import { withTenant } from "@mms/db/context";
+import * as schema from "@mms/db/schema";
+import { type SmsIntegrationRow } from "@mms/db/schema/messaging";
+import type { SmsIntegrationConfig, SmsIntegrationSecrets } from "@mms/contracts";
+import { DEFAULT_SMS_INTEGRATION } from "@mms/contracts";
 
 export async function getSmsIntegrationRow(
   workspaceSubdomain: string,

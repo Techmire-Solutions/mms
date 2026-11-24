@@ -1,5 +1,5 @@
-import type { StudentLookupKind } from "@mms/shared";
-import { studentLookups } from "../schema.js";
+import type { StudentLookupKind } from "@mms/contracts";
+import { studentLookups } from "@mms/db/schema";
 import {
   createModuleLookupsRepo,
   type ModuleLookupRowInput,

@@ -15,7 +15,7 @@ import {
   useObligationsDistributionsCollection,
   useObligationsReportAggregates,
 } from "@/tenant/features/obligations/hooks/useObligationsApi";
-import { formatMoney, OBLIGATIONS_COLLECTIONS_MAX_LIMIT } from "@mms/shared";
+import { formatMoney, OBLIGATIONS_COLLECTIONS_MAX_LIMIT } from "@mms/contracts";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { Skeleton } from "@/components/ui/skeleton";

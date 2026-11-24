@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_FACULTY_SETTINGS, type FacultyMember } from "@mms/shared";
+import { DEFAULT_FACULTY_SETTINGS, type FacultyMember } from "@mms/contracts";
 import { FacultyDetail } from "./FacultyDetail";
 
 vi.mock("@/hooks/useStandardModuleConfig", () => {

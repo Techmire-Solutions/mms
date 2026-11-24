@@ -1,5 +1,5 @@
 import type React from "react";
-import type { FacultyMember, FieldDefinition } from "@mms/shared";
+import type { FacultyMember, FieldDefinition } from "@mms/contracts";
 
 export type {
   FacultySectionBaseProps,

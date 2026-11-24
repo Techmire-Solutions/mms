@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import { createAttendanceUseCases } from "../attendance/use-cases/attendanceUseCases.js";
 import type { AttendanceRepository } from "../attendance/repository/attendanceRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";

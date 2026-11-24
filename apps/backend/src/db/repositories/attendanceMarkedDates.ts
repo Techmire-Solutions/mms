@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import type { AttendanceMarkedDatesQuery } from "@mms/shared";
+import type { AttendanceMarkedDatesQuery } from "@mms/contracts";
 import { getQueryRows } from "../documentStoreKeys.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Distinct days in range that carry at least one live attendance row.

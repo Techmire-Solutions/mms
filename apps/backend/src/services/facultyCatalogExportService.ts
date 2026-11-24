@@ -3,7 +3,7 @@ import {
   facultyDepartmentsToCsv,
   facultyDesignationsToCsv,
   type FacultyDepartmentEntity,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { listFacultyDepartments } from "../db/repositories/facultyDepartmentRepository.js";
 import { listFacultyDesignations } from "../db/repositories/facultyDesignationRepository.js";

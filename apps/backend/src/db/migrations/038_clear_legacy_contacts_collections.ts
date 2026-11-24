@@ -3,13 +3,13 @@
  * Entity rows are REST-only; residual JSON collections are a dual-store hazard.
  * Skips delete when typed table is empty but legacy rows still exist (avoids data loss).
  */
-import { parseTenantScopedStorageKey } from "@mms/shared";
+import { parseTenantScopedStorageKey } from "@mms/contracts";
 import {
   listCollectionStorageNames,
   deleteCollectionByStorageName,
   getCollectionByStorageName,
 } from "../database.js";
-import { countContactsByWorkspace } from "../repositories/contactRepository.js";
+import { countContactsByWorkspace } from "@mms/mod-contacts/backend/repository";
 
 export async function runMigration038(): Promise<void> {
   const names = await listCollectionStorageNames();

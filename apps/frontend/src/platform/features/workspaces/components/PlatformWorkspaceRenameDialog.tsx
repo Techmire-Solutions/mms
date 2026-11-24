@@ -1,8 +1,8 @@
 import React, { useId, useState } from "react";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import { Pencil } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
-import { Field, Input } from "@shared/ui";
+import { Field, Input } from "@mms/ui";
 import { NAME_MAX } from "@/components/branding/BrandingShared";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";

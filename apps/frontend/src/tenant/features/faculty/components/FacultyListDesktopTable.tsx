@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/app/UserAvatar";
 import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";

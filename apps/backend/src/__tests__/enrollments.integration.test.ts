@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { admissionsContract, enrollmentContract, enrollmentOperationsContract } from "@mms/shared";
+import {
+  admissionsContract,
+  enrollmentContract,
+  enrollmentOperationsContract,
+} from "@mms/contracts";
 import { buildApp } from "../app.js";
 import { accountantToken, adminToken, teacherToken, viewerToken } from "./helpers/tokens.js";
 import { enrollmentsUseCases } from "../enrollments/use-cases/enrollmentsUseCases.js";
@@ -102,7 +106,7 @@ vi.mock("../enrollments/use-cases/enrollmentsUseCases.js", () => ({
   },
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (first: unknown, second?: unknown) => {
     const input = (second ?? first) as {
       realUserId?: string;

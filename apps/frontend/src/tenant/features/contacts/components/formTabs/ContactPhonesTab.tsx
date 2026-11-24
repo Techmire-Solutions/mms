@@ -8,7 +8,7 @@ import {
   clampPhoneNumberInput,
   getMaxAllowedPhoneInputLength,
   parsePhoneNumber,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ContactLabeledValueSubListTab } from "./ContactLabeledValueSubListTab";
 import { isSubListItemPrimary } from "./ContactSubListCards";
 

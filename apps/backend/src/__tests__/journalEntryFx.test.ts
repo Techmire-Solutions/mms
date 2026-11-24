@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Account, JournalEntry } from "@mms/shared";
+import type { Account, JournalEntry } from "@mms/contracts";
 import type { AccountingRepository } from "../accounting/repository/accountingRepository.js";
 import type { AccountingFxRepository } from "../accounting/repository/accountingFxRepository.js";
-import { resolveEntriesFx } from "../accounting/use-cases/journalEntryFx.js";
+import { resolveEntriesFx } from "@mms/mod-accounting/backend/use-cases";
 
 function makeFx(overrides: Partial<AccountingFxRepository> = {}): AccountingFxRepository {
   return {

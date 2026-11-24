@@ -3,9 +3,11 @@ import {
   listAllUserUiPreferencesByWorkspace,
   replaceUserUiPreferencesForWorkspace,
 } from "../db/repositories/userUiPreferencesRepository.js";
-import { withTenant } from "../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn(async (_tenant: string, cb: (tx: any) => Promise<unknown>) => {
     const mockTx = {
       select: vi.fn().mockReturnThis(),

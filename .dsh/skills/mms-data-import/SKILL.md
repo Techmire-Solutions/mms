@@ -21,7 +21,7 @@ metadata:
 ## 1. Domain Invariants & Standards
 
 - **Standard Route Helper**: Every module POST `/import` route must be registered using `registerModuleCsvImportRoutes` (`apps/backend/src/lib/registerModuleCsvImportRoutes.ts`), which enforces body limits, tenant isolation, idempotency keys, and audit event capture.
-- **Transfer Schema SSOT**: Define each importable module's columns once via `createModuleTransferSchema` (`packages/shared/src/dataTransfer/core/moduleTransferSchema.ts`, registered through `moduleTransferRegistry`). The single `fields` array derives the import mappings, template columns, and export columns together, enforcing the field whitelist (system metadata keys stripped) and 1:1 header symmetry with the exporter — the same SSOT the export side consumes (`mms-reports.md` §3).
+- **Transfer Schema SSOT**: Define each importable module's columns once via `createModuleTransferSchema` (`packages/contracts/src/dataTransfer/core/moduleTransferSchema.ts`, registered through `moduleTransferRegistry`). The single `fields` array derives the import mappings, template columns, and export columns together, enforcing the field whitelist (system metadata keys stripped) and 1:1 header symmetry with the exporter — the same SSOT the export side consumes (`mms-reports.md` §3).
 - **Dry-Run Validation**: Import dialogs must provide a dry-run preview stage verifying required headers, parsing types, and highlighting row errors before final queuing.
 - **Idempotency & Queuing**: Large imports (> 50 rows) are dispatched as asynchronous BullMQ background jobs with status tracking and artifact error logs (`mms-background-jobs`).
 - **Bulk Upsert Semantics**: Import writes adhere to bulk PUT/upsert contracts (`mms-api-interface.md` §5). Never wipe or truncate missing existing rows during an import batch.
@@ -33,7 +33,7 @@ metadata:
 
 | Concern | Path |
 |---------|------|
-| Transfer Schema SSOT | `packages/shared/src/dataTransfer/core/moduleTransferSchema.ts` |
+| Transfer Schema SSOT | `packages/contracts/src/dataTransfer/core/moduleTransferSchema.ts` |
 | Backend Import Helper | `apps/backend/src/lib/registerModuleCsvImportRoutes.ts` |
 | Import Integration Tests | `apps/backend/src/__tests__/moduleCsvImport.test.ts` |
 | Background Worker Service | `apps/backend/src/services/backgroundJobWorkerService.ts` |

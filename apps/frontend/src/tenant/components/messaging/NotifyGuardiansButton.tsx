@@ -1,6 +1,6 @@
 import React from "react";
 import { MessageSquare } from "lucide-react";
-import { toMessagingRecipient } from "@mms/shared";
+import { toMessagingRecipient } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";

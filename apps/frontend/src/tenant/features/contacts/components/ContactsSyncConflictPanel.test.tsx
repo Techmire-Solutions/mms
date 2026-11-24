@@ -23,7 +23,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     open,
     title,

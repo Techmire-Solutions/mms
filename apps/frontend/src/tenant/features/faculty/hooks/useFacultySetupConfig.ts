@@ -6,7 +6,7 @@ import {
   normalizeFacultySettings,
   type FacultyModulePreferences,
   type FacultySettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { SETUP_STALE_TIME } from "@/lib/queryClient";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";

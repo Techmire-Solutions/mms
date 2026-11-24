@@ -4,9 +4,14 @@
  */
 
 import { User as UserIcon } from "lucide-react";
-import { formatDate, type TaskRecord, type TaskStatus, type AppTranslationKey } from "@mms/shared";
+import {
+  formatDate,
+  type TaskRecord,
+  type TaskStatus,
+  type AppTranslationKey,
+} from "@mms/contracts";
 import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { TableCellLink } from "@shared/ui";
+import { TableCellLink } from "@mms/ui";
 import { TaskPriorityBadge } from "./TaskBadges";
 import { TaskStatusMenu } from "./TaskStatusMenu";
 

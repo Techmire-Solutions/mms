@@ -12,7 +12,7 @@ import {
   listStudentContactRelationships,
   type Contact,
   type Student,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { formatLocalizedRelationshipParts } from "@/lib/contacts/formatLocalizedRelationshipLabel";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { GuardianContactCard } from "@/tenant/features/students/components/GuardianContactCard";

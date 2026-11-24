@@ -4,7 +4,7 @@ import { ListPagination } from "@/components/app/ListPagination";
 import { cn } from "@/lib/utils";
 
 import { EmptyState } from "@/components/app/EmptyState";
-import { TableSkeleton } from "@shared/ui";
+import { TableSkeleton } from "@mms/ui";
 
 export interface ReportDataGridContainerProps {
   children: React.ReactNode;

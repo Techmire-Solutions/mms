@@ -1,4 +1,4 @@
-import type { FacultyMember } from "@mms/shared";
+import type { FacultyMember } from "@mms/contracts";
 import {
   type ClassDetailTabId,
   ClassDetailGeneralTab,

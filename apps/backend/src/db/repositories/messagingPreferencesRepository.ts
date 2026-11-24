@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
-import type { MessagingPreferences } from "@mms/shared";
-import { messagingPreferences } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import type { MessagingPreferences } from "@mms/contracts";
+import { messagingPreferences } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 
 function rowToPreferences(row: typeof messagingPreferences.$inferSelect): MessagingPreferences {
   return {

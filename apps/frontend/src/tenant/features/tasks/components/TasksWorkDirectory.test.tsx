@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { TaskRecord } from "@mms/shared";
+import type { TaskRecord } from "@mms/contracts";
 import { TasksWorkDirectory } from "./TasksWorkDirectory";
 
 vi.mock("@/hooks/useTranslation", () => ({

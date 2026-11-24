@@ -5,7 +5,7 @@ import {
   type FacultyEmployDesignationFormRow,
   type FacultyEmployDesignationWriteRow,
   type FacultyMember,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function newEmployDesignationFormRow(
   partial?: Partial<FacultyEmployDesignationFormRow>,

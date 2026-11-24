@@ -4,7 +4,7 @@ import { SubTabBar } from "@/components/app/SubTabBar";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionBank as QuestionsPanel } from "@/tenant/features/question-bank/components/QuestionBank";
 import type { useQuestionBankColumnLayout } from "@/tenant/features/question-bank/hooks/useQuestionBankColumnLayout";
-import type { QuestionBankQuestion, QuestionBankTest } from "@mms/shared";
+import type { QuestionBankQuestion, QuestionBankTest } from "@mms/contracts";
 import { PaperBlueprintPanel } from "./PaperBlueprintPanel";
 
 interface WorkTab {

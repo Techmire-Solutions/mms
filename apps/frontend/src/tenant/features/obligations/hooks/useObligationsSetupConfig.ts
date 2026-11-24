@@ -5,7 +5,7 @@ import {
   normalizeObligationsSettings,
   type ObligationsModulePreferences,
   type ObligationsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchObligationsPreferences,

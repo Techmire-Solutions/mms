@@ -1,5 +1,5 @@
-import type { BrandingSettings, DocumentTemplate } from "@mms/shared";
-import type { PaymentVoucherModel } from "@/tenant/features/accounting/lib/paymentVoucherModel";
+import type { BrandingSettings, DocumentTemplate } from "@mms/contracts";
+import type { PaymentVoucherModel } from "@mms/mod-accounting/frontend/tenant";
 
 /** Server-side key for the accounting voucher layout (`/api/templates/:key`). */
 export const ACCOUNTING_VOUCHER_TEMPLATE_KEY = "accounting_voucher_template";

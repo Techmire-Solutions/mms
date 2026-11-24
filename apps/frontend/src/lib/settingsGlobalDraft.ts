@@ -8,7 +8,7 @@ import {
   normalizeTimezone,
   type DateFormatId,
   type GlobalSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getGlobalSettings } from "@/lib/db";
 
 /** Fields from the global settings draft that participate in live preview. */

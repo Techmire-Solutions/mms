@@ -1,4 +1,4 @@
-import type { ModuleColumnRegistryEntry, Student } from "@mms/shared";
+import type { ModuleColumnRegistryEntry, Student } from "@mms/contracts";
 import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";

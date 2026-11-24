@@ -3,7 +3,7 @@ import {
   buildReversalLines,
   type Invoice,
   type JournalEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import crypto from "node:crypto";
 import { findEntryById, findEntryIdBySource } from "../../db/repositories/accountingRepository.js";
 import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";

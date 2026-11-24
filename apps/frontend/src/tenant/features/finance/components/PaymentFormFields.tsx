@@ -8,8 +8,8 @@ import { FORM_INPUT, FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { FormSelect } from "@/components/app/FormSelect";
 import { SectionCard } from "@/components/app/SectionCard";
 import { cn } from "@/lib/utils";
-import { coerceFinancePaymentMethod } from "@mms/shared";
-import { tryParseMoneyAmountNumber } from "@mms/shared";
+import { coerceFinancePaymentMethod } from "@mms/contracts";
+import { tryParseMoneyAmountNumber } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { buildInitialPaymentDraft } from "@/tenant/features/finance/lib/paymentFormHelpers";
 

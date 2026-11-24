@@ -4,4 +4,4 @@ export {
   type ReviewListProps,
   type ReviewListRowProps,
   type ReviewRowItem,
-} from "@shared/ui";
+} from "@mms/ui";

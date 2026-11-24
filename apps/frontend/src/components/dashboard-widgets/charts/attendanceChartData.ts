@@ -1,4 +1,4 @@
-import { formatShortWeekdayLabels } from "@mms/shared";
+import { formatShortWeekdayLabels } from "@mms/contracts";
 
 export interface AttendancePoint {
   day: string;

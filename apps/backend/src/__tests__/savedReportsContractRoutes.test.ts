@@ -53,7 +53,7 @@ vi.mock("../db/repositories/savedReportsRepository.js", async (importOriginal) =
   };
 });
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (first: unknown, second?: unknown) => {
     const input = (second ?? first) as {
       realUserId?: string;

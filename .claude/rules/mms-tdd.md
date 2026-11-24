@@ -5,7 +5,7 @@ paths:
   - "apps/backend/src/**/services/**/*.ts"
   - "apps/backend/src/**/repositories/**/*.ts"
   - "apps/backend/src/**/repository/**/*.ts"
-  - "packages/shared/src/**/*.ts"
+  - "packages/contracts/src/**/*.ts"
   - "apps/frontend/src/tenant/features/**/hooks/**/*.ts"
 ---
 
@@ -13,7 +13,7 @@ paths:
 
 **Workflow skills:** testing workflows → `mms-testing-e2e` · PR/self-review → `mms-code-review` · auth/RLS specs → `mms-backend-security`.
 
-Applies to business logic, use-case handlers, services, repositories, `@mms/shared` pure helpers, tenant hooks, and every bug fix. UI component specs follow `mms-testing-observability.md` §2–§4.
+Applies to business logic, use-case handlers, services, repositories, `@mms/contracts` pure helpers, tenant hooks, and every bug fix. UI component specs follow `mms-testing-observability.md` §2–§4.
 
 ## 1. Red → Green → Refactor
 1. **Red:** write the failing Vitest spec first (`*.test.ts` / `*.test.tsx`, colocated or under `apps/backend/src/__tests__/`) that states the expected behaviour.

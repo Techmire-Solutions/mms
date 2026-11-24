@@ -1,7 +1,7 @@
 # Faculty Module Architecture & Engineering Specification
 
 > **Module Status:** Production Gold Standard  
-> **Package Scopes:** `apps/backend`, `apps/frontend`, `packages/shared`  
+> **Package Scopes:** `apps/backend`, `apps/frontend`, `packages/contracts`  
 > **Conformance Targets:** Clean Architecture, 3-Tier Module Layout (§7 Parity), Zero-Trust Zod DTOs, PostgreSQL 16 RLS & Recursive CTEs, RFC 8785 Canonical JSON Outbox Audit Trail, TanStack Query v5, BiDi / RTL Accessibility (WCAG 2.1 AA).
 
 ---
@@ -11,7 +11,7 @@
 The **Faculty Module** in the Madrasa Management System (MMS) manages academic personnel, organizational structures, multi-role temporal appointments, and operational workflows across tenant institutions.
 
 Historically transformed from a simplistic "teachers" table, the current Faculty domain represents an enterprise-grade personnel subsystem with:
-1. **Separation of Personal Identity vs. Employment:** Personal data (names, identity numbers, phones, avatars, addresses) is strictly owned by the **Contacts** module ([`contacts.ts`](../apps/backend/src/db/schema/contacts.ts)). The Faculty profile owns institutional employment attributes (employee IDs, ranks, specializations, qualifications, join dates, and temporal appointments).
+1. **Separation of Personal Identity vs. Employment:** Personal data (names, identity numbers, phones, avatars, addresses) is strictly owned by the **Contacts** module ([`contacts.ts`](../packages/db/src/schema/contacts.ts)). The Faculty profile owns institutional employment attributes (employee IDs, ranks, specializations, qualifications, join dates, and temporal appointments).
 2. **Normalized Multi-Role Temporal Appointments:** Faculty members can hold appointments across multiple departments and designations simultaneously or consecutively over date ranges (`startDate` → `endDate`), with transactional validation guaranteeing at most one active primary appointment.
 3. **Department / designation structure:** Department and designation catalogs define institutional structure and rank. Display names and hierarchy rank are resolved from primary `faculty_assignments` rows (not denormalized on `faculty`). Session tables (`session_faculty`, `session_classes`, timetable periods) reference `faculty` via composite FKs. The former Organization positions/locations module has been removed.
 4. **Three-Tier Command Centre UX:** Conforms strictly to the MMS Master Module Scaffold Layout:
@@ -37,7 +37,7 @@ graph TD
         WT --> TQ[TanStack Query Facade<br/>@/tenant/hooks/collections/faculty]
     end
 
-    subgraph Shared ["packages/shared (@mms/shared)"]
+    subgraph Shared ["packages/contracts (@mms/shared)"]
         FCTR[facultyContract (@ts-rest)]
         FDTO[Zod DTOs & Validation Schemas]
         FMOD[FACULTY_MODULE_MANIFEST]
@@ -76,7 +76,7 @@ graph TD
 
 ## 3. Database Layer (PostgreSQL 16 & Drizzle ORM)
 
-The database schema is defined using Drizzle ORM in [`apps/backend/src/db/schema/faculty.ts`](../apps/backend/src/db/schema/faculty.ts) and sub-modules decomposed to comply with the 300-line limit.
+The database schema is defined using Drizzle ORM in [`packages/db/src/schema/faculty.ts`](../packages/db/src/schema/faculty.ts) and sub-modules decomposed to comply with the 300-line limit.
 
 ### 3.1 Relational Tables & Field Schemas
 
@@ -98,21 +98,21 @@ Defines the institutional profile for an employed instructor or administrator.
   - `faculty_hierarchy_rank_positive_check`: `hierarchy_rank > 0`.
 
 #### 2. Department Catalog: `faculty_departments`
-Normalized hierarchical department/faculty tree ([`facultyDepartmentTables.ts`](../apps/backend/src/db/schema/facultyDepartmentTables.ts)).
+Normalized hierarchical department/faculty tree ([`facultyDepartmentTables.ts`](../packages/db/src/schema/facultyDepartmentTables.ts)).
 - **Primary Key:** `(workspace_subdomain, id)`.
 - **Self-Reference:** `parent_id` references `faculty_departments(id)` `ON DELETE RESTRICT`. Unbounded nesting (Faculty → School → Department → Program).
 - **Active Code Uniqueness:** Partial unique index `WHERE deleted_at IS NULL` on `(workspace_subdomain, code)`.
 - **Constraint:** `CHECK (parent_id IS NULL OR parent_id <> id)`.
 
 #### 3. Designation & Roles Catalog: `faculty_designations`
-Normalized academic titles and permissions ([`facultyDesignationTables.ts`](../apps/backend/src/db/schema/facultyDesignationTables.ts)).
+Normalized academic titles and permissions ([`facultyDesignationTables.ts`](../packages/db/src/schema/facultyDesignationTables.ts)).
 - **Primary Key:** `(workspace_subdomain, id)`.
 - **Fields:** `code` (unique among active), `name`, `hierarchy_rank` (> 0), `is_active`, soft-delete fields.
 - **Linked Roles (`faculty_designation_roles`):** Maps a designation to workspace security roles (`role_key`) granted when holding the designation.
 - **Designation history:** Projected from `faculty_assignments` (FA SSOT). Legacy `faculty_designation_assignments` is retired.
 
 #### 4. Multi-Role Temporal Appointments: `faculty_assignments`
-Models multi-role holding, joint appointments, and designation history ([`facultyAssignmentTables.ts`](../apps/backend/src/db/schema/facultyAssignmentTables.ts)).
+Models multi-role holding, joint appointments, and designation history ([`facultyAssignmentTables.ts`](../packages/db/src/schema/facultyAssignmentTables.ts)).
 - **Primary Key:** `(workspace_subdomain, id)`.
 - **Foreign Keys:**
   - `faculty_id` → `faculty.id` `ON DELETE CASCADE`.
@@ -282,20 +282,20 @@ Business logic is completely isolated from HTTP concerns in [`apps/backend/src/f
 The shared package maintains single sources of truth for both frontend and backend:
 
 ### 5.1 Type-Safe DTO Schemas
-- **[`facultyCoreSchema`](../packages/shared/src/faculty/facultyModuleManifest.ts):** Core Zod schema defining valid faculty fields.
-- **[`buildDynamicFacultySchema`](../packages/shared/src/schemas/faculty.dto.ts):** Dynamic compiler that inspects tenant setup preferences, enabled tabs, and custom fields to assemble a `.strict()` schema that rejects unexpected or dangerous payload properties.
-- **[`facultyDepartmentSchema`](../packages/shared/src/faculty/facultyDepartmentTypes.ts):** Read/write schemas for departments, including hierarchy depth and child count projections.
-- **[`facultyAssignmentSchema`](../packages/shared/src/faculty/facultyDepartmentTypes.ts):** Enforces ISO 8601 calendar date formats (`z.iso.date()`) and validates that `endDate >= startDate`.
+- **[`facultyCoreSchema`](../packages/contracts/src/faculty/facultyModuleManifest.ts):** Core Zod schema defining valid faculty fields.
+- **[`buildDynamicFacultySchema`](../packages/contracts/src/schemas/faculty.dto.ts):** Dynamic compiler that inspects tenant setup preferences, enabled tabs, and custom fields to assemble a `.strict()` schema that rejects unexpected or dangerous payload properties.
+- **[`facultyDepartmentSchema`](../packages/contracts/src/faculty/facultyDepartmentTypes.ts):** Read/write schemas for departments, including hierarchy depth and child count projections.
+- **[`facultyAssignmentSchema`](../packages/contracts/src/faculty/facultyDepartmentTypes.ts):** Enforces ISO 8601 calendar date formats (`z.iso.date()`) and validates that `endDate >= startDate`.
 
 ### 5.2 Pure Utilities & Helpers
-- **[`formatDeterministicEmployeeId`](../packages/shared/src/faculty/facultyUtils.ts):** Formats sequences with zero-padding and configurable date formats (`YYYY`, `YY`, `NONE`).
-- **[`stripFacultyWriteNoise`](../packages/shared/src/faculty/facultyUtils.ts):** Strips personal contact fields (`firstName`, `lastName`, `phone`, `email`, `nationalId`, `avatarUrl`) from writes before they hit the faculty table.
+- **[`formatDeterministicEmployeeId`](../packages/contracts/src/faculty/facultyUtils.ts):** Formats sequences with zero-padding and configurable date formats (`YYYY`, `YY`, `NONE`).
+- **[`stripFacultyWriteNoise`](../packages/contracts/src/faculty/facultyUtils.ts):** Strips personal contact fields (`firstName`, `lastName`, `phone`, `email`, `nationalId`, `avatarUrl`) from writes before they hit the faculty table.
 - **[`resolveFacultyDisplayName`](../apps/frontend/src/tenant/features/faculty/lib/facultyFieldDisplay.ts):** Gracefully resolves a display name across linked Contact models, legacy profile names, or localized placeholder fallbacks.
 
 ### 5.3 Standardized Data Transfer & Symmetrical CSV Schemas (`@mms/shared`)
 Faculty data transfer implements the monorepo's DRY, symmetric SSOT transfer architecture:
-- **[`facultyTransferSchema`](../packages/shared/src/dataTransfer/schemas/facultyTransferSchema.ts):** Unified schema for Faculty Member CSV export and import. Enforces strict Field Whitelist by stripping internal metadata (`id`, `tenantId`, `createdAt`, `updatedAt`, `deletedAt`). Guaranteed 1:1 header symmetry between exported columns and import mappings.
-- **[`facultyDesignationTransferSchema`](../packages/shared/src/dataTransfer/schemas/facultyDesignationTransferSchema.ts):** Unified SSOT schema for Faculty Designation CSV export, import mappings, and template generation.
+- **[`facultyTransferSchema`](../packages/contracts/src/dataTransfer/schemas/facultyTransferSchema.ts):** Unified schema for Faculty Member CSV export and import. Enforces strict Field Whitelist by stripping internal metadata (`id`, `tenantId`, `createdAt`, `updatedAt`, `deletedAt`). Guaranteed 1:1 header symmetry between exported columns and import mappings.
+- **[`facultyDesignationTransferSchema`](../packages/contracts/src/dataTransfer/schemas/facultyDesignationTransferSchema.ts):** Unified SSOT schema for Faculty Designation CSV export, import mappings, and template generation.
 - **Frontend Dialog Integration ([`FacultyCsvImportDialog.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultyCsvImportDialog.tsx)):** Employs the generic [`ModuleImportDialog`](../apps/frontend/src/components/app/ModuleImportDialog.tsx) driven by `useModuleCsvImportActions`, consuming schemas without ad-hoc mapping duplication.
 
 ---
@@ -367,7 +367,7 @@ Data fetching hooks are consolidated in [`@/tenant/hooks/collections/faculty.ts`
 ## 7. Internationalization (i18n), BiDi & Accessibility (a11y)
 
 ### 7.1 Translation Key Parity
-All UI labels, validation messages, and aria-attributes are localized across English (`en`), Arabic (`ar`), Urdu (`ur`), and Persian (`fa`). Keys are registered in [`packages/shared/src/appTranslationsEn.ts`](../packages/shared/src/i18n/appTranslationsEn.ts) and verified via automated test suites.
+All UI labels, validation messages, and aria-attributes are localized across English (`en`), Arabic (`ar`), Urdu (`ur`), and Persian (`fa`). Keys are registered in [`packages/contracts/src/appTranslationsEn.ts`](../packages/contracts/src/i18n/appTranslationsEn.ts) and verified via automated test suites.
 
 ### 7.2 BiDi / RTL Layout Compliance
 The frontend avoids hardcoded directional CSS (`left`, `right`, `ml-`, `mr-`, `pl-`, `pr-`), strictly employing Tailwind CSS logical utilities:

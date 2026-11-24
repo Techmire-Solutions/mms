@@ -6,9 +6,9 @@ import {
   toSqlSearchPattern,
   type UsersCommandMetricsSnapshot,
   type UsersListQuery,
-} from "@mms/shared";
-import { tenantUsers } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { tenantUsers } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { runListPage } from "./listPageHelper.js";
 import { rowToTenantUser, type TenantUserRow } from "./tenantUserRepository.js";
 

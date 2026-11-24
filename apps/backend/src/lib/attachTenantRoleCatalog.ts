@@ -5,7 +5,7 @@
  * System roles use the built-in map and skip the lookup entirely. Custom and
  * faculty composite roles need the tenant catalog, which is cached per tenant.
  */
-import { isSystemRole, type User } from "@mms/shared";
+import { isSystemRole, type User } from "@mms/contracts";
 
 export async function attachTenantRoleCatalog(user: User, tenant: string): Promise<void> {
   if (!user.role || isSystemRole(user.role)) return;

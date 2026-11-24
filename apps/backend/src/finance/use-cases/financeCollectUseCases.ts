@@ -17,7 +17,7 @@ import {
   type Invoice,
   type RemindInvoicesBody,
   type RemindInvoicesResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
@@ -38,8 +38,8 @@ import {
   tryPostLateFeeJournals,
   tryPostLateFeeReversalJournal,
 } from "../../accounting/ledgerPosting/ledgerPostingService.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { withTenant } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import {
   invoiceAuditState,
   recordCreditNoteAudit,

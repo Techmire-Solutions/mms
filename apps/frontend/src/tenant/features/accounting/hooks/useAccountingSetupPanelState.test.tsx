@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_ACCOUNTING_PREFERENCES } from "@mms/shared";
+import { DEFAULT_ACCOUNTING_PREFERENCES } from "@mms/contracts";
 
 const mocks = vi.hoisted(() => ({
   getPreferences: vi.fn(),
@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   notifyError: vi.fn(),
 }));
 
-vi.mock("@/lib/api", () => ({
+vi.mock("@mms/fe-core/api/tsRest", () => ({
   apiContract: {
     accounting: {
       getPreferences: mocks.getPreferences,
@@ -20,12 +20,12 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-vi.mock("@/lib/contexts/AuthContext", () => ({
+vi.mock("@mms/fe-core/auth/AuthContext", () => ({
   useAuth: () => ({ isAuthenticated: true }),
   useOptionalAuth: () => ({ isAuthenticated: true }),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     success: mocks.notifySuccess,
     error: mocks.notifyError,
@@ -35,7 +35,7 @@ vi.mock("@/lib/notify", () => ({
   },
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 

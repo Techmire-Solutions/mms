@@ -3,7 +3,7 @@ import {
   type Enrollment,
   type EnrollmentPlacement,
   type Session,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 type SessionClass = NonNullable<Session["classes"]>[number];
 

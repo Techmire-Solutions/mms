@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { AlertTriangle, Check, Plus } from "lucide-react";
-import { BRANDING_THEME_PRESETS, meetsWcagAaUiContrast, type BrandingThemeMode } from "@mms/shared";
+import {
+  BRANDING_THEME_PRESETS,
+  meetsWcagAaUiContrast,
+  type BrandingThemeMode,
+} from "@mms/contracts";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

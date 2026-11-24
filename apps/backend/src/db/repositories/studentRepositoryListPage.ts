@@ -1,9 +1,9 @@
 import { and, eq, sql } from "drizzle-orm";
-import type { StudentsListPageResult, StudentsListQuery } from "@mms/shared";
-import { isQueryFlagTrue } from "@mms/shared";
-import { students, contacts } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import type { StudentsListPageResult, StudentsListQuery } from "@mms/contracts";
+import { isQueryFlagTrue } from "@mms/contracts";
+import { students, contacts } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
 import { hydrateStudentsList } from "./studentRepository.js";
 import { buildListConditions, buildOrderBy } from "./studentRepositoryListQuery.js";
 import { STUDENT_COLUMNS_LIST } from "./studentRepositoryColumns.js";

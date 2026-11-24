@@ -1,11 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
+import { beforeAll, describe, it, expect, vi } from "vitest";
+import { bindRequestTenant } from "@mms/be-core/http";
 import { z } from "zod";
 import { createModuleExportService } from "../lib/createModuleExportService.js";
 import { createModuleImportService } from "../lib/createModuleImportService.js";
-
-vi.mock("../lib/tenantContext.js", () => ({
-  getRequestTenant: () => "test-tenant",
-}));
 
 type SampleEntity = {
   id: string;
@@ -20,6 +17,7 @@ const sampleRows: SampleEntity[] = [
 ];
 
 describe("createModuleExportService multi-format export", () => {
+  beforeAll(() => bindRequestTenant("test-tenant"));
   const exportService = createModuleExportService<
     SampleEntity,
     { search?: string },

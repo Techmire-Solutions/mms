@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { generateSnapshotJsonChunks } from "../routes/common/db/snapshotJsonStream.js";
 import { generateSnapshotJsonFromSource } from "../lib/streamingSnapshotJson.js";
-import type { TenantDatabaseSnapshot } from "@mms/shared";
+import type { TenantDatabaseSnapshot } from "@mms/contracts";
 
 async function collectString(generator: AsyncGenerator<string, void, unknown>): Promise<string> {
   const chunks: string[] = [];

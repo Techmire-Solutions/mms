@@ -5,8 +5,8 @@
  * statement timeout; every write is permission-gated *before* the repository call
  * and runs in a write transaction so the audit row commits with the change.
  */
-import { DASHBOARD_MODULE_MANIFEST, type User } from "@mms/shared";
-import { withTenant } from "../../../db/tenant-context.js";
+import { DASHBOARD_MODULE_MANIFEST, type User } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { requireTenant } from "../../../lib/tenantContext.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 

@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { type QuestionBankTest } from "@mms/shared";
-import { type tests, testQuestions, testSections, testSectionQuestions } from "../schema.js";
-import { type TenantTransaction } from "../tenant-context.js";
+import { type QuestionBankTest } from "@mms/contracts";
+import { type tests, testQuestions, testSections, testSectionQuestions } from "@mms/db/schema";
+import { type TenantTransaction } from "@mms/db/context";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type TestRow = typeof tests.$inferSelect;

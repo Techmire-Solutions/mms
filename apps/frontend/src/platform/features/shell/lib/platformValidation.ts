@@ -5,7 +5,7 @@ import {
   validatePlatformPasswordMatch,
   PLATFORM_MIN_PASSWORD_LENGTH,
   type AppTranslationKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 type TranslateFn = (key: AppTranslationKey, params?: Record<string, string>) => string;
 

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { UserMinus, Users } from "lucide-react";
-import type { WorkshopDetail, WorkshopRegistrationState } from "@mms/shared";
-import { resolveWorkshopRegistrationState } from "@mms/shared";
+import type { WorkshopDetail, WorkshopRegistrationState } from "@mms/contracts";
+import { resolveWorkshopRegistrationState } from "@mms/contracts";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

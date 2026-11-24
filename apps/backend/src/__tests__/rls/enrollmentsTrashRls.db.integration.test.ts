@@ -1,8 +1,8 @@
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
+import { beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
 import {
   enrollments,
   sessionClassSections,
@@ -10,7 +10,7 @@ import {
   sessions,
   students,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { listEnrollmentsPage } from "../../db/repositories/enrollmentRepositoryList.js";
 import { findEnrollmentById } from "../../db/repositories/enrollmentRepositoryHydrate.js";
 import {

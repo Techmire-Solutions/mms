@@ -20,7 +20,9 @@ vi.mock("../lib/tenantContext.js", () => ({
   getRequestUserId: () => "admin-1",
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (...args: unknown[]) => mocks.withTenant(...args),
 }));
 
@@ -32,7 +34,7 @@ vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
   reconcileFacultyContactsByFacultyIds: (...args: unknown[]) => mocks.reconcile(...args),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => mocks.recordModernAuditEvent(...args),
   mapActionStringToAuditType: () => "UPDATE",
 }));

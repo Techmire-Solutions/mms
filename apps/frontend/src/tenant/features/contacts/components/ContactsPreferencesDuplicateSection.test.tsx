@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_CONTACT_PREFERENCES } from "@mms/shared";
+import { DEFAULT_CONTACT_PREFERENCES } from "@mms/contracts";
 import { ContactsPreferencesDuplicateSection } from "./ContactsPreferencesDuplicateSection";
 
 vi.mock("@/hooks/useTranslation", () => ({

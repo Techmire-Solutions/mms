@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { generateClientEntityId } from "@mms/shared";
+import { generateClientEntityId } from "@mms/contracts";
 import type { Mujtahid, MujtahidRep, ObligationType, WakalaType } from "@/lib/data/obligationsData";
 
 export interface ObligationCollectionCatalogQuickCreateArgs {

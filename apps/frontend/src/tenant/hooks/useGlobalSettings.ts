@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { type GlobalSettings } from "@mms/shared";
+import { type GlobalSettings } from "@mms/contracts";
 import { getScopedGlobalSettings } from "@/lib/settingsPreviewStore";
 import { SETTINGS_PREVIEW_EVENT } from "@/lib/settingsPreview";
 

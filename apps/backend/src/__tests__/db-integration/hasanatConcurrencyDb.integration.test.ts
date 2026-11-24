@@ -9,9 +9,9 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
 import {
   hasanatBatches,
   hasanatDenoms,
@@ -19,8 +19,8 @@ import {
   hasanatRedemptions,
   students,
   workspaces,
-} from "../../db/schema.js";
-import { distributionCreateSchema, type Distribution } from "@mms/shared";
+} from "@mms/db/schema";
+import { distributionCreateSchema, type Distribution } from "@mms/contracts";
 import { hasanatRepository } from "../../hasanat/repository/hasanatRepositoryAdapter.js";
 import { issueHasanatCard } from "../../hasanat/use-cases/hasanatIssuanceUseCases.js";
 import {

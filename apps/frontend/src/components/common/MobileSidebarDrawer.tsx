@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { OVERLAY_BACKDROP } from "@shared/ui";
+import { OVERLAY_BACKDROP } from "@mms/ui";
 import { cn } from "@/lib/utils";
 import { useOverlayBehavior } from "@/hooks/useOverlayBehavior";
 

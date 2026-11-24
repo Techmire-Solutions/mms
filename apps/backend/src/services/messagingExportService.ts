@@ -4,7 +4,7 @@ import {
   MESSAGING_CSV_EXPORT_MAX_BYTES,
   MESSAGING_CSV_EXPORT_MAX_ROWS,
   type MessagingCsvExportQueryDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { loadFilteredMessageLogs, resolveMessagingRecipients } from "./messagingService.js";
 
 const RESOLVE_CHUNK_SIZE = 100;

@@ -18,7 +18,9 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: mocks.getRequestTenant,
 }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: mocks.withTenant,
 }));
 vi.mock("../students/use-cases/studentUseCases.js", () => ({
@@ -47,7 +49,7 @@ vi.mock("../services/hasanatService.js", () => ({
 vi.mock("../services/questionBankMetricsService.js", () => ({
   loadQuestionBankCommandMetrics: mocks.questionBank,
 }));
-vi.mock("../services/accountingService.js", () => ({
+vi.mock("@mms/mod-accounting/backend/services", () => ({
   loadAccountingCommandMetrics: mocks.accounting,
 }));
 vi.mock("../tasks/use-cases/tasksUseCases.js", () => ({

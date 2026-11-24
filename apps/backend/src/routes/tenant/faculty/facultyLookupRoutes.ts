@@ -4,7 +4,7 @@ import {
   facultyLookupKindParamsSchema,
   facultyLookupPutBodySchema,
   type FacultyLookupKind,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { registerModuleLookupRoutes } from "../../../lib/registerModuleLookupRoutes.js";
 import { canReadCollection } from "../../../services/rbacService.js";
 import {

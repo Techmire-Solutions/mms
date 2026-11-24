@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { LlmConfig } from "@mms/shared";
+import type { LlmConfig } from "@mms/contracts";
 
 type LlmHealthStatus = "verified" | "failed" | "testing" | "untested";
 

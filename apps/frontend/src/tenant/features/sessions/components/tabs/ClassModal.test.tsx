@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ClassSchema } from "@mms/shared";
+import { ClassSchema } from "@mms/contracts";
 import { ClassModal } from "./ClassModal";
 
 vi.mock("@/hooks/useAcademicTerms", () => ({

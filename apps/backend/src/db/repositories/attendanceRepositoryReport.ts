@@ -9,13 +9,13 @@ import {
   type AttendanceReportComparison,
   type AttendanceReportComparisonMonth,
   type AttendanceReportComparisonSession,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getQueryRows } from "../documentStoreKeys.js";
-import { withTenant } from "../tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 import { isPresentOrLateSql, loadAttendanceOverview } from "./attendanceReportOverview.js";
 import { getAttendanceModulePreferences } from "./attendanceModulePreferencesRepository.js";
-import { normalizeAttendanceModulePreferences } from "@mms/shared";
+import { normalizeAttendanceModulePreferences } from "@mms/contracts";
 
 function activeAttendanceWhere(subdomain: string, alias = "a"): ReturnType<typeof sql> {
   return sql`

@@ -5,7 +5,7 @@ import {
   DASHBOARD_MODULE_MANIFEST,
   DEFAULT_DASHBOARD_PREFERENCES,
   type DashboardPreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   clearLegacyDashboardWidgets,
   hasSeededDashboardWidgets,

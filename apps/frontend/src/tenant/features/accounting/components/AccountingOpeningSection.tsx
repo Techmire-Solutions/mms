@@ -1,19 +1,16 @@
 import React from "react";
-import { formatMoney, type Account, type FiscalYear } from "@mms/shared";
+import { formatMoney, type Account, type FiscalYear } from "@mms/contracts";
 import { Scale } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/app/Alert";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Input } from "@/components/ui/input";
-import {
-  Field,
-  FieldErrorMessage,
-  FormCollectionShell,
-  FormListFieldCard,
-  FormSelectWithQuickCreate,
-} from "@/components/app/FormPrimitives";
-import { SectionCard } from "@/components/app/SectionCard";
-import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
+import { Button } from "@mms/ui";
+import { Alert } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Input } from "@mms/ui";
+import { Field, FieldErrorMessage } from "@mms/ui";
+import { FormSelectWithQuickCreate } from "@mms/fe-core/components/FormSelectWithQuickCreate";
+import { FormCollectionShell } from "@mms/ui/app/FormCollectionShell";
+import { FormListFieldCard } from "@mms/fe-core/components/FormListFieldCard";
+import { SectionCard } from "@mms/ui";
+import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@mms/ui";
 import type { MoneySeparator } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { useAccountingOpeningBalancesState } from "@/tenant/features/accounting/hooks/useAccountingOpeningBalancesState";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";

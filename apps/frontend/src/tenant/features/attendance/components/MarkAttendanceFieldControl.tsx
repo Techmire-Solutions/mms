@@ -8,7 +8,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 import { StatusToggle } from "@/tenant/features/attendance/components/StatusToggle";
 import type { AttendanceRow } from "@/tenant/features/attendance/lib/markAttendanceTypes";
-import type { ModuleFieldDef } from "@mms/shared";
+import type { ModuleFieldDef } from "@mms/contracts";
 
 export interface MarkAttendanceFieldControlProps {
   row: AttendanceRow;

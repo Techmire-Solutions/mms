@@ -3,7 +3,7 @@
  * @description Single source of the workshop phase tone/label mapping (Work column + drawer).
  */
 
-import type { AppTranslationKey, WorkshopPhase } from "@mms/shared";
+import type { AppTranslationKey, WorkshopPhase } from "@mms/contracts";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { useTranslation } from "@/hooks/useTranslation";
 

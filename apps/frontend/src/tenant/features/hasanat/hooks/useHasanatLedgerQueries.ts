@@ -5,7 +5,7 @@
  * 300-line ceiling. `useHasanatQueries` re-exports these for the public barrel.
  */
 
-import type { Redemption } from "@mms/shared";
+import type { Redemption } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { tsrClient } from "@/lib/api";

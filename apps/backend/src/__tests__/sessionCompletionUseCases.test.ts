@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { SessionSchema } from "@mms/shared";
+import { SessionSchema } from "@mms/contracts";
 import { sessionCompletionUseCases } from "../sessions/use-cases/sessionCompletionUseCases.js";
 
 const hooks = vi.hoisted(() => ({
@@ -13,10 +13,14 @@ const hooks = vi.hoisted(() => ({
   markCertificatesIssued: vi.fn(),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn((_tenant: string, cb: (tx: unknown) => Promise<unknown>) => cb({})),
 }));
-vi.mock("../db/commitScope.js", () => ({
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+
   runAfterCommit: hooks.runAfterCommit,
 }));
 vi.mock("../lib/livePush.js", () => ({ broadcastCollection: hooks.broadcastCollection }));

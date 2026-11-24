@@ -1,9 +1,9 @@
 import { and, count, eq, inArray, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type StockBatch } from "@mms/shared";
-import { hasanatBatches } from "../schema.js";
-import { hasanatDistributions } from "../schema.js";
-import { ConflictError } from "../../lib/httpErrors.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type StockBatch } from "@mms/contracts";
+import { hasanatBatches } from "@mms/db/schema";
+import { hasanatDistributions } from "@mms/db/schema";
+import { ConflictError } from "@mms/be-core/http/errors";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { requireDbDateValue } from "../../lib/dbDate.js";
 
 type BatchRow = typeof hasanatBatches.$inferSelect;

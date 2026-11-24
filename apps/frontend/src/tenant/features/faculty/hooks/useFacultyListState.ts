@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import type { Faculty, FacultySortField } from "@mms/shared";
+import type { Faculty, FacultySortField } from "@mms/contracts";
 import { getDirectoryPageSelection } from "@/lib/directorySelection";
 import { useFacultyStatusConfig } from "@/tenant/features/faculty/hooks/useFacultyStatusConfig";
 

@@ -1,4 +1,4 @@
-import { DEFAULT_GLOBAL_SETTINGS, detectBrowserTimezone, normalizeTimezone } from "@mms/shared";
+import { DEFAULT_GLOBAL_SETTINGS, detectBrowserTimezone, normalizeTimezone } from "@mms/contracts";
 
 export type TimezoneDetectionSource = "geolocation" | "device";
 

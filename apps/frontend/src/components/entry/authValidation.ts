@@ -1,4 +1,4 @@
-import { isValidEmail } from "@mms/shared";
+import { isValidEmail } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface SignInFieldErrors {

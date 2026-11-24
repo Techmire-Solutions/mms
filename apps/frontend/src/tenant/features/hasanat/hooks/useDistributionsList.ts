@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Distribution, DistributionWrite } from "@/lib/data/hasanatData";
-import { HASANAT_MODULE_MANIFEST } from "@mms/shared";
+import { HASANAT_MODULE_MANIFEST } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useHasanatContractList } from "@/tenant/features/hasanat/hooks/useHasanatQueries";

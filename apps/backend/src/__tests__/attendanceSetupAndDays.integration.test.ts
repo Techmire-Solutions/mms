@@ -29,7 +29,9 @@ vi.mock("../sessions/use-cases/teacherSectionScope.js", () => ({
 vi.mock("../attendance/use-cases/instructionalDayGuard.js", () => ({
   assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (_tenant: string, fn: () => unknown) => fn(),
   withTenantRead: (_tenant: string, fn: () => unknown) => fn(),
 }));

@@ -1,4 +1,4 @@
-import type { FacultyIjazah } from "@mms/shared";
+import type { FacultyIjazah } from "@mms/contracts";
 
 /**
  * Normalizes the ijazah collection before the faculty write:

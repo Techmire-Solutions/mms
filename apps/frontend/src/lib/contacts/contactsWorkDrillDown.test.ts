@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ContactsWorkDrillDown } from "@mms/shared";
+import type { ContactsWorkDrillDown } from "@mms/contracts";
 import {
   CONTACTS_WORK_DRILLDOWN_EVENT,
   applyContactsWorkDrillDown,

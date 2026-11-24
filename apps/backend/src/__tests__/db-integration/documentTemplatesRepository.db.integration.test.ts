@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { inArray, sql } from "drizzle-orm";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
-import { documentTemplates, workspaces } from "../../db/schema.js";
+import { beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
+import { documentTemplates, workspaces } from "@mms/db/schema";
 import {
   getDocumentTemplateRepo,
   upsertDocumentTemplateRepo,

@@ -5,7 +5,7 @@ import {
   getPrimaryEmail,
   getPrimaryPhone,
   hasWhatsApp,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";

@@ -1,13 +1,13 @@
 import { randomUUID } from "node:crypto";
-import { dedupeTrimmedIds, type SoftDeleteFields, type SoftDeleteListFilter } from "@mms/shared";
+import { dedupeTrimmedIds, type SoftDeleteFields, type SoftDeleteListFilter } from "@mms/contracts";
 export {
   type TenantSoftDeleteTable,
   type ListByWorkspaceOptions,
   type GenericServiceRepo,
   buildTenantSoftDeleteConditions,
   filterInMemorySoftDeleted,
-} from "../db/genericRelationalConditions.js";
-import { type GenericServiceRepo } from "../db/genericRelationalConditions.js";
+} from "@mms/db/genericRelationalConditions";
+import { type GenericServiceRepo } from "@mms/db/genericRelationalConditions";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { ConflictError, NotFoundError } from "../lib/httpErrors.js";
 import type { ZodType } from "zod";

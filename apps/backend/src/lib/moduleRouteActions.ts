@@ -1,4 +1,4 @@
-import type { ModuleAction } from "@mms/shared";
+import type { ModuleAction } from "@mms/contracts";
 import { MODULE_ROUTE_ACTION_RULES } from "./moduleRouteActionRules.js";
 
 export type { ModuleRouteActionRule } from "./moduleRouteActionRules.js";

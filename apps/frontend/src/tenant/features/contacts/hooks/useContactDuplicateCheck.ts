@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useState } from "react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 
 export interface UseContactDuplicateCheckOptions {

@@ -1,9 +1,9 @@
 import { sql } from "drizzle-orm";
-import { withGlobalTenant } from "../db/tenant-context.js";
+import { withGlobalTenant } from "@mms/db/context";
 import { logger } from "../lib/logger.js";
 import { broadcastTenantUpdate } from "../lib/livePush.js";
 import { LEADER_LOCK_SESSION_LIFECYCLE, tryAcquireLeaderLease } from "../lib/leaderElection.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /** Hourly so each workspace flips on its own local business day. */
 const INTERVAL_MS = 60 * 60 * 1000;

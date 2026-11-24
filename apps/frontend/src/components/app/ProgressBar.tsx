@@ -1,2 +1,2 @@
-export { ProgressBar, type ProgressBarProps, type ProgressBarSize } from "@shared/ui";
-export { ProgressBar as default } from "@shared/ui";
+export { ProgressBar, type ProgressBarProps, type ProgressBarSize } from "@mms/ui";
+export { ProgressBar as default } from "@mms/ui";

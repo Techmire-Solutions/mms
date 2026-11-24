@@ -1,4 +1,4 @@
-import { DEFAULT_BRANDING_SETTINGS } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS } from "@mms/contracts";
 import { describe, expect, it } from "vitest";
 import { buildInvoiceTemplateFooterElements } from "./invoiceTemplateFooterElements";
 

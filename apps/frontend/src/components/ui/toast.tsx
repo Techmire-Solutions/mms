@@ -8,4 +8,4 @@ export {
   ToastClose,
   toastVariants,
   type ToastProps,
-} from "@shared/ui";
+} from "@mms/ui";

@@ -1,14 +1,14 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { BackgroundJobRecord, Contact } from "@mms/shared";
+import type { BackgroundJobRecord, Contact } from "@mms/contracts";
 import { ContactsCsvImportDialog } from "./ContactsCsvImportDialog";
 
-vi.mock("@/lib/download", () => ({
+vi.mock("@mms/fe-core/api/download", () => ({
   triggerFileDownload: vi.fn(),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     success: vi.fn(),
     error: vi.fn(),
@@ -17,6 +17,10 @@ vi.mock("@/lib/notify", () => ({
 }));
 
 vi.mock("@/hooks/useTranslation", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
+vi.mock("@mms/fe-core/i18n", async () => {
   const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
   return { useTranslation: useTranslationEnMock() };
 });
@@ -123,7 +127,7 @@ describe("ContactsCsvImportDialog", () => {
   });
 
   it("renders contact import modal and triggers template download from SSOT schema", async () => {
-    const { triggerFileDownload } = await import("@/lib/download");
+    const { triggerFileDownload } = await import("@mms/fe-core/api/download");
 
     act(() => {
       root.render(<ContactsCsvImportDialog open={true} onClose={vi.fn()} canWrite={true} />);
@@ -200,7 +204,7 @@ describe("ContactsCsvImportDialog", () => {
   });
 
   it("surfaces a failed import and keeps the dialog open when the starter rejects", async () => {
-    const { notify } = await import("@/lib/notify");
+    const { notify } = await import("@mms/fe-core/notify");
     const onClose = vi.fn();
 
     act(() => {

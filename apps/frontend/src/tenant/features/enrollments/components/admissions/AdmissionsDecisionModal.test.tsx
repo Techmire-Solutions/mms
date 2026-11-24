@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import type { RegistrationApplication } from "@mms/shared";
+import type { RegistrationApplication } from "@mms/contracts";
 import { AdmissionsDecisionModal } from "./AdmissionsDecisionModal";
 
 vi.mock("@/hooks/useTranslation", () => ({

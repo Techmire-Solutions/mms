@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ContactBasicAvatarSection } from "./ContactBasicAvatarSection";
 import { notify } from "@/lib/notify";
-import { IMAGE_UPLOAD_MAX_INPUT_BYTES } from "@mms/shared";
+import { IMAGE_UPLOAD_MAX_INPUT_BYTES } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

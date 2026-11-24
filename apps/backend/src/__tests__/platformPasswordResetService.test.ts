@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { StoredPlatformUser } from "@mms/shared";
+import type { StoredPlatformUser } from "@mms/contracts";
 
 const mocks = vi.hoisted(() => ({
   putAuthArtifact: vi.fn(),

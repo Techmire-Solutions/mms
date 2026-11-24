@@ -5,7 +5,7 @@ review time). It re-verifies every finding left open by the [2026-11-04 review](
 and reconciles the [2026-11-12 domain/lifecycle audit](tasks-domain-lifecycle-audit-2026-11-12.md), then surfaces
 what is still open today.
 
-**Scope.** `packages/shared/src/tasks/**`, `contracts/tasks.contract.ts`, `dataTransfer/**/tasksTransferSchema.ts`,
+**Scope.** `packages/contracts/src/tasks/**`, `contracts/tasks.contract.ts`, `dataTransfer/**/tasksTransferSchema.ts`,
 `auth/{permissionRules,permissions,userRbac*}.ts`; `apps/backend/src/routes/tenant/tasks*.ts`,
 `apps/backend/src/tasks/**`, `services/task*.ts` + `tasksExportService.ts` + `backgroundJobTasksRunners.ts`,
 `db/repositories/task*.ts`, `db/schema/tasksTables.ts` + `taskSettingsTables.ts`, `lib/moduleRouteActionRules.ts`

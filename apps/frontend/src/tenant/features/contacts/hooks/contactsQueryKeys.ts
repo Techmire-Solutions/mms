@@ -1,4 +1,4 @@
-import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST } from "@mms/contracts";
 
 export const CONTACTS_API = CONTACTS_MODULE_MANIFEST.restBasePath;
 

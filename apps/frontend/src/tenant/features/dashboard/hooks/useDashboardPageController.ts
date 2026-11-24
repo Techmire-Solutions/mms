@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import { DASHBOARD_MODULE_MANIFEST } from "@mms/shared";
+import { DASHBOARD_MODULE_MANIFEST } from "@mms/contracts";
 import { resolveDashboardRole } from "@/lib/dashboardRole";
 import { getActiveCustomCardIds, isDashboardWidgetAllowed } from "@/lib/dashboardCollections";
 import { usePermissions } from "@/tenant/hooks/usePermissions";

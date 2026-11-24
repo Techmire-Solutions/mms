@@ -1,6 +1,6 @@
 import { useCallback, type Dispatch, type SetStateAction } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { type Contact, type ContactActivity, todayISO, uuidv7 } from "@mms/shared";
+import { type Contact, type ContactActivity, todayISO, uuidv7 } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";

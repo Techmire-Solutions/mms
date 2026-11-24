@@ -1,4 +1,4 @@
-import type { Distribution } from "@mms/shared";
+import type { Distribution } from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { hasanatEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";

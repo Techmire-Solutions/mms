@@ -1,7 +1,7 @@
 import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_FACULTY_USER_ROLE } from "@mms/shared";
+import { DEFAULT_FACULTY_USER_ROLE } from "@mms/contracts";
 import { useFacultyAssignableRolesSync } from "./useFacultyFormSync";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 

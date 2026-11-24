@@ -3,7 +3,7 @@ import {
   canViewContactField,
   type Contact,
   type FieldDefinition as RegistryFieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptorFromFieldConfig } from "@/components/common/entityDescriptorFromFieldConfig";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";

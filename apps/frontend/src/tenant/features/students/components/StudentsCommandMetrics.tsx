@@ -3,7 +3,7 @@ import { GraduationCap, Filter, UserCheck, UserX, UserPlus } from "lucide-react"
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import type { StudentsCommandMetricsSnapshot } from "@mms/shared";
+import type { StudentsCommandMetricsSnapshot } from "@mms/contracts";
 
 export interface StudentsCommandMetricsProps {
   total: number;

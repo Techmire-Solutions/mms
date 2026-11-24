@@ -1,15 +1,15 @@
 import { and, eq } from "drizzle-orm";
-import type { DbClient } from "../db/dbConnection.js";
-import { activeDb } from "../db/dbConnection.js";
+import type { DbClient } from "@mms/db/client";
+import { activeDb } from "@mms/db/client";
 import {
   contacts,
   contactPhones,
   contactEmails,
   contactAddresses,
   contactSocials,
-} from "../db/schema.js";
+} from "@mms/db/schema";
 import { executeSubjectErasure } from "./cryptoShreddingService.js";
-import { recordModernAuditEvent } from "./auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { logger } from "../lib/logger.js";
 
 export interface ExecuteGdprErasureOptions {

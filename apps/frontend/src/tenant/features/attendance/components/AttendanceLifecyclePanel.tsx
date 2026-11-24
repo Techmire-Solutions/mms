@@ -3,7 +3,7 @@ import { AlertTriangle, CalendarCheck2, Check, RefreshCw, X } from "lucide-react
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/app/SectionCard";
-import type { AttendanceLeave } from "@mms/shared";
+import type { AttendanceLeave } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import type { AttendanceAlertRow } from "@/tenant/features/attendance/hooks/useAttendanceLifecycle";

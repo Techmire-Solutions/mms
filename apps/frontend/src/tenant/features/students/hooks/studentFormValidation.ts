@@ -17,7 +17,7 @@ import {
   type ValidationError,
   type FieldDefinition,
   type StudentsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { checkStudentRegistrationDuplicate } from "@/tenant/features/students/hooks/useStudents";
 
 export const DUPLICATE_ERROR_KEYS: Record<StudentDuplicateReason, AppTranslationKey> = {

@@ -3,10 +3,10 @@
  */
 
 import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
-import { dedupeTrimmedIds, type Distribution } from "@mms/shared";
-import { hasanatDistributions } from "../schema.js";
+import { dedupeTrimmedIds, type Distribution } from "@mms/contracts";
+import { hasanatDistributions } from "@mms/db/schema";
 import { distributionColumns } from "./hasanatColumns.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 import { distributionRowToRecord } from "./hasanatDistributionsMappers.js";
 
 export async function findDistributionById(

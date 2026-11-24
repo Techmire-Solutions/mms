@@ -1,4 +1,4 @@
-import type { Contact, FieldDefinition, Student } from "@mms/shared";
+import type { Contact, FieldDefinition, Student } from "@mms/contracts";
 import {
   StudentContactSection,
   StudentGuardianSection,

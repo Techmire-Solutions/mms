@@ -4,7 +4,7 @@ import {
   type Enrollment,
   type Session,
   type Student,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { enrollmentOperationsRepository as ops } from "../repository/enrollmentOperationsRepositoryAdapter.js";
 import { admissionsRepository as admissions } from "../repository/admissionsRepositoryAdapter.js";
 import type {
@@ -15,7 +15,7 @@ import type {
 import { broadcastCollection } from "../../lib/livePush.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { HttpDomainError, SeatCapacityError } from "../../lib/httpErrors.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { recordEnrollmentAudit } from "./enrollmentAudit.js";
 
 export interface RolloverCandidate extends LiveEnrollmentRow {

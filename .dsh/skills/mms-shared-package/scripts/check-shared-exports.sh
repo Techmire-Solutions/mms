@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# MMS @mms/shared SSOT purity auditor.
+# MMS @mms/contracts SSOT purity auditor.
 #
 # Fails when the shared package imports a runtime it must not depend on
 # (React/Fastify/DB/Redis/Pino) or touches DOM/Node-only globals. The package
 # must stay a pure, environment-agnostic leaf so both apps can consume it.
 #
 # Usage:
-#   check-shared-exports.sh            # scan packages/shared/src
+#   check-shared-exports.sh            # scan packages/contracts/src
 #   check-shared-exports.sh <dir>      # scan an alternate source dir (tests)
-echo "🔍 Checking @mms/shared SSOT purity & boundaries…"
+echo "🔍 Checking @mms/contracts SSOT purity & boundaries…"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$ROOT_DIR"
 
-SHARED_SRC="${1:-packages/shared/src}"
+SHARED_SRC="${1:-packages/contracts/src}"
 if [[ ! -d "$SHARED_SRC" ]]; then
   echo "✗ Shared source directory not found at $SHARED_SRC"
   exit 1
@@ -106,7 +106,7 @@ const BANNED_PACKAGES = [
   "redis", "ioredis", "bullmq", "pino",
 ];
 
-// Environment-bound globals/APIs: @mms/shared is consumed by both the browser
+// Environment-bound globals/APIs: @mms/contracts is consumed by both the browser
 // bundle and the Node backend, so it may not touch either runtime directly.
 const BANNED_USAGE = [
   { pattern: /\bdocument\s*\./, label: "document.* (DOM)" },
@@ -196,11 +196,11 @@ if (fs.existsSync(contractsDir)) {
 }
 
 if (violations > 0) {
-  console.error(`\nFound ${violations} purity violation(s) in @mms/shared.`);
+  console.error(`\nFound ${violations} purity violation(s) in @mms/contracts.`);
   console.error("Move runtime-specific logic to apps/frontend or apps/backend instead (mms-shared-package, mms-dry.md).");
   process.exit(1);
 }
-console.log(`  All ${scanned} non-test files in @mms/shared stay pure (no DOM, React, Fastify, DB, Redis, or Node builtins).`);
+console.log(`  All ${scanned} non-test files in @mms/contracts stay pure (no DOM, React, Fastify, DB, Redis, or Node builtins).`);
 '
 
-echo "✅ @mms/shared SSOT boundary verified cleanly."
+echo "✅ @mms/contracts SSOT boundary verified cleanly."

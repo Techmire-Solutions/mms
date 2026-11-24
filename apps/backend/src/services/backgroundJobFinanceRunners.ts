@@ -1,4 +1,4 @@
-import { FINANCE_MODULE_MANIFEST, type FinanceTransferEntity } from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST, type FinanceTransferEntity } from "@mms/contracts";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";

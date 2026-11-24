@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * `@mms/shared` structural ratchets.
+ * `@mms/contracts` structural ratchets.
  *
- * Guards the de-flattening of packages/shared so it cannot silently regress:
+ * Guards the de-flattening of packages/contracts so it cannot silently regress:
  *
- *   1. `packages/shared/src/` root holds only the public barrel (`index.ts`).
+ *   1. `packages/contracts/src/` root holds only the public barrel (`index.ts`).
  *      Domain code lives under `src/<domain>/` (mms-structure-naming §1).
- *   2. Consumers import `@mms/shared` (root) or the explicitly exported subpaths
- *      only — never a deep `@mms/shared/src/...` / `dist/...` path (README policy,
+ *   2. Consumers import `@mms/contracts` (root) or the explicitly exported subpaths
+ *      only — never a deep `@mms/contracts/src/...` / `dist/...` path (README policy,
  *      the `exports` map is the contract).
  *
  *   node scripts/check-shared-structure.mjs
@@ -16,13 +16,14 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { assertScanDirs, fromRoot } from "./lib/repo-paths.mjs";
 
 const ROOT = process.cwd();
-const SHARED_SRC = path.join(ROOT, "packages/shared/src");
+const SHARED_SRC = path.join(ROOT, "packages/contracts/src");
 
-/** Files allowed directly under packages/shared/src/. */
+/** Files allowed directly under packages/contracts/src/. */
 const ROOT_ALLOWLIST = new Set(["index.ts"]);
-/** Subpath exports the package exposes (see packages/shared/package.json `exports`). */
+/** Subpath exports the package exposes (see packages/contracts/package.json `exports`). */
 const EXPORTED_SUBPATHS = new Set([
   "tenantUtils",
   "translations/en",
@@ -31,6 +32,10 @@ const EXPORTED_SUBPATHS = new Set([
   "translations/fa",
 ]);
 const CONSUMER_DIRS = ["apps/backend/src", "apps/frontend/src", "e2e"];
+
+// Fail closed: a renamed consumer root must fail the gate, not silently stop
+// checking deep-import violations (docs/monorepo-migration-plan.md §2.7).
+assertScanDirs([SHARED_SRC, ...CONSUMER_DIRS.map((dir) => fromRoot(dir))], "contracts structure");
 
 const BASELINE = {
   flatRootFiles: 0,
@@ -65,7 +70,7 @@ const flatRootFiles = fs
   .filter((e) => e.isFile() && /\.(ts|tsx)$/.test(e.name) && !ROOT_ALLOWLIST.has(e.name))
   .map((e) => toRel(path.join(SHARED_SRC, e.name)));
 
-// --- Norm 2: consumers must not deep-import @mms/shared --------------------
+// --- Norm 2: consumers must not deep-import @mms/contracts --------------------
 const SUBPATH_IMPORT = /["']@mms\/shared\/([^"']+)["']/g;
 const unlistedSubpathImports = [];
 for (const dir of CONSUMER_DIRS) {
@@ -74,7 +79,7 @@ for (const dir of CONSUMER_DIRS) {
     for (const match of content.matchAll(SUBPATH_IMPORT)) {
       const sub = match[1];
       if (!EXPORTED_SUBPATHS.has(sub))
-        unlistedSubpathImports.push(`${toRel(file)} → @mms/shared/${sub}`);
+        unlistedSubpathImports.push(`${toRel(file)} → @mms/contracts/${sub}`);
     }
   }
 }
@@ -84,7 +89,9 @@ for (const dir of CONSUMER_DIRS) {
 // clean dist/, so a stale local emit can hide it).
 const exportsTargetsResolve = [];
 {
-  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "packages/shared/package.json"), "utf8"));
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(ROOT, "packages/contracts/package.json"), "utf8"),
+  );
   const seen = new Set();
   for (const [sub, value] of Object.entries(pkg.exports ?? {})) {
     for (const target of typeof value === "string" ? [value] : Object.values(value)) {
@@ -105,22 +112,22 @@ const exportsTargetsResolve = [];
 
 const results = [
   {
-    name: "Files directly under packages/shared/src/ root (only index.ts allowed)",
+    name: "Files directly under packages/contracts/src/ root (only index.ts allowed)",
     norm: "mms-structure-naming.md §1",
     count: flatRootFiles.length,
     baseline: BASELINE.flatRootFiles,
     sample: flatRootFiles.slice(0, 8),
   },
   {
-    name: "Consumer imports of unexported @mms/shared subpaths",
-    norm: "packages/shared/README.md (exports contract)",
+    name: "Consumer imports of unexported @mms/contracts subpaths",
+    norm: "packages/contracts/README.md (exports contract)",
     count: unlistedSubpathImports.length,
     baseline: BASELINE.unlistedSubpathImports,
     sample: unlistedSubpathImports.slice(0, 8),
   },
   {
     name: "package.json exports subpaths missing a matching src file",
-    norm: "packages/shared/package.json (exports contract)",
+    norm: "packages/contracts/package.json (exports contract)",
     count: exportsTargetsResolve.length,
     baseline: BASELINE.exportsTargetsResolve,
     sample: exportsTargetsResolve.slice(0, 8),
@@ -179,7 +186,7 @@ for (const result of results) {
 console.log("");
 if (regressions > 0) {
   console.error(
-    "💥 shared-structure ratchet(s) regressed. Move domain code under src/<domain>/ and add the export to packages/shared/package.json, or — with a reviewed reason — lower the BASELINE in scripts/check-shared-structure.mjs.",
+    "💥 shared-structure ratchet(s) regressed. Move domain code under src/<domain>/ and add the export to packages/contracts/package.json, or — with a reviewed reason — lower the BASELINE in scripts/check-shared-structure.mjs.",
   );
   process.exit(1);
 }

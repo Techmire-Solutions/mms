@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/contracts";
 import {
   dedupeRecipientsById,
   filterDisplayedRecipients,

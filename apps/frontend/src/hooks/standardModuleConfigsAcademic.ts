@@ -1,7 +1,7 @@
-import { activeAcademicCatalogItems } from "@mms/shared";
+import { activeAcademicCatalogItems } from "@mms/contracts";
 import { useAcademicCatalogItems } from "@/hooks/useAcademicCatalog";
 import { useMemo } from "react";
-import type { ModuleCustomField } from "@mms/shared";
+import type { ModuleCustomField } from "@mms/contracts";
 import {
   getSortedFacultyFields,
   listEnabledCustomFacultyFormFields,
@@ -19,7 +19,7 @@ import {
   type FacultySettings,
   type EnrollmentsSettings,
   type ExaminationsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createStandardModuleConfigHook,
   type StandardModuleConfigCore,

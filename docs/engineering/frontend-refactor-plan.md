@@ -13,7 +13,7 @@ Build on the existing design system so platform and tenant experiences share ren
 interaction contracts, and semantic tokens while their adapters own domain policy.
 Optimize for consistent behavior and safe changes, rather than the largest possible shared component.
 
-Scope: `apps/frontend/src`, frontend consumption of `packages/shared`, related tests,
+Scope: `apps/frontend/src`, frontend consumption of `packages/contracts`, related tests,
 architecture checks, and documentation. Backend behavior and deployment are outside this refactor.
 Tenant customization is treated as runtime branding, locale, capabilities, and module configuration;
 the initial inspection found a shared tenant application, rather than separate tenant codebases.
@@ -42,7 +42,7 @@ as historical context. Their counts and verification results are not a current b
 
 | Layer | Owns | Must not own |
 | --- | --- | --- |
-| `packages/shared` | Pure domain types, DTO schemas, manifests, pure branding calculations | React, DOM effects, transport, identity state |
+| `packages/contracts` | Pure domain types, DTO schemas, manifests, pure branding calculations | React, DOM effects, transport, identity state |
 | `index.css` and semantic style helpers | Semantic token mappings, layout scales, component variants | Per-tenant hardcoded styling branches |
 | `components/ui` | Domain-independent primitives and interaction views | Tenant/platform services, feature imports, endpoint selection |
 | `components/common` | Shared compositions such as shell and module scaffold | Hidden tenant data loading or permission policy |

@@ -3,7 +3,7 @@ import {
   DEFAULT_GLOBAL_SETTINGS,
   mergeBrandingSettings,
   type PublicBranding,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { applyDocumentTheme } from "@/lib/brandingThemeCore";
 
 export function applyTenantEntryTheme(branding: PublicBranding): void {

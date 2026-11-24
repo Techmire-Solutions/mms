@@ -13,7 +13,7 @@ const CommandPalette = React.lazy(() =>
   import("@/components/app/CommandPalette").then((m) => ({ default: m.CommandPalette })),
 );
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { getInitials } from "@mms/shared";
+import { getInitials } from "@mms/contracts";
 import { useSessionTimeout } from "@/tenant/hooks/useSessionTimeout";
 import { LOGO_IMAGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";

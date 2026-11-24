@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import type { Session, SessionClassSection } from "@mms/shared";
-import type { TenantTransaction } from "../tenant-context.js";
+import type { Session, SessionClassSection } from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 
 type SectionRow = {

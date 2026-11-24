@@ -11,7 +11,7 @@ import {
   ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
 } from "./accountingQueryKeys";
 import { ACCOUNTING_PREFERENCES_QUERY_KEY } from "./useAccountingSetupConfig";
-import { VOUCHER_NUMBERING_QUERY_KEY } from "./useVoucherNumbering";
+import { VOUCHER_NUMBERING_QUERY_KEY } from "@/tenant/features/accounting/hooks/useVoucherNumbering";
 import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/lib/query/dashboardQueryKeys";
 import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 

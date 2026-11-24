@@ -1,10 +1,10 @@
 import React from "react";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { EnrollmentsSettings } from "@mms/shared";
+import type { EnrollmentsSettings } from "@mms/contracts";
 
 export interface EnrollmentsPreferencesSectionProps {
   settingsDraft: EnrollmentsSettings;

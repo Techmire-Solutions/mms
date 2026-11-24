@@ -13,7 +13,7 @@ import {
   QUESTION_BANK_MODULE_MANIFEST,
   ACCOUNTING_MODULE_MANIFEST,
   resolveAccessModuleId,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * Maps report collections to Settings → System Modules keys.

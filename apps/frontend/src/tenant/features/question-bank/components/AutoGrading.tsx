@@ -4,7 +4,7 @@ import {
   type QuestionBankQuestion as Question,
   type QuestionBankResult,
   type QuestionBankTest,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { FORM_LABEL } from "@/components/ui/formStyles";

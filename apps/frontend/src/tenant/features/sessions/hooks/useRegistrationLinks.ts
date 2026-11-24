@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import type { RegistrationLink, RegistrationLinkWrite } from "@mms/shared";
+import type { RegistrationLink, RegistrationLinkWrite } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { isApiError } from "@/lib/apiError";
 import { notify } from "@/lib/notify";

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import type { Contact, ContactPreferences } from "@mms/shared";
+import type { Contact, ContactPreferences } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TableCell } from "@/components/ui/table";
 import { BiDiText } from "@/components/app/BiDiText";

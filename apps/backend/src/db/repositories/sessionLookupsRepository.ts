@@ -1,5 +1,5 @@
-import type { SessionLookupKind } from "@mms/shared";
-import { sessionLookups } from "../schema.js";
+import type { SessionLookupKind } from "@mms/contracts";
+import { sessionLookups } from "@mms/db/schema";
 import {
   createModuleLookupsRepo,
   type ModuleLookupRowInput,

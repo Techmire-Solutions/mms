@@ -1,4 +1,4 @@
-import type { MessageTemplate } from "@mms/shared";
+import type { MessageTemplate } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type {
   SentDispatchRecord,

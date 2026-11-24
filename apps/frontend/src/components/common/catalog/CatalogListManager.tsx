@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ListChecks, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
-import type { AcademicCatalogItem, AcademicCatalogKind } from "@mms/shared";
+import type { AcademicCatalogItem, AcademicCatalogKind } from "@mms/contracts";
 import {
   DataTable,
   DataTableRowActions,

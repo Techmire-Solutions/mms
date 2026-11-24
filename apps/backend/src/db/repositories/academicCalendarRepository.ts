@@ -3,13 +3,13 @@ import type {
   AcademicCalendarEvent,
   AcademicCalendarEventKind,
   AcademicCalendarScope,
-} from "@mms/shared";
-import { academicCalendarEvents, sessionClassSections } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
-import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+} from "@mms/contracts";
+import { academicCalendarEvents, sessionClassSections } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
+import { ConflictError, ValidationError } from "@mms/be-core/http/errors";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
 
 const TABLE_NAME = "academic_calendar_events";
 

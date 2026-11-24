@@ -17,7 +17,7 @@ import {
   type QuestionDifficulty,
   type QuestionBankQuestion as Question,
   type QuestionSourceBook,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createZodFormResolver } from "@/lib/forms/createZodFormResolver";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";

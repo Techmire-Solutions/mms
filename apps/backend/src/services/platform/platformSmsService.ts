@@ -1,4 +1,4 @@
-import type { SendSmsInput, SendSmsResult } from "@mms/shared";
+import type { SendSmsInput, SendSmsResult } from "@mms/contracts";
 import {
   loadPlatformSmsIntegrationConfig,
   loadPlatformSmsIntegrationSecrets,

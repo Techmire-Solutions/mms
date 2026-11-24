@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { type GlobalSettings, mergeGlobalSettings, SYSTEM_MODULES } from "@mms/shared";
-import { activeDb } from "../dbConnection.js";
-import { workspaces as workspacesTable } from "../schema.js";
+import { type GlobalSettings, mergeGlobalSettings, SYSTEM_MODULES } from "@mms/contracts";
+import { activeDb } from "@mms/db/client";
+import { workspaces as workspacesTable } from "@mms/db/schema";
 import {
   decryptLlmApiKey,
   decryptLlmConfigs,

@@ -23,7 +23,7 @@ import { SessionArchivedBanner } from "@/tenant/features/sessions/components/Ses
 import { ContactDetailDrawerHeaderActions } from "@/tenant/features/contacts/components/detail/ContactDetailDrawerChrome";
 import { notify } from "@/lib/notify";
 import { Toaster } from "@/components/ui/toaster";
-import type { Contact, Student, Faculty, Session } from "@mms/shared";
+import type { Contact, Student, Faculty, Session } from "@mms/contracts";
 import {
   useOptimisticSoftDelete,
   type UseOptimisticSoftDeleteOptions,

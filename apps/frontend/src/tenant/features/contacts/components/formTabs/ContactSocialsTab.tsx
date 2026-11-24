@@ -1,6 +1,6 @@
 import type React from "react";
 import { Share2 } from "lucide-react";
-import { formatSocialPlatformUrl } from "@mms/shared";
+import { formatSocialPlatformUrl } from "@mms/contracts";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveSocialPlatformLabel } from "@/lib/contacts/contactI18n";

@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { WizardStepIndicator, type WizardStepItem } from "@shared/ui";
+import { WizardStepIndicator, type WizardStepItem } from "@mms/ui";
 
 export interface Step extends WizardStepItem {
   id: string;

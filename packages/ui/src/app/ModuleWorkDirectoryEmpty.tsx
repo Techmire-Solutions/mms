@@ -1,0 +1,56 @@
+import type { LucideIcon } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { Button } from "@mms/ui";
+import { EmptyState } from "./EmptyState";
+import { WORK_SURFACE } from "@mms/ui";
+
+export interface ModuleWorkDirectoryEmptyProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  hasActiveFilters: boolean;
+  viewingDeleted: boolean;
+  onClearFilters: () => void;
+  onShowActive?: () => void;
+  clearFiltersLabel: string;
+  showActiveLabel: string;
+  firstRunAction?: React.ReactNode;
+}
+
+/** Shared Work directory empty chrome (filters / trash / first-run). */
+export function ModuleWorkDirectoryEmpty({
+  icon,
+  title,
+  description,
+  hasActiveFilters,
+  viewingDeleted,
+  onClearFilters,
+  onShowActive,
+  clearFiltersLabel,
+  showActiveLabel,
+  firstRunAction,
+}: ModuleWorkDirectoryEmptyProps): React.JSX.Element {
+  const action = hasActiveFilters ? (
+    <Button type="button" variant="outline" size="sm" onClick={onClearFilters} className="gap-1.5">
+      <RefreshCw className="w-3 h-3" /> {clearFiltersLabel}
+    </Button>
+  ) : viewingDeleted && onShowActive ? (
+    <Button type="button" variant="outline" size="sm" onClick={onShowActive} className="gap-1.5">
+      <RefreshCw className="w-3 h-3" /> {showActiveLabel}
+    </Button>
+  ) : (
+    (firstRunAction ?? null)
+  );
+
+  return (
+    <div className={`${WORK_SURFACE} border-border/40 p-6`}>
+      <EmptyState
+        variant="dashed"
+        icon={icon}
+        title={title}
+        description={description}
+        action={action}
+      />
+    </div>
+  );
+}

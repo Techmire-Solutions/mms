@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { WorkshopCompletionRow, WorkshopEvent } from "@mms/shared";
+import type { WorkshopCompletionRow, WorkshopEvent } from "@mms/contracts";
 import { WorkshopCertificatePrintModal } from "./WorkshopCertificatePrintModal";
 import { DEFAULT_WORKSHOP_CERTIFICATE_TEMPLATE } from "../lib/workshopCertificateTemplate";
 

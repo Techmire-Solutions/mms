@@ -1,6 +1,6 @@
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { platformMessagingRepository } from "../repository/platformMessagingAdapter.js";
-import type { PlatformMessageRecipient } from "@mms/shared";
+import type { PlatformMessageRecipient } from "@mms/contracts";
 
 export interface PlatformMessagingUseCases {
   listMessages(input: {

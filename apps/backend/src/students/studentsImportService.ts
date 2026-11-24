@@ -1,5 +1,5 @@
 import { createModuleImportService } from "../lib/createModuleImportService.js";
-import { studentImportRowSchema } from "@mms/shared";
+import { studentImportRowSchema } from "@mms/contracts";
 import { importStudentRows, type StudentImportRow } from "./use-cases/studentImportUseCases.js";
 
 /**

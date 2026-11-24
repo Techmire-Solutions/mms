@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import type { Contact, ContactsQuickFilter } from "@mms/shared";
+import type { Contact, ContactsQuickFilter } from "@mms/contracts";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type ContactsListCards from "@/tenant/features/contacts/components/ContactsListCards";
 import type ContactsListDesktopTable from "@/tenant/features/contacts/components/ContactsListDesktopTable";

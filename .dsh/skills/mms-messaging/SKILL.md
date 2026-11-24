@@ -58,7 +58,7 @@ metadata:
 
 ## Script
 
-`.agent/skills/mms-messaging/scripts/verify-template-tokens.mjs` validates every `{token}` in a template against the canonical token set in `packages/shared/src/messaging/messagingSchemas.ts`:
+`.agent/skills/mms-messaging/scripts/verify-template-tokens.mjs` validates every `{token}` in a template against the canonical token set in `packages/contracts/src/messaging/messagingSchemas.ts`:
 
 ```bash
 node .agent/skills/mms-messaging/scripts/verify-template-tokens.mjs --text 'Salaam {student_name}, {bogus_token} due'

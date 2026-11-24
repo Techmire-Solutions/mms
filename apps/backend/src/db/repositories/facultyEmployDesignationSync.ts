@@ -11,9 +11,9 @@ import {
   resolveFacultyProfileStatus,
   type FacultyEmployDesignationWriteRow,
   type FacultyMember,
-} from "@mms/shared";
-import { facultyEmployDesignations } from "../schema.js";
-import type { AppDb } from "../tenant-context.js";
+} from "@mms/contracts";
+import { facultyEmployDesignations } from "@mms/db/schema";
+import type { AppDb } from "@mms/db/context";
 import { auditEmploymentEntitySoftDeletes } from "./facultyEmploymentEntityAudit.js";
 import { upsertFacultyEmployDesignationTx } from "./facultyEmployDesignationRepository.js";
 

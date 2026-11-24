@@ -38,7 +38,7 @@ import {
   type QuestionBankCommandMetricsSnapshot,
   type AccountingCommandMetricsSnapshot,
   type Permission,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export interface DashboardCollectionData {
   studentsTotal: number;

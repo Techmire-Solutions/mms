@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import { teacherToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({

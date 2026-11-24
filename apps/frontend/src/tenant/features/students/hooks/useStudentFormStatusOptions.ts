@@ -1,7 +1,7 @@
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { studentStatusBadgeConfig, studentStatusLabel } from "@/lib/students/studentStatusUi";
 import type { StudentStatusSelectOption } from "@/tenant/features/students/components/StudentFormSectionShared";
-import { resolveStudentStatuses } from "@mms/shared";
+import { resolveStudentStatuses } from "@mms/contracts";
 import { useStudentLookupMutation } from "@/tenant/features/students/hooks/useStudentLookups";
 
 export function useStudentFormStatusOptions(

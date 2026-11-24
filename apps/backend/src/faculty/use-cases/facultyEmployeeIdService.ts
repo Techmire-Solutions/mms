@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { DEFAULT_FACULTY_SETTINGS, type FacultyEmployeeIdSettings } from "@mms/shared";
-import { facultySetupConfig, type FacultySetupConfigRow } from "../../db/schema/faculty.js";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
+import { DEFAULT_FACULTY_SETTINGS, type FacultyEmployeeIdSettings } from "@mms/contracts";
+import { facultySetupConfig, type FacultySetupConfigRow } from "@mms/db/schema/faculty";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 export type { NextEmployeeIdResult, EmployeeIdPreviewResult } from "./facultyEmployeeIdPreview.js";

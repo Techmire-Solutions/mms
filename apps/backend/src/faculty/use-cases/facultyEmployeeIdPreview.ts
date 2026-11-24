@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/shared";
-import { facultyEmployments, facultySetupConfig } from "../../db/schema/faculty.js";
-import { withTenantRead } from "../../db/tenant-context.js";
+import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/contracts";
+import { facultyEmployments, facultySetupConfig } from "@mms/db/schema/faculty";
+import { withTenantRead } from "@mms/db/context";
 import { logger } from "../../lib/logger.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 

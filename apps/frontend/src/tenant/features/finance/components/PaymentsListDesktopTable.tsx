@@ -1,6 +1,6 @@
 import React from "react";
 import { RotateCcw, Trash2 } from "lucide-react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";

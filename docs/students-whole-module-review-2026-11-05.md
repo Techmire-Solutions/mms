@@ -256,7 +256,7 @@ enrollment withdrawal, and a concurrent status change is mis-audited.
 ### C4 — CSV import is not idempotent under BullMQ retry; succeeded rows are reported as failures
 
 **Where:** `apps/backend/src/students/use-cases/studentImportUseCases.ts:99-148`,
-`packages/shared/src/dataTransfer/import/importPipelineRunner.ts:45-48,99-116`,
+`packages/contracts/src/dataTransfer/import/importPipelineRunner.ts:45-48,99-116`,
 `apps/backend/src/worker/queues/queueConfig.ts:91-95` (`attempts: 3`)
 **Root cause:** each attempt re-runs the whole chunk. Rows with a phone/email reuse the contact by unique
 match and then `createStudent` collides on `students_workspace_contact_active_uidx` → row reported failed
@@ -267,8 +267,8 @@ reporting on a normal retry.
 **Fix (targeted snippets — minimal idempotency in the domain path):**
 
 ```diff
---- a/packages/shared/src/dataTransfer/import/importPipelineRunner.ts
-+++ b/packages/shared/src/dataTransfer/import/importPipelineRunner.ts
+--- a/packages/contracts/src/dataTransfer/import/importPipelineRunner.ts
++++ b/packages/contracts/src/dataTransfer/import/importPipelineRunner.ts
 @@
  export type ImportBatchFn<TRow> = (
    rows: TRow[],
@@ -466,7 +466,7 @@ map zero rows to `StudentCreateIdConflictError`; keep the upsert for updates/res
 ## 3. Unused Code Candidates (listed only — not deleted)
 
 Scan: 165 non-test files / **443 exported symbols** across
-`apps/backend/src/students`, `packages/shared/src/students`, `apps/frontend/src/tenant/features/students`,
+`apps/backend/src/students`, `packages/contracts/src/students`, `apps/frontend/src/tenant/features/students`,
 `apps/frontend/src/lib/students`, with repo-wide reference counts bucketed into production / test / same-file.
 Caveats that block deletion: dynamic `import()` (frontend lazy routes/panels), barrel re-exports, reflection
 or external consumers outside this repo. **Every item needs your confirmation before removal.**
@@ -475,10 +475,10 @@ or external consumers outside this repo. **Every item needs your confirmation be
 
 | File | Symbol | Suggested action |
 | --- | --- | --- |
-| `packages/shared/src/students/studentDirectoryColumns.ts` | `StudentDirectoryColumnKey`, `StudentWorkColumnKey`, `studentWorkColumnLabelsFrom`, `isStudentSortField` | Remove (or keep `isStudentSortField` if R7 adopts the SSOT) |
-| `packages/shared/src/students/studentFieldDependencies.ts` | `isStudentSeedFieldKey` | Remove |
-| `packages/shared/src/students/studentLookupTypes.ts` | `StudentLookupStringKind` | Remove type |
-| `packages/shared/src/students/studentsListQuery.ts` | `StudentsNextGrNumberQuery` | Remove type |
+| `packages/contracts/src/students/studentDirectoryColumns.ts` | `StudentDirectoryColumnKey`, `StudentWorkColumnKey`, `studentWorkColumnLabelsFrom`, `isStudentSortField` | Remove (or keep `isStudentSortField` if R7 adopts the SSOT) |
+| `packages/contracts/src/students/studentFieldDependencies.ts` | `isStudentSeedFieldKey` | Remove |
+| `packages/contracts/src/students/studentLookupTypes.ts` | `StudentLookupStringKind` | Remove type |
+| `packages/contracts/src/students/studentsListQuery.ts` | `StudentsNextGrNumberQuery` | Remove type |
 | `apps/frontend/src/.../components/StudentDetail.tsx` | `StudentDrawer` | Remove export (component is used under its default export) |
 | `apps/frontend/src/.../hooks/studentSetupConfigApi.ts` | `getStudentSettingsMemoryFallback` | Remove |
 | `apps/frontend/src/.../lib/studentCardTemplateTypes.ts` | `StudentCardFieldDefinition` | Remove type |
@@ -500,7 +500,7 @@ tests keep alive, creating a divergence trap.
   `pickPrimaryResponsibleAdult`, `deriveStudentGuardiansFromContact`, `studentUtils.formatStudentNameWithParents`,
   `studentsModuleManifest.studentListSchema`, `StudentsListDesktopTableSimpleCells.renderStudentSessionsCell`, backend `studentLookupsService.loadStudentLookupKind`.
 - Barrel note: `studentRegistrationUtils` and `studentsWidgetAggregate` are re-exported from
-  `packages/shared/src/entry/indexDomainsAcademic.ts`; that is the only reason they look “public”.
+  `packages/contracts/src/entry/indexDomainsAcademic.ts`; that is the only reason they look “public”.
 
 ### 3.3 File-local exports (only referenced inside their own file) — 74
 

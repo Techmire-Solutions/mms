@@ -5,7 +5,7 @@ import {
   takeGoogleContactsOAuthCode,
   takeGoogleContactsOAuthVerifier,
 } from "@/lib/contacts/googleContactsOAuth";
-import type { ContactGoogleSyncConfigClient } from "@mms/shared";
+import type { ContactGoogleSyncConfigClient } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 type ExchangeOAuthMutation = {

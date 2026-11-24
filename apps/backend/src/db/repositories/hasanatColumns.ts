@@ -5,7 +5,7 @@
  * making a column addition a one-line change instead of a hunt through every repository.
  */
 
-import { hasanatDistributions, hasanatRedemptions } from "../schema.js";
+import { hasanatDistributions, hasanatRedemptions } from "@mms/db/schema";
 
 export const distributionColumns = {
   id: hasanatDistributions.id,

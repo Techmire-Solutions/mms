@@ -1,4 +1,4 @@
-import type { DocumentTemplatePreset } from "@mms/shared";
+import type { DocumentTemplatePreset } from "@mms/contracts";
 import type { BrandingInfo } from "@/lib/invoiceTemplateStore";
 import type { StudentCardPayload } from "./studentCardTemplateTypes";
 import { getDefaultStudentCardTemplate } from "./studentCardTemplateDefaults";

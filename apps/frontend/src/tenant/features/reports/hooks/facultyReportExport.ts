@@ -1,4 +1,4 @@
-import type { Faculty, FacultyQuickFilter } from "@mms/shared";
+import type { Faculty, FacultyQuickFilter } from "@mms/contracts";
 import { fetchAllFacultyForQuery } from "@/tenant/hooks/collections/faculty";
 import { mapFacultyRow } from "@/components/reports/facultyReportTypes";
 

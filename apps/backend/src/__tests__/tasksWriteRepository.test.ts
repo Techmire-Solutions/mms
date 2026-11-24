@@ -14,7 +14,10 @@ const mocks = vi.hoisted(() => ({
   recordModernAuditEvent: vi.fn(),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({ withTenant: mocks.withTenant }));
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+  withTenant: mocks.withTenant,
+}));
 vi.mock("../db/repositories/tasksRepository.js", () => ({
   findTaskById: mocks.findTaskById,
 }));
@@ -24,7 +27,7 @@ vi.mock("../db/repositories/tasksAssigneesRepository.js", () => ({
 vi.mock("../db/repositories/facultyAssignmentValidation.js", () => ({
   lockFacultyHierarchy: mocks.lockFacultyHierarchy,
 }));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mocks.recordModernAuditEvent,
 }));
 

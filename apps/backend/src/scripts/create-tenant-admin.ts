@@ -1,6 +1,6 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initializeDatabaseConnection, getRootDb, closeDatabase } from "../db/dbConnection.js";
-import { tenantUsers } from "../db/schema.js";
+import { initializeDatabaseConnection, getRootDb, closeDatabase } from "@mms/db/client";
+import { tenantUsers } from "@mms/db/schema";
 import { hashPassword } from "../services/auth/passwordService.js";
 import { randomBytes, randomInt } from "node:crypto";
 import { eq, and } from "drizzle-orm";

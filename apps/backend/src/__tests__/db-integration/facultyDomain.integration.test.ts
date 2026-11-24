@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { sql } from "drizzle-orm";
-import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 /**

@@ -10,8 +10,8 @@ import {
   type PlatformConfigBackupApplyResult,
   type PlatformConfigBackupSnapshot,
   type PlatformSettings,
-} from "@mms/shared";
-import { runInGlobalTransaction } from "../../db/dbConnection.js";
+} from "@mms/contracts";
+import { runInGlobalTransaction } from "@mms/db/client";
 import {
   upsertPlatformBrandingRow,
   GLOBAL_BRANDING_ID,

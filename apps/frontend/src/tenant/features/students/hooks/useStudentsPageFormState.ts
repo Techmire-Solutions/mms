@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 
 /** Create/edit Student form overlay state for Students Work. */
 export function useStudentsPageFormState() {

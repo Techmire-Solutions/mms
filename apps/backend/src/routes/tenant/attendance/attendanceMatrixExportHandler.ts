@@ -1,4 +1,4 @@
-import { type attendanceContract, type User, ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { type attendanceContract, type User, ATTENDANCE_MODULE_MANIFEST } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection } from "../../../services/rbacService.js";
@@ -8,7 +8,7 @@ import {
   QueueUnavailableError,
 } from "../../../services/backgroundJobWorkerService.js";
 import { buildBackgroundJobId, buildDeterministicJobKey } from "../../../lib/backgroundJobIds.js";
-import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { getTenantId } from "./attendanceRecordHandlers.js";
 import { attendanceUseCases } from "../../../attendance/use-cases/attendanceUseCases.js";
 import {

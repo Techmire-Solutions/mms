@@ -5,11 +5,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformInspector } from "@/platform/features/shell/lib/PlatformInspectorContext";
 import { usePlatformBreadcrumb } from "@/platform/features/shell/lib/PlatformBreadcrumbContext";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { WorkspaceStatusBadge } from "@/platform/features/workspaces/components/WorkspaceStatusBadge";
 import { ROUTES } from "@/lib/config/routes";
 import { tenantUrl } from "@/lib/config/tenantConfig";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 
 /** Right-side contextual inspector — independent of the system AI drawer. */
 export function PlatformInspectorDrawer(): React.JSX.Element | null {

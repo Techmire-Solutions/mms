@@ -1,5 +1,5 @@
 import React from "react";
-import type { PublicRegistrationView } from "@mms/shared";
+import type { PublicRegistrationView } from "@mms/contracts";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";

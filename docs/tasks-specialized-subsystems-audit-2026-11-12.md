@@ -20,19 +20,19 @@ All three specialized subsystems audited in this report — the Recurrence Engin
 
 **Status: FEATURE GAP — NOT IMPLEMENTED.**
 
-An exhaustive search across `apps/backend/src`, `apps/frontend/src`, and `packages/shared/src` found **zero files** matching patterns `recur`, `rrule`, `cron`, `interval`, or `schedule` within any task-related code path. No recurring task infrastructure exists anywhere in the codebase.
+An exhaustive search across `apps/backend/src`, `apps/frontend/src`, and `packages/contracts/src` found **zero files** matching patterns `recur`, `rrule`, `cron`, `interval`, or `schedule` within any task-related code path. No recurring task infrastructure exists anywhere in the codebase.
 
 ### 1.2 Evidence of Absence
 
 | Search Target | Expected Location | Found |
 |---|---|---|
-| `recurrence_rule` column | [`tasksTables.ts`](../apps/backend/src/db/schema/tasksTables.ts) | ❌ Not present |
+| `recurrence_rule` column | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts) | ❌ Not present |
 | `timezone` / `next_occurrence_at` column | `tasksTables.ts` | ❌ Not present |
 | `recurring_parent_id` column | `tasksTables.ts` | ❌ Not present |
 | RRULE parsing library | `package.json` / any import | ❌ Not present |
 | Recurrence BullMQ worker | [`backgroundJobTasksRunners.ts`](../apps/backend/src/services/backgroundJobTasksRunners.ts) | ❌ Not present — only CSV import/export runners registered |
-| Recurrence types / schemas | [`tasksModuleManifest.ts`](../packages/shared/src/tasks/tasksModuleManifest.ts) | ❌ Not present |
-| Recurrence settings | [`taskSettingsTables.ts`](../apps/backend/src/db/schema/taskSettingsTables.ts) `task_module_preferences` | ❌ Not present — only `delegationScope`, `allowSelfAssignment`, `notifyOnAssignment`, `notifyOnStatusChange` |
+| Recurrence types / schemas | [`tasksModuleManifest.ts`](../packages/contracts/src/tasks/tasksModuleManifest.ts) | ❌ Not present |
+| Recurrence settings | [`taskSettingsTables.ts`](../packages/db/src/schema/taskSettingsTables.ts) `task_module_preferences` | ❌ Not present — only `delegationScope`, `allowSelfAssignment`, `notifyOnAssignment`, `notifyOnStatusChange` |
 | Recurrence UI controls | `apps/frontend/src/tenant/features/tasks/**` | ❌ Not present |
 
 ### 1.3 Risk Analysis — Failure Modes If Implemented Naively
@@ -82,8 +82,8 @@ No Kanban board view exists in the frontend. The tasks schema has no ordering co
 
 | Search Target | Expected Location | Found |
 |---|---|---|
-| `sort_order` / `kanban_position` / `rank` column on `tasks` | [`tasksTables.ts`](../apps/backend/src/db/schema/tasksTables.ts) | ❌ Not present — `sort_order` exists on `organization_locations` and `organization_positions` tables only |
-| Kanban view in directory views | [`tasksModuleManifest.ts`](../packages/shared/src/tasks/tasksModuleManifest.ts) `TASKS_MODULE_MANIFEST.work.directoryViews` | ❌ Only `["table", "cards"]` defined — no `"kanban"` |
+| `sort_order` / `kanban_position` / `rank` column on `tasks` | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts) | ❌ Not present — `sort_order` exists on `organization_locations` and `organization_positions` tables only |
+| Kanban view in directory views | [`tasksModuleManifest.ts`](../packages/contracts/src/tasks/tasksModuleManifest.ts) `TASKS_MODULE_MANIFEST.work.directoryViews` | ❌ Only `["table", "cards"]` defined — no `"kanban"` |
 | Kanban board component | `apps/frontend/src/tenant/features/tasks/**` | ❌ Only `TasksListDesktopTable.tsx` and `TasksListCards.tsx` exist |
 | Drag-and-drop handler | `useTasksPageController.ts` | ❌ Only `setPageIndex`, `serverFilters`, offset-based pagination — no position mutation |
 | LexoRank / fractional index algorithm | Anywhere in codebase | ❌ Not present |
@@ -260,11 +260,11 @@ The three missing subsystems will interact with previously identified defects on
 
 | File | Purpose |
 |---|---|
-| [`tasksTables.ts`](../apps/backend/src/db/schema/tasksTables.ts) | Full task schema — confirmed no recurrence, ordering, or dependency columns |
-| [`taskSettingsTables.ts`](../apps/backend/src/db/schema/taskSettingsTables.ts) | Module preferences — confirmed no recurrence settings |
+| [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts) | Full task schema — confirmed no recurrence, ordering, or dependency columns |
+| [`taskSettingsTables.ts`](../packages/db/src/schema/taskSettingsTables.ts) | Module preferences — confirmed no recurrence settings |
 | [`backgroundJobTasksRunners.ts`](../apps/backend/src/services/backgroundJobTasksRunners.ts) | Background workers — only CSV import/export registered |
 | [`tasksMetricsRepository.ts`](../apps/backend/src/db/repositories/tasksMetricsRepository.ts) | Only overdue metric count — no cascade triggers |
-| [`tasksModuleManifest.ts`](../packages/shared/src/tasks/tasksModuleManifest.ts) | Shared types/enums — no recurrence, dependency, or Kanban types |
+| [`tasksModuleManifest.ts`](../packages/contracts/src/tasks/tasksModuleManifest.ts) | Shared types/enums — no recurrence, dependency, or Kanban types |
 | [`taskMutationService.ts`](../apps/backend/src/services/taskMutationService.ts) | Task mutation service — no cascade or recurrence spawn logic |
 | [`tasksRoutes.ts`](../apps/backend/src/routes/tenant/tasksRoutes.ts) | API routes — no reorder or dependency endpoints |
 | `TasksListDesktopTable.tsx`, `TasksListCards.tsx` | Frontend views — table and cards only, no Kanban component |

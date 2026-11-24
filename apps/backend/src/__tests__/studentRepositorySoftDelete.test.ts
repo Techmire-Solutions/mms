@@ -17,7 +17,9 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (_tenant: string, fn: (tx: { update: typeof mocks.update }) => Promise<unknown>) =>
     fn({ update: mocks.update }),
 }));
@@ -26,7 +28,7 @@ vi.mock("../lib/cache/index.js", () => ({
   invalidateMultiTierCache: mocks.invalidate,
 }));
 
-vi.mock("../lib/softDeleteHelpers.js", () => ({
+vi.mock("@mms/db/soft-delete", () => ({
   enableIncludeDeleted: mocks.enable,
   withIncludeDeletedScope: (_tx: unknown, work: () => Promise<unknown>) => work(),
 }));

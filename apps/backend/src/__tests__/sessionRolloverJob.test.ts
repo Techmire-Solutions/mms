@@ -57,7 +57,7 @@ vi.mock("../sessions/use-cases/sessionLockGuard.js", () => ({
 vi.mock("../sessions/use-cases/sessionTransitionService.js", () => ({
   transitionSession: hooks.transitionSession,
 }));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: hooks.recordModernAuditEvent,
 }));
 vi.mock("../lib/cache/index.js", () => ({

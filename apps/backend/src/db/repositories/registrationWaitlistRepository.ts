@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import { SEAT_AVAILABLE_REVIEW_NOTE, SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/shared";
-import { withTenant, withGlobalTenant } from "../tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { SEAT_AVAILABLE_REVIEW_NOTE, SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/contracts";
+import { withTenant, withGlobalTenant } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /** The application a freed seat flagged, with the labels a staff notification needs. */
 export type FlaggedWaitlistApplication = {

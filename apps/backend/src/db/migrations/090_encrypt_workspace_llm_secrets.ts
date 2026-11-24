@@ -4,10 +4,10 @@
  * encrypted envelopes are left unchanged.
  */
 import { eq } from "drizzle-orm";
-import type { LlmConfig } from "@mms/shared";
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
+import type { LlmConfig } from "@mms/contracts";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
 import {
   encryptLlmApiKey,
   encryptLlmConfigs,

@@ -6,7 +6,7 @@ import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { ATTENDANCE_MODULE_MANIFEST } from "@mms/contracts";
 import {
   flushAuditQueue,
   queueAuditEntry,

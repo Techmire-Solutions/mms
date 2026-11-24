@@ -5,7 +5,7 @@ import { FormModal } from "@/components/app/FormModal";
 import { EnrollmentDetail } from "@/tenant/features/enrollments/components/EnrollmentDetail";
 import { EnrollmentsListConfirmDialogs } from "@/tenant/features/enrollments/components/EnrollmentsListConfirmDialogs";
 import { EnrollmentWizard } from "@/tenant/features/enrollments/components/EnrollmentWizard";
-import type { Enrollment, EnrollmentInsert } from "@mms/shared";
+import type { Enrollment, EnrollmentInsert } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface EnrollmentsModalLayerProps {

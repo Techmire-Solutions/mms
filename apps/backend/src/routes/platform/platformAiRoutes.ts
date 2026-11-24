@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { platformAiQueryRequestSchema } from "@mms/shared";
+import { platformAiQueryRequestSchema } from "@mms/contracts";
 import {
   authenticatePlatform,
   requirePlatformPermission,

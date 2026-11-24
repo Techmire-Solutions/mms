@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
-import type { DocumentTemplatePreset } from "@mms/shared";
-import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
-import { useTranslation } from "@/hooks/useTranslation";
+import type { DocumentTemplatePreset } from "@mms/contracts";
+import { DocumentTemplateEditor } from "@mms/fe-core/components/DocumentTemplateEditor";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import {
   ACCOUNTING_VOUCHER_TEMPLATE_KEY,

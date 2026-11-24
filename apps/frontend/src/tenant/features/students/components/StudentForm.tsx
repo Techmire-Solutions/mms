@@ -8,7 +8,7 @@ import { FormFooterEntityChip } from "@/components/app/FormFooterChip";
 import { Badge } from "@/components/ui/badge";
 import { StudentFormTabContent } from "@/tenant/features/students/components/StudentFormTabContent";
 import { useStudentFormState } from "@/tenant/features/students/hooks/useStudentFormState";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 
 export interface StudentFormProps {
   student?: Partial<Student> | null;

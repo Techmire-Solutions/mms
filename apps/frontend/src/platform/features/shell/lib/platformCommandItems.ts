@@ -1,7 +1,7 @@
 import { Building2 } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { ROUTES } from "@/lib/config/routes";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import { PLATFORM_STATIC_COMMANDS } from "@/platform/features/shell/lib/platformStaticCommands";
 
 export type PlatformCommandCategory =

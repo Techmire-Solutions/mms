@@ -1,4 +1,4 @@
-import type { Exam, ExamResult, RankedInExam, RankedPosition } from "@mms/shared";
+import type { Exam, ExamResult, RankedInExam, RankedPosition } from "@mms/contracts";
 import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
 import type { StudentResultItem } from "@/tenant/features/examinations/components/StudentResultCard";
 

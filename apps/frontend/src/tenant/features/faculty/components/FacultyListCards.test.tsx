@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { FacultyListCards } from "@/tenant/features/faculty/components/FacultyListCards";
 
 vi.mock("@/hooks/useTranslation", () => ({

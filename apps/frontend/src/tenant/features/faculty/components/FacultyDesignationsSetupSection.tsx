@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { FacultyDesignationDefinition } from "@mms/shared";
+import type { FacultyDesignationDefinition } from "@mms/contracts";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ErrorState } from "@/components/app/ErrorState";

@@ -11,9 +11,9 @@ import {
   type EnrollmentsReportComparisonSession,
   type EnrollmentsReportFees,
   type EnrollmentsReportStatusCounts,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getQueryRows } from "../documentStoreKeys.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 import { loadEnrollmentReportExtras } from "./enrollmentRepositoryReportExtras.js";
 

@@ -1,5 +1,5 @@
-import { resolveTenantLoginEmail } from "@mms/shared";
-import type { tenantUsers } from "../schema.js";
+import { resolveTenantLoginEmail } from "@mms/contracts";
+import type { tenantUsers } from "@mms/db/schema";
 import type { TenantUserRow } from "./tenantUserRepositoryHydrate.js";
 
 export const TABLE_AUTH_KEYS = new Set([

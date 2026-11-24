@@ -1,4 +1,4 @@
-import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsQuickFilter } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsQuickFilter } from "@mms/contracts";
 import { useStudentsContractList } from "@/tenant/features/students/hooks/useStudentsQueries";
 import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 import { contractBody, isContractQueryError } from "@/lib/contractQuery";

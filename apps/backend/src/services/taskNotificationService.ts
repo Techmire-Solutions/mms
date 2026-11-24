@@ -4,9 +4,9 @@
  * Delivery to SMS/WhatsApp/email is owned by messaging consumers of these events.
  */
 
-import type { TaskRecord, TaskSettings, TaskStatus } from "@mms/shared";
-import type { AppDb } from "../db/tenant-context.js";
-import { emitOutboxEvent, emitOutboxEvents, type OutboxBatchEvent } from "./outboxEventService.js";
+import type { TaskRecord, TaskSettings, TaskStatus } from "@mms/contracts";
+import type { AppDb } from "@mms/db/context";
+import { emitOutboxEvent, emitOutboxEvents, type OutboxBatchEvent } from "@mms/be-core/data/outbox";
 
 /**
  * Emits assignment/status notification intents **inside the caller's

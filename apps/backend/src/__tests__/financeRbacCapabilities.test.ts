@@ -6,7 +6,7 @@ import {
   roleHasPermission,
   type User,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { canManageAccounting, canManageFinance, canPostAccounting } from "../lib/rbacCanHelpers.js";
 
 vi.mock("../db/database.js", () => ({

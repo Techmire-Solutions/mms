@@ -21,16 +21,16 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({}),
 }));
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { createObligationsUseCases } from "../obligations/use-cases/obligationsUseCases.js";
 import type { ObligationsRepository } from "../obligations/repository/obligationsRepository.js";
-import type { ObligationCollection } from "@mms/shared";
+import type { ObligationCollection } from "@mms/contracts";
 import { HttpDomainError } from "../lib/httpErrors.js";
 
 const ARCHIVED_AT = "2026-07-01T00:00:00.000Z";

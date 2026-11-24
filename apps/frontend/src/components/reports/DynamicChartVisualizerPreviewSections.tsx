@@ -1,7 +1,7 @@
 import React from "react";
 import { AnimatePresence, m } from "framer-motion";
 import { ChevronDown, ChevronUp, Table as TableIcon } from "lucide-react";
-import { formatNumber } from "@mms/shared";
+import { formatNumber } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { SectionLabel } from "@/components/app/SectionLabel";

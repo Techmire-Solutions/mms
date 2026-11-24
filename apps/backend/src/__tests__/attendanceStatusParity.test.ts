@@ -10,8 +10,9 @@ import {
   DEFAULT_ATTENDANCE_STATUSES,
   defaultAttendanceLookupItems,
   isAttendedStatus,
-} from "@mms/shared";
-import { attendanceMatrixCellCode } from "@mms/shared";
+} from "@mms/contracts";
+import { attendanceMatrixCellCode } from "@mms/contracts";
+import { resolveSchemaSourceDirectory } from "@mms/db/testing";
 
 /**
  * Status-domain parity.
@@ -20,8 +21,6 @@ import { attendanceMatrixCellCode } from "@mms/shared";
  * database CHECK must all describe the same five statuses. Each of these had its own copy at some
  * point; this test is what makes a lone edit fail.
  */
-
-const SRC = join(process.cwd(), "src");
 
 describe("attendance status domain", () => {
   it("is exactly the documented five statuses", () => {
@@ -66,7 +65,10 @@ describe("attendance status domain", () => {
   });
 
   it("matches the database CHECK declared in the Drizzle model", () => {
-    const schemaSource = readFileSync(join(SRC, "db/schema/attendance.ts"), "utf8");
+    const schemaSource = readFileSync(
+      join(resolveSchemaSourceDirectory(), "attendance.ts"),
+      "utf8",
+    );
     const check = /attendance_status_check",\s*sql`\$\{table\.status\} IN \(([^)]+)\)`/s.exec(
       schemaSource,
     );
@@ -81,7 +83,7 @@ describe("attendance status domain", () => {
   it("ships the half-day label in every locale", () => {
     for (const locale of ["En", "Ar", "Ur", "Fa"]) {
       const translations = readFileSync(
-        join(process.cwd(), "../../packages/shared/src/i18n", `appTranslations${locale}.ts`),
+        join(process.cwd(), "../../packages/contracts/src/i18n", `appTranslations${locale}.ts`),
         "utf8",
       );
       expect(translations).toContain('"attendance.status.half_day"');

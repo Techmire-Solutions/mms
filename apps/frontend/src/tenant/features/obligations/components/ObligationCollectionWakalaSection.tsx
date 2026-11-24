@@ -1,7 +1,7 @@
 import React from "react";
 import { User } from "lucide-react";
 import { type Mujtahid, type MujtahidRep, type ObligationType } from "@/lib/data/obligationsData";
-import { type AppTranslationKey } from "@mms/shared";
+import { type AppTranslationKey } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";

@@ -6,11 +6,11 @@ import {
   type AttendanceModulePreferences,
   type AttendanceRecordStatus,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { notificationsUseCases } from "../../notifications/use-cases/notificationsUseCases.js";
-import { recordModernAuditEvent, type DbOrTransaction } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent, type DbOrTransaction } from "@mms/be-core/audit";
 import { NotFoundError } from "../../lib/httpErrors.js";
 import {
   attendanceEscalationRepository as repo,

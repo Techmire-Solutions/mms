@@ -50,7 +50,7 @@ vi.mock("../services/enrollmentPreferencesService.js", () => ({
     mockSaveEnrollmentModulePreferences(...args),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
   mapActionStringToAuditType: (action: string) =>
     action.includes("delete") ? "DELETE" : action.includes("create") ? "CREATE" : "UPDATE",

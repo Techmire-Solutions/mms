@@ -1,4 +1,4 @@
-import { resolveDistributionPoints } from "@mms/shared";
+import { resolveDistributionPoints } from "@mms/contracts";
 import type { AggregatedItem, ChartOperation, FilterRule } from "./dynamicChartVisualizerTypes";
 
 export function isDateDimensionField(fieldName: string): boolean {

@@ -25,4 +25,4 @@ export {
   DETAIL_SECTION_TITLE,
   FORM_SELECT_MINI,
   SETUP_SECTION_CARD_CLASS,
-} from "@shared/ui";
+} from "@mms/ui";

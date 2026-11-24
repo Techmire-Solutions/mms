@@ -1,4 +1,4 @@
-import type { FieldDefinition, TabDefinition } from "@mms/shared";
+import type { FieldDefinition, TabDefinition } from "@mms/contracts";
 
 /** Stable field shape for dirty detection — ignores undefined vs false noise from buildFieldsMap. */
 export function canonicalizeField(field: FieldDefinition): Record<string, unknown> {

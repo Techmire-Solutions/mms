@@ -14,7 +14,7 @@ import {
   type MujtahidRep,
   type ObligationCollection,
   type ObligationType,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type {
   useMergedObligationContacts,
   useMergedObligationUsers,

@@ -5,7 +5,7 @@ import {
   isPlatformApiErrorType,
   mapPlatformAuthError,
 } from "@/platform/features/auth/lib/platformAuthErrors";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 
 const EN: Record<string, string> = {
   "platform.setupInvalidEmail": "Enter a valid email address",

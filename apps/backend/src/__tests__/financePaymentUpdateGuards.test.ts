@@ -4,7 +4,7 @@ import type { FinanceRepository } from "../finance/repository/financeRepository.
 import { runWithTenant } from "../lib/tenantContext.js";
 
 const mockRecordModernAuditEvent = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mockRecordModernAuditEvent,
 }));
 

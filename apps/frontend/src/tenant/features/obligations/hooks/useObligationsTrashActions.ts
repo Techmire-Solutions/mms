@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { notify } from "@/lib/notify";

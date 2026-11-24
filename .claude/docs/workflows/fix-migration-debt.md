@@ -22,7 +22,7 @@ This workflow guides the structured resolution of technical debt items documente
 Refactor the code following the strict MMS invariants (`rules/mms-core.md`):
 
 - [ ] **Data Hooks Refactor**: If migrating frontend data fetching, replace legacy `useLiveCollection` (unless for local drafts) with TanStack Query v5 `queryOptions`/`mutationOptions` factories (`mms-query-factories`).
-- [ ] **Security Refactor**: If removing `role ===` hardcoded checks, replace them with authoritative RBAC permission wrappers (`can()`, `platformUserCan()`) and zero-trust `@mms/shared` Zod validation.
+- [ ] **Security Refactor**: If removing `role ===` hardcoded checks, replace them with authoritative RBAC permission wrappers (`can()`, `platformUserCan()`) and zero-trust `@mms/contracts` Zod validation.
 - [ ] **Schema Debt (`mms-schema-migrate`)**: If normalizing database tables, enforce 3NF/BCNF, ensure bidirectional relations are typed, and write forward-only migrations (no `drizzle-kit push`).
 - [ ] **UI/UX Modernization**: Ensure any touched UI is modernized to 44x44px touch targets, BiDi tokens (`mms-ui-ux-design.md`), and semantic HTML.
 - [ ] **Preserve intentional debt**: Some items (like Messaging clear / QB variants) are marked as intentional debt. **Do not regress** or "fix" these unless specifically requested.

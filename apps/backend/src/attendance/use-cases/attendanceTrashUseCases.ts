@@ -1,5 +1,5 @@
-import type { AttendanceRecord, User } from "@mms/shared";
-import { withTenant } from "../../db/tenant-context.js";
+import type { AttendanceRecord, User } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { assertAttendanceDayEditable } from "./attendancePolicyGuard.js";
 import { auditAttendanceMutation } from "./attendanceAudit.js";
 import { requireTenant, type AttendanceMutationDeps } from "./attendanceUseCaseSupport.js";

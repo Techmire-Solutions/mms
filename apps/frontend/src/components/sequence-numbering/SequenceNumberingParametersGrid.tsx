@@ -6,7 +6,7 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { Field } from "@/components/app/FormPrimitives";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import { SEQUENCE_DELIMITER_PRESETS, type SequenceYearFormat } from "@mms/shared";
+import { SEQUENCE_DELIMITER_PRESETS, type SequenceYearFormat } from "@mms/contracts";
 
 const DELIMITER_LABEL_KEYS = {
   "": "common.sequenceNumbering.delimiterNone",

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { userUiPreferences, tenantUsers } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { userUiPreferences, tenantUsers } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 
 export interface UserUiPreferenceRecord {
   userId: string;

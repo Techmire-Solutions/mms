@@ -1,4 +1,4 @@
-import type { WorkspaceUser } from "@mms/shared";
+import type { WorkspaceUser } from "@mms/contracts";
 
 /**
  * Editable profile fields a bulk upsert may carry. Credential, lifecycle, tenant

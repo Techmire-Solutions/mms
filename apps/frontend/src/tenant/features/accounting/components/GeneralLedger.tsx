@@ -1,10 +1,10 @@
 import React from "react";
-import { EmptyState } from "@/components/app/EmptyState";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { type Account } from "@/lib/data/accountingData";
-import { notify } from "@/lib/notify";
-import { useTranslation } from "@/hooks/useTranslation";
+import { EmptyState } from "@mms/ui";
+import { Button } from "@mms/ui";
+import { Skeleton } from "@mms/ui";
+import { type Account } from "@mms/mod-accounting/frontend/tenant";
+import { notify } from "@mms/fe-core/notify";
+import { useTranslation } from "@mms/fe-core/i18n";
 import {
   useGeneralLedger,
   type GeneralLedgerLineWithRunning,
@@ -12,9 +12,9 @@ import {
 import { fetchAllAccountingLedgerLines } from "@/tenant/features/accounting/hooks/accountingListFetch";
 import { exportGeneralLedgerCsv } from "@/tenant/features/accounting/lib/generalLedgerExport";
 import { useAccountingLedgerExport } from "@/tenant/features/accounting/hooks/useAccountingLedgerExport";
-import { GeneralLedgerFilters } from "@/tenant/features/accounting/components/GeneralLedgerFilters";
-import { GeneralLedgerAccountSummary } from "@/tenant/features/accounting/components/GeneralLedgerAccountSummary";
-import { GeneralLedgerEntries } from "@/tenant/features/accounting/components/GeneralLedgerEntries";
+import { GeneralLedgerFilters } from "@mms/mod-accounting/frontend/tenant";
+import { GeneralLedgerAccountSummary } from "@mms/mod-accounting/frontend/tenant";
+import { GeneralLedgerEntries } from "@mms/mod-accounting/frontend/tenant";
 
 interface GeneralLedgerProps {
   accounts: Account[];

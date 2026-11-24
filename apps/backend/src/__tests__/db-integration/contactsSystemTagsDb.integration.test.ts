@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import type { Contact } from "@mms/shared";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { withTenant } from "../../db/tenant-context.js";
+import type { Contact } from "@mms/contracts";
+import { closeDatabase } from "@mms/db/client";
+import { withTenant } from "@mms/db/context";
 import {
   contactTags,
   faculty,
@@ -12,13 +12,13 @@ import {
   facultyEmployDesignations,
   facultyEmployments,
   workspaces,
-} from "../../db/schema.js";
-import { contactUseCases } from "../../contacts/use-cases/contactUseCases.js";
+} from "@mms/db/schema";
+import { contactUseCases } from "@mms/mod-contacts/backend/use-cases";
 import { studentUseCases } from "../../students/use-cases/studentUseCases.js";
 import {
   reconcileContactSystemTags,
   reconcileDesignationContacts,
-} from "../../contacts/systemTags/contactSystemTagUseCases.js";
+} from "@mms/mod-contacts/backend/use-cases";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 

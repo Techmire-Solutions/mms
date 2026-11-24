@@ -6,7 +6,7 @@ import { ContactExperienceEntryCard } from "./ContactExperienceEntryCard";
 import { createEmptyExperience } from "./contactExperienceShared";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ContactExperience } from "@mms/shared";
+import type { ContactExperience } from "@mms/contracts";
 
 /**
  * TypeScript type representing an individual experience entry.

@@ -7,7 +7,7 @@ import {
   signTenantToken,
   teacherToken,
 } from "./helpers/tokens.js";
-import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/shared";
+import type { QuestionBankQuestion, QuestionBankTest, QuestionBankResult } from "@mms/contracts";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -50,7 +50,7 @@ vi.mock("../lib/csvExportEnqueue.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../services/auditTrailService.js", async (importOriginal) => {
+vi.mock("@mms/be-core/audit", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,

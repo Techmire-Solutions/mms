@@ -3,9 +3,9 @@
  * @description WorkBatchTable column definitions for the Workshops Work directory.
  */
 
-import { formatDate, type AppTranslationKey, type WorkshopEvent } from "@mms/shared";
+import { formatDate, type AppTranslationKey, type WorkshopEvent } from "@mms/contracts";
 import type { WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { TableCellLink } from "@shared/ui";
+import { TableCellLink } from "@mms/ui";
 import { WORKSHOP_TITLE_DEFAULT_WIDTH } from "../hooks/useWorkshopsColumnLayout";
 import { WorkshopPhaseBadge } from "./WorkshopPhaseBadge";
 

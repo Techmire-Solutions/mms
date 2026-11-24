@@ -1,8 +1,8 @@
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
-import type { WidgetAggregateResult, WidgetQuery } from "@mms/shared";
-import { questionCategories, questions } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
-import { HttpDomainError } from "../../lib/httpErrors.js";
+import type { WidgetAggregateResult, WidgetQuery } from "@mms/contracts";
+import { questionCategories, questions } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
+import { HttpDomainError } from "@mms/be-core/http/errors";
 
 function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(questions.workspaceSubdomain, subdomain), isNull(questions.deletedAt))!;

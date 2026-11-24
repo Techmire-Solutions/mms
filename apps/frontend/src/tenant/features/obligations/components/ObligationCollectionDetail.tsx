@@ -8,7 +8,7 @@ import type {
   WakalaType,
   ObligationDistribution,
 } from "@/lib/data/obligationsData";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

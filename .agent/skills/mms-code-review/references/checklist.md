@@ -6,7 +6,7 @@ Extracted from `SKILL.md` so the skill body stays loadable in one pass; the owni
 ## Checklist
 
 ### Architecture
-- [ ] Shared types/utils in `@mms/shared` (not duplicated)
+- [ ] Shared types/utils in `@mms/contracts` (not duplicated)
 - [ ] No frontend → backend direct imports
 - [ ] Backend: routes → use-cases (repo DI) → repository interface → adapter (no `pg`/Drizzle in routes); refactored modules use composition root (`contactUseCases` pattern) — `mms-api-interface.md` §2
 - [ ] Repository interface is the sole storage gateway; use-case functions take it via DI (testable with fakes) — `mms-data-layer.md`
@@ -113,7 +113,7 @@ Extracted from `SKILL.md` so the skill body stays loadable in one pass; the owni
 - [ ] Send/campaign idempotency key **bound to body digest** (409 on mismatch); `429`/`Retry-After` surfaced
 
 ### Field persistence (new/changed fields)
-- [ ] Field on `@mms/shared` type + `DEFAULT_*` + merge helper
+- [ ] Field on `@mms/contracts` type + `DEFAULT_*` + merge helper
 - [ ] Write reaches PostgreSQL
 - [ ] UI control bound to save path — not orphaned `useState`
 
@@ -138,13 +138,13 @@ Extracted from `SKILL.md` so the skill body stays loadable in one pass; the owni
 
 ### Testing
 - [ ] Strict TDD verification: targeted Vitest spec written first, with the Red-phase command + failure in the PR body — `mms-tdd.md` §1–§2 (`pnpm run check:tdd-pairing` advisory)
-- [ ] New `@mms/shared` pure helpers have unit tests
+- [ ] New `@mms/contracts` pure helpers have unit tests
 - [ ] Specification naming: tests follow `describe('Entity', () => it('given [condition], should [expected result] when [action]'))` — `mms-testing-observability.md` §2
 - [ ] AAA format: tests distinctly separate `// Arrange`, `// Act`, and `// Assert` phases — `mms-testing-observability.md` §2
 - [ ] User-centric queries & black-box boundary: DOM/E2E tests use `getByRole` > `getByLabelText` > `getByText`; no assertions on component internal state or CSS classes — `mms-testing-observability.md` §3
 - [ ] Realistic interactions: use `userEvent` over `fireEvent` in component tests; web-first locator actions in Playwright — `mms-testing-observability.md` §3
 - [ ] Transport-level mocking: Fastify `inject()` on backend; no monkey-patching raw `fetch` or internal client classes — `mms-testing-observability.md` §4
-- [ ] Typed factories over JSON: domain models constructed via typed factory builders with `@mms/shared` defaults; ban static mutable `.json` fixtures — `mms-testing-observability.md` §4
+- [ ] Typed factories over JSON: domain models constructed via typed factory builders with `@mms/contracts` defaults; ban static mutable `.json` fixtures — `mms-testing-observability.md` §4
 - [ ] Zero shared mutable state: no outer `describe` mutable `let`s; mandatory lifecycle resets; no arbitrary `sleep`/`waitForTimeout` — `mms-testing-observability.md` §4
 - [ ] Strict assertion specificity: ban `toBeTruthy()`, `toBeFalsy()`, generic `toBeDefined()`; use strict types, ISO regex (`/^\d{4}-\d{2}-\d{2}T/`), or typed DOM instances (`toBeInstanceOf(...)`) — `mms-testing-observability.md` §1
 - [ ] Zero DB skip latches: ban `isDbAvailable`; ordinary integration tests use in-memory repository mock fixtures and Fastify `inject()`; explicit PostgreSQL `test:db` must actually execute for locking/RLS evidence — `mms-testing-observability.md` §1

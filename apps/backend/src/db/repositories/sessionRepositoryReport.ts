@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import type { SessionsReportAggregates, SessionsReportQuery } from "@mms/shared";
+import type { SessionsReportAggregates, SessionsReportQuery } from "@mms/contracts";
 import { getQueryRows } from "../documentStoreKeys.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 

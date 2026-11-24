@@ -4,7 +4,7 @@ import {
   WORKSPACES_COLLECTION,
   type Workspace,
   type Enrollment,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import { bulkSaveEnrollments } from "../repositories/enrollmentRepository.js";
 

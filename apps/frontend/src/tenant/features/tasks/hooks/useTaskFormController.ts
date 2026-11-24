@@ -6,7 +6,7 @@ import {
   type TaskInsert,
   type TaskPriority,
   type TaskStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useEligibleTaskAssignees, useTasks } from "@/tenant/hooks/collections/tasks";

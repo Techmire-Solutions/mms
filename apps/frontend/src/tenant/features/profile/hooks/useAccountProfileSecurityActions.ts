@@ -9,7 +9,7 @@ import {
   requestLoginEmailChangeBodySchema,
   confirmLoginEmailChangeBodySchema,
   validatePasswordPolicy,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { tsrClient } from "@/lib/api";
 import { apiContractError, assertContractOk } from "@/lib/apiContractError";

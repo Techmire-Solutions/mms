@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useState } from "react";
-import type { SessionsReportAggregates } from "@mms/shared";
+import type { SessionsReportAggregates } from "@mms/contracts";
 import {
   useSessions,
   useSessionsCollection,

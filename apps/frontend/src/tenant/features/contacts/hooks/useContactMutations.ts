@@ -4,7 +4,7 @@ import {
   type ContactIdentityMatchBody,
   type ContactIdentityMatchResult,
   type ValidationError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import {
   enqueueContactsOutbox,

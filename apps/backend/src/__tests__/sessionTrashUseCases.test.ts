@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { SessionSchema } from "@mms/shared";
+import { SessionSchema } from "@mms/contracts";
 import { createSessionTrashUseCases } from "../sessions/use-cases/sessionTrashUseCases.js";
 import { transitionSession } from "../sessions/use-cases/sessionTransitionService.js";
 import { runWithTenant } from "../lib/tenantContext.js";
@@ -15,7 +15,10 @@ const commitHooks = vi.hoisted(() => ({
   broadcastCollection: vi.fn(),
   invalidateMultiTierCache: vi.fn(),
 }));
-vi.mock("../db/commitScope.js", () => ({ runAfterCommit: commitHooks.runAfterCommit }));
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+  runAfterCommit: commitHooks.runAfterCommit,
+}));
 vi.mock("../lib/livePush.js", () => ({ broadcastCollection: commitHooks.broadcastCollection }));
 vi.mock("../lib/cache/index.js", () => ({
   invalidateMultiTierCache: commitHooks.invalidateMultiTierCache,

@@ -4,7 +4,7 @@ import type { Student } from "@/lib/data/studentsData";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsCollection } from "@/tenant/hooks/collections/enrollments";
 import { useStudentsByIds } from "@/tenant/hooks/collections/students";
-import { enrollmentHoldsSeat } from "@mms/shared";
+import { enrollmentHoldsSeat } from "@mms/contracts";
 
 /**
  * The exam roster is the **seat-holding** enrollment set — the same rule the backend eligibility

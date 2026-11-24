@@ -14,11 +14,8 @@ vi.mock("../lib/logger.js", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
-import {
-  postFxRevaluation,
-  type FxRevaluationDeps,
-} from "../accounting/use-cases/fxRevaluationUseCases.js";
-import { postIas29Restatement } from "../accounting/use-cases/ias29UseCases.js";
+import { postFxRevaluation, type FxRevaluationDeps } from "@mms/mod-accounting/backend/use-cases";
+import { postIas29Restatement } from "@mms/mod-accounting/backend/use-cases";
 import { mapDatabaseErrorCode } from "../lib/dbErrorMapping.js";
 import { withTimeout } from "../worker/sweepSupport.js";
 

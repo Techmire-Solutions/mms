@@ -35,7 +35,7 @@ import {
   DEFAULT_CONTACT_PREFERENCES,
   type ContactPreferences,
   type FieldConfig,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useContactConfigProviderValue } from "@/lib/contacts/useContactConfigProviderValue";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { useAuth } from "@/lib/contexts/AuthContext";

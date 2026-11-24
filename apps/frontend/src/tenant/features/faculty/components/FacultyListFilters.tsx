@@ -1,5 +1,9 @@
 import { useMemo } from "react";
-import type { FacultySortField, FacultyQuickFilter, ModuleColumnRegistryEntry } from "@mms/shared";
+import type {
+  FacultySortField,
+  FacultyQuickFilter,
+  ModuleColumnRegistryEntry,
+} from "@mms/contracts";
 import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";

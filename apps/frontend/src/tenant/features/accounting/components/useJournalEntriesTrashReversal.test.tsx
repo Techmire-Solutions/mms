@@ -1,9 +1,10 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useJournalEntriesTrashReversal } from "../hooks/useJournalEntriesTrashReversal";
-import type { JournalEntry } from "@/lib/data/accountingData";
-import { notify } from "@/lib/notify";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import { notify } from "@mms/fe-core/notify";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -15,7 +16,7 @@ vi.mock("@/tenant/features/accounting/hooks/useReverseJournalEntry", () => ({
   useReverseJournalEntry: () => ({ mutateAsync: mockReverseMutate }),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     warning: vi.fn(),
     success: vi.fn(),
@@ -85,6 +86,10 @@ function TestHarness(
 describe("useJournalEntriesTrashReversal", () => {
   let container: HTMLDivElement;
   let root: Root;
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  function renderWithClient(node: React.ReactNode) {
+    root.render(<QueryClientProvider client={queryClient}>{node}</QueryClientProvider>);
+  }
   const t = ((key: string, args?: Record<string, string | number>) =>
     args ? `${key}|${JSON.stringify(args)}` : key) as unknown as Parameters<
     typeof useJournalEntriesTrashReversal
@@ -108,7 +113,7 @@ describe("useJournalEntriesTrashReversal", () => {
     let controller!: ReturnType<typeof useJournalEntriesTrashReversal>;
 
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[mockEntryPosted]}
           showDeleted={false}
@@ -135,7 +140,7 @@ describe("useJournalEntriesTrashReversal", () => {
     const onDelete = vi.fn();
 
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[mockEntryDraft]}
           showDeleted={false}
@@ -170,7 +175,7 @@ describe("useJournalEntriesTrashReversal", () => {
     const setSelectedIds = vi.fn();
 
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[mockEntryDraft]}
           showDeleted={false}
@@ -205,7 +210,7 @@ describe("useJournalEntriesTrashReversal", () => {
     const onBulkDelete = vi.fn();
 
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[mockEntryDraft, mockEntryPosted]}
           showDeleted={false}
@@ -244,7 +249,7 @@ describe("useJournalEntriesTrashReversal", () => {
     const onBulkDelete = vi.fn();
 
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[mockEntryPosted]}
           showDeleted={false}
@@ -272,7 +277,7 @@ describe("useJournalEntriesTrashReversal", () => {
     let controller!: ReturnType<typeof useJournalEntriesTrashReversal>;
     mockReverseMutate.mockResolvedValue({ entry: { ...mockReversalOfPosted, ref: "REV-JE-002" } });
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[mockEntryPosted]}
           showDeleted={false}
@@ -306,7 +311,7 @@ describe("useJournalEntriesTrashReversal", () => {
     let controller!: ReturnType<typeof useJournalEntriesTrashReversal>;
     mockReverseMutate.mockResolvedValue({ entry: mockReversalOfPosted });
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[mockEntryPosted]}
           showDeleted={false}
@@ -337,7 +342,7 @@ describe("useJournalEntriesTrashReversal", () => {
     // Arrange
     let controller!: ReturnType<typeof useJournalEntriesTrashReversal>;
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[mockEntryPosted, mockReversalOfPosted]}
           showDeleted={false}
@@ -380,7 +385,7 @@ describe("useJournalEntriesTrashReversal", () => {
       source_id: "inv-1",
     };
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[invoicePosting]}
           showDeleted={false}
@@ -417,7 +422,7 @@ describe("useJournalEntriesTrashReversal", () => {
       },
     });
     await act(async () => {
-      root.render(
+      renderWithClient(
         <TestHarness
           entries={[mockEntryPosted]}
           showDeleted={false}

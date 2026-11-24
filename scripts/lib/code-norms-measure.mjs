@@ -6,8 +6,17 @@
 export const SCAN_DIRS = [
   "apps/frontend/src",
   "apps/backend/src",
-  "packages/shared/src",
+  "packages/contracts/src",
+  "packages/db/src",
+  "packages/be-core/src",
+  "packages/fe-core/src",
   "packages/ui/src",
+  "packages/modules/iam/src",
+  "packages/modules/accounting/src",
+  // Design tokens moved to the shared Tailwind package; the inert-`@theme`
+  // namespace check walks CSS under every SCAN_DIR, so it must include this one
+  // or the token file would silently stop being covered.
+  "tooling/tailwind-config",
 ];
 export const IGNORED = /(^|\/)(node_modules|dist|coverage|\.turbo)\//;
 export const SOURCE_EXT = /\.(ts|tsx)$/;

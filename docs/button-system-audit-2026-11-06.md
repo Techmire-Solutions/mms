@@ -12,7 +12,7 @@ the semantic tokens at runtime.
 ## 1. Method
 
 - Token values parsed from `:root` / `.dark` and converted to hex; every ratio computed with the
-  repo's own `getContrastRatio()` (`packages/shared/src/branding/brandingColorContrast.ts`), not a
+  repo's own `getContrastRatio()` (`packages/contracts/src/branding/brandingColorContrast.ts`), not a
   re-implementation.
 - Tailwind 4.3.3 emission probes confirmed `rounded-lg → var(--radius)`, `duration-fast → 150ms`,
   `focus-visible:ring-offset-background → hsl(var(--background))`, and `:disabled` is emitted after

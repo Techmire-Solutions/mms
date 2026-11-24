@@ -11,7 +11,7 @@ import {
   resolveModuleTierTab,
   type AppTranslationKey,
   type ObligationCollection,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   useObligationsTypesCollection,
   useObligationsMujtahidsCollection,

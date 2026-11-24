@@ -6,7 +6,7 @@ import type {
   ObligationCollection,
   ObligationType,
 } from "@/lib/data/obligationsData";
-import { DEFAULT_CURRENCIES, formatMoney } from "@mms/shared";
+import { DEFAULT_CURRENCIES, formatMoney } from "@mms/contracts";
 
 export interface ObligationContact {
   name?: string;

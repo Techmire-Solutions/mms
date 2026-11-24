@@ -1,31 +1,31 @@
 ---
 name: mms-shared-package
-description: Extends @mms/shared with types, settings defaults, module manifests, translation keys, messaging schemas, and pure utilities shared by frontend and backend. Use when adding shared types, formatDate, formatMoney, parsePhoneNumber, manifests, or moving duplicated logic to packages/shared. Do NOT use for UI components or JSX (use mms-shared-ui or mms-frontend) or Fastify backend-only services (use mms-backend-api).
+description: Extends @mms/contracts with types, settings defaults, module manifests, translation keys, messaging schemas, and pure utilities shared by frontend and backend. Use when adding shared types, formatDate, formatMoney, parsePhoneNumber, manifests, or moving duplicated logic to packages/contracts. Do NOT use for UI components or JSX (use mms-shared-ui or mms-frontend) or Fastify backend-only services (use mms-backend-api).
 license: Proprietary
 metadata:
   owner: mms-platform
   last-verified: 2026-11-02
 ---
 
-# @mms/shared Package Workflow
+# @mms/contracts Package Workflow
 
 **Rules (norms SSOT):** `mms-dry.md` · `mms-performance.md` §4 · `mms-settings-i18n.md` · `mms-structure-naming.md`.
 
 ## When to use
 
 - Adding shared types, Zod DTOs, manifests, or pure utils used by FE and BE
-- Moving duplicated pure logic into `packages/shared`
+- Moving duplicated pure logic into `packages/contracts`
 - Changing soft-delete / bulk ID schemas consumed by both apps
 
 ## Implementation map
 
 | Concern | Path |
 |---------|------|
-| API DTOs | `packages/shared/src/schemas/api.dto.ts` (`softDeleteBodySchema`, `bulkIdsBodySchema`) |
-| Soft-delete helpers | `packages/shared/src/core/softDelete.ts` |
-| Manifests | `packages/shared/src/**/*ModuleManifest.ts` (per-domain folders) |
-| Domain folders | per-domain folders under `packages/shared/src/` (`core`, `auth`, `contacts`, `finance`, `settings`, `branding`, `messaging`, `i18n`, `erd`, …) — the `src/` root holds only `index.ts` |
-| Barrel | `packages/shared/src/index.ts` (named exports; extra subpaths only `./tenantUtils` + `./translations/{en,ar,ur,fa}`) |
+| API DTOs | `packages/contracts/src/schemas/api.dto.ts` (`softDeleteBodySchema`, `bulkIdsBodySchema`) |
+| Soft-delete helpers | `packages/contracts/src/core/softDelete.ts` |
+| Manifests | `packages/contracts/src/**/*ModuleManifest.ts` (per-domain folders) |
+| Domain folders | per-domain folders under `packages/contracts/src/` (`core`, `auth`, `contacts`, `finance`, `settings`, `branding`, `messaging`, `i18n`, `erd`, …) — the `src/` root holds only `index.ts` |
+| Barrel | `packages/contracts/src/index.ts` (named exports; extra subpaths only `./tenantUtils` + `./translations/{en,ar,ur,fa}`) |
 
 ## 1. Architectural Boundaries & Purity
 
@@ -44,13 +44,13 @@ metadata:
 - Document templates: GET/PUT records carry `{ template, updatedAt }`; saves accept `expectedUpdatedAt` (`null` = insert-only) and the contract declares `409` (`mms-document-templates.md`).
 - **Request DTOs must accept the read shape**: a contract write schema validates bodies only (`@ts-rest` response validation is off), so its nested rows must accept exactly what the response mapper emits. Prove it with a round-trip test (`contactWriteSchema.test.ts` fixture built from the `mapChild*` mappers) — a `.strict()` child row that rejects hydrated keys becomes a silent 400 on every edit.
 - **Server-owned fields are stripped, not persisted**: `stripClientAuditFields` (createdAt/createdBy/updatedBy) and `stripContactClientSoftDeleteFields` run in the DTO preprocess and again at the write choke point; the server stamps attribution (`mms-data-layer.md` §5). Read-only projections may be accepted solely so they can be stripped.
-- **System-managed projections**: read-only metadata schemas (e.g. `contactSystemTagSchema`) and pure reserved-name/formatting helpers live in `@mms/shared`; they must stay React/DOM/DB-free, deterministic, and truncation-safe. The write DTO accepts the projection only to strip it.
+- **System-managed projections**: read-only metadata schemas (e.g. `contactSystemTagSchema`) and pure reserved-name/formatting helpers live in `@mms/contracts`; they must stay React/DOM/DB-free, deterministic, and truncation-safe. The write DTO accepts the projection only to strip it.
 - **Export/import parity**: every value the exporter's column list produces must be schema-valid for the importer; nested relationship rows (`email`, `gender`) belong in the nested schema, not lost at the boundary.
 
 ## 3. Workflow & Verification
 
-1. Place models in the matching domain folder under `packages/shared/src/` (`*Types.ts` / `*Schemas.ts`) — never the `src/` root.
-2. Add pure utilities to `packages/shared/src/core/utils.ts` (e.g. `formatDate`, `formatMoney`, `parsePhoneNumber`).
+1. Place models in the matching domain folder under `packages/contracts/src/` (`*Types.ts` / `*Schemas.ts`) — never the `src/` root.
+2. Add pure utilities to `packages/contracts/src/core/utils.ts` (e.g. `formatDate`, `formatMoney`, `parsePhoneNumber`).
 3. Export from `index.ts` with JSDoc on public symbols.
 4. Verify:
 

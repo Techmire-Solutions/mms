@@ -7,7 +7,7 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
-import { toMoneyNumber } from "@mms/shared";
+import { toMoneyNumber } from "@mms/contracts";
 import type { Class } from "@/lib/data/sessionsData";
 
 interface BudgetAddModalProps {

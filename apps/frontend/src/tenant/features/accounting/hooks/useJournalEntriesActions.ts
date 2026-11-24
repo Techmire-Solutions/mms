@@ -1,8 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { Account, JournalEntry } from "@/lib/data/accountingData";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { JournalEntriesChange } from "@/tenant/features/accounting/lib/journalEntriesTypes";
-import type { QuickActionType } from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
+import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import type { JournalEntriesChange } from "@mms/mod-accounting/frontend/tenant";
+import type { QuickActionType } from "@mms/mod-accounting/frontend/tenant";
 import {
   createJournalPostHandler,
   createJournalSaveHandler,
@@ -10,13 +10,13 @@ import {
   formatJournalAmount,
 } from "@/tenant/features/accounting/lib/journalEntriesControllerActions";
 import { useJournalEntriesTrashReversal } from "@/tenant/features/accounting/hooks/useJournalEntriesTrashReversal";
-import { createJournalEntryActionsRenderer } from "@/tenant/features/accounting/components/journalEntriesControllerSelection";
-import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
-import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
-import { isVoucherPrintable } from "@/tenant/features/accounting/lib/paymentVoucherKind";
+import { createJournalEntryActionsRenderer } from "@mms/mod-accounting/frontend/tenant";
+import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@mms/ui/app/entityCardChrome";
+import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@mms/ui/app/ModuleRowActionsMenu";
+import { isVoucherPrintable } from "@mms/mod-accounting/frontend/tenant";
 import { usePaymentVoucherPrint } from "@/tenant/features/accounting/hooks/usePaymentVoucherPrint";
-import { apiContract } from "@/lib/api";
-import { assertContractOk } from "@/lib/apiContractError";
+import { apiContract } from "@mms/fe-core/api/tsRest";
+import { assertContractOk } from "@mms/fe-core/api/contractError";
 
 export interface UseJournalEntriesActionsOptions {
   entries: JournalEntry[];

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { LayoutDashboard } from "lucide-react";
-import { type Contact, getPrimaryPhone, getPrimaryEmail } from "@mms/shared";
+import { type Contact, getPrimaryPhone, getPrimaryEmail } from "@mms/contracts";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";

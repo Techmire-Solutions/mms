@@ -1,5 +1,5 @@
 import type React from "react";
-import { getDisplayName, type AppTranslationKey, type Contact } from "@mms/shared";
+import { getDisplayName, type AppTranslationKey, type Contact } from "@mms/contracts";
 import type { useContactFormDraft } from "@/tenant/features/contacts/hooks/useContactFormDraft";
 import { FormFooterEntityChip, FormFooterErrorChip } from "@/components/app/FormFooterChip";
 import { Badge } from "@/components/ui/badge";

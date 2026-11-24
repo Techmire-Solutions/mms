@@ -7,7 +7,7 @@ import type {
   StudentDuplicateReason,
   StudentsSettings,
   ValidationError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";

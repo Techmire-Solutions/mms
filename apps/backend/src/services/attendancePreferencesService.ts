@@ -1,7 +1,7 @@
 import {
   normalizeAttendanceModulePreferences,
   type AttendanceModulePreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getAttendanceModulePreferences,
   setAttendanceModulePreferences,

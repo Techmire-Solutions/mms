@@ -1,4 +1,4 @@
-import { findUnknownPersonalizationTokens } from "@mms/shared";
+import { findUnknownPersonalizationTokens } from "@mms/contracts";
 
 /** Formats unknown `{token}` keys for API validation_error messages. */
 export function formatUnknownTokensMessage(tokens: string[]): string {

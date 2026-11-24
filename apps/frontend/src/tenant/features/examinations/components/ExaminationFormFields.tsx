@@ -9,7 +9,7 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { parseIntegerInput } from "../lib/examFormValidation";
-import { EXAM_STATUSES, SESSIONS_MODULE_MANIFEST, allowedNextStatuses } from "@mms/shared";
+import { EXAM_STATUSES, SESSIONS_MODULE_MANIFEST, allowedNextStatuses } from "@mms/contracts";
 import { AcademicCatalogSelect } from "@/components/common/catalog/AcademicCatalogSelect";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import type { useExaminationForm } from "../hooks/useExaminationForm";

@@ -6,8 +6,8 @@ import {
   getContrastRatio,
   hslColorToHex,
   MAX_RESTING_TINT_BY_MODE,
-} from "@mms/shared";
-import { buttonVariants } from "@shared/ui";
+} from "@mms/contracts";
+import { buttonVariants } from "@mms/ui";
 
 /**
  * The tint-contract case reads every source file synchronously. It takes well under a second on
@@ -32,11 +32,21 @@ const SOURCE_SCAN_TIMEOUT_MS = 60_000;
  * because a tint of the token lightens the surface the token is read against.
  *
  * Contrast uses the repository's own `getContrastRatio()`
- * (`packages/shared/src/brandingColorContrast.ts`) rather than a re-implementation,
+ * (`packages/contracts/src/brandingColorContrast.ts`) rather than a re-implementation,
  * so this test and the runtime branding/contrast tooling cannot drift.
  */
 
 const INDEX_CSS = path.resolve(import.meta.dirname, "../index.css");
+/**
+ * The `@theme` tokens and the semantic `:root`/`.dark` variables live in the
+ * shared Tailwind package (single source of truth for every web app);
+ * `index.css` keeps the app-specific layers. Read both so a token added to
+ * either stylesheet stays covered by the contrast contract.
+ */
+const THEME_CSS = path.resolve(
+  import.meta.dirname,
+  "../../../../tooling/tailwind-config/theme.css",
+);
 
 const AA_TEXT = 4.5;
 /** WCAG 1.4.11 non-text contrast, for focus indicators and UI boundaries. */
@@ -44,7 +54,7 @@ const AA_NON_TEXT = 3;
 /**
  * Strongest same-token tint used behind same-token text AT REST, per theme.
  *
- * Single-sourced from `@mms/shared`. It used to restate the number, so all three
+ * Single-sourced from `@mms/contracts`. It used to restate the number, so all three
  * copies drifted together when the dark value was measured wrong (`0.10`, from the
  * false claim that "dark — only `dark:bg-<role>/10` exists; there is no
  * `dark:bg-<role>/15`"): `dark:bg-info/15` and `dark:bg-<role>/20` both existed. The
@@ -61,7 +71,7 @@ function readTokenBlock(css: string, selector: string): Record<string, Hsl> {
   // and then reads the wrong block entirely.
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const located = new RegExp(`^\\s*${escaped}\\s*\\{`, "m").exec(css);
-  if (!located) throw new Error(`Selector ${selector} not found in index.css`);
+  if (!located) throw new Error(`Selector ${selector} not found in the theme stylesheets`);
   const open = css.indexOf("{", located.index);
   const close = css.indexOf("}", open);
   const block = css.slice(open + 1, close);
@@ -109,9 +119,32 @@ function tintOver(tintHex: string, baseHex: string, alpha: number): string {
   return `#${composited.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
 
-const css = readFileSync(INDEX_CSS, "utf-8");
+const css = readFileSync(THEME_CSS, "utf-8") + "\n" + readFileSync(INDEX_CSS, "utf-8");
 const light = readTokenBlock(css, ":root");
 const dark = readTokenBlock(css, ".dark");
+
+describe("tailwind theme — single shared token source", () => {
+  const indexCss = readFileSync(INDEX_CSS, "utf-8");
+  const appPackageJson = JSON.parse(
+    readFileSync(path.resolve(import.meta.dirname, "../../package.json"), "utf-8"),
+  ) as { devDependencies?: Record<string, string> };
+
+  it("imports the shared theme package from the app stylesheet", () => {
+    expect(indexCss).toContain('@import "@mms/tailwind-config/theme.css";');
+    expect(appPackageJson.devDependencies?.["@mms/tailwind-config"]).toBe("workspace:*");
+  });
+
+  it("scans the shared UI and contracts sources for utilities", () => {
+    // `@source` globs must stay in the app stylesheet: they resolve relative to
+    // the declaring file, and the shared package cannot know an app's layout.
+    for (const source of [
+      '@source "../../../packages/ui/src/**/*.{js,jsx,ts,tsx}";',
+      '@source "../../../packages/contracts/src/**/*.{js,jsx,ts,tsx}";',
+    ]) {
+      expect(indexCss).toContain(source);
+    }
+  });
+});
 
 /** Roles that must work as a fill, as text, and as text on their own tint. */
 const SEMANTIC_ROLES = ["primary", "destructive", "success", "warning", "info"] as const;
@@ -327,7 +360,7 @@ type ButtonStateDeclaration = {
 function readButtonStateDeclarations(selector: string): ButtonStateDeclaration[] {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const located = new RegExp(`^\\s*${escaped}\\s*\\{`, "m").exec(css);
-  if (!located) throw new Error(`Selector ${selector} not found in index.css`);
+  if (!located) throw new Error(`Selector ${selector} not found in the theme stylesheets`);
   const open = css.indexOf("{", located.index);
   const close = css.indexOf("}", open);
   const block = css.slice(open + 1, close);

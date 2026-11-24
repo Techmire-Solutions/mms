@@ -3,11 +3,11 @@ import {
   ATTENDANCE_LOOKUP_LEGACY_COLLECTION_KEYS,
   isAttendanceLookupLegacyCollectionKey,
   type AttendanceLookupKind,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { and, eq } from "drizzle-orm";
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
 
 type NormalizedAttendanceItem = {
   id: string;

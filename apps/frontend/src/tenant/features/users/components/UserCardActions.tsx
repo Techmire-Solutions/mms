@@ -1,4 +1,4 @@
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { DirectoryCardFooterActions } from "@/components/app/DirectoryCardFooterActions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { UsersRowActions } from "@/tenant/features/users/components/UsersRowActions";

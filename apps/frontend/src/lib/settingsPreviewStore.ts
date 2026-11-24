@@ -1,4 +1,4 @@
-import { mergeGlobalSettings, type BrandingSettings, type GlobalSettings } from "@mms/shared";
+import { mergeGlobalSettings, type BrandingSettings, type GlobalSettings } from "@mms/contracts";
 import {
   clearBrandingSettingsPreviewOverlay,
   clearGlobalSettingsPreviewOverlay,

@@ -1,7 +1,7 @@
 import SessionsTable from "@/components/dashboard-widgets/SessionsTable";
 import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { SessionsReportTodaySession } from "@mms/shared";
+import type { SessionsReportTodaySession } from "@mms/contracts";
 
 interface SessionReportDashboardWidgetsProps {
   todaysSessions: SessionsReportTodaySession[];

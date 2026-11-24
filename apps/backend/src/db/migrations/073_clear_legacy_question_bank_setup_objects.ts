@@ -3,10 +3,10 @@
  * Safe to re-run: skips delete when typed Setup rows are missing for that tenant.
  */
 import { eq } from "drizzle-orm";
-import { parseTenantScopedStorageKey, QUESTION_BANK_MODULE_MANIFEST } from "@mms/shared";
-import * as schema from "../schema.js";
+import { parseTenantScopedStorageKey, QUESTION_BANK_MODULE_MANIFEST } from "@mms/contracts";
+import * as schema from "@mms/db/schema";
 import { deleteObjectByStorageKey, listObjectStorageKeys } from "../database.js";
-import { withGlobalTenant, type TenantTransaction } from "../tenant-context.js";
+import { withGlobalTenant, type TenantTransaction } from "@mms/db/context";
 
 const SETTINGS_KEY = QUESTION_BANK_MODULE_MANIFEST.settingsObjectKey;
 

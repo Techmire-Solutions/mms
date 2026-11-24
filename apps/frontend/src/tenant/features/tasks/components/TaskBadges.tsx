@@ -1,5 +1,5 @@
 import React from "react";
-import { type TaskPriority, type TaskStatus, type AppTranslationKey } from "@mms/shared";
+import { type TaskPriority, type TaskStatus, type AppTranslationKey } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";

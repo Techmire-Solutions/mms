@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { usePlatformWorkspaceListActions } from "@/platform/features/workspaces/components/usePlatformWorkspaceListActions";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 
 const mockSetEnabledMutate = vi.fn();
 const mockSetEmailMutate = vi.fn();

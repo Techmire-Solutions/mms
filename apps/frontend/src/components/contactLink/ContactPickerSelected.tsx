@@ -1,6 +1,6 @@
 import React from "react";
 import { X, Mail, Phone, Camera } from "lucide-react";
-import { type Contact, getDisplayName, getPrimaryPhone, getPrimaryEmail } from "@mms/shared";
+import { type Contact, getDisplayName, getPrimaryPhone, getPrimaryEmail } from "@mms/contracts";
 import { cn } from "@/lib/utils";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { getGenderBadgeTone } from "@/lib/ui/genderUi";

@@ -6,7 +6,7 @@ import type {
   QuestionBankTest,
   QuestionBankResult,
   QuestionStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { invalidateQuestionBankQueries } from "./invalidateQuestionBankQueries";
 

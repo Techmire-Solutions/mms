@@ -12,8 +12,8 @@ description: MMS core invariants, standards mirroring, security, boundaries, and
 - **Data Safety:** RFC 8785 JSON audit outbox; soft-delete (`WHERE deleted_at IS NULL`); forward-only DDL.
 
 ## 2. Boundaries & Limits
-- **Layers:** `@mms/shared` = pure types/DTOs. `@shared/ui` = unified shared UI component primitives. TanStack Query server authority. Zero cross-feature imports.
-- **Shared UI Governance:** `@shared/ui` is the single source for reusable components; run `pnpm run check:shared-ui` before cleaning up legacy UI files. Norms → `mms-shared-ui.md` · `mms-dry.md` §1 · workflow `/shared-ui-audit`.
+- **Layers:** `@mms/contracts` = pure types/DTOs. `@mms/ui` = unified shared UI component primitives. TanStack Query server authority. Zero cross-feature imports.
+- **Shared UI Governance:** `@mms/ui` is the single source for reusable components; run `pnpm run check:shared-ui` before cleaning up legacy UI files. Norms → `mms-shared-ui.md` · `mms-dry.md` §1 · workflow `/shared-ui-audit`.
 - **Limits:** Strict TypeScript (zero `any`, no unsafe casts). 300 LOC hard cap per source file (ratcheted by `check:code-norms.mjs`).
 - **Modern Web Baseline:** Modern evergreen browsers. Execute `modern-web-guidance` first on all HTML/CSS/DOM/client-side JS tasks; zero polyfills; Baseline features native behind feature detection (`AGENTS.md`).
 

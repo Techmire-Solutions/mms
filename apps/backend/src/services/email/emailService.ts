@@ -3,7 +3,7 @@ import {
   type GlobalSettings,
   type SendEmailInput,
   type SendEmailResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createSmtpTransporter,
   resolveSmtpTransportOptions,

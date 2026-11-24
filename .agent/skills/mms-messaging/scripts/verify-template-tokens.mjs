@@ -3,13 +3,13 @@
  * Verify messaging template personalization tokens against the runtime allowlist.
  *
  * This used to print a green banner without reading anything: it resolved a
- * non-existent `packages/shared/src/messagingSchemas.ts`, kept a hardcoded copy of
+ * non-existent `packages/contracts/src/messagingSchemas.ts`, kept a hardcoded copy of
  * the token list (stale and different from the runtime set), and always exited 0.
  * A gate that cannot fail is worse than no gate.
  *
  * What it proves now:
  *   1. The allowlist is read from its single source of truth
- *      (`packages/shared/src/messaging/messagingPersonalizeUtils.ts`), so a drifted
+ *      (`packages/contracts/src/messaging/messagingPersonalizeUtils.ts`), so a drifted
  *      copy cannot pass.
  *   2. Every shipped default template (`DEFAULT_MESSAGE_TEMPLATES`) uses only
  *      allowlisted tokens.
@@ -25,8 +25,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const ROOT = process.cwd();
-const ALLOWLIST_SOURCE = resolve(ROOT, "packages/shared/src/messaging/messagingPersonalizeUtils.ts");
-const DEFAULTS_SOURCE = resolve(ROOT, "packages/shared/src/messaging/messagingTemplateSchemas.ts");
+const ALLOWLIST_SOURCE = resolve(ROOT, "packages/contracts/src/messaging/messagingPersonalizeUtils.ts");
+const DEFAULTS_SOURCE = resolve(ROOT, "packages/contracts/src/messaging/messagingTemplateSchemas.ts");
 
 const TOKEN_PATTERN = /\{([^}]*)\}/g;
 const failures = [];

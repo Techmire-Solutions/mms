@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { EmailIntegrationConfig } from "@mms/shared";
+import type { EmailIntegrationConfig } from "@mms/contracts";
 import type { Transporter } from "nodemailer";
 
 const nodemailerMocks = vi.hoisted(() => ({ createTransport: vi.fn() }));

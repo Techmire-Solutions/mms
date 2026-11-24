@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { resolveMigrationsFolder } from "@mms/db/testing";
 
-const drizzleDir = join(process.cwd(), "src/db/migrations_drizzle");
+const drizzleDir = resolveMigrationsFolder();
 
 describe("students deferred DB migrations (source)", () => {
   it("0016 adds gender expression index (historical; dropped by 0020)", () => {

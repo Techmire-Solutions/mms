@@ -7,7 +7,7 @@ import {
   type FacultyDuplicateReason,
   type FacultySettings,
   type ValidationError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { checkFacultyRegistrationDuplicate } from "@/tenant/features/faculty/hooks/useFaculty";
 import { scrollAndFocusFirstError } from "@/lib/forms/formAutoScroll";
 

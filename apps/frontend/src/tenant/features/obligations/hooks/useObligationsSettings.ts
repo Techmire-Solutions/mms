@@ -4,7 +4,7 @@ import {
   normalizeObligationsModulePreferences,
   type ObligationsModulePreferences,
   type ObligationsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   useComposedObligationsSettings,
   useObligationsPreferencesMutation,

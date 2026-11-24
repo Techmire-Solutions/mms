@@ -1,4 +1,4 @@
-import { MAX_MARKS_OBTAINED } from "@mms/shared";
+import { MAX_MARKS_OBTAINED } from "@mms/contracts";
 
 /** The mutable exam fields that participate in form validation. */
 export interface ExamFormDraftShape {

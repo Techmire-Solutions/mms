@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ModuleFieldDef } from "@mms/shared";
+import type { ModuleFieldDef } from "@mms/contracts";
 import type { AttendanceFilterState } from "@/tenant/features/attendance/components/AttendanceFilters";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 

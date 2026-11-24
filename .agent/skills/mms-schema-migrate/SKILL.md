@@ -20,9 +20,9 @@ metadata:
 
 | Concern | Path |
 |---------|------|
-| Soft-delete mixin | `apps/backend/src/db/schema/softDeleteSchema.ts` (`softDeleteColumns`) |
-| Migrations | `apps/backend/src/db/migrations_drizzle/` (+ `meta/_journal.json`) |
-| Drizzle config | `apps/backend/drizzle.config.ts` |
+| Soft-delete mixin | `packages/db/src/schema/softDeleteSchema.ts` (`softDeleteColumns`) |
+| Migrations | `packages/db/migrations_drizzle/` (+ `meta/_journal.json`) |
+| Drizzle config | `packages/db/drizzle.config.ts` |
 | Concurrent indexes | `pnpm --filter mms-backend index:concurrent` |
 | Integrity script | `scripts/check-migrations.sh` |
 
@@ -32,11 +32,11 @@ metadata:
 - **Multi-Tenancy**: Every tenant table requires `tenantId: uuid("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" })` and `FORCE ROW LEVEL SECURITY`.
 - **Primary & Temporal Keys**: `bigint` identity PK (high-write) or `uuid` PK (distributed); `TIMESTAMPTZ` with timezone for `createdAt`/`updatedAt`. Bounded `varchar(N)` for predictable text.
 - **Drizzle Relations & Types**: Define bidirectional `relations(entityTable, ...)` and export `$inferSelect` and `$inferInsert` types.
-- **Shared Zod Contracts**: Define matching write schemas in `packages/shared/src/schemas/` with `.strict()`.
+- **Shared Zod Contracts**: Define matching write schemas in `packages/contracts/src/schemas/` with `.strict()`.
 
 ## 2. Migration Execution Procedure
 
-1. **Author Schema**: Add/edit `apps/backend/src/db/schema/[entity].ts` and export from `schema.ts`.
+1. **Author Schema**: Add/edit `packages/db/src/schema/[entity].ts` and export from `schema.ts`.
 2. **Generate Migration**: Run `pnpm --filter mms-backend exec drizzle-kit generate` (requires `DATABASE_URL`). If generation is blocked by a malformed historical snapshot, stop and report; a hand-authored migration is a reviewed exception only (copy the previous snapshot, append the journal entry, document the reason in the PR). Never squash or alter existing committed migrations.
 
    > **Applied SQL is immutable; snapshot metadata is repairable.** `meta/*_snapshot.json` is drizzle-kit's diff input, not applied DDL, so repairing a malformed serialization (e.g. a missing `name`/`schema`, a `null` `prevId`, duplicate snapshot ids) is a *metadata repair*, not a retcon of history that has already run on a database. The `check-migrations-forward-only` ratchet exempts snapshots for this reason; `.sql` files and the hand-written TS data migrations remain byte-identical, and `_journal.json` remains append-only.

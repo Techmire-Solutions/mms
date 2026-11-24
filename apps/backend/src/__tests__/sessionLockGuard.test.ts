@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SessionSchema, type Session } from "@mms/shared";
+import { SessionSchema, type Session } from "@mms/contracts";
 import {
   assertSessionEditable,
   SessionLockedError,

@@ -1,7 +1,7 @@
 import { inArray, sql } from "drizzle-orm";
 import type pg from "pg";
-import { withTenant } from "../db/tenant-context.js";
-import { collections, objects } from "../db/schema.js";
+import { withTenant } from "@mms/db/context";
+import { collections, objects } from "@mms/db/schema";
 import { quoteIdent, SELF_REFERENCING_FKS } from "./resetAllModulesTables.js";
 
 export async function executeTenantResetTx(

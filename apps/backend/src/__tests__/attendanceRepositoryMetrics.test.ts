@@ -9,7 +9,9 @@ vi.mock("../lib/workspaceTimezone.js", () => ({
   getWorkspaceTimezone: (...args: unknown[]) => mockGetWorkspaceTimezone(...args),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: (...args: unknown[]) => mockWithTenantRead(...args),
 }));
 

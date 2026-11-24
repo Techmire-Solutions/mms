@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
 
 export interface UsePlatformAdminSelectionResult {

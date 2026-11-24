@@ -4,10 +4,10 @@ import {
   type ConsolidatedRow,
   type ConsolidationReport,
   type TranslatedRow,
-} from "@mms/shared";
-import { StatCard } from "@/components/app/StatCard";
+} from "@mms/contracts";
+import { StatCard } from "@mms/fe-core/components/StatCard";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 
 interface ConsolidationReportViewProps {
   report: ConsolidationReport;

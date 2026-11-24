@@ -4,7 +4,7 @@
  * Idempotent: only updates rows that still contain any of the keys.
  */
 import { sql } from "drizzle-orm";
-import { withGlobalTenant } from "../tenant-context.js";
+import { withGlobalTenant } from "@mms/db/context";
 
 export async function runMigration053(): Promise<void> {
   await withGlobalTenant(async (tx) => {

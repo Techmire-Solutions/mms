@@ -10,7 +10,7 @@ import {
   type FieldDefinition,
   getContactQualification,
   getContactSpecialization,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   DEFAULT_USER_ACCOUNT_DRAFT,
   extractEmployeeId,

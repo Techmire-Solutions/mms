@@ -2,13 +2,13 @@ import React from "react";
 import {
   PasswordInput as SharedPasswordInput,
   type PasswordInputProps as SharedPasswordInputProps,
-} from "@shared/ui";
+} from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export type PasswordInputProps = SharedPasswordInputProps;
 
 /**
- * Localized PasswordInput facade delegating to `@shared/ui`.
+ * Localized PasswordInput facade delegating to `@mms/ui`.
  * Auto-injects tenant translations for show/hide password buttons.
  */
 export const PasswordInput: React.FC<PasswordInputProps> = ({

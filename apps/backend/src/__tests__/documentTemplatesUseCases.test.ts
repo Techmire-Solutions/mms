@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DocumentTemplate, User } from "@mms/shared";
+import type { DocumentTemplate, User } from "@mms/contracts";
 
 const mocks = vi.hoisted(() => ({
   withTenant: vi.fn(async (_tenant: string, cb: () => Promise<unknown>) => cb()),
@@ -12,7 +12,9 @@ const mocks = vi.hoisted(() => ({
   recordModernAuditEvent: vi.fn(async () => undefined),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: mocks.withTenant,
   withTenantRead: mocks.withTenantRead,
 }));
@@ -31,7 +33,7 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: mocks.broadcastTenantUpdate,
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mocks.recordModernAuditEvent,
 }));
 

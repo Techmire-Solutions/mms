@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { TenantMessageComposerRecipientTable } from "./TenantMessageComposerRecipientTable";
-import type { StandardMessagingRecipient } from "@mms/shared";
+import type { StandardMessagingRecipient } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

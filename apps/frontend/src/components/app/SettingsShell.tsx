@@ -1,7 +1,7 @@
 import React from "react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { cn } from "@/lib/utils";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 

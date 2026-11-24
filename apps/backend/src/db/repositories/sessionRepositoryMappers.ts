@@ -12,7 +12,7 @@ import {
   type SessionClassRefreshment,
   type SessionClassScholarship,
   type ScholarshipEligibility,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   type sessionFaculty,
   type sessionClasses,
@@ -26,7 +26,7 @@ import {
   type scholarshipEligibilities,
   type sessionClassScholarships,
   type SessionReadRow,
-} from "../schema.js";
+} from "@mms/db/schema";
 import { mapAuditTimestamps, nullsToUndefined } from "./repositoryMappers.js";
 
 type SessionRow = SessionReadRow;

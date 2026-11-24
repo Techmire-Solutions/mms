@@ -1,4 +1,4 @@
-import type { BrandingSettings, GlobalSettings } from "@mms/shared";
+import type { BrandingSettings, GlobalSettings } from "@mms/contracts";
 import { applyAppTheme, applyBrandingTheme } from "@/lib/brandingTheme";
 import {
   clearAllPreviews,

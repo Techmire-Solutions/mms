@@ -1,5 +1,5 @@
 import { canReadCollection } from "../../../services/rbacService.js";
-import type { User, facultyContract } from "@mms/shared";
+import type { User, facultyContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import {
   findAssignmentManagerChain,

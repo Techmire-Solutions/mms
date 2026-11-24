@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import { startContactsDuplicateScan } from "@/lib/backgroundJobs/startServerContactsBackgroundJobs";
 import { startServerBackgroundJob } from "@/lib/backgroundJobs/startServerBackgroundJob";
 

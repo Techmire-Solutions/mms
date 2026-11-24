@@ -2,7 +2,7 @@ import { useState } from "react";
 import type React from "react";
 import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { LlmConfig, LlmTestResult } from "@mms/shared";
+import type { LlmConfig, LlmTestResult } from "@mms/contracts";
 import type { SandboxMessage } from "../lib/llmSettingsTypes";
 
 export function useLlmSettingsSandbox(configs: LlmConfig[]) {

@@ -11,7 +11,7 @@ import {
   User,
   type LucideIcon,
 } from "lucide-react";
-import { FACULTY_TAB_REGISTRY, type FacultySettings } from "@mms/shared";
+import { FACULTY_TAB_REGISTRY, type FacultySettings } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { resolveRegistryLabel } from "@/lib/contacts/contactI18n";
 

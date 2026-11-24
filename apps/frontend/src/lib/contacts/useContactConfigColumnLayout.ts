@@ -8,7 +8,7 @@ import {
   CONTACTS_MODULE_MANIFEST,
   type ColumnRegistryEntry,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useUiPreference } from "@/lib/useUiStateStore";
 
 export interface ContactConfigColumnLayoutOptions {

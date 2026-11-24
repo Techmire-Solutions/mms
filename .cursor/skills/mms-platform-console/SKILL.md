@@ -21,10 +21,10 @@ metadata:
 ## 1. Tenant = Platform Parity Principle
 
 All architecture rules apply equally to Platform Console code:
-- **No Forked UI Primitives**: Import shared primitives from `@shared/ui` (`Button`, `Table`, `Card`, `Modal`). Never hand-roll custom platform duplicates (`platformUiArchitecture.test.ts`).
+- **No Forked UI Primitives**: Import shared primitives from `@mms/ui` (`Button`, `Table`, `Card`, `Modal`). Never hand-roll custom platform duplicates (`platformUiArchitecture.test.ts`).
 - **Design Tokens**: Adhere to centralized design tokens, CSS variables, and layout contracts (`mms-ui-ux-design.mdc`).
 - **LTR Locking**: Unlike the BiDi/RTL tenant console, the Platform Apex Console is locked to LTR (`mms-settings-i18n.mdc` §5).
-- **Zod Strict Schemas**: All platform API payloads require `.strict()` DTO schemas defined in `@mms/shared`.
+- **Zod Strict Schemas**: All platform API payloads require `.strict()` DTO schemas defined in `@mms/contracts`.
 - **Source File Cap**: Files must strictly obey the 300 LOC hard ceiling (`check-code-norms.mjs`).
 
 ## 2. Platform Authentication & Authorization

@@ -16,7 +16,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
-const CONTRACT_DIR = path.join(ROOT, "packages/shared/src/contracts");
+const CONTRACT_DIR = path.join(ROOT, "packages/contracts/src/contracts");
 const TEST_ROOT = path.join(ROOT, "apps/backend/src/__tests__");
 
 function walk(dir, files = []) {

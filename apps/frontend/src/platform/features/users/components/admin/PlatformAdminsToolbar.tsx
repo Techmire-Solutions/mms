@@ -2,7 +2,7 @@ import React from "react";
 import { Download } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SubTabBar } from "@/components/app/SubTabBar";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { WorkTaskToolbar } from "@/components/common/work";
 import type { AdminRoleFilter } from "@/platform/features/users/PlatformAdminsList";
 import { toColumnCustomizer, type DataTableColumnLayout } from "@/components/common/data-table";

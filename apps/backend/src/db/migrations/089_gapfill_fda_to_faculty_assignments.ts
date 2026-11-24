@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { withGlobalTenant, withTenant } from "../tenant-context.js";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
 import { lockFacultyHierarchy } from "../repositories/facultyAssignmentValidation.js";
 
 /**

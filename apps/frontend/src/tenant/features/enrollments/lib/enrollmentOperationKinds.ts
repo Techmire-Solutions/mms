@@ -1,5 +1,5 @@
 import { ArrowRightLeft, LogOut, PauseCircle, RotateCcw, type LucideIcon } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 
 export type EnrollmentOperationKind = "transfer" | "withdraw" | "readmit" | "suspend";
 

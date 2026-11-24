@@ -4,7 +4,7 @@ import {
   todayISO,
   applyStudentScalarCustomFieldDefaults,
   STUDENT_WRITE_SYSTEM_KEYS,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 const STUDENT_FORM_VOLATILE_KEYS = new Set([
   "id",

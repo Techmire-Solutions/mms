@@ -5,9 +5,9 @@ re-reviews the module closed by #276 (`44871c86c`): the §3 table verifies those
 surfaces no earlier round reached.
 
 Scope: `apps/backend/src/routes/tenant/faculty/**`, `apps/backend/src/faculty/**`,
-`apps/backend/src/db/repositories/faculty*`, `apps/backend/src/db/schema/faculty*.ts`,
-`packages/shared/src/faculty/**`, `packages/shared/src/schemas/faculty*.ts`,
-`packages/shared/src/contracts/faculty*.ts`, `apps/frontend/src/tenant/features/faculty/**` (~200 files),
+`apps/backend/src/db/repositories/faculty*`, `packages/db/src/schema/faculty*.ts`,
+`packages/contracts/src/faculty/**`, `packages/contracts/src/schemas/faculty*.ts`,
+`packages/contracts/src/contracts/faculty*.ts`, `apps/frontend/src/tenant/features/faculty/**` (~200 files),
 the faculty manifest / route registration / module-access table, and the faculty DB + integration specs.
 
 Method: `read`/`grep`/`glob`, `git show 44871c86c`, `git log 44871c86c..HEAD`, a read-only i18n parity

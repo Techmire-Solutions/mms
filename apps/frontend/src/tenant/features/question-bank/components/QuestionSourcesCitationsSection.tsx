@@ -8,7 +8,7 @@ import {
   type QuestionBookCitation,
   type QuestionSourceBook,
   type QuestionSourceReference,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import {
   Field,

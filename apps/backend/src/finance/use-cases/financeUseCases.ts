@@ -1,7 +1,7 @@
 import type { FinanceRepository } from "../repository/financeRepository.js";
 import { financeRepository } from "../repository/financeRepositoryAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
-import { invoiceRecordSchema, paymentRecordSchema } from "@mms/shared";
+import { invoiceRecordSchema, paymentRecordSchema } from "@mms/contracts";
 import { createGenericRelationalService } from "../../services/genericRelationalService.js";
 import {
   dedupeTrimmedIds,
@@ -12,8 +12,8 @@ import {
   type Invoice,
   type Payment,
   type PaymentUpdate,
-} from "@mms/shared";
-import { withTenant } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { createFinanceLifecycleOperations } from "./financeRecordLifecycle.js";
 import { createFinanceMutationOperations } from "./financeMutationOperations.js";
 import { paymentAuditState, recordPaymentAudit } from "./financeAuditEvents.js";
@@ -283,8 +283,8 @@ export function createFinanceUseCases(repo: FinanceRepository = financeRepositor
     },
 
     loadFinanceWidgetAggregates: async (
-      queries: import("@mms/shared").WidgetQuery[],
-    ): Promise<Record<string, import("@mms/shared").WidgetAggregateResult>> => {
+      queries: import("@mms/contracts").WidgetQuery[],
+    ): Promise<Record<string, import("@mms/contracts").WidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateFinanceWidgetQueries(tenant, queries);

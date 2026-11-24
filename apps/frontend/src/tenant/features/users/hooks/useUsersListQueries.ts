@@ -1,4 +1,4 @@
-import { USERS_MODULE_MANIFEST } from "@mms/shared";
+import { USERS_MODULE_MANIFEST } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient, apiContract } from "@/lib/api";
 import {

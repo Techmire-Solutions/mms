@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { isContactRelationshipTabEnabled, type Contact } from "@mms/shared";
+import { isContactRelationshipTabEnabled, type Contact } from "@mms/contracts";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { FieldGroupCard } from "./ContactDetailShared";
 import { ContactDetailCollections } from "./ContactDetailCollections";

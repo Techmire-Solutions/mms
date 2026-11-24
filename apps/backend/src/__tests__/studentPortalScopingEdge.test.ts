@@ -79,7 +79,7 @@ vi.mock("../students/use-cases/studentConfigService.js", () => ({
   loadStudentsSettingsCombined: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({
     hashPrevious: "0".repeat(64),
     hashCurrent: "1".repeat(64),

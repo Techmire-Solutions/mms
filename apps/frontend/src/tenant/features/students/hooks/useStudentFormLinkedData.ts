@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
-import { formatDate, todayISO, type Student } from "@mms/shared";
+import { formatDate, todayISO, type Student } from "@mms/contracts";
 import {
   useStudentLinkedContactIds,
   useStudentNextGrNumber,

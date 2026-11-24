@@ -321,11 +321,11 @@ model a status vocabulary.
 | Check | Result |
 |---|---|
 | `apps/frontend` typecheck | pass |
-| `packages/shared` typecheck | pass |
+| `packages/contracts` typecheck | pass |
 | `e2e` typecheck | pass |
 | `apps/frontend` ESLint (`--quiet`) | pass — 0 errors, 0 BiDi violations under the **strengthened** rule |
 | `apps/frontend` vitest | **596 files / 1,813 tests pass** (0 failures) |
-| `packages/shared` vitest | **171 files / 1,229 tests pass** |
+| `packages/contracts` vitest | **171 files / 1,229 tests pass** |
 | `scripts/verify-rules-integrity.mjs` | pass — 38 skills, 21 rules |
 | `scripts/check-code-norms.mjs` | pass — includes the new inert-`@theme`-token check at baseline 0; verified to **exit 1** when `--font-size-*` is reintroduced |
 | BiDi sweep (2,539 files) | pass — 0 violations |

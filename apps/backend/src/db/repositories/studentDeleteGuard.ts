@@ -1,6 +1,6 @@
 import { sql, type SQL } from "drizzle-orm";
-import { withTenantRead } from "../tenant-context.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { withTenantRead } from "@mms/db/context";
+import { ConflictError } from "@mms/be-core/http/errors";
 import {
   facultyEmployments,
   financeInvoices,
@@ -8,7 +8,7 @@ import {
   tenantUsers,
   workshopEvents,
   workshopParticipants,
-} from "../schema.js";
+} from "@mms/db/schema";
 
 /**
  * Pre-deletion guard for students.

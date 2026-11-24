@@ -10,7 +10,7 @@ import {
   type FinanceSettings,
   type AttendanceSettings,
   type AccountingSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createStandardModuleConfigHook,
   type StandardModuleConfigCore,

@@ -4,7 +4,7 @@ import {
   workspaceRoleLabel,
   type ModuleColumnRegistryEntry,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   ModuleFilterDivider,
   ModuleFilterDropdown,

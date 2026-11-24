@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Copy, ExternalLink, Link2, Pencil, Plus, Trash2 } from "lucide-react";
-import { formatDate, type RegistrationLink, type Session } from "@mms/shared";
+import { formatDate, type RegistrationLink, type Session } from "@mms/contracts";
 import {
   DataTable,
   DataTableRowActions,

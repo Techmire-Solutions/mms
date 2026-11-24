@@ -1,4 +1,4 @@
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import { bindRequestAuditContext, bindRequestUserId, runWithTenant } from "../lib/tenantContext.js";
 import { resolveBackgroundJobAccessContext } from "../lib/backgroundJobModuleAccess.js";
 

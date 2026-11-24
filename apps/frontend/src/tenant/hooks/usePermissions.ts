@@ -12,7 +12,7 @@ import {
   roleHasPermission,
   type Permission,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
 
@@ -30,7 +30,7 @@ export interface UsePermissionsResult {
   permissions: readonly Permission[];
 }
 
-/** Centralised RBAC hook — delegates to `@mms/shared` dynamic role matrix and governance helpers. */
+/** Centralised RBAC hook — delegates to `@mms/contracts` dynamic role matrix and governance helpers. */
 export function usePermissions(): UsePermissionsResult {
   const { user } = useAuth();
   const workspaceRoles = useWorkspaceRoles();

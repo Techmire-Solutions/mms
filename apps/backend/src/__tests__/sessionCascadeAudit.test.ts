@@ -8,13 +8,15 @@ const h = vi.hoisted(() => {
   return { audit, outbox, sync, tx };
 });
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (_tenant: string, callback: (tx: unknown) => Promise<unknown>) => callback(h.tx),
 }));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => h.audit(...args),
 }));
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvents: (...args: unknown[]) => h.outbox(...args),
 }));
 vi.mock("../db/repositories/enrollmentSessionSync.js", () => ({

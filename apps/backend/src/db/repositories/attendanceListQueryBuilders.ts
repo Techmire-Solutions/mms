@@ -17,8 +17,8 @@ import {
   isQueryFlagTrue,
   toSqlSearchPattern,
   type AttendanceListQuery,
-} from "@mms/shared";
-import { attendance, sessionClasses } from "../schema.js";
+} from "@mms/contracts";
+import { attendance, sessionClasses } from "@mms/db/schema";
 
 /**
  * WHERE/ORDER BY builders for the Attendance list page. Split out of

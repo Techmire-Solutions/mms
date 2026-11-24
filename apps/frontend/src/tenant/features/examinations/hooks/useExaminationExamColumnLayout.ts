@@ -1,5 +1,8 @@
 import { useMemo } from "react";
-import { EXAMINATIONS_MODULE_MANIFEST, buildExaminationExamWorkColumnRegistry } from "@mms/shared";
+import {
+  EXAMINATIONS_MODULE_MANIFEST,
+  buildExaminationExamWorkColumnRegistry,
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

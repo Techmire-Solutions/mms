@@ -6,7 +6,7 @@ import {
   type PublicRegistrationView,
   type RegistrationLink,
   type Session,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /** Classes a link offers (no explicit list = every class of the session). */
 export function linkClasses(link: RegistrationLink, session: Session): Class[] {

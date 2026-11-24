@@ -47,7 +47,7 @@ bound.
 ## What changed
 
 **A. Register/matrix export (streaming, injection-safe)**
-- `packages/shared/src/attendance/attendanceMatrix.ts`: grid builder (status codes, per-student
+- `packages/contracts/src/attendance/attendanceMatrix.ts`: grid builder (status codes, per-student
   totals, percentage, daily totals), range validation (`ATTENDANCE_MATRIX_MAX_DAYS = 92`),
   `ATTENDANCE_MATRIX_MAX_CELLS = 200_000` for materialised formats.
 - `services/attendanceMatrixExportService.ts`: roster read **100 students at a time**, marks fetched
@@ -65,7 +65,7 @@ bound.
 **B. Device check-in ingestion**
 - Contract `POST /api/attendance/check-ins` (≤ 2,000 rows, `attendance.write` + section scope) →
   `{ accepted, duplicates, rejected[], records[] }`.
-- `packages/shared/src/attendance/checkInTime.ts`: `HH:mm`, ISO-8601, epoch → workspace day + wall
+- `packages/contracts/src/attendance/checkInTime.ts`: `HH:mm`, ISO-8601, epoch → workspace day + wall
   clock; rejects malformed values, future dates, and anything older than
   `ATTENDANCE_CHECKIN_LATE_WINDOW_DAYS = 7`.
 - `attendanceCheckInUseCases.ts`: validate-all-then-write, atomic upsert of accepted rows;

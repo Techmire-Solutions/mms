@@ -5,7 +5,9 @@ import facultyRoutes from "../routes/tenant/faculty.js";
 const { loadPage, loadOne } = vi.hoisted(() => ({ loadPage: vi.fn(), loadOne: vi.fn() }));
 vi.mock("../middleware/authenticate.js", () => ({ authenticateTenant: async () => {} }));
 vi.mock("../middleware/requireTenantModule.js", () => ({ registerModuleAccess: vi.fn() }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (_tenant: string, work: () => Promise<unknown>) => work(),
 }));
 vi.mock("../routes/tenant/faculty/index.js", () => ({

@@ -76,7 +76,7 @@ And nothing could notice: **S1** — no report, dashboard, export or reconciliat
 
 ### 1.2 What was applied
 
-New pure validator [`financePaymentAllocations.ts`](../packages/shared/src/finance/financePaymentAllocations.ts):
+New pure validator [`financePaymentAllocations.ts`](../packages/contracts/src/finance/financePaymentAllocations.ts):
 
 | Violation | Rule |
 |---|---|
@@ -131,7 +131,7 @@ HAVING ROUND(COALESCE(i.paid_amt, 0) * 100) <> ROUND(COALESCE(SUM(a.amount), 0) 
 
 **I2** is the consequence worth writing down: because the amount is per period, a reader who treats `finalAmt` as a session total will be off by the number of periods.
 
-**If it is built** (D6), the arithmetic is already proven twice in this repo: largest-remainder in [`obligationSplitAllocation.ts`](../packages/shared/src/finance/obligationSplitAllocation.ts) (assign the leftover minor unit to the largest fractional part, never to a line that would go negative) and BigInt basis points in [`financeCollect.computeLateFee`](../packages/shared/src/finance/financeCollect.ts#L9). The remaining decision is *where* the remainder goes — first or final installment — which the brief leaves open and the product must choose.
+**If it is built** (D6), the arithmetic is already proven twice in this repo: largest-remainder in [`obligationSplitAllocation.ts`](../packages/contracts/src/finance/obligationSplitAllocation.ts) (assign the leftover minor unit to the largest fractional part, never to a line that would go negative) and BigInt basis points in [`financeCollect.computeLateFee`](../packages/contracts/src/finance/financeCollect.ts#L9). The remaining decision is *where* the remainder goes — first or final installment — which the brief leaves open and the product must choose.
 
 ---
 
@@ -150,7 +150,7 @@ while the figure the rest of Finance shows is `finalAmt + lateFeeAmt − credite
 **Applied:** the lateral now includes `COALESCE(fi.late_fee_amt, 0)`, keeping the same `GREATEST(0, …)` per-invoice clamp so a credit on one invoice cannot mask a debt on another, and the same `deleted_at IS NULL` / `status <> 'cancelled'` / `enrollment_id = e.id` scoping. Pinned by:
 
 - [`sessionCompletionGateDues.test.ts`](../apps/backend/src/__tests__/sessionCompletionGateDues.test.ts) — a source-level assertion that the lateral still contains each component (late fee, paid, credited, clamp, scoping). A single SQL lateral that cannot be executed without a database is exactly where a text assertion earns its keep: removing `late_fee_amt` is otherwise a silent gate bypass.
-- [`financeInvoiceAmounts.test.ts`](../packages/shared/src/finance/financeInvoiceAmounts.test.ts) — the canonical rule: a late-fee-only invoice is worth 10, not 0.
+- [`financeInvoiceAmounts.test.ts`](../packages/contracts/src/finance/financeInvoiceAmounts.test.ts) — the canonical rule: a late-fee-only invoice is worth 10, not 0.
 - The existing DB integration suite (`sessionCompletionDb`) remains the end-to-end proof in CI.
 
 ### 3.2 W6 / W7 — the gate's guardrails, verified
@@ -175,7 +175,7 @@ A waiver is `createCreditNote`: lock the invoice, `canCreditInvoice` (open statu
 
 | Area | Change |
 | --- | --- |
-| Shared | new [`financePaymentAllocations.ts`](../packages/shared/src/finance/financePaymentAllocations.ts) (9 tests) + barrel export; late-fee canonical case in `financeInvoiceAmounts.test.ts` |
+| Shared | new [`financePaymentAllocations.ts`](../packages/contracts/src/finance/financePaymentAllocations.ts) (9 tests) + barrel export; late-fee canonical case in `financeInvoiceAmounts.test.ts` |
 | Finance write path | allocation invariants enforced before any write in `createPayment` and in `updatePaymentById`; `settlePayment` now takes the validated rows |
 | Finance reversal | `applyCollectedDelta` keeps a fully credited invoice settled |
 | Sessions gate | `late_fee_amt` added to the completion-gate dues lateral |

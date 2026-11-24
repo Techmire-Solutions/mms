@@ -4,9 +4,9 @@
  */
 
 import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { type TaskListQuery, type TaskRecord } from "@mms/shared";
-import { taskAssignees, tasks, tenantUsers, workspaces } from "../schema.js";
-import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { type TaskListQuery, type TaskRecord } from "@mms/contracts";
+import { taskAssignees, tasks, tenantUsers, workspaces } from "@mms/db/schema";
+import { withTenantRead, type TenantTransaction } from "@mms/db/context";
 import { fetchAssigneesByTaskIds } from "./tasksAssigneesRepository.js";
 import { buildTaskFilterConditions } from "./tasksFilterConditions.js";
 

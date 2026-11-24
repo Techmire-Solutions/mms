@@ -6,7 +6,7 @@ import {
   type PromotionPreviewRow,
   type SessionRolloverInput,
   type SessionRolloverRun,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 export { SESSION_ROLLOVER_RUNS_QUERY_KEY } from "./sessionQueryKeys.js";

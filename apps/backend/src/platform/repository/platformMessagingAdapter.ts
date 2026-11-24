@@ -8,7 +8,7 @@ import {
   restorePlatformMessage,
   savePlatformMessageTemplate,
 } from "../../db/repositories/platformMessagingRepository.js";
-import { listPlatformContacts } from "../../db/repositories/platformContactsRepository.js";
+import { listPlatformContacts } from "@mms/mod-contacts/backend/repository";
 import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";
 
 export interface PlatformMessagingRepository {

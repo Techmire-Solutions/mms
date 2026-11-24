@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { Invoice, Payment } from "@mms/shared";
+import type { Invoice, Payment } from "@mms/contracts";
 
 const mockLedgerPosting = vi.hoisted(() => ({
   tryPostArchiveReversalJournal: vi.fn(),

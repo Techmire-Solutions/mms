@@ -8,8 +8,8 @@ import {
   buildAttendanceMatrixFooter,
   type AttendanceMatrixStatus,
   type AttendanceMatrixStudent,
-} from "@mms/shared";
-import { buildCsvContent } from "@mms/shared";
+} from "@mms/contracts";
+import { buildCsvContent } from "@mms/contracts";
 
 /** Matrix grid + caps + CSV safety. The injection test is the point: a student name is user data. */
 

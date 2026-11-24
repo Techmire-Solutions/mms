@@ -10,7 +10,7 @@ import {
   type SessionCertificatesBody,
   type SessionCompletionActionBody,
   type SessionCompletionRow,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import { sessionCompletionRepository as repo } from "../repository/sessionCompletionRepositoryAdapter.js";
 import type { CompletionFactRow } from "../repository/sessionCompletionRepository.js";
@@ -18,8 +18,8 @@ import type { CompletionGateRow } from "../repository/sessionCompletionRepositor
 import { broadcastCollection } from "../../lib/livePush.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { runAfterCommit } from "../../db/commitScope.js";
+import { withTenant } from "@mms/db/context";
+import { runAfterCommit } from "@mms/db/client";
 import { workspaceToday } from "./sessionLockGuard.js";
 import { CompletionBlockedError } from "./sessionCompletionErrors.js";
 

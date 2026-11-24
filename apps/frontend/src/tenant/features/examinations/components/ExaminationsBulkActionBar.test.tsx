@@ -18,6 +18,17 @@ vi.mock("@/components/app/ModuleWorkBulkActionBar", () => ({
   ),
 }));
 
+vi.mock("@mms/fe-core/i18n", () => ({
+  useTranslation: () => ({
+    language: "en",
+    dir: "ltr",
+    isRtl: false,
+    isLoading: false,
+    t: (key: string, params?: Record<string, string | number>) =>
+      params?.count ? `${params.count} selected` : key,
+  }),
+}));
+
 describe("ExaminationsBulkActionBar Component", () => {
   it("renders bulk actions bar with count label", () => {
     const html = renderToStaticMarkup(

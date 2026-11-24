@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCheckInTime } from "@mms/shared";
+import { parseCheckInTime } from "@mms/contracts";
 
 /** Device timestamp normalisation: wall clock, ISO with offset, epoch; bounds and ambiguity. */
 

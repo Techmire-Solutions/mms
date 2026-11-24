@@ -66,7 +66,7 @@ describe("FacultyFormTabContent Component", () => {
             phones: [{ number: "+923001234567" }],
             emails: [{ address: "umar@example.com" }],
             education: [{ degree: "M.A. Islamic Studies", fieldOfStudy: "Tajweed" }],
-          } as unknown as import("@mms/shared").Contact
+          } as unknown as import("@mms/contracts").Contact
         }
       />,
     );

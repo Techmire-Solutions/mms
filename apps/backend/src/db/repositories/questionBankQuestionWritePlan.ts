@@ -3,7 +3,7 @@ import {
   normalizeQuestionBankQuestion,
   validateQuestionByType,
   type QuestionBankQuestion,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   assessmentResults,
   questions,
@@ -11,8 +11,8 @@ import {
   testSectionQuestions,
   testSections,
   tests,
-} from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+} from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 import {
   assertQuestionEditable,
   questionInvariantsError,

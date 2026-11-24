@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ServerCog } from "lucide-react";
-import { MIGRATE_AND_RESTART_CONFIRM } from "@mms/shared";
-import { Button, SectionCard, TypedConfirmDialog } from "@shared/ui";
+import { MIGRATE_AND_RESTART_CONFIRM } from "@mms/contracts";
+import { Button, SectionCard, TypedConfirmDialog } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import {

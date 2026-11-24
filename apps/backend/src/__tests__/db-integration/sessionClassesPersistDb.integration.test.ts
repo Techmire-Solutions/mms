@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { SessionSchema, type Session } from "@mms/shared";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { SessionSchema, type Session } from "@mms/contracts";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant } from "@mms/db/context";
 import {
   workspaces,
   students,
@@ -11,7 +11,7 @@ import {
   sessionClassFees,
   sessionClassTimetablePeriods,
   enrollments,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { withTenant, withTenantRead, withGlobalTenant } from "../tenant-context.js";
-import { questionBankModulePreferences } from "../schema.js";
-import type { QuestionBankModulePreferences } from "@mms/shared";
+import { withTenant, withTenantRead, withGlobalTenant } from "@mms/db/context";
+import { questionBankModulePreferences } from "@mms/db/schema";
+import type { QuestionBankModulePreferences } from "@mms/contracts";
 
 export async function replaceQuestionBankModulePreferencesForWorkspace(
   workspaceSubdomain: string,

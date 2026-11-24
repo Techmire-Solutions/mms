@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { AnimatePresence } from "framer-motion";
-import type { Contact, StandardMessagingRecipient } from "@mms/shared";
+import type { Contact, StandardMessagingRecipient } from "@mms/contracts";
 import {
   ModuleDrawerLoadingSkeleton,
   ModuleOverlayLoadingFallback,

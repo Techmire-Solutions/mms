@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { MigrateAndRestartAccepted, PlatformSettings } from "@mms/shared";
+import type { MigrateAndRestartAccepted, PlatformSettings } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { useTranslation } from "@/hooks/useTranslation";

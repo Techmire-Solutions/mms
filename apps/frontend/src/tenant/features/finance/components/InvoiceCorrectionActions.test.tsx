@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Invoice } from "@mms/shared";
+import type { Invoice } from "@mms/contracts";
 
 /**
  * Regression 1: a same-frame double submit recorded two credit notes because the

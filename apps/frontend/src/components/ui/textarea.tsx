@@ -1,1 +1,1 @@
-export { Textarea, type TextareaProps } from "@shared/ui";
+export { Textarea, type TextareaProps } from "@mms/ui";

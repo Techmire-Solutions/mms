@@ -3,7 +3,7 @@ import {
   buildTenantExportFilename,
   isSystemMetadataKey,
   type BackgroundJobRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useOptionalTenant } from "@/lib/contexts/TenantContext";
 import { downloadBackgroundJobArtifact } from "@/lib/backgroundJobs/backgroundJobApi";
 import {

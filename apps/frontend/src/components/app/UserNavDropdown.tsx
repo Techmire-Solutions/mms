@@ -1,1 +1,1 @@
-export { UserNavDropdown, type UserNavDropdownProps } from "@shared/ui";
+export { UserNavDropdown, type UserNavDropdownProps } from "@mms/ui";

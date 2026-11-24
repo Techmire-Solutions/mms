@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle, Sparkles } from "lucide-react";
 import { SectionCard } from "@/components/app/SectionCard";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { LlmTestResult } from "@mms/shared";
+import type { LlmTestResult } from "@mms/contracts";
 
 interface LlmConfigTestResultPanelProps {
   testResult: LlmTestResult;

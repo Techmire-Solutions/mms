@@ -10,7 +10,7 @@ import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { FormListFieldCard } from "@/components/app/FormPrimitives";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ContactSkill } from "@mms/shared";
+import type { ContactSkill } from "@mms/contracts";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 import { ContactSkillDetailsSection } from "./ContactSkillDetailsSection";
 

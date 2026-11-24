@@ -3,7 +3,7 @@ import {
   EXAMINATIONS_MODULE_MANIFEST,
   examinationsCsvExportBodySchema,
   examinationsImportBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
 import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";

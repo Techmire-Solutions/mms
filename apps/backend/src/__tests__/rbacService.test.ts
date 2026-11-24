@@ -5,7 +5,7 @@ import {
   STUDENT_CARD_TEMPLATE_OBJECT_KEY,
   MESSAGING_MODULE_MANIFEST,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   canBulkSync,
   canDeleteContacts,

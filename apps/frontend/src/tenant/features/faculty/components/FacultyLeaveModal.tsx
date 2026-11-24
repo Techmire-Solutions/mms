@@ -21,7 +21,7 @@ import {
   type FacultyLeaveCategory,
   type FacultyMember,
   type FacultyRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useFacultyContractList } from "@/tenant/features/faculty/hooks/useFacultyTsrQueries";
 
 export interface FacultyLeaveModalProps {

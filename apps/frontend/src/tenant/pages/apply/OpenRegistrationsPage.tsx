@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, ClipboardList, Users } from "lucide-react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { AuthPageFrame } from "@/components/entry";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/app/EmptyState";

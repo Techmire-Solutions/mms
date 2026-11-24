@@ -10,7 +10,7 @@ An audit of `apps/frontend/src` (2026-09-20) established that the original 7-pha
 
 - **No `routes/tenant/` or `routes/platform/` exist.** Actual layout: `tenant/routes/TenantRoutes.tsx` + `tenant/features/<module>/` (17 modules) and `platform/routes/ApexRoutes.tsx` + `platform/pages|components/`. Host-based split in `components/routing/HostRoutes.tsx`.
 - **Tenant is already consolidated.** 17/17 pages on `ModuleScaffold` (via `components/ui/ModulePageShell.tsx`), 14/14 entity detail drawers on `components/ui/DetailDrawerShell.tsx`, all directory cards on `DirectoryCardsGrid`/`DirectoryEntityCard`, zero native `<select>`, all create/edit via `FormModal` + `FormField`/`FormSelect`.
-- **A field/column registry SSOT already exists in `@mms/shared`** (`packages/shared/src/`): `FieldDefinition`, `TabDefinition`, `ColumnRegistryEntry`, `FieldConfig` envelope, per-module seeds (`contactFieldSeed.ts`, `moduleFieldSetupPersons.ts`, …), column layer (`moduleColumnCore.ts`, per-domain registries, `applyModuleColumnOverlay`), and sync modules. Any descriptor work **extends** this system; it does not create a parallel registry.
+- **A field/column registry SSOT already exists in `@mms/shared`** (`packages/contracts/src/`): `FieldDefinition`, `TabDefinition`, `ColumnRegistryEntry`, `FieldConfig` envelope, per-module seeds (`contactFieldSeed.ts`, `moduleFieldSetupPersons.ts`, …), column layer (`moduleColumnCore.ts`, per-domain registries, `applyModuleColumnOverlay`), and sync modules. Any descriptor work **extends** this system; it does not create a parallel registry.
 - **Token reality.** Tailwind v4 CSS-first (`src/index.css`, `@theme inline`, no `tailwind.config`). Semantic utilities are shadcn-HSL: `bg-card`, `text-muted-foreground`, `bg-primary`, `border-border`, `text-success`, … backed by `:root`/`.dark` CSS vars. TS class-string SSOTs: `src/lib/semanticTone.ts` (`SURFACE`, `SEMANTIC_BADGE/TEXT/BG`, …) and `src/components/ui/formStyles.ts` (`FORM_CARD`, `WORK_SURFACE`, …). **The brief's example tokens (`bg-surface`, `text-text-primary`, `bg-brand-primary`) do not exist** and will not be introduced as a rename.
 - **Platform tree is a parallel universe.** `PlatformPageShell`/`PlatformSidebar`/`PlatformCommandPalette` (per-page shell opt-in, no route-level layout), parallel `PlatformWorkspaceCards/Table`, `PlatformAdminCards/Table/Badges`, bespoke forms with zero `FormModal`/`FormField`/`DetailDrawerShell` reuse, manual tab state in `PlatformConsole.tsx`.
 - **Residual hardcoded styles are narrow.** Two files hold 44/56 raw-palette matches: `tenant/features/dashboard/components/SetupIncompleteCallout.tsx` (21) and `tenant/features/settings/components/ThemeModeSelector.tsx` (23). The rest is print-template CSS (`CertificatePreview.tsx`, `FinanceTemplateEditor.tsx`, `paperBuilderUtils.ts`, invoice print previews) and data-driven colors (hasanat denominations), plus virtualizer spacers.
@@ -31,7 +31,7 @@ An audit of `apps/frontend/src` (2026-09-20) established that the original 7-pha
 
 ## 3. Sub-project B — Entity Attribute Descriptor layer
 
-### 3.1 Shared types (`packages/shared/src/`)
+### 3.1 Shared types (`packages/contracts/src/`)
 
 New `entityPresentation.ts` (exact exported names are fixed in Sub-project B's implementation plan; types are FE-consumed pure types, Zod-strict if any later cross the API):
 

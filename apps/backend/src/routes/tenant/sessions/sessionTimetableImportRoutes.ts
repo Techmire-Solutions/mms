@@ -5,15 +5,12 @@ import {
   sessionTimetableImportBodySchema,
   type Class,
   type Session,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { canWriteCollection } from "../../../services/rbacService.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
-import {
-  recordModernAuditEvent,
-  mapActionStringToAuditType,
-} from "../../../services/auditTrailService.js";
+import { recordModernAuditEvent, mapActionStringToAuditType } from "@mms/be-core/audit";
 import { sessionsUseCases } from "../../../sessions/use-cases/sessionsUseCases.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;

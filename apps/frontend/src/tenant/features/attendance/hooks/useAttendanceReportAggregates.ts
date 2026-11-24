@@ -1,5 +1,5 @@
-import type { AttendanceReportAggregates, AttendanceReportComparisonQuery } from "@mms/shared";
-import { normalizeAttendanceReportComparisonQuery } from "@mms/shared";
+import type { AttendanceReportAggregates, AttendanceReportComparisonQuery } from "@mms/contracts";
+import { normalizeAttendanceReportComparisonQuery } from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { useAuth } from "@/lib/contexts/AuthContext";
 

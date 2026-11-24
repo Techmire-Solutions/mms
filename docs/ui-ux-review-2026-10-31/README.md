@@ -231,7 +231,7 @@ below it; finance shows `Rs 1,100`, accounting shows `Rs 0.00`, and Arabic shows
 to `Rs ٠`. Two formatters are in play: `formatMoney()` defaults to the ISO code, while
 `useFinanceCurrency().formatCurrency` (and many explicit `useSymbol: true` calls) emit the symbol.
 
-- Cause: `packages/shared/src/finance/moneyFormatUtils.ts:145` (prefix defaults to code) versus
+- Cause: `packages/contracts/src/finance/moneyFormatUtils.ts:145` (prefix defaults to code) versus
   `apps/frontend/src/hooks/useCurrency.ts:26`; dashboard resolvers call the former while summary
   widgets call the latter.
 - Direction: pick one presentation per surface role (code for KPIs, symbol for line items is
@@ -325,7 +325,7 @@ one label), and `contacts.form.closeCropper` is literally `کropper بند کر�
 to a Latin word. Arabic and Persian translate these terms fully, so this is a stray Urdu
 translation, not a policy.
 
-- Cause: `packages/shared/src/i18n/appTranslationsUr.ts:2477-2478`, and the `closeCropper` key.
+- Cause: `packages/contracts/src/i18n/appTranslationsUr.ts:2477-2478`, and the `closeCropper` key.
 - Direction: translate to ہم آہنگی / کراپر; add a lint rule for Latin letters embedded without a
   word boundary in ur/ar/fa values.
 

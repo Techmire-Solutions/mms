@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { FACULTY_MODULE_MANIFEST, type Faculty, type FacultyQuickFilter } from "@mms/shared";
+import { FACULTY_MODULE_MANIFEST, type Faculty, type FacultyQuickFilter } from "@mms/contracts";
 import { BookOpen, Layers, Users } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";

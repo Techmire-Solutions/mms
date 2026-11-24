@@ -6,18 +6,18 @@
  * route plugin: the API and the worker are separate processes, and a runner registered only in the
  * API makes the enqueue succeed and then dead-letter in the worker.
  */
-import { getDisplayName, type ObligationTransferEntity } from "@mms/shared";
+import { getDisplayName, type ObligationTransferEntity } from "@mms/contracts";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
-import { OBLIGATIONS_MODULE_MANIFEST } from "@mms/shared";
+import { OBLIGATIONS_MODULE_MANIFEST } from "@mms/contracts";
 import {
   buildObligationsCsvExport,
   type ObligationsExportOptions,
 } from "./obligationsExportService.js";
 import { obligationsUseCases } from "../obligations/use-cases/obligationsUseCases.js";
 import { obligationsRepository } from "../obligations/repository/obligationsRepositoryAdapter.js";
-import { loadContactsPage } from "../contacts/use-cases/contactLoadUseCases.js";
+import { loadContactsPage } from "@mms/mod-contacts/backend/use-cases";
 
 export function registerObligationsJobRunners(): void {
   registerModuleCsvExportJobRunner({

@@ -1,4 +1,8 @@
-import { dedupeTrimmedIds, type QuestionBankQuestion, type QuestionBankResult } from "@mms/shared";
+import {
+  dedupeTrimmedIds,
+  type QuestionBankQuestion,
+  type QuestionBankResult,
+} from "@mms/contracts";
 import type { QuestionBankRepository } from "../repository/questionBankRepository.js";
 import { scoreAssessment } from "../domain/questionScoring.js";
 

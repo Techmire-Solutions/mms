@@ -3,7 +3,7 @@ import {
   formatDateToIso,
   type MessagingStatusFilter,
   type ModuleColumnRegistryEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessagingFiltersMenuButton } from "./MessagingFiltersMenuButton";

@@ -7,7 +7,7 @@
 import { apiContract, tsrClient } from "@/lib/api";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
-import type { ContactPickerSearchQuery, ContactsQuickFilter } from "@mms/shared";
+import type { ContactPickerSearchQuery, ContactsQuickFilter } from "@mms/contracts";
 import {
   CONTACTS_FIELD_CONFIG_QUERY_KEY,
   CONTACTS_QUERY_KEY,

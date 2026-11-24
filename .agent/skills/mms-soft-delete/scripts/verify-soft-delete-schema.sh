@@ -17,7 +17,7 @@ node -e '
 const fs = require("node:fs");
 const path = require("node:path");
 
-const schemaDir = path.resolve("apps/backend/src/db/schema");
+const schemaDir = path.resolve("packages/db/src/schema");
 const files = fs.readdirSync(schemaDir).filter(f => f.endsWith(".ts"));
 
 let issues = 0;

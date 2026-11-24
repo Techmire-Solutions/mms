@@ -7,7 +7,7 @@ grouped by the invariant they protect; **Status** records what exists today, **W
 
 | Invariant | Status | Where |
 |---|---|---|
-| Raw-score grading; `passed` and grade can never disagree | ✅ | `packages/shared/src/examinations/resultScoring.test.ts` |
+| Raw-score grading; `passed` and grade can never disagree | ✅ | `packages/contracts/src/examinations/resultScoring.test.ts` |
 | Exam-specific pass mark (not a hardcoded 50) | ✅ | same |
 | Grace adds to the effective score without rewriting the raw mark | ✅ | same + `examinationSubsystemsDb` |
 | Zero/negative total never yields Infinity/A+ | ✅ | same |
@@ -136,7 +136,7 @@ grouped by the invariant they protect; **Status** records what exists today, **W
 3. **Route-level lock test** — real eligibility + persist behind `fastify.inject` (409), and a
    route-level wrong-section 403 (unit mock today).
 4. **E2E smoke** — enter marks → save → publish → grid locked → print preview has `dir="rtl"`.
-5. **CI ratchets** — coverage floor (`packages/shared/src/examinations/**` ≥90% lines), and
+5. **CI ratchets** — coverage floor (`packages/contracts/src/examinations/**` ≥90% lines), and
    `check:tdd-pairing --strict` for `use-cases/`.
 
 ## Non-goals

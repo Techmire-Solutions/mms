@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type React from "react";
-import type { StudentsQuickFilter } from "@mms/shared";
+import type { StudentsQuickFilter } from "@mms/contracts";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
 import { WorkTaskToolbar } from "@/components/common/work";

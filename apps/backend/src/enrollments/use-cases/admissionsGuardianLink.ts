@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import type { Contact, RelationshipContact, User } from "@mms/shared";
-import { upsertContact } from "../../contacts/use-cases/contactWriteUseCases.js";
+import type { Contact, RelationshipContact, User } from "@mms/contracts";
+import { upsertContact } from "@mms/mod-contacts/backend/use-cases";
 
 /** Relationship label written on the student's contact for an application guardian. */
 export const GUARDIAN_RELATIONSHIP = "guardian";

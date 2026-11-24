@@ -92,7 +92,7 @@ test("route matcher tolerates placeholders, query strings and template interpola
 
 test("the checked-in matrix covers every contract route with the library's classification", () => {
   const root = process.cwd();
-  const contractDir = path.join(root, "packages/shared/src/contracts");
+  const contractDir = path.join(root, "packages/contracts/src/contracts");
   const routes = new Set();
   for (const name of fs.readdirSync(contractDir).filter((f) => /^accounting.*\.ts$/.test(f))) {
     const source = fs.readFileSync(path.join(contractDir, name), "utf8");

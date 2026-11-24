@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Contact, ValidationError } from "@mms/shared";
+import type { Contact, ValidationError } from "@mms/contracts";
 import {
   readContactErrorFieldValue,
   reconcileContactValidationErrors,

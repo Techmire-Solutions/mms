@@ -9,9 +9,9 @@ import {
   type HasanatReportComparisonMonth,
   type HasanatReportComparisonQuery,
   type HasanatReportComparisonSession,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getQueryRows } from "../documentStoreKeys.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 
 function activeDistributionWhere(subdomain: string, alias = "hd"): ReturnType<typeof sql> {
   return sql`

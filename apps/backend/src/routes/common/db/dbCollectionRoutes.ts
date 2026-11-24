@@ -5,17 +5,17 @@ import {
   canWriteCollection,
   isAllowedCollectionName,
 } from "../../../services/rbacService.js";
-import { WORKSPACES_COLLECTION } from "@mms/shared";
-import type { User } from "@mms/shared";
-import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
+import { WORKSPACES_COLLECTION } from "@mms/contracts";
+import type { User } from "@mms/contracts";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 
 /** Collection names that always generate an audit event on write. */
 const AUDITED_COLLECTIONS = new Set(["users", "contacts"]);
 
 import { SYNC_MAX_BODY_BYTES } from "../../../lib/syncLimits.js";
-import { collectionSaveBodySchema, resourceNameParamsSchema } from "@mms/shared";
+import { collectionSaveBodySchema, resourceNameParamsSchema } from "@mms/contracts";
 import type { z } from "zod";
 
 /** Normalize a collection save body — arrays pass through, `{ data }` objects unwrap. */

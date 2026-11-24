@@ -1,11 +1,11 @@
 import type { FastifyPluginAsync } from "fastify";
-import type { User } from "@mms/shared";
-import { questionBankContract } from "@mms/shared";
+import type { User } from "@mms/contracts";
+import { questionBankContract } from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { questionBankUseCases } from "../../../questionBank/use-cases/questionBankUseCases.js";
 import {
   assemblePaperHandler,

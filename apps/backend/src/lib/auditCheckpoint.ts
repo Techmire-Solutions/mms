@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
 import { and, desc, gte, lte } from "drizzle-orm";
-import { GENESIS_AUDIT_HASH } from "@mms/shared";
-import { withGlobalTenant } from "../db/tenant-context.js";
-import { auditMerkleRoots, auditTrailEvents } from "../db/schema/auditTrail.js";
+import { GENESIS_AUDIT_HASH } from "@mms/contracts";
+import { withGlobalTenant } from "@mms/db/context";
+import { auditMerkleRoots, auditTrailEvents } from "@mms/db/schema/auditTrail";
 
 /**
  * Computes a Merkle root from an array of leaf hashes using SHA-256.

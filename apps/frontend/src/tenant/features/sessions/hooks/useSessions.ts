@@ -1,6 +1,6 @@
 import { useQuery, queryOptions } from "@tanstack/react-query";
-import type { SessionsCommandMetricsSnapshot, SessionsReportAggregates } from "@mms/shared";
-import { SESSIONS_MODULE_MANIFEST, sessionsWidgetQueryFromWidget } from "@mms/shared";
+import type { SessionsCommandMetricsSnapshot, SessionsReportAggregates } from "@mms/contracts";
+import { SESSIONS_MODULE_MANIFEST, sessionsWidgetQueryFromWidget } from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient, apiContract } from "@/lib/api";

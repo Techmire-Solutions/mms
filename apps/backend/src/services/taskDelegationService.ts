@@ -1,4 +1,4 @@
-import type { TaskAssigneeInput } from "@mms/shared";
+import type { TaskAssigneeInput } from "@mms/contracts";
 import {
   findEligibleTaskRecipientRows,
   type TaskDelegationOptions,

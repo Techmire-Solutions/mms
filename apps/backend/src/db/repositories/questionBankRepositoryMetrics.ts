@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import type { QuestionBankCommandMetricsSnapshot } from "@mms/shared";
-import { assessmentResults, questions, tests } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { QuestionBankCommandMetricsSnapshot } from "@mms/contracts";
+import { assessmentResults, questions, tests } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /** Command-centre metrics (extracted from the list module to keep it under the line ceiling). */
 /**

@@ -17,4 +17,4 @@ export {
   type CardContentProps,
   type CardFooterProps,
   type CardAccentColor,
-} from "@shared/ui";
+} from "@mms/ui";

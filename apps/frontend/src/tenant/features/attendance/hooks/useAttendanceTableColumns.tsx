@@ -5,7 +5,7 @@ import type { AttendanceRecord, AttendanceStatus } from "@/lib/data/attendanceDa
 import { AttendanceRecordStatusCell } from "@/tenant/features/attendance/components/AttendanceRecordStatusCell";
 import { TimePicker } from "@/components/app/TimePicker";
 import { FORM_ERROR } from "@/components/ui/formStyles";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 
 export interface UseAttendanceTableColumnsOptions {
   isColumnVisible: (key: string) => boolean;

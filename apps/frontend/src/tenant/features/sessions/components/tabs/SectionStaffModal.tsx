@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Users } from "lucide-react";
-import type { FacultyMember, SessionClassSection } from "@mms/shared";
+import type { FacultyMember, SessionClassSection } from "@mms/contracts";
 import { Modal } from "@/components/app/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionStaffPanel } from "./SectionStaffPanel";

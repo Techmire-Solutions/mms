@@ -1,7 +1,7 @@
-import { type User, type examinationContract } from "@mms/shared";
+import { type User, type examinationContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canDeleteCollection } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { NotFoundError } from "../../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../../lib/cache/index.js";

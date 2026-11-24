@@ -10,7 +10,7 @@ import type {
   HasanatReportComparisonQuery,
   WidgetQuery,
   WidgetAggregateResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { CardPatch, NewCardFields } from "../../db/repositories/hasanatCardOps.js";
 import type { NewRedemptionFields } from "../../db/repositories/hasanatLedgerOps.js";
 

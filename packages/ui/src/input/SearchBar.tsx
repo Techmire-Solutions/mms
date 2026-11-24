@@ -60,6 +60,8 @@ export function SearchBar({
   const [localValue, setLocalValue] = React.useState(value);
 
   React.useEffect(() => {
+    // Controlled prop → local mirror; resetting here is intentional for keystroke continuity.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalValue(value);
   }, [value]);
 

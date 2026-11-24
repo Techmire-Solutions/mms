@@ -2,7 +2,7 @@ import {
   normalizeFacultyModulePreferences,
   type FacultyRecord,
   type FacultyWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
@@ -19,7 +19,7 @@ import {
   handleImplicitRestore,
 } from "./facultyWriteHelpers.js";
 import { ConflictError } from "../../lib/httpErrors.js";
-import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileContactSystemTags } from "@mms/mod-contacts/backend/use-cases";
 import { logger } from "../../lib/logger.js";
 import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 import { facultyRoleFingerprint } from "./facultyLinkedUserRoleSync.js";

@@ -5,7 +5,7 @@ import {
   type PermissionAction,
   type PermissionMap,
   type RbacModuleDef,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";

@@ -2,12 +2,12 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { purgeExpiredArchivedRecords } from "../worker/purgeArchivedRecordsJob.js";
 import { executeGdprErasure } from "../services/gdprErasureService.js";
 import { getMsUntilNextUtcHour, runRetentionPurgeCycle } from "../worker/index.js";
-import type { DbClient } from "../db/dbConnection.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import type { DbClient } from "@mms/db/client";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { executeSubjectErasure } from "../services/cryptoShreddingService.js";
-import { messageLogs } from "../db/schema.js";
+import { messageLogs } from "@mms/db/schema";
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({
     id: 1,
     hashPrevious: "0".repeat(64),
@@ -25,7 +25,7 @@ vi.mock("../services/cryptoShreddingService.js", () => ({
   }),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 

@@ -6,9 +6,9 @@ import {
   type FinanceListQuery,
   type FinanceInvoicesListPageResult,
   type FinancePaymentsListPageResult,
-} from "@mms/shared";
-import { financeInvoices, financePayments } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { financeInvoices, financePayments } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { runListPage } from "./listPageHelper.js";
 import { invoiceRowToRecord, paymentRowToRecord } from "./financeRepository.js";

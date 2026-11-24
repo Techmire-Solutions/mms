@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig.base.json",
+  "extends": "../tooling/typescript-config/node.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "NodeNext",

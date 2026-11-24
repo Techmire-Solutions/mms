@@ -7,7 +7,7 @@ import {
   QUEUE_MESSAGING_BROADCAST,
   DEFAULT_JOB_OPTIONS,
 } from "../worker/queues/index.js";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import { logger } from "../lib/logger.js";
 
 async function runBenchmark(): Promise<void> {

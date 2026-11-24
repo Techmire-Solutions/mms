@@ -42,7 +42,7 @@ vi.mock("../lib/logger.js", () => ({
 }));
 
 import { runFacultyMembersImportJob } from "../faculty/use-cases/facultyImportJobUseCases.js";
-import type { FacultyImportJobPayload } from "@mms/shared";
+import type { FacultyImportJobPayload } from "@mms/contracts";
 
 const payload: FacultyImportJobPayload = {
   rows: [

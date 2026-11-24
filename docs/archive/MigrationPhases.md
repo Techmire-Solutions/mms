@@ -27,7 +27,7 @@
 
 #### 1. Execution Steps
 
-* Create `apps/backend/src/db/tenant-context.ts` to encapsulate all tenant operations inside dedicated transactions executing `SELECT set_config('app.current_tenant', $1, true)`.
+* Create `packages/db/src/tenant-context.ts` to encapsulate all tenant operations inside dedicated transactions executing `SELECT set_config('app.current_tenant', $1, true)`.
 * Configure dual connection pools in `apps/backend/src/db/index.ts` (Primary Read/Write + Read Replica).
 * Generate forward-only Drizzle DDL migration enforcing `FORCE ROW LEVEL SECURITY` and explicit RLS policies across all 18+ module tables.
 * Refactor base repository methods to require `TenantTransaction` instead of the root database client.
@@ -35,7 +35,7 @@
 #### 2. Code Artifact
 
 ```typescript
-// apps/backend/src/db/tenant-context.ts
+// packages/db/src/tenant-context.ts
 import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { db, readReplicaDb } from './index';
@@ -77,15 +77,15 @@ export async function withTenant<T>(
 
 #### 1. Execution Steps
 
-* Install `@ts-rest/core` into `packages/shared`.
-* Implement a centralized Unicode sanitizer in `packages/shared/src/schemas/sanitize.ts` to strip non-printable directional override runes (`U+202A` through `U+202E`, `U+2066` through `U+2069`).
-* Convert all write DTO schemas (`packages/shared/src/schemas/*.dto.ts`) to use `.strict()` mode with the sanitizer.
-* Define contract routers for all modules in `packages/shared/src/contracts/` exporting a unified root contract router.
+* Install `@ts-rest/core` into `packages/contracts`.
+* Implement a centralized Unicode sanitizer in `packages/contracts/src/schemas/sanitize.ts` to strip non-printable directional override runes (`U+202A` through `U+202E`, `U+2066` through `U+2069`).
+* Convert all write DTO schemas (`packages/contracts/src/schemas/*.dto.ts`) to use `.strict()` mode with the sanitizer.
+* Define contract routers for all modules in `packages/contracts/src/contracts/` exporting a unified root contract router.
 
 #### 2. Code Artifact
 
 ```typescript
-// packages/shared/src/contracts/index.ts
+// packages/contracts/src/contracts/index.ts
 import { initContract } from '@ts-rest/core';
 import { studentContract } from './students.contract';
 import { financeContract } from './finance.contract';

@@ -46,12 +46,12 @@ Audit the diff against the core MMS invariants:
   - Zero wildcard projections (`SELECT *`), verified via `check:db-projections.mjs`.
   - Zero queries in loops (N+1); batch with Drizzle relational `with` or `inArray`.
   - Transaction RLS (`SET LOCAL app.current_tenant`) is used appropriately for tenant writes.
-  - Zero-trust DTOs validated via `@mms/shared` Zod strict schemas before persistence.
+  - Zero-trust DTOs validated via `@mms/contracts` Zod strict schemas before persistence.
 - [ ] **Frontend Architecture (`mms-frontend`, `mms-query-factories`, `mms-module-work`)**:
   - TanStack Query v5 is used for data fetching (no new `useLiveCollection` for REST entities).
   - Every module route is gated via `TENANT_APP_ROUTE_ACCESS` + `ModuleAccessRoute`.
   - Work directory uses the shared `DataTable` / `WorkBatchTable` stack (zero hand-rolled tables, verified via `check:work-directory.mjs`).
-  - Cross-feature imports are banned (e.g. importing `@/tenant/features/A` from `B`). Shared logic must reside in `@mms/shared` or `@/tenant/hooks/collections/*` facades.
+  - Cross-feature imports are banned (e.g. importing `@/tenant/features/A` from `B`). Shared logic must reside in `@mms/contracts` or `@/tenant/hooks/collections/*` facades.
   - Code splits properly at the ~300-line soft ceiling via stable barrels (`mms-structure-naming.md`).
 - [ ] **UI & i18n Parity (`mms-ui-ux-design.md`, `mms-settings-i18n.md`, `ui-ux-pro-max`)**:
   - Design tokens: zero raw hex colours outside `@theme`, zero Tailwind bracket expressions (`[#...]`), verified via `check:code-norms.mjs`.

@@ -2,7 +2,7 @@ import {
   PROMOTION_OUTCOME_STATUS,
   sessionRolloverBodySchema,
   type SessionRolloverBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { z } from "zod";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import { sessionRolloverRepository as runs } from "../repository/sessionRolloverRepositoryAdapter.js";
@@ -12,7 +12,7 @@ import {
   listRolloverCandidates,
 } from "../../enrollments/use-cases/enrollmentRolloverUseCases.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { HttpDomainError, NotFoundError } from "../../lib/httpErrors.js";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";

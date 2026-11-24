@@ -1,4 +1,4 @@
-import { isValidIsoDate, todayISOInTimeZone } from "@mms/shared";
+import { isValidIsoDate, todayISOInTimeZone } from "@mms/contracts";
 import { ValidationError } from "./httpErrors.js";
 
 /**

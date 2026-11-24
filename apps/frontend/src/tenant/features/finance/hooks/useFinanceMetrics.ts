@@ -1,5 +1,5 @@
-import type { FinanceCommandMetricsSnapshot } from "@mms/shared";
-import { FINANCE_MODULE_MANIFEST } from "@mms/shared";
+import type { FinanceCommandMetricsSnapshot } from "@mms/contracts";
+import { FINANCE_MODULE_MANIFEST } from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 
 export function financeCommandMetricsQueryOptions() {

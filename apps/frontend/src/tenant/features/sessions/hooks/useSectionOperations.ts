@@ -5,7 +5,7 @@ import type {
   SectionMergeBody,
   SectionOperationResult,
   SectionSplitBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { isApiError } from "@/lib/apiError";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";

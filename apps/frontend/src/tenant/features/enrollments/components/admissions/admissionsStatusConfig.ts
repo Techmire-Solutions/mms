@@ -1,4 +1,4 @@
-import type { RegistrationApplicationStatus } from "@mms/shared";
+import type { RegistrationApplicationStatus } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";

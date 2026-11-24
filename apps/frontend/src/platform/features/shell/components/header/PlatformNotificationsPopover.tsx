@@ -1,10 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { buildPlatformNotifications } from "@/platform/features/shell/lib/buildPlatformNotifications";
 import { usePlatformNotificationAck } from "@/platform/hooks/usePlatformNotificationAck";
-import { NotificationsPopover, type NotificationItem } from "@shared/ui";
+import { NotificationsPopover, type NotificationItem } from "@mms/ui";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformNotificationsPopoverProps {

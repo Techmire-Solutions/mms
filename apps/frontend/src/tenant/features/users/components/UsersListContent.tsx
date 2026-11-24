@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { UserPlus } from "lucide-react";
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 
 import { EmptyState } from "@/components/app/EmptyState";

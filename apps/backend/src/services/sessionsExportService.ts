@@ -10,7 +10,7 @@ import {
   type SessionExportColumn,
   type SessionsListQuery,
   type SessionsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createModuleExportService,
   type ModuleExportQueryInput,

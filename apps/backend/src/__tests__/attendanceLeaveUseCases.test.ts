@@ -16,7 +16,7 @@ vi.mock("../attendance/repository/attendanceCalendarRepositoryAdapter.js", () =>
     insertApprovedLeaveIfFree: mocks.insertApprovedLeaveIfFree,
   },
 }));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("../lib/livePush.js", () => ({

@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { TrendingUp, TrendingDown, ArrowUpDown, AlertTriangle } from "lucide-react";
-import { Alert } from "@/components/app/Alert";
-import { centsToMoney, type JournalEntry, type Account } from "@/lib/data/accountingData";
-import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
+import { Alert } from "@mms/ui";
+import { centsToMoney, type JournalEntry, type Account } from "@mms/mod-accounting/frontend/tenant";
+import { ModuleCommandMetricsGrid } from "@mms/fe-core/components/ModuleCommandMetricsGrid";
 import { WorkTaskToolbar } from "@/components/common/work";
 import { buildDataTableRegistry, toColumnCustomizer } from "@/components/common/data-table";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
-import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useWorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
 import {
   buildCashbookRows,
@@ -15,7 +15,7 @@ import {
   resolveCashAccountIds,
   sumCashbookTotals,
   type EntryType,
-} from "@/tenant/features/accounting/lib/cashbookViewShared";
+} from "@mms/mod-accounting/frontend/tenant";
 import { CashbookViewTable } from "@/tenant/features/accounting/components/CashbookViewTable";
 import {
   useCashbookColumns,

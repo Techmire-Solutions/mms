@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { CardSkeleton } from "@shared/ui";
+import { CardSkeleton } from "@mms/ui";
 import { MessagingWorkTier } from "@/platform/features/messaging/components/MessagingWorkTier";
 import { MessagingReportsTier } from "@/platform/features/messaging/components/MessagingReportsTier";
 import { MessagingSetupTier } from "@/platform/features/messaging/components/MessagingSetupTier";

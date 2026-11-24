@@ -5,8 +5,8 @@
  * Only runs after migration 080 has completed successfully. Idempotent.
  */
 import { or, like } from "drizzle-orm";
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
 
 export async function runMigration081(): Promise<void> {
   const db = getDb();

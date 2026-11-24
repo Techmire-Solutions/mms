@@ -8,7 +8,7 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 
 # package dir | lint scope prefix (mirrors each package's `lint` script target) | path to repo root
-PACKAGES=('apps/frontend|apps/frontend/|../..' 'apps/backend|apps/backend/src/|../..' 'packages/shared|packages/shared/|../..' 'e2e|e2e/|..')
+PACKAGES=('apps/frontend|apps/frontend/|../..' 'apps/backend|apps/backend/src/|../..' 'packages/contracts|packages/contracts/|../..' 'e2e|e2e/|..')
 
 FILES="$(sed '/^$/d' | grep -E '\.(ts|tsx|js|jsx|mjs|cjs)$' || true)"
 if [[ -z "$FILES" ]]; then

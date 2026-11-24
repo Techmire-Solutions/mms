@@ -3,7 +3,7 @@ import type {
   QuestionDifficultyRegistryEntry,
   QuestionTypeRegistryEntry,
   AppTranslationKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/app/SectionLabel";

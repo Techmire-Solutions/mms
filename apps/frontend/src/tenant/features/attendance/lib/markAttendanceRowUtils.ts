@@ -1,4 +1,4 @@
-import { enrollmentActiveOn, enrollmentHoldsSeat, type ModuleCustomField } from "@mms/shared";
+import { enrollmentActiveOn, enrollmentHoldsSeat, type ModuleCustomField } from "@mms/contracts";
 import type { AttendanceRecord, ClassStudent } from "@/lib/data/attendanceData";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Session } from "@/lib/data/sessionsData";

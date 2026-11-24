@@ -1,6 +1,6 @@
 import { sql, type SQL } from "drizzle-orm";
-import { STUDENT_SORT_FIELD_SET } from "@mms/shared";
-import { students, contacts } from "../schema.js";
+import { STUDENT_SORT_FIELD_SET } from "@mms/contracts";
+import { students, contacts } from "@mms/db/schema";
 import {
   grNumberExpr,
   statusExpr,

@@ -4,14 +4,14 @@ import {
   ISO_4217_CURRENCIES,
   DEFAULT_PLATFORM_CONSOLIDATION_PREFS,
   type PlatformConsolidationPrefs,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SettingsPanel } from "@/components/app/SettingsShell";
-import { SectionCard } from "@/components/app/SectionCard";
+import { SectionCard } from "@mms/ui";
 import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
-import { CardSkeleton } from "@shared/ui";
-import { useTranslation } from "@/hooks/useTranslation";
+import { CardSkeleton } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useSavedFlash } from "@/hooks/useSavedFlash";
 import { PlatformSettingsLoadError } from "@/platform/features/settings/components/PlatformSettingsLoadError";
 import {

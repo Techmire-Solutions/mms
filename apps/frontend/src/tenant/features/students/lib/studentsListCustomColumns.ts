@@ -1,4 +1,4 @@
-import { formatDate, formatDateTime } from "@mms/shared";
+import { formatDate, formatDateTime } from "@mms/contracts";
 
 /**
  * Format a student custom field value for Work table/cards/detail read rows.

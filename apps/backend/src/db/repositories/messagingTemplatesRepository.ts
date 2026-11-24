@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { messageTemplates } from "../schema.js";
-import { dedupeTrimmedIds, type MessageTemplate } from "@mms/shared";
-import { withTenant } from "../tenant-context.js";
+import { messageTemplates } from "@mms/db/schema";
+import { dedupeTrimmedIds, type MessageTemplate } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 
 type TemplateRow = typeof messageTemplates.$inferSelect;
 

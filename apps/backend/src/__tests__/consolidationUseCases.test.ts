@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ConsolidationGroup } from "@mms/shared";
+import type { ConsolidationGroup } from "@mms/contracts";
 import { HttpDomainError } from "../lib/httpErrors.js";
 import type { PlatformConsolidationRepository } from "../platform/repository/platformConsolidationRepositoryAdapter.js";
 import {

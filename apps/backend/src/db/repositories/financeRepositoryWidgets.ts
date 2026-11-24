@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
-import type { WidgetAggregateResult, WidgetQuery } from "@mms/shared";
-import { financeInvoices } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { WidgetAggregateResult, WidgetQuery } from "@mms/contracts";
+import { financeInvoices } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(financeInvoices.workspaceSubdomain, subdomain), isNull(financeInvoices.deletedAt))!;

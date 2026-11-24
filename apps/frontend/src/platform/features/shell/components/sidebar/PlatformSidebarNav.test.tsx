@@ -45,7 +45,7 @@ const mockSections: { section: "overview"; items: PlatformNavItem[] }[] = [
   },
 ];
 
-import { TooltipProvider } from "@shared/ui";
+import { TooltipProvider } from "@mms/ui";
 
 describe("PlatformSidebarNav", () => {
   it("renders navigation links in expanded mode", () => {

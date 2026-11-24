@@ -9,7 +9,7 @@ set -euo pipefail
 # shipped `*.map` would expose the frontend source at /assets/*.js.map
 # (docs/project-review-2026-10-30.md P-03). Keep them on disk for a future Sentry
 # upload; never put them in the release tarball.
-tar czf mms-dist.tar.gz --exclude='*.map' apps/backend/dist apps/frontend/dist packages/shared/dist
+tar czf mms-dist.tar.gz --exclude='*.map' apps/backend/dist apps/frontend/dist packages/contracts/dist packages/db/dist packages/db/migrations_drizzle packages/be-core/dist packages/modules/iam/dist packages/modules/accounting/dist packages/modules/contacts/dist
 
 if tar tzf mms-dist.tar.gz | grep -q '\.map$'; then
   echo "package-dist: release tarball must not contain source maps" >&2

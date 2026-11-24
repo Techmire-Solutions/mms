@@ -11,10 +11,10 @@
  * The actor comes from the request context; background callers (workspace purge) record `null`
  * rather than inventing an id.
  */
-import type { ObligationCollection, ObligationDistribution, WakalaType } from "@mms/shared";
+import type { ObligationCollection, ObligationDistribution, WakalaType } from "@mms/contracts";
 import { getRequestUserId } from "../../lib/tenantContext.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvents } from "../../services/outboxEventService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvents } from "@mms/be-core/data/outbox";
 
 const TABLE = "obligation_collections";
 

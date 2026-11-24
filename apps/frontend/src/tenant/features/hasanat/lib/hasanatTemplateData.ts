@@ -10,7 +10,7 @@ import type {
   DocumentTemplate,
   DocumentTemplatePreset,
   TemplateFieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   PRINT_EMERALD,
   PRINT_EMERALD_LIGHT,

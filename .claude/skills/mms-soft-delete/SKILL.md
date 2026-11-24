@@ -20,7 +20,7 @@ Financial posted ledgers are append-only/reversal-driven; see ledger controls be
 
 ## 1. Database Schema Standards
 
-- **Column Sextuple**: Add `softDeleteColumns` from `apps/backend/src/db/schema/softDeleteSchema.ts` (`deletedAt`, `deletedBy`, `deletionReason`, `restoredAt`, `restoredBy`, `deletedWithCascade`).
+- **Column Sextuple**: Add `softDeleteColumns` from `packages/db/src/schema/softDeleteSchema.ts` (`deletedAt`, `deletedBy`, `deletionReason`, `restoredAt`, `restoredBy`, `deletedWithCascade`).
 - **3-Tier Indexing**:
   - Category A (Trash scan): compound `(tenant_id, deleted_at)`.
   - Category B (Active hot partial): `(tenant_id, ...)` `WHERE deleted_at IS NULL` (mandatory for active list performance).

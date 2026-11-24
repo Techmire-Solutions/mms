@@ -1,6 +1,6 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import type { TaskStatus } from "@mms/shared";
+import type { TaskStatus } from "@mms/contracts";
 import {
   useBulkDeleteTasks,
   useBulkRestoreTasks,

@@ -1,6 +1,6 @@
 import React, { act } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DocumentTemplate } from "@mms/shared";
+import type { DocumentTemplate } from "@mms/contracts";
 import { createRoot } from "react-dom/client";
 import type { Invoice } from "@/lib/data/financeData";
 import { InvoiceReceiptModal } from "./InvoiceReceiptModal";
@@ -31,7 +31,7 @@ vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   deleteDocumentTemplateServer: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     children,
     headerActions,

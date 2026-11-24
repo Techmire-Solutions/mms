@@ -5,7 +5,7 @@ import {
   type User,
 } from "../../../services/auth/authService.js";
 import { exchangeAuthHandoff } from "../../../services/auth/authHandoffService.js";
-import { patchUserUiStateBodySchema } from "@mms/shared";
+import { patchUserUiStateBodySchema } from "@mms/contracts";
 import { getUserUiState, patchUserUiState } from "../../../services/auth/userUiStateService.js";
 import { getRequestTenant, runWithTenant } from "../../../lib/tenantContext.js";
 import {
@@ -27,13 +27,13 @@ import {
   SESSION_EXPIRY_RESPONSE,
 } from "../../../services/sessionGuardService.js";
 import { tenantSessionPolicy } from "../../../services/sessionPolicyService.js";
-import { parseSessionTimeoutMinutes } from "@mms/shared";
+import { parseSessionTimeoutMinutes } from "@mms/contracts";
 import { getPublicUserById } from "../../../services/auth/userService.js";
 import {
   rotateRefreshToken,
   validateRefreshToken,
 } from "../../../services/auth/twoFactorService.js";
-import { handoffBodySchema } from "@mms/shared";
+import { handoffBodySchema } from "@mms/contracts";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { sendForbidden, sendUnauthorized } from "../../../lib/httpErrors.js";
 import { getWorkspaceInstitutionSetupStatus } from "../../../services/workspaceService.js";

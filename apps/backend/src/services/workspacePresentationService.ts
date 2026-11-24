@@ -13,10 +13,10 @@ import {
   isInstitutionSetupComplete,
   isWorkspaceEnabled,
   toPublicBranding,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { sql, count } from "drizzle-orm";
 import { getDb } from "../db/database.js";
-import { workspaces as workspacesTable } from "../db/schema.js";
+import { workspaces as workspacesTable } from "@mms/db/schema";
 import {
   getWorkspaceBranding,
   getWorkspaceWithBranding,

@@ -12,7 +12,7 @@ import {
 import { facultyCatalogIoRoutes } from "./faculty/facultyCatalogIoRoutes.js";
 import { facultyImportRoutes } from "./faculty/facultyImportRoutes.js";
 import { handleGetFaculty, handleListFaculty } from "./faculty/facultyCrudRoutes.js";
-import { facultyListQuerySchema } from "@mms/shared";
+import { facultyListQuerySchema } from "@mms/contracts";
 import { replyValidationError } from "../../lib/zodRequest.js";
 
 /**

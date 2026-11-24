@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useMessagingMetrics } from "@/tenant/hooks/collections/messaging";
-import { getChannelLabelKey } from "@mms/shared";
+import { getChannelLabelKey } from "@mms/contracts";
 import {
   MESSAGING_CHANNEL_CONFIG,
   type MessagingChannelConfig,

@@ -1,6 +1,6 @@
 import { and, asc, eq, gt, gte, inArray, isNull, lte, notInArray, sql } from "drizzle-orm";
-import { attendance, enrollments } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { attendance, enrollments } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Register/matrix reads.

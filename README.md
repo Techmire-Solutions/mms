@@ -12,7 +12,7 @@ A full-stack, multi-tenant **Madrasa Management System** built for Islamic educa
 | **Backend**       | Fastify 5 · Node.js ≥ 24.14 (`--experimental-strip-types`) · TypeScript 7 (strict)                                                                                   |
 | **Database**      | PostgreSQL 16 · Drizzle ORM · Row-Level Security (RLS) · Forward-only migrations                                                                                     |
 | **Cache / Queue** | Redis 7 · BullMQ                                                                                                                                                     |
-| **Shared**        | `@mms/shared` — Zod DTOs, types, manifests, pure utils (zero DOM/React/Fastify deps)                                                                                 |
+| **Shared**        | `@mms/contracts` — Zod DTOs, types, manifests, pure utils (zero DOM/React/Fastify deps)                                                                              |
 | **Monorepo**      | pnpm workspaces · Turborepo task graph (`^build` ordering)                                                                                                           |
 | **CI/CD**         | GitHub Actions — change-gated parallel jobs (ratchets · build+provenance · unit/coverage · DB · E2E) behind a required "CI Gate"; separate deploy workflow on `main` |
 | **Production**    | Hetzner VPS · PM2 · Apache reverse proxy (PORT 5002)                                                                                                                 |
@@ -27,7 +27,7 @@ mms/
 │   ├── backend/          # Fastify 5 API server + BullMQ worker
 │   └── frontend/         # React 19 SPA
 ├── packages/
-│   ├── shared/           # @mms/shared — SSOT types, Zod schemas, pure utils
+│   ├── shared/           # @mms/contracts — SSOT types, Zod schemas, pure utils
 │   └── ui/               # @shared/ui — shared UI primitives (SSOT for both consoles)
 ├── e2e/                  # Playwright end-to-end tests
 ├── scripts/              # i18n checker, ESLint TS compat shim, sync scripts
@@ -314,11 +314,11 @@ MMS uses a **three-tier module architecture** (Work · Reports · Setup) across 
 - **Multi-tenancy:** Every tenant table uses `FORCE ROW LEVEL SECURITY` + `SET LOCAL app.current_tenant` via `withTenantTransaction`.
 - **Auth:** `@fastify/cookie` HttpOnly session cookies + `@fastify/jwt`. No JWTs in `localStorage`.
 - **CSRF:** `Sec-Fetch-Site: same-origin|same-site|none` origin gate on all cookie-mutating routes.
-- **RBAC:** `can()` permission checks via `@mms/shared` — no raw `role ===` comparisons.
+- **RBAC:** `can()` permission checks via `@mms/contracts` — no raw `role ===` comparisons.
 - **Soft-Delete System:** In-place lifecycle archiving across all tenant entities · partial unique indexes (`WHERE deleted_at IS NULL`) · `BEFORE DELETE` triggers forbidding physical deletes · atomic conditional latches · transactional outbox CDC tombstones · URL-synced trash directories with 5–10s optimistic Undo toasts · scheduled chunked hard-purge workers (see [`docs/soft-delete.md`](docs/soft-delete.md) · skill `mms-soft-delete`).
 - **Audit Trail:** RFC 8785 canonical JSON payloads · per-tenant sharded hash chains · Merkle rollups · `INSERT`-only audit tables · crypto-shredding for Right to Erasure.
 - **Backups:** AES-256-GCM encrypted workspace exports with PBKDF2-derived keys · validate-before-wipe safety gate.
-- **Input validation:** All DTOs via `@mms/shared` Zod schemas (`.strict()` on write paths) — raw client bodies are never trusted.
+- **Input validation:** All DTOs via `@mms/contracts` Zod schemas (`.strict()` on write paths) — raw client bodies are never trusted.
 
 ---
 
@@ -333,7 +333,7 @@ Full BiDi / RTL support with four languages:
 | `ur`   | Urdu (RTL)            |
 | `fa`   | Persian / Farsi (RTL) |
 
-Translation keys live in `@mms/shared` (`appTranslationsEn.ts`, `appTranslationsAr.ts`, etc.). Run `pnpm check:i18n` to verify completeness.
+Translation keys live in `@mms/contracts` (`appTranslationsEn.ts`, `appTranslationsAr.ts`, etc.). Run `pnpm check:i18n` to verify completeness.
 
 ---
 
@@ -346,7 +346,7 @@ pnpm test:e2e          # Playwright E2E (requires running stack)
 
 # Scoped
 cd apps/backend && pnpm test:db   # Integration tests against real Postgres
-cd packages/shared && pnpm test   # Shared utility unit tests
+cd packages/contracts && pnpm test   # Shared utility unit tests
 ```
 
 CI runs on every PR and push to `main` via [`.github/workflows/ci.yml`](.github/workflows/ci.yml): a

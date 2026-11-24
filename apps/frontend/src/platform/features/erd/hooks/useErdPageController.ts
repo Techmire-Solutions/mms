@@ -11,7 +11,7 @@ import {
   type ErdDomain,
   type ErdDomainId,
   type PlatformErdResponse,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { PLATFORM_QUERY_KEYS } from "@/platform/features/shell/lib/platformQueryKeys";

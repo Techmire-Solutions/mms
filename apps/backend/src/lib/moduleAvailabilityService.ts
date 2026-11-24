@@ -1,4 +1,4 @@
-import { buildModuleAvailability, type ModuleAvailabilityMap } from "@mms/shared";
+import { buildModuleAvailability, type ModuleAvailabilityMap } from "@mms/contracts";
 import { getWorkspaceModuleAccessRow } from "../db/repositories/workspaceModuleAccessRepository.js";
 import { getPlatformSettings } from "../services/platform/platformSettingsService.js";
 

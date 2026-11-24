@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { TaskListQuery } from "@mms/shared";
+import type { TaskListQuery } from "@mms/contracts";
 import { buildTaskFilterConditions } from "../db/repositories/tasksFilterConditions.js";
 
 describe("buildTaskFilterConditions", () => {

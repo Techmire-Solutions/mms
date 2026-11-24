@@ -16,7 +16,7 @@ set -uo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$ROOT_DIR"
 
-MIGRATIONS_DIR="apps/backend/src/db/migrations_drizzle"
+MIGRATIONS_DIR="packages/db/migrations_drizzle"
 JOURNAL_FILE="$MIGRATIONS_DIR/meta/_journal.json"
 FAILED=0
 
@@ -39,7 +39,7 @@ node -e '
 const fs = require("node:fs");
 const path = require("node:path");
 
-const migrationsDir = path.resolve("apps/backend/src/db/migrations_drizzle");
+const migrationsDir = path.resolve("packages/db/migrations_drizzle");
 const journal = JSON.parse(fs.readFileSync(path.join(migrationsDir, "meta", "_journal.json"), "utf8"));
 
 let missing = 0;

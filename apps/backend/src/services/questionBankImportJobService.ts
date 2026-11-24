@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
-import type { QuestionBankQuestion } from "@mms/shared";
+import type { QuestionBankQuestion } from "@mms/contracts";
 import {
   transferRowToQuestionInput,
   type QuestionImportCandidate,
   type QuestionTransferRow,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { questionBankUseCases } from "../questionBank/use-cases/questionBankUseCases.js";
 

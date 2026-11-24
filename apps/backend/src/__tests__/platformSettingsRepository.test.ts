@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/contracts";
 
 const mockLimit = vi.fn();
 const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
@@ -20,11 +20,11 @@ const mockDb = {
   insert: mockInsert,
 };
 
-vi.mock("../db/dbClient.js", () => ({
+vi.mock("@mms/db/client/db", () => ({
   getDb: () => mockDb,
 }));
 
-vi.mock("../db/dbConnection.js", () => ({
+vi.mock("@mms/db/client/connection", () => ({
   activeDb: () => mockDb,
   getRootDb: () => mockDb,
   getReadReplicaDb: () => mockDb,

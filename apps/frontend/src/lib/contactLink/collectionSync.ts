@@ -1,4 +1,4 @@
-import type { ContactLike, NamedEntity } from "@mms/shared";
+import type { ContactLike, NamedEntity } from "@mms/contracts";
 import {
   createHasanatDistributionLookupMap,
   createNamedEntityLookupMap,
@@ -28,7 +28,7 @@ import {
   stripWorkspaceUserProfileFields,
   type HasanatDistributionLike,
   type SessionLike,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 type Row = Record<string, unknown>;
 

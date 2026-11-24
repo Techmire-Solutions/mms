@@ -1,6 +1,6 @@
 import { asc, desc, gte, inArray, lt, sql } from "drizzle-orm";
-import { activeDb } from "../dbConnection.js";
-import { platformActivityLogs, workspaces } from "../schema.js";
+import { activeDb } from "@mms/db/client";
+import { platformActivityLogs, workspaces } from "@mms/db/schema";
 import { logger } from "../../lib/logger.js";
 
 export interface InsertPlatformActivityLog {

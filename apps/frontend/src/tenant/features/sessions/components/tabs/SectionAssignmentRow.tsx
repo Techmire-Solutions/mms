@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/app/DatePicker";
 import { useTranslation } from "@/hooks/useTranslation";

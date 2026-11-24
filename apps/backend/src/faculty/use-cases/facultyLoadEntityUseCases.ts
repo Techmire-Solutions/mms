@@ -3,7 +3,7 @@ import type {
   FacultyListPageResult,
   FacultyListQuery,
   FacultyHierarchyNode,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import type { FacultyRepository } from "../repository/facultyRepository.js";
 import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";

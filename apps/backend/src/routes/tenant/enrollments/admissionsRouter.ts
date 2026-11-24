@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { admissionsContract, ENROLLMENTS_MODULE_MANIFEST, type User } from "@mms/shared";
+import { admissionsContract, ENROLLMENTS_MODULE_MANIFEST, type User } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs, ContractRouteHandler } from "../../../lib/contractRouterTypes.js";

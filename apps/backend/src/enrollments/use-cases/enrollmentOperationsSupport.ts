@@ -4,14 +4,14 @@ import {
   type Enrollment,
   type Session,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { enrollmentOperationsRepository as repo } from "../repository/enrollmentOperationsRepositoryAdapter.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import type { TenantTransaction } from "../../db/tenant-context.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import type { TenantTransaction } from "@mms/db/context";
 
 /** Enrollment + its session when the session still accepts changes; 404/409 otherwise. */
 export async function loadEnrollmentInOpenSession(

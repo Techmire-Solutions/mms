@@ -50,6 +50,8 @@ export function WorkspaceLogo({
   const sizeCfg = SIZE_CONFIG[size] ?? SIZE_CONFIG.md;
 
   useEffect(() => {
+    // Reset fallback state when the logo URL changes; keep as an effect (no render-time writes).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setImgError(false);
   }, [logoUrl]);
 

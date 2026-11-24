@@ -3,7 +3,7 @@ import {
   type Exam,
   type ExamGateStudentDetail,
   type ExamResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { examEligibilityRepository as repo } from "../repository/examEligibilityAdapter.js";
 import { examinationsRepository } from "../repository/examinationsRepositoryAdapter.js";
 import { HttpDomainError, NotFoundError } from "../../lib/httpErrors.js";

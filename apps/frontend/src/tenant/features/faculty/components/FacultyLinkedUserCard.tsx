@@ -9,7 +9,7 @@ import {
   workspaceRoleDescription,
   workspaceRoleLabel,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export interface FacultyLinkedUserCardProps {
   linkedUser: { email?: string; role?: string };

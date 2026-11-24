@@ -7,7 +7,7 @@ import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import { FINANCE_MODULE_MANIFEST, type Payment } from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST, type Payment } from "@mms/contracts";
 import {
   useFinanceInvoicesPaginated,
   useFinancePaymentsPaginated,

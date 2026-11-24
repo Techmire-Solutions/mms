@@ -4,7 +4,7 @@ import type {
   GenericSavedReport,
   GenericSavedReportCategory,
   GenericSavedReportCreateInput,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { apiContract } from "@/lib/api";
 import { getCollection, saveCollectionCacheOnly } from "@/lib/db";

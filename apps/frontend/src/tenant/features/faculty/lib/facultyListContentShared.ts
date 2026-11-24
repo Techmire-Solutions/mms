@@ -4,7 +4,7 @@ import type {
   FacultyCustomField,
   FacultySortField,
   ModuleColumnRegistryEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export interface FacultyListContentProps {

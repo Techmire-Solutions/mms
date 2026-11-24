@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { DEFAULT_TASK_SETTINGS, taskSettingsSchema, type TaskSettings } from "@mms/shared";
-import { taskModulePreferences, workspaces } from "../db/schema.js";
-import { withTenant } from "../db/tenant-context.js";
+import { DEFAULT_TASK_SETTINGS, taskSettingsSchema, type TaskSettings } from "@mms/contracts";
+import { taskModulePreferences, workspaces } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant, getRequestUserId } from "../lib/tenantContext.js";
-import { recordModernAuditEvent } from "./auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 function tenantContext(): string {
   const tenant = getRequestTenant()?.trim().toLowerCase();
