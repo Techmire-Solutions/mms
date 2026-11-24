@@ -53,7 +53,7 @@ const ROOT = process.cwd();
  */
 const BASELINE = {
   anyAnnotations: 0,
-  hexColourFiles: 26,
+  hexColourFiles: 25,
   arbitraryColourExpressions: 0,
   filesOverHardLimit: 4,
 };

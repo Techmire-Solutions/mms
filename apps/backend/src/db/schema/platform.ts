@@ -11,7 +11,12 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import type { PlatformRole, LlmConfig, PlatformConsolidationPrefs, PlatformContactPrefs } from "@mms/shared";
+import type {
+  PlatformRole,
+  LlmConfig,
+  PlatformConsolidationPrefs,
+  PlatformContactPrefs,
+} from "@mms/shared";
 
 /** Apex workspaces registry — not tenant-scoped. Branding fields migrated from objects store (migration 0071). */
 export const workspaces = pgTable(

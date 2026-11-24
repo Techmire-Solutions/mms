@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { jsonb, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
-import type { BrandingSocialLink } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, type BrandingSocialLink } from "@mms/shared";
 
 /**
  * Platform console branding — singleton row (`id = 'global'`), mirrors tenant
@@ -12,8 +12,12 @@ export const platformBranding = pgTable("platform_branding", {
   productName: varchar("product_name", { length: 60 }).notNull().default(""),
   consoleTitle: varchar("console_title", { length: 60 }).notNull().default(""),
   tagline: varchar("tagline", { length: 120 }).notNull().default(""),
-  primaryColor: varchar("primary_color", { length: 16 }).notNull().default("#d99b00"),
-  secondaryColor: varchar("secondary_color", { length: 16 }).notNull().default("#5c3412"),
+  primaryColor: varchar("primary_color", { length: 16 })
+    .notNull()
+    .default(DEFAULT_BRANDING_SETTINGS.primaryColor),
+  secondaryColor: varchar("secondary_color", { length: 16 })
+    .notNull()
+    .default(DEFAULT_BRANDING_SETTINGS.secondaryColor),
   cornerStyle: varchar("corner_style", { length: 32 }).notNull().default("rounded"),
   logoUrl: text("logo_url").notNull().default(""),
   faviconUrl: text("favicon_url").notNull().default(""),

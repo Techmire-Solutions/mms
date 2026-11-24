@@ -5,7 +5,10 @@ import { DATE_FORMAT_PRESET_IDS } from "../core/dateFormatPresets.js";
 import { THEME_MODE_VALUES } from "../settings/globalSettingsThemeUtils.js";
 import { platformConfigBackupApplyResultSchema } from "../backup/platformConfigBackupTypes.js";
 import { SYSTEM_MODULES_BY_ID } from "../settings/globalSettingsModuleRegistry.js";
-import { platformConsolidationPrefsSchema, platformContactPrefsSchema } from "../auth/platformSettingsTypes.js";
+import {
+  platformConsolidationPrefsSchema,
+  platformContactPrefsSchema,
+} from "../auth/platformSettingsTypes.js";
 
 const platformModuleIdSchema = z
   .string()
