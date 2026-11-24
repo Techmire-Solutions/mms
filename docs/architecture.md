@@ -25,7 +25,7 @@ mms/
 │     └─ src/
 │        ├─ components/      # SHARED cross-surface UI primitives (the DRY layer)
 │        ├─ platform/        # apex admin console
-│        │  ├─ components/   ├─ pages/   ├─ hooks/   ├─ lib/   ├─ routes/
+│        │  ├─ features/{feature}/ (components/ hooks/ lib/)   ├─ hooks/   ├─ routes/
 │        ├─ tenant/          # madrasa workspace app
 │        │  ├─ components/   ├─ features/{module}/   ├─ pages/   ├─ hooks/
 │        └─ lib/             # app shell config (apiClient, routes, i18n)

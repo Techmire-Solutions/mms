@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { AppTranslationKey } from "@mms/shared";
 import { resolveModuleTierTab } from "@mms/shared";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import {
   getUsersConfigTabs,

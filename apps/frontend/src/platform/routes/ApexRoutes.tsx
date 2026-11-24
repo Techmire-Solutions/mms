@@ -1,11 +1,13 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { ROUTES, TENANT_APP_PATHS } from "@/lib/config/routes";
-import PlatformBootGate, { PlatformFallbackRoute } from "@/platform/components/PlatformBootGate";
-import { PlatformFirstRunGate } from "@/platform/components/PlatformFirstRunGate";
+import PlatformBootGate, {
+  PlatformFallbackRoute,
+} from "@/platform/features/auth/components/PlatformBootGate";
+import { PlatformFirstRunGate } from "@/platform/features/auth/components/PlatformFirstRunGate";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
-import { PlatformAuthProvider } from "@/platform/lib/PlatformAuthContext";
-import { ApexBootPrefetch } from "@/platform/components/ApexBootPrefetch";
+import { PlatformAuthProvider } from "@/platform/features/auth/lib/PlatformAuthContext";
+import { ApexBootPrefetch } from "@/platform/features/auth/components/ApexBootPrefetch";
 import { MotionPreferences } from "@/providers/MotionPreferences";
 import {
   PLATFORM_CONSOLE_GROUPS,
@@ -17,18 +19,18 @@ import {
 // motion) — none of which the public apex entry routes need. Load it only when
 // an authenticated console route actually renders the shell.
 const PlatformPageShell = React.lazy(() =>
-  import("@/platform/components/PlatformPageShell").then((m) => ({
+  import("@/platform/features/shell/components/PlatformPageShell").then((m) => ({
     default: m.PlatformPageShell,
   })),
 );
 
-const ApexHome = React.lazy(() => import("@/platform/pages/ApexHome"));
-const ApexWorkspaceGate = React.lazy(() => import("@/platform/pages/ApexWorkspaceGate"));
-const TenantNotFoundPage = React.lazy(() => import("@/platform/pages/TenantNotFoundPage"));
+const ApexHome = React.lazy(() => import("@/platform/features/auth/ApexHome"));
+const ApexWorkspaceGate = React.lazy(() => import("@/platform/features/auth/ApexWorkspaceGate"));
+const TenantNotFoundPage = React.lazy(() => import("@/platform/features/auth/TenantNotFoundPage"));
 const PlatformForgotPassword = React.lazy(
-  () => import("@/platform/pages/auth/PlatformForgotPassword"),
+  () => import("@/platform/features/auth/PlatformForgotPassword"),
 );
-const PlatformLoginPage = React.lazy(() => import("@/platform/pages/auth/PlatformLoginPage"));
+const PlatformLoginPage = React.lazy(() => import("@/platform/features/auth/PlatformLoginPage"));
 
 /**
  * Stable id → lazy page component. Built once at module scope so `React.lazy`

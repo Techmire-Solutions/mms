@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CommandPalette } from "./CommandPalette";
-import { PlatformCommandPalette } from "@/platform/components/PlatformCommandPalette";
+import { PlatformCommandPalette } from "@/platform/features/shell/components/command/PlatformCommandPalette";
 import type { CommandPaletteModalProps } from "./CommandPaletteModal";
 
 const navigate = vi.fn();
@@ -18,7 +18,7 @@ vi.mock("@/platform/hooks/usePlatformPermissions", () => ({
     canAdmins: true,
   }),
 }));
-vi.mock("@/platform/hooks/usePlatformWorkspaces", () => ({
+vi.mock("@/platform/features/workspaces/hooks/usePlatformWorkspaces", () => ({
   usePlatformWorkspaces: () => ({ data: [] }),
 }));
 vi.mock("./CommandPaletteModal", () => ({

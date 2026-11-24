@@ -1,6 +1,6 @@
 import React from "react";
 import { Trash2 } from "lucide-react";
-import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
+import { SettingsAdminOnlyNotice } from "@/components/app/SettingsAdminOnlyNotice";
 import BackupRestoreConfirmModal from "@/tenant/features/settings/components/BackupRestoreConfirmModal";
 import BackupCredentialsModal from "@/tenant/features/settings/components/BackupCredentialsModal";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";

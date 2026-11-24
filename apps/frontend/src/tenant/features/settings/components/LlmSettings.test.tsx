@@ -25,7 +25,7 @@ vi.mock("../hooks/useLlmSettingsController", () => ({
   }),
 }));
 
-vi.mock("./LlmConfigListSection", () => ({
+vi.mock("@/components/llm/LlmConfigListSection", () => ({
   LlmConfigListSection: () => <div data-testid="llm-config-list">ConfigList</div>,
 }));
 
@@ -33,7 +33,7 @@ vi.mock("./LlmSandboxPanel", () => ({
   LlmSandboxPanel: () => <div data-testid="llm-sandbox">Sandbox</div>,
 }));
 
-vi.mock("./LlmConfigModal", () => ({
+vi.mock("@/components/llm/LlmConfigModal", () => ({
   LlmConfigModal: () => <div data-testid="llm-modal">Modal</div>,
 }));
 

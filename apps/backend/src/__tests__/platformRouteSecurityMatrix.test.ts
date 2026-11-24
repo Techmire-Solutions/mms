@@ -19,7 +19,15 @@ import { buildApp } from "../app.js";
  */
 
 const mockUsers = vi.hoisted(() => {
-  const all = { workspaces: true, onboard: true, settings: true, admins: true, system: true };
+  const all = {
+    workspaces: true,
+    onboard: true,
+    settings: true,
+    admins: true,
+    system: true,
+    contacts: true,
+    messaging: true,
+  };
   const user = (id: string, role: "super_user" | "admin", permissions: typeof all) => ({
     id,
     email: `${id}@platform.test`,
@@ -39,6 +47,8 @@ const mockUsers = vi.hoisted(() => {
       settings: false,
       admins: false,
       system: false,
+      contacts: false,
+      messaging: false,
     }),
     onboardOnly: user("p-admin-onboard", "admin", {
       ...all,
@@ -46,12 +56,21 @@ const mockUsers = vi.hoisted(() => {
       settings: false,
       admins: false,
       system: false,
+      contacts: false,
+      messaging: false,
     }),
     noWorkspaces: user("p-admin-no-ws", "admin", { ...all, workspaces: false }),
     noSettings: user("p-admin-no-settings", "admin", { ...all, settings: false }),
     noAdmins: user("p-admin-no-admins", "admin", { ...all, admins: false }),
     noSystem: user("p-admin-no-system", "admin", { ...all, system: false }),
     noOnboard: user("p-admin-no-onboard", "admin", { ...all, onboard: false }),
+    noSettingsNoOnboard: user("p-admin-no-settings-onboard", "admin", {
+      ...all,
+      settings: false,
+      onboard: false,
+    }),
+    noContacts: user("p-admin-no-contacts", "admin", { ...all, contacts: false }),
+    noMessaging: user("p-admin-no-messaging", "admin", { ...all, messaging: false }),
   };
 });
 type MockUser = (typeof mockUsers)[keyof typeof mockUsers];
@@ -79,8 +98,11 @@ type Area =
   | "workspaces"
   | "onboard"
   | "settings"
+  | "settings_or_onboard"
   | "admins"
   | "system"
+  | "contacts"
+  | "messaging"
   | "authenticated"
   | "optional"
   | "public";
@@ -109,7 +131,14 @@ const ROUTE_AREAS: ReadonlyArray<{ pattern: RegExp; area: Area }> = [
   // Areas.
   { pattern: /^\/api\/platform\/(users|admins)(\/|$)/, area: "admins" },
   { pattern: /^\/api\/platform\/(workspaces|consolidation)(\/|$)/, area: "workspaces" },
-  { pattern: /^\/api\/platform\/(email|sms|settings)(\/|$)/, area: "settings" },
+  { pattern: /^\/api\/platform\/contacts(\/|$)/, area: "contacts" },
+  { pattern: /^\/api\/platform\/messages(\/|$)/, area: "messaging" },
+  { pattern: /^\/api\/platform\/modules\/catalog$/, area: "settings_or_onboard" },
+  {
+    pattern:
+      /^\/api\/platform\/(email|sms|settings|branding|llm|backup|modules(?!\/catalog))(\/|$)/,
+    area: "settings",
+  },
   { pattern: /^\/api\/platform\/(admin\/system|schema|ai|audit)(\/|$)/, area: "system" },
 ];
 
@@ -127,6 +156,12 @@ const SUPER_USER_ONLY = new Set([
   "DELETE /api/platform/users/:adminId",
   "PATCH /api/platform/users/:adminId/disabled",
   "PATCH /api/platform/users/:adminId/permissions",
+  "PUT /api/platform/modules",
+  "PUT /api/platform/llm",
+  "POST /api/platform/llm/test",
+  "POST /api/platform/llm/models",
+  "POST /api/platform/backup/export",
+  "POST /api/platform/backup/import",
 ]);
 
 /** Routes registered outside `/api/platform` that still carry a platform permission. */
@@ -233,8 +268,11 @@ describe("platform route security matrix", () => {
       workspaces: mockUsers.noWorkspaces,
       onboard: mockUsers.noOnboard,
       settings: mockUsers.noSettings,
+      settings_or_onboard: mockUsers.noSettingsNoOnboard,
       admins: mockUsers.noAdmins,
       system: mockUsers.noSystem,
+      contacts: mockUsers.noContacts,
+      messaging: mockUsers.noMessaging,
     };
     for (const key of platformRoutes) {
       const area = areaFor(key.split(" ")[1] ?? "");

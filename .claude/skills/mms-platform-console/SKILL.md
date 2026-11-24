@@ -53,8 +53,10 @@ For platform permission keys, RBAC mappings, and capability matrices, see [refer
 | Layer | Path / Symbol |
 |---|---|
 | Frontend Shell & Routes | `apps/frontend/src/platform/routes/ApexRoutes.tsx`, `apexRouteRegistry.ts` |
-| Frontend Auth Context | `apps/frontend/src/platform/lib/PlatformAuthContext.tsx` |
-| Query Keys Factory | `apps/frontend/src/platform/lib/platformQueryKeys.ts` |
+| Feature Modules | `apps/frontend/src/platform/features/{feature}/` (`{Feature}Page.tsx`, `components/`, `hooks/`, `lib/`) |
+| Shared Shell / Auth | `apps/frontend/src/platform/features/shell/`, `platform/features/auth/` |
+| Frontend Auth Context | `apps/frontend/src/platform/features/auth/lib/PlatformAuthContext.tsx` |
+| Query Keys Factory | `apps/frontend/src/platform/features/shell/lib/platformQueryKeys.ts` |
 | Backend Routes | `apps/backend/src/routes/platform/` |
 | Backend Auth Middleware | `apps/backend/src/middleware/authenticatePlatform.ts` |
 | Architecture Guard Test | `apps/frontend/src/platform/platformUiArchitecture.test.ts` |

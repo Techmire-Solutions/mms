@@ -19,6 +19,8 @@ Project-wide entry points live at the repo root:
 - [frontend-performance-baseline.md](./frontend-performance-baseline.md) — render-hygiene + React Compiler baseline.
 - [dependencies-notes.md](./dependencies-notes.md) — dependency/tooling operational notes.
 - [rls-operations.md](./rls-operations.md) — RLS role model, provisioning, deploy preflight, rollback.
+- [platform-settings.md](./platform-settings.md) — Platform console settings parity, storage, runtime white-label branding, module flags, LLM and configuration-only backup boundaries.
+- [platform-console-modularization.md](./platform-console-modularization.md) — Platform console feature-module layout (review, findings, migration, boundary rules).
 
 ## Decisions
 

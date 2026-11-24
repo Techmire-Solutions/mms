@@ -4,7 +4,7 @@ import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { OBLIGATIONS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/obligations/components/ObligationCollectionsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
   OBLIGATIONS_MODULE_MANIFEST,

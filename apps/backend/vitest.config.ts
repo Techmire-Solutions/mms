@@ -37,7 +37,9 @@ export default defineConfig({
         ssr: { enabled: true, include: ["@mms/shared"], force: true },
       },
     },
-    pool: "threads",
+    pool:
+      (process.env.VITEST_POOL as "threads" | "forks") ??
+      (process.platform === "darwin" && !process.env.CI ? "forks" : "threads"),
     isolate: true,
     maxWorkers: process.env.CI ? 4 : undefined,
     fileParallelism: true,

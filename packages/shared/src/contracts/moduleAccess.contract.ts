@@ -7,6 +7,8 @@ const c = initContract();
 export const moduleAvailabilitySchema = z.object({
   granted: z.boolean(),
   enabled: z.boolean(),
+  /** Operator disabled the module platform-wide (feature flag); tenant toggles are locked. */
+  platformDisabled: z.boolean().optional(),
 });
 
 export const moduleAccessResponseSchema = z.object({

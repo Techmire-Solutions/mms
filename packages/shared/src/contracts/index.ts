@@ -78,6 +78,14 @@ import { accountingLedgerContract } from "./accountingLedger.contract.js";
 import { accountingFxContract } from "./accountingFx.contract.js";
 import { accountingHedgesContract } from "./accountingHedges.contract.js";
 import { platformConsolidationContract } from "./platformConsolidation.contract.js";
+import { platformContactsContract } from "./platformContacts.contract.js";
+import { platformMessagingContract } from "./platformMessaging.contract.js";
+import {
+  platformBrandingContract,
+  platformModuleContract,
+  platformLlmContract,
+  platformBackupContract,
+} from "./platformSettingsExtra.contract.js";
 import { financeOpsContract } from "./financeOps.contract.js";
 import {
   platformContract,
@@ -133,6 +141,8 @@ export const rootContract = c.router({
   accountingFx: accountingFxContract,
   accountingHedges: accountingHedgesContract,
   platformConsolidation: platformConsolidationContract,
+  platformContacts: platformContactsContract,
+  platformMessaging: platformMessagingContract,
   financeOps: financeOpsContract,
   platform: platformContract,
   templates: documentTemplatesContract,
@@ -212,10 +222,16 @@ export {
   accountingFxContract,
   accountingHedgesContract,
   platformConsolidationContract,
+  platformContactsContract,
+  platformMessagingContract,
   financeOpsContract,
   platformContract,
   platformWorkspacesContract,
   platformSettingsContract,
+  platformBrandingContract,
+  platformModuleContract,
+  platformLlmContract,
+  platformBackupContract,
   platformAdminsContract,
   documentTemplatesContract,
 };
@@ -263,6 +279,8 @@ export type DomainContracts = {
   accountingFx: typeof accountingFxContract;
   accountingHedges: typeof accountingHedgesContract;
   platformConsolidation: typeof platformConsolidationContract;
+  platformContacts: typeof platformContactsContract;
+  platformMessaging: typeof platformMessagingContract;
   financeOps: typeof financeOpsContract;
   platform: typeof platformContract;
   templates: typeof documentTemplatesContract;

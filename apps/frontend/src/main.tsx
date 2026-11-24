@@ -21,20 +21,48 @@ runAfterFirstPaint(() => {
   void import("@/lib/clientErrorReporting").then(({ initErrorReporting }) => initErrorReporting());
 });
 
-void import("@/lib/documentFavicon").then(
-  ({ applyPlatformDocumentFavicon, applyTenantDocumentFavicon }) => {
-    if (typeof window !== "undefined" && isApexHost(window.location.hostname, getAppDomain())) {
-      applyPlatformDocumentFavicon();
-      void import("@/lib/branding/apexPlatformTheme").then(({ applyApexPlatformTheme }) => {
-        applyApexPlatformTheme("en");
-      });
-    } else {
-      // Drop the static platform favicon from index.html before React mounts.
-      applyTenantDocumentFavicon({});
-      void import("@/lib/brandingTheme").then(({ applyAppTheme }) => applyAppTheme());
-    }
-  },
-);
+const APEX_BRANDING_BOOT_TIMEOUT_MS = 900;
+
+function withTimeout(promise: Promise<unknown>, ms: number): Promise<void> {
+  return Promise.race([
+    promise.then(() => undefined).catch(() => undefined),
+    new Promise<void>((resolve) => setTimeout(resolve, ms)),
+  ]);
+}
+
+/**
+ * Applies the white-label chrome before React mounts. On the apex, branding is
+ * hydrated first (bounded wait) so an installer's logo/name never flashes the
+ * default MMS chrome on the sign-in page; tenant hosts keep the fast path.
+ */
+async function applyBootChrome(): Promise<void> {
+  const isApex =
+    typeof window !== "undefined" && isApexHost(window.location.hostname, getAppDomain());
+  if (isApex) {
+    const [{ hydratePlatformBranding, getPlatformBrandingAsBrandingSettings }, favicon] =
+      await Promise.all([
+        import("@/lib/branding/platformBrandingStore"),
+        import("@/lib/documentFavicon"),
+      ]);
+    await withTimeout(hydratePlatformBranding(), APEX_BRANDING_BOOT_TIMEOUT_MS);
+    const branding = getPlatformBrandingAsBrandingSettings();
+    favicon.applyPlatformDocumentFavicon({
+      faviconUrl: branding.faviconUrl,
+      logoUrl: branding.logoUrl,
+      productName: branding.madrasaName,
+      primaryColor: branding.primaryColor,
+    });
+    const { applyApexPlatformTheme } = await import("@/lib/branding/apexPlatformTheme");
+    applyApexPlatformTheme("en");
+    return;
+  }
+
+  const { applyTenantDocumentFavicon } = await import("@/lib/documentFavicon");
+  // Drop the static platform favicon from index.html before React mounts.
+  applyTenantDocumentFavicon({});
+  const { applyAppTheme } = await import("@/lib/brandingTheme");
+  applyAppTheme();
+}
 
 // DEV ONLY: suppress the Recharts v3 false-positive dimension warnings that
 // fire during mount. The global console must stay unpatched in production —
@@ -67,11 +95,16 @@ const app = (
   </ErrorBoundary>
 );
 
-ReactDOM.createRoot(rootElement).render(
-  import.meta.env.DEV ? <React.StrictMode>{app}</React.StrictMode> : app,
-);
+async function bootstrap(): Promise<void> {
+  await applyBootChrome();
+  ReactDOM.createRoot(rootElement as HTMLElement).render(
+    import.meta.env.DEV ? <React.StrictMode>{app}</React.StrictMode> : app,
+  );
 
-// Register service worker deferred after first paint instead of eager injectRegister
-import("@/lib/registerServiceWorkerDeferred").then(({ registerServiceWorkerDeferred }) => {
-  registerServiceWorkerDeferred();
-});
+  // Register service worker deferred after first paint instead of eager injectRegister
+  void import("@/lib/registerServiceWorkerDeferred").then(({ registerServiceWorkerDeferred }) => {
+    registerServiceWorkerDeferred();
+  });
+}
+
+void bootstrap();

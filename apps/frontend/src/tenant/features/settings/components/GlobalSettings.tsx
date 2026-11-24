@@ -16,10 +16,10 @@ import { FormSelect } from "@/components/app/FormSelect";
 import { Label } from "@/components/ui/label";
 import { SectionCard } from "@/components/app/SectionCard";
 import { SettingsFormActions } from "@/components/app/SettingsFormActions";
-import DateFormatSelect from "@/tenant/features/settings/components/DateFormatSelect";
-import TimezoneSelect from "@/tenant/features/settings/components/TimezoneSelect";
+import DateFormatSelect from "@/components/app/DateFormatSelect";
+import TimezoneSelect from "@/components/app/TimezoneSelect";
 import { GlobalSettingsSecuritySection } from "@/tenant/features/settings/components/GlobalSettingsSecuritySection";
-import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
+import { SettingsAdminOnlyNotice } from "@/components/app/SettingsAdminOnlyNotice";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { SettingsCallout, SettingsFieldGroup, SettingsPanel } from "@/components/app/SettingsShell";
 

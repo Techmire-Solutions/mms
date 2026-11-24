@@ -209,7 +209,7 @@ production.
   persistence. Type-contract drift only.
 - `.passthrough()` on module setup-preference schemas is the documented forward-compatibility choice
   (unknown keys survive future field additions); not widened here.
-- The single `dangerouslySetInnerHTML` ([`ErdMermaidDiagram.tsx:184`](../apps/frontend/src/platform/components/erd/ErdMermaidDiagram.tsx#L184))
+- The single `dangerouslySetInnerHTML` ([`ErdMermaidDiagram.tsx:184`](../apps/frontend/src/platform/features/erd/components/ErdMermaidDiagram.tsx#L184))
   renders Mermaid output with `securityLevel: "strict"` from schema-derived ERD source.
 - Sampled `catch {}` blocks are deliberate best-effort paths (faculty sequence sync, JSON citation
   parsing). One handler returns a generic 500 without logging

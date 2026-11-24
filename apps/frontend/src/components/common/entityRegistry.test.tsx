@@ -491,6 +491,8 @@ describe("SSOT Entity UI Registry Architecture", () => {
           settings: true,
           admins: true,
           system: true,
+          contacts: true,
+          messaging: true,
         },
         createdAt: "2026-01-01",
         disabledAt: null,

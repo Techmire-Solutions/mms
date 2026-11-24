@@ -3,7 +3,7 @@ import { resolveModuleTierTab } from "@mms/shared";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { MEDIA_LG_UP } from "@/lib/breakpoints";
-import { useFilteredModuleTierTabs, type ModuleTierTab } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs, type ModuleTierTab } from "@/hooks/useModuleTierTabs";
 import {
   useModulePermissions,
   type ModulePermissionsManifest,

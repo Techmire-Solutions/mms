@@ -5,26 +5,13 @@ import { authenticateTenant } from "../../middleware/authenticate.js";
 import { sendForbidden } from "../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 import {
-  getLlmProviderModelsUrl,
   aiModelsBodySchema as modelsBodySchema,
   aiTestBodySchema as testBodySchema,
   type User,
   type LlmTestResult,
 } from "@mms/shared";
-import { fetchSafeExternal, safeOptionalExternalHttpUrl } from "../../lib/outboundUrl.js";
+import { fetchLlmModels } from "../../services/llmModelsService.js";
 import { userHasPermission } from "../../lib/userPermissionContext.js";
-
-interface GeminiModelsResponse {
-  models?: Array<{ name: string }>;
-}
-
-interface AnthropicModelsResponse {
-  data?: Array<{ id: string }>;
-}
-
-interface OpenAiModelsResponse {
-  data?: Array<{ id: string }>;
-}
 
 export default async function aiRoutes(
   fastify: FastifyInstance,
@@ -66,56 +53,12 @@ export default async function aiRoutes(
     }
 
     try {
-      let models: string[] = [];
-      const safeBaseUrl = safeOptionalExternalHttpUrl(resolvedBaseUrl, "AI base URL");
-
-      if (provider === "gemini") {
-        const modelsEndpoint = getLlmProviderModelsUrl("gemini", safeBaseUrl);
-        const url = `${modelsEndpoint}?key=${resolvedApiKey}`;
-        const res = await fetchSafeExternal(url);
-        if (res.ok) {
-          const json = (await res.json()) as GeminiModelsResponse;
-          models = (json.models || []).map((model) => model.name.replace("models/", ""));
-        }
-      } else if (provider === "anthropic") {
-        const url = getLlmProviderModelsUrl("anthropic", safeBaseUrl);
-        const res = await fetchSafeExternal(url, {
-          headers: {
-            "x-api-key": resolvedApiKey,
-            "anthropic-version": "2023-06-01",
-          },
-        });
-        if (res.ok) {
-          const json = (await res.json()) as AnthropicModelsResponse;
-          models = (json.data || []).map((model) => model.id);
-        } else {
-          models = [
-            "claude-3-5-haiku-20241022",
-            "claude-3-5-sonnet-20241022",
-            "claude-3-opus-20240229",
-          ];
-        }
-      } else {
-        const url = getLlmProviderModelsUrl(provider, safeBaseUrl);
-        if (url) {
-          const headers: Record<string, string> = {
-            Authorization: `Bearer ${resolvedApiKey}`,
-          };
-          if (provider === "openrouter") {
-            const domain = process.env.MMS_APP_DOMAIN?.trim();
-            headers["HTTP-Referer"] = domain ? `https://${domain}` : "http://localhost:3000";
-            headers["X-Title"] = "MMS";
-          }
-          const res = await fetchSafeExternal(url, { headers });
-          if (res.ok) {
-            const json = (await res.json()) as OpenAiModelsResponse;
-            models = (json.data || []).map((model) => model.id);
-          }
-        }
-      }
-
-      const uniqueModels = Array.from(new Set(models)).sort();
-      return reply.send({ success: true, models: uniqueModels });
+      const models = await fetchLlmModels({
+        provider,
+        apiKey: resolvedApiKey,
+        baseUrl: resolvedBaseUrl,
+      });
+      return reply.send({ success: true, models });
     } catch (caughtError: unknown) {
       const errorMessage = caughtError instanceof Error ? caughtError.message : "Unknown error";
       return reply.send({ success: false, message: errorMessage, models: [] });

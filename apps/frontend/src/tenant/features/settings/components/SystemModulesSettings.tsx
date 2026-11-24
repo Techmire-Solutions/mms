@@ -6,7 +6,7 @@ import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
 import { SettingsFormActions } from "@/components/app/SettingsFormActions";
 import ModuleSettingsNavGrid from "@/tenant/features/settings/components/modules/ModuleSettingsNavGrid";
 import { SettingsPanel } from "@/components/app/SettingsShell";
-import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
+import { SettingsAdminOnlyNotice } from "@/components/app/SettingsAdminOnlyNotice";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 
 /**
@@ -32,12 +32,19 @@ export default function SystemModulesSettings(): React.JSX.Element {
   const grantedModules = availability
     ? Object.fromEntries(Object.entries(availability).map(([id, entry]) => [id, entry.granted]))
     : undefined;
+  const platformDisabledModules = new Set(
+    availability
+      ? Object.entries(availability)
+          .filter(([, entry]) => entry.platformDisabled)
+          .map(([id]) => id)
+      : [],
+  );
 
   const enabledModules = (() => normalizeEnabledModules(data.enabledModules))();
 
   const updModule = (moduleId: string, enabled: boolean): void => {
     const mod = SYSTEM_MODULES_BY_ID[moduleId];
-    if (mod?.required) return;
+    if (mod?.required || platformDisabledModules.has(moduleId)) return;
     upd("enabledModules", normalizeEnabledModules({ ...enabledModules, [moduleId]: enabled }));
     clearSaved();
   };
@@ -71,6 +78,7 @@ export default function SystemModulesSettings(): React.JSX.Element {
       <ModuleSettingsNavGrid
         enabledModules={enabledModules}
         grantedModules={grantedModules}
+        platformDisabledModules={platformDisabledModules}
         onToggleModule={updModule}
       />
     </SettingsPanel>

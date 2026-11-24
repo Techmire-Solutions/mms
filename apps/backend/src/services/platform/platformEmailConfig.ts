@@ -1,3 +1,5 @@
+import { getPlatformBranding } from "./platformBrandingService.js";
+
 export function readEnv(name: string): string {
   return process.env[name]?.trim() ?? "";
 }
@@ -21,7 +23,16 @@ export function isPlatformSmtpConfigured(): boolean {
 
 export function platformFromHeader(): string {
   const fromAddress = readEnv("PLATFORM_EMAIL_FROM");
-  const fromName = readEnv("PLATFORM_EMAIL_FROM_NAME") || "MMS Platform";
+  const configuredName = readEnv("PLATFORM_EMAIL_FROM_NAME");
+  let brandName = "";
+  if (!configuredName) {
+    try {
+      brandName = getPlatformBranding().productName.trim();
+    } catch {
+      brandName = "";
+    }
+  }
+  const fromName = configuredName || brandName || "MMS Platform";
   return `"${fromName}" <${fromAddress}>`;
 }
 

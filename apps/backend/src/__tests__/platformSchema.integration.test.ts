@@ -9,7 +9,15 @@ const { mockPlatformAdmin } = vi.hoisted(() => {
     name: "ERD Admin",
     passwordHash: "$2b$10$abcdefghijklmnopqrstuvwxyz123456",
     role: "admin" as const,
-    permissions: { workspaces: true, onboard: true, settings: true, admins: true, system: true },
+    permissions: {
+      workspaces: true,
+      onboard: true,
+      settings: true,
+      admins: true,
+      system: true,
+      contacts: true,
+      messaging: true,
+    },
     sessionVersion: 0,
     createdAt: "2026-01-01T00:00:00.000Z",
   };
@@ -98,6 +106,8 @@ describe("GET /api/platform/schema/erd", () => {
         settings: false,
         admins: false,
         system: false,
+        contacts: false,
+        messaging: false,
       },
     };
     const { findPlatformUserRowById } =

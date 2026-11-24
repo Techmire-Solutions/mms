@@ -2,6 +2,7 @@ import React, { useEffect, Suspense } from "react";
 import { isApexHost } from "@mms/shared/tenantUtils";
 import { SETTINGS_PREVIEW_EVENT } from "@/lib/settingsPreview";
 import { getAppDomain } from "@/lib/config/tenantConfig";
+import { subscribePlatformBranding } from "@/lib/branding/platformBrandingStore";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useIsTenantHost } from "@/lib/host/useIsTenantHost";
 const UserNotRegisteredError = React.lazy(
@@ -79,6 +80,7 @@ function App(): React.JSX.Element {
     };
     window.addEventListener("local-database-update", onThemeUpdate);
     window.addEventListener(SETTINGS_PREVIEW_EVENT, onThemeUpdate);
+    const unsubscribePlatformBranding = subscribePlatformBranding(onThemeUpdate);
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const listener = () => {
@@ -89,6 +91,7 @@ function App(): React.JSX.Element {
     return () => {
       window.removeEventListener("local-database-update", onThemeUpdate);
       window.removeEventListener(SETTINGS_PREVIEW_EVENT, onThemeUpdate);
+      unsubscribePlatformBranding();
       mediaQuery.removeEventListener("change", listener);
     };
   }, [isApexBoot]);

@@ -22,10 +22,7 @@ export const SAVING_EXEMPT = new Map([
     "tenant/features/sessions/components/SessionLockOverrideDialog.tsx",
     "resolves an in-memory lock prompt; no mutation",
   ],
-  [
-    "tenant/features/settings/components/LlmConfigModal.tsx",
-    "draft edit only; the settings page owns the save",
-  ],
+  ["components/llm/LlmConfigModal.tsx", "draft edit only; the settings page owns the save"],
 ]);
 
 /**
@@ -42,7 +39,7 @@ export const DIRTY_EXEMPT = new Map([
     "password step-up prompt; closing abandons the action",
   ],
   [
-    "platform/components/PlatformWorkspaceResetPasswordDialog.tsx",
+    "platform/features/workspaces/components/PlatformWorkspaceResetPasswordDialog.tsx",
     "credential step-up; closing abandons the action",
   ],
 ]);

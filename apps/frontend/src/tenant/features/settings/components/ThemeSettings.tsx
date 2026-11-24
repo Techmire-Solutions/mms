@@ -7,20 +7,20 @@ import {
   resolveBrandingCornerRadius,
 } from "@mms/shared";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useApplyLogoColors } from "@/tenant/hooks/useApplyLogoColors";
+import { useApplyLogoColors } from "@/hooks/useApplyLogoColors";
 import { useThemeSettingsDraft } from "@/tenant/features/settings/hooks/useThemeSettingsDraft";
 import { useSettingsTab } from "@/lib/contexts/SettingsTabContext";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
-import { SettingsAdminOnlyNotice } from "@/tenant/features/settings/components/SettingsAdminOnlyNotice";
+import { SettingsAdminOnlyNotice } from "@/components/app/SettingsAdminOnlyNotice";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { SettingsFormActions } from "@/components/app/SettingsFormActions";
-import ThemeModeSelector from "@/tenant/features/settings/components/ThemeModeSelector";
-import CornerStyleSelector from "@/tenant/features/settings/components/CornerStyleSelector";
+import ThemeModeSelector from "@/components/branding/ThemeModeSelector";
+import CornerStyleSelector from "@/components/branding/CornerStyleSelector";
 import { FieldHint } from "@/components/branding/BrandingShared";
 import { SettingsColoursBadge, SettingsPanel } from "@/components/app/SettingsShell";
-import { ThemeSettingsColoursSection } from "@/tenant/features/settings/components/ThemeSettingsColoursSection";
-import { ThemeSettingsFooterSection } from "@/tenant/features/settings/components/ThemeSettingsFooterSection";
+import { ThemeSettingsColoursSection } from "@/components/branding/ThemeSettingsColoursSection";
+import { ThemeSettingsFooterSection } from "@/components/branding/ThemeSettingsFooterSection";
 import { Badge } from "@/components/ui/badge";
 
 /**

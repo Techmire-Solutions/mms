@@ -4,7 +4,7 @@ import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { EXAMINATIONS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/examinations/components/ExaminationsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { BookOpen, FileText } from "lucide-react";
 import { EXAMINATIONS_MODULE_MANIFEST, examsFromResponse, resolveModuleTierTab } from "@mms/shared";

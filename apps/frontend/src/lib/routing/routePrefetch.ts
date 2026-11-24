@@ -3,11 +3,11 @@ import { TENANT_ROUTE_LOADERS } from "@/lib/routing/moduleRegistry";
 import { isCurrentHostApex } from "@/lib/config/tenantConfig";
 
 const APEX_ROUTE_LOADERS: Record<string, () => Promise<unknown>> = {
-  [ROUTES.home]: () => import("@/platform/pages/ApexHome"),
-  [ROUTES.tenantNotFound]: () => import("@/platform/pages/TenantNotFoundPage"),
-  [ROUTES.onboarding]: () => import("@/platform/pages/onboarding/OnboardingWizard"),
-  [ROUTES.platformAccount]: () => import("@/platform/pages/PlatformAccount"),
-  [ROUTES.platformForgotPassword]: () => import("@/platform/pages/auth/PlatformForgotPassword"),
+  [ROUTES.home]: () => import("@/platform/features/auth/ApexHome"),
+  [ROUTES.tenantNotFound]: () => import("@/platform/features/auth/TenantNotFoundPage"),
+  [ROUTES.onboarding]: () => import("@/platform/features/onboarding/OnboardingWizard"),
+  [ROUTES.platformAccount]: () => import("@/platform/features/account/PlatformAccount"),
+  [ROUTES.platformForgotPassword]: () => import("@/platform/features/auth/PlatformForgotPassword"),
 };
 
 const prefetched = new Set<string>();

@@ -1,8 +1,10 @@
 import {
+  PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES,
   resolvePlatformSessionPolicy,
   resolveTenantSessionPolicy,
   type SessionTimeoutPolicy,
 } from "@mms/shared";
+import { getPlatformSettings } from "./platform/platformSettingsService.js";
 
 function envInt(name: string): number | undefined {
   const v = Number.parseInt(process.env[name] ?? "", 10);
@@ -23,14 +25,21 @@ export function tenantSessionPolicy(sessionTimeoutMinutes?: number): SessionTime
 }
 
 /**
- * Resolves the apex platform session policy from runtime env
- * (`PLATFORM_SESSION_IDLE_MINUTES`, `PLATFORM_SESSION_WARN_SECONDS`,
- * `PLATFORM_SESSION_ABSOLUTE_MINUTES`). Re-read per call so operators can tune
- * timeouts without redeploying code. All fallbacks live in the shared resolver.
+ * Resolves the apex platform session policy. The Settings → General idle timeout
+ * is authoritative when configured; `PLATFORM_SESSION_IDLE_MINUTES` remains the
+ * fallback for installs that never saved the setting (and for the default value).
+ * `PLATFORM_SESSION_WARN_SECONDS` / `PLATFORM_SESSION_ABSOLUTE_MINUTES` still come
+ * from runtime env. All fallbacks live in the shared resolver.
  */
 export function platformSessionPolicy(): SessionTimeoutPolicy {
+  const configured = getPlatformSettings().idleSessionMinutes;
+  const envIdle = envInt("PLATFORM_SESSION_IDLE_MINUTES");
+  const idle =
+    configured === PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES && envIdle !== undefined
+      ? envIdle
+      : configured;
   return resolvePlatformSessionPolicy(
-    envInt("PLATFORM_SESSION_IDLE_MINUTES"),
+    idle,
     envInt("PLATFORM_SESSION_WARN_SECONDS"),
     envInt("PLATFORM_SESSION_ABSOLUTE_MINUTES"),
   );

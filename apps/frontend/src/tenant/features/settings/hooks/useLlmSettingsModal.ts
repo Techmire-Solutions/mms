@@ -8,10 +8,10 @@ import {
   type LlmProviderType,
   type LlmTestResult,
 } from "@mms/shared";
-import { useLlmModelFetch } from "./useLlmModelFetch";
+import { useLlmModelFetch } from "@/hooks/useLlmModelFetch";
 
 import { computeNextLlmConfigs, testLlmConnectivity } from "../lib/llmSettingsModalHelpers";
-import { validateLlmConfigInput } from "../lib/llmConfigValidation";
+import { validateLlmConfigInput } from "@/lib/llmConfigValidation";
 
 interface UseLlmSettingsModalOptions {
   configs: LlmConfig[];

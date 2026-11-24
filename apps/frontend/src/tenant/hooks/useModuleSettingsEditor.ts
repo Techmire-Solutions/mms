@@ -8,7 +8,7 @@ export interface ModuleSettingsShape {
   enabledTabs?: string[];
   requiredTabs?: string[];
 }
-import { useSavedFlash } from "./useSavedFlash";
+import { useSavedFlash } from "@/hooks/useSavedFlash";
 
 interface UseModuleSettingsEditorOptions<T extends ModuleSettingsShape> {
   config: {

@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PlatformUserProfile } from "@mms/shared";
 import { platformUserCan } from "@mms/shared";
-import { usePlatformPermissions } from "./usePlatformPermissions";
-import { usePlatformAuth } from "@/platform/lib/PlatformAuthContext";
+import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
+import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 
-vi.mock("@/platform/lib/PlatformAuthContext", () => ({
+vi.mock("@/platform/features/auth/lib/PlatformAuthContext", () => ({
   usePlatformAuth: vi.fn(),
 }));
 
@@ -15,7 +15,15 @@ describe("usePlatformPermissions", () => {
       email: "super@apex.test",
       name: "Super Operator",
       role: "super_user",
-      permissions: { workspaces: true, onboard: true, settings: true, admins: true, system: true },
+      permissions: {
+        workspaces: true,
+        onboard: true,
+        settings: true,
+        admins: true,
+        system: true,
+        contacts: true,
+        messaging: true,
+      },
     };
 
     expect(platformUserCan(mockSuperUser, "workspaces")).toBe(true);
@@ -34,6 +42,8 @@ describe("usePlatformPermissions", () => {
         settings: false,
         admins: false,
         system: false,
+        contacts: false,
+        messaging: false,
       },
     };
 

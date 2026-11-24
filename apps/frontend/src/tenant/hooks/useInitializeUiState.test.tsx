@@ -84,11 +84,13 @@ describe("useInitializeUiState", () => {
       body: { state: { notifications_read: ["a"], language: "ar" } },
     });
     const unmount = renderHook(client);
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
 
-    expect(mocks.initialize).toHaveBeenCalledWith({ notifications_read: ["a"], language: "ar" });
+    // The seed runs in a `useEffect` after the query resolves; poll instead of
+    // relying on a single macrotask flush so this stays deterministic under a
+    // busy parallel test run.
+    await vi.waitFor(() => {
+      expect(mocks.initialize).toHaveBeenCalledWith({ notifications_read: ["a"], language: "ar" });
+    });
     unmount();
   });
 

@@ -80,12 +80,15 @@ vi.mock("../services/platform/platformCookieService.js", () => ({
 }));
 
 import { onboardUser } from "../services/auth/authService.js";
+import { setPlatformSettingsCache } from "../services/platform/platformSettingsService.js";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
 
 const workspace = { id: "ws_1", subdomain: "demo", madrasaName: "Demo Madrasa", enabled: true };
 
 describe("onboardUser provisioning saga", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    setPlatformSettingsCache({ ...DEFAULT_PLATFORM_SETTINGS, disabledModules: [] });
     mocks.createWorkspace.mockResolvedValue(workspace);
     mocks.deleteWorkspace.mockResolvedValue(workspace);
     mocks.unblockTenant.mockResolvedValue(undefined);
@@ -113,6 +116,58 @@ describe("onboardUser provisioning saga", () => {
     ).rejects.toThrow(/super-admin invariant violated/);
 
     expect(mocks.deleteWorkspace).toHaveBeenCalledWith("demo");
+  });
+
+  it("rejects a platform-disabled module before creating a workspace", async () => {
+    setPlatformSettingsCache({ ...DEFAULT_PLATFORM_SETTINGS, disabledModules: ["finance"] });
+
+    await expect(
+      onboardUser({
+        subdomain: "demo",
+        madrasaName: "Demo Madrasa",
+        adminName: "Ali Raza",
+        email: "admin@demo.com",
+        adminGender: "male",
+        adminPasswordMode: "temporary",
+        password: "P@ssw0rd123",
+        modules: ["finance"],
+      }),
+    ).rejects.toThrow(/disabled platform-wide/);
+
+    expect(mocks.createWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("applies platform module defaults when the caller sends no module list", async () => {
+    setPlatformSettingsCache({
+      ...DEFAULT_PLATFORM_SETTINGS,
+      defaultEnabledModules: { tasks: false },
+    });
+    mocks.provisionWorkspaceAdmin.mockResolvedValue({
+      id: "usr_1",
+      loginEmail: "admin@demo.com",
+      name: "Ali Raza",
+      role: "super_admin",
+      workspaceSubdomain: "demo",
+    });
+    mocks.findUserByLoginEmailAndWorkspace.mockResolvedValue({
+      id: "usr_1",
+      loginEmail: "admin@demo.com",
+      name: "Ali Raza",
+      role: "super_admin",
+      workspaceSubdomain: "demo",
+    });
+
+    await onboardUser({
+      subdomain: "demo",
+      madrasaName: "Demo Madrasa",
+      adminName: "Ali Raza",
+      email: "admin@demo.com",
+      adminGender: "male",
+      adminPasswordMode: "temporary",
+      password: "P@ssw0rd123",
+    });
+
+    expect(mocks.createWorkspace).toHaveBeenCalled();
   });
 
   it("keeps the workspace and returns the provisioned admin on success", async () => {

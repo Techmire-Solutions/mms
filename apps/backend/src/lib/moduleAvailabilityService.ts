@@ -1,5 +1,6 @@
 import { buildModuleAvailability, type ModuleAvailabilityMap } from "@mms/shared";
 import { getWorkspaceModuleAccessRow } from "../db/repositories/workspaceModuleAccessRepository.js";
+import { getPlatformSettings } from "../services/platform/platformSettingsService.js";
 
 /**
  * Short backstop TTL only: every grant/enablement write calls
@@ -27,6 +28,15 @@ function isTestRuntime(): boolean {
   return process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
 }
 
+function platformDisabledModules(): string[] {
+  try {
+    return getPlatformSettings().disabledModules;
+  } catch {
+    // Never widen access because the platform-settings cache is unavailable.
+    return [];
+  }
+}
+
 /** Platform grants + tenant enablement for a workspace, from the workspace row. */
 export async function loadModuleAvailability(tenant: string): Promise<ModuleAvailabilityMap> {
   const key = normalizeTenant(tenant);
@@ -37,11 +47,17 @@ export async function loadModuleAvailability(tenant: string): Promise<ModuleAvai
   try {
     const row = await getWorkspaceModuleAccessRow(key);
     if (!row) throw new Error("Workspace row not found");
-    availability = buildModuleAvailability(row.grantedModules, row.enabledModules);
+    availability = buildModuleAvailability(
+      row.grantedModules,
+      row.enabledModules,
+      platformDisabledModules(),
+    );
   } catch (error) {
     // Mocked unit suites run without a database and expect default-enabled
     // modules; every real runtime fails closed.
-    if (isTestRuntime()) return buildModuleAvailability(null, null);
+    if (isTestRuntime()) {
+      return buildModuleAvailability(null, null, platformDisabledModules());
+    }
     throw new ModuleAvailabilityUnavailableError(key, error);
   }
 

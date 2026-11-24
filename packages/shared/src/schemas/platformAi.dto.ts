@@ -38,6 +38,8 @@ export const platformAiQueryResponseSchema = z
     suggestions: z.array(platformAiSuggestionSchema),
     confidence: z.number().min(0).max(1).optional(),
     latencyMs: z.number().optional(),
+    /** Whether the analysis came from the configured platform LLM or the heuristic engine. */
+    mode: z.enum(["llm", "heuristic"]).optional(),
   })
   .strict();
 export type PlatformAiQueryResponse = z.infer<typeof platformAiQueryResponseSchema>;

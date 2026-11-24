@@ -1905,6 +1905,41 @@
       "when": 1797850801408,
       "tag": "0271_loud_xavin",
       "breakpoints": true
+    },
+    {
+      "idx": 272,
+      "version": "7",
+      "when": 1797850801409,
+      "tag": "0272_platform_settings_branding",
+      "breakpoints": true
+    },
+    {
+      "idx": 273,
+      "version": "7",
+      "when": 1797850801410,
+      "tag": "0273_brave_gladiator",
+      "breakpoints": true
+    },
+    {
+      "idx": 274,
+      "version": "7",
+      "when": 1797850801411,
+      "tag": "0274_pale_energizer",
+      "breakpoints": true
+    },
+    {
+      "idx": 275,
+      "version": "7",
+      "when": 1797850801412,
+      "tag": "0275_stormy_lifeguard",
+      "breakpoints": true
+    },
+    {
+      "idx": 276,
+      "version": "7",
+      "when": 1797850801413,
+      "tag": "0276_platform_soft_delete_triggers",
+      "breakpoints": true
     }
   ]
 }

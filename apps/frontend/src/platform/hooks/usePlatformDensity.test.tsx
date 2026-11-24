@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
-import { usePlatformDensity, type PlatformDensityConfig } from "./usePlatformDensity";
+import {
+  usePlatformDensity,
+  type PlatformDensityConfig,
+} from "@/platform/hooks/usePlatformDensity";
 
 function renderDensityHook() {
   let hookResult!: PlatformDensityConfig;

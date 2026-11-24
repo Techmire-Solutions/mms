@@ -17,7 +17,7 @@ paths:
 
 ## 1. Server State (TanStack Query)
 - **Query Factories & Toast:** Wrap colocated `queryOptions` / `mutationOptions` factories (`@/lib/query/*`). Toast via `notify.*` + `t()` at call site after `mutateAsync`; ban global `MutationCache` toast buses.
-- **Cross-Module Facades:** Hook implementations stay in `tenant/features/{module}/hooks/`. Cross-feature imports must use `@/tenant/hooks/collections/{module}` facades. Platform hooks colocate in `@/platform/hooks/` and must not cross tenant boundaries.
+- **Cross-Module Facades:** Hook implementations stay in `tenant/features/{module}/hooks/`. Cross-feature imports must use `@/tenant/hooks/collections/{module}` facades. Platform feature hooks colocate in `platform/features/{feature}/hooks/`; only cross-feature hooks (permissions, density, notification acks) live in `@/platform/hooks/`. Platform code must not cross tenant boundaries.
 - **Where Logic Lives:** Feature logic files belong in `features/{module}/hooks/` (hooks) or `features/{module}/lib/` (helpers, drafts, types) — never directly under `features/{module}/components/`, which holds UI only (`check:frontend-structure`).
 
 ## 2. Legacy Data Layer (`useLiveCollection` Ban)

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { ROUTES } from "@/lib/config/routes";
-import { PLATFORM_CONSOLE_ENTRIES, PLATFORM_CONSOLE_GROUPS } from "./apexRouteRegistry";
+import {
+  PLATFORM_CONSOLE_ENTRIES,
+  PLATFORM_CONSOLE_GROUPS,
+} from "@/platform/routes/apexRouteRegistry";
 
 const ROUTE_VALUES = new Set<string>(Object.values(ROUTES));
 
@@ -24,7 +27,8 @@ describe("apexRouteRegistry", () => {
     for (const entry of PLATFORM_CONSOLE_ENTRIES) {
       expect(ROUTE_VALUES.has(entry.path), entry.path).toBe(true);
       if (entry.redirectTo) {
-        expect(ROUTE_VALUES.has(entry.redirectTo), entry.redirectTo).toBe(true);
+        // Redirect targets may carry query params (`?tab=reports`); validate the path.
+        expect(ROUTE_VALUES.has(entry.redirectTo.split("?")[0]), entry.redirectTo).toBe(true);
       }
     }
   });
@@ -44,7 +48,16 @@ describe("apexRouteRegistry", () => {
 
   it("pins the permission groups (IA ratchet)", () => {
     expect(new Set(PLATFORM_CONSOLE_ENTRIES.map((entry) => entry.permission))).toEqual(
-      new Set([null, "workspaces", "onboard", "admins", "settings", "system"]),
+      new Set([
+        null,
+        "workspaces",
+        "onboard",
+        "admins",
+        "settings",
+        "system",
+        "contacts",
+        "messaging",
+      ]),
     );
   });
 });

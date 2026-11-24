@@ -1,20 +1,42 @@
-import type { PlatformSettings, PlatformSettingsUpdateInput } from "@mms/shared";
-import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
+import type { PlatformSettings, PlatformSettingsUpdateInput, LlmConfig } from "@mms/shared";
+import { DEFAULT_PLATFORM_SETTINGS, mergePlatformSettings } from "@mms/shared";
 import {
   findPlatformSettingsRow,
   insertPlatformSettingsDefaultRow,
   upsertPlatformSettingsRow,
-} from "../../db/repositories/platformSettingsRepository.js";
+} from "../../platform/repository/platformSettingsAdapter.js";
 import { logger } from "../../lib/logger.js";
 import { redisGet, redisSet } from "../../lib/redis.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 
 export const REDIS_PLATFORM_SETTINGS_KEY = "platform:settings:global";
 
+const MASK_PREFIX = "****";
+
 let cachedPlatformSettings: PlatformSettings = { ...DEFAULT_PLATFORM_SETTINGS };
 
+/** True when the value is a masked secret produced by `maskPlatformSettingsForClient`. */
+export function isMaskedPlatformSecret(value: string | undefined | null): boolean {
+  return typeof value === "string" && value.startsWith(MASK_PREFIX);
+}
+
 /**
- * Initializes the in-memory platform settings cache from Redis or PostgreSQL on server startup.
+ * Client-safe copy: LLM API keys are masked for every reader. The full secrets
+ * stay server-side only and are reused by the platform AI service.
+ */
+export function maskPlatformSettingsForClient(settings: PlatformSettings): PlatformSettings {
+  return {
+    ...settings,
+    llmApiKey: settings.llmApiKey ? `${MASK_PREFIX}${settings.llmApiKey.slice(-4)}` : "",
+    llmConfigs: settings.llmConfigs.map((config) => ({
+      ...config,
+      apiKey: config.apiKey ? `${MASK_PREFIX}${config.apiKey.slice(-4)}` : "",
+    })),
+  };
+}
+
+/**
+ * Initializes the in-memory platform settings cache from Redis or PostgreSQL on startup.
  * Creates the single 'global' row if it does not exist yet.
  */
 export async function initPlatformSettings(): Promise<PlatformSettings> {
@@ -22,7 +44,9 @@ export async function initPlatformSettings(): Promise<PlatformSettings> {
     const cached = await redisGet(REDIS_PLATFORM_SETTINGS_KEY);
     if (cached) {
       try {
-        cachedPlatformSettings = JSON.parse(cached) as PlatformSettings;
+        cachedPlatformSettings = mergePlatformSettings(
+          JSON.parse(cached) as Partial<PlatformSettings>,
+        );
         return cachedPlatformSettings;
       } catch {
         // Fall back to database query
@@ -31,7 +55,7 @@ export async function initPlatformSettings(): Promise<PlatformSettings> {
 
     const existing = await findPlatformSettingsRow();
     if (existing) {
-      cachedPlatformSettings = existing;
+      cachedPlatformSettings = mergePlatformSettings(existing);
     } else {
       const defaultSyncTls = process.env.MMS_SYNC_TLS_ON_CREATE !== "false";
       const defaultTlsExtraSans = process.env.MMS_TLS_EXTRA_SANS?.trim() || "";
@@ -44,7 +68,7 @@ export async function initPlatformSettings(): Promise<PlatformSettings> {
       });
 
       if (inserted) {
-        cachedPlatformSettings = inserted;
+        cachedPlatformSettings = mergePlatformSettings(inserted);
       }
     }
 
@@ -68,7 +92,53 @@ export async function initPlatformSettings(): Promise<PlatformSettings> {
  * Returns a copy so callers cannot mutate the shared cache.
  */
 export function getPlatformSettings(): PlatformSettings {
-  return { ...cachedPlatformSettings };
+  return {
+    ...cachedPlatformSettings,
+    llmConfigs: cachedPlatformSettings.llmConfigs.map((config) => ({ ...config })),
+  };
+}
+
+/** Keeps the stored secret when the client sends the masked placeholder or omits the field. */
+function retainSecret(incoming: string | undefined, stored: string): string {
+  if (incoming === undefined) return stored;
+  if (isMaskedPlatformSecret(incoming)) return stored;
+  return incoming;
+}
+
+function retainConfigSecrets(
+  incoming: LlmConfig[] | undefined,
+  stored: LlmConfig[],
+): LlmConfig[] | undefined {
+  if (!incoming) return undefined;
+  return incoming.map((config) => {
+    const previous = stored.find((candidate) => candidate.id === config.id);
+    return {
+      ...config,
+      apiKey: retainSecret(config.apiKey, previous?.apiKey ?? ""),
+    };
+  });
+}
+
+/** Applies a validated patch over the current record (secret round-trip guarded). */
+export function mergePlatformSettingsInput(
+  current: PlatformSettings,
+  input: PlatformSettingsUpdateInput,
+): PlatformSettings {
+  const patch = { ...input } as Partial<PlatformSettings>;
+  delete (patch as { expectedUpdatedAt?: string }).expectedUpdatedAt;
+  if (patch.llmApiKey !== undefined) {
+    patch.llmApiKey = retainSecret(patch.llmApiKey, current.llmApiKey);
+  }
+  if (patch.llmConfigs !== undefined) {
+    const nextConfigs = retainConfigSecrets(patch.llmConfigs, current.llmConfigs);
+    if (nextConfigs) patch.llmConfigs = nextConfigs;
+  }
+  return mergePlatformSettings({ ...current, ...patch });
+}
+
+/** Replaces the in-memory cache after a transaction commits (combined appearance saves). */
+export function setPlatformSettingsCache(next: PlatformSettings): void {
+  cachedPlatformSettings = mergePlatformSettings(next);
 }
 
 /**
@@ -78,7 +148,7 @@ export async function updatePlatformSettings(
   input: PlatformSettingsUpdateInput,
 ): Promise<PlatformSettings> {
   const current = getPlatformSettings();
-  const next = await upsertPlatformSettingsRow(input, current);
+  const next = await upsertPlatformSettingsRow(mergePlatformSettingsInput(current, input));
   cachedPlatformSettings = next;
   try {
     await redisSet(REDIS_PLATFORM_SETTINGS_KEY, JSON.stringify(next), 86400);
@@ -90,5 +160,24 @@ export async function updatePlatformSettings(
     domain: "settings",
     key: "global",
   });
-  return { ...cachedPlatformSettings };
+  return { ...next, llmConfigs: next.llmConfigs.map((config) => ({ ...config })) };
+}
+
+/** Resolved default LLM config for the platform AI service (first default text model). */
+export function getPlatformDefaultLlmConfig(): LlmConfig | null {
+  const settings = cachedPlatformSettings;
+  const configs = settings.llmConfigs;
+  const explicitDefault = configs.find((config) => config.isDefaultText);
+  if (explicitDefault) return explicitDefault;
+  if (settings.llmProvider !== "none" && settings.llmApiKey) {
+    return {
+      id: "platform-default",
+      name: "Platform default",
+      provider: settings.llmProvider,
+      apiKey: settings.llmApiKey,
+      model: "",
+      isDefaultText: true,
+    };
+  }
+  return null;
 }

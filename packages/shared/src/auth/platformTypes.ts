@@ -13,6 +13,8 @@ export const PLATFORM_ADMIN_PERMISSION_KEYS = [
   "settings",
   "admins",
   "system",
+  "contacts",
+  "messaging",
 ] as const;
 
 /** Grantable platform admin capabilities (super_user ignores and has all). */
@@ -29,24 +31,36 @@ export interface PlatformAdminPermissions {
   settings: boolean;
   admins: boolean;
   system: boolean;
+  /** Optional so pre-existing admin rows / fixtures without the newer grants stay assignable. */
+  contacts?: boolean;
+  /** Optional so pre-existing admin rows / fixtures without the newer grants stay assignable. */
+  messaging?: boolean;
 }
 
+export type ConcretePlatformAdminPermissions = {
+  [K in PlatformAdminPermissionKey]: boolean;
+};
+
 /** Default for new admins — account self-service only until a super-user grants access. */
-export const DEFAULT_PLATFORM_ADMIN_PERMISSIONS: PlatformAdminPermissions = {
+export const DEFAULT_PLATFORM_ADMIN_PERMISSIONS: ConcretePlatformAdminPermissions = {
   workspaces: false,
   onboard: false,
   settings: false,
   admins: false,
   system: false,
+  contacts: false,
+  messaging: false,
 };
 
 /** Full grants used for super_user rows / JWT hydration convenience. */
-export const FULL_PLATFORM_ADMIN_PERMISSIONS: PlatformAdminPermissions = {
+export const FULL_PLATFORM_ADMIN_PERMISSIONS: ConcretePlatformAdminPermissions = {
   workspaces: true,
   onboard: true,
   settings: true,
   admins: true,
   system: true,
+  contacts: true,
+  messaging: true,
 };
 
 /** Public platform operator — separate from tenant `User`. */
@@ -103,6 +117,8 @@ export function normalizePlatformAdminPermissions(value: unknown): PlatformAdmin
     settings: record.settings === true,
     admins: record.admins === true,
     system: record.system === true,
+    contacts: record.contacts === true,
+    messaging: record.messaging === true,
   };
 }
 

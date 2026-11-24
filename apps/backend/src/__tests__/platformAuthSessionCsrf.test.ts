@@ -58,6 +58,8 @@ describe("issuePlatformSession", () => {
           settings: true,
           admins: true,
           system: true,
+          contacts: true,
+          messaging: true,
         },
       },
       jwtSigner,

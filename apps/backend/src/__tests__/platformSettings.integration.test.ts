@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../app.js";
 
@@ -56,7 +57,7 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
 }));
 
 let currentSettings: Record<string, unknown> = {
-  id: "global",
+  ...DEFAULT_PLATFORM_SETTINGS,
   certbotEmail: "admin@madrasa.com",
   syncTlsOnCreate: false,
   updatedAt: "2026-01-01T00:00:00.000Z",
@@ -64,6 +65,7 @@ let currentSettings: Record<string, unknown> = {
 
 vi.mock("../services/platform/platformSettingsService.js", () => ({
   getPlatformSettings: vi.fn().mockImplementation(() => currentSettings),
+  maskPlatformSettingsForClient: vi.fn().mockImplementation((settings: unknown) => settings),
   updatePlatformSettings: vi.fn().mockImplementation(async (data: unknown) => {
     currentSettings = { ...currentSettings, ...(data as Record<string, unknown>) };
     return currentSettings;

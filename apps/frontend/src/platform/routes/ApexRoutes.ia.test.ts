@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const apexRoutesPath = join(process.cwd(), "src/platform/routes/ApexRoutes.tsx");
 const apexRegistryPath = join(process.cwd(), "src/platform/routes/apexRouteRegistry.ts");
-const platformNavPath = join(process.cwd(), "src/platform/lib/platformNav.ts");
+const platformNavPath = join(process.cwd(), "src/platform/features/shell/lib/platformNav.ts");
 
 describe("platform apex live IA", () => {
   it("given the console registry, should mount dedicated sidebar pages and not import PlatformConsole", () => {
@@ -17,7 +17,7 @@ describe("platform apex live IA", () => {
     expect(registrySource).toContain("PlatformDashboardPage");
     expect(registrySource).toContain("PlatformWorkspacesPage");
     expect(registrySource).toContain("PlatformUsersPage");
-    expect(registrySource).toContain("PlatformReportsPage");
+    expect(registrySource).toContain("redirectTo: `${ROUTES.platformWorkspaces}?tab=reports`");
     expect(registrySource).toContain("PlatformSettingsPage");
     expect(registrySource).toContain("PlatformSystemPage");
     expect(registrySource).toContain("PlatformActivityLogsPage");

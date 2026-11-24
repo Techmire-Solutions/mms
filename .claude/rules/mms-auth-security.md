@@ -10,9 +10,9 @@ paths:
   - "packages/shared/src/**/platformApiErrors.ts"
   - "packages/shared/src/**/moduleAccessPolicy.ts"
   - "apps/frontend/src/lib/contexts/AuthContext.tsx"
-  - "apps/frontend/src/platform/lib/PlatformAuthContext.tsx"
-  - "apps/frontend/src/platform/lib/platformAuthErrors.ts"
-  - "apps/frontend/src/platform/pages/auth/**"
+  - "apps/frontend/src/platform/features/auth/lib/PlatformAuthContext.tsx"
+  - "apps/frontend/src/platform/features/auth/lib/platformAuthErrors.ts"
+  - "apps/frontend/src/platform/features/auth/**"
   - "apps/frontend/src/tenant/hooks/usePermissions.ts"
   - "apps/frontend/src/components/routing/**"
 ---

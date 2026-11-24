@@ -25,6 +25,8 @@ import {
   upsertWorkspaceGlobalSettings,
 } from "../db/repositories/workspaceRepository.js";
 import { saveObject } from "../db/database.js";
+import { setPlatformSettingsCache } from "../services/platform/platformSettingsService.js";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
 
 const mockedGet = vi.mocked(getWorkspaceGlobalSettings);
 const mockedUpsert = vi.mocked(upsertWorkspaceGlobalSettings);
@@ -144,6 +146,24 @@ describe("LLM secret masking", () => {
     };
     expect(saved.llmApiKey).toBe("brand-new-key");
     expect(saved.llmConfigs[0].apiKey).toBe("brand-new-config-key");
+  });
+
+  it("forces platform-disabled modules off when a workspace saves enabledModules", async () => {
+    setPlatformSettingsCache({
+      ...DEFAULT_PLATFORM_SETTINGS,
+      disabledModules: ["finance"],
+    });
+    mockedGet.mockResolvedValue({ enabledModules: {}, llmConfigs: [] } as never);
+
+    await saveGlobalSettings({
+      enabledModules: { finance: true, students: true },
+    } as never);
+
+    const saved = mockedUpsert.mock.calls[0][1] as {
+      enabledModules: Record<string, boolean>;
+    };
+    expect(saved.enabledModules.finance).toBe(false);
+    expect(saved.enabledModules.students).toBe(true);
   });
 
   it("sanitizeGlobalSettingsWrite strips the workspace display mode for non-admins", () => {

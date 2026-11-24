@@ -44,7 +44,7 @@ metadata:
 |---------|----------------|
 | Gold pages | `apps/frontend/src/tenant/features/accounting/AccountingPage.tsx`, `.../contacts/ContactsPage.tsx` |
 | Shell | `apps/frontend/src/components/app/ModulePageShell.tsx` |
-| Tier tabs | `apps/frontend/src/tenant/hooks/useModuleTierTabs.ts` (`useFilteredModuleTierTabs`) |
+| Tier tabs | `apps/frontend/src/hooks/useModuleTierTabs.ts` (`useFilteredModuleTierTabs`) |
 | Permissions | `apps/frontend/src/tenant/hooks/usePermissions.ts` (`useModulePermissions`) |
 | Tab + trash state | `apps/frontend/src/hooks/usePersistedTabState.ts`, `apps/frontend/src/hooks/useDirectoryTrashState.ts` |
 | Router | `apps/frontend/src/components/routing/HostRoutes.tsx` |

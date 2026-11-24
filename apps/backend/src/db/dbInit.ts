@@ -15,6 +15,7 @@ import { resolveBackendRoot } from "../config/loadEnv.js";
 import { loadServerConfig } from "../config/serverConfig.js";
 import { purgeExpiredAuthArtifacts } from "../services/auth/authArtifactService.js";
 import { initPlatformSettings } from "../services/platform/platformSettingsService.js";
+import { initPlatformBranding } from "../services/platform/platformBrandingService.js";
 import { ensurePlatformSuperUserFromEnv } from "../services/platform/platformUserService.js";
 import {
   getPool,
@@ -140,6 +141,7 @@ export function initDb(options?: { force?: boolean }): Promise<void> {
         await import("../services/platform/platformSuperUserTenantSyncService.js");
       await syncPlatformSuperUserToTenants();
       await initPlatformSettings();
+      await initPlatformBranding();
 
       const results = await getRootDb()
         .select({ count: sql<number>`count(*)` })

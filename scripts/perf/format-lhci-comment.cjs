@@ -48,7 +48,7 @@ function deriveBudgets(config) {
     lcp: budgetMaxNumeric(assertions, "largest-contentful-paint") ?? 7200,
     tbt: budgetMaxNumeric(assertions, "total-blocking-time") ?? 300,
     scriptKiB: Math.round(
-      (budgetMaxNumeric(assertions, "resource-summary:script:size") ?? 614400) / 1024,
+      (budgetMaxNumeric(assertions, "resource-summary:script:size") ?? 624640) / 1024,
     ),
   };
 }

@@ -2,7 +2,7 @@
 description: Universal module architecture, page tabs (operational + required Reports/Setup), manifests, and soft-delete integration
 paths:
   - "apps/frontend/src/tenant/features/**"
-  - "apps/frontend/src/platform/pages/**"
+  - "apps/frontend/src/platform/features/**"
   - "packages/shared/src/**/*ModuleManifest.ts"
 ---
 

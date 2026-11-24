@@ -74,7 +74,7 @@ The module page coordinates three tiers:
 ```tsx
 import { lazy, Suspense } from "react";
 import { ModulePageShell } from "@/components/app/ModulePageShell";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { MY_MODULE_MANIFEST } from "@mms/shared";

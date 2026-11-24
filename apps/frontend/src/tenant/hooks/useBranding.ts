@@ -4,6 +4,7 @@ import { type BrandingSettings, type AppTranslationKey } from "@mms/shared";
 import { applyAppTheme } from "@/lib/brandingTheme";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import { SETTINGS_PREVIEW_EVENT } from "@/lib/settingsPreview";
+import { subscribePlatformBranding } from "@/lib/branding/platformBrandingStore";
 import { isTenantHost } from "@/lib/config/tenantConfig";
 import { ROUTES, isEntryPath } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -27,10 +28,12 @@ function subscribeToBrandingUpdates(onStoreChange: () => void): () => void {
   window.addEventListener("local-database-update", handleUpdate);
   window.addEventListener("storage", handleUpdate);
   window.addEventListener(SETTINGS_PREVIEW_EVENT, handleUpdate);
+  const unsubscribePlatform = subscribePlatformBranding(handleUpdate);
   return () => {
     window.removeEventListener("local-database-update", handleUpdate);
     window.removeEventListener("storage", handleUpdate);
     window.removeEventListener(SETTINGS_PREVIEW_EVENT, handleUpdate);
+    unsubscribePlatform();
   };
 }
 
@@ -73,12 +76,6 @@ export function useBranding(): BrandingSettings {
     if (isEntryPath(pathname, { isApex: !isTenantHost() })) {
       return;
     }
-    if (!isTenantHost()) {
-      document.title = "Madrasa Management System";
-      applyPlatformDocumentFavicon();
-      return;
-    }
-
     let pageLabel = "";
     if (pathname === "/" || pathname === "") {
       pageLabel = t("nav.dashboard");
@@ -95,6 +92,18 @@ export function useBranding(): BrandingSettings {
           pageLabel = t(`nav.${matchedKey}` as AppTranslationKey);
         }
       }
+    }
+
+    if (!isTenantHost()) {
+      const productName = branding.madrasaName.trim() || t("entry.productName");
+      document.title = pageLabel ? `${pageLabel} | ${productName}` : productName;
+      applyPlatformDocumentFavicon({
+        faviconUrl: branding.faviconUrl,
+        logoUrl: branding.logoUrl,
+        productName,
+        primaryColor: branding.primaryColor,
+      });
+      return;
     }
 
     if (branding.madrasaName) {

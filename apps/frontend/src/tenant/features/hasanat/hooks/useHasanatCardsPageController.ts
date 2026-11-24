@@ -4,7 +4,7 @@ import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { HASANAT_WORK_SEARCH_INPUT_ID } from "@/tenant/features/hasanat/components/DistributionsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
   HASANAT_MODULE_MANIFEST,

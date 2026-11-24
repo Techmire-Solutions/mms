@@ -1,4 +1,4 @@
-import { type BrandingSettings, type GlobalSettings } from "@mms/shared";
+import { mergeGlobalSettings, type BrandingSettings, type GlobalSettings } from "@mms/shared";
 import {
   clearBrandingSettingsPreviewOverlay,
   clearGlobalSettingsPreviewOverlay,
@@ -8,29 +8,38 @@ import {
   mergeGlobalSettingsPreview,
 } from "@/lib/dbObjects";
 import {
-  isTenantHost,
-  MMS_PLATFORM_BRANDING,
-  MMS_PLATFORM_GLOBAL_SETTINGS,
-} from "@/lib/branding/platformThemeConfig";
+  getEffectivePlatformThemeMode,
+  getPlatformBrandingAsBrandingSettings,
+  getPlatformRegionalSettings,
+} from "@/lib/branding/platformBrandingStore";
+import { isTenantHost } from "@/lib/config/tenantConfig";
 
-/** Tenant-persisted global settings + preview overlay (apex returns MMS platform defaults). */
+/** Tenant-persisted global settings + preview overlay (apex returns platform instance defaults). */
 export function getEffectiveGlobalSettingsScoped(): GlobalSettings {
-  if (!isTenantHost()) return MMS_PLATFORM_GLOBAL_SETTINGS;
+  if (!isTenantHost()) {
+    const regional = getPlatformRegionalSettings();
+    return mergeGlobalSettings({
+      language: "en",
+      timezone: regional.timezone,
+      dateFormat: regional.dateFormat,
+      theme: getEffectivePlatformThemeMode(),
+    });
+  }
   return getEffectiveGlobalSettings();
 }
 
-/** Tenant-persisted branding + preview overlay (apex returns MMS platform defaults). */
+/** Tenant-persisted branding + preview overlay (apex returns platform white-label branding). */
 export function getEffectiveBrandingSettingsScoped(): BrandingSettings {
-  if (!isTenantHost()) return MMS_PLATFORM_BRANDING;
+  if (!isTenantHost()) return getPlatformBrandingAsBrandingSettings();
   return getEffectiveBrandingSettings();
 }
 
-/** Settings used for theme injection — same as effective on tenant; MMS defaults on apex. */
+/** Settings used for theme injection — same as effective on tenant; platform branding on apex. */
 export function getScopedGlobalSettings(): GlobalSettings {
   return getEffectiveGlobalSettingsScoped();
 }
 
-/** Branding used for theme injection — institution on tenant; MMS defaults on apex. */
+/** Branding used for theme injection — institution on tenant; platform brand on apex. */
 export function getScopedBrandingSettings(): BrandingSettings {
   return getEffectiveBrandingSettingsScoped();
 }

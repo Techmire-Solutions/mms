@@ -1,13 +1,13 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { usePlatformNotificationAck } from "./usePlatformNotificationAck";
+import { usePlatformNotificationAck } from "@/platform/hooks/usePlatformNotificationAck";
 
 const authMock = vi.hoisted(() => ({
   userId: null as string | null,
 }));
 
-vi.mock("@/platform/lib/PlatformAuthContext", () => ({
+vi.mock("@/platform/features/auth/lib/PlatformAuthContext", () => ({
   usePlatformAuth: () => ({ platformUser: { id: authMock.userId } }),
 }));
 

@@ -3,7 +3,7 @@ import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";
 import { QUESTION_BANK_WORK_SEARCH_INPUT_ID } from "@/tenant/features/question-bank/components/QuestionsListFilters";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
-import { useFilteredModuleTierTabs } from "@/tenant/hooks/useModuleTierTabs";
+import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useWorkSelection } from "@/hooks/useWorkSelection";

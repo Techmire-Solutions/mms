@@ -16,7 +16,7 @@ vi.mock("@/tenant/hooks/usePermissions", () => ({
   useModulePermissions: () => ({ canWrite: true, canDelete: true, canRead: true }),
 }));
 
-vi.mock("@/tenant/hooks/useModuleTierTabs", () => ({
+vi.mock("@/hooks/useModuleTierTabs", () => ({
   useFilteredModuleTierTabs: () => [
     { id: "work", label: "Attendance" },
     { id: "reports", label: "Reports" },
