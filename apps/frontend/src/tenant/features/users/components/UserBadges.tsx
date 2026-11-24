@@ -11,6 +11,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
+import { RoleBadge } from "@mms/mod-iam/frontend/tenant";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 
@@ -36,16 +37,13 @@ export function UserRoleBadge({ roleId }: { roleId: string }): React.JSX.Element
     return <span className="text-xs text-muted-foreground">{roleId}</span>;
   }
   return (
-    <span className="inline-flex flex-wrap items-center gap-1">
-      <Badge as="span" size="sm" tone={VARIANT_TO_TONE[role.badgeVariant] ?? "muted"}>
-        {workspaceRoleLabel(role, t)}
-      </Badge>
-      {isPlatformManagedRole(roleId) ? (
-        <Badge as="span" size="sm" tone="muted">
-          {t("users.platformManagedRole")}
-        </Badge>
-      ) : null}
-    </span>
+    <RoleBadge
+      label={workspaceRoleLabel(role, t)}
+      platformManaged={isPlatformManagedRole(roleId)}
+      platformManagedLabel={t("users.platformManagedRole")}
+      roleId={roleId}
+      variant={role.badgeVariant}
+    />
   );
 }
 

@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, preHandlerAsyncHookHandler } from "fastify";
 import authRoutes from "./common/auth.js";
 import { contactRoutes } from "@mms/mod-contacts/backend/tenant";
 import dbRoutes from "./common/db.js";
@@ -51,14 +51,18 @@ import notificationsRoutes from "./tenant/notifications/notificationsRoutes.js";
 import moduleAccessRoutes from "./tenant/moduleAccess.js";
 import tasksRoutes from "./tenant/tasksRoutes.js";
 import { documentTemplatesRoutes } from "./tenant/templates/documentTemplatesContractRouter.js";
+import { tenantIamRoutes } from "@mms/mod-iam/backend/tenant";
+import { platformIamRoutes } from "@mms/mod-iam/backend/platform";
 import { platformAccountingRoutes } from "@mms/mod-accounting/backend/platform";
 import { tenantAccountingRoutes } from "@mms/mod-accounting/backend/tenant";
 import "../modules/accounting/configure.js";
 import { configureFacultyAccountDeletionGuard } from "../modules/faculty/adapters.js";
+import { iamService } from "../modules/iam/compose.js";
 import { authenticateTenant } from "../middleware/authenticate.js";
 import {
   authenticatePlatform,
   requirePlatformPermission,
+  requirePlatformSuperUser,
 } from "../middleware/authenticatePlatform.js";
 import { registerModuleAccess } from "../middleware/requireTenantModule.js";
 
@@ -66,6 +70,10 @@ import { registerModuleAccess } from "../middleware/requireTenantModule.js";
 // auth middleware port. Runs on module load (app.ts imports this file), before any
 // request reaches `authenticateTenant`.
 configureFacultyAccountDeletionGuard();
+
+const requireIamSuperUser: preHandlerAsyncHookHandler = async (request, reply) => {
+  await requirePlatformSuperUser()(request, reply);
+};
 
 export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(openapiRoutes);
@@ -125,9 +133,24 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(usersRoutes);
 
   await app.register(async (scope) => {
+    scope.addHook("preHandler", authenticateTenant);
+    registerModuleAccess(scope, "users");
+    await scope.register(tenantIamRoutes, { service: iamService });
+  });
+
+  await app.register(async (scope) => {
     scope.addHook("preHandler", authenticatePlatform);
     scope.addHook("preHandler", requirePlatformPermission("workspaces"));
     await scope.register(platformAccountingRoutes);
+  });
+
+  await app.register(async (scope) => {
+    scope.addHook("preHandler", authenticatePlatform);
+    scope.addHook("preHandler", requirePlatformPermission("admins"));
+    await scope.register(platformIamRoutes, {
+      service: iamService,
+      requireSuperUser: requireIamSuperUser,
+    });
   });
 
   await app.register(attendanceRoutes);
