@@ -361,7 +361,7 @@ importers:
         specifier: ^17.14.0
         version: 17.14.0
       happy-dom:
-        specifier: ^21.0.4
+        specifier: '>=21.0.4'
         version: 21.0.4
       oxc-transform-react:
         specifier: 0.158.0
