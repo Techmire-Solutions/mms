@@ -1,10 +1,6 @@
 import { requireTenant } from "@mms/be-core/http";
-import {
-  deleteContactGoogleSyncCredentials,
-  findContactGoogleSyncCredentials,
-  upsertContactGoogleSyncCredentials,
-  type ContactGoogleSyncCredentialRecord,
-} from "../repository/contactGoogleSyncRepository.js";
+import { contactGoogleSyncRepository } from "../repository/contactGoogleSyncAdapter.js";
+import type { ContactGoogleSyncCredentialRecord } from "../repository/contactGoogleSyncRepository.js";
 
 export type ContactGoogleSyncConfig = ContactGoogleSyncCredentialRecord;
 
@@ -37,21 +33,21 @@ export class GoogleSyncError extends Error {
 }
 
 export async function getContactGoogleSyncConfig(userId: string): Promise<ContactGoogleSyncConfig> {
-  return findContactGoogleSyncCredentials(requireTenant(), userId);
+  return contactGoogleSyncRepository.findCredentials(requireTenant(), userId);
 }
 
 export async function setContactGoogleSyncConfig(
   userId: string,
   config: ContactGoogleSyncConfig,
 ): Promise<ContactGoogleSyncConfig> {
-  return upsertContactGoogleSyncCredentials(requireTenant(), userId, {
+  return contactGoogleSyncRepository.upsertCredentials(requireTenant(), userId, {
     ...config,
     updatedAt: new Date().toISOString(),
   });
 }
 
 export async function clearContactGoogleSyncConfig(userId: string): Promise<void> {
-  await deleteContactGoogleSyncCredentials(requireTenant(), userId);
+  await contactGoogleSyncRepository.deleteCredentials(requireTenant(), userId);
 }
 
 export async function clearGoogleSyncTokens(

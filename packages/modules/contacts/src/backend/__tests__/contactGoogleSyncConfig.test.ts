@@ -19,6 +19,7 @@ vi.mock("../repository/contactGoogleSyncRepository.js", () => ({
   findContactGoogleSyncCredentials: (...args: unknown[]) => mockFindCredentials(...args),
   upsertContactGoogleSyncCredentials: (...args: unknown[]) => mockUpsertCredentials(...args),
   deleteContactGoogleSyncCredentials: (...args: unknown[]) => mockDeleteCredentials(...args),
+  replaceContactGoogleSyncCredentialsForWorkspace: vi.fn(),
 }));
 
 import {

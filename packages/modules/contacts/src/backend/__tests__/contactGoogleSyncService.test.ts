@@ -24,6 +24,8 @@ vi.mock("@mms/be-core/http", () => ({
 vi.mock("../repository/contactGoogleSyncRepository.js", () => ({
   findContactGoogleSyncCredentials: (...args: unknown[]) => mockFindCredentials(...args),
   upsertContactGoogleSyncCredentials: (...args: unknown[]) => mockUpsertCredentials(...args),
+  deleteContactGoogleSyncCredentials: vi.fn(),
+  replaceContactGoogleSyncCredentialsForWorkspace: vi.fn(),
 }));
 
 vi.mock("../use-cases/contactLoadUseCases.js", () => ({

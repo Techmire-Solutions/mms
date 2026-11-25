@@ -8,6 +8,8 @@ vi.mock("../repository/contactLookupsRepository.js", () => ({
   listContactLookupsByWorkspace: (...args: unknown[]) => mockListByWorkspace(...args),
   listContactLookupsByKind: (...args: unknown[]) => mockListByKind(...args),
   replaceContactLookupsForKind: (...args: unknown[]) => mockReplaceKind(...args),
+  listAllContactLookupsByWorkspace: vi.fn().mockResolvedValue([]),
+  replaceContactLookupsForWorkspace: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@mms/be-core/http", () => ({

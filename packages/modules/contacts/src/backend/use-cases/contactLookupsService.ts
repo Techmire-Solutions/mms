@@ -23,11 +23,7 @@ import {
 import { createModuleStringListLookupsService } from "@mms/be-core/data/module-string-lookups";
 import { getRequestTenant } from "@mms/be-core/http";
 import { slugifyLookupLabel } from "@mms/be-core/data/slugify-lookup-label";
-import {
-  listContactLookupsByKind,
-  listContactLookupsByWorkspace,
-  replaceContactLookupsForKind,
-} from "../repository/contactLookupsRepository.js";
+import { contactLookupsRepository } from "../repository/contactLookupsAdapter.js";
 import { broadcastCollection } from "@mms/be-core/realtime";
 
 type ContactStringLookupKind = Exclude<ContactLookupKind, "countryCodes">;
@@ -108,15 +104,15 @@ const stringListLookups = createModuleStringListLookupsService<
   kinds: CONTACT_STRING_LOOKUP_KINDS,
   emptyMap: emptyStringLookupsMap,
   defaultItems: defaultStringItems,
-  listByWorkspace: listContactLookupsByWorkspace,
-  listByKind: listContactLookupsByKind,
-  replaceForKind: replaceContactLookupsForKind,
+  listByWorkspace: (ws) => contactLookupsRepository.listByWorkspace(ws),
+  listByKind: (ws, kind) => contactLookupsRepository.listByKind(ws, kind),
+  replaceForKind: (ws, kind, rows) => contactLookupsRepository.replaceForKind(ws, kind, rows),
   broadcastKey: "contacts",
 });
 
 async function loadCountryCodes(tenant = getRequestTenant()): Promise<ContactLookupCountryCode[]> {
   if (!tenant) return defaultCountryItems();
-  const rows = await listContactLookupsByKind(tenant, "countryCodes");
+  const rows = await contactLookupsRepository.listByKind(tenant, "countryCodes");
   if (!rows || rows.length === 0) return defaultCountryItems();
   const countries = rowsToCountryItems(rows);
   return needsContactCountryCodesCurate(countries) ? curatedContactCountryCodes() : countries;
@@ -157,7 +153,7 @@ export async function replaceContactLookupKind(
     const curated = needsContactCountryCodesCurate(countries)
       ? curatedContactCountryCodes()
       : countries;
-    await replaceContactLookupsForKind(
+    await contactLookupsRepository.replaceForKind(
       tenant,
       kind,
       curated.map((entry, index) => ({

@@ -109,5 +109,23 @@ export function createContactsUseCases(repo: ContactsRepository = contactsReposi
 
 type ContactsUseCases = ReturnType<typeof createContactsUseCases>;
 
-/** Default Drizzle-backed use-case instance used by routes and cross-module services. */
-export const contactUseCases: ContactsUseCases = createContactsUseCases();
+/** Active use-case binding (Drizzle composition by default; overridable in tests). */
+let activeUseCases: ContactsUseCases = createContactsUseCases();
+
+/**
+ * Default instance used by routes and cross-module services. Delegates through a
+ * proxy so tests can inject a fully mocked composition without rewriting handlers.
+ */
+export const contactUseCases: ContactsUseCases = new Proxy({} as ContactsUseCases, {
+  get: (_target, property) => (activeUseCases as unknown as Record<PropertyKey, unknown>)[property],
+});
+
+/** Test-only: point the barrel at a fake use-case composition. */
+export function setContactUseCasesForTesting(useCases: ContactsUseCases): void {
+  activeUseCases = useCases;
+}
+
+/** Test-only: restore the Drizzle-backed composition. */
+export function resetContactUseCasesForTesting(): void {
+  activeUseCases = createContactsUseCases();
+}
