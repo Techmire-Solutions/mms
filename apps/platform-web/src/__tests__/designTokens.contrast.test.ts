@@ -134,12 +134,14 @@ describe("tailwind theme — single shared token source", () => {
     expect(appPackageJson.devDependencies?.["@mms/tailwind-config"]).toBe("workspace:*");
   });
 
-  it("scans the shared UI and contracts sources for utilities", () => {
+  it("scans the shared UI, fe-core, contracts, and vertical module sources for utilities", () => {
     // `@source` globs must stay in the app stylesheet: they resolve relative to
     // the declaring file, and the shared package cannot know an app's layout.
     for (const source of [
       '@source "../../../packages/ui/src/**/*.{js,jsx,ts,tsx}";',
+      '@source "../../../packages/fe-core/src/**/*.{js,jsx,ts,tsx}";',
       '@source "../../../packages/contracts/src/**/*.{js,jsx,ts,tsx}";',
+      '@source "../../../packages/modules/*/src/**/*.{js,jsx,ts,tsx}";',
     ]) {
       expect(indexCss).toContain(source);
     }

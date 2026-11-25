@@ -44,10 +44,23 @@ COPY --from=builder /app/packages/db/migrations_drizzle ./packages/db/migrations
 COPY --from=builder /app/packages/contracts/dist ./packages/contracts/dist
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY --from=builder /app/packages/be-core/dist ./packages/be-core/dist
-COPY --from=builder /app/packages/modules/iam/dist ./packages/modules/iam/dist
 COPY --from=builder /app/packages/modules/accounting/dist ./packages/modules/accounting/dist
+COPY --from=builder /app/packages/modules/audit/dist ./packages/modules/audit/dist
+COPY --from=builder /app/packages/modules/billing/dist ./packages/modules/billing/dist
 COPY --from=builder /app/packages/modules/contacts/dist ./packages/modules/contacts/dist
+COPY --from=builder /app/packages/modules/documents/dist ./packages/modules/documents/dist
+COPY --from=builder /app/packages/modules/enrollments/dist ./packages/modules/enrollments/dist
+COPY --from=builder /app/packages/modules/examinations/dist ./packages/modules/examinations/dist
+COPY --from=builder /app/packages/modules/faculty/dist ./packages/modules/faculty/dist
+COPY --from=builder /app/packages/modules/hasanat/dist ./packages/modules/hasanat/dist
+COPY --from=builder /app/packages/modules/iam/dist ./packages/modules/iam/dist
+COPY --from=builder /app/packages/modules/messaging/dist ./packages/modules/messaging/dist
 COPY --from=builder /app/packages/modules/notifications/dist ./packages/modules/notifications/dist
+COPY --from=builder /app/packages/modules/obligations/dist ./packages/modules/obligations/dist
+COPY --from=builder /app/packages/modules/question-bank/dist ./packages/modules/question-bank/dist
+COPY --from=builder /app/packages/modules/sessions/dist ./packages/modules/sessions/dist
+COPY --from=builder /app/packages/modules/students/dist ./packages/modules/students/dist
+COPY --from=builder /app/packages/modules/workshops/dist ./packages/modules/workshops/dist
 
 WORKDIR /app/apps/api
 

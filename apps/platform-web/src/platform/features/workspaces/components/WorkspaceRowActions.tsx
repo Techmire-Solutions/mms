@@ -41,7 +41,7 @@ export function WorkspaceRowActions({
   const { t } = useTranslation();
 
   const actionButtons = (
-    <div className="flex items-center gap-2 justify-end">
+    <div className="flex flex-wrap items-center gap-1.5 justify-end">
       <Button
         asChild
         variant="outline"

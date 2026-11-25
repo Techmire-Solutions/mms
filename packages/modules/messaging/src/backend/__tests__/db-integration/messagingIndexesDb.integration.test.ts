@@ -11,7 +11,18 @@ import {
 } from "@mms/db/client";
 import { applyDrizzleMigrations } from "@mms/db/migrations";
 
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const backendRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "apps",
+  "api",
+);
 
 function applyDatabaseUrlFromEnvFile(): void {
   if (process.env.DATABASE_URL) return;

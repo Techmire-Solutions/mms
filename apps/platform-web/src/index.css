@@ -5,7 +5,9 @@
 @source "../index.html";
 @source "./**/*.{js,jsx,ts,tsx}";
 @source "../../../packages/ui/src/**/*.{js,jsx,ts,tsx}";
+@source "../../../packages/fe-core/src/**/*.{js,jsx,ts,tsx}";
 @source "../../../packages/contracts/src/**/*.{js,jsx,ts,tsx}";
+@source "../../../packages/modules/*/src/**/*.{js,jsx,ts,tsx}";
 
 @layer base {
   *,

@@ -83,7 +83,10 @@ bucket() {
         'packages/db/drizzle.config.ts' \
         'apps/api/src/*/repository/*' \
         'apps/api/src/*/ledgerPosting/*' \
+        'apps/api/src/__tests__/db-integration/*' \
+        'apps/api/src/__tests__/rls/*' \
         'apps/api/vitest.db.config.ts' \
+        'apps/api/vitest.rls.config.ts' \
         "${COMMON_ROOT[@]}"
       ;;
     e2e) printf '%s\n' "$CHANGED_TEXT" | paths_match 'e2e/*' 'apps/*' "${COMMON_ROOT[@]}" ;;
@@ -155,10 +158,14 @@ else
 fi
 
 NEED_FE=0; NEED_BE_UNIT=0; NEED_BE_DB=0; NEED_E2E=0
-bucket frontend && NEED_FE=1
-bucket backend_unit && NEED_BE_UNIT=1
-bucket backend_db && NEED_BE_DB=1
-bucket e2e && NEED_E2E=1
+if [[ "$FULL" -eq 1 ]]; then
+  NEED_FE=1; NEED_BE_UNIT=1; NEED_BE_DB=1; NEED_E2E=1
+else
+  bucket frontend && NEED_FE=1
+  bucket backend_unit && NEED_BE_UNIT=1
+  bucket backend_db && NEED_BE_DB=1
+  bucket e2e && NEED_E2E=1
+fi
 echo ""
 echo "Phase B: buckets frontend=$NEED_FE backend_unit=$NEED_BE_UNIT backend_db=$NEED_BE_DB e2e=$NEED_E2E"
 
@@ -166,15 +173,11 @@ pnpm run check:module-boundaries && note_ran "module-boundaries"
 pnpm run check:move-manifest && note_ran "move-manifest"
 pnpm run check:topology && note_ran "topology"
 if [[ "$NEED_FE" -eq 1 || "$NEED_BE_UNIT" -eq 1 ]]; then
-  pnpm --filter @mms/mod-iam test && note_ran "mod-iam-test"
-  pnpm --filter @mms/mod-accounting test && note_ran "mod-accounting-test"
-  pnpm --filter @mms/mod-contacts test && note_ran "mod-contacts-test"
-  pnpm --filter @mms/mod-hasanat test && note_ran "mod-hasanat-test"
-  pnpm --filter @mms/mod-faculty test && note_ran "mod-faculty-test"
-  pnpm --filter @mms/mod-messaging test && note_ran "mod-messaging-test"
-  pnpm --filter @mms/mod-billing test && note_ran "mod-billing-test"
-  pnpm --filter @mms/mod-students test && note_ran "mod-students-test"
-  pnpm --filter @mms/mod-sessions test && note_ran "mod-sessions-test"
+  for mod_dir in packages/modules/*/; do
+    [[ -f "${mod_dir}package.json" ]] || continue
+    mod_slice="$(basename "$mod_dir")"
+    pnpm --filter "@mms/mod-${mod_slice}" test && note_ran "mod-${mod_slice}-test"
+  done
 fi
 
 echo ""
@@ -240,12 +243,25 @@ else
   note_skip "lighthouse(pass--with-lighthouse)"
 fi
 
-if [[ "$WITH_DB" -eq 1 && "$NEED_BE_DB" -eq 1 ]]; then
+postgres_ready() {
   if command -v pg_isready >/dev/null 2>&1 && pg_isready -q 2>/dev/null; then
+    return 0
+  fi
+  node -e 'const net=require("node:net"),s=net.connect(Number(process.env.PGPORT||5432),process.env.PGHOST||"127.0.0.1",()=>{s.end();process.exit(0)});s.on("error",()=>process.exit(1));setTimeout(()=>process.exit(1),1500);' 2>/dev/null
+}
+
+if [[ "$WITH_DB" -eq 1 && "$NEED_BE_DB" -eq 1 ]]; then
+  if postgres_ready; then
     echo ""
     echo "Phase E: backend DB (--with-db)"
     pnpm --filter mms-api run db:migrate
-    pnpm --filter @mms/mod-accounting run test:db
+    for mod_dir in packages/modules/*/; do
+      [[ -f "${mod_dir}vitest.db.config.ts" ]] || continue
+      mod_slice="$(basename "$mod_dir")"
+      if ! grep -Fq "packages/modules/${mod_slice}/" apps/api/vitest.db.config.ts; then
+        pnpm --filter "@mms/mod-${mod_slice}" run test:db
+      fi
+    done
     pnpm --filter mms-api run test:db
     pnpm --filter mms-api run test:db:coverage:attendance
     node scripts/ci/check-attendance-coverage.mjs --coverage apps/api/coverage-attendance-db

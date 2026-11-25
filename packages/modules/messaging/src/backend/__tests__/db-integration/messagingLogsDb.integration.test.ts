@@ -23,7 +23,18 @@ import {
 import { listAllMessageLogsByWorkspace } from "../../repository/db/messagingLogsRepository.js";
 
 const TEST_SUBDOMAIN = "messaging-review-test";
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const backendRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "apps",
+  "api",
+);
 
 function applyDatabaseUrlFromEnvFile(): void {
   if (process.env.DATABASE_URL) return;

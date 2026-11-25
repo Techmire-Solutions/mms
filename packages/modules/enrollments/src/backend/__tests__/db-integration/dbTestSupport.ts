@@ -20,7 +20,18 @@ import { initializeDatabaseConnection, pingDatabase } from "@mms/db/client";
  * `pnpm test` run, and CI provides a Postgres service for it.
  */
 
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const backendRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "apps",
+  "api",
+);
 
 /** Populates DATABASE_URL from apps/api/.env when the environment has none. */
 function applyDatabaseUrlFromEnvFile(): void {

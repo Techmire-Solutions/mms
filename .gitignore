@@ -81,6 +81,7 @@ playwright/.cache/
 apps/frontend/scripts/ui-audit-report.json
 
 # 7. Local Uploads & Media Storage
+/apps/api/uploads/
 /apps/backend/uploads/
 /packages/db/seeds/seeds.json
 /packages/db/seeds/seeds.json.gz

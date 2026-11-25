@@ -3,6 +3,7 @@ import {
   formatDate,
   type PlatformWorkspaceRow as PlatformWorkspaceRowData,
   type AppTranslationKey,
+  type ModuleColumnKind,
 } from "@mms/contracts";
 import { tenantUrl } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@mms/fe-core/i18n";
@@ -14,7 +15,6 @@ import {
   deriveSelectionState,
   WORK_TABLE_CONTAINER_CLASS,
 } from "@mms/fe-core/components/workBatchTableTypes";
-import { WORK_TABLE_ACTIONS_WIDTH_WIDE } from "@mms/fe-core/components/workBatchTableWidths";
 import { WorkspaceIdentityCell } from "@/platform/features/workspaces/components/WorkspaceIdentityCell";
 import { WorkspaceRowActions } from "@/platform/features/workspaces/components/WorkspaceRowActions";
 import {
@@ -51,6 +51,36 @@ export interface WorkspaceTableViewProps {
   selectedSubdomains?: ReadonlySet<string>;
   onToggleSelect?: (subdomain: string) => void;
   onToggleSelectAll?: () => void;
+}
+
+const WORKSPACE_TABLE_ACTIONS_WIDTH = 288;
+
+function resolveWorkspaceColumnSizing(columnId: string): {
+  kind: ModuleColumnKind;
+  width: number;
+  widthClass: string;
+} {
+  if (columnId === "madrasaName") {
+    return { kind: "identity", width: 300, widthClass: "w-75 min-w-72" };
+  }
+  if (columnId === "enabled") {
+    return { kind: "status", width: 160, widthClass: "w-40 min-w-40" };
+  }
+  if (columnId === "requireEmailVerification") {
+    return { kind: "boolean", width: 208, widthClass: "w-52 min-w-52" };
+  }
+  if (columnId === "createdAt") {
+    return { kind: "date", width: 144, widthClass: "w-36 min-w-36" };
+  }
+  return { kind: "shortText", width: 160, widthClass: "w-40 min-w-40" };
+}
+
+function resolveWorkspaceSortField(columnId: string): WorkspaceSortField | undefined {
+  if (columnId === "madrasaName") return "name";
+  if (columnId === "enabled") return "status";
+  if (columnId === "subdomain") return "subdomain";
+  if (columnId === "createdAt") return "createdAt";
+  return undefined;
 }
 
 type WorkspaceTableRow = PlatformWorkspaceRowData & { id: string };
@@ -106,31 +136,13 @@ export function WorkspaceTableView({
       const label =
         translated && translated !== labelKey ? translated : col.label || f?.label || col.id;
 
-      const headerClassName = cn(
-        pad,
-        col.id === "madrasaName"
-          ? "min-w-72 flex-1"
-          : col.id === "enabled"
-            ? "w-44 min-w-44"
-            : col.id === "requireEmailVerification"
-              ? "w-60 min-w-60"
-              : col.id === "createdAt"
-                ? "w-40 min-w-40"
-                : "w-36",
-      );
-
+      const sizing = resolveWorkspaceColumnSizing(col.id);
+      const headerClassName = cn(pad, sizing.widthClass);
       const cellClassName = cn(
         pad,
         "align-middle",
-        col.id === "madrasaName"
-          ? "min-w-72"
-          : col.id === "enabled"
-            ? "w-44 min-w-44"
-            : col.id === "requireEmailVerification"
-              ? "w-60 min-w-60"
-              : col.id === "createdAt"
-                ? cn("font-medium text-muted-foreground w-40 min-w-40", textSz)
-                : "",
+        sizing.widthClass,
+        col.id === "createdAt" && cn("font-medium text-muted-foreground", textSz),
       );
 
       const render = (workspace: WorkspaceTableRow) => {
@@ -161,10 +173,14 @@ export function WorkspaceTableView({
 
       const noWrap =
         col.id === "createdAt" || col.id === "enabled" || col.id === "requireEmailVerification";
+      const mappedSortField = f?.sortable === false ? undefined : resolveWorkspaceSortField(col.id);
       return {
         id: col.id,
         label,
-        sortField: col.id,
+        kind: sizing.kind,
+        width: sizing.width,
+        sortable: Boolean(mappedSortField),
+        sortField: mappedSortField,
         headerClassName,
         cellClassName,
         noWrap,
@@ -211,9 +227,9 @@ export function WorkspaceTableView({
       onRowClick={onInspect ? (w) => onInspect(w) : undefined}
       stickyColumnId="madrasaName"
       columnResize={toColumnResize(columnLayout)}
-      actionsHeaderClassName={cn("w-56 min-w-56", pad)}
-      actionsCellClassName={cn("w-56 min-w-56 align-middle", pad)}
-      actionsWidth={WORK_TABLE_ACTIONS_WIDTH_WIDE}
+      actionsHeaderClassName={cn("w-72 min-w-72", pad)}
+      actionsCellClassName={cn("w-72 min-w-72 overflow-hidden align-middle", pad)}
+      actionsWidth={WORKSPACE_TABLE_ACTIONS_WIDTH}
       renderRowActions={(workspace) => (
         <WorkspaceRowActions
           subdomain={workspace.subdomain}

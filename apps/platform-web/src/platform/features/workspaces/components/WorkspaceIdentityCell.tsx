@@ -30,10 +30,10 @@ export function WorkspaceIdentityCell({
         />
       </div>
       <div className="min-w-0 flex-1 space-y-1">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <BiDiText
             as="h3"
-            className="text-sm font-bold tracking-tight text-foreground truncate group-hover:text-primary transition-colors text-balance"
+            className="min-w-0 flex-1 text-sm font-bold tracking-tight text-foreground truncate group-hover:text-primary transition-colors"
             titleFromContent
           >
             {workspace.madrasaName}
