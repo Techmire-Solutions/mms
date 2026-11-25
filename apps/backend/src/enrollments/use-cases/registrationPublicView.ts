@@ -35,11 +35,13 @@ export function toPublicView(
   session: Session,
   madrasaName: string,
   now: Date,
+  logoUrl: string | null = null,
 ): PublicRegistrationView {
   return {
     slug: link.slug,
     title: link.title || session.name,
     madrasaName,
+    logoUrl,
     sessionName: session.name,
     startDate: session.startDate ?? "",
     endDate: session.endDate ?? "",

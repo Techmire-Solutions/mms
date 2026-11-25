@@ -56,6 +56,7 @@ describe("registrationPublicView", () => {
       slug: "slug-123456789",
       title: "Hifz 2027",
       madrasaName: "Madrasa",
+      logoUrl: null,
       sessionName: "Hifz 2027",
       startDate: "2027-04-01",
       endDate: "",
@@ -98,5 +99,10 @@ describe("registrationPublicView", () => {
       false,
     );
     expect(acceptsSubmissions(link(), { ...session, status: "draft" }, NOW)).toBe(false);
+  });
+
+  it("should preserve the provided logoUrl when present", () => {
+    const view = toPublicView(link(), session, "Madrasa", NOW, "https://example.com/logo.png");
+    expect(view.logoUrl).toBe("https://example.com/logo.png");
   });
 });
