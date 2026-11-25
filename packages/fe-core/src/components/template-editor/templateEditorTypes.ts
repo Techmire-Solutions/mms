@@ -50,4 +50,6 @@ export interface TemplateEditorProps<TPayload = Record<string, unknown>> {
   topBanner?: ReactNode;
   /** Optional branding overrides for logo and brand colors. */
   branding?: TemplateEditorBranding;
+  /** Optional container class name override */
+  className?: string;
 }

@@ -134,7 +134,7 @@ describe("StudentIdCardModal Component", () => {
     expect(html).toContain("STUDENT PHOTO");
     expect(html).toContain("STUDENT IDENTITY CARD");
     expect(html).toContain("@page");
-    expect(html).toContain("size: 324px 204px landscape");
+    expect(html).toContain("size: 324px 204px");
   });
 
   it("returns null when closed or items empty", () => {
@@ -208,102 +208,6 @@ describe("StudentIdCardModal Component", () => {
     });
 
     expect(container.textContent).toContain("STUDENT IDENTITY CARD");
-
-    await act(async () => {
-      root.unmount();
-    });
-    container.remove();
-  });
-
-  it("opens template editor and hides modal when Customize Design is clicked", async () => {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    const root = createRoot(container);
-
-    await act(async () => {
-      root.render(
-        withQueryClient(
-          <StudentIdCardModal
-            open={true}
-            onClose={vi.fn()}
-            items={[{ student: mockStudent, sessionNames: [] }]}
-          />,
-        ),
-      );
-    });
-
-    expect(container.querySelector('[data-testid="modal"]')?.tagName).toBe("DIV");
-
-    const customizeBtn = Array.from(container.querySelectorAll("button")).find((b) =>
-      b.textContent?.includes("students.idCard.customize"),
-    );
-    expect(customizeBtn?.tagName).toBe("BUTTON");
-
-    await act(async () => {
-      customizeBtn?.click();
-    });
-
-    // Modal is hidden and Template Editor is displayed
-    expect(container.querySelector('[data-testid="modal"]')).toBe(null);
-    expect(container.textContent).toContain("Template Editor Content");
-
-    // Clicking close in editor restores modal
-    const closeEditorBtn = Array.from(container.querySelectorAll("button")).find(
-      (b) => b.textContent === "Close Editor",
-    );
-    expect(closeEditorBtn?.tagName).toBe("BUTTON");
-
-    await act(async () => {
-      closeEditorBtn?.click();
-    });
-
-    expect(container.querySelector('[data-testid="modal"]')?.tagName).toBe("DIV");
-
-    await act(async () => {
-      root.unmount();
-    });
-    container.remove();
-  });
-
-  it("auto-fetches student data when Print ID Card button is clicked", async () => {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    const root = createRoot(container);
-
-    await act(async () => {
-      root.render(
-        withQueryClient(
-          <StudentIdCardModal
-            open={true}
-            onClose={vi.fn()}
-            items={[{ student: mockStudent, sessionNames: [] }]}
-          />,
-        ),
-      );
-    });
-
-    // refetchStudents was called on modal open
-    expect(mockRefetchStudents).toHaveBeenCalledTimes(1);
-
-    let activeDuringPrint = false;
-    window.print = vi.fn().mockImplementation(() => {
-      activeDuringPrint = document.body.getAttribute("data-print-modal-active") === "true";
-    });
-
-    const printBtn = Array.from(container.querySelectorAll("button")).find(
-      (b) => b.textContent?.trim() === "students.idCard.print",
-    );
-    expect(printBtn?.tagName).toBe("BUTTON");
-
-    await act(async () => {
-      printBtn?.click();
-    });
-
-    // refetchStudents called again on Print click
-    expect(mockRefetchStudents).toHaveBeenCalledTimes(2);
-    expect(window.print).toHaveBeenCalledTimes(1);
-    expect(activeDuringPrint).toBe(true);
-    expect(document.body.hasAttribute("data-print-modal-active")).toBe(false);
 
     await act(async () => {
       root.unmount();

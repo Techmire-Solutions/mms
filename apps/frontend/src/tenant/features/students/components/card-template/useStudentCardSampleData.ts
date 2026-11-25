@@ -14,7 +14,7 @@ const DEMO_STUDENT_PHOTO =
 export interface UseStudentCardSampleDataOptions {
   branding: BrandingSettings;
   sampleStudent?: Student | null;
-  sessionNames: string[];
+  sessionNames?: string[];
   guardianName?: string;
   emergencyPhone?: string;
   bloodGroup?: string;
@@ -24,7 +24,7 @@ export interface UseStudentCardSampleDataOptions {
 export function useStudentCardSampleData({
   branding,
   sampleStudent,
-  sessionNames,
+  sessionNames = [],
   guardianName,
   emergencyPhone,
   bloodGroup,
@@ -33,6 +33,7 @@ export function useStudentCardSampleData({
   return useMemo<StudentCardPayload>(() => {
     const institutionAddress = formatBrandingAddress(branding) || "123 Seminary Road, Karachi";
     const madrasaName = branding.madrasaName || "Madrasa Management System";
+    const safeSessionNames = sessionNames ?? [];
     const studentWithExtras = sampleStudent as
       | {
           avatarUrl?: string;
@@ -49,7 +50,8 @@ export function useStudentCardSampleData({
         gr_number: sampleStudent.grNumber || "2026-0042",
         student_id: String(sampleStudent.studentId || sampleStudent.id || "STU-001"),
         roll_number: "14",
-        session_name: sessionNames.length > 0 ? sessionNames.join(", ") : "Dars-e-Nizami Year 2",
+        session_name:
+          safeSessionNames.length > 0 ? safeSessionNames.join(", ") : "Dars-e-Nizami Year 2",
         guardian_name: guardianName || sampleStudent.fatherName || "Muhammad Kazim",
         emergency_phone: emergencyPhone || sampleStudent.phone || "+92 300 1234567",
         phone: sampleStudent.phone || "+92 321 7654321",

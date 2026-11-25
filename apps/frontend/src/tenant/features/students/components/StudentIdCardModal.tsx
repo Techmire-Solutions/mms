@@ -186,7 +186,7 @@ export function StudentIdCardModal({
           </>
         }
       >
-        <div className="space-y-3">
+        <div className="space-y-3 print:space-y-0 print:m-0 print:p-0">
           <StudentIdCardPrintControlsBar
             printMode={printMode}
             onSelectPrintMode={(mode) => {
@@ -216,8 +216,18 @@ export function StudentIdCardModal({
       </Modal>
 
       {showEditor && (
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <div
+              data-testid="student-card-editor-loading"
+              className="fixed inset-0 z-modal-priority flex items-center justify-center bg-background/80 backdrop-blur-xs"
+            >
+              <Loader2 className="w-8 h-8 animate-spin text-primary" aria-hidden />
+            </div>
+          }
+        >
           <StudentCardTemplateEditor
+            portalToBody={true}
             onClose={() => {
               setShowEditor(false);
               void queryClient.invalidateQueries({

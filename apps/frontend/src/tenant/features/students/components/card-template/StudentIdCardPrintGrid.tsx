@@ -35,7 +35,7 @@ export function StudentIdCardPrintGrid({
     <div
       ref={printAreaRef}
       data-print-unclamp
-      className="id-card-print-container grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-dialog-scroll overflow-y-auto overflow-x-hidden p-2 justify-items-center print:grid-cols-2 print:gap-3 print:max-h-none print:overflow-visible print:p-0"
+      className="id-card-print-container grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-dialog-scroll overflow-y-auto overflow-x-hidden p-2 justify-items-center print:block print:w-auto print:max-h-none print:overflow-visible print:p-0"
     >
       {items.map(({ student, sessionNames, guardianName, emergencyPhone, bloodGroup }) => {
         if (printMode === "both") {

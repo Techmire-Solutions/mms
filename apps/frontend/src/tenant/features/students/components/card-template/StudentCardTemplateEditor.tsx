@@ -8,6 +8,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { TemplateEditor } from "@/components/app/TemplateEditor";
@@ -40,6 +41,7 @@ export interface StudentCardTemplateEditorProps {
   /** Reports unsaved layout changes to the Setup leave-guard. */
   onDirtyChange?: (dirty: boolean) => void;
   fullscreen?: boolean;
+  portalToBody?: boolean;
   sampleStudent?: Student | null;
   sessionNames?: string[];
   guardianName?: string;
@@ -51,6 +53,7 @@ export function StudentCardTemplateEditor({
   onClose,
   onDirtyChange,
   fullscreen = true,
+  portalToBody = false,
   sampleStudent = null,
   sessionNames = [],
   guardianName,
@@ -212,8 +215,9 @@ export function StudentCardTemplateEditor({
       ? t("students.cardTemplate.side.front")
       : t("students.cardTemplate.side.back");
 
-  return (
+  const content = (
     <div
+      data-testid="student-card-template-editor"
       className={
         fullscreen
           ? "fixed inset-0 z-modal-priority flex flex-col bg-background outline-hidden"
@@ -234,7 +238,7 @@ export function StudentCardTemplateEditor({
         <StudentCardSideSwitcher activeSide={activeSide} onSelectSide={setActiveSide} t={t} />
       </div>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 flex flex-col">
         <TemplateEditor<StudentCardPayload>
           key={`card-editor-${activeSide}-${conflict.reloadNonce}`}
           title={`${t("students.cardTemplate.title")} (${sideLabel})`}
@@ -245,6 +249,7 @@ export function StudentCardTemplateEditor({
           documentType="student-card"
           sampleData={sampleData}
           fullscreen={false}
+          className={fullscreen ? "h-full max-h-none rounded-none border-0" : undefined}
           branding={branding}
           canSave={!conflict.blocked}
           onChange={handleSideTemplateChange}
@@ -255,6 +260,12 @@ export function StudentCardTemplateEditor({
       </div>
     </div>
   );
+
+  if (fullscreen && portalToBody && typeof document !== "undefined") {
+    return createPortal(content, document.body);
+  }
+
+  return content;
 }
 
 export default StudentCardTemplateEditor;
