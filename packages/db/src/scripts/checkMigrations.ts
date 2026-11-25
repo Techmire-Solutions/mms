@@ -13,8 +13,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { closeDatabase, getPool, initializeDatabaseConnection } from "@mms/db/client";
-import { resolveMigrationsFolder } from "@mms/db/migrations";
+import { closeDatabase, getPool, initializeDatabaseConnection } from "../client.js";
+import { resolveMigrationsFolder } from "../migrations.js";
 
 interface DrizzleMigrationRecord {
   id: number;
