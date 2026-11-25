@@ -1,6 +1,6 @@
 # Accounting shared contracts & TypeScript definitions audit
 
-Scope: the Accounting domain model in `packages/shared` — DTO ownership, enum/registry consistency
+Scope: the Accounting domain model in `packages/contracts` — DTO ownership, enum/registry consistency
 with the database, and runtime schema strictness for money and balanced vouchers.
 
 Method: traced every Accounting DTO to its declaring module, compared the shared enums with the DB
@@ -19,7 +19,7 @@ it was supposed to describe.
 | Report interfaces | `accountingReportAggregates.ts`, `accountingReportEndpoints.ts`, `accountingHttpResponses.ts` (every envelope lives there; no accounting route declares an inline response schema), `financialLedgerTypes.ts` |
 | Enum registry | `accountingEnums.ts` is the canonical list; `financeAccountingConstraintsParity.test.ts` pins account types, fiscal-year statuses, posting-period statuses and source types to the 0248/0252/0253 SQL, and every DB check to the Drizzle model |
 | Voucher/period states | stored statuses are `draft`/`posted` (matching `accounting_entries_status_chk`); `reversed` is derived (`JOURNAL_ENTRY_LIFECYCLE` + `isJournalEntryReversed`, shared by backend and UI); fiscal years active/closed/upcoming and posting periods open/closed match their checks |
-| Money | no `any` in `packages/shared/src/finance`; no bare `z.number()` money in accounting DTOs; TypeBox is not used in this repository — Zod is the only runtime validator |
+| Money | no `any` in `packages/contracts/src/finance`; no bare `z.number()` money in accounting DTOs; TypeBox is not used in this repository — Zod is the only runtime validator |
 | Package drift | both apps depend on `@mms/shared` via `workspace:*`, and `turbo.json` makes `typecheck`/`test` depend on `^build`, so the built `dist` cannot drift from source |
 
 ## 2. Findings
@@ -47,7 +47,7 @@ it was supposed to describe.
   derived `reversed` state stays out of the database vocabulary.
 - **S7 (P2) — dead duplicated ledger math in the frontend.** `lib/data/accountingCalculations.ts`
   (`computeLedger`/`computeTrialBalance`/`computeFinancials`) re-implemented invariants owned by
-  `packages/shared` and the server aggregates; no production code imported it.
+  `packages/contracts` and the server aggregates; no production code imported it.
 - **S8 (P3) — hardcoded voucher status options** in `AccountingFiltersMenuButton` instead of deriving
   them from `JOURNAL_ENTRY_STATUSES`.
 - **S9 (P3) — rate-key shape inlined twice.** Two repository signatures repeated

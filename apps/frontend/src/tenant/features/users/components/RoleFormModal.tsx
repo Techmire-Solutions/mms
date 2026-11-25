@@ -10,7 +10,7 @@ import {
   type PermissionMap,
   type RbacModuleDef,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";

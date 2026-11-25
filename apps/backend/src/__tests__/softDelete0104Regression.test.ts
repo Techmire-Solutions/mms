@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { resolveMigrationsFolder } from "@mms/db/testing";
 
 describe("Migration 0104 & Soft-Delete Schema Invariants (Protect 0104)", () => {
-  const migrationPath = join(
-    process.cwd(),
-    "src/db/migrations_drizzle/0104_soft_delete_system_complete.sql",
-  );
-  const journalPath = join(process.cwd(), "src/db/migrations_drizzle/meta/_journal.json");
+  const migrationPath = join(resolveMigrationsFolder(), "0104_soft_delete_system_complete.sql");
+  const journalPath = join(resolveMigrationsFolder(), "meta/_journal.json");
 
   it("verifies 0104 migration is tracked in drizzle journal", async () => {
     const journalRaw = await readFile(journalPath, "utf-8");

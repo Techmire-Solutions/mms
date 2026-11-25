@@ -4,8 +4,8 @@ import type {
   QuestionBankTest,
   QuestionBankResult,
   QuestionBankReportQuery,
-} from "@mms/shared";
-import { QUESTION_BANK_MODULE_MANIFEST } from "@mms/shared";
+} from "@mms/contracts";
+import { QUESTION_BANK_MODULE_MANIFEST } from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient } from "@/lib/api";

@@ -4,8 +4,8 @@ import type {
   EmailIntegrationSecrets,
   EmailProviderId,
   User,
-} from "@mms/shared";
-import { isEmailProviderId, mergeEmailIntegrationConfig } from "@mms/shared";
+} from "@mms/contracts";
+import { isEmailProviderId, mergeEmailIntegrationConfig } from "@mms/contracts";
 import {
   loadEmailIntegrationConfig,
   markEmailIntegrationTestResult,
@@ -20,7 +20,7 @@ import {
   emailIntegrationBodySchema,
   emailTestBodySchema,
   verificationCodeBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 import { sendForbidden } from "../../lib/httpErrors.js";
 import { AUTH_RATE_LIMIT } from "../../lib/rateLimitConfig.js";

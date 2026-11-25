@@ -6,7 +6,7 @@ import {
   getInitials,
   getMessageCategoryLabelKey,
   type Message,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { type StatusBadgeConfigItem, StatusBadge } from "@/components/app/StatusBadge";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
 import { CopyBtn } from "@/components/app/CopyButton";

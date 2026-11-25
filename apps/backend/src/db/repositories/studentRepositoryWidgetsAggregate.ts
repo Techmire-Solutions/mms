@@ -1,7 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
-import type { StudentsWidgetAggregateResult, StudentsWidgetQuery } from "@mms/shared";
-import { students, contacts } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { StudentsWidgetAggregateResult, StudentsWidgetQuery } from "@mms/contracts";
+import { students, contacts } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import {
   activeWorkspaceWhere,
   resolveChartLimit,

@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: mocks.reconcile,
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -25,10 +35,6 @@ vi.mock("../db/repositories/facultyDesignationRepository.js", () => ({
   listFacultyDesignations: mocks.listDesignations,
 }));
 
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: mocks.reconcile,
-}));
-
 vi.mock("../lib/tenantRoleCatalog.js", () => ({
   tenantUserHasPermission: mocks.tenantUserHasPermission,
 }));
@@ -42,7 +48,7 @@ vi.mock("../lib/logger.js", () => ({
 }));
 
 import { runFacultyMembersImportJob } from "../faculty/use-cases/facultyImportJobUseCases.js";
-import type { FacultyImportJobPayload } from "@mms/shared";
+import type { FacultyImportJobPayload } from "@mms/contracts";
 
 const payload: FacultyImportJobPayload = {
   rows: [

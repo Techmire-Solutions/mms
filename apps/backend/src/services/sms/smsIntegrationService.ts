@@ -3,7 +3,7 @@ import {
   type SmsIntegrationConfig,
   type SmsIntegrationSecrets,
   type SmsProviderId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import {
@@ -11,7 +11,7 @@ import {
   upsertSmsIntegrationConfigRow,
   upsertSmsIntegrationSecretsRow,
 } from "../../db/repositories/smsIntegrationRepository.js";
-import { type SmsIntegrationRow } from "../../db/schema/messaging.js";
+import { type SmsIntegrationRow } from "@mms/db/schema/messaging";
 
 function rowToConfig(row: SmsIntegrationRow): SmsIntegrationConfig {
   const overrides: Partial<SmsIntegrationConfig> = {

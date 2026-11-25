@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
-import { beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { workspaces } from "../../db/schema.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
+import { beginLongLivedTenantTransaction } from "@mms/db/client";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { workspaces } from "@mms/db/schema";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const SUFFIX = randomUUID().slice(0, 8);

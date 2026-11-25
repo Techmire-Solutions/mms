@@ -1,16 +1,16 @@
 import React, { act } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DocumentTemplate } from "@mms/shared";
+import type { DocumentTemplate } from "@mms/contracts";
 import { createRoot } from "react-dom/client";
 import type { Denomination, Distribution } from "@/lib/data/hasanatData";
 import { DistributionDetail } from "./DistributionDetail";
-import { fetchDocumentTemplateServer } from "@/lib/templates/documentTemplatesApi";
-import { writeCachedDocumentTemplate } from "@/lib/templates/documentTemplateCache";
+import { fetchDocumentTemplateServer } from "@mms/fe-core/documentTemplates/documentTemplatesApi";
+import { writeCachedDocumentTemplate } from "@mms/fe-core/documentTemplates/documentTemplateCache";
 import { HASANAT_TEMPLATE_STORAGE_KEY } from "../lib/hasanatTemplateData";
 import { notify } from "@/lib/notify";
 import { withQueryClient } from "@/test/queryClientTestUtils";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key, language: "en", isRtl: false }),
 }));
 
@@ -18,11 +18,11 @@ vi.mock("@/tenant/hooks/useBranding", () => ({
   useBranding: () => ({ madrasaName: "Test Madrasa", logoUrl: null }),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
 
-vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+vi.mock("@mms/fe-core/documentTemplates/documentTemplatesApi", () => ({
   fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
   saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => ({
     template,

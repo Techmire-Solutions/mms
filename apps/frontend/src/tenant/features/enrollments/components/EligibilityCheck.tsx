@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { getInitials } from "@mms/shared";
+import { getInitials } from "@mms/contracts";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { calcAge } from "@/lib/data/studentsData";
 import { type CheckResult, runFullEligibility, suggestClass } from "@/lib/data/enrollmentData";

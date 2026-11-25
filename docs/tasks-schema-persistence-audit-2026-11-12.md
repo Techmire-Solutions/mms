@@ -37,15 +37,15 @@ The Task module was introduced in migration `0134_organization_positions_and_tas
 
 | Dimension | Severity | Issue | Impact | Primary File |
 | :--- | :--- | :--- | :--- | :--- |
-| **Indexes & Query Paths** | **HIGH** | Missing composite index on `(workspace_subdomain, created_at DESC)` and `(workspace_subdomain, status, due_at)` | Every default work-list query triggers a table scan and memory/disk sort (`Sort` / `Top-N Sort`). | [`tasksTables.ts`](../apps/backend/src/db/schema/tasksTables.ts#L50-L69) |
+| **Indexes & Query Paths** | **HIGH** | Missing composite index on `(workspace_subdomain, created_at DESC)` and `(workspace_subdomain, status, due_at)` | Every default work-list query triggers a table scan and memory/disk sort (`Sort` / `Top-N Sort`). | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L50-L69) |
 | **Indexes & Query Paths** | **HIGH** | In-memory ID array passing (`inArray(tasks.id, ids)`) during assignee filtering | Loads unbounded task IDs into Node.js heap memory, resulting in oversized SQL `IN (...)` parameters. | [`tasksRepository.ts`](../apps/backend/src/db/repositories/tasksRepository.ts#L104-L123) |
-| **Indexes & Query Paths** | **MEDIUM** | Missing polymorphic columns (`entity_type`, `entity_id`) or junction table | Tasks cannot be associated with Students, Admissions, or Finance records. | [`tasksTables.ts`](../apps/backend/src/db/schema/tasksTables.ts#L23-L46) |
-| **Hierarchy & Ordering** | **HIGH** | No `sort_order` or fractional rank (LexoRank) column for Kanban board positioning | Kanban board columns cannot maintain custom user ordering without `O(N)` updates. | [`tasksTables.ts`](../apps/backend/src/db/schema/tasksTables.ts#L23-L46) |
-| **Hierarchy & Ordering** | **MEDIUM** | No lightweight checklist table; missing task dependency tracking (`task_dependencies`) | Simple checklist items bloat the main tasks table; blocker relationships cannot be queried. | [`tasksTables.ts`](../apps/backend/src/db/schema/tasksTables.ts#L23-L46) |
+| **Indexes & Query Paths** | **MEDIUM** | Missing polymorphic columns (`entity_type`, `entity_id`) or junction table | Tasks cannot be associated with Students, Admissions, or Finance records. | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L23-L46) |
+| **Hierarchy & Ordering** | **HIGH** | No `sort_order` or fractional rank (LexoRank) column for Kanban board positioning | Kanban board columns cannot maintain custom user ordering without `O(N)` updates. | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L23-L46) |
+| **Hierarchy & Ordering** | **MEDIUM** | No lightweight checklist table; missing task dependency tracking (`task_dependencies`) | Simple checklist items bloat the main tasks table; blocker relationships cannot be queried. | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L23-L46) |
 | **Concurrency & Integrity** | **CRITICAL** | Global Advisory Lock (`lockFacultyHierarchy`) on all task mutations | Serializes all task edits and status changes tenant-wide, blocking unrelated concurrent users. | [`tasksWriteRepository.ts`](../apps/backend/src/db/repositories/tasksWriteRepository.ts#L32) |
 | **Concurrency & Integrity** | **HIGH** | Opt-in Timestamp OCC instead of mandatory integer versioning (`occ_version`) | Bypassed when header is omitted; microsecond timestamp truncation causes lost updates. | [`tasksWriteRepository.ts`](../apps/backend/src/db/repositories/tasksWriteRepository.ts#L140-L161) |
 | **Concurrency & Integrity** | **HIGH** | Soft delete does not cascade to `task_assignees` | Deleting a task leaves orphaned active assignee rows with `deleted_at IS NULL`. | [`tasksTrashRepository.ts`](../apps/backend/src/db/repositories/tasksTrashRepository.ts#L30-L35) |
-| **Drizzle Anti-Patterns** | **MEDIUM** | Omission of Drizzle ORM Relations definitions | Missing `relations(tasks, ...)` forces verbose manual joins and prevents Relational Queries. | [`schema/relations/`](../apps/backend/src/db/schema/relations) |
+| **Drizzle Anti-Patterns** | **MEDIUM** | Omission of Drizzle ORM Relations definitions | Missing `relations(tasks, ...)` forces verbose manual joins and prevents Relational Queries. | [`schema/relations/`](../packages/db/src/schema/relations) |
 
 ---
 
@@ -118,7 +118,7 @@ Every invocation of `listTasks` specifies:
 .limit(query.limit)
 .offset(query.offset)
 ```
-In [`tasksTables.ts`](../apps/backend/src/db/schema/tasksTables.ts#L50-L69), the only indexes defined on `tasks` are:
+In [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L50-L69), the only indexes defined on `tasks` are:
 - `tasks_status_active_idx`: `(workspaceSubdomain, status) WHERE deletedAt is null`
 - `tasks_priority_active_idx`: `(workspaceSubdomain, priority) WHERE deletedAt is null`
 - `tasks_due_at_active_idx`: `(workspaceSubdomain, dueAt) WHERE deletedAt is null`
@@ -410,12 +410,12 @@ Every time a task is edited (even if assignees did not change):
 ## 4. Drizzle ORM Anti-Patterns & Recommendations
 
 ### 4.1 Missing Drizzle Relations
-In `apps/backend/src/db/schema/relations/`, relations exist for 12 domains (`academic`, `accounting`, `faculty`, `messaging`, etc.), but **there is no `taskRelations.ts`**.
+In `packages/db/src/schema/relations/`, relations exist for 12 domains (`academic`, `accounting`, `faculty`, `messaging`, etc.), but **there is no `taskRelations.ts`**.
 
 **Defect**:
 Drizzle's relational query API (`db.query.tasks.findFirst({ with: { assignees: true, parent: true } })`) cannot be used. Repositories must manually perform multi-table `leftJoin` queries and write custom in-memory grouping loops.
 
-**Fix**: Create `apps/backend/src/db/schema/relations/taskRelations.ts`:
+**Fix**: Create `packages/db/src/schema/relations/taskRelations.ts`:
 ```ts
 import { relations } from "drizzle-orm";
 import { tasks, taskAssignees } from "../tasksTables.js";
@@ -552,8 +552,8 @@ END $$;
 
 1. **Database Schema & Drizzle Definitions**:
    - Apply migration `0138` adding `version`, `kanban_position`, `entity_type`, `entity_id`, and composite indexes.
-   - Update [`tasksTables.ts`](../apps/backend/src/db/schema/tasksTables.ts) to declare the new columns and composite indexes in Drizzle syntax.
-   - Create `apps/backend/src/db/schema/relations/taskRelations.ts` and export it in `relations/index.ts`.
+   - Update [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts) to declare the new columns and composite indexes in Drizzle syntax.
+   - Create `packages/db/src/schema/relations/taskRelations.ts` and export it in `relations/index.ts`.
 2. **Repository Query Optimization**:
    - In [`tasksRepository.ts`](../apps/backend/src/db/repositories/tasksRepository.ts), replace the 2-step `inArray(tasks.id, ids)` assignee fetch with a single SQL `EXISTS` subquery.
    - In [`tasksWriteRepository.ts`](../apps/backend/src/db/repositories/tasksWriteRepository.ts), remove `lockFacultyHierarchy` from `createTask` and `updateTask` to eliminate tenant-wide transaction serialization.

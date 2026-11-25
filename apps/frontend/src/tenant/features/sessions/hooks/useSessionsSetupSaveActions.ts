@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SESSION_MODULE_PREFERENCE_KEYS, type SessionsSettings } from "@mms/shared";
+import { SESSION_MODULE_PREFERENCE_KEYS, type SessionsSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 

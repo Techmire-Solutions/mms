@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { obligationCollectionListSchema } from "@mms/shared";
+import { obligationCollectionListSchema } from "@mms/contracts";
 import { obligationCollectionRowToRecord } from "../db/repositories/obligationCollectionsRepository.js";
 
 /**

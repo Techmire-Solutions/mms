@@ -50,7 +50,9 @@ const mockTx = {
   })),
 };
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: async (_tenant: string, work: (tx: typeof mockTx) => Promise<unknown>) =>
     work(mockTx),
   withTenant: async (_tenant: string, work: (tx: typeof mockTx) => Promise<unknown>) =>

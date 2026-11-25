@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { STUDENT_PARENT_RELATIONSHIP_LABEL } from "@mms/shared";
+import { STUDENT_PARENT_RELATIONSHIP_LABEL } from "@mms/contracts";
 import { StudentGuardianSection } from "./StudentGuardianSection";
 
 vi.mock("@/tenant/hooks/collections/contacts", () => ({

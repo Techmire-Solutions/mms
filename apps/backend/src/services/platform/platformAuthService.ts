@@ -1,7 +1,10 @@
 import type { FastifyReply } from "fastify";
 import type { JWT } from "@fastify/jwt";
-import type { NotificationChannel, PlatformUser, PlatformUserProfile } from "@mms/shared";
-import { PLATFORM_ACCESS_TOKEN_TTL_SECONDS, resolvePlatformNotificationChannel } from "@mms/shared";
+import type { NotificationChannel, PlatformUser, PlatformUserProfile } from "@mms/contracts";
+import {
+  PLATFORM_ACCESS_TOKEN_TTL_SECONDS,
+  resolvePlatformNotificationChannel,
+} from "@mms/contracts";
 import { verifyPassword, DUMMY_PASSWORD_HASH } from "../auth/passwordService.js";
 import { clearAuthCookies, setCsrfCookie } from "../auth/authCookieService.js";
 import {

@@ -52,8 +52,8 @@ Four default/recent list ORDER BY predicates had no supporting index. Added part
 - `exams_workspace_updated_at_active_idx`  `(workspace_subdomain, updated_at) WHERE deleted_at IS NULL`
 - `attendance_workspace_updated_at_active_idx` `(workspace_subdomain, updated_at) WHERE deleted_at IS NULL`
 
-Applied in `apps/backend/src/db/schema/{contacts,enrollments,examinations,attendance}.ts` and
-`apps/backend/src/db/migrations_drizzle/0091_perf_list_order_indexes.sql` (+ `meta/_journal.json`).
+Applied in `packages/db/src/schema/{contacts,enrollments,examinations,attendance}.ts` and
+`packages/db/migrations_drizzle/0091_perf_list_order_indexes.sql` (+ `meta/_journal.json`).
 **Verified to apply cleanly on the live DB** (5 `CREATE INDEX` applied, indexes confirmed present).
 
 ### 4. Pagination (Objective 4)
@@ -73,9 +73,9 @@ repositories. **No unbounded `dump()` / `loadAll()` hot paths found** → no cod
  apps/backend/src/db/repositories/contactRepositoryMetrics.ts | 60 +-/– (N year-queries → 1)
  apps/backend/src/db/repositories/financeRepositoryList.ts   | 48 +-/– (N updates → 1 IN)
  apps/backend/src/db/repositories/attendanceRepositoryList.ts| 21 +/-   (full-row → explicit 15-col)
- apps/backend/src/db/schema/{contacts,enrollments,examinations,attendance}.ts | +5 partial indexes
- apps/backend/src/db/migrations_drizzle/0091_perf_list_order_indexes.sql     | new migration
- apps/backend/src/db/migrations_drizzle/meta/_journal.json  | +1 journal entry
+ packages/db/src/schema/{contacts,enrollments,examinations,attendance}.ts | +5 partial indexes
+ packages/db/migrations_drizzle/0091_perf_list_order_indexes.sql     | new migration
+ packages/db/migrations_drizzle/meta/_journal.json  | +1 journal entry
  apps/backend/src/__tests__/contactRepositoryMetrics.test.ts | fixture row shape updated (output contract unchanged)
 ```
 

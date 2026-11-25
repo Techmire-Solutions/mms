@@ -1,13 +1,13 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { APP_TRANSLATIONS_EN, type FiscalYear, type PostingPeriod } from "@mms/shared";
-import type { JournalEntry } from "@/lib/data/accountingData";
+import { APP_TRANSLATIONS_EN, type FiscalYear, type PostingPeriod } from "@mms/contracts";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import { JournalReverseDialog } from "./JournalReverseDialog";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     language: "en",
     direction: "ltr",
@@ -22,7 +22,7 @@ vi.mock("@/hooks/useCurrency", () => ({
   useAccountingCurrency: () => ({ formatCurrency: (value: number) => `PKR ${value}` }),
 }));
 
-vi.mock("@/lib/contexts/AuthContext", () => ({
+vi.mock("@mms/fe-core/auth/AuthContext", () => ({
   useAuth: () => ({ user: { id: "u-1", name: "Amina Accountant" } }),
 }));
 

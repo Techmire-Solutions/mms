@@ -4,7 +4,7 @@ import {
   mapMessageToInsertRow,
   type LogSelectRow,
 } from "../db/repositories/messagingLogsMapper.js";
-import type { Message } from "@mms/shared";
+import type { Message } from "@mms/contracts";
 
 describe("messagingLogsMapper", () => {
   describe("logRowToRecord", () => {

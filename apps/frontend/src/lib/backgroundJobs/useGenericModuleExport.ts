@@ -3,7 +3,7 @@ import {
   buildTenantExportFilename,
   type BackgroundJobRecord,
   type ExportColumn,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useOptionalTenant } from "@/lib/contexts/TenantContext";
 import { startServerModuleCsvExport } from "@/lib/backgroundJobs/startServerModuleCsvExport";
 import { downloadBackgroundJobArtifact } from "@/lib/backgroundJobs/backgroundJobApi";

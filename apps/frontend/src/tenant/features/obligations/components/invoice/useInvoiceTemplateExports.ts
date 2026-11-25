@@ -5,7 +5,7 @@ import {
   mapToTypstFeeReceipt,
   mapToZohoInvoice,
 } from "@/components/template-editor/templatePayloadMappers";
-import type { ZohoInvoicePayload } from "@mms/shared";
+import type { ZohoInvoicePayload } from "@mms/contracts";
 
 function safeFilenamePart(value: string): string {
   return value.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 80) || "document";

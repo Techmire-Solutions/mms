@@ -1,5 +1,5 @@
-import type { FeeStructure } from "@mms/shared";
-import type { TenantTransaction } from "../tenant-context.js";
+import type { FeeStructure } from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
 import { loadSessionClassRefTx } from "./sessionClassRefs.js";
 
 /**

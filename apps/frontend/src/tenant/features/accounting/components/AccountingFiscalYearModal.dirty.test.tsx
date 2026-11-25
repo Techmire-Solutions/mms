@@ -14,11 +14,11 @@ const harness = vi.hoisted(() => ({
   discardUnsavedDescription: undefined as string | undefined,
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock("@/components/app/FormModal", () => ({
+vi.mock("@mms/fe-core/components/FormModal", () => ({
   FormModal: ({
     children,
     isDirty,
@@ -37,7 +37,7 @@ vi.mock("@/components/app/FormModal", () => ({
   },
 }));
 
-vi.mock("@/components/app/DatePicker", () => ({
+vi.mock("@mms/fe-core/components/DatePicker", () => ({
   DatePicker: ({
     id,
     value,

@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { useModuleCrudNotify } from "@/lib/useModuleCrudNotify";
 
 export function useStudentsCrudNotify() {

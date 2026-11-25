@@ -3,8 +3,8 @@ import {
   hydrateFacultyFromContact,
   type Contact,
   type Faculty,
-} from "@mms/shared";
-import { loadContactsSummaryByIdsForTenant } from "../../services/contactService.js";
+} from "@mms/contracts";
+import { loadContactsSummaryByIdsForTenant } from "@mms/mod-contacts/backend/services";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 import { logger } from "../../lib/logger.js";
 

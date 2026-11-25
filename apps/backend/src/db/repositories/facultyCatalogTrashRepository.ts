@@ -1,9 +1,9 @@
 import { and, eq, isNotNull, sql } from "drizzle-orm";
-import type { FacultyDepartmentEntity, FacultyDesignationDefinition } from "@mms/shared";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
-import { facultyDepartments, facultyDesignations } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import type { FacultyDepartmentEntity, FacultyDesignationDefinition } from "@mms/contracts";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
+import { facultyDepartments, facultyDesignations } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import { selectDepartmentById } from "./facultyDepartmentRepository.js";
 import { FacultyCatalogConflictError } from "./facultyDepartmentValidation.js";
 import { selectDesignationById } from "./facultyDesignationRepository.js";

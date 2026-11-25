@@ -4,7 +4,7 @@ import {
   PROMOTION_OUTCOMES,
   type AppTranslationKey,
   type Session,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ArrowRight } from "lucide-react";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { Alert } from "@/components/app/Alert";

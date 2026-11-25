@@ -1,7 +1,7 @@
 import React from "react";
 import { Mail, User as UserIcon, CheckCircle2 } from "lucide-react";
-import { formatDate } from "@mms/shared";
-import { SectionCard } from "@shared/ui";
+import { formatDate } from "@mms/contracts";
+import { SectionCard } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface PlatformUserProfileInfo {

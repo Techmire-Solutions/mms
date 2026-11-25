@@ -1,6 +1,6 @@
 import type React from "react";
-import type { Contact, FacultyMember } from "@mms/shared";
-import { resolveFacultyStatus } from "@mms/shared";
+import type { Contact, FacultyMember } from "@mms/contracts";
+import { resolveFacultyStatus } from "@mms/contracts";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { Alert } from "@/components/app/Alert";
 import { FormFooterEntityChip } from "@/components/app/FormFooterChip";

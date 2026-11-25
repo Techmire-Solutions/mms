@@ -6,9 +6,9 @@ import {
   type EnrollmentRecord,
   type EnrollmentUpdate,
   type EnrollmentInsert,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { createGenericRelationalService } from "../../services/genericRelationalService.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { ConflictError, HttpDomainError, ValidationError } from "../../lib/httpErrors.js";
 import {

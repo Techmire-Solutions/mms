@@ -1,6 +1,6 @@
 import React from "react";
 import { Smartphone } from "lucide-react";
-import { type Contact } from "@mms/shared";
+import { type Contact } from "@mms/contracts";
 import { DashedFileDropZone } from "@/components/app/DashedFileDropZone";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";

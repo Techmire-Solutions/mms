@@ -26,7 +26,14 @@ import { changedFiles } from "./lib/changed-files.mjs";
 import { findWildcardProjections } from "./lib/db-projections-core.mjs";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const srcDir = path.join(rootDir, "apps", "backend", "src");
+const APP_SRC = path.join(rootDir, "apps", "backend", "src");
+/**
+ * Kernel moved into `@mms/db` or `@mms/be-core` must stay under the same projection
+ * ban (P1b): moving code into a package must not let it escape a gate.
+ */
+const DB_PKG_SRC = path.join(rootDir, "packages", "db", "src");
+const BE_CORE_SRC = path.join(rootDir, "packages", "be-core", "src");
+const SOURCE_ROOTS = [APP_SRC, DB_PKG_SRC, BE_CORE_SRC];
 
 /** Measured 2026-09-19. Zero wildcard projections across apps/backend. */
 const BASELINE = 0;
@@ -44,7 +51,7 @@ function collectSourceFiles(dir) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       if (entry.name === "__tests__" || entry.name === "node_modules") continue;
-      if (path.join(dir, entry.name) === path.join(srcDir, "db", "migrations")) continue;
+      if (path.join(dir, entry.name) === path.join(APP_SRC, "db", "migrations")) continue;
       found.push(...collectSourceFiles(full));
       continue;
     }
@@ -55,17 +62,23 @@ function collectSourceFiles(dir) {
   return found;
 }
 
-if (!fs.existsSync(srcDir)) {
-  console.error(`✗ Backend source not found at ${path.relative(rootDir, srcDir)}`);
-  process.exit(1);
+for (const dir of SOURCE_ROOTS) {
+  if (!fs.existsSync(dir)) {
+    console.error(`✗ DB source root not found at ${path.relative(rootDir, dir)}`);
+    process.exit(1);
+  }
 }
 
 const sources = process.argv.includes("--changed")
   ? changedFiles()
-      .filter((rel) => rel.startsWith("apps/backend/src/") && isBackendSource(rel))
+      .filter(
+        (rel) =>
+          (rel.startsWith("apps/backend/src/") || rel.startsWith("packages/db/src/")) &&
+          isBackendSource(rel),
+      )
       .map((rel) => path.join(rootDir, rel))
       .filter((file) => fs.existsSync(file))
-  : collectSourceFiles(srcDir);
+  : SOURCE_ROOTS.flatMap((dir) => collectSourceFiles(dir));
 
 const offenders = [];
 for (const file of sources) {

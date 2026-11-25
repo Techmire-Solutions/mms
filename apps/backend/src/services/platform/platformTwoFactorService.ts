@@ -2,7 +2,7 @@ import {
   PLATFORM_OTP_MAX_ATTEMPTS,
   TWO_FACTOR_CHALLENGE_TTL_MS,
   type StoredPlatformUser,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createArtifactId,
   deleteAuthArtifact,

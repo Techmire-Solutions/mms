@@ -5,7 +5,7 @@ import {
   type AcademicCatalogItem,
   type AcademicCatalogKind,
   type AcademicCatalogWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { z } from "zod";
 import { apiJson } from "@/lib/apiClient";
 

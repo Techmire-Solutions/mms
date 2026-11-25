@@ -2,7 +2,7 @@
  * @file facultyRepositoryColumnDefs.ts
  * @description Faculty row projection + known persist keys (profile-only after contract).
  */
-import { faculty } from "../schema.js";
+import { faculty } from "@mms/db/schema";
 
 export const FACULTY_PROJECTION_COLUMNS = {
   id: faculty.id,

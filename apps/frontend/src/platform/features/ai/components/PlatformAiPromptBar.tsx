@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { SendHorizontal, Sparkles, Loader2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
-import { Input } from "@shared/ui";
+import { Button } from "@mms/ui";
+import { Input } from "@mms/ui";
 import { cn } from "@/lib/utils";
 
 export interface PlatformAiPromptBarProps {

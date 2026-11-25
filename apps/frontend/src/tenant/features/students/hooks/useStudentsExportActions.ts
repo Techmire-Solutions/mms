@@ -7,7 +7,7 @@ import {
   type StudentsListQuery,
   type StudentsSettings,
   type StudentsQuickFilter,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { startServerStudentsCsvExport } from "@/lib/backgroundJobs/startServerStudentsCsvExport";
 import { useModuleServerCsvExportActions } from "@/lib/backgroundJobs/useModuleServerCsvExportActions";
 import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";

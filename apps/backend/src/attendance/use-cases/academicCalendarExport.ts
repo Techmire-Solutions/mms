@@ -1,4 +1,4 @@
-import { buildCsvContent, type AcademicCalendarEvent } from "@mms/shared";
+import { buildCsvContent, type AcademicCalendarEvent } from "@mms/contracts";
 import { streamIcalCalendar } from "../../lib/icalFormat.js";
 
 const CSV_HEADER = [

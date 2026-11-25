@@ -9,7 +9,7 @@ Per `mms-completion-review.md` §4 and `mms-core.md` §3, every feature completi
 Systematic review across the 4 adversarial review vectors:
 
 - **Vector 1: Edge Cases & Payload Integrity:**
-  - *Malformed / Boundary Inputs:* Evaluated null, undefined, empty strings, max-length payloads, and unexpected Unicode/emojis against `@mms/shared` Zod schemas.
+  - *Malformed / Boundary Inputs:* Evaluated null, undefined, empty strings, max-length payloads, and unexpected Unicode/emojis against `@mms/contracts` Zod schemas.
   - *Timezones & Formatting:* Evaluated UTC normalization on date boundaries, leap seconds, and currency string formatting (`formatMoney`).
   - *Idempotency & Replays:* Evaluated double-submission protection on mutations, duplicate webhook receipts, and `Idempotency-Key` collisions.
 

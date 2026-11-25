@@ -1,14 +1,14 @@
 import { Download } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
-import { Button } from "@/components/ui/button";
-import { FilterChips } from "@/components/app/FilterChips";
-import { type ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnCustomizer";
+import type { AppTranslationKey } from "@mms/contracts";
+import { Button } from "@mms/ui";
+import { FilterChips } from "@mms/fe-core/components/FilterChips";
+import { type ModuleColumnCustomizerProps } from "@mms/fe-core/components/moduleColumnCustomizerTypes";
 import { WorkTaskToolbar } from "@/components/common/work";
-import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { SubTabBar } from "@/components/app/SubTabBar";
-import { useTranslation } from "@/hooks/useTranslation";
-import { AccountingFiltersMenuButton } from "@/tenant/features/accounting/components/AccountingFiltersMenuButton";
-import { getJournalTagLabel } from "@/tenant/features/accounting/lib/journalEntriesListShared";
+import type { WorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { SubTabBar } from "@mms/ui/app/SubTabBar";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { AccountingFiltersMenuButton } from "@mms/mod-accounting/frontend/tenant";
+import { getJournalTagLabel } from "@mms/mod-accounting/frontend/tenant";
 
 export const ACCOUNTING_WORK_SEARCH_INPUT_ID = "accounting-work-search";
 
@@ -181,4 +181,4 @@ export function JournalEntriesListFilters({
 export {
   JournalEntriesAdvancedFilters,
   type JournalEntriesAdvancedFiltersProps,
-} from "./JournalEntriesAdvancedFilters";
+} from "@mms/mod-accounting/frontend/tenant";

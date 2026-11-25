@@ -4,7 +4,7 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import BrandColorPanel from "@/components/branding/BrandColorPanel";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { BrandingThemeMode, LogoColorProportion } from "@mms/shared";
+import type { BrandingThemeMode, LogoColorProportion } from "@mms/contracts";
 import { ThemeSettingsLogoColourSource } from "./ThemeSettingsLogoColourSource";
 
 export interface ThemeSettingsColoursSectionProps {

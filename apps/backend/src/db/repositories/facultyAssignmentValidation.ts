@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import type { TenantTransaction } from "../tenant-context.js";
-import type { InsertFacultyAssignmentRow } from "../schema/facultyAssignmentTables.js";
-import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+import type { TenantTransaction } from "@mms/db/context";
+import type { InsertFacultyAssignmentRow } from "@mms/db/schema/facultyAssignmentTables";
+import { ConflictError, ValidationError } from "@mms/be-core/http/errors";
 
 /** Minimal shape of the appointment row needed by the archive guard. */
 export interface FacultyAssignmentDeletability {

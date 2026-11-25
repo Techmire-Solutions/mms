@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import { withTenant } from "../tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError } from "@mms/be-core/http/errors";
 
 export async function guardFacultyAssignmentDependents(
   tenant: string,

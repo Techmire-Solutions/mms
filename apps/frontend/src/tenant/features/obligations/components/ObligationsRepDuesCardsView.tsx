@@ -1,5 +1,5 @@
 import React from "react";
-import { getInitials } from "@mms/shared";
+import { getInitials } from "@mms/contracts";
 import { StatGrid, StatRow } from "@/components/app/StatGrid";
 import { ReportMoneyCard } from "@/components/reports/ReportMoneyCard";
 import { ReportMoneyCardsGrid } from "@/components/reports/ReportMoneyCardsGrid";

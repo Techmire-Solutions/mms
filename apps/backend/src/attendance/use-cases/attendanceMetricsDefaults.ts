@@ -1,7 +1,7 @@
 /**
  * Zero-valued attendance command metrics, returned when there is no tenant context.
  */
-import { type AttendanceCommandMetricsSnapshot } from "@mms/shared";
+import { type AttendanceCommandMetricsSnapshot } from "@mms/contracts";
 
 export const EMPTY_ATTENDANCE_METRICS: AttendanceCommandMetricsSnapshot = {
   total: 0,

@@ -27,11 +27,11 @@ vi.mock("../db/database.js", () => ({
   runInGlobalTransaction: mocks.runInGlobalTransaction,
 }));
 
-vi.mock("../db/dbClient.js", () => ({
+vi.mock("@mms/db/client/db", () => ({
   getDb: () => mockDb,
 }));
 
-vi.mock("../db/dbConnection.js", () => ({
+vi.mock("@mms/db/client/connection", () => ({
   activeDb: () => mockDb,
   getRootDb: () => mockDb,
   getReadReplicaDb: () => mockDb,
@@ -74,7 +74,10 @@ describe("workspaceService", () => {
 
     expect(removed).toMatchObject({ subdomain: "demo" });
     expect(mocks.runInGlobalTransaction).toHaveBeenCalledTimes(1);
-    expect(mocks.purgeTenantDataBySubdomain).toHaveBeenCalledWith("demo");
+    expect(mocks.purgeTenantDataBySubdomain).toHaveBeenCalledWith("demo", {
+      deleteAuthArtifacts: expect.any(Function),
+      deleteExportBlobs: expect.any(Function),
+    });
     expect(mockDb.delete).toHaveBeenCalled();
   });
 });

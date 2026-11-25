@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IdCard, School, UserCheck } from "lucide-react";
-import { hydrateFacultyFromContact, type FacultyMember } from "@mms/shared";
+import { hydrateFacultyFromContact, type FacultyMember } from "@mms/contracts";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerArchiveChrome";
 import { DrawerUpdatedStamp } from "@/components/app/DrawerUpdatedStamp";

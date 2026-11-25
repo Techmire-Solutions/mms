@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SessionSchema, type RegistrationLink } from "@mms/shared";
+import { SessionSchema, type RegistrationLink } from "@mms/contracts";
 import {
   acceptsSubmissions,
   linkClasses,

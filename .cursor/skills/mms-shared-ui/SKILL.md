@@ -1,6 +1,6 @@
 ---
 name: mms-shared-ui
-description: Governs the shared component architecture (@shared/ui / packages/ui) between Tenant Console and Platform Console — enforces single source of truth for UI primitives, bans cross-console duplicate components, validates pre-deletion cleanup safety, and catches orphaned imports. Use when creating, modifying, moving, auditing, or refactoring UI primitives across Tenant and Platform consoles, or checking for orphaned/duplicate components. Do NOT use for backend API routes (use mms-backend-api), database schema migrations (use mms-schema-migrate), or design token/style intelligence (use ui-ux-pro-max).
+description: Governs the shared component architecture (@mms/ui / packages/ui) between Tenant Console and Platform Console — enforces single source of truth for UI primitives, bans cross-console duplicate components, validates pre-deletion cleanup safety, and catches orphaned imports. Use when creating, modifying, moving, auditing, or refactoring UI primitives across Tenant and Platform consoles, or checking for orphaned/duplicate components. Do NOT use for backend API routes (use mms-backend-api), database schema migrations (use mms-schema-migrate), or design token/style intelligence (use ui-ux-pro-max).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -15,16 +15,16 @@ allowed-tools: Read Grep Glob Write Edit Bash(node scripts/check-shared-ui.mjs) 
 ## When to use
 
 - Creating or standardizing reusable UI primitives shared across Tenant and Platform consoles.
-- Migrating components from console-specific directories to `@shared/ui`.
+- Migrating components from console-specific directories to `@mms/ui`.
 - Auditing codebase for duplicate UI components or orphaned imports.
 - Safely deleting legacy or deprecated UI components with pre-deletion verification.
 
 ## Architecture & Package Topology
 
-The monorepo standardizes all domain-agnostic UI primitives in the `@shared/ui` package:
+The monorepo standardizes all domain-agnostic UI primitives in the `@mms/ui` package:
 
 ```
-packages/ui/src/                    # @shared/ui (Single Source of Truth)
+packages/ui/src/                    # @mms/ui (Single Source of Truth)
 ├── button/                         # Button, Badge
 ├── input/                          # Input, Select, Switch, Checkbox, Textarea, Slider, Label
 ├── card/                           # Card, CardHeader, CardTitle, CardContent, CardFooter, stripes
@@ -42,16 +42,16 @@ packages/ui/src/                    # @shared/ui (Single Source of Truth)
 ### Consumption Rules
 
 1. **Platform Console (`apps/frontend/src/platform/`):**
-   - Must import primitives directly from `@shared/ui`.
+   - Must import primitives directly from `@mms/ui`.
    - Never import from `@/components/ui/*`.
    - Never import from `@/tenant/*`.
 
 2. **Tenant Console (`apps/frontend/src/tenant/`):**
-   - Imports primitives either directly from `@shared/ui` or via `@/components/ui/*`.
+   - Imports primitives either directly from `@mms/ui` or via `@/components/ui/*`.
    - Never import from `@/platform/*`.
 
 3. **UI Facades (`apps/frontend/src/components/ui/`):**
-   - Provide backward-compatible, typed re-exports from `@shared/ui`.
+   - Provide backward-compatible, typed re-exports from `@mms/ui`.
    - Must contain zero local JSX component implementations or duplicate style logic.
    - Enforced by `.agent/skills/mms-shared-ui/scripts/check-shared-ui.mjs` (canonical implementation; `scripts/check-shared-ui.mjs` is a thin wrapper).
 
@@ -76,7 +76,7 @@ Whenever cleaning up legacy UI files, deprecated shims, or duplicate components:
    Ensure existing codebase builds and passes all checks before touching files.
 
 2. **File Removal & Import Migration:**
-   - Migrate consuming call sites to `@shared/ui`.
+   - Migrate consuming call sites to `@mms/ui`.
    - Remove the deprecated file or replace with a pure typed re-export.
 
 3. **Post-Deletion Verification Gate:**
@@ -104,7 +104,7 @@ The implementation exists once, in the skill. The root wrapper exists so `pnpm r
 and CI keep working without a second copy that can drift.
 
 The script verifies:
-- Platform Console imports 100% directly from `@shared/ui`.
+- Platform Console imports 100% directly from `@mms/ui`.
 - Zero cross-console leakage between Tenant and Platform consoles.
 - UI facades in `components/ui/` contain zero duplicate JSX implementations.
 - Zero duplicate UI primitive files across consoles.

@@ -1,12 +1,12 @@
 import type { UsersRepository } from "../repository/usersRepository.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { deleteRefreshTokensForUser } from "../../services/auth/authArtifactService.js";
 import { hashPassword } from "../../services/auth/passwordService.js";
 import { assertPasswordMeetsPolicy } from "../../services/globalSettingsService.js";
 import { revokeAllUserSessions } from "../../services/authSessionService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { canManageTargetUser } from "@mms/shared";
+import { canManageTargetUser } from "@mms/contracts";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { recordUserActivityLog } from "./userActivityLogUseCases.js";
 

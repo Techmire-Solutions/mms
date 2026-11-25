@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { formatDateTime, todayISO } from "@mms/shared";
+import { formatDateTime, todayISO } from "@mms/contracts";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ClipboardList, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { type AttendanceFilterState } from "@/tenant/features/attendance/compone
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormSelect } from "@/components/app/FormSelect";
 import { reportClientError } from "@/lib/clientErrorReporting";
-import { SectionHeader } from "@shared/ui";
+import { SectionHeader } from "@mms/ui";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import {
   DataTable,

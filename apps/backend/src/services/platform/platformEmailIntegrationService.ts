@@ -3,14 +3,14 @@ import {
   type EmailIntegrationConfig,
   type EmailIntegrationSecrets,
   type EmailProviderId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import {
   getPlatformEmailIntegrationRow,
   upsertPlatformEmailIntegrationConfigRow,
   upsertPlatformEmailIntegrationSecretsRow,
 } from "../../db/repositories/platformEmailIntegrationRepository.js";
-import { type PlatformEmailIntegrationRow } from "../../db/schema/platform.js";
+import { type PlatformEmailIntegrationRow } from "@mms/db/schema/platform";
 
 function rowToConfig(row: PlatformEmailIntegrationRow): EmailIntegrationConfig {
   const overrides: Partial<EmailIntegrationConfig> = {

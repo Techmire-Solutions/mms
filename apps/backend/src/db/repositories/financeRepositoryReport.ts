@@ -9,9 +9,9 @@ import {
   type FinanceReportComparisonMonth,
   type FinanceReportComparisonQuery,
   type FinanceReportComparisonSession,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getQueryRows } from "../documentStoreKeys.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Collected amount SQL — mirrors `getCollectedAmountForInvoice`:

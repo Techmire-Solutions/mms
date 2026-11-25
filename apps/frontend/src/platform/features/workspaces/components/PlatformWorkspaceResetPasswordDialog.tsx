@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import { KeyRound } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -7,7 +7,7 @@ import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import { getPlatformErrorMessage } from "@/platform/features/auth/lib/platformAuthErrors";
 import { WorkspaceSummary } from "@/platform/features/workspaces/components/WorkspaceSummary";
 import { WorkspacePasswordField } from "@/platform/features/workspaces/components/WorkspacePasswordField";
-import { CredentialsResultCard, Field, Input } from "@shared/ui";
+import { CredentialsResultCard, Field, Input } from "@mms/ui";
 
 interface PlatformWorkspaceResetPasswordDialogProps {
   open: boolean;

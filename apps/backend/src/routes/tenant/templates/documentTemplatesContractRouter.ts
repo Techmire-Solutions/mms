@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { documentTemplatesContract, type User } from "@mms/shared";
+import { documentTemplatesContract, type User } from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";

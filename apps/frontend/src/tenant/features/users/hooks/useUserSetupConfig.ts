@@ -5,7 +5,7 @@ import {
   normalizeUsersSettings,
   type UserModulePreferences,
   type UsersSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchUserPreferences,

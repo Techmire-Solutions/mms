@@ -10,8 +10,8 @@ Backup archives in MMS are encrypted client-side using industry-standard authent
 
 - **Cipher:** AES-256-GCM (Galois/Counter Mode with 128-bit authentication tag).
 - **Key Derivation Function (KDF):** PBKDF2 with SHA-256 (minimum 100,000 iterations).
-- **Core Library:** `packages/shared/src/backup/backupCrypto.ts`
-- **Envelope Schemas:** `packages/shared/src/backup/backupSchemas.ts`
+- **Core Library:** `packages/contracts/src/backup/backupCrypto.ts`
+- **Envelope Schemas:** `packages/contracts/src/backup/backupSchemas.ts`
 
 ### Envelope Structure
 ```json
@@ -64,7 +64,7 @@ Before any database wipe or restore sequence begins, the system executes four ma
 
 ```bash
 # Test backup crypto and envelope serialization
-pnpm --filter @mms/shared test packages/shared/src/backup/backupCrypto.test.ts
+pnpm --filter @mms/contracts test packages/contracts/src/backup/backupCrypto.test.ts
 
 # Test backend restore service
 pnpm --filter mms-backend test apps/backend/src/__tests__/backupAssetService.test.ts

@@ -4,10 +4,10 @@ import {
   todayISO,
   type ExchangeRateRecord,
   type ExchangeRateType,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
-import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
+import { mapZodFormErrors } from "@mms/fe-core/forms/mapZodFormErrors";
+import { translateValidationMessage } from "@mms/fe-core/forms/translateValidationMessage";
 import { notify } from "@/lib/notify";
 import {
   useAccountingExchangeRates,

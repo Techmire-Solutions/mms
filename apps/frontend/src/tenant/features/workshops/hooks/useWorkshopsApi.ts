@@ -19,7 +19,7 @@ import {
   type WorkshopScoresBody,
   type WorkshopStatus,
   type WorkshopsCommandMetricsSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { z } from "zod";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";

@@ -1,9 +1,9 @@
 import { sql } from "drizzle-orm";
-import { slugifyFacultyCatalogCode } from "@mms/shared";
-import type { TenantTransaction } from "../tenant-context.js";
+import { slugifyFacultyCatalogCode } from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 import { FacultyCatalogConflictError } from "../../faculty/errors.js";
-import { ValidationError } from "../../lib/httpErrors.js";
+import { ValidationError } from "@mms/be-core/http/errors";
 
 /** Re-exported from the faculty domain so existing importers keep one class identity. */
 export { FacultyCatalogConflictError };

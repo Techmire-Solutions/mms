@@ -6,7 +6,7 @@ import {
   type FacultyMember,
   type SectionStaffAssignment,
   type SectionStaffRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/app/DatePicker";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";

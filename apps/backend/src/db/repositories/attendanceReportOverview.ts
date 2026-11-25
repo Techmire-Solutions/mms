@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
-import { ATTENDANCE_ATTENDED_STATUSES } from "@mms/shared";
-import { type AttendanceReportOverview } from "@mms/shared";
+import { ATTENDANCE_ATTENDED_STATUSES } from "@mms/contracts";
+import { type AttendanceReportOverview } from "@mms/contracts";
 import { getQueryRows } from "../documentStoreKeys.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import type { TenantTransaction } from "@mms/db/context";
 import type { CountableAttendanceSql } from "./attendanceCountableSql.js";
 
 /**

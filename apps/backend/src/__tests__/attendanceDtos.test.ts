@@ -9,7 +9,7 @@ import {
   type AttendanceListPageResult,
   type AttendanceRecord,
   type AttendanceLeave,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * DTO parity: every shared attendance DTO is inferred from its wire schema, so the client and the

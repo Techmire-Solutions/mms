@@ -98,10 +98,10 @@ index definition.
 
 ## Changes landed
 
-**Schema** — `apps/backend/src/db/schema/attendance.ts`: `...softDeleteColumns`; `version integer
+**Schema** — `packages/db/src/schema/attendance.ts`: `...softDeleteColumns`; `version integer
 NOT NULL DEFAULT 1`; `attendance_status_check`; comments pinning the section-exclusion decision.
 
-**Migration** — `apps/backend/src/db/migrations_drizzle/0218_attendance_integrity.sql` +
+**Migration** — `packages/db/migrations_drizzle/0218_attendance_integrity.sql` +
 `meta/0218_attendance_integrity_snapshot.json` + journal entry `idx: 218`. Idempotent
 (`ADD COLUMN IF NOT EXISTS`), `SET LOCAL lock_timeout = '2s'`, casing normalization before the
 CHECK, and a 0207-style skip-with-warning when a tenant carries an unrecognised status.
@@ -117,7 +117,7 @@ the pre-existing snapshot-chain collision (`0216`/`0217` share a parent) recorde
 `db/repositories/attendanceRepository.ts`: natural-key upserts returning persisted rows,
 `23505` → 409; the unused hard-delete helper `deleteAttendanceRecord` was removed.
 
-**Contracts** — `packages/shared/src/attendance/attendanceModuleManifest.ts`: `version`,
+**Contracts** — `packages/contracts/src/attendance/attendanceModuleManifest.ts`: `version`,
 `restoredAt`, `restoredBy`, `deletedWithCascade` on the record schema (it is `.strict()`, so an
 undeclared field would reject the bulk payload).
 

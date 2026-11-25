@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import { type Permission, type User } from "@mms/shared";
+import { type Permission, type User } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import { HttpDomainError } from "../../../lib/httpErrors.js";
 import { runWithTenant } from "../../../lib/tenantContext.js";

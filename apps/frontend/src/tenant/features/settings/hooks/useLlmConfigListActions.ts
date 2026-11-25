@@ -1,7 +1,7 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { LlmConfig, LlmTestResult } from "@mms/shared";
+import type { LlmConfig, LlmTestResult } from "@mms/contracts";
 import type { LlmHealthStatus } from "../lib/llmSettingsControllerTypes";
 import { assertContractOk } from "@/lib/apiContractError";
 

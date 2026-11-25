@@ -1,7 +1,7 @@
 import type React from "react";
 import { ReceiptText } from "lucide-react";
-import type { StandardMessagingRecipient } from "@mms/shared";
-import { getOutstandingAmountForInvoice } from "@mms/shared";
+import type { StandardMessagingRecipient } from "@mms/contracts";
+import { getOutstandingAmountForInvoice } from "@mms/contracts";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";

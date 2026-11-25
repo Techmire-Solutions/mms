@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Download, Plus, RotateCcw, Users } from "lucide-react";
-import { Badge, Button } from "@shared/ui";
+import { Badge, Button } from "@mms/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { ModuleTrashToggle } from "@/components/app/ModuleTrashToggle";
@@ -11,7 +11,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { notify } from "@/lib/notify";
-import type { AppTranslationKey, PlatformMessageDto } from "@mms/shared";
+import type { AppTranslationKey, PlatformMessageDto } from "@mms/contracts";
 import {
   useDeletePlatformMessage,
   usePlatformMessages,

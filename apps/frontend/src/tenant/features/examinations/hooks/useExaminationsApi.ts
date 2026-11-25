@@ -1,11 +1,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
-import type { Exam, ExamResult, ExaminationsCommandMetricsSnapshot } from "@mms/shared";
+import type { Exam, ExamResult, ExaminationsCommandMetricsSnapshot } from "@mms/contracts";
 import {
   EXAMINATIONS_MODULE_MANIFEST,
   examResultsPageResponseSchema,
   examsFromResponse,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { apiContract, tsrClient } from "@/lib/api";

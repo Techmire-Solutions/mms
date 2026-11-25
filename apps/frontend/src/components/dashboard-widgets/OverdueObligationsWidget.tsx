@@ -4,7 +4,7 @@ import { WidgetCardHeader } from "@/components/app/WidgetCardHeader";
 import { AlertTriangle, Bell, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatDateToIso, getOutstandingAmountForInvoice } from "@mms/shared";
+import { formatDateToIso, getOutstandingAmountForInvoice } from "@mms/contracts";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useLocalPagination } from "@/hooks/useLocalPagination";

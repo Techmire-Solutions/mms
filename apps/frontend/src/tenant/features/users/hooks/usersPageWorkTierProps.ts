@@ -1,4 +1,4 @@
-import type { ActivityLog, SystemUser, UsersListPageResult } from "@mms/shared";
+import type { ActivityLog, SystemUser, UsersListPageResult } from "@mms/contracts";
 import type {
   UsersWorkSubTab,
   UsersWorkTierProps,

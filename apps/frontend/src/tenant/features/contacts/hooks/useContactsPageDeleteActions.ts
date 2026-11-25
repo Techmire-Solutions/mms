@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { getDisplayName, type Contact } from "@mms/shared";
+import { getDisplayName, type Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import type { useContactsCrudActions } from "@/tenant/features/contacts/hooks/useContactsCrudActions";

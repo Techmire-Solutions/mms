@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { Layers, Pencil, Plus, Trash2 } from "lucide-react";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
-import { EmptyState } from "@/components/app/EmptyState";
+import { EmptyState } from "@mms/ui";
 import { ErrorState } from "@/components/app/ErrorState";
-import { SectionCard } from "@/components/app/SectionCard";
-import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
+import { SectionCard } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { notify } from "@mms/fe-core/notify";
 import { ConsolidationGroupForm } from "@/platform/features/consolidation/components/ConsolidationGroupForm";
-import { ConsolidationGroupDetailDrawer } from "@/platform/features/consolidation/components/ConsolidationGroupDetailDrawer";
+import { ConsolidationGroupDetailDrawer } from "@mms/mod-accounting/frontend/platform";
 import {
   useConsolidationGroups,
   useDeleteConsolidationGroup,
 } from "@/platform/features/consolidation/hooks/usePlatformConsolidation";
-import type { ConsolidationGroup } from "@mms/shared";
+import type { ConsolidationGroup } from "@mms/contracts";
 
 /** Consolidation → Work: consolidation-group directory (DataTable + drawer + form). */
 export function PlatformConsolidationWorkTier(): React.JSX.Element {

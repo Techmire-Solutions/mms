@@ -5,7 +5,7 @@ import {
   type User,
   type SessionLookupKind,
   normalizeSessionModulePreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { canReadCollection } from "../../../services/rbacService.js";
 import { sessionsUseCases } from "../../../sessions/use-cases/sessionsUseCases.js";
 import {
@@ -21,7 +21,7 @@ import { auditSession } from "./sessionRouteHelpers.js";
 import { putSessionLookupKind } from "./sessionLookupKindPut.js";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 
 const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;

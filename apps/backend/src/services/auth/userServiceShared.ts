@@ -3,13 +3,13 @@ import {
   type ContactLike,
   type StoredTenantUser,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import {
   listTenantUsersByWorkspace,
   type TenantUserRow,
 } from "../../db/repositories/tenantUserRepository.js";
-import { loadContactsByIds } from "../contactService.js";
+import { loadContactsByIds } from "@mms/mod-contacts/backend/services";
 
 /** Auth-capable user with credentials resolved for login and session. */
 export interface StoredUser {

@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { Calendar } from "lucide-react";
-import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";

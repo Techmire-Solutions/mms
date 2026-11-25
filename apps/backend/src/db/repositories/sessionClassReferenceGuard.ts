@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { TenantTransaction } from "../tenant-context.js";
+import type { TenantTransaction } from "@mms/db/context";
 
 function idList(ids: readonly string[]) {
   return sql.join(

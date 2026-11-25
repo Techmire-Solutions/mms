@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { enrollments, sessionClassSections, sessions } from "../schema.js";
-import { isSessionReadOnly } from "@mms/shared";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { enrollments, sessionClassSections, sessions } from "@mms/db/schema";
+import { isSessionReadOnly } from "@mms/contracts";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
 import { insertTypedTimelineEventTx, movePlacementTx } from "./enrollmentHistoryWrite.js";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
-import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
+import { ConflictError, NotFoundError, ValidationError } from "@mms/be-core/http/errors";
 
 interface SectionActor {
   userId: string | null;

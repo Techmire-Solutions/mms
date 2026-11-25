@@ -5,14 +5,14 @@ import {
   type WorkshopDetail,
   type WorkshopScore,
   type WorkshopsCommandMetricsSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   workshopAttendance,
   workshopEvents,
   workshopParticipants,
   workshopScores,
-} from "../schema.js";
-import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenantRead, type TenantTransaction } from "@mms/db/context";
 import { findWorkshopRow, workshopRowToRecord } from "./workshopEventsRepository.js";
 import {
   listActiveParticipants,

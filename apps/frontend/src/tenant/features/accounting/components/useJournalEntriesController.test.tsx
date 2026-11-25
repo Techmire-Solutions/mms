@@ -1,15 +1,16 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useJournalEntriesController } from "./useJournalEntriesController";
-import type { JournalEntry } from "@/lib/data/accountingData";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -22,7 +23,7 @@ vi.mock("@/hooks/useCurrency", () => ({
   }),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     success: vi.fn(),
     error: vi.fn(),
@@ -63,6 +64,10 @@ const mockEntries: JournalEntry[] = [
 describe("useJournalEntriesController", () => {
   let container: HTMLDivElement;
   let root: Root;
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  function renderWithClient(node: React.ReactNode) {
+    root.render(<QueryClientProvider client={queryClient}>{node}</QueryClientProvider>);
+  }
   let latest: ReturnType<typeof useJournalEntriesController> | null = null;
 
   beforeEach(() => {
@@ -118,7 +123,7 @@ describe("useJournalEntriesController", () => {
     const onFilteredCountChange = vi.fn();
 
     await act(async () => {
-      root.render(<Probe props={{ ...defaultProps, onFilteredCountChange }} />);
+      renderWithClient(<Probe props={{ ...defaultProps, onFilteredCountChange }} />);
     });
 
     expect(container.querySelector('[data-testid="mode"]')?.textContent).toBe("simple");
@@ -130,7 +135,7 @@ describe("useJournalEntriesController", () => {
 
   it("switches to advanced mode when showDeleted is true", async () => {
     await act(async () => {
-      root.render(<Probe props={{ ...defaultProps, showDeleted: true }} />);
+      renderWithClient(<Probe props={{ ...defaultProps, showDeleted: true }} />);
     });
 
     expect(container.querySelector('[data-testid="mode"]')?.textContent).toBe("advanced");
@@ -138,7 +143,7 @@ describe("useJournalEntriesController", () => {
 
   it("switches to advanced mode and opens new modal when createRequestKey is incremented", async () => {
     await act(async () => {
-      root.render(<Probe props={{ ...defaultProps, createRequestKey: 1 }} />);
+      renderWithClient(<Probe props={{ ...defaultProps, createRequestKey: 1 }} />);
     });
 
     expect(container.querySelector('[data-testid="mode"]')?.textContent).toBe("advanced");
@@ -147,7 +152,7 @@ describe("useJournalEntriesController", () => {
 
   it("updates mode and tab via controller setters", async () => {
     await act(async () => {
-      root.render(<Probe props={defaultProps} />);
+      renderWithClient(<Probe props={defaultProps} />);
     });
 
     await act(async () => {
@@ -162,7 +167,7 @@ describe("useJournalEntriesController", () => {
   it("toggles and clears entry selection", async () => {
     const onShortcutStateChange = vi.fn();
     await act(async () => {
-      root.render(<Probe props={{ ...defaultProps, onShortcutStateChange }} />);
+      renderWithClient(<Probe props={{ ...defaultProps, onShortcutStateChange }} />);
     });
 
     expect(latest?.selectedIds).toHaveLength(0);

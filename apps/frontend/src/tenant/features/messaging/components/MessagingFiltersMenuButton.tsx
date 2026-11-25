@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import type { MessagingStatusFilter } from "@mms/shared";
+import type { MessagingStatusFilter } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";

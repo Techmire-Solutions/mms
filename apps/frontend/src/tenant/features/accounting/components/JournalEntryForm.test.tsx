@@ -1,7 +1,18 @@
+vi.mock("@mms/fe-core/auth/AuthContext", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/fe-core/auth/AuthContext")>()),
+  useAuth: () => ({ user: { id: "u-1" }, isAuthenticated: true, token: "test-token" }),
+}));
+
+vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
+  VOUCHER_NUMBERING_QUERY_KEY: ["accounting", "voucher-numbering"],
+  useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
+  useSaveVoucherNumbering: () => ({ mutateAsync: async () => undefined, isPending: false }),
+}));
+
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
+import type { Account, FiscalYear, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import { JournalEntryForm } from "./JournalEntryForm";
 
 declare global {
@@ -9,7 +20,7 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string, params?: Record<string, unknown>) => {
       if (params) {
@@ -28,7 +39,7 @@ vi.mock("@/hooks/useCurrency", () => ({
   }),
 }));
 
-vi.mock("@/lib/contexts/AuthContext", async (importOriginal) => {
+vi.mock("@mms/fe-core/auth/AuthContext", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/contexts/AuthContext")>();
   return {
     ...actual,
@@ -78,12 +89,12 @@ vi.mock("@/tenant/features/accounting/hooks/useAccountingLedgerOps", async (impo
   };
 });
 
-vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@/tenant/features/accounting/hooks/useVoucherNumbering")>();
+vi.mock("@mms/mod-accounting/frontend/tenant", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-accounting/frontend/tenant")>();
   return {
     ...actual,
     useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
+    useAccountingLedger: () => ({ data: undefined }),
   };
 });
 
@@ -106,7 +117,7 @@ const formModalPropsCapture = vi.hoisted(() => ({
   lastProps: null as Record<string, unknown> | null,
 }));
 
-vi.mock("@/components/app/FormModal", () => ({
+vi.mock("@mms/fe-core/components/FormModal", () => ({
   FormModal: (props: Record<string, unknown> & { children?: React.ReactNode }) => {
     formModalPropsCapture.lastProps = props;
     return (

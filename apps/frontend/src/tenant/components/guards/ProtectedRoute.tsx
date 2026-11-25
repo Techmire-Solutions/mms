@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { requiresTwoFactor, roleHasPermission } from "@mms/shared";
+import { requiresTwoFactor, roleHasPermission } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { DEFAULT_AUTH_REDIRECT, ROUTES } from "@/lib/config/routes";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";

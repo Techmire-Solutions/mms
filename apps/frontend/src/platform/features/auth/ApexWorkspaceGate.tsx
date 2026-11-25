@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Globe, Shield } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import WorkspaceRegistryList from "@/platform/features/workspaces/components/WorkspaceRegistryList";
 import {
   AuthBackLink,
@@ -13,7 +13,7 @@ import {
 } from "@/components/entry";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 
 export type ApexGateVariant = "forgotPassword" | "twoFactor" | "tenantOnly";
 

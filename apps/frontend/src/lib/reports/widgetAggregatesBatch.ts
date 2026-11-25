@@ -1,4 +1,4 @@
-import { WIDGET_AGGREGATES_MAX } from "@mms/shared";
+import { WIDGET_AGGREGATES_MAX } from "@mms/contracts";
 import { apiContractError } from "@/lib/apiContractError";
 
 /**

@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { DEFAULT_GLOBAL_SETTINGS } from "@mms/shared";
+import { DEFAULT_GLOBAL_SETTINGS } from "@mms/contracts";
 import {
   useGlobalSettingsDraft,
   type UseGlobalSettingsDraftResult,

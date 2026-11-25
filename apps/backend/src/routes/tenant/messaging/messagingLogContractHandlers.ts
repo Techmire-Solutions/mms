@@ -1,20 +1,20 @@
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import {
   messagingMetricsQuerySchema,
   recordMessageLogsSchema,
   type messagingContract,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import {
   canClearMessagingLogs,
   canReadMessaging,
   canRestoreMessagingLogs,
 } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
-import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
-import { emitOutboxEvent } from "../../../services/outboxEventService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
 import { logger } from "../../../lib/logger.js";
 import { processRecordMessageLogs } from "./messagingLogRecordHandler.js";
 

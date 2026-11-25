@@ -8,6 +8,17 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+vi.mock("@mms/fe-core/i18n", () => ({
+  useTranslation: () => ({
+    language: "en",
+    dir: "ltr",
+    isRtl: false,
+    isLoading: false,
+    t: (key: string, params?: Record<string, string | number>) =>
+      params?.count ? `${key}:${params.count}` : key,
+  }),
+}));
+
 describe("TasksBulkActionBar", () => {
   it("renders null when selectedCount is 0", () => {
     const html = renderToStaticMarkup(

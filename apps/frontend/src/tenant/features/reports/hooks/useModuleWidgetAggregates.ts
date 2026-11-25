@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { apiContract } from "@/lib/api";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { SUMMARY_STALE_TIME } from "@/lib/queryClient";
-import type { WidgetQuery, WidgetAggregateResult } from "@mms/shared";
+import type { WidgetQuery, WidgetAggregateResult } from "@mms/contracts";
 import { dynamicWidgetAggregatesQueryKey } from "@/lib/query/dynamicWidgetAggregatesQueryKey";
 
 export interface DynamicWidgetInput {

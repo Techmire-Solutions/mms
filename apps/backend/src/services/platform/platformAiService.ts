@@ -3,7 +3,7 @@ import type {
   PlatformAiQueryRequest,
   PlatformAiQueryResponse,
   PlatformAiSuggestion,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getPlatformTelemetry } from "./platformTelemetryService.js";
 import { getPlatformDefaultLlmConfig } from "./platformSettingsService.js";
 import { generateCompletion } from "../llmService.js";

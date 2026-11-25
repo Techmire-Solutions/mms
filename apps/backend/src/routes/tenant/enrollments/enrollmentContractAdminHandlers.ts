@@ -1,15 +1,15 @@
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import type { enrollmentContract } from "@mms/shared";
+import type { enrollmentContract } from "@mms/contracts";
 import {
   ENROLLMENTS_MODULE_MANIFEST,
   normalizeEnrollmentModulePreferences,
   normalizeEnrollmentsReportComparisonQuery,
   parseComparisonQueryParams,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import { isUniqueViolation } from "../../../lib/pgErrors.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 import {

@@ -7,7 +7,7 @@ import {
   type Permission,
   type DashboardRole,
   type AppTranslationKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export type { DashboardRole };

@@ -5,7 +5,7 @@ import {
   type resolveBrandingChartPaletteHex,
   type AppTranslationKey,
   type BrandingThemeMode,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export type BrandingTokens = ReturnType<typeof buildBrandingCssVariables>;
 

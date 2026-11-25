@@ -5,10 +5,10 @@ review time), **re-verifying** the 2026-11-03 / #269 and 2026-11-04 / #275 round
 surfaces those rounds did not cover. Line numbers are from the tree as reviewed.
 
 Scope: `apps/backend/src/routes/tenant/students/**`, `apps/backend/src/students/**`,
-`apps/backend/src/db/repositories/student*`, `apps/backend/src/db/schema/students.ts` +
+`apps/backend/src/db/repositories/student*`, `packages/db/src/schema/students.ts` +
 `studentSetupTables.ts`, `apps/backend/src/services/student{Validation,Export}Service.ts`,
-`packages/shared/src/students/**`, `packages/shared/src/schemas/students.dto.ts`,
-`packages/shared/src/contracts/students*.ts`, `apps/frontend/src/tenant/features/students/**`, the
+`packages/contracts/src/students/**`, `packages/contracts/src/schemas/students.dto.ts`,
+`packages/contracts/src/contracts/students*.ts`, `apps/frontend/src/tenant/features/students/**`, the
 students manifest, route registration, the module-access route table, and the students DB/e2e specs.
 Contacts, enrollments, examinations, finance, hasanat and the document-template route were inspected
 only where students calls them.
@@ -81,7 +81,7 @@ persistence complete the minor set.
 **Evidence**
 
 - `apps/backend/src/worker/queues/queueConfig.ts:90-97` — `DEFAULT_JOB_OPTIONS: { attempts: 3, backoff: { type: "exponential", delay: 1000 } … }`.
-- `packages/shared/src/dataTransfer/import/importPipelineRunner.ts:94-109` re-runs the whole `transformed` array on every attempt; nothing is keyed or checkpointed.
+- `packages/contracts/src/dataTransfer/import/importPipelineRunner.ts:94-109` re-runs the whole `transformed` array on every attempt; nothing is keyed or checkpointed.
 - `apps/backend/src/students/use-cases/studentImportUseCases.ts:47-56` — contact reuse happens **only** by phone/email:
   ```ts
   if (phone || email) {

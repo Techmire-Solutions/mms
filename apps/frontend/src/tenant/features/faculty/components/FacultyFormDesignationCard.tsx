@@ -9,7 +9,7 @@ import {
   type FacultyDesignationDefinition,
   type FacultyEmployDesignationFormRow,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FacultyDesignationSelectField } from "./FacultyDesignationSelectField";
 import { resolveFacultyFieldLabel } from "./FacultyFormSectionShared";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

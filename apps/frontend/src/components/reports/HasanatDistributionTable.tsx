@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Star } from "lucide-react";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";
-import { TableCellLink } from "@shared/ui";
+import { TableCellLink } from "@mms/ui";
 import { ModuleTableHeaderCell } from "@/components/app/ModuleTableHeaderCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";

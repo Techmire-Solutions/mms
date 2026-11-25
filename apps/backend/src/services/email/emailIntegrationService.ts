@@ -3,7 +3,7 @@ import {
   type EmailIntegrationConfig,
   type EmailIntegrationSecrets,
   type EmailProviderId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import {
@@ -11,7 +11,7 @@ import {
   upsertEmailIntegrationConfigRow,
   upsertEmailIntegrationSecretsRow,
 } from "../../db/repositories/emailIntegrationRepository.js";
-import { type EmailIntegrationRow } from "../../db/schema/messaging.js";
+import { type EmailIntegrationRow } from "@mms/db/schema/messaging";
 
 function rowToConfig(row: EmailIntegrationRow): EmailIntegrationConfig {
   const overrides: Partial<EmailIntegrationConfig> = {

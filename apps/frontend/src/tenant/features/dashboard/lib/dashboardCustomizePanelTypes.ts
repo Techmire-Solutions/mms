@@ -1,6 +1,6 @@
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import type { StatItem } from "@/lib/dashboardWidgets";
-import type { Permission } from "@mms/shared";
+import type { Permission } from "@mms/contracts";
 
 export interface DashboardCustomizePanelProps {
   can: (permission: Permission) => boolean;

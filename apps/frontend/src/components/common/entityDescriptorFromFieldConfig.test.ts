@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import type { FieldDefinition as RegistryFieldDefinition } from "@mms/shared";
+import type { FieldDefinition as RegistryFieldDefinition } from "@mms/contracts";
 import {
   createEntityDescriptorFromFieldConfig,
   mapRegistryFieldType,

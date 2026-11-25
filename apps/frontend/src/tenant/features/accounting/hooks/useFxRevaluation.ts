@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { FxReport, FxRevaluationRun } from "@mms/shared";
+import type { FxReport, FxRevaluationRun } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
-import { assertContractOk } from "@/lib/apiContractError";
+import { assertContractOk } from "@mms/fe-core/api/contractError";
 
 const RUNS_KEY = ["accounting", "fx", "revaluations"] as const;
 

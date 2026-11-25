@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 /**
  * Checkbox SSOT ratchet — the product has exactly one checkbox implementation
- * (`@shared/ui` Checkbox / CheckboxField / FormCheckboxCard). This guards the
+ * (`@mms/ui` Checkbox / CheckboxField / FormCheckboxCard). This guards the
  * two regressions that caused the 2026-11-01 “checkboxes don't work” report and
  * keeps bespoke checkbox markup from returning:
  *

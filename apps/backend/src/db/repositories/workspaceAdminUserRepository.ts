@@ -1,8 +1,8 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { isAdminRole, isSuperAdminRole } from "@mms/shared";
+import { isAdminRole, isSuperAdminRole } from "@mms/contracts";
 import { randomBytes } from "node:crypto";
-import { tenantUsers } from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
+import { tenantUsers } from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
 import { hashPassword } from "../../services/auth/passwordService.js";
 import { getWorkspaceWithBranding } from "./workspaceRepository.js";
 import { normalizeSubdomainInput } from "../../services/workspaceService.js";

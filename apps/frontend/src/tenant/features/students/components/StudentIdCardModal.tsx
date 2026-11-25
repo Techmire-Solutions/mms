@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, lazy, Suspense, type JSX } from "react";
 import { Printer, IdCard, Paintbrush, Loader2 } from "lucide-react";
-import { STUDENTS_MODULE_MANIFEST, getPageDimensions, type Student } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, getPageDimensions, type Student } from "@mms/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import { Modal } from "@/components/app/Modal";
 import { Button } from "@/components/ui/button";

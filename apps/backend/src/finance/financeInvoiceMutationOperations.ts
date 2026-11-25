@@ -5,12 +5,12 @@ import {
   type Invoice,
   type InvoiceCreateInput,
   type InvoiceUpdate,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { createGenericRelationalService } from "../services/genericRelationalService.js";
 import { allocateInvoiceNumbers } from "../db/repositories/financeBillingRepository.js";
 import { tryPostInvoiceJournal } from "../accounting/ledgerPosting/ledgerPostingService.js";
 import { resolveDocumentFx } from "./use-cases/financeDocumentFx.js";
-import { withTenant } from "../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { HttpDomainError } from "../lib/httpErrors.js";
 import { invoiceAuditState, recordInvoiceAudit } from "./use-cases/financeAuditEvents.js";
 

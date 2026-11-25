@@ -14,7 +14,7 @@ import {
   type GenerateInvoicesBody,
   type GenerateInvoicesResult,
   type Invoice,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant, requireTenant } from "../../lib/tenantContext.js";
 import { loadFinanceModulePreferences } from "../../services/financePreferencesService.js";
 import {
@@ -32,7 +32,7 @@ import { financeUseCases } from "./financeUseCases.js";
 import { recordInvoiceAudit } from "./financeAuditEvents.js";
 import { applyGeneratedInvoiceFx } from "./financeDocumentFx.js";
 import { logger } from "../../lib/logger.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { tryPostInvoiceJournals } from "../../accounting/ledgerPosting/ledgerPostingService.js";
 
 function resolveFrequency(

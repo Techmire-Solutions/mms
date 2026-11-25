@@ -3,9 +3,9 @@ import {
   ISO_4217_CURRENCIES,
   accountingCurrencySettingsPutSchema,
   isSupportedFunctionalCurrency,
-} from "@mms/shared";
-import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
-import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
+} from "@mms/contracts";
+import { mapZodFormErrors } from "@mms/fe-core/forms/mapZodFormErrors";
+import { translateValidationMessage } from "@mms/fe-core/forms/translateValidationMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {

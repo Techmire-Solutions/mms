@@ -4,7 +4,7 @@ import {
   guardReceipts,
 } from "../obligations/use-cases/obligationCollectionWritePrep.js";
 import type { ObligationsRepository } from "../obligations/repository/obligationsRepository.js";
-import type { ObligationCollection } from "@mms/shared";
+import type { ObligationCollection } from "@mms/contracts";
 
 const receipt = (overrides: Partial<ObligationCollection> = {}): ObligationCollection =>
   ({

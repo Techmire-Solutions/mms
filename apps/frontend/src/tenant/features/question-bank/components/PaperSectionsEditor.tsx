@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Field, FormCollectionShell, FormListFieldCard } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
-import type { QuestionBankQuestion as Question } from "@mms/shared";
+import type { QuestionBankQuestion as Question } from "@mms/contracts";
 import type { PaperSection } from "@/tenant/features/question-bank/lib/paperBuilderUtils";
 
 interface PaperSectionsEditorProps {

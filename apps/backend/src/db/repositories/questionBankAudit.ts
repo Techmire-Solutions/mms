@@ -1,6 +1,6 @@
-import type { QuestionBankQuestion } from "@mms/shared";
-import type { TenantTransaction } from "../tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import type { QuestionBankQuestion } from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /**
  * Transactional audit for Question Bank writes.

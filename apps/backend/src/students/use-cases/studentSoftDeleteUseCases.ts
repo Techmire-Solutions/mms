@@ -1,16 +1,16 @@
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { activeDb, runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { buildStudentForensicSnapshot } from "../../services/forensicSnapshotService.js";
-import { nowIso } from "../../lib/softDeleteHelpers.js";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { buildStudentForensicSnapshot } from "@mms/be-core/audit/forensic-snapshot";
+import { nowIso } from "@mms/db/soft-delete";
 import { cascadeSoftDeleteEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileContactSystemTags } from "@mms/mod-contacts/backend/use-cases";
 
 export async function softDeleteStudentById(
   id: string,

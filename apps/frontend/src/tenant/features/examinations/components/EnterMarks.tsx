@@ -2,7 +2,7 @@ import { translateValidationMessage } from "@/lib/forms/translateValidationMessa
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Save, CheckCircle2, Loader2, Lock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { examinationsMarksTransferSchema } from "@mms/shared";
+import { examinationsMarksTransferSchema } from "@mms/contracts";
 import { parseMarksSavePayload } from "../lib/enterMarksSavePayload";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 import { EnterMarksTransferActions } from "./EnterMarksTransferActions";

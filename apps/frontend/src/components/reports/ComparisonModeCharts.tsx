@@ -2,7 +2,7 @@ import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { ReportChartCard } from "./ReportChartCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatNumber } from "@mms/shared";
+import { formatNumber } from "@mms/contracts";
 import { Bar, BarChart, Legend, Tooltip, XAxis, YAxis } from "recharts";
 import { ChartGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import { ChartTooltip, ChartTooltipRow } from "@/components/app/ChartTooltip";

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "turbo run dev --filter=mms-frontend --filter=mms-backend",
+    "db:migrate": "turbo run db:migrate",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
@@ -28,6 +29,7 @@
     "check:frontend-structure": "node scripts/check-frontend-structure.mjs",
     "check:work-directory": "node scripts/check-work-directory.mjs",
     "check:shared-ui": "node scripts/check-shared-ui.mjs",
+    "check:core-packages": "node scripts/check-core-packages.mjs",
     "check:forms": "node scripts/check-form-architecture.mjs",
     "forms:inventory": "node scripts/check-form-architecture.mjs --inventory",
     "check:shared-purity": "bash .agent/skills/mms-shared-package/scripts/check-shared-exports.sh",
@@ -38,6 +40,8 @@
     "check:migrations-forward-only": "node scripts/check-migrations-forward-only.mjs",
     "check:secrets": "node scripts/check-staged-secrets.mjs",
     "check:docs": "node scripts/check-docs.mjs",
+    "check:move-manifest": "node scripts/check-move-manifest.mjs",
+    "check:topology": "node scripts/check-topology.mjs",
     "check:tdd-pairing": "node scripts/check-tdd-pairing.mjs",
     "check:ratchet-baselines": "node scripts/ci/check-ratchet-baselines.mjs",
     "test:scripts": "node --test scripts/ci/*.test.mjs scripts/lib/db-projections-core.test.mjs scripts/perf/*.test.cjs",
@@ -50,11 +54,12 @@
     "check:obligations-route-injection": "node scripts/ci/check-obligations-route-injection.mjs",
     "check:accounting-route-injection": "node scripts/ci/check-accounting-route-injection.mjs",
     "check:accounting-route-security": "node scripts/ci/check-accounting-route-security.mjs",
-    "check:accounting-coverage": "node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db",
+    "check:accounting-coverage": "node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db --coverage packages/modules/accounting/coverage-finance-db",
     "check:examinations-route-injection": "node scripts/ci/check-examinations-route-injection.mjs",
     "check:examinations-route-security": "node scripts/ci/check-examinations-route-security.mjs",
     "check:money-safety": "node scripts/check-money-safety.mjs",
-    "check:contracts": "node scripts/check-finance-contract-parity.mjs"
+    "check:contracts": "node scripts/check-finance-contract-parity.mjs",
+    "check:module-boundaries": "node scripts/check-module-boundaries.mjs"
   },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",

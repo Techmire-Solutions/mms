@@ -3,7 +3,7 @@ import {
   formatQuestionSourcesCitation,
   splitQuestionCompoundAnswer,
   type QuestionBankQuestion as Question,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FORM_LABEL } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

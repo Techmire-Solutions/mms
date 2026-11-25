@@ -1,4 +1,4 @@
-import { parseTenantScopedStorageKey } from "@mms/shared";
+import { parseTenantScopedStorageKey } from "@mms/contracts";
 import { deleteCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 
 const OVERDUE_OBLIGATIONS_COLLECTION = "overdue_obligations";

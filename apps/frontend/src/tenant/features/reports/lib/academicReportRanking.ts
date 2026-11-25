@@ -1,4 +1,4 @@
-import { rankResults, resolveResultScore } from "@mms/shared";
+import { rankResults, resolveResultScore } from "@mms/contracts";
 import type { Exam, ExamResult } from "@/lib/data/examinationData";
 import type {
   AcademicResultItem,

@@ -6,7 +6,7 @@
 
 import React, { useRef } from "react";
 import { Printer, ReceiptText, FileCode2, CloudUpload } from "lucide-react";
-import { getPageDimensions } from "@mms/shared";
+import { getPageDimensions } from "@mms/contracts";
 import type { Invoice } from "@/lib/data/financeData";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/app/Modal";

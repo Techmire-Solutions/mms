@@ -1,7 +1,7 @@
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { DocumentTemplate } from "@mms/shared";
+import type { DocumentTemplate } from "@mms/contracts";
 import { ExaminationTemplateEditor } from "./ExaminationTemplateEditor";
 import {
   fetchDocumentTemplateServer,
@@ -10,7 +10,7 @@ import {
 import { notify } from "@/lib/notify";
 import { withQueryClient } from "@/test/queryClientTestUtils";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -20,11 +20,11 @@ vi.mock("@/tenant/hooks/useBranding", () => ({
   useBranding: () => ({ logoUrl: null, primaryColor: "#059669", secondaryColor: "#047857" }),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+vi.mock("@mms/fe-core/documentTemplates/documentTemplatesApi", () => ({
   fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
   saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => ({
     template,
@@ -39,7 +39,7 @@ type CapturedEditorProps = {
   presets?: Array<{ label: string }>;
 };
 let capturedProps: CapturedEditorProps | null = null;
-vi.mock("@/components/app/TemplateEditor", () => ({
+vi.mock("@mms/fe-core/components/TemplateEditor", () => ({
   TemplateEditor: (props: CapturedEditorProps) => {
     capturedProps = props;
     return <div data-testid="mock-template-editor">TemplateEditor</div>;

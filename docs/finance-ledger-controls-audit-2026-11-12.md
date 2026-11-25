@@ -84,7 +84,7 @@ Every finding marked **Fixed** landed with this change (migration `0249_finance_
 
 **Guards and locks:** `assertPostingPeriodOpen`, `assertEntriesWritable` (period-aware), out-of-range rule in `assertJournalEntryPeriodOpen`, `postingYearIds` + `lockFiscalYearsForEntries`, and wiring in every posting path.
 
-**Posting-period API:** `db/repositories/accountingPostingPeriodsRepository.ts` (list / find-by-id / closed-for-date / set-status), `accounting/use-cases/accountingPostingPeriodUseCases.ts` (close/reopen with audit + FY lock), re-exported from `accountingLedgerOpsUseCases.ts`; routes `GET /posting-periods`, `POST /posting-periods/:id/close`, `POST /posting-periods/:id/reopen` in `accountingLedgerOpsRoutes.ts`; shared `postingPeriodRecordSchema`, `postingPeriodParamsSchema`, `postingPeriodsQuerySchema`, `closePostingPeriodBodySchema` in `packages/shared/src/finance/accountingLedgerOps.ts`.
+**Posting-period API:** `db/repositories/accountingPostingPeriodsRepository.ts` (list / find-by-id / closed-for-date / set-status), `accounting/use-cases/accountingPostingPeriodUseCases.ts` (close/reopen with audit + FY lock), re-exported from `accountingLedgerOpsUseCases.ts`; routes `GET /posting-periods`, `POST /posting-periods/:id/close`, `POST /posting-periods/:id/reopen` in `accountingLedgerOpsRoutes.ts`; shared `postingPeriodRecordSchema`, `postingPeriodParamsSchema`, `postingPeriodsQuerySchema`, `closePostingPeriodBodySchema` in `packages/contracts/src/finance/accountingLedgerOps.ts`.
 
 **Precision:** exact trial balance sums, closing-entry balance assertion, cents arithmetic in `financeBilling.ts`, `financeInvoiceAmounts.ts`, `financePaymentArchiveDeltas.ts` and `createPayment`.
 

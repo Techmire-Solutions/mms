@@ -9,7 +9,7 @@ import {
   type HasanatModulePreferences,
   type HasanatBatchRecipientsResponse,
   type HasanatBatchTarget,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   issueHasanatCardsBatch,
   resolveBatchAwardRecipients,
@@ -20,7 +20,7 @@ import {
 } from "./hasanatBatchAwardJob.js";
 import { reconcileTiersForCards } from "./hasanatTierUseCases.js";
 import { assertAwardScope } from "./hasanatAwardScope.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { archiveCardEvidence, restoreCardEvidence } from "./hasanatCardArchive.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { enqueueBackgroundJob } from "../../services/backgroundJobWorkerService.js";

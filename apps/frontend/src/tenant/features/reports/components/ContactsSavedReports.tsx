@@ -9,12 +9,12 @@ import type {
   ContactsSavedReport,
   ContactsSavedReportShareScope,
   ContactsWorkDrillDown,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   contactsSavedReportCreateSchema,
   formatDate,
   validateContactsSavedReportDrillDown,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePermissions } from "@/tenant/hooks/usePermissions";

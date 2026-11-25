@@ -1,6 +1,6 @@
 import React from "react";
 import { Search } from "lucide-react";
-import { capitalize, type AppTranslationKey } from "@mms/shared";
+import { capitalize, type AppTranslationKey } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";
 import { Input } from "@/components/ui/input";

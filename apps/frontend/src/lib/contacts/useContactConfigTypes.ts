@@ -4,7 +4,7 @@ import type {
   FieldConfig,
   FieldDefinition,
   TabDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ContactsColumnConfig } from "./contactConfigContextTypes";
 
 export type { ContactsColumnConfig };

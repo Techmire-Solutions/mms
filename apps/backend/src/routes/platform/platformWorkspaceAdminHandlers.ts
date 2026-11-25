@@ -1,4 +1,4 @@
-import type { platformWorkspacesContract } from "@mms/shared";
+import type { platformWorkspacesContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../lib/contractRouterTypes.js";
 import type { PlatformAuthenticatedRequest } from "../../middleware/authenticatePlatform.js";
 import {

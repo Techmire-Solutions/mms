@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Contact, FacultyMember, FieldDefinition } from "@mms/shared";
+import type { Contact, FacultyMember, FieldDefinition } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {
   buildFacultySavePayload,

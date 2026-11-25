@@ -11,7 +11,7 @@ vi.mock("@/lib/api", () => ({
   tsrClient: {},
 }));
 
-import { STUDENTS_MODULE_MANIFEST } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST } from "@mms/contracts";
 import { fetchAllStudentsForQuery } from "./useStudentsListQueries";
 
 describe("fetchAllStudentsForQuery", () => {

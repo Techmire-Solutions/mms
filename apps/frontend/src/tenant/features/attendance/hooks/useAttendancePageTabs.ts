@@ -1,7 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePermissions, useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
-import { resolveModuleTierTab, ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { resolveModuleTierTab, ATTENDANCE_MODULE_MANIFEST } from "@mms/contracts";
 import {
   ClipboardEdit,
   BookOpen,

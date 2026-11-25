@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiError } from "@/lib/apiClient";
+import { ApiError } from "@mms/fe-core/api/client";
 
 const mocks = vi.hoisted(() => ({
   seedMutateAsync: vi.fn(),
@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   notifyError: vi.fn(),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     success: mocks.notifySuccess,
     error: mocks.notifyError,
@@ -19,7 +19,7 @@ vi.mock("@/lib/notify", () => ({
   },
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
@@ -27,7 +27,7 @@ vi.mock("@/tenant/features/accounting/hooks/useSeedDefaultChart", () => ({
   useSeedDefaultChart: () => ({ mutateAsync: mocks.seedMutateAsync, isPending: false }),
 }));
 
-vi.mock("@/components/app/ConfirmAlertDialog", () => ({
+vi.mock("@mms/fe-core/components/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({
     open,
     title,

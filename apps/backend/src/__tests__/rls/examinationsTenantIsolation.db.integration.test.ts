@@ -1,8 +1,8 @@
 import pg from "pg";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "@mms/db/client";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import {
   enrollments,
   examClasses,
@@ -13,7 +13,7 @@ import {
   sessions,
   students,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { listExamResultsPage } from "../../db/repositories/examinationResultsRepository.js";
 import {
@@ -318,7 +318,7 @@ describe("examinations tenant isolation", () => {
   });
 
   it("the audit chain refuses a cross-tenant append", async () => {
-    const { recordModernAuditEvent } = await import("../../services/auditTrailService.js");
+    const { recordModernAuditEvent } = await import("@mms/be-core/audit");
     await expect(
       // The request context must say TENANT_A for the service's cross-tenant guard to be the
       // thing that fires (otherwise only the RLS policy would reject the insert).

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import {
   resolveStudentAccessScope,
   isStudentInAssignedSections,
@@ -7,13 +7,15 @@ import {
 } from "../students/repository/studentScopingRepository.js";
 import { buildListConditions } from "../db/repositories/studentRepositoryListQuery.js";
 import { resolveUserStudentClearance } from "../routes/tenant/students/studentRouteHelpers.js";
-import { sanitizeStudentForViewer, maskNationalId } from "@mms/shared";
+import { sanitizeStudentForViewer, maskNationalId } from "@mms/contracts";
 
 // Mock the tenant-context instance
 const mockSelect = vi.fn();
 const fakeTx = { select: mockSelect, selectDistinct: mockSelect };
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: vi.fn(async (_tenant: string, work: (tx: any) => Promise<any>) => work(fakeTx)),
 }));
 

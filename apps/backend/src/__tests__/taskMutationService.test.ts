@@ -16,7 +16,10 @@ const mocks = vi.hoisted(() => ({
   emitTaskNotificationIntents: vi.fn(),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({ withTenant: mocks.withTenant }));
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+  withTenant: mocks.withTenant,
+}));
 vi.mock("../db/repositories/facultyAssignmentValidation.js", () => ({
   lockFacultyHierarchy: mocks.lockFacultyHierarchy,
 }));

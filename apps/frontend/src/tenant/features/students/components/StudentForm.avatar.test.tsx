@@ -45,7 +45,7 @@ vi.mock("@/components/app/FormModal", () => ({
   FormModal: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock("@/components/app/ConfirmAlertDialog", () => ({
+vi.mock("@mms/fe-core/components/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({
     open,
     title,

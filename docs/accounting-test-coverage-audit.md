@@ -1,7 +1,7 @@
 # Accounting module — test coverage audit
 
 Scope: backend accounting module (`apps/backend/src/accounting/**`, `apps/backend/src/routes/tenant/accounting/**`),
-shared accounting sources (`packages/shared/src/accounting*.ts`, `packages/shared/src/contracts/accounting.contract.ts`),
+shared accounting sources (`packages/contracts/src/accounting*.ts`, `packages/contracts/src/contracts/accounting.contract.ts`),
 plus frontend/e2e accounting tests. All line numbers are from the working tree at audit time (git status clean).
 
 Method: read every production file and every test file listed; verified coverage claims by grepping for the specific
@@ -18,10 +18,10 @@ call sites / assertion strings in the test corpus. Nothing below is inferred fro
 | `apps/backend/src/accounting/ledgerPosting/ledgerPostingService.ts` | 195 | `apps/backend/src/__tests__/ledgerPostingService.test.ts` (8 tests) | **Happy path only.** All 4 collaborators mocked (`ledgerPostingService.test.ts:22-25`), incl. `prepareJournalEntryForPersist` stubbed to identity (`:18-20`). No duplicate-post, race, out-of-range fiscal year, or closed-year case. Indirect: `financeCollectUseCases.test.ts:15-17,98,172,220` and `financeService.test.ts:43-44` replace the whole module with `vi.fn()` → call-count assertions only. |
 | `apps/backend/src/accounting/repository/accountingRepository.ts` | 106 | none (pure interface, no runtime) | n/a — covered by `tsc`. |
 | `apps/backend/src/accounting/repository/accountingRepositoryAdapter.ts` | 68 | none | **Zero direct coverage.** No test imports the adapter (verified by grep); the DB integration test imports the concrete `db/repositories` functions directly (`accountingPersistDb.integration.test.ts:20`). A missing/wrong delegation entry would be invisible to the suite. |
-| `apps/backend/src/accounting/use-cases/accountingLedgerGuards.ts` | 48 | `accountingLedgerGuards.test.ts` (4 tests) | Good narrow coverage: label→FK resolution + `source_type` default (`:30-35`), unbalanced posted rejection (`:37-46`), unbalanced draft allowed (`:48-57`), closed-year rejection (`:59-63`). **Unresolved/unknown-year → null `fiscal_year_id` fallback (`:44`) untested.** |
-| `apps/backend/src/accounting/use-cases/accountingLedgerOpsUseCases.ts` | 108 | `accountingLedgerOpsUseCases.test.ts` (10 tests) | Happy path per function + tenant-missing once (`:48-50`) + broadcast assertions. No validation-rejection, no limit/boundary, no error path; every assertion is on a mocked repo call. |
-| `apps/backend/src/accounting/use-cases/accountingPeriodClose.ts` | 79 | `accountingPeriodClose.test.ts` (4 tests) | Not-found (`:33-37`), already-closed (`:39-45`), missing retained earnings (`:47-56`), happy close + closing entry (`:58-91`). Balanced-closing failure (`:46-48`), idempotent existing-closing skip (`:50-51`), all-zero-net path, explicit `retainedEarningsAccountId` override untested. |
-| `apps/backend/src/accounting/use-cases/accountingUseCases.ts` | 393 | `accountingUseCases.test.ts` (9 tests, fake repo) | Pagination/metrics delegation + no-tenant defaults (`:67-98`), soft-delete filtering (`:100-227`), posted immutability for **`lines` only** (`:229-264`), `deleteAccountById` guard (`:266-274`), bulk account guard, mixed case (`:276-293`). No coverage of `deleteJournalEntryById`, non-line content changes, `updateJournalEntryById`, restore, or `replace*`. |
+| `packages/modules/accounting/src/backend/use-cases/accountingLedgerGuards.ts` | 48 | `accountingLedgerGuards.test.ts` (4 tests) | Good narrow coverage: label→FK resolution + `source_type` default (`:30-35`), unbalanced posted rejection (`:37-46`), unbalanced draft allowed (`:48-57`), closed-year rejection (`:59-63`). **Unresolved/unknown-year → null `fiscal_year_id` fallback (`:44`) untested.** |
+| `packages/modules/accounting/src/backend/use-cases/accountingLedgerOpsUseCases.ts` | 108 | `accountingLedgerOpsUseCases.test.ts` (10 tests) | Happy path per function + tenant-missing once (`:48-50`) + broadcast assertions. No validation-rejection, no limit/boundary, no error path; every assertion is on a mocked repo call. |
+| `packages/modules/accounting/src/backend/use-cases/accountingPeriodClose.ts` | 79 | `accountingPeriodClose.test.ts` (4 tests) | Not-found (`:33-37`), already-closed (`:39-45`), missing retained earnings (`:47-56`), happy close + closing entry (`:58-91`). Balanced-closing failure (`:46-48`), idempotent existing-closing skip (`:50-51`), all-zero-net path, explicit `retainedEarningsAccountId` override untested. |
+| `packages/modules/accounting/src/backend/use-cases/accountingUseCases.ts` | 393 | `accountingUseCases.test.ts` (9 tests, fake repo) | Pagination/metrics delegation + no-tenant defaults (`:67-98`), soft-delete filtering (`:100-227`), posted immutability for **`lines` only** (`:229-264`), `deleteAccountById` guard (`:266-274`), bulk account guard, mixed case (`:276-293`). No coverage of `deleteJournalEntryById`, non-line content changes, `updateJournalEntryById`, restore, or `replace*`. |
 | `apps/backend/src/routes/tenant/accounting/accountingContractRouter.ts` | 104 | `accounting.integration.test.ts` (14 tests) | 3 of 4 handlers (`listAccounts`, `listEntries`, `listFiscalYears`) exercised, **non-paginated branch only**; 200 + 401 + 403 envelope checks. Paginated branch (`:25-31, :53-59, :81-87`) and `includeDeleted` 403 branch (`:21-23, :49-51, :77-79`) untested. |
 | `apps/backend/src/routes/tenant/accounting/accountingReportRoutes.ts` | 31 | `accounting.integration.test.ts:400-455` (2 tests) | 200 aggregate passthrough + 403 for unauthorized role. Invalid-query 400 path (`:23`) untested. |
 | `apps/backend/src/routes/tenant/accounting/accountingLedgerOpsRoutes.ts` | 169 | **none** | **Zero coverage.** No test file references `/posting-rules`, `/opening-balances`, `/bank-statements`, `/bank-reconciliations`, or `/fiscal-years/:id/close` (verified by grep across `apps/backend/src/__tests__` and `e2e`). |
@@ -34,15 +34,15 @@ has no integration test, while the equivalent contacts/enrollments setup routes 
 
 | Production file | LOC | Covering test file(s) | Thoroughness |
 |---|---|---|---|
-| `packages/shared/src/accountingLedgerInvariants.ts` | 96 | `accountingLedgerInvariants.test.ts` (6 tests) | Strong: cent rounding, single-sided lines, balanced/imbalanced/zero-total, id+label resolution, money refinements. |
-| `packages/shared/src/accountingLedgerPosting.ts` | 168 | `accountingLedgerPosting.test.ts` (8 tests) | Strong for pure builders: missing-accounts null, discount split, cash/AR, closing incl. contra balances, null-when-no-activity, opening balance rejection, reversal/credit-note/late-fee direction — with `isJournalEntryBalanced` asserted as an invariant. |
-| `packages/shared/src/accountingReportAggregates.ts` | 73 | `accountingReportAggregates.test.ts` (2 tests) | Parse + empty defaults only. |
-| `packages/shared/src/accountingModuleManifest.ts` | 210 | `__tests__/accountingModuleManifest.test.ts` (2 tests) direct; `__tests__/softDeleteSharedInvariants.test.ts:36-38`, `__tests__/softDeleteDtoGuards.test.ts:87,266-272,416` indirect | `accountRecordSchema` trim/blank + `accountRecordInsertSchema` soft-delete-field rejection + manifest soft-delete config. **`journalEntryRecordSchema` / `fiscalYearRecordSchema` have no direct test.** |
-| `packages/shared/src/accountingLedgerOps.ts` | 121 | none directly; happy-path parse only via `accountingLedgerOpsUseCases.test.ts:61-70,83-94,129-169` | No rejection tests (`max(500)`, strictness, 2-decimal money, iso dates). `closeFiscalYearBodySchema`, `openingBalancesQuerySchema`, `fiscalYearParamsSchema` only reachable through the untested ledger-ops routes. |
-| `packages/shared/src/accountingListQuery.ts` | 38 | none (types only) | n/a at runtime. |
-| `packages/shared/src/accountingModuleSettings.ts` | 55 | none | Zero coverage. |
-| `packages/shared/src/accountingSetupConfigTypes.ts` | 267 | none (referenced only by `contracts/accounting.contract.ts` + barrel) | Zero coverage. |
-| `packages/shared/src/contracts/accounting.contract.ts` | 211 | none | 14 operations declared; only 3 are implemented in `accountingContractRouter.ts:15,43,71`, and the router casts itself `as unknown as RouterImplementation<typeof accountingContract>` (`:99`), so the missing handlers are not caught by `tsc`. |
+| `packages/contracts/src/accountingLedgerInvariants.ts` | 96 | `accountingLedgerInvariants.test.ts` (6 tests) | Strong: cent rounding, single-sided lines, balanced/imbalanced/zero-total, id+label resolution, money refinements. |
+| `packages/contracts/src/accountingLedgerPosting.ts` | 168 | `accountingLedgerPosting.test.ts` (8 tests) | Strong for pure builders: missing-accounts null, discount split, cash/AR, closing incl. contra balances, null-when-no-activity, opening balance rejection, reversal/credit-note/late-fee direction — with `isJournalEntryBalanced` asserted as an invariant. |
+| `packages/contracts/src/accountingReportAggregates.ts` | 73 | `accountingReportAggregates.test.ts` (2 tests) | Parse + empty defaults only. |
+| `packages/contracts/src/accountingModuleManifest.ts` | 210 | `__tests__/accountingModuleManifest.test.ts` (2 tests) direct; `__tests__/softDeleteSharedInvariants.test.ts:36-38`, `__tests__/softDeleteDtoGuards.test.ts:87,266-272,416` indirect | `accountRecordSchema` trim/blank + `accountRecordInsertSchema` soft-delete-field rejection + manifest soft-delete config. **`journalEntryRecordSchema` / `fiscalYearRecordSchema` have no direct test.** |
+| `packages/contracts/src/accountingLedgerOps.ts` | 121 | none directly; happy-path parse only via `accountingLedgerOpsUseCases.test.ts:61-70,83-94,129-169` | No rejection tests (`max(500)`, strictness, 2-decimal money, iso dates). `closeFiscalYearBodySchema`, `openingBalancesQuerySchema`, `fiscalYearParamsSchema` only reachable through the untested ledger-ops routes. |
+| `packages/contracts/src/accountingListQuery.ts` | 38 | none (types only) | n/a at runtime. |
+| `packages/contracts/src/accountingModuleSettings.ts` | 55 | none | Zero coverage. |
+| `packages/contracts/src/accountingSetupConfigTypes.ts` | 267 | none (referenced only by `contracts/accounting.contract.ts` + barrel) | Zero coverage. |
+| `packages/contracts/src/contracts/accounting.contract.ts` | 211 | none | 14 operations declared; only 3 are implemented in `accountingContractRouter.ts:15,43,71`, and the router casts itself `as unknown as RouterImplementation<typeof accountingContract>` (`:99`), so the missing handlers are not caught by `tsc`. |
 
 ### DB-integration and frontend/e2e
 
@@ -74,8 +74,8 @@ test, and the only non-null stub (`:129-131`) answers the *separate* pre-lookup 
 was **not** called (and that `tryPostOpeningJournal` returns `null`).
 
 **G2. Concurrent double-post and the partial unique index.**
-`ledgerPostingService.ts:28-33` + `apps/backend/src/db/schema/accounting.ts:79-81` +
-`apps/backend/src/db/migrations_drizzle/0092_accounting_ledger_integrity.sql:23-25`
+`ledgerPostingService.ts:28-33` + `packages/db/src/schema/accounting.ts:79-81` +
+`packages/db/migrations_drizzle/0092_accounting_ledger_integrity.sql:23-25`
 (`accounting_entries_workspace_source_uidx` on `(workspace_subdomain, source_type, source_id)`, `deleted_at IS NULL`).
 No test anywhere mentions the index or a `23505` on `accounting_entries` (grep: `23505` handling exists only for
 contacts/faculty/students — `lib/pgErrors.ts` consumers). Two distinct untested outcomes:
@@ -86,7 +86,7 @@ contacts/faculty/students — `lib/pgErrors.ts` consumers). Two distinct unteste
 * different entry id with the same `(source_type, source_id)`: the insert conflicts on the partial index, which is
   **not** the conflict target, so it raises `23505`, and no accounting code maps it → raw 500. This is reachable
   because `source_type`/`source_id` are client-settable on the bulk upsert route
-  (`packages/shared/src/accountingModuleManifest.ts:69-70, 98-99`; route `apps/backend/src/routes/tenant/accounting.ts:57`).
+  (`packages/contracts/src/accountingModuleManifest.ts:69-70, 98-99`; route `apps/backend/src/routes/tenant/accounting.ts:57`).
 Missing tests: (a) DB test asserting a second insert with the same source pair and a different id is rejected/handled;
 (b) a race test (two concurrent `persistGeneratedEntry` calls) asserting exactly one entry and no overwrite of the
 winner's lines.
@@ -111,7 +111,7 @@ When the posting date (or "today") falls outside every configured year the value
 (column nullable: `schema/accounting.ts:64`). No test exercises this branch: `accountingLedgerGuards.test.ts:30-35`
 always supplies a resolvable label, and every service test stubs the guard (`ledgerPostingService.test.ts:18-20`).
 Same gap for an *unknown* label (e.g. `fiscal_year: 'FY-NOPE'`): `resolveFiscalYearRef` returns `null`
-(`packages/shared/src/accountingLedgerInvariants.ts:85-92`), the closed check passes, and the entry persists with a
+(`packages/contracts/src/accountingLedgerInvariants.ts:85-92`), the closed check passes, and the entry persists with a
 null FK — nothing rejects it. Missing tests: date outside all years → no throw, `fiscal_year_id` null (assert the
 intended policy); unknown label → same.
 
@@ -129,7 +129,7 @@ atomicity/compensation.
 ### P1 — immutability and archive guards
 
 **G6. `assertEntriesMutable` covers only the `lines` field.**
-`apps/backend/src/accounting/use-cases/accountingUseCases.ts:144-162`, comparison function `:60-77`.
+`packages/modules/accounting/src/backend/use-cases/accountingUseCases.ts:144-162`, comparison function `:60-77`.
 `accountingUseCases.test.ts:229-264` mutates only `lines`. Untested: every other compared field
 (`date, ref, description, status, fiscal_year, fiscal_year_id, source_type, source_id, transaction_type,
 reversed_ref, simple_mode`, `:61-72`) and the normalisation tolerance (`normalizeLines` sort at `:43-50`,
@@ -173,11 +173,11 @@ Also untested in `accountingContractRouter.ts`: the paginated branch (3 handlers
 `includeDeleted`-without-delete-permission 403 branch.
 
 **G10. Shared schema rejection paths and contract/handler drift.**
-`packages/shared/src/accountingLedgerOps.ts` — only valid payloads are parsed anywhere
+`packages/contracts/src/accountingLedgerOps.ts` — only valid payloads are parsed anywhere
 (`accountingLedgerOpsUseCases.test.ts:64-67, 86-88, 143, 155-161`): no test for `openingBalancesReplaceSchema`
 `max(500)` (`:39`), the 2-decimal money refinement on balances (`:27-28`), `.strict()` rejection of unknown keys, or
-invalid `isoDateSchema` on bank statements (`:49, :63-64`). `packages/shared/src/accountingModuleSettings.ts` and
-`packages/shared/src/accountingSetupConfigTypes.ts` have no tests. `contracts/accounting.contract.ts` declares 14
+invalid `isoDateSchema` on bank statements (`:49, :63-64`). `packages/contracts/src/accountingModuleSettings.ts` and
+`packages/contracts/src/accountingSetupConfigTypes.ts` have no tests. `contracts/accounting.contract.ts` declares 14
 operations but `accountingContractRouter.ts` implements 3, hidden behind the `as unknown as RouterImplementation`
 cast at `:99`; nothing fails if a declared operation stays unimplemented.
 
@@ -190,7 +190,7 @@ cast at `:99`; nothing fails if a declared operation stays unimplemented.
    `saveEntry`. No assertion covers `lines`, debit/credit direction, `date`, `fiscal_year_id`, or balance. Swapping
    Dr/Cr inside the service (or dropping the fiscal-year resolution) would not fail that file.
 2. **The reversal fixture is malformed and its output is unasserted.** `ledgerPostingService.test.ts:132-138` stubs
-   `findEntryById` with lines keyed `accountId` instead of `account_id` (`packages/shared/src/accountingModuleManifest.ts:46`),
+   `findEntryById` with lines keyed `accountId` instead of `account_id` (`packages/contracts/src/accountingModuleManifest.ts:46`),
    and the assertion at `:143-149` never inspects the reversed lines — so the test passes even if
    `buildReversalLines` returned the original debit/credit. The swap is only proven for the pure builder
    (`accountingLedgerPosting.test.ts:118-131`).
@@ -237,7 +237,7 @@ cast at `:99`; nothing fails if a declared operation stays unimplemented.
 
 ## (d) Commands run and observed results
 
-Root scripts (`package.json:9-14`, `apps/backend/package.json`, `packages/shared/package.json`):
+Root scripts (`package.json:9-14`, `apps/backend/package.json`, `packages/contracts/package.json`):
 `pnpm test` → `turbo run test`; backend `pnpm --filter mms-backend test:unit` (`vitest run`);
 shared `pnpm --filter @mms/shared test:unit` (`vitest run`);
 DB suite `pnpm --filter mms-backend test:db` (`vitest run --config vitest.db.config.ts`).
@@ -264,7 +264,7 @@ Per file: `accountingLedgerGuards` 4, `accountingPeriodClose` 4, `ledgerPostingS
 2. Shared accounting files:
 
 ```bash
-cd packages/shared && pnpm exec vitest run \
+cd packages/contracts && pnpm exec vitest run \
   src/accountingLedgerInvariants.test.ts \
   src/accountingLedgerPosting.test.ts \
   src/accountingReportAggregates.test.ts \

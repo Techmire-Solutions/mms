@@ -1,7 +1,7 @@
 # Protected zones (mms-core §1) require owner review.
 /.github/                                   @hasnainwasaya88
 /scripts/deploy-*.sh                        @hasnainwasaya88
-/apps/backend/src/db/migrations_drizzle/   @hasnainwasaya88
+/packages/db/migrations_drizzle/   @hasnainwasaya88
 /apps/backend/src/middleware/authenticate*  @hasnainwasaya88
 /apps/backend/src/services/auth/            @hasnainwasaya88
 
@@ -15,3 +15,6 @@
 /.agent/                                    @hasnainwasaya88
 /.cursor/                                   @hasnainwasaya88
 /.claude/                                   @hasnainwasaya88
+/packages/be-core/   @hasnainwasaya88
+/packages/fe-core/   @hasnainwasaya88
+/packages/ui/        @hasnainwasaya88

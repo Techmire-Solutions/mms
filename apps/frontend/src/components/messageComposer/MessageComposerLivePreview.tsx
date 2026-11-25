@@ -1,6 +1,6 @@
 import { AnimatePresence, m } from "framer-motion";
 import { CheckCheck, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
-import { calculateSmsSegments, formatDateTime, personalizeMessage } from "@mms/shared";
+import { calculateSmsSegments, formatDateTime, personalizeMessage } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/app/FormSelect";
 import { ChannelBadge } from "@/components/app/ChannelBadge";

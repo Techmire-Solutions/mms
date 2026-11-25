@@ -6,7 +6,7 @@ import {
   ensureAccessibleBrandColor,
   getContrastRatio,
   meetsWcagAaTextContrast,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

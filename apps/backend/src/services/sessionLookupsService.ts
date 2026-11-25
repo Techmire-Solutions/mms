@@ -4,7 +4,7 @@ import {
   emptySessionLookupsMap,
   type SessionLookupKind,
   type SessionLookupsMap,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleStringListLookupsService } from "../lib/createModuleStringListLookupsService.js";
 import {
   listSessionLookupsByKind,

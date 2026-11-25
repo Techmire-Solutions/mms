@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
-import { facultyFieldLabelKey, type Contact, type Faculty } from "@mms/shared";
+import { facultyFieldLabelKey, type Contact, type Faculty } from "@mms/contracts";
 import { ContactPhoneAction, ContactEmailAction } from "@/components/app/ContactAction";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";

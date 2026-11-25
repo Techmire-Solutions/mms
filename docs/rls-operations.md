@@ -7,7 +7,7 @@ The backend is written for defence in depth: every tenant table carries
 RLS only protects data when the **runtime role does not bypass it**. PostgreSQL
 exempts superusers and `BYPASSRLS` roles from every policy, so a `DATABASE_URL`
 that still points at `postgres` makes all 200+ policies decorative. The boot
-guard ([`rlsRoleGuard.ts`](../apps/backend/src/db/rlsRoleGuard.ts)) refuses to
+guard ([`rlsRoleGuard.ts`](../packages/db/src/rlsRoleGuard.ts)) refuses to
 start in `strict` mode when that happens.
 
 ## 1. Check the current role

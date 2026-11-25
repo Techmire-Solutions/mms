@@ -6,7 +6,7 @@ import {
   WORKSPACES_COLLECTION,
   type ContactsSavedReport,
   type Workspace,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,
@@ -14,7 +14,7 @@ import {
   deleteObjectByStorageKey,
 } from "../database.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
-import { replaceContactGoogleSyncCredentialsForWorkspace } from "../repositories/contactGoogleSyncRepository.js";
+import { replaceContactGoogleSyncCredentialsForWorkspace } from "@mms/mod-contacts/backend/repository";
 import {
   createPersistedSavedReport,
   findSavedReportById,

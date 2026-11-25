@@ -1,10 +1,10 @@
 import React from "react";
 import { Pencil, Trash2, Users } from "lucide-react";
-import { Badge, Button } from "@shared/ui";
+import { Badge, Button } from "@mms/ui";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { PlatformContactDto } from "@mms/shared";
+import type { PlatformContactDto } from "@mms/contracts";
 import { PLATFORM_CONTACT_KIND_LABEL_KEYS } from "@/platform/features/contacts/lib/platformContactKinds";
 
 /** Read-only contact detail drawer with quick edit/delete actions. */

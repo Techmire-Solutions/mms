@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { SessionSchema } from "@mms/shared";
+import { SessionSchema } from "@mms/contracts";
 import { SessionLifecycleBar } from "./SessionLifecycleBar";
 import { SessionActivityTab } from "./tabs/SessionActivityTab";
 

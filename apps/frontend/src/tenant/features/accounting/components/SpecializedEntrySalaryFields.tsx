@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import type { Account, SalaryEntryInput } from "@mms/shared";
-import { DatePicker } from "@/components/app/DatePicker";
-import { FORM_INPUT } from "@/components/ui/formStyles";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import type { Account, SalaryEntryInput } from "@mms/contracts";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { FORM_INPUT } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { Textarea } from "@mms/ui";
+import { FormControl, FormField, FormItem, FormLabel } from "@mms/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 import { SpecializedEntrySalaryAccountFields } from "./SpecializedEntrySalaryAccountFields";
 

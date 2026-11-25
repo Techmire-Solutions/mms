@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Contact, ContactPickerOption, ContactPickerSearchQuery } from "@mms/shared";
+import type { Contact, ContactPickerOption, ContactPickerSearchQuery } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

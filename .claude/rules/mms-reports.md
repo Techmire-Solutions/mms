@@ -11,7 +11,7 @@ paths:
   - "apps/frontend/src/components/app/ExportToolbarCompact.tsx"
   - "apps/frontend/src/components/app/exportToolbarUtils.ts"
   - "apps/frontend/src/components/app/SafeResponsiveContainer.tsx"
-  - "packages/shared/src/**/*Report*.ts"
+  - "packages/contracts/src/**/*Report*.ts"
 ---
 
 # MMS Reports & Analytics
@@ -32,7 +32,7 @@ paths:
 - **Export Toolbar:** Standardize on `ExportToolbar` / `ExportToolbarCompact` (`exportToolbarUtils.ts`). Exports exceeding interactive thresholds offload to BullMQ worker process (`mms-module-architecture.md` §5).
 - **Streaming Caps:** An in-memory export cap (`maxRecords`) is enforced **inside** the generator before a chunk is yielded. Draining the generator into an array first and checking the count afterwards bounds nothing — an oversized tenant is already buffered.
 - **Formula Injection Mitigation:** Prefix untrusted cell values starting with `=`, `+`, `-`, or `@` with a single quote (`'`) in CSV/Excel outputs; preserve legitimate negative numbers.
-- **Field Whitelist & Bidirectional Data Transfer SSOT:** Form module CSV exports/imports must use `@mms/shared` transfer schemas (`createModuleTransferSchema`, `buildExportGrid`). All internal system metadata (`_id`, `id`, `tenantId`, `created_at`, `updated_at`, etc.) is stripped. Exported headers match primary import headers 1:1 for symmetric round-trips. Every row the parser emits — including nested relationship/contact-card fields — must be accepted by the write/import DTO; add a round-trip test that parses an exported file, so a column the exporter writes can never reach a strict schema as an unknown key.
+- **Field Whitelist & Bidirectional Data Transfer SSOT:** Form module CSV exports/imports must use `@mms/contracts` transfer schemas (`createModuleTransferSchema`, `buildExportGrid`). All internal system metadata (`_id`, `id`, `tenantId`, `created_at`, `updated_at`, etc.) is stripped. Exported headers match primary import headers 1:1 for symmetric round-trips. Every row the parser emits — including nested relationship/contact-card fields — must be accepted by the write/import DTO; add a round-trip test that parses an exported file, so a column the exporter writes can never reach a strict schema as an unknown key.
 
 ## 4. Visualizations & Chart Rules
 - **Design Tokens:** Recharts must bind to semantic Tailwind tokens (`@theme`, `StatusBadge`). Export/print labels via `t()`.

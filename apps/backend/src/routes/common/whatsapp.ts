@@ -4,13 +4,13 @@ import type {
   WhatsappIntegrationConfig,
   WhatsappIntegrationSecrets,
   WhatsappProviderId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   isWhatsappProviderId,
   mergeWhatsappIntegrationConfig,
   whatsappIntegrationBodySchema,
   whatsappTestBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   loadWhatsappIntegrationConfig,
   markWhatsappIntegrationTestResult,

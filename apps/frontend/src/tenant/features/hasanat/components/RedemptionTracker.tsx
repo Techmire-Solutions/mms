@@ -3,7 +3,7 @@ import { Gift, Plus, Star } from "lucide-react";
 import { type Redemption, type Distribution } from "@/lib/data/hasanatData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useListRowMotion } from "@/hooks/useListRowMotion";
-import { formatDate, formatNumber, HASANAT_MODULE_MANIFEST } from "@mms/shared";
+import { formatDate, formatNumber, HASANAT_MODULE_MANIFEST } from "@mms/contracts";
 import {
   useHasanatRedemptionsState,
   useHasanatMutations,
@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SectionHeader } from "@shared/ui";
+import { SectionHeader } from "@mms/ui";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import {
   DataTable,

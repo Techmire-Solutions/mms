@@ -1,5 +1,5 @@
 import type React from "react";
-import { SYSTEM_MODULES, type IndustryType } from "@mms/shared";
+import { SYSTEM_MODULES, type IndustryType } from "@mms/contracts";
 import OrganizationDetailsStep from "@/platform/features/onboarding/steps/OrganizationDetailsStep";
 import ModulesStep from "@/platform/features/onboarding/steps/ModulesStep";
 import StructureStep from "@/platform/features/onboarding/steps/StructureStep";

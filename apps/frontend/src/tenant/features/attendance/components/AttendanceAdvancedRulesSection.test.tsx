@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceAdvancedRulesSection } from "./AttendanceAdvancedRulesSection";
-import type { AttendanceSettings } from "@mms/shared";
+import type { AttendanceSettings } from "@mms/contracts";
 
 describe("AttendanceAdvancedRulesSection Component", () => {
   it("renders advanced settings section and its save button", () => {

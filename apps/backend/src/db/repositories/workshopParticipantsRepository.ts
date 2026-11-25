@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, sql, type SQL } from "drizzle-orm";
-import { workshopParticipantStatusSchema, type WorkshopParticipant } from "@mms/shared";
-import { contactPhones, contacts, workshopParticipants } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { workshopParticipantStatusSchema, type WorkshopParticipant } from "@mms/contracts";
+import { contactPhones, contacts, workshopParticipants } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 /**
  * Participant reads.

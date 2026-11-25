@@ -1,5 +1,5 @@
 import React from "react";
-import { isContactCustomCollectionTab } from "@mms/shared";
+import { isContactCustomCollectionTab } from "@mms/contracts";
 import { ContactCustomCollectionTab } from "@/tenant/features/contacts/components/ContactCustomCollectionTab";
 import { ContactPhonesTab } from "@/tenant/features/contacts/components/formTabs/ContactPhonesTab";
 import { ContactEmailsTab } from "@/tenant/features/contacts/components/formTabs/ContactEmailsTab";

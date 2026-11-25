@@ -1,4 +1,4 @@
-import type { ModuleCustomField } from "@mms/shared";
+import type { ModuleCustomField } from "@mms/contracts";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 import type { AttendanceRow } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 import {

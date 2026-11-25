@@ -12,7 +12,7 @@
  * which neutralises spreadsheet formula injection.
  */
 
-import { buildCsvContent, buildTenantExportFilename } from "@mms/shared";
+import { buildCsvContent, buildTenantExportFilename } from "@mms/contracts";
 import { obligationsRepository } from "../obligations/repository/obligationsRepositoryAdapter.js";
 import type { ObligationsRepository } from "../obligations/repository/obligationsRepository.js";
 import { getRequestTenant } from "../lib/tenantContext.js";

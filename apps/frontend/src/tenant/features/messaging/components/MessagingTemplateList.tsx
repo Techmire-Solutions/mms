@@ -1,11 +1,11 @@
 import React from "react";
 import { Tag } from "lucide-react";
-import { MESSAGING_MODULE_MANIFEST, type MessageTemplate } from "@mms/shared";
+import { MESSAGING_MODULE_MANIFEST, type MessageTemplate } from "@mms/contracts";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
-import { SectionHeader } from "@shared/ui";
+import { SectionHeader } from "@mms/ui";
 import {
   DataTable,
   type DataTableColumn,

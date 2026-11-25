@@ -1,4 +1,4 @@
-import { mergeBrandingSettings } from "@mms/shared";
+import { mergeBrandingSettings } from "@mms/contracts";
 import {
   defaultTemplateTranslate,
   type BrandingInfo,

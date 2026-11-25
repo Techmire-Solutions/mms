@@ -1,6 +1,6 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import type { Enrollment, EnrollmentInsert } from "@mms/shared";
+import type { Enrollment, EnrollmentInsert } from "@mms/contracts";
 import { useEnrollmentViewerRole } from "@/tenant/hooks/useViewerRole";
 import { useEnrollmentMutations } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
 import { useEnrollmentsBulkActions } from "@/tenant/features/enrollments/hooks/useEnrollmentsBulkActions";

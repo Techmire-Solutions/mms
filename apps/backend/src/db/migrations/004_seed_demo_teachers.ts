@@ -5,7 +5,7 @@ import {
   tenantCollectionKey,
   tenantObjectKey,
   type Workspace,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,

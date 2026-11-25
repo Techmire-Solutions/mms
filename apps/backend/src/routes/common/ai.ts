@@ -9,7 +9,7 @@ import {
   aiTestBodySchema as testBodySchema,
   type User,
   type LlmTestResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { fetchLlmModels } from "../../services/llmModelsService.js";
 import { userHasPermission } from "../../lib/userPermissionContext.js";
 

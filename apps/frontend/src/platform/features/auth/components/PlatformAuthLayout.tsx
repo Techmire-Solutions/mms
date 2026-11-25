@@ -2,7 +2,7 @@ import React from "react";
 import { ShieldCheck, Lock, ShieldAlert } from "lucide-react";
 import { AuthCardShell, AuthFormHeading, AuthPageFrame } from "@/components/entry";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Badge, PlatformLogoMark } from "@shared/ui";
+import { Badge, PlatformLogoMark } from "@mms/ui";
 import { usePlatformBranding } from "@/platform/features/settings/hooks/usePlatformBranding";
 
 export interface PlatformAuthLayoutProps {

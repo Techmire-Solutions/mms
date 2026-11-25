@@ -10,7 +10,7 @@ import {
   GraduationCap,
   Send,
 } from "lucide-react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { AuthPageFrame } from "@/components/entry";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

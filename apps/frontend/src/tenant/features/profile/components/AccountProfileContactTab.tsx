@@ -5,7 +5,7 @@ import {
   getPrimaryPhone,
   normalizePhoneInput,
   type TenantUserProfile,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FormSubmitActions } from "@/components/app/FormSubmitActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardTitleBar } from "@/components/app/CardTitleBar";

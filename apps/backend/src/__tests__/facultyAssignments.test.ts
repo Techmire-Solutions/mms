@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import type { FacultyAssignmentRow } from "../db/schema/facultyAssignmentTables.js";
+import type { FacultyAssignmentRow } from "@mms/db/schema/facultyAssignmentTables";
 
 type Assignment = FacultyAssignmentRow;
 

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { USERS_MODULE_MANIFEST, buildUsersWorkColumnRegistry } from "@mms/shared";
+import { USERS_MODULE_MANIFEST, buildUsersWorkColumnRegistry } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

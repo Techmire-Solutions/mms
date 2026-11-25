@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { todayISO, type HedgeRelationship, type HedgeRelationshipCreate } from "@mms/shared";
+import { todayISO, type HedgeRelationship, type HedgeRelationshipCreate } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import type { HedgeAction, HedgeActionInput } from "@/tenant/features/accounting/lib/hedgeForms";
+import type { HedgeAction, HedgeActionInput } from "@mms/mod-accounting/frontend/tenant";
 import {
   useCreateHedge,
   useDiscontinueHedge,

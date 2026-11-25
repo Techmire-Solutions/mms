@@ -1,7 +1,7 @@
 import React from "react";
 import { AnimatePresence } from "framer-motion";
 import type { MessagingTarget } from "@/hooks/useMessageComposerState";
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { AddUserModal } from "@/tenant/features/users/components/AddUserModal";
 import { EditUserModal } from "@/tenant/features/users/components/EditUserModal";

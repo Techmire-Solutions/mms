@@ -1,4 +1,4 @@
-import type { Faculty, FacultySortField, ModuleColumnRegistryEntry } from "@mms/shared";
+import type { Faculty, FacultySortField, ModuleColumnRegistryEntry } from "@mms/contracts";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 
 export type { FacultySortField };

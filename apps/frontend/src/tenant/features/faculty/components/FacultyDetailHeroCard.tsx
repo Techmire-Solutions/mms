@@ -4,7 +4,7 @@ import { PersonDetailHeroCard } from "@/components/app/PersonDetailHeroCard";
 import { Badge } from "@/components/ui/badge";
 import { getGenderCardAccent } from "@/lib/ui/genderUi";
 import { useTranslation } from "@/hooks/useTranslation";
-import { resolveFacultyStatus, type Faculty } from "@mms/shared";
+import { resolveFacultyStatus, type Faculty } from "@mms/contracts";
 
 export interface FacultyDetailHeroCardProps {
   faculty: Faculty;

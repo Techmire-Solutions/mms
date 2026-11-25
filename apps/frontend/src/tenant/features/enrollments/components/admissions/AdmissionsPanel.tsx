@@ -6,7 +6,7 @@ import {
   SEAT_AVAILABLE_REVIEW_NOTE,
   type RegistrationApplication,
   type RegistrationApplicationStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   DataTable,
   DataTableRowActions,

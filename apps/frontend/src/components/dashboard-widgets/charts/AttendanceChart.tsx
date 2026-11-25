@@ -26,7 +26,7 @@ import {
   ATTENDANCE_CHART_COLOR_OPTIONS,
   formatPercent,
   type DashboardChartType,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 const AttTooltip = buildChartTooltip({ valueFormatter: (value) => formatPercent(value) });
 

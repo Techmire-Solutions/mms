@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { eq } from "drizzle-orm";
-import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
-import { tenantNotifications, workspaces } from "../../db/schema.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant, withTenantRead } from "@mms/db/context";
+import { tenantNotifications, workspaces } from "@mms/db/schema";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 /**

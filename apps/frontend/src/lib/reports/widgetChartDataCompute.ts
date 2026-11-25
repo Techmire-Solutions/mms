@@ -1,7 +1,7 @@
 import type { CustomWidget } from "./pinnedWidgetTypes";
 import type { ReportCollectionsSnapshot } from "@/lib/reports/useReportCollections";
 import type { Denomination } from "@/lib/data/hasanatData";
-import { resolveDistributionPoints } from "@mms/shared";
+import { resolveDistributionPoints } from "@mms/contracts";
 import {
   readContactsWidgetAggregate,
   readStudentsWidgetAggregate,

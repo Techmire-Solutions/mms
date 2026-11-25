@@ -12,7 +12,7 @@ import {
   type EnrollmentWithdrawBody,
   type WithdrawalBillingOutcome,
   withdrawalBillingOutcomeSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 export const ENROLLMENT_PLACEMENTS_QUERY_KEY = ["enrollments", "placements"] as const;

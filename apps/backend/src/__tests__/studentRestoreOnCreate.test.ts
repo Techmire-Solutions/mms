@@ -1,5 +1,15 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 
 const { canDeleteCollection, recordRestoreEvents, restoreCascaded } = vi.hoisted(() => ({
   canDeleteCollection: vi.fn(),
@@ -14,9 +24,7 @@ vi.mock("../db/database.js", () => ({ activeDb: () => ({}) }));
 vi.mock("../db/repositories/studentEnrollmentCascade.js", () => ({
   restoreCascadedEnrollmentsForStudents: (...args: unknown[]) => restoreCascaded(...args),
 }));
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: vi.fn().mockResolvedValue(undefined),
-}));
+
 vi.mock("../students/use-cases/studentAuditEvents.js", () => ({
   recordRestoreEvents: (...args: unknown[]) => recordRestoreEvents(...args),
 }));

@@ -1,12 +1,12 @@
 import { useState, type ReactElement } from "react";
-import type { ReceivablesAging, ReceivablesAgingRow } from "@mms/shared";
-import { EmptyState } from "@/components/app/EmptyState";
-import { ErrorState } from "@/components/app/ErrorState";
+import type { ReceivablesAging, ReceivablesAgingRow } from "@mms/contracts";
+import { EmptyState } from "@mms/ui";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@mms/ui";
+import { Skeleton } from "@mms/ui";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { runGridCsvExportJob } from "@/lib/backgroundJobs/runGridCsvExportJob";
 import { useReceivablesAging } from "../hooks/useAccountingQueries";
 

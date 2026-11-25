@@ -4,7 +4,7 @@ import {
   getSortedFields,
   type ModuleCustomField,
   type ModuleFieldDef,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { reportClientError } from "@/lib/clientErrorReporting";
 
 export interface StandardModuleConfigSettingsLike {

@@ -1,9 +1,9 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import type { EnrollmentCompletionStatus } from "@mms/shared";
-import { enrollments } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import type { EnrollmentCompletionStatus } from "@mms/contracts";
+import { enrollments } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { getRequestUserId } from "../../lib/tenantContext.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 import { isPresentOrLateSql } from "./attendanceReportOverview.js";
 

@@ -7,7 +7,7 @@ import type {
   SessionsWidgetAggregateResult,
   SessionsReportAggregates,
   SessionsReportQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * Sole storage gateway for the sessions module.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ObligationDistribution, WakalaType } from "@mms/shared";
+import type { ObligationDistribution, WakalaType } from "@mms/contracts";
 import {
   assertNoCascadingLoss,
   assertReceiptHasWakala,

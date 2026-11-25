@@ -1,9 +1,9 @@
 import { and, eq, getTableColumns, inArray, isNotNull, isNull } from "drizzle-orm";
-import { dedupeTrimmedIds } from "@mms/shared";
-import { workshopEvents } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
-import { emitOutboxEvents } from "../../services/outboxEventService.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { dedupeTrimmedIds } from "@mms/contracts";
+import { workshopEvents } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
+import { emitOutboxEvents } from "@mms/be-core/data/outbox";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /**
  * Trash lifecycle for workshops (soft-delete §2.2 / §2.5 / invariant 7).

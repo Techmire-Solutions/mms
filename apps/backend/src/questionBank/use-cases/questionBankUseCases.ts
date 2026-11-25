@@ -29,7 +29,7 @@ import {
   questionBankResultRecordSchema,
   normalizeQuestionBankQuestion,
   normalizeQuestionBankModulePreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 const EMPTY_METRICS: QuestionBankCommandMetricsSnapshot = {
   total: 0,
@@ -263,8 +263,8 @@ export function createQuestionBankUseCases(repo: QuestionBankRepository = questi
     bulkRestoreQuestions: questionCrud.bulkRestoreByIds,
 
     loadQuestionBankWidgetAggregates: async (
-      queries: import("@mms/shared").WidgetQuery[],
-    ): Promise<Record<string, import("@mms/shared").WidgetAggregateResult>> => {
+      queries: import("@mms/contracts").WidgetQuery[],
+    ): Promise<Record<string, import("@mms/contracts").WidgetAggregateResult>> => {
       const tenant = getRequestTenant();
       if (!tenant) return {};
       return repo.aggregateQuestionBankWidgetQueries(tenant, queries);

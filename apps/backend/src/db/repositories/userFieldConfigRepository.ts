@@ -1,4 +1,4 @@
-import { userFieldConfigs } from "../schema.js";
+import { userFieldConfigs } from "@mms/db/schema";
 import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({

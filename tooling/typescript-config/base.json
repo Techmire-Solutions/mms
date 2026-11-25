@@ -1,0 +1,25 @@
+{
+  // Shared TypeScript compiler base — Single Source of Truth for the strictness/
+  // quality flags every MMS package enables. `node.json` and `react.json` extend
+  // this file; every package tsconfig extends one of those two presets and only
+  // declares its emit/module/path deltas, so a new flag added here is picked up
+  // consistently.
+  //
+  // Deliberately excludes per-surface concerns (module/moduleResolution/target/
+  // lib/outDir/paths/jsx/noUnused*, emit) so web (Vite) vs node (Fastify) builds
+  // keep their own settings without inheriting the wrong ones.
+  //
+  // The repository-root `tsconfig.base.json` re-exports this file so the long-lived
+  // docs/rules that name it stay accurate.
+  "compilerOptions": {
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

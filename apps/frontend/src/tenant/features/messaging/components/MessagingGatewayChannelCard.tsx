@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { WidgetCard } from "@/components/app/WidgetCard";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Switch, Label } from "@shared/ui";
+import { Switch, Label } from "@mms/ui";
 import { cn } from "@/lib/utils";
 import type { GatewayStatusItem } from "../hooks/useMessagingGatewaysStatus";
 

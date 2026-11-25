@@ -1,18 +1,23 @@
 import { randomUUID } from "node:crypto";
-import { misconfiguredAppDomainHint } from "@mms/shared";
+import { misconfiguredAppDomainHint } from "@mms/contracts";
 import fastify, { type FastifyInstance } from "fastify";
 import { serializerCompiler, validatorCompiler } from "fastify-type-provider-zod";
 import { loadBackendEnv } from "./config/loadEnv.js";
-import { LOG_REDACTION_OPTIONS } from "./lib/logRedaction.js";
+import { LOG_REDACTION_OPTIONS } from "@mms/db";
 import { loadServerConfig } from "./config/serverConfig.js";
 import { initDb } from "./db/database.js";
+import { createPlatformBootServices } from "./bootstrap/bootServices.js";
 import { registerFrontendSpa } from "./plugins/frontendSpa.js";
 import { registerPlugins } from "./plugins/index.js";
 import { registerRoutes } from "./routes/index.js";
 import { registerDefaultBackgroundJobRunners } from "./services/backgroundJobRunnerService.js";
+import { configureContactsKernelAdapters } from "./modules/contacts/adapters.js";
 import { setStaticAssetHeaders } from "./plugins/staticAssets.js";
 
 loadBackendEnv();
+
+// Bind the contacts module kernel deps before background job runners register.
+configureContactsKernelAdapters();
 
 export async function buildApp(): Promise<FastifyInstance> {
   const config = loadServerConfig();
@@ -44,7 +49,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
-  await initDb();
+  // Import through the `db/database.js` facade on purpose: 101 integration suites
+  // mock that module (`initDb: vi.fn()`) to skip a real boot. The platform hooks are
+  // injected explicitly so `db/` keeps no service import.
+  await initDb({ services: createPlatformBootServices() });
   registerDefaultBackgroundJobRunners();
   await registerPlugins(app, config);
 

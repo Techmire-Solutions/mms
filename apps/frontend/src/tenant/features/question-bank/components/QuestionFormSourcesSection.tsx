@@ -5,7 +5,7 @@ import {
   type ModuleFieldDef,
   type QuestionSourceBook,
   type QuestionSourceFieldId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { QuestionSourcesTab } from "@/tenant/features/question-bank/components/QuestionSourcesTab";

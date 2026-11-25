@@ -1,10 +1,10 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/shared";
+import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/contracts";
 import { DuplicateDetectionModal } from "./DuplicateDetectionModal";
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     open,
     title,

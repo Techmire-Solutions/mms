@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { DEFAULT_CHART_PALETTE_ID, getChartPaletteColors } from "@mms/shared";
+import { DEFAULT_CHART_PALETTE_ID, getChartPaletteColors } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { useDashboardConfig } from "@/hooks/useDashboardConfig";

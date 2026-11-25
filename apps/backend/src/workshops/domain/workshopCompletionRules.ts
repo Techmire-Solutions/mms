@@ -2,7 +2,7 @@ import {
   countWorkshopDays,
   evaluateWorkshopCompletion,
   type WorkshopCompletionRow,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * The single computation from completion facts to the public rows.

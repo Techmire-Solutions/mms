@@ -1,8 +1,8 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { examEligibilityOverrides, exams } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { ValidationError } from "../../lib/httpErrors.js";
+import { examEligibilityOverrides, exams } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { ValidationError } from "@mms/be-core/http/errors";
 
 export type { ExamEligibilityRow, ExamEligibilityView } from "./examEligibilityBatchRepository.js";
 export { loadExamEligibility, loadExamEligibilityBatch } from "./examEligibilityBatchRepository.js";

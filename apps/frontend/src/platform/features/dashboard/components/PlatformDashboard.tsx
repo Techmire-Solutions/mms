@@ -8,7 +8,7 @@ import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions"
 import { usePlatformWorkspaceMetrics } from "@/platform/features/workspaces/hooks/usePlatformWorkspaceMetrics";
 import { usePlatformActivityTrend } from "@/platform/features/system/hooks/usePlatformTelemetry";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { Button, EmptyState, ErrorState, StatsSkeleton } from "@shared/ui";
+import { Button, EmptyState, ErrorState, StatsSkeleton } from "@mms/ui";
 import { containerVariantsConsole, itemVariants } from "@/lib/motion";
 import { PlatformDashboardBanner } from "@/platform/features/dashboard/components/PlatformDashboardBanner";
 import { PlatformDashboardTelemetry } from "@/platform/features/dashboard/components/PlatformDashboardTelemetry";

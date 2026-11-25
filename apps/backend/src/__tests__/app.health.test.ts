@@ -139,7 +139,7 @@ describe("health routes", () => {
    * `@anatine/zod-openapi@1.x`, which only understands the Zod 3 schema API.
    * Replacing it with the Zod-4-native `@asteasolutions/zod-to-openapi` was
    * prototyped and works for bodies/responses, but parameter metadata could not
-   * be attached: the schemas built by `@mms/shared` do not receive
+   * be attached: the schemas built by `@mms/contracts` do not receive
    * `extendZodWithOpenApi`'s prototype patch (`schema.openapi` is undefined even
    * though `z.string().openapi` is a function in the same process), so
    * `registerPath` throws "Missing parameter data".

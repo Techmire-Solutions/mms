@@ -7,7 +7,7 @@ import {
   type LlmConfig,
   type LlmProviderType,
   type LlmTestResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useLlmModelFetch } from "@/hooks/useLlmModelFetch";
 
 import { computeNextLlmConfigs, testLlmConnectivity } from "../lib/llmSettingsModalHelpers";

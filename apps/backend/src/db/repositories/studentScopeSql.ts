@@ -1,6 +1,6 @@
 import { sql, type SQL } from "drizzle-orm";
-import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/shared";
-import { enrollments, students } from "../schema.js";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/contracts";
+import { enrollments, students } from "@mms/db/schema";
 
 const SEAT_RELEASED_STATUSES_SQL = sql.join(
   SEAT_RELEASED_ENROLLMENT_STATUSES.map((status) => sql`${status}`),

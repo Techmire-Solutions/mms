@@ -5,7 +5,7 @@ import {
   resolveEnrollmentReportExportRows,
   fetchAllEnrollmentsForQuery,
 } from "./studentReportExport";
-import type { Enrollment, Session, StudentRecord } from "@mms/shared";
+import type { Enrollment, Session, StudentRecord } from "@mms/contracts";
 
 vi.mock("@/tenant/hooks/collections/students", () => ({
   fetchAllStudentsForQuery: vi.fn(),

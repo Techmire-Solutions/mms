@@ -2,8 +2,8 @@ import type {
   PlatformSetupRegisterBody,
   PlatformSetupStatus,
   StoredPlatformUser,
-} from "@mms/shared";
-import { normalizePlatformEmail } from "@mms/shared";
+} from "@mms/contracts";
+import { normalizePlatformEmail } from "@mms/contracts";
 import { hashPassword } from "../auth/passwordService.js";
 import { createVerifiedPlatformUser, hasPlatformUsers } from "./platformUserService.js";
 import { isPlatformSmtpConfigured } from "./platformEmailService.js";

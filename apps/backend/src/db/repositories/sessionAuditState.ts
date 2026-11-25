@@ -1,6 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
-import { sessions, sessionClasses } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { sessions, sessionClasses } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 /** Compact pre-image captured for the audit trail `old_state` (no child collections). */
 export interface SessionAuditState {

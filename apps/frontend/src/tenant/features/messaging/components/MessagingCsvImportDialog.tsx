@@ -1,5 +1,5 @@
 import React from "react";
-import { messagingTransferSchema, type MessagingTransferEntity } from "@mms/shared";
+import { messagingTransferSchema, type MessagingTransferEntity } from "@mms/contracts";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface MessagingCsvImportDialogProps {

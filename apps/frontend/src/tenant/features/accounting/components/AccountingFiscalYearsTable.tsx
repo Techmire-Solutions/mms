@@ -1,15 +1,15 @@
 import React from "react";
 import { Calendar, Lock, Pencil } from "lucide-react";
-import { type FiscalYear, formatDate } from "@mms/shared";
-import { EmptyState } from "@/components/app/EmptyState";
-import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import { type FiscalYear, formatDate } from "@mms/contracts";
+import { EmptyState } from "@mms/ui";
+import { StatusBadge, type StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
 import {
   DataTable,
   DataTableRowActions,
   type DataTableColumn,
   type DataTableFilter,
 } from "@/components/common/data-table";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 export interface AccountingFiscalYearsTableProps {
   sortedYears: FiscalYear[];

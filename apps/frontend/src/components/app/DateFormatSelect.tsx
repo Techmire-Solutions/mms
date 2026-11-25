@@ -8,7 +8,7 @@ import {
   type AppLanguageCode,
   type AppTranslationKey,
   type DateFormatId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
 import { notify } from "@/lib/notify";

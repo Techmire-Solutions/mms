@@ -3,7 +3,7 @@ import {
   DEFAULT_COLUMN_REGISTRY,
   resolveContactColumnSortField,
   type ColumnRegistryEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ModuleColumnCustomizerLabels } from "@/components/app/moduleColumnCustomizerTypes";

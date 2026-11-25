@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { FacultySettings } from "@mms/shared";
+import type { FacultySettings } from "@mms/contracts";
 
 const mockLoadFacultySettingsCombined = vi.fn();
 const mockValidateOrThrow = vi.fn();
@@ -13,8 +13,8 @@ vi.mock("../lib/zodRequest.js", () => ({
   validateOrThrow: (...args: unknown[]) => mockValidateOrThrow(...args),
 }));
 
-vi.mock("@mms/shared", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@mms/shared")>();
+vi.mock("@mms/contracts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/contracts")>();
   return {
     ...actual,
     buildDynamicFacultySchema: (...args: unknown[]) => {

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { GenerateInvoicesBody, GenerateInvoicesResult } from "@mms/shared";
+import type { GenerateInvoicesBody, GenerateInvoicesResult } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { invalidateFinanceQueries } from "@/tenant/features/finance/hooks/invalidateFinanceQueries";

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { taskListQuerySchema } from "@mms/shared";
+import { taskListQuerySchema } from "@mms/contracts";
 import { canPerformTaskAction } from "../../services/taskPermissionService.js";
 import { getTaskMetrics, listTasks } from "../../tasks/use-cases/tasksUseCases.js";
 import { mapTaskRouteError } from "../../lib/taskRouteErrors.js";

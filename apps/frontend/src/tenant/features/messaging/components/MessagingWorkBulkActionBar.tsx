@@ -1,6 +1,6 @@
 import { type JSX } from "react";
 import { ChevronDown, MessageSquare, RotateCcw } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

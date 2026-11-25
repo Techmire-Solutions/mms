@@ -9,7 +9,7 @@ import {
   type WakalaType,
   type ObligationDistribution,
   type ObligationCollection,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceObligationTypesForWorkspace,

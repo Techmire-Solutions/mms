@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Award, Pencil, RotateCcw, Trash2 } from "lucide-react";
-import type { FacultyDesignationDefinition } from "@mms/shared";
+import type { FacultyDesignationDefinition } from "@mms/contracts";
 import { EmptyCellDash } from "@/components/app/EmptyCellDash";
 import { EmptyState } from "@/components/app/EmptyState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";

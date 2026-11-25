@@ -4,7 +4,7 @@ import {
   type AcademicCatalogItem,
   type AcademicCatalogKind,
   type AcademicCatalogWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { isApiError } from "@/lib/apiError";
 import { notify } from "@/lib/notify";

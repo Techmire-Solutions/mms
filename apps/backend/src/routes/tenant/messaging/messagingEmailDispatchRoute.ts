@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
-import type { User } from "@mms/shared";
-import { messagingEmailDispatchSchema } from "@mms/shared";
+import type { User } from "@mms/contracts";
+import { messagingEmailDispatchSchema } from "@mms/contracts";
 import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";

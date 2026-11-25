@@ -1,9 +1,9 @@
 import { and, eq, lte, sql } from "drizzle-orm";
-import { AUDIT_RETENTION_FLOORS, type AuditRetentionRegime } from "@mms/shared";
-import { withTenant, withTenantRead } from "../db/tenant-context.js";
-import { cryptoShreddingKeys } from "../db/schema/auditTrail.js";
+import { AUDIT_RETENTION_FLOORS, type AuditRetentionRegime } from "@mms/contracts";
+import { withTenant, withTenantRead } from "@mms/db/context";
+import { cryptoShreddingKeys } from "@mms/db/schema/auditTrail";
 import { logger } from "../lib/logger.js";
-import type { DbOrTransaction } from "./auditTrailService.js";
+import type { DbOrTransaction } from "@mms/be-core/audit";
 
 export interface RetentionPolicyEvaluation {
   regime: AuditRetentionRegime;

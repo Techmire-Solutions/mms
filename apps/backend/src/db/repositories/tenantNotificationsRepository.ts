@@ -4,9 +4,9 @@ import {
   TENANT_NOTIFICATION_RETENTION_DAYS,
   type TenantNotificationKind,
   type TenantNotificationList,
-} from "@mms/shared";
-import { tenantNotificationReads, tenantNotifications } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { tenantNotificationReads, tenantNotifications } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 
 export interface NewTenantNotification {
   id: string;

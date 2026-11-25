@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { applyTitleCaseRecursive, isAdminRole, isSuperAdminRole } from "@mms/shared";
-import { withTenant } from "../tenant-context.js";
-import { tenantUsers } from "../schema.js";
+import { applyTitleCaseRecursive, isAdminRole, isSuperAdminRole } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
+import { tenantUsers } from "@mms/db/schema";
 import {
   findTenantUserRowById,
   listAllTenantUsersByWorkspace,

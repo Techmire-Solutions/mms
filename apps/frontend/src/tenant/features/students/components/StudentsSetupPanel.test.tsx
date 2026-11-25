@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_STUDENTS_SETTINGS } from "@mms/shared";
+import { DEFAULT_STUDENTS_SETTINGS } from "@mms/contracts";
 import { StudentsSetupPanel } from "./StudentsSetupPanel";
 
 vi.mock("@/tenant/features/students/hooks/useStudentsSetupPanelState", () => ({

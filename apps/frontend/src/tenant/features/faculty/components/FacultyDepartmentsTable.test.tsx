@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { FacultyDepartmentEntity } from "@mms/shared";
+import type { FacultyDepartmentEntity } from "@mms/contracts";
 import { FacultyDepartmentsTable } from "./FacultyDepartmentsTable";
 
 declare global {

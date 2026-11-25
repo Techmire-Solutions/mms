@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
-import { MESSAGING_MODULE_MANIFEST, validateRecipientAddress } from "@mms/shared";
+import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/contracts";
+import { MESSAGING_MODULE_MANIFEST, validateRecipientAddress } from "@mms/contracts";
 import { dedupeRecipientsById } from "@/components/messageComposer/messageComposerRecipientsUtils";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { notify } from "@/lib/notify";

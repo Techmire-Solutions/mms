@@ -5,7 +5,7 @@ import type {
   MessagingPreferences,
   WhatsappIntegrationConfig,
   WhatsappIntegrationSecrets,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type {
   MessageLogClaim,
   MessageLogDeliveryOutcome,
@@ -19,7 +19,7 @@ export type {
   MessageLogsFilterQuery,
   MessageLogsPageResult,
 };
-import type { WhatsappIntegrationRow } from "../../db/schema/messaging.js";
+import type { WhatsappIntegrationRow } from "@mms/db/schema/messaging";
 
 /**
  * Sole storage gateway for the messaging module (templates + logs).

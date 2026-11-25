@@ -9,7 +9,7 @@ import {
 } from "../../services/workspaceService.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { sendNotFound } from "../../lib/httpErrors.js";
-import { subdomainParamsSchema } from "@mms/shared";
+import { subdomainParamsSchema } from "@mms/contracts";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 
 export default async function workspaceRoutes(

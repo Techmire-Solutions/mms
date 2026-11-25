@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatRelativeTime, type TenantNotificationRecord } from "@mms/shared";
+import { formatRelativeTime, type TenantNotificationRecord } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import type { DashboardNotificationItem } from "@/lib/buildDashboardNotifications";

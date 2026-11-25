@@ -6,14 +6,14 @@ import {
   type Contact,
   type ImportBatchFn,
   type ImportRowError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { redisGet, redisSet, redisDel } from "../../lib/redis.js";
-import { upsertContact } from "../../contacts/use-cases/contactWriteUseCases.js";
-import { findContactsMatchingUniqueValues } from "../../contacts/use-cases/contactLoadUseCases.js";
+import { upsertContact } from "@mms/mod-contacts/backend/use-cases";
+import { findContactsMatchingUniqueValues } from "@mms/mod-contacts/backend/use-cases";
 import { createStudent } from "./studentWriteUseCases.js";
 
 /** One validated CSV row as produced by `studentImportRowSchema`. */

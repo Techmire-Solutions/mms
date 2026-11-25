@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ExamResult, User } from "@mms/shared";
+import type { ExamResult, User } from "@mms/contracts";
 
 const assertEligible = vi.hoisted(() => vi.fn(async () => undefined));
 vi.mock("../examinations/use-cases/examEligibilityGate.js", () => ({

@@ -3,12 +3,12 @@ import {
   type User,
   type StudentClearanceOptions,
   roleHasPermission,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
 import { studentUseCases } from "../../../students/use-cases/studentUseCases.js";
 import { StudentPermissionError } from "../../../students/use-cases/studentNormalizeUseCases.js";
-import { withTenant } from "../../../db/tenant-context.js";
-import { enableIncludeDeleted } from "../../../lib/softDeleteHelpers.js";
+import { withTenant } from "@mms/db/context";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
 
 /** Thin Students audit helper — shared factory, same shape as Contacts/Faculty. */
 export const auditStudent = createCollectionAuditHelper("students", { subjectScoped: true });

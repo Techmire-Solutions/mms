@@ -3,7 +3,7 @@ import {
   aiModelsBodySchema,
   platformLlmTestBodySchema,
   platformLlmUpdateSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   authenticatePlatform,
   requirePlatformPermission,

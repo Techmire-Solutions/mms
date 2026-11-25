@@ -4,7 +4,7 @@ Scope: the domain layer behind the Accounting module — `accountingUseCases`, `
 `accountingLedgerGuards`, the posting/reversal orchestration (`ledgerPosting/*`,
 `reverseJournalEntryUseCase`), the period and year-end locks (`accountingPostingPeriodUseCases`,
 `accountingPeriodClose`, `fiscalYearPostingLock`), the shared invariants they rely on
-(`packages/shared/src/finance/accountingLedgerInvariants.ts`, `accountingJournalReversal.ts`,
+(`packages/contracts/src/finance/accountingLedgerInvariants.ts`, `accountingJournalReversal.ts`,
 `accountingLedgerPosting.ts`), and the database guards those paths depend on (`0248`, `0249`, `0253`,
 `0254`).
 
@@ -39,7 +39,7 @@ derives functional amounts and absorbs rounding but never compares the document-
 database only mirrored the functional pair. A voucher written in one foreign currency could therefore
 balance in PKR while its own document was short by any amount (per-line rates make that easy), and the FX
 report's per-currency exposure and realised FX then describe a position the ledger never held.
-*Fix:* `journalCurrencyImbalances` (`packages/shared/src/finance/accountingCurrencyBalance.ts:39`), enforced in
+*Fix:* `journalCurrencyImbalances` (`packages/contracts/src/finance/accountingCurrencyBalance.ts:39`), enforced in
 `prepareJournalEntryForPersist` (`accountingLedgerGuards.ts:70-86`) and in the commit-time
 `accounting_assert_entry_postable`. **Scope, corrected during implementation:** the invariant is
 checkable only for a **single-currency** voucher. A mixed-currency voucher cannot be held to it — a
@@ -160,15 +160,15 @@ duplicate of the original reversal).
 
 | File | Change |
 |---|---|
-| `apps/backend/src/db/migrations_drizzle/0254_accounting_ledger_control_hardening.sql` | new: commit-time per-currency + closed-fiscal-year checks, narrowed closing exemption, summary-account line guard, "used account cannot become a parent", frozen `created_by`, period-reopen guard, report-only warnings |
+| `packages/db/migrations_drizzle/0254_accounting_ledger_control_hardening.sql` | new: commit-time per-currency + closed-fiscal-year checks, narrowed closing exemption, summary-account line guard, "used account cannot become a parent", frozen `created_by`, period-reopen guard, report-only warnings |
 | `…/meta/0254_accounting_ledger_control_hardening_snapshot.json`, `meta/_journal.json` | snapshot derived from 0253 + journal entry (no schema delta) |
-| `apps/backend/src/accounting/use-cases/accountingLedgerGuards.ts` | transaction-currency check; `created_by` server-owned; re-exports the split modules |
-| `apps/backend/src/accounting/use-cases/accountingAccountPostability.ts` | new: `assertAccountIdsPostable` / `assertJournalAccountsWritable` (summary + locking loader) |
-| `apps/backend/src/accounting/use-cases/accountingLedgerErrors.ts` | new: the 422 `ledgerError` shape shared by both guard modules |
+| `packages/modules/accounting/src/backend/use-cases/accountingLedgerGuards.ts` | transaction-currency check; `created_by` server-owned; re-exports the split modules |
+| `packages/modules/accounting/src/backend/use-cases/accountingAccountPostability.ts` | new: `assertAccountIdsPostable` / `assertJournalAccountsWritable` (summary + locking loader) |
+| `packages/modules/accounting/src/backend/use-cases/accountingLedgerErrors.ts` | new: the 422 `ledgerError` shape shared by both guard modules |
 | `apps/backend/src/accounting/ledgerPosting/ledgerPostingHelpers.ts` | postability guard on generated postings |
-| `apps/backend/src/accounting/use-cases/accountingPeriodClose.ts` | postability guard for closing lines |
-| `apps/backend/src/accounting/use-cases/accountingLedgerOpsUseCases.ts` | opening balances validated at edit time; summary accounts rejected as posting-rule targets |
-| `apps/backend/src/accounting/use-cases/accountingPostingPeriodUseCases.ts` | lock-before-read for close and reopen |
+| `packages/modules/accounting/src/backend/use-cases/accountingPeriodClose.ts` | postability guard for closing lines |
+| `packages/modules/accounting/src/backend/use-cases/accountingLedgerOpsUseCases.ts` | opening balances validated at edit time; summary accounts rejected as posting-rule targets |
+| `packages/modules/accounting/src/backend/use-cases/accountingPostingPeriodUseCases.ts` | lock-before-read for close and reopen |
 | `apps/backend/src/accounting/ledgerPosting/fiscalYearPostingLock.ts` | 64-bit advisory key |
 | `apps/backend/src/db/repositories/accountingAccountsRepository.ts` | `lockPostableAccounts` (`FOR SHARE`, `hasChildren`), `findSummaryAccountIds` |
 | `apps/backend/src/db/repositories/accountingFiscalYearsRepository.ts` | restore regenerates posting periods |
@@ -176,10 +176,10 @@ duplicate of the original reversal).
 | `apps/backend/src/db/repositories/accountingAccountGuards.ts` | hierarchy guard rejects reparenting a used account (422) |
 | `apps/backend/src/db/repositories/accountingAccountLedgerLines.ts` | new: `postedActiveLineScope` / `postedLineCountsByAccount` (split for the 300-line ceiling) |
 | `apps/backend/src/accounting/repository/accountingRepository.ts` + adapter | `lockPostableAccounts` |
-| `packages/shared/src/finance/accountingLedgerInvariants.ts` | (split: currency checks moved out) |
-| `packages/shared/src/finance/accountingCurrencyBalance.ts` | new: `journalCurrencyImbalances`, `formatJournalCurrencyImbalance` |
-| `packages/shared/src/finance/accountingAccountHierarchy.ts` | `summaryAccountIds` |
-| `packages/shared/src/finance/accountingFxLines.ts` | unique FX-rounding line id |
+| `packages/contracts/src/finance/accountingLedgerInvariants.ts` | (split: currency checks moved out) |
+| `packages/contracts/src/finance/accountingCurrencyBalance.ts` | new: `journalCurrencyImbalances`, `formatJournalCurrencyImbalance` |
+| `packages/contracts/src/finance/accountingAccountHierarchy.ts` | `summaryAccountIds` |
+| `packages/contracts/src/finance/accountingFxLines.ts` | unique FX-rounding line id |
 | `apps/frontend/src/tenant/features/accounting/lib/accountOptions.ts` | summary accounts excluded from pickers |
 | `apps/backend/src/scripts/audit-ledger-currency-balance.ts` + `package.json` | new audit script (`audit:ledger-currency-balance`) |
 

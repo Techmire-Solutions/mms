@@ -1,4 +1,4 @@
-import type { FacultySortField } from "@mms/shared";
+import type { FacultySortField } from "@mms/contracts";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useFacultyPageTabPanelProps } from "@/tenant/features/faculty/hooks/useFacultyPageTabPanelProps";
 import type { useFacultyDirectoryFilters } from "@/tenant/features/faculty/hooks/useFacultyDirectoryFilters";

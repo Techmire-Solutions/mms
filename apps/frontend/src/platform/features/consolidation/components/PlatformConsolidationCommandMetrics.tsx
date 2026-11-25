@@ -1,8 +1,8 @@
 import React from "react";
 import { Layers, Users } from "lucide-react";
-import { useTranslation } from "@/hooks/useTranslation";
-import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { StatsSkeleton } from "@shared/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ModuleCommandMetricsGrid } from "@mms/fe-core/components/ModuleCommandMetricsGrid";
+import { StatsSkeleton } from "@mms/ui";
 import { useConsolidationGroups } from "@/platform/features/consolidation/hooks/usePlatformConsolidation";
 
 /** Consolidation command metrics strip (group + member counts, visible across all tiers). */

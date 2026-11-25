@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-import { DEFAULT_BRANDING_SETTINGS, SYSTEM_MODULES } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, SYSTEM_MODULES } from "@mms/contracts";
 import { loginTenant } from "./moduleTiers.js";
 import { ensureE2ePlatformAdmin } from "./platformAdminSeeder.js";
 import type { TenantBootstrapCredentials } from "./tenantBootstrap.js";

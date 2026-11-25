@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useMemo, useState } from "react";
-import { STUDENTS_MODULE_MANIFEST } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST } from "@mms/contracts";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";

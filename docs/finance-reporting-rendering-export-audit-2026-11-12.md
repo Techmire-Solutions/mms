@@ -63,15 +63,15 @@ Status: **Fixed** items ship with this change; **Verified** items were exercised
 
 | File | Change |
 |---|---|
-| `packages/shared/src/finance/accountingReportEndpoints.ts` (new) | ledger + aging query/response schemas, exported from the shared barrel |
-| `packages/shared/src/finance/accountingReportAggregates.ts`, `accountingListQuery.ts` | ISO-date + ordered-range validation |
+| `packages/contracts/src/finance/accountingReportEndpoints.ts` (new) | ledger + aging query/response schemas, exported from the shared barrel |
+| `packages/contracts/src/finance/accountingReportAggregates.ts`, `accountingListQuery.ts` | ISO-date + ordered-range validation |
 | `apps/backend/src/lib/dbErrorMapping.ts` | `22007`/`22008` → 400, `23P01` → 409 |
 | `apps/backend/src/db/repositories/accountingReportEndpointsRepository.ts` (new) | integer-cent ledger/aging SQL |
-| `apps/backend/src/accounting/use-cases/accountingReportEndpointsUseCases.ts` (new) | ledger page + aging DTOs |
+| `packages/modules/accounting/src/backend/use-cases/accountingReportEndpointsUseCases.ts` (new) | ledger page + aging DTOs |
 | `apps/backend/src/routes/tenant/accounting/accountingReportRoutes.ts` | `GET /ledger`, `GET /receivables-aging` |
 | `apps/backend/src/accounting/ledgerPosting/ledgerPostingService.ts`, `accounting/use-cases/accountingLedgerOpsUseCases.ts` | revisioned opening balances + audit |
-| `apps/backend/src/accounting/use-cases/accountingAccountLifecycleUseCases.ts` | fiscal-year overlap guard |
-| `apps/backend/src/db/migrations_drizzle/0251_fiscal_year_no_overlap.sql` | exclusion constraint + pre-check |
+| `packages/modules/accounting/src/backend/use-cases/accountingAccountLifecycleUseCases.ts` | fiscal-year overlap guard |
+| `packages/db/migrations_drizzle/0251_fiscal_year_no_overlap.sql` | exclusion constraint + pre-check |
 | FE `useAccountingQueries`, `useGeneralLedger`, `GeneralLedger`, `ReceivablesAgingPanel`, `FinancialReports`, `accountingListFetch` | server ledger paging, aging view, paged CSV export |
 | FE `InvoiceReceiptModal`, `receiptPrintBatch` | print batch cap |
 | FE `reportExportCore` | sanitizer parity with `escapeCsvCell` |

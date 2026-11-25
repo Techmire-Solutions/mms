@@ -1,4 +1,4 @@
-import type { WhatsappIntegrationConfig } from "@mms/shared";
+import type { WhatsappIntegrationConfig } from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 export async function fetchWhatsappIntegration(): Promise<WhatsappIntegrationConfig | null> {

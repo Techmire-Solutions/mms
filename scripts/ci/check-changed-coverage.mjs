@@ -79,6 +79,13 @@ if (!args.coverage) {
   process.exit(2);
 }
 
+// Fail closed: a stale `--root` would make `changed` empty and exit 0 ("nothing to
+// enforce") while silently enforcing nothing (docs/monorepo-migration-plan.md §2.7).
+if (args.root && !fs.existsSync(path.resolve(process.cwd(), args.root))) {
+  console.error(`::error::changed-coverage --root does not exist: ${args.root}`);
+  process.exit(1);
+}
+
 function git(...command) {
   try {
     return execFileSync("git", command, { encoding: "utf8" });

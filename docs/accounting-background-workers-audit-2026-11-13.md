@@ -95,7 +95,7 @@ closing entry per fiscal year, COA active-code unique index, invoice period uniq
 | Posting use cases | `accounting/use-cases/fxRevaluationUseCases.ts`, `accounting/use-cases/ias29UseCases.ts` |
 | Transaction/lock | `db/tenant-context.ts`, `db/dbTransactions.ts`, `db/tenantTransactionGuards.ts`, `lib/httpErrors.ts`, `lib/dbErrorMapping.ts`, `routes/tenant/accounting/accountingLedgerOpsRoutes.ts` |
 | Import runner | `services/backgroundJobAccountingRunners.ts` (new), `services/backgroundJobRunnerService.ts` |
-| Notifications | `packages/shared/src/dashboard/tenantNotifications.ts`, `apps/frontend/src/tenant/hooks/notifications/useStoredNotifications.ts`, i18n ×4, migration `0257_notification_kinds_finance_accounting.sql` + snapshot/journal |
+| Notifications | `packages/contracts/src/dashboard/tenantNotifications.ts`, `apps/frontend/src/tenant/hooks/notifications/useStoredNotifications.ts`, i18n ×4, migration `0257_notification_kinds_finance_accounting.sql` + snapshot/journal |
 | Ops | `scripts/audit-accounting-batch-runs.ts` (new), `apps/backend/package.json`; `.gitignore`/`.prettierignore` now exclude in-checkout `.worktrees/` (VCS internals that broke the formatting gate) |
 | Tests | `financeAutomationScheduler.test.ts` (catch-up, isolation, failure record, abort), `financeAutomationRuns.test.ts` (new), `accountingBatchJobGuards.test.ts` (new), `accountingImportRunner.test.ts` (new), `db-integration/accountingCsvImportDb.integration.test.ts` (new), `db-integration/accountingFxRevaluationDb.integration.test.ts` (rollback probe) |
 

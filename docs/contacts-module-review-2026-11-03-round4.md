@@ -10,8 +10,8 @@ the write path end-to-end, the shared contract layer, module authorization for a
 and the frontend Work/Form/Sync tiers — the surfaces that had never been reviewed together.
 
 **Scope.** `apps/backend/src/routes/tenant/contacts/**`, `apps/backend/src/contacts/**`,
-`apps/backend/src/db/repositories/contact*`, `apps/backend/src/db/schema/contact*`,
-`apps/backend/src/plugins/staticAssets.ts`, `packages/shared/src/{contacts,contracts,schemas}`,
+`apps/backend/src/db/repositories/contact*`, `packages/db/src/schema/contact*`,
+`apps/backend/src/plugins/staticAssets.ts`, `packages/contracts/src/{contacts,contracts,schemas}`,
 `apps/frontend/src/tenant/features/contacts/**`, `apps/frontend/src/lib/contacts/**`,
 `apps/frontend/src/components/contact{Link,-action}/**`, migrations `0160`, `0200–0203`, and the
 contacts unit/DB/e2e specs.

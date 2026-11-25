@@ -42,7 +42,7 @@ Verify that all TypeScript import statements match the exact filename casing on 
 - Since Mac OS filesystems are case-insensitive by default, running typechecks locally using `pnpm typecheck` compiles strict casing.
 - Enforce casing check by building the shared package first and compiling the backend:
   ```bash
-  pnpm --filter @mms/shared build && pnpm --filter mms-backend typecheck
+  pnpm --filter @mms/contracts build && pnpm --filter mms-backend typecheck
   ```
 
 ## 3. Directory and Permissions Setup on Ubuntu VPS

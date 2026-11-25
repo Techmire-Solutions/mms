@@ -2,7 +2,7 @@ import React from "react";
 import { Info } from "lucide-react";
 import { Alert } from "@/components/app/Alert";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { GoogleContactsPanel } from "./sync/GoogleContactsPanel";
 import { AppleContactsPanel } from "./sync/AppleContactsPanel";
 import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";

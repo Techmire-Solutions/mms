@@ -1,7 +1,7 @@
 import { and, eq, or, sql } from "drizzle-orm";
-import { type Student } from "@mms/shared";
-import { students, studentEnrolledSessionsLegacy } from "../schema.js";
-import { withTenant, type AppDb } from "../tenant-context.js";
+import { type Student } from "@mms/contracts";
+import { students, studentEnrolledSessionsLegacy } from "@mms/db/schema";
+import { withTenant, type AppDb } from "@mms/db/context";
 import { mapAuditToInsert } from "./repositoryMappers.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { naiveTimestamp, requireDbDate } from "../../lib/dbDate.js";

@@ -9,13 +9,13 @@ import {
   type Account,
   type FeeEntryInput,
   type SalaryEntryInput,
-} from "@mms/shared";
-import { FormModal } from "@/components/app/FormModal";
-import { Form } from "@/components/ui/form";
-import { firstZodFieldError } from "@/lib/forms/translateZodError";
-import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
-import { notify } from "@/lib/notify";
-import { useTranslation } from "@/hooks/useTranslation";
+} from "@mms/contracts";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { Form } from "@mms/ui/form";
+import { firstZodFieldError } from "@mms/fe-core/forms/translateZodError";
+import { useSubmitGuard } from "@mms/fe-core/forms/useSubmitGuard";
+import { notify } from "@mms/fe-core/notify";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useProcessSpecializedEntryMutation } from "@/tenant/features/accounting/hooks/useAccountingApi";
 import { SpecializedEntryFeeFields } from "@/tenant/features/accounting/components/SpecializedEntryFeeFields";
 import { SpecializedEntrySalaryFields } from "@/tenant/features/accounting/components/SpecializedEntrySalaryFields";

@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { generateClientEntityId } from "@mms/shared";
+import { generateClientEntityId } from "@mms/contracts";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";

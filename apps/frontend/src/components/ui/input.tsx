@@ -1,1 +1,1 @@
-export { Input, type InputProps } from "@shared/ui";
+export { Input, type InputProps } from "@mms/ui";

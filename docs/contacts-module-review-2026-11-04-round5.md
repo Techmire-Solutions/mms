@@ -4,8 +4,8 @@ Independent, read-only re-review of the contacts domain at `main` HEAD `60245210
 after the round-4 fix set landed in `ab9874cab` (#274).
 
 **Scope.** `apps/backend/src/routes/tenant/contacts/**`, `apps/backend/src/contacts/**`,
-`apps/backend/src/db/repositories/contact*`, `apps/backend/src/db/schema/contact*`,
-`apps/backend/src/plugins/staticAssets.ts`, `packages/shared/src/{contacts,contracts,schemas}`,
+`apps/backend/src/db/repositories/contact*`, `packages/db/src/schema/contact*`,
+`apps/backend/src/plugins/staticAssets.ts`, `packages/contracts/src/{contacts,contracts,schemas}`,
 `apps/frontend/src/tenant/features/contacts/**`, `apps/frontend/src/lib/contacts/**`,
 `apps/frontend/src/components/contact*/**`, the contacts e2e/DB specs, and
 `lib/moduleRouteActions.ts`.
@@ -72,10 +72,10 @@ five of them discarding the error object entirely. **No P0** — no cross-tenant
 ### M-1 — Merge aborts on the CNIC the merged-away contact still holds (Major)
 
 **Evidence.**
-- `packages/shared/src/contacts/contactMergeUtils.ts:31-40` copies any value the survivor lacks —
+- `packages/contracts/src/contacts/contactMergeUtils.ts:31-40` copies any value the survivor lacks —
   `cnic` is not in `EXCLUDED_MERGE_KEYS`:
   `for (const key of Object.keys(other)) { if (EXCLUDED_MERGE_KEYS.has(key)) continue; if (merged[key] === undefined || … === null || … === "") { merged[key] = other[key]; } }`
-- `apps/backend/src/db/schema/contactCoreTables.ts:90-95` declares a **workspace-wide** partial unique index:
+- `packages/db/src/schema/contactCoreTables.ts:90-95` declares a **workspace-wide** partial unique index:
   `uniqueIndex("contacts_workspace_cnic_active_uidx").on(table.workspaceSubdomain, sql\`(regexp_replace(${table.cnic}, '[^0-9]', '', 'g'))\`).where(sql\`${table.deletedAt} is null and …\`)`.
   Created by `0066_contacts_unique_indexes.sql:62-69`; the phone/email twins were dropped by
   `0075_contacts_normalization.sql:16-17`, so `cnic` is the only remaining workspace-unique column.
@@ -109,7 +109,7 @@ domain conflicts — `throw new ConflictError(DEPENDENT_LINK_MESSAGES.student)` 
 (plus active-employment and active-user variants).
 `apps/backend/src/routes/tenant/contacts/contactCrudRoutes.ts:251-261` discards the type:
 `} catch (error) { request.log.error(error, "Failed to delete contact"); return { status: 500 as const, body: { type: "database_error", message: "Failed to delete contact" } }; }`
-The contract cannot express the outcome either — `packages/shared/src/contracts/contactsCrud.contract.ts:106-111`
+The contract cannot express the outcome either — `packages/contracts/src/contracts/contactsCrud.contract.ts:106-111`
 declares only `200/403/404/500` for `delete`.
 
 **Production path.** `DELETE /api/contacts/:id` implemented by `contactCrudRoutes.delete`

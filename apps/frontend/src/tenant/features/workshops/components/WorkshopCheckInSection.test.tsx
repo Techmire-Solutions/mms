@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { WorkshopDetail } from "@mms/shared";
+import type { WorkshopDetail } from "@mms/contracts";
 import { WorkshopCheckInSection } from "./WorkshopCheckInSection";
 
 declare global {

@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import type { TenantTransaction } from "../tenant-context.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import type { TenantTransaction } from "@mms/db/context";
+import { withTenant, withTenantRead } from "@mms/db/context";
 
 /** Organization positions removed — supervisor position resolution is unavailable. */
 export async function resolveSupervisorPrimaryPositionId(

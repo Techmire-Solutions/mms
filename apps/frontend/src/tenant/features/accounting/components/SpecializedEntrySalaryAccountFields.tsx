@@ -1,10 +1,10 @@
 import React from "react";
 import type { UseFormReturn } from "react-hook-form";
-import type { Account, SalaryEntryInput } from "@mms/shared";
-import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
-import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import type { Account, SalaryEntryInput } from "@mms/contracts";
+import { FormSelectWithQuickCreate } from "@mms/fe-core/components/FormSelectWithQuickCreate";
+import { FormControl, FormField, FormItem, FormLabel } from "@mms/ui/form";
 import { TranslatedFormMessage } from "@/lib/forms/TranslatedFormMessage";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { AccountModal } from "@/tenant/features/accounting/components/AccountModal";
 import { useAccountQuickCreate } from "../hooks/useAccountQuickCreate";
 

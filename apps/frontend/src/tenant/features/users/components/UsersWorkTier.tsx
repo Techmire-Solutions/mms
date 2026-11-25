@@ -4,10 +4,10 @@ import type {
   ModuleColumnRegistryEntry,
   SystemUser,
   UsersListPageResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { ErrorState } from "@/components/app/ErrorState";
-import { CardSkeleton } from "@shared/ui";
+import { CardSkeleton } from "@mms/ui";
 import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { DataTableColumnLayout } from "@/components/common/data-table";
 import { useTranslation } from "@/hooks/useTranslation";

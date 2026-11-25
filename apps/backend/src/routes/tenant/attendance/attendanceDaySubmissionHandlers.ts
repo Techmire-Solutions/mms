@@ -1,8 +1,8 @@
-import { type attendanceContract, type User, ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { type attendanceContract, type User, ATTENDANCE_MODULE_MANIFEST } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import {
   readSubmittedAttendanceDay,
   reopenSubmittedAttendanceDay,

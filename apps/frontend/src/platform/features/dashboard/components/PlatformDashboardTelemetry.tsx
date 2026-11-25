@@ -6,9 +6,9 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { itemVariants } from "@/lib/motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { ROUTES } from "@/lib/config/routes";
-import { WORK_SURFACE } from "@shared/ui";
+import { WORK_SURFACE } from "@mms/ui";
 import { cn } from "@/lib/utils";
 
 /**

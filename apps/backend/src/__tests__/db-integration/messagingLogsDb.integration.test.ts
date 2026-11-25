@@ -8,9 +8,9 @@ import {
   closeDatabase,
   initializeDatabaseConnection,
   pingDatabase,
-} from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { messageLogs, workspaces } from "../../db/schema.js";
+} from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { messageLogs, workspaces } from "@mms/db/schema";
 import {
   claimMessageLogForDelivery,
   saveMessageLogDeliveryOutcomes,

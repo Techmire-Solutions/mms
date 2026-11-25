@@ -6,7 +6,7 @@
  * {@link defineTenantBulkCollectionService} (list + replace + schema + broadcast key) that the
  * use cases only reference.
  */
-import { obligationCollectionListSchema, type ObligationCollection } from "@mms/shared";
+import { obligationCollectionListSchema, type ObligationCollection } from "@mms/contracts";
 import { defineTenantBulkCollectionService } from "../../services/tenantBulkService.js";
 import type { ObligationsRepository } from "../repository/obligationsRepository.js";
 

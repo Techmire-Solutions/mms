@@ -4,7 +4,7 @@ import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Enrollment } from "@/lib/data/enrollmentData";
-import { enrollmentHoldsSeat, type Student, type toMessagingRecipient } from "@mms/shared";
+import { enrollmentHoldsSeat, type Student, type toMessagingRecipient } from "@mms/contracts";
 
 export type MessageChannel = "whatsapp" | "sms" | "email";
 

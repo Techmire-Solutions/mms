@@ -4,7 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { PrintablePaper } from "@/tenant/features/question-bank/components/PrintablePaper";
 import { PrintableAnswerSheet } from "@/tenant/features/question-bank/components/PrintableAnswerSheet";
-import type { QuestionBankQuestion as Question } from "@mms/shared";
+import type { QuestionBankQuestion as Question } from "@mms/contracts";
 import type {
   PaperConfig,
   PaperPrintMode,

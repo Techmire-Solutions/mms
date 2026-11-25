@@ -24,14 +24,14 @@ metadata:
 - **Contact Linkage**: Student records link to a primary contact for person identity (`contactId`). Demographic, address, and phone data hydrate from `contacts` rather than duplicating onto `students` (`mms-migration-status.md` §2).
 - **Enrollment Cascades**: When an academic session is archived or restored, enrollment cascades must preserve `deleted_with_cascade` flags so standalone student un-enrollments are never erroneously restored.
 - **Attendance Batching**: Daily attendance operates as workshop grid (`MarkAttendanceTableView.tsx`, `MarkAttendanceStudentCard.tsx`). Form submissions use bulk upsert contracts with transactional atomicity.
-- **Grading & GPA Calculations**: Grade calculations (percentages, grade letters, GPA points) must be calculated on the backend or in pure `@mms/shared` helpers; never rely on un-validated client math.
+- **Grading & GPA Calculations**: Grade calculations (percentages, grade letters, GPA points) must be calculated on the backend or in pure `@mms/contracts` helpers; never rely on un-validated client math.
 - **Guardian Triad & Derived Tags**: father/mother/guardian links live on the student primary contact's relationship graph; do not dual-write the `students.father_*` columns. The contact projection derives `Student`, `Parent`, and `Guardian` tags from those links and student status (`active`/`suspended`), archives them on status end/unlink/soft-delete, and reactivates on restore. Student create/update/delete/restore and bulk status paths must reconcile the student and related contacts. See `mms-data-layer.md` §9.
 
 ## 2. Implementation Map
 
 | Operational Domain | Frontend Feature | Backend Routes & Services |
 |---|---|---|
-| Students & Admissions | `apps/frontend/src/tenant/features/students/StudentsPage.tsx` | `apps/backend/src/students/`, `apps/backend/src/contacts/systemTags/` |
+| Students & Admissions | `apps/frontend/src/tenant/features/students/StudentsPage.tsx` | `apps/backend/src/students/`, `packages/modules/contacts/src/backend/systemTags/` |
 | Enrollments & Classes | `apps/frontend/src/tenant/features/enrollments/EnrollmentsPage.tsx` | `apps/backend/src/enrollments/` |
 | Attendance Tracking | `apps/frontend/src/tenant/features/attendance/AttendancePage.tsx` | `apps/backend/src/attendance/` |
 | Examinations & Grades | `apps/frontend/src/tenant/features/examinations/ExaminationsPage.tsx` | `apps/backend/src/examinations/` |

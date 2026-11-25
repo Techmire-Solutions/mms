@@ -1,10 +1,16 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      upsertContact: mocks.upsertContact,
+    },
+  };
+});
+
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 const mocks = vi.hoisted(() => ({ upsertContact: vi.fn() }));
-
-vi.mock("../contacts/use-cases/contactWriteUseCases.js", () => ({
-  upsertContact: mocks.upsertContact,
-}));
 
 const { createGuardianContact, guardianRelationships, GUARDIAN_RELATIONSHIP } =
   await import("../enrollments/use-cases/admissionsGuardianLink.js");

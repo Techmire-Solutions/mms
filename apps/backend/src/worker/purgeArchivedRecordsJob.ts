@@ -1,8 +1,8 @@
 import { and, eq, inArray, isNotNull, lt, lte, sql } from "drizzle-orm";
-import type { DbClient } from "../db/dbConnection.js";
-import { messageLogs, attendance, backgroundJobs } from "../db/schema.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
-import { emitOutboxEvent } from "../services/outboxEventService.js";
+import type { DbClient } from "@mms/db/client";
+import { messageLogs, attendance, backgroundJobs } from "@mms/db/schema";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
 import { logger } from "../lib/logger.js";
 
 const CHUNK_SIZE = 500;

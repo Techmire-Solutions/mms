@@ -1,6 +1,30 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsByIds: vi.fn().mockResolvedValue([]),
+      getContactById: vi.fn().mockResolvedValue(null),
+      updateContactById: vi.fn(),
+    },
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsByIds: vi.fn().mockResolvedValue([]),
+      getContactById: vi.fn().mockResolvedValue(null),
+      updateContactById: vi.fn(),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { loadContactsByIds } from "../services/contactService.js";
-import type { Contact } from "@mms/shared";
+import { loadContactsByIds } from "@mms/mod-contacts/backend/services";
+import type { Contact } from "@mms/contracts";
 
 const mockListTenantUsers = vi.fn();
 const mockFindTenantUserById = vi.fn();
@@ -43,12 +67,6 @@ vi.mock("../services/auth/passwordService.js", async (importOriginal) => {
     verifyPassword: (...args: unknown[]) => mockVerifyPassword(...args),
   };
 });
-
-vi.mock("../services/contactService.js", () => ({
-  loadContactsByIds: vi.fn().mockResolvedValue([]),
-  getContactById: vi.fn().mockResolvedValue(null),
-  updateContactById: vi.fn(),
-}));
 
 vi.mock("../services/globalSettingsService.js", () => ({
   assertPasswordMeetsPolicy: vi.fn().mockResolvedValue(undefined),

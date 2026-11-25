@@ -12,11 +12,11 @@ const mocks = vi.hoisted(() => ({
   prefsLoadFailed: false,
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -75,7 +75,7 @@ vi.mock("./AccountingSettingsPreferences", () => ({
   },
 }));
 
-vi.mock("@/components/app/ModuleSetupSaveFooter", () => ({
+vi.mock("@mms/fe-core/components/ModuleSetupSaveFooter", () => ({
   ModuleSetupSaveFooter: ({ dirty }: { dirty: boolean }) => (
     <div data-testid="save-footer" data-dirty={String(dirty)}>
       Save Footer
@@ -87,7 +87,7 @@ vi.mock("./AccountingFiscalYearModal", () => ({
   AccountingFiscalYearModal: () => null,
 }));
 
-vi.mock("@/components/app/ConfirmAlertDialog", () => ({
+vi.mock("@mms/fe-core/components/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: () => null,
 }));
 

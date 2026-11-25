@@ -1,7 +1,7 @@
 import { apiContract } from "@/lib/api";
 import { createModuleSetupConfigApi } from "@/lib/query/createModuleSetupConfigApi";
-import type { HasanatModulePreferences } from "@mms/shared";
-import { normalizeHasanatModulePreferences } from "@mms/shared";
+import type { HasanatModulePreferences } from "@mms/contracts";
+import { normalizeHasanatModulePreferences } from "@mms/contracts";
 
 const api = createModuleSetupConfigApi<HasanatModulePreferences>({
   fetchPreferencesFn: async (signal) => {

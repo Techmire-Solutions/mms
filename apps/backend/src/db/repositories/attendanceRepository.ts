@@ -1,8 +1,8 @@
-import { attendance } from "../schema.js";
-import type { AttendanceRecord } from "@mms/shared";
-import { withTenant } from "../tenant-context.js";
-import { ConflictError } from "../../lib/httpErrors.js";
-import { isUniqueViolation } from "../../lib/pgErrors.js";
+import { attendance } from "@mms/db/schema";
+import type { AttendanceRecord } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
+import { ConflictError } from "@mms/be-core/http/errors";
+import { isUniqueViolation } from "@mms/be-core/http/errors";
 import {
   attendanceRowToRecord as rowToRecord,
   attendanceRecordToInsert as recordToInsert,

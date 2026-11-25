@@ -7,7 +7,7 @@ import {
   type StockBatch,
   type Distribution,
   type Redemption,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceDenomsForWorkspace,

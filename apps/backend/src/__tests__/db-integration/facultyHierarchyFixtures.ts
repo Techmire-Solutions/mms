@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
 import {
   workspaces,
   contacts,
@@ -9,7 +9,7 @@ import {
   facultyDesignations,
   facultyAssignments,
   facultyEmployments,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 
 export const facultyTestTenant = `faculty-${randomUUID().slice(0, 8)}`;
 export const facultyOtherTenant = `${facultyTestTenant}-other`;

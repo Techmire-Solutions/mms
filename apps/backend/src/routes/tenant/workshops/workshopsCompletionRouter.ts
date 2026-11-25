@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { workshopsCompletionContract, WORKSHOPS_MODULE_MANIFEST } from "@mms/shared";
+import { workshopsCompletionContract, WORKSHOPS_MODULE_MANIFEST } from "@mms/contracts";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { guarded } from "./workshopsRouteGuard.js";

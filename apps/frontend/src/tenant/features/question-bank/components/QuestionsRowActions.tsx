@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { QuestionBankQuestion as Question } from "@mms/shared";
+import type { QuestionBankQuestion as Question } from "@mms/contracts";
 
 export interface QuestionsRowActionsProps {
   question: Question;

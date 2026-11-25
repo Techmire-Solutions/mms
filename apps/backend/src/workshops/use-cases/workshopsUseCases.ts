@@ -6,7 +6,7 @@ import {
   type WorkshopEventUpdate,
   type WorkshopScoresBody,
   type WorkshopTransitionBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { WorkshopsRepository } from "../repository/workshopsRepository.js";
 import { workshopsRepository } from "../repository/workshopsRepositoryAdapter.js";
 import { requireTenant } from "../../lib/tenantContext.js";

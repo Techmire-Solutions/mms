@@ -1,13 +1,13 @@
-import { type AccountingSettings, type Account, type FiscalYear } from "@mms/shared";
-import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { AccountingSettingsCurrencySection } from "./AccountingSettingsCurrencySection";
+import { type AccountingSettings, type Account, type FiscalYear } from "@mms/contracts";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import { AccountingSettingsCurrencySection } from "@mms/mod-accounting/frontend/tenant";
 import { AccountingSettingsFxSection } from "./AccountingSettingsFxSection";
 import { AccountingSettingsHyperinflationSection } from "./AccountingSettingsHyperinflationSection";
 import { AccountingSettingsFiscalYearsSection } from "./AccountingSettingsFiscalYearsSection";
-import { AccountingSettingsRulesSection } from "./AccountingSettingsRulesSection";
-import { AccountingSettingsTemplatesSection } from "./AccountingSettingsTemplatesSection";
+import { AccountingSettingsRulesSection } from "@mms/mod-accounting/frontend/tenant";
+import { AccountingSettingsTemplatesSection } from "@mms/mod-accounting/frontend/tenant";
 import { AccountingSettingsNumberingSection } from "./AccountingSettingsNumberingSection";
-import { AccountingSettingsPostingSection } from "./AccountingSettingsPostingSection";
+import { AccountingSettingsPostingSection } from "@mms/mod-accounting/frontend/tenant";
 
 type CurrencyOption = {
   code: string;

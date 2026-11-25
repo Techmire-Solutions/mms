@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { User } from "lucide-react";
-import { Field, FormSubmitActions, Input, SectionCard } from "@shared/ui";
+import { Field, FormSubmitActions, Input, SectionCard } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 import { useUpdatePlatformProfileName } from "@/platform/features/account/hooks/usePlatformProfile";

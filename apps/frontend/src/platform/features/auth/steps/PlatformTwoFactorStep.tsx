@@ -1,7 +1,7 @@
 import React from "react";
 import { ShieldCheck } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FieldErrorMessage, OtpInput } from "@shared/ui";
+import { FieldErrorMessage, OtpInput } from "@mms/ui";
 import {
   AuthSubmitButton,
   AuthResendCodeControl,

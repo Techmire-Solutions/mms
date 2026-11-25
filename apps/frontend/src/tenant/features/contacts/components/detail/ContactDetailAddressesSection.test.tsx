@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { ContactDetailAddressesSection } from "./ContactDetailAddressesSection";
 
 const mockContact: Contact = {

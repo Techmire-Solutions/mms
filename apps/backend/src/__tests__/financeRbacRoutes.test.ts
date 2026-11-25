@@ -32,8 +32,8 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+vi.mock("@mms/db/context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/context")>();
   return { ...actual, withTenant: (_tenant: string, work: () => unknown) => work() };
 });
 
@@ -61,27 +61,33 @@ vi.mock("../finance/use-cases/financeInvoiceGenerationUseCases.js", () => ({
 const mockCloseFiscalYear = vi.fn();
 const mockClosePeriod = vi.fn();
 const mockReopenPeriod = vi.fn();
-vi.mock("../accounting/use-cases/accountingLedgerOpsUseCases.js", () => ({
-  closeFiscalYear: (...args: unknown[]) => mockCloseFiscalYear(...args),
-  closePostingPeriod: (...args: unknown[]) => mockClosePeriod(...args),
-  reopenPostingPeriod: (...args: unknown[]) => mockReopenPeriod(...args),
-  loadBankStatements: vi.fn().mockResolvedValue([]),
-  loadOpeningBalances: vi.fn().mockResolvedValue([]),
-  loadPostingPeriods: vi.fn().mockResolvedValue([]),
-  loadPostingRules: vi.fn().mockResolvedValue(null),
-  matchBankStatementLine: vi.fn(),
-  postOpeningBalances: vi.fn(),
-  upsertBankStatement: vi.fn(),
-  upsertOpeningBalances: vi.fn(),
-  upsertPostingRules: vi.fn(),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingLedgerOpsUseCases.js",
+  () => ({
+    closeFiscalYear: (...args: unknown[]) => mockCloseFiscalYear(...args),
+    closePostingPeriod: (...args: unknown[]) => mockClosePeriod(...args),
+    reopenPostingPeriod: (...args: unknown[]) => mockReopenPeriod(...args),
+    loadBankStatements: vi.fn().mockResolvedValue([]),
+    loadOpeningBalances: vi.fn().mockResolvedValue([]),
+    loadPostingPeriods: vi.fn().mockResolvedValue([]),
+    loadPostingRules: vi.fn().mockResolvedValue(null),
+    matchBankStatementLine: vi.fn(),
+    postOpeningBalances: vi.fn(),
+    upsertBankStatement: vi.fn(),
+    upsertOpeningBalances: vi.fn(),
+    upsertPostingRules: vi.fn(),
+  }),
+);
 
 const mockLoadNumbering = vi.fn();
 const mockSaveNumbering = vi.fn();
-vi.mock("../accounting/use-cases/accountingVoucherNumberingUseCases.js", () => ({
-  loadVoucherNumbering: (...args: unknown[]) => mockLoadNumbering(...args),
-  upsertVoucherNumbering: (...args: unknown[]) => mockSaveNumbering(...args),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingVoucherNumberingUseCases.js",
+  () => ({
+    loadVoucherNumbering: (...args: unknown[]) => mockLoadNumbering(...args),
+    upsertVoucherNumbering: (...args: unknown[]) => mockSaveNumbering(...args),
+  }),
+);
 
 const NUMBERING = {
   autoGenerate: true,

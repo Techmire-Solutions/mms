@@ -1,4 +1,4 @@
-import { todayISO } from "@mms/shared";
+import { todayISO } from "@mms/contracts";
 import { useAttendanceMetrics } from "@/tenant/hooks/collections/attendance";
 import { useFinanceMetrics } from "@/tenant/hooks/collections/finance";
 import { useAccountingMetrics } from "@/tenant/hooks/collections/accounting";

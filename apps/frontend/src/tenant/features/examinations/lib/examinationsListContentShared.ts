@@ -1,6 +1,6 @@
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { enrollmentHoldsSeat } from "@mms/shared";
+import { enrollmentHoldsSeat } from "@mms/contracts";
 import type { Enrollment } from "@/lib/data/enrollmentData";
 import type { Exam } from "@/lib/data/examinationData";
 

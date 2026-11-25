@@ -1,14 +1,14 @@
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
 import type {
   FacultyCatalogStatus,
   FacultyDesignationDefinition,
   FacultyDesignationWrite,
-} from "@mms/shared";
-import { facultyDepartments, facultyDesignationRoles, facultyDesignations } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+} from "@mms/contracts";
+import { facultyDepartments, facultyDesignationRoles, facultyDesignations } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
 import { resolveFacultyCatalogCode } from "./facultyDepartmentValidation.js";
 import {
   recomputeDescendantRanks,

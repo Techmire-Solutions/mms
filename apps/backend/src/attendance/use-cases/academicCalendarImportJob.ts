@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { AcademicCalendarEventWrite } from "@mms/shared";
+import type { AcademicCalendarEventWrite } from "@mms/contracts";
 import { registerModuleCsvImportJobRunner } from "../../lib/registerModuleCsvImportJobRunner.js";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { academicCalendarUseCases } from "./academicCalendarUseCases.js";

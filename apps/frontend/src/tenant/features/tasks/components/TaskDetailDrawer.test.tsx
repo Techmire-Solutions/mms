@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import type { TaskRecord } from "@mms/shared";
+import type { TaskRecord } from "@mms/contracts";
 import { TaskDetailDrawer } from "./TaskDetailDrawer";
 
 vi.mock("@/hooks/useTranslation", () => ({

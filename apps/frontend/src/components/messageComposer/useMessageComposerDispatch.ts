@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   type MessageTemplate,
   type StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { useMessagingMutations } from "@/hooks/useMessaging";

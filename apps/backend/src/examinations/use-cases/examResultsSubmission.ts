@@ -1,4 +1,4 @@
-import type { ExamResult, User } from "@mms/shared";
+import type { ExamResult, User } from "@mms/contracts";
 import { examinationsRepository } from "../repository/examinationsRepositoryAdapter.js";
 import { examEligibilityRepository as eligibilityRepo } from "../repository/examEligibilityAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";

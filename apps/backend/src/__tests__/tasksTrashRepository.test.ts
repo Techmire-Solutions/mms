@@ -18,7 +18,9 @@ function mockQueryResult(rows: unknown[]) {
   });
 }
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (_tenant: string, fn: (tx: { select: typeof mocks.select }) => Promise<unknown>) =>
     fn({ select: mocks.select }),
 }));
@@ -27,11 +29,11 @@ vi.mock("../db/repositories/facultyAssignmentValidation.js", () => ({
   lockFacultyHierarchy: vi.fn(),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn(),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn(),
 }));
 

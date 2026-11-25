@@ -1,4 +1,4 @@
-import { CONTACTS_MODULE_MANIFEST, type ContactsQuickFilter, type Contact } from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST, type ContactsQuickFilter, type Contact } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { createModuleListQueryBuilders } from "@/lib/query/createModuleListQueryBuilders";
 import {

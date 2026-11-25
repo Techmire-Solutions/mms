@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PAGE_SIZES } from "@mms/shared";
+import { PAGE_SIZES } from "@mms/contracts";
 import {
   buildVoucherTemplate,
   voucherLayoutCopy,
@@ -9,7 +9,7 @@ import {
   voucherTableLines,
   type VoucherPrintPayload,
 } from "@/tenant/features/accounting/lib/voucherTemplateModel";
-import type { PaymentVoucherModel } from "@/tenant/features/accounting/lib/paymentVoucherModel";
+import type { PaymentVoucherModel } from "@mms/mod-accounting/frontend/tenant";
 
 const copy = voucherLayoutCopy((key) => key);
 

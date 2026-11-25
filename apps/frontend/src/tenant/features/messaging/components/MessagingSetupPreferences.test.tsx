@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MessagingSetupPreferences } from "./MessagingSetupPreferences";
-import { DEFAULT_MESSAGING_PREFERENCES } from "@mms/shared";
+import { DEFAULT_MESSAGING_PREFERENCES } from "@mms/contracts";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

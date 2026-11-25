@@ -1,7 +1,7 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/dbInit.js";
-import { activeDb, closeDatabase } from "../db/dbConnection.js";
-import { workspaces } from "../db/schema/platform.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { activeDb, closeDatabase } from "@mms/db/client";
+import { workspaces } from "@mms/db/schema/platform";
 import {
   verifyTenantAuditChain,
   computeAndPublishMerkleCheckpoint,
@@ -11,7 +11,7 @@ loadBackendEnv();
 
 async function main(): Promise<void> {
   console.log("[verify-audit-chains] Initializing database connection...");
-  await initDb();
+  await initializeDatabase();
   const db = activeDb();
 
   console.log("[verify-audit-chains] Querying active tenant workspaces...");

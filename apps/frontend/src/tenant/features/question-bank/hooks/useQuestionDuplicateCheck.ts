@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiContract } from "@/lib/api";
-import { hasComparableStem } from "@mms/shared";
+import { hasComparableStem } from "@mms/contracts";
 
 export interface DuplicateMatch {
   id: string;

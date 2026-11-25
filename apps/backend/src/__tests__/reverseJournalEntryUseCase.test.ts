@@ -1,12 +1,12 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { describe, expect, it } from "vitest";
-import { journalReversalResultSchema } from "@mms/shared";
-import type { Account, FiscalYear, JournalEntry } from "@mms/shared";
-import type { RecordModernAuditInput } from "../services/auditTrailService.js";
+import { journalReversalResultSchema } from "@mms/contracts";
+import type { Account, FiscalYear, JournalEntry } from "@mms/contracts";
+import type { RecordModernAuditInput } from "@mms/be-core/audit";
 import {
   reverseJournalEntry,
   type ReverseJournalEntryDeps,
-} from "../accounting/use-cases/reverseJournalEntryUseCase.js";
+} from "@mms/mod-accounting/backend/use-cases";
 
 const TENANT = "demo";
 const ACTOR = { id: "user-1", name: "Amina Accountant" };

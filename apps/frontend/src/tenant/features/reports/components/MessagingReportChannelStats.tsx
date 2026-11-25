@@ -3,7 +3,7 @@ import {
   MESSAGING_CHANNEL_CONFIG,
   type MessagingChannelConfig,
 } from "@/tenant/hooks/collections/messaging";
-import { getChannelLabelKey } from "@mms/shared";
+import { getChannelLabelKey } from "@mms/contracts";
 import { WORK_SURFACE, WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { SEMANTIC_TEXT, getSolidBgClass } from "@/lib/ui/semanticTone";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

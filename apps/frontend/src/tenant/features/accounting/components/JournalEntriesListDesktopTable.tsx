@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { formatDirectoryPageCountLabel } from "@/lib/formatDirectoryPageCountLabel";
 import { WorkBatchTable, type WorkBatchTableFooterRow } from "@/components/common/work";
 import {
@@ -7,7 +7,7 @@ import {
   getVisibleLeadingColumnCount,
   isJournalBalanced,
   type JournalEntriesListProps,
-} from "@/tenant/features/accounting/lib/journalEntriesListShared";
+} from "@mms/mod-accounting/frontend/tenant";
 import { useJournalEntriesTableColumns } from "./useJournalEntriesTableColumns";
 
 type JournalEntriesListDesktopTableProps = JournalEntriesListProps;

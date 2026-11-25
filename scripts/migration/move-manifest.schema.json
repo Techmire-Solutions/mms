@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mms.local/scripts/migration/move-manifest.schema.json",
+  "title": "MMS migration move ledger",
+  "description": "One entry per directory/file move in docs/monorepo-migration-plan.md. Validated by scripts/check-move-manifest.mjs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "entries"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "to", "phase", "status"],
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Repo-relative POSIX path that must disappear.",
+            "pattern": "^[^/\\\\][^\\\\]*$"
+          },
+          "to": {
+            "type": "string",
+            "description": "Repo-relative POSIX path that must appear.",
+            "pattern": "^[^/\\\\][^\\\\]*$"
+          },
+          "phase": {
+            "type": "string",
+            "description": "Migration phase from docs/monorepo-migration-plan.md §8.",
+            "pattern": "^P[0-9]$"
+          },
+          "status": {
+            "enum": ["todo", "done"],
+            "description": "todo = from still exists; done = moved and from is gone."
+          }
+        }
+      }
+    }
+  }
+}

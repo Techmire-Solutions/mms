@@ -13,7 +13,7 @@ import {
 } from "@/components/app/DetailDrawerArchiveChrome";
 
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatDate, getOutstandingAmountForInvoice } from "@mms/shared";
+import { formatDate, getOutstandingAmountForInvoice } from "@mms/contracts";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { InvoiceCorrectionActions } from "@/tenant/features/finance/components/InvoiceCorrectionActions";
 import { formatDocumentAmount } from "@/tenant/features/finance/lib/documentAmount";

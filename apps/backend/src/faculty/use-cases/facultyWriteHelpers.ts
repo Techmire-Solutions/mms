@@ -1,4 +1,4 @@
-import type { FacultyRecord } from "@mms/shared";
+import type { FacultyRecord } from "@mms/contracts";
 import { randomUUID } from "node:crypto";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import {

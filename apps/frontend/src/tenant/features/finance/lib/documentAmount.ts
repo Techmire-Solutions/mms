@@ -1,4 +1,4 @@
-import { formatMoney } from "@mms/shared";
+import { formatMoney } from "@mms/contracts";
 
 /**
  * Format an amount in its document's currency. Functional-currency documents

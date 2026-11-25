@@ -1,4 +1,4 @@
-import type { GenericSavedReportCategory } from "@mms/shared";
+import type { GenericSavedReportCategory } from "@mms/contracts";
 
 /** Legacy localStorage collection that held generic saved-report presets. */
 export const LEGACY_SAVED_REPORTS_COLLECTION_KEY = "reports_saved_reports";

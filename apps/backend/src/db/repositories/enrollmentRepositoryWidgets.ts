@@ -1,8 +1,8 @@
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
-import type { EnrollmentsWidgetAggregateResult, EnrollmentsWidgetQuery } from "@mms/shared";
-import { enrollments } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
-import { HttpDomainError } from "../../lib/httpErrors.js";
+import type { EnrollmentsWidgetAggregateResult, EnrollmentsWidgetQuery } from "@mms/contracts";
+import { enrollments } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
+import { HttpDomainError } from "@mms/be-core/http/errors";
 
 /** Columns whose values are canonical lowercase ids/statuses: equality can use the index. */
 const EXACT_INDEXED_FIELDS = new Set([

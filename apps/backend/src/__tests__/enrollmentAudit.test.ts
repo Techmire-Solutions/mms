@@ -4,9 +4,9 @@ import {
   ENROLLMENT_AUDIT_REASON_CODES,
   recordEnrollmentAudit,
 } from "../enrollments/use-cases/enrollmentAudit.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
 

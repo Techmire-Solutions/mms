@@ -1,4 +1,4 @@
-import { canSendWhatsAppNotifications, type GlobalSettings } from "@mms/shared";
+import { canSendWhatsAppNotifications, type GlobalSettings } from "@mms/contracts";
 import {
   loadWhatsappIntegrationConfig,
   loadWhatsappIntegrationSecrets,

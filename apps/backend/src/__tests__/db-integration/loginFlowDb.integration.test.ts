@@ -2,12 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { buildApp } from "../../app.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
-import { workspaces, tenantUsers, platformUsers, contacts } from "../../db/schema.js";
-import {
-  beginLongLivedTenantTransaction,
-  closeDatabase,
-  getRootDb,
-} from "../../db/dbConnection.js";
+import { workspaces, tenantUsers, platformUsers, contacts } from "@mms/db/schema";
+import { beginLongLivedTenantTransaction, closeDatabase, getRootDb } from "@mms/db/client";
 import { hashPassword } from "../../services/auth/passwordService.js";
 import type { FastifyInstance } from "fastify";
 
@@ -224,7 +220,7 @@ describe("POST /api/auth/login DB Integration", () => {
 
   it("test loadContactChildMapsAggregated with contactIds", async () => {
     const { loadContactChildMapsAggregated, loadContactSummaryChildMapsAggregated } =
-      await import("../../db/repositories/contactRepositoryHydrateChildren.js");
+      await import("@mms/mod-contacts/backend/repository");
     const db = getRootDb();
     const res = await loadContactChildMapsAggregated(db as any, TEST_SUBDOMAIN, ["c1", "c2"]);
     expect(res).toBeDefined();

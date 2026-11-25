@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import type { ObligationCollection } from "@mms/shared";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant, withTenant, withTenantRead } from "../../db/tenant-context.js";
-import { auditTrailEvents } from "../../db/schema/auditTrail.js";
+import type { ObligationCollection } from "@mms/contracts";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant, withTenant, withTenantRead } from "@mms/db/context";
+import { auditTrailEvents } from "@mms/db/schema/auditTrail";
 import {
   contacts,
   mujtahidReps,
@@ -13,7 +13,7 @@ import {
   obligationCollections,
   obligationTypes,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { saveObligationCollection } from "../../db/repositories/obligationCollectionsPersist.js";
 import { auditCollectionSaved } from "../../obligations/use-cases/obligationAuditTrail.js";

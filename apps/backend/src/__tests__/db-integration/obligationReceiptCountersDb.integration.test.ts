@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { closeDatabase } from "@mms/db/client";
+import { withTenant } from "@mms/db/context";
 import {
   contacts,
   mujtahidReps,
@@ -11,7 +11,7 @@ import {
   obligationReceiptCounters,
   obligationTypes,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 import { allocateObligationReceiptNumbers } from "../../db/repositories/obligationReceiptNumbering.js";
 

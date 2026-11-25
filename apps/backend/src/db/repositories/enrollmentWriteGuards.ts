@@ -1,13 +1,13 @@
 import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
-import { SEAT_RELEASED_ENROLLMENT_STATUSES, type Enrollment } from "@mms/shared";
-import { enrollments } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES, type Enrollment } from "@mms/contracts";
+import { enrollments } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import {
   AlreadyEnrolledError,
   ConflictError,
   RollNumberConflictError,
-} from "../../lib/httpErrors.js";
-import { isUniqueViolation, uniqueViolationConstraint } from "../../lib/pgErrors.js";
+} from "@mms/be-core/http/errors";
+import { isUniqueViolation, uniqueViolationConstraint } from "@mms/be-core/http/errors";
 
 /**
  * Write-path guards shared by the enrollment persistence functions.

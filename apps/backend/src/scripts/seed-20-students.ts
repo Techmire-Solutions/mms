@@ -1,9 +1,9 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/database.js";
-import { getDb } from "../db/dbClient.js";
-import { workspaces } from "../db/schema.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { getDb } from "@mms/db/client";
+import { workspaces } from "@mms/db/schema";
 import { bulkSaveStudents } from "../db/repositories/studentRepositoryPersist.js";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 
 loadBackendEnv();
 
@@ -18,7 +18,7 @@ loadBackendEnv();
 const STUDENT_COUNT = 20;
 
 async function main() {
-  await initDb();
+  await initializeDatabase();
   const db = getDb();
 
   const argSubdomain = process.argv[2]?.trim().toLowerCase();

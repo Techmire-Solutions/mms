@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { Message, StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type { Message, StandardMessagingRecipient as MessagingRecipient } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useMessagingRecipientsByIds } from "./useMessagingContactsByIds";
 

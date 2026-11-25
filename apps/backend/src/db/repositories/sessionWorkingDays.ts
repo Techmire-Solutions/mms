@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { WEEKDAY_NAMES, weekdayIndexes, type WeekdayName } from "@mms/shared";
-import { sessionWorkingDays } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { WEEKDAY_NAMES, weekdayIndexes, type WeekdayName } from "@mms/contracts";
+import { sessionWorkingDays } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 /** Replaces a session's weekly teaching days; `undefined` leaves them untouched, `[]` clears the override. */
 export async function replaceSessionWorkingDaysTx(

@@ -10,7 +10,7 @@ import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { type Enrollment } from "@/lib/data/enrollmentData";
 import { useEnrollmentsPaginated } from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
 import { useEnrollmentsDirectoryFilters } from "@/tenant/features/enrollments/hooks/useEnrollmentsDirectoryFilters";
-import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
+import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/contracts";
 import { useWorkDrillDownListener } from "@/lib/query/useWorkDrillDownListener";
 import {
   ENROLLMENTS_WORK_DRILLDOWN_EVENT,

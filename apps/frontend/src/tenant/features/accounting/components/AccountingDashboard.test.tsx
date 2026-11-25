@@ -7,7 +7,7 @@ import type {
   JournalEntry,
   AccountingSettings,
   FiscalYear,
-} from "@/lib/data/accountingData";
+} from "@mms/mod-accounting/frontend/tenant";
 
 const mockMetrics = vi.hoisted(() => ({
   data: {
@@ -54,7 +54,7 @@ vi.mock("@/lib/contexts/BrandingPaletteContext", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string, opts?: Record<string, unknown>) =>
       opts?.amount ? `${key}:${opts.amount}` : key,
@@ -67,13 +67,13 @@ vi.mock("@/hooks/useCurrency", () => ({
   }),
 }));
 
-vi.mock("@/components/app/SafeResponsiveContainer", () => ({
+vi.mock("@mms/ui/app/SafeResponsiveContainer", () => ({
   SafeResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="chart-container">{children}</div>
   ),
 }));
 
-vi.mock("@/components/app/ChartGrid", () => ({
+vi.mock("@mms/ui/app/ChartGrid", () => ({
   ChartGrid: () => <div data-testid="chart-grid" />,
   chartAxisTick: () => ({}),
   chartTooltipStyle: () => ({}),

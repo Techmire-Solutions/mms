@@ -3,7 +3,7 @@ import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { QuestionsListDesktopTable } from "@/tenant/features/question-bank/components/QuestionsListDesktopTable";
 import { QuestionsListCards } from "@/tenant/features/question-bank/components/QuestionsListCards";
 import type { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
-import type { QuestionBankQuestion as Question } from "@mms/shared";
+import type { QuestionBankQuestion as Question } from "@mms/contracts";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 
 type QuestionBankConfig = ReturnType<typeof useQuestionBankConfig>;

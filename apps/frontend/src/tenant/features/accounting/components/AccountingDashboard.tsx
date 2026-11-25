@@ -4,13 +4,13 @@ import type {
   JournalEntry,
   AccountingSettings,
   FiscalYear,
-} from "@/lib/data/accountingData";
-import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { ErrorState } from "@/components/app/ErrorState";
-import { TableSkeleton } from "@shared/ui";
+} from "@mms/mod-accounting/frontend/tenant";
+import { ModuleCommandMetricsGrid } from "@mms/fe-core/components/ModuleCommandMetricsGrid";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { TableSkeleton } from "@mms/ui";
 import { useAccountingDashboardView } from "../hooks/useAccountingDashboardView";
-import { AccountingDashboardCharts } from "./AccountingDashboardCharts";
-import { AccountingDashboardSnapshots } from "./AccountingDashboardSnapshots";
+import { AccountingDashboardCharts } from "@mms/mod-accounting/frontend/tenant";
+import { AccountingDashboardSnapshots } from "@mms/mod-accounting/frontend/tenant";
 
 export interface AccountingDashboardProps {
   accounts: Account[];

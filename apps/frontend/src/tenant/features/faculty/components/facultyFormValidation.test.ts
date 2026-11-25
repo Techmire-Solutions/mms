@@ -9,7 +9,7 @@ import {
 } from "../lib/facultyFormValidation";
 import * as formAutoScroll from "@/lib/forms/formAutoScroll";
 import * as useFacultyModule from "@/tenant/features/faculty/hooks/useFaculty";
-import { DEFAULT_FACULTY_SETTINGS } from "@mms/shared";
+import { DEFAULT_FACULTY_SETTINGS } from "@mms/contracts";
 
 vi.mock("@/lib/forms/formAutoScroll", () => ({
   scrollAndFocusFirstError: vi.fn(),

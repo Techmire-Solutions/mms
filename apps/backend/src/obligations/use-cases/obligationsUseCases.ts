@@ -8,7 +8,7 @@ import {
   type ObligationCollection,
   obligationCollectionListSchema,
   obligationCollectionRecordSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createObligationsCatalogUseCases } from "./obligationsCatalogUseCases.js";
 import { createObligationsInsightUseCases } from "./obligationsInsightUseCases.js";
 import { createObligationCollectionBulkService } from "./obligationCollectionServices.js";
@@ -21,7 +21,7 @@ import {
 } from "./obligationLedgerSync.js";
 import { fillBlankReceiptNumbers, guardReceipts } from "./obligationCollectionWritePrep.js";
 import { auditCollectionSaved } from "./obligationAuditTrail.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { findObligationJournalEntry } from "../../accounting/ledgerPosting/obligationVoucherLookup.js";
 
 /**

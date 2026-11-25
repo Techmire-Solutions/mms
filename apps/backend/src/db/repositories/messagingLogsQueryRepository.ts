@@ -1,8 +1,8 @@
 import { and, eq, gte, ilike, isNull, lte, or, sql, asc, desc } from "drizzle-orm";
-import { messageLogs, contacts } from "../schema.js";
-import type { Message } from "@mms/shared";
-import { MESSAGE_LOGS_DEFAULT_PAGE_SIZE, toSqlSearchPattern } from "@mms/shared";
-import { withTenant } from "../tenant-context.js";
+import { messageLogs, contacts } from "@mms/db/schema";
+import type { Message } from "@mms/contracts";
+import { MESSAGE_LOGS_DEFAULT_PAGE_SIZE, toSqlSearchPattern } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { logRowToRecord } from "./messagingLogsRepository.js";
 
 /** Matches messagingLogsQuerySchema pageSize max — defensive for direct callers. */

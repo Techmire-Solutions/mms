@@ -1,6 +1,6 @@
 import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
-import { students } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { students } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Active students whose GR matches any of the given values (case-insensitive).

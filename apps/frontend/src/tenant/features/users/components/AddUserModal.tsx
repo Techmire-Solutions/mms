@@ -1,7 +1,7 @@
 import React from "react";
 import { AnimatePresence, m } from "framer-motion";
 import { ChevronLeft, ChevronRight, UserPlus, X } from "lucide-react";
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { FormModal } from "@/components/app/FormModal";
 import { Button } from "@/components/ui/button";
 import { ADD_USER_MODAL_STEP_DEFS, StepIndicator } from "./AddUserModalStepIndicator";

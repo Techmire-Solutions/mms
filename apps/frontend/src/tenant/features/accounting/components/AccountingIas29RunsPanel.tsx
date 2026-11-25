@@ -1,11 +1,11 @@
 import type React from "react";
-import { formatDate, formatMoney, type Ias29Run } from "@mms/shared";
-import { DatePicker } from "@/components/app/DatePicker";
-import { EmptyState } from "@/components/app/EmptyState";
-import { Field } from "@/components/app/FormPrimitives";
+import { formatDate, formatMoney, type Ias29Run } from "@mms/contracts";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { EmptyState } from "@mms/ui";
+import { Field } from "@mms/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
-import { Button } from "@/components/ui/button";
-import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import type { HyperinflationPanel } from "@/tenant/features/accounting/hooks/useHyperinflationPanel";
 
 type LineRow = Ias29Run["lines"][number] & { id: string };

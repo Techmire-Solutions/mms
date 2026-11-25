@@ -10,7 +10,7 @@ import React, { useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { DocumentTemplateEditor } from "@/components/app/DocumentTemplateEditor";
-import { type TypstReportCardPayload } from "@mms/shared";
+import { type TypstReportCardPayload } from "@mms/contracts";
 import { mapToTypstReportCard } from "@/components/template-editor/templatePayloadMappers";
 import { notify } from "@/lib/notify";
 import {

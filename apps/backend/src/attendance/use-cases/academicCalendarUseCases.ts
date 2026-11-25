@@ -2,7 +2,7 @@ import {
   academicCalendarEventWriteSchema,
   type AcademicCalendarEvent,
   type AcademicCalendarEventWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { attendanceCalendarRepository as repo } from "../repository/attendanceCalendarRepositoryAdapter.js";
 import type { AcademicCalendarRange } from "../repository/attendanceCalendarRepository.js";
 import { broadcastCollection } from "../../lib/livePush.js";

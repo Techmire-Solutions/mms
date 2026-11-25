@@ -1,15 +1,15 @@
 import { useMemo } from "react";
-import { formatDate } from "@mms/shared";
-import { StatusBadge } from "@/components/app/StatusBadge";
-import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@mms/contracts";
+import { StatusBadge } from "@mms/fe-core/components/StatusBadge";
+import { Badge } from "@mms/ui";
 import { type WorkBatchTableColumn } from "@/components/common/work";
-import type { JournalEntry } from "@/lib/data/accountingData";
-import { useTranslation } from "@/hooks/useTranslation";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
 import {
   getJournalEntryLineTotals,
   getJournalTagLabel,
   type JournalEntriesListProps,
-} from "../lib/journalEntriesListShared";
+} from "@mms/mod-accounting/frontend/tenant";
 
 interface UseJournalEntriesTableColumnsParams {
   isColumnVisible: JournalEntriesListProps["isColumnVisible"];

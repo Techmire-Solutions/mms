@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AccountingPeriodEndPanel } from "./AccountingPeriodEndPanel";
-import type { Account, FiscalYear, HedgeRelationship } from "@mms/shared";
+import type { Account, FiscalYear, HedgeRelationship } from "@mms/contracts";
 
 // The setup guide has its own spec; keep these suites on their sections.
 vi.mock("./FxSetupGuide", () => ({ FxSetupGuide: () => null }));
@@ -11,7 +11,7 @@ vi.mock("./AccountingPostingPeriodsSection", () => ({
   AccountingPostingPeriodsSection: () => <div>Posting periods</div>,
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 

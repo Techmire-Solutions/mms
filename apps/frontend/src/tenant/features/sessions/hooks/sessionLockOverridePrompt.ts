@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { SessionEditViolation } from "@mms/shared";
+import type { SessionEditViolation } from "@mms/contracts";
 import { isApiError } from "@/lib/apiError";
 
 interface PromptState {

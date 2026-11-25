@@ -1,5 +1,5 @@
-import type { AppTranslationKey } from "@mms/shared";
-import { buildContactsReportFieldCatalog, resolveContactReportFieldLabel } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
+import { buildContactsReportFieldCatalog, resolveContactReportFieldLabel } from "@mms/contracts";
 
 /** Data source keys available in the custom report builder. */
 export type DataSource =

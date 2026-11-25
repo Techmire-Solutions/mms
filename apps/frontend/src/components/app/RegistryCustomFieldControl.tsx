@@ -1,5 +1,5 @@
 import type React from "react";
-import type { FieldDefinition } from "@mms/shared";
+import type { FieldDefinition } from "@mms/contracts";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/app/DatePicker";
 import { Field } from "@/components/app/FormPrimitives";

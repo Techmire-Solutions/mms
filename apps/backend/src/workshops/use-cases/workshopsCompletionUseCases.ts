@@ -6,13 +6,13 @@ import {
   type WorkshopCertificatesBody,
   type WorkshopPreferences,
   type WorkshopReportRow,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { WorkshopsRepository } from "../repository/workshopsRepository.js";
 import { workshopsRepository } from "../repository/workshopsRepositoryAdapter.js";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { runAfterCommit } from "../../db/commitScope.js";
+import { withTenant } from "@mms/db/context";
+import { runAfterCommit } from "@mms/db/client";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { NotFoundError } from "../../lib/httpErrors.js";
 import {

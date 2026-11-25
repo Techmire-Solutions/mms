@@ -42,7 +42,7 @@ vi.mock("../sessions/use-cases/sessionsUseCases.js", () => ({
   },
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi
     .fn()
     .mockResolvedValue({ hashPrevious: "0", hashCurrent: "1", canonicalPayload: "{}" }),

@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo } from "react";
-import { formatBrandingAddress, formatDate, getPageDimensions, type Student } from "@mms/shared";
+import { formatBrandingAddress, formatDate, getPageDimensions, type Student } from "@mms/contracts";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getPrintBrandingTokens } from "@/lib/ui/printBrandingTokens";

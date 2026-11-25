@@ -1,5 +1,5 @@
 import React from "react";
-import { StatusBadge } from "@shared/ui";
+import { StatusBadge } from "@mms/ui";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 

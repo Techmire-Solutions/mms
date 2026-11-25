@@ -2,7 +2,7 @@ import {
   findPlatformUserRowById,
   updatePlatformUserRow,
 } from "../../db/repositories/platformUserRepository.js";
-import type { StoredPlatformUser } from "@mms/shared";
+import type { StoredPlatformUser } from "@mms/contracts";
 import { hashPassword, verifyPassword } from "../auth/passwordService.js";
 import { PlatformError } from "./platformErrorService.js";
 

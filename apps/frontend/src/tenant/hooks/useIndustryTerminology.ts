@@ -3,7 +3,7 @@
  * @description Resolves industry terminology profile for UI labels (no DB renames).
  */
 
-import { getTerminologyForIndustry } from "@mms/shared";
+import { getTerminologyForIndustry } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getCurrentSubdomain } from "@/lib/config/tenantConfig";
 import {

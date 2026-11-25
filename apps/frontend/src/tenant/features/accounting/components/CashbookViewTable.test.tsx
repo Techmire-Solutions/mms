@@ -2,9 +2,9 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CashbookViewTable } from "./CashbookViewTable";
-import type { CashbookRow } from "../lib/cashbookViewShared";
+import type { CashbookRow } from "@mms/mod-accounting/frontend/tenant";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string | number>) =>
       params ? `${key} ${Object.values(params).join(" ")}` : key,

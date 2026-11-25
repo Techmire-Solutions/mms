@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { BACKUP_FORMAT_ID } from "@mms/shared";
+import { BACKUP_FORMAT_ID } from "@mms/contracts";
 
 // Control the current tenant subdomain so the API client enforces a workspace
 // match without depending on window.location hostname parsing.
@@ -7,7 +7,7 @@ const { currentSubdomain } = vi.hoisted(() => ({
   currentSubdomain: vi.fn(() => "demo"),
 }));
 
-vi.mock("@/lib/config/tenantConfig", () => ({
+vi.mock("@mms/fe-core/config/tenantConfig", () => ({
   getCurrentSubdomain: () => currentSubdomain(),
 }));
 

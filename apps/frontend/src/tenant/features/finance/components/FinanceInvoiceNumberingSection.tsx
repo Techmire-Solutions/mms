@@ -4,7 +4,7 @@ import {
   financeSettingsToSequenceConfig,
   type FinanceSettings,
   type SequenceNumberingConfig,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SequenceNumberingCard } from "@/components/sequence-numbering";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 

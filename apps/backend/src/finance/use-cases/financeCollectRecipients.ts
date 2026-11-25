@@ -7,9 +7,9 @@ import {
   sanitizeContactsForViewer,
   toMessagingRecipient,
   type Contact,
-} from "@mms/shared";
-import { loadContactsSummaryByIdsForTenant } from "../../services/contactService.js";
-import { loadContactFieldConfig } from "../../contacts/use-cases/contactConfigService.js";
+} from "@mms/contracts";
+import { loadContactsSummaryByIdsForTenant } from "@mms/mod-contacts/backend/services";
+import { loadContactFieldConfig } from "@mms/mod-contacts/backend/use-cases";
 
 /**
  * Loads the family contacts for an invoice reminder batch and applies the

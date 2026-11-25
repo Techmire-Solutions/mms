@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { canManageTargetUser, isPlatformManagedRole, type SystemUser } from "@mms/shared";
+import { canManageTargetUser, isPlatformManagedRole, type SystemUser } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { notify } from "@/lib/notify";

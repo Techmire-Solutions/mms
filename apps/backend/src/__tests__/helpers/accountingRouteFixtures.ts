@@ -1,4 +1,4 @@
-import type { HedgeRelationship, Ias29Run, JournalEntry } from "@mms/shared";
+import type { HedgeRelationship, Ias29Run, JournalEntry } from "@mms/contracts";
 
 /**
  * Contract-complete route fixtures.

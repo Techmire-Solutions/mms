@@ -8,7 +8,7 @@ import {
   pingDatabase,
   closeDatabase,
   beginLongLivedTenantTransaction,
-} from "../../db/dbConnection.js";
+} from "@mms/db/client";
 import {
   streamTenantDocStoreSnapshot,
   streamSyncSnapshot,
@@ -18,8 +18,20 @@ import { getAllData } from "../../db/documentStoreAdmin.js";
 import { generateSnapshotJsonChunks } from "../../routes/common/db/snapshotJsonStream.js";
 import { sanitizeSnapshot } from "../../routes/common/db/dbRouteHelpers.js";
 import { fetchDatabaseSnapshot, fetchBackupSnapshot } from "../../services/dbSyncService.js";
+import { collectAssetUrlsFromValue, readAssetBase64 } from "../../services/backupAssetService.js";
+import {
+  getWorkspaceBranding,
+  getWorkspaceGlobalSettings,
+} from "../../db/repositories/workspaceRepository.js";
+import { maskGlobalSettingsForClient } from "../../services/globalSettingsService.js";
+
+const snapshotSettings = {
+  getWorkspaceBranding,
+  getWorkspaceGlobalSettings,
+  maskGlobalSettingsForClient,
+};
 import { runWithTenant } from "../../lib/tenantContext.js";
-import * as schema from "../../db/schema.js";
+import * as schema from "@mms/db/schema";
 
 const TEST_SUBDOMAIN = "stream-parity-demo";
 const SEED_COLLECTION = "t:stream-parity-demo:students";
@@ -141,7 +153,7 @@ suite("real-Postgres streaming snapshot parity", () => {
     const txn = await beginLongLivedTenantTransaction(TEST_SUBDOMAIN);
     let streamed: unknown;
     try {
-      streamed = await collectToObject(streamSyncSnapshot(txn, TEST_SUBDOMAIN));
+      streamed = await collectToObject(streamSyncSnapshot(txn, TEST_SUBDOMAIN, snapshotSettings));
       await txn.commit();
     } catch (error) {
       await txn.rollback().catch(() => undefined);
@@ -168,7 +180,14 @@ suite("real-Postgres streaming snapshot parity", () => {
     const txn = await beginLongLivedTenantTransaction(TEST_SUBDOMAIN);
     let streamed: unknown;
     try {
-      streamed = await collectToObject(streamBackupSnapshot(txn, TEST_SUBDOMAIN));
+      streamed = await collectToObject(
+        streamBackupSnapshot(
+          txn,
+          TEST_SUBDOMAIN,
+          { collectAssetUrlsFromValue, readAssetBase64 },
+          snapshotSettings,
+        ),
+      );
       await txn.commit();
     } catch (error) {
       await txn.rollback().catch(() => undefined);

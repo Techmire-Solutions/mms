@@ -1,4 +1,4 @@
-import { translateAppParams } from "@mms/shared";
+import { translateAppParams } from "@mms/contracts";
 
 /**
  * The `@/hooks/useTranslation` mock module used by `useTranslationEnMock`. Test

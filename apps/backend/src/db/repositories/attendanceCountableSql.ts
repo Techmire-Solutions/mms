@@ -1,5 +1,5 @@
 import { sql, type SQL } from "drizzle-orm";
-import { normalizeAttendanceModulePreferences, weekdayIndexes } from "@mms/shared";
+import { normalizeAttendanceModulePreferences, weekdayIndexes } from "@mms/contracts";
 import { getAttendanceModulePreferences } from "./attendanceModulePreferencesRepository.js";
 
 /** Builds the "counts toward attendance rates" predicate for an attendance table alias. */
@@ -10,7 +10,7 @@ export type CountableAttendanceSql = (alias: string) => SQL;
  * a row counts only when its date is an instructional day for its class — weekly working days
  * (session override, else workspace preference) adjusted by holidays / make-up days, narrowest
  * scope first — and the student was not on approved leave that day.
- * Mirrors `@mms/shared` `instructionalDayDecision`. Workspace-level EXISTS probes are
+ * Mirrors `@mms/contracts` `instructionalDayDecision`. Workspace-level EXISTS probes are
  * uncorrelated (evaluated once), so tenants without calendar data pay only the weekday check.
  */
 export function countableAttendanceSql(

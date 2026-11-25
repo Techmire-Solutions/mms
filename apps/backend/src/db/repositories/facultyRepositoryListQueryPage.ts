@@ -3,10 +3,10 @@ import {
   type FacultyListPageResult,
   type FacultyListQuery,
   type FacultyMember,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { and, sql } from "drizzle-orm";
-import { faculty } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { faculty } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { facultyRowToRecord } from "./facultyRepositoryColumns.js";
 import { countSubordinatesBatch } from "./facultyRepositorySubordinates.js";
 import { buildListConditions, buildOrderBy } from "./facultyRepositoryListQuerySql.js";

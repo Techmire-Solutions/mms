@@ -1,6 +1,10 @@
 import React from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { USER_STATUS_VALUES, type InviteWorkspaceUserInput, type WorkspaceRole } from "@mms/shared";
+import {
+  USER_STATUS_VALUES,
+  type InviteWorkspaceUserInput,
+  type WorkspaceRole,
+} from "@mms/contracts";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { Button } from "@/components/ui/button";
 import { CheckboxField } from "@/components/ui/checkbox";

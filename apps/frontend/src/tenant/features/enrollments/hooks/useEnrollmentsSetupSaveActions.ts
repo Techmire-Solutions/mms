@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { validateEnrollmentPreferences, type EnrollmentsSettings } from "@mms/shared";
+import { validateEnrollmentPreferences, type EnrollmentsSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 

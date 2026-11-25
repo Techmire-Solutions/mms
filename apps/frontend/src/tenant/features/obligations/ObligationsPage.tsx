@@ -5,7 +5,7 @@ import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
-import { obligationsTransferSchema } from "@mms/shared";
+import { obligationsTransferSchema } from "@mms/contracts";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import { ObligationsModalLayer } from "@/tenant/features/obligations/components/ObligationsModalLayer";
 import { ObligationsPageActions } from "@/tenant/features/obligations/components/ObligationsPageActions";

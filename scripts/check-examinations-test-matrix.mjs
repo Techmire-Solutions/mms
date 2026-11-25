@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs";
 
 const REQUIRED = [
   {
-    file: "packages/shared/src/examinations/resultScoring.test.ts",
+    file: "packages/contracts/src/examinations/resultScoring.test.ts",
     names: [
       "grade bands (boundary sweep)",
       "rounds percentages to two decimals only for display",
@@ -22,14 +22,14 @@ const REQUIRED = [
     ],
   },
   {
-    file: "packages/shared/src/examinations/gradeUtils.test.ts",
+    file: "packages/contracts/src/examinations/gradeUtils.test.ts",
     names: [
       "exports the same labels the bands use, highest first",
       "floors NaN and negative percentages to F and tops out at A+",
     ],
   },
   {
-    file: "packages/shared/src/examinations/examLifecycle.test.ts",
+    file: "packages/contracts/src/examinations/examLifecycle.test.ts",
     names: ["matches the transition table for every ordered status pair"],
   },
   {
@@ -109,7 +109,7 @@ const REQUIRED = [
     names: ["computes all four aggregates in one tenant-scoped statement"],
   },
   {
-    file: "packages/shared/src/examinations/examinationsApiSchemas.test.ts",
+    file: "packages/contracts/src/examinations/examinationsApiSchemas.test.ts",
     names: [
       "normalizes the unpaged and paginated envelopes without casting",
       "never defaults a missing mark to zero on the read/write boundary",
@@ -179,7 +179,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "packages/shared/src/examinations/examinationsApiSchemas.test.ts",
+    file: "packages/contracts/src/examinations/examinationsApiSchemas.test.ts",
     names: [
       "rejects an out-of-range page size, an unknown status and an unknown query key",
       "rejects an invalid calendar date",

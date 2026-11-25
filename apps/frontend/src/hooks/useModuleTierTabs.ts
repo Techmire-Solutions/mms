@@ -1,5 +1,5 @@
 import { LayoutDashboard, BarChart2, Settings, type LucideIcon } from "lucide-react";
-import type { AppTranslationKey, ModuleTierTabId } from "@mms/shared";
+import type { AppTranslationKey, ModuleTierTabId } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export interface ModuleTierTab {

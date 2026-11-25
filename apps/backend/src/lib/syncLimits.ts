@@ -1,4 +1,4 @@
-import { BACKUP_UPLOAD_MAX_BYTES } from "@mms/shared";
+import { BACKUP_UPLOAD_MAX_BYTES } from "@mms/contracts";
 
 /**
  * Max JSON body for bulk sync upload. Defaults to the shared upload cap

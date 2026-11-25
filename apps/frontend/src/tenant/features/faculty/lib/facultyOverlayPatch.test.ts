@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { patchViewFaculty } from "./facultyOverlayPatch";
 
 const record = {

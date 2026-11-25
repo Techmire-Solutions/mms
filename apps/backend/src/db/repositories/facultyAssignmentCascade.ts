@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
-import { facultyAssignments } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { facultyAssignments } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
 
 /**

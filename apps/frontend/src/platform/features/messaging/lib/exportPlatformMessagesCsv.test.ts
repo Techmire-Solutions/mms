@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { PlatformMessageDto } from "@mms/shared";
+import type { PlatformMessageDto } from "@mms/contracts";
 import { exportPlatformMessagesCsv } from "@/platform/features/messaging/lib/exportPlatformMessagesCsv";
 
 const triggerDownload = vi.fn();

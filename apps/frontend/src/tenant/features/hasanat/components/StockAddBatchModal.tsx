@@ -9,7 +9,7 @@ import { UserActorSelect } from "@/tenant/components/selectors/UserActorSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
-import { generateClientEntityId, hasanatBatchCreateSchema } from "@mms/shared";
+import { generateClientEntityId, hasanatBatchCreateSchema } from "@mms/contracts";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";

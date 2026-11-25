@@ -1,8 +1,8 @@
 import { apiContract } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import { createModuleSetupConfigApi } from "@/lib/query/createModuleSetupConfigApi";
-import type { SessionModulePreferences } from "@mms/shared";
-import { normalizeSessionModulePreferences } from "@mms/shared";
+import type { SessionModulePreferences } from "@mms/contracts";
+import { normalizeSessionModulePreferences } from "@mms/contracts";
 
 const api = createModuleSetupConfigApi<SessionModulePreferences>({
   fetchPreferencesFn: async (signal) => {

@@ -4,7 +4,7 @@ import {
   type ContactPreferences,
   type ContactPreferencesSetupIssue,
   prepareContactPreferencesSetupSave,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import type { CountryCodeEntry } from "@/lib/contacts/countryCodeOptions";

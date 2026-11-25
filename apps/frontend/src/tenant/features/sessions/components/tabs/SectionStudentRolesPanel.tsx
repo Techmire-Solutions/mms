@@ -3,7 +3,7 @@ import {
   SECTION_STUDENT_ROLES,
   sectionStudentRoleBodySchema,
   type SectionStudentRoleKind,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/app/DatePicker";
 import { EmptyState } from "@/components/app/EmptyState";

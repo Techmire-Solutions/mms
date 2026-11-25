@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { deriveSiblingLinks, type Contact } from "@mms/shared";
+import { deriveSiblingLinks, type Contact } from "@mms/contracts";
 import { collectLinkedContactIds, mergeContactLinkDirectory } from "@/lib/contacts/contactLinkIds";
 import { useContactsByIds } from "@/tenant/features/contacts/hooks/useContacts";
 

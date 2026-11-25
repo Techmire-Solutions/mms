@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { formatDate, formatDateTime, type TaskRecord, type TaskStatus } from "@mms/shared";
+import { formatDate, formatDateTime, type TaskRecord, type TaskStatus } from "@mms/contracts";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import {
   DetailDrawerArchivedBanner,

@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { useExamSelection } from "./useExamSelection";
-import type { Exam } from "@mms/shared";
+import type { Exam } from "@mms/contracts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

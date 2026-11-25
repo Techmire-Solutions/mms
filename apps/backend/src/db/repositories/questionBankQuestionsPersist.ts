@@ -1,13 +1,13 @@
 import { and, eq, inArray, isNull, isNotNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type QuestionBankQuestion } from "@mms/shared";
+import { dedupeTrimmedIds, type QuestionBankQuestion } from "@mms/contracts";
 import {
   questions,
   questionCategories,
   questionOptions,
   questionTags,
   questionCitations,
-} from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 // OCC + restore-provenance upsert plumbing (0240) lives in its own module to keep this file inside
 // the 300-line ceiling; see `questionBankQuestionUpsert.ts`.
 import {

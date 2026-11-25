@@ -3,11 +3,11 @@ import {
   isManuallyReversibleJournalSource,
   type AppTranslationKey,
   type JournalReversalRequest,
-} from "@mms/shared";
-import { hasReversalEntry, type JournalEntry } from "@/lib/data/accountingData";
-import { notify } from "@/lib/notify";
-import { getApiValidationMessage } from "@/lib/apiValidationMessage";
-import { useReverseJournalEntry } from "@/tenant/features/accounting/hooks/useReverseJournalEntry";
+} from "@mms/contracts";
+import { hasReversalEntry, type JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import { notify } from "@mms/fe-core/notify";
+import { getApiValidationMessage } from "@mms/fe-core/api/validationMessage";
+import { useReverseJournalEntry } from "./useReverseJournalEntry";
 
 export interface UseJournalEntriesTrashReversalOptions {
   entries: JournalEntry[];

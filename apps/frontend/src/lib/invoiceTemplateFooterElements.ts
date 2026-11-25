@@ -1,4 +1,4 @@
-import { formatBrandingAddress } from "@mms/shared";
+import { formatBrandingAddress } from "@mms/contracts";
 import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import {
   defaultTemplateTranslate,

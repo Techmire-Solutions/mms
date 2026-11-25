@@ -5,7 +5,7 @@ import {
   type Denomination,
   type StockBatch,
   type Distribution,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export const SETUP_TAB_LABEL_KEYS: Record<

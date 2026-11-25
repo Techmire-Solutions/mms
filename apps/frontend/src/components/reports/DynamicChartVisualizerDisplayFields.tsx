@@ -1,5 +1,5 @@
 import React from "react";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SectionLabel } from "@/components/app/SectionLabel";
 

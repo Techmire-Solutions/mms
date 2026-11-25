@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Settings } from "lucide-react";
-import { Button, Input } from "@shared/ui";
+import { Button, Input } from "@mms/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SectionCard } from "@/components/app/SectionCard";
@@ -9,7 +9,7 @@ import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
-import type { PlatformMessageTemplateDto } from "@mms/shared";
+import type { PlatformMessageTemplateDto } from "@mms/contracts";
 import {
   useDeletePlatformMessageTemplate,
   usePlatformMessageTemplates,

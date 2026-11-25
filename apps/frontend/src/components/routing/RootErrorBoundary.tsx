@@ -1,5 +1,5 @@
 import React from "react";
-import { translateAppParams } from "@mms/shared";
+import { translateAppParams } from "@mms/contracts";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 
 import { Button } from "@/components/ui/button";

@@ -1,4 +1,4 @@
-import { normalizeDashboardPreferences, type DashboardPreferences } from "@mms/shared";
+import { normalizeDashboardPreferences, type DashboardPreferences } from "@mms/contracts";
 import {
   getDashboardPreferencesByWorkspace,
   getDashboardPreferencesWithUpdatedAt,

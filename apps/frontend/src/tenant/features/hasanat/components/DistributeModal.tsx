@@ -8,7 +8,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { type Denomination, type Distribution, type StockBatch } from "@/lib/data/hasanatData";
-import { generateClientEntityId, hasanatDistributionCreateSchema } from "@mms/shared";
+import { generateClientEntityId, hasanatDistributionCreateSchema } from "@mms/contracts";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { DistributeModalFields } from "@/tenant/features/hasanat/components/DistributeModalFields";
 import type { DistributionFieldUpdate } from "@/tenant/features/hasanat/components/DistributeRecipientFields";

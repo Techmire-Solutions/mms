@@ -1,4 +1,4 @@
-import type { AttendanceBatchRowError } from "@mms/shared";
+import type { AttendanceBatchRowError } from "@mms/contracts";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 
 /**

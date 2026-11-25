@@ -2,7 +2,7 @@ import {
   buildSequenceFormulaTemplate,
   normalizeFacultyModulePreferences,
   type FacultyModulePreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getFacultyModulePreferencesByWorkspace,
   upsertFacultyModulePreferences,

@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type React from "react";
 import {
   GraduationCap,
@@ -23,7 +23,7 @@ import {
   Zap,
   BarChart2,
 } from "lucide-react";
-import { WIDGET_CHART_PALETTES } from "@mms/shared";
+import { WIDGET_CHART_PALETTES } from "@mms/contracts";
 import type { CustomCard } from "./reportMetadata";
 
 export interface CustomWidget {

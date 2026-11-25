@@ -19,7 +19,9 @@ vi.mock("../enrollments/repository/admissionsRepositoryAdapter.js", () => ({
   },
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: mocks.withTenant,
 }));
 
@@ -27,15 +29,13 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: mocks.broadcast,
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mocks.audit,
 }));
 
-vi.mock("../db/commitScope.js", () => ({
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal()),
   runAfterCommit: mocks.runAfterCommit,
-}));
-
-vi.mock("../db/dbTransactions.js", () => ({
   hasActiveTransaction: mocks.hasActiveTransaction,
 }));
 

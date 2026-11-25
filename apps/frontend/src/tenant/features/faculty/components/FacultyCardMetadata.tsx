@@ -1,4 +1,4 @@
-import type { Faculty, FacultyCustomField, ModuleColumnRegistryEntry } from "@mms/shared";
+import type { Faculty, FacultyCustomField, ModuleColumnRegistryEntry } from "@mms/contracts";
 import { DirectoryCardMetadata } from "@/components/app/DirectoryCardMetadata";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";

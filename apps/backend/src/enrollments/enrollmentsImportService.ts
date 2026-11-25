@@ -1,4 +1,4 @@
-import { enrollmentImportRowSchema } from "@mms/shared";
+import { enrollmentImportRowSchema } from "@mms/contracts";
 import { createModuleImportService } from "../lib/createModuleImportService.js";
 import {
   importEnrollmentRows,

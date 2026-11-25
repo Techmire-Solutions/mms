@@ -7,7 +7,7 @@ import type {
   PlatformAiQueryResponse,
   PlatformAiSuggestion,
   PlatformAiContext,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformChatMessage {

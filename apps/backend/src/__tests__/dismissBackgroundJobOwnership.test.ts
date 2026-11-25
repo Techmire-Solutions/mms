@@ -8,7 +8,9 @@ const { deleteWhereClauses, deleteRows } = vi.hoisted(() => ({
 vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: () => "tenant-1",
 }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, callback: (tx: unknown) => Promise<unknown>) =>
     callback({
       select: () => ({

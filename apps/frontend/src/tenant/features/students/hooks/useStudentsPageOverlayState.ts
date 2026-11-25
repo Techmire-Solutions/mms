@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { toMessagingRecipient, type Student } from "@mms/shared";
+import { toMessagingRecipient, type Student } from "@mms/contracts";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { studentStatusBadgeConfig } from "@/lib/students/studentStatusUi";

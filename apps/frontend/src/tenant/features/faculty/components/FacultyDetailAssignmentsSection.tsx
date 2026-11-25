@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DetailSectionTitle } from "@/components/app/DetailSectionTitle";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { FacultyAssignmentEntity } from "@mms/shared";
+import type { FacultyAssignmentEntity } from "@mms/contracts";
 import { useFacultyAssignments } from "../hooks/useFacultyAssignments";
 
 export interface FacultyDetailAssignmentsSectionProps {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import Fastify from "fastify";
 import { attendanceContractRouter } from "../routes/tenant/attendance/attendanceContractRouter.js";
-import { ATTENDANCE_BULK_MAX_BYTES } from "@mms/shared";
+import { ATTENDANCE_BULK_MAX_BYTES } from "@mms/contracts";
 
 /**
  * Payload bottleneck guard: an oversized roster save is refused with 413 **before parsing**.

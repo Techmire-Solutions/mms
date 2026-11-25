@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { Session } from "@/lib/data/sessionsData";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { SESSIONS_MODULE_MANIFEST } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST } from "@mms/contracts";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import {
   createSessionBulkDeleteHandler,

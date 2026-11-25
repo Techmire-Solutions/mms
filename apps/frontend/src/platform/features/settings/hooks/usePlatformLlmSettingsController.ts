@@ -8,7 +8,7 @@ import {
   type LlmProviderType,
   type LlmTestResult,
   type PlatformSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSavedFlash } from "@/hooks/useSavedFlash";
 import { validateLlmConfigInput } from "@/lib/llmConfigValidation";

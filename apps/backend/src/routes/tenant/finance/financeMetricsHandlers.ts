@@ -1,7 +1,7 @@
-import { FINANCE_MODULE_MANIFEST, type User, type financeContract } from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST, type User, type financeContract } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { financeUseCases } from "../../../finance/use-cases/financeUseCases.js";
 import { canReadCollection } from "../../../services/rbacService.js";
 

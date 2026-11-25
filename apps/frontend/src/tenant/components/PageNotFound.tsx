@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 import { ROUTES } from "@/lib/config/routes";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 
 /** Tenant-only 404 — mounted only on madrasa subdomain routes. */
 export default function PageNotFound(): React.JSX.Element {

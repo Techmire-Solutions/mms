@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { withTenantRead } from "../../db/tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
 
 export interface ContactLinkResolution {

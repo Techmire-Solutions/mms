@@ -1,4 +1,4 @@
-import { SESSION_LIFECYCLE_STATES, type SessionLifecycleState } from "@mms/shared";
+import { SESSION_LIFECYCLE_STATES, type SessionLifecycleState } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";

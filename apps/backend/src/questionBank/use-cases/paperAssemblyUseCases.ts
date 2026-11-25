@@ -3,7 +3,7 @@ import {
   type BlueprintDeficit,
   type QuestionBankTest,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { NotFoundError } from "../../lib/httpErrors.js";
 import { broadcastCollection } from "../../lib/livePush.js";

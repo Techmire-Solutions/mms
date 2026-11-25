@@ -2,7 +2,7 @@ import {
   FACULTY_MODULE_MANIFEST,
   type FacultyExportColumn,
   type FacultyImportJobPayload,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { FacultyExportQueryInput } from "./facultyExportService.js";
 import { buildFacultyCsvExport, generateFacultyCsvStreamChunks } from "./facultyExportService.js";
 import {

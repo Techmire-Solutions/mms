@@ -1,4 +1,4 @@
-import type { Message, MessageLogCreateDto, User } from "@mms/shared";
+import type { Message, MessageLogCreateDto, User } from "@mms/contracts";
 import { randomUUID } from "node:crypto";
 import { logger } from "../../../lib/logger.js";
 import { canWriteMessaging } from "../../../services/rbacService.js";

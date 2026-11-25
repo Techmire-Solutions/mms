@@ -1,13 +1,13 @@
 import { randomUUID } from "node:crypto";
-import type { MessageTemplate, User } from "@mms/shared";
-import { messageTemplateInputSchema, type messagingContract } from "@mms/shared";
+import type { MessageTemplate, User } from "@mms/contracts";
+import { messageTemplateInputSchema, type messagingContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canReadMessaging, canWriteMessaging } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { logger } from "../../../lib/logger.js";
 import { messagingUseCases } from "../../../messaging/use-cases/messagingUseCases.js";
-import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import {
   collectUnknownPersonalizationTokens,
   formatUnknownTokensMessage,

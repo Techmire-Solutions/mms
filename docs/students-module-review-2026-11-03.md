@@ -24,9 +24,9 @@ reading the executed path (route → use case → repository → SQL); concurren
 race-reproduced (no local Postgres), and are marked as such.
 
 **Scope.** `apps/backend/src/routes/tenant/students/**`, `apps/backend/src/students/**`,
-`apps/backend/src/db/repositories/student*`, `apps/backend/src/db/schema/students.ts`,
-`packages/shared/src/students/**`, `packages/shared/src/schemas/students.dto.ts`,
-`packages/shared/src/contracts/students*.ts`, `apps/frontend/src/tenant/features/students/**`,
+`apps/backend/src/db/repositories/student*`, `packages/db/src/schema/students.ts`,
+`packages/contracts/src/students/**`, `packages/contracts/src/schemas/students.dto.ts`,
+`packages/contracts/src/contracts/students*.ts`, `apps/frontend/src/tenant/features/students/**`,
 `apps/frontend/src/tenant/hooks/collections/students.ts`, the students module manifest and route
 registration, students migrations `0011`–`0202`, and the students e2e/a11y entry points. Contacts,
 enrollments and finance were inspected only where the students module calls them.
@@ -135,7 +135,7 @@ No test caught it because the only import spec asserts the POST path is called.
 
 ### D-02 — P1 — Create path adopts any client-supplied id (overwrite / unauthorized resurrect)
 
-**Evidence.** The wire DTO accepts an `id` (`packages/shared/src/schemas/students.dto.ts:9`), and
+**Evidence.** The wire DTO accepts an `id` (`packages/contracts/src/schemas/students.dto.ts:9`), and
 `resolveStudentRowId` keeps any non-empty string
 (`apps/backend/src/students/use-cases/studentNormalizeUseCases.ts:45-53`). `createStudent` only
 probes for an existing row **by `contactId`**
@@ -178,7 +178,7 @@ the definition and the still-present mock in `students.integration.test.ts:73`. 
 ("align contract routing…") deleted `await validateStudentDynamic(tenant, body, lang)` from both
 create and update in `routes/tenant/students/studentCrudRoutes.ts`. `buildStudentWriteSchema` — the
 strict, tenant-aware allowlist — is likewise referenced only by its own spec
-(`packages/shared/src/__tests__/studentWriteSchema.test.ts`); the HTTP boundary uses the
+(`packages/contracts/src/__tests__/studentWriteSchema.test.ts`); the HTTP boundary uses the
 `.passthrough()` wire schema (`students.dto.ts:84-88`). Blueprint-version conflict detection
 (`verifyBlueprintVersion`) therefore no longer runs for students, while contacts still enforce it
 (`apps/backend/src/contacts/use-cases/contactBlueprintValidation.ts:49`).
@@ -205,7 +205,7 @@ the client is told the (never deleted) record was restored.
 
 **Evidence.** Guardian links are stripped before persistence by design —
 `normalizeStoredStudent` removes `fatherContactId`/`motherContactId`/`guardianContactId` and the
-matching names (`packages/shared/src/students/studentUtils.ts:28-47`,
+matching names (`packages/contracts/src/students/studentUtils.ts:28-47`,
 `apps/backend/src/students/use-cases/studentNormalizeUseCases.ts:74-106`), so
 `students.father_contact_id` etc. are always `NULL` for modern rows. Yet the list filter matches
 those columns (`apps/backend/src/db/repositories/studentRepositoryListQuery.ts:161-174`) and the
@@ -221,7 +221,7 @@ triad is only discoverable through `contact_relationships` — which no students
 
 **Evidence.** Reads flatten `custom_fields` onto the record **and** keep the nested map
 (`apps/backend/src/db/repositories/studentRepositoryMappers.ts:29-38`). The viewer sanitizer deletes
-only top-level keys (`packages/shared/src/students/studentsResponseSanitizer.ts:70-98`), so a field
+only top-level keys (`packages/contracts/src/students/studentsResponseSanitizer.ts:70-98`), so a field
 key removed at the top level remains readable inside `customFields`.
 
 **Impact.** A role that may not read a Setup field still receives its value. Contacts' equivalent
@@ -233,7 +233,7 @@ key removed at the top level remains readable inside `customFields`.
 (`studentNormalizeUseCases.ts:101-103`) and persistence lowercases again
 (`studentRepositoryPersist.ts:71-72`). The SSOT formatter preserves literal template case — its own
 spec expects `GR26001` for the template `GR{yy}{seq}`
-(`packages/shared/src/students/studentRegistrationUtils.test.ts:38-41`).
+(`packages/contracts/src/students/studentRegistrationUtils.test.ts:38-41`).
 
 **Impact.** The GR previewed by `GET /next-gr-number` (e.g. `GR26001`) is stored and redisplayed as
 `gr26001`. Case-insensitive uniqueness is already guaranteed by the
@@ -252,7 +252,7 @@ status persisted with live enrollments, and the request already broadcast `stude
 
 **Evidence.**
 - `getLookupKind` (`GET /api/students/lookups/:kind`) is declared
-  (`packages/shared/src/contracts/students.contract.ts:192-197`) but
+  (`packages/contracts/src/contracts/students.contract.ts:192-197`) but
   `registerModuleLookupRoutes` only registers `GET /lookups` and `PUT /lookups/:kind`
   (`apps/backend/src/lib/registerModuleLookupRoutes.ts:38,49`). The path is unreachable, and
   `loadStudentLookupKind` has no consumer outside its spec
@@ -289,7 +289,7 @@ parity).
 
 ### D-13 — P3 — `export-audit` persists a client-supplied count
 
-**Evidence.** `packages/shared/src/contracts/students.contract.ts:84-94` and
+**Evidence.** `packages/contracts/src/contracts/students.contract.ts:84-94` and
 `apps/backend/src/lib/registerModuleCsvExportRoutes.ts:118-149` write `count`/`scope` from the
 request body into the audit chain; the FE calls it from
 `apps/frontend/src/tenant/features/students/hooks/useStudentsExportActions.ts:32,81`. The queue path
@@ -353,7 +353,7 @@ falls back to the seeded defaults instead.
 `COALESCE(registered_on::timestamptz, created_at)` (`studentRepositoryListQuery.ts:119-124`) had no
 supporting index. The GR generator takes `SELECT … FOR UPDATE` on `student_sequence_config`
 (`studentRepositorySequence.ts:31-41`) and `withTenant` reuses the caller's transaction
-(`apps/backend/src/db/tenant-context.ts:68-92`), so the row lock is held until the whole create
+(`packages/db/src/tenant-context.ts:68-92`), so the row lock is held until the whole create
 commits; the bootstrap branch additionally set `app.include_deleted = 'true'` for the remainder of
 that transaction (`studentRepositorySequence.ts:42`).
 

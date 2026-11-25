@@ -3,7 +3,7 @@
  * @description Faculty Work list FROM: employment SSOT + primary employ-designation.
  */
 import { sql, type SQL } from "drizzle-orm";
-import { faculty } from "../schema.js";
+import { faculty } from "@mms/db/schema";
 
 /**
  * FROM clause: faculty + employment + LATERAL primary open employ-designation

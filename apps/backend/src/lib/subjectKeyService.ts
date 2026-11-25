@@ -1,7 +1,7 @@
 import crypto, { createCipheriv, createDecipheriv } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { activeDb } from "../db/dbConnection.js";
-import { cryptoShreddingKeys } from "../db/schema/auditTrail.js";
+import { activeDb } from "@mms/db/client";
+import { cryptoShreddingKeys } from "@mms/db/schema/auditTrail";
 import { decryptSecretAtRest, encryptSecretAtRest } from "./cryptoAtRest.js";
 import { logger } from "./logger.js";
 

@@ -1,5 +1,5 @@
 import React from "react";
-import type { AttendanceSettings } from "@mms/shared";
+import type { AttendanceSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AttendanceTimingRulesSection } from "./AttendanceTimingRulesSection";
 import { AttendanceTeachingDaysSection } from "./AttendanceTeachingDaysSection";

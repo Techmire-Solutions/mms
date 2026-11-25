@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { activeDb } from "../db/dbConnection.js";
+import { activeDb } from "@mms/db/client";
 import { logger } from "../lib/logger.js";
 
 /**

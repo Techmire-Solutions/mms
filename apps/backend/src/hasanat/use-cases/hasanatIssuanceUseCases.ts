@@ -13,8 +13,8 @@ import {
   type DistributionCreate,
   type HasanatAwardScope,
   validateIssuance,
-} from "@mms/shared";
-import { withTenant } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { NotFoundError } from "../../lib/httpErrors.js";
 import { throwRuleViolation } from "./hasanatRuleErrors.js";

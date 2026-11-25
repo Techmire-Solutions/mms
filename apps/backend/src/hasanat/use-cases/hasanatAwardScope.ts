@@ -10,7 +10,7 @@
  * object, so `resolveAwardScopeBypass` resolves the enqueuer's role server-side.
  */
 
-import { roleHasPermission, type HasanatAwardScope } from "@mms/shared";
+import { roleHasPermission, type HasanatAwardScope } from "@mms/contracts";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
 

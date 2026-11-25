@@ -1,7 +1,7 @@
 import { and, eq, or } from "drizzle-orm";
 import { getRequestTenant } from "../../lib/tenantContext.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { backgroundJobs, tenantUsers } from "../schema.js";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
+import { backgroundJobs, tenantUsers } from "@mms/db/schema";
 
 /** Fallback identity that satisfies the (tenant,user) FK for non-tenant sessions. */
 export async function resolveEffectiveTenantUserId(

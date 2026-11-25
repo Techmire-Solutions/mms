@@ -24,12 +24,12 @@ allowed-tools: Read Grep Glob Write Edit Bash(pnpm *) Bash(node scripts/verify-r
 
 | Layer | Location | Responsibility |
 |---|---|---|
-| Contract | `packages/shared/src/contracts/documentTemplates.contract.ts` | GET `{template, updatedAt}`; PUT `{template, expectedUpdatedAt}`; 409; layout schema |
+| Contract | `packages/contracts/src/contracts/documentTemplates.contract.ts` | GET `{template, updatedAt}`; PUT `{template, expectedUpdatedAt}`; 409; layout schema |
 | Server | `apps/backend/src/routes/tenant/templates/documentTemplatesContractRouter.ts` → `apps/backend/src/documents/use-cases/documentTemplatesUseCases.ts` → `apps/backend/src/db/repositories/documentTemplatesRepository.ts` | `settings.global.write` gate, conflict error, atomic CAS, audit/broadcast on success |
-| Client data | `apps/frontend/src/lib/templates/documentTemplatesApi.ts`, `documentTemplateCache.ts`, `useDocumentTemplates.ts`, `useTemplateSaveConflict.ts` | record cache, save with cached version, typedd conflict, reload |
-| Editor | `apps/frontend/src/components/app/DocumentTemplateEditor.tsx`, `apps/frontend/src/components/app/TemplateEditor.tsx`, `apps/frontend/src/components/template-editor/` | load/save/conflict, canvas, element renderer, import/export, localization |
+| Client data | `packages/fe-core/src/documentTemplates/documentTemplatesApi.ts`, `documentTemplateCache.ts`, `useDocumentTemplates.ts`, `useTemplateSaveConflict.ts` | record cache, save with cached version, typedd conflict, reload |
+| Editor | `packages/fe-core/src/components/DocumentTemplateEditor.tsx`, `packages/fe-core/src/components/TemplateEditor.tsx`, `packages/fe-core/src/components/template-editor/` | load/save/conflict, canvas, element renderer, import/export, localization |
 | Module adapters | `apps/frontend/src/tenant/features/finance/components/FinanceTemplateEditor.tsx` (siblings: examinations, hasanat, obligations, accounting, students) | localized fields/presets, sample payload, default layout, module export adapters |
-| Print | `apps/frontend/src/components/template-editor/TemplateDocumentPreview.tsx`, `templateDocumentPrint.ts` | one page renderer; popup print HTML |
+| Print | `packages/fe-core/src/components/template-editor/TemplateDocumentPreview.tsx`, `templateDocumentPrint.ts` | one page renderer; popup print HTML |
 | Guard | `apps/frontend/src/tenant/features/templateFieldI18n.test.ts` | every field/preset key exists |
 
 ## Procedure
@@ -68,7 +68,7 @@ allowed-tools: Read Grep Glob Write Edit Bash(pnpm *) Bash(node scripts/verify-r
 ## Verification
 
 ```bash
-pnpm --filter @mms/shared build
+pnpm --filter @mms/contracts build
 pnpm --filter mms-frontend typecheck && pnpm --filter mms-frontend lint
 pnpm --filter mms-frontend exec vitest run src/components/template-editor src/lib/templates src/tenant/features/templateFieldI18n.test.ts
 pnpm --filter mms-backend exec vitest run src/__tests__/documentTemplatesContractRoutes.test.ts src/__tests__/documentTemplatesUseCases.test.ts

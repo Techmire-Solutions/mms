@@ -1,3 +1,4 @@
+import { deleteAuthArtifactsForWorkspace } from "./auth/authArtifactService.js";
 import {
   getCollection as dbGetCollection,
   saveCollection as dbSaveCollection,
@@ -14,7 +15,7 @@ export { synchronizeData } from "./dbSyncRestoreService.js";
  * Resets the current tenant to minimal defaults (scoped; does not drop global tables).
  */
 export async function resetToDefaults(): Promise<void> {
-  await dbResetTenantData();
+  await dbResetTenantData({ deleteAuthArtifacts: deleteAuthArtifactsForWorkspace });
 }
 
 /**

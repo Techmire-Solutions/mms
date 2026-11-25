@@ -1,5 +1,5 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { getPool, closeDatabase, initializeDatabaseConnection } from "../db/dbConnection.js";
+import { getPool, closeDatabase, initializeDatabaseConnection } from "@mms/db/client";
 import { resolveMigrationsFolder } from "../db/dbInit.js";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";

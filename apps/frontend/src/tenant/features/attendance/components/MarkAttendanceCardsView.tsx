@@ -4,7 +4,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getAttendanceStatusInfo, type AttendanceStatus } from "@/lib/data/attendanceData";
-import type { ModuleFieldDef } from "@mms/shared";
+import type { ModuleFieldDef } from "@mms/contracts";
 import type { AttendanceRow } from "../lib/markAttendanceTypes";
 import { MarkAttendanceStudentCard } from "./MarkAttendanceStudentCard";
 

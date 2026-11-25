@@ -7,7 +7,7 @@ import {
   type StudentClearanceOptions,
   type StudentsSettings,
   type TabDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { loadStudentFieldConfig } from "./studentConfigService.js";
 
 interface StudentsFieldConfigSnapshot {

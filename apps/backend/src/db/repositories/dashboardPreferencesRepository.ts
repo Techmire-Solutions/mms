@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { dashboardPreferences } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { dashboardPreferences } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { createWorkspaceSingletonJsonRepo } from "./moduleSetupRepoFactories.js";
 
 const repo = createWorkspaceSingletonJsonRepo({

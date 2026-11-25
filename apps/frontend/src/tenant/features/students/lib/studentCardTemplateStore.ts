@@ -8,7 +8,7 @@
  */
 
 import { useMemo } from "react";
-import { STUDENT_CARD_TEMPLATE_OBJECT_KEY, type TemplateFieldDefinition } from "@mms/shared";
+import { STUDENT_CARD_TEMPLATE_OBJECT_KEY, type TemplateFieldDefinition } from "@mms/contracts";
 import { useDocumentTemplate, useSaveDocumentTemplate } from "@/lib/templates/useDocumentTemplates";
 import type { BrandingInfo } from "@/lib/invoiceTemplateStore";
 import { getDefaultStudentCardTemplate } from "./studentCardTemplateDefaults";

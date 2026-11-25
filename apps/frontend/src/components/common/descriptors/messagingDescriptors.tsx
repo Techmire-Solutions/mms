@@ -1,4 +1,4 @@
-import type { MessageRecordDto } from "@mms/shared";
+import type { MessageRecordDto } from "@mms/contracts";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";

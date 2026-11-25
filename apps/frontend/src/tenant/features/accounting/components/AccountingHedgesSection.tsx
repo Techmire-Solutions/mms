@@ -8,20 +8,20 @@ import {
   type AppTranslationKey,
   type HedgeRelationship,
   type HedgeStatus,
-} from "@mms/shared";
-import { DatePicker } from "@/components/app/DatePicker";
-import { EmptyState } from "@/components/app/EmptyState";
-import { ErrorState } from "@/components/app/ErrorState";
-import { Field } from "@/components/app/FormPrimitives";
-import { SectionCard } from "@/components/app/SectionCard";
+} from "@mms/contracts";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { EmptyState } from "@mms/ui";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { Field } from "@mms/ui";
+import { SectionCard } from "@mms/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
-import { Button } from "@/components/ui/button";
-import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@mms/ui";
+import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingCurrencySettings } from "@/tenant/features/accounting/hooks/useAccountingFx";
 import { useHedgesPanel } from "@/tenant/features/accounting/hooks/useHedgesPanel";
-import { HedgeActionModal } from "./HedgeActionModal";
-import { HedgeDesignationModal } from "./HedgeDesignationModal";
+import { HedgeActionModal } from "@mms/mod-accounting/frontend/tenant";
+import { HedgeDesignationModal } from "@mms/mod-accounting/frontend/tenant";
 
 const STATUS_KEYS: Record<HedgeStatus, AppTranslationKey> = {
   active: "accounting.settings.hedges.statusActive",

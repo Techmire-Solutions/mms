@@ -1,8 +1,8 @@
 import { type PAYMENT_METHODS } from "@/lib/data/financeData";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { type AppTranslationKey, todayISO, type PaymentCreateInput } from "@mms/shared";
+import { type AppTranslationKey, todayISO, type PaymentCreateInput } from "@mms/contracts";
 
-import type { FinancePaymentMethod } from "@mms/shared";
+import type { FinancePaymentMethod } from "@mms/contracts";
 
 export interface PaymentFormDraft {
   amount: string;

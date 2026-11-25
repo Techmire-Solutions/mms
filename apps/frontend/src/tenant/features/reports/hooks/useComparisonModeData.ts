@@ -1,4 +1,4 @@
-import { formatDate, type AppTranslationKey } from "@mms/shared";
+import { formatDate, type AppTranslationKey } from "@mms/contracts";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useContactsReportAnalytics } from "@/tenant/hooks/collections/contacts";
 import { useEnrollmentsReportAggregates } from "@/tenant/hooks/collections/enrollments";

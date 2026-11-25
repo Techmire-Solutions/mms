@@ -30,7 +30,8 @@ mms/
 │        │  ├─ components/   ├─ features/{module}/   ├─ pages/   ├─ hooks/
 │        └─ lib/             # app shell config (apiClient, routes, i18n)
 ├─ packages/
-│  └─ shared/        # @mms/shared — version-catalog-free contract/DTO/format layer
+│  ├─ contracts/    # @mms/contracts — contract/DTO/format layer (no Node/browser-only runtime deps)
+│  └─ db/           # @mms/db — Drizzle schema, DDL migrations, seeds, soft-delete, tenant-scoped client
 │     └─ src/        # (flat today — see §4 for recommended organization)
 ├─ e2e/              # Playwright E2E (sharded in CI)
 ├─ scripts/          # dev/ops/deploy shell + tsx scripts
@@ -42,14 +43,14 @@ mms/
 
 | Package | Owns | Must **not** contain |
 |---|---|---|
-| `@mms/shared` | shared **types/DTOs/zod schemas**, pure **format/validate/derive** helpers used by ≥2 packages, i18n packs, shared constants/contracts | UI components, I/O, runtime deps on app internals |
+| `@mms/contracts` | shared **types/DTOs/zod schemas**, pure **format/validate/derive** helpers used by ≥2 packages, i18n packs, shared constants/contracts | UI components, I/O, runtime deps on app internals |
 | `apps/backend` | HTTP API, auth/security, persistence, background jobs | React/DOM, browser-only code |
 | `apps/frontend` | UI, client state (Query), and surface-specific chrome (shared primitives live in `packages/ui`) | server secrets, DB access |
 | `e2e` | Playwright specs/helpers | app logic |
 
-**Decision rule:** if ≥2 packages need a type/utility, move it to `@mms/shared` and
-re-export through `packages/shared/src/index.ts`. If ≥2 **UI surfaces** need a
-component, put it in `packages/ui/src` and import it via `@shared/ui` (enforced by
+**Decision rule:** if ≥2 packages need a type/utility, move it to `@mms/contracts` and
+re-export through `packages/contracts/src/index.ts`. If ≥2 **UI surfaces** need a
+component, put it in `packages/ui/src` and import it via `@mms/ui` (enforced by
 `check:shared-ui`; `apps/frontend/src/components/ui` is only a facade).
 
 ## 3. Conventions
@@ -61,24 +62,24 @@ component, put it in `packages/ui/src` and import it via `@shared/ui` (enforced 
   missing a capability, extend the shared primitive (e.g. the labeled `CopyBtn`
   variant) instead of forking.
 - **Platform vs tenant chrome:** the platform console and the tenant workspace are
-  distinct surfaces, but both are built from the shared `@shared/ui` layer
+  distinct surfaces, but both are built from the shared `@mms/ui` layer
   (`packages/ui/src`); only truly surface-specific chrome lives under `platform/` / `tenant/`.
 - **Domain grouping:** keep feature code together by module (backend `services/`,
   `routes/tenant/<module>/`, `db/repositories/`, frontend `tenant/features/<module>/`).
-- **Strictness:** compiler strictness is centralized in [`tsconfig.base.json`](../tsconfig.base.json);
-  do not scatter flags across package tsconfigs.
+- **Strictness:** compiler strictness is centralized in [`tooling/typescript-config/base.json`](../tooling/typescript-config/base.json)
+  (re-exported by the root [`tsconfig.base.json`](../tsconfig.base.json)); do not scatter flags across package tsconfigs.
 - **Editor config / npm:** `.editorconfig` and `.npmrc` are the base; match them.
 
-## 4. `@mms/shared/src` — domain de-flattened (enforced)
+## 4. `@mms/contracts/src` — domain de-flattened (enforced)
 
-`packages/shared/src` is **de-flattened**: only `index.ts` may live at the root,
+`packages/contracts/src` is **de-flattened**: only `index.ts` may live at the root,
 and domain code sits in a folder per area. This is not a convention — it is gated
 by `pnpm run check:shared-structure` (root files other than `index.ts`, consumer
 imports of unexported subpaths, and `package.json` subpaths without a matching
 file all fail CI).
 
 ```
-packages/shared/src/
+packages/contracts/src/
   contacts/        # contact DTOs, normalization, dedupe, validation
   dataTransfer/    # module transfer schemas, import/export SSOT, system metadata stripping
   branding/        # theme tokens, color math, css variable builders
@@ -95,7 +96,7 @@ packages/shared/src/
   index.ts         # public barrel (the ONLY file allowed at the root)
 ```
 
-External imports go through `@mms/shared` (or an exported subpath), so the
+External imports go through `@mms/contracts` (or an exported subpath), so the
 physical layout can keep evolving without changing consumers.
 
 ## 5. Tooling map
@@ -104,7 +105,10 @@ physical layout can keep evolving without changing consumers.
 |---|---|---|
 | Workspaces + install | pnpm workspace + version catalog | `pnpm-workspace.yaml` |
 | Task orchestration / caching | Turborepo | `turbo.json` |
-| Compiler strictness | TypeScript base | `tsconfig.base.json` |
+| Compiler strictness | TypeScript presets | `tooling/typescript-config/*.json` (root `tsconfig.base.json` re-export) |
+| ORM schema & migrations | Drizzle + `@mms/db` | `packages/db/src/schema/`, `packages/db/migrations_drizzle/` |
+| Backend kernel | `@mms/be-core` | `packages/be-core/src/` (auth guards, logger/telemetry, redis/queues, realtime, transports) |
+| Frontend runtime | `@mms/fe-core` | `packages/fe-core/src/` (API SDK, auth/tenant contexts, query/form/i18n helpers) |
 | Lint | ESLint (per-package; defers formatting to Prettier) | `eslint.config.js` (each package) |
 | Format | Prettier | `.prettierrc.json` → `pnpm format` / `pnpm format:check` |
 | Unit/integration tests | Vitest + coverage thresholds | `vitest.config.ts` (each package) |
@@ -120,9 +124,18 @@ physical layout can keep evolving without changing consumers.
 
 ## 6. Where common questions live
 
-- "Where does the platform reuse a shared widget?" → `packages/ui/src/` (`@shared/ui`;
+- "Where does the platform reuse a shared widget?" → `packages/ui/src/` (`@mms/ui`;
   `apps/frontend/src/components/ui/` is a facade that re-exports it).
-- "Is a type shared?" → `packages/shared/src` barrel.
-- "Which table/repo serves this?" → `apps/backend/src/db/schema.ts` + `db/repositories/`.
+- "Is a type shared?" → `packages/contracts/src` barrel.
+- "Which table/repo serves this?" → `packages/db/src/schema.ts` + `db/repositories/`.
 - "Which route?" → `apps/backend/src/routes/index.ts` registry.
-- "Session/timeout policy?" → `packages/shared/src/sessions/sessionPolicy.ts` (SSOT).
+- "Session/timeout policy?" → `packages/contracts/src/sessions/sessionPolicy.ts` (SSOT).
+
+## Vertical modules
+
+`packages/modules/<slice>` packages are audience-separated vertical slices:
+`shared/` (pure FE+BE), `backend/` (Node ESM), and `frontend/{components,tenant,platform}`.
+Consumers import explicit subpaths (`@mms/mod-<slice>/shared`, `/backend/*`, `/frontend/*`);
+there is no package root export. Modules may not import apps or other modules — cross-module
+access is a declared port implemented by the app composition root. See
+`packages/modules/README.md` and `docs/monorepo-migration-plan.md` §5–§7.

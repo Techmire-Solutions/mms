@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { generateClientEntityId } from "@mms/shared";
+import { generateClientEntityId } from "@mms/contracts";
 import type { Session, SessionClassBudget } from "@/lib/data/sessionsData";
 import type { BudgetItemWithClass, DeleteBudgetTarget } from "./budgetTabShared";
 

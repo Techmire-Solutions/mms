@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { studentSequenceConfig, studentLookups, students } from "../db/schema/index.js";
+import { studentSequenceConfig, studentLookups, students } from "@mms/db/schema";
 import { statusExpr } from "../db/repositories/studentRepositoryListQuery.js";
 import {
   bulkSoftDeleteStudentsSql,
@@ -9,6 +9,7 @@ import {
 } from "../db/repositories/studentRepositorySoftDelete.js";
 import { studentWriteValues } from "../db/repositories/studentRepositoryPersist.js";
 import { studentRowToRecord } from "../db/repositories/studentRepositoryMappers.js";
+import { resolveMigrationsFolder } from "@mms/db/testing";
 
 describe("students DB improvements", () => {
   it("exports studentSequenceConfig table with workspace primary key", () => {
@@ -40,10 +41,7 @@ describe("students DB improvements", () => {
   });
 
   it("migration 0165 defines lock_timeout, index hardening, and audit columns", () => {
-    const migrationPath = join(
-      process.cwd(),
-      "src/db/migrations_drizzle/0165_students_db_improvements.sql",
-    );
+    const migrationPath = join(resolveMigrationsFolder(), "0165_students_db_improvements.sql");
     const sql = readFileSync(migrationPath, "utf8");
     expect(sql).toContain("SET LOCAL lock_timeout = '2s'");
     expect(sql).toContain("btrim(\"gr_number\") <> ''");
@@ -55,7 +53,7 @@ describe("students DB improvements", () => {
   });
 
   it("registers migration 0165 in meta/_journal.json", () => {
-    const journalPath = join(process.cwd(), "src/db/migrations_drizzle/meta/_journal.json");
+    const journalPath = join(resolveMigrationsFolder(), "meta/_journal.json");
     const journal = JSON.parse(readFileSync(journalPath, "utf8"));
     const entry = journal.entries.find(
       (e: { tag: string }) => e.tag === "0165_students_db_improvements",

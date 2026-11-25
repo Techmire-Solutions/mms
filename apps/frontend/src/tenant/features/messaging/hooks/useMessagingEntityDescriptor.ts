@@ -1,4 +1,4 @@
-import type { MessageRecordDto } from "@mms/shared";
+import type { MessageRecordDto } from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { messagingEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";

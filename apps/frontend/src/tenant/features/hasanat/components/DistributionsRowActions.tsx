@@ -8,7 +8,7 @@ import {
 import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { useTranslation } from "@/hooks/useTranslation";
-import { nextStatuses } from "@mms/shared";
+import { nextStatuses } from "@mms/contracts";
 import type { Distribution } from "@/lib/data/hasanatData";
 
 type DistributionStatus = Distribution["status"];

@@ -1,5 +1,5 @@
 import { Briefcase, ChevronDown, IdCard, Users } from "lucide-react";
-import { FACULTY_MODULE_MANIFEST, type Faculty } from "@mms/shared";
+import { FACULTY_MODULE_MANIFEST, type Faculty } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { Button } from "@/components/ui/button";
 import {

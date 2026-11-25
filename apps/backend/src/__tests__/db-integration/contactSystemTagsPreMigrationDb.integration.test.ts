@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import pg from "pg";
-import { CONTACT_TAG_PRE_MIGRATION_CLEANUP } from "../../db/contactSystemTagsPreMigration.js";
+import { CONTACT_TAG_PRE_MIGRATION_CLEANUP } from "@mms/db/migrations";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const tenant = "contacts-pre-migration-review";

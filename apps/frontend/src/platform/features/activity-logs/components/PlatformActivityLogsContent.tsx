@@ -9,7 +9,7 @@ import {
   CardSkeleton,
   WidgetCard,
   WidgetCardHeader,
-} from "@shared/ui";
+} from "@mms/ui";
 import { ModuleWorkToolbar } from "@/components/app/ModuleWorkToolbar";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { exportActivityLogsCsv } from "@/platform/features/activity-logs/components/exportActivityLogsCsv";

@@ -8,7 +8,7 @@ import {
   UserCheck,
   Shield,
 } from "lucide-react";
-import { PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES } from "@mms/shared";
+import { PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES } from "@mms/contracts";
 import { getPlatformAdminMetrics } from "@/platform/features/users/lib/platformAdminMetrics";
 import { platformPermissionEntries } from "@/platform/features/users/lib/platformPermissionConfig";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
@@ -21,7 +21,7 @@ import {
   ErrorState,
   CardSkeleton,
   ProgressBar,
-} from "@shared/ui";
+} from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformAdmins } from "@/platform/features/users/hooks/usePlatformAdmins";
 

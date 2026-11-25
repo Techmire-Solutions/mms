@@ -12,7 +12,11 @@ mms/
 │   ├── backend/        # Fastify 5 + Node.js 24 + PostgreSQL 16 + Drizzle ORM + BullMQ
 │   └── frontend/       # React 19 + Vite 8 + Tailwind CSS v4 + TanStack Query v5
 ├── packages/
-│   └── shared/         # @mms/shared: Zod DTOs, interfaces, pure utilities, manifests (SSOT)
+│   ├── contracts/      # @mms/contracts: Zod schemas/DTOs, pagination/filter contracts, error codes, enums (SSOT)
+│   ├── db/             # @mms/db: Drizzle schema, DDL migrations, seeds, soft-delete helpers, tenant-scoped client
+│   ├── be-core/        # @mms/be-core: auth/session/RBAC guards, logger+telemetry, Redis/BullMQ, realtime, transports
+│   ├── fe-core/        # @mms/fe-core: typed API SDK, auth/tenant contexts, query factories, form hooks, i18n init
+│   └── ui/             # @mms/ui: primitives, layout shells, tables, form controls, dumb UI (no router/API)
 ├── e2e/                # Playwright end-to-end integration and accessibility suites
 ├── scripts/            # Build, deploy, ratchet, and validation tooling
 └── .agent/             # Tri-mirrored agent configuration (.agent, .cursor, .claude)
@@ -23,20 +27,24 @@ Repository documentation is indexed in [`docs/README.md`](docs/README.md); decis
 
 ### Layer Constraints & Responsibilities
 
-| Layer                        | Path                                          | Responsibilities & Boundaries                                                                                                                    |
-| ---------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Shared Contracts (SSOT)**  | `packages/shared/`                            | Strict Zod 4 DTOs, TypeScript interfaces, module manifests, pure math/formatting utils. **Zero** DOM, React, Fastify, or SQL dependencies.       |
-| **Frontend UI Primitives**   | `apps/frontend/src/components/ui/`            | Reusable UI chrome, design tokens, Radix UI wrappers. Pure presentation with zero feature-domain imports.                                        |
-| **Frontend Shared Lib**      | `apps/frontend/src/lib/`                      | Application-wide apiClient, TanStack Query factories, i18n configurations, currency formatting.                                                  |
-| **Frontend Tenant Features** | `apps/frontend/src/tenant/features/{module}/` | Module pages, presentation sub-components, custom hooks. Cross-feature imports are forbidden; communication occurs via facades or `@mms/shared`. |
-| **Backend API Routes**       | `apps/backend/src/routes/`                    | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots.                                                   |
-| **Backend Clean Domain**     | `apps/backend/src/{module}/`                  | Clean Architecture domain layers: `use-cases/` (business logic) and `repository/` (Drizzle storage adapters).                                    |
+| Layer                        | Path                                          | Responsibilities & Boundaries                                                                                                                       |
+| ---------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Shared Contracts (SSOT)**  | `packages/contracts/`                         | Strict Zod 4 DTOs, TypeScript interfaces, module manifests, pure math/formatting utils. **Zero** DOM, React, Fastify, or SQL dependencies.          |
+| **Frontend UI Primitives**   | `apps/frontend/src/components/ui/`            | Reusable UI chrome, design tokens, Radix UI wrappers. Pure presentation with zero feature-domain imports.                                           |
+| **Frontend Shared Lib**      | `apps/frontend/src/lib/`                      | Application-wide apiClient, TanStack Query factories, i18n configurations, currency formatting.                                                     |
+| **Frontend Tenant Features** | `apps/frontend/src/tenant/features/{module}/` | Module pages, presentation sub-components, custom hooks. Cross-feature imports are forbidden; communication occurs via facades or `@mms/contracts`. |
+| **Backend API Routes**       | `apps/backend/src/routes/`                    | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots.                                                      |
+| **Backend Kernel**           | `packages/be-core/`                           | Auth/session/RBAC guard factories, logger+correlation tracing, Redis/BullMQ abstractions, realtime emitters, email/notification transport adapters. |
+| **Frontend Runtime**         | `packages/fe-core/`                           | Typed API SDK, auth/tenant contexts, TanStack query/cache factories, shared form hooks and i18n initialization.                                     |
+| **Shared UI**                | `packages/ui/`                                | Primitives, layout shells, tables, form controls and dumb UI; zero API/router/domain imports.                                                       |
+| **Database Layer**           | `packages/db/`                                | Drizzle schema, migrations, seeds, soft-delete helpers and the tenant-scoped client (`withTenant`, audited `bypassTenantScope`).                    |
+| **Backend Clean Domain**     | `apps/backend/src/{module}/`                  | Clean Architecture domain layers: `use-cases/` (business logic) and `repository/` (Drizzle storage adapters).                                       |
 
 ---
 
 ## 2. Interface Contracts & API Boundaries
 
-MMS enforces end-to-end contract type safety through `@ts-rest` contracts and Fastify REST endpoints backed by Zod schemas in `@mms/shared`.
+MMS enforces end-to-end contract type safety through `@ts-rest` contracts and Fastify REST endpoints backed by Zod schemas in `@mms/contracts`.
 
 ### Core API Namespaces
 

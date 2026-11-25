@@ -12,8 +12,8 @@ without a version predicate, default `read committed`, no `FOR UPDATE` in any co
 they were not race-reproduced because no local Postgres was available.
 
 **Scope.** `apps/backend/src/routes/tenant/contacts*`, `apps/backend/src/contacts/**`,
-`apps/backend/src/db/repositories/contact*`, `packages/shared/src/contacts/**`,
-`packages/shared/src/contracts/contacts*`, `packages/shared/src/schemas/contacts*`,
+`apps/backend/src/db/repositories/contact*`, `packages/contracts/src/contacts/**`,
+`packages/contracts/src/contracts/contacts*`, `packages/contracts/src/schemas/contacts*`,
 `apps/frontend/src/tenant/features/contacts/**`, `apps/frontend/src/lib/contacts/**`, contacts
 migrations `0004`–`0101`, and the contacts e2e/a11y specs. Consumers (students/faculty/messaging)
 were inspected only where they call contact services.
@@ -75,7 +75,7 @@ compares `existing.updatedAt` with `x-expected-updated-at`, then calls `repo.sav
 `INSERT … ON CONFLICT DO UPDATE` with no version predicate
 (`apps/backend/src/db/repositories/contactRepositoryPersist.ts:42-51`), and `updatedAt` is
 overwritten server-side (`apps/backend/src/db/repositories/contactRepositoryValues.ts:32-40`). The
-transaction uses the connection default isolation (`apps/backend/src/db/dbTransactions.ts:242-248`
+transaction uses the connection default isolation (`packages/db/src/dbTransactions.ts:242-248`
 → `read committed`), and no contacts repository uses `FOR UPDATE` (grep: zero matches).
 
 **Why it reproduces.** Two editors open the same contact. Both send `PUT` with the same
@@ -88,7 +88,7 @@ the unit test never exercises two connections.
 
 **Impact.** Silent lost update on concurrent edits of the same contact (phones, addresses, notes).
 The contract comment promises “two editors cannot silently overwrite each other”
-(`packages/shared/src/contracts/contactsCrud.contract.ts:79-83`).
+(`packages/contracts/src/contracts/contactsCrud.contract.ts:79-83`).
 
 **Fix.** Make the write conditional: `UPDATE … WHERE workspace_subdomain = $1 AND id = $2 AND
 updated_at = $3 RETURNING *`, or `SELECT … FOR UPDATE` inside the existing transaction and compare
@@ -105,7 +105,7 @@ barrier) proving the second save gets 409 and the first payload survives.
 **Evidence.** `apps/backend/src/contacts/use-cases/contactSoftDeleteUseCases.ts:100-109` calls
 `recordModernAuditEvent` with `oldState: c` and no `subjectId`; `contactRestoreUseCases.ts:99-106`
 and `:206-215` do the same with `newState`. Encryption at capture is keyed only on
-`input.subjectId` (`apps/backend/src/services/auditTrailService.ts:151-165`), and
+`input.subjectId` (`packages/be-core/src/audit/auditTrailService.ts:151-165`), and
 `sanitizeAuditState` only redacts credentials, not PII
 (`apps/backend/src/lib/auditState.ts:24-60`). The route-level helper *is* subject-scoped
 (`contactRouteHelpers.ts:123-124`, used at `contactSoftDeleteRoutes.ts:24-26`), so the summary row is
@@ -154,7 +154,7 @@ proving the tag path does not revert the child edit.
 ### C-04 — P2 — Basic-tab field permissions are ignored by the response sanitizer
 
 **Evidence.** `resolveContactStripPlan` handles collection tabs in `TAB_COLLECTION_KEYS`
-(`packages/shared/src/contacts/contactResponseSanitizer.ts:14-27,70-94`) and then treats every other
+(`packages/contracts/src/contacts/contactResponseSanitizer.ts:14-27,70-94`) and then treats every other
 tab — including `basic` — as a collection: hidden fields become `rowFields` for
 `mutable["basic"]`, which does not exist, so the scalar keys are never deleted (`:97-111`). The only
 basic fields explicitly stripped are `firstName`/`lastName` (`:113-119`). Fields absent from the
@@ -169,7 +169,7 @@ output: {"id":"1","firstName":"A","lastName":"B","cnic":"12345-6789012-3"}
 ```
 
 `PUT /api/contacts/field-config` accepts arbitrary field records
-(`packages/shared/src/schemas/moduleFieldConfig.dto.ts:6-13`), and the router applies the same
+(`packages/contracts/src/schemas/moduleFieldConfig.dto.ts:6-13`), and the router applies the same
 sanitizer to list/get/resolve/duplicates (`contactRouteHelpers.ts:111-121`,
 `contactDuplicateRoutes.ts:53`). The frontend *does* hide the field
 (`ContactDetailFields`/`EntityDescriptor`), so an operator who restricts CNIC/DOB/notes sees a
@@ -197,7 +197,7 @@ gap is real.
 `toVCard` directly over `loadContactsPage` results
 (`apps/backend/src/contacts/use-cases/contactExportUseCases.ts:136-173`). `toVCard` emits phones,
 emails, employer, designation, `NOTE` and `BDAY`
-(`packages/shared/src/core/vcardUtils.ts:118-140`). Contrast the CSV path, which threads
+(`packages/contracts/src/core/vcardUtils.ts:118-140`). Contrast the CSV path, which threads
 `viewerRole: user.role` (`apps/backend/src/lib/registerModuleCsvExportRoutes.ts:76`) and sanitizes
 every chunk (`contactExportUseCases.ts:93-114`).
 
@@ -216,9 +216,9 @@ each page with `resolveContactFieldConfigSnapshot` + `sanitizeContactsForViewer`
 ### C-06 — P3 — List query bypasses the domain query schema → 500 on malformed params
 
 **Evidence.** `contactsCrudRoutes.list` declares `query: baseListQuerySchema`
-(`packages/shared/src/contracts/contactsCrud.contract.ts:38-48`), a `.passthrough()` schema
-(`packages/shared/src/core/apiSchemas.ts:21`). The domain schema
-`contactsListQuerySchema` (`packages/shared/src/contacts/contactsListQuery.ts`, with `gender`,
+(`packages/contracts/src/contracts/contactsCrud.contract.ts:38-48`), a `.passthrough()` schema
+(`packages/contracts/src/core/apiSchemas.ts:21`). The domain schema
+`contactsListQuerySchema` (`packages/contracts/src/contacts/contactsListQuery.ts`, with `gender`,
 `hasPhone`, `quickFilter`, `excludeIds`, …) is never applied. `buildListConditions` assumes strings
 (`contactRepositoryListFilter.ts:76-86`) and `buildOrderBy` calls `sortField?.trim()`
 (`:27`). Repeated query keys are parsed as arrays.
@@ -262,7 +262,7 @@ a transition occurred.
 **Evidence.** `bulkRestoreContacts` iterates `ids` as received
 (`apps/backend/src/contacts/use-cases/contactRestoreUseCases.ts:129-170`) and increments
 `succeeded`/`failed` per entry; `bulkIdsBodySchema` enforces 1–500 entries but does not dedupe
-(`packages/shared/src/schemas/api.dto.ts:16-24`). The soft-delete path dedupes via
+(`packages/contracts/src/schemas/api.dto.ts:16-24`). The soft-delete path dedupes via
 `dedupeTrimmedIds` (`contactSoftDeleteUseCases.ts:36`).
 
 **Impact.** `POST /api/contacts/bulk-restore` with `["c1","c1"]` reports `succeeded: 2` for one

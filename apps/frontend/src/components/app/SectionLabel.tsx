@@ -1,2 +1,2 @@
-export { SectionLabel, type SectionLabelProps } from "@shared/ui";
-export { SectionLabel as default } from "@shared/ui";
+export { SectionLabel, type SectionLabelProps } from "@mms/ui";
+export { SectionLabel as default } from "@mms/ui";

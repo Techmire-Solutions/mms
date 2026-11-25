@@ -5,7 +5,7 @@ describe("Toast store", () => {
   beforeEach(() => {
     // Reset state
     const state = getToastState();
-    state.toasts.forEach((t) => toast({ title: "" }).dismiss());
+    state.toasts.forEach(() => toast({ title: "" }).dismiss());
   });
 
   it("dispatches and records a new toast", () => {

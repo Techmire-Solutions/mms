@@ -3,7 +3,7 @@ import {
   BRANDING_THEME_VARIABLES,
   buildBrandingCssVariables,
   DEFAULT_BRANDING_SETTINGS,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { applyDocumentTheme } from "./brandingThemeCore";
 import { applyApexPlatformTheme } from "@/lib/branding/apexPlatformTheme";
 import {

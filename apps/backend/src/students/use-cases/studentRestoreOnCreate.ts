@@ -1,7 +1,7 @@
-import { type Student, type StudentRecord, type User } from "@mms/shared";
+import { type Student, type StudentRecord, type User } from "@mms/contracts";
 import { activeDb } from "../../db/database.js";
 import { canDeleteCollection } from "../../lib/rbacCanHelpers.js";
-import { buildRestoredRecord } from "../../lib/softDeleteHelpers.js";
+import { buildRestoredRecord } from "@mms/db/soft-delete";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import {
   prepareStudentRecord,
@@ -10,7 +10,7 @@ import {
 } from "./studentNormalizeUseCases.js";
 import { recordRestoreEvents } from "./studentAuditEvents.js";
 import { restoreCascadedEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
-import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileContactSystemTags } from "@mms/mod-contacts/backend/use-cases";
 
 interface RestoreArchivedStudentInput {
   tenant: string;

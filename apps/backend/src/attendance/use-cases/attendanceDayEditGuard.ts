@@ -4,7 +4,7 @@ import {
   normalizeAttendanceModulePreferences,
   type AttendanceRecord,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { canDeleteCollection } from "../../services/rbacService.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { attendanceCalendarRepository } from "../repository/attendanceCalendarRepositoryAdapter.js";

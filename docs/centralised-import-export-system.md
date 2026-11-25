@@ -15,19 +15,19 @@ supports bulk transfer plugs into one cross-module engine split across three lay
 
 ### 1.1 Shared contracts & SSOT — `@mms/shared`
 
-Canonical entry point: [`packages/shared/src/dataTransfer/index.ts`](../packages/shared/src/dataTransfer/index.ts)
+Canonical entry point: [`packages/contracts/src/dataTransfer/index.ts`](../packages/contracts/src/dataTransfer/index.ts)
 
 | Concern | Path |
 | --- | --- |
-| Transfer schema factory (SSOT) | [`core/moduleTransferSchema.ts`](../packages/shared/src/dataTransfer/core/moduleTransferSchema.ts) — `createModuleTransferSchema` |
-| Module coverage registry | [`registry/moduleTransferRegistry.ts`](../packages/shared/src/dataTransfer/registry/moduleTransferRegistry.ts) |
-| Import contracts | [`core/importTypes.ts`](../packages/shared/src/dataTransfer/core/importTypes.ts) — `ImportSpec`, `ImportResult`, `ImportRowError` |
-| Export contracts | [`core/exportTypes.ts`](../packages/shared/src/dataTransfer/core/exportTypes.ts) — `ExportSpec`, `ExportColumn`, `ExportFormat`, `ExportCellExtractor` |
-| Import pipeline | [`import/importPipelineRunner.ts`](../packages/shared/src/dataTransfer/import/importPipelineRunner.ts) — `runImportPipeline`, `validateImportRows` |
-| Export grid builder | [`export/buildExportGrid.ts`](../packages/shared/src/dataTransfer/export/buildExportGrid.ts) — `buildExportGrid`, `yieldExportGridChunks` |
-| Field visibility filter | [`export/filterExportColumns.ts`](../packages/shared/src/dataTransfer/export/filterExportColumns.ts) |
-| Serializer registry | [`export/exportSerializerRegistry.ts`](../packages/shared/src/dataTransfer/export/exportSerializerRegistry.ts) — CSV/JSON shared; XLSX server-only |
-| Per-module schemas | [`schemas/index.ts`](../packages/shared/src/dataTransfer/schemas/index.ts) |
+| Transfer schema factory (SSOT) | [`core/moduleTransferSchema.ts`](../packages/contracts/src/dataTransfer/core/moduleTransferSchema.ts) — `createModuleTransferSchema` |
+| Module coverage registry | [`registry/moduleTransferRegistry.ts`](../packages/contracts/src/dataTransfer/registry/moduleTransferRegistry.ts) |
+| Import contracts | [`core/importTypes.ts`](../packages/contracts/src/dataTransfer/core/importTypes.ts) — `ImportSpec`, `ImportResult`, `ImportRowError` |
+| Export contracts | [`core/exportTypes.ts`](../packages/contracts/src/dataTransfer/core/exportTypes.ts) — `ExportSpec`, `ExportColumn`, `ExportFormat`, `ExportCellExtractor` |
+| Import pipeline | [`import/importPipelineRunner.ts`](../packages/contracts/src/dataTransfer/import/importPipelineRunner.ts) — `runImportPipeline`, `validateImportRows` |
+| Export grid builder | [`export/buildExportGrid.ts`](../packages/contracts/src/dataTransfer/export/buildExportGrid.ts) — `buildExportGrid`, `yieldExportGridChunks` |
+| Field visibility filter | [`export/filterExportColumns.ts`](../packages/contracts/src/dataTransfer/export/filterExportColumns.ts) |
+| Serializer registry | [`export/exportSerializerRegistry.ts`](../packages/contracts/src/dataTransfer/export/exportSerializerRegistry.ts) — CSV/JSON shared; XLSX server-only |
+| Per-module schemas | [`schemas/index.ts`](../packages/contracts/src/dataTransfer/schemas/index.ts) |
 
 `createModuleTransferSchema(config)` is the single source of truth that derives, from one
 `fields` array, the export columns, the cell extractor, the import mappings, the template
@@ -56,7 +56,7 @@ Per-row failures are collected as `ImportRowError` and never throw the whole job
 | Generic service factories | [`lib/createModuleImportService.ts`](../apps/backend/src/lib/createModuleImportService.ts), [`lib/createModuleExportService.ts`](../apps/backend/src/lib/createModuleExportService.ts) |
 | Streaming CSV writer | [`lib/csvExportStreamFactory.ts`](../apps/backend/src/lib/csvExportStreamFactory.ts) |
 | Serializer resolution | [`lib/exportSerializerResolver.ts`](../apps/backend/src/lib/exportSerializerResolver.ts), [`lib/xlsxExportSerializer.ts`](../apps/backend/src/lib/xlsxExportSerializer.ts) |
-| Contacts VCF connector | [`lib/registerContactsVcfExportJobRunner.ts`](../apps/backend/src/lib/registerContactsVcfExportJobRunner.ts) |
+| Contacts VCF connector | [`lib/registerContactsVcfExportJobRunner.ts`](../packages/modules/contacts/src/backend/jobs/registerContactsVcfExportJobRunner.ts) |
 | Worker orchestration | [`services/backgroundJobWorkerService.ts`](../apps/backend/src/services/backgroundJobWorkerService.ts), [`services/backgroundJobRunnerService.ts`](../apps/backend/src/services/backgroundJobRunnerService.ts) |
 | Export artifact store | [`services/exportArtifactService.ts`](../apps/backend/src/services/exportArtifactService.ts) |
 
@@ -180,7 +180,7 @@ field visibility or soft-delete policy.
 
 ### 3.1 Implemented (schema registered)
 
-Registry SSOT: [`moduleTransferRegistry.ts`](../packages/shared/src/dataTransfer/registry/moduleTransferRegistry.ts).
+Registry SSOT: [`moduleTransferRegistry.ts`](../packages/contracts/src/dataTransfer/registry/moduleTransferRegistry.ts).
 
 | Module | Schema(s) | Priority | Notes |
 | --- | --- | --- | --- |
@@ -257,7 +257,7 @@ purpose-built paths. Rationales recorded so a future review does not re-litigate
 
 ## 4. Adding a new module adapter (the recipe)
 
-1. **Schema (SSOT).** Add `packages/shared/src/dataTransfer/schemas/<module>TransferSchema.ts`
+1. **Schema (SSOT).** Add `packages/contracts/src/dataTransfer/schemas/<module>TransferSchema.ts`
    using `createModuleTransferSchema({ moduleId, entityNounPlural, defaultFilename, fields,
    filterColumns })`. Export it from `schemas/index.ts` and register via
    `registerModuleTransferSchema`.

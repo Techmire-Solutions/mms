@@ -1,13 +1,13 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import type { QuestionBankReportAggregates } from "@mms/shared";
+import type { QuestionBankReportAggregates } from "@mms/contracts";
 import {
   questions,
   questionCategories,
   tests,
   assessmentResults,
   assessmentAnswers,
-} from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 const VALID_DIFFICULTIES_SET = new Set(["easy", "medium", "hard"]);
 

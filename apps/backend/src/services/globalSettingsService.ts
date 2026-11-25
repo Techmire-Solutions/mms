@@ -6,7 +6,7 @@ import {
   parseSessionTimeoutMinutes,
   validatePasswordPolicy,
   type GlobalSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { getPlatformSettings } from "./platform/platformSettingsService.js";
 import {

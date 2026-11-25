@@ -1,4 +1,4 @@
-import type { DocumentTemplate } from "@mms/shared";
+import type { DocumentTemplate } from "@mms/contracts";
 import {
   deleteDocumentTemplateRepo,
   getDocumentTemplateRepo,

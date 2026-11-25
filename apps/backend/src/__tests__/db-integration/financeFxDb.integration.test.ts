@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import type { Invoice, Payment } from "@mms/shared";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
-import { financeInvoices, financePayments, workspaces } from "../../db/schema.js";
+import type { Invoice, Payment } from "@mms/contracts";
+import { beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
+import { financeInvoices, financePayments, workspaces } from "@mms/db/schema";
 import { saveInvoice } from "../../db/repositories/financeInvoicesPersist.js";
 import { findInvoiceById } from "../../db/repositories/financeInvoicesRepository.js";
 import { findPaymentById, savePayment } from "../../db/repositories/financePaymentsRepository.js";

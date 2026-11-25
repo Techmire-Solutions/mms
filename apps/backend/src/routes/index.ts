@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import authRoutes from "./common/auth.js";
-import { contactRoutes } from "./tenant/contacts.js";
+import { contactRoutes } from "@mms/mod-contacts/backend/tenant";
 import dbRoutes from "./common/db.js";
 import emailRoutes from "./common/email.js";
 import smsRoutes from "./common/sms.js";
@@ -20,8 +20,7 @@ import platformSmsIntegrationRoutes from "./platform/platformSmsIntegrationRoute
 import platformAdminSystemRoutes from "./platform/platformAdminSystem.js";
 import platformSchemaRoutes from "./platform/platformSchemaRoutes.js";
 import platformAiRoutes from "./platform/platformAiRoutes.js";
-import platformConsolidationRoutes from "./platform/platformConsolidationRoutes.js";
-import platformContactsRoutes from "./platform/platformContacts.js";
+import platformContactsRoutes from "@mms/mod-contacts/backend/platform";
 import platformMessagingRoutes from "./platform/platformMessaging.js";
 import platformAuditRoutes from "./platform/platformAuditRoutes.js";
 import publicRoutes from "./common/public.js";
@@ -31,7 +30,6 @@ import facultyRoutes from "./tenant/faculty.js";
 import financeRoutes from "./tenant/finance.js";
 import enrollmentsRoutes from "./tenant/enrollments.js";
 import obligationsRoutes from "./tenant/obligations.js";
-import accountingRoutes from "./tenant/accounting.js";
 import hasanatRoutes from "./tenant/hasanat.js";
 import workshopsRoutes from "./tenant/workshops/workshopsRoutes.js";
 import examinationsRoutes from "./tenant/examinations.js";
@@ -53,6 +51,21 @@ import notificationsRoutes from "./tenant/notifications/notificationsRoutes.js";
 import moduleAccessRoutes from "./tenant/moduleAccess.js";
 import tasksRoutes from "./tenant/tasksRoutes.js";
 import { documentTemplatesRoutes } from "./tenant/templates/documentTemplatesContractRouter.js";
+import { platformAccountingRoutes } from "@mms/mod-accounting/backend/platform";
+import { tenantAccountingRoutes } from "@mms/mod-accounting/backend/tenant";
+import "../modules/accounting/configure.js";
+import { configureFacultyAccountDeletionGuard } from "../modules/faculty/adapters.js";
+import { authenticateTenant } from "../middleware/authenticate.js";
+import {
+  authenticatePlatform,
+  requirePlatformPermission,
+} from "../middleware/authenticatePlatform.js";
+import { registerModuleAccess } from "../middleware/requireTenantModule.js";
+
+// Composition root: bind the faculty domain's soft-deleted-account probe to the
+// auth middleware port. Runs on module load (app.ts imports this file), before any
+// request reaches `authenticateTenant`.
+configureFacultyAccountDeletionGuard();
 
 export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(openapiRoutes);
@@ -74,15 +87,22 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(platformAdminSystemRoutes, { prefix: "/api/platform/admin/system" });
   await app.register(platformSchemaRoutes, { prefix: "/api/platform/schema" });
   await app.register(platformAiRoutes, { prefix: "/api/platform/ai" });
-  await app.register(platformConsolidationRoutes);
-  await app.register(platformContactsRoutes);
+  await app.register(async (scope) => {
+    scope.addHook("preHandler", authenticatePlatform);
+    scope.addHook("preHandler", requirePlatformPermission("contacts"));
+    await scope.register(platformContactsRoutes);
+  });
   await app.register(platformMessagingRoutes);
   await app.register(platformAuditRoutes, { prefix: "/api/platform/audit" });
   await app.register(workspaceRoutes, { prefix: "/api/workspace" });
   await app.register(workspaceRoutes, { prefix: "/api/workspaces" });
   await app.register(uploadRoutes, { prefix: "/api/uploads" });
   await app.register(dbRoutes, { prefix: "/api/db" });
-  await app.register(contactRoutes);
+  await app.register(async (scope) => {
+    scope.addHook("preHandler", authenticateTenant);
+    registerModuleAccess(scope, "contacts");
+    await scope.register(contactRoutes);
+  });
   await app.register(emailRoutes, { prefix: "/api/email" });
   await app.register(smsRoutes, { prefix: "/api/sms" });
   await app.register(whatsappRoutes, { prefix: "/api/whatsapp" });
@@ -93,12 +113,23 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(financeRoutes);
   await app.register(enrollmentsRoutes);
   await app.register(obligationsRoutes);
-  await app.register(accountingRoutes);
+  await app.register(async (scope) => {
+    scope.addHook("preHandler", authenticateTenant);
+    registerModuleAccess(scope, "accounting");
+    await scope.register(tenantAccountingRoutes);
+  });
   await app.register(hasanatRoutes);
   await app.register(workshopsRoutes);
   await app.register(examinationsRoutes);
   await app.register(questionBankRoutes);
   await app.register(usersRoutes);
+
+  await app.register(async (scope) => {
+    scope.addHook("preHandler", authenticatePlatform);
+    scope.addHook("preHandler", requirePlatformPermission("workspaces"));
+    await scope.register(platformAccountingRoutes);
+  });
+
   await app.register(attendanceRoutes);
   await app.register(sessionsRoutes);
   await app.register(messagingRoutes);

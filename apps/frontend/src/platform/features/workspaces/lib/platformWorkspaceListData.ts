@@ -1,4 +1,4 @@
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import { triggerFileDownload } from "@/lib/download";
 
 /** Sortable workspace list columns (URL `sort` param). */

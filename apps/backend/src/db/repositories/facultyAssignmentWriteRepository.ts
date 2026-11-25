@@ -1,15 +1,15 @@
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
 import { and, eq, isNull } from "drizzle-orm";
-import { facultyAssignments } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
-import type { InsertFacultyAssignmentRow } from "../schema/facultyAssignmentTables.js";
+import { facultyAssignments } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
+import type { InsertFacultyAssignmentRow } from "@mms/db/schema/facultyAssignmentTables";
 import {
   assertFacultyAssignmentDeletable,
   lockFacultyHierarchy,
   validateFacultyAssignment,
 } from "./facultyAssignmentValidation.js";
 import { findFacultyAssignmentById } from "./facultyAssignmentRepository.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 
 export async function saveFacultyAssignment(

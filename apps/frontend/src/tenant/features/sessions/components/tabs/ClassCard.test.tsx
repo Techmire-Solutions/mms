@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { createRoot } from "react-dom/client";
 import { ClassCard } from "./ClassCard";
-import { ClassSchema, type FacultyMember } from "@mms/shared";
+import { ClassSchema, type FacultyMember } from "@mms/contracts";
 
 vi.mock("@/components/app/ModuleRowActionsMenu", () => ({
   ModuleRowActionsMenu: ({

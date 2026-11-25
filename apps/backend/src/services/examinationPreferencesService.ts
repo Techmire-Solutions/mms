@@ -1,7 +1,7 @@
 import {
   normalizeExaminationsModulePreferences,
   type ExaminationsModulePreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getExaminationModulePreferences,
   setExaminationModulePreferences,

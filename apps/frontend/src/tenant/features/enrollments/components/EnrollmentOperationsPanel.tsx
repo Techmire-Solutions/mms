@@ -12,7 +12,7 @@ import {
   formatDate,
   type AppTranslationKey,
   type Enrollment,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { useTranslation } from "@/hooks/useTranslation";

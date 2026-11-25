@@ -9,7 +9,7 @@ import {
   getPrimaryPhone,
   getPrimaryEmail,
   hasWhatsApp,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useMemo } from "react";
 import { useSessions, useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useContactsByIds, useContactById } from "@/tenant/hooks/collections/contacts";

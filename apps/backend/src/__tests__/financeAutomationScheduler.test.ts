@@ -42,7 +42,9 @@ vi.mock("../services/backgroundJobDeadline.js", () => ({
   runWithJobDeadline: (_deadline: unknown, work: () => Promise<unknown>) => work(),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (_tenant: string, work: () => unknown) => work(),
 }));
 

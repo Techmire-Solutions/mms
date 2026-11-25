@@ -5,16 +5,16 @@ import {
   formatAuditEventHashInput,
   GENESIS_AUDIT_HASH,
   type AuditVerificationStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 
-import { withTenantRead } from "../db/tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 import {
   auditTrailEvents,
   auditVerificationRuns,
   auditMerkleRoots,
-} from "../db/schema/auditTrail.js";
+} from "@mms/db/schema/auditTrail";
 import { logger } from "../lib/logger.js";
-import type { DbOrTransaction } from "./auditTrailService.js";
+import type { DbOrTransaction } from "@mms/be-core/audit";
 
 export interface ChainVerificationResult {
   runId: string;

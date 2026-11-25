@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { closeDatabase, initializeDatabaseConnection } from "../db/dbConnection.js";
-import { withGlobalTenant } from "../db/tenant-context.js";
+import { closeDatabase, initializeDatabaseConnection } from "@mms/db/client";
+import { withGlobalTenant } from "@mms/db/context";
 import { logger } from "../lib/logger.js";
 
 loadBackendEnv();

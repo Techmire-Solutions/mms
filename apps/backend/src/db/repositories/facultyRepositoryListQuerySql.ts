@@ -11,8 +11,8 @@ import {
   facultyQuickFilterStatusValue,
   toSqlSearchPattern,
   type FacultyListQuery,
-} from "@mms/shared";
-import { faculty } from "../schema.js";
+} from "@mms/contracts";
+import { faculty } from "@mms/db/schema";
 import {
   joinedContactGenderExpr,
   joinedContactNameExpr,

@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]): string {
 
 export const isIframe: boolean = window.self !== window.top;
 
-export { hexToHslToken as hexToTailwindHsl } from "@mms/shared";
+export { hexToHslToken as hexToTailwindHsl } from "@mms/contracts";
 
 export {
   formatDate,
@@ -32,8 +32,8 @@ export {
   getRecentMonthsList,
   formatCnic,
   calcPercentage,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export { optimizeImage } from "./imageOptimization";
 
-export { isImeSafeEnter } from "@shared/ui";
+export { isImeSafeEnter } from "@mms/ui";

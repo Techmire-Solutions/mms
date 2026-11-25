@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const execute = vi.hoisted(() => vi.fn());
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: async (_tenant: string, fn: (tx: unknown) => Promise<unknown>) => fn({ execute }),
 }));
 vi.mock("../db/documentStoreKeys.js", () => ({

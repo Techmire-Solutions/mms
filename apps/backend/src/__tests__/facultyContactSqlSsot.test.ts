@@ -23,7 +23,10 @@ describe("Faculty contact / employee-id SQL SSOT", () => {
 
   it("contacts list faculty link filter uses typed contact_id", () => {
     const linkSqlSrc = readFileSync(
-      join(here, "../db/repositories/contactRepositoryLinkSql.ts"),
+      join(
+        here,
+        "../../../../packages/modules/contacts/src/backend/repository/contactRepositoryLinkSql.ts",
+      ),
       "utf8",
     );
     expect(linkSqlSrc).toContain("existsActiveFacultyLinkSql");

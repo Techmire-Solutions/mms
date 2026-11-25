@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  decideRlsRole,
-  type RlsEnforcementMode,
-  type RuntimeRoleCheck,
-} from "../db/rlsRoleGuard.js";
+import { decideRlsRole, type RlsEnforcementMode, type RuntimeRoleCheck } from "@mms/db/client";
 
 const applies: RuntimeRoleCheck = {
   role: "mms_app",

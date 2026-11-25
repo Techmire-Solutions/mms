@@ -14,7 +14,7 @@ import {
   FINANCE_MODULE_MANIFEST,
   formatPercent,
   moneyToCents,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { percentChange } from "@/tenant/hooks/collections/dashboard";
 

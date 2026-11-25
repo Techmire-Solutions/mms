@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Alert } from "@/components/app/Alert";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 
 /** Shared load-failure state for platform settings panels. */
 export function PlatformSettingsLoadError({ onRetry }: { onRetry: () => void }): React.JSX.Element {

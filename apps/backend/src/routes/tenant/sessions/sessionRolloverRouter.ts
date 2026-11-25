@@ -1,13 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { SESSIONS_MODULE_MANIFEST, sessionRolloverContract, type User } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST, sessionRolloverContract, type User } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import { enforceSessionResponses } from "../../../lib/sessionContractResponses.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
-import { SESSIONS_MODULE_MANIFEST as MANIFEST } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST as MANIFEST } from "@mms/contracts";
 import { sessionRolloverUseCases as rollover } from "../../../sessions/use-cases/sessionRolloverUseCases.js";
 
 type Contract = typeof sessionRolloverContract;

@@ -10,7 +10,7 @@ import {
   bulkSoftDeleteStudentsSql,
   bulkRestoreStudentsSql,
 } from "../../db/repositories/studentRepository.js";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import {
   listStudentsPage,
   aggregateStudentsCommandMetrics,

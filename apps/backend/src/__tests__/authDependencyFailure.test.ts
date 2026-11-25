@@ -11,6 +11,9 @@ vi.mock("../services/authSessionService.js", async (importOriginal) => {
 });
 
 import { authenticateTenant } from "../middleware/authenticate.js";
+import { configureAccountDeletionGuard } from "../middleware/accountDeletionGuard.js";
+// The composition root normally wires this; a direct-import test must do it itself.
+configureAccountDeletionGuard(async () => false);
 
 const JWT_SECRET = "test-secret-at-least-32-characters-long";
 

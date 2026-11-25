@@ -3,10 +3,10 @@ import React, { useId, useState } from "react";
 import {
   workspaceCreateAdminUserBodySchema,
   type PlatformWorkspaceRow as PlatformWorkspaceRowData,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { UserPlus, User, Mail } from "lucide-react";
 import { FormModal } from "@/components/app/FormModal";
-import { Field, FieldErrorMessage, Input, LeadingIconInput } from "@shared/ui";
+import { Field, FieldErrorMessage, Input, LeadingIconInput } from "@mms/ui";
 import { WorkspaceSummary } from "@/platform/features/workspaces/components/WorkspaceSummary";
 import { WorkspacePasswordField } from "@/platform/features/workspaces/components/WorkspacePasswordField";
 import { useTranslation } from "@/hooks/useTranslation";

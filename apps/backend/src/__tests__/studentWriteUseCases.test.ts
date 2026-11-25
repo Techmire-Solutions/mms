@@ -1,5 +1,15 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
 
 const TENANT = "demo";
@@ -33,10 +43,6 @@ vi.mock("../db/repositories/studentEnrollmentCascade.js", () => ({
   restoreCascadedEnrollmentsForStudents: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
-}));
-
 vi.mock("../students/use-cases/studentPreferencesService.js", () => ({
   loadStudentModulePreferences: vi.fn().mockResolvedValue(null),
 }));
@@ -45,11 +51,11 @@ vi.mock("../enrollments/use-cases/enrollmentEndUseCases.js", () => ({
   withdrawEnrollmentsForStudentStatus: (...args: unknown[]) => mockWithdrawEnrollments(...args),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
   mapActionStringToAuditType: (action: string) => action,
   sanitizeAuditState: (value: unknown) => value,

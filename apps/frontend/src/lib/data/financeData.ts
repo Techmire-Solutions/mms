@@ -10,7 +10,7 @@ import {
   OPEN_INVOICE_STATUSES,
   type OpenInvoiceStatus,
   isOpenInvoiceStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export type { Invoice, Payment, FinanceSettings, InvoiceStatus, OpenInvoiceStatus };
 export { DEFAULT_FINANCE_SETTINGS, INVOICE_STATUSES, OPEN_INVOICE_STATUSES, isOpenInvoiceStatus };

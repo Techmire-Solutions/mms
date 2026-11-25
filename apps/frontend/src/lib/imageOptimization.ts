@@ -5,7 +5,7 @@ import {
   IMAGE_UPLOAD_PRESETS,
   imageExtensionForMime,
   type ImageUploadPurpose,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { encodeWebpWithWasm } from "@/lib/imageEncoders/wasmWebpEncoder";
 import { ImageUploadError } from "@/lib/imageUploadErrors";
 

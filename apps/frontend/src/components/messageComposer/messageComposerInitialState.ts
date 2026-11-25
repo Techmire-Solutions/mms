@@ -1,7 +1,7 @@
 import type {
   MessageTemplate,
   StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   readComposerDraft,
   resolveComposerUserId,

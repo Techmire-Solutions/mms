@@ -3,7 +3,7 @@ import {
   type AppTranslationKey,
   type EnrollmentExportColumn,
   type EnrollmentsListQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { startServerEnrollmentsCsvExport } from "@/lib/backgroundJobs/startServerEnrollmentsCsvExport";
 import { useModuleServerCsvExportActions } from "@/lib/backgroundJobs/useModuleServerCsvExportActions";
 import { useTranslation } from "@/hooks/useTranslation";

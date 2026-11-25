@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { platformSettingsContract } from "@mms/shared";
+import { platformSettingsContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../lib/contractRouterTypes.js";
 import {
   authenticatePlatform,

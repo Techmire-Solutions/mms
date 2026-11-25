@@ -10,7 +10,7 @@ import {
   type AppTranslationKey,
   type ModuleColumnKind,
   type ModuleColumnRegistryEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

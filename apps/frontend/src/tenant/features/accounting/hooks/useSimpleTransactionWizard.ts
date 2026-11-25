@@ -1,23 +1,23 @@
-import { translateApiMessage } from "@/lib/forms/translateValidationMessage";
+import { translateApiMessage } from "@mms/fe-core/forms/translateValidationMessage";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useAuth } from "@/lib/contexts/AuthContext";
-import { isJournalRefUnique, type JournalEntry } from "@/lib/data/accountingData";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useAuth } from "@mms/fe-core/auth/AuthContext";
+import { isJournalRefUnique, type JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import {
   generateClientEntityId,
   isJournalEntryBalanced,
   journalEntryWriteSchema,
-} from "@mms/shared";
-import { mapApiFormError } from "@/lib/forms/serverFormErrors";
-import { notify } from "@/lib/notify";
-import { validateWizardForm } from "../lib/simpleTransactionWizardTypes";
-import { validateJournalPostingGuards } from "../lib/journalEntryFormValidation";
-import { parseMoneyInput } from "../lib/simpleTransactionMoney";
-import { quickActionDescription, quickActionLabel } from "../lib/quickActionLabels";
+} from "@mms/contracts";
+import { mapApiFormError } from "@mms/fe-core/forms/serverFormErrors";
+import { notify } from "@mms/fe-core/notify";
+import { validateWizardForm } from "@mms/mod-accounting/frontend/tenant";
+import { validateJournalPostingGuards } from "@mms/mod-accounting/frontend/tenant";
+import { parseMoneyInput } from "@mms/mod-accounting/frontend/tenant";
+import { quickActionDescription, quickActionLabel } from "@mms/mod-accounting/frontend/tenant";
 import type { JournalEntrySave } from "../lib/journalEntriesTypes";
-import type { DraftForm } from "../lib/journalEntryFormTypes";
+import type { DraftForm } from "@mms/mod-accounting/frontend/tenant";
 import { usePostingPeriods } from "./useAccountingLedgerOps";
-import { useVoucherNumbering } from "./useVoucherNumbering";
+import { useVoucherNumbering } from "@/tenant/features/accounting/hooks/useVoucherNumbering";
 import {
   useSimpleTransactionDraft,
   LAST_TYPE_SESSION_KEY,

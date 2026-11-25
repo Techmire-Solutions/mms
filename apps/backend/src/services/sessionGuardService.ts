@@ -1,4 +1,4 @@
-import type { SessionTimeoutPolicy } from "@mms/shared";
+import type { SessionTimeoutPolicy } from "@mms/contracts";
 import {
   isSessionAbsoluteExpired,
   isSessionIdleExpired,

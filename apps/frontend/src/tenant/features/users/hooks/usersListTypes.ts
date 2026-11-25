@@ -1,4 +1,4 @@
-import type { ModuleColumnRegistryEntry, SystemUser, UsersListPageResult } from "@mms/shared";
+import type { ModuleColumnRegistryEntry, SystemUser, UsersListPageResult } from "@mms/contracts";
 import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 
 export interface UsersListProps {

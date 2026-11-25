@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Payment } from "@mms/shared";
+import type { Payment } from "@mms/contracts";
 import {
   assertPaymentLedgerFieldsUnchanged,
   paymentLedgerSensitiveChanges,

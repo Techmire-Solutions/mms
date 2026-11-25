@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { type ActivityLog, type SystemUser, type WorkspaceUser } from "@mms/shared";
+import { type ActivityLog, type SystemUser, type WorkspaceUser } from "@mms/contracts";
 import { useLocalPagination } from "@/hooks/useLocalPagination";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { DataTableColumnLayout } from "@/components/common/data-table";

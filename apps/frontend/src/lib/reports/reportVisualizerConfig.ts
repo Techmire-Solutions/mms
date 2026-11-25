@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import type { ReportCollection } from "./reportCollectionTypes";
 
 export interface VisualizerConfig {

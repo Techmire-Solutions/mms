@@ -1,4 +1,4 @@
-import { findStudentTimetableCollisions, type Session } from "@mms/shared";
+import { findStudentTimetableCollisions, type Session } from "@mms/contracts";
 import { enrollmentOperationsRepository as repo } from "../repository/enrollmentOperationsRepositoryAdapter.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 

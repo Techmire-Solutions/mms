@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { QuestionBankQuestion, QuestionBankTest, QuestionStatus, User } from "@mms/shared";
+import type { QuestionBankQuestion, QuestionBankTest, QuestionStatus, User } from "@mms/contracts";
 import type { QuestionBankRepository } from "../repository/questionBankRepository.js";
 import { questionBankRepository } from "../repository/questionBankRepositoryAdapter.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";

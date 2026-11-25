@@ -1,4 +1,4 @@
-import { ALL_PERMISSIONS, type User } from "@mms/shared";
+import { ALL_PERMISSIONS, type User } from "@mms/contracts";
 import type {
   NewTenantNotification,
   NotificationsRepository,

@@ -1,7 +1,7 @@
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
 import { eq, or } from "drizzle-orm";
-import { HASANAT_MODULE_MANIFEST, parseTenantScopedStorageKey } from "@mms/shared";
+import { HASANAT_MODULE_MANIFEST, parseTenantScopedStorageKey } from "@mms/contracts";
 
 const SETTINGS_KEY = "hasanat_settings";
 

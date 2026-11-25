@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { type FacultyMember } from "@mms/shared";
+import { type FacultyMember } from "@mms/contracts";
 import { ClassDetailGeneralTab } from "./ClassDetailGeneralTab";
 import { ClassDetailFeesTab } from "./ClassDetailFeesTab";
 import { ClassDetailScheduleTab } from "./ClassDetailScheduleTab";

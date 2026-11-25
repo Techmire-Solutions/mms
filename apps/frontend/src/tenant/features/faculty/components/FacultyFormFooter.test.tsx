@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Contact, FacultyMember } from "@mms/shared";
+import type { Contact, FacultyMember } from "@mms/contracts";
 import { FacultyFormFooter } from "./FacultyFormFooter";
 
 const mockContact: Contact = {

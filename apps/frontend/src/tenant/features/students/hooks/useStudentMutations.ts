@@ -1,4 +1,4 @@
-import type { StudentsBulkEnrollBody } from "@mms/shared";
+import type { StudentsBulkEnrollBody } from "@mms/contracts";
 
 import {
   useStudentsContractCreate,

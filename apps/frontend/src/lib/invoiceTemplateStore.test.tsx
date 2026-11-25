@@ -15,7 +15,7 @@ import {
   useInvoiceTemplate,
   INVOICE_TEMPLATE_KEY,
 } from "./invoiceTemplateStore";
-import * as api from "./templates/documentTemplatesApi";
+import * as api from "@mms/fe-core/documentTemplates/documentTemplatesApi";
 import { createTestQueryClient } from "@/test/queryClientTestUtils";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

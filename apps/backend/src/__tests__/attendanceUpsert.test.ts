@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { planAttendanceUpsert } from "../db/repositories/attendanceUpsert.js";
 import { ValidationError } from "../lib/httpErrors.js";
-import type { AttendanceRecord } from "@mms/shared";
+import type { AttendanceRecord } from "@mms/contracts";
 
 /**
  * The rules that keep concurrent roster saves safe are pure functions, so they are pinned here

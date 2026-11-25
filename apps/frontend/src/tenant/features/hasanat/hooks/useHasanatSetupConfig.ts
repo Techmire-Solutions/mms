@@ -5,7 +5,7 @@ import {
   normalizeHasanatSettings,
   type HasanatModulePreferences,
   type HasanatSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchHasanatPreferences,

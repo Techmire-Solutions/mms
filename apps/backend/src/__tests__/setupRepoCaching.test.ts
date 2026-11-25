@@ -6,7 +6,9 @@ import { createWorkspaceSingletonJsonRepo } from "../db/repositories/moduleSetup
 import { createModuleLookupsRepo } from "../db/repositories/moduleSetupRepoLookups.js";
 
 const mockWithTenant = vi.fn();
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (tenant: string, fn: (tx: unknown) => Promise<unknown>) => mockWithTenant(tenant, fn),
   withTenantRead: (tenant: string, fn: (tx: unknown) => Promise<unknown>) =>
     mockWithTenant(tenant, fn),

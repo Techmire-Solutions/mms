@@ -5,7 +5,7 @@ import {
   SYSTEM_MODULES,
   getRecommendedModulesForIndustry,
   type IndustryType,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getAppDomain } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { NAME_MAX } from "@/components/branding/BrandingShared";

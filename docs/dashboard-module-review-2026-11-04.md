@@ -7,7 +7,7 @@ from the tree as reviewed.
 Scope: `apps/frontend/src/tenant/features/dashboard/**` (26 files: page, 10 components, 9 hooks/helpers,
 types), `tenant/hooks/collections/dashboard.ts`, `apps/backend/src/routes/tenant/dashboard.ts` and every
 service/lib it imports (`dashboardSummaryService`, `dashboardPreferencesService`, `lib/dashboardWidgetsService`,
-`db/repositories/dashboard{Preferences,Widgets}Repository`, `db/schema/dashboard`), `packages/shared/src/dashboard/**`,
+`db/repositories/dashboard{Preferences,Widgets}Repository`, `db/schema/dashboard`), `packages/contracts/src/dashboard/**`,
 `contracts/dashboard.contract.ts`, plus the cross-cutting governance files (`routeAccess.ts`, `moduleRegistry.ts`,
 `moduleAccessPolicy.ts`, `globalSettingsModuleRegistry.ts`, `lib/moduleRouteActions.ts`,
 `moduleAccessCoverage.test.ts`). Dashboard is correctly modelled as a non-CRUD module (no three tiers) and was
@@ -47,7 +47,7 @@ enforced and the client-supplied `date` flows unbounded into a cache key.
 
 ### D1 — Major — Preferences and widgets are workspace-global, not per-user
 
-**Evidence.** `apps/backend/src/db/schema/dashboard.ts:14,24`
+**Evidence.** `packages/db/src/schema/dashboard.ts:14,24`
 ```ts
 /** Dashboard layout/chart preferences — workspace singleton (was document-store `mms_dashboard_preferences`). */
   (table) => [primaryKey({ columns: [table.workspaceSubdomain] })],
@@ -109,7 +109,7 @@ last-write-wins) story.
 
 ### D3 — Major — Partial PUT erases every omitted preference
 
-**Evidence.** `packages/shared/src/dashboard/dashboardPreferencesTypes.ts:72-89` — every field `.optional()`, then
+**Evidence.** `packages/contracts/src/dashboard/dashboardPreferencesTypes.ts:72-89` — every field `.optional()`, then
 `.passthrough()`:
 ```ts
 export const dashboardPreferencesPutBodySchema = z
@@ -137,7 +137,7 @@ shape, not a malformed request.
 
 ### D4 — Major — Widget write DTO is looser than the table it writes
 
-**Evidence.** `packages/shared/src/dashboard/dashboardWidgetSchema.ts:38-45`
+**Evidence.** `packages/contracts/src/dashboard/dashboardWidgetSchema.ts:38-45`
 ```ts
 id: z.string().min(1),
 title: z.string(),
@@ -145,7 +145,7 @@ titleKey: z.string().optional(),
 category: z.string(),
 collection: z.string(),
 ```
-against `apps/backend/src/db/schema/dashboard.ts:38-48`: `category varchar(64)`, `collection varchar(64)`,
+against `packages/db/src/schema/dashboard.ts:38-48`: `category varchar(64)`, `collection varchar(64)`,
 `role varchar(32)`, `title varchar(255)`, `icon varchar(64)`, `color varchar(32)`, `operation varchar(32)`. The schema
 is `.passthrough()` (`:79`) and `toRow` copies every non-indexed key into `config` jsonb
 (`dashboardWidgetsRepository.ts:22-51`).

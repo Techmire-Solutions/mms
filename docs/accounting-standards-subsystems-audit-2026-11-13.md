@@ -131,22 +131,22 @@ whole posting fails atomically (single route transaction) rather than half-posti
 
 | File | Change |
 |---|---|
-| `apps/backend/src/db/migrations_drizzle/0255_hedge_discontinuation_and_currency_lock.sql` | new: hedge `kind` CHECK gains `discontinuation`; functional-currency immutability trigger |
+| `packages/db/migrations_drizzle/0255_hedge_discontinuation_and_currency_lock.sql` | new: hedge `kind` CHECK gains `discontinuation`; functional-currency immutability trigger |
 | `…/meta/0255_…_snapshot.json`, `meta/_journal.json` | snapshot derived from 0254 + journal entry |
-| `packages/shared/src/money/fxConvert.ts` | `rateDifference` |
-| `packages/shared/src/finance/accountingHedges.ts` | single-rounding fair value via the rate difference |
-| `packages/shared/src/finance/accountingHedgeSchemas.ts` | `hedgeDiscontinuationRequestSchema`; valuation `kind` gains `discontinuation` |
-| `packages/shared/src/finance/accountingHttpResponses.ts` | response kind enum |
-| `packages/shared/src/contracts/accountingHedges.contract.ts` | `discontinueHedge` contract entry |
-| `packages/shared/src/i18n/appTranslations{En,Ar,Ur,Fa}.ts` | discontinue/reason keys |
+| `packages/contracts/src/money/fxConvert.ts` | `rateDifference` |
+| `packages/contracts/src/finance/accountingHedges.ts` | single-rounding fair value via the rate difference |
+| `packages/contracts/src/finance/accountingHedgeSchemas.ts` | `hedgeDiscontinuationRequestSchema`; valuation `kind` gains `discontinuation` |
+| `packages/contracts/src/finance/accountingHttpResponses.ts` | response kind enum |
+| `packages/contracts/src/contracts/accountingHedges.contract.ts` | `discontinueHedge` contract entry |
+| `packages/contracts/src/i18n/appTranslations{En,Ar,Ur,Fa}.ts` | discontinue/reason keys |
 | `apps/backend/src/db/repositories/accountingAccountsRepository.ts` | `accountCurrency` in the locking postable lookup |
-| `apps/backend/src/accounting/use-cases/accountingAccountPostability.ts` | per-line currency check |
-| `apps/backend/src/accounting/use-cases/hedgeErrors.ts`, `hedgeAccountRoles.ts` | new: shared 422 shapes and role validation |
-| `apps/backend/src/accounting/use-cases/hedgeUseCases.ts` | uses the split role/error modules (under the 300-line ceiling) |
-| `apps/backend/src/accounting/use-cases/hedgeSettlementUseCases.ts` | role checks; `discontinueHedge`; reclassification from `discontinued` |
-| `apps/backend/src/accounting/use-cases/accountingPeriodClose.ts` | hedge + IAS 29 close preconditions |
+| `packages/modules/accounting/src/backend/use-cases/accountingAccountPostability.ts` | per-line currency check |
+| `packages/modules/accounting/src/backend/use-cases/hedgeErrors.ts`, `hedgeAccountRoles.ts` | new: shared 422 shapes and role validation |
+| `packages/modules/accounting/src/backend/use-cases/hedgeUseCases.ts` | uses the split role/error modules (under the 300-line ceiling) |
+| `packages/modules/accounting/src/backend/use-cases/hedgeSettlementUseCases.ts` | role checks; `discontinueHedge`; reclassification from `discontinued` |
+| `packages/modules/accounting/src/backend/use-cases/accountingPeriodClose.ts` | hedge + IAS 29 close preconditions |
 | `apps/backend/src/routes/tenant/accounting/accountingHedgeRoutes.ts` | `POST /hedges/:id/discontinue` |
-| `apps/backend/src/db/schema/accountingHedges.ts` | declared kind CHECK updated |
+| `packages/db/src/schema/accountingHedges.ts` | declared kind CHECK updated |
 | `apps/frontend/src/tenant/features/accounting/{hooks/useHedges.ts,hooks/useHedgesPanel.ts,lib/hedgeForms.ts,components/HedgeActionModal.tsx,components/AccountingHedgesSection.tsx}` | Discontinue action (date + reason), reclassify shown for discontinued cash-flow hedges |
 
 ## 4. Tests

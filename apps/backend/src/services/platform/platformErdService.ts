@@ -1,6 +1,6 @@
 import { getTableConfig, PgTable } from "drizzle-orm/pg-core";
 import { is } from "drizzle-orm";
-import type { ErdDomain, ErdRelationship, ErdTable, PlatformErdResponse } from "@mms/shared";
+import type { ErdDomain, ErdRelationship, ErdTable, PlatformErdResponse } from "@mms/contracts";
 import { DOMAIN_REGISTRY } from "./platformErdDomains.js";
 import { introspectPgTable } from "./platformErdIntrospect.js";
 

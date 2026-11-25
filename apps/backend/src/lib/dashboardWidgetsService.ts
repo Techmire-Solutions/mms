@@ -1,4 +1,4 @@
-import type { DashboardWidgetDto } from "@mms/shared";
+import type { DashboardWidgetDto } from "@mms/contracts";
 import { requireTenant } from "./tenantContext.js";
 import { broadcastCollection } from "./livePush.js";
 import { logger } from "./logger.js";

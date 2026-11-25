@@ -6,8 +6,8 @@ import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import type { EnrollmentsReportAggregates } from "@mms/shared";
-import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES } from "@mms/shared";
+import type { EnrollmentsReportAggregates } from "@mms/contracts";
+import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES } from "@mms/contracts";
 import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 

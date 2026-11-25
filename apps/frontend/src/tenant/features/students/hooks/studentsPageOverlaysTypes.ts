@@ -1,4 +1,4 @@
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import type {
   StudentsDeleteTarget,

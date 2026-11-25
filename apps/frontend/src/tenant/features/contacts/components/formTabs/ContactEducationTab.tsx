@@ -5,7 +5,7 @@ import { ContactSubListShell, resolveSubListAllowAdd } from "./ContactSubListCar
 import { ContactEducationEntryCard } from "./ContactEducationEntryCard";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ContactEducation } from "@mms/shared";
+import type { ContactEducation } from "@mms/contracts";
 
 /**
  * TypeScript interface representing an individual education entry.

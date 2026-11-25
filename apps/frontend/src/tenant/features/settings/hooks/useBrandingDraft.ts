@@ -8,7 +8,7 @@ import {
   mergeBrandingSettings,
   pickDirtyBrandingFields,
   type BrandingSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { fetchBrandingFromServer } from "@/lib/brandingHydration";
 import { getBrandingSettings, saveBrandingSettings } from "@/lib/db";
 import { clearBrandingSettingsPreview, previewBrandingSettings } from "@/lib/settingsPreview";

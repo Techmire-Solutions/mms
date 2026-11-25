@@ -1,7 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/shared";
-import { facultyEmployments, facultySetupConfig } from "../../db/schema/faculty.js";
-import { withTenant, type TenantTransaction } from "../../db/tenant-context.js";
+import { formatDeterministicEmployeeId, DEFAULT_FACULTY_SETTINGS } from "@mms/contracts";
+import { facultyEmployments, facultySetupConfig } from "@mms/db/schema/faculty";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import type { NextEmployeeIdResult } from "./facultyEmployeeIdService.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 

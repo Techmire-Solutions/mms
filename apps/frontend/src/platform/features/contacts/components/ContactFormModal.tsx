@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Input } from "@shared/ui";
+import { Input } from "@mms/ui";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { PlatformContactDto } from "@mms/shared";
+import type { PlatformContactDto } from "@mms/contracts";
 import {
   PLATFORM_CONTACT_KINDS,
   PLATFORM_CONTACT_KIND_LABEL_KEYS,

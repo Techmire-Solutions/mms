@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { isHostAllowedForAppDomain } from "@mms/shared";
+import { isHostAllowedForAppDomain } from "@mms/contracts";
 import type { ServerConfig } from "../config/serverConfig.js";
 import { requestHostname } from "../lib/requestHost.js";
 

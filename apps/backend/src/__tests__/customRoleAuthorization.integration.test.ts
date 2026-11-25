@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { WorkspaceRole } from "@mms/shared";
+import type { WorkspaceRole } from "@mms/contracts";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -63,7 +63,7 @@ vi.mock("../students/use-cases/studentUseCases.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi
     .fn()
     .mockResolvedValue({ hashPrevious: "0", hashCurrent: "1", canonicalPayload: "{}" }),

@@ -6,7 +6,7 @@ import { SectionLabel } from "@/components/app/SectionLabel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BookOpen } from "lucide-react";
-import { formatMoney, sessionTypeI18nKey, type Session } from "@mms/shared";
+import { formatMoney, sessionTypeI18nKey, type Session } from "@mms/contracts";
 
 export interface StudentDetailSessionsSectionProps {
   sessions: Session[];

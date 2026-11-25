@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import {
   OBLIGATIONS_MODULE_MANIFEST,
   buildObligationCollectionWorkColumnRegistry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

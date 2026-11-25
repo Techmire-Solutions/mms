@@ -4,11 +4,11 @@
  */
 
 import { and } from "drizzle-orm";
-import { type Distribution, type RepositoryListOptions } from "@mms/shared";
+import { type Distribution, type RepositoryListOptions } from "@mms/contracts";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
-import { hasanatDistributions } from "../schema.js";
+import { hasanatDistributions } from "@mms/db/schema";
 import { distributionColumns } from "./hasanatColumns.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 import { distributionRowToRecord } from "./hasanatDistributionsMappers.js";
 
 export { distributionRowToRecord } from "./hasanatDistributionsMappers.js";

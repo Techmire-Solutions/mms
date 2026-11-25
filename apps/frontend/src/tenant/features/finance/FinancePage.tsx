@@ -12,7 +12,7 @@ import { PaymentsList } from "@/tenant/features/finance/components/PaymentsList"
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { type Invoice } from "@/lib/data/financeData";
-import { financeTransferSchema } from "@mms/shared";
+import { financeTransferSchema } from "@mms/contracts";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import { FinanceCommandMetrics } from "@/tenant/features/finance/components/FinanceCommandMetrics";
 import { notify } from "@/lib/notify";

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 
 const examinations = vi.hoisted(() => ({ findExamById: vi.fn() }));
 vi.mock("../examinations/repository/examinationsRepositoryAdapter.js", () => ({

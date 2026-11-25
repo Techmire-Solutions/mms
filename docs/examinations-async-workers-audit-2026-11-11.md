@@ -37,7 +37,7 @@ answered **503** while the UI kept offering the import dialog.
 
 ## Implemented
 
-- `packages/shared/src/examinations/examinationsExportUtils.ts` — column catalogue + row builder
+- `packages/contracts/src/examinations/examinationsExportUtils.ts` — column catalogue + row builder
   (exam metadata only; **marks never leave through the exam CSV**).
 - `services/examinationsExportService.ts` — paged reads (500/page, 10k cap), same catalogue as the route.
 - `services/examinationsImportService.ts` — deterministic ids, chunked apply with per-row error

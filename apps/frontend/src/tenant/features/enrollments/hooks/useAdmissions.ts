@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { RegistrationApplicationListQuery, RegistrationReview } from "@mms/shared";
+import type { RegistrationApplicationListQuery, RegistrationReview } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { isApiError } from "@/lib/apiError";
 import { notify } from "@/lib/notify";

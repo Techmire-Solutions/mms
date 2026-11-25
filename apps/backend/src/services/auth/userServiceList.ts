@@ -2,7 +2,7 @@ import {
   createContactLookupMap,
   hydrateWorkspaceUserProfile,
   resolveTenantLoginEmail,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   findTenantUserRowById,
   upsertTenantUsersBatch,

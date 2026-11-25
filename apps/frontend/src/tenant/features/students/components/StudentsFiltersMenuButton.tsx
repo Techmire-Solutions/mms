@@ -3,7 +3,7 @@ import {
   STUDENTS_QUICK_FILTER_OPTIONS,
   isStudentsQuickFilter,
   type StudentsQuickFilter,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDivider,

@@ -1,8 +1,8 @@
 # Database Schema & Persistence Layer Review: Obligations Module
 
-Schema, Drizzle ORM model, constraint, index, soft-delete and concurrency review of the **Obligations** module (`apps/backend/src/db/schema/obligations.ts`, its migration chain, and the persistence/use-case layer that writes it and posts it to the general ledger).
+Schema, Drizzle ORM model, constraint, index, soft-delete and concurrency review of the **Obligations** module (`packages/db/src/schema/obligations.ts`, its migration chain, and the persistence/use-case layer that writes it and posts it to the general ledger).
 
-**Status: fixed.** Every finding below was raised against this repository and then closed in the same change set — migration [0258_obligations_schema_integrity.sql](../apps/backend/src/db/migrations_drizzle/0258_obligations_schema_integrity.sql), the out-of-band index file [0258_obligations_indexes_concurrent.sql](../apps/backend/scripts/sql/0258_obligations_indexes_concurrent.sql), and the Drizzle/persistence/contract changes listed in [§4.7](#47-drizzle-and-code-mirrors). The remaining defers are D1–D5 in [§6](#6-deferred-items-with-target-designs); D6 (the shared allocation rule) was closed later by [obligations-domain-lifecycle-audit-2026-11-14.md](./obligations-domain-lifecycle-audit-2026-11-14.md).
+**Status: fixed.** Every finding below was raised against this repository and then closed in the same change set — migration [0258_obligations_schema_integrity.sql](../packages/db/migrations_drizzle/0258_obligations_schema_integrity.sql), the out-of-band index file [0258_obligations_indexes_concurrent.sql](../apps/backend/scripts/sql/0258_obligations_indexes_concurrent.sql), and the Drizzle/persistence/contract changes listed in [§4.7](#47-drizzle-and-code-mirrors). The remaining defers are D1–D5 in [§6](#6-deferred-items-with-target-designs); D6 (the shared allocation rule) was closed later by [obligations-domain-lifecycle-audit-2026-11-14.md](./obligations-domain-lifecycle-audit-2026-11-14.md).
 
 The environment that produced this change had **no PostgreSQL**, so the migration initially shipped unapplied. A later session (see the security and async audits) did have a live database: `0258` and `0259` applied cleanly, `financeEnumParityDb` passed, and the persistence suite revealed — and then fixed — two missing foreign-key parents in its own fixtures. [§7](#7-verification) records both the original gap and the later verification.
 
@@ -14,7 +14,7 @@ The review request described an *installment / allocation / balance* model: `obl
 
 | Briefed | Actual |
 | --- | --- |
-| `obligation_installments`, `obligation_allocations` | No such table, column, type, route or snapshot entry. The only `*_allocations` table is `finance_payment_allocations` ([financeBilling.ts:127](../apps/backend/src/db/schema/financeBilling.ts#L127)), which belongs to Finance. |
+| `obligation_installments`, `obligation_allocations` | No such table, column, type, route or snapshot entry. The only `*_allocations` table is `finance_payment_allocations` ([financeBilling.ts:127](../packages/db/src/schema/financeBilling.ts#L127)), which belongs to Finance. |
 | `status`, `due_date`, `assessment_date` | `obligation_collections` has exactly 20 columns; the only date column is `received_date`. There is no status column anywhere in the module. |
 | fulfilled / paid / waived / remaining balance | No such columns. `amount` is the only money column. The tenant's "dues" figure is computed **in the browser** ([obligationsSummaryCalculations.ts:110-114](../apps/frontend/src/tenant/features/obligations/lib/obligationsSummaryCalculations.ts#L110-L114)) and never persisted. |
 | `contact_id` / `student_id` / `session_id` / `invoice_id` | Only `sender_id` → `contacts.id`, written by a `ContactPicker` ([ObligationCollectionFormFields.tsx:156](../apps/frontend/src/tenant/features/obligations/components/ObligationCollectionFormFields.tsx#L156)). There is no student, session or invoice link at all. |
@@ -56,24 +56,24 @@ Constraints inherited from `0000`/`0052`: composite primary key `(workspace_subd
 
 | # | Dimension | Severity | Issue | Impact | Primary file |
 | --- | --- | --- | --- | --- | --- |
-| F1 | Precision | HIGH | Money is `numeric(12,2)` ⇄ JS `number` ⇄ `z.number()`, with no 2-dp or safe-cents refine | A subtotal carrying more than 2 dp is silently rounded by Postgres while the API echoes the unrounded value | [obligations.ts:137](../apps/backend/src/db/schema/obligations.ts#L137), [obligationCollectionsRepository.ts:50](../apps/backend/src/db/repositories/obligationCollectionsRepository.ts#L50) |
+| F1 | Precision | HIGH | Money is `numeric(12,2)` ⇄ JS `number` ⇄ `z.number()`, with no 2-dp or safe-cents refine | A subtotal carrying more than 2 dp is silently rounded by Postgres while the API echoes the unrounded value | [obligations.ts:137](../packages/db/src/schema/obligations.ts#L137), [obligationCollectionsRepository.ts:50](../apps/backend/src/db/repositories/obligationCollectionsRepository.ts#L50) |
 | F2 | Precision | HIGH | Report/metric aggregates are cast to `float8` | Tenant totals carry binary-float drift (`…)0000002`); `0.01` is not representable | [obligationRepositoryReport.ts:42](../apps/backend/src/db/repositories/obligationRepositoryReport.ts#L42), [obligationRepositoryMetrics.ts:39](../apps/backend/src/db/repositories/obligationRepositoryMetrics.ts#L39) |
-| F3 | Date integrity | HIGH | All obligation timestamps are `timestamp` (naive) in the DB but `timestamptz` in Drizzle and every snapshot; `0108`'s `ADD COLUMN IF NOT EXISTS … TIMESTAMPTZ` was a no-op | Values shift whenever the session timezone is not UTC; identical to the defect `0229` fixed for hasanat | [obligations.ts:144-145](../apps/backend/src/db/schema/obligations.ts#L144-L145) |
-| F4 | Date integrity | OK | `received_date` is a real `date` column (`mode: "string"`) written through `requireDbDateValue` | Correct — recorded so it is not "fixed" later | [obligations.ts:134](../apps/backend/src/db/schema/obligations.ts#L134) |
+| F3 | Date integrity | HIGH | All obligation timestamps are `timestamp` (naive) in the DB but `timestamptz` in Drizzle and every snapshot; `0108`'s `ADD COLUMN IF NOT EXISTS … TIMESTAMPTZ` was a no-op | Values shift whenever the session timezone is not UTC; identical to the defect `0229` fixed for hasanat | [obligations.ts:144-145](../packages/db/src/schema/obligations.ts#L144-L145) |
+| F4 | Date integrity | OK | `received_date` is a real `date` column (`mode: "string"`) written through `requireDbDateValue` | Correct — recorded so it is not "fixed" later | [obligations.ts:134](../packages/db/src/schema/obligations.ts#L134) |
 | F5 | Date integrity | MEDIUM | Posting is date-safe, but every reversal posts at "today" | An edit or archive moves the correcting entry into a different period than the original | [ledgerReversalPostingService.ts:122](../apps/backend/src/accounting/ledgerPosting/ledgerReversalPostingService.ts#L122) |
-| F6 | Referential integrity | HIGH | `sender_id` is a contact id with **no FK to `contacts`** | A purged contact leaves receipts pointing at nothing; contact statements scan the tenant | [obligations.ts:135](../apps/backend/src/db/schema/obligations.ts#L135) |
-| F7 | Referential integrity | HIGH | Five composite FKs exist in the DB (`0068`) but are **absent from the Drizzle model and the snapshot** | ORM and database disagree; `drizzle-kit push` would drop them | [obligations.ts](../apps/backend/src/db/schema/obligations.ts) |
-| F8 | Referential integrity | MEDIUM | `obligation_distributions.account_id` has no FK to `accounting_accounts` | A stale id is caught only at posting time, where it makes the whole receipt post **nothing** | [obligations.ts:109](../apps/backend/src/db/schema/obligations.ts#L109) |
-| F9 | Indexing | MEDIUM | Receipt numbers are generated in the browser and are **not unique**; two indexes are redundant/undeclared | Duplicate receipt numbers; wasted write amplification; drift between DB and Drizzle | [obligationsReceiptNumberingUtils.ts:20](../packages/shared/src/obligations/obligationsReceiptNumberingUtils.ts#L20) |
-| F10 | Constraints | MEDIUM | `percentage numeric(5,2)` accepts 999.99 while the DTO caps at 100; no name uniqueness in a wakala; no sum-to-100 guard | DB accepts rows the API rejects; distribution lists can double-count | [obligations.ts:106](../apps/backend/src/db/schema/obligations.ts#L106) |
-| F11 | Constraints | MEDIUM | No enum CHECKs on `payment_mode`, `distribution.type`, `designated_for` | Free-form values reach the posting engine and the metrics counters silently | [obligations.ts:108,139,27](../apps/backend/src/db/schema/obligations.ts#L108) |
-| F12 | Constraints | LOW | `mujtahids` / `mujtahid_reps` / `obligation_types` allow duplicate names | Duplicate catalogue entries; needs a product decision, not DDL | [obligations.ts:33](../apps/backend/src/db/schema/obligations.ts#L33) |
+| F6 | Referential integrity | HIGH | `sender_id` is a contact id with **no FK to `contacts`** | A purged contact leaves receipts pointing at nothing; contact statements scan the tenant | [obligations.ts:135](../packages/db/src/schema/obligations.ts#L135) |
+| F7 | Referential integrity | HIGH | Five composite FKs exist in the DB (`0068`) but are **absent from the Drizzle model and the snapshot** | ORM and database disagree; `drizzle-kit push` would drop them | [obligations.ts](../packages/db/src/schema/obligations.ts) |
+| F8 | Referential integrity | MEDIUM | `obligation_distributions.account_id` has no FK to `accounting_accounts` | A stale id is caught only at posting time, where it makes the whole receipt post **nothing** | [obligations.ts:109](../packages/db/src/schema/obligations.ts#L109) |
+| F9 | Indexing | MEDIUM | Receipt numbers are generated in the browser and are **not unique**; two indexes are redundant/undeclared | Duplicate receipt numbers; wasted write amplification; drift between DB and Drizzle | [obligationsReceiptNumberingUtils.ts:20](../packages/contracts/src/obligations/obligationsReceiptNumberingUtils.ts#L20) |
+| F10 | Constraints | MEDIUM | `percentage numeric(5,2)` accepts 999.99 while the DTO caps at 100; no name uniqueness in a wakala; no sum-to-100 guard | DB accepts rows the API rejects; distribution lists can double-count | [obligations.ts:106](../packages/db/src/schema/obligations.ts#L106) |
+| F11 | Constraints | MEDIUM | No enum CHECKs on `payment_mode`, `distribution.type`, `designated_for` | Free-form values reach the posting engine and the metrics counters silently | [obligations.ts:108,139,27](../packages/db/src/schema/obligations.ts#L108) |
+| F12 | Constraints | LOW | `mujtahids` / `mujtahid_reps` / `obligation_types` allow duplicate names | Duplicate catalogue entries; needs a product decision, not DDL | [obligations.ts:33](../packages/db/src/schema/obligations.ts#L33) |
 | F13 | Soft delete | **CRITICAL** | Soft delete and its ledger reversal are **not atomic**, and a reversal failure is swallowed to a log line | An archived receipt keeps a live journal entry with no durable record of the gap | [obligationLedgerSync.ts:24-35](../apps/backend/src/obligations/use-cases/obligationLedgerSync.ts#L24-L35) |
 | F14 | Soft delete | **CRITICAL** | A save copies `deleted_at` from the payload, so a stale sync **resurrects** an archived receipt — and the ledger then nets to **−amount** | Silent un-delete plus a double reversal; restore provenance never stamped | [obligationCollectionsPersist.ts:114](../apps/backend/src/db/repositories/obligationCollectionsPersist.ts#L114) |
 | F15 | Concurrency | HIGH | No OCC anywhere: no `version` column, unconditional upsert, read-modify-write on update | Lost updates; the wrong revision is reversed when two users edit | [obligationsUseCases.ts:115-126](../apps/backend/src/obligations/use-cases/obligationsUseCases.ts#L115-L126) |
 | F16 | Soft delete | MEDIUM | Workspace purge issues a hard `DELETE` against a table with a `forbid_hard_delete` trigger | Purge raises `check_violation` unless the caller sets `app.allow_hard_purge` | [obligationCollectionsPersist.ts:234](../apps/backend/src/db/repositories/obligationCollectionsPersist.ts#L234) |
 | F17 | Soft delete | OK (verified) | Bulk delete passes requested ids, not succeeded ids, to the reversal loop | Safe — re-processing is idempotent by lifecycle key | [obligationLedgerSync.ts:72-84](../apps/backend/src/obligations/use-cases/obligationLedgerSync.ts#L72-L84) |
-| F18 | Precision | LOW | A negative penny residual can zero the largest allocation line, dropping it and skipping the posting with a misleading log | Verified tiny-amount edge case; the receipt posts nothing | [obligationPostingLogic.ts:168](../packages/shared/src/finance/obligationPostingLogic.ts#L168) |
+| F18 | Precision | LOW | A negative penny residual can zero the largest allocation line, dropping it and skipping the posting with a misleading log | Verified tiny-amount edge case; the receipt posts nothing | [obligationPostingLogic.ts:168](../packages/contracts/src/finance/obligationPostingLogic.ts#L168) |
 | F19 | Precision | MEDIUM | The "dues/balance" figure is client-side float math and divides by the liability percentages only, while the ledger renormalizes by **all** percentages | UI dues ≠ posted liability; the feature dir is outside `check:money-safety` | [obligationsSummaryCalculations.ts:110-114](../apps/frontend/src/tenant/features/obligations/lib/obligationsSummaryCalculations.ts#L110-L114) |
 | F20 | Ratchet | LOW | `check:money-safety` blanket-allows every repository `Number()` citing `financeEnumParityDb`, which does **not** cover `obligation_collections` | The obligation money conversion is unverified | [check-money-safety.mjs:31-41](../scripts/check-money-safety.mjs#L31-L41) |
 | F21 | Precision | LOW | `currency_id` has neither an FK nor any FX handling; a foreign-currency receipt posts 1:1 into the functional-currency ledger | Misstated ledger for any non-functional currency | [obligationPostingService.ts:158-171](../apps/backend/src/accounting/ledgerPosting/obligationPostingService.ts#L158-L171) |
@@ -100,7 +100,7 @@ Constraints inherited from `0000`/`0052`: composite primary key `(workspace_subd
 | F16 hard delete vs trigger | **Fixed** — the wipe/replace paths opt into `app.allow_hard_purge` deliberately |
 | F17 bulk-delete id set | Verified safe, no change |
 | F18 penny residual | **Fixed** — largest-remainder allocation |
-| F19 client-side float dues | **Fixed** in the domain change set — `allocateWakalaSplits` ([obligationSplitAllocation.ts](../packages/shared/src/finance/obligationSplitAllocation.ts)) is now the one allocation rule for the ledger and the summary, which also accumulates in integer cents |
+| F19 client-side float dues | **Fixed** in the domain change set — `allocateWakalaSplits` ([obligationSplitAllocation.ts](../packages/contracts/src/finance/obligationSplitAllocation.ts)) is now the one allocation rule for the ledger and the summary, which also accumulates in integer cents |
 | F20 ratchet coverage | **Fixed** — obligations added to the parity test's table list |
 | F21 collection FX | Deferred (D4) — new columns + an FX-aware line builder |
 
@@ -113,7 +113,7 @@ Constraints inherited from `0000`/`0052`: composite primary key `(workspace_subd
 The column is exact:
 
 ```ts
-// apps/backend/src/db/schema/obligations.ts:137
+// packages/db/src/schema/obligations.ts:137
 amount: numeric("amount", { precision: 12, scale: 2 }).notNull().default("0"),
 ```
 
@@ -134,11 +134,11 @@ amount: String(record.amount),
 and the DTO accepts any non-negative float:
 
 ```ts
-// packages/shared/src/obligations/obligationsModuleManifest.ts:152
+// packages/contracts/src/obligations/obligationsModuleManifest.ts:152
 amount: z.number().min(0),
 ```
 
-There is no 2-dp check, although the repo already has the exact predicates ([`accountingLedgerInvariants.ts:47-61`](../packages/shared/src/finance/accountingLedgerInvariants.ts#L47-L61)):
+There is no 2-dp check, although the repo already has the exact predicates ([`accountingLedgerInvariants.ts:47-61`](../packages/contracts/src/finance/accountingLedgerInvariants.ts#L47-L61)):
 
 ```ts
 const hasAtMostTwoDecimals = (value: number): boolean =>
@@ -151,7 +151,7 @@ const hasSafeCents = (value: number): boolean => Number.isSafeInteger(Math.round
 **Fix (P1, contract-level).** Add an exact number schema to the shared money module and use it in the obligation record/insert schemas:
 
 ```ts
-// packages/shared/src/money/moneySchemas.ts
+// packages/contracts/src/money/moneySchemas.ts
 export const moneyNumberAmountSchema = z
   .number()
   .finite()
@@ -164,11 +164,11 @@ export const moneyNumberAmountSchema = z
 ```
 
 ```ts
-// packages/shared/src/obligations/obligationsModuleManifest.ts:152,179
+// packages/contracts/src/obligations/obligationsModuleManifest.ts:152,179
 amount: moneyNumberAmountSchema,
 ```
 
-**Fix (target, deferred D1).** Move `amount` to `nonNegativeMoneyDecimalAmountSchema` ([`moneySchemas.ts:26`](../packages/shared/src/money/moneySchemas.ts#L26)) — decimal string end-to-end, `numeric` never passing through `Number()`. That is an API-breaking change across the shared contract, the backend mappers, the CSV transfer schema and the frontend, so it is recorded as a design item rather than folded into a DDL migration.
+**Fix (target, deferred D1).** Move `amount` to `nonNegativeMoneyDecimalAmountSchema` ([`moneySchemas.ts:26`](../packages/contracts/src/money/moneySchemas.ts#L26)) — decimal string end-to-end, `numeric` never passing through `Number()`. That is an API-breaking change across the shared contract, the backend mappers, the CSV transfer schema and the frontend, so it is recorded as a design item rather than folded into a DDL migration.
 
 ### 1.2 F2 — aggregates are computed in binary float
 
@@ -214,7 +214,7 @@ ALTER TABLE "obligation_collections" ADD COLUMN IF NOT EXISTS "deleted_at" TIMES
 Because the column already existed, `ADD COLUMN IF NOT EXISTS` was a **no-op**, and no later migration (grep: zero `ALTER COLUMN … TYPE` statements on any obligation table except `0106`'s `deletion_reason` varchar) ever converted it. Drizzle and the snapshots nevertheless declare `timestamptz`:
 
 ```ts
-// apps/backend/src/db/schema/obligations.ts:144-145
+// packages/db/src/schema/obligations.ts:144-145
 createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 ```
@@ -269,7 +269,7 @@ Editing a receipt received on 2026-10-31 on 2026-11-02 posts the reversal into N
 `sender_id` is a contact id (the form binds a `ContactPicker`), yet the column carries no reference at all:
 
 ```ts
-// apps/backend/src/db/schema/obligations.ts:135
+// packages/db/src/schema/obligations.ts:135
 senderId: varchar("sender_id", { length: 64 }).notNull(),
 ```
 
@@ -300,7 +300,7 @@ The live database has (from `0068:204-237`):
 | `obligation_collections_obligation_type_fk` | `(workspace_subdomain, obligation_type_id)` → `obligation_types` |
 | `obligation_collections_rep_fk` | `(workspace_subdomain, mujtahid_representative_id)` → `mujtahid_reps` |
 
-Only the first and fourth are declared in Drizzle. `obligationCollections` and `wakalaTypes` declare **no** `foreignKey()` at all — their table callbacks contain only a primary key and indexes ([obligations.ts:147-179](../apps/backend/src/db/schema/obligations.ts#L147-L179)) — and the snapshot agrees with the schema, not the database:
+Only the first and fourth are declared in Drizzle. `obligationCollections` and `wakalaTypes` declare **no** `foreignKey()` at all — their table callbacks contain only a primary key and indexes ([obligations.ts:147-179](../packages/db/src/schema/obligations.ts#L147-L179)) — and the snapshot agrees with the schema, not the database:
 
 ```
 == wakala_types
@@ -311,7 +311,7 @@ Only the first and fourth are declared in Drizzle. `obligationCollections` and `
 
 **Impact.** The ORM cannot express `with:` relational queries across these edges (the hand-written joins in the report repository are the workaround), and the declarative model is wrong: any `drizzle-kit push` against a database, or a future `generate` that re-baselines the snapshot, proposes dropping constraints that the running system depends on. Only `ON DELETE CASCADE` protects a tenant purge today, and that cascade lives exclusively in SQL that the model does not know about.
 
-**Fix.** Mirror them in [obligations.ts](../apps/backend/src/db/schema/obligations.ts) with the `0068` constraint names:
+**Fix.** Mirror them in [obligations.ts](../packages/db/src/schema/obligations.ts) with the `0068` constraint names:
 
 ```ts
 // wakala_types table callback
@@ -346,14 +346,14 @@ foreignKey({
 `0198_obligation_distributions_account_id.sql` added the column bare, and Drizzle matches:
 
 ```ts
-// apps/backend/src/db/schema/obligations.ts:109
+// packages/db/src/schema/obligations.ts:109
 accountId: text("account_id"),
 ```
 
 The only validation is at posting time, where an unknown account makes the **entire** receipt unpostable:
 
 ```ts
-// packages/shared/src/finance/obligationPostingLogic.ts:145
+// packages/contracts/src/finance/obligationPostingLogic.ts:145
 if (!targetAccountId || !knownAccountIds.has(targetAccountId)) return null;
 ```
 
@@ -376,7 +376,7 @@ ALTER TABLE "obligation_distributions" VALIDATE CONSTRAINT "obligation_distribut
 The next receipt number is derived **in the browser** from the collection list it happens to hold:
 
 ```ts
-// packages/shared/src/obligations/obligationsReceiptNumberingUtils.ts:20
+// packages/contracts/src/obligations/obligationsReceiptNumberingUtils.ts:20
 export function computeNextObligationReceiptNo(
   existingCollections: ObligationCollectionReceiptRecord[],
   settings?: Partial<ObligationsSettings>,
@@ -388,7 +388,7 @@ export function computeNextObligationReceiptNo(
 and the only index on the column is non-unique:
 
 ```ts
-// apps/backend/src/db/schema/obligations.ts:149-152
+// packages/db/src/schema/obligations.ts:149-152
 index("obligation_collections_workspace_receipt_idx").on(table.workspaceSubdomain, table.receiptNo),
 ```
 
@@ -418,14 +418,14 @@ DROP INDEX CONCURRENTLY IF EXISTS "obligation_collections_workspace_receipt_idx"
 ### 2.5 F10 — percentage, name uniqueness and the sum-to-100 guard
 
 ```ts
-// apps/backend/src/db/schema/obligations.ts:106-109
+// packages/db/src/schema/obligations.ts:106-109
 percentage: numeric("percentage", { precision: 5, scale: 2 }).notNull().default("0"),
 wakalaTypeId: text("wakala_type_id").notNull(),
 type: varchar("type", { length: 30 }).notNull(),
 accountId: text("account_id"),
 ```
 
-`numeric(5,2)` permits **999.99**; the DTO permits at most 100 ([obligationsModuleManifest.ts:116](../packages/shared/src/obligations/obligationsModuleManifest.ts#L116)). The database therefore accepts values the API rejects — which matters because the API is not the only writer: the CSV/transfer import and the collection-replacement path both reach the same table.
+`numeric(5,2)` permits **999.99**; the DTO permits at most 100 ([obligationsModuleManifest.ts:116](../packages/contracts/src/obligations/obligationsModuleManifest.ts#L116)). The database therefore accepts values the API rejects — which matters because the API is not the only writer: the CSV/transfer import and the collection-replacement path both reach the same table.
 
 **Fix.** Bound the value, keep names unique inside a wakala:
 
@@ -437,7 +437,7 @@ ALTER TABLE "obligation_distributions"
 
 A `(workspace_subdomain, wakala_type_id, name)` unique index belongs in the concurrent file (the table is in `LARGE_TABLES`).
 
-A *sum-to-100* constraint is deliberately **not** proposed as DDL: the posting engine already tolerates a non-100 total by renormalizing (`effectiveTotalPct`, [obligationPostingLogic.ts:129-130](../packages/shared/src/finance/obligationPostingLogic.ts#L129-L130)). The defect is that the **frontend does not**, which is F19 — a shared-allocation fix, not a database one.
+A *sum-to-100* constraint is deliberately **not** proposed as DDL: the posting engine already tolerates a non-100 total by renormalizing (`effectiveTotalPct`, [obligationPostingLogic.ts:129-130](../packages/contracts/src/finance/obligationPostingLogic.ts#L129-L130)). The defect is that the **frontend does not**, which is F19 — a shared-allocation fix, not a database one.
 
 ### 2.6 F11 — three enum columns have no CHECK
 
@@ -457,7 +457,7 @@ ALTER TABLE "obligation_types"
   CHECK ("designated_for" = ANY (ARRAY['Syed'::character varying, 'Non-Syed'::character varying, 'Both'::character varying, 'None'::character varying]));
 ```
 
-The four values are the shared DTO's `z.enum` ([obligationsModuleManifest.ts:9](../packages/shared/src/obligations/obligationsModuleManifest.ts#L9)), and the frontend has a matching `DesignatedFor` union ([obligationTypeManagerShared.ts:4](../apps/frontend/src/tenant/features/obligations/lib/obligationTypeManagerShared.ts#L4)). The API route is therefore the only enforcement point: the column itself accepts any 20-character string, so a direct repository write, a data migration or a restored backup can carry a value the API would have rejected.
+The four values are the shared DTO's `z.enum` ([obligationsModuleManifest.ts:9](../packages/contracts/src/obligations/obligationsModuleManifest.ts#L9)), and the frontend has a matching `DesignatedFor` union ([obligationTypeManagerShared.ts:4](../apps/frontend/src/tenant/features/obligations/lib/obligationTypeManagerShared.ts#L4)). The API route is therefore the only enforcement point: the column itself accepts any 20-character string, so a direct repository write, a data migration or a restored backup can carry a value the API would have rejected.
 
 ### 2.7 F12 — duplicate catalogue names are allowed
 
@@ -602,7 +602,7 @@ ALTER TABLE "obligation_collections"
 ```
 
 ```ts
-// apps/backend/src/db/schema/obligations.ts — inside obligationCollections
+// packages/db/src/schema/obligations.ts — inside obligationCollections
 /** OCC token: a save carrying a stale version writes nothing and returns 409. */
 version: integer("version").notNull().default(1),
 ```
@@ -640,7 +640,7 @@ So this function only works if its caller (the workspace wipe/restore path) sets
 `buildObligationPostingLines` allocates in integer cents and pushes the residual onto the largest line:
 
 ```ts
-// packages/shared/src/finance/obligationPostingLogic.ts:152-168
+// packages/contracts/src/finance/obligationPostingLogic.ts:152-168
 const diffCents = totalCents - allocatedCents;
 if (diffCents !== 0 && distCentsList.length > 0) { /* add diff to the largest line */ }
 for (…) {
@@ -846,15 +846,15 @@ CREATE POLICY "tenant_soft_delete_isolation" ON "obligation_collections"
 
 ### 4.7 Drizzle and code mirrors
 
-**Model.** [obligationCatalogTables.ts](../apps/backend/src/db/schema/obligationCatalogTables.ts) now holds the catalogue half (types, mujtahids, representatives, wakalas, distribution rules) and [obligations.ts](../apps/backend/src/db/schema/obligations.ts) keeps the collections table and re-exports the catalogue — both under the 300-line ceiling after the additions. They carry the six composite `foreignKey()` declarations with explicit `0068` names, the two new RESTRICT references, the six `check()`s, `version`, and the index set described in [§2.4](#24-f9--receipt-numbers-are-neither-server-allocated-nor-unique).
+**Model.** [obligationCatalogTables.ts](../packages/db/src/schema/obligationCatalogTables.ts) now holds the catalogue half (types, mujtahids, representatives, wakalas, distribution rules) and [obligations.ts](../packages/db/src/schema/obligations.ts) keeps the collections table and re-exports the catalogue — both under the 300-line ceiling after the additions. They carry the six composite `foreignKey()` declarations with explicit `0068` names, the two new RESTRICT references, the six `check()`s, `version`, and the index set described in [§2.4](#24-f9--receipt-numbers-are-neither-server-allocated-nor-unique).
 
-**Contracts.** `moneyNumberAmountSchema` added to [moneySchemas.ts](../packages/shared/src/money/moneySchemas.ts) and applied to both obligation DTOs, which also gain `version: z.number().int().positive().optional()`.
+**Contracts.** `moneyNumberAmountSchema` added to [moneySchemas.ts](../packages/contracts/src/money/moneySchemas.ts) and applied to both obligation DTOs, which also gain `version: z.number().int().positive().optional()`.
 
 **Persistence.** [obligationCollectionsPersist.ts](../apps/backend/src/db/repositories/obligationCollectionsPersist.ts): `deleted_at`/`deleted_by`/`deletion_reason` removed from the upsert `set` (F14); `setWhere: version = excluded.version` plus a written-row assertion that raises 409 (F15); `restored_at`/`restored_by` stamped on restore (F14); the wipe and replace paths opt into `app.allow_hard_purge` (F16). [obligationCollectionsRepository.ts](../apps/backend/src/db/repositories/obligationCollectionsRepository.ts) projects and maps `version`.
 
 **Ledger lifecycle.** [obligationLedgerSync.ts](../apps/backend/src/obligations/use-cases/obligationLedgerSync.ts) gains `strict` posting plus `archiveCollectionsWithLedger` / `restoreCollectionsWithLedger`, which own the transaction that [obligationsUseCases.ts](../apps/backend/src/obligations/use-cases/obligationsUseCases.ts) wraps around every delete and restore (F13). Save/create keep the tolerant path: a receipt that is already committed must not be rejected because the ledger posting failed.
 
-**Aggregates and posting.** [obligationRepositoryReport.ts](../apps/backend/src/db/repositories/obligationRepositoryReport.ts) and [obligationRepositoryMetrics.ts](../apps/backend/src/db/repositories/obligationRepositoryMetrics.ts) sum in `numeric::text` and convert once with `roundMoneyAmount` (F2); [obligationPostingLogic.ts](../packages/shared/src/finance/obligationPostingLogic.ts) allocates by largest remainder (F18).
+**Aggregates and posting.** [obligationRepositoryReport.ts](../apps/backend/src/db/repositories/obligationRepositoryReport.ts) and [obligationRepositoryMetrics.ts](../apps/backend/src/db/repositories/obligationRepositoryMetrics.ts) sum in `numeric::text` and convert once with `roundMoneyAmount` (F2); [obligationPostingLogic.ts](../packages/contracts/src/finance/obligationPostingLogic.ts) allocates by largest remainder (F18).
 
 **UI.** The collection form rejects a >2-dp amount inline with a new `obligations.form.errors.amountScale` key (en/ar/ur/fa) and parses with `Number` instead of `parseFloat`, so a value the DTO rejects can no longer reach the API as a 400.
 
@@ -896,7 +896,7 @@ The unique receipt index must **not** be run before the duplicate pre-flight (or
 | **D2** | Duplicate catalogue names (F12) | `UNIQUE (workspace_subdomain, name)` on `obligation_types`, `mujtahids`, `mujtahid_reps` after a merge decision on existing duplicates. |
 | **D3** | Server-side receipt allocation (F9) | A workspace counter table modelled on `accounting_voucher_counters` (`0128`), allocated inside the insert transaction; the browser's `computeNextObligationReceiptNo` becomes a preview only. Prerequisite for the unique index on a tenant with duplicates. |
 | **D4** | Currency and FX on collections (F21) | `currency` + insert-only `exchange_rate` + `txn_amount` columns, mirroring `financeDocumentFx.ts`; `buildObligationPostingLines` becomes FX-aware and posts the functional amount. Today a foreign-currency receipt posts 1:1 and misstates the ledger. |
-| **D6** | ~~One shared wakala-allocation function for the UI and the ledger (F19)~~ | **Done** — `packages/shared/src/finance/obligationSplitAllocation.ts` (+ 7 tests) is consumed by `buildObligationPostingLines` and `obligationsSummaryCalculations`. The remaining half — adding `apps/frontend/src/tenant/features/obligations` to `check:money-safety`'s `SCAN_DIRS` — was closed later as the domain audit's D7 (the eight findings it surfaced are fixed, not allow-listed). |
+| **D6** | ~~One shared wakala-allocation function for the UI and the ledger (F19)~~ | **Done** — `packages/contracts/src/finance/obligationSplitAllocation.ts` (+ 7 tests) is consumed by `buildObligationPostingLines` and `obligationsSummaryCalculations`. The remaining half — adding `apps/frontend/src/tenant/features/obligations` to `check:money-safety`'s `SCAN_DIRS` — was closed later as the domain audit's D7 (the eight findings it surfaced are fixed, not allow-listed). |
 | **D5** | The installment/balance model the brief described | Not merely missing but **absent by design**: this module records receipts, it does not track a debtor's schedule. A `due_date`/`status`/`paid_amount` model would be a new product capability (pledges with installments and waivers), requiring its own schema, ledger semantics and approvals — not a hardening of this one. |
 
 ---

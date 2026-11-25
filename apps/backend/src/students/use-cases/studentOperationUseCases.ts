@@ -9,7 +9,7 @@ import {
   type StudentDuplicateCheckInput,
   type StudentGrNumberSettings,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
 import { loadStudentModulePreferences } from "./studentPreferencesService.js";
@@ -24,7 +24,7 @@ import {
   recordStudentStatusAuditEvents,
   withdrawEnrollmentsEndedByStatus,
 } from "./studentStatusTransitionUseCases.js";
-import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileContactSystemTags } from "@mms/mod-contacts/backend/use-cases";
 
 import {
   bulkEnrollStudentsIntoClass,

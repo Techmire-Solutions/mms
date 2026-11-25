@@ -1,5 +1,5 @@
 import React from "react";
-import type { Contact, ContactPreferences } from "@mms/shared";
+import type { Contact, ContactPreferences } from "@mms/contracts";
 import { DirectoryCardInfoPills } from "@/components/app/DirectoryCardInfoPills";
 import { resolveAllContactPhones, resolveAllContactEmails } from "@/lib/contacts/contactI18n";
 

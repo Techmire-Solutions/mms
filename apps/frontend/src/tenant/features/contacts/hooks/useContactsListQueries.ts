@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 
 import { uniqueRegistryIds } from "@/lib/registryResolve";

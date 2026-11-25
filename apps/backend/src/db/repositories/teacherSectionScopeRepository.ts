@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 
 export type ClassDatePair = {
   classId: string;

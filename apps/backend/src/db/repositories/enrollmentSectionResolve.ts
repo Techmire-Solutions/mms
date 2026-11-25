@@ -1,11 +1,11 @@
 import { sql } from "drizzle-orm";
-import { enrollmentHoldsSeat, type Enrollment } from "@mms/shared";
-import type { TenantTransaction } from "../tenant-context.js";
+import { enrollmentHoldsSeat, type Enrollment } from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
 import {
   RollNumberConflictError,
   SeatCapacityError,
   ValidationError,
-} from "../../lib/httpErrors.js";
+} from "@mms/be-core/http/errors";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 import {
   countLiveSeatsBySectionTx,

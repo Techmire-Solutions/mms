@@ -9,11 +9,11 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { SearchIndexAdapter } from "../worker/adapters/searchIndexAdapter.js";
-import type { SoftDeletedPayload } from "../services/outboxEventService.js";
-import { buildStudentForensicSnapshot } from "../services/forensicSnapshotService.js";
-import { buildContactForensicSnapshot } from "../services/forensicSnapshotService.js";
+import type { SoftDeletedPayload } from "@mms/be-core/data/outbox";
+import { buildStudentForensicSnapshot } from "@mms/be-core/audit/forensic-snapshot";
+import { buildContactForensicSnapshot } from "@mms/be-core/audit/forensic-snapshot";
 import { redisGet, redisSet, redisDelPattern } from "../lib/redis.js";
-import { emitOutboxEvent, emitOutboxEvents } from "../services/outboxEventService.js";
+import { emitOutboxEvent, emitOutboxEvents } from "@mms/be-core/data/outbox";
 
 // ---------------------------------------------------------------------------
 // Module mocks (factory state is created in vi.hoisted)
@@ -37,7 +37,9 @@ const { mockInsert, mockUpdate, mockSelect, mockActiveDb } = vi.hoisted(() => {
   return { mockInsert, mockUpdate, mockSelect, mockActiveDb };
 });
 
-vi.mock("../db/dbConnection.js", () => ({
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+
   activeDb: mockActiveDb,
   runInTransaction: vi.fn((cb: () => unknown) => cb()),
   runInGlobalTransaction: vi.fn((cb: () => unknown) => cb()),
@@ -77,7 +79,7 @@ vi.mock("../lib/redis.js", () => ({
   }),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({
     id: 1,
     hashPrevious: "0".repeat(64),
@@ -273,7 +275,7 @@ describe("Outbox CDC — soft-delete / restore pipeline", () => {
         // These must NOT appear in the snapshot (credentials)
         password: "secret-hash",
         refreshToken: "rt-xyz",
-      } as unknown as import("@mms/shared").Student;
+      } as unknown as import("@mms/contracts").Student;
 
       const snapshot = buildStudentForensicSnapshot(student);
 
@@ -292,7 +294,7 @@ describe("Outbox CDC — soft-delete / restore pipeline", () => {
         firstName: "Abdullah",
         notes: "Referred by Ahmad.",
         customData: null,
-      } as unknown as import("@mms/shared").Contact;
+      } as unknown as import("@mms/contracts").Contact;
 
       const snapshot = buildContactForensicSnapshot(contact);
       expect(snapshot["id"]).toBe("con-1");

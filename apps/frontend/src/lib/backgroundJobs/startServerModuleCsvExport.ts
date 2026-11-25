@@ -1,4 +1,4 @@
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import { startServerBackgroundJob } from "@/lib/backgroundJobs/startServerBackgroundJob";
 
 /**

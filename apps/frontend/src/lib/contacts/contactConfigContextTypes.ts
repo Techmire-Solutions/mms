@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { ColumnRegistryEntry, ModuleColumnKind } from "@mms/shared";
+import type { ColumnRegistryEntry, ModuleColumnKind } from "@mms/contracts";
 import type { ContactConfigExtras } from "./useContactConfigTypes";
 import { getDefaultContactConfigContextValue } from "./defaultContactConfigValue";
 

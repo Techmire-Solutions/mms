@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { addIsoDays, type Enrollment, type EnrollmentEventType } from "@mms/shared";
+import { addIsoDays, type Enrollment, type EnrollmentEventType } from "@mms/contracts";
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { enrollmentPlacements, enrollmentTimelineEvents } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { enrollmentPlacements, enrollmentTimelineEvents } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 
 type Placeable = Pick<
   Enrollment,

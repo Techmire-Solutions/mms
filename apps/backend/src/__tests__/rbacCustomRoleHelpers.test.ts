@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { User, WorkspaceRole } from "@mms/shared";
+import type { User, WorkspaceRole } from "@mms/contracts";
 import { canReadCollection, canWriteCollection } from "../lib/rbacCanCollectionHelpers.js";
 import { setUserRoleCatalog } from "../lib/userPermissionContext.js";
 

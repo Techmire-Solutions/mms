@@ -138,7 +138,10 @@ describe("paperBuilderUtils", () => {
       "utf-8",
     );
     const printHelper = readFileSync(
-      path.resolve(import.meta.dirname, "../../../../lib/printWindowHtml.ts"),
+      path.resolve(
+        import.meta.dirname,
+        "../../../../../../../packages/fe-core/src/print/printWindowHtml.ts",
+      ),
       "utf-8",
     );
 

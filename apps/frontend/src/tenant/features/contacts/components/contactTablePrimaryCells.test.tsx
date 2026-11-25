@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Contact, ContactPreferences } from "@mms/shared";
+import type { Contact, ContactPreferences } from "@mms/contracts";
 import {
   renderContactNameCell,
   renderContactPhoneCell,

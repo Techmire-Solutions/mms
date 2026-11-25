@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { withGlobalTenant } from "../db/tenant-context.js";
+import { withGlobalTenant } from "@mms/db/context";
 
 /**
  * Shared primitives for leader-only worker sweeps (attendance absence, finance

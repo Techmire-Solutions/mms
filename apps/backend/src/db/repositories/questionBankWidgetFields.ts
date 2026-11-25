@@ -1,7 +1,7 @@
 import { and, sql, type SQL } from "drizzle-orm";
-import type { WidgetQuery } from "@mms/shared";
-import { questions } from "../schema.js";
-import { HttpDomainError } from "../../lib/httpErrors.js";
+import type { WidgetQuery } from "@mms/contracts";
+import { questions } from "@mms/db/schema";
+import { HttpDomainError } from "@mms/be-core/http/errors";
 
 /**
  * Strict widget-field resolution for Question Bank aggregates.

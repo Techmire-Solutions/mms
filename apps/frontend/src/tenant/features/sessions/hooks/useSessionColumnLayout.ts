@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { SESSIONS_MODULE_MANIFEST, buildSessionWorkColumnRegistry } from "@mms/shared";
+import { SESSIONS_MODULE_MANIFEST, buildSessionWorkColumnRegistry } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { FxRevaluationRun } from "@mms/shared";
-import { buildFxReport, type FxReportDeps } from "../accounting/use-cases/fxReportUseCases.js";
+import type { FxRevaluationRun } from "@mms/contracts";
+import { buildFxReport, type FxReportDeps } from "@mms/mod-accounting/backend/use-cases";
 
 /**
  * The FX report is a period disclosure: it must ask for the runs inside the

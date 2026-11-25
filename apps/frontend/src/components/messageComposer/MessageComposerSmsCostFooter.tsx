@@ -7,7 +7,7 @@ import {
   SMS_MULTI_SEGMENT_WARN,
   SMS_SOFT_CHAR_WARN,
   type SmsSegmentResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";
 

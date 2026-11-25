@@ -1,5 +1,5 @@
 import React from "react";
-import { questionBankTransferSchema, type QuestionBankTransferEntity } from "@mms/shared";
+import { questionBankTransferSchema, type QuestionBankTransferEntity } from "@mms/contracts";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface QuestionBankCsvImportDialogProps {

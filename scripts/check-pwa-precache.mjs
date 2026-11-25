@@ -28,8 +28,15 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const distDir = path.join(rootDir, "apps", "frontend", "dist");
 const swPath = path.join(distDir, "sw.js");
 
-/** Measured with the entry-closure transform: 38 entries / ~2.3 MB raw. */
-const MAX_ENTRIES = Number.parseInt(process.env.PWA_PRECACHE_MAX_ENTRIES ?? "50", 10);
+/**
+ * Measured with the entry-closure transform: 38 entries / ~2.3 MB raw when the
+ * gate landed; **69 entries / 2.28 MB** after the `@mms/fe-core` extraction
+ * (`@mms/mod-*`) grew the shell's static import closure. The entry ceiling is a
+ * reviewed re-baseline to 80 (payload budget unchanged at 3.5 MB); P8 replaces
+ * this single-app ceiling with per-app budgets. Re-record both numbers here
+ * whenever the ceiling moves.
+ */
+const MAX_ENTRIES = Number.parseInt(process.env.PWA_PRECACHE_MAX_ENTRIES ?? "80", 10);
 const MAX_MB = Number.parseFloat(process.env.PWA_PRECACHE_MAX_MB ?? "3.5");
 
 /** Optional/large chunks that must stay lazy (runtime-cached on first use). */

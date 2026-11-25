@@ -6,7 +6,7 @@ import {
   type SystemUser,
   type WorkspaceRole,
   type ModuleCustomField,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Alert } from "@/components/app/Alert";
 import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/app/FormSelect";

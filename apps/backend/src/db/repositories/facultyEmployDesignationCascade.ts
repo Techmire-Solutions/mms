@@ -3,8 +3,8 @@
  * @description Cascade soft-delete / restore for faculty_employ_designations (+ audit/outbox).
  */
 import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
-import { faculty, facultyEmployDesignations } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { faculty, facultyEmployDesignations } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import {
   auditEmploymentEntityRestores,
   auditEmploymentEntitySoftDeletes,

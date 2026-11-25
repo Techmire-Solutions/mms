@@ -95,7 +95,7 @@ vi.mock("../students/use-cases/studentConfigService.js", () => ({
   loadStudentsSettingsCombined: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (first: unknown, second?: unknown) => {
     const input = (second ?? first) as {
       realUserId?: string;

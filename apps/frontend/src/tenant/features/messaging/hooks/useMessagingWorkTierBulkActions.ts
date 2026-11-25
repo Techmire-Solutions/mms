@@ -3,7 +3,7 @@ import type {
   Message,
   MessagingStatusFilter,
   StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";
 import { exportMessagingLogsFiltered } from "../lib/messagingReportsExport";

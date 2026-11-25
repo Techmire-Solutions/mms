@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 
 export const PLATFORM_CONTACT_KINDS = ["platform_operator", "workspace_admin", "external"] as const;
 export type PlatformContactKind = (typeof PLATFORM_CONTACT_KINDS)[number];

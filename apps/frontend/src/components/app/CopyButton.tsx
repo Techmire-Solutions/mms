@@ -2,7 +2,7 @@ import React from "react";
 import {
   CopyButton as SharedCopyButton,
   type CopyButtonProps as SharedCopyButtonProps,
-} from "@shared/ui";
+} from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 
@@ -14,7 +14,7 @@ export type CopyBtnProps = CopyButtonProps;
 
 /**
  * Reusable copy-to-clipboard control facade with feedback icon + optional toast.
- * Re-exports and adapts @shared/ui CopyButton with localization and toast notification defaults.
+ * Re-exports and adapts @mms/ui CopyButton with localization and toast notification defaults.
  */
 export function CopyButton({
   showToast = false,

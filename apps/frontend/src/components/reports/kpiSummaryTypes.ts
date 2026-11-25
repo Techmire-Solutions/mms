@@ -3,7 +3,7 @@ import type {
   ContactsReportAnalyticsSnapshot,
   StudentsCommandMetricsSnapshot,
   FacultyCommandMetricsSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export interface KPIItem {
   id: string;

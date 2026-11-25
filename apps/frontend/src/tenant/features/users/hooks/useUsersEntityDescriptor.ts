@@ -1,4 +1,4 @@
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { usersEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";

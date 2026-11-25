@@ -4,7 +4,7 @@ import {
   getPrimaryEmail,
   listEnabledCustomFacultyFormFields,
   normalizeStoredFaculty,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { extractEmployeeId } from "@/tenant/features/faculty/lib/facultyFormDraft";

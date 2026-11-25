@@ -21,7 +21,7 @@ references).
 
 | Level | Files | What it pinned |
 |---|---|---|
-| Shared unit | 71 files repo-wide mention obligations; the module's own live in `packages/shared/src/{obligations,finance,money}` | split largest-remainder, enums/date schemas, import blueprint, posting, allocation |
+| Shared unit | 71 files repo-wide mention obligations; the module's own live in `packages/contracts/src/{obligations,finance,money}` | split largest-remainder, enums/date schemas, import blueprint, posting, allocation |
 | Backend API (`inject`) | `obligations.integration.test.ts` (19), `requireTenantModule`, composition, write-path, audit units | RBAC, 400/403/409/500, unknown query keys, import blueprint, single-record save |
 | DB integration | `obligationsPersistenceDb` (8), `obligationsAuditAtomicityDb` (2), `financeEnumParityDb` (2) | OCC **sequential** 409, no-resurrection, restore provenance, audit rollback, parity |
 | RLS | `obligationsTenantIsolation` (6, `NOBYPASSRLS`) | all 7 tables, explicit-id read, UPDATE/DELETE, FK rejection, policy inventory |

@@ -63,12 +63,14 @@ vi.mock("../services/authSessionService.js", () => ({
   revokeAllUserSessions: vi.fn(),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
   mapActionStringToAuditType: vi.fn().mockReturnValue("UPDATE"),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi
     .fn()
     .mockImplementation(async (_tenant: string, callback: () => Promise<unknown>) => callback()),

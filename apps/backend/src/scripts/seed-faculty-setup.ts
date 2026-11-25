@@ -1,7 +1,7 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/database.js";
-import { getDb } from "../db/dbClient.js";
-import { facultyDepartments, facultyDesignations } from "../db/schema.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { getDb } from "@mms/db/client";
+import { facultyDepartments, facultyDesignations } from "@mms/db/schema";
 
 loadBackendEnv();
 
@@ -18,7 +18,7 @@ async function main() {
   }
 
   console.log(`Seeding faculty setup (department + designation) for subdomain: "${subdomain}"...`);
-  await initDb();
+  await initializeDatabase();
   const db = getDb();
 
   const departmentId = "dept-default";

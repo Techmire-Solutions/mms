@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { isInstitutionSetupComplete } from "@mms/shared";
+import { isInstitutionSetupComplete } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";

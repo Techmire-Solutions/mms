@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Combine, Split, Users, XCircle } from "lucide-react";
-import type { FacultyMember, SessionClassSection } from "@mms/shared";
+import type { FacultyMember, SessionClassSection } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

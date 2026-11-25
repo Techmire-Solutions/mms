@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { BookOpen } from "lucide-react";
-import { type QuestionType } from "@mms/shared";
+import { type QuestionType } from "@mms/contracts";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";

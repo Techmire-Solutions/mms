@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from "react";
 import { CalendarX } from "lucide-react";
-import { formatDate, isoWeekday, todayISO, WEEKDAY_NAMES } from "@mms/shared";
+import { formatDate, isoWeekday, todayISO, WEEKDAY_NAMES } from "@mms/contracts";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
 import { DatePicker } from "@/components/app/DatePicker";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Field } from "@/components/app/FormPrimitives";
 import { ExportToolbar } from "@/components/app/ExportToolbar";
-import { StatsSkeleton } from "@shared/ui";
+import { StatsSkeleton } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAttendanceCoverage } from "@/tenant/features/attendance/hooks/useAttendanceCoverage";
 

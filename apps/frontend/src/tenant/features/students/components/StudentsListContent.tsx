@@ -1,4 +1,4 @@
-import { type Student } from "@mms/shared";
+import { type Student } from "@mms/contracts";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { StudentsListViews } from "@/tenant/features/students/components/StudentsListViews";
@@ -12,7 +12,7 @@ export interface StudentsListContentProps {
   onRestore?: (id: string) => void | Promise<void>;
   viewMode: WorkDirectoryViewMode;
   isColumnVisible: (key: string) => boolean;
-  columnRegistry?: import("@mms/shared").ModuleColumnRegistryEntry[];
+  columnRegistry?: import("@mms/contracts").ModuleColumnRegistryEntry[];
   getColumnWidth?: (key: string) => number | undefined;
   onColumnResize?: (key: string, width: number) => void;
   sortField: StudentsListContentSortField | null;

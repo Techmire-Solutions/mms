@@ -1,4 +1,4 @@
-import { ValidationError } from "../../lib/httpErrors.js";
+import { ValidationError } from "@mms/be-core/http/errors";
 
 export function validateHierarchyDepth(maxDepth: number): void {
   if (!Number.isInteger(maxDepth) || maxDepth < 1 || maxDepth > 20) {

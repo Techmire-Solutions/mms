@@ -8,7 +8,7 @@ import type {
   ExaminationsReportComparisonQuery,
   WidgetQuery,
   WidgetAggregateResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * Sole storage gateway for the examinations module (exams + results).

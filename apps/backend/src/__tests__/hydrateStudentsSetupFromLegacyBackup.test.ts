@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hydrateStudentsSetupCollectionsFromLegacyObjects } from "../db/hydrateStudentsSetupFromLegacyBackup.js";
+import { hydrateStudentsSetupCollectionsFromLegacyObjects } from "../db/migrations/hydrateStudentsSetupFromLegacyBackup.js";
 
 describe("hydrateStudentsSetupCollectionsFromLegacyObjects", () => {
   it("no-ops without users (partial payload)", () => {

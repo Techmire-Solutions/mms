@@ -1,5 +1,6 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -13,18 +14,18 @@ const mocks = vi.hoisted(() => ({
   mutateAsync: vi.fn(),
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock("@/tenant/features/accounting/hooks/useAccountingMutations", () => ({
+vi.mock("@/tenant/features/accounting/hooks/useAccountingApi", () => ({
   useProcessSpecializedEntryMutation: () => ({
     mutateAsync: mocks.mutateAsync,
     isPending: false,
   }),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: { success: vi.fn(), warning: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
 
@@ -36,7 +37,7 @@ vi.mock("@/tenant/components/selectors/RegistryPersonSelect", () => ({
   ),
 }));
 
-vi.mock("@/components/app/FormModal", () => ({
+vi.mock("@mms/fe-core/components/FormModal", () => ({
   FormModal: ({
     children,
     onSave,
@@ -77,6 +78,10 @@ function setInputValue(input: HTMLInputElement, value: string) {
 describe("SpecializedEntryModal fee double submit", () => {
   let container: HTMLDivElement;
   let root: Root;
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  function renderWithClient(node: React.ReactNode) {
+    root.render(<QueryClientProvider client={queryClient}>{node}</QueryClientProvider>);
+  }
 
   beforeEach(() => {
     mocks.mutateAsync.mockReset();
@@ -93,7 +98,7 @@ describe("SpecializedEntryModal fee double submit", () => {
 
   it("collapses two synchronous save invocations into one mutateAsync", async () => {
     await act(async () => {
-      root.render(<SpecializedEntryModal type="fee" accounts={[]} onClose={vi.fn()} />);
+      renderWithClient(<SpecializedEntryModal type="fee" accounts={[]} onClose={vi.fn()} />);
     });
 
     const studentPicker = container.querySelector<HTMLButtonElement>(

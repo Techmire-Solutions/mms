@@ -1,4 +1,4 @@
-import { compileContactReportCellExtractor, isContactsReportFieldId } from "@mms/shared";
+import { compileContactReportCellExtractor, isContactsReportFieldId } from "@mms/contracts";
 import type { DataSource } from "./customReportBuilderFields";
 
 export function toCamelCase(value: string): string {

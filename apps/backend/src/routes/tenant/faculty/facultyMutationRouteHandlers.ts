@@ -1,6 +1,6 @@
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
-import type { Faculty, User, facultyContract } from "@mms/shared";
+import type { Faculty, User, facultyContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { facultyUseCases } from "../../../faculty/use-cases/facultyUseCases.js";
 import { validateFacultyDynamic } from "../../../services/facultyValidationService.js";

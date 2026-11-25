@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { closeDatabase } from "@mms/db/client";
+import { withTenant } from "@mms/db/context";
 import {
   contacts,
   mujtahidReps,
@@ -11,8 +11,8 @@ import {
   obligationTypes,
   wakalaTypes,
   workspaces,
-} from "../../db/schema.js";
-import type { ObligationCollection } from "@mms/shared";
+} from "@mms/db/schema";
+import type { ObligationCollection } from "@mms/contracts";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 import {
   bulkRestoreObligationCollections,

@@ -6,7 +6,7 @@ import {
   type WorkshopEvent,
   type WorkshopEventCreate,
   type WorkshopPreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 

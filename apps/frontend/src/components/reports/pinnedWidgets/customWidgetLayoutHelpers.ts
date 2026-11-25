@@ -1,4 +1,4 @@
-import { capitalize, type AppTranslationKey } from "@mms/shared";
+import { capitalize, type AppTranslationKey } from "@mms/contracts";
 import { resolveWidgetTitle } from "@/lib/dashboardWidgets";
 import { METADATA_FIELDS, getCollectionLabel } from "@/lib/reports/reportMetadata";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";

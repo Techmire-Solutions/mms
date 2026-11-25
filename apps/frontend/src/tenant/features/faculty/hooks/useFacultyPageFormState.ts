@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 
 /** Create/edit Faculty form overlay state (Students-shaped page form state). */
 export function useFacultyPageFormState() {

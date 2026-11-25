@@ -1,4 +1,4 @@
-import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/contracts";
 import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";
 import type { RecipientTab } from "./MessageComposerRecipients";
 

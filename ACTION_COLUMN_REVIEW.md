@@ -64,7 +64,7 @@ Data headers render through `ModuleTableHeaderCell` → `MODULE_TABLE_HEAD_CLASS
 
 **B1 — Mixed i18n keys for the column label.** _(consistency)_
 
-The label is always `t()`-wrapped (no hardcoded English — good), and every key exists in all four locales (verified in `packages/shared/src/i18n/appTranslations{En,Ar,Ur,Fa}.ts`), but the key choice is inconsistent:
+The label is always `t()`-wrapped (no hardcoded English — good), and every key exists in all four locales (verified in `packages/contracts/src/i18n/appTranslations{En,Ar,Ur,Fa}.ts`), but the key choice is inconsistent:
 
 - `common.actions` — invoices, payments, messaging log, obligations collections, sessions, both platform tables.
 - Module-specific `*.table.actions` / `*.columns.actions` / `users.colActions` / `obligations.wakala.colActions` — contacts, students, faculty, hasanat, question-bank, examinations, accounting, wakala.
@@ -168,7 +168,7 @@ Every `*RowActions` trigger now uses `common.actionsFor` = "Actions for {name}" 
 
 **Edge cases** — every trigger call site guards a missing display name (`name ?? id`, `entry.ref`, `receipt_no`, `getDisplayName`, `studentName || id`); read-only users no longer get an empty action column (`renderRowActions={undefined}`); Urdu/Fa `common.actionsFor` keys place the object before "for" for correct RTL word order; long free-text identifiers (`question.text`, `entry.ref`) are acceptable in `aria-label` (no truncation needed).
 
-**Failure modes** — `@mms/shared` `dist`/`AppTranslationKey` staleness resolved by rebuilding after key edits; 8 test mocks updated to `common.actionsFor`; `useMemo` dep array fixed after column removal (`react-hooks/exhaustive-deps`); full suite + build confirm no non-targeted regressions.
+**Failure modes** — `@mms/contracts` `dist`/`AppTranslationKey` staleness resolved by rebuilding after key edits; 8 test mocks updated to `common.actionsFor`; `useMemo` dep array fixed after column removal (`react-hooks/exhaustive-deps`); full suite + build confirm no non-targeted regressions.
 
 **Security / multi-tenancy** — no backend, RBAC, or DTO changes; action visibility is unchanged and still gated by the existing `canWrite` / `canDelete` / `canEdit` / `canManage` permissions; `aria-label`s expose only row data already rendered in the row (names, refs, receipt numbers) — no cross-tenant leakage. Frontend visibility remains non-authoritative, as before.
 

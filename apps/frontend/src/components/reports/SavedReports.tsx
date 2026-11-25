@@ -16,7 +16,7 @@ import {
   type GenericSavedReport,
   type GenericSavedReportCategory,
   type GenericSavedReportCreateInput,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { SavedReportsSource } from "@/hooks/useSavedReportsSource";
 import { SavedReportCard } from "./SavedReportCard";
 

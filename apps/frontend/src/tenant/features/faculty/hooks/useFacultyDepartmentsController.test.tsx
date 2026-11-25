@@ -1,8 +1,8 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { FacultyDepartmentEntity } from "@mms/shared";
-import { slugifyFacultyCatalogCode } from "@mms/shared";
+import type { FacultyDepartmentEntity } from "@mms/contracts";
+import { slugifyFacultyCatalogCode } from "@mms/contracts";
 import { useFacultyDepartmentsController } from "./useFacultyDepartmentsController";
 import { notify } from "@/lib/notify";
 

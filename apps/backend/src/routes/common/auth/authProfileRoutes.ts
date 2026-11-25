@@ -7,7 +7,7 @@ import {
   ownContactPatchBodySchema,
   requestLoginEmailChangeBodySchema,
   verifyPasswordBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { AUTH_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
 import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
 import { clearAuthCookies } from "../../../services/auth/authCookieService.js";
@@ -24,7 +24,7 @@ import {
   confirmLoginEmailChange,
   requestLoginEmailChange,
 } from "../../../services/auth/tenantLoginEmailService.js";
-import { ContactUniqueFieldError } from "../../../services/contactService.js";
+import { ContactUniqueFieldError } from "@mms/mod-contacts/backend/services";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { sendNotFound } from "../../../lib/httpErrors.js";
 

@@ -1,4 +1,4 @@
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 

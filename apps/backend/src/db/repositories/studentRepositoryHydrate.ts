@@ -1,11 +1,8 @@
 import { and, eq, inArray, or, sql } from "drizzle-orm";
-import { type Student, type RepositoryListOptions } from "@mms/shared";
-import { students, studentEnrolledSessions, type StudentSelectRow } from "../schema.js";
-import { withTenantRead, type AppDb } from "../tenant-context.js";
-import {
-  enableIncludeDeleted,
-  softDeleteFilterNeedsIncludeDeleted,
-} from "../../lib/softDeleteHelpers.js";
+import { type Student, type RepositoryListOptions } from "@mms/contracts";
+import { students, studentEnrolledSessions, type StudentSelectRow } from "@mms/db/schema";
+import { withTenantRead, type AppDb } from "@mms/db/context";
+import { enableIncludeDeleted, softDeleteFilterNeedsIncludeDeleted } from "@mms/db/soft-delete";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import { studentRowToRecord } from "./studentRepositoryMappers.js";
 import { getPreparedStudentById } from "../preparedStatements.js";

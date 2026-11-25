@@ -6,7 +6,7 @@ import {
   SubordinateReassignmentError,
   SubordinateReassignmentUnavailableError,
 } from "../faculty/use-cases/facultySoftDeleteUseCases.js";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import type { FacultyRepository } from "../faculty/repository/facultyRepository.js";
 
 vi.mock("../db/database.js", () => ({
@@ -29,7 +29,7 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
   sanitizeAuditState: (value: unknown) => value,
 }));
@@ -39,7 +39,7 @@ vi.mock("../faculty/use-cases/facultyHydrateUseCases.js", () => ({
   hydrateTeachersFromContacts: async (_tenant: unknown, rows: unknown) => rows,
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 

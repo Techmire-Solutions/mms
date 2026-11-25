@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { ENROLLMENTS_MODULE_MANIFEST, STUDENTS_MODULE_MANIFEST, type Student } from "@mms/shared";
+import {
+  ENROLLMENTS_MODULE_MANIFEST,
+  STUDENTS_MODULE_MANIFEST,
+  type Student,
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useEnrollmentsPaginated } from "@/tenant/hooks/collections/enrollments";

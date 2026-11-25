@@ -6,12 +6,16 @@ vi.mock("@/hooks/useTranslation", async () => {
   const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
   return { useTranslation: useTranslationEnMock() };
 });
+vi.mock("@mms/fe-core/i18n", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
 
-vi.mock("@/lib/download", () => ({
+vi.mock("@mms/fe-core/api/download", () => ({
   triggerFileDownload: vi.fn(),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     success: vi.fn(),
     error: vi.fn(),
@@ -26,7 +30,7 @@ const mockStartServerImport = vi.fn().mockResolvedValue({
   progress: { current: 1, total: 1 },
 });
 
-vi.mock("@/lib/backgroundJobs/startServerModuleCsvImport", () => ({
+vi.mock("@mms/fe-core/backgroundJobs/startServerModuleCsvImport", () => ({
   startServerModuleCsvImport: (...args: unknown[]) => mockStartServerImport(...args),
 }));
 
@@ -62,7 +66,7 @@ describe("SessionsCsvImportDialog", () => {
   });
 
   it("renders session import modal and triggers template download from SSOT schema", async () => {
-    const { triggerFileDownload } = await import("@/lib/download");
+    const { triggerFileDownload } = await import("@mms/fe-core/api/download");
 
     act(() => {
       root.render(<SessionsCsvImportDialog open={true} onClose={vi.fn()} canWrite={true} />);

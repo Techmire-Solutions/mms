@@ -5,7 +5,7 @@ import {
   sanitizePhoneForSms,
   sanitizePhoneForTel,
   sanitizePhoneForWhatsApp,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { MessagingActionButton } from "@/components/app/MessagingActionButton";

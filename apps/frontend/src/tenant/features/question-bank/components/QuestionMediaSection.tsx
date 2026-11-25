@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { QuestionBankQuestion } from "@mms/shared";
+import type { QuestionBankQuestion } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { FormSelect } from "@/components/app/FormSelect";

@@ -1,15 +1,15 @@
 import type React from "react";
 import { TrendingUp } from "lucide-react";
-import { formatDate, type PriceIndexPoint } from "@mms/shared";
-import { DatePicker } from "@/components/app/DatePicker";
-import { EmptyState } from "@/components/app/EmptyState";
-import { Field } from "@/components/app/FormPrimitives";
-import { SectionCard } from "@/components/app/SectionCard";
+import { formatDate, type PriceIndexPoint } from "@mms/contracts";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { EmptyState } from "@mms/ui";
+import { Field } from "@mms/ui";
+import { SectionCard } from "@mms/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import {
   useHyperinflationPanel,
   type HyperinflationPanel,

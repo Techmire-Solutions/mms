@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { DEFAULT_AUTH_REDIRECT, ROUTES } from "@/lib/config/routes";
 import { clear2FAState, is2FAVerified, mark2FAVerified } from "@/lib/twoFactor";
-import { requiresTwoFactor } from "@mms/shared";
+import { requiresTwoFactor } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { getAuthErrorMessage } from "@/lib/authErrors";

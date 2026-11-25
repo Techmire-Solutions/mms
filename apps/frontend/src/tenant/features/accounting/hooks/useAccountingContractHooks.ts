@@ -2,7 +2,7 @@
  * Accounting contract-driven server-state surface: list query options,
  * contract query hooks, and contract mutations.
  */
-import { apiContract, tsrClient } from "@/lib/api";
+import { apiContract, tsrClient } from "@mms/fe-core/api/tsRest";
 import { keepPreviousData, queryOptions, useQueryClient } from "@tanstack/react-query";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
 import {
@@ -10,7 +10,7 @@ import {
   ACCOUNTING_ENTRIES_QUERY_KEY,
   ACCOUNTING_FISCAL_YEARS_QUERY_KEY,
 } from "@/tenant/features/accounting/hooks/useAccountingApi";
-import { assertContractOk } from "@/lib/apiContractError";
+import { assertContractOk } from "@mms/fe-core/api/contractError";
 
 export function accountingAccountsListQueryOptions(query: Record<string, unknown> = {}) {
   return queryOptions({

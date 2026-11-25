@@ -1,4 +1,4 @@
-import { formatDate, type FacultyMember } from "@mms/shared";
+import { formatDate, type FacultyMember } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 export type FacultyReportSubTab = "roster" | "workload";

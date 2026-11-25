@@ -9,7 +9,7 @@ import {
   SESSIONS_MODULE_MANIFEST,
   STUDENTS_MODULE_MANIFEST,
   USERS_MODULE_MANIFEST,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type {
   ContactExportColumn,
   ContactsImportJobPayload,
@@ -18,12 +18,12 @@ import type {
   SessionExportColumn,
   StudentExportColumn,
   UserExportColumn,
-} from "@mms/shared";
-import type { ContactsExportQueryInput } from "../contacts/use-cases/contactExportUseCases.js";
+} from "@mms/contracts";
+import type { ContactsExportQueryInput } from "@mms/mod-contacts/backend/use-cases";
 import {
   buildContactsCsvExport,
   generateContactsCsvStreamChunks,
-} from "../contacts/use-cases/contactExportUseCases.js";
+} from "@mms/mod-contacts/backend/use-cases";
 import type { StudentsExportQueryInput } from "./studentsExportService.js";
 import {
   buildStudentsCsvExport,
@@ -47,18 +47,18 @@ import {
   buildMessagingCsvExport,
   generateMessagingCsvStreamChunks,
 } from "./messagingExportService.js";
-import { runContactsDuplicateScan } from "../contacts/use-cases/contactDuplicateScanUseCases.js";
+import { runContactsDuplicateScan } from "@mms/mod-contacts/backend/use-cases";
 import {
   buildContactsImportJobLabel,
   runContactsImportJob,
-} from "../contacts/use-cases/contactImportJobUseCases.js";
+} from "@mms/mod-contacts/backend/use-cases";
 import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
 import { registerSessionRolloverJobRunner } from "../sessions/use-cases/sessionRolloverJob.js";
 import { registerEnrollmentsImportJobRunner } from "../enrollments/enrollmentsImportService.js";
 import { registerSessionImportJobRunner } from "../sessions/use-cases/sessionImportJob.js";
 import { registerSessionsBulkJobRunners } from "./backgroundJobSessionsBulkRunners.js";
 import { registerModuleCsvExportJobRunner } from "../lib/registerModuleCsvExportJobRunner.js";
-import { registerContactsVcfExportJobRunner } from "../lib/registerContactsVcfExportJobRunner.js";
+import { registerContactsVcfExportJobRunner } from "@mms/mod-contacts/backend/jobs";
 import { registerMessagingCampaignJobRunner } from "./messagingCampaignJobRunner.js";
 import { registerMessagingImportJobRunner } from "./backgroundJobMessagingRunners.js";
 import { registerFacultyBackgroundJobRunners } from "./backgroundJobFacultyRunners.js";

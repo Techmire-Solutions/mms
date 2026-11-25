@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { CONTACTS_MODULE_MANIFEST } from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactColumns } from "@/lib/contexts/ContactConfigContext";
 import { useGoogleContactsOAuthListener } from "@/lib/contacts/googleContactsOAuthListener";

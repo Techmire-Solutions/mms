@@ -1,6 +1,6 @@
 import React from "react";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
-import { formatMoney } from "@mms/shared";
+import { formatMoney } from "@mms/contracts";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 

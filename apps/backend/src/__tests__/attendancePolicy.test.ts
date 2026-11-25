@@ -7,7 +7,7 @@ import {
   minutesToHhmm,
   type AttendanceModulePreferences,
   type AttendancePolicyRow,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * The configurable attendance rules — cut-off, late grace, note requirement, approved leave and

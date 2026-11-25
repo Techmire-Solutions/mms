@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant } from "@mms/db/context";
 import {
   attendance,
   workspaces,
@@ -10,8 +10,8 @@ import {
   sessions,
   sessionClasses,
   sessionClassSections,
-} from "../../db/schema.js";
-import type { AttendanceRecord } from "@mms/shared";
+} from "@mms/db/schema";
+import type { AttendanceRecord } from "@mms/contracts";
 import {
   bulkSaveAttendanceRecords,
   saveAttendanceRecordById,

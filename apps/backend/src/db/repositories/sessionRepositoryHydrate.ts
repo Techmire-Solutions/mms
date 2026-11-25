@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import { type Session } from "@mms/shared";
-import { type sessionFaculty, type sessionClasses } from "../schema.js";
-import { type TenantTransaction } from "../tenant-context.js";
+import { type Session } from "@mms/contracts";
+import { type sessionFaculty, type sessionClasses } from "@mms/db/schema";
+import { type TenantTransaction } from "@mms/db/context";
 import { sessionRowToRecord } from "./sessionRepositoryMappers.js";
 import {
   hydrateSessionsListAggregated,

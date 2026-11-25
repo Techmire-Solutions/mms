@@ -6,7 +6,7 @@ import {
   type ModuleColumnRegistryEntry,
   type FacultyCustomField,
   type FacultySortField,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /** Visible Work columns in registry order (checkbox / actions stay outside). */
 export function getFacultyVisibleWorkColumns(

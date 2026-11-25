@@ -26,7 +26,7 @@ correction (Major, measurement), and three minor hardening items. The dominant r
 | Review date | 2026-10-30 (Asia/Karachi) |
 | Toolchain | Node `26.7.0` local (CI runs Node 24), pnpm `11.15.1` (matches `packageManager`) |
 | Source size | backend 1,649 `.ts` · frontend 3,848 `.ts(x)` · shared 883 · e2e 20 specs |
-| Migrations | 198 forward-only SQL migrations (`apps/backend/src/db/migrations_drizzle`) |
+| Migrations | 198 forward-only SQL migrations (`packages/db/migrations_drizzle`) |
 | Journal head | `0197_backend_review_hardening` |
 | Tests | 1,600 files · 7,736 executed at review time (2,235 backend + 3,757 frontend + 1,744 shared), 2 skipped; 7,746 after the resolution tests |
 | Standards | 49 skills · 23 rules · 19 ADRs · DeepSeek Harness `.dsh` mirror in sync |
@@ -69,8 +69,8 @@ Each claim was re-read in code and/or covered by a test that ran in this pass.
 | Prior finding | Evidence |
 | --- | --- |
 | Print-window title XSS (10-29 project review §3.1) | [`printHtmlDocument.ts`](../apps/frontend/src/lib/ui/printHtmlDocument.ts#L21) and [`printWindowHtml.ts`](../apps/frontend/src/lib/printWindowHtml.ts#L33) still run titles through `escapeHtml`; both popups also null their `opener`. |
-| Executable social URL schemes (10-29 §3.2) | [`socialPlatformUtils.ts`](../packages/shared/src/messaging/socialPlatformUtils.ts#L33) rejects any explicit scheme outside `http(s)`/`mailto`/`tel`. |
-| Backend F1/F12 audit trail | [`auditTrailService.ts`](../apps/backend/src/services/auditTrailService.ts#L66) joins the active transaction; shard append takes `pg_advisory_xact_lock(hashtext(...))` at L122. |
+| Executable social URL schemes (10-29 §3.2) | [`socialPlatformUtils.ts`](../packages/contracts/src/messaging/socialPlatformUtils.ts#L33) rejects any explicit scheme outside `http(s)`/`mailto`/`tel`. |
+| Backend F1/F12 audit trail | [`auditTrailService.ts`](../packages/be-core/src/audit/auditTrailService.ts#L66) joins the active transaction; shard append takes `pg_advisory_xact_lock(hashtext(...))` at L122. |
 | Backend F4/F5 finance | Invoice replay check → `409 conflict` ([`financeInvoiceMutationOperations.ts`](../apps/backend/src/finance/financeInvoiceMutationOperations.ts#L129)); settlement row lock `forUpdate: true` ([`financeMutationOperations.ts`](../apps/backend/src/finance/use-cases/financeMutationOperations.ts#L116)). |
 | Backend F37/F45 | Revocation TTL `Math.max(60, remainingSeconds)` ([`authSessionRoutes.ts`](../apps/backend/src/routes/common/auth/authSessionRoutes.ts#L83)); 2FA challenge tenant match ([`twoFactorService.ts`](../apps/backend/src/services/auth/twoFactorService.ts#L89)). |
 | Backend F39/F40 | Uploads and tenant files send `Cache-Control: private, no-store`; 5xx upload errors return a request reference ([`staticAssets.ts`](../apps/backend/src/plugins/staticAssets.ts#L43), [`uploads.ts`](../apps/backend/src/routes/common/uploads.ts#L43)). |
@@ -124,7 +124,7 @@ and remains a follow-up (the unit assertion is the change-time ratchet).
 #### P-02 — Major (gate integrity) — backend and shared coverage still measure only loaded files
 
 **Where:** [`apps/backend/vitest.config.ts:45`](../apps/backend/vitest.config.ts#L45) and
-[`packages/shared/vitest.config.ts:17`](../packages/shared/vitest.config.ts#L17) define `coverage`
+[`packages/contracts/vitest.config.ts:17`](../packages/contracts/vitest.config.ts#L17) define `coverage`
 exclusions and thresholds but no `coverage.include`; the frontend added one on 2026-10-30 after
 discovering that 715 of 2,820 source files never entered its denominator.
 

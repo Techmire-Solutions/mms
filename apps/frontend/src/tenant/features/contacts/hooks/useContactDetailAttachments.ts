@@ -6,8 +6,8 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { AppTranslationKey, Contact } from "@mms/shared";
-import { todayISO } from "@mms/shared";
+import type { AppTranslationKey, Contact } from "@mms/contracts";
+import { todayISO } from "@mms/contracts";
 import { deleteAttachmentFile, uploadAttachmentFile } from "@/lib/attachmentUpload";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";

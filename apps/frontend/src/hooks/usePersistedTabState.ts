@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { normalizeModuleTierTabId } from "@mms/shared";
+import { normalizeModuleTierTabId } from "@mms/contracts";
 import { useUiPreference } from "@/lib/useUiStateStore";
 
 /**

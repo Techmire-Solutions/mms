@@ -4,7 +4,7 @@ import {
   attendanceLookupPutBodySchema,
   type AttendanceLookupKind,
   type AttendanceStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createLookupKindPutHandler } from "../../../lib/createLookupKindPutHandler.js";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
 import { replaceAttendanceLookupKind } from "../../../services/attendanceLookupsService.js";

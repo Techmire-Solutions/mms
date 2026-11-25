@@ -30,7 +30,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const migrationsDir = path.join(rootDir, "apps", "backend", "src", "db", "migrations_drizzle");
+const migrationsDir = path.join(rootDir, "packages", "db", "migrations_drizzle");
 
 /**
  * Tables where a write-blocking index build is unacceptable once populated.

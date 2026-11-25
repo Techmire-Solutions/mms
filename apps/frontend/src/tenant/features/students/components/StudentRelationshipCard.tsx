@@ -5,8 +5,8 @@ import type {
   EmailAddress,
   PhoneNumber,
   StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
-import { toMessagingRecipient } from "@mms/shared";
+} from "@mms/contracts";
+import { toMessagingRecipient } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/app/UserAvatar";
 import { useTranslation } from "@/hooks/useTranslation";

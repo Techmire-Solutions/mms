@@ -5,8 +5,8 @@ import type {
   ContactsSavedReportShareScope,
   ContactsWorkDrillDown,
   AppTranslationKey,
-} from "@mms/shared";
-import { canDeleteContactsSavedReport, validateContactsSavedReportDrillDown } from "@mms/shared";
+} from "@mms/contracts";
+import { canDeleteContactsSavedReport, validateContactsSavedReportDrillDown } from "@mms/contracts";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { BiDiText } from "@/components/app/BiDiText";

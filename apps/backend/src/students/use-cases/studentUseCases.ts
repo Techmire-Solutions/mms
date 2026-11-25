@@ -1,4 +1,4 @@
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";
 import * as loadEntity from "./studentLoadEntityUseCases.js";
@@ -83,14 +83,14 @@ export function createStudentsUseCases(repo: StudentsRepository = studentsReposi
     migrateStudentsMissingGrNumbers: (userId?: string) =>
       operation.migrateStudentsMissingGrNumbers(repo, userId),
     sanitizeStudentForViewer: (
-      student: import("@mms/shared").Student,
+      student: import("@mms/contracts").Student,
       viewerRole: string,
-      clearance?: import("@mms/shared").StudentClearanceOptions,
+      clearance?: import("@mms/contracts").StudentClearanceOptions,
     ) => sanitize.sanitizeStudentForViewer(student, viewerRole, clearance),
     sanitizeStudentsForViewer: (
-      students: import("@mms/shared").Student[],
+      students: import("@mms/contracts").Student[],
       viewerRole: string,
-      clearance?: import("@mms/shared").StudentClearanceOptions,
+      clearance?: import("@mms/contracts").StudentClearanceOptions,
     ) => sanitize.sanitizeStudentsForViewer(students, viewerRole, clearance),
   };
 }

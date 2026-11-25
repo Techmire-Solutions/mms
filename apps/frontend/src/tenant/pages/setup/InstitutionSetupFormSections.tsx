@@ -1,6 +1,6 @@
 import React from "react";
 import { Building2, Mail } from "lucide-react";
-import type { BrandingSettings } from "@mms/shared";
+import type { BrandingSettings } from "@mms/contracts";
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";

@@ -4,7 +4,7 @@ import {
   resolveExaminationsExportColumns,
   type Exam,
   type ExaminationsExportColumn,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { examinationsRepository } from "../examinations/repository/examinationsRepositoryAdapter.js";

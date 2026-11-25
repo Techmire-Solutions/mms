@@ -104,13 +104,13 @@ authority. UUID RLS must use NULLIF(current_setting(
 
 ## File impact
 
-- apps/backend/src/db/schema/faculty*.ts and relations/academicRelations.ts
-- apps/backend/src/db/migrations_drizzle/: new migration, journal and snapshot
+- packages/db/src/schema/faculty*.ts and relations/academicRelations.ts
+- packages/db/migrations_drizzle/: new migration, journal and snapshot
 - apps/backend/src/db/migrations/: resumable normalized-data backfill
 - apps/backend/src/db/repositories/faculty*HierarchyRepository.ts
 - apps/backend/src/faculty/use-cases/: assignment lifecycle and validators
 - apps/backend/src/routes/tenant/faculty/: thin contract adapters
-- packages/shared/src/schemas/faculty.dto.ts and Faculty contracts/types
+- packages/contracts/src/schemas/faculty.dto.ts and Faculty contracts/types
 - apps/backend/src/__tests__/facultyUseCases.test.ts and focused regression tests
 - apps/backend/src/__tests__/db-integration/: real Faculty traversal/RLS tests
 - .cursor/rules/mms-data-layer.mdc and generated rule mirrors
@@ -189,10 +189,10 @@ execution was not part of this backend change's verification.
 ## Deliverables in requested order
 
 1. Implementation plan: this document.
-2. Schema and exports: `apps/backend/src/db/schema/faculty.ts`,
+2. Schema and exports: `packages/db/src/schema/faculty.ts`,
    `facultyDepartmentTables.ts`, `facultyDesignationTables.ts`,
    `facultyAssignmentTables.ts`, and `relations/facultyRelations.ts`.
-3. DDL/RLS: `apps/backend/src/db/migrations_drizzle/0133_faculty_integrity.sql`,
+3. DDL/RLS: `packages/db/migrations_drizzle/0133_faculty_integrity.sql`,
    journal and cumulative snapshot; concurrent index helper
    `apps/backend/src/db/migrations/facultyContactIndex.ts`; resumable data backfill
    `087_backfill_faculty_assignments.ts` and `facultyReportingBackfill.ts`.

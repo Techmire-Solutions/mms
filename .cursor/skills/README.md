@@ -49,7 +49,7 @@ Agent skills for Cursor, Antigravity, and Claude Code. Cursor/Claude discover th
 | [mms-schema-migrate](mms-schema-migrate/SKILL.md) | Changing schema.ts, writing SQL migrations, or reviewing DDL PRs |
 | [mms-seed-fixtures](mms-seed-fixtures/SKILL.md) | Adding seed data for new modules, resetting local development databases, or crafting deterministic E2E test fixtures |
 | [mms-settings-i18n](mms-settings-i18n/SKILL.md) | Adding or modifying settings, sidebar navigation items, custom localizations, translation files, or RTL/LTR layout mirroring |
-| [mms-shared-package](mms-shared-package/SKILL.md) | Adding shared types, formatDate, formatMoney, parsePhoneNumber, manifests, or moving duplicated logic to packages/shared |
+| [mms-shared-package](mms-shared-package/SKILL.md) | Adding shared types, formatDate, formatMoney, parsePhoneNumber, manifests, or moving duplicated logic to packages/contracts |
 | [mms-shared-ui](mms-shared-ui/SKILL.md) | Creating, modifying, moving, auditing, or refactoring UI primitives across Tenant and Platform consoles, or checking for orphaned/duplicate components |
 | [mms-soft-delete](mms-soft-delete/SKILL.md) | Adding or changing soft-delete, trash directories, restore handlers, DDL migrations, or auditing deletion lifecycles |
 | [mms-student-lifecycle](mms-student-lifecycle/SKILL.md) | Modifying student, enrollment, attendance, examination, or hasanat features |

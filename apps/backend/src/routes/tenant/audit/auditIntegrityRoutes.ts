@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { auditAnomaliesQuerySchema, type User } from "@mms/shared";
+import { auditAnomaliesQuerySchema, type User } from "@mms/contracts";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
 import { verifyTenantAuditChain } from "../../../services/auditVerificationService.js";

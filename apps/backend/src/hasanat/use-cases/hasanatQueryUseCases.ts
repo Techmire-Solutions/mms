@@ -19,7 +19,7 @@ import {
   type StockBatch,
   type WidgetAggregateResult,
   type WidgetQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";
 

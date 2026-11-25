@@ -3,9 +3,9 @@ import {
   formatFacultyFieldCellValue,
   type FacultyMember,
   type FacultyCustomField,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import { formatDate, formatFacultyPerformanceRating } from "@mms/shared";
+import { formatDate, formatFacultyPerformanceRating } from "@mms/contracts";
 
 type LinkedContactName = { name?: string | null } | null | undefined;
 

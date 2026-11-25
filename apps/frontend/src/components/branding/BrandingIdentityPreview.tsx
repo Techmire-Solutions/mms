@@ -1,6 +1,6 @@
 import React from "react";
 import { Building2, Mail, MapPin, Phone } from "lucide-react";
-import { formatBrandingAddress, type BrandingSettings } from "@mms/shared";
+import { formatBrandingAddress, type BrandingSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 

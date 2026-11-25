@@ -1,4 +1,4 @@
-import { calcPercentChange, type DashboardMetricTrends } from "@mms/shared";
+import { calcPercentChange, type DashboardMetricTrends } from "@mms/contracts";
 import type { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
 
 /** Percent change helper used by dashboard metric trends. */

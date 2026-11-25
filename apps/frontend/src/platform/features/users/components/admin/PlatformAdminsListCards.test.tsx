@@ -6,7 +6,7 @@ import {
   DEFAULT_PLATFORM_ADMIN_PERMISSIONS,
   FULL_PLATFORM_ADMIN_PERMISSIONS,
   type PlatformUserProfile,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 
 vi.mock("@/hooks/useTranslation", () => ({

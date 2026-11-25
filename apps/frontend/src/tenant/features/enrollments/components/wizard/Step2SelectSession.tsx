@@ -14,10 +14,10 @@ import {
   spotsLeft as computeSpotsLeft,
 } from "@/tenant/features/enrollments/lib/enrollmentCapacity";
 
-import { formatDate, sessionTypeI18nKey } from "@mms/shared";
+import { formatDate, sessionTypeI18nKey } from "@mms/contracts";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 
-import { normalizeSessionStatus, SESSION_ENROLLABLE_STATES } from "@mms/shared";
+import { normalizeSessionStatus, SESSION_ENROLLABLE_STATES } from "@mms/contracts";
 export interface Step2SelectSessionProps {
   value: Session | null | undefined;
   onChange: (session: Session) => void;

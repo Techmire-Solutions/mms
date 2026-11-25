@@ -12,7 +12,7 @@ import {
   normalizeContactTagName,
   splitContactTags,
   todayISO,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ContactTagBadge } from "@/tenant/features/contacts/components/ContactTagBadge";
 import { cn } from "@/lib/utils";
 

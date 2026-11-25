@@ -8,7 +8,7 @@ import {
 } from "../users/use-cases/userPasswordUseCases.js";
 import { HttpDomainError } from "../lib/httpErrors.js";
 import type { UsersRepository } from "../users/repository/usersRepository.js";
-import { withTenant, type TenantTransaction } from "../db/tenant-context.js";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import { deleteRefreshTokensForUser } from "../services/auth/authArtifactService.js";
 import { hashPassword } from "../services/auth/passwordService.js";
 import { assertPasswordMeetsPolicy } from "../services/globalSettingsService.js";
@@ -16,7 +16,9 @@ import { revokeAllUserSessions } from "../services/authSessionService.js";
 import { broadcastCollection } from "../lib/livePush.js";
 import { recordUserActivityLog } from "../users/use-cases/userActivityLogUseCases.js";
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn((_subdomain, callback) => callback({} as unknown as TenantTransaction)),
 }));
 

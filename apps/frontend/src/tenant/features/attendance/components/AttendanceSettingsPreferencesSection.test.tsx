@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AttendanceSettingsPreferencesSection } from "./AttendanceSettingsPreferencesSection";
-import type { AttendanceSettings } from "@mms/shared";
+import type { AttendanceSettings } from "@mms/contracts";
 
 const mockSettings: AttendanceSettings = {
   workingDays: ["monday", "tuesday"],

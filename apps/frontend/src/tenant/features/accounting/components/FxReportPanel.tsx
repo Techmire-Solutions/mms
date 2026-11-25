@@ -1,10 +1,10 @@
 import type React from "react";
-import { formatDate, formatMoney, type FxExposureRow, type FxRealizedRow } from "@mms/shared";
-import { EmptyState } from "@/components/app/EmptyState";
-import { ErrorState } from "@/components/app/ErrorState";
+import { formatDate, formatMoney, type FxExposureRow, type FxRealizedRow } from "@mms/contracts";
+import { EmptyState } from "@mms/ui";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslation } from "@/hooks/useTranslation";
+import { Skeleton } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useFxReport } from "@/tenant/features/accounting/hooks/useFxRevaluation";
 
 type ExposureRow = FxExposureRow & { id: string };

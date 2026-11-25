@@ -1,7 +1,7 @@
-import type { TenantDatabaseSnapshot } from "@mms/shared";
-import { withTenant } from "../db/tenant-context.js";
+import type { TenantDatabaseSnapshot } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { SYNC_REQUEST_TIMEOUT_MS } from "../lib/syncLimits.js";
-import { recordModernAuditEvent } from "./auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { synchronizeData } from "./dbSyncService.js";
 
 export interface RestoreWorkspaceInput {

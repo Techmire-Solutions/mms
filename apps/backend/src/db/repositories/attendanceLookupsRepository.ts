@@ -1,5 +1,5 @@
-import type { AttendanceLookupKind } from "@mms/shared";
-import { attendanceLookups } from "../schema.js";
+import type { AttendanceLookupKind } from "@mms/contracts";
+import { attendanceLookups } from "@mms/db/schema";
 import {
   createModuleLookupsRepo,
   type ModuleLookupRowInput,

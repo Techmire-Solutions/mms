@@ -8,7 +8,7 @@ import {
   type PromotionPreviewRow,
   type Session,
   type SessionRolloverInput,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export type RolloverMode = SessionRolloverInput["mode"];
 export type RolloverCopyKey = keyof SessionRolloverInput["copy"];

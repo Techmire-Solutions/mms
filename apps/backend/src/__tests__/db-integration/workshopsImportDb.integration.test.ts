@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
-import { auditTrailEvents, contacts, workspaces } from "../../db/schema.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant, withTenantRead } from "@mms/db/context";
+import { auditTrailEvents, contacts, workspaces } from "@mms/db/schema";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { workshopsUseCases } from "../../workshops/use-cases/workshopsUseCases.js";
 import { importParticipantChunk } from "../../db/repositories/workshopParticipantImportRepository.js";

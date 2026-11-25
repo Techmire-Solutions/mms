@@ -1,4 +1,4 @@
-import { IMAGE_UPLOAD_MAX_INPUT_BYTES } from "@mms/shared";
+import { IMAGE_UPLOAD_MAX_INPUT_BYTES } from "@mms/contracts";
 import { isSupportedImageSource } from "@/lib/imageOptimization";
 import { ImageUploadError } from "@/lib/imageUploadErrors";
 

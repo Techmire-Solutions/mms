@@ -8,7 +8,7 @@ const apiContractMock = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/lib/api", () => ({ apiContract: apiContractMock }));
+vi.mock("@mms/fe-core/api/tsRest", () => ({ apiContract: apiContractMock }));
 vi.mock("@/lib/contexts/AuthContext", () => ({ useAuth: () => ({ isAuthenticated: true }) }));
 
 import { fetchAccountingEntriesPage, fetchAllAccountingAccounts } from "./accountingListFetch";

@@ -1,13 +1,13 @@
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
 import { logger } from "../../lib/logger.js";
 import { ADMISSIONS_BROADCAST_KEY } from "./registrationPublicUseCases.js";
-import { ENROLLMENTS_MODULE_MANIFEST, normalizeEnrollmentModulePreferences } from "@mms/shared";
+import { ENROLLMENTS_MODULE_MANIFEST, normalizeEnrollmentModulePreferences } from "@mms/contracts";
 import { notificationsUseCases } from "../../notifications/use-cases/notificationsUseCases.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { runAfterCommit } from "../../db/commitScope.js";
-import { hasActiveTransaction } from "../../db/dbTransactions.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { runAfterCommit } from "@mms/db/client";
+import { hasActiveTransaction } from "@mms/db/client";
 
 /**
  * A seat opened in a class (withdrawal / transfer out / trash / capacity increase): the oldest

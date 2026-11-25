@@ -5,7 +5,7 @@ import {
   mergeStoredAndDerivedSiblingLinks,
   type AppTranslationKey,
   type Contact,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { formatLocalizedRelationshipLabel } from "@/lib/contacts/formatLocalizedRelationshipLabel";
 
 export function renderSocialMetadata({

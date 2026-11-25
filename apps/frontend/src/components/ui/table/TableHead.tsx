@@ -1,1 +1,1 @@
-export { TableHead, TableHeadCell } from "@shared/ui";
+export { TableHead, TableHeadCell } from "@mms/ui";

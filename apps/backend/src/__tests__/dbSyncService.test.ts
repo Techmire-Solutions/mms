@@ -44,8 +44,8 @@ vi.mock("../db/database.js", () => ({
   listTenantCollectionLogicalKeys: () => dbListTenantCollectionLogicalKeys(),
 }));
 
-vi.mock("../db/dbConnection.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/dbConnection.js")>();
+vi.mock("@mms/db/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/client")>();
   return {
     ...actual,
     activeDb: vi.fn(() => ({ execute: vi.fn().mockResolvedValue([]) })),

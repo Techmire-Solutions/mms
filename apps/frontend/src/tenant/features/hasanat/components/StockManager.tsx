@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ProgressBar } from "@/components/app/ProgressBar";
-import { SectionHeader } from "@shared/ui";
+import { SectionHeader } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StockAddBatchModal } from "@/tenant/features/hasanat/components/StockAddBatchModal";
 import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@/lib/ui/semanticTone";

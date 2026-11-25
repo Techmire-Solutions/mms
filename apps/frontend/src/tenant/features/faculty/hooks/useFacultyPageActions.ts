@@ -2,10 +2,10 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { notify } from "@/lib/notify";
 import { assertContractOk } from "@/lib/apiContractError";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { useFacultyMutations } from "@/tenant/features/faculty/hooks/useFaculty";
 import { useFacultyCrudNotify } from "@/tenant/features/faculty/hooks/useFacultyCrudNotify";
-import { type FacultyRecord, toMessagingRecipient } from "@mms/shared";
+import { type FacultyRecord, toMessagingRecipient } from "@mms/contracts";
 
 export interface UseFacultyPageActionsParams {
   editFaculty?: Faculty | null;

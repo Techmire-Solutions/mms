@@ -8,7 +8,7 @@ import type {
   ObligationsCommandMetricsSnapshot,
   ObligationsReportAggregates,
   ObligationsReportQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { CatalogueDependents } from "../../db/repositories/obligationCatalogueDependentsRepository.js";
 
 /**

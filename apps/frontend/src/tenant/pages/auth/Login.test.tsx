@@ -50,8 +50,8 @@ vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
   }),
 }));
 
-vi.mock("@mms/shared", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@mms/shared")>();
+vi.mock("@mms/contracts", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@mms/contracts")>();
   return {
     ...original,
     requiresTwoFactor: () => mockRequiresTwoFactor,

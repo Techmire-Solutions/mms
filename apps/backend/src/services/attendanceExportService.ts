@@ -7,7 +7,7 @@ import {
   type AttendanceExportColumn,
   type AttendanceListQuery,
   type AttendanceRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createModuleExportService,
   type ModuleExportOptions,

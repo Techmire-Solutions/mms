@@ -25,7 +25,7 @@ import {
   type ValidationError,
   formatSocialPlatformUrl,
   uuidv7,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function useContactFormSave({
   contact,

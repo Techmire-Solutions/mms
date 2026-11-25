@@ -1,1 +1,1 @@
-export { Skeleton } from "@shared/ui";
+export { Skeleton } from "@mms/ui";

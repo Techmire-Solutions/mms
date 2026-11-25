@@ -8,7 +8,7 @@ import {
   normalizeQuestionBankModulePreferences,
   normalizeQuestionBankFieldConfigOnly,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { sendForbidden } from "../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";

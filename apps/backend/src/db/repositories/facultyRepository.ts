@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
-import { type Faculty, type RepositoryListOptions } from "@mms/shared";
-import { faculty, facultyEmployments } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { type Faculty, type RepositoryListOptions } from "@mms/contracts";
+import { faculty, facultyEmployments } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { naiveTimestamp } from "../../lib/dbDate.js";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
 import {

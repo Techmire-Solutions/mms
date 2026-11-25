@@ -2,8 +2,8 @@
  * @file facultySoftDeleteCascade.ts
  * @description Cascade soft-delete of assignments, employ-designations, employments + parent outbox.
  */
-import type { Faculty } from "@mms/shared";
-import { emitOutboxEvents } from "../../services/outboxEventService.js";
+import type { Faculty } from "@mms/contracts";
+import { emitOutboxEvents } from "@mms/be-core/data/outbox";
 import { cascadeSoftDeleteFacultyAssignments } from "../../db/repositories/facultyAssignmentCascade.js";
 import { cascadeSoftDeleteFacultyEmployments } from "../../db/repositories/facultyEmploymentRepository.js";
 import { cascadeSoftDeleteFacultyEmployDesignations } from "../../db/repositories/facultyEmployDesignationRepository.js";

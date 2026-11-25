@@ -1,8 +1,8 @@
-import { Field } from "@/components/app/FormField";
-import { Input } from "@/components/ui/input";
-import { isImeSafeEnter } from "@/lib/utils";
+import { Field } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { isImeSafeEnter } from "@mms/ui";
 import { NextVoucherNumberHint } from "./NextVoucherNumberHint";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 
 interface SimpleTransactionRefFieldProps {
   prefix: string;

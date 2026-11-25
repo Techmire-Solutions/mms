@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Lock, PackageX, PowerOff, RefreshCw, ShieldAlert, type LucideIcon } from "lucide-react";
-import type { AppTranslationKey, ModuleAccessDenialCode } from "@mms/shared";
+import type { AppTranslationKey, ModuleAccessDenialCode } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/app/LoadingState";
 import { ROUTES } from "@/lib/config/routes";

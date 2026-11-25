@@ -1,16 +1,16 @@
 import React from "react";
-import { type AccountingSettings, type FiscalYear } from "@mms/shared";
+import { type AccountingSettings, type FiscalYear } from "@mms/contracts";
 import { Calendar, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { FormSelect } from "@/components/app/FormSelect";
-import { SectionHeader } from "@shared/ui";
-import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Field } from "@/components/app/FormPrimitives";
-import { SectionCard } from "@/components/app/SectionCard";
-import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
-import { localizedFiscalMonths } from "../lib/accountingSettingsPreferencesShared";
+import { Button } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { SectionHeader } from "@mms/ui";
+import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { Field } from "@mms/ui";
+import { SectionCard } from "@mms/ui";
+import { ModuleSetupSaveFooter } from "@mms/fe-core/components/ModuleSetupSaveFooter";
+import { localizedFiscalMonths } from "@mms/mod-accounting/frontend/tenant";
 import { AccountingFiscalYearsTable } from "./AccountingFiscalYearsTable";
 
 export interface AccountingSettingsFiscalYearsSectionProps {

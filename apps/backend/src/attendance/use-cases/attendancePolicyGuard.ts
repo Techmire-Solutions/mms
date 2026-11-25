@@ -6,7 +6,7 @@ import {
   type AttendancePolicyRow,
   type AttendanceRecord,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { attendanceCalendarRepository } from "../repository/attendanceCalendarRepositoryAdapter.js";
 import { canDeleteCollection } from "../../services/rbacService.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";

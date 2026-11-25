@@ -33,8 +33,8 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+vi.mock("@mms/db/context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/context")>();
   return { ...actual, withTenant: (_tenant: string, work: () => unknown) => work() };
 });
 
@@ -42,13 +42,16 @@ const mockUpsert = vi.fn();
 const mockLookup = vi.fn();
 const mockUpdateSettings = vi.fn();
 
-vi.mock("../accounting/use-cases/exchangeRateUseCases.js", () => ({
-  getCurrencySettings: vi.fn(),
-  listExchangeRates: vi.fn().mockResolvedValue([]),
-  lookupExchangeRate: (...args: unknown[]) => mockLookup(...args),
-  updateCurrencySettings: (...args: unknown[]) => mockUpdateSettings(...args),
-  upsertExchangeRates: (...args: unknown[]) => mockUpsert(...args),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/exchangeRateUseCases.js",
+  () => ({
+    getCurrencySettings: vi.fn(),
+    listExchangeRates: vi.fn().mockResolvedValue([]),
+    lookupExchangeRate: (...args: unknown[]) => mockLookup(...args),
+    updateCurrencySettings: (...args: unknown[]) => mockUpdateSettings(...args),
+    upsertExchangeRates: (...args: unknown[]) => mockUpsert(...args),
+  }),
+);
 
 type Role = "admin" | "accountant" | "auditor" | "guardian";
 

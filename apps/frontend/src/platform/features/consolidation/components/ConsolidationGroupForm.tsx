@@ -1,20 +1,24 @@
 import type React from "react";
 import { useState } from "react";
 import { Layers } from "lucide-react";
-import { ISO_4217_CURRENCIES, type AppTranslationKey, type ConsolidationGroup } from "@mms/shared";
-import { Input } from "@shared/ui";
-import { EditableMultiSelect } from "@/components/app/EditableMultiSelect";
+import {
+  ISO_4217_CURRENCIES,
+  type AppTranslationKey,
+  type ConsolidationGroup,
+} from "@mms/contracts";
+import { Input } from "@mms/ui";
+import { EditableMultiSelect } from "@mms/fe-core/components/EditableMultiSelect";
 import { FormCollectionShell } from "@/components/app/FormCollectionShell";
-import { FormModal } from "@/components/app/FormModal";
+import { FormModal } from "@mms/fe-core/components/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
-import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
-import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { notify } from "@mms/fe-core/notify";
+import { useDirtySnapshot } from "@mms/fe-core/forms/useDirtySnapshot";
 import { useConsolidationGroupDraft } from "@/platform/features/consolidation/hooks/useConsolidationGroupDraft";
 import { useSaveConsolidationGroup } from "@/platform/features/consolidation/hooks/usePlatformConsolidation";
 import { usePlatformWorkspaces } from "@/platform/features/workspaces/hooks/usePlatformWorkspaces";
-import { ConsolidationMemberRow } from "@/platform/features/consolidation/components/ConsolidationMemberRow";
+import { ConsolidationMemberRow } from "@mms/mod-accounting/frontend/platform";
 
 interface ConsolidationGroupFormProps {
   initial: ConsolidationGroup | null;

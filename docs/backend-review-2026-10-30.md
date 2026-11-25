@@ -31,7 +31,7 @@ The 46 findings (F1–F46) identified in the prior review have been thoroughly v
 The review verified code paths across the recent hardening commits:
 
 ### A. Audit Trail & Cryptographic Verification (F1, F2, F12)
-- **F1 (Transaction Bounding):** In [`auditTrailService.ts`](../apps/backend/src/services/auditTrailService.ts#L250-L282), `recordModernAuditEvent` joins any active tenant transaction (`hasActiveTransaction() ? activeDb() : ...`) or opens a dedicated `withTenant(subdomain)` transaction. Audit reads in [`auditQueryAdapter.ts`](../apps/backend/src/audit/repository/auditQueryAdapter.ts) utilize `withTenantRead`, guaranteeing `SET LOCAL app.current_tenant` is present and RLS does not reject inserts or return empty reads.
+- **F1 (Transaction Bounding):** In [`auditTrailService.ts`](../packages/be-core/src/audit/auditTrailService.ts#L250-L282), `recordModernAuditEvent` joins any active tenant transaction (`hasActiveTransaction() ? activeDb() : ...`) or opens a dedicated `withTenant(subdomain)` transaction. Audit reads in [`auditQueryAdapter.ts`](../apps/backend/src/audit/repository/auditQueryAdapter.ts) utilize `withTenantRead`, guaranteeing `SET LOCAL app.current_tenant` is present and RLS does not reject inserts or return empty reads.
 - **F2 (Merkle Anchoring & Initial Status):** Events insert with `verificationStatus: 'PENDING'`. In [`auditVerificationService.ts`](../apps/backend/src/services/auditVerificationService.ts), verification anchors against `audit_verification_runs` checkpoint heads with tolerance for archived partitions, eliminating false `BROKEN_CHAIN` reports.
 - **F12 (Hash-Chain Monotonicity):** Shard lock `SELECT pg_advisory_xact_lock(hashtext('audit:${subdomain}'))` serializes appends per workspace. The ordering timestamp is captured *after* the lock and clamped to `head.timestamp + 1ms` if requested time is less than or equal to head, preventing concurrency inversion.
 
@@ -40,7 +40,7 @@ The review verified code paths across the recent hardening commits:
 - **F4 (Invoice Create Immutability):** In [`financeInvoiceMutationOperations.ts`](../apps/backend/src/finance/financeInvoiceMutationOperations.ts#L113-L131), `POST /api/finance/invoices` is strictly insert-only. Supplying an existing ID checks `isIdempotentInvoiceReplay`; if not an exact match, it throws `409 Conflict`.
 - **F5 (Payment Settlement Atomicity):** In [`financeMutationOperations.ts`](../apps/backend/src/finance/use-cases/financeMutationOperations.ts#L103-L148), invoice row locking (`forUpdate: true`), payment allocation, journal posting, and audit logging execute within the same transaction.
 - **F7 (Credit Note & Cancel Locking):** In [`financeCollectUseCases.ts`](../apps/backend/src/finance/use-cases/financeCollectUseCases.ts#L160-L230), cancel and credit note operations acquire `financeUseCases.getInvoiceByIdForUpdate(invoiceId)`, preventing race conditions on open balance calculations.
-- **F13 (Fiscal Year Close Advisory Lock):** In [`accountingPeriodClose.ts`](../apps/backend/src/accounting/use-cases/accountingPeriodClose.ts#L48-L60), closing a fiscal year takes both a row lock on the year and an advisory lock (`lockFiscalYearForPosting`), shared with transaction posting paths to prevent entries landing during close.
+- **F13 (Fiscal Year Close Advisory Lock):** In [`accountingPeriodClose.ts`](../packages/modules/accounting/src/backend/use-cases/accountingPeriodClose.ts#L48-L60), closing a fiscal year takes both a row lock on the year and an advisory lock (`lockFiscalYearForPosting`), shared with transaction posting paths to prevent entries landing during close.
 
 ### C. Privacy, RBAC & Session Security (F6, F35, F36, F37, F38, F45, F46)
 - **F6 & F35 (Crypto-Shredding Governance):** In [`auditPrivacyRoutes.ts`](../apps/backend/src/routes/tenant/audit/auditPrivacyRoutes.ts#L22-L43), erasure requires `audit.manage` (revoked from generic teachers) plus the mandatory step-up header `X-Confirm-Erasure: <subjectId>`. Tables enforce `workspace_subdomain` with `FORCE ROW LEVEL SECURITY`.
@@ -70,7 +70,7 @@ The review verified code paths across the recent hardening commits:
 - Dynamic soft-delete injection in `dbClient.ts` consistently appends `isNull(table.deletedAt)`.
 
 ### Pillar 2: Financial Accounting & Ledger Integrity
-- Currency formatting strictly obeys decimal strings and BigInt units (`packages/shared/src/utils/money.ts`), completely avoiding floating-point inaccuracies.
+- Currency formatting strictly obeys decimal strings and BigInt units (`packages/contracts/src/utils/money.ts`), completely avoiding floating-point inaccuracies.
 - Period-close enforces IAS 21 foreign-currency revaluation checks before closing trial balances.
 
 ### Pillar 3: Audit Trail & Data Privacy

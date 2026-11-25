@@ -5,7 +5,7 @@
 
 import React from "react";
 import { CheckSquare } from "lucide-react";
-import { TASKS_MODULE_MANIFEST } from "@mms/shared";
+import { TASKS_MODULE_MANIFEST } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { useTaskStatusConfig } from "./TaskBadges";
 

@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { platformAdminsContract } from "@mms/shared";
+import { platformAdminsContract } from "@mms/contracts";
 import {
   authenticatePlatform,
   requirePlatformPermission,

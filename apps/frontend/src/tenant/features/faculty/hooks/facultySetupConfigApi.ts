@@ -7,7 +7,7 @@ import {
   stripFacultyFieldConfigForPersist,
   type FacultyModulePreferences,
   type FacultySettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 const api = createModuleSetupConfigApi<FacultyModulePreferences>({
   fetchPreferencesFn: async (signal) => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { apiContract } from "@/lib/api";
-import { getLlmProviderDefaultModel, type LlmConfig, type LlmProviderType } from "@mms/shared";
+import { getLlmProviderDefaultModel, type LlmConfig, type LlmProviderType } from "@mms/contracts";
 
 export interface LlmModelFetchRequest {
   provider: LlmProviderType;

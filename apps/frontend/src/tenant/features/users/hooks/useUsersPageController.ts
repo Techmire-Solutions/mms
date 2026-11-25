@@ -6,7 +6,7 @@ import {
   normalizeWorkspaceUser,
   USERS_MODULE_MANIFEST,
   type SystemUser,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useUsersMutations } from "@/tenant/features/users/hooks/useUsersApi";
 import { useUsersActivityLogs } from "./useUsersActivityLogs";
 import { useUsersPaginated } from "@/tenant/features/users/hooks/useUsersListQueries";

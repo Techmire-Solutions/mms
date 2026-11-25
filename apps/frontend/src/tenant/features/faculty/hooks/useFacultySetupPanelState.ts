@@ -1,5 +1,5 @@
 import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
-import { type FacultySettings } from "@mms/shared";
+import { type FacultySettings } from "@mms/contracts";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useFacultySetupSaveActions } from "@/tenant/features/faculty/hooks/useFacultySetupSaveActions";
 

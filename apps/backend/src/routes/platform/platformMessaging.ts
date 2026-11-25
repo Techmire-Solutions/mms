@@ -4,7 +4,7 @@ import {
   platformMessagesListQuerySchema,
   platformMessageTemplateSaveInputSchema,
   resourceIdParamsSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   authenticatePlatform,
   requirePlatformPermission,

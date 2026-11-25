@@ -5,7 +5,7 @@ import {
   normalizeBrandingCornerStyle,
   normalizeThemeMode,
   resolveBrandingCornerRadius,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useApplyLogoColors } from "@/hooks/useApplyLogoColors";
 import { useThemeSettingsDraft } from "@/tenant/features/settings/hooks/useThemeSettingsDraft";

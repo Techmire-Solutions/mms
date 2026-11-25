@@ -6,14 +6,15 @@ import {
   QUESTION_LANGUAGES,
   QUESTION_STATUSES,
   QUESTION_TYPES,
-} from "@mms/shared";
+} from "@mms/contracts";
+import { resolveMigrationsFolder } from "@mms/db/testing";
 
 /**
  * Pins the database CHECK constraints to the shared taxonomy arrays. Lives in the backend because
  * only this package can read migration files; the shared package stays pure.
  */
 describe("question taxonomy ↔ database constraints", () => {
-  const migrationDir = path.resolve(import.meta.dirname, "../db/migrations_drizzle");
+  const migrationDir = resolveMigrationsFolder();
 
   it("enforces every type, difficulty and language in migration 0243", () => {
     const sql = readFileSync(

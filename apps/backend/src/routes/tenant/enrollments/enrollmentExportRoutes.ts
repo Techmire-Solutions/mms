@@ -3,7 +3,7 @@ import {
   ENROLLMENTS_MODULE_MANIFEST,
   enrollmentsCsvExportBodySchema,
   enrollmentsImportBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
 import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
 import {

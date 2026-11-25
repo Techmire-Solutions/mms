@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { withTenant } from "../tenant-context.js";
+import { withTenant } from "@mms/db/context";
 
 export interface TaskDelegationOptions {
   canAssignAnywhere?: boolean;

@@ -8,7 +8,7 @@ Recorded so they are not lost, with the evidence gathered since.
    `export`/`delete` permissions across all 16 manifests plus the role matrix — a product decision, not a
    defect. **Left as-is.**
 2. **P1-6 — empty/null grant map ⇒ all modules.** _Investigated: deliberate, forward-compatibility._
-   `workspaces.granted_modules` is a nullable jsonb (`apps/backend/src/db/schema/platform.ts`) that
+   `workspaces.granted_modules` is a nullable jsonb (`packages/db/src/schema/platform.ts`) that
    provisioning writes as a **full** map (`apps/backend/src/services/workspaceService.ts:251-272`), and the
    "granted unless explicitly `false`" rule — including migration `086`'s backfill — is what lets a
    **newly introduced module reach existing workspaces**. Pinned by

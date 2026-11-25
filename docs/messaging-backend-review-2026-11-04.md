@@ -2,7 +2,7 @@
 
 Independent backend review of the messaging module (`apps/backend/src/routes/tenant/messaging/**`,
 `apps/backend/src/messaging/**`, `apps/backend/src/db/repositories/messaging*`,
-`apps/backend/src/db/schema/messaging.ts`, `apps/backend/src/services/messaging*.ts`, the messaging
+`packages/db/src/schema/messaging.ts`, `apps/backend/src/services/messaging*.ts`, the messaging
 backup mapping, and the messaging branch of `backgroundJobRunnerService.ts`). Frontend, shared
 contracts and the worker were read only where the backend calls them.
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import { assertTeacherSectionScope } from "../sessions/use-cases/teacherSectionScope.js";
 
 /**

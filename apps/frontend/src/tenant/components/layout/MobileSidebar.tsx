@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { X, LogOut } from "lucide-react";
 import { useBranding } from "@/tenant/hooks/useBranding";
-import { getInitials } from "@mms/shared";
+import { getInitials } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

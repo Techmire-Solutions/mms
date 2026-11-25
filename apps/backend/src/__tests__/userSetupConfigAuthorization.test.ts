@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { normalizeWorkspaceRoles, type User } from "@mms/shared";
+import { normalizeWorkspaceRoles, type User } from "@mms/contracts";
 import { canWriteUserPreferences } from "../routes/tenant/users/userSetupConfigAuthorization.js";
 
 vi.mock("../lib/userPermissionContext.js", () => ({

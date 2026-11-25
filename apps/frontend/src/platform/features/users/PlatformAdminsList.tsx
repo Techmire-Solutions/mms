@@ -1,9 +1,9 @@
 import React, { useState, useDeferredValue, useMemo } from "react";
 import { ShieldCheck } from "lucide-react";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
-import { Button, EmptyState, DETAIL_SECTION_TITLE } from "@shared/ui";
+import { Button, EmptyState, DETAIL_SECTION_TITLE } from "@mms/ui";
 import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import { exportPlatformAdminsCsv } from "@/platform/features/users/components/admin/exportPlatformAdminsCsv";
 import { PlatformAdminsToolbar } from "@/platform/features/users/components/admin/PlatformAdminsToolbar";

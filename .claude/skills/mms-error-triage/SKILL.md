@@ -37,7 +37,7 @@ The server echoes `x-request-id` and `traceparent` back on responses (`mms-api-i
 4. **Classify before fixing:**
    - **Render crash** → `ErrorBoundary` scope; check whether the boundary wraps the right subtree (`mms-testing-observability.md` §4).
    - **Fetch failure / 4xx-5xx** → Query `isError` path, error mapping, RBAC gate, or RLS context missing in the service (`mms-data-layer.md` §1).
-   - **Silent wrong data** → soft-delete leakage, projection mismatch vs the `@mms/shared` DTO, or a stale mirror/column config (`mms-soft-delete`, `mms-fields.md`).
+   - **Silent wrong data** → soft-delete leakage, projection mismatch vs the `@mms/contracts` DTO, or a stale mirror/column config (`mms-soft-delete`, `mms-fields.md`).
    - **Slow/timeout** → hand off to `mms-db-performance` or `mms-queue-ops` rather than patching a timeout value.
 5. **Fix, then prove it.** Add a regression test that fails before the fix and passes after (`mms-tdd.md` §2) — a bug fix without one is how the same issue returns. For tenant/RLS bugs, the test must assert allow **and** deny with the wrong tenant.
 6. **Record the outcome** where the next person will look: the migration/debt register if it is systemic (`mms-migration-status.md`), or the owning rule/skill if a norm was missing. Do not leave the knowledge only in the PR description.
@@ -49,7 +49,7 @@ If the report indicates cross-tenant data exposure, credential leakage, or destr
 ## Verification
 
 - **Regression proof:** the new spec fails on the pre-fix code and passes after; the Red command + failure are recorded in the PR body (`mms-tdd.md` §1–§2).
-- **Gates:** the owning suite (`pnpm --filter mms-backend test <path>` / `pnpm --filter mms-frontend test <path>` / `pnpm --filter @mms/shared test`) plus `pnpm typecheck`; run `pnpm ci:local` before proposing the fix.
+- **Gates:** the owning suite (`pnpm --filter mms-backend test <path>` / `pnpm --filter mms-frontend test <path>` / `pnpm --filter @mms/contracts test`) plus `pnpm typecheck`; run `pnpm ci:local` before proposing the fix.
 - **Resolution evidence:** the Sentry issue links the request id/traceparent → audit row → the owning fix; "the error stopped" alone is not a resolution.
 
 ## Do not

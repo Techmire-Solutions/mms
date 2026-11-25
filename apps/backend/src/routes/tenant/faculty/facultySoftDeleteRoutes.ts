@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { registerSoftDeletableBulkTrashRoutes } from "../../../lib/crudBulkRoutes.js";
 import { registerSingleRestoreRoute } from "../../../lib/crudRouter.js";
 import { canDeleteCollection } from "../../../services/rbacService.js";
-import { bulkIdsBodySchema as facultyBulkIdsSchema, type Faculty, type User } from "@mms/shared";
+import { bulkIdsBodySchema as facultyBulkIdsSchema, type Faculty, type User } from "@mms/contracts";
 import { facultyUseCases } from "../../../faculty/use-cases/facultyUseCases.js";
 import { auditFaculty, sanitizeOneFacultyForUser } from "./facultyRouteHelpers.js";
 

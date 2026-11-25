@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";

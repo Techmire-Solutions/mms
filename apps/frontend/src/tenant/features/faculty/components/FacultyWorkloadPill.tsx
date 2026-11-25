@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { LegendChip } from "@/components/app/LegendChip";
 import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";

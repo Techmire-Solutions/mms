@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { uuidv7, type AcademicCatalogKind } from "@mms/shared";
+import { uuidv7, type AcademicCatalogKind } from "@mms/contracts";
 import {
   exams,
   programs,
@@ -9,8 +9,8 @@ import {
   sessions,
   subjects,
   type AcademicCatalogTable,
-} from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+} from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 const TABLES: Record<AcademicCatalogKind, AcademicCatalogTable> = {
   categories: sessionCategories,

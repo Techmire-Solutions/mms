@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { runListPage } from "../db/repositories/listPageHelper.js";
-import { students } from "../db/schema/students.js";
+import { students } from "@mms/db/schema/students";
 import { sql } from "drizzle-orm";
 
 describe("runListPage - Cursor & Keyset Pagination", () => {

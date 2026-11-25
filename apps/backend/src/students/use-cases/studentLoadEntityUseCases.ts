@@ -1,4 +1,4 @@
-import type { Student, StudentsListQuery, StudentsListPageResult } from "@mms/shared";
+import type { Student, StudentsListQuery, StudentsListPageResult } from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";

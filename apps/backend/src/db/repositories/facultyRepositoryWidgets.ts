@@ -1,6 +1,6 @@
 import { and, sql } from "drizzle-orm";
-import type { FacultyWidgetAggregateResult, FacultyWidgetQuery } from "@mms/shared";
-import { withTenantRead } from "../tenant-context.js";
+import type { FacultyWidgetAggregateResult, FacultyWidgetQuery } from "@mms/contracts";
+import { withTenantRead } from "@mms/db/context";
 import {
   activeWorkspaceWhere,
   resolveChartLimit,

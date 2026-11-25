@@ -8,7 +8,7 @@ import {
   type Session,
   type SessionTransitionViolation,
   type WithdrawalBillingOutcome,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
 import {
   countLiveEnrollmentsTx,
@@ -19,12 +19,12 @@ import {
   sessionHasBudgetTx,
   updateSessionStatusIfTx,
 } from "../repository/sessionTransitionRepositoryAdapter.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { runAfterCommit } from "../../db/commitScope.js";
+import { withTenant } from "@mms/db/context";
+import { runAfterCommit } from "@mms/db/client";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import {
   completeLiveEnrollments,
   endLiveEnrollments,

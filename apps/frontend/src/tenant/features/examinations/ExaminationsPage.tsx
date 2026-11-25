@@ -5,7 +5,7 @@ import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
-import { examinationsTransferSchema } from "@mms/shared";
+import { examinationsTransferSchema } from "@mms/contracts";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import { ExaminationsCommandMetrics } from "@/tenant/features/examinations/components/ExaminationsCommandMetrics";
 import { ExaminationsModalLayer } from "@/tenant/features/examinations/components/ExaminationsModalLayer";

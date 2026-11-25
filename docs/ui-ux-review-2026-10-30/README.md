@@ -125,7 +125,7 @@ Measured in the DOM: **5** `NaN/NaN/NaN` cells on the Arabic dashboard's overdue
 the Arabic finance table; Persian reproduces **20** on finance. Urdu does not (its formatter keeps
 Latin digits).
 
-**Cause:** `packages/shared/src/settings/settingsDateFormattersCore.ts:35-47` builds parts with
+**Cause:** `packages/contracts/src/settings/settingsDateFormattersCore.ts:35-47` builds parts with
 `Intl.DateTimeFormat` and then does `Number(parts.find(part => part.type === "day")?.value)`. For
 Arabic/Persian, `Intl` returns Arabic-Indic/Persian digits (`"٣١"`, `"۳۱"`), and `Number("٣١")` is
 `NaN`. English/Urdu use Latin digits, which is why they work.
@@ -151,7 +151,7 @@ At both 1440 and 1920 the `Name` `<th>` computes to **33 px** with inline
 (`NameGender`), and row names collide with the gender/Syed badges (“Amina Bukhari” overlaps the
 “Female” pill). This is the gold-standard directory.
 
-**Cause chain:** `packages/shared/src/contacts/contactColumnRegistryPrimary.ts:11` declares
+**Cause chain:** `packages/contracts/src/contacts/contactColumnRegistryPrimary.ts:11` declares
 `width: 0` (presumably “auto”); `WorkBatchTable.tsx:117` renders `table-fixed w-full`; and
 `ResizableTableHead.tsx:132-137` applies any numeric width literally. A zero is therefore a
 zero-width column.
@@ -282,7 +282,7 @@ regression test asserting `window.scrollY === 0` after first paint at 375 for ea
 The platform “Welcome back…” heading computes to `font-family: Amiri, serif` in English, as does
 the tenant sidebar brand. The CSS fix scoped Amiri to `[lang=ar]`/`[lang=ur]`, but the runtime
 `applyDocumentLanguage` overwrites `--font-display` from
-`packages/shared/src/core/languageUtils.ts:99-102`, whose **default (English) branch is
+`packages/contracts/src/core/languageUtils.ts:99-102`, whose **default (English) branch is
 `'Amiri', serif`**. This is the residual of prior finding #8: the stylesheet is fixed, the runtime
 is not.
 

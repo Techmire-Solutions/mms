@@ -3,7 +3,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { useUsersPageController } from "./useUsersPageController";
-import { normalizeWorkspaceUser } from "@mms/shared";
+import { normalizeWorkspaceUser } from "@mms/contracts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -28,7 +28,7 @@ vi.mock("@/lib/contexts/AuthContext", () => ({
 // Default roles, as the hook returns when no custom roles are configured;
 // unmocked it fetches users config from the backend during the test.
 vi.mock("@/tenant/hooks/useWorkspaceRoles", async () => {
-  const { cloneDefaultWorkspaceRoles } = await import("@mms/shared");
+  const { cloneDefaultWorkspaceRoles } = await import("@mms/contracts");
   return { useWorkspaceRoles: () => cloneDefaultWorkspaceRoles() };
 });
 

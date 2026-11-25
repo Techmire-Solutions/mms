@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { FacultyIdCardModal } from "./FacultyIdCardModal";
 
 vi.mock("@/hooks/useTranslation", () => ({
@@ -13,7 +13,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     title,
     children,

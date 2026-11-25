@@ -1,5 +1,5 @@
 import React from "react";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StatusBulkActionDock } from "@/components/app/StatusBulkActionDock";
 

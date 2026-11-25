@@ -1,5 +1,15 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
 
 const state = vi.hoisted(() => ({ depth: 0, withdrawDepth: -1 }));
@@ -48,11 +58,7 @@ vi.mock("../lib/cache/index.js", () => ({
   invalidateMultiTierCache: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: vi.fn().mockResolvedValue(undefined),
-}));
-
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => mockAudit(...args),
   mapActionStringToAuditType: (action: string) =>
     action.toLowerCase().includes("delete") ? "DELETE" : "UPDATE",

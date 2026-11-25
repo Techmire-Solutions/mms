@@ -12,7 +12,7 @@ import {
   workspaceRoleDescription,
   workspaceRoleLabel,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { FacultyUserAccountDraft } from "@/tenant/features/faculty/components/FacultyUserAccountSection";
 
 export interface FacultyNewUserAccountFieldsProps {

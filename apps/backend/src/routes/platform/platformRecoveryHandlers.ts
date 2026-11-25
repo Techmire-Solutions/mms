@@ -12,7 +12,7 @@ import {
   platformPasswordResendBodySchema,
   platformPasswordResetBodySchema,
   platformSetupRegisterBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { parseRequest, replyValidationError } from "../../lib/zodRequest.js";
 
 export async function handlePlatformSetupRegister(

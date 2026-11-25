@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { computeStudentsSelectionTargets } from "@/tenant/features/students/hooks/studentsSelectionTargets";
 
 function student(partial: Partial<Student> & { id: string }): Student {

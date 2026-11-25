@@ -6,7 +6,7 @@ import {
   type EmailAddress,
   type PhoneNumber,
   type Student,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { formatLocalizedRelationshipParts } from "@/lib/contacts/formatLocalizedRelationshipLabel";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";

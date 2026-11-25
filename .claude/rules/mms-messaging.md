@@ -7,8 +7,8 @@ paths:
   - "apps/frontend/src/components/messageComposer/**"
   - "apps/frontend/src/hooks/useMessaging.ts"
   - "apps/frontend/src/lib/backgroundJobs/startServerMessagingCsvExport.ts"
-  - "packages/shared/src/**/messagingModuleManifest.ts"
-  - "packages/shared/src/**/messagingSchemas.ts"
+  - "packages/contracts/src/**/messagingModuleManifest.ts"
+  - "packages/contracts/src/**/messagingSchemas.ts"
   - "apps/backend/src/routes/tenant/messaging.ts"
   - "apps/backend/src/routes/tenant/messaging/**"
   - "apps/backend/src/db/repositories/messagingRepository.ts"
@@ -20,7 +20,7 @@ paths:
 **Workflow skills:** campaign authoring & templates → `mms-messaging` · background CSV exports → `mms-background-jobs` · printable document layouts → `mms-document-templates`.
 
 ## 1. Architectural Boundaries & Recipient Modeling
-- **Composer SSOT:** Outbound campaigns strictly consume `MessageComposer` with `MessagingRecipient` / `toMessagingRecipient` from `@mms/shared`. Feature modules enter via `useMessageComposerState`.
+- **Composer SSOT:** Outbound campaigns strictly consume `MessageComposer` with `MessagingRecipient` / `toMessagingRecipient` from `@mms/contracts`. Feature modules enter via `useMessageComposerState`.
 - **Domain Isolation:** Never import Contacts-specific schemas or UI tables into messaging primitives.
 
 ## 2. Data Layer, RLS & Idempotent Delivery
@@ -34,7 +34,7 @@ paths:
 - **Safe Token Substitution:** Evaluate variable tokens (e.g. `{name}`) on the client against a strict manifest allowlist; reject unknown placeholders.
 - **Content Security:** Message templates and payloads are plain text; executable HTML or script tags are banned. Never log message bodies at INFO level.
 - **Template Scope:** Message templates are plain-text campaign content. Invoice/receipt/student-card/report-card layouts and their print surfaces are owned by `mms-document-templates.md`; do not extend the messaging template stack for printable documents.
-- **Delivery Providers:** WhatsApp number resolution requires `PuppeteerWhatsAppProvider.getNumberId` (`@mms/shared`). Sequential dispatch with configurable delay. SMS dispatches via `openDeviceSmsComposer`.
+- **Delivery Providers:** WhatsApp number resolution requires `PuppeteerWhatsAppProvider.getNumberId` (`@mms/contracts`). Sequential dispatch with configurable delay. SMS dispatches via `openDeviceSmsComposer`.
 
 ## 4. Module Page Parity & Soft-Archive Semantics
 - **Three-Tier Parity:** Follow Work | Reports | Setup standard. Gate actions via `useModulePermissions(MESSAGING_MODULE_MANIFEST)`. Setup renders read-only when `!canEditSetup`.

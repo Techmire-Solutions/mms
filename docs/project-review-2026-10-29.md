@@ -19,7 +19,7 @@ vectors were found and fixed in this pass; the remaining findings are managed de
 | Branch / HEAD | `main` · `3aedc509e` (clean tree at review start) |
 | Source size | 6,471 `.ts`/`.tsx` files · backend 196,817 LOC · frontend 365,104 · shared 131,900 · e2e 5,339 |
 | Stack | React 19 / Vite 8 / TanStack Query v5 · Fastify 5 / Node 24 · PostgreSQL 16 + Drizzle · Redis 7 + BullMQ |
-| Migrations | 197 forward-only SQL migrations (`apps/backend/src/db/migrations_drizzle`) |
+| Migrations | 197 forward-only SQL migrations (`packages/db/migrations_drizzle`) |
 | Tests | 288 backend files (2,098 tests) · 1,015 frontend files (3,639 tests, 2 skipped) · 232 shared files (1,720 tests) |
 | CI | 14 jobs incl. dependency review, gitleaks, sensitive-file guard, sharded unit/DB/coverage, nightly full E2E |
 
@@ -82,7 +82,7 @@ a privilege-escalation path, not just self-XSS. The same class was already solve
 
 ### 3.2 FIXED — Executable URL schemes accepted for social links (High)
 
-**Where:** [`socialPlatformUtils.ts`](../packages/shared/src/messaging/socialPlatformUtils.ts) (the new scheme guard, line 34).
+**Where:** [`socialPlatformUtils.ts`](../packages/contracts/src/messaging/socialPlatformUtils.ts) (the new scheme guard, line 34).
 
 `formatSocialPlatformUrl` passed through `http(s)`, `mailto` and `tel` untouched, but for an
 unknown platform fell back to returning the raw input. Callers use the result directly as a link
@@ -98,7 +98,7 @@ path. (`ContactLinkAction` already prefixed `https://`, so the two surfaces disa
 **Fix:** the formatter now rejects any explicit scheme outside `http(s)`/`mailto`/`tel`, returning
 `""` so callers fall back to a non-link badge. Case-insensitive URLs such as `HTTPS://…` are
 preserved. Tests added in
-[`socialPlatformUtils.test.ts`](../packages/shared/src/messaging/socialPlatformUtils.test.ts)
+[`socialPlatformUtils.test.ts`](../packages/contracts/src/messaging/socialPlatformUtils.test.ts)
 (4 new cases; 11/11 pass).
 
 ### 3.3 FIXED — Dependency advisories: 12 findings → 2 (one reviewed, one unpatchable)
@@ -123,7 +123,7 @@ The backend suite (2,098 tests) passes on the new graph.
 ### 3.4 FIXED — Coverage floors raised to the measured floor (ratcheted)
 
 Thresholds are global and enforced (`apps/backend/vitest.config.ts:57`,
-`apps/frontend/vitest.config.ts:114`, `packages/shared/vitest.config.ts:24`). Measured on
+`apps/frontend/vitest.config.ts:114`, `packages/contracts/vitest.config.ts:24`). Measured on
 2026-10-29 and now the floors (each ~1 point below the measurement):
 
 | Package | Thresholds (lines / stmts / funcs / branches) | Measured |
@@ -208,8 +208,8 @@ What the review found strong, with the evidence that makes it strong:
 - **Uploads**: AVIF/WebP only (no SVG), authenticated tenant paths, `private, no-store` for tenant
   files (`config/uploadConfig.ts`, `uploadsAuth.test.ts`).
 - **CSV injection**: formula-prefix neutralisation with a numeric exception
-  (`packages/shared/src/core/csvUtils.ts`), used by every export service.
-- **Money**: integer/BigInt money layer in `packages/shared/src/money`, with invoice settlement
+  (`packages/contracts/src/core/csvUtils.ts`), used by every export service.
+- **Money**: integer/BigInt money layer in `packages/contracts/src/money`, with invoice settlement
   row-locked (`findInvoiceById(..., { forUpdate: true })`).
 - **Audit**: RFC 8785 canonical JSON, sharded hash chains, monthly partitions, retention/purge
   schedulers — plus verification scheduling and anomaly detection services.

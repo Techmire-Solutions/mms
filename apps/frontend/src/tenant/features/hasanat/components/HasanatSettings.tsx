@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { hasanatPreferencesPutBodySchema } from "@mms/shared";
+import { hasanatPreferencesPutBodySchema } from "@mms/contracts";
 import { Star } from "lucide-react";
 import { SectionCard } from "@/components/app/SectionCard";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
@@ -7,7 +7,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { useHasanatSetupPanelState } from "@/tenant/features/hasanat/hooks/useHasanatSetupPanelState";
 import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";

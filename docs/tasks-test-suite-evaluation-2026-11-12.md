@@ -34,7 +34,7 @@ The Task module test suite spans three workspaces (`@mms/shared`, `mms-backend`,
 ### Verified Test Files Inventory
 
 ```
-packages/shared/src/obligations/
+packages/contracts/src/obligations/
 ├── tasksSecurity.test.ts                         (6 tests: capability boundaries, schema strictness)
 └── tasksStatusTransitions.test.ts                (3 tests: valid/invalid status graph edges)
 

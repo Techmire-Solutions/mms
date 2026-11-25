@@ -1,14 +1,11 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeAny } from "zod";
-import type { Permission, User } from "@mms/shared";
-import {} from "@mms/shared";
+import type { Permission, User } from "@mms/contracts";
+import {} from "@mms/contracts";
 import { sendForbidden } from "./httpErrors.js";
 import { parseRequest, replyValidationError } from "./zodRequest.js";
-import { moduleSetupAuditBodySchema } from "@mms/shared";
-import {
-  recordModernAuditEvent,
-  mapActionStringToAuditType,
-} from "../services/auditTrailService.js";
+import { moduleSetupAuditBodySchema } from "@mms/contracts";
+import { recordModernAuditEvent, mapActionStringToAuditType } from "@mms/be-core/audit";
 import { getRequestTenant } from "./tenantContext.js";
 import { logger } from "./logger.js";
 import { userHasPermission } from ".//userPermissionContext.js";

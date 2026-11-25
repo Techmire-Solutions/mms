@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { roleHasPermission } from "@mms/shared";
+import { roleHasPermission } from "@mms/contracts";
 import { SETTINGS_NAV } from "./settingsNavConfig";
 
 function visibleSectionsFor(role: string): string[] {

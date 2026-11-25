@@ -3,7 +3,7 @@ import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { notify } from "@/lib/notify";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 import { useAttendanceMutations } from "@/tenant/features/attendance/hooks/useAttendance";
-import { toMessagingRecipient } from "@mms/shared";
+import { toMessagingRecipient } from "@mms/contracts";
 
 export function useAttendancePageActions() {
   const { t } = useTranslation();

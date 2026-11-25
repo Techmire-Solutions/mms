@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { MAX_MARKS_OBTAINED, type ExamResult } from "@mms/shared";
+import { MAX_MARKS_OBTAINED, type ExamResult } from "@mms/contracts";
 import { NotFoundError } from "../lib/httpErrors.js";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
@@ -7,7 +7,7 @@ import { examinationsRepository } from "../examinations/repository/examinationsR
 import { examEligibilityRepository } from "../examinations/repository/examEligibilityAdapter.js";
 import { examinationsUseCases } from "../examinations/use-cases/examinationsUseCases.js";
 import { assertExamResultsEligible } from "../examinations/use-cases/examEligibilityGate.js";
-import { recordAuditEventSafely } from "./auditTrailService.js";
+import { recordAuditEventSafely } from "@mms/be-core/audit";
 
 /**
  * Bulk marks import (`examinations:marks-import`).

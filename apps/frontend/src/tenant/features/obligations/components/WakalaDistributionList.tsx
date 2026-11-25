@@ -10,7 +10,7 @@ import {
 } from "@/components/common/data-table";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { Account } from "@mms/shared";
+import type { Account } from "@mms/contracts";
 import { useAccountingContractAccounts } from "@/tenant/hooks/collections/accounting";
 
 interface WakalaDistributionListProps {

@@ -74,7 +74,7 @@ gates — they are behaviours the gates cannot see.
 | F10 | **High** | The documented Docker Compose stack cannot boot: production mode + superuser DSN triggers the strict RLS boot guard. | `docker-compose.yml:94-96`; `db/rlsRoleGuard.ts:112-118` |
 | F11 | **High** | Finance and accounting writes emit no audit events at all (invoices, payments, credit notes, journal entries, period close). Only setup config and five accounting FX/reversal use-cases audit. | `grep recordModernAuditEvent` over `finance/ accounting/ routes/tenant/{finance,accounting}` |
 | F12 | **High** | Audit hash-chain order is decided by lock acquisition but *verified* by a timestamp captured before the lock — concurrent appends can permanently report `BROKEN_CHAIN`. | `services/auditTrailService.ts:150,158` |
-| F35 | **High** | Audit governance is gated by `analytics.view` (a **dashboard read**): any teacher can run erasure/retention purge, read the full audit trail with actor IPs, and export it. | `routes/tenant/audit/auditPrivacyRoutes.ts:23`; `packages/shared/src/auth/permissionRules.ts:95`; `userRbacDefaultRoles.ts:97` |
+| F35 | **High** | Audit governance is gated by `analytics.view` (a **dashboard read**): any teacher can run erasure/retention purge, read the full audit trail with actor IPs, and export it. | `routes/tenant/audit/auditPrivacyRoutes.ts:23`; `packages/contracts/src/auth/permissionRules.ts:95`; `userRbacDefaultRoles.ts:97` |
 | F36 | **High** | Any `analytics.view` holder can forge or overwrite staff activity logs: `PUT /api/users/activity/bulk` writes `userId`/`ts`/`ip`/`detail` from the body and upserts existing rows. | `lib/rbacPermissionMaps.ts:147`; `routes/tenant/users.ts:47-55`; `db/repositories/logsRepository.ts:163-172` |
 | F13 | **Medium** | Fiscal-year close has no lock or posting barrier: an entry can land in the year being closed after the trial-balance read and be omitted from the closing entry. | `accounting/use-cases/accountingPeriodClose.ts:41-107` |
 | F14 | **Medium** | Client-supplied idempotency keys become a **global** primary key and BullMQ `jobId` (no tenant namespace) → cross-tenant 500s or silently suppressed jobs. | `lib/csvExportEnqueue.ts:40`; `db/schema/system.ts:59`; `worker/queues/index.ts:160-163` |
@@ -115,7 +115,7 @@ gates — they are behaviours the gates cannot see.
 
 ### F1 — The audit trail is not tenant-transaction-bound
 
-**Where:** [`auditTrailService.ts:145`](../apps/backend/src/services/auditTrailService.ts#L145),
+**Where:** [`auditTrailService.ts:145`](../packages/be-core/src/audit/auditTrailService.ts#L145),
 [`auditQueryAdapter.ts:28`](../apps/backend/src/audit/repository/auditQueryAdapter.ts#L28).
 
 ```ts
@@ -130,7 +130,7 @@ await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`audit:${subdomain}
 ```
 
 `activeDb()` returns the transaction bound by `withTenant`/`runInTransaction` **or the root pool**
-when there is none ([`dbTransactions.ts:24-26`](../apps/backend/src/db/dbTransactions.ts#L24-L26)).
+when there is none ([`dbTransactions.ts:24-26`](../packages/db/src/dbTransactions.ts#L24-L26)).
 No request-level transaction exists — `requestHooks.ts` only binds an AsyncLocalStorage *value*.
 So any audit call made directly from a route or use-case runs in autocommit with no
 `app.current_tenant` GUC. `audit_trail_events` is `ENABLE` + **`FORCE ROW LEVEL SECURITY`** with
@@ -139,7 +139,7 @@ So any audit call made directly from a route or use-case runs in autocommit with
 USING (current_setting('app.rls_bypass', true) = 'on'
        OR workspace_subdomain = current_setting('app.current_tenant', true))
 ```
-([`0116_force_rls_missing_tenant_tables.sql:137`](../apps/backend/src/db/migrations_drizzle/0116_force_rls_missing_tenant_tables.sql#L137)).
+([`0116_force_rls_missing_tenant_tables.sql:137`](../packages/db/migrations_drizzle/0116_force_rls_missing_tenant_tables.sql#L137)).
 
 Consequences under the RLS-subject role that `assertRlsRuntimeRole` **requires** in production:
 
@@ -171,7 +171,7 @@ statements succeed because RLS is inert — is not a fix: it is the state
 
 **Where:** [`auditVerificationService.ts:89`](../apps/backend/src/services/auditVerificationService.ts#L89),
 [`:189`](../apps/backend/src/services/auditVerificationService.ts#L189),
-[`auditTrailService.ts:241`](../apps/backend/src/services/auditTrailService.ts#L241).
+[`auditTrailService.ts:241`](../packages/be-core/src/audit/auditTrailService.ts#L241).
 
 ```ts
 let expectedPreviousHash = GENESIS_AUDIT_HASH;      // ← always starts at genesis
@@ -258,7 +258,7 @@ invoice update; keep the idempotency check under the lock.
 ### F6 — Crypto-shredding is global, under-authorised and inert
 
 **Where:** [`cryptoShreddingService.ts:156-186`](../apps/backend/src/services/cryptoShreddingService.ts#L156-L186),
-[`auditTrail.ts:145-198`](../apps/backend/src/db/schema/auditTrail.ts#L145-L198),
+[`auditTrail.ts:145-198`](../packages/db/src/schema/auditTrail.ts#L145-L198),
 [`auditPrivacyRoutes.ts:27-30`](../apps/backend/src/routes/tenant/audit/auditPrivacyRoutes.ts#L27-L30).
 
 `crypto_shredding_keys` and `audit_erasure_requests` have **no `workspace_subdomain` column**, and
@@ -302,7 +302,7 @@ re-check the balance under the lock, and post the journal in the same transactio
 ### F8 — Backups are paged without an ORDER BY in READ COMMITTED
 
 **Where:** [`streamingSnapshotProducer.ts:238`](../apps/backend/src/db/streamingSnapshotProducer.ts#L238),
-[`dbTransactions.ts:139`](../apps/backend/src/db/dbTransactions.ts#L139).
+[`dbTransactions.ts:139`](../packages/db/src/dbTransactions.ts#L139).
 
 ```ts
 const chunk = await listRows(tenant ?? "", { limit: CHUNK_SIZE, offset });
@@ -336,7 +336,7 @@ recipients.
 ### F10 — The documented Docker Compose deployment cannot start
 
 **Where:** [`docker-compose.yml:94-96`](../docker-compose.yml#L94-L96),
-[`rlsRoleGuard.ts:112-118`](../apps/backend/src/db/rlsRoleGuard.ts#L112-L118).
+[`rlsRoleGuard.ts:112-118`](../packages/db/src/rlsRoleGuard.ts#L112-L118).
 
 Compose sets `NODE_ENV=production` and
 `DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:…`, and `POSTGRES_USER` defaults to
@@ -360,7 +360,7 @@ stack.
 
 ### F11 — Finance/accounting mutations are unaudited
 
-**Where:** domain-wide; e.g. [`accountingEntryMutationUseCases.ts:73-81`](../apps/backend/src/accounting/use-cases/accountingEntryMutationUseCases.ts#L73-L81).
+**Where:** domain-wide; e.g. [`accountingEntryMutationUseCases.ts:73-81`](../packages/modules/accounting/src/backend/use-cases/accountingEntryMutationUseCases.ts#L73-L81).
 
 Grepping `recordModernAuditEvent` across `finance/`, `accounting/`, `obligations/` and their routes
 returns only five accounting use-cases (exchange rates, FX revaluation, IAS 29, hedges, journal
@@ -376,7 +376,7 @@ old/new state inside the same transaction.
 
 ### F12 — Audit chain order is decided under the lock, verification order before it
 
-**Where:** [`auditTrailService.ts:150` and `:158`](../apps/backend/src/services/auditTrailService.ts#L150-L158).
+**Where:** [`auditTrailService.ts:150` and `:158`](../packages/be-core/src/audit/auditTrailService.ts#L150-L158).
 
 `transactionTimestamp` is captured **before** `pg_advisory_xact_lock`, and `getLatestShardHash`
 selects the head by `(transaction_timestamp DESC, id DESC)` while verification walks ascending.
@@ -392,8 +392,8 @@ monotonic per-shard sequence column) and make the head query and the verifier us
 ### F35 — Audit governance is a dashboard read permission
 
 **Where:** [`auditPrivacyRoutes.ts:23`](../apps/backend/src/routes/tenant/audit/auditPrivacyRoutes.ts#L23),
-[`permissionRules.ts:95-99`](../packages/shared/src/auth/permissionRules.ts#L95-L99),
-[`userRbacDefaultRoles.ts:97`](../packages/shared/src/auth/userRbacDefaultRoles.ts#L97).
+[`permissionRules.ts:95-99`](../packages/contracts/src/auth/permissionRules.ts#L95-L99),
+[`userRbacDefaultRoles.ts:97`](../packages/contracts/src/auth/userRbacDefaultRoles.ts#L97).
 
 ```ts
 if (!roleHasPermission(user?.role ?? "", "analytics.view")) return sendForbidden(reply);
@@ -442,7 +442,7 @@ already exists).
 
 `closeFiscalYearForTenant` reads the year, aggregates the trial balance, builds the closing entry
 and saves `status: "closed"` with no row lock and no advisory lock
-([`accountingPeriodClose.ts:41-107`](../apps/backend/src/accounting/use-cases/accountingPeriodClose.ts#L41-L107)).
+([`accountingPeriodClose.ts:41-107`](../packages/modules/accounting/src/backend/use-cases/accountingPeriodClose.ts#L41-L107)).
 The posting guard reads the year in a separate statement. A posting dated inside the year can commit
 between the aggregate and the save: it is included in the year's reports but excluded from the
 closing entry, so retained earnings and opening equity are understated. Fix: lock the fiscal-year
@@ -454,7 +454,7 @@ per-tenant accounting advisory lock shared by posting.
 Export/import routes accept a client `idempotencyKey` and use it directly as
 `background_jobs.id` (`text primary key`) and BullMQ `jobId`
 ([`csvExportEnqueue.ts:40`](../apps/backend/src/lib/csvExportEnqueue.ts#L40),
-[`system.ts:59`](../apps/backend/src/db/schema/system.ts#L59)). `getUserBackgroundJob` is
+[`system.ts:59`](../packages/db/src/schema/system.ts#L59)). `getUserBackgroundJob` is
 user-scoped, so a second tenant with the same key reaches the insert and gets a 23505 → 500; if the
 first row has been dismissed, the insert succeeds but `queue.add` is deduped by the surviving BullMQ
 job, leaving a row that never runs. Fix: namespace the id (`${tenant}:${userId}:${key}`) or use a
@@ -542,7 +542,7 @@ failure; or mark the row `unknown` rather than terminal.
 
 `beginLongLivedTenantTransaction` applies the per-transaction guards with defaults
 `statement_timeout = 30 s` and `idle_in_transaction_session_timeout = 15 s`
-([`tenantTransactionGuards.ts:35-36`](../apps/backend/src/db/tenantTransactionGuards.ts#L35-L36)),
+([`tenantTransactionGuards.ts:35-36`](../packages/db/src/tenantTransactionGuards.ts#L35-L36)),
 and the backup/sync routes pass no override ([`dbSyncRoutes.ts:87,112`](../apps/backend/src/routes/common/db/dbSyncRoutes.ts#L87)).
 The asset loop does disk/S3 I/O between statements, so a slow asset read or slow client aborts the
 session (`57P05`). Fix: pass an explicit larger `statementTimeoutMs`/idle budget for snapshot
@@ -582,7 +582,7 @@ the global operations to the platform console.
 
 `buildSearchSql` builds `concat_ws(...)` over the contact row plus three correlated
 `string_agg` subqueries (phones, emails, addresses) and matches `LIKE '%term%'`
-([`contactRepositoryListSql.ts:83-116`](../apps/backend/src/db/repositories/contactRepositoryListSql.ts#L83-L116)).
+([`contactRepositoryListSql.ts:83-116`](../packages/modules/contacts/src/backend/repository/contactRepositoryListSql.ts#L83-L116)).
 No `pg_trgm`/GIN index exists in any migration, and `runListPage` executes the same predicate again
 for `count(*)`. Every search page scans all tenant contacts with four subqueries per row. Fix: add a
 `gin_trgm_ops` index on a maintained search column (or a materialized search vector) and use it for
@@ -706,7 +706,7 @@ shared handler (or log it and return the generic stage message + request id).
   limit bounds guesses.
 - **Nested `withTenant` re-points RLS**: a nested call with a different tenant `set_config`s
   `app.current_tenant` inside the outer transaction and restores it afterwards
-  ([`tenant-context.ts:66-108`](../apps/backend/src/db/tenant-context.ts#L66-L108)), whereas nested
+  ([`tenant-context.ts:66-108`](../packages/db/src/tenant-context.ts#L66-L108)), whereas nested
   `runInTransaction` ignores its tenant. It is documented as intentional, but it is the one place
   where a mis-threaded tenant string can turn the fail-closed design into a cross-tenant window.
   Consider rejecting a mismatched nested tenant outright.
@@ -719,11 +719,11 @@ These are not consolation prizes; each is a control that would otherwise be a fi
 
 1. **Tenant isolation fails closed at the transaction boundary.** `resolveTenantScope` rejects
    empty, `"undefined"` and `"null"` tenants unless `allowGlobal` is explicit; all three transaction
-   helpers share it ([`tenantScopeGuard.ts:56-81`](../apps/backend/src/db/tenantScopeGuard.ts#L56-L81)),
+   helpers share it ([`tenantScopeGuard.ts:56-81`](../packages/db/src/tenantScopeGuard.ts#L56-L81)),
    and `tenantScopeGuards.test.ts` / `tenantContextGuards.test.ts` cover the failure paths.
 2. **RLS is not assumed.** `assertRlsRuntimeRole` inspects `current_user` at boot and refuses to
    start under a superuser/BYPASSRLS role in production
-   ([`rlsRoleGuard.ts:85-118`](../apps/backend/src/db/rlsRoleGuard.ts#L85-L118)) — the reason F10 is
+   ([`rlsRoleGuard.ts:85-118`](../packages/db/src/rlsRoleGuard.ts#L85-L118)) — the reason F10 is
    a deployment bug rather than a silent isolation gap.
 3. **Module access is a three-layer gate with an exhaustive coverage test.**
    `registerModuleAccess` + `MODULE_ROUTE_ACTION_RULES` + the shared policy, verified by a test that

@@ -5,7 +5,7 @@ import { FormModal } from "@/components/app/FormModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { type AppTranslationKey, type BackgroundJobRecord, formatDateTime } from "@mms/shared";
+import { type AppTranslationKey, type BackgroundJobRecord, formatDateTime } from "@mms/contracts";
 
 export interface BackgroundJobsTrayProps {
   className?: string;

@@ -25,7 +25,7 @@ metadata:
 - **Filters SSOT**: Single filter menu via `ModuleFilterDropdown` / `ModuleFiltersMenuButton`. Active state indicated by count badge + Clear CTA; never duplicate active filters in a permanent pill bar.
 - **Selection SSOT**: Page controller owns row selection via `useWorkSelection`; list-local selection state is banned.
 - **Virtualization**: Mandatory `@tanstack/react-virtual` row virtualization whenever collection items > 30.
-- **Data Transfer & Import/Export**: Form module CSV import dialogs wrap `ModuleImportDialog` via `useModuleCsvImportActions` consuming the module's SSOT `ModuleTransferSchema` from `@mms/shared`. Exports enforce Field Whitelist metadata stripping and 1:1 bidirectional header symmetry.
+- **Data Transfer & Import/Export**: Form module CSV import dialogs wrap `ModuleImportDialog` via `useModuleCsvImportActions` consuming the module's SSOT `ModuleTransferSchema` from `@mms/contracts`. Exports enforce Field Whitelist metadata stripping and 1:1 bidirectional header symmetry.
 
 ## 2. Implementation map
 
@@ -36,7 +36,7 @@ metadata:
 | Cards | `DirectoryEntityCard`, `DirectoryCardFooterActions`, `DirectoryCardMetaGrid` |
 | Card actions | `useWorkCardAction` |
 | Toolbar / trash | `ModuleWorkToolbar`, `ModuleTrashToggle` |
-| Data Transfer / Import | `ModuleImportDialog`, `useModuleCsvImportActions`, `ModuleTransferSchema` (`@mms/shared`) |
+| Data Transfer / Import | `ModuleImportDialog`, `useModuleCsvImportActions`, `ModuleTransferSchema` (`@mms/contracts`) |
 | Data Transfer / Export | `useModuleServerCsvExportActions`, `buildExportGrid`, `runGridCsvExportJob` |
 | Bulk | `ModuleUniversalBulkActionBar`, `ModuleWorkBulkActionBar`, `BulkSelectionDeleteAction`, `BulkSelectionRestoreAction` |
 | Archive chrome | `@/components/app/DetailDrawerArchiveChrome` (`EntityArchivedBanner`, `DetailDrawerArchivedBanner`) |

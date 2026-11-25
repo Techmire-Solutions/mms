@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { setDbLogger } from "@mms/db/testing";
 import type pg from "pg";
 
 const log = vi.hoisted(() => ({ error: vi.fn(), info: vi.fn() }));
 
 vi.mock("../lib/logger.js", () => ({ logger: log }));
 
-import { ensureEnrollmentIntegrityIndexes } from "../db/migrations/enrollmentIntegrityIndexes.js";
+// The maintenance helpers moved to @mms/db; inject the stub logger there too.
+setDbLogger(log as unknown as Parameters<typeof setDbLogger>[0]);
+
+import { ensureEnrollmentIntegrityIndexes } from "@mms/db/migrations";
 
 interface ClientOptions {
   /** Index names that already exist and are considered valid. */

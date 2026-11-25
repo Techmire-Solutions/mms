@@ -11,9 +11,9 @@
  * Idempotent and resumable: only rows with `func_debit IS NULL` are touched.
  */
 import { sql } from "drizzle-orm";
-import { inferIsMonetaryAccount } from "@mms/shared";
+import { inferIsMonetaryAccount } from "@mms/contracts";
 import { resolveDefaultFunctionalCurrency } from "../repositories/accountingCurrencySettingsRepository.js";
-import { withGlobalTenant, withTenant, type TenantTransaction } from "../tenant-context.js";
+import { withGlobalTenant, withTenant, type TenantTransaction } from "@mms/db/context";
 
 const BATCH_SIZE = 5000;
 

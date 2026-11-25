@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 
 const patches = vi.hoisted(() => [] as Array<Record<string, unknown>>);
 vi.mock("../services/backgroundJobPatch.js", () => ({

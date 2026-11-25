@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { isFacultyCatalogRowActive, type FacultyDepartmentEntity } from "@mms/shared";
+import { isFacultyCatalogRowActive, type FacultyDepartmentEntity } from "@mms/contracts";
 import { Field, FormSelectWithQuickCreate } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 

@@ -32,12 +32,18 @@
 import { execFileSync } from "node:child_process";
 import process from "node:process";
 import { changeBase, changedFiles, readAtBase, readCurrent } from "./lib/changed-files.mjs";
+import { SOURCE_EXTENSIONS, assertScanDirs, fromRoot } from "./lib/repo-paths.mjs";
 
 /** Both migration trees: the hand-written TS data migrations and the Drizzle SQL ones. */
-const MIGRATION_DIRS = [
-  "apps/backend/src/db/migrations/",
-  "apps/backend/src/db/migrations_drizzle/",
-];
+const MIGRATION_DIRS = ["apps/backend/src/db/migrations/", "packages/db/migrations_drizzle/"];
+
+// Fail closed: a moved migration tree must fail loudly instead of diffing nothing
+// and reporting "no migration changes" (docs/monorepo-migration-plan.md §2.7).
+assertScanDirs(
+  MIGRATION_DIRS.map((dir) => fromRoot(dir.replace(/\/$/, ""))),
+  "migrations forward-only",
+  { extensions: [...SOURCE_EXTENSIONS, ".sql"] },
+);
 
 const isMigration = (rel) => MIGRATION_DIRS.some((dir) => rel.startsWith(dir));
 
@@ -52,7 +58,7 @@ const isMigration = (rel) => MIGRATION_DIRS.some((dir) => rel.startsWith(dir));
 const isSnapshotMetadata = (rel) => rel.endsWith("_snapshot.json");
 
 /** Drizzle's journal must grow with every new migration; only its existing entries are frozen. */
-const JOURNAL = "apps/backend/src/db/migrations_drizzle/meta/_journal.json";
+const JOURNAL = "packages/db/migrations_drizzle/meta/_journal.json";
 
 function isAppendOnlyJournal(atBase, now) {
   try {
@@ -107,6 +113,90 @@ if (explicitBase !== null) {
   files = changedFiles();
 }
 
+/**
+ * Structural normalization for already-applied migrations.
+ *
+ * Package relocations (`@mms/shared` → `@mms/contracts`, `db/*` modules → `@mms/db/*`,
+ * `lib/tenantContext` → `@mms/be-core/http`, `repositories/contact*` →
+ * `@mms/mod-contacts/backend/repository`) and import-depth fixes are structural, not
+ * logic: the SQL and control flow are unchanged. Compare migrations with their import
+ * specifiers canonicalized so a repository-wide move does not read as "rewrote an
+ * applied migration", while any change to the migration body still fails.
+ */
+const MOVED_DB_CLIENT =
+  /^(?:\.\.\/)+(?:db\/)?(?:dbClient|dbConnection|dbTransactions|rlsRoleGuard|commitScope|dbPoolMetrics|preparedStatements)\.js$/;
+const MOVED_DB_CONTEXT =
+  /^(?:\.\.\/)+(?:db\/)?(?:tenant-context|tenantScopeGuard|tenantTransactionGuards)\.js$/;
+const MOVED_DB_SCHEMA = /^(?:\.\.\/)+(?:db\/)?schema(\/[^"']*)?\.js$/;
+const MOVED_SEED = /^(?:\.\.\/)+(?:db\/)?minimalSeeds\.js$/;
+const MOVED_LIB = /^(?:\.\.\/)+lib\/(?:softDeleteHelpers|logRedaction)\.js$/;
+const MOVED_TENANT_CONTEXT = /^(?:\.\.\/)+lib\/tenantContext\.js$/;
+// Contacts repositories moved into the audience-separated module package (P5); the
+// migrations barrel still resolves the same symbols.
+const MOVED_CONTACT_REPOSITORY =
+  /^(?:\.\.\/)+(?:db\/)?repositories\/contact[A-Za-z0-9_]*Repository\.js$/;
+const MOVED_MIGRATION_MODULE = /^(?:\.{1,2}\/)+(?:migrations\/)?(\d{3}_[A-Za-z0-9_]+)\.js$/;
+
+function canonicalModuleSpecifier(specifier) {
+  const normalized = specifier.replaceAll("@mms/shared", "@mms/contracts");
+  if (normalized === "@mms/contracts" || normalized.startsWith("@mms/contracts/")) {
+    return "@mms/contracts";
+  }
+  // Canonicalize both the old relative module and its new package subpath to the
+  // same bucket, so a relocation compares equal without masking body changes.
+  if (normalized === "@mms/db/schema" || normalized.startsWith("@mms/db/schema/")) {
+    return "@mms/db/schema";
+  }
+  const schema = MOVED_DB_SCHEMA.exec(specifier);
+  if (schema) return `@mms/db/schema${schema[1] ?? ""}`;
+  // The tenant-context ALS now lives behind `@mms/be-core/http` (it re-exports
+  // `@mms/db/request-context`); canonicalize the old app-relative shim to the same bucket.
+  if (
+    MOVED_TENANT_CONTEXT.test(specifier) ||
+    normalized === "@mms/be-core/http" ||
+    normalized.startsWith("@mms/be-core/http/")
+  ) {
+    return "@mms/be-core/http";
+  }
+  if (
+    MOVED_CONTACT_REPOSITORY.test(specifier) ||
+    normalized === "@mms/mod-contacts/backend/repository" ||
+    normalized.startsWith("@mms/mod-contacts/backend/repository/")
+  ) {
+    return "@mms/mod-contacts/backend/repository";
+  }
+  if (
+    MOVED_DB_CLIENT.test(specifier) ||
+    MOVED_DB_CONTEXT.test(specifier) ||
+    MOVED_SEED.test(specifier) ||
+    MOVED_LIB.test(specifier)
+  ) {
+    return "@mms/db";
+  }
+  if (normalized === "@mms/db" || normalized.startsWith("@mms/db/")) {
+    return "@mms/db";
+  }
+  const migrationModule = MOVED_MIGRATION_MODULE.exec(specifier);
+  if (migrationModule) return `@mms/legacy-migration/${migrationModule[1]}`;
+  return specifier;
+}
+
+function normalizeStructural(content) {
+  return content
+    .replace(
+      /(\bfrom\s*)(["'])([^"']+)\2/g,
+      (_m, prefix, quote, spec) => `${prefix}${quote}${canonicalModuleSpecifier(spec)}${quote}`,
+    )
+    .replace(
+      /(\bimport\s*\(\s*)(["'])([^"']+)\2/g,
+      (_m, prefix, quote, spec) => `${prefix}${quote}${canonicalModuleSpecifier(spec)}${quote}`,
+    )
+    .replace(
+      /(\bimport\s+)(["'])([^"']+)\2/g,
+      (_m, prefix, quote, spec) => `${prefix}${quote}${canonicalModuleSpecifier(spec)}${quote}`,
+    );
+}
+
 const violations = [];
 for (const rel of new Set(files)) {
   if (!isMigration(rel) || isSnapshotMetadata(rel)) continue;
@@ -116,7 +206,10 @@ for (const rel of new Set(files)) {
   const now = readCurrent(rel);
   if (now === null) {
     violations.push({ file: rel, reason: "deleted" });
-  } else if (now !== atBase && !(rel === JOURNAL && isAppendOnlyJournal(atBase, now))) {
+  } else if (
+    normalizeStructural(now) !== normalizeStructural(atBase) &&
+    !(rel === JOURNAL && isAppendOnlyJournal(atBase, now))
+  ) {
     violations.push({ file: rel, reason: "modified" });
   }
 }
@@ -137,7 +230,7 @@ if (violations.length > 0) {
       "\n\nAn existing migration may already have run on a deployed database; editing it means\n" +
       "fresh installs and existing installs diverge, and the change never reaches the latter.\n" +
       "Add a NEW migration that performs the fix instead (append-only), e.g.\n" +
-      "  apps/backend/src/db/migrations_drizzle/0NNN_<description>.sql\n\n" +
+      "  packages/db/migrations_drizzle/0NNN_<description>.sql\n\n" +
       "See .agent/skills/mms-schema-migrate/SKILL.md (forward-only DDL).",
   );
   process.exit(1);

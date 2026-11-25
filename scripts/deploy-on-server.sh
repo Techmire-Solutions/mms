@@ -132,7 +132,7 @@ if [ -f "$TARBALL" ]; then
   fi
 
   echo "Extracting production dist..."
-  rm -rf "${ROOT_DIR}/apps/frontend/dist" "${ROOT_DIR}/apps/backend/dist"
+  rm -rf "${ROOT_DIR}/apps/frontend/dist" "${ROOT_DIR}/apps/backend/dist" "${ROOT_DIR}/packages/db/dist" "${ROOT_DIR}/packages/be-core/dist" "${ROOT_DIR}/packages/modules/iam/dist" "${ROOT_DIR}/packages/modules/accounting/dist" "${ROOT_DIR}/packages/modules/contacts/dist"
   tar xzf "$TARBALL" -C "$ROOT_DIR"
   if [ $? -ne 0 ]; then
     echo "FATAL: tar extract failed"
@@ -141,8 +141,8 @@ if [ -f "$TARBALL" ]; then
   rm -f "$TARBALL" "${TARBALL}.sha256"
 else
   echo "No tarball found at ${TARBALL} — checking pre-extracted dist folders..."
-  if [ ! -d "${ROOT_DIR}/apps/backend/dist" ] || [ ! -d "${ROOT_DIR}/apps/frontend/dist" ]; then
-    echo "FATAL: missing pre-built dist directories (apps/backend/dist, apps/frontend/dist) and no tarball at ${TARBALL}"
+  if [ ! -d "${ROOT_DIR}/apps/backend/dist" ] || [ ! -d "${ROOT_DIR}/apps/frontend/dist" ] || [ ! -d "${ROOT_DIR}/packages/db/dist" ] || [ ! -d "${ROOT_DIR}/packages/be-core/dist" ] || [ ! -d "${ROOT_DIR}/packages/modules/iam/dist" ] || [ ! -d "${ROOT_DIR}/packages/modules/accounting/dist" "${ROOT_DIR}/packages/modules/contacts/dist" ]; then
+    echo "FATAL: missing pre-built dist directories (apps/backend/dist, apps/frontend/dist, packages/db/dist, packages/be-core/dist, packages/modules/iam/dist, packages/modules/accounting/dist, packages/modules/contacts/dist) and no tarball at ${TARBALL}"
     exit 1
   fi
 fi

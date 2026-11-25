@@ -16,6 +16,22 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
+vi.mock("@mms/fe-core/i18n", () => ({
+  useTranslation: () => ({
+    language: "en",
+    dir: "ltr",
+    isRtl: false,
+    isLoading: false,
+    t: (key: string, params?: Record<string, string | number>) => {
+      if (params?.count) return `${params.count} selected`;
+      if (key === "common.deselect") return "Deselect";
+      if (key === "common.bulkActionsToolbar") return "Bulk actions toolbar";
+      if (key === "common.actions") return "Actions";
+      return key;
+    },
+  }),
+}));
+
 describe("MessagingWorkBulkActionBar", () => {
   it("given write permissions, should render selected count, export, resend, and clear logs via BulkSelectionBar", () => {
     // Arrange / Act

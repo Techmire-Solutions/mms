@@ -1,4 +1,4 @@
-import { resolveBackendListenPort } from "@mms/shared";
+import { resolveBackendListenPort } from "@mms/contracts";
 
 export type LogLevel = "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent";
 

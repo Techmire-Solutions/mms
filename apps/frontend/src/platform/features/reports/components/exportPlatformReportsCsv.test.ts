@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { exportPlatformReportsCsv } from "@/platform/features/reports/components/exportPlatformReportsCsv";
 import * as downloadModule from "@/lib/download";
-import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
 
 vi.mock("@/lib/download", () => ({
   triggerFileDownload: vi.fn(),

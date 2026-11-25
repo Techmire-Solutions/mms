@@ -73,7 +73,7 @@ MMS unifies high-concurrency event ingestion, strict multi-tenant data isolation
 To prevent RLS context pollution across pooled connections (`pg`), tenant execution context is encapsulated within transaction scopes using `set_config('app.current_tenant', ..., true)`.
 
 ```typescript
-// apps/backend/src/db/tenant-context.ts
+// packages/db/src/tenant-context.ts
 import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { db, readReplicaDb } from './index';
@@ -169,7 +169,7 @@ CREATE INDEX idx_audit_tenant_entity ON audit_trail_ledger(tenant_id, entity_nam
 ### Contract Definition (`@mms/shared`)
 
 ```typescript
-// packages/shared/src/contracts/students.contract.ts
+// packages/contracts/src/contracts/students.contract.ts
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 import { 
@@ -221,7 +221,7 @@ export const studentContract = c.router({
 Prevent Unicode Directional Spoofing (e.g., Right-to-Left Override attacks `U+202E`) across all string inputs:
 
 ```typescript
-// packages/shared/src/schemas/sanitize.ts
+// packages/contracts/src/schemas/sanitize.ts
 import { z } from 'zod';
 
 // Matches Unicode Bidi Override runes: U+202A to U+202E and U+2066 to U+2069
@@ -609,7 +609,7 @@ Sprint 1: Multi-Tenancy & Security Hardening
 └── [x] Verification Gate: Concurrent connection pool test verifying zero cross-tenant leakage
 
 Sprint 2: Contract-Driven API Layer
-├── [x] Define @ts-rest contracts in packages/shared/src/contracts/
+├── [x] Define @ts-rest contracts in packages/contracts/src/contracts/
 ├── [x] Implement safeString() BiDi Unicode override sanitization
 ├── [x] Bind Fastify route handlers using @ts-rest/fastify
 └── [x] Verification Gate: Typecheck suite passes; 100% autocompletion on frontend API client

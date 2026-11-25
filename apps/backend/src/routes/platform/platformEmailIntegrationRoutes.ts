@@ -1,10 +1,14 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import type { EmailIntegrationConfig, EmailIntegrationSecrets, EmailProviderId } from "@mms/shared";
+import type {
+  EmailIntegrationConfig,
+  EmailIntegrationSecrets,
+  EmailProviderId,
+} from "@mms/contracts";
 import {
   isEmailProviderId,
   mergeEmailIntegrationConfig,
   emailIntegrationBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   loadPlatformEmailIntegrationConfig,
   markPlatformEmailIntegrationTestResult,

@@ -1,8 +1,8 @@
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
+import { withTenant } from "@mms/db/context";
 import { loadExaminationsReportAggregatesSql } from "../../db/repositories/examinationRepositoryReport.js";
 import { loadExamRoster } from "../../db/repositories/examEligibilityRepository.js";
 import {
@@ -16,7 +16,7 @@ import {
   sessions,
   students,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import {
   applyExamResultModeration,
   listExamResultsPage,

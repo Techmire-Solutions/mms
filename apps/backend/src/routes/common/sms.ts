@@ -1,11 +1,16 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import type { SmsIntegrationConfig, SmsIntegrationSecrets, SmsProviderId, User } from "@mms/shared";
+import type {
+  SmsIntegrationConfig,
+  SmsIntegrationSecrets,
+  SmsProviderId,
+  User,
+} from "@mms/contracts";
 import {
   isSmsProviderId,
   mergeSmsIntegrationConfig,
   smsIntegrationBodySchema,
   smsTestBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   loadSmsIntegrationConfig,
   markSmsIntegrationTestResult,

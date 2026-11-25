@@ -3,10 +3,10 @@ import {
   dedupeTrimmedIds,
   type ObligationCollection,
   type RepositoryListOptions,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
-import { obligationCollections } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { obligationCollections } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 import {

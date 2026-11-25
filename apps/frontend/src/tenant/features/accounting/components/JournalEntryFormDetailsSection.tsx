@@ -1,13 +1,13 @@
 import React from "react";
 import { BookOpen } from "lucide-react";
-import { type FiscalYear } from "@/lib/data/accountingData";
-import { SectionCard } from "@/components/app/SectionCard";
-import { Field } from "@/components/app/FormField";
-import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/app/DatePicker";
-import { FormSelect } from "@/components/app/FormSelect";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { DraftForm } from "../lib/journalEntryFormTypes";
+import { type FiscalYear } from "@mms/mod-accounting/frontend/tenant";
+import { SectionCard } from "@mms/ui";
+import { Field } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import type { DraftForm } from "@mms/mod-accounting/frontend/tenant";
 import { NextVoucherNumberHint } from "./NextVoucherNumberHint";
 
 interface JournalEntryFormDetailsSectionProps {

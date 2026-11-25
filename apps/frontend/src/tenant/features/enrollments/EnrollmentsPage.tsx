@@ -10,7 +10,7 @@ import { EnrollmentsPageModals } from "@/tenant/features/enrollments/components/
 import { EnrollmentsWorkTier } from "@/tenant/features/enrollments/components/EnrollmentsWorkTier";
 import { EnrollmentsPageHeaderActions } from "@/tenant/features/enrollments/components/EnrollmentsPageHeaderActions";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
-import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
+import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/contracts";
 import { useEnrollmentsPageState } from "@/tenant/features/enrollments/hooks/useEnrollmentsPageState";
 
 const EnrollmentsReportsTier = lazy(() =>

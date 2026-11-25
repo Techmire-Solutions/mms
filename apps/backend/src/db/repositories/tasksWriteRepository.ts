@@ -4,14 +4,14 @@ import {
   type TaskInsert,
   type TaskStatus,
   type TaskUpdate,
-} from "@mms/shared";
-import { tasks } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+} from "@mms/contracts";
+import { tasks } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import { findTaskById } from "./tasksRepository.js";
 import { syncTaskAssignees } from "./tasksAssigneesRepository.js";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { ConflictError, ValidationError } from "@mms/be-core/http/errors";
 import { naiveTimestamp } from "../../lib/dbDate.js";
 
 type Recipients = Parameters<typeof syncTaskAssignees>[3];

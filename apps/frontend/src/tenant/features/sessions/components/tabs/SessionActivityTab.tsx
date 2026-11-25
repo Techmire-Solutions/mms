@@ -1,6 +1,6 @@
 import React from "react";
 import { History } from "lucide-react";
-import { formatDate, type AppTranslationKey, type Session } from "@mms/shared";
+import { formatDate, type AppTranslationKey, type Session } from "@mms/contracts";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";

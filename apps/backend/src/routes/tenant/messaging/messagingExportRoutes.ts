@@ -1,20 +1,20 @@
 import crypto from "node:crypto";
 import { buildBackgroundJobId } from "../../../lib/backgroundJobIds.js";
 import type { FastifyPluginAsync } from "fastify";
-import type { BackgroundJobRecord, User } from "@mms/shared";
+import type { BackgroundJobRecord, User } from "@mms/contracts";
 import {
   canonicalizeJson,
   MESSAGING_MODULE_MANIFEST,
   messagingCsvExportBodySchema,
   messagingImportBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
 import { MESSAGING_LOG_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
 import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendForbidden } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
-import { recordModernAuditEvent } from "../../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,

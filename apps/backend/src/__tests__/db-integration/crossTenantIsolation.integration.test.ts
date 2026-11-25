@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { closeDatabase, beginLongLivedTenantTransaction } from "../../db/dbConnection.js";
+import { closeDatabase, beginLongLivedTenantTransaction } from "@mms/db/client";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
-import { workspaces, tenantUsers } from "../../db/schema.js";
+import { workspaces, tenantUsers } from "@mms/db/schema";
 import {
   findTenantUserRowById,
   findTenantUserRowByIdGlobal,

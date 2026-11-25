@@ -1,8 +1,8 @@
 import { and, eq, desc, or } from "drizzle-orm";
-import { BACKGROUND_JOBS_MAX_PER_USER, type BackgroundJobRecord } from "@mms/shared";
+import { BACKGROUND_JOBS_MAX_PER_USER, type BackgroundJobRecord } from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
-import { withTenant } from "../db/tenant-context.js";
-import { backgroundJobs } from "../db/schema.js";
+import { withTenant } from "@mms/db/context";
+import { backgroundJobs } from "@mms/db/schema";
 import { resolveEffectiveTenantUserId } from "../db/repositories/backgroundJobCleanupRepository.js";
 export {
   CLEARABLE_BACKGROUND_JOB_STATUSES,

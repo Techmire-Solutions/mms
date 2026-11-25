@@ -1,7 +1,7 @@
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type Mujtahid } from "@mms/shared";
-import { mujtahids } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type Mujtahid } from "@mms/contracts";
+import { mujtahids } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 export * from "./obligationMujtahidRepsRepository.js";
 
 type MujtahidRow = typeof mujtahids.$inferSelect;

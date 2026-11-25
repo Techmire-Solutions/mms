@@ -17,7 +17,7 @@ import {
   DEFAULT_FORM_TABS,
   type TabDefinition,
   type ValidationError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export const SYSTEM_TAB_ICONS: Record<string, ComponentType> = {

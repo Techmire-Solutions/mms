@@ -3,7 +3,9 @@ import { createEnrollmentWriteUseCases } from "../enrollments/use-cases/enrollme
 import { runWithTenant } from "../lib/tenantContext.js";
 import { ConflictError, HttpDomainError, ValidationError } from "../lib/httpErrors.js";
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn((_tenant, cb) => cb({} as any)),
 }));
 

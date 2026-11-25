@@ -1,4 +1,4 @@
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { activeDb, runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
@@ -10,9 +10,9 @@ import {
 } from "./studentNormalizeUseCases.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import { recordRestoreEvents } from "./studentAuditEvents.js";
-import { buildRestoredRecord, enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { buildRestoredRecord, enableIncludeDeleted } from "@mms/db/soft-delete";
 import { restoreCascadedEnrollmentsForStudents } from "../../db/repositories/studentEnrollmentCascade.js";
-import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileContactSystemTags } from "@mms/mod-contacts/backend/use-cases";
 import { invalidateStudentsCache } from "./studentCacheInvalidation.js";
 
 interface StudentBulkRestoreConflict {

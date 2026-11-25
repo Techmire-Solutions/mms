@@ -1,5 +1,5 @@
 import React, { type JSX } from "react";
-import { getInitials, type StandardMessagingRecipient } from "@mms/shared";
+import { getInitials, type StandardMessagingRecipient } from "@mms/contracts";
 import {
   Table,
   TableBody,

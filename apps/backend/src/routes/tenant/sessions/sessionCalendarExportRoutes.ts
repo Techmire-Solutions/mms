@@ -4,7 +4,7 @@ import {
   SESSIONS_MODULE_MANIFEST,
   buildTenantExportFilename,
   sessionsTimetableExportQuerySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { buildContentDisposition } from "../../../lib/contentDisposition.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { getWorkspaceTimezone } from "../../../lib/workspaceTimezone.js";

@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
-import { enrollmentImportPreflightBodySchema } from "@mms/shared";
-import type { User } from "@mms/shared";
+import { enrollmentImportPreflightBodySchema } from "@mms/contracts";
+import type { User } from "@mms/contracts";
 import { canWriteCollection } from "../../../services/rbacService.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";

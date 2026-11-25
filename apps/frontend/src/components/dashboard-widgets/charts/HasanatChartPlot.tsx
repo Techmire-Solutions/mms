@@ -16,7 +16,7 @@ import {
 import { SafeResponsiveContainer } from "@/components/app/SafeResponsiveContainer";
 import { ChartGrid, ChartPolarGrid, chartAxisTick } from "@/components/app/ChartGrid";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatNumber } from "@mms/shared";
+import { formatNumber } from "@mms/contracts";
 import {
   buildChartTooltip,
   CHART_AXIS_LINE_PROPS,

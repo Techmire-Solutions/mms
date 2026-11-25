@@ -3,10 +3,10 @@ import {
   dedupeTrimmedIds,
   type QuestionBankQuestion,
   type RepositoryListOptions,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
-import { questions } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { questions } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { hydrateQuestionRecords } from "./questionBankQuestionsSync.js";
 
 export { questionRowToRecord } from "./questionBankQuestionsSync.js";

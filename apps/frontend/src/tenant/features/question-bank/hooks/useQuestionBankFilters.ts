@@ -4,7 +4,7 @@ import {
   type QuestionBankQuestion as Question,
   type QuestionStatus,
   type QuestionType,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useQuestionBankContractList } from "@/tenant/features/question-bank/hooks/useQuestionBankQueries";
 

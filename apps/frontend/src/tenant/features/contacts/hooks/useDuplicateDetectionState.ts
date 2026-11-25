@@ -5,11 +5,11 @@ import {
   mergeContacts,
   type AppTranslationKey,
   type Contact,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useContactsDuplicatePairs } from "@/tenant/features/contacts/hooks/useContactsAnalyticsQueries";
-import type { ContactsDuplicatePairsPageResult } from "@mms/shared";
+import type { ContactsDuplicatePairsPageResult } from "@mms/contracts";
 import { DUPLICATE_REASON_I18N } from "@/lib/contacts/contactI18n";
 import { notify } from "@/lib/notify";
 import { reportClientError } from "@/lib/clientErrorReporting";

@@ -4,7 +4,7 @@ import {
   calculateDetailedSolarAge,
   getLunarDateString,
   calculateDetailedLunarAge,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function renderSolarDobMetadata({
   dob,

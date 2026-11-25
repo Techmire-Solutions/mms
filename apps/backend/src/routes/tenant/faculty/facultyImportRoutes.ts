@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { FACULTY_MODULE_MANIFEST, facultyImportBodySchema } from "@mms/shared";
+import { FACULTY_MODULE_MANIFEST, facultyImportBodySchema } from "@mms/contracts";
 import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
 import { canWriteCollection } from "../../../services/rbacService.js";
 

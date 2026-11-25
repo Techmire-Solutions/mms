@@ -1,19 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockGetRequestTenant = vi.fn();
-const mockBroadcastCollection = vi.fn();
 
-vi.mock("../lib/tenantContext.js", () => ({
-  getRequestTenant: () => mockGetRequestTenant(),
-  requireTenant: () => {
-    const t = mockGetRequestTenant();
-    if (!t) throw new Error("Tenant context required");
-    return t.trim().toLowerCase();
+vi.mock("@mms/db/request-context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/request-context")>()),
+  ...{
+    getRequestTenant: () => mockGetRequestTenant(),
+    requireTenant: () => {
+      const t = mockGetRequestTenant();
+      if (!t) throw new Error("Tenant context required");
+      return t.trim().toLowerCase();
+    },
   },
-}));
-
-vi.mock("../lib/livePush.js", () => ({
-  broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 
 import { createModulePreferencesService } from "../lib/createModulePreferencesService.js";
@@ -58,7 +56,6 @@ function makeService(overrides: Partial<ServiceOptions> = {}) {
 describe("createModulePreferencesService", () => {
   beforeEach(() => {
     mockGetRequestTenant.mockReturnValue("demo");
-    mockBroadcastCollection.mockReset();
   });
 
   describe("load", () => {
@@ -102,7 +99,6 @@ describe("createModulePreferencesService", () => {
 
       expect(saved).toEqual({ theme: "dark", pageSize: 50 });
       expect(upsert).toHaveBeenCalledWith("demo", { theme: "dark", pageSize: 50 });
-      expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
       expect(getByWorkspace).not.toHaveBeenCalled();
     });
 

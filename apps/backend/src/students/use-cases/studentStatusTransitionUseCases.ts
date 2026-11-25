@@ -1,8 +1,5 @@
-import { studentStatusEndsEnrollments, type User } from "@mms/shared";
-import {
-  mapActionStringToAuditType,
-  recordModernAuditEvent,
-} from "../../services/auditTrailService.js";
+import { studentStatusEndsEnrollments, type User } from "@mms/contracts";
+import { mapActionStringToAuditType, recordModernAuditEvent } from "@mms/be-core/audit";
 import { withdrawEnrollmentsForStudentStatus } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
 import type { OperationActor } from "../../enrollments/repository/enrollmentOperationsRepository.js";
 

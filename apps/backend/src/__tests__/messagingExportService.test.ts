@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MESSAGING_CSV_EXPORT_MAX_BYTES, MESSAGING_CSV_EXPORT_MAX_ROWS } from "@mms/shared";
+import { MESSAGING_CSV_EXPORT_MAX_BYTES, MESSAGING_CSV_EXPORT_MAX_ROWS } from "@mms/contracts";
 import {
   buildMessagingCsvExport,
   generateMessagingCsvStreamChunks,

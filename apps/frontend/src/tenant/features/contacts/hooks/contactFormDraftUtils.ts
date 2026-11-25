@@ -3,7 +3,7 @@ import {
   normalizeContactForEdit,
   type Contact,
   type ContactItemNormalizeDefaults,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function contactDraftSnapshot(draft: Partial<Contact>): string {
   return JSON.stringify(cleanContactDraft(draft));

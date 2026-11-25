@@ -5,7 +5,7 @@ import {
   type BlueprintCandidate,
   type BlueprintResult,
   type PaperBlueprint,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   questionCategories,
   questions,
@@ -14,9 +14,9 @@ import {
   testSectionQuestions,
   testSections,
   tests,
-} from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
+} from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
+import { ConflictError, NotFoundError } from "@mms/be-core/http/errors";
 import { auditQuestionBankEntity } from "./questionBankAudit.js";
 
 /**

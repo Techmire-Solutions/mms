@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { distributionCreateSchema, type Distribution, type Redemption } from "@mms/shared";
+import { distributionCreateSchema, type Distribution, type Redemption } from "@mms/contracts";
 import { createHasanatUseCases } from "../hasanat/use-cases/hasanatUseCases.js";
 import * as hasanatCardUseCases from "../hasanat/use-cases/hasanatCardUseCases.js";
 import * as hasanatIssuanceUseCases from "../hasanat/use-cases/hasanatIssuanceUseCases.js";
@@ -24,7 +24,7 @@ vi.mock("../lib/livePush.js", () => ({
 }));
 
 const auditCalls = vi.hoisted(() => [] as Array<Record<string, unknown>>);
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn(async (first: unknown, second?: unknown) => {
     auditCalls.push((second ?? first) as Record<string, unknown>);
     return { sequence: 1, hashCurrent: "hash", hashPrevious: "genesis" };
@@ -32,7 +32,7 @@ vi.mock("../services/auditTrailService.js", () => ({
 }));
 
 const outboxCalls = vi.hoisted(() => [] as unknown[]);
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvents: vi.fn(async (events: unknown[]) => {
     outboxCalls.push(...events);
   }),

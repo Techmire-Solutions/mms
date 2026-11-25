@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { AttendanceRecord, ClassStudent } from "@/lib/data/attendanceData";
-import type { ModuleCustomField } from "@mms/shared";
+import type { ModuleCustomField } from "@mms/contracts";
 import type { AttendanceRow } from "@/tenant/features/attendance/lib/markAttendanceTypes";
 import {
   applyPersistedRows,

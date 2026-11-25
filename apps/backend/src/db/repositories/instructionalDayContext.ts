@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { AcademicCalendarEvent, WeekdayName } from "@mms/shared";
-import { sessionClasses } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { AcademicCalendarEvent, WeekdayName } from "@mms/contracts";
+import { sessionClasses } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { listCalendarEventsTx } from "./academicCalendarRepository.js";
 import { listEnrollmentPlacementsTx } from "./enrollmentPlacementLookup.js";
 import { loadSessionWorkingDaysTx } from "./sessionWorkingDays.js";

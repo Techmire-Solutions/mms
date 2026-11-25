@@ -1,5 +1,5 @@
 import { and, count, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { PUBLISHABLE_EXAM_STATUSES, type ExamStatus } from "@mms/shared";
+import { PUBLISHABLE_EXAM_STATUSES, type ExamStatus } from "@mms/contracts";
 import {
   contacts,
   enrollments,
@@ -8,11 +8,11 @@ import {
   sessionClasses,
   sessions,
   students,
-} from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
-import { exams } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+} from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
+import { exams } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /**
  * Exam-class membership lookups, results finalisation and student labels.

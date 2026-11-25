@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { StudentsSettings } from "@mms/shared";
+import type { StudentsSettings } from "@mms/contracts";
 import { useStudentFormActionHandlers } from "@/tenant/features/students/hooks/useStudentFormActionHandlers";
 
 const mocks = vi.hoisted(() => ({

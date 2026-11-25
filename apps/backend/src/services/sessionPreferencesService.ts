@@ -1,4 +1,4 @@
-import { normalizeSessionModulePreferences, type SessionModulePreferences } from "@mms/shared";
+import { normalizeSessionModulePreferences, type SessionModulePreferences } from "@mms/contracts";
 import {
   getSessionModulePreferencesByWorkspace,
   upsertSessionModulePreferences,

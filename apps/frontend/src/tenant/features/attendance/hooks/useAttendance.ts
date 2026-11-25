@@ -1,6 +1,6 @@
 import { useQueryClient, queryOptions, keepPreviousData } from "@tanstack/react-query";
-import type { AttendanceCommandMetricsSnapshot, AttendanceListPageResult } from "@mms/shared";
-import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import type { AttendanceCommandMetricsSnapshot, AttendanceListPageResult } from "@mms/contracts";
+import { ATTENDANCE_MODULE_MANIFEST } from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { apiContract, tsrClient } from "@/lib/api";
 import { useAuth } from "@/lib/contexts/AuthContext";

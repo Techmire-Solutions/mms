@@ -5,7 +5,7 @@ import {
   type BlueprintCandidate,
   type QuestionBankQuestion,
   type QuestionBankTest,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import {
   Field,

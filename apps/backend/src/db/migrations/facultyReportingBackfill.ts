@@ -1,4 +1,4 @@
-import type { TenantTransaction } from "../tenant-context.js";
+import type { TenantTransaction } from "@mms/db/context";
 
 /**
  * Quarantined: legacy assignment-edge reporting backfill.

@@ -3,7 +3,7 @@ import type { ModuleColumnCustomizerProps } from "@/components/app/ModuleColumnC
 import { WorkListFiltersScaffold, type WorkListFilterChip } from "@/components/common/work";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { InvoicesFiltersMenuButton } from "@/tenant/features/finance/components/InvoicesFiltersMenuButton";
 
 export const FINANCE_INVOICES_WORK_SEARCH_INPUT_ID = "finance-invoices-work-search";

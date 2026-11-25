@@ -1,9 +1,9 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { ExamResult } from "@mms/shared";
-import { examClasses, examResults, exams } from "../schema.js";
-import { withTenant, type AppDb } from "../tenant-context.js";
-import { isUniqueViolation } from "../../lib/pgErrors.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import type { ExamResult } from "@mms/contracts";
+import { examClasses, examResults, exams } from "@mms/db/schema";
+import { withTenant, type AppDb } from "@mms/db/context";
+import { isUniqueViolation } from "@mms/be-core/http/errors";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { assertMarksWritable } from "./examinationMarksLock.js";
 import { auditCollectionReplacement } from "./examinationExamsAudit.js";
 import {

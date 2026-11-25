@@ -19,7 +19,7 @@ import {
 } from "../../services/attachmentStorageService.js";
 import { canWriteCollection } from "../../lib/rbacCanHelpers.js";
 import { questionMediaMimeRejection } from "../../lib/questionMediaPolicy.js";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 
 /**
  * Attachment uploads are contact documents by default, so they require contacts.write (B-02).

@@ -1,4 +1,4 @@
-import { pickBrandingFields, type BrandingSettings } from "@mms/shared";
+import { pickBrandingFields, type BrandingSettings } from "@mms/contracts";
 
 /** Always live-preview theme colours & corner style when identity fields change (logo → colours). */
 export const BRANDING_COLOUR_PREVIEW_KEYS = [

@@ -63,7 +63,7 @@ state where the Red evidence goes (PR body bullet, not a checkbox).
   global package minimum for *every* addition.
 * Enforced reality: `apps/frontend/vitest.config.ts:114-118` (56/55/46/51),
   `apps/backend/vitest.config.ts:59-63` (46/43.5/41/33),
-  `packages/shared/vitest.config.ts:25-29` (79/75/72/57).
+  `packages/contracts/vitest.config.ts:25-29` (79/75/72/57).
 * `README.md:143` states yet a third version ("FE 55/50, BE 45/27").
 
 An agent following the rule cannot satisfy it, and the mismatch hides the real gate (the
@@ -78,7 +78,7 @@ in each workspace's `vitest.config.ts` (SSOT) and raise them with measured value
 `mms-data-layer.mdc:14` mandates "sequential **UUIDv7** (`crypto.randomUUIDv7()`)". Node 24 has
 no such API (only `crypto.randomUUID()` → v4), and the string appears nowhere in the tree.
 The project SSOT is `uuidv7()` from `@mms/shared`
-([`packages/shared/src/core/uuidv7.ts`](../packages/shared/src/core/uuidv7.ts)), used by
+([`packages/contracts/src/core/uuidv7.ts`](../packages/contracts/src/core/uuidv7.ts)), used by
 `apps/backend/src/db/repositories/academicCatalogReferences.ts:177` and others.
 
 **Fix:** `uuidv7()` from `@mms/shared` (and note PostgreSQL 16 has no built-in, which the shared
@@ -107,7 +107,7 @@ exposes `test`, `test:coverage`, `test:e2e` only; the DB suite is
 `mms-dry.mdc:37`: "Named exports only; **subpath imports banned**."
 `mms-structure-naming.mdc:15`: "Consumers import `@mms/shared` **or the declared subpaths**
 (`tenantUtils`, `translations/{en,ar,ur,fa}`) only."
-Reality: `packages/shared/package.json` exports exactly those 5 subpaths, and
+Reality: `packages/contracts/package.json` exports exactly those 5 subpaths, and
 `apps/frontend/src/App.tsx:2`, `main.tsx:6`, `TenantContext.tsx:7`, `tenantConfig.ts:8` import
 `@mms/shared/tenantUtils`.
 
@@ -183,7 +183,7 @@ conflicts surfaced on restore (`mapRestoreError`)".
 `mms-api-interface.mdc:27` is presented as the classification list but lacks
 `session_revoked` (`mms-auth-security.mdc:16`) and the module-denial codes
 `MODULE_NOT_GRANTED` / `MODULE_DISABLED` / `PERMISSION_DENIED` / `MODULE_ACCESS_UNAVAILABLE`
-(`mms-auth-security.mdc:28`, real in `packages/shared/src/settings/moduleAccessPolicy.ts:31-34`).
+(`mms-auth-security.mdc:28`, real in `packages/contracts/src/settings/moduleAccessPolicy.ts:31-34`).
 Clients key on `type`/`code`, so an incomplete list is a contract hole.
 
 **Fix:** add "platform/auth-specific types are extensions of this list — see the owner rules",
@@ -205,7 +205,7 @@ advisory until a check exists.
 
 `mms-module-architecture.mdc:51` enumerates `workExcludesDeleted`, `reportsIncludeDeleted`,
 `captureDeletionReason`, `retentionDays`. Manifests also define `exportsIncludeDeleted`
-(e.g. `packages/shared/src/attendance/attendanceModuleManifest.ts:127`), which
+(e.g. `packages/contracts/src/attendance/attendanceModuleManifest.ts:127`), which
 `mms-reports.mdc:39` relies on. The "manifest contract" is therefore under-specified relative to
 the schema.
 
@@ -216,7 +216,7 @@ the schema.
 `mms-data-layer.mdc:13` mandates "`tenantId: uuid("tenant_id")` **or** `workspaceSubdomain`";
 `mms-performance.mdc:14` says compound indexes "must prefix `tenant_id`"; `mms-data-layer.mdc:55`
 tiers prefixes `workspaceSubdomain`, and every finance table
-(`apps/backend/src/db/schema/finance.ts:19-40`) uses `workspace_subdomain`. An agent adding an
+(`packages/db/src/schema/finance.ts:19-40`) uses `workspace_subdomain`. An agent adding an
 index from the performance rule would key on a column that usually does not exist.
 
 **Fix:** "prefix the tenant column this table uses (`workspace_subdomain`, or `tenant_id` on the
@@ -468,7 +468,7 @@ bash .agent/scripts/sync-all.sh --dry-run
 # glob liveness: expand each frontmatter `globs:` entry against `git ls-files`
 # body parity: strip frontmatter, diff .cursor/.agent/.claude per rule
 grep -rn "randomUUIDv7" --include=*.ts apps packages        # 0 hits
-grep -rn "thresholds" -A6 apps/*/vitest.config.ts packages/shared/vitest.config.ts
+grep -rn "thresholds" -A6 apps/*/vitest.config.ts packages/contracts/vitest.config.ts
 grep -n "catalog:" -A12 pnpm-workspace.yaml
 grep -rn "AsyncLocalStorage\|AsyncContextFrame" --include=*.ts apps/backend/src/lib | head
 grep -rn "opentelemetry" package.json apps/*/package.json   # 0 hits

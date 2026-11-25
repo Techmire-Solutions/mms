@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
-import type { DocumentTemplate } from "@mms/shared";
+import type { DocumentTemplate } from "@mms/contracts";
 import { TermReportCardModal } from "./TermReportCardModal";
 import type { StudentExamPaper } from "../lib/studentExamPapers";
 import { EXAMINATION_TEMPLATE_STORAGE_KEY } from "../lib/examinationTemplateData";
@@ -31,7 +31,7 @@ vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   deleteDocumentTemplateServer: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({ children, footer }: { children?: React.ReactNode; footer?: React.ReactNode }) => (
     <div data-testid="modal">
       {children}

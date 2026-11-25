@@ -1,5 +1,5 @@
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
-import type { SessionsListPageResult } from "@mms/shared";
+import type { SessionsListPageResult } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import type { Session } from "@/lib/data/sessionsData";
 import { SessionsListFilters } from "@/tenant/features/sessions/components/SessionsListFilters";

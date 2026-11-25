@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { QUESTION_BANK_MODULE_MANIFEST, buildQuestionBankWorkColumnRegistry } from "@mms/shared";
+import { QUESTION_BANK_MODULE_MANIFEST, buildQuestionBankWorkColumnRegistry } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

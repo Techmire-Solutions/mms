@@ -5,7 +5,7 @@ import {
   ATTENDANCE_MODULE_MANIFEST,
   isQueryFlagTrue,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../../lib/contractRouterTypes.js";

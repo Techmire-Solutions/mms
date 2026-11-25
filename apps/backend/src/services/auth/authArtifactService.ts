@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { and, eq, lt } from "drizzle-orm";
-import { authArtifacts } from "../../db/schema.js";
-import { activeDb } from "../../db/dbConnection.js";
+import { authArtifacts } from "@mms/db/schema";
+import { activeDb } from "@mms/db/client";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 
 export type AuthArtifactKind =

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { accountantToken, adminToken, auditorToken, teacherToken } from "./helpers/tokens.js";
 import { getRequestTenant } from "../lib/tenantContext.js";
-import { normalizeObligationsModulePreferences } from "@mms/shared";
+import { normalizeObligationsModulePreferences } from "@mms/contracts";
 
 /**
  * HTTP coverage for the catalogue and preferences routes.

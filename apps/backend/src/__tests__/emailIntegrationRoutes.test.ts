@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { adminToken, viewerToken } from "./helpers/tokens.js";
-import { DEFAULT_EMAIL_INTEGRATION } from "@mms/shared";
+import { DEFAULT_EMAIL_INTEGRATION } from "@mms/contracts";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
@@ -55,6 +55,7 @@ vi.mock("../services/email/emailService.js", () => ({
 
 vi.mock("../services/globalSettingsService.js", () => ({
   loadGlobalSettings: vi.fn().mockResolvedValue({ emailNotifications: true }),
+  maskGlobalSettingsForClient: vi.fn((settings) => settings),
 }));
 
 describe("emailRoutes", () => {

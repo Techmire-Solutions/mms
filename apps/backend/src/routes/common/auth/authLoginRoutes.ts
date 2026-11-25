@@ -20,7 +20,7 @@ import {
   loginBodySchema,
   type TenantLoginResponse,
   type TenantAuthError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { sendNotFound } from "../../../lib/httpErrors.js";
 import { insertPlatformActivityLog } from "../../../platform/use-cases/platformUseCases.js";

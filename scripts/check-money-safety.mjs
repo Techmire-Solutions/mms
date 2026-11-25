@@ -12,13 +12,15 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { assertScanDirs, fromRoot } from "./lib/repo-paths.mjs";
 
 const ROOT = process.cwd();
 const SCAN_DIRS = [
-  "packages/shared/src/finance",
-  "packages/shared/src/money",
+  "packages/contracts/src/finance",
+  "packages/contracts/src/money",
   "apps/backend/src/finance",
   "apps/backend/src/accounting",
+  "packages/modules/accounting/src/backend",
   "apps/backend/src/db/repositories",
   "apps/frontend/src/lib/data",
   // The template/receipt renderers format money for print; they were outside every scan root
@@ -26,8 +28,16 @@ const SCAN_DIRS = [
   "apps/frontend/src/lib",
   "apps/frontend/src/tenant/features/finance",
   "apps/frontend/src/tenant/features/accounting",
+  "packages/modules/accounting/src/frontend",
   "apps/frontend/src/tenant/features/obligations",
 ];
+// Fail closed: money-safety must cover every finance surface, so an empty scan
+// root is a gate bug (docs/monorepo-migration-plan.md §2.7).
+assertScanDirs(
+  SCAN_DIRS.map((dir) => fromRoot(dir)),
+  "money safety",
+);
+
 const SOURCE_EXT = /\.(ts|tsx)$/;
 const SKIP = /(?:^|\/)(?:__tests__|dist|node_modules)\/|\.(?:test|spec)\.(?:ts|tsx)$/;
 
@@ -37,6 +47,21 @@ const ALLOW = [
     file: /^apps\/backend\/src\/db\/repositories\//,
     rule: "db-adapter",
     reason: "exact only for the 2-dp column precisions asserted by financeEnumParityDb",
+  },
+  {
+    // The same db adapters after the P5 move into their module package — the
+    // precision contract (financeEnumParityDb) is unchanged, only the path.
+    file: /^packages\/modules\/(?:accounting|finance|obligations)\/src\/backend\/repository\//,
+    rule: "db-adapter",
+    reason:
+      "moved db adapters — same 2-dp column precision contract as apps/backend/src/db/repositories",
+  },
+  {
+    // Forward-only data backfills: run once by a migration runner, never on a
+    // request path and not importable by runtime code.
+    file: /^packages\/modules\/(?:accounting|finance|obligations)\/src\/backend\/migrations\//,
+    rule: "one-time-migration",
+    reason: "one-time backfill migration; compares 2-dp trial balances, no runtime money path",
   },
   {
     file: /^apps\/frontend\/src\/tenant\/features\/finance\/lib\/paymentFormHelpers\.ts$/,
@@ -100,7 +125,8 @@ for (const scanDir of SCAN_DIRS) {
         numberMatch &&
         MONEY_ARG.test(numberArg) &&
         !NON_MONEY_ARG.test(numberArg) &&
-        !isAllowed(relative, "db-adapter")
+        !isAllowed(relative, "db-adapter") &&
+        !isAllowed(relative, "one-time-migration")
       ) {
         FINDINGS.push(`${where} Number() on a money value — convert via integer cents`);
       }

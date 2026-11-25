@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ModuleFieldDef, QuestionSourceBook } from "@mms/shared";
+import type { ModuleFieldDef, QuestionSourceBook } from "@mms/contracts";
 
 /**
  * Regression: the source-book save had no in-flight state and no error handling —

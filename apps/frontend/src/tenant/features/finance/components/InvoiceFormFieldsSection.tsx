@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { SectionCard } from "@/components/app/SectionCard";
 import { cn } from "@/lib/utils";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { FeeStructure } from "@mms/shared";
+import type { FeeStructure } from "@mms/contracts";
 import type { InvoiceDraft } from "@/tenant/features/finance/lib/invoiceFormDraft";
 import { RegistryPersonSelect } from "@/tenant/components/selectors/RegistryPersonSelect";
 import { InvoiceFormMetadataFields } from "@/tenant/features/finance/components/InvoiceFormMetadataFields";

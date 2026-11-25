@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import type { BackgroundJobRecord } from "@mms/shared";
-import { withTenant } from "../db/tenant-context.js";
-import { backgroundJobs } from "../db/schema.js";
+import type { BackgroundJobRecord } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
+import { backgroundJobs } from "@mms/db/schema";
 import { rowToJobRecord } from "./backgroundJobService.js";
 
 /** Patches a background-job row inside its tenant transaction. */

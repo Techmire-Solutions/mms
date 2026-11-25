@@ -21,7 +21,7 @@ import {
   type ExaminationsReportComparisonQuery,
   type ExaminationsReportAggregates,
   EMPTY_EXAMINATIONS_REPORT_AGGREGATES,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 const EMPTY_EXAMINATIONS_METRICS: ExaminationsCommandMetricsSnapshot = {
   total: 0,

@@ -1,16 +1,16 @@
 import { randomUUID } from "node:crypto";
-import type { Contact, User } from "@mms/shared";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
+import type { Contact, User } from "@mms/contracts";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
 import type { ApplicationJoinedRow } from "../repository/admissionsRepository.js";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
-import { upsertContact } from "../../contacts/use-cases/contactWriteUseCases.js";
+import { upsertContact } from "@mms/mod-contacts/backend/use-cases";
 import { createGuardianContact, guardianRelationships } from "./admissionsGuardianLink.js";
 import { createStudent } from "../../students/use-cases/studentWriteUseCases.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { ConflictError } from "../../lib/httpErrors.js";
-import { canTransitionApplication } from "@mms/shared";
+import { canTransitionApplication } from "@mms/contracts";
 import { bulkEnrollStudentsIntoClass } from "./enrollmentBulkEnroll.js";
 
 export interface ApproveOptions {

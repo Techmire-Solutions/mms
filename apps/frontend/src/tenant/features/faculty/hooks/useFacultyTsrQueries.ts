@@ -6,7 +6,7 @@ import {
   FACULTY_MODULE_MANIFEST,
   type FacultyQuickFilter,
   type FacultySortField,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract, tsrClient } from "@/lib/api";
 import { queryOptions } from "@tanstack/react-query";
 import { FACULTY_QUERY_KEY } from "@/tenant/features/faculty/hooks/facultyQueryKeys";

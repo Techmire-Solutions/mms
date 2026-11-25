@@ -9,7 +9,7 @@ the platform-console dashboard**.
 
 Scope: tenant dashboard (`apps/frontend/src/tenant/features/dashboard/**`, `apps/frontend/src/hooks/useDashboardConfig.ts`,
 `apps/frontend/src/lib/dashboard*`, `tenant/hooks/collections/dashboard.ts`, backend
-`routes/tenant/dashboard.ts` + its services/repositories/schema, `packages/shared/src/dashboard/**`,
+`routes/tenant/dashboard.ts` + its services/repositories/schema, `packages/contracts/src/dashboard/**`,
 `contracts/dashboard.contract.ts`) **plus** the platform dashboard (`apps/frontend/src/platform/**` dashboard
 components/hooks, `apps/backend/src/services/platform/**`, `routes/platform/**`, `workspacePresentationService.ts`),
 with the cross-cutting access files (`moduleRouteActionRules.ts`, `requireTenantModule.ts`, `moduleAccessPolicy.ts`,

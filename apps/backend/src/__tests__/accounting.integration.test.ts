@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { accountantToken, guardianToken } from "./helpers/tokens.js";
-import { accountingContract, type Account, type JournalEntry, type FiscalYear } from "@mms/shared";
+import {
+  accountingContract,
+  type Account,
+  type JournalEntry,
+  type FiscalYear,
+} from "@mms/contracts";
 
 /** Returns an ISO date string for N days before today (time-independent). */
 function daysAgo(n: number): string {
@@ -58,47 +63,58 @@ const mockLoadAccountingReportAggregates = vi.fn();
 const mockDeleteAccountById = vi.fn();
 const mockBulkSoftDeleteAccounts = vi.fn();
 
-vi.mock("../accounting/use-cases/accountingUseCases.js", () => ({
-  accountingUseCases: {
-    loadAccounts: (...args: unknown[]) => mockLoadAccounts(...args),
-    loadAccountsPage: (...args: unknown[]) => mockLoadAccountsPage(...args),
-    upsertAccounts: (...args: unknown[]) => mockUpsertAccounts(...args),
-    loadEntries: (...args: unknown[]) => mockLoadEntries(...args),
-    loadEntriesPage: (...args: unknown[]) => mockLoadEntriesPage(...args),
-    upsertEntries: (...args: unknown[]) => mockUpsertEntries(...args),
-    loadFiscalYears: (...args: unknown[]) => mockLoadFiscalYears(...args),
-    loadFiscalYearsPage: (...args: unknown[]) => mockLoadFiscalYearsPage(...args),
-    upsertFiscalYears: (...args: unknown[]) => mockUpsertFiscalYears(...args),
-    deleteJournalEntryById: (...args: unknown[]) => mockDeleteJournalEntryById(...args),
-    restoreJournalEntryById: (...args: unknown[]) => mockRestoreJournalEntryById(...args),
-    bulkSoftDeleteJournalEntries: (...args: unknown[]) => mockBulkSoftDeleteJournalEntries(...args),
-    bulkRestoreJournalEntries: (...args: unknown[]) => mockBulkRestoreJournalEntries(...args),
-    loadAccountingCommandMetrics: (...args: unknown[]) => mockLoadAccountingCommandMetrics(...args),
-    loadAccountingReportAggregates: (...args: unknown[]) =>
-      mockLoadAccountingReportAggregates(...args),
-    createJournalEntry: vi.fn(),
-    updateJournalEntryById: vi.fn(),
-    deleteAccountById: (...args: unknown[]) => mockDeleteAccountById(...args),
-    restoreAccountById: vi.fn(),
-    bulkSoftDeleteAccounts: (...args: unknown[]) => mockBulkSoftDeleteAccounts(...args),
-    bulkRestoreAccounts: vi.fn(),
-    replaceAccounts: vi.fn(),
-    replaceEntries: vi.fn(),
-    replaceFiscalYears: vi.fn(),
-  },
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingUseCases.js",
+  () => ({
+    accountingUseCases: {
+      loadAccounts: (...args: unknown[]) => mockLoadAccounts(...args),
+      loadAccountsPage: (...args: unknown[]) => mockLoadAccountsPage(...args),
+      upsertAccounts: (...args: unknown[]) => mockUpsertAccounts(...args),
+      loadEntries: (...args: unknown[]) => mockLoadEntries(...args),
+      loadEntriesPage: (...args: unknown[]) => mockLoadEntriesPage(...args),
+      upsertEntries: (...args: unknown[]) => mockUpsertEntries(...args),
+      loadFiscalYears: (...args: unknown[]) => mockLoadFiscalYears(...args),
+      loadFiscalYearsPage: (...args: unknown[]) => mockLoadFiscalYearsPage(...args),
+      upsertFiscalYears: (...args: unknown[]) => mockUpsertFiscalYears(...args),
+      deleteJournalEntryById: (...args: unknown[]) => mockDeleteJournalEntryById(...args),
+      restoreJournalEntryById: (...args: unknown[]) => mockRestoreJournalEntryById(...args),
+      bulkSoftDeleteJournalEntries: (...args: unknown[]) =>
+        mockBulkSoftDeleteJournalEntries(...args),
+      bulkRestoreJournalEntries: (...args: unknown[]) => mockBulkRestoreJournalEntries(...args),
+      loadAccountingCommandMetrics: (...args: unknown[]) =>
+        mockLoadAccountingCommandMetrics(...args),
+      loadAccountingReportAggregates: (...args: unknown[]) =>
+        mockLoadAccountingReportAggregates(...args),
+      createJournalEntry: vi.fn(),
+      updateJournalEntryById: vi.fn(),
+      deleteAccountById: (...args: unknown[]) => mockDeleteAccountById(...args),
+      restoreAccountById: vi.fn(),
+      bulkSoftDeleteAccounts: (...args: unknown[]) => mockBulkSoftDeleteAccounts(...args),
+      bulkRestoreAccounts: vi.fn(),
+      replaceAccounts: vi.fn(),
+      replaceEntries: vi.fn(),
+      replaceFiscalYears: vi.fn(),
+    },
+  }),
+);
 
 const mockAssertEntriesPostable = vi.hoisted(() => vi.fn());
 
-vi.mock("../accounting/use-cases/accountingPostingGuard.js", () => ({
-  assertEntriesPostable: (...args: unknown[]) => mockAssertEntriesPostable(...args),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingPostingGuard.js",
+  () => ({
+    assertEntriesPostable: (...args: unknown[]) => mockAssertEntriesPostable(...args),
+  }),
+);
 
 const mockSeedDefaultChart = vi.fn();
 
-vi.mock("../accounting/use-cases/seedDefaultChartOfAccounts.js", () => ({
-  seedDefaultChartOfAccountsUseCase: (...args: unknown[]) => mockSeedDefaultChart(...args),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/seedDefaultChartOfAccounts.js",
+  () => ({
+    seedDefaultChartOfAccountsUseCase: (...args: unknown[]) => mockSeedDefaultChart(...args),
+  }),
+);
 
 const mockGetUserColumnPreferencesForModule = vi.fn();
 const mockSetUserColumnPreferencesForModule = vi.fn();

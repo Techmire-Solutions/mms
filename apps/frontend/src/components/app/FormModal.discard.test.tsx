@@ -6,7 +6,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     title,
     children,
@@ -26,12 +26,12 @@ vi.mock("@/components/app/Modal", () => ({
   ),
 }));
 
-vi.mock("@/components/app/ConfirmAlertDialog", () => ({
+vi.mock("@mms/fe-core/components/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({ open, title }: { open: boolean; title: string }) =>
     open ? <div data-testid="discard-dialog">{title}</div> : null,
 }));
 
-vi.mock("@/components/app/useFormModalLayout", () => ({
+vi.mock("@mms/fe-core/components/useFormModalLayout", () => ({
   useFormModalLayout: () => ({
     panelClassName: undefined,
     effectiveSize: "md",

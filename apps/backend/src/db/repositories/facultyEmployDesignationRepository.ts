@@ -8,9 +8,9 @@ import {
   DEFAULT_FACULTY_PROFILE_STATUS,
   isFacultyProfileStatus,
   type FacultyMember,
-} from "@mms/shared";
-import { facultyEmployDesignations } from "../schema.js";
-import type { AppDb } from "../tenant-context.js";
+} from "@mms/contracts";
+import { facultyEmployDesignations } from "@mms/db/schema";
+import type { AppDb } from "@mms/db/context";
 import { auditEmploymentEntityUpdate } from "./facultyEmploymentEntityAudit.js";
 
 export {

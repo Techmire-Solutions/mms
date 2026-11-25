@@ -4,7 +4,7 @@ import {
   type SessionExportColumn,
   type SessionsListQuery,
   type SessionsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { startServerSessionsCsvExport } from "@/lib/backgroundJobs/startServerSessionsCsvExport";
 import { useModuleServerCsvExportActions } from "@/lib/backgroundJobs/useModuleServerCsvExportActions";
 import type { SessionSortField } from "@/tenant/features/sessions/lib/sessionPageTypes";

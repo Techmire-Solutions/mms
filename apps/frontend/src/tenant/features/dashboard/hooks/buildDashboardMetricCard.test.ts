@@ -9,7 +9,7 @@ import type {
   FinanceCommandMetricsSnapshot,
   SessionsCommandMetricsSnapshot,
   StudentsCommandMetricsSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { queryClientInstance } from "@/lib/queryClient";
 import { STUDENTS_WIDGET_AGGREGATES_QUERY_KEY } from "@/tenant/hooks/collections/students";
 

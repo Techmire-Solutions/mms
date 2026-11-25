@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { Receipt } from "lucide-react";
-import { OBLIGATIONS_MODULE_MANIFEST } from "@mms/shared";
+import { OBLIGATIONS_MODULE_MANIFEST } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 
 export interface ObligationsBulkActionBarProps {

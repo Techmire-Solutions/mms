@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { VoucherNumbering, VoucherNumberingUpdate } from "@mms/shared";
+import type { VoucherNumbering, VoucherNumberingUpdate } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 

@@ -3,7 +3,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { notify } from "@/lib/notify";
 import { type Exam } from "@/lib/data/examinationData";
-import { toTitleCase } from "@mms/shared";
+import { toTitleCase } from "@mms/contracts";
 import { EXAMINATION_FORM_EMPTY } from "../lib/examinationFormConstants";
 import { examinationClassOptions } from "../lib/examinationClassOptions";
 import {

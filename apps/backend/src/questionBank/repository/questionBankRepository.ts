@@ -9,7 +9,7 @@ import type {
   QuestionBankReportQuery,
   WidgetQuery,
   WidgetAggregateResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * Sole storage gateway for the question bank module (questions, tests, results).
@@ -73,7 +73,7 @@ export interface QuestionBankRepository {
     tenant: string,
     change: {
       id: string;
-      to: import("@mms/shared").QuestionStatus;
+      to: import("@mms/contracts").QuestionStatus;
       actorId: string;
       reason?: string | null;
     },
@@ -86,11 +86,11 @@ export interface QuestionBankRepository {
     tenant: string,
     input: {
       testId: string;
-      blueprint: import("@mms/shared").PaperBlueprint;
+      blueprint: import("@mms/contracts").PaperBlueprint;
       actorId?: string | null;
     },
   ): Promise<{
-    result: import("@mms/shared").BlueprintResult;
+    result: import("@mms/contracts").BlueprintResult;
     questionIds: string[];
   }>;
   findSimilarQuestions?(
@@ -110,7 +110,7 @@ export interface QuestionBankRepository {
       url: string;
       actorId?: string | null;
     },
-  ): Promise<import("@mms/shared").QuestionAttachment>;
+  ): Promise<import("@mms/contracts").QuestionAttachment>;
   removeQuestionAttachment?(
     tenant: string,
     input: { questionId: string; attachmentId: string; actorId?: string | null },

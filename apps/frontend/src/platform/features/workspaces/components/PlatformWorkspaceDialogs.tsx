@@ -12,7 +12,7 @@ import { useRenameWorkspace } from "@/platform/features/workspaces/hooks/usePlat
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import type { useWorkspaceDeleteState } from "@/platform/features/workspaces/components/useWorkspaceDeleteState";
 import type { usePlatformWorkspaceModalState } from "@/platform/features/workspaces/components/usePlatformWorkspaceModalState";
 

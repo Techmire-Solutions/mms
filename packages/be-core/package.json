@@ -1,0 +1,180 @@
+{
+  "name": "@mms/be-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MMS backend kernel: auth/session guards, RBAC, logger/telemetry, Redis/BullMQ, realtime emitters and transport adapters. Imports only @mms/contracts and @mms/db.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./auth": {
+      "import": "./dist/auth/index.js",
+      "types": "./dist/auth/index.d.ts"
+    },
+    "./rbac": {
+      "import": "./dist/rbac/index.js",
+      "types": "./dist/rbac/index.d.ts"
+    },
+    "./logger": {
+      "import": "./dist/logger/index.js",
+      "types": "./dist/logger/index.d.ts"
+    },
+    "./telemetry": {
+      "import": "./dist/telemetry/index.js",
+      "types": "./dist/telemetry/index.d.ts"
+    },
+    "./http": {
+      "import": "./dist/http/index.js",
+      "types": "./dist/http/index.d.ts"
+    },
+    "./redis": {
+      "import": "./dist/redis/index.js",
+      "types": "./dist/redis/index.d.ts"
+    },
+    "./queues": {
+      "import": "./dist/queues/index.js",
+      "types": "./dist/queues/index.d.ts"
+    },
+    "./realtime": {
+      "import": "./dist/realtime/index.js",
+      "types": "./dist/realtime/index.d.ts"
+    },
+    "./transports": {
+      "import": "./dist/transports/index.js",
+      "types": "./dist/transports/index.d.ts"
+    },
+    "./testing": {
+      "import": "./dist/testing/index.js",
+      "types": "./dist/testing/index.d.ts"
+    },
+    "./package.json": "./package.json",
+    "./telemetry/plugin": {
+      "import": "./dist/telemetry/plugin.js",
+      "types": "./dist/telemetry/plugin.d.ts"
+    },
+    "./audit": {
+      "import": "./dist/audit/index.js",
+      "types": "./dist/audit/index.d.ts"
+    },
+    "./audit/auditState": {
+      "import": "./dist/audit/auditState.js",
+      "types": "./dist/audit/auditState.d.ts"
+    },
+    "./http/errors": {
+      "import": "./dist/http/errors/index.js",
+      "types": "./dist/http/errors/index.d.ts"
+    },
+    "./data": {
+      "import": "./dist/data/index.js",
+      "types": "./dist/data/index.d.ts"
+    },
+    "./http/routes": {
+      "import": "./dist/http/routes/index.js",
+      "types": "./dist/http/routes/index.d.ts"
+    },
+    "./http/crud": {
+      "import": "./dist/http/crud/index.js",
+      "types": "./dist/http/crud/index.d.ts"
+    },
+    "./jobs/exports": {
+      "import": "./dist/jobs/exports/index.js",
+      "types": "./dist/jobs/exports/index.d.ts"
+    },
+    "./cache": {
+      "import": "./dist/cache/index.js",
+      "types": "./dist/cache/index.d.ts"
+    },
+    "./cache/multiTierCache": {
+      "import": "./dist/cache/multiTierCache.js",
+      "types": "./dist/cache/multiTierCache.d.ts"
+    },
+    "./cache/cacheInvalidation": {
+      "import": "./dist/cache/cacheInvalidation.js",
+      "types": "./dist/cache/cacheInvalidation.d.ts"
+    },
+    "./data/outbox": {
+      "import": "./dist/data/outboxEventService.js",
+      "types": "./dist/data/outboxEventService.d.ts"
+    },
+    "./data/saved-reports": {
+      "import": "./dist/data/savedReportsRepository.js",
+      "types": "./dist/data/savedReportsRepository.d.ts"
+    },
+    "./data/saved-reports-admin": {
+      "import": "./dist/data/savedReportsAdminRepository.js",
+      "types": "./dist/data/savedReportsAdminRepository.d.ts"
+    },
+    "./data/slugify-lookup-label": {
+      "import": "./dist/data/slugifyLookupLabel.js",
+      "types": "./dist/data/slugifyLookupLabel.d.ts"
+    },
+    "./data/module-preferences": {
+      "import": "./dist/data/createModulePreferencesService.js",
+      "types": "./dist/data/createModulePreferencesService.d.ts"
+    },
+    "./data/module-field-config": {
+      "import": "./dist/data/createModuleFieldConfigService.js",
+      "types": "./dist/data/createModuleFieldConfigService.d.ts"
+    },
+    "./data/module-string-lookups": {
+      "import": "./dist/data/createModuleStringListLookupsService.js",
+      "types": "./dist/data/createModuleStringListLookupsService.d.ts"
+    },
+    "./audit/collection-audit": {
+      "import": "./dist/audit/collectionAuditInTx.js",
+      "types": "./dist/audit/collectionAuditInTx.d.ts"
+    },
+    "./audit/forensic-snapshot": {
+      "import": "./dist/audit/forensicSnapshotService.js",
+      "types": "./dist/audit/forensicSnapshotService.d.ts"
+    },
+    "./db-sync": {
+      "import": "./dist/db-sync/index.js",
+      "types": "./dist/db-sync/index.d.ts"
+    },
+    "./db-sync/*": {
+      "import": "./dist/db-sync/*.js",
+      "types": "./dist/db-sync/*.d.ts"
+    },
+    "./audit/auditTrailService": {
+      "import": "./dist/audit/auditTrailService.js",
+      "types": "./dist/audit/auditTrailService.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "node -r ../../scripts/eslint-ts-compat.cjs node_modules/eslint/bin/eslint.js --cache --cache-strategy content --cache-location node_modules/.cache/eslint/ . --quiet",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mms/contracts": "workspace:*",
+    "@mms/db": "workspace:*",
+    "@ts-rest/core": "^3.52.1",
+    "@ts-rest/fastify": "^3.52.1",
+    "bullmq": "^6.7.8",
+    "drizzle-orm": "catalog:",
+    "exceljs": "^4.4.0",
+    "ioredis": "^6.1.0",
+    "lru-cache": "^11.5.3",
+    "nodemailer": "^10.6.1",
+    "pino": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "fastify": "^5.12.8"
+  },
+  "devDependencies": {
+    "@mms/eslint-config": "workspace:*",
+    "@types/node": "^26.6.6",
+    "@types/nodemailer": "^8.0.2",
+    "eslint": "^10.15.0",
+    "fastify": "catalog:",
+    "typescript": "~7.0.2",
+    "vitest": "5.1.0"
+  }
+}

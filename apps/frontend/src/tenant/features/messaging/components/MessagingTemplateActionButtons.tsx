@@ -1,6 +1,6 @@
 import React from "react";
 import { Edit3, Files, Trash2 } from "lucide-react";
-import type { MessageTemplate } from "@mms/shared";
+import type { MessageTemplate } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { CopyBtn } from "@/components/app/CopyButton";
 import { useTranslation } from "@/hooks/useTranslation";

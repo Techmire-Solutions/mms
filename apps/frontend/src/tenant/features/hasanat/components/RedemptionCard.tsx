@@ -1,7 +1,7 @@
 import React from "react";
 import { Star } from "lucide-react";
 import { m, type HTMLMotionProps } from "framer-motion";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import type { Redemption } from "@/lib/data/hasanatData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";

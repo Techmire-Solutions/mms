@@ -1,4 +1,4 @@
-import { getVisibleWorkColumns, type ModuleColumnRegistryEntry } from "@mms/shared";
+import { getVisibleWorkColumns, type ModuleColumnRegistryEntry } from "@mms/contracts";
 
 /** Card-face Work columns for Sessions (rendered outside the metadata grid). */
 const SESSION_CARD_FACE_COLUMN_IDS = new Set(["name"]);

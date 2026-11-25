@@ -96,7 +96,7 @@ propagates transport failures.
 **Evidence.** `FacultyFiltersMenuPanel.tsx:85-92,146-153` passed the neutral option's raw `"all"` to the
 setter (department/designation/supervisor mapped it inline). `buildFacultyDirectoryQuery` only dropped
 falsy values (`facultyQueryShared.ts:43-56`), and the shared schema has no `all` normalisation
-(`packages/shared/src/faculty/facultyListQuery.ts:71-81`), so the request carried `gender=all` /
+(`packages/contracts/src/faculty/facultyListQuery.ts:71-81`), so the request carried `gender=all` /
 `specialization=all` and the SQL equality filter returned zero rows while the badge claimed one active
 filter.
 
@@ -125,7 +125,7 @@ Only an empty visible set still yields `""`.
 **Evidence.** `lib/facultyFormSavePayload.ts:15-32` omitted `employmentContractType`, so
 `buildFacultySavePayload` dropped it while `FacultyEmploymentSection.tsx:123-128` marked the form dirty and the
 hero rendered the stored value. The wire schema accepts the key
-(`packages/shared/src/faculty/facultyModuleManifest.ts:108`) and the server persists unknown keys in
+(`packages/contracts/src/faculty/facultyModuleManifest.ts:108`) and the server persists unknown keys in
 `faculty.custom_data` (`apps/backend/src/db/repositories/facultyRepositoryColumns.ts:41-46`), so the
 frontend allowlist was the only gap.
 
@@ -283,7 +283,7 @@ Source: `hooks/useFacultyPageActions.ts`, `hooks/useFacultyCrudNotify.ts`, `hook
 `components/FacultyUserAccountSection.tsx`, `components/FacultyDetailAssignmentsSection.tsx`,
 `components/FacultyFiltersMenuPanel.tsx`, `components/FacultyCommandMetrics.tsx`,
 `components/FacultyPageView.tsx`, `lib/apiContractError.ts`,
-`packages/shared/src/contracts/faculty.contract.ts`, `packages/shared/src/i18n/appTranslations{En,Ar,Ur,Fa}.ts`.
+`packages/contracts/src/contracts/faculty.contract.ts`, `packages/contracts/src/i18n/appTranslations{En,Ar,Ur,Fa}.ts`.
 
 Tests added: `hooks/useFacultyPageActions.test.tsx`, `hooks/facultySetupConfigApi.test.ts`,
 `lib/facultyFilterValues.test.ts`, `lib/facultyFormSaveFlow.test.ts`,

@@ -1,8 +1,8 @@
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { canWriteCollection, canReadCollection } from "../../../services/rbacService.js";
-import { STUDENTS_MODULE_MANIFEST, type User, studentOperationsContract } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, type User, studentOperationsContract } from "@mms/contracts";
 import {
   filterStudentIdsInAssignedSections,
   resolveStudentAccessScope,

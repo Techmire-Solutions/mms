@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
 import { toggleIdInSelection, togglePageIdsInSelection } from "@/lib/directorySelection";
-import { isStudentsQuickFilter, type StudentsQuickFilter } from "@mms/shared";
+import { isStudentsQuickFilter, type StudentsQuickFilter } from "@mms/contracts";
 import {
   STUDENTS_WORK_DRILLDOWN_EVENT,
   consumeStudentsWorkDrillDown,

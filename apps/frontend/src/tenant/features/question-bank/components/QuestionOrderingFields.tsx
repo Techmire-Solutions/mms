@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormCollectionShell, FormListFieldCard } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";
-import { joinQuestionCompoundAnswer, type AppTranslationKey } from "@mms/shared";
+import { joinQuestionCompoundAnswer, type AppTranslationKey } from "@mms/contracts";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useStableRowList } from "@/lib/forms/useStableRowList";
 

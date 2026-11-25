@@ -5,7 +5,7 @@
  * so the wrappers diff before/after and append one audit row per changed record.
  */
 
-import type { Denomination, StockBatch } from "@mms/shared";
+import type { Denomination, StockBatch } from "@mms/contracts";
 import { getRequestTenant, getRequestUserId } from "../../lib/tenantContext.js";
 import { auditSetupMutation } from "./hasanatAudit.js";
 import type { HasanatRepository } from "../repository/hasanatRepository.js";

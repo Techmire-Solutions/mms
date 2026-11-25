@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import type { Workspace } from "@mms/shared";
-import { activeDb } from "../dbConnection.js";
-import { workspaces as workspacesTable } from "../schema.js";
+import type { Workspace } from "@mms/contracts";
+import { activeDb } from "@mms/db/client";
+import { workspaces as workspacesTable } from "@mms/db/schema";
 import {
   clearWorkspaceCacheForTests,
   ALL_WORKSPACE_COLUMNS,

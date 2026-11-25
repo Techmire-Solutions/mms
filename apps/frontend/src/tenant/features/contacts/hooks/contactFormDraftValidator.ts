@@ -5,7 +5,7 @@ import {
   type Contact,
   type FieldDefinition,
   type ValidationError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 
 export interface ValidateContactDraftOptions {

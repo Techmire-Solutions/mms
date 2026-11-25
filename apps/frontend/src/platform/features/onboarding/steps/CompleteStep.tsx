@@ -6,8 +6,8 @@
 import React from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { ClipboardCheck } from "lucide-react";
-import { SYSTEM_MODULES } from "@mms/shared";
-import { Field, Input, SectionCard } from "@shared/ui";
+import { SYSTEM_MODULES } from "@mms/contracts";
+import { Field, Input, SectionCard } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { OnboardingData } from "@/platform/features/onboarding/onboardingWizardTypes";
 

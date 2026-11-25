@@ -1,5 +1,5 @@
 import { performance } from "node:perf_hooks";
-import { getPoolMetrics, getTenantDbMetrics, pingDatabase } from "../../db/dbConnection.js";
+import { getPoolMetrics, getTenantDbMetrics, pingDatabase } from "@mms/db/client";
 import {
   getPlatformMonthlyActivityTrend,
   type MonthlyPlatformActivityItem,

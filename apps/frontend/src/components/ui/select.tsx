@@ -10,4 +10,4 @@ export {
   SelectScrollUpButton,
   SelectScrollDownButton,
   isRadixSelectPortalTarget,
-} from "@shared/ui";
+} from "@mms/ui";

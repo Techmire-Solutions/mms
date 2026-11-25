@@ -1,5 +1,5 @@
 import React from "react";
-import type { Message } from "@mms/shared";
+import type { Message } from "@mms/contracts";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useReducedMotion } from "@/hooks/useReducedMotion";

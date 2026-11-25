@@ -5,8 +5,8 @@ import {
   formatAuditEventHashInput,
   GENESIS_AUDIT_HASH,
   AUDIT_RETENTION_FLOORS,
-} from "@mms/shared";
-import { recordModernAuditEvent, type DbOrTransaction } from "../services/auditTrailService.js";
+} from "@mms/contracts";
+import { recordModernAuditEvent, type DbOrTransaction } from "@mms/be-core/audit";
 import {
   evaluateAuditRetentionPolicy,
   purgeExpiredCryptoShreddingKeys,

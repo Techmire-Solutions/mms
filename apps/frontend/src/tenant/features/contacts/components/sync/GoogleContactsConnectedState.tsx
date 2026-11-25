@@ -5,7 +5,7 @@ import { FieldErrorMessage } from "@/components/app/FormField";
 import { FORM_ERROR_BOX } from "@/components/ui/formStyles";
 import { Alert } from "@/components/app/Alert";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { GoogleContactsSyncRunResult } from "@mms/shared";
+import type { GoogleContactsSyncRunResult } from "@mms/contracts";
 
 export interface GoogleContactsConnectedStateProps {
   canWrite: boolean;

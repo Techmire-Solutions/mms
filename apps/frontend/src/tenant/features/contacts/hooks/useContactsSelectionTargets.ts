@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { computeContactsSelectionTargets } from "@/tenant/features/contacts/hooks/contactsSelectionTargets";
 
 export function useContactsSelectionTargets({

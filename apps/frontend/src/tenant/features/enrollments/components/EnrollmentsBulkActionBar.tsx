@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { ClipboardList, XCircle } from "lucide-react";
-import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
+import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/contracts";
 import { bulkActionDockActionClassName } from "@/components/app/bulkActionDockStyles";
 import { Button } from "@/components/ui/button";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";

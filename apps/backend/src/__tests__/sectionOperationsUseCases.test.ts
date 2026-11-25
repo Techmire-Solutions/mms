@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { SessionSchema } from "@mms/shared";
+import { SessionSchema } from "@mms/contracts";
 import { sectionOperationsUseCases } from "../sessions/use-cases/sectionOperationsUseCases.js";
 
 const hooks = vi.hoisted(() => ({
@@ -13,17 +13,21 @@ const hooks = vi.hoisted(() => ({
   applySectionClose: vi.fn(),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn((_tenant: string, cb: (tx: unknown) => Promise<unknown>) => cb({})),
 }));
-vi.mock("../db/commitScope.js", () => ({
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+
   runAfterCommit: hooks.runAfterCommit,
 }));
 vi.mock("../lib/livePush.js", () => ({ broadcastCollection: hooks.broadcastCollection }));
 vi.mock("../lib/cache/index.js", () => ({
   invalidateMultiTierCache: hooks.invalidateMultiTierCache,
 }));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: hooks.recordModernAuditEvent,
 }));
 vi.mock("../sessions/use-cases/sessionLockGuard.js", () => ({

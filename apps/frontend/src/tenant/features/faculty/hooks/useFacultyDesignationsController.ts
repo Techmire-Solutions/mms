@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import type { FacultyDesignationDefinition, FacultyDesignationWrite } from "@mms/shared";
+import type { FacultyDesignationDefinition, FacultyDesignationWrite } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {

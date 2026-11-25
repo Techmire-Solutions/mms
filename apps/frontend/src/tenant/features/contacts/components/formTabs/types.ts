@@ -1,4 +1,4 @@
-import type { Contact, FieldDefinition } from "@mms/shared";
+import type { Contact, FieldDefinition } from "@mms/contracts";
 
 export type ContactSubListKey =
   | "phones"

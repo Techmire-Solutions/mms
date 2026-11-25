@@ -1,6 +1,6 @@
 import React from "react";
 import { Globe, Check, Type } from "lucide-react";
-import { Input, Label, RequiredMark, SectionCard } from "@shared/ui";
+import { Input, Label, RequiredMark, SectionCard } from "@mms/ui";
 import { FieldHint, NAME_MAX } from "@/components/branding/BrandingShared";
 import type { CreateMadrasaController } from "@/platform/features/onboarding/steps/useCreateMadrasaController";
 

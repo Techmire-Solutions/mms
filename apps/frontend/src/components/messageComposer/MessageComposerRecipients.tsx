@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import type { StandardMessagingRecipient } from "@mms/shared";
+import type { StandardMessagingRecipient } from "@mms/contracts";
 import { SearchBar } from "@/components/app/SearchBar";
 import { SectionLabel } from "@/components/app/SectionLabel";
 import { CompactSegmentedControl } from "@/components/app/CompactSegmentedControl";

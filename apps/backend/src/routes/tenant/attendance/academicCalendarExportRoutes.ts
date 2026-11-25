@@ -4,7 +4,7 @@ import {
   ATTENDANCE_MODULE_MANIFEST,
   academicCalendarExportQuerySchema,
   buildTenantExportFilename,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { buildContentDisposition } from "../../../lib/contentDisposition.js";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { getWorkspaceTimezone } from "../../../lib/workspaceTimezone.js";

@@ -1,7 +1,7 @@
 import type React from "react";
 import { FileText, RefreshCw, Upload } from "lucide-react";
-import type { Contact } from "@mms/shared";
-import { getDisplayName, getPrimaryEmail, getPrimaryPhone } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
+import { getDisplayName, getPrimaryEmail, getPrimaryPhone } from "@mms/contracts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BiDiText } from "@/components/app/BiDiText";

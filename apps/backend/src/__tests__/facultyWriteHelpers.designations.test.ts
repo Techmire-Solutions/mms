@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { todayISO, type FacultyRecord } from "@mms/shared";
+import { todayISO, type FacultyRecord } from "@mms/contracts";
 
 const mocks = vi.hoisted(() => ({
   findPrimary: vi.fn(),

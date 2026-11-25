@@ -259,7 +259,7 @@ Source: `components/contactLink/ContactPickerMenu.tsx` ·
 `hooks/facultyPageOverlaysTypes.ts` · `hooks/useFacultyPageOverlayProps.ts` ·
 `lib/facultyOverlayPatch.ts` (new) · `FacultyCardHeader.tsx` · `FacultyDepartmentsTable.tsx` ·
 `FacultyDesignationsTable.tsx` · `FacultyIjazahSection.tsx` · `FacultyDetailIjazahSection.tsx` ·
-`packages/shared/src/i18n/appTranslations{En,Ar,Ur,Fa}.ts`.
+`packages/contracts/src/i18n/appTranslations{En,Ar,Ur,Fa}.ts`.
 
 Tests added/updated: `FacultyLeaveModal.test.tsx`, `ContactPickerMenu.test.tsx`,
 `FacultyFormContactSection.test.tsx` (new), `FacultyWorkloadPill.test.tsx`,

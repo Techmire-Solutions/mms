@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { activeDb } from "../dbConnection.js";
-import { workspaces as workspacesTable } from "../schema.js";
+import { activeDb } from "@mms/db/client";
+import { workspaces as workspacesTable } from "@mms/db/schema";
 
 export interface WorkspaceModuleAccessRow {
   grantedModules: Record<string, boolean> | null;

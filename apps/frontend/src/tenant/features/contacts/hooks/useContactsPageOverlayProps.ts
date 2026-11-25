@@ -1,4 +1,4 @@
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import { notify } from "@/lib/notify";

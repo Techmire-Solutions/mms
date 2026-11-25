@@ -4,7 +4,7 @@ import {
   normalizeSessionStatus,
   type Session,
   type SessionEditViolation,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { HttpDomainError, ValidationError } from "../../lib/httpErrors.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { sessionsAcademicRepository } from "../repository/sessionsAcademicRepositoryAdapter.js";

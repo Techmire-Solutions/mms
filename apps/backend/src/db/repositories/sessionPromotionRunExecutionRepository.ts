@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, lte, or } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
-import { sessionPromotionRunWarnings, sessionPromotionRuns } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { sessionPromotionRunWarnings, sessionPromotionRuns } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 
 /** Run phases a retried job uses to resume instead of duplicating structure/staff/calendar. */
 export interface PromotionRunPhases {

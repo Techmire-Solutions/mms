@@ -8,8 +8,8 @@ import {
   type PublicRegistrationView,
   type RegistrationApplicationStatus,
   type RegistrationSubmit,
-} from "@mms/shared";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
 import {
   fetchPublicBrandingForSubdomain,
@@ -19,7 +19,7 @@ import { ConflictError, HttpDomainError, NotFoundError } from "../../lib/httpErr
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { linkClasses, toPublicView } from "./registrationPublicView.js";
 import { approveApplications } from "./admissionsApprove.js";
 import { sendRegistrationAcknowledgement } from "./registrationAcknowledgement.js";

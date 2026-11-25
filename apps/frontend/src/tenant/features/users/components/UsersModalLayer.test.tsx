@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { UsersModalLayer, type UsersModalLayerProps } from "./UsersModalLayer";
-import { normalizeWorkspaceUser } from "@mms/shared";
+import { normalizeWorkspaceUser } from "@mms/contracts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

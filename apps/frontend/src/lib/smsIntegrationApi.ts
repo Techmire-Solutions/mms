@@ -1,4 +1,4 @@
-import type { SmsIntegrationConfig } from "@mms/shared";
+import type { SmsIntegrationConfig } from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 export async function fetchSmsIntegration(

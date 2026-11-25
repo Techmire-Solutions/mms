@@ -1,8 +1,8 @@
 import React from "react";
 import { SequenceNumberingCard } from "@/components/sequence-numbering";
-import { Button } from "@/components/ui/button";
-import { FieldErrorMessage } from "@/components/app/FormPrimitives";
-import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@mms/ui";
+import { FieldErrorMessage } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useVoucherNumberingSettings } from "../hooks/useVoucherNumberingSettings";
 
 export interface AccountingSettingsNumberingSectionProps {

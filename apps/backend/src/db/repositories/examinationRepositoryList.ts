@@ -22,9 +22,9 @@ import {
   EXAM_SORT_FIELDS as EXAM_SORT_FIELDS_SHARED,
   isExamStatus,
   type ExaminationsListPageResult,
-} from "@mms/shared";
-import { examResults, exams, examClasses, subjects } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { examResults, exams, examClasses, subjects } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { runListPage } from "./listPageHelper.js";
 import { examRowToRecord } from "./examinationRepository.js";
 import { examSubjectSql } from "./academicCatalogNameSql.js";

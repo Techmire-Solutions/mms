@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import type { WorkshopReportRow } from "@mms/shared";
+import type { WorkshopReportRow } from "@mms/contracts";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";

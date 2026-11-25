@@ -1,21 +1,21 @@
 import {
   translateApiMessage,
   translateValidationMessage,
-} from "@/lib/forms/translateValidationMessage";
+} from "@mms/fe-core/forms/translateValidationMessage";
 import { useCallback, useMemo, useState } from "react";
-import type { Account, JournalEntry, FiscalYear } from "@/lib/data/accountingData";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useAuth } from "@/lib/contexts/AuthContext";
+import type { Account, JournalEntry, FiscalYear } from "@mms/mod-accounting/frontend/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useAuth } from "@mms/fe-core/auth/AuthContext";
 import {
   isValidExchangeRate,
   journalEntryWriteSchema,
   resolveDefaultFiscalYear,
   todayISO,
-} from "@mms/shared";
-import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
-import { mapApiFormError } from "@/lib/forms/serverFormErrors";
-import { notify } from "@/lib/notify";
-import type { DraftForm, DraftLine } from "../lib/journalEntryFormTypes";
+} from "@mms/contracts";
+import { mapZodFormErrors } from "@mms/fe-core/forms/mapZodFormErrors";
+import { mapApiFormError } from "@mms/fe-core/forms/serverFormErrors";
+import { notify } from "@mms/fe-core/notify";
+import type { DraftForm, DraftLine } from "@mms/mod-accounting/frontend/tenant";
 import type { JournalEntrySave } from "../lib/journalEntriesTypes";
 import {
   calculateJournalEntryCompleteness,
@@ -23,19 +23,19 @@ import {
   isJournalRefUnique,
   validateJournalEntryForm,
   validateJournalPostingGuards,
-} from "../lib/journalEntryFormValidation";
+} from "@mms/mod-accounting/frontend/tenant";
 import {
   buildJournalEntryDraft,
   emptyJournalLine,
   serializeJournalDraft,
-} from "../lib/journalEntryDraft";
-import { buildJournalEntrySaveCandidate } from "../lib/journalEntrySaveCandidate";
-import { accountOptions } from "../lib/accountOptions";
+} from "@mms/mod-accounting/frontend/tenant";
+import { buildJournalEntrySaveCandidate } from "@mms/mod-accounting/frontend/tenant";
+import { accountOptions } from "@mms/mod-accounting/frontend/tenant";
 import { useJournalEntryCurrency } from "./useJournalEntryCurrency";
 import { usePostingPeriods } from "./useAccountingLedgerOps";
-import { useVoucherNumbering } from "./useVoucherNumbering";
-import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
-import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
+import { useVoucherNumbering } from "@/tenant/features/accounting/hooks/useVoucherNumbering";
+import { useSubmitGuard } from "@mms/fe-core/forms/useSubmitGuard";
+import { useDirtySnapshot } from "@mms/fe-core/forms/useDirtySnapshot";
 
 interface UseJournalEntryFormOptions {
   accounts: Account[];

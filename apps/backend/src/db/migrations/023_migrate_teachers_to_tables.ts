@@ -4,7 +4,7 @@ import {
   WORKSPACES_COLLECTION,
   type Workspace,
   type Faculty,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import { bulkSaveFaculty } from "../repositories/facultyRepository.js";
 

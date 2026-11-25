@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Mail, MessageCircle, MessageSquare } from "lucide-react";
-import { getActiveNotificationChannels } from "@mms/shared";
+import { getActiveNotificationChannels } from "@mms/contracts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";

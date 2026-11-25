@@ -2,7 +2,7 @@ import React from "react";
 import { MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { StatsSkeleton } from "@shared/ui";
+import { StatsSkeleton } from "@mms/ui";
 import { usePlatformMessagingMetrics } from "@/platform/features/messaging/hooks/usePlatformMessaging";
 
 interface MessagingMetrics {

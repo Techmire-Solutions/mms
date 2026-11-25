@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { Session } from "@mms/shared";
+import type { Session } from "@mms/contracts";
 import type {
   SessionReadRow,
   sessionFaculty,
@@ -13,8 +13,8 @@ import type {
   sessionClassRefreshments,
   scholarshipEligibilities,
   sessionClassScholarships,
-} from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+} from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 import { sessionRowToRecord } from "./sessionRepositoryMappers.js";
 import { enrollmentHoldsSeatSql } from "./enrollmentSeatSql.js";
 

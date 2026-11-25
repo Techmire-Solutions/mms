@@ -12,7 +12,7 @@
  * and the FirstRun gate stay explicit in `ApexRoutes.tsx` — they have bespoke
  * elements, not a loader.
  */
-import type { PlatformAdminPermissionKey } from "@mms/shared";
+import type { PlatformAdminPermissionKey } from "@mms/contracts";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface ApexConsoleEntry {

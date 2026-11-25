@@ -1,5 +1,5 @@
 import type React from "react";
-import { type Account } from "@mms/shared";
+import { type Account } from "@mms/contracts";
 import type { MoneySeparator } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { AccountingBankRecSection } from "./AccountingBankRecSection";
 

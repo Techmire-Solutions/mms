@@ -1,13 +1,5 @@
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import { AccountingSettingsNumberingSection } from "./AccountingSettingsNumberingSection";
-
-vi.mock("@/hooks/useTranslation", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
-
 vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
+  VOUCHER_NUMBERING_QUERY_KEY: ["accounting", "voucher-numbering"],
   useVoucherNumbering: () => ({
     data: {
       autoGenerate: true,
@@ -23,6 +15,37 @@ vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
     },
   }),
   useSaveVoucherNumbering: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock("@mms/mod-accounting/frontend/tenant", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-accounting/frontend/tenant")>();
+  return {
+    ...actual,
+    useVoucherNumbering: () => ({
+      data: {
+        autoGenerate: true,
+        prefix: "JV",
+        delimiter: "/",
+        yearFormat: "NONE",
+        sequenceDigits: 4,
+        startingSequence: 1,
+        rolloverPolicy: "never",
+        currentSequence: 41,
+        periodYear: 0,
+        nextVoucherNumber: "JV/0042",
+      },
+    }),
+    useSaveVoucherNumbering: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  };
+});
+
+import React from "react";
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { AccountingSettingsNumberingSection } from "./AccountingSettingsNumberingSection";
+
+vi.mock("@mms/fe-core/i18n", () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
 }));
 
 describe("AccountingSettingsNumberingSection", () => {

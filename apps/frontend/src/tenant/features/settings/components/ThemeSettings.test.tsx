@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_BRANDING_SETTINGS, mergeBrandingSettings } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, mergeBrandingSettings } from "@mms/contracts";
 import ThemeSettings from "./ThemeSettings";
 
 let mockCanWrite = true;

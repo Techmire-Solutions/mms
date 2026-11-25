@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toMessagingRecipient, type Faculty } from "@mms/shared";
+import { toMessagingRecipient, type Faculty } from "@mms/contracts";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import type { FacultyIoEntity } from "@/tenant/features/faculty/facultyPageWorkSubTabs";
 

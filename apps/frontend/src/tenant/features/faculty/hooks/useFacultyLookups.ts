@@ -3,7 +3,7 @@ import {
   emptyFacultyLookupsMap,
   type FacultyLookupKind,
   type FacultyLookupsMap,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { createModuleLookupsHooks } from "@/lib/query/createModuleLookupsHooks";
 

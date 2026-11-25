@@ -9,7 +9,7 @@ import {
   normalizeTimezone,
   type AppLanguageCode,
   type DateFormatId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSettingsGlobalDraft } from "@/lib/contexts/SettingsGlobalDraftContext";
 import { FormSelect } from "@/components/app/FormSelect";

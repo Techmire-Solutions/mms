@@ -5,7 +5,7 @@ import {
   normalizeExaminationsSettings,
   type ExaminationsModulePreferences,
   type ExaminationsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchExaminationPreferences,

@@ -1,4 +1,4 @@
-import type { InvoiceCreateInput, PaymentCreateInput } from "@mms/shared";
+import type { InvoiceCreateInput, PaymentCreateInput } from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

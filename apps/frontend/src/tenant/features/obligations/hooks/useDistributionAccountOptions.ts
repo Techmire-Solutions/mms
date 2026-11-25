@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Account } from "@mms/shared";
+import type { Account } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAccountingContractAccounts } from "@/tenant/hooks/collections/accounting";
 

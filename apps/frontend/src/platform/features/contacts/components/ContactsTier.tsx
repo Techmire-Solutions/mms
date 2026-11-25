@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { CardSkeleton } from "@shared/ui";
+import { CardSkeleton } from "@mms/ui";
 import { ContactsWorkTier } from "@/platform/features/contacts/components/ContactsWorkTier";
 import { ContactsReportsTier } from "@/platform/features/contacts/components/ContactsReportsTier";
 import { ContactsSetupTier } from "@/platform/features/contacts/components/ContactsSetupTier";

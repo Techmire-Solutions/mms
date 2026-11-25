@@ -1,4 +1,4 @@
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import type { FacultyPageOverlaysProps } from "@/tenant/features/faculty/hooks/facultyPageOverlaysTypes";
 import { patchViewFaculty } from "@/tenant/features/faculty/lib/facultyOverlayPatch";
 import type { useFacultyPageFormState } from "@/tenant/features/faculty/hooks/useFacultyPageFormState";

@@ -1,5 +1,5 @@
-import type { Session, FacultyMember } from "@mms/shared";
-import { DEFAULT_FACULTY_STATUS } from "@mms/shared";
+import type { Session, FacultyMember } from "@mms/contracts";
+import { DEFAULT_FACULTY_STATUS } from "@mms/contracts";
 
 export interface FacultyAssignedClassItem {
   sessionId: string;

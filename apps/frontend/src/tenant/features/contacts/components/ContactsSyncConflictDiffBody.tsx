@@ -1,6 +1,6 @@
 import type React from "react";
 import { Loader2 } from "lucide-react";
-import type { Contact, SyncFieldPick } from "@mms/shared";
+import type { Contact, SyncFieldPick } from "@mms/contracts";
 import { resolveSyncFieldLabel } from "@/lib/contacts/contactI18n";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";

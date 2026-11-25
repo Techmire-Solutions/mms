@@ -44,14 +44,20 @@ const mockSaveFieldConfig = vi.hoisted(() => vi.fn());
 const mockGetPreferences = vi.hoisted(() => vi.fn());
 const mockSavePreferences = vi.hoisted(() => vi.fn());
 
-vi.mock("../services/accountingConfigService.js", () => ({
-  getAccountingFieldConfigService: mockGetFieldConfig,
-  updateAccountingFieldConfigService: mockSaveFieldConfig,
-}));
-vi.mock("../services/accountingPreferencesService.js", () => ({
-  getAccountingPreferencesService: mockGetPreferences,
-  updateAccountingPreferencesService: mockSavePreferences,
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/services/accountingConfigService.js",
+  () => ({
+    getAccountingFieldConfigService: mockGetFieldConfig,
+    updateAccountingFieldConfigService: mockSaveFieldConfig,
+  }),
+);
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/services/accountingPreferencesService.js",
+  () => ({
+    getAccountingPreferencesService: mockGetPreferences,
+    updateAccountingPreferencesService: mockSavePreferences,
+  }),
+);
 
 const fieldConfig = { referencePrefix: "ACC", codeLength: 4 };
 const preferences = { currency: "PKR", decimalPlaces: 2 };

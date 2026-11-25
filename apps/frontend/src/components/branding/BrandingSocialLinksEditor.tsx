@@ -5,7 +5,7 @@ import {
   BRANDING_SOCIAL_PLACEHOLDERS,
   type AppTranslationKey,
   type BrandingSocialLink,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -52,7 +52,9 @@ module.exports = {
         // Measured baseline: TBT ≈ 40–150ms.
         "total-blocking-time": ["error", { maxNumericValue: 300 }],
         // 610 KiB. Measured baseline: ≈ 605 KiB for the entry closure (incorporates platform 3-tier modules + i18n).
-        "resource-summary:script:size": ["error", { maxNumericValue: 624640 }],
+        // Migration (P5/P6) adds ≈ 9 KiB of shared module code to the closure;
+        // deliberate headroom to 625 KiB until the extraction settles.
+        "resource-summary:script:size": ["error", { maxNumericValue: 640000 }],
       },
     },
   },

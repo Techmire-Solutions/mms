@@ -6,7 +6,7 @@ import {
   type AppTranslationKey,
   type SmsIntegrationConfig,
   type SmsIntegrationValidationError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import type { ResolveActionError, ResolvedActionError, SmsIntegrationApi } from "./types";
@@ -44,7 +44,7 @@ export interface SmsIntegrationPanelHookOptions {
 
 /**
  * One-active-provider SMS setup panel state (SSOT) shared by the Tenant and
- * Platform consoles. Validation runs through the @mms/shared
+ * Platform consoles. Validation runs through the @mms/contracts
  * `validateSmsIntegrationConfig`; error codes map to `sms.*` keys.
  */
 export function useSmsIntegrationPanel(options: SmsIntegrationPanelHookOptions) {

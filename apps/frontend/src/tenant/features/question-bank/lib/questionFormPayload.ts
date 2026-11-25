@@ -3,7 +3,7 @@ import {
   joinQuestionCompoundAnswer,
   splitQuestionCompoundAnswer,
   type QuestionBookCitation,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { QuestionFormDraft } from "./questionFormTypes";
 
 function uniqueTrimmed(values: readonly string[]): string[] {

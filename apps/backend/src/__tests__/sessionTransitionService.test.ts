@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { SessionSchema, type Session } from "@mms/shared";
+import { SessionSchema, type Session } from "@mms/contracts";
 import { ConflictError, NotFoundError, ValidationError } from "../lib/httpErrors.js";
 import { transitionSession } from "../sessions/use-cases/sessionTransitionService.js";
 import { SessionTransitionBlockedError } from "../sessions/use-cases/sessionTransitionErrors.js";
@@ -17,10 +17,12 @@ import {
   completeLiveEnrollments,
   endLiveEnrollments,
 } from "../enrollments/use-cases/enrollmentEndUseCases.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { broadcastCollection } from "../lib/livePush.js";
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi.fn((_tenant: string, cb: (tx: unknown) => Promise<unknown>) => cb({})),
 }));
 vi.mock("../db/repositories/sessionTransitionRepository.js", () => ({
@@ -42,10 +44,13 @@ vi.mock("../enrollments/use-cases/enrollmentEndUseCases.js", () => ({
   completeLiveEnrollments: vi.fn(),
   SYSTEM_ACTOR: { userId: null, label: "System" },
 }));
-vi.mock("../services/auditTrailService.js", () => ({ recordModernAuditEvent: vi.fn() }));
+vi.mock("@mms/be-core/audit", () => ({ recordModernAuditEvent: vi.fn() }));
 vi.mock("../lib/cache/index.js", () => ({ invalidateMultiTierCache: vi.fn() }));
 vi.mock("../lib/livePush.js", () => ({ broadcastCollection: vi.fn() }));
-vi.mock("../db/commitScope.js", () => ({ runAfterCommit: (fn: () => unknown) => void fn() }));
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+  runAfterCommit: (fn: () => unknown) => void fn(),
+}));
 vi.mock("../sessions/use-cases/sessionLockGuard.js", () => ({
   workspaceToday: vi.fn().mockResolvedValue("2026-06-15"),
 }));

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Faculty, User } from "@mms/shared";
+import type { Faculty, User } from "@mms/contracts";
 import { createFacultyUseCases } from "../faculty/use-cases/facultyUseCases.js";
 import { SubordinateReassignmentError } from "../faculty/use-cases/facultySoftDeleteUseCases.js";
 import { handleSaveDesignation } from "../routes/tenant/faculty/facultyDesignationRouteHandlers.js";
@@ -26,7 +26,7 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
   emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
@@ -49,7 +49,7 @@ vi.mock("../db/repositories/facultyEmployDesignationRepository.js", () => ({
   upsertFacultyEmployDesignationTx: vi.fn().mockResolvedValue("faced-mock"),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => mockRecordModernAuditEvent(...args),
   mapActionStringToAuditType: () => "UPDATE",
 }));

@@ -5,7 +5,7 @@ import {
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   toSqlSearchPattern,
   type StudentsListQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   students,
   studentEnrolledSessions,
@@ -14,7 +14,7 @@ import {
   contactPhones,
   contactEmails,
   contactRelationships,
-} from "../schema.js";
+} from "@mms/db/schema";
 import { studentScopeExistsSql } from "./studentScopeSql.js";
 
 export { buildOrderBy } from "./studentRepositoryListSort.js";

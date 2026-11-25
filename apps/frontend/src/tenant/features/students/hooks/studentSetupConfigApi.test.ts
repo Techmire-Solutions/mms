@@ -5,7 +5,7 @@ import {
   setStudentFieldRequired,
   studentFieldConfigPutBodySchema,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import {
   fetchStudentFieldConfig,

@@ -1,9 +1,9 @@
 import { sql } from "drizzle-orm";
-import { FACULTY_DESIGNATION_HIERARCHY_MAX_DEPTH } from "@mms/shared";
-import type { TenantTransaction } from "../tenant-context.js";
+import { FACULTY_DESIGNATION_HIERARCHY_MAX_DEPTH } from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
 import { FacultyCatalogConflictError } from "./facultyDepartmentValidation.js";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
-import { ValidationError } from "../../lib/httpErrors.js";
+import { ValidationError } from "@mms/be-core/http/errors";
 
 type Executor = Pick<TenantTransaction, "execute">;
 

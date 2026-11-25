@@ -7,7 +7,12 @@
  * cached per tenant under the `rbac` domain and invalidated with the role
  * matrix, so role edits/removals apply on the next request.
  */
-import { isSystemRole, roleHasPermission, type Permission, type WorkspaceRole } from "@mms/shared";
+import {
+  isSystemRole,
+  roleHasPermission,
+  type Permission,
+  type WorkspaceRole,
+} from "@mms/contracts";
 import { getOrSetMultiTier } from "./cache/index.js";
 import { getTenantUsersSettings } from "../services/users/usersSettingsService.js";
 import { resolveCurrentTenantRole } from "./currentTenantRole.js";

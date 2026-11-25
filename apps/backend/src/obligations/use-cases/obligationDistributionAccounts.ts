@@ -3,7 +3,7 @@
  * @description Validates the ledger account mapped to each wakala distribution.
  */
 
-import type { ObligationDistribution } from "@mms/shared";
+import type { ObligationDistribution } from "@mms/contracts";
 import type { ObligationsRepository } from "../repository/obligationsRepository.js";
 
 /**

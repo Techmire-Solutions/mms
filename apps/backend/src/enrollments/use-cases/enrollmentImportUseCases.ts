@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { ImportBatchFn, ImportRowError } from "@mms/shared";
+import type { ImportBatchFn, ImportRowError } from "@mms/contracts";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";

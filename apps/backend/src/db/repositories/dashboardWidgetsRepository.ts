@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
-import { DASHBOARD_WIDGETS_MAX, type DashboardWidgetDto } from "@mms/shared";
-import { dashboardWidgets } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { DASHBOARD_WIDGETS_MAX, type DashboardWidgetDto } from "@mms/contracts";
+import { dashboardWidgets } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { toDto, toRestoredDto, toRow } from "./dashboardWidgetMappers.js";
 
 /** List all active dashboard widgets for a workspace, ordered by pin order. */

@@ -2,7 +2,7 @@ import type {
   StudentsCommandMetricsSnapshot,
   StudentsWidgetAggregateResult,
   StudentsWidgetQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import type { StudentsRepository } from "../repository/studentsRepository.js";
 import { studentsRepository } from "../repository/studentsRepositoryAdapter.js";

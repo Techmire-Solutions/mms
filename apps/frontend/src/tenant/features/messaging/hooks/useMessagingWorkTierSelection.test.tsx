@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import type { Message } from "@mms/shared";
+import type { Message } from "@mms/contracts";
 import { useMessagingWorkTierSelection } from "./useMessagingWorkTierSelection";
 import { useMessagingWorkFilters } from "./useMessagingWorkFilters";
 

@@ -6,7 +6,7 @@ import {
   type TaskUpdate,
   type TaskStatus,
   type TaskSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import {
   TASKS_QUERY_KEY,

@@ -1,6 +1,6 @@
 # Examinations Shared Contracts & TypeScript Definitions — Audit (2026-11-11)
 
-**Scope.** `packages/shared` as the single source of truth for Examinations DTOs, enums and runtime
+**Scope.** `packages/contracts` as the single source of truth for Examinations DTOs, enums and runtime
 schemas, cross-checked against the Drizzle schema, the ts-rest HTTP contract, the Fastify routes and
 the frontend consumers.
 

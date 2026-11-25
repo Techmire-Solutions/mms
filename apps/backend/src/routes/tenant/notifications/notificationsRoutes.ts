@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { notificationsContract, type User } from "@mms/shared";
+import { notificationsContract, type User } from "@mms/contracts";
 import { authenticateTenant } from "../../../middleware/authenticate.js";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";

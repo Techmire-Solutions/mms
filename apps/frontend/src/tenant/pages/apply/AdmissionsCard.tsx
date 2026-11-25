@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, Clock, GraduationCap, Users } from "lucide-react";
-import { formatDate, type PublicRegistrationView } from "@mms/shared";
+import { formatDate, type PublicRegistrationView } from "@mms/contracts";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ROUTES } from "@/lib/config/routes";

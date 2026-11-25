@@ -1,4 +1,4 @@
-import type { Permission } from "@mms/shared";
+import type { Permission } from "@mms/contracts";
 import type { Dispatch, SetStateAction } from "react";
 import { saveObject } from "@/lib/db";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

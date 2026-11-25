@@ -12,7 +12,7 @@ import {
   type TaskRecord,
   type TaskPriority,
   type TaskStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { listTasks } from "../tasks/use-cases/tasksUseCases.js";
 import { getWorkspaceTimezone } from "./taskSettingsService.js";

@@ -1,10 +1,10 @@
 import React from "react";
 import { Sparkles, ArrowRight, Activity, Terminal } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
-import { Badge } from "@shared/ui";
+import { Button } from "@mms/ui";
+import { Badge } from "@mms/ui";
 import type { PlatformChatMessage } from "@/platform/features/ai/hooks/usePlatformAiDiagnostics";
-import type { PlatformAiSuggestion } from "@mms/shared";
+import type { PlatformAiSuggestion } from "@mms/contracts";
 import { cn } from "@/lib/utils";
 
 export interface PlatformAiMessageListProps {

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted & Enforced
 - **Date:** 2026-09-24
-- **Context:** `apps/backend/src/db/preparedStatements.ts` had grown to 329 LOC with duplicated SQL prepare boilerplate and loose `any` typing across query builders, statement holders, and client arguments.
+- **Context:** `packages/db/src/preparedStatements.ts` had grown to 329 LOC with duplicated SQL prepare boilerplate and loose `any` typing across query builders, statement holders, and client arguments.
 - **Decision:**
   1. Decomposed column selections into `apps/backend/src/db/preparedColumns.ts` (102 LOC) to separate projection metadata from statement execution mechanics.
   2. Preserved public column exports in `preparedStatements.ts` as a stable barrel facade to prevent breaking changes in repository consumers.

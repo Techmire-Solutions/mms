@@ -1,16 +1,16 @@
 import React, { useMemo, useState } from "react";
-import type { Account, FiscalYear } from "@mms/shared";
+import type { Account, FiscalYear } from "@mms/contracts";
 import { Lock } from "lucide-react";
-import { FormModal } from "@/components/app/FormModal";
-import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
-import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Field } from "@/components/app/FormPrimitives";
-import { Alert } from "@/components/app/Alert";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { useSubmitGuard } from "@mms/fe-core/forms/useSubmitGuard";
+import { useDirtySnapshot } from "@mms/fe-core/forms/useDirtySnapshot";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Field } from "@mms/ui";
+import { Alert } from "@mms/ui";
 import { useCloseFiscalYear } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
-import { notify } from "@/lib/notify";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { notify } from "@mms/fe-core/notify";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 export interface CloseFiscalYearModalProps {
   closeTarget: FiscalYear | null;

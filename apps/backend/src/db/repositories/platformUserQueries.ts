@@ -7,9 +7,9 @@ import {
   PLATFORM_ADMIN_PERMISSION_KEYS,
   normalizePlatformAdminPermissions,
   FULL_PLATFORM_ADMIN_PERMISSIONS,
-} from "@mms/shared";
-import { activeDb } from "../dbConnection.js";
-import { platformUsers, platformUserPermissions } from "../schema.js";
+} from "@mms/contracts";
+import { activeDb } from "@mms/db/client";
+import { platformUsers, platformUserPermissions } from "@mms/db/schema";
 
 export const PERMISSION_KEYS: PlatformAdminPermissionKey[] = [...PLATFORM_ADMIN_PERMISSION_KEYS];
 

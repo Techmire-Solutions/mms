@@ -10,7 +10,7 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
-import { facultyContract } from "@mms/shared";
+import { facultyContract } from "@mms/contracts";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),

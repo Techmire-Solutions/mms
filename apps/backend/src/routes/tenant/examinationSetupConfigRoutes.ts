@@ -4,7 +4,7 @@ import {
   examinationsFieldConfigPutBodySchema,
   examinationsPreferencesPutBodySchema,
   normalizeExaminationsModulePreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { registerModuleSetupConfigRoutes } from "../../lib/registerModuleSetupConfigRoutes.js";
 import { canReadCollection } from "../../services/rbacService.js";
 import {

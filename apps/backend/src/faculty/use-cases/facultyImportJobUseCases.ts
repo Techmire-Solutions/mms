@@ -1,4 +1,4 @@
-import type { FacultyImportJobPayload } from "@mms/shared";
+import type { FacultyImportJobPayload } from "@mms/contracts";
 import { listFacultyDepartments } from "../../db/repositories/facultyDepartmentRepository.js";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 import {
@@ -6,7 +6,7 @@ import {
   findFacultyIdsByEmployeeIds,
   updateFacultyById,
 } from "../../services/facultyService.js";
-import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileContactSystemTags } from "@mms/mod-contacts/backend/use-cases";
 import { tenantUserHasPermission } from "../../lib/tenantRoleCatalog.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { logger } from "../../lib/logger.js";

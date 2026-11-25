@@ -45,7 +45,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(rootDir, "./src"),
-      "@shared/ui": path.resolve(rootDir, "../../packages/ui/src"),
+      "@mms/ui": path.resolve(rootDir, "../../packages/ui/src"),
       react: path.resolve(rootDir, "./node_modules/react"),
       "react-dom": path.resolve(rootDir, "./node_modules/react-dom"),
       clsx: path.resolve(rootDir, "./node_modules/clsx"),

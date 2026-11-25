@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { resolveWorkshopRegistration } from "@mms/shared";
-import { contacts, workshopParticipants } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
-import { NotFoundError } from "../../lib/httpErrors.js";
+import { resolveWorkshopRegistration } from "@mms/contracts";
+import { contacts, workshopParticipants } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
+import { NotFoundError } from "@mms/be-core/http/errors";
 import { throwIfBackgroundJobAborted } from "../../lib/backgroundJobAbort.js";
 import { findWorkshopRow } from "./workshopEventsRepository.js";
 import { countActiveParticipants } from "./workshopParticipantsRepository.js";

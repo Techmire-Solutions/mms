@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/repository", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/repository")>();
+  return {
+    ...actual,
+    ...{
+      upsertContactModulePreferences: mocks.upsertContactModulePreferences,
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -49,10 +59,6 @@ vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: () => "demo",
 }));
 
-vi.mock("../db/repositories/contactModulePreferencesRepository.js", () => ({
-  upsertContactModulePreferences: mocks.upsertContactModulePreferences,
-}));
-
 vi.mock("../services/authSessionService.js", () => ({
   unblockTenant: mocks.unblockTenant,
   blockTenant: vi.fn().mockResolvedValue(undefined),
@@ -81,7 +87,7 @@ vi.mock("../services/platform/platformCookieService.js", () => ({
 
 import { onboardUser } from "../services/auth/authService.js";
 import { setPlatformSettingsCache } from "../services/platform/platformSettingsService.js";
-import { DEFAULT_PLATFORM_SETTINGS } from "@mms/shared";
+import { DEFAULT_PLATFORM_SETTINGS } from "@mms/contracts";
 
 const workspace = { id: "ws_1", subdomain: "demo", madrasaName: "Demo Madrasa", enabled: true };
 

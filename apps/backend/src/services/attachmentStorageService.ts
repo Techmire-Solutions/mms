@@ -1,7 +1,7 @@
 import { unlink } from "node:fs/promises";
 import { resolve, sep } from "node:path";
 import { resolveUploadsRoot } from "../config/uploadConfig.js";
-import { contactsRepository } from "../contacts/repository/contactsRepositoryAdapter.js";
+import { contactsRepository } from "@mms/mod-contacts/backend/repository";
 
 /**
  * `/uploads/tenants/<tenant>/attachments/<file>` — exactly one segment for each

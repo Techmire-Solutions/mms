@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AccountingFxRepository } from "../accounting/repository/accountingFxRepository.js";
-import { upsertExchangeRates } from "../accounting/use-cases/exchangeRateUseCases.js";
+import { upsertExchangeRates } from "@mms/mod-accounting/backend/use-cases";
 
 function makeDeps() {
   const fx = {

@@ -1,7 +1,7 @@
 import React from "react";
 import type { ChangeEvent, RefObject } from "react";
 import { m, AnimatePresence } from "framer-motion";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { ContactDetailOverview } from "@/tenant/features/contacts/components/detail/ContactDetailOverview";
 import { ContactDetailTimeline } from "@/tenant/features/contacts/components/detail/ContactDetailTimeline";

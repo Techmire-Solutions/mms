@@ -5,4 +5,4 @@ export {
   type BadgeProps,
   type BadgeTone,
   type BadgeVariant,
-} from "@shared/ui";
+} from "@mms/ui";

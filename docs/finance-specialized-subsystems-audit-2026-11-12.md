@@ -75,12 +75,12 @@ Fix: `updateSessionById` now refuses a `currency` change while the session has n
 
 | File | Change |
 |---|---|
-| `packages/shared/src/finance/accountingHedgeSchemas.ts` | notional refined against the hedged currency's scale |
-| `packages/shared/src/finance/accountingFxRevaluation.ts` | typed `AmountScaleError` from `normalizeStoredAmount` |
-| `packages/shared/src/finance/financeInvoiceGeneration.ts` | `posted`/`unposted` on `GenerateInvoicesResult` |
-| `apps/backend/src/accounting/use-cases/hedgeUseCases.ts` (+ new `hedgeSettlementUseCases.ts`) | deterministic ids, event lock, account-role validation, 422 on scale errors; settlement/reclass split out for the length ceiling |
+| `packages/contracts/src/finance/accountingHedgeSchemas.ts` | notional refined against the hedged currency's scale |
+| `packages/contracts/src/finance/accountingFxRevaluation.ts` | typed `AmountScaleError` from `normalizeStoredAmount` |
+| `packages/contracts/src/finance/financeInvoiceGeneration.ts` | `posted`/`unposted` on `GenerateInvoicesResult` |
+| `packages/modules/accounting/src/backend/use-cases/hedgeUseCases.ts` (+ new `hedgeSettlementUseCases.ts`) | deterministic ids, event lock, account-role validation, 422 on scale errors; settlement/reclass split out for the length ceiling |
 | `apps/backend/src/accounting/ledgerPosting/ledgerEventLock.ts` | new per-event advisory lock |
-| `apps/backend/src/accounting/use-cases/fxRevaluationUseCases.ts`, `ias29UseCases.ts` | event lock before the run check, 422 on scale errors, NMP account type validation |
+| `packages/modules/accounting/src/backend/use-cases/fxRevaluationUseCases.ts`, `ias29UseCases.ts` | event lock before the run check, 422 on scale errors, NMP account type validation |
 | `apps/backend/src/accounting/repository/accounting{Hedges,Hyperinflation}RepositoryAdapter.ts` | expose `findAccountsByIds` |
 | `apps/backend/src/db/repositories/accountingAccountsFxPersist.ts` | foreign-currency account implies monetary |
 | `apps/backend/src/db/repositories/sessionRepositoryQueries.ts` + sessions port/adapter | `sessionHasEnrollments` |

@@ -1,5 +1,5 @@
 import React from "react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@/components/app/ModuleRowActionsMenu";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { useTranslation } from "@/hooks/useTranslation";

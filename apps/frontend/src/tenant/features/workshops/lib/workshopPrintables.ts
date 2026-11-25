@@ -1,4 +1,4 @@
-import type { WorkshopEvent, WorkshopParticipant } from "@mms/shared";
+import type { WorkshopEvent, WorkshopParticipant } from "@mms/contracts";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { printHtmlDocument } from "@/lib/ui/printHtmlDocument";
 import { formatWorkshopDates } from "../components/workshopsWorkColumns";

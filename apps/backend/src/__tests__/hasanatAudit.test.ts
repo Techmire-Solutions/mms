@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { Distribution, Redemption } from "@mms/shared";
+import type { Distribution, Redemption } from "@mms/contracts";
 import {
   cardAuditSnapshot,
   auditCardMutation,
@@ -7,11 +7,11 @@ import {
   auditAwardMutation,
   auditSetupMutation,
 } from "../hasanat/use-cases/hasanatAudit.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 const auditCalls: Array<Record<string, unknown>> = [];
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn(async (params: Record<string, unknown>) => {
     auditCalls.push(params);
     return { sequence: 1, hashCurrent: "h", hashPrevious: "p" };

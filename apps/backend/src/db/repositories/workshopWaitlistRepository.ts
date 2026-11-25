@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { contacts, workshopParticipants } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { contacts, workshopParticipants } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 import { auditRow } from "./workshopAudit.js";
 
 /**

@@ -21,7 +21,7 @@ DeepSeek Harness loads project instructions from the repo-root `AGENTS.md` / `CL
 | [mms-data-layer](rules/mms-data-layer.md) | PostgreSQL database, Drizzle schema, migrations, transactions, and TanStack Query state authority | — |
 | [mms-dependencies](rules/mms-dependencies.md) | Node 24, pnpm catalogs, package versions, React Compiler, and dependency audit rules | — |
 | [mms-document-templates](rules/mms-document-templates.md) | Printable document-template engine — server-authoritative layouts, optimistic concurrency, shared editor/renderer/print path, and localized field catalogs | — |
-| [mms-dry](rules/mms-dry.md) | DRY guidelines, duplication thresholds, extraction patterns, and @mms/shared export standards | — |
+| [mms-dry](rules/mms-dry.md) | DRY guidelines, duplication thresholds, extraction patterns, and @mms/contracts export standards | — |
 | [mms-fields](rules/mms-fields.md) | System vs custom fields registry, field tabs, delete guards, and column registry synchronization | — |
 | [mms-form-architecture](rules/mms-form-architecture.md) | FormModal shell, Zod form validation, decimal currency formatting, and form lifecycle hooks | — |
 | [mms-hooks](rules/mms-hooks.md) | Frontend React hooks standards, TanStack Query factories, page controllers, and view mode state | — |
@@ -32,7 +32,7 @@ DeepSeek Harness loads project instructions from the repo-root `AGENTS.md` / `CL
 | [mms-performance](rules/mms-performance.md) | Performance rules, query optimization, render hygiene, caching, streaming, and DOM virtualization | — |
 | [mms-reports](rules/mms-reports.md) | Embedded analytics, KPI cards, Recharts visualizations, report builder, and PDF/Excel/CSV exports | — |
 | [mms-settings-i18n](rules/mms-settings-i18n.md) | App settings, live preview draft states, navigation registries, and i18n translation keys (en/ar/ur/fa) | — |
-| [mms-shared-ui](rules/mms-shared-ui.md) | Shared UI component architecture governance — @shared/ui SSOT, cross-console duplicate ban, pre-deletion verification gates, and orphaned import detection | — |
+| [mms-shared-ui](rules/mms-shared-ui.md) | Shared UI component architecture governance — @mms/ui SSOT, cross-console duplicate ban, pre-deletion verification gates, and orphaned import detection | — |
 | [mms-structure-naming](rules/mms-structure-naming.md) | Directory structure, colocation, 300 LOC file limits, and symbol/casing naming conventions | — |
 | [mms-tdd](rules/mms-tdd.md) | Test-first delivery — Red/Green/Refactor for backend domain layers, shared helpers, and bug fixes | — |
 | [mms-testing-observability](rules/mms-testing-observability.md) | Testing strategy (unit, API inject, Playwright E2E), coverage gates, isolation, and error reporting | — |
@@ -83,8 +83,8 @@ DeepSeek Harness loads project instructions from the repo-root `AGENTS.md` / `CL
 | [mms-schema-migrate](skills/mms-schema-migrate/SKILL.md) | Forward-only Drizzle migrations with journal/meta, expand/contract DDL, FORCE RLS on new tenant tables, and ban on drizzle-kit push against shared/pr… |
 | [mms-seed-fixtures](skills/mms-seed-fixtures/SKILL.md) | Authors, maintains, and runs database seed scripts, demo tenant fixtures, and module reset utilities. Use when adding seed data for new modules, rese… |
 | [mms-settings-i18n](skills/mms-settings-i18n/SKILL.md) | Governs application-wide settings panels (/settings), settings preview states, sidebar navigation registries, and localization/i18n standards (en/ar/… |
-| [mms-shared-package](skills/mms-shared-package/SKILL.md) | Extends @mms/shared with types, settings defaults, module manifests, translation keys, messaging schemas, and pure utilities shared by frontend and b… |
-| [mms-shared-ui](skills/mms-shared-ui/SKILL.md) | Governs the shared component architecture (@shared/ui / packages/ui) between Tenant Console and Platform Console — enforces single source of truth fo… |
+| [mms-shared-package](skills/mms-shared-package/SKILL.md) | Extends @mms/contracts with types, settings defaults, module manifests, translation keys, messaging schemas, and pure utilities shared by frontend an… |
+| [mms-shared-ui](skills/mms-shared-ui/SKILL.md) | Governs the shared component architecture (@mms/ui / packages/ui) between Tenant Console and Platform Console — enforces single source of truth for U… |
 | [mms-soft-delete](skills/mms-soft-delete/SKILL.md) | Implements, verifies, or audits the MMS Soft-Delete System — column sextuple, 3-tier index strategy, partial unique indexes, BEFORE DELETE triggers,… |
 | [mms-student-lifecycle](skills/mms-student-lifecycle/SKILL.md) | Implements academic student lifecycle workflows — admissions, enrollments, attendance marking grids, examinations, grading formulas, and hasanat poin… |
 | [mms-testing-e2e](skills/mms-testing-e2e/SKILL.md) | Automated testing guide for MMS — Vitest unit/integration tests, Fastify inject() API tests, Playwright E2E specs, responsive/RTL smoke suites, and a… |

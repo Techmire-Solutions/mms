@@ -1,5 +1,5 @@
 import React from "react";
-import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/shared";
+import { CONTACTS_MODULE_MANIFEST, type Contact } from "@mms/contracts";
 import { type ContactCreateDefaults } from "./ContactCreateModal";
 import { ContactPickerSearchInput } from "./ContactPickerSearchInput";
 import { ContactPickerSelected } from "./ContactPickerSelected";

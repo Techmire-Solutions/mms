@@ -1,9 +1,9 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/database.js";
-import { getDb } from "../db/dbClient.js";
-import { workspaces } from "../db/schema.js";
-import { bulkSaveContacts } from "../db/repositories/contactRepository.js";
-import { stripContactRetiredClassificationFields, type Contact } from "@mms/shared";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { getDb } from "@mms/db/client";
+import { workspaces } from "@mms/db/schema";
+import { bulkSaveContacts } from "@mms/mod-contacts/backend/repository";
+import { stripContactRetiredClassificationFields, type Contact } from "@mms/contracts";
 import { SEED_20_DUMMY_CONTACTS } from "./seed-20-contacts-data.js";
 
 loadBackendEnv();
@@ -11,7 +11,7 @@ loadBackendEnv();
 const DUMMY_CONTACTS = SEED_20_DUMMY_CONTACTS;
 
 async function main() {
-  await initDb();
+  await initializeDatabase();
   const db = getDb();
 
   const argSubdomain = process.argv[2]?.trim().toLowerCase();

@@ -31,7 +31,7 @@ if [[ -n "$STAGED_FILES" ]]; then
   printf '%s\n' "$STAGED_FILES" | xargs -n 30 -r pnpm exec prettier --check --end-of-line auto --ignore-unknown
 fi
 
-STAGED_MIGRATIONS="$(printf '%s\n' "$STAGED_FILES" | grep -E '^apps/backend/src/db/migrations_drizzle/' || true)"
+STAGED_MIGRATIONS="$(printf '%s\n' "$STAGED_FILES" | grep -E '^packages/db/migrations_drizzle/' || true)"
 if [[ -n "$STAGED_MIGRATIONS" ]]; then
   echo "🔍 Pre-commit: migration hygiene check..."
   pnpm run check:migration-hygiene -- --base origin/main

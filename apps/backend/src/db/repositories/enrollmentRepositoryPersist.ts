@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { OPEN_INVOICE_STATUSES, dedupeTrimmedIds, type Enrollment } from "@mms/shared";
-import { enrollments, enrollmentTimelineEvents, financeInvoices } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { OPEN_INVOICE_STATUSES, dedupeTrimmedIds, type Enrollment } from "@mms/contracts";
+import { enrollments, enrollmentTimelineEvents, financeInvoices } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { recordToInsert } from "./enrollmentRecordToInsert.js";
 import { resolveEnrollmentSectionsTx } from "./enrollmentSectionResolve.js";
 
@@ -9,9 +9,9 @@ import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { appendClientTimelineTx, syncPlacementsTx } from "./enrollmentHistoryWrite.js";
 import { findWorkspaceTimezone } from "./workspaceRepository.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
 import { enrollmentWriteConflict, findLiveEnrollmentPairsTx } from "./enrollmentWriteGuards.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError } from "@mms/be-core/http/errors";
 
 export {
   enrollmentWriteConflict,

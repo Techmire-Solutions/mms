@@ -12,7 +12,7 @@ import {
   isSessionStructureLocked,
   normalizeSessionStatus,
   type SessionLifecycleState,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAcademicCatalogItems } from "@/hooks/useAcademicCatalog";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useZodDraftForm } from "@/lib/forms/useZodDraftForm";

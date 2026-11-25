@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { StudentDetailFieldsSection, type SortedField } from "./StudentDetailFieldsSection";
 
 vi.mock("@/hooks/useTranslation", () => ({

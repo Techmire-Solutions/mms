@@ -5,7 +5,7 @@ import type { WorkBatchTableColumn } from "@/components/common/work/workBatchTab
 import { useTranslation } from "@/hooks/useTranslation";
 import { getAttendanceStatusInfo, type AttendanceStatus } from "@/lib/data/attendanceData";
 import { MarkAttendanceFieldControl } from "./MarkAttendanceFieldControl";
-import type { ModuleFieldDef } from "@mms/shared";
+import type { ModuleFieldDef } from "@mms/contracts";
 import type { AttendanceRow } from "../lib/markAttendanceTypes";
 
 export interface MarkAttendanceTableViewProps {

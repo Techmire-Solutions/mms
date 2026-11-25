@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { DollarSign } from "lucide-react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import type { Invoice } from "@/lib/data/financeData";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ReportDataGridContainer } from "@/components/reports/ReportDataGridContainer";

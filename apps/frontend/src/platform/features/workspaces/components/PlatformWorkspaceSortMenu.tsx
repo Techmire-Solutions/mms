@@ -1,13 +1,8 @@
 import React from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@shared/ui";
+import { Button } from "@mms/ui";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@mms/ui";
 import type {
   WorkspaceSortDirection,
   WorkspaceSortField,

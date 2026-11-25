@@ -7,7 +7,7 @@ import {
   extractAmountFromNaturalLanguage,
   parseNaturalLanguage,
   resolveEntryDirection,
-} from "@/tenant/features/accounting/lib/journalEntriesQuickActions";
+} from "@mms/mod-accounting/frontend/tenant";
 
 describe("parseNaturalLanguage", () => {
   it("maps common accounting phrases to quick actions", () => {

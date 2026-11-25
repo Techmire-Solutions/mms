@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  */
 const queue = vi.hoisted(() => ({ rows: [] as unknown[][] }));
 
-vi.mock("../db/tenant-context.js", () => {
+vi.mock("@mms/db/context", () => {
   const makeTx = () => {
     const nextRows = () => queue.rows.shift() ?? [];
     const query = {

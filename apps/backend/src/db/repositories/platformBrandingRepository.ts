@@ -3,9 +3,9 @@ import {
   DEFAULT_PLATFORM_BRANDING,
   mergePlatformBranding,
   type PlatformBrandingSettings,
-} from "@mms/shared";
-import { activeDb } from "../dbConnection.js";
-import { platformBranding } from "../schema.js";
+} from "@mms/contracts";
+import { activeDb } from "@mms/db/client";
+import { platformBranding } from "@mms/db/schema";
 
 export const GLOBAL_BRANDING_ID = "global";
 

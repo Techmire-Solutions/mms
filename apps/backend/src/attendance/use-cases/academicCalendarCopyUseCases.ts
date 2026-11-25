@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { addIsoDays } from "@mms/shared";
+import { addIsoDays } from "@mms/contracts";
 import { attendanceCalendarRepository as repo } from "../repository/attendanceCalendarRepositoryAdapter.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { ACADEMIC_CALENDAR_BROADCAST_KEY } from "./academicCalendarUseCases.js";
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Check } from "lucide-react";
-import { splitContactTags, type Contact } from "@mms/shared";
+import { splitContactTags, type Contact } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

@@ -1,6 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { IMAGE_UPLOAD_MAX_OUTPUT_BYTES } from "@mms/shared";
+import { IMAGE_UPLOAD_MAX_OUTPUT_BYTES } from "@mms/contracts";
 import { resolveBackendRoot } from "./loadEnv.js";
 
 /** Max optimized image payload accepted by the upload API (bytes). */

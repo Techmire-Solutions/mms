@@ -6,7 +6,7 @@ import {
   type QuestionBankQuestion,
   type QuestionBankTest,
   type QuestionBankResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
 import {
   replaceQuestionsForWorkspace,

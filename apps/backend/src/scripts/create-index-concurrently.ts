@@ -2,7 +2,7 @@ import pg from "pg";
 import { loadBackendEnv } from "../config/loadEnv.js";
 import { loadServerConfig } from "../config/serverConfig.js";
 import { logger } from "../lib/logger.js";
-import { initializeDatabaseConnection, closeDatabase } from "../db/dbConnection.js";
+import { initializeDatabaseConnection, closeDatabase } from "@mms/db/client";
 
 loadBackendEnv();
 

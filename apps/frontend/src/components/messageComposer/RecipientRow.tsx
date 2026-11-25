@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { X } from "lucide-react";
-import { getInitials } from "@mms/shared";
+import { getInitials } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import type { ValidatedMessagingRecipient } from "./useMessageComposerDispatch";
 

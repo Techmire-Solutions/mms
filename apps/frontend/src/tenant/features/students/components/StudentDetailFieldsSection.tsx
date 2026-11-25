@@ -7,7 +7,7 @@ import {
   STUDENT_DETAIL_HERO_FIELD_KEYS,
   formatDate,
   formatDateTime,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { useTranslation } from "@/hooks/useTranslation";

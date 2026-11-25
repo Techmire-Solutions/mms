@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { SessionSchema, type SessionCompletionRow } from "@mms/shared";
+import { SessionSchema, type SessionCompletionRow } from "@mms/contracts";
 import { SessionCompletionTab } from "./SessionCompletionTab";
 
 const rows: SessionCompletionRow[] = [

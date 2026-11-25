@@ -3,7 +3,7 @@ import {
   facultyDepartmentSchema,
   type FacultyDepartmentEntity,
   type FacultyDepartmentWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useQueryClientOrFallback } from "@/lib/query/optionalQueryContext";

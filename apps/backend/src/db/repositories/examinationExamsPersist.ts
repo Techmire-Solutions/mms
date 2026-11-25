@@ -1,8 +1,8 @@
 import { requireDbDate } from "../../lib/dbDate.js";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { Exam } from "@mms/shared";
-import { exams, examClasses } from "../schema.js";
-import { withTenant, type AppDb } from "../tenant-context.js";
+import type { Exam } from "@mms/contracts";
+import { exams, examClasses } from "@mms/db/schema";
+import { withTenant, type AppDb } from "@mms/db/context";
 import { resolveCatalogRefsTx } from "./academicCatalogSnapshot.js";
 import {
   auditExamCreated,

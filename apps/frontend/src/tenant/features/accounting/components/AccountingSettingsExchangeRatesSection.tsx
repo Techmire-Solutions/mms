@@ -5,19 +5,19 @@ import {
   EXCHANGE_RATE_TYPES,
   formatDate,
   type ExchangeRateRecord,
-} from "@mms/shared";
-import { DatePicker } from "@/components/app/DatePicker";
-import { EmptyState } from "@/components/app/EmptyState";
-import { ErrorState } from "@/components/app/ErrorState";
-import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
-import { FormSelect } from "@/components/app/FormSelect";
-import { SectionCard } from "@/components/app/SectionCard";
+} from "@mms/contracts";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { EmptyState } from "@mms/ui";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { Field, FieldErrorMessage } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { SectionCard } from "@mms/ui";
 import { DataTable, type DataTableColumn } from "@/components/common/data-table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
-import { useTranslation } from "@/hooks/useTranslation";
-import { FX_SETUP_ANCHORS } from "../lib/fxSetupReadiness";
+import { Button } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { FX_SETUP_ANCHORS } from "@mms/mod-accounting/frontend/tenant";
 import { useExchangeRateDraft } from "@/tenant/features/accounting/hooks/useExchangeRateDraft";
 
 export interface AccountingSettingsExchangeRatesSectionProps {

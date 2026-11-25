@@ -1,15 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant } from "../../db/tenant-context.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant } from "@mms/db/context";
 import {
   ACCOUNTING_ACCOUNT_TYPES,
   FISCAL_YEAR_STATUSES,
   INVOICE_STATUSES,
   JOURNAL_ENTRY_STATUSES,
   POSTING_PERIOD_STATUSES,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const CHECK_CONSTRAINTS: Array<{

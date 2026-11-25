@@ -1,6 +1,6 @@
 import type React from "react";
-import type { Account, FiscalYear } from "@mms/shared";
-import { useTranslation } from "@/hooks/useTranslation";
+import type { Account, FiscalYear } from "@mms/contracts";
+import { useTranslation } from "@mms/fe-core/i18n";
 import type { MoneySeparator } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { useAccountingCurrencySettings } from "@/tenant/features/accounting/hooks/useAccountingFx";
 import { AccountingSettingsExchangeRatesSection } from "./AccountingSettingsExchangeRatesSection";

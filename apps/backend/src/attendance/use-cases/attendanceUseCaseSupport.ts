@@ -2,7 +2,7 @@ import { HttpDomainError } from "../../lib/httpErrors.js";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import type { AttendanceRepository } from "../repository/attendanceRepository.js";
 import type { createGenericRelationalService } from "../../services/genericRelationalService.js";
-import type { AttendanceRecord } from "@mms/shared";
+import type { AttendanceRecord } from "@mms/contracts";
 import type { AttendancePolicyStore } from "./attendancePolicyGuard.js";
 
 /** Shared plumbing for the attendance write use-cases. */

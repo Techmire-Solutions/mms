@@ -1,4 +1,4 @@
-import { resolvePlatformNotificationChannel } from "@mms/shared";
+import { resolvePlatformNotificationChannel } from "@mms/contracts";
 import { logger } from "../../lib/logger.js";
 import { dispatchPlatformOtp, type PlatformOtpDispatchResult } from "./platformOtpService.js";
 import { sendPlatformSms } from "./platformSmsService.js";

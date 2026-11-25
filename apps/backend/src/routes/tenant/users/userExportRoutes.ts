@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { USERS_MODULE_MANIFEST } from "@mms/shared";
+import { USERS_MODULE_MANIFEST } from "@mms/contracts";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
 import {
   canDeleteCollection,
@@ -10,7 +10,7 @@ import {
   moduleExportAuditBodySchema as userExportAuditSchema,
   usersCsvExportBodySchema,
   usersImportBodySchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
 
 /** Users CSV export queue, import queue, and export audit logging. */

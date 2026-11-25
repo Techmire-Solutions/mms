@@ -6,7 +6,7 @@ import {
   type StoredPlatformUser,
   type Workspace,
   type PlatformRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getCollectionByStorageName,
   getObjectByStorageKey,

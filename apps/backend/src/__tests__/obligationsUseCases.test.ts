@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({}),
 }));
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 

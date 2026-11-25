@@ -9,7 +9,7 @@ import type {
   FinanceCommandMetricsSnapshot,
   HasanatCommandMetricsSnapshot,
   SessionsCommandMetricsSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 describe("computeDashboardMetricTrends", () => {
   it("computes trend percentages correctly for student, faculty, and contact metrics", () => {

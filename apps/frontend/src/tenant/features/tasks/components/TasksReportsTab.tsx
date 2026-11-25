@@ -6,7 +6,7 @@
 import React from "react";
 import { useTaskMetrics } from "../hooks/useTasksApi";
 import { ErrorState } from "@/components/app/ErrorState";
-import { StatsSkeleton } from "@shared/ui";
+import { StatsSkeleton } from "@mms/ui";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { useTranslation } from "@/hooks/useTranslation";
 import { TasksReportsCharts } from "./TasksReportsCharts";

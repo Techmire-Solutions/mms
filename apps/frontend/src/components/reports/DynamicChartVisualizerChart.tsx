@@ -27,7 +27,7 @@ import {
   chartAxisTick,
   chartTooltipStyle,
 } from "@/components/app/ChartGrid";
-import { capitalize, type AppTranslationKey } from "@mms/shared";
+import { capitalize, type AppTranslationKey } from "@mms/contracts";
 import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
 import type {
   AggregatedItem,

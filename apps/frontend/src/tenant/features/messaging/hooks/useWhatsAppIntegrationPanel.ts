@@ -4,7 +4,7 @@ import {
   DEFAULT_WHATSAPP_INTEGRATION,
   listWhatsappProviderPresets,
   type WhatsappIntegrationConfig,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";

@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { examMarksWriteListSchema } from "@mms/shared";
+import { examMarksWriteListSchema } from "@mms/contracts";
 
 export type MarksWriteRow = z.infer<typeof examMarksWriteListSchema>[number];
 

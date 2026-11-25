@@ -1,6 +1,6 @@
 import { resolveApiUrl } from "@/lib/apiClientHelpers";
 import { notifySessionExpired } from "@/lib/apiClient";
-import type { BackgroundJobEventMessage } from "@mms/shared";
+import type { BackgroundJobEventMessage } from "@mms/contracts";
 
 export type TenantDatabaseUpdateMessage = {
   event: "database-update";

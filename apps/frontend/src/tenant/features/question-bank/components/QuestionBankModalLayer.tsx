@@ -7,7 +7,7 @@ import {
   type PaperBuilderTab,
 } from "@/tenant/features/question-bank/components/PaperBuilder";
 import { QuestionForm } from "@/tenant/features/question-bank/components/QuestionForm";
-import type { QuestionBankQuestion, QuestionBankTest } from "@mms/shared";
+import type { QuestionBankQuestion, QuestionBankTest } from "@mms/contracts";
 
 interface QuestionBankModalLayerProps {
   canWrite: boolean;

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
-import type { WorkspaceUser, ActivityLog } from "@mms/shared";
+import type { WorkspaceUser, ActivityLog } from "@mms/contracts";
 import { adminToken, teacherToken, signTenantToken } from "./helpers/tokens.js";
 
 vi.mock("../db/database.js", () => ({
@@ -8,7 +8,9 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi
     .fn()
     .mockImplementation(async (_tenant: string, callback: (tx: unknown) => Promise<unknown>) =>

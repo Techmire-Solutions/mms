@@ -14,7 +14,7 @@ import {
   DASHBOARD_CHART_TYPE_OPTIONS,
   REVENUE_CHART_COLOR_OPTIONS,
   type DashboardChartType,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export default function RevenueChart({ isEditMode = false }: { isEditMode?: boolean }) {
   const { t } = useTranslation();

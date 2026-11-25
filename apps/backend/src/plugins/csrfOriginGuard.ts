@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { isOriginAllowedForAppDomain, isTrustedWorkspaceOrigin } from "@mms/shared";
+import { isOriginAllowedForAppDomain, isTrustedWorkspaceOrigin } from "@mms/contracts";
 import type { ServerConfig } from "../config/serverConfig.js";
 import { requestHostname } from "../lib/requestHost.js";
 import { PLATFORM_ACCESS_COOKIE } from "../services/platform/platformCookieService.js";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SessionSchema, type EnrollmentPlacement } from "@mms/shared";
+import { SessionSchema, type EnrollmentPlacement } from "@mms/contracts";
 import {
   findTransferTarget,
   operationWindowError,

@@ -7,7 +7,7 @@ import {
   isValidSubdomain,
   isValidEmail,
   validatePasswordPolicy,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ROUTES } from "@/lib/config/routes";
 import { applyBrandingTheme } from "@/lib/brandingTheme";
 import { useAuth } from "@/lib/contexts/AuthContext";

@@ -11,7 +11,7 @@ import {
   type SectionMergeBody,
   type SectionSplitBody,
   type SessionClassSection,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";

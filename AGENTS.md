@@ -20,7 +20,12 @@ pnpm ci:local:full                                       # + i18n/build/bundle
 ```
 apps/frontend/     React 19 + Vite 8 · TanStack Query v5 · Tailwind v4
 apps/backend/      Fastify 5 + Node.js 24 + PostgreSQL 16 + Drizzle · BullMQ worker
-packages/shared/   @mms/shared — types, Zod DTOs, manifests, pure utils (SSOT)
+packages/contracts/ @mms/contracts — Zod schemas, DTOs, pagination/filter contracts, error codes, domain enums (SSOT)
+packages/db/        @mms/db — Drizzle schema, DDL migrations, seed fixtures, soft-delete helpers, tenant-scoped client
+packages/be-core/   @mms/be-core — auth/session/RBAC guards, logger+correlation, Redis/BullMQ, realtime, transports
+packages/fe-core/   @mms/fe-core — typed API SDK, auth/tenant contexts, query factories, form hooks, i18n init
+packages/ui/        @mms/ui — primitives, layout shells, tables, form controls, dumb UI (zero API/router/domain)
+packages/modules/   @mms/mod-<slice> — audience-separated vertical modules (shared/backend/frontend; no root export)
 e2e/               Playwright suites + axe helpers
 ```
 
@@ -93,64 +98,64 @@ Owners: always-on `mms-agent-universal` §1 (**Reuse First**) · workflow and th
 
 Every module-owned route, UI entry point, and backend operation must declare and enforce its module and action-permission requirements. Frontend visibility is not a security boundary. Backend authorization must use authoritative tenant grants, module enablement, and user permissions. Reuse the centralized policy and guards. Explicitly classify non-module routes and add coverage checks so new routes or endpoints cannot silently bypass authorization.
 
-Owners: norm `mms-auth-security` §3 (**Module Access Gates**) · policy `@mms/shared` `moduleAccessPolicy.ts` · backend `registerModuleAccess` + `MODULE_ROUTE_ACTION_RULES` · frontend `TENANT_APP_ROUTE_ACCESS` + `ModuleAccessRoute` · checks `apps/backend/src/__tests__/moduleAccessCoverage.test.ts` and `apps/frontend/src/lib/config/routeAccess.test.ts`.
+Owners: norm `mms-auth-security` §3 (**Module Access Gates**) · policy `@mms/contracts` `moduleAccessPolicy.ts` · backend `registerModuleAccess` + `MODULE_ROUTE_ACTION_RULES` · frontend `TENANT_APP_ROUTE_ACCESS` + `ModuleAccessRoute` · checks `apps/backend/src/__tests__/moduleAccessCoverage.test.ts` and `apps/frontend/src/lib/config/routeAccess.test.ts`.
 
 **Rule → skill map:** every rule carries a **Workflow skills:** line, and the full ownership matrix lives in [.cursor/rules/README.md](.cursor/rules/README.md) (that file is the single owner of the topic→rule→skill index — do not restate it here).
 
 ## Skills (50)
 
-| Skill                     | Purpose                                                                                                                                                     |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `antigravity-workspace`   | Where rules/skills live; sync policy                                                                                                                        |
-| `mms-a11y-smoke`          | axe + shell a11y verification                                                                                                                               |
-| `mms-agent-standards`     | Authoring/verifying rules, skills, commands, hooks                                                                                                          |
-| `mms-audit-trail`         | Audit trail, RFC 8785 canonical JSON, sharded hash chains, partitions                                                                                       |
-| `mms-backend-api`         | Fastify backend                                                                                                                                             |
-| `mms-backend-security`    | Tenant isolation, RBAC, cookies, CSRF                                                                                                                       |
-| `mms-background-jobs`     | Queued exports/imports, progress, artifacts                                                                                                                 |
-| `mms-backup-restore`      | Encrypted backup / wipe-restore                                                                                                                             |
-| `mms-ci-ratchets`         | Diagnosing and resolving custom CI gates and boundary ratchets                                                                                              |
-| `mms-code-review`         | Change-set review before merge                                                                                                                              |
-| `mms-data-import`         | Bulk CSV and tabular data import workflows — file ingestion, mapping, dry-run validation, and queued batch onboarding                                       |
-| `mms-data-sync`           | db.ts & API sync                                                                                                                                            |
-| `mms-db-performance`      | Query/index/autovacuum triage                                                                                                                               |
-| `mms-dependency-upgrade`  | Catalogs, Dependabot, audits, React Compiler                                                                                                                |
-| `mms-dev-setup`           | Install, run, env verify                                                                                                                                    |
-| `mms-document-templates`  | Printable document templates — server persistence/CAS, shared editor/renderer, module print surfaces, localized field catalogs                              |
-| `mms-error-triage`        | Sentry issue → traceparent → audit row                                                                                                                      |
-| `mms-faculty-domain`      | Faculty staff hierarchy, temporal appointments, designations, departments                                                                                   |
-| `mms-fields-registry`     | Fields & tabs, field guards                                                                                                                                 |
-| `mms-finance-accounting`  | Invoices, payments, double-entry ledger                                                                                                                     |
-| `mms-form-architecture`   | Static FormModal, shared Zod, uploads                                                                                                                       |
-| `mms-frontend`            | React app shell, apiClient, Query vs localStorage, FE tests                                                                                                 |
-| `mms-i18n-completeness`   | Key parity across en/ar/ur/fa                                                                                                                               |
-| `mms-incident-response`   | Diagnose → rollback → verify a bad deploy                                                                                                                   |
-| `mms-linux-compatibility` | Linux/Ubuntu VPS compatibility                                                                                                                              |
-| `mms-messaging`           | SMS/WhatsApp campaigns                                                                                                                                      |
-| `mms-migration-fixes`     | Open debt priorities P1–P7                                                                                                                                  |
-| `mms-module-page`         | Three-tier module pages + gold-standard parity (§7)                                                                                                         |
-| `mms-module-setup`        | Setup tier — Preferences, sub-tabs, setup audit                                                                                                             |
-| `mms-module-work`         | Work tier — metrics, directory, drawer, trash                                                                                                               |
-| `mms-notifications`       | In-app notification center, real-time unread badges, notification preferences, and event-driven alert triggers                                              |
-| `mms-ops-deploy`          | Hetzner deploy, Apache isolation, PORT 5002                                                                                                                 |
-| `mms-platform-console`    | Platform Apex routes, auth, workspace provisioning, and admin console                                                                                       |
-| `mms-query-factories`     | TanStack Query factories / optimistic policy                                                                                                                |
-| `mms-queue-ops`           | Diagnose stuck/failed BullMQ jobs; replay safely                                                                                                            |
-| `mms-realtime-events`     | WebSocket `/api/ws` pipeline, live push invalidation, and progress                                                                                          |
-| `mms-release-versioning`  | Version bumps, changelog, milestone bookkeeping                                                                                                             |
-| `mms-reports-export`      | Analytics & export                                                                                                                                          |
-| `mms-schema-migrate`      | Forward-only Drizzle DDL, lock-safe indexes                                                                                                                 |
-| `mms-seed-fixtures`       | Database seed scripts, demo tenant fixtures, and test resets                                                                                                |
-| `mms-settings-i18n`       | Settings + i18n (en/ar/ur/fa)                                                                                                                               |
-| `mms-shared-package`      | `@mms/shared` purity and exports                                                                                                                            |
-| `mms-shared-ui`           | Shared UI architecture (`@shared/ui`) — ban duplicates, migrate legacy files, check orphaned imports (rule: `mms-shared-ui` · workflow: `/shared-ui-audit`) |
-| `mms-soft-delete`         | Soft-Delete System, 3-tier indexing, restore, outbox CDC, hard-purge                                                                                        |
-| `mms-student-lifecycle`   | Admissions, enrollments, attendance marking, exams, and grading                                                                                             |
-| `mms-testing-e2e`         | Vitest, Playwright E2E & axe smoke                                                                                                                          |
-| `mms-ui-ux-design`        | Design tokens, BiDi / RTL layout, Master Module Scaffold                                                                                                    |
-| `mms-user-management`     | Tenant staff user management, role assignments, staff invitations, and active session controls                                                              |
-| `mms-vuln-response`       | Triage and respond to a dependency advisory                                                                                                                 |
-| `ui-ux-pro-max`           | Design intelligence (styles, palettes, typography, UX, charts)                                                                                              |
+| Skill                     | Purpose                                                                                                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `antigravity-workspace`   | Where rules/skills live; sync policy                                                                                                                     |
+| `mms-a11y-smoke`          | axe + shell a11y verification                                                                                                                            |
+| `mms-agent-standards`     | Authoring/verifying rules, skills, commands, hooks                                                                                                       |
+| `mms-audit-trail`         | Audit trail, RFC 8785 canonical JSON, sharded hash chains, partitions                                                                                    |
+| `mms-backend-api`         | Fastify backend                                                                                                                                          |
+| `mms-backend-security`    | Tenant isolation, RBAC, cookies, CSRF                                                                                                                    |
+| `mms-background-jobs`     | Queued exports/imports, progress, artifacts                                                                                                              |
+| `mms-backup-restore`      | Encrypted backup / wipe-restore                                                                                                                          |
+| `mms-ci-ratchets`         | Diagnosing and resolving custom CI gates and boundary ratchets                                                                                           |
+| `mms-code-review`         | Change-set review before merge                                                                                                                           |
+| `mms-data-import`         | Bulk CSV and tabular data import workflows — file ingestion, mapping, dry-run validation, and queued batch onboarding                                    |
+| `mms-data-sync`           | db.ts & API sync                                                                                                                                         |
+| `mms-db-performance`      | Query/index/autovacuum triage                                                                                                                            |
+| `mms-dependency-upgrade`  | Catalogs, Dependabot, audits, React Compiler                                                                                                             |
+| `mms-dev-setup`           | Install, run, env verify                                                                                                                                 |
+| `mms-document-templates`  | Printable document templates — server persistence/CAS, shared editor/renderer, module print surfaces, localized field catalogs                           |
+| `mms-error-triage`        | Sentry issue → traceparent → audit row                                                                                                                   |
+| `mms-faculty-domain`      | Faculty staff hierarchy, temporal appointments, designations, departments                                                                                |
+| `mms-fields-registry`     | Fields & tabs, field guards                                                                                                                              |
+| `mms-finance-accounting`  | Invoices, payments, double-entry ledger                                                                                                                  |
+| `mms-form-architecture`   | Static FormModal, shared Zod, uploads                                                                                                                    |
+| `mms-frontend`            | React app shell, apiClient, Query vs localStorage, FE tests                                                                                              |
+| `mms-i18n-completeness`   | Key parity across en/ar/ur/fa                                                                                                                            |
+| `mms-incident-response`   | Diagnose → rollback → verify a bad deploy                                                                                                                |
+| `mms-linux-compatibility` | Linux/Ubuntu VPS compatibility                                                                                                                           |
+| `mms-messaging`           | SMS/WhatsApp campaigns                                                                                                                                   |
+| `mms-migration-fixes`     | Open debt priorities P1–P7                                                                                                                               |
+| `mms-module-page`         | Three-tier module pages + gold-standard parity (§7)                                                                                                      |
+| `mms-module-setup`        | Setup tier — Preferences, sub-tabs, setup audit                                                                                                          |
+| `mms-module-work`         | Work tier — metrics, directory, drawer, trash                                                                                                            |
+| `mms-notifications`       | In-app notification center, real-time unread badges, notification preferences, and event-driven alert triggers                                           |
+| `mms-ops-deploy`          | Hetzner deploy, Apache isolation, PORT 5002                                                                                                              |
+| `mms-platform-console`    | Platform Apex routes, auth, workspace provisioning, and admin console                                                                                    |
+| `mms-query-factories`     | TanStack Query factories / optimistic policy                                                                                                             |
+| `mms-queue-ops`           | Diagnose stuck/failed BullMQ jobs; replay safely                                                                                                         |
+| `mms-realtime-events`     | WebSocket `/api/ws` pipeline, live push invalidation, and progress                                                                                       |
+| `mms-release-versioning`  | Version bumps, changelog, milestone bookkeeping                                                                                                          |
+| `mms-reports-export`      | Analytics & export                                                                                                                                       |
+| `mms-schema-migrate`      | Forward-only Drizzle DDL, lock-safe indexes                                                                                                              |
+| `mms-seed-fixtures`       | Database seed scripts, demo tenant fixtures, and test resets                                                                                             |
+| `mms-settings-i18n`       | Settings + i18n (en/ar/ur/fa)                                                                                                                            |
+| `mms-shared-package`      | `@mms/contracts` purity and exports                                                                                                                      |
+| `mms-shared-ui`           | Shared UI architecture (`@mms/ui`) — ban duplicates, migrate legacy files, check orphaned imports (rule: `mms-shared-ui` · workflow: `/shared-ui-audit`) |
+| `mms-soft-delete`         | Soft-Delete System, 3-tier indexing, restore, outbox CDC, hard-purge                                                                                     |
+| `mms-student-lifecycle`   | Admissions, enrollments, attendance marking, exams, and grading                                                                                          |
+| `mms-testing-e2e`         | Vitest, Playwright E2E & axe smoke                                                                                                                       |
+| `mms-ui-ux-design`        | Design tokens, BiDi / RTL layout, Master Module Scaffold                                                                                                 |
+| `mms-user-management`     | Tenant staff user management, role assignments, staff invitations, and active session controls                                                           |
+| `mms-vuln-response`       | Triage and respond to a dependency advisory                                                                                                              |
+| `ui-ux-pro-max`           | Design intelligence (styles, palettes, typography, UX, charts)                                                                                           |
 
 Index: [.agent/skills/README.md](.agent/skills/README.md)
 
@@ -158,10 +163,10 @@ Index: [.agent/skills/README.md](.agent/skills/README.md)
 
 [.agent/workflows/](.agent/workflows/) — `dev-setup`, `feature-module`, `code-review`, `fix-migration-debt`, `dry`, `run-tests`, `shared-ui-audit`, `form-audit`. Available as slash commands in Cursor (`.cursor/commands/`) and Claude Code (`.claude/commands/`); Antigravity reads the folder directly.
 
-| Workflow          | When to invoke                                                                                              |
-| ----------------- | ----------------------------------------------------------------------------------------------------------- |
-| `form-audit`      | Inventory every form surface and audit/fix lifecycle, collection, UI, i18n, and a11y defects                |
-| `shared-ui-audit` | Audit frontend for duplicate/orphaned UI components, enforce `@shared/ui` SSOT, run pre-deletion validation |
+| Workflow          | When to invoke                                                                                           |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| `form-audit`      | Inventory every form surface and audit/fix lifecycle, collection, UI, i18n, and a11y defects             |
+| `shared-ui-audit` | Audit frontend for duplicate/orphaned UI components, enforce `@mms/ui` SSOT, run pre-deletion validation |
 
 ## Editing standards
 

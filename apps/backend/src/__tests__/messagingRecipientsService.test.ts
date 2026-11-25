@@ -1,5 +1,32 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsPageForTenant: (...args: unknown[]) => mockLoadContactsPageForTenant(...args),
+      loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
+        mockLoadContactsSummaryByIdsForTenant(...args),
+    },
+    ...{
+      loadContactFieldConfig: (...args: unknown[]) => mockLoadContactFieldConfig(...args),
+    },
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsPageForTenant: (...args: unknown[]) => mockLoadContactsPageForTenant(...args),
+      loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
+        mockLoadContactsSummaryByIdsForTenant(...args),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Contact, ContactsListPageResult } from "@mms/shared";
+import type { Contact, ContactsListPageResult } from "@mms/contracts";
 
 vi.mock("../db/repositories/messagingRepository.js", () => ({
   listMessageTemplatesByWorkspace: vi.fn(),
@@ -27,16 +54,6 @@ vi.mock("../db/repositories/messagingRepository.js", () => ({
 const mockLoadContactsPageForTenant = vi.fn();
 const mockLoadContactsSummaryByIdsForTenant = vi.fn();
 const mockLoadContactFieldConfig = vi.fn();
-
-vi.mock("../services/contactService.js", () => ({
-  loadContactsPageForTenant: (...args: unknown[]) => mockLoadContactsPageForTenant(...args),
-  loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
-    mockLoadContactsSummaryByIdsForTenant(...args),
-}));
-
-vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
-  loadContactFieldConfig: (...args: unknown[]) => mockLoadContactFieldConfig(...args),
-}));
 
 import {
   loadMessagingRecipients,

@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import { SessionSchema, type Invoice, type User } from "@mms/shared";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { students, workspaces } from "../../db/schema.js";
+import { SessionSchema, type Invoice, type User } from "@mms/contracts";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant } from "@mms/db/context";
+import { students, workspaces } from "@mms/db/schema";
 import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";
 import { saveEnrollment } from "../../db/repositories/enrollmentRepositoryPersist.js";

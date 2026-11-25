@@ -7,7 +7,7 @@ import {
   translateSystemModuleLabel,
   type ModuleDefinition,
   type SystemModuleNavEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { resolveModuleIcon } from "@/lib/config/moduleIcons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Switch } from "@/components/ui/switch";

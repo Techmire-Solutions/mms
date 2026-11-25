@@ -3,10 +3,10 @@ import {
   NON_INSTRUCTIONAL_DAY_ERROR_TYPE,
   normalizeAttendanceModulePreferences,
   weekdayIndexes,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { attendanceCalendarRepository as repo } from "../repository/attendanceCalendarRepositoryAdapter.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";
-import { recordModernAuditEvent, type DbOrTransaction } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent, type DbOrTransaction } from "@mms/be-core/audit";
 
 export interface AttendanceDayRow {
   classId: string;

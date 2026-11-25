@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { FACULTY_MODULE_MANIFEST, toTitleCase } from "@mms/shared";
+import { FACULTY_MODULE_MANIFEST, toTitleCase } from "@mms/contracts";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { ReportDataGridContainer } from "./ReportDataGridContainer";
 import { ErrorState } from "@/components/app/ErrorState";

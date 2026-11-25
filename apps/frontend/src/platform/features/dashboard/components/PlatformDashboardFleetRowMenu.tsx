@@ -1,15 +1,10 @@
 import React from "react";
 import { MoreHorizontal, Eye, ExternalLink } from "lucide-react";
-import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformInspector } from "@/platform/features/shell/lib/PlatformInspectorContext";
-import { Button } from "@shared/ui";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@shared/ui";
+import { Button } from "@mms/ui";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@mms/ui";
 import { tenantUrl } from "@/lib/config/tenantConfig";
 
 interface PlatformDashboardFleetRowMenuProps {

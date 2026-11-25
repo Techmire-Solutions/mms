@@ -6,7 +6,7 @@ import { ContactBasicTab } from "@/tenant/features/contacts/components/formTabs/
 import { ContactFormNestedTabsDispatcher } from "@/tenant/features/contacts/components/ContactFormNestedTabsDispatcher";
 import type { ContactSubListTabBaseProps } from "@/tenant/features/contacts/components/formTabs/types";
 import type { useContactFormDraft } from "@/tenant/features/contacts/hooks/useContactFormDraft";
-import { normalizeContactFormTabId, type FieldDefinition } from "@mms/shared";
+import { normalizeContactFormTabId, type FieldDefinition } from "@mms/contracts";
 
 export type ContactFormDraftState = ReturnType<typeof useContactFormDraft>;
 

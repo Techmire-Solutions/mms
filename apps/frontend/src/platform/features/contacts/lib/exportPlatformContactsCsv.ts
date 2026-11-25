@@ -1,4 +1,4 @@
-import type { PlatformContactDto } from "@mms/shared";
+import type { PlatformContactDto } from "@mms/contracts";
 import { triggerFileDownload } from "@/lib/download";
 
 const HEADERS = ["ID", "Name", "Email", "Phone", "Kind", "Workspace", "Tags", "Notes"] as const;

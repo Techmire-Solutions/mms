@@ -1,5 +1,9 @@
 import React from "react";
-import { parseSessionTimeoutMinutes, resolveTenantSessionPolicy, translateApp } from "@mms/shared";
+import {
+  parseSessionTimeoutMinutes,
+  resolveTenantSessionPolicy,
+  translateApp,
+} from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useIdleTimer } from "@/hooks/useIdleTimer";

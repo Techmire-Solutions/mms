@@ -1,4 +1,4 @@
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export function WorkspaceAdminDialogFooter({

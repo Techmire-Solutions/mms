@@ -82,15 +82,15 @@ const REQUIRED = [
     ],
   },
   {
-    file: "packages/shared/src/finance/obligationSplitAllocation.test.ts",
+    file: "packages/contracts/src/finance/obligationSplitAllocation.test.ts",
     names: ["gives the leftover cent to the largest remainder, stably"],
   },
   {
-    file: "packages/shared/src/__tests__/obligationsImportBlueprint.test.ts",
+    file: "packages/contracts/src/__tests__/obligationsImportBlueprint.test.ts",
     names: ["rejects the old tasks shape instead of silently carrying it"],
   },
   {
-    file: "packages/shared/src/__tests__/obligationsSharedSchemas.test.ts",
+    file: "packages/contracts/src/__tests__/obligationsSharedSchemas.test.ts",
     names: ["keeps the DTOs on the canonical schemas"],
   },
   {

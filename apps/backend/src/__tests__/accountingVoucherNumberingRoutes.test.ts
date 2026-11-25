@@ -35,10 +35,13 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
 const mockLoad = vi.fn();
 const mockUpsert = vi.fn();
 
-vi.mock("../accounting/use-cases/accountingVoucherNumberingUseCases.js", () => ({
-  loadVoucherNumbering: (...args: unknown[]) => mockLoad(...args),
-  upsertVoucherNumbering: (...args: unknown[]) => mockUpsert(...args),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingVoucherNumberingUseCases.js",
+  () => ({
+    loadVoucherNumbering: (...args: unknown[]) => mockLoad(...args),
+    upsertVoucherNumbering: (...args: unknown[]) => mockUpsert(...args),
+  }),
+);
 
 const format = {
   autoGenerate: true,

@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { activeDb } from "../dbConnection.js";
-import * as schema from "../schema.js";
-import { type PlatformEmailIntegrationRow } from "../schema/platform.js";
-import type { EmailIntegrationConfig, EmailIntegrationSecrets } from "@mms/shared";
-import { DEFAULT_EMAIL_INTEGRATION } from "@mms/shared";
+import { activeDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
+import { type PlatformEmailIntegrationRow } from "@mms/db/schema/platform";
+import type { EmailIntegrationConfig, EmailIntegrationSecrets } from "@mms/contracts";
+import { DEFAULT_EMAIL_INTEGRATION } from "@mms/contracts";
 
 const SINGLETON_ID = "global";
 

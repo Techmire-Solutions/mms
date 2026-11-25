@@ -2,8 +2,11 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformAdminActionButtons } from "@/platform/features/users/components/admin/PlatformAdminActionButtons";
-import type { PlatformUserProfile } from "@mms/shared";
-import { DEFAULT_PLATFORM_ADMIN_PERMISSIONS, FULL_PLATFORM_ADMIN_PERMISSIONS } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
+import {
+  DEFAULT_PLATFORM_ADMIN_PERMISSIONS,
+  FULL_PLATFORM_ADMIN_PERMISSIONS,
+} from "@mms/contracts";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

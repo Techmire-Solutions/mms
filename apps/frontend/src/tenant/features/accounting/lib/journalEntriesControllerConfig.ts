@@ -1,6 +1,6 @@
-import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 export function buildJournalStatusConfig(
   t: TranslationFunction,

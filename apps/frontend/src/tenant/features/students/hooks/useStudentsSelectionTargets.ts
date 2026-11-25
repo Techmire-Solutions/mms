@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import {
   computeStudentsSelectionTargets,
   type StudentsSelectionTargets,

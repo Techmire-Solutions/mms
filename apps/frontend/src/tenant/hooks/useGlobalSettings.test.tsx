@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { useGlobalSettings } from "./useGlobalSettings";
-import type { GlobalSettings } from "@mms/shared";
+import type { GlobalSettings } from "@mms/contracts";
 
 const mocks = vi.hoisted(() => ({
   getScopedGlobalSettings: vi.fn<() => GlobalSettings>(),

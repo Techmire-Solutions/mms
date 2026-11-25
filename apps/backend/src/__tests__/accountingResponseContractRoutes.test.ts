@@ -41,8 +41,8 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../db/tenant-context.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../db/tenant-context.js")>();
+vi.mock("@mms/db/context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/db/context")>();
   return {
     ...actual,
     withTenant: (_tenant: string, work: () => unknown) => work(),
@@ -64,59 +64,83 @@ const mockLedgerOps = vi.hoisted(() => ({
   upsertBankStatement: vi.fn(),
   matchBankStatementLine: vi.fn(),
 }));
-vi.mock("../accounting/use-cases/accountingLedgerOpsUseCases.js", () => mockLedgerOps);
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingLedgerOpsUseCases.js",
+  () => mockLedgerOps,
+);
 
 const mockReportEndpoints = vi.hoisted(() => ({
   loadAccountLedger: vi.fn(),
   loadReceivablesAging: vi.fn(),
 }));
-vi.mock("../accounting/use-cases/accountingReportEndpointsUseCases.js", () => mockReportEndpoints);
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingReportEndpointsUseCases.js",
+  () => mockReportEndpoints,
+);
 
 const mockAggregates = vi.hoisted(() => vi.fn());
 const mockDeleteEntry = vi.hoisted(() => vi.fn());
 const mockLoadEntry = vi.hoisted(() => vi.fn());
-vi.mock("../accounting/use-cases/accountingUseCases.js", () => ({
-  accountingUseCases: {
-    loadAccountingReportAggregates: mockAggregates,
-    deleteJournalEntryById: mockDeleteEntry,
-    loadEntryById: mockLoadEntry,
-  },
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingUseCases.js",
+  () => ({
+    accountingUseCases: {
+      loadAccountingReportAggregates: mockAggregates,
+      deleteJournalEntryById: mockDeleteEntry,
+      loadEntryById: mockLoadEntry,
+    },
+  }),
+);
 
 const mockPreviewFx = vi.hoisted(() => vi.fn());
 const mockPreviewIas29 = vi.hoisted(() => vi.fn());
-vi.mock("../accounting/use-cases/ias29UseCases.js", () => ({
+vi.mock("../../../../packages/modules/accounting/dist/backend/use-cases/ias29UseCases.js", () => ({
   previewIas29Restatement: mockPreviewIas29,
 }));
 const mockListFxRuns = vi.hoisted(() => vi.fn());
 const mockBuildFxReport = vi.hoisted(() => vi.fn());
-vi.mock("../accounting/use-cases/fxRevaluationDeps.js", () => ({
-  fxRevaluationDeps: { listRuns: mockListFxRuns },
-  fxReportDeps: {},
-}));
-vi.mock("../accounting/use-cases/fxRevaluationUseCases.js", () => ({
-  previewFxRevaluation: mockPreviewFx,
-  postFxRevaluation: vi.fn(),
-}));
-vi.mock("../accounting/use-cases/fxReportUseCases.js", () => ({
-  buildFxReport: mockBuildFxReport,
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/fxRevaluationDeps.js",
+  () => ({
+    fxRevaluationDeps: { listRuns: mockListFxRuns },
+    fxReportDeps: {},
+  }),
+);
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/fxRevaluationUseCases.js",
+  () => ({
+    previewFxRevaluation: mockPreviewFx,
+    postFxRevaluation: vi.fn(),
+  }),
+);
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/fxReportUseCases.js",
+  () => ({
+    buildFxReport: mockBuildFxReport,
+  }),
+);
 
 const mockSpecializedEntry = vi.hoisted(() => vi.fn());
-vi.mock("../accounting/use-cases/processSpecializedEntryUseCase.js", () => ({
-  processSpecializedEntryUseCase: mockSpecializedEntry,
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/processSpecializedEntryUseCase.js",
+  () => ({
+    processSpecializedEntryUseCase: mockSpecializedEntry,
+  }),
+);
 
 const mockCanPostAccounting = vi.hoisted(() => vi.fn());
-vi.mock("../lib/rbacCanModuleHelpers.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../lib/rbacCanModuleHelpers.js")>();
+vi.mock("@mms/be-core/rbac", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/be-core/rbac")>();
   return { ...actual, canPostAccounting: (...args: unknown[]) => mockCanPostAccounting(...args) };
 });
 
 const mockSeedChart = vi.hoisted(() => vi.fn());
-vi.mock("../accounting/use-cases/seedDefaultChartOfAccounts.js", () => ({
-  seedDefaultChartOfAccountsUseCase: mockSeedChart,
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/seedDefaultChartOfAccounts.js",
+  () => ({
+    seedDefaultChartOfAccountsUseCase: mockSeedChart,
+  }),
+);
 
 const ledgerPage = {
   account: { id: "cash", code: "1010", name: "Cash", type: "Asset", subtype: "" },
@@ -381,7 +405,7 @@ describe("accounting response contracts", () => {
 
   it("returns the shared envelope (with a code) when a posted entry cannot be deleted", async () => {
     const { HttpDomainError } = await import("../lib/httpErrors.js");
-    const { ACCOUNTING_ERROR_CODES } = await import("@mms/shared");
+    const { ACCOUNTING_ERROR_CODES } = await import("@mms/contracts");
     mockDeleteEntry.mockRejectedValue(
       Object.assign(
         new HttpDomainError(422, "validation_error", "Posted journal entries cannot be deleted"),

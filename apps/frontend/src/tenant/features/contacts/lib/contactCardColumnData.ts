@@ -4,7 +4,7 @@ import {
   isRelationshipContactColumnKey,
   isRelationshipTypeColumnKey,
   type Contact,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /** Whether a card metadata column has renderable data for the contact. */
 export function hasContactCardColumnData(contact: Contact, colId: string): boolean {

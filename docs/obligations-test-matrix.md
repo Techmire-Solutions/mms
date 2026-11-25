@@ -16,9 +16,9 @@ drop a scenario.
 | RLS isolation | `rls/obligationsTenantIsolation` | returns only the current tenant's rows for an unfiltered read |
 | One RLS policy per table | `rls/obligationsTenantIsolation` | has exactly one policy per obligation table, all FORCE-enabled |
 | Route-level tenant scoping | `obligationsCrossTenant.integration` | keeps another workspace's receipt id inside the caller's own scope |
-| Split largest-remainder | `packages/shared/src/finance/obligationSplitAllocation` | gives the leftover cent to the largest remainder, stably |
-| Blueprint validation | `packages/shared/src/__tests__/obligationsImportBlueprint` | rejects the old tasks shape instead of silently carrying it |
-| Receipt date validation | `packages/shared/src/__tests__/obligationsSharedSchemas` | rejects %s before it reaches the database |
+| Split largest-remainder | `packages/contracts/src/finance/obligationSplitAllocation` | gives the leftover cent to the largest remainder, stably |
+| Blueprint validation | `packages/contracts/src/__tests__/obligationsImportBlueprint` | rejects the old tasks shape instead of silently carrying it |
+| Receipt date validation | `packages/contracts/src/__tests__/obligationsSharedSchemas` | rejects %s before it reaches the database |
 | Single-record save payload | `hooks/useObligationsPageActions` | sends exactly one record, not the cached directory |
 | Catalogue lists are inject-covered | `obligationsCatalogRoutes.integration` | serves a reader and scopes the read to the caller's workspace |
 | Catalogue writes refuse a read-only role | `obligationsCatalogRoutes.integration` | refuses a read-only role before the save runs |

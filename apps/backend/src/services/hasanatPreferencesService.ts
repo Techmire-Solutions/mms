@@ -1,4 +1,4 @@
-import { normalizeHasanatModulePreferences, type HasanatModulePreferences } from "@mms/shared";
+import { normalizeHasanatModulePreferences, type HasanatModulePreferences } from "@mms/contracts";
 import {
   getHasanatModulePreferences,
   setHasanatModulePreferences,

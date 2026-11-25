@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { getInitialStudentDraft } from "./studentFormDraft";
 import { prepareStudentForSave } from "@/tenant/features/students/hooks/studentFormValidation";
 

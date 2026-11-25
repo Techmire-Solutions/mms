@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FORM_INPUT } from "@/components/ui/formStyles";
-import { notify } from "@/lib/notify";
+import { Button } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { FORM_INPUT } from "@mms/ui";
+import { notify } from "@mms/fe-core/notify";
 import { useMatchBankReconciliation } from "@/tenant/features/accounting/hooks/useAccountingLedgerOps";
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 export interface BankReconciliationMatcherProps {
   t: TranslationFunction;

@@ -1,6 +1,6 @@
 import { notify } from "@/lib/notify";
-import type { Student, ValidationError, StudentDuplicateReason } from "@mms/shared";
-import type { Contact } from "@mms/shared";
+import type { Student, ValidationError, StudentDuplicateReason } from "@mms/contracts";
+import type { Contact } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { getApiValidationMessage } from "@/lib/apiValidationMessage";
 import { reportClientError } from "@/lib/clientErrorReporting";

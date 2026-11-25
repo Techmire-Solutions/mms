@@ -1,8 +1,8 @@
-import { type attendanceContract, type User } from "@mms/shared";
+import { type attendanceContract, type User } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { attendanceUseCases } from "../../../attendance/use-cases/attendanceUseCases.js";
 import { getTenantId } from "./attendanceRecordHandlers.js";
 

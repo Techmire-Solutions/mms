@@ -32,7 +32,7 @@ live in `apps/frontend/src/platform/features/settings/lib/platformSettingsNavCon
 - LLM keys are encrypted with the existing `encryptSecretAtRest` envelope; responses are always masked
   (`****last4`). A masked/omitted key never overwrites the stored secret.
 
-Migration: `apps/backend/src/db/migrations_drizzle/0272_platform_settings_branding.sql` (forward-only,
+Migration: `packages/db/migrations_drizzle/0272_platform_settings_branding.sql` (forward-only,
 `lock_timeout`, journal + snapshot).
 
 ## 3. Runtime white-label

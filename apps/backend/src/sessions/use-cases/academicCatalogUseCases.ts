@@ -1,5 +1,9 @@
-import type { AcademicCatalogItem, AcademicCatalogKind, AcademicCatalogWrite } from "@mms/shared";
-import { academicCatalogWriteSchema, activeAcademicCatalogItems } from "@mms/shared";
+import type {
+  AcademicCatalogItem,
+  AcademicCatalogKind,
+  AcademicCatalogWrite,
+} from "@mms/contracts";
+import { academicCatalogWriteSchema, activeAcademicCatalogItems } from "@mms/contracts";
 import { sessionsAcademicRepository as repo } from "../repository/sessionsAcademicRepositoryAdapter.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";

@@ -1,5 +1,5 @@
 import { loadGlobalSettings } from "./globalSettingsService.js";
-import { LLM_PROVIDERS_META, type LlmConfig } from "@mms/shared";
+import { LLM_PROVIDERS_META, type LlmConfig } from "@mms/contracts";
 import { fetchWithTimeout, safeOptionalExternalHttpUrl } from "../lib/outboundUrl.js";
 
 interface GeminiGenerateResponse {

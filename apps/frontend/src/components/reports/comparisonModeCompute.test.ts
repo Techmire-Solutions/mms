@@ -4,7 +4,7 @@ import {
   computeDynamicDateRangeComparison,
   computeDynamicSessionComparison,
 } from "@/components/reports/comparisonModeCompute";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 
 const t = (key: AppTranslationKey) => key;
 

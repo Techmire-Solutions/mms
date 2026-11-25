@@ -1,14 +1,14 @@
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { tsrClient } from "@/lib/api";
-import type { QuestionBankSettings } from "@mms/shared";
+import type { QuestionBankSettings } from "@mms/contracts";
 import {
   DEFAULT_QUESTION_BANK_SETTINGS,
   stripQuestionBankFieldConfigForPersist,
   composeQuestionBankSettings,
   normalizeQuestionBankModulePreferences,
   normalizeQuestionBankFieldConfigOnly,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { assertContractOk } from "@/lib/apiContractError";
 
 const QUERY_KEY_COMPOSED = ["question-bank", "config", "composed"] as const;

@@ -3,12 +3,12 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AccountingSettingsPreferences } from "./AccountingSettingsPreferences";
-import { DEFAULT_ACCOUNTING_SETTINGS, type Account, type FiscalYear } from "@mms/shared";
+import { DEFAULT_ACCOUNTING_SETTINGS, type Account, type FiscalYear } from "@mms/contracts";
 
 // The setup guide has its own spec; keep these suites on their sections.
 vi.mock("./FxSetupGuide", () => ({ FxSetupGuide: () => null }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 

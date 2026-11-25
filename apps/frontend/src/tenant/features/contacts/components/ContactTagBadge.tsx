@@ -5,9 +5,9 @@ import {
   normalizeContactTagName,
   type Contact,
   type ContactSystemTag,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ChipOverflowList } from "@shared/ui";
+import { ChipOverflowList } from "@mms/ui";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 

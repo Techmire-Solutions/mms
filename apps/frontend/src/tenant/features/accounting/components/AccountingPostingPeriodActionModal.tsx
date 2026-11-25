@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { LockKeyhole } from "lucide-react";
-import type { PostingPeriod } from "@mms/shared";
-import { FormModal } from "@/components/app/FormModal";
-import { Field } from "@/components/app/FormPrimitives";
-import { Textarea } from "@/components/ui/textarea";
+import type { PostingPeriod } from "@mms/contracts";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { Field } from "@mms/ui";
+import { Textarea } from "@mms/ui";
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useDirtySnapshot } from "@mms/fe-core/forms/useDirtySnapshot";
 
 export interface AccountingPostingPeriodActionModalProps {
   period: PostingPeriod;

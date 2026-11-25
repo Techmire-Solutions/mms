@@ -5,7 +5,7 @@ import {
   ModuleFilterDropdown,
 } from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
-import { parseSessionStatus } from "@mms/shared";
+import { parseSessionStatus } from "@mms/contracts";
 import type { SessionStatus } from "@/tenant/features/sessions/lib/sessionPageTypes";
 
 export interface SessionsFiltersMenuButtonProps {

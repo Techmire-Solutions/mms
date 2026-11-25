@@ -3,7 +3,7 @@ import { Award, FileStack, Printer } from "lucide-react";
 
 import { getRankSuffix, type GradeInfo } from "@/tenant/features/examinations/lib/gradeUtils";
 import { type Exam } from "@/lib/data/examinationData";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/app/Modal";
 import { Card } from "@/components/ui/card";

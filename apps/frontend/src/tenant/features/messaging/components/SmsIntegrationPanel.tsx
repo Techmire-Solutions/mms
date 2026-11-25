@@ -1,6 +1,6 @@
 import React from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { listSmsProviderPresets } from "@mms/shared";
+import { listSmsProviderPresets } from "@mms/contracts";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SmsIntegrationPanel as SharedSmsIntegrationPanel } from "@/components/app/IntegrationPanels/SmsIntegrationPanel";

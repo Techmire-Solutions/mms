@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Student, ModuleColumnRegistryEntry } from "@mms/shared";
+import type { Student, ModuleColumnRegistryEntry } from "@mms/contracts";
 import { renderStudentsListDesktopTableCell } from "./StudentsListDesktopTableCells";
 
 const mockTranslate = ((key: string, params?: Record<string, string>) => {

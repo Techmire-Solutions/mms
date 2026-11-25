@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { ShieldCheck, Lock, Clock, Key, ArrowRight } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@shared/ui";
-import { Badge } from "@shared/ui";
-import { Button } from "@shared/ui";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@mms/ui";
+import { Badge } from "@mms/ui";
+import { Button } from "@mms/ui";
 import { ROUTES } from "@/lib/config/routes";
-import { PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES } from "@mms/shared";
+import { PLATFORM_IDLE_SESSION_TIMEOUT_MINUTES } from "@mms/contracts";
 
 export function PlatformSecuritySettingsPanel(): React.JSX.Element {
   const { t } = useTranslation();

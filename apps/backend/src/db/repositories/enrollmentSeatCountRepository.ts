@@ -1,8 +1,8 @@
 import { and, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
-import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/shared";
-import { enrollments } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { NotFoundError, SeatCapacityError } from "../../lib/httpErrors.js";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES } from "@mms/contracts";
+import { enrollments } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
+import { NotFoundError, SeatCapacityError } from "@mms/be-core/http/errors";
 
 /** Advisory lock for a rollover carry on one target session (released with the ambient tx). */
 export async function lockRolloverCarryTx(tenant: string, targetSessionId: string): Promise<void> {

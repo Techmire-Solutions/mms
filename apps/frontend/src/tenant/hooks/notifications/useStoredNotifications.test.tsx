@@ -3,7 +3,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClientProvider, queryOptions, type QueryClient } from "@tanstack/react-query";
 import { toStoredNotificationItem, useStoredNotifications } from "./useStoredNotifications";
-import type { TenantNotificationRecord } from "@mms/shared";
+import type { TenantNotificationRecord } from "@mms/contracts";
 import { createTestQueryClient } from "@/test/queryClientTestUtils";
 
 const t = (key: string, params?: Record<string, string | number>) =>

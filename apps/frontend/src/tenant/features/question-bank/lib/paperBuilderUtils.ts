@@ -2,7 +2,7 @@ import type {
   QuestionBankPaperSection,
   QuestionBankQuestion as Question,
   QuestionBankTest,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { autoPrintWindow, PRINT_FONT_LINK, PRINT_FONT_STACK } from "@/lib/printWindowHtml";
 import {

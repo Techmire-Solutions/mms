@@ -1,4 +1,4 @@
-import { isQueryFlagTrue, type facultyContract } from "@mms/shared";
+import { isQueryFlagTrue, type facultyContract } from "@mms/contracts";
 import { canDeleteCollection } from "../../../services/rbacService.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import {

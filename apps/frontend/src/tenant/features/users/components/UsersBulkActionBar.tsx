@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { UserCog } from "lucide-react";
-import { USERS_MODULE_MANIFEST, type SystemUser } from "@mms/shared";
+import { USERS_MODULE_MANIFEST, type SystemUser } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import type { BulkSelectionMessageChannel } from "@/components/app/BulkSelectionActions";
 import { useTranslation } from "@/hooks/useTranslation";

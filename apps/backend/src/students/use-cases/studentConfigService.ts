@@ -5,7 +5,7 @@ import {
   type FieldDefinition,
   type StudentsSettings,
   type TabDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   createModuleFieldConfigService,
   requireFieldConfigTenant,

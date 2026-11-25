@@ -13,7 +13,7 @@ product surface.**
 A **receipt ledger** for religious dues (khums/zakat and similar), not a pledge or installment model.
 
 ```
-UI (111 files)                      packages/shared (7 files)            backend
+UI (111 files)                      packages/contracts (7 files)            backend
 ObligationsPage (3 tiers)  ──►  contracts/obligations.contract.ts        routes/tenant/obligations.ts
   Work: directory + drawer      obligationsModuleManifest.ts (schemas)    routes/.../obligations/*.ts
   Reports: ModuleReportsTier    obligationsReportAggregates.ts            obligations/use-cases/* (5)

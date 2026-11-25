@@ -1,4 +1,4 @@
-import { normalizeBrandingCornerStyle, normalizeThemeMode, type ThemeMode } from "@mms/shared";
+import { normalizeBrandingCornerStyle, normalizeThemeMode, type ThemeMode } from "@mms/contracts";
 
 export interface PlatformThemeDraft {
   themeMode: ThemeMode;

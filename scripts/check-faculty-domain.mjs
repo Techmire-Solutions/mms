@@ -1,7 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { glob } from "node:fs/promises";
+import { assertScanDirs, fromRoot } from "./lib/repo-paths.mjs";
 
-const roots = ["apps/backend/src", "apps/frontend/src", "packages/shared/src"];
+const roots = ["apps/backend/src", "apps/frontend/src", "packages/contracts/src"];
+
+// Fail closed: the legacy-surface scan must not pass on a renamed app root.
+assertScanDirs(
+  roots.map((root) => fromRoot(root)),
+  "faculty domain",
+);
 const forbidden = [
   ["/api/teachers", "legacy Teacher API route"],
   ['CREATE VIEW "teachers"', "legacy Teacher compatibility view"],
@@ -38,28 +45,28 @@ for (const root of roots) {
   }
 }
 
-const facultySchema = await readFile("apps/backend/src/db/schema/faculty.ts", "utf8");
+const facultySchema = await readFile("packages/db/src/schema/faculty.ts", "utf8");
 const facultyDesignationSchema = await readFile(
-  "apps/backend/src/db/schema/facultyDesignationTables.ts",
+  "packages/db/src/schema/facultyDesignationTables.ts",
   "utf8",
 );
 const facultyAssignmentSchema = await readFile(
-  "apps/backend/src/db/schema/facultyAssignmentTables.ts",
+  "packages/db/src/schema/facultyAssignmentTables.ts",
   "utf8",
 );
 const facultyDepartmentSchema = await readFile(
-  "apps/backend/src/db/schema/facultyDepartmentTables.ts",
+  "packages/db/src/schema/facultyDepartmentTables.ts",
   "utf8",
 );
 const facultySchemaSource = `${facultySchema}\n${facultyDesignationSchema}\n${facultyAssignmentSchema}\n${facultyDepartmentSchema}`;
 for (const needle of requiredSchemaNeedles) {
   if (!facultySchemaSource.includes(needle)) {
-    violations.push(`apps/backend/src/db/schema: missing ${needle}`);
+    violations.push(`packages/db/src/schema: missing ${needle}`);
   }
 }
 
 const temporalMigration = await readFile(
-  "apps/backend/src/db/migrations_drizzle/0123_faculty_temporal_designations.sql",
+  "packages/db/migrations_drizzle/0123_faculty_temporal_designations.sql",
   "utf8",
 );
 if (!temporalMigration.includes("faculty_designation_assignments_no_overlap_excl")) {

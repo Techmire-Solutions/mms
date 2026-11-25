@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+});
+
 /**
  * GAP COVERAGE: Concurrency and allocation race condition tests.
  *
@@ -17,7 +27,7 @@
  * serialisation is covered by the db-integration layer.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
 
 // ─── Shared mocks ────────────────────────────────────────────────────────────
@@ -45,11 +55,7 @@ vi.mock("../lib/cache/index.js", () => ({
   invalidateMultiTierCache: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: vi.fn().mockResolvedValue(undefined),
-}));
-
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
   mapActionStringToAuditType: (action: string) => action,
   sanitizeAuditState: (v: unknown) => v,
@@ -67,7 +73,7 @@ vi.mock("../db/repositories/studentEnrollmentCascade.js", () => ({
   restoreCascadedEnrollmentsForStudents: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -253,7 +259,7 @@ describe("GAP-C4: parallel bulkUpdateStudentStatus with overlapping id sets", ()
     };
 
     // The import must be fresh since we're re-mocking auditTrailService in the outer vi.mock above.
-    const { recordModernAuditEvent } = await import("../services/auditTrailService.js");
+    const { recordModernAuditEvent } = await import("@mms/be-core/audit");
     const auditSpy = vi.mocked(recordModernAuditEvent);
     mockBulkUpdateStatus.mockImplementation(async (_tenant: string, ids: string[]) => ({
       succeeded: ids.length,

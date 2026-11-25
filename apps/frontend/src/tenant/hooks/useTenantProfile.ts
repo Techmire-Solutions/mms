@@ -1,6 +1,6 @@
 import { tsrClient } from "@/lib/api";
 import { useAuth } from "@/lib/contexts/AuthContext";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 
 /**
  * Own-profile cache key carries the `auth` segment so `canPersistQuery` never

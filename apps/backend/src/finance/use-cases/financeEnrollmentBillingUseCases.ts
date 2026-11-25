@@ -1,9 +1,9 @@
-import { withdrawalInvoicePlan, type WithdrawalBillingOutcome } from "@mms/shared";
+import { withdrawalInvoicePlan, type WithdrawalBillingOutcome } from "@mms/contracts";
 import { financeRepository as repo } from "../repository/financeRepositoryAdapter.js";
 import { requireTenant } from "../../lib/tenantContext.js";
 import { logger } from "../../lib/logger.js";
-import { hasActiveTransaction } from "../../db/dbTransactions.js";
-import { withSavepoint } from "../../db/transactionSideEffects.js";
+import { hasActiveTransaction } from "@mms/db/client";
+import { withSavepoint } from "@mms/db/transactionSideEffects";
 import { cancelInvoice } from "./financeCollectUseCases.js";
 
 const ref = (invoice: { id: string; invoiceNumber?: string | null }) => ({

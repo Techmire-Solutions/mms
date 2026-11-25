@@ -1,14 +1,14 @@
 import React, { lazy, Suspense } from "react";
-import { ACCOUNTING_MODULE_MANIFEST, type Account, type FiscalYear } from "@mms/shared";
-import { ErrorBoundary } from "@/components/app/ErrorBoundary";
-import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
-import { SetupReadOnlyMessage } from "@/components/app/SetupReadOnlyMessage";
-import { SubTabBar } from "@/components/app/SubTabBar";
-import { useTranslation } from "@/hooks/useTranslation";
+import { ACCOUNTING_MODULE_MANIFEST, type Account, type FiscalYear } from "@mms/contracts";
+import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
+import { ModuleTierMotion } from "@mms/ui/app/ModuleTierMotion";
+import { SetupReadOnlyMessage } from "@mms/ui/app/SetupReadOnlyMessage";
+import { SubTabBar } from "@mms/ui/app/SubTabBar";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useModuleSetupSubTabs } from "@/lib/setup/useModuleSetupSubTabs";
 import { useTemplateDraftGuard } from "@/lib/setup/useTemplateDraftGuard";
-import { ModulePanelSuspenseFallback } from "@/components/app/ModulePanelSuspenseFallback";
+import { ModulePanelSuspenseFallback } from "@mms/fe-core/components/ModulePanelSuspenseFallback";
 
 const AccountingSettings = lazy(
   () => import("@/tenant/features/accounting/components/AccountingSettings"),

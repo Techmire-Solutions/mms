@@ -15,13 +15,13 @@ sync, list pagination and indexes, and cross-module consumers (students/faculty/
 the contacts axe specs were executed. Read-only SQL probes ran against the local Docker Postgres
 (catalogue, `EXPLAIN`, one rolled-back temp-table length probe). No source, test, migration or
 config file was modified; probes that needed a schema boundary were executed against the already
-built `packages/shared/dist`. Findings are labelled **proven** (production code path executed or
+built `packages/contracts/dist`. Findings are labelled **proven** (production code path executed or
 schema/DDL inspected) or **hypothesis**; a hypothesis is never counted in the verdict.
 
 **Scope.** `apps/backend/src/routes/tenant/contacts*`, `apps/backend/src/contacts/**`,
-`apps/backend/src/db/repositories/contact*`, `apps/backend/src/db/schema/contact*`,
-`packages/shared/src/contacts/**`, `packages/shared/src/contracts/contacts*`,
-`packages/shared/src/schemas/contacts*`, `apps/frontend/src/tenant/features/contacts/**`,
+`apps/backend/src/db/repositories/contact*`, `packages/db/src/schema/contact*`,
+`packages/contracts/src/contacts/**`, `packages/contracts/src/contracts/contacts*`,
+`packages/contracts/src/schemas/contacts*`, `apps/frontend/src/tenant/features/contacts/**`,
 `apps/frontend/src/lib/contacts/**`, the shared work/table and CSV-export machinery they consume,
 contacts migrations `0004`–`0101`/`0108`, and contacts e2e/a11y specs. Consumers were inspected only
 where they call contact services or render contact pickers.
@@ -137,7 +137,7 @@ has more than 38 contacts (seeding is out of scope for a read-only review).
 **Evidence.**
 - `apps/frontend/src/tenant/features/contacts/components/ContactsCsvImportDialog.tsx:23-24` — `apiPath="/api/contacts/import"`, `schema={contactsTransferSchema}`.
 - The shared starter posts `{ rows, label }`: `apps/frontend/src/lib/backgroundJobs/useModuleCsvImportActions.ts:96-101`.
-- The route contract is strict and expects `contacts`: `packages/shared/src/schemas/contactsImport.dto.ts:38-44`; parsed at `apps/backend/src/routes/tenant/contacts/contactAuditExportRoutes.ts:50-51`.
+- The route contract is strict and expects `contacts`: `packages/contracts/src/schemas/contactsImport.dto.ts:38-44`; parsed at `apps/backend/src/routes/tenant/contacts/contactAuditExportRoutes.ts:50-51`.
 - Executed against the built schema: `contactsImportBodySchema.safeParse({rows:[…]})` → `invalid_type ["contacts"] "expected array, received undefined"`.
 - The dialog is reachable from the Work header: `ContactsPageHeaderActions.tsx:69-79` (“Import CSV”) → `ContactsPageOverlays.tsx:152-157`.
 
@@ -167,7 +167,7 @@ case proves chunking.
 - `/api/contacts` list/get require `canReadCollection(user,"contacts")`: `apps/backend/src/routes/tenant/contacts/contactCrudRoutes.ts:35,83`; `canReadContacts` is `roleHasPermission(role, "contacts.read")` (`apps/backend/src/lib/rbacCanModuleHelpers.ts:7-13`).
 - The shared picker runs in server mode and calls those endpoints: `apps/frontend/src/components/contactLink/useContactPickerState.ts:70-86` → `useContactsContractList` / `useContactById` (`apps/frontend/src/tenant/features/contacts/hooks/useContactsQueries.ts:101-118`).
 - Consumers render it with no permission gate: `apps/frontend/src/tenant/features/students/components/StudentContactSection.tsx:77-80`, `.../faculty/components/FacultyFormContactSection.tsx`, `.../workshops/components/WorkshopParticipantsSection.tsx:62`.
-- Default roles: `teacher` has `students: read/update`, `faculty: read/update`, `workshops: create/read/update` but **no** `contacts` grant (`packages/shared/src/auth/userRbacDefaultRoles.ts:95-135`); assistant_teacher and librarian likewise.
+- Default roles: `teacher` has `students: read/update`, `faculty: read/update`, `workshops: create/read/update` but **no** `contacts` grant (`packages/contracts/src/auth/userRbacDefaultRoles.ts:95-135`); assistant_teacher and librarian likewise.
 - Executed: `roleHasPermission("teacher","contacts.read") === false`, while `STUDENTS_MODULE_MANIFEST.permissions.write` and `WORKSHOPS_MODULE_MANIFEST.permissions.write` are `true` for the same role.
 
 **Impact.** A teacher can open a student/faculty edit form and the workshop participants panel, but
@@ -189,14 +189,14 @@ finds a usable picker.
 ### R2-04 — P2 — Relationship `email`/`gender` are accepted, exported and imported but never stored
 
 **Evidence.**
-- Type declares them: `packages/shared/src/contacts/contactEntityTypes.ts:100-107` (`RelationshipContact.email`, `.gender`).
-- The table has no such columns: `apps/backend/src/db/schema/contactProfileTables.ts:162-169` (`related_contact_id, name, relationship, phone, inferred, inferred_from_contact_id, inference_depth, sort_order`).
+- Type declares them: `packages/contracts/src/contacts/contactEntityTypes.ts:100-107` (`RelationshipContact.email`, `.gender`).
+- The table has no such columns: `packages/db/src/schema/contactProfileTables.ts:162-169` (`related_contact_id, name, relationship, phone, inferred, inferred_from_contact_id, inference_depth, sort_order`).
 - Write mapper drops them: `apps/backend/src/db/repositories/contactPersistEngagementChildren.ts:31-42`; read mapper drops them: `contactChildRowMappers.ts:134-151`.
-- The CSV surface treats them as real: export columns `packages/shared/src/contacts/contactExportColumns.ts:106-107`, extractors `contactExportExtractors.ts:163-169`, import parser `contactsCsvParser.ts:87-98`.
+- The CSV surface treats them as real: export columns `packages/contracts/src/contacts/contactExportColumns.ts:106-107`, extractors `contactExportExtractors.ts:163-169`, import parser `contactsCsvParser.ts:87-98`.
 
 **Impact.** CSV import silently discards relationship email/gender; the two export columns are
 permanently blank; guardian messaging that reads `RelationshipContact.email`
-(`packages/shared/src/students/studentGuardianFromContacts.ts:23-24`) can never receive a persisted
+(`packages/contracts/src/students/studentGuardianFromContacts.ts:23-24`) can never receive a persisted
 value.
 
 **Fix.** Choose one SSOT: add `email`/`gender` columns plus persist/hydrate/JSON-projection changes,
@@ -210,7 +210,7 @@ assert both survive; CSV export→import round-trip equality for both columns.
 ### R2-05 — P2 — Student father/mother assignment is insertion-order based
 
 **Evidence.**
-- `packages/shared/src/students/studentGuardianFromContacts.ts:174-196` picks slots by
+- `packages/contracts/src/students/studentGuardianFromContacts.ts:174-196` picks slots by
   `link.gender === "male"/"female"` and otherwise does `[fatherLink, motherLink] = parentLinks;`.
 - Relationship gender is never hydrated (R2-04), so the gender branch is unreachable on persisted
   data; the order fallback always runs.
@@ -257,7 +257,7 @@ A→B removes B→A inferred; (c) a concurrent target edit yields 409 instead of
 ### R2-07 — P2 — Duplicate pairing is quadratic on shared names and caches every pair
 
 **Evidence.**
-- Exact name equality alone emits a pair: `packages/shared/src/contacts/contactDuplicateUtils.ts:141-144`.
+- Exact name equality alone emits a pair: `packages/contracts/src/contacts/contactDuplicateUtils.ts:141-144`.
 - Every entry is compared against every entry sharing its name key: `contactDuplicateUtils.ts:196-243`.
 - The full pair array is persisted to the object store: `apps/backend/src/contacts/use-cases/contactDuplicateScanUseCases.ts:137-143`.
 - Any `contacts.read` user can trigger a scan (`apps/backend/src/routes/tenant/contacts/contactDuplicateRoutes.ts:64-77`); the client sends no idempotency key.
@@ -302,7 +302,7 @@ and repeated requests return identical page contents.
   `selection` without `selectRowAriaLabel`/`selectAllAriaLabel`.
 - `apps/frontend/src/components/common/work/WorkBatchTableRow.tsx:50` falls back to
   `` `Select row ${idStr}` ``; `WorkBatchTable.tsx:55` falls back to `t("common.selectAll")`.
-- The localized keys already exist (`packages/shared/src/i18n/appTranslationsEn.ts:2898-2899`) and the
+- The localized keys already exist (`packages/contracts/src/i18n/appTranslationsEn.ts:2898-2899`) and the
   mobile card path uses them (`ContactsListCards.tsx:104`).
 
 **Impact.** On the primary desktop surface (and in every locale) each row checkbox is named
@@ -398,16 +398,16 @@ compressed form; confidence is **proven** unless marked *(hypothesis)*.
 
 | ID | Finding | Evidence | Fix / acceptance |
 | --- | --- | --- | --- |
-| R2-13 | Field/tab governance is inert: the field-config PUT schema cannot persist `formTabs`, the sanitizer reads only `tabs` (so `enabledTabs` cannot hide a tab), and `validateContactDynamic` has no production call site | `packages/shared/src/schemas/moduleFieldConfig.dto.ts:4-11` (`.strict()`, no `formTabs`); `apps/backend/src/contacts/use-cases/contactConfigService.ts:12-15,46`; `contactResponseSanitizer.ts:70-79`; `contactEnabledTabs.ts:82-96`; `contactBlueprintValidation.ts:33-75` (tests only) | Derive tabs server-side from `enabledTabs` + seed, feed sanitizer/export/dynamic schema; acceptance: `{enabledTabs:["phones"]}` hides education in GET/export |
+| R2-13 | Field/tab governance is inert: the field-config PUT schema cannot persist `formTabs`, the sanitizer reads only `tabs` (so `enabledTabs` cannot hide a tab), and `validateContactDynamic` has no production call site | `packages/contracts/src/schemas/moduleFieldConfig.dto.ts:4-11` (`.strict()`, no `formTabs`); `apps/backend/src/contacts/use-cases/contactConfigService.ts:12-15,46`; `contactResponseSanitizer.ts:70-79`; `contactEnabledTabs.ts:82-96`; `contactBlueprintValidation.ts:33-75` (tests only) | Derive tabs server-side from `enabledTabs` + seed, feed sanitizer/export/dynamic schema; acceptance: `{enabledTabs:["phones"]}` hides education in GET/export |
 | R2-14 | The frontend never unwraps the setup response, so a stored tenant field config is ignored | Backend/contract send `{config}` (`contactsSetup.contract.ts:6-14`, `registerModuleSetupConfigRoutes.ts:78`); FE spreads `fieldConfigResponse?.body` (`ContactConfigContext.tsx:91,173,208`); provider falls back to seed (`useContactConfigProviderValue.ts:71-80`) | Spread `body.config`; provider test with a `{config}` body |
-| R2-15 | `PUT /api/contacts/preferences` is a `.passthrough()` with only `relationshipPairs` validated; malformed `namePrefixesToIgnore` string persists and makes duplicate scan/check 500 (`buildNamePrefixRegex` `.map` throws) | `packages/shared/src/contacts/contactSetupConfigTypes.ts:23-27`; `contactDisplayUtils.ts:144-156`; `contactRepositoryDuplicateFind.ts:49,119`; only client validation in `useContactsPreferencesSave.ts:51-55` | Shared Zod for the whole `ContactPreferences`, parse in route; acceptance: string/51-prefix/threshold 0|101 → 400 |
+| R2-15 | `PUT /api/contacts/preferences` is a `.passthrough()` with only `relationshipPairs` validated; malformed `namePrefixesToIgnore` string persists and makes duplicate scan/check 500 (`buildNamePrefixRegex` `.map` throws) | `packages/contracts/src/contacts/contactSetupConfigTypes.ts:23-27`; `contactDisplayUtils.ts:144-156`; `contactRepositoryDuplicateFind.ts:49,119`; only client validation in `useContactsPreferencesSave.ts:51-55` | Shared Zod for the whole `ContactPreferences`, parse in route; acceptance: string/51-prefix/threshold 0|101 → 400 |
 | R2-16 | Sanitizer strips `tag` but not its mirror `tags`, and strips `name` only when `firstName` is hidden (a hidden `lastName` leaks through `name`) | `contactResponseSanitizer.ts:117-129`; mapper emits both mirrors (`contactRepositoryMappers.ts:63-67`) | Strip `tags` with `tag`; strip/recompute `name` when either part hidden; restricted-tag spec |
 | R2-17 | Write DTOs have no DB-aligned length bounds; overlong tag/firstName/email values hit varchar limits and return 500 | `contacts.dto.ts:115-148` (no `.max`), `contactEntityTypes.ts:228-237`; live DDL: `contact_tags.name varchar(100)`, `contacts.first_name varchar(150)`, `contact_emails.address varchar(255)`; probe in a rolled-back temp table: insertion of 101 chars → `22001 value too long` | Bound strings in the shared DTO; acceptance: 101-char tag → 400 not 500 |
 | R2-18 | `bulk-tag` has no `ids` cap (bulk delete/restore cap at 500) and loads fully hydrated contacts (12 child collections) only to merge tags | `contactEntityTypes.ts:228-237` vs `api.dto.ts:19-24`; `contactBulkWriteUseCases.ts:122` → `findContactsByIds` → `hydrateContactsList` | Cap ids at 500 and load a tags-only projection; 25k-id request must 400 |
 | R2-19 | `POST /api/contacts/google-sync/audit` lets the client choose which audit event is written (`credentials_saved`/`disconnected`); no frontend caller exists | `googleSyncRoutes.ts:133-146`; enum `contactsOperations.dto.ts:25-34`; frontend grep: no caller | Delete the endpoint or derive the audit from the actual config change |
 | R2-20 | Google Contacts sync runs synchronously inside the request and paginates the whole People directory with no page/record cap | `googleSyncRoutes.ts:110-121`; `contactGooglePeopleApi.ts:40-51` (`pageSize=1000`, `do…while(pageToken)`); `contactGoogleSyncRun.ts` one long transaction | Move to a BullMQ job with progress + cap; persist `syncToken`; 10k mock → 202 + job |
 | R2-21 | “Keep mine”/“Retry all” re-queue the same stale `updatedAt`, so the next flush 409s and re-records the conflict forever; the merge UI also only diffs 7 fields and force-keeps the local name | `useContactsSyncConflictRow.ts:82-91`; `contactsSyncOutboxConflicts.ts:24-35`; `contactsSyncOutboxFlush.ts:81-90`; `useContactMutations.ts:88-91`; `contactSyncDiff.ts:11-19,136-146` | Keep-mine via upsert (no version header) or refreshed token; merge over the full permitted field set, honour the name pick |
-| R2-22 | Title casing mangles hyphenated/apostrophe/inner-capital Latin names on every save and merge (`Al-Siddiq→Al-siddiq`, `O'Brien→O'brien`, `McDonald→Mcdonald`) | `packages/shared/src/core/titleCaseStringUtils.ts:34-43`; applied in `useContactFormSave.ts:117`, `useDuplicateDetectionState.ts:161,184`, `contactValidationUseCases.ts:121` | Segment-aware casing (`[\s'-]`, preserve all-caps/Mc/O’) + tests; Arabic/Urdu round-trip unchanged |
+| R2-22 | Title casing mangles hyphenated/apostrophe/inner-capital Latin names on every save and merge (`Al-Siddiq→Al-siddiq`, `O'Brien→O'brien`, `McDonald→Mcdonald`) | `packages/contracts/src/core/titleCaseStringUtils.ts:34-43`; applied in `useContactFormSave.ts:117`, `useDuplicateDetectionState.ts:161,184`, `contactValidationUseCases.ts:121` | Segment-aware casing (`[\s'-]`, preserve all-caps/Mc/O’) + tests; Arabic/Urdu round-trip unchanged |
 | R2-23 | A 409 stale-write conflict has no recovery UX and surfaces the server’s English sentence over a translated toast | `useContactFormSave.ts:130-151`; server message `contactWriteUseCases.ts:174-176`; mapping `contactCrudRoutes.ts:207-213` | Branch on 409/`type:"conflict"`, keep the form dirty, offer reload/overwrite with localized copy |
 | R2-24 | Invalidation gaps: field-config is absent from the shared invalidator (and from its own mutation’s success), and a preferences save does not invalidate the duplicates query | `invalidateContactsQueries.ts:19-35`; `useContactsQueries.ts:174-187`; `createModuleSetupConfigHooks.ts:69-78` | Add field-config + duplicates keys; invalidation test asserting `isInvalidated` |
 | R2-25 | “Merge all high-confidence” performs N sequential merges, each firing the full ~10-key invalidation wave; a mid-run failure leaves a partial merge with one generic toast | `useDuplicateDetectionState.ts:151-174`; `invalidateContactsQueries.ts:28-35`; `useContactMutations.ts:54-56` | Single batch mutation or one `onSettled` invalidate after the loop; assert 10 merges ⇒ 1 invalidation/key |

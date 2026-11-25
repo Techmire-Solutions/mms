@@ -3,7 +3,7 @@ import {
   type DocumentTemplatePreset,
   type TemplateFieldDefinition,
   type TypstFeeReceiptPayload,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   PRINT_BLUE_DEEP,
   PRINT_BLUE_DIVIDER,

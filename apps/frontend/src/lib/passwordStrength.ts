@@ -1,4 +1,4 @@
-import { estimatePasswordStrength } from "@mms/shared";
+import { estimatePasswordStrength } from "@mms/contracts";
 
 export interface PasswordStrengthResult {
   score: number;

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ModuleFieldDef } from "@mms/shared";
+import type { ModuleFieldDef } from "@mms/contracts";
 
 interface QuestionSourceInputProps {
   field: ModuleFieldDef;

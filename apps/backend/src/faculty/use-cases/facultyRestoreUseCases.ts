@@ -1,4 +1,4 @@
-import { dedupeTrimmedIds, type Faculty } from "@mms/shared";
+import { dedupeTrimmedIds, type Faculty } from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
@@ -6,12 +6,12 @@ import type { FacultyRepository } from "../repository/facultyRepository.js";
 import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
-import { buildRestoredRecord, nowIso } from "../../lib/softDeleteHelpers.js";
-import { emitOutboxEvent, emitOutboxEvents } from "../../services/outboxEventService.js";
+import { buildRestoredRecord, nowIso } from "@mms/db/soft-delete";
+import { emitOutboxEvent, emitOutboxEvents } from "@mms/be-core/data/outbox";
 import { cascadeRestoreFacultyAssignments } from "../../db/repositories/facultyAssignmentCascade.js";
 import { cascadeRestoreFacultyEmployments } from "../../db/repositories/facultyEmploymentRepository.js";
 import { cascadeRestoreFacultyEmployDesignations } from "../../db/repositories/facultyEmployDesignationRepository.js";
-import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileFacultyContactsByFacultyIds } from "@mms/mod-contacts/backend/use-cases";
 import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 
 export async function restoreFacultyById(

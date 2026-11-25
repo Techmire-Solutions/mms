@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Archive, AlertTriangle, MessageSquareOff, RotateCcw, Send } from "lucide-react";
-import type { Message } from "@mms/shared";
+import type { Message } from "@mms/contracts";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";

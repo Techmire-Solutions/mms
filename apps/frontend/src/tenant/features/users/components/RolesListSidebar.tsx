@@ -1,6 +1,6 @@
 import React from "react";
 import { Plus, Pencil } from "lucide-react";
-import { workspaceRoleDescription, workspaceRoleLabel, type WorkspaceRole } from "@mms/shared";
+import { workspaceRoleDescription, workspaceRoleLabel, type WorkspaceRole } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { UserRoleBadge } from "@/tenant/features/users/components/UserBadges";

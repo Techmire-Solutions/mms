@@ -1,4 +1,4 @@
-import type { NotificationChannel, PlatformUserProfile } from "@mms/shared";
+import type { NotificationChannel, PlatformUserProfile } from "@mms/contracts";
 
 export interface PlatformAuthContextType {
   platformUser: PlatformUserProfile | null;

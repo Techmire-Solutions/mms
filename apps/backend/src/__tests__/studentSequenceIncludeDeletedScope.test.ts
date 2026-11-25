@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { readIncludeDeletedSetting, withIncludeDeletedScope } from "../lib/softDeleteHelpers.js";
+import { readIncludeDeletedSetting, withIncludeDeletedScope } from "@mms/db/soft-delete";
 
 type QueryChunk = string | { value?: unknown };
 

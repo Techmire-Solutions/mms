@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Roster reads for examinations: the marks-import roll resolution, the broadsheet names and the

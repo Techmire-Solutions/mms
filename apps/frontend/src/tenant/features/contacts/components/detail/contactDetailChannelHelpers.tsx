@@ -3,7 +3,7 @@ import {
   type Contact,
   type EmailAddress,
   type PhoneNumber,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { EmptyState } from "@/components/app/EmptyState";
 import { cn } from "@/lib/utils";
 

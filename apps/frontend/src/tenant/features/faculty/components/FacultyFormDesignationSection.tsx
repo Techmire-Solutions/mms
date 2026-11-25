@@ -8,7 +8,7 @@ import type {
   FacultyEmployDesignationFormRow,
   FacultyMember,
   FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FacultyCatalogCreateOverlays } from "./FacultyCatalogCreateOverlays";
 import { FacultyFormDesignationCard } from "./FacultyFormDesignationCard";
 import { buildDesignationDraftPatch } from "../lib/facultyFormDesignationDraft";

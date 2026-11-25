@@ -5,7 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 import { useTranslation } from "@/hooks/useTranslation";
 import { ReportChartCard } from "@/components/reports/ReportChartCard";
 import { SubTabBar } from "@/components/app/SubTabBar";
-import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
 
 type Timeframe = "all" | "1y" | "90d" | "30d";
 

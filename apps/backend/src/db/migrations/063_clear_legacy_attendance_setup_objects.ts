@@ -1,6 +1,6 @@
 import { like, and } from "drizzle-orm";
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
 
 export async function runMigration063(): Promise<void> {
   console.log("Clearing legacy Attendance setup config from objects table...");

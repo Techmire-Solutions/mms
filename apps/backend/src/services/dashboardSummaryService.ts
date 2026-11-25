@@ -9,18 +9,18 @@ import type {
   QuestionBankCommandMetricsSnapshot,
   AccountingCommandMetricsSnapshot,
   TasksCommandMetricsSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
-import { withTenant } from "../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { redisGet, redisSet, redisKeys } from "../lib/redis.js";
 import { studentUseCases } from "../students/use-cases/studentUseCases.js";
 import { facultyUseCases } from "../faculty/use-cases/facultyUseCases.js";
-import { contactUseCases } from "../contacts/use-cases/contactUseCases.js";
+import { contactUseCases } from "@mms/mod-contacts/backend/use-cases";
 import { loadSessionsCommandMetrics } from "./sessionService.js";
 import { aggregateAttendanceCommandMetrics } from "../db/repositories/attendanceRepositoryList.js";
 import { loadFinanceCommandMetrics } from "./financeService.js";
 import { loadHasanatCommandMetrics } from "./hasanatService.js";
-import { loadAccountingCommandMetrics } from "./accountingService.js";
+import { loadAccountingCommandMetrics } from "@mms/mod-accounting/backend/services";
 import { loadQuestionBankCommandMetrics } from "./questionBankMetricsService.js";
 import { tasksUseCases } from "../tasks/use-cases/tasksUseCases.js";
 

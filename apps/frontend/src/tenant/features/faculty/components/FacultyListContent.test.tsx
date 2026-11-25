@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_FACULTY_COLUMN_REGISTRY, type Faculty } from "@mms/shared";
+import { DEFAULT_FACULTY_COLUMN_REGISTRY, type Faculty } from "@mms/contracts";
 import { FacultyListContent } from "./FacultyListContent";
 
 vi.mock("@/hooks/useTranslation", () => ({

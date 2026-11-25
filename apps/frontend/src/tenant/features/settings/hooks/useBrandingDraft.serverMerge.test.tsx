@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_BRANDING_SETTINGS, mergeBrandingSettings } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, mergeBrandingSettings } from "@mms/contracts";
 import {
   SettingsBrandingDraftProvider,
   useSettingsBrandingDraft,
@@ -15,7 +15,7 @@ const mockSaveBrandingSettings = vi.fn(async (_branding: Record<string, unknown>
 const mockFetchBrandingFromServer = vi.fn();
 
 vi.mock("@/lib/db", async () => {
-  const shared = await import("@mms/shared");
+  const shared = await import("@mms/contracts");
   return {
     getBrandingSettings: vi.fn(() =>
       shared.mergeBrandingSettings({
@@ -37,7 +37,7 @@ vi.mock("@/lib/brandingHydration", () => ({
 
 vi.mock("@/components/branding/BrandingShared", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/components/branding/BrandingShared")>();
-  const shared = await import("@mms/shared");
+  const shared = await import("@mms/contracts");
   // Draft + baseline come from the same store in production; keep them aligned here.
   return {
     ...actual,

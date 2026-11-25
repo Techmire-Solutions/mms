@@ -1,7 +1,7 @@
 /**
  * Audit implementation pointers — no standalone cryptographic recipe.
  *
- * Use packages/shared/src/auditTypes.ts for canonicalizeJson and
+ * Use packages/contracts/src/auditTypes.ts for canonicalizeJson and
  * formatAuditEventHashInput; verify behavior with auditTypes.test.ts.
  * The writer is apps/backend/src/services/auditTrailService.ts.
  * Verification and checkpoint construction are in

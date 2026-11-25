@@ -1,10 +1,10 @@
 import crypto from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import type { AuditRetentionRegime } from "@mms/shared";
-import { activeDb } from "../db/dbConnection.js";
-import { withTenant } from "../db/tenant-context.js";
-import { auditErasureRequests, cryptoShreddingKeys } from "../db/schema/auditTrail.js";
-import { recordModernAuditEvent } from "./auditTrailService.js";
+import type { AuditRetentionRegime } from "@mms/contracts";
+import { activeDb } from "@mms/db/client";
+import { withTenant } from "@mms/db/context";
+import { auditErasureRequests, cryptoShreddingKeys } from "@mms/db/schema/auditTrail";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { logger } from "../lib/logger.js";
 
 export {

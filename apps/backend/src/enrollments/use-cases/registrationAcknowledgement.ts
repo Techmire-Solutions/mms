@@ -1,4 +1,4 @@
-import type { RegistrationApplicationStatus } from "@mms/shared";
+import type { RegistrationApplicationStatus } from "@mms/contracts";
 import { logger } from "../../lib/logger.js";
 import { sendTenantSms } from "../../services/sms/smsService.js";
 import { sendTenantWhatsApp } from "../../services/whatsapp/whatsappService.js";

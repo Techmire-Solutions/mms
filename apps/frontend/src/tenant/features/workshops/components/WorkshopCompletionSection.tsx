@@ -4,7 +4,7 @@ import {
   type WorkshopCompletionRow,
   type WorkshopCompletionShortfall,
   type WorkshopEvent,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/app/ErrorState";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";

@@ -1,4 +1,4 @@
-import { getInitials } from "@mms/shared";
+import { getInitials } from "@mms/contracts";
 
 export const PLATFORM_FAVICON_HREF = "/favicon.svg";
 export const PLATFORM_APPLE_TOUCH_ICON_HREF = "/apple-touch-icon.png";

@@ -1,5 +1,5 @@
-import { ConflictError } from "../../lib/httpErrors.js";
-import { isExclusionViolation } from "../../lib/pgErrors.js";
+import { ConflictError } from "@mms/be-core/http/errors";
+import { isExclusionViolation } from "@mms/be-core/http/errors";
 
 /**
  * The exclusion constraint is the authority (migration 0206); translate its `23P01` into a 409 so

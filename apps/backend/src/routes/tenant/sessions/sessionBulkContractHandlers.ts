@@ -1,10 +1,10 @@
-import { type sessionContract, SESSIONS_MODULE_MANIFEST, type User } from "@mms/shared";
+import { type sessionContract, SESSIONS_MODULE_MANIFEST, type User } from "@mms/contracts";
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { sessionsUseCases } from "../../../sessions/use-cases/sessionsUseCases.js";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import {
   enqueueBackgroundJob,
   getUserBackgroundJob,

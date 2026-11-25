@@ -17,6 +17,7 @@
  * initial commit) the check reports "skipped" instead of a false "no domain files".
  */
 import { execFileSync } from "node:child_process";
+import { assertScanDirs, fromRoot } from "./lib/repo-paths.mjs";
 
 const argv = process.argv.slice(2);
 const baseFlag = argv.indexOf("--base");
@@ -30,6 +31,9 @@ const STRICT = argv.includes("--strict");
 const STRICT_USE_CASES = argv.includes("--strict-use-cases");
 
 const DOMAIN_RE = /^apps\/backend\/src\/.+\/(?:use-cases|services|repositories|repository)\//;
+
+// Fail closed: "no domain files" must mean nothing changed, never "the root moved".
+assertScanDirs({ "backend source": fromRoot("apps/backend/src") }, "TDD pairing");
 const TEST_RE = /\.(?:integration\.)?test\.(?:ts|tsx)$/;
 
 const git = (args) => {

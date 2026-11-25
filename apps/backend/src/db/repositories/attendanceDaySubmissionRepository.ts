@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { attendanceDaySubmissions } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
-import { isAttendanceDayLocked } from "../schema/attendance.js";
+import { attendanceDaySubmissions } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
+import { isAttendanceDayLocked } from "@mms/db/schema/attendance";
 
 /**
  * Attendance day submission state — the storage the `lockAfterSubmit` rule needs.

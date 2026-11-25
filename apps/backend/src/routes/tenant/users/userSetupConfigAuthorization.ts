@@ -3,7 +3,7 @@ import {
   canAccessRolesAndPermissions,
   normalizeWorkspaceRoles,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { loadUserModulePreferences } from "../../../services/userPreferencesService.js";
 

@@ -4,7 +4,7 @@ import {
   getPrimaryPhone,
   sanitizePhoneForWhatsApp,
   type Contact,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { openDeviceSmsComposer } from "@/lib/deviceSms";
 
 export type ContactMessagingChannel = "whatsapp" | "sms" | "email";

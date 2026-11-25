@@ -1,5 +1,9 @@
-import type { QuestionBankTransferEntity } from "@mms/shared";
-import { buildCsvContent, questionBankTransferSchema, questionToTransferEntity } from "@mms/shared";
+import type { QuestionBankTransferEntity } from "@mms/contracts";
+import {
+  buildCsvContent,
+  questionBankTransferSchema,
+  questionToTransferEntity,
+} from "@mms/contracts";
 import { questionBankRepository } from "../questionBank/repository/questionBankRepositoryAdapter.js";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 

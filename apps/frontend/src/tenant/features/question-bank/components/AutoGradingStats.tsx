@@ -1,6 +1,6 @@
 import React from "react";
 import { CheckCircle2, XCircle, Clock, Award } from "lucide-react";
-import type { QuestionBankQuestion as Question, QuestionBankTest } from "@mms/shared";
+import type { QuestionBankQuestion as Question, QuestionBankTest } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import {

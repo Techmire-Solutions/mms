@@ -7,7 +7,7 @@
  * nowhere at all. Each guard is pure (no I/O) so it is unit-testable and so the same rule can be
  * applied by the API, the CSV import and a future worker.
  */
-import type { ObligationDistribution, WakalaType } from "@mms/shared";
+import type { ObligationDistribution, WakalaType } from "@mms/contracts";
 import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
 
 /** The collection fields the ledger split depends on. */

@@ -3,7 +3,7 @@ import {
   type FacultyDepartmentEntity,
   type FacultyDesignationDefinition,
   type FacultyMember,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * Faculty Management model: employ-designation rows hold catalog `designationId`;

@@ -13,6 +13,10 @@ const base = {
   e2eResult: "success",
   rlsMatched: true,
   rlsResult: "success",
+  frontendMatched: true,
+  frontendResult: "success",
+  backendMatched: true,
+  backendResult: "success",
 };
 
 test("passes a normal ready PR", () => {
@@ -42,6 +46,42 @@ test("fails when matched suites are skipped on a ready PR", () => {
     rlsResult: "skipped",
   });
   assert.equal(failures.length, 3);
+});
+
+test("fails when matched unit matrices are skipped on a ready PR", () => {
+  const failures = evaluateCiGatePolicy({
+    ...base,
+    frontendResult: "skipped",
+    backendResult: "skipped",
+  });
+  assert.equal(failures.length, 2);
+  assert.match(failures.join("\n"), /frontend unit tests were skipped/);
+  assert.match(failures.join("\n"), /backend unit tests were skipped/);
+});
+
+test("allows skipped unit matrices while the PR is a draft", () => {
+  assert.deepEqual(
+    evaluateCiGatePolicy({
+      ...base,
+      isDraft: true,
+      frontendResult: "skipped",
+      backendResult: "skipped",
+    }),
+    [],
+  );
+});
+
+test("allows skipped unit matrices when their path filters did not match", () => {
+  assert.deepEqual(
+    evaluateCiGatePolicy({
+      ...base,
+      frontendMatched: false,
+      frontendResult: "skipped",
+      backendMatched: false,
+      backendResult: "skipped",
+    }),
+    [],
+  );
 });
 
 test("allows a skipped suite when its path filter did not match", () => {

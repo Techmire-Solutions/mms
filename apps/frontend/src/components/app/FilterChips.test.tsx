@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { act } from "react";
 import { FilterChips } from "@/components/app/FilterChips";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => `t:${key}`, dir: "ltr", language: "en" }),
 }));
 

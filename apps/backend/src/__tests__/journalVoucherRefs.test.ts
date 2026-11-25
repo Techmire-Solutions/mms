@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { JournalEntry } from "@mms/shared";
-import { assignVoucherRefs } from "../accounting/use-cases/journalVoucherRefs.js";
+import type { JournalEntry } from "@mms/contracts";
+import { assignVoucherRefs } from "@mms/mod-accounting/backend/use-cases";
 import { ConflictError, ValidationError } from "../lib/httpErrors.js";
 
 const TENANT = "tenant-accounting";

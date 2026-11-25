@@ -2,7 +2,7 @@ import type {
   BackgroundJobRecord,
   EnrollmentExportColumn,
   EnrollmentsListQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { startServerModuleCsvExport } from "@/lib/backgroundJobs/startServerModuleCsvExport";
 
 export async function startServerEnrollmentsCsvExport(options: {

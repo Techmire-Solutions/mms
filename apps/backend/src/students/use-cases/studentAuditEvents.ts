@@ -1,6 +1,6 @@
-import type { Student, StudentRecord } from "@mms/shared";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import type { Student, StudentRecord } from "@mms/contracts";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /** Emits CDC outbox event and writes modern audit event for student restore actions. */
 export async function recordRestoreEvents(

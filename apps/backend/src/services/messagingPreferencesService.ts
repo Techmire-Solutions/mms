@@ -2,7 +2,7 @@ import {
   normalizeMessagingPreferences,
   type MessagingPreferences,
   MESSAGING_MODULE_MANIFEST,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { broadcastCollection } from "../lib/livePush.js";
 import { getObject } from "../db/documentStoreObjects.js";

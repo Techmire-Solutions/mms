@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { QUESTION_BANK_FIELD_LABEL_KEYS, type AppTranslationKey } from "@mms/shared";
+import { QUESTION_BANK_FIELD_LABEL_KEYS, type AppTranslationKey } from "@mms/contracts";
 
 export function useQuestionBankLabels(
   t: (key: AppTranslationKey, params?: Record<string, string | number>) => string,

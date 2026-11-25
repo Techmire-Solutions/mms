@@ -23,7 +23,7 @@ vi.mock("../lib/logger.js", () => ({ logger: { warn: mocks.warn } }));
 vi.mock("../db/repositories/enrollmentModulePreferencesRepository.js", () => ({
   getEnrollmentModulePreferencesByWorkspace: mocks.prefs,
 }));
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mocks.audit,
 }));
 

@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { SectionCard } from "@/components/app/SectionCard";
 import { SettingsCallout } from "@/components/app/SettingsShell";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
-import type { LlmConfig, LlmTestResult } from "@mms/shared";
+import type { LlmConfig, LlmTestResult } from "@mms/contracts";
 import { LlmConfigCard } from "./LlmConfigCard";
 import { LlmConfigTestResultPanel } from "./LlmConfigTestResultPanel";
 

@@ -1,4 +1,4 @@
-import { ATTENDANCE_MODULE_MANIFEST, buildTenantExportFilename } from "@mms/shared";
+import { ATTENDANCE_MODULE_MANIFEST, buildTenantExportFilename } from "@mms/contracts";
 import { PassThrough } from "node:stream";
 import {
   resolveTenantExportKey,

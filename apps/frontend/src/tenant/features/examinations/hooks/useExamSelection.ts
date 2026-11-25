@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { Exam } from "@mms/shared";
+import type { Exam } from "@mms/contracts";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
 
 /**

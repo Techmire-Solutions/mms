@@ -1,7 +1,7 @@
 import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
 import React, { useEffect, useRef } from "react";
 import { CopyPlus } from "lucide-react";
-import type { AppTranslationKey, Session } from "@mms/shared";
+import type { AppTranslationKey, Session } from "@mms/contracts";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionRolloverActions } from "@/tenant/features/sessions/hooks/useSessionRollover";
-import { addIsoDays } from "@mms/shared";
+import { addIsoDays } from "@mms/contracts";
 import {
   useSessionRolloverForm,
   type RolloverCopyKey,

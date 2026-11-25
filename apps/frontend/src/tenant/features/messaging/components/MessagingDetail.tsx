@@ -4,7 +4,7 @@ import {
   formatDateTime,
   type Message,
   type StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ChannelBadge } from "@/components/app/ChannelBadge";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";

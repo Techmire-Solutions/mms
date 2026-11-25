@@ -1,7 +1,22 @@
+vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
+  VOUCHER_NUMBERING_QUERY_KEY: ["accounting", "voucher-numbering"],
+  useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
+  useSaveVoucherNumbering: () => ({ mutateAsync: async () => undefined, isPending: false }),
+}));
+
+vi.mock("@mms/mod-accounting/frontend/tenant", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-accounting/frontend/tenant")>();
+  return {
+    ...actual,
+    useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
+    useAccountingLedger: () => ({ data: undefined }),
+  };
+});
+
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { JournalEntry } from "@/lib/data/accountingData";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 import { useJournalEntryForm } from "../hooks/useJournalEntryForm";
 
 declare global {
@@ -29,11 +44,7 @@ vi.mock("@/tenant/features/accounting/hooks/useAccountingLedgerOps", () => ({
   usePostingPeriods: () => ({ data: [] }),
 }));
 
-vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
-  useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
-}));
-
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     language: "en",
     // Key identity keeps the assertions about which validation message fired.
@@ -44,7 +55,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/lib/contexts/AuthContext", () => ({
+vi.mock("@mms/fe-core/auth/AuthContext", () => ({
   useAuth: () => ({ user: { name: "Tester" } }),
 }));
 

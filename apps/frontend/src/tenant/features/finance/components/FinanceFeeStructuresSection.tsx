@@ -10,7 +10,7 @@ import {
 } from "@/components/app/FormPrimitives";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { useTranslation } from "@/hooks/useTranslation";
-import { tryParseMoneyAmountNumber } from "@mms/shared";
+import { tryParseMoneyAmountNumber } from "@mms/contracts";
 import {
   SessionClassSectionSelect,
   type SessionClassSectionValue,

@@ -5,7 +5,7 @@ import {
   ModuleFilterDropdown,
 } from "@/components/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@/hooks/useTranslation";
-import { EXAM_STATUSES, isExamStatus, type ExamStatus } from "@mms/shared";
+import { EXAM_STATUSES, isExamStatus, type ExamStatus } from "@mms/contracts";
 
 export interface ExaminationsFiltersMenuButtonProps {
   filterStatus: string[];

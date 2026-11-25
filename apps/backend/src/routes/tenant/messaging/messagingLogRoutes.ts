@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
-import type { User } from "@mms/shared";
-import { messagingLogsQuerySchema } from "@mms/shared";
+import type { User } from "@mms/contracts";
+import { messagingLogsQuerySchema } from "@mms/contracts";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";

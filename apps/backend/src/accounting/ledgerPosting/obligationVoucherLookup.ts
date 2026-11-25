@@ -3,7 +3,7 @@
  * @description Looks up or generates on-demand general ledger vouchers for obligation receipts.
  */
 
-import type { Account, JournalEntry } from "@mms/shared";
+import type { Account, JournalEntry } from "@mms/contracts";
 import { findEntryById, findEntryIdBySource } from "../../db/repositories/accountingRepository.js";
 import { listAccountsByWorkspace } from "../../db/repositories/accountingAccountsRepository.js";
 import { obligationsRepository } from "../../obligations/repository/obligationsRepositoryAdapter.js";

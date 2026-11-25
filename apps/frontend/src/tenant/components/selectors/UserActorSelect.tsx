@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useUsersPaginated } from "@/tenant/hooks/collections/users";
-import type { WorkspaceUser } from "@mms/shared";
+import type { WorkspaceUser } from "@mms/contracts";
 import { SELECT_SEARCH_DEBOUNCE_MS } from "./selectSearch";
 
 export interface UserActorSelectProps {

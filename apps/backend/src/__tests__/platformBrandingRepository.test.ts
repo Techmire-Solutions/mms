@@ -16,8 +16,11 @@ const mockInsert = vi.fn().mockReturnValue({ values: mockInsertValues });
 
 const mockDb = { select: mockSelect, insert: mockInsert };
 
-vi.mock("../db/dbClient.js", () => ({ getDb: () => mockDb }));
-vi.mock("../db/dbConnection.js", () => ({
+vi.mock("@mms/db/client/db", () => ({
+  getDb: () => mockDb,
+}));
+
+vi.mock("@mms/db/client/connection", () => ({
   activeDb: () => mockDb,
   getRootDb: () => mockDb,
   getReadReplicaDb: () => mockDb,
@@ -30,7 +33,7 @@ import {
   GLOBAL_BRANDING_ID,
   upsertPlatformBrandingRow,
 } from "../db/repositories/platformBrandingRepository.js";
-import { DEFAULT_PLATFORM_BRANDING, mergePlatformBranding } from "@mms/shared";
+import { DEFAULT_PLATFORM_BRANDING, mergePlatformBranding } from "@mms/contracts";
 
 describe("platformBrandingRepository", () => {
   beforeEach(() => {

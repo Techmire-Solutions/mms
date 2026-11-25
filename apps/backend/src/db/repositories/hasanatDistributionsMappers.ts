@@ -2,8 +2,8 @@
  * Hasanat distribution row mapper and inferred row type.
  */
 
-import { type Distribution } from "@mms/shared";
-import type { hasanatDistributions } from "../schema.js";
+import { type Distribution } from "@mms/contracts";
+import type { hasanatDistributions } from "@mms/db/schema";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 
 type DistRow = typeof hasanatDistributions.$inferSelect;

@@ -5,7 +5,7 @@ import {
   unpublishExamRejection,
   type PublishRejection,
   type UnpublishRejection,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { examEligibilityRepository as repo } from "../repository/examEligibilityAdapter.js";
 import type { ExamLifecycleState } from "../repository/examEligibilityPort.js";
 import { ConflictError, NotFoundError, ValidationError } from "../../lib/httpErrors.js";

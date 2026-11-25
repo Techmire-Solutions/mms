@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { tsrClient } from "@/lib/api";
-import type { ContactGoogleSyncConfigClient } from "@mms/shared";
+import type { ContactGoogleSyncConfigClient } from "@mms/contracts";
 import { CONTACTS_GOOGLE_SYNC_QUERY_KEY } from "@/tenant/features/contacts/hooks/contactsQueryKeys";
 
 export function useContactGoogleSyncConfig(options?: { enabled?: boolean }) {

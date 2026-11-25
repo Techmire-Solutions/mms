@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import type { ModuleColumnRegistryEntry } from "@mms/contracts";
 import type { TableColumnDescriptor } from "@/components/common/entityRegistryTypes";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

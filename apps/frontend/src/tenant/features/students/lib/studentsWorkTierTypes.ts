@@ -1,4 +1,4 @@
-import type { Student, StudentsListPageResult, StudentsQuickFilter } from "@mms/shared";
+import type { Student, StudentsListPageResult, StudentsQuickFilter } from "@mms/contracts";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { useStudentColumnLayout } from "@/tenant/features/students/hooks/useStudentColumnLayout";
 import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
@@ -52,7 +52,7 @@ export interface StudentsWorkTierProps {
     status: string,
   ) => void | Promise<{ succeeded: number; failed: number }>;
   onBulkEnroll?: (
-    payload: import("@mms/shared").StudentsBulkEnrollPlacement,
+    payload: import("@mms/contracts").StudentsBulkEnrollPlacement,
   ) => void | Promise<void | boolean>;
   bulkEnrollPending?: boolean;
   onBulkPrintIdCards?: () => void;

@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { ContactsListFilters } from "./ContactsListFilters";
 import { CONTACTS_WORK_SEARCH_INPUT_ID } from "@/tenant/features/contacts/hooks/useContactsKeyboardShortcuts";
 
@@ -55,6 +55,10 @@ vi.mock("@/tenant/features/contacts/hooks/useContactsToolbarModel", () => ({
   }),
 }));
 
+vi.mock("@mms/fe-core/i18n", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
 describe("ContactsListFilters Component", () => {
   const defaultProps = {
     search: "",
@@ -85,12 +89,12 @@ describe("ContactsListFilters Component", () => {
 
   it("renders clear search button when search query is non-empty", () => {
     const emptyHtml = renderToStaticMarkup(<ContactsListFilters {...defaultProps} search="" />);
-    expect(emptyHtml).not.toContain("Clear search");
+    expect(emptyHtml).not.toContain("Clear Search");
 
     const filledHtml = renderToStaticMarkup(
       <ContactsListFilters {...defaultProps} search="Ahmad" />,
     );
-    expect(filledHtml).toContain("Clear search");
+    expect(filledHtml).toContain("Clear Search");
   });
 
   it("renders live polite count announcer when shownCount is supplied", () => {

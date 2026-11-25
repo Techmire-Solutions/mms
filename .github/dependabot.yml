@@ -27,7 +27,7 @@ updates:
           - "*"
 
   # One entry for the whole pnpm workspace. From "/" Dependabot reads
-  # pnpm-workspace.yaml and updates every package (apps/*, packages/shared,
+  # pnpm-workspace.yaml and updates every package (apps/*, packages/contracts,
   # e2e) together with the single pnpm-lock.yaml. Per-directory entries
   # edited package.json without the lockfile, so their PRs failed
   # `pnpm install --frozen-lockfile` and duplicated the root PRs.

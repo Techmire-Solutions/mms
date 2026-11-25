@@ -5,7 +5,7 @@ import {
   STUDENTS_MODULE_MANIFEST,
   type Student,
   type StudentsBulkEnrollPlacement,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 import { Button } from "@/components/ui/button";
 import { type StatusBadgeConfigItem } from "@/components/app/StatusBadge";

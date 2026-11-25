@@ -1,7 +1,7 @@
 import React from "react";
 import { Mail } from "lucide-react";
-import type { PlatformUserProfile } from "@mms/shared";
-import { formatDate } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
+import { formatDate } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BiDiText } from "@/components/app/BiDiText";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";

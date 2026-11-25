@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsPage: h.loadContactsPage,
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const h = vi.hoisted(() => ({
@@ -20,9 +30,7 @@ vi.mock("../obligations/repository/obligationsRepositoryAdapter.js", () => ({
     listMujtahidRepsByWorkspace: h.listMujtahidRepsByWorkspace,
   },
 }));
-vi.mock("../contacts/use-cases/contactLoadUseCases.js", () => ({
-  loadContactsPage: h.loadContactsPage,
-}));
+
 vi.mock("../obligations/use-cases/obligationsUseCases.js", () => ({
   obligationsUseCases: { createObligationCollection: h.createObligationCollection },
 }));

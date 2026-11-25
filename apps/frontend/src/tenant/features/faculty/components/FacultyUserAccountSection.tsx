@@ -10,7 +10,7 @@ import {
   getPrimaryEmail,
   type Contact,
   type FacultyMember,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FacultyLinkedUserCard } from "@/tenant/features/faculty/components/FacultyLinkedUserCard";
 import { FacultyNewUserAccountFields } from "@/tenant/features/faculty/components/FacultyNewUserAccountFields";
 

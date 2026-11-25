@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FacultyDesignationDefinition } from "@mms/shared";
+import type { FacultyDesignationDefinition } from "@mms/contracts";
 import {
   buildDesignationDraftPatch,
   selectableDesignationOptions,

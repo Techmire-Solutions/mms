@@ -26,7 +26,7 @@ vi.mock("../services/backgroundJobWorkerService.js", () => ({
   QueueUnavailableError: class QueueUnavailableError extends Error {},
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mocks.recordModernAuditEvent,
   mapActionStringToAuditType: vi.fn(() => "IMPORT"),
 }));

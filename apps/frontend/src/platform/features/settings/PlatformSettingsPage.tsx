@@ -9,7 +9,7 @@ import {
   ResponsiveAccordionTabs,
   type AccordionTabItem,
 } from "@/components/app/ResponsiveAccordionTabs";
-import { CardSkeleton } from "@shared/ui";
+import { CardSkeleton } from "@mms/ui";
 import {
   PLATFORM_SETTINGS_NAV,
   parsePlatformSettingsSection,

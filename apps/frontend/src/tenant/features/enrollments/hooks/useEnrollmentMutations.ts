@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { MutateOptions } from "@tanstack/react-query";
-import type { Enrollment, EnrollmentInsert } from "@mms/shared";
+import type { Enrollment, EnrollmentInsert } from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { invalidateEnrollmentImpacts } from "@/lib/query/enrollmentImpactInvalidation";
 

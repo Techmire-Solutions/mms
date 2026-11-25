@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { PlatformAdminBulkDock } from "@/platform/features/users/components/admin/PlatformAdminBulkDock";
 
 vi.mock("@/hooks/useTranslation", () => ({

@@ -1,7 +1,7 @@
 import { apiContract } from "@/lib/api";
 import { createModuleSetupConfigApi } from "@/lib/query/createModuleSetupConfigApi";
-import type { ExaminationsModulePreferences } from "@mms/shared";
-import { normalizeExaminationsModulePreferences } from "@mms/shared";
+import type { ExaminationsModulePreferences } from "@mms/contracts";
+import { normalizeExaminationsModulePreferences } from "@mms/contracts";
 
 const api = createModuleSetupConfigApi<ExaminationsModulePreferences>({
   fetchPreferencesFn: async (signal) => {

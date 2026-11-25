@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { APP_TRANSLATIONS_EN } from "@mms/shared";
+import { APP_TRANSLATIONS_EN } from "@mms/contracts";
 import { messagingEntityDescriptor } from "./messagingDescriptors";
 
 type TranslationKey = keyof typeof APP_TRANSLATIONS_EN;

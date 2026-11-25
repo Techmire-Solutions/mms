@@ -5,7 +5,7 @@ import type {
   PlatformLlmTestBody,
   PlatformLlmUpdateInput,
   PlatformSettingsDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import { useTranslation } from "@/hooks/useTranslation";

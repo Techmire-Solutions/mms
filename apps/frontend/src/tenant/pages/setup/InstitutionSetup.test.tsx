@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_BRANDING_SETTINGS, mergeBrandingSettings } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, mergeBrandingSettings } from "@mms/contracts";
 import InstitutionSetup from "@/tenant/pages/setup/InstitutionSetup";
 
 const mockSaveBrandingSettings = vi.fn(async (_branding: Record<string, unknown>) => ({
@@ -25,7 +25,7 @@ vi.mock("@/tenant/hooks/useBranding", () => ({
 }));
 
 vi.mock("@/lib/db", async () => {
-  const shared = await import("@mms/shared");
+  const shared = await import("@mms/contracts");
   return {
     saveBrandingSettings: (branding: Record<string, unknown>) => mockSaveBrandingSettings(branding),
     getBrandingSettings: () => shared.mergeBrandingSettings(shared.DEFAULT_BRANDING_SETTINGS),

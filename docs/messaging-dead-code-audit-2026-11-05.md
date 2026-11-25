@@ -18,7 +18,7 @@ applied; everything exported is listed below for confirmation first.
 **Orphaned files: none.** Every file under `apps/frontend/src/tenant/features/messaging`,
 `apps/frontend/src/components/messageComposer`, `apps/frontend/src/tenant/components/messaging`,
 `apps/backend/src/routes/tenant/messaging`, `apps/backend/src/messaging`, and
-`packages/shared/src/messaging` is reachable from an import specifier or a lazy/route registration
+`packages/contracts/src/messaging` is reachable from an import specifier or a lazy/route registration
 (0 assets: the module has no CSS/SVG/JSON files of its own).
 
 ## Applied cleanup (verified zero references, including tests)
@@ -111,11 +111,11 @@ the package root, so treat as public-API cleanup and confirm external consumers 
 
 | Target File | Item / Import to Remove | Reason |
 | --- | --- | --- |
-| `packages/shared/src/schemas/messaging.dto.ts` | `messageInsertSchema`, `messageLogListSchema`, `MessageInsert`, `MessageUpdate`, `MessagingLogsQueryDto`, `MessagingMetricsQueryDto`, `MessagingCsvExportBodyDto` | 0 refs |
-| `packages/shared/src/schemas/messagingTemplate.dto.ts` | `messageTemplateInsertSchema`, `messageTemplateUpdateSchema`, `MessageTemplateInsert`, `MessageTemplateInputDto` | 0 refs (the contract uses `messageTemplateSchema` + `messageTemplateInputSchema`) |
-| `packages/shared/src/messaging/messagingDispatchSchemas.ts` | `MessagingSmsDispatchDto`, `MessagingEmailDispatchDto`, `MessagingWhatsAppDispatchDto`, `MessagingEmailDispatchResponseDto`, `MessagingWhatsAppDispatchResponseDto`, `messagingEmailDispatchResponseSchema`, `messagingWhatsAppDispatchResponseSchema` | 0 refs (only the SMS response schema is consumed) |
-| `packages/shared/src/messaging/messagingModuleManifest.ts` | `MessagingModuleTier`, `MessagingRecipientDto`, `MessagingResolveResponseDto` | 0 refs |
-| `packages/shared/src/messaging/messagingModuleManifest.ts` | `MESSAGING_ROLE_FILTERS`, `MESSAGING_GENDER_FILTERS`, `MESSAGING_STATUS_FILTERS` | exported but only used inside the manifest to derive its types/options (drop `export`) |
+| `packages/contracts/src/schemas/messaging.dto.ts` | `messageInsertSchema`, `messageLogListSchema`, `MessageInsert`, `MessageUpdate`, `MessagingLogsQueryDto`, `MessagingMetricsQueryDto`, `MessagingCsvExportBodyDto` | 0 refs |
+| `packages/contracts/src/schemas/messagingTemplate.dto.ts` | `messageTemplateInsertSchema`, `messageTemplateUpdateSchema`, `MessageTemplateInsert`, `MessageTemplateInputDto` | 0 refs (the contract uses `messageTemplateSchema` + `messageTemplateInputSchema`) |
+| `packages/contracts/src/messaging/messagingDispatchSchemas.ts` | `MessagingSmsDispatchDto`, `MessagingEmailDispatchDto`, `MessagingWhatsAppDispatchDto`, `MessagingEmailDispatchResponseDto`, `MessagingWhatsAppDispatchResponseDto`, `messagingEmailDispatchResponseSchema`, `messagingWhatsAppDispatchResponseSchema` | 0 refs (only the SMS response schema is consumed) |
+| `packages/contracts/src/messaging/messagingModuleManifest.ts` | `MessagingModuleTier`, `MessagingRecipientDto`, `MessagingResolveResponseDto` | 0 refs |
+| `packages/contracts/src/messaging/messagingModuleManifest.ts` | `MESSAGING_ROLE_FILTERS`, `MESSAGING_GENDER_FILTERS`, `MESSAGING_STATUS_FILTERS` | exported but only used inside the manifest to derive its types/options (drop `export`) |
 
 ### Frontend: dead fields, props, and re-exports
 

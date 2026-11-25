@@ -4,7 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { ContactSubListShell, resolveSubListAllowAdd } from "./ContactSubListCards";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ContactSkill } from "@mms/shared";
+import type { ContactSkill } from "@mms/contracts";
 import { ContactSkillCardItem } from "./ContactSkillCardItem";
 
 /**

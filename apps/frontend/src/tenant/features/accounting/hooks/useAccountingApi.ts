@@ -1,3 +1,1 @@
-/** Public barrel — import accounting hooks from here. */
-export * from "./useAccountingQueries";
-export * from "./useAccountingMutations";
+export * from "@mms/mod-accounting/frontend/tenant";

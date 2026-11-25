@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
+import { withTenant } from "@mms/db/context";
 import {
   questionAttachments,
   questionCategories,
@@ -14,7 +14,7 @@ import {
   testQuestions,
   tests,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { assemblePaperForTest } from "../../db/repositories/questionBankAssemblyPersist.js";
 import { findSimilarQuestions } from "../../db/repositories/questionSimilarityRepository.js";
 import {

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { type BackupCredentials, type PendingDecrypt, type PendingRestore } from "@mms/shared";
+import { type BackupCredentials, type PendingDecrypt, type PendingRestore } from "@mms/contracts";
 import { verifyAdminBackupPassword } from "@/lib/backupAuth";
 import { importDatabase } from "@/lib/db";
 import { notify } from "@/lib/notify";

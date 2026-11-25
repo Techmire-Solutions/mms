@@ -4,7 +4,7 @@ import { StudentCardTemplateEditor } from "./StudentCardTemplateEditor";
 import { withQueryClient } from "@/test/queryClientTestUtils";
 import { fetchDocumentTemplateServer } from "@/lib/templates/documentTemplatesApi";
 
-vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+vi.mock("@mms/fe-core/documentTemplates/documentTemplatesApi", () => ({
   fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
   saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => ({
     template,
@@ -12,7 +12,7 @@ vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   })),
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -27,7 +27,7 @@ vi.mock("@/tenant/hooks/useBranding", () => ({
   }),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     success: vi.fn(),
     error: vi.fn(),

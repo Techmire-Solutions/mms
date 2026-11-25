@@ -1,4 +1,4 @@
-import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/shared";
+import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/contracts";
 
 export const ENROLLMENTS_QUERY_KEY = ["enrollments", "list"] as const;
 export const ENROLLMENTS_METRICS_QUERY_KEY = ["enrollments", "metrics"] as const;

@@ -1,6 +1,6 @@
 import React from "react";
 import { CalendarCheck, CalendarClock, CalendarRange, Presentation, Users } from "lucide-react";
-import { StatsSkeleton } from "@shared/ui";
+import { StatsSkeleton } from "@mms/ui";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
 import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";

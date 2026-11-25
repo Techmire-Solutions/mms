@@ -6,7 +6,7 @@ import {
   type PermissionMap,
   type RbacModuleDef,
   type RbacPermissionMatrixGroup,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PermissionMatrixMobileRow } from "@/tenant/features/users/components/PermissionMatrixMobileRow";

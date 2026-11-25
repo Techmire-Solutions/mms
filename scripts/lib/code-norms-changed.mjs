@@ -27,6 +27,10 @@ const EMPTY = { anySites: [], arbitrarySites: [], hasHex: false, lineCount: 0 };
  */
 const SANCTIONED_HEX_SOURCE_MODULES = new Set([
   "apps/frontend/src/lib/branding/platformThemeConfig.ts",
+  // Print/PDF + QR output needs absolute colours (not CSS tokens); moved from
+  // apps/frontend to @mms/fe-core during the monorepo migration.
+  "packages/fe-core/src/print/printTemplateStyles.ts",
+  "packages/fe-core/src/print/qrCodeGenerator.ts",
 ]);
 
 function sourceRegressions(rel) {

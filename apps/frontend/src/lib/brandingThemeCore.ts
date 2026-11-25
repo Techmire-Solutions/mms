@@ -8,7 +8,7 @@ import {
   type BrandingSettings,
   type BrandingThemeMode,
   type GlobalSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { applyDocumentLanguage } from "@/lib/documentLanguage";
 import { ensureLocaleFontsLoaded } from "@/lib/localeFonts";
 

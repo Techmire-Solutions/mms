@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CONTACTS_IMPORT_MAX_CONTACTS, CONTACTS_IMPORT_MAX_FILE_BYTES } from "@mms/shared";
+import { CONTACTS_IMPORT_MAX_CONTACTS, CONTACTS_IMPORT_MAX_FILE_BYTES } from "@mms/contracts";
 import {
   readAndParseAppleContactsFile,
   type ParseAppleContactsResult,

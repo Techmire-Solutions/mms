@@ -1,15 +1,21 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      contactUseCases: {
+        loadContactsByIdsForTenant: (...args: unknown[]) => mockLoadContactsByIdsForTenant(...args),
+        loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
+          mockLoadContactsByIdsForTenant(...args),
+      },
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 
 const mockLoadContactsByIdsForTenant = vi.fn();
-
-vi.mock("../contacts/use-cases/contactUseCases.js", () => ({
-  contactUseCases: {
-    loadContactsByIdsForTenant: (...args: unknown[]) => mockLoadContactsByIdsForTenant(...args),
-    loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
-      mockLoadContactsByIdsForTenant(...args),
-  },
-}));
 
 import { hydrateStudentsFromContacts } from "../students/use-cases/studentHydrateUseCases.js";
 
@@ -152,3 +158,10 @@ describe("hydrateStudentsFromContacts", () => {
     );
   });
 });
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/mod-contacts/backend/services")>()),
+  loadContactsByIdsForTenant: (...args: unknown[]) => mockLoadContactsByIdsForTenant(...args),
+  loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
+    mockLoadContactsByIdsForTenant(...args),
+}));

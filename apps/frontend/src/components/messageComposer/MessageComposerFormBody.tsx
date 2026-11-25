@@ -3,7 +3,7 @@ import {
   getMessageCategoryLabelKey,
   insertVariableTokenAt,
   type MessageTemplate,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FormSelect } from "@/components/app/FormSelect";
 import { Field } from "@/components/app/FormPrimitives";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";

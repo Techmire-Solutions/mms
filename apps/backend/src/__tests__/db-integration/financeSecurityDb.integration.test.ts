@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, desc, eq, sql } from "drizzle-orm";
-import type { JournalEntry } from "@mms/shared";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
+import type { JournalEntry } from "@mms/contracts";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import {
   accountingAccounts,
@@ -15,16 +15,16 @@ import {
   financePayments,
   students,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { findInvoiceById } from "../../db/repositories/financeInvoicesRepository.js";
 import { findAccountById } from "../../db/repositories/accountingAccountsRepository.js";
 import { findEntryById } from "../../db/repositories/accountingRepository.js";
 import { allocateVoucherNumbers } from "../../db/repositories/accountingVoucherRepository.js";
 import { accountingRepository } from "../../accounting/repository/accountingRepositoryAdapter.js";
-import { upsertEntriesHelper } from "../../accounting/use-cases/accountingEntryMutationUseCases.js";
-import { accountingUseCases } from "../../accounting/use-cases/accountingUseCases.js";
+import { upsertEntriesHelper } from "@mms/mod-accounting/backend/use-cases";
+import { accountingUseCases } from "@mms/mod-accounting/backend/use-cases";
 import { financeUseCases } from "../../finance/use-cases/financeUseCases.js";
-import { upsertVoucherNumbering } from "../../accounting/use-cases/accountingVoucherNumberingUseCases.js";
+import { upsertVoucherNumbering } from "@mms/mod-accounting/backend/use-cases";
 import { createCreditNote } from "../../finance/use-cases/financeCollectUseCases.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 

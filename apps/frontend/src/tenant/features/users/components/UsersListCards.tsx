@@ -1,4 +1,4 @@
-import { isAdminRole, isSuperAdminRole, type SystemUser } from "@mms/shared";
+import { isAdminRole, isSuperAdminRole, type SystemUser } from "@mms/contracts";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
 import { useReducedMotion } from "@/hooks/useReducedMotion";

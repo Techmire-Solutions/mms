@@ -5,7 +5,7 @@ import {
   isQueryFlagTrue,
   ENROLLMENTS_MODULE_MANIFEST,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import type {
@@ -13,7 +13,7 @@ import type {
   ContractHandlerMap,
   ContractRouteResponse,
 } from "../../../lib/contractRouterTypes.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import {
   canReadCollection,
   canWriteCollection,

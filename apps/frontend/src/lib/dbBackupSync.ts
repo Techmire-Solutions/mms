@@ -10,7 +10,7 @@ import {
   type BackupCredentials,
   type WorkspaceBackupStats,
   type WorkspaceBackupEnvelope,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getCurrentSubdomain } from "@/lib/config/tenantConfig";
 import {
   clearByPrefix,

@@ -6,7 +6,7 @@
 import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 import { apiContract } from "@/lib/api";
 import { MESSAGING_LOGS_QUERY_KEY, MESSAGING_METRICS_QUERY_KEY } from "@/hooks/useMessaging";
-import type { MessagingMetricsDto } from "@mms/shared";
+import type { MessagingMetricsDto } from "@mms/contracts";
 import { assertContractOk } from "@/lib/apiContractError";
 
 export function messagingLogsListQueryOptions(

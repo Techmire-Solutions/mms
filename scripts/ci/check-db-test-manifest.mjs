@@ -9,7 +9,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const ROOT = path.resolve(process.cwd(), "apps/backend/src/__tests__/db-integration");
+const ROOTS = [
+  path.resolve(process.cwd(), "apps/backend/src/__tests__/db-integration"),
+  path.resolve(process.cwd(), "packages/modules/accounting/src/backend/__tests__/db-integration"),
+];
 const BASELINE = {
   "enrollmentConcurrencyDb.integration.test.ts": 6,
   "enrollmentIntegrityDb.integration.test.ts": 7,
@@ -98,9 +101,17 @@ const BASELINE = {
 
 const update = process.argv.includes("--update");
 const counts = {};
+function findSuite(name) {
+  for (const root of ROOTS) {
+    const candidate = path.join(root, name);
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
 for (const name of Object.keys(BASELINE)) {
-  const file = path.join(ROOT, name);
-  if (!fs.existsSync(file)) {
+  const file = findSuite(name);
+  if (!file) {
     console.error(`✗ Missing required DB suite: ${name}`);
     process.exit(1);
   }
@@ -116,10 +127,15 @@ if (update) {
 // A new accounting DB suite must be listed here, otherwise its cases could be
 // deleted (or skipped) without moving any floor.
 const ACCOUNTING_PREFIX = "accounting";
-const unlistedAccounting = fs
-  .readdirSync(ROOT)
-  .filter((name) => name.startsWith(ACCOUNTING_PREFIX) && name.endsWith(".integration.test.ts"))
-  .filter((name) => !(name in BASELINE));
+const unlistedAccounting = ROOTS.flatMap((root) =>
+  fs.existsSync(root)
+    ? fs
+        .readdirSync(root)
+        .filter(
+          (name) => name.startsWith(ACCOUNTING_PREFIX) && name.endsWith(".integration.test.ts"),
+        )
+    : [],
+).filter((name) => !(name in BASELINE));
 let failed = unlistedAccounting.length > 0;
 for (const name of unlistedAccounting) {
   console.error(`✗ ${name}: accounting DB suite is not in the manifest baseline.`);

@@ -4,7 +4,7 @@ import {
   setPreferencesMemory,
   savePreferences,
 } from "@/lib/contacts/preferencesStorage";
-import { normalizeContactPreferences } from "@mms/shared";
+import { normalizeContactPreferences } from "@mms/contracts";
 
 describe("preferencesStorage", () => {
   beforeEach(() => {

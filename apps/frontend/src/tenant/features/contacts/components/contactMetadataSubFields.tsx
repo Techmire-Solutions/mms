@@ -1,5 +1,5 @@
 import React from "react";
-import type { AppTranslationKey, Contact } from "@mms/shared";
+import type { AppTranslationKey, Contact } from "@mms/contracts";
 import { Badge } from "@/components/ui/badge";
 
 export function renderEducationSubField(

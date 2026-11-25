@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../app.js";
 import { adminToken, viewerToken } from "./helpers/tokens.js";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),

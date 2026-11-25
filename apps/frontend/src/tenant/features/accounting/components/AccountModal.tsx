@@ -1,7 +1,7 @@
 import {
   translateApiMessage,
   translateValidationMessage,
-} from "@/lib/forms/translateValidationMessage";
+} from "@mms/fe-core/forms/translateValidationMessage";
 import React, { useMemo, useState } from "react";
 import { BookOpen } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
@@ -10,15 +10,19 @@ import {
   ACCOUNT_TYPE_META,
   type Account,
   type AccountType,
-} from "@/lib/data/accountingData";
+} from "@mms/mod-accounting/frontend/tenant";
 import { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
-import { FormModal } from "@/components/app/FormModal";
-import { useTranslation } from "@/hooks/useTranslation";
-import { accountRecordSchema, generateClientEntityId, type AppTranslationKey } from "@mms/shared";
-import { createZodFormResolver } from "@/lib/forms/createZodFormResolver";
-import { mapApiFormError } from "@/lib/forms/serverFormErrors";
-import { useIdentityReset } from "@/lib/forms/useIdentityReset";
-import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { useTranslation } from "@mms/fe-core/i18n";
+import {
+  accountRecordSchema,
+  generateClientEntityId,
+  type AppTranslationKey,
+} from "@mms/contracts";
+import { createZodFormResolver } from "@mms/fe-core/forms/createZodFormResolver";
+import { mapApiFormError } from "@mms/fe-core/forms/serverFormErrors";
+import { useIdentityReset } from "@mms/fe-core/forms/useIdentityReset";
+import { useSubmitGuard } from "@mms/fe-core/forms/useSubmitGuard";
 import { AccountModalFields } from "@/tenant/features/accounting/components/AccountModalFields";
 
 interface AccountModalProps {

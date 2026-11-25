@@ -3,7 +3,7 @@
  * @description Header actions, banner, tab-bar, and footer chrome partitions for ContactDetailDrawer.
  */
 import React from "react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SubTabBar, type SubTab } from "@/components/app/SubTabBar";
 import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerArchiveChrome";

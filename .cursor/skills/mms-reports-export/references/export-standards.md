@@ -23,10 +23,10 @@
 
 ## Standardized Module Data Transfer (SSOT & Field Whitelist)
 
-All module entity CSV exports and imports must adhere to the shared `@mms/shared` data-transfer pipeline:
+All module entity CSV exports and imports must adhere to the shared `@mms/contracts` data-transfer pipeline:
 - **Field Whitelist Invariant**: Strip all internal system metadata keys (`id`, `_id`, `uuid`, `tenantId`, `tenant_id`, `createdAt`, `updatedAt`, `deletedAt`, `version`, `__v`, `syncStatus`, `shardedHash`, `hashChain`) from exported columns and imported objects via `filterNonMetadataColumns()` and `isSystemMetadataKey()`.
 - **Bidirectional Symmetry**: Export headers must 1:1 match primary import headers (`field.label`). Any valid exported CSV must be cleanly accepted by the corresponding import dialog without column mismatches.
-- **SSOT Schemas**: Defined using `createModuleTransferSchema()` in `packages/shared/src/dataTransfer/schemas/*`.
+- **SSOT Schemas**: Defined using `createModuleTransferSchema()` in `packages/contracts/src/dataTransfer/schemas/*`.
 - **Grid Builder**: All entity rows must be generated using `buildExportGrid()` or `yieldExportGridChunks()`, which enforce metadata stripping at the root generation layer.
 
 ## Tamper-Evident Compliance & Audit Exports

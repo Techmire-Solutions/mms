@@ -1,4 +1,4 @@
-import { uuidv7, type Contact } from "@mms/shared";
+import { uuidv7, type Contact } from "@mms/contracts";
 import {
   MAX_CONTACTS_SYNC_CONFLICT_ATTEMPTS,
   currentContactsSyncKeys,

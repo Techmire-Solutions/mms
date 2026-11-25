@@ -1,5 +1,5 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import type { PlatformWorkspaceListResponse, PlatformWorkspacesListQuery } from "@mms/shared";
+import type { PlatformWorkspaceListResponse, PlatformWorkspacesListQuery } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";

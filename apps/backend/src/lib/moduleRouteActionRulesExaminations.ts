@@ -1,4 +1,4 @@
-import type { ModuleAction } from "@mms/shared";
+import type { ModuleAction } from "@mms/contracts";
 
 /**
  * Examinations route-action rules, split from `moduleRouteActionRules.ts` for the 300-line band.

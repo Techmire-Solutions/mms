@@ -26,7 +26,7 @@ Do **not** use for day-to-day install/run → `mms-dev-setup`. Do **not** use fo
 4. `pnpm install` then `pnpm audit` (or OSV) — fix/document high+ findings. Prefer the `allowBuilds` allowlist in `pnpm-workspace.yaml` so arbitrary postinstall scripts stay off.
 5. Read upstream major migration guides before landing breaking API changes.
 6. `pnpm typecheck && pnpm test` + FE/BE lint when those apps changed.
-7. **Tree-Shaking & Bundle Review**: Verify tree-shaking compatibility before introducing any new dependency. Ban monolithic utility libraries (`lodash`, `moment`, `ramda`) in favor of native JS and `@mms/shared`. Ban CommonJS-only packages that break Vite tree-shaking (`mms-performance.md`).
+7. **Tree-Shaking & Bundle Review**: Verify tree-shaking compatibility before introducing any new dependency. Ban monolithic utility libraries (`lodash`, `moment`, `ramda`) in favor of native JS and `@mms/contracts`. Ban CommonJS-only packages that break Vite tree-shaking (`mms-performance.md`).
 8. **React Compiler** (only if enabling): follow the current official integration for the selected Vite/React versions; configure frontend only and preserve existing Hooks lint. Advisory: adopt incrementally; retain manual memoization until identity/dependency semantics and behavior are verified. Update the stack note once enabled.
 9. Keep GitHub `dependency-review` green on the PR.
 10. Do not enable `exactOptionalPropertyTypes` mid-feature — dedicated TS-strictness PR only (`mms-dependencies.md`).

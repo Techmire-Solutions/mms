@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      contactUseCases: { loadContactsCommandMetrics: mocks.contacts },
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -18,7 +28,9 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../lib/tenantContext.js", () => ({
   getRequestTenant: mocks.getRequestTenant,
 }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: mocks.withTenant,
 }));
 vi.mock("../students/use-cases/studentUseCases.js", () => ({
@@ -29,9 +41,7 @@ vi.mock("../faculty/use-cases/facultyUseCases.js", () => ({
     loadFacultyCommandMetrics: mocks.faculty,
   },
 }));
-vi.mock("../contacts/use-cases/contactUseCases.js", () => ({
-  contactUseCases: { loadContactsCommandMetrics: mocks.contacts },
-}));
+
 vi.mock("../services/sessionService.js", () => ({
   loadSessionsCommandMetrics: mocks.sessions,
 }));
@@ -47,7 +57,7 @@ vi.mock("../services/hasanatService.js", () => ({
 vi.mock("../services/questionBankMetricsService.js", () => ({
   loadQuestionBankCommandMetrics: mocks.questionBank,
 }));
-vi.mock("../services/accountingService.js", () => ({
+vi.mock("@mms/mod-accounting/backend/services", () => ({
   loadAccountingCommandMetrics: mocks.accounting,
 }));
 vi.mock("../tasks/use-cases/tasksUseCases.js", () => ({

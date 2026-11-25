@@ -5,7 +5,7 @@ import {
   getPrimaryPhone,
   toMessagingRecipient,
   type Contact,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";

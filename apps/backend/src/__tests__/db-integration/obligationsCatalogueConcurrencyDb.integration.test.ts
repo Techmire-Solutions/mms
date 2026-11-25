@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant, withTenant, withTenantRead } from "../../db/tenant-context.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant, withTenant, withTenantRead } from "@mms/db/context";
 import {
   mujtahidReps,
   mujtahids,
@@ -11,8 +11,8 @@ import {
   obligationTypes,
   wakalaTypes,
   workspaces,
-} from "../../db/schema.js";
-import type { ObligationDistribution, WakalaType } from "@mms/shared";
+} from "@mms/db/schema";
+import type { ObligationDistribution, WakalaType } from "@mms/contracts";
 import { replaceWakalaAggregateForWorkspace } from "../../db/repositories/obligationWakalaRepository.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 

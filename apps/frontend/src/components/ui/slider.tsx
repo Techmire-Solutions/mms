@@ -1,1 +1,1 @@
-export { Slider } from "@shared/ui";
+export { Slider } from "@mms/ui";

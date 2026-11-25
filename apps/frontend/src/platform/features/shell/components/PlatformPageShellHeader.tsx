@@ -8,7 +8,7 @@ import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions"
 import { usePlatformSidebar } from "@/platform/features/shell/lib/PlatformSidebarContext";
 import { usePlatformHealth } from "@/platform/features/system/hooks/usePlatformHealth";
 import { usePlatformBreadcrumb } from "@/platform/features/shell/lib/PlatformBreadcrumbContext";
-import { Badge, Breadcrumb, Button } from "@shared/ui";
+import { Badge, Breadcrumb, Button } from "@mms/ui";
 import { ROUTES, isNavPathActive } from "@/lib/config/routes";
 import { PLATFORM_NAV_ITEMS } from "@/platform/features/shell/lib/platformNav";
 import { PlatformHeaderBrand } from "@/platform/features/shell/components/header/PlatformHeaderBrand";

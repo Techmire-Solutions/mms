@@ -6,7 +6,7 @@ import {
   curatedContactCountryCodes,
   needsContactCountryCodesCurate,
   parseTenantScopedStorageKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   getCollectionByStorageName,
   listCollectionStorageNames,

@@ -2,7 +2,7 @@ import {
   MESSAGING_MODULE_MANIFEST,
   normalizeMessagingPreferences,
   type MessagingPreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleSetupConfigHooks } from "@/lib/query/createModuleSetupConfigHooks";
 import {
   fetchMessagingPreferences,

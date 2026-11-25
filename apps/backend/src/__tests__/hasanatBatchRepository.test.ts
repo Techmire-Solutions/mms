@@ -39,7 +39,9 @@ const mockTx = {
   execute: vi.fn(async () => txState.executeResult),
 };
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, cb: (tx: typeof mockTx) => Promise<unknown>) => cb(mockTx),
   withTenantRead: async (_tenant: string, cb: (tx: typeof mockTx) => Promise<unknown>) =>
     cb(mockTx),

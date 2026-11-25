@@ -3,7 +3,7 @@
 Whole-module pass over Faculty at `main` HEAD `a51ae8bd5` + the working tree: backend
 (`apps/backend/src/faculty/**`, `routes/tenant/faculty/**`, `db/repositories/faculty*` ≈ 9.7k LOC),
 frontend (`apps/frontend/src/tenant/features/faculty/**` ≈ 20.9k LOC) and the shared faculty package
-(`packages/shared/src/faculty/**` + contracts ≈ 5.5k LOC).
+(`packages/contracts/src/faculty/**` + contracts ≈ 5.5k LOC).
 
 | Method | What it covered |
 |---|---|

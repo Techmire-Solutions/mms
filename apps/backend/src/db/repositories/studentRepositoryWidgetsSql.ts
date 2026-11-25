@@ -1,6 +1,6 @@
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
-import type { StudentsWidgetQuery } from "@mms/shared";
-import { students, contacts, contactAddresses } from "../schema.js";
+import type { StudentsWidgetQuery } from "@mms/contracts";
+import { students, contacts, contactAddresses } from "@mms/db/schema";
 
 export function activeWorkspaceWhere(subdomain: string): SQL {
   return and(eq(students.workspaceSubdomain, subdomain), isNull(students.deletedAt))!;

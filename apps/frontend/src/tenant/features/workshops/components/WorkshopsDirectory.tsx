@@ -5,7 +5,7 @@
 
 import React, { useMemo } from "react";
 import { CalendarDays, Pencil, RotateCcw, Trash2, Users } from "lucide-react";
-import type { WorkshopEvent, WorkshopStatus } from "@mms/shared";
+import type { WorkshopEvent, WorkshopStatus } from "@mms/contracts";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import { DataTableRowActions } from "@/components/common/data-table";
 import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";

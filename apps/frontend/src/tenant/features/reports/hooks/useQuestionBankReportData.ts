@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getQuestionCategoryIds } from "@mms/shared";
+import { getQuestionCategoryIds } from "@mms/contracts";
 import {
   useQuestionBankQuestions,
   useQuestionBankQuestionsCollection,

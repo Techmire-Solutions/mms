@@ -1,7 +1,7 @@
 # Accounting — schema and persistence audit
 
 Scope: the persistence layer behind the Accounting module — the Drizzle model
-(`apps/backend/src/db/schema/{accounting,accountingAccounts,accountingEntryChildren,accountingFxColumns,accountingVoucherNumbering,accountingLedgerOps,accountingModuleConfig,softDeleteSchema}.ts`),
+(`packages/db/src/schema/{accounting,accountingAccounts,accountingEntryChildren,accountingFxColumns,accountingVoucherNumbering,accountingLedgerOps,accountingModuleConfig,softDeleteSchema}.ts`),
 the SQL that actually enforces the rules (`0092`, `0127`, `0128`, `0248`, `0249`, `0252`, and the new
 `0253`), the repositories that write them (`apps/backend/src/db/repositories/accounting*`), and the four
 DB-integration suites named in the review request: `accountingPersistDb`, `accountingPersistSoftDeleteDb`,
@@ -244,13 +244,13 @@ Result against a fresh PostgreSQL 16: **22 accounting DB suites / 148 tests pass
 
 | File | Change |
 |---|---|
-| `apps/backend/src/db/migrations_drizzle/0253_accounting_schema_integrity.sql` | new: posted-ref freeze, COA hierarchy + guard trigger, unique code, archive guard, restore attribution, period-status check, rate-positive check, eight indexes |
+| `packages/db/migrations_drizzle/0253_accounting_schema_integrity.sql` | new: posted-ref freeze, COA hierarchy + guard trigger, unique code, archive guard, restore attribution, period-status check, rate-positive check, eight indexes |
 | `…/migrations_drizzle/meta/0253_accounting_schema_integrity_snapshot.json`, `meta/_journal.json` | new snapshot (derived from 0252) + journal entry (§7) |
-| `apps/backend/src/db/schema/accountingAccounts.ts` | new: COA table split out (300-line ceiling) with hierarchy, unique active code, partial indexes, declared checks |
-| `apps/backend/src/db/schema/accounting.ts` | re-exports the COA; new entry indexes, period-status check, line sign/side/mirror/rate checks, fiscal-year created index + status check |
-| `apps/backend/src/db/schema/accountingEntryChildren.ts` | documents the `INCLUDE` tag index (model cannot express it) |
-| `apps/backend/src/db/schema/relations/accountingRelations.ts` | self-relations for `parent`/`children` |
-| `apps/backend/src/db/schema/index.ts` | barrel export |
+| `packages/db/src/schema/accountingAccounts.ts` | new: COA table split out (300-line ceiling) with hierarchy, unique active code, partial indexes, declared checks |
+| `packages/db/src/schema/accounting.ts` | re-exports the COA; new entry indexes, period-status check, line sign/side/mirror/rate checks, fiscal-year created index + status check |
+| `packages/db/src/schema/accountingEntryChildren.ts` | documents the `INCLUDE` tag index (model cannot express it) |
+| `packages/db/src/schema/relations/accountingRelations.ts` | self-relations for `parent`/`children` |
+| `packages/db/src/schema/index.ts` | barrel export |
 | `apps/backend/src/db/repositories/accountingAccountsPersist.ts` | soft-delete ownership, primary+locked line guard, hierarchy/freshness/config guards, restore attribution + code pre-check, parent preservation, token stamping |
 | `apps/backend/src/db/repositories/accountingAccountGuards.ts` | new: hierarchy, config-reference, freshness and posted-line guards |
 | `apps/backend/src/db/repositories/accountingAccountsHierarchyPersist.ts` | new: explicit parent upsert, unique-error mapping, restored-parent check |
@@ -261,12 +261,12 @@ Result against a fresh PostgreSQL 16: **22 accounting DB suites / 148 tests pass
 | `apps/backend/src/db/repositories/accountingRepositoryMetrics.ts` | exact `numeric` sums, exact `surplus` |
 | `apps/backend/src/db/repositories/accountingPostingPeriodsRepository.ts` | status from the shared union |
 | `apps/backend/src/db/repositories/accountingRepositoryListPages.ts` | `parentAccountId` in the COA page projection |
-| `apps/backend/src/accounting/use-cases/accountingEntryMutationUseCases.ts` | passes `changedIds` |
-| `apps/backend/src/accounting/use-cases/accountingLedgerGuards.ts` | 422 bound for out-of-range ledger amounts |
+| `packages/modules/accounting/src/backend/use-cases/accountingEntryMutationUseCases.ts` | passes `changedIds` |
+| `packages/modules/accounting/src/backend/use-cases/accountingLedgerGuards.ts` | 422 bound for out-of-range ledger amounts |
 | `apps/backend/src/accounting/repository/accountingRepository.ts` | `bulkSaveEntries` options |
-| `packages/shared/src/finance/accountingAccountHierarchy.ts` + `.test.ts` | new pure hierarchy rules |
-| `packages/shared/src/finance/accountingModuleManifest.ts` | `parentId` on the account record/insert schemas |
-| `packages/shared/src/entry/indexDomainsOperations.ts` | export |
+| `packages/contracts/src/finance/accountingAccountHierarchy.ts` + `.test.ts` | new pure hierarchy rules |
+| `packages/contracts/src/finance/accountingModuleManifest.ts` | `parentId` on the account record/insert schemas |
+| `packages/contracts/src/entry/indexDomainsOperations.ts` | export |
 | `apps/backend/src/__tests__/…` | new `accountingAccountsSchemaDb`, `accountingMetricsPrecisionDb`; extended persist, soft-delete, voucher-counter, posted-guard and constraints-parity suites |
 
 ## 6. Deviations from the approved plan

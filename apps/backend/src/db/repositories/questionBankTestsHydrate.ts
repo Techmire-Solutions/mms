@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { tests, testQuestions, testSections, testSectionQuestions } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { tests, testQuestions, testSections, testSectionQuestions } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 export const testSelectFields = {
   id: tests.id,

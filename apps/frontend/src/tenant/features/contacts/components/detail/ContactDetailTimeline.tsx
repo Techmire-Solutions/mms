@@ -3,7 +3,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { m } from "framer-motion";
 import { History, Send } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { type ContactActivity, formatDate } from "@mms/shared";
+import { type ContactActivity, formatDate } from "@mms/contracts";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

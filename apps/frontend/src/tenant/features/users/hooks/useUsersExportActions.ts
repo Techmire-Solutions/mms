@@ -4,7 +4,7 @@ import {
   type AppTranslationKey,
   type UserExportColumn,
   type UsersListQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { startServerUsersCsvExport } from "@/lib/backgroundJobs/startServerUsersCsvExport";
 import { useModuleServerCsvExportActions } from "@/lib/backgroundJobs/useModuleServerCsvExportActions";
 import { useTranslation } from "@/hooks/useTranslation";

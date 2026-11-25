@@ -8,7 +8,7 @@
  * (handled by request validation before the use case runs).
  */
 
-import type { HasanatRuleViolation } from "@mms/shared";
+import type { HasanatRuleViolation } from "@mms/contracts";
 import { ConflictError, PolicyViolationError } from "../../lib/httpErrors.js";
 
 /** Rule codes that are policy refusals rather than state conflicts. */

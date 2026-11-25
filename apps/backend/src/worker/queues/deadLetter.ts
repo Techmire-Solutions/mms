@@ -1,6 +1,6 @@
 import { logger } from "../../lib/logger.js";
 import { markJobPermanentlyFailed } from "../../services/backgroundJobWorkerService.js";
-import { recordAuditEventSafely } from "../../services/auditTrailService.js";
+import { recordAuditEventSafely } from "@mms/be-core/audit";
 import { failPromotionRunFromDlq } from "../../services/sessionRolloverFinalizer.js";
 import type { EnqueuedJobData } from "./index.js";
 

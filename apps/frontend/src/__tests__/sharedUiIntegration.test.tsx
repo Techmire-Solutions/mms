@@ -12,14 +12,14 @@ import {
   UiConfigProvider,
   toast,
   getToastState,
-} from "@shared/ui";
+} from "@mms/ui";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-describe("@shared/ui Core UI Library Integration", () => {
+describe("@mms/ui Core UI Library Integration", () => {
   let container: HTMLDivElement;
   let root: Root;
 

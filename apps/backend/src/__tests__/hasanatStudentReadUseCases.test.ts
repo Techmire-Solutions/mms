@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { HasanatTier } from "@mms/shared";
+import type { HasanatTier } from "@mms/contracts";
 import { getHasanatStudentReport } from "../hasanat/use-cases/hasanatStudentReadUseCases.js";
 
 const TIERS: HasanatTier[] = [

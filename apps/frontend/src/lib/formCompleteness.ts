@@ -1,5 +1,5 @@
-import type { ModuleFieldDef } from "@mms/shared";
-import { hasFieldValue } from "@mms/shared";
+import type { ModuleFieldDef } from "@mms/contracts";
+import { hasFieldValue } from "@mms/contracts";
 
 const DEFAULT_SKIP_TYPES = new Set(["boolean", "ai_summary"]);
 

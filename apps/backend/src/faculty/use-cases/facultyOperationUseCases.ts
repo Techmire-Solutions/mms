@@ -5,14 +5,14 @@ import {
   type FacultyDuplicateCheckInput,
   type FacultyEmployeeIdSettings,
   type FacultyDuplicateReason,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { loadFacultyModulePreferences } from "./facultyPreferencesService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import type { FacultyRepository } from "../repository/facultyRepository.js";
 import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
-import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { reconcileFacultyContactsByFacultyIds } from "@mms/mod-contacts/backend/use-cases";
+import { withTenant } from "@mms/db/context";
 import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 

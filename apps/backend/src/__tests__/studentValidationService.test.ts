@@ -13,7 +13,8 @@ vi.mock("../students/use-cases/studentConfigService.js", () => ({
   loadStudentsSettingsCombined: (...args: unknown[]) => mocks.loadSettings(...args),
 }));
 
-vi.mock("../services/contactService.js", () => ({
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/mod-contacts/backend/services")>()),
   loadContactsSummaryByIdsForTenant: (...args: unknown[]) => mocks.loadContacts(...args),
 }));
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatDateToIso, todayISO } from "@mms/shared";
+import { formatDateToIso, todayISO } from "@mms/contracts";
 import { computeInvoiceAmounts, createInitialDraft } from "./invoiceFormDraft";
 
 describe("invoice form draft", () => {

@@ -6,7 +6,7 @@ import {
   updatePlatformSettings,
 } from "../services/platform/platformSettingsService.js";
 
-vi.mock("../db/dbClient.js", () => {
+vi.mock("@mms/db/client", () => {
   const mockRows: Record<string, unknown>[] = [];
   const mockDb = {
     select: () => ({
@@ -30,7 +30,7 @@ vi.mock("../db/dbClient.js", () => {
   };
 });
 
-vi.mock("../db/dbConnection.js", () => {
+vi.mock("@mms/db/client", () => {
   const mockRows: Record<string, unknown>[] = [];
   const mockDb = {
     select: () => ({

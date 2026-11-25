@@ -1,4 +1,4 @@
-import { type Contact, type ContactPreferences } from "@mms/shared";
+import { type Contact, type ContactPreferences } from "@mms/contracts";
 import { ContactMetadataCell } from "@/tenant/features/contacts/components/ContactMetadataCell";
 import type { useTranslation } from "@/hooks/useTranslation";
 import {

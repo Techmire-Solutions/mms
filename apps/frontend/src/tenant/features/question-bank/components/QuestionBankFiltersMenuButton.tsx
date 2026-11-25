@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { Filter } from "lucide-react";
-import { QUESTION_STATUSES, type QuestionStatus, type QuestionType } from "@mms/shared";
+import { QUESTION_STATUSES, type QuestionStatus, type QuestionType } from "@mms/contracts";
 import {
   ModuleFilterCheckboxGroup,
   ModuleFilterDivider,

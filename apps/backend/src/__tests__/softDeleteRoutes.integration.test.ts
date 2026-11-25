@@ -1,4 +1,38 @@
-import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  resetContactsRepositoryForTesting,
+  setContactsRepositoryForTesting,
+} from "@mms/mod-contacts/backend/repository";
+import { createFakeContactsRepository } from "./helpers/fakeContactsRepository.js";
+
+vi.mock("@mms/be-core/data/module-field-config", () => ({
+  createModuleFieldConfigService: () => ({
+    load: vi.fn().mockResolvedValue(null),
+    save: vi.fn(),
+  }),
+}));
+
+vi.mock("@mms/be-core/audit", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/be-core/audit")>()),
+  recordModernAuditEvent: vi.fn().mockResolvedValue({}),
+}));
+
+vi.mock("@mms/be-core/data/outbox", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/be-core/data/outbox")>()),
+  emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
+  emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@mms/be-core/realtime", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/be-core/realtime")>()),
+  broadcastCollection: vi.fn(),
+}));
+
+vi.mock("@mms/db/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/client")>()),
+  runInTransaction: (callback: () => unknown) => callback(),
+}));
+
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 
 vi.mock("../db/database.js", () => ({
@@ -19,7 +53,9 @@ const mockTx = {
   returning: vi.fn().mockResolvedValue([]),
 };
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: vi
     .fn()
     .mockImplementation(
@@ -40,11 +76,6 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
   purgeExpiredAuthArtifacts: vi.fn().mockResolvedValue(undefined),
   putAuthArtifact: vi.fn(),
   takeAuthArtifact: vi.fn(),
-}));
-
-vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
-  loadContactFieldConfig: vi.fn().mockResolvedValue(null),
-  saveContactFieldConfig: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("../services/workspaceService.js", async (importOriginal) => {
@@ -95,27 +126,6 @@ vi.mock("../faculty/repository/facultyRepositoryAdapter.js", async (importOrigin
   };
 });
 
-const mockGetContactById = vi.fn();
-const mockSoftDeleteContactById = vi.fn();
-const mockRestoreContactById = vi.fn();
-const mockBulkSoftDeleteContacts = vi.fn();
-const mockBulkRestoreContacts = vi.fn();
-
-vi.mock("../contacts/use-cases/contactUseCases.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../contacts/use-cases/contactUseCases.js")>();
-  return {
-    ...actual,
-    contactUseCases: {
-      ...actual.contactUseCases,
-      getContactById: (...args: unknown[]) => mockGetContactById(...args),
-      softDeleteContactById: (...args: unknown[]) => mockSoftDeleteContactById(...args),
-      restoreContactById: (...args: unknown[]) => mockRestoreContactById(...args),
-      bulkSoftDeleteContacts: (...args: unknown[]) => mockBulkSoftDeleteContacts(...args),
-      bulkRestoreContacts: (...args: unknown[]) => mockBulkRestoreContacts(...args),
-    },
-  };
-});
-
 const mockDeleteExamById = vi.fn();
 const mockRestoreExamById = vi.fn();
 const mockBulkRestoreExams = vi.fn();
@@ -143,6 +153,17 @@ import { clearL1Cache } from "../lib/cache/index.js";
 import { softDeleteTenantUserRow } from "../db/repositories/tenantUserRepositoryPersist.js";
 
 describe("Soft Delete Route Semantics & Session Invalidation Integration", () => {
+  let repo: ReturnType<typeof createFakeContactsRepository>;
+
+  beforeEach(() => {
+    repo = createFakeContactsRepository();
+    setContactsRepositoryForTesting(repo);
+  });
+
+  afterEach(() => {
+    resetContactsRepositoryForTesting();
+  });
+
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -236,7 +257,7 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
       deletedAt: "2026-09-10T12:00:00.000Z",
       deletedBy: "u-admin",
     };
-    mockGetContactById.mockResolvedValue(archivedContact);
+    vi.mocked(repo.findById).mockResolvedValue(archivedContact as never);
 
     const token = adminToken(app, { workspaceSubdomain: "demo" });
     const response = await app.inject({
@@ -260,7 +281,7 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
       deletedAt: "2026-09-10T12:00:00.000Z",
       deletedBy: "u-admin",
     };
-    mockGetContactById.mockResolvedValue(archivedContact);
+    vi.mocked(repo.findById).mockResolvedValue(archivedContact as never);
 
     // 1. Admin has contacts.delete permission -> 200 OK
     const adminAuth = adminToken(app, { workspaceSubdomain: "demo" });
@@ -310,7 +331,10 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
 
   it("Assertion 3: DELETE /api/contacts/:id on an already-deleted contact returns 404 Not Found", async () => {
     // When softDeleteContactById returns false (record does not exist or already soft-deleted)
-    mockSoftDeleteContactById.mockResolvedValue(false);
+    vi.mocked(repo.bulkSoftDelete as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      succeeded: 0,
+      failed: 1,
+    });
 
     const token = adminToken(app, { workspaceSubdomain: "demo" });
     const response = await app.inject({
@@ -445,7 +469,10 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
 
   it("Assertion 5: Manifest compliance — forwards deletionReason for modules that capture it", async () => {
     mockDeleteExamById.mockResolvedValue(true);
-    mockSoftDeleteContactById.mockResolvedValue(true);
+    vi.mocked(repo.bulkSoftDelete as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      succeeded: 1,
+      failed: 0,
+    });
 
     const token = adminToken(app, { workspaceSubdomain: "demo" });
 
@@ -483,8 +510,9 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
     });
 
     expect(contactRes.statusCode).toBe(200);
-    expect(mockSoftDeleteContactById).toHaveBeenCalledWith(
-      "c-active-101",
+    expect(repo.bulkSoftDelete).toHaveBeenCalledWith(
+      "demo",
+      ["c-active-101"],
       "u-admin",
       "Preserve this audit reason",
     );

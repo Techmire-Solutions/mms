@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   MessageTemplate,
   StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useMessageComposerDispatch } from "./useMessageComposerDispatch";
 
 declare global {

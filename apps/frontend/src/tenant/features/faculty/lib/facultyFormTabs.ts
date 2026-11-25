@@ -6,7 +6,7 @@ import type {
   FacultyDesignationDefinition,
   FacultyDepartmentEntity,
   FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { focusFacultyValidationField } from "@/tenant/features/faculty/lib/facultyFormValidation";
 import type { FacultyStatusOption } from "@/tenant/features/faculty/components/FacultyFormSections";

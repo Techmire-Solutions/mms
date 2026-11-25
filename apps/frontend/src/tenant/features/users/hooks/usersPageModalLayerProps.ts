@@ -1,4 +1,4 @@
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import type { MessagingTarget } from "@/hooks/useMessageComposerState";
 import type { UsersModalLayerProps } from "@/tenant/features/users/components/UsersModalLayer";
 import type { useUsersPageActions } from "@/tenant/features/users/hooks/useUsersPageActions";

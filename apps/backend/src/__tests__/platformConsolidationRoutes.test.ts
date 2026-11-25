@@ -66,18 +66,21 @@ const mockReport = vi.fn();
 
 // The route now goes through the adapter-free `consolidationUseCases` surface
 // (check:backend-boundaries: routes must not import repository adapters).
-vi.mock("../platform/use-cases/consolidationUseCases.js", () => ({
-  listGroups: vi.fn().mockResolvedValue([]),
-  saveGroup: (...args: unknown[]) => mockSave(...args),
-  deleteGroup: vi.fn(),
-  buildConsolidationReport: (...args: unknown[]) => mockReport(...args),
-  consolidationUseCases: {
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/consolidationUseCases.js",
+  () => ({
     listGroups: vi.fn().mockResolvedValue([]),
     saveGroup: (...args: unknown[]) => mockSave(...args),
     deleteGroup: vi.fn(),
     buildConsolidationReport: (...args: unknown[]) => mockReport(...args),
-  },
-}));
+    consolidationUseCases: {
+      listGroups: vi.fn().mockResolvedValue([]),
+      saveGroup: (...args: unknown[]) => mockSave(...args),
+      deleteGroup: vi.fn(),
+      buildConsolidationReport: (...args: unknown[]) => mockReport(...args),
+    },
+  }),
+);
 
 const GROUP = {
   name: "Group",

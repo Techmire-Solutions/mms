@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import type { Account, FiscalYear } from "@mms/shared";
-import { useTranslation } from "@/hooks/useTranslation";
-import { Alert } from "@/components/app/Alert";
-import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
+import type { Account, FiscalYear } from "@mms/contracts";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { Alert } from "@mms/ui";
+import { ModuleSetupSaveFooter } from "@mms/fe-core/components/ModuleSetupSaveFooter";
 import { AccountingFiscalYearModal } from "./AccountingFiscalYearModal";
 import { AccountingSettingsPreferences } from "./AccountingSettingsPreferences";
 import { useAccountingSetupPanelState } from "@/tenant/features/accounting/hooks/useAccountingSetupPanelState";
 import { CloseFiscalYearModal } from "./CloseFiscalYearModal";
-import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
+import { ModuleSetupContent } from "@mms/ui/app/ModuleSetupContent";
 
 export interface AccountingSettingsProps {
   accounts: Account[];

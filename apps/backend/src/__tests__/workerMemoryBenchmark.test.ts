@@ -14,7 +14,7 @@ vi.mock("node:child_process", () => ({
     callback(null, { stdout: "", stderr: "" });
   },
 }));
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import {
   dispatchJobToQueue,
   QUEUE_PDF_RENDERING,

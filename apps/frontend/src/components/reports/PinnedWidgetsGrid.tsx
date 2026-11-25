@@ -1,7 +1,7 @@
 import type React from "react";
 import { LayoutDashboard, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 import { m } from "framer-motion";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";

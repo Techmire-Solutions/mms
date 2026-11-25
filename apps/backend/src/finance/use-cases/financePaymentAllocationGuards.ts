@@ -16,7 +16,7 @@ import {
   type Payment,
   type PaymentAllocation,
   type PaymentUpdate,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 
 export function assertPaymentAllocationsValid(

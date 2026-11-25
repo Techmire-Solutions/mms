@@ -2,11 +2,11 @@ import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, X, Trash2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { usePlatformAiDiagnostics } from "@/platform/features/ai/hooks/usePlatformAiDiagnostics";
 import { PlatformAiMessageList } from "@/platform/features/ai/components/PlatformAiMessageList";
 import { PlatformAiPromptBar } from "@/platform/features/ai/components/PlatformAiPromptBar";
-import type { PlatformAiSuggestion } from "@mms/shared";
+import type { PlatformAiSuggestion } from "@mms/contracts";
 import { cn } from "@/lib/utils";
 
 export interface PlatformAiDrawerProps {

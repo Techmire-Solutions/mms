@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { HandCoins } from "lucide-react";
-import { HASANAT_MODULE_MANIFEST } from "@mms/shared";
+import { HASANAT_MODULE_MANIFEST } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 
 export interface HasanatBulkActionBarProps {

@@ -10,9 +10,9 @@ The "centralised ID configuration" is a single shared sequence engine, not a per
 
 | Concern | Location |
 |---|---|
-| Config schema (SSOT) | `packages/shared/src/core/sequenceNumberingTypes.ts` (`SequenceNumberingConfig`) |
-| Formatting engine | `packages/shared/src/core/sequenceNumberingUtils.ts` (`formatDeterministicSequence`, `formatTemplateSequence`) |
-| Per-module adapters | `packages/shared/src/core/sequenceNumberingAdapters.ts` (faculty, students, accounting, finance, obligations) |
+| Config schema (SSOT) | `packages/contracts/src/core/sequenceNumberingTypes.ts` (`SequenceNumberingConfig`) |
+| Formatting engine | `packages/contracts/src/core/sequenceNumberingUtils.ts` (`formatDeterministicSequence`, `formatTemplateSequence`) |
+| Per-module adapters | `packages/contracts/src/core/sequenceNumberingAdapters.ts` (faculty, students, accounting, finance, obligations) |
 | Shared UI card | `apps/frontend/src/components/sequence-numbering/` (`SequenceNumberingCard` + preview/parameters/telemetry) |
 | Per-module Setup sections | `FacultyIdSettingsCard`, `StudentsPreferencesSection`, `FinanceInvoiceNumberingSection`, `AccountingSettingsNumberingSection`, `ObligationsReceiptNumberingSection` |
 
@@ -40,7 +40,7 @@ one place.
 `ObligationCollectionForm.tsx` pre-filled `receipt_no` with
 `generateReceiptNo(existingCollections, settings)`, which derived the next number
 from whatever list the client happened to hold. The schema comment in
-`apps/backend/src/db/schema/obligations.ts` admitted the failure mode: *"two
+`packages/db/src/schema/obligations.ts` admitted the failure mode: *"two
 clients produced the same one; this unique partial index is the only thing that
 stops it."* The `autoGenerateReceipt: false` Setup toggle was also ignored — the
 form always generated.
@@ -61,7 +61,7 @@ form always generated.
 - The browser no longer derives the number: the form shows "assigned automatically
   on save" when auto-generation is on, and an editable required field when off.
 - Shared helpers added to
-  `packages/shared/src/obligations/obligationsReceiptNumberingUtils.ts`
+  `packages/contracts/src/obligations/obligationsReceiptNumberingUtils.ts`
   (`obligationReceiptFormatKey`, `obligationReceiptSequencePattern`,
   `obligationReceiptNumberingIsUnambiguous`), mirroring the accounting voucher
   helpers.

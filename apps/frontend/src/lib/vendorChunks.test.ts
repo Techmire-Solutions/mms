@@ -33,10 +33,10 @@ describe("vendorChunks SSOT", () => {
       ["/repo/node_modules/d3-scale/src/index.js", "vendor-charts"],
       ["/repo/node_modules/zod/v4/index.js", "vendor-validation"],
       ["/repo/node_modules/@ts-rest/core/index.js", "vendor-validation"],
-      ["/repo/packages/shared/dist/i18n/appTranslationsEn.js", "mms-i18n-en"],
-      ["/repo/packages/shared/dist/i18n/appTranslationsAr.js", "mms-i18n-ar"],
-      ["/repo/packages/shared/dist/i18n/appTranslationsUr.js", "mms-i18n-ur"],
-      ["/repo/packages/shared/dist/i18n/appTranslationsFa.js", "mms-i18n-fa"],
+      ["/repo/packages/contracts/dist/i18n/appTranslationsEn.js", "mms-i18n-en"],
+      ["/repo/packages/contracts/dist/i18n/appTranslationsAr.js", "mms-i18n-ar"],
+      ["/repo/packages/contracts/dist/i18n/appTranslationsUr.js", "mms-i18n-ur"],
+      ["/repo/packages/contracts/dist/i18n/appTranslationsFa.js", "mms-i18n-fa"],
     ];
     for (const [id, expected] of cases) {
       expect(manualVendorChunk(id), id).toBe(expected);
@@ -45,9 +45,9 @@ describe("vendorChunks SSOT", () => {
 
   it("handles Windows path separators", () => {
     expect(manualVendorChunk("C:\\repo\\node_modules\\react\\index.js")).toBe("vendor-react");
-    expect(manualVendorChunk("C:\\repo\\packages\\shared\\dist\\i18n\\appTranslationsEn.js")).toBe(
-      "mms-i18n-en",
-    );
+    expect(
+      manualVendorChunk("C:\\repo\\packages\\contracts\\dist\\i18n\\appTranslationsEn.js"),
+    ).toBe("mms-i18n-en");
   });
 
   it("returns undefined for app code and unmatched modules", () => {

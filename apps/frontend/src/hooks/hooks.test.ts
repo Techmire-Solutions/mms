@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { roleHasPermission } from "@mms/shared";
+import { roleHasPermission } from "@mms/contracts";
 
 describe("usePermissions matrix", () => {
   it("admin can write students", () => {

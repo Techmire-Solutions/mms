@@ -1,15 +1,15 @@
 # Module Manifest, Routing & Tier Architecture
 
-This guide details the procedure for registering a new module manifest in `@mms/shared`, configuring route-access gates in the frontend, and structuring the three-tier `ModulePageShell`.
+This guide details the procedure for registering a new module manifest in `@mms/contracts`, configuring route-access gates in the frontend, and structuring the three-tier `ModulePageShell`.
 
 ---
 
-## 1. Module Manifest Registration (`packages/shared`)
+## 1. Module Manifest Registration (`packages/contracts`)
 
 Every module declares a manifest defining its capability flags, settings, and permission keys:
 
 ```ts
-// packages/shared/src/manifests/myModuleManifest.ts
+// packages/contracts/src/manifests/myModuleManifest.ts
 export interface MyModuleManifest {
   readonly id: "myModule";
   readonly titleKey: "nav.myModule";
@@ -29,7 +29,7 @@ export const MY_MODULE_MANIFEST: MyModuleManifest = {
 } as const;
 ```
 
-Export the manifest from `packages/shared/src/index.ts`.
+Export the manifest from `packages/contracts/src/index.ts`.
 
 ---
 
@@ -77,7 +77,7 @@ import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { MY_MODULE_MANIFEST } from "@mms/shared";
+import { MY_MODULE_MANIFEST } from "@mms/contracts";
 import { MyModuleWorkDirectory } from "./MyModuleWorkDirectory";
 
 const MyModuleReportsTier = lazy(() => import("./MyModuleReportsTier"));

@@ -7,7 +7,7 @@ import {
   GENDERS,
   RELATIONSHIPS,
   SOCIAL_PLATFORMS,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getContactConfigCollectionDefaults } from "@/lib/contacts/contactConfigSeeds";
 
 describe("getContactConfigCollectionDefaults", () => {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { WorkspaceRole } from "@mms/shared";
+import type { WorkspaceRole } from "@mms/contracts";
 
 const mockSettings = vi.fn();
 const mockRole = vi.fn();

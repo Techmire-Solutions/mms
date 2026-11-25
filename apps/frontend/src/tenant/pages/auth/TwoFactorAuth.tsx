@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { maskEmail, requiresTwoFactor, resolveNotificationChannel } from "@mms/shared";
+import { maskEmail, requiresTwoFactor, resolveNotificationChannel } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import AuthLayout from "@/tenant/components/AuthLayout";
 import {

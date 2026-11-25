@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { BrandingSettings } from "@mms/shared";
+import type { BrandingSettings } from "@mms/contracts";
 import { isInstitutionProfileComplete } from "./SetupIncompleteCallout";
 
 function branding(partial: Partial<BrandingSettings>): BrandingSettings {

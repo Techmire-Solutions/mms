@@ -8,7 +8,7 @@ import {
   AuthStatusBanner,
   AuthSubmitButton,
 } from "@/components/entry";
-import { OtpInput, isOtpComplete } from "@shared/ui";
+import { OtpInput, isOtpComplete } from "@mms/ui";
 import { PasswordStrengthMeter } from "@/components/app/PasswordStrengthMeter";
 import { ROUTES } from "@/lib/config/routes";
 import type { PlatformForgotPasswordController } from "@/platform/features/auth/usePlatformForgotPasswordController";

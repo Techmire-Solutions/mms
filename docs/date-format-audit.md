@@ -31,7 +31,7 @@ That accepts dates which do not exist:
 For **accounting** this is not cosmetic: a journal-entry or fiscal-period date
 feeds date arithmetic, period comparison, and aging reports.
 
-All 21 call sites now use `isoDateSchema` from `packages/shared`, which checks
+All 21 call sites now use `isoDateSchema` from `packages/contracts`, which checks
 both the shape **and** that the date is real (verified by round-tripping through
 `Date.UTC`, so the result cannot depend on the host timezone). Duplicate
 implementations are gone, so the modules cannot drift apart again — which is
@@ -70,7 +70,7 @@ path.
 ## Known gap: session dates are still shape-unvalidated
 
 `SessionSchema` / `SessionInsertSchema` and `SessionClassSchedule*` in
-`packages/shared/src/sessionTypes.ts` validate `startDate` / `endDate` only as:
+`packages/contracts/src/sessionTypes.ts` validate `startDate` / `endDate` only as:
 
 ```ts
 startDate: z.string().min(1, 'Start date is required')

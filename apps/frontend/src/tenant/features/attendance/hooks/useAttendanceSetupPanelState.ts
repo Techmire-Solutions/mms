@@ -1,4 +1,4 @@
-import { type AttendanceSettings } from "@mms/shared";
+import { type AttendanceSettings } from "@mms/contracts";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useAttendanceSetupSaveActions } from "@/tenant/features/attendance/hooks/useAttendanceSetupSaveActions";

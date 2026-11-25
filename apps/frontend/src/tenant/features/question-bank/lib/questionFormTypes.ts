@@ -4,7 +4,7 @@ import type {
   QuestionBookCitation,
   QuestionDifficulty,
   QuestionType,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export interface QuestionFormProps {
   open: boolean;

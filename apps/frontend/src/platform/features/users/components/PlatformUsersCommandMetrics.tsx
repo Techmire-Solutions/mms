@@ -3,8 +3,8 @@ import React from "react";
 import { ShieldCheck, UserCheck, Crown } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { StatsSkeleton } from "@shared/ui";
-import type { PlatformUserProfile } from "@mms/shared";
+import { StatsSkeleton } from "@mms/ui";
+import type { PlatformUserProfile } from "@mms/contracts";
 
 export interface PlatformUsersCommandMetricsProps {
   admins: PlatformUserProfile[] | undefined;

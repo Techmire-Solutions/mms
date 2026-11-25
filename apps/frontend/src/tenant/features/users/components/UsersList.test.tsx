@@ -1,7 +1,7 @@
 import React, { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 
 /**
  * Regression: the bulk bar derived recipients by intersecting the CURRENT page's

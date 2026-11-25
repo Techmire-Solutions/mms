@@ -1,5 +1,5 @@
 import { Brain, Boxes, Database, Globe, Palette, Sparkles, type LucideIcon } from "lucide-react";
-import type { AppTranslationKey, Permission } from "@mms/shared";
+import type { AppTranslationKey, Permission } from "@mms/contracts";
 import { SETTINGS_SECTIONS, type SettingsSection } from "@/lib/config/routes";
 
 export interface SettingsNavItem {

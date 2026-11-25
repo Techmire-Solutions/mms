@@ -9,10 +9,10 @@ Scope: `apps/frontend/src/tenant/features/messaging/**`,
 `apps/frontend/src/components/messageComposer/**`, `components/app/MessageComposer.tsx`,
 `apps/frontend/src/hooks/useMessaging*.ts`, `apps/backend/src/routes/tenant/messaging/**`,
 `apps/backend/src/messaging/**`, `apps/backend/src/db/repositories/messaging*`,
-`apps/backend/src/db/schema/messaging.ts`, `apps/backend/src/services/messaging*.ts`,
+`packages/db/src/schema/messaging.ts`, `apps/backend/src/services/messaging*.ts`,
 `apps/backend/src/services/backgroundJobRunnerService.ts` (messaging branch),
-`packages/shared/src/messaging/**`, `packages/shared/src/schemas/messaging.dto.ts`,
-`packages/shared/src/contracts/messaging.contract.ts`, the messaging module manifest, and the
+`packages/contracts/src/messaging/**`, `packages/contracts/src/schemas/messaging.dto.ts`,
+`packages/contracts/src/contracts/messaging.contract.ts`, the messaging module manifest, and the
 module-access route table. Contacts, storage and the worker were read only where messaging calls them.
 
 Method: three parallel layer surveys (HTTP surface, persistence/async, frontend) against the rule
@@ -140,7 +140,7 @@ changing channel/status/search/page, "resend selected" hit rows no longer displa
 
 ### M3 — Major — archived logs were unreachable
 
-The contract used `baseListQuerySchema` (`packages/shared/src/contracts/messaging.contract.ts:50`),
+The contract used `baseListQuerySchema` (`packages/contracts/src/contracts/messaging.contract.ts:50`),
 whose `includeDeleted` is `z.union([z.boolean(), z.enum(["true","false"])])` **without** a transform
 (`core/apiSchemas.ts:13`). The handler checked the flag with `isQueryFlagTrue` but forwarded the raw
 query (`messagingLogContractHandlers.ts:49-59`), and the repository compared `=== true`

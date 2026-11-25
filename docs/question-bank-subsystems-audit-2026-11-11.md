@@ -18,7 +18,7 @@ contacts only.
 | # | Sev | Where | Finding |
 |---|---|---|---|
 | BP1 | P1 | [`QuestionBankWorkTier.tsx:132`](../apps/frontend/src/tenant/features/question-bank/components/QuestionBankWorkTier.tsx) | **No assembly engine.** The `generate` sub-tab was one button that opened the manual paper builder. No topic weightage, difficulty distribution, type quota, marks budget, recently-used exclusion or randomness existed anywhere — so determinism, constraint satisfaction and "criteria cannot be met" had no implementation to audit. |
-| BP2 | P2 | [`examinationTestTables.ts:30`](../apps/backend/src/db/schema/examinationTestTables.ts) | `tests.difficulty` accepts `"mixed"` but nothing derives a mix; `total_marks` was unrelated to the selected questions. |
+| BP2 | P2 | [`examinationTestTables.ts:30`](../packages/db/src/schema/examinationTestTables.ts) | `tests.difficulty` accepts `"mixed"` but nothing derives a mix; `total_marks` was unrelated to the selected questions. |
 | BP3 | P2 | `questionBankTestsHydrate.ts` | No recently-used signal was read, although `test_questions` + `tests.created_at` make it available. |
 | BP4 | P3 | `questionBankModuleManifest.ts` | `directoryViews: ["questions","generate"]` promised a generator the module did not have. |
 
@@ -39,7 +39,7 @@ contacts only.
 |---|---|---|---|
 | DUP1 | P1 | `questionBankQuestionWritePlan.ts` | **No duplicate detection** of any kind — not in the form, not at the write boundary, not in a report. |
 | DUP2 | P1 | [`registerModuleCsvImportRoutes.ts:49`](../apps/backend/src/lib/registerModuleCsvImportRoutes.ts) | Bulk import and export both return **503**: no `questionBank:import` / `questionBank:export` runner is registered. "Duplicate detection during bulk import" could not run. |
-| DUP3 | P2 | [`questionBankTransferSchema.ts`](../packages/shared/src/dataTransfer/schemas/questionBankTransferSchema.ts) | The CSV contract maps `title/explanation/points/source/category`, while storage uses `text/answer/marks/sourceCitations/categoryIds`; samples use `"open-ended"`/`"intermediate"`, outside the enums. Enabling the runner as-is would export empty stems and import invalid types. |
+| DUP3 | P2 | [`questionBankTransferSchema.ts`](../packages/contracts/src/dataTransfer/schemas/questionBankTransferSchema.ts) | The CSV contract maps `title/explanation/points/source/category`, while storage uses `text/answer/marks/sourceCitations/categoryIds`; samples use `"open-ended"`/`"intermediate"`, outside the enums. Enabling the runner as-is would export empty stems and import invalid types. |
 
 ### Loops, races and orphans
 
@@ -57,10 +57,10 @@ contacts only.
 ## What shipped
 
 **Shared, pure**
-- [`paperBlueprint.ts`](../packages/shared/src/examinations/paperBlueprint.ts) — blueprint schema,
+- [`paperBlueprint.ts`](../packages/contracts/src/examinations/paperBlueprint.ts) — blueprint schema,
   bucketed selection, `fnv1a` + `mulberry32` seeded PRNG, stable candidate ordering, marks budget,
   deficit report, hard caps.
-- [`questionSimilarity.ts`](../packages/shared/src/examinations/questionSimilarity.ts) — Arabic-aware
+- [`questionSimilarity.ts`](../packages/contracts/src/examinations/questionSimilarity.ts) — Arabic-aware
   normalization and character-trigram Jaccard with `DUPLICATE_THRESHOLD`/`SIMILAR_THRESHOLD`.
 
 **Migration `0242_question_bank_subsystems.sql`** (+ snapshot + journal): `question_attachments`

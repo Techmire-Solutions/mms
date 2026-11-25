@@ -1,6 +1,6 @@
 import React from "react";
 import { Shield, AlertTriangle, CheckCircle2, Phone, Mail, Send } from "lucide-react";
-import type { SystemUser } from "@mms/shared";
+import type { SystemUser } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";

@@ -1,5 +1,5 @@
-import type { FacultyLookupKind } from "@mms/shared";
-import { facultyLookups } from "../schema.js";
+import type { FacultyLookupKind } from "@mms/contracts";
+import { facultyLookups } from "@mms/db/schema";
 import {
   createModuleLookupsRepo,
   type ModuleLookupRowInput,

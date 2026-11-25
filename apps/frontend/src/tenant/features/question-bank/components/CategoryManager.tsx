@@ -1,7 +1,7 @@
 import React from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { createQuestionCategory, type QuestionCategory } from "@mms/shared";
+import { createQuestionCategory, type QuestionCategory } from "@mms/contracts";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { moduleAccessContract, type ModuleAccessResponse } from "@mms/shared";
+import { moduleAccessContract, type ModuleAccessResponse } from "@mms/contracts";
 import { loadModuleAvailability } from "../../lib/moduleAvailabilityService.js";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { sendForbidden } from "../../lib/httpErrors.js";

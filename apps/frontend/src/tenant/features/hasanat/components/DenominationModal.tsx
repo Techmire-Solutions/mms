@@ -2,7 +2,7 @@ import { translateValidationMessage } from "@/lib/forms/translateValidationMessa
 import { useRef, useState } from "react";
 import { CreditCard } from "lucide-react";
 import { type Denomination } from "@/lib/data/hasanatData";
-import { generateClientEntityId, hasanatDenomCreateSchema } from "@mms/shared";
+import { generateClientEntityId, hasanatDenomCreateSchema } from "@mms/contracts";
 import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";

@@ -3,7 +3,7 @@ import {
   type User,
   ATTENDANCE_MODULE_MANIFEST,
   type attendanceContract,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import {
@@ -11,7 +11,7 @@ import {
   canReadCollection,
   canWriteCollection,
 } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { attendanceUseCases } from "../../../attendance/use-cases/attendanceUseCases.js";
 

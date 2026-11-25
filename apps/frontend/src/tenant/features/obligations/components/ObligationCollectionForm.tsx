@@ -8,7 +8,7 @@ import {
   type MujtahidRep,
   type Mujtahid,
 } from "@/lib/data/obligationsData";
-import { todayISO, type AppTranslationKey } from "@mms/shared";
+import { todayISO, type AppTranslationKey } from "@mms/contracts";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";

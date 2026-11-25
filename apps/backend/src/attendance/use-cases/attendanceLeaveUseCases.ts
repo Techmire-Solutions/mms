@@ -1,10 +1,10 @@
 import { attendanceCalendarRepository as repo } from "../repository/attendanceCalendarRepositoryAdapter.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { withTenant } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { assertTeacherClassScope } from "../../sessions/use-cases/teacherSectionScope.js";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import type { AttendanceDaySubmission } from "../repository/attendanceCalendarRepository.js";
 
 /**

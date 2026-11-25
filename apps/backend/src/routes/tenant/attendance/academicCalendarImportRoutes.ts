@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { ATTENDANCE_MODULE_MANIFEST, academicCalendarCsvImportBodySchema } from "@mms/shared";
+import { ATTENDANCE_MODULE_MANIFEST, academicCalendarCsvImportBodySchema } from "@mms/contracts";
 import { registerModuleCsvImportRoutes } from "../../../lib/registerModuleCsvImportRoutes.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 

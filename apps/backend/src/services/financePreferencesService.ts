@@ -1,4 +1,4 @@
-import { normalizeFinanceModulePreferences, type FinanceModulePreferences } from "@mms/shared";
+import { normalizeFinanceModulePreferences, type FinanceModulePreferences } from "@mms/contracts";
 import {
   getFinanceModulePreferencesByWorkspace,
   upsertFinanceModulePreferences,

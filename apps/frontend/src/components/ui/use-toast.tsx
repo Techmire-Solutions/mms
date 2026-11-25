@@ -1,1 +1,1 @@
-export { useToast, toast, reducer, type ToasterToast } from "@shared/ui";
+export { useToast, toast, reducer, type ToasterToast } from "@mms/ui";

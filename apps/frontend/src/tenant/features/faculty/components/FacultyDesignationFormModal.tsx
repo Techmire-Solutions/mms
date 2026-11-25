@@ -7,7 +7,7 @@ import {
   type FacultyCatalogStatus,
   type FacultyDepartmentEntity,
   type FacultyDesignationDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { mapApiFormError } from "@/lib/forms/serverFormErrors";

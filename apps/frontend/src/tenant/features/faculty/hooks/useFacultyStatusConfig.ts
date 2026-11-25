@@ -1,4 +1,4 @@
-import { resolveFacultySpecializations, resolveFacultyStatuses } from "@mms/shared";
+import { resolveFacultySpecializations, resolveFacultyStatuses } from "@mms/contracts";
 import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import { facultyStatusBadgeConfig } from "@/lib/faculty/facultyStatusUi";

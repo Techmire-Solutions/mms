@@ -2,13 +2,13 @@ import React from "react";
 import { Building2 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StatCard } from "@/components/app/StatCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@shared/ui";
-import { Skeleton } from "@shared/ui";
-import { Breadcrumb } from "@shared/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@mms/ui";
+import { Skeleton } from "@mms/ui";
+import { Breadcrumb } from "@mms/ui";
 import { SubTabBar } from "@/components/app/SubTabBar";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@shared/ui";
-import { ListPagination } from "@shared/ui";
-import { WORK_SURFACE } from "@shared/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@mms/ui";
+import { ListPagination } from "@mms/ui";
+import { WORK_SURFACE } from "@mms/ui";
 import { cn } from "@/lib/utils";
 import {
   DESIGN_SYSTEM_SECTIONS,

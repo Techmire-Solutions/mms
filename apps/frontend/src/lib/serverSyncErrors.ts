@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 
 /** Translation key for a failed branding/global settings server sync. */
 export function serverSyncErrorKey(status?: number): AppTranslationKey {

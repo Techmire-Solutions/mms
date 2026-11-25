@@ -1,4 +1,4 @@
-import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsListQuery } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, type Student, type StudentsListQuery } from "@mms/contracts";
 import { apiContract, tsrClient } from "@/lib/api";
 import { assertContractOk } from "@/lib/apiContractError";
 import { useQuery } from "@tanstack/react-query";

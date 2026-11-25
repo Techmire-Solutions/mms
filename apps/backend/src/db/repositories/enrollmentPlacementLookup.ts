@@ -1,8 +1,8 @@
 import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { enrollments } from "../schema.js";
-import { withTenantRead, type TenantTransaction } from "../tenant-context.js";
+import { enrollments } from "@mms/db/schema";
+import { withTenantRead, type TenantTransaction } from "@mms/db/context";
 import { enrollmentHoldsSeatWhere } from "./enrollmentSeatSql.js";
-import { enableIncludeDeleted, withIncludeDeletedScope } from "../../lib/softDeleteHelpers.js";
+import { enableIncludeDeleted, withIncludeDeletedScope } from "@mms/db/soft-delete";
 
 export interface EnrollmentPlacementRow {
   studentId: string;

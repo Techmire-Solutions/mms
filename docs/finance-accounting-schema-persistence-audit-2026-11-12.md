@@ -1,6 +1,6 @@
 # Finance & Accounting — schema and persistence audit
 
-Scope: the Drizzle model (`apps/backend/src/db/schema/{accounting,accountingFx,accountingFxColumns,accountingLedgerOps,accountingVoucherNumbering,finance,financeBilling,financeCollect,softDeleteSchema}.ts`), the SQL migrations that actually define the live constraints (`0092`, `0093`, `0104`, `0108`, `0127`, `0128`, `0184`, `0248`), the persistence layer that writes them (`apps/backend/src/db/repositories/accounting*`, `finance*`), and the five DB-integration suites named in the review request. All line numbers are from the working tree at audit time.
+Scope: the Drizzle model (`packages/db/src/schema/{accounting,accountingFx,accountingFxColumns,accountingLedgerOps,accountingVoucherNumbering,finance,financeBilling,financeCollect,softDeleteSchema}.ts`), the SQL migrations that actually define the live constraints (`0092`, `0093`, `0104`, `0108`, `0127`, `0128`, `0184`, `0248`), the persistence layer that writes them (`apps/backend/src/db/repositories/accounting*`, `finance*`), and the five DB-integration suites named in the review request. All line numbers are from the working tree at audit time.
 
 Method: every claim below was read from code or measured against the running PostgreSQL — `pg_indexes`, `pg_constraint`, `pg_trigger`, `information_schema.columns` — and `EXPLAIN` was used for the two hot queries. Nothing is inferred from a type annotation, a docstring, or a skill description. The reproducibility queries are in the appendix.
 
@@ -66,7 +66,7 @@ Fix: column widened to `numeric(19,4)`; the writer rounds explicitly at that sca
 `restoredAt`/`restoredBy` exist in `softDeleteSchema.ts:33-38` and are selected by every reader, but the three restore paths set only `deletedAt/deletedBy/deletionReason` to NULL (`accountingEntriesLifecyclePersist.ts:199-279`, `financeInvoicesPersist.ts`, `financePaymentsPersist.ts`) — so a restored ledger row had no evidence of who restored it. Every other module writes them (`contacts`, `attendance`, `tasks`, `sessions`, `faculty`, `hasan…`). Fix: all three now set `restoredAt: now`, `restoredBy: userId`.
 
 **F10 — status and source type were free text in the database.** *Fixed.*
-`accounting_entries.status` (default `posted`, `schema/accounting.ts:135`) and `source_type` (`:139`) had no constraint; the legal source-type set lived only in `packages/shared/src/finance/accountingLedgerInvariants.ts:6-24`. Fix: `CHECK` constraints (NOT VALID) plus `__tests__/financeAccountingConstraintsParity.test.ts`, which pins the SQL list to `JOURNAL_SOURCE_TYPES` (the `0243` taxonomy pattern). All 15 values are reachable from real writers (invoice, payment, closing, reversal, opening, obligation, `fx_reval*`, `ias29_*`, `hedge_*`).
+`accounting_entries.status` (default `posted`, `schema/accounting.ts:135`) and `source_type` (`:139`) had no constraint; the legal source-type set lived only in `packages/contracts/src/finance/accountingLedgerInvariants.ts:6-24`. Fix: `CHECK` constraints (NOT VALID) plus `__tests__/financeAccountingConstraintsParity.test.ts`, which pins the SQL list to `JOURNAL_SOURCE_TYPES` (the `0243` taxonomy pattern). All 15 values are reachable from real writers (invoice, payment, closing, reversal, opening, obligation, `fx_reval*`, `ias29_*`, `hedge_*`).
 
 **F11 — FX line amounts had no negative-amount validation.** *Fixed (sign); single-sidedness documented.*
 Only `debit`/`credit` had (NOT VALID) checks from `0092:63-73`; `txn_debit/txn_credit/func_debit/func_credit` accepted negatives on `accounting_journal_lines` *and* `accounting_opening_balances`. Fix: sign checks on both tables, NOT VALID.
@@ -96,7 +96,7 @@ Single-sidedness is deliberately **not** a database CHECK: `091_backfill_functio
 
 **F19 — the tag filter cannot be driven from tags.** `accounting_entry_tags` has only PK `(workspace, entry_id, tag)` + `(workspace, entry_id)`. The correlated `EXISTS` probe in `buildEntryListConditions` is served by the PK (verified by `EXPLAIN`), so there is no missing lookup index; a *reverse* index `(workspace_subdomain, tag) INCLUDE (entry_id)` would only help highly selective tags on a very large journal. Advisory.
 
-**F20 — `moneyToCents` is a float path.** `Math.round(amount * 100)` (`packages/shared/src/finance/accountingLedgerInvariants.ts:43-48`) is bounded by `moneyAmountSchema`'s ≤2-decimal refinement and `hasAtMostTwoDecimals`, so it round-trips exactly for accepted input. New money code should use `@mms/shared` `Money`/`parseMoney` (BigInt minor units).
+**F20 — `moneyToCents` is a float path.** `Math.round(amount * 100)` (`packages/contracts/src/finance/accountingLedgerInvariants.ts:43-48`) is bounded by `moneyAmountSchema`'s ≤2-decimal refinement and `hasAtMostTwoDecimals`, so it round-trips exactly for accepted input. New money code should use `@mms/shared` `Money`/`parseMoney` (BigInt minor units).
 
 **F21 — `finance_invoices.student_id` / `finance_payments.student_id` have no FK (decision item).** Adding one is not a one-line change: `dbPurge.ts:56-63` deletes unknown tables (including `students`) *before* `finance_invoices`, so a RESTRICT FK would make a workspace purge fail. Doing it properly means reordering the purge and deciding the erase semantics for invoices; recorded here instead of half-fixed.
 
@@ -124,23 +124,23 @@ Single-sidedness is deliberately **not** a database CHECK: `091_backfill_functio
 
 | File | Change |
 |---|---|
-| `apps/backend/src/db/migrations_drizzle/0248_finance_accounting_integrity.sql` | new: posted-archive guard, journal-line immutability, `rate_date`→`date`, allocation width, three indexes, NOT VALID checks |
-| `apps/backend/src/db/migrations_drizzle/meta/0248_finance_accounting_integrity_snapshot.json`, `meta/_journal.json` | new snapshot + journal entry (see §5) |
+| `packages/db/migrations_drizzle/0248_finance_accounting_integrity.sql` | new: posted-archive guard, journal-line immutability, `rate_date`→`date`, allocation width, three indexes, NOT VALID checks |
+| `packages/db/migrations_drizzle/meta/0248_finance_accounting_integrity_snapshot.json`, `meta/_journal.json` | new snapshot + journal entry (see §5) |
 | `apps/backend/src/db/migrations/financeConcurrentIndexes.ts` | new concurrent boot provisioner |
 | `apps/backend/src/db/dbInit.ts` | wires the provisioner after `ensureAttendanceAnalyticsIndexes` |
-| `apps/backend/src/db/schema/accounting.ts` | two indexes, two checks, covering-index note |
-| `apps/backend/src/db/schema/accountingEntryChildren.ts`, `accountingModuleConfig.ts` | new: the four child/config tables split out of `accounting.ts` so it stays inside the 300-line ceiling (barrel + relations updated) |
-| `apps/backend/src/db/schema/accountingFx.ts`, `accountingFxColumns.ts` | `rate_date` → `date` |
-| `apps/backend/src/db/schema/accountingLedgerOps.ts` | opening-balance FX checks |
-| `apps/backend/src/db/schema/finance.ts` | invoice/payment checks, directory-index notes |
-| `apps/backend/src/db/schema/financeBilling.ts` | allocation `numeric(19,4)` + positive check |
+| `packages/db/src/schema/accounting.ts` | two indexes, two checks, covering-index note |
+| `packages/db/src/schema/accountingEntryChildren.ts`, `accountingModuleConfig.ts` | new: the four child/config tables split out of `accounting.ts` so it stays inside the 300-line ceiling (barrel + relations updated) |
+| `packages/db/src/schema/accountingFx.ts`, `accountingFxColumns.ts` | `rate_date` → `date` |
+| `packages/db/src/schema/accountingLedgerOps.ts` | opening-balance FX checks |
+| `packages/db/src/schema/finance.ts` | invoice/payment checks, directory-index notes |
+| `packages/db/src/schema/financeBilling.ts` | allocation `numeric(19,4)` + positive check |
 | `apps/backend/src/db/repositories/financeInvoicesPersist.ts` | drop soft-delete columns from both SET lists; `deleteInvoice` delegates to soft delete; restore attribution |
 | `apps/backend/src/db/repositories/accountingEntriesPersist.ts` | `preserveChildren`, clear-before-upsert ordering |
 | `apps/backend/src/db/repositories/financeBillingInvoiceLines.ts` | explicit 4 dp rounding |
 | `apps/backend/src/db/repositories/accountingVoucherRepository.ts` | allocation split + numbering audit |
 | `apps/backend/src/db/repositories/accountingEntriesLifecyclePersist.ts`, `financePaymentsPersist.ts` | restore attribution |
 | `apps/backend/src/db/repositories/financeRepositoryList.ts` | exact `numeric` sums, workspace-local month |
-| `apps/backend/src/accounting/use-cases/accountingEntryMutationUseCases.ts` | passes `preserveChildren` |
+| `packages/modules/accounting/src/backend/use-cases/accountingEntryMutationUseCases.ts` | passes `preserveChildren` |
 | `apps/backend/src/accounting/repository/accountingRepository.ts` | `bulkSaveEntries` options |
 | `apps/backend/src/accounting/ledgerPosting/ledgerPostingHelpers.ts` + 3 posting services | `postingDateForTenant` |
 | `apps/backend/src/scripts/audit-finance-date-columns.ts` | four `rate_date` columns |

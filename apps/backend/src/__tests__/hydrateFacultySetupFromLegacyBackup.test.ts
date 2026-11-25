@@ -4,7 +4,7 @@ import {
   FACULTY_SETTINGS_OBJECT_KEY,
   FACULTY_COLUMN_PREFS_OBJECT_KEY,
   FACULTY_LEGACY_SETUP_OBJECT_KEYS,
-} from "../db/hydrateFacultySetupFromLegacyBackup.js";
+} from "../db/migrations/hydrateFacultySetupFromLegacyBackup.js";
 
 describe("Faculty Setup hydrate constants", () => {
   it("exports canonical object keys and skip-list for typed hydrate", () => {

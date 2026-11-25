@@ -1,0 +1,211 @@
+import React, { useEffect, useRef } from "react";
+import { AnimatePresence, m } from "framer-motion";
+import { Button } from "@mms/ui";
+import { cn } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useReducedMotion } from "@mms/fe-core/tenant";
+import { useRovingToolbar } from "@mms/fe-core/hooks";
+import { isAnotherLayerFocused, overlayLayerCount } from "@mms/fe-core/hooks";
+import {
+  BulkSelectionClearAction,
+  BulkSelectionDeleteAction,
+  BulkSelectionRestoreAction,
+  BulkSelectionExportAction,
+  BulkSelectionMessagingActions,
+  type BulkSelectionMessageChannel,
+} from "@mms/ui/app/BulkSelectionActions";
+import { BulkSelectionStatusAction } from "./BulkSelectionStatusAction";
+
+export type BulkActionDockPlacement = "floating" | "inline";
+export type BulkActionDockTone = "glass" | "tint" | "plain";
+
+export {
+  BulkSelectionClearAction,
+  BulkSelectionDeleteAction,
+  BulkSelectionRestoreAction,
+  BulkSelectionExportAction,
+  BulkSelectionMessagingActions,
+  BulkSelectionStatusAction,
+  type BulkSelectionMessageChannel,
+};
+
+const PLACEMENT: Record<BulkActionDockPlacement, string> = {
+  floating:
+    "fixed inset-x-4 bottom-4 z-header max-w-full sm:inset-x-auto sm:end-6 sm:bottom-6 surface-overlay rounded-2xl p-3 flex flex-wrap items-center gap-3 border-s-4 border-s-primary shadow-surface-lg",
+  inline: "flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-xl max-w-full",
+};
+
+const INLINE_TONE: Record<BulkActionDockTone, string> = {
+  glass: "surface-raised border-primary/20",
+  tint: "border border-primary/20 bg-primary/5 gap-2 py-2.5",
+  plain: "border border-border bg-card",
+};
+
+export interface BulkActionDockActionProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "outline" | "destructive" | "ghost" | "default";
+  icon?: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+}
+
+function DockAction({
+  variant = "outline",
+  icon: Icon,
+  className,
+  children,
+  ...props
+}: BulkActionDockActionProps): React.JSX.Element {
+  return (
+    <Button
+      type="button"
+      variant={variant}
+      size="sm"
+      className={cn(
+        "min-h-11 px-3 text-xs font-semibold gap-1.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        className,
+      )}
+      {...props}
+    >
+      {Icon && <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />}
+      {children}
+    </Button>
+  );
+}
+
+function DockSeparator({ className }: { className?: string }): React.JSX.Element {
+  return <div className={cn("h-4 w-px bg-border shrink-0", className)} aria-hidden="true" />;
+}
+
+export interface BulkActionDockProps {
+  selectedCount: number;
+  totalCount?: number;
+  onClearSelection?: () => void;
+  countLabel?: React.ReactNode;
+  clearLabel?: string;
+  isAllSelected?: boolean;
+  onSelectAllToggle?: () => void;
+  placement?: BulkActionDockPlacement;
+  tone?: BulkActionDockTone;
+  leading?: React.ReactNode;
+  children?: React.ReactNode;
+  trailing?: React.ReactNode;
+  className?: string;
+  "aria-label"?: string;
+  enableEscapeKey?: boolean;
+}
+
+/**
+ * Universal BulkActionDock primitive.
+ * Floating selection dock with Escape key integration and generic selection models.
+ */
+export function BulkActionDock({
+  selectedCount,
+  totalCount,
+  onClearSelection = () => {},
+  countLabel,
+  clearLabel,
+  isAllSelected,
+  onSelectAllToggle,
+  placement = "floating",
+  tone = "glass",
+  leading,
+  children,
+  trailing,
+  className,
+  "aria-label": ariaLabel,
+  enableEscapeKey = true,
+}: BulkActionDockProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
+  const dockRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRovingToolbar<HTMLDivElement>({ selector: "button" });
+
+  useEffect(() => {
+    if (!enableEscapeKey || selectedCount === 0) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (overlayLayerCount() > 0) return;
+      if (isAnotherLayerFocused(dockRef.current)) return;
+      onClearSelection();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [enableEscapeKey, selectedCount, onClearSelection]);
+
+  const enterY = placement === "floating" ? 20 : -8;
+  const resolvedCountLabel =
+    countLabel ??
+    (totalCount !== undefined
+      ? t("common.selectedOfTotal", { selected: selectedCount, total: totalCount })
+      : t("common.selectedCount", { count: selectedCount }));
+
+  const resolvedTrailing =
+    trailing ??
+    (clearLabel ? (
+      <BulkSelectionClearAction label={clearLabel} onClick={onClearSelection} />
+    ) : undefined);
+
+  return (
+    <AnimatePresence>
+      {selectedCount > 0 && (
+        <m.div
+          ref={dockRef}
+          role="region"
+          aria-label={ariaLabel ?? t("common.bulkActionsToolbar")}
+          initial={reducedMotion ? false : { opacity: 0, y: enterY }}
+          animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+          exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: enterY }}
+          transition={reducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }}
+          className={cn(
+            placement === "floating" ? PLACEMENT.floating : cn(PLACEMENT.inline, INLINE_TONE[tone]),
+            className,
+          )}
+        >
+          <div className="flex min-w-0 items-center gap-2">
+            {leading}
+            <span
+              className={cn(
+                "text-foreground",
+                placement === "floating" ? "text-xs font-bold ps-1" : "text-sm font-semibold",
+              )}
+            >
+              {resolvedCountLabel}
+            </span>
+            {onSelectAllToggle && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onSelectAllToggle}
+                className="relative text-xs h-7 px-2 min-h-7 touch-target-coarse text-primary hover:text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background after:absolute after:start-1/2 after:top-1/2 after:h-11 after:min-w-11 after:w-full after:-translate-x-1/2 rtl:after:translate-x-1/2 after:-translate-y-1/2 after:content-['']"
+              >
+                {isAllSelected ? t("common.deselectAll") : t("common.selectAll")}
+              </Button>
+            )}
+            {placement === "floating" && (children || resolvedTrailing) && <DockSeparator />}
+          </div>
+
+          {(children || resolvedTrailing) && (
+            <div
+              ref={actionsRef}
+              role="toolbar"
+              aria-label={t("common.actions")}
+              className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3"
+            >
+              {children}
+              {resolvedTrailing}
+            </div>
+          )}
+        </m.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+BulkActionDock.Action = DockAction;
+BulkActionDock.Separator = DockSeparator;
+BulkActionDock.Clear = BulkSelectionClearAction;
+BulkActionDock.Delete = BulkSelectionDeleteAction;
+BulkActionDock.Restore = BulkSelectionRestoreAction;
+BulkActionDock.Export = BulkSelectionExportAction;
+BulkActionDock.Messaging = BulkSelectionMessagingActions;
+BulkActionDock.Status = BulkSelectionStatusAction;

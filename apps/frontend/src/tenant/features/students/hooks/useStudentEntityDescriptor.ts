@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { EntityDescriptor, FieldBadgeConfig } from "@/components/common/entityRegistryTypes";
 import { studentsEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";

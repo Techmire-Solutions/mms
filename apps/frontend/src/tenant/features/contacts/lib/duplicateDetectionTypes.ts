@@ -1,5 +1,5 @@
-import type { Contact, ContactPreferences } from "@mms/shared";
-import { DEFAULT_CONTACT_PREFERENCES } from "@mms/shared";
+import type { Contact, ContactPreferences } from "@mms/contracts";
+import { DEFAULT_CONTACT_PREFERENCES } from "@mms/contracts";
 
 export interface DuplicatePair {
   id: string;

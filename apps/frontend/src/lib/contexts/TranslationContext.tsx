@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useSyncExternalStore,
-} from "react";
+import React, { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from "react";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useHydrateGlobalSettings } from "@/tenant/hooks/useHydrateGlobalSettings";
 import { useHydrateBranding } from "@/tenant/hooks/useHydrateBranding";
@@ -22,7 +15,7 @@ import {
   type AppTranslationKey,
   type TranslationArgs,
   type AppLanguageCode,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { applyDocumentLanguage } from "@/lib/documentLanguage";
 import { ensureLocaleFontsLoaded } from "@/lib/localeFonts";
 import { reportClientError } from "@/lib/clientErrorReporting";
@@ -32,20 +25,12 @@ import {
   fetchLanguagePack,
 } from "@/lib/contexts/translationContextHelpers";
 
-export type TranslationFunction = <K extends AppTranslationKey>(
-  key: K,
-  ...args: TranslationArgs<K>
-) => string;
-
-interface TranslationContextType {
-  language: string;
-  t: TranslationFunction;
-  isLoading: boolean;
-  dir: "ltr" | "rtl";
-  isRtl: boolean;
-}
-
-export const TranslationContext = createContext<TranslationContextType | null>(null);
+export type { TranslationFunction } from "@mms/fe-core/i18n";
+export { TranslationContext } from "@mms/fe-core/i18n";
+import {
+  TranslationProvider as FeTranslationProvider,
+  type TranslationContextValue,
+} from "@mms/fe-core/i18n";
 
 /** Languages whose packs are loaded on demand (see `fetchLanguagePack`). */
 function isPackLanguage(language: string): boolean {
@@ -152,7 +137,7 @@ export function TranslationProvider({
   const dir = getLanguageDirection(activeLanguage);
   const isRtl = isRtlLanguage(activeLanguage);
 
-  const value = useMemo<TranslationContextType>(
+  const value = useMemo<TranslationContextValue>(
     () => ({ language: activeLanguage, t, isLoading, dir, isRtl }),
     [activeLanguage, t, isLoading, dir, isRtl],
   );
@@ -173,5 +158,5 @@ export function TranslationProvider({
     );
   }
 
-  return <TranslationContext.Provider value={value}>{children}</TranslationContext.Provider>;
+  return <FeTranslationProvider value={value}>{children}</FeTranslationProvider>;
 }

@@ -1,1 +1,1 @@
-export { Toaster } from "@shared/ui";
+export { Toaster } from "@mms/ui";

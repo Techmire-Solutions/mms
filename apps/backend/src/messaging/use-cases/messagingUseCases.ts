@@ -10,7 +10,7 @@ import {
   type MessagingMetricsDto,
   type MessagingPreferences,
   messageTemplateListSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type {
   MessageLogsFilterQuery,
   MessageLogsPageResult,

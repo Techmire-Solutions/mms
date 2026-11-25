@@ -1,6 +1,6 @@
 import React from "react";
 import { FileQuestion } from "lucide-react";
-import type { QuestionBankQuestion as Question, QuestionStatus } from "@mms/shared";
+import type { QuestionBankQuestion as Question, QuestionStatus } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";

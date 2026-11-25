@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
-import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError, isApiError } from "@/lib/apiClient";
 import { WORKSPACE_REGISTRY_QUERY_KEY } from "@/platform/features/workspaces/hooks/useWorkspaceRegistry";

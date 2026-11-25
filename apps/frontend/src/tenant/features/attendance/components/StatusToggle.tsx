@@ -3,7 +3,7 @@ import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import type { AttendanceStatus } from "@/lib/data/attendanceData";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 import { attendanceStatusLabel } from "@/lib/ui/attendanceStatusUi";
 
 export interface StatusToggleProps {

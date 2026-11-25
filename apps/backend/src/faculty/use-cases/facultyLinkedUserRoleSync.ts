@@ -15,7 +15,7 @@ import {
   type FacultyEmployDesignationWriteRow,
   type FacultyMember,
   type FacultyProfileStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { listFacultyDesignations } from "../../db/repositories/facultyDesignationRepository.js";
 import {
   findTenantUserRowByContactId,

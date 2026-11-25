@@ -3,8 +3,8 @@
  * @description Replace assignable role keys for a faculty designation.
  */
 import { and, eq } from "drizzle-orm";
-import { facultyDesignationRoles } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { facultyDesignationRoles } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 /** Normalize, dedupe, and replace all role keys for one designation (at most one). */
 export async function replaceFacultyDesignationRoles(

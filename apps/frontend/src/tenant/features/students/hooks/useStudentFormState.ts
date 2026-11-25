@@ -16,7 +16,7 @@ import {
   type Student,
   DEFAULT_STUDENT_ENABLED_TABS,
   formatDate,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 interface UseStudentFormStateOptions {
   student?: Partial<Student> | null;
@@ -44,9 +44,9 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
 
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<import("@mms/shared").ValidationError[]>(
-    [],
-  );
+  const [validationErrors, setValidationErrors] = useState<
+    import("@mms/contracts").ValidationError[]
+  >([]);
   const [studentDraft, setStudentDraft] = useState<Partial<Student>>(() =>
     getInitialStudentDraft({ student, fields }),
   );
@@ -54,7 +54,7 @@ export function useStudentFormState({ student, onClose, onSave }: UseStudentForm
     studentDraftSnapshot(getInitialStudentDraft({ student, fields })),
   );
   const [typedDuplicateReason, setTypedDuplicateReason] = useState<
-    import("@mms/shared").StudentDuplicateReason | null
+    import("@mms/contracts").StudentDuplicateReason | null
   >(null);
   const [duplicateConfirmOpen, setDuplicateConfirmOpen] = useState(false);
   const [pendingSaveData, setPendingSaveData] = useState<Partial<Student> | null>(null);

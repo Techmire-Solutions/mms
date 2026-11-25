@@ -1,4 +1,4 @@
-import type { WorkshopAttendanceStatus } from "@mms/shared";
+import type { WorkshopAttendanceStatus } from "@mms/contracts";
 
 /**
  * Planning helpers for the workshop check-in / score upserts.

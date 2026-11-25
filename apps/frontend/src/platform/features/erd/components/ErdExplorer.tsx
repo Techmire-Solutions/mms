@@ -1,6 +1,6 @@
 import type React from "react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Field, FormSelect, WORK_SURFACE } from "@shared/ui";
+import { Field, FormSelect, WORK_SURFACE } from "@mms/ui";
 import { ErdMermaidDiagram } from "@/platform/features/erd/components/ErdMermaidDiagram";
 import { ErdRelationshipList } from "@/platform/features/erd/components/ErdRelationshipList";
 import { useErdPageController } from "@/platform/features/erd/hooks/useErdPageController";

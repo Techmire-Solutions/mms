@@ -3,7 +3,7 @@ import {
   isDuplicateFacultyDepartmentName,
   type FacultyDepartmentEntity,
   type FacultyDepartmentWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_STUDENT_COLUMN_REGISTRY, type Student } from "@mms/shared";
+import { DEFAULT_STUDENT_COLUMN_REGISTRY, type Student } from "@mms/contracts";
 import type { useStudentColumnLayout } from "@/tenant/features/students/hooks/useStudentColumnLayout";
 import { StudentsWorkTier } from "./StudentsWorkTier";
 

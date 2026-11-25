@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyRequest } from "fastify";
-import type { User, WorkspaceRole } from "@mms/shared";
+import type { User, WorkspaceRole } from "@mms/contracts";
 
 const mockAvailability = vi.fn();
 const mockMatrix = vi.fn();

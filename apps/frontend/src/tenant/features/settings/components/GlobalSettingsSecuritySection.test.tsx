@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_GLOBAL_SETTINGS, type GlobalSettings } from "@mms/shared";
+import { DEFAULT_GLOBAL_SETTINGS, type GlobalSettings } from "@mms/contracts";
 import { GlobalSettingsSecuritySection } from "./GlobalSettingsSecuritySection";
 
 declare global {

@@ -1,4 +1,4 @@
-import type { ContactsWorkDrillDown } from "@mms/shared";
+import type { ContactsWorkDrillDown } from "@mms/contracts";
 import { applyContactsWorkDrillDown } from "@/lib/contacts/contactsWorkDrillDown";
 import { TENANT_PATHS } from "@/lib/routing/tenantPaths";
 

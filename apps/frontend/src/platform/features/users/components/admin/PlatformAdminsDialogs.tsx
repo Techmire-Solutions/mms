@@ -1,5 +1,5 @@
 import React from "react";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 import { EntityDescriptorSections } from "@/components/app/EntityDescriptorSections";
 import { PlatformEditAdminAccessDialog } from "@/platform/features/users/components/admin/PlatformEditAdminAccessDialog";

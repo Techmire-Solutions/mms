@@ -1,7 +1,7 @@
 import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type ObligationDistribution, type WakalaType } from "@mms/shared";
-import { obligationDistributions, wakalaTypes } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type ObligationDistribution, type WakalaType } from "@mms/contracts";
+import { obligationDistributions, wakalaTypes } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 
 type WakalaTypeRow = typeof wakalaTypes.$inferSelect;
 

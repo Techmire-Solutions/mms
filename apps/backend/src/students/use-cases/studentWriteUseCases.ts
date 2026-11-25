@@ -1,4 +1,4 @@
-import { studentStatusEndsEnrollments, type StudentRecord, type User } from "@mms/shared";
+import { studentStatusEndsEnrollments, type StudentRecord, type User } from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
@@ -13,7 +13,7 @@ import {
 } from "./studentNormalizeUseCases.js";
 import { readSuppliedStudentId, resolveStudentIdCollision } from "./studentCreateGuard.js";
 import { loadStudentModulePreferences } from "./studentPreferencesService.js";
-import { reconcileContactSystemTags } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileContactSystemTags } from "@mms/mod-contacts/backend/use-cases";
 import { withdrawEnrollmentsForStudentStatus } from "../../enrollments/use-cases/enrollmentEndUseCases.js";
 import { buildStudentStatusActor } from "./studentStatusTransitionUseCases.js";
 import { invalidateStudentsCache } from "./studentCacheInvalidation.js";

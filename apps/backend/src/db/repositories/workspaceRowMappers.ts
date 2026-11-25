@@ -1,5 +1,5 @@
-import type { Workspace, BrandingSettings } from "@mms/shared";
-import type { workspaces as workspacesTable } from "../schema.js";
+import type { Workspace, BrandingSettings } from "@mms/contracts";
+import type { workspaces as workspacesTable } from "@mms/db/schema";
 
 export function rowToWorkspace(ws: {
   id: string;

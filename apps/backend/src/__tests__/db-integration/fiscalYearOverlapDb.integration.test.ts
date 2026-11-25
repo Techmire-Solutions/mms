@@ -1,15 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
 import { runWithTenant } from "../../lib/tenantContext.js";
-import { accountingFiscalYears, workspaces } from "../../db/schema.js";
+import { accountingFiscalYears, workspaces } from "@mms/db/schema";
 import {
   findOverlappingFiscalYearPair,
   upsertFiscalYearsHelper,
-} from "../../accounting/use-cases/accountingAccountLifecycleUseCases.js";
+} from "@mms/mod-accounting/backend/use-cases";
 import { accountingRepository } from "../../accounting/repository/accountingRepositoryAdapter.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 

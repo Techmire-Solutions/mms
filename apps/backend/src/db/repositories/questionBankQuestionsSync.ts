@@ -1,13 +1,13 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { type QuestionBankQuestion } from "@mms/shared";
+import { type QuestionBankQuestion } from "@mms/contracts";
 import {
   questions,
   questionCategories,
   questionOptions,
   questionTags,
   questionCitations,
-} from "../schema.js";
-import { type TenantTransaction } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { type TenantTransaction } from "@mms/db/context";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 import { listQuestionAttachmentsTx } from "./questionBankAttachmentsRepository.js";
 

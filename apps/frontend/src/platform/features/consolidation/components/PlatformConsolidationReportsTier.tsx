@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { BarChart3, Download } from "lucide-react";
-import { todayISO, type ConsolidationReportQuery } from "@mms/shared";
-import { Button } from "@shared/ui";
-import { DatePicker } from "@/components/app/DatePicker";
+import { todayISO, type ConsolidationReportQuery } from "@mms/contracts";
+import { Button } from "@mms/ui";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
-import { SectionCard } from "@/components/app/SectionCard";
-import { useTranslation } from "@/hooks/useTranslation";
+import { SectionCard } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { ConsolidationReportView } from "@/platform/features/consolidation/components/ConsolidationReportView";
 import { exportConsolidationReportCsv } from "@/platform/features/consolidation/lib/exportConsolidationReportCsv";
 import {

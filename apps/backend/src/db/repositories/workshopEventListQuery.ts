@@ -10,8 +10,8 @@ import {
   type AnyColumn,
   type SQL,
 } from "drizzle-orm";
-import { isQueryFlagTrue, toSqlSearchPattern, type BaseListQuery } from "@mms/shared";
-import { workshopEvents } from "../schema.js";
+import { isQueryFlagTrue, toSqlSearchPattern, type BaseListQuery } from "@mms/contracts";
+import { workshopEvents } from "@mms/db/schema";
 
 /**
  * WHERE/ORDER BY builders for the workshop Work list.

@@ -3,9 +3,9 @@
  */
 
 import { and, eq } from "drizzle-orm";
-import { type InvoiceLine, type PaymentAllocation } from "@mms/shared";
-import { financeInvoiceLines, financePaymentAllocations } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { type InvoiceLine, type PaymentAllocation } from "@mms/contracts";
+import { financeInvoiceLines, financePaymentAllocations } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 export function invoiceLineRowToRecord(row: typeof financeInvoiceLines.$inferSelect): InvoiceLine {
   return {
     id: row.id,

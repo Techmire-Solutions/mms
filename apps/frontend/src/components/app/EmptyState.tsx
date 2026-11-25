@@ -1,1 +1,1 @@
-export { EmptyState, type EmptyStateProps } from "@shared/ui";
+export { EmptyState, type EmptyStateProps } from "@mms/ui";

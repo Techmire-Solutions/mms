@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { TaskRecord } from "@mms/shared";
+import type { TaskRecord } from "@mms/contracts";
 
 const mockListTasks = vi.fn();
 const mockGetWorkspaceTimezone = vi.fn().mockReturnValue("UTC");

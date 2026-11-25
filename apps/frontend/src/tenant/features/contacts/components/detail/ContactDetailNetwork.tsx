@@ -6,8 +6,8 @@ import {
   getPrimaryPhone,
   hasWhatsApp,
   mergeStoredAndDerivedSiblingLinks,
-} from "@mms/shared";
-import type { Contact } from "@mms/shared";
+} from "@mms/contracts";
+import type { Contact } from "@mms/contracts";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/useTranslation";
 import { formatLocalizedRelationshipLabel } from "@/lib/contacts/formatLocalizedRelationshipLabel";

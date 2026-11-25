@@ -1,1 +1,1 @@
-export { TableEmpty, type TableEmptyProps } from "@shared/ui";
+export { TableEmpty, type TableEmptyProps } from "@mms/ui";

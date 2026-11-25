@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   recordModernAuditEvent: vi.fn(),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: mocks.recordModernAuditEvent,
 }));
 

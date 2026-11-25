@@ -3,7 +3,7 @@ import { ModuleRowActionsMenu } from "@/components/app/ModuleRowActionsMenu";
 import { PersonMessagingRowActionsExtras } from "@/components/app/PersonMessagingRowActionsExtras";
 import { resolveFacultyPrimaryChannels } from "@/lib/faculty/facultyPrimaryChannels";
 import { facultyMessagingLabels } from "@/lib/faculty/facultyMessagingLabels";
-import { hasWhatsApp, type Faculty } from "@mms/shared";
+import { hasWhatsApp, type Faculty } from "@mms/contracts";
 import { resolveFacultyDisplayName } from "@/tenant/features/faculty/lib/facultyFieldDisplay";
 
 export interface FacultyListRowActionsProps {

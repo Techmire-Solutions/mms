@@ -4,7 +4,7 @@ import {
   formatDate,
   type BrandingSettings,
   type Student,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { StudentCardPayload } from "../../lib/studentCardTemplateTypes";
 

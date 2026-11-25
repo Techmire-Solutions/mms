@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import type { Faculty } from "@mms/shared";
-import { withTenantRead } from "../tenant-context.js";
+import type { Faculty } from "@mms/contracts";
+import { withTenantRead } from "@mms/db/context";
 import { findFacultyByIds } from "./facultyRepository.js";
 
 /**

@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
-import type { PublicRegistrationView } from "@mms/shared";
+import type { PublicRegistrationView } from "@mms/contracts";
 import { AdmissionsCard } from "./AdmissionsCard";
 
 const mockItem: PublicRegistrationView = {

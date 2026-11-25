@@ -1,5 +1,5 @@
-import { deriveWorkshopPhase, normalizeWorkshopStatus, type WorkshopEvent } from "@mms/shared";
-import type { workshopEvents } from "../schema.js";
+import { deriveWorkshopPhase, normalizeWorkshopStatus, type WorkshopEvent } from "@mms/contracts";
+import type { workshopEvents } from "@mms/db/schema";
 
 export type WorkshopEventRow = typeof workshopEvents.$inferSelect;
 

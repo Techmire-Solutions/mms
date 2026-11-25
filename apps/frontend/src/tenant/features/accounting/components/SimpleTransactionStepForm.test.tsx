@@ -1,30 +1,49 @@
+vi.mock("@mms/fe-core/auth/AuthContext", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/fe-core/auth/AuthContext")>()),
+  useAuth: () => ({ user: { id: "u-1" }, isAuthenticated: true, token: "test-token" }),
+}));
+
+vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
+  VOUCHER_NUMBERING_QUERY_KEY: ["accounting", "voucher-numbering"],
+  useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
+  useSaveVoucherNumbering: () => ({ mutateAsync: async () => undefined, isPending: false }),
+}));
+
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StepTransactionForm } from "./SimpleTransactionStepForm";
-import type { WizardFormState } from "../lib/simpleTransactionWizardTypes";
-import type { Account, JournalEntry } from "@/lib/data/accountingData";
+import type { WizardFormState } from "@mms/mod-accounting/frontend/tenant";
+import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@/tenant/features/accounting/hooks/useAccountingQueries", () => ({
+vi.mock("@/tenant/features/accounting/hooks/useAccountingQueries", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("@/tenant/features/accounting/hooks/useAccountingQueries")
+  >()),
   useAccountingLedger: () => ({ data: undefined }),
 }));
 
-vi.mock("@/tenant/features/accounting/hooks/useVoucherNumbering", () => ({
-  useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
-}));
+vi.mock("@mms/mod-accounting/frontend/tenant", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-accounting/frontend/tenant")>();
+  return {
+    ...actual,
+    useVoucherNumbering: () => ({ data: { autoGenerate: true, nextVoucherNumber: "JE-0001" } }),
+    useAccountingLedger: () => ({ data: undefined }),
+  };
+});
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
 }));
 
-vi.mock("@/components/app/DatePicker", () => ({
+vi.mock("@mms/fe-core/components/DatePicker", () => ({
   DatePicker: ({
     id,
     value,
@@ -42,7 +61,7 @@ vi.mock("@/components/app/DatePicker", () => ({
   ),
 }));
 
-vi.mock("@/components/app/FormSelect", () => ({
+vi.mock("@mms/fe-core/components/FormSelect", () => ({
   FormSelect: ({
     id,
     value,
@@ -54,7 +73,7 @@ vi.mock("@/components/app/FormSelect", () => ({
   }) => <input id={id} data-testid={id} value={value} onChange={(e) => onChange(e.target.value)} />,
 }));
 
-import { QUICK_ACTIONS } from "../lib/journalEntriesQuickActions";
+import { QUICK_ACTIONS } from "@mms/mod-accounting/frontend/tenant";
 
 const mockActionType = QUICK_ACTIONS[0]!.type;
 

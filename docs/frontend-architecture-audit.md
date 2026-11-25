@@ -1,7 +1,7 @@
 # MMS Frontend Architecture Audit — Reuse, SSOT & DRY
 
 **Scope:** `apps/frontend/src/**` (platform apex + tenant host), its consumption of
-`packages/shared`, and the enforcement tooling (`scripts/check-code-norms.mjs`,
+`packages/contracts`, and the enforcement tooling (`scripts/check-code-norms.mjs`,
 `apps/frontend/eslint-rules/`). React 19 + Vite 8, TanStack Query v5, Tailwind v4.
 
 **Method:** Structural audit against three objectives: (1) maximize shared UI reuse
@@ -42,10 +42,10 @@ models), and **near-duplicate `components/ui` pairs** with incompatible APIs.
 
 `apps/frontend/src/lib/data/accountingData.ts:1` declares
 `ACCOUNT_TYPES = ["Asset", "Liability", "Equity", "Revenue", "Expense"]` and
-`ACCOUNT_SUBTYPES`, while `packages/shared/src/accountingListQuery.ts:6` independently
+`ACCOUNT_SUBTYPES`, while `packages/contracts/src/accountingListQuery.ts:6` independently
 declares `ACCOUNTING_ACCOUNT_TYPES` with identical values. Same pattern in
 `apps/frontend/src/lib/data/financeData.ts:12-13` (`PAYMENT_METHODS`, `INVOICE_STATUSES`)
-vs `packages/shared/src/financeModuleManifest.ts:113-114` (`OPEN_INVOICE_STATUSES`,
+vs `packages/contracts/src/financeModuleManifest.ts:113-114` (`OPEN_INVOICE_STATUSES`,
 already consumed by the backend at `apps/backend/src/db/repositories/financeRepositoryList.ts:5`).
 
 - **Risk:** silent drift — e.g. a new account type added to the shared Zod enum passes
@@ -195,7 +195,7 @@ bodies (e.g. `tenant/features/finance/FinancePage.tsx`), and tab/tier motion wir
   SEO, and suspense chrome have one implementation; keep per-tier content as children.
   Severity **P3**, effort **M**.
 
-#### F12. Hygiene: stale `.tmp` artifacts in `packages/shared/src`
+#### F12. Hygiene: stale `.tmp` artifacts in `packages/contracts/src`
 
 Six `*.tmp` files (`appTranslations*.tmp`, `permissions.ts.tmp`) sit in the shared
 source tree. They are gitignored/untracked (not a correctness issue) but pollute local
@@ -259,7 +259,7 @@ live in `components/common`.
 ## Notes
 
 - `docs/architecture.md` §4 already defers the physical reorganization of
-  `packages/shared/src` into domain subfolders while another session edits it — this
+  `packages/contracts/src` into domain subfolders while another session edits it — this
   audit does not revisit that decision; F1–F4 changes are barrel-compatible.
 - The working tree had uncommitted changes in 5 files
   (`BulkSelectionActions.tsx`, `DetailDrawerShell.tsx`, `semanticTone.ts`,

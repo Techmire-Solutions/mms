@@ -1,6 +1,6 @@
 # Attendance Shared Contracts, Schemas & Types Audit
 
-**Date:** 2026-11-10 · **Scope:** `packages/shared` attendance DTOs, the status/excuse enums, and the
+**Date:** 2026-11-10 · **Scope:** `packages/contracts` attendance DTOs, the status/excuse enums, and the
 runtime-validation ↔ TypeScript-type boundary.
 
 **Method:** compared every hand-written attendance type with the zod schema it is supposed to mirror,

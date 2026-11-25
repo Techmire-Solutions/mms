@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { EnrollmentReports } from "./EnrollmentReports";
-import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES } from "@mms/shared";
+import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES } from "@mms/contracts";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

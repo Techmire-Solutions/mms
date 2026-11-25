@@ -1,6 +1,6 @@
 import { and, eq, gte, isNull, lte, sql } from "drizzle-orm";
-import { attendance } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { attendance } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 
 /**
  * Retroactive mark synchronisation and the per-student lock that serialises it against marking.

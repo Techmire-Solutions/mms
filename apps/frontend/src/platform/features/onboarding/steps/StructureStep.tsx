@@ -6,8 +6,8 @@
 import React from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Building2, Check } from "lucide-react";
-import { getRecommendedRolesForIndustry } from "@mms/shared";
-import { SectionCard } from "@shared/ui";
+import { getRecommendedRolesForIndustry } from "@mms/contracts";
+import { SectionCard } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { OnboardingData } from "@/platform/features/onboarding/onboardingWizardTypes";
 

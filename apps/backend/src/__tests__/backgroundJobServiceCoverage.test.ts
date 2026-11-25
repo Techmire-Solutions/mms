@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import {
   BackgroundJobLimitError,
   countUserBackgroundJobs,
@@ -12,7 +12,7 @@ import {
   upsertUserBackgroundJob,
 } from "../services/backgroundJobService.js";
 import * as tenantContext from "../lib/tenantContext.js";
-import * as tenantDb from "../db/tenant-context.js";
+import * as tenantDb from "@mms/db/context";
 import * as cleanupRepo from "../db/repositories/backgroundJobCleanupRepository.js";
 import * as queryRepo from "../db/repositories/backgroundJobQueryRepository.js";
 

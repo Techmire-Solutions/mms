@@ -1,0 +1,18 @@
+{
+  "$schema": "./move-manifest.schema.json",
+  "version": 1,
+  "entries": [
+    {
+      "from": "apps/backend/src/db/transactionSideEffects.ts",
+      "to": "packages/db/src/transactionSideEffects.ts",
+      "phase": "P1",
+      "status": "done"
+    },
+    {
+      "from": "apps/backend/src/db/genericRelationalConditions.ts",
+      "to": "packages/db/src/genericRelationalConditions.ts",
+      "phase": "P1",
+      "status": "done"
+    }
+  ]
+}

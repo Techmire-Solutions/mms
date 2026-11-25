@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { PlatformLogoMark } from "@shared/ui";
+import { PlatformLogoMark } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ROUTES } from "@/lib/config/routes";
 import { usePlatformBranding } from "@/platform/features/settings/hooks/usePlatformBranding";

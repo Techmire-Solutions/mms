@@ -8,7 +8,7 @@ import {
   MessageSquare,
   type LucideIcon,
 } from "lucide-react";
-import type { AppTranslationKey, PlatformAdminPermissionKey } from "@mms/shared";
+import type { AppTranslationKey, PlatformAdminPermissionKey } from "@mms/contracts";
 
 export interface PlatformPermissionConfigEntry {
   labelKey: AppTranslationKey;

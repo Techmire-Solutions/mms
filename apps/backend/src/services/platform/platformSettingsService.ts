@@ -1,5 +1,5 @@
-import type { PlatformSettings, PlatformSettingsUpdateInput, LlmConfig } from "@mms/shared";
-import { DEFAULT_PLATFORM_SETTINGS, mergePlatformSettings } from "@mms/shared";
+import type { PlatformSettings, PlatformSettingsUpdateInput, LlmConfig } from "@mms/contracts";
+import { DEFAULT_PLATFORM_SETTINGS, mergePlatformSettings } from "@mms/contracts";
 import {
   findPlatformSettingsRow,
   insertPlatformSettingsDefaultRow,

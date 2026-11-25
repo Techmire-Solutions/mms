@@ -1,7 +1,7 @@
 /**
  * DANGER: Wipes the ENTIRE application database (all schemas), not platform tables only.
  *
- * Drops `public` + `drizzle`, recreates `public`, then runs `initDb()` migrations.
+ * Drops `public` + `drizzle`, recreates `public`, then runs `initializeDatabase()` migrations.
  * Prefer `resetDb.ts` (`pnpm --filter mms-backend db:reset`) which prompts for confirmation.
  *
  * Usage (local/dev only):
@@ -9,7 +9,7 @@
  */
 import { loadBackendEnv } from "../config/loadEnv.js";
 import pg from "pg";
-import { initDb } from "../db/database.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
 
 loadBackendEnv();
 
@@ -27,7 +27,7 @@ async function main() {
   await client.end();
 
   console.log("Running clean database initialization & migrations...");
-  await initDb();
+  await initializeDatabase();
 
   console.log("Database completely wiped and reset to initial migrated state.");
   process.exit(0);

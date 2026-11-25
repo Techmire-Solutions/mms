@@ -1,8 +1,8 @@
 import React, { act } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { createRoot } from "react-dom/client";
-import type { Account } from "@/lib/data/accountingData";
-import type { DraftLine } from "../lib/journalEntryFormTypes";
+import type { Account } from "@mms/mod-accounting/frontend/tenant";
+import type { DraftLine } from "@mms/mod-accounting/frontend/tenant";
 
 /**
  * Memo contract for the voucher rows (the fix for sluggish 50-line vouchers).
@@ -16,7 +16,7 @@ import type { DraftLine } from "../lib/journalEntryFormTypes";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key, language: "en", dir: "ltr" }),
 }));
 
@@ -33,8 +33,8 @@ vi.mock("framer-motion", () => {
 
 const renders = vi.hoisted(() => [] as string[]);
 
-vi.mock("./JournalEntryLineRow", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./JournalEntryLineRow")>();
+vi.mock("@mms/mod-accounting/frontend/tenant", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-accounting/frontend/tenant")>();
   return {
     ...actual,
     JournalEntryLineRow: (props: {
@@ -48,7 +48,7 @@ vi.mock("./JournalEntryLineRow", async (importOriginal) => {
 });
 
 import { JournalEntryLinesEditor } from "./JournalEntryLinesEditor";
-import { areJournalEntryLineRowPropsEqual } from "./JournalEntryLineRow";
+import { areJournalEntryLineRowPropsEqual } from "@mms/mod-accounting/frontend/tenant";
 
 const accounts: Account[] = [
   {

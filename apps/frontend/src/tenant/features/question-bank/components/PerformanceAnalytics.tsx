@@ -3,7 +3,7 @@ import {
   getQuestionCategoryIds,
   QUESTION_ACCURACY_WEAK_THRESHOLD,
   calcPercentage as pct,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";

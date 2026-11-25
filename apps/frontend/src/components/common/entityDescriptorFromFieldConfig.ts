@@ -1,4 +1,4 @@
-import type { FieldDefinition as RegistryFieldDefinition } from "@mms/shared";
+import type { FieldDefinition as RegistryFieldDefinition } from "@mms/contracts";
 import type {
   EntityDescriptor,
   FieldBadgeConfig,

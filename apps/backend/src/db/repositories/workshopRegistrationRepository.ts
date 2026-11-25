@@ -4,11 +4,11 @@ import {
   isWorkshopWaitlistPromotable,
   resolveWorkshopRegistration,
   type WorkshopParticipant,
-} from "@mms/shared";
-import { workshopParticipants, contacts } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+} from "@mms/contracts";
+import { workshopParticipants, contacts } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import { auditRow } from "./workshopAudit.js";
-import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
+import { ConflictError, NotFoundError } from "@mms/be-core/http/errors";
 import { findWorkshopRow } from "./workshopEventsRepository.js";
 import {
   countActiveParticipants,

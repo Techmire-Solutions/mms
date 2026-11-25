@@ -9,7 +9,7 @@ import {
   tierProgress,
   type HasanatStudentReportResponseDto,
   type HasanatStudentReportRowDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { loadHasanatStudentReport } from "../repository/hasanatRepositoryAdapter.js";
 import { loadHasanatTierLadder } from "./hasanatTierUseCases.js";
 

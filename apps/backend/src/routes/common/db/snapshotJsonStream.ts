@@ -1,4 +1,4 @@
-import type { TenantDatabaseSnapshot } from "@mms/shared";
+import type { TenantDatabaseSnapshot } from "@mms/contracts";
 
 /**
  * Streams a tenant database snapshot as JSON string chunks without buffering

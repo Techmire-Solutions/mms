@@ -17,7 +17,7 @@ import {
   resolveRlsEnforcementMode,
   type RlsEnforcementMode,
   type RuntimeRoleCheck,
-} from "../db/rlsRoleGuard.js";
+} from "@mms/db/client";
 
 export interface RoleRow {
   role: string;

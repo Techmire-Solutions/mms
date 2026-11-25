@@ -23,7 +23,7 @@ import {
 } from "../lib/accountingRouteClassification.mjs";
 
 const ROOT = process.cwd();
-const CONTRACT_DIR = path.join(ROOT, "packages/shared/src/contracts");
+const CONTRACT_DIR = path.join(ROOT, "packages/contracts/src/contracts");
 const MATRIX_FILE = path.join(ROOT, "scripts/ci/accounting-route-security.json");
 const writeMatrix = process.argv.includes("--write-matrix");
 

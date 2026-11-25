@@ -6,7 +6,7 @@ import {
   formatZodIssues,
   type FieldConfig,
   type ValidationError,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { usePermissions } from "@/tenant/hooks/usePermissions";

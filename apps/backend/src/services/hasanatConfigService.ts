@@ -5,7 +5,7 @@ import {
   stripHasanatFieldConfigForPersist,
   type HasanatSettings,
   type TabDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleFieldConfigService } from "../lib/createModuleFieldConfigService.js";
 import {
   getHasanatFieldConfig,

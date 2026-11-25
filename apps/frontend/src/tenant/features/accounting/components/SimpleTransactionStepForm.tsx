@@ -1,17 +1,17 @@
-import { quickActionDescription } from "../lib/quickActionLabels";
+import { quickActionDescription } from "@mms/mod-accounting/frontend/tenant";
 import type { Dispatch, SetStateAction } from "react";
-import { DatePicker } from "@/components/app/DatePicker";
-import { Field } from "@/components/app/FormField";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Input } from "@/components/ui/input";
-import type { Account, FiscalYear, JournalEntry } from "@/lib/data/accountingData";
-import type { QuickActionType, WizardFormState } from "../lib/simpleTransactionWizardTypes";
-import { SimpleTransactionAmountInput } from "./SimpleTransactionAmountInput";
-import { SimpleTransactionTagSelector } from "./SimpleTransactionTagSelector";
-import { SimpleTransactionHeader } from "./SimpleTransactionHeader";
-import { SimpleTransactionAccountLegs } from "./SimpleTransactionAccountLegs";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { Field } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Input } from "@mms/ui";
+import type { Account, FiscalYear, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { QuickActionType, WizardFormState } from "@mms/mod-accounting/frontend/tenant";
+import { SimpleTransactionAmountInput } from "@mms/mod-accounting/frontend/tenant";
+import { SimpleTransactionTagSelector } from "@mms/mod-accounting/frontend/tenant";
+import { SimpleTransactionHeader } from "@mms/mod-accounting/frontend/tenant";
+import { SimpleTransactionAccountLegs } from "@mms/mod-accounting/frontend/tenant";
 import { SimpleTransactionRefField } from "./SimpleTransactionRefField";
-import { useSimpleTransactionStepFormState } from "../hooks/useSimpleTransactionStepFormState";
+import { useSimpleTransactionStepFormState } from "@/tenant/features/accounting/hooks/useSimpleTransactionStepFormState";
 
 interface StepTransactionFormProps {
   type: QuickActionType;

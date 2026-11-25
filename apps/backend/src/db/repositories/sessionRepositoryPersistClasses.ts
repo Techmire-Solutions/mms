@@ -4,11 +4,11 @@ import {
   findTimetableCollisions,
   periodTimeErrors,
   type Class,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { randomUUID } from "node:crypto";
-import { sessionClasses, enrollments, examClasses } from "../schema.js";
-import { type TenantTransaction } from "../tenant-context.js";
-import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+import { sessionClasses, enrollments, examClasses } from "@mms/db/schema";
+import { type TenantTransaction } from "@mms/db/context";
+import { ConflictError, ValidationError } from "@mms/be-core/http/errors";
 import { getSessionModulePreferencesByWorkspace } from "./sessionModulePreferencesRepository.js";
 import { persistClassSectionsTx } from "./sessionRepositorySections.js";
 import { hasClassReferencesTx } from "./sessionClassReferenceGuard.js";

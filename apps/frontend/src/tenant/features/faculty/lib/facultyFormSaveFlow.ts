@@ -8,7 +8,7 @@ import {
   type Contact,
   type ValidationError,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import {
   checkFacultyFormDuplicate,

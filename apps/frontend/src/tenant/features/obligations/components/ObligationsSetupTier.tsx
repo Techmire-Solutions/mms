@@ -5,7 +5,7 @@ import type {
   Mujtahid,
   MujtahidRep,
   WakalaType,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";

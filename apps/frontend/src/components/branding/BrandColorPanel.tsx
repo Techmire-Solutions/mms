@@ -6,7 +6,7 @@ import {
   suggestHarmoniousSecondaryColor,
   type BrandingHarmonyScheme,
   type BrandingThemeMode,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import {

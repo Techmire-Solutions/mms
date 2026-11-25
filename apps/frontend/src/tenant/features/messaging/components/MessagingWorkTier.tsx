@@ -1,5 +1,5 @@
 import React from "react";
-import type { Message } from "@mms/shared";
+import type { Message } from "@mms/contracts";
 import { MessagingWorkTierDirectory } from "./MessagingWorkTierDirectory";
 import { useMessagingWorkTierController } from "../hooks/useMessagingWorkTierController";
 

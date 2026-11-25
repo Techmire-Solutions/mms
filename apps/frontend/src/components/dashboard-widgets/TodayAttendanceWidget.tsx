@@ -11,11 +11,11 @@ import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useAttendanceRecordsCollection } from "@/tenant/hooks/collections/attendance";
 import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatPercent } from "@mms/shared";
+import { formatPercent } from "@mms/contracts";
 import { rateToneClass } from "@/lib/ui/semanticTone";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { Badge } from "@/components/ui/badge";
-import { type AppTranslationKey, formatDate } from "@mms/shared";
+import { type AppTranslationKey, formatDate } from "@mms/contracts";
 import { useTodayAttendanceStats } from "./useTodayAttendanceStats";
 
 /**

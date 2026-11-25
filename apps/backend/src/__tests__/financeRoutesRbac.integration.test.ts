@@ -13,7 +13,9 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
   takeAuthArtifact: vi.fn(),
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (_tenant: string, work: () => unknown) => work(),
   withTenantRead: (_tenant: string, work: () => unknown) => work(),
 }));

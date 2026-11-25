@@ -1,5 +1,5 @@
 import { Clock } from "lucide-react";
-import { formatDate, formatRelativeTime } from "@mms/shared";
+import { formatDate, formatRelativeTime } from "@mms/contracts";
 import { SectionLabel } from "@/components/app/SectionLabel";
 import { formatEntityStamp } from "@/lib/formatEntityStamp";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -1,6 +1,6 @@
 import { ArrowRight, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ROUTES } from "@/lib/config/routes";
 

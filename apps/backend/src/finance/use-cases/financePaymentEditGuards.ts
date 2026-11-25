@@ -1,5 +1,5 @@
-import { exchangeRateStringsEqual } from "@mms/shared";
-import type { Payment, PaymentUpdate } from "@mms/shared";
+import { exchangeRateStringsEqual } from "@mms/contracts";
+import type { Payment, PaymentUpdate } from "@mms/contracts";
 
 /** Fields whose persisted change desynchronises a payment from its posted journal. */
 export const LEDGER_SENSITIVE_PAYMENT_FIELDS = [

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { FeeStructure, FeeStructureInsert } from "@mms/shared";
+import type { FeeStructure, FeeStructureInsert } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { FINANCE_FEE_STRUCTURES_QUERY_KEY } from "./financeQueryKeys";
 import { assertContractOk } from "@/lib/apiContractError";

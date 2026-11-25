@@ -4,7 +4,7 @@ import {
   obligationsSettingsToSequenceConfig,
   type SequenceNumberingConfig,
   type ObligationsSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SequenceNumberingCard } from "@/components/sequence-numbering";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";
 import { useObligationsSettings } from "@/tenant/features/obligations/hooks/useObligationsSettings";

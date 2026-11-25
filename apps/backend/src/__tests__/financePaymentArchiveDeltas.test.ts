@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Invoice, Payment } from "@mms/shared";
+import type { Invoice, Payment } from "@mms/contracts";
 import {
   applyCollectedDelta,
   applyPaymentDeltas,

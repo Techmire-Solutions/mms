@@ -6,7 +6,7 @@ import {
   type Contact,
   type ContactIdentityMatchBody,
   type ContactIdentityMatchResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /** Build identity-match candidates from an Apple VCF preview list. */
 export function buildAppleImportIdentityCandidates(

@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { setTimeout as sleep } from "node:timers/promises";
-import { canonicalizeJson } from "@mms/shared";
+import { canonicalizeJson } from "@mms/contracts";
 import {
   authArtifactUserScopeKey,
   authArtifactWorkspaceScopeKey,

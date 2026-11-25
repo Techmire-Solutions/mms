@@ -1,5 +1,5 @@
 import React from "react";
-import { MESSAGING_MODULE_MANIFEST, mergeMessageTemplates } from "@mms/shared";
+import { MESSAGING_MODULE_MANIFEST, mergeMessageTemplates } from "@mms/contracts";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";

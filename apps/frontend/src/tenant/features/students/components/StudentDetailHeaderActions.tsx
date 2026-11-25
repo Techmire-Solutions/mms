@@ -1,6 +1,6 @@
 import React from "react";
 import { IdCard } from "lucide-react";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { DetailDrawerRestoreOrEditAction } from "@/components/app/DetailDrawerArchiveChrome";
 

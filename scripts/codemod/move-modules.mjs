@@ -2,10 +2,12 @@
 /**
  * Module-move codemod (frontend bundler-style and NodeNext-style packages).
  *
- * Moves a batch of modules and rewrites every import/export/dynamic-import
- * specifier under a source root so references follow the moves — in the `@/…`
- * alias form and the relative form, preserving whichever style the call site
- * already used, and preserving the module-specifier extension convention.
+ * Moves a batch of modules and rewrites the import/export/dynamic-import
+ * specifiers that follow the moves — in the `@/…` alias form or the relative
+ * form, preserving whichever style the call site already used and the configured
+ * module-specifier extension convention. Specifiers where neither the importer
+ * nor the target moved are left byte-for-byte untouched, so a move never becomes
+ * a repo-wide formatting diff.
  *
  * Usage:
  *   node scripts/codemod/move-modules.mjs <map.json> [options]
@@ -15,12 +17,34 @@
  *   --ext-suffix <none|js>
  *                        Specifier extension convention:
  *                          none  → bundler style, extensionless, `dir` for index  (frontend)
- *                          js    → NodeNext style, explicit `.js`, `dir/index.js` (packages/shared)
+ *                          js    → NodeNext style, explicit `.js`, `dir/index.js` (packages/contracts)
  *   --dry-run            Report changes without moving/writing
  *   --no-format          Skip `prettier --write` on touched files
  *   --rewrite-only       Repoint specifiers per the map WITHOUT moving files
  *                        (map = { oldResolvedFile: newResolvedFile }); use to
  *                        retire a re-export shim and repoint its importers.
+ *   --verbose            Print every rewritten specifier (old -> new)
+ *   --allow-cross-root   Allow a map target outside `--src-root` (e.g.
+ *                        apps/backend/src → packages/modules/<slice>/src/backend).
+ *                        Combined with a matching `--target-alias`, imports of the
+ *                        moved files become package specifiers instead of
+ *                        `../../packages/...` relative paths.
+ *   --target-alias <spec>=<dir>
+ *                        Rewrite imports of files under <dir> (repo-relative) to
+ *                        `<spec>/<path-within-dir>` (index files collapse to
+ *                        `<spec>`). Repeatable. Importers already inside <dir>
+ *                        keep relative imports. Example:
+ *                          --target-alias @mms/mod-contacts/backend=packages/modules/contacts/src/backend
+ *   --retarget <file>=<packageSpec>
+ *                        Rewrite every importer of <file> to the bare
+ *                        <packageSpec> (a file whose implementation already lives
+ *                        in a workspace package, e.g. a re-export shim such as
+ *                        lib/logger.ts -> @mms/be-core/logger). Repeatable, and the
+ *                        map argument becomes optional. Example:
+ *                          --retarget apps/backend/src/lib/logger.ts=@mms/be-core/logger
+ *
+ * Cross-root note: only `--src-root` files are rewritten. Run the tool again with
+ * `--src-root <destination>` to normalise imports between the moved files.
  *
  * <map.json> maps repo-relative SOURCE paths to TARGET paths:
  *   { "apps/frontend/src/components/ui/PageHeader.tsx":
@@ -46,24 +70,34 @@ const opts = {
   dryRun: false,
   noFormat: false,
   rewriteOnly: false,
+  allowCrossRoot: false,
+  verbose: false,
   srcRoot: "apps/frontend/src",
   extSuffix: "none",
+  targetAlias: [],
+  retarget: [],
 };
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a === "--dry-run") opts.dryRun = true;
   else if (a === "--no-format") opts.noFormat = true;
   else if (a === "--rewrite-only") opts.rewriteOnly = true;
+  else if (a === "--allow-cross-root") opts.allowCrossRoot = true;
+  else if (a === "--verbose") opts.verbose = true;
   else if (a === "--src-root") opts.srcRoot = argv[++i];
   else if (a === "--ext-suffix") opts.extSuffix = argv[++i];
+  else if (a === "--target-alias") opts.targetAlias.push(argv[++i] ?? "");
+  else if (a === "--retarget") opts.retarget.push(argv[++i] ?? "");
   else if (a.startsWith("--")) {
     console.error(`Unknown flag: ${a}`);
     process.exit(1);
   } else positional.push(a);
 }
-if (positional.length !== 1) {
+if (positional.length > 1 || (positional.length === 0 && opts.retarget.length === 0)) {
   console.error(
-    "Usage: node scripts/codemod/move-modules.mjs <map.json> [--src-root dir] [--ext-suffix none|js] [--dry-run] [--no-format]",
+    "Usage: node scripts/codemod/move-modules.mjs <map.json> [--src-root dir] [--ext-suffix none|js] " +
+      "[--rewrite-only] [--allow-cross-root] [--target-alias spec=dir] [--retarget file=spec] " +
+      "[--verbose] [--dry-run] [--no-format]",
   );
   process.exit(1);
 }
@@ -72,10 +106,64 @@ if (!["none", "js"].includes(opts.extSuffix)) {
   process.exit(1);
 }
 
+/** `--target-alias spec=dir` pairs, resolved to absolute directories. */
+const TARGET_ALIASES = opts.targetAlias.map((raw) => {
+  const separator = raw.indexOf("=");
+  if (separator <= 0) {
+    console.error(
+      `--target-alias must look like "@mms/mod-x/backend=packages/modules/x/src/backend" (got: "${raw}")`,
+    );
+    process.exit(1);
+  }
+  const spec = raw.slice(0, separator);
+  const dir = path.resolve(ROOT, raw.slice(separator + 1));
+  if (!dir.startsWith(ROOT)) {
+    console.error(`--target-alias directory escapes the repository: ${raw.slice(separator + 1)}`);
+    process.exit(1);
+  }
+  return { spec, dir };
+});
+/**
+ * `--retarget file=packageSpec` pairs. The file must exist (a typo fails loudly),
+ * and the specifier must be a bare package entry (no `./`, `/index`, `.js`).
+ */
+const RETARGETS = opts.retarget.map((raw) => {
+  const separator = raw.indexOf("=");
+  if (separator <= 0) {
+    console.error(
+      `--retarget must look like "apps/backend/src/lib/logger.ts=@mms/be-core/logger" (got: "${raw}")`,
+    );
+    process.exit(1);
+  }
+  const file = path.resolve(ROOT, raw.slice(0, separator));
+  const spec = raw.slice(separator + 1);
+  if (!file.startsWith(ROOT)) {
+    console.error(`--retarget file escapes the repository: ${raw.slice(0, separator)}`);
+    process.exit(1);
+  }
+  if (!fs.existsSync(file)) {
+    console.error(`--retarget file does not exist: ${toRel(file)}`);
+    process.exit(1);
+  }
+  if (!spec.startsWith("@mms/") && !spec.startsWith("@")) {
+    console.error(`--retarget spec must be a package specifier (got: "${spec}")`);
+    process.exit(1);
+  }
+  return { file, spec };
+});
+
+if (opts.targetAlias.length && !opts.allowCrossRoot) {
+  console.warn(
+    "--target-alias without --allow-cross-root: aliases still apply inside the source root.",
+  );
+}
+
 const SRC_ROOT = path.resolve(ROOT, opts.srcRoot);
 const EXT_SUFFIX = opts.extSuffix === "js" ? ".js" : "";
 
-const rawMap = JSON.parse(fs.readFileSync(path.resolve(ROOT, positional[0]), "utf8"));
+const rawMap = positional.length
+  ? JSON.parse(fs.readFileSync(path.resolve(ROOT, positional[0]), "utf8"))
+  : {};
 const abs = (p) => path.resolve(ROOT, p);
 const toRel = (p) => path.relative(ROOT, p).split(path.sep).join("/");
 
@@ -87,7 +175,11 @@ for (const [src, dst] of Object.entries(rawMap)) {
   const srcAbs = abs(src);
   const dstAbs = abs(dst);
   if (!srcAbs.startsWith(SRC_ROOT)) throw new Error(`source outside ${opts.srcRoot}: ${src}`);
-  if (!dstAbs.startsWith(SRC_ROOT)) throw new Error(`target outside ${opts.srcRoot}: ${dst}`);
+  if (!opts.allowCrossRoot && !dstAbs.startsWith(SRC_ROOT))
+    throw new Error(
+      `target outside ${opts.srcRoot}: ${dst} (pass --allow-cross-root for a cross-package move)`,
+    );
+  if (!dstAbs.startsWith(ROOT)) throw new Error(`target escapes the repository: ${dst}`);
   if (!fs.existsSync(srcAbs)) throw new Error(`source does not exist: ${src}`);
   if (!opts.rewriteOnly && srcAbs !== dstAbs && fs.existsSync(dstAbs))
     throw new Error(`target already exists: ${dst}`);
@@ -118,10 +210,22 @@ function resolveSpecifier(spec, importerAbs) {
   return null;
 }
 
+const isInside = (child, parent) => child === parent || child.startsWith(parent + path.sep);
+
 /** Build the import specifier string from `fromAbs` to `targetAbs`. */
 function buildSpecifier(fromAbs, targetAbs, useAlias) {
   const stripExt = (p) => p.replace(/\.(tsx|ts|jsx|js)$/, "");
   const tidy = (p) => (EXT_SUFFIX === ".js" ? p : p.replace(/\/index$/, ""));
+  // A declared alias wins for files under its directory, but never for importers
+  // already inside that directory (they keep short relative imports).
+  const alias = TARGET_ALIASES.find(
+    ({ dir }) => isInside(targetAbs, dir) && !isInside(fromAbs, dir),
+  );
+  if (alias) {
+    const within = stripExt(path.relative(alias.dir, targetAbs).split(path.sep).join("/"));
+    const collapsed = within === "index" ? "" : within.replace(/\/index$/, "");
+    return collapsed ? `${alias.spec}/${collapsed}` : alias.spec;
+  }
   if (useAlias) {
     return (
       "@/" +
@@ -226,13 +330,39 @@ for (const originalAbs of sourceFiles) {
       continue;
     }
     const finalTarget = finalOf.get(resolvedOrig) ?? resolvedOrig;
+    // Preserve untouched specifiers byte-for-byte: rebuilding every specifier
+    // normalises unrelated `.js`/extensionless choices and turns a move into a
+    // repo-wide formatting diff. Only a moved importer or a moved target is rebuilt.
+    // A retargeted file's implementation lives in a package: the import becomes the
+    // bare package specifier regardless of whether either side moved.
+    const retarget = RETARGETS.find((entry) => entry.file === resolvedOrig);
+    if (retarget) {
+      if (spec === retarget.spec) continue;
+      replacements.push({
+        start: node.getStart(sourceFile),
+        end: node.getEnd(),
+        from: spec,
+        text: JSON.stringify(retarget.spec),
+      });
+      continue;
+    }
+    const importerMoved = finalAbs !== originalAbs;
+    const targetMoved = finalTarget !== resolvedOrig;
+    if (!importerMoved && !targetMoved) continue;
     const newSpec = buildSpecifier(finalAbs, finalTarget, spec.startsWith("@/"));
     if (newSpec === spec) continue;
     replacements.push({
       start: node.getStart(sourceFile),
       end: node.getEnd(),
+      from: spec,
       text: JSON.stringify(newSpec),
     });
+  }
+
+  if (replacements.length && opts.verbose) {
+    for (const r of replacements) {
+      console.log(`  ${toRel(originalAbs)}: ${r.from} -> ${JSON.parse(r.text)}`);
+    }
   }
 
   if (replacements.length) {

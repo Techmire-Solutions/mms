@@ -1,5 +1,5 @@
 import { sql, type SQL } from "drizzle-orm";
-import { withIncludeDeletedScope } from "../../lib/softDeleteHelpers.js";
+import { withIncludeDeletedScope } from "@mms/db/soft-delete";
 
 export interface EnrolledSessionSyncScope {
   studentIds?: readonly string[];

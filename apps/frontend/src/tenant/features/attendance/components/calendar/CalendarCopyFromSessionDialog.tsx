@@ -5,7 +5,7 @@ import {
   isoDaysBetween,
   type AcademicCalendarEvent,
   type AcademicCalendarEventWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import type { PlatformUserProfile } from "@mms/shared";
+import type { PlatformUserProfile } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { TypedConfirmDialog } from "@shared/ui";
+import { TypedConfirmDialog } from "@mms/ui";
 import { getPlatformErrorMessage } from "@/platform/features/auth/lib/platformAuthErrors";
 import {
   useDeletePlatformAdmin,

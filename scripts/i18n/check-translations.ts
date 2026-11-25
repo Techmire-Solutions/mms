@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const sharedSrc = path.resolve(__dirname, "../../packages/shared/src");
+const sharedSrc = path.resolve(__dirname, "../../packages/contracts/src");
 
 function extractTranslations(filePath: string): Record<string, string> {
   if (!fs.existsSync(filePath)) {

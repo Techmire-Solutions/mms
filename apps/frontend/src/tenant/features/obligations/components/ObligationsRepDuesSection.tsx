@@ -6,12 +6,12 @@ import {
   useWorkDirectoryViewMode,
   type WorkDirectoryViewMode,
 } from "@/hooks/useWorkDirectoryViewMode";
-import { getInitials } from "@mms/shared";
+import { getInitials } from "@mms/contracts";
 import { Users } from "lucide-react";
 import { useMemo } from "react";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import type { WorkBatchTableFooterRow } from "@/components/common/work/workBatchTableTypes";
-import { SectionHeader } from "@shared/ui";
+import { SectionHeader } from "@mms/ui";
 import { ObligationsRepDuesCardsView } from "./ObligationsRepDuesCardsView";
 
 export interface RepSummaryEntry {

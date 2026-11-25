@@ -42,7 +42,7 @@ vi.mock("@/components/app/DashedFileDropZone", () => ({
   ),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     children,
     title,

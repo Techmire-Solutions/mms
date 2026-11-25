@@ -1,5 +1,5 @@
 import React from "react";
-import { financeTransferSchema, type FinanceTransferEntity } from "@mms/shared";
+import { financeTransferSchema, type FinanceTransferEntity } from "@mms/contracts";
 import { StandardModuleCsvImportDialog } from "@/components/app/StandardModuleCsvImportDialog";
 
 export interface FinanceCsvImportDialogProps {

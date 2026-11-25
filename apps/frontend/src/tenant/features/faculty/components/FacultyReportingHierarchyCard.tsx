@@ -1,6 +1,6 @@
 import React from "react";
 import { ArrowRight, Network, Users } from "lucide-react";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/app/SectionCard";
 import { useTranslation } from "@/hooks/useTranslation";

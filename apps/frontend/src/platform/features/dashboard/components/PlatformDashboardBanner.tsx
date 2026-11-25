@@ -4,13 +4,13 @@ import { Radio, Globe } from "lucide-react";
 import { m } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { Button } from "@shared/ui";
-import { WORK_SURFACE } from "@shared/ui";
-import { Badge } from "@shared/ui";
+import { Button } from "@mms/ui";
+import { WORK_SURFACE } from "@mms/ui";
+import { Badge } from "@mms/ui";
 import { itemVariants } from "@/lib/motion";
 import { ROUTES } from "@/lib/config/routes";
 import { cn } from "@/lib/utils";
-import type { PlatformUser } from "@mms/shared";
+import type { PlatformUser } from "@mms/contracts";
 
 export interface PlatformDashboardBannerProps {
   platformUser?: PlatformUser | null;

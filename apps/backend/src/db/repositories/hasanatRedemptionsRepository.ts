@@ -1,13 +1,13 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type Redemption } from "@mms/shared";
+import { dedupeTrimmedIds, type Redemption } from "@mms/contracts";
 import { redemptionColumns } from "./hasanatColumns.js";
 import {
   hasanatDenoms,
   hasanatBatches,
   hasanatDistributions,
   hasanatRedemptions,
-} from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { requireDbDateValue } from "../../lib/dbDate.js";
 
 type RedempRow = typeof hasanatRedemptions.$inferSelect;

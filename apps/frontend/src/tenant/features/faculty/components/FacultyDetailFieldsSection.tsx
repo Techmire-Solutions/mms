@@ -1,7 +1,7 @@
 import React from "react";
 import { Award, School } from "lucide-react";
-import type { Faculty, FacultySettings } from "@mms/shared";
-import { resolveRoleDisplayName } from "@mms/shared";
+import type { Faculty, FacultySettings } from "@mms/contracts";
+import { resolveRoleDisplayName } from "@mms/contracts";
 import { Badge } from "@/components/ui/badge";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";

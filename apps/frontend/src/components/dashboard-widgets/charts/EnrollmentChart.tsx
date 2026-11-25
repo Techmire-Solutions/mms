@@ -14,7 +14,7 @@ import {
   formatMonthName,
   formatPercent,
   getRecentMonthsList,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ChartPrefsControlGroup } from "@/components/dashboard-widgets/charts/ChartPrefsControlGroup";
 import { ChartEmptyState } from "@/components/dashboard-widgets/charts/ChartEmptyState";
 import {
@@ -35,7 +35,7 @@ import {
   ENROLLMENT_CHART_COLOR_OPTIONS,
   type DashboardChartType,
   type DashboardPreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 interface EnrollmentPoint {
   month: string;

@@ -3,7 +3,7 @@ import {
   STUDENT_CARD_FACE_COLUMN_IDS,
   STUDENT_SORT_FIELDS,
   type ModuleColumnRegistryEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { StudentsListContentSortField } from "@/tenant/features/students/lib/studentsListTypes";
 
 /** Sortable Work columns that map to the Students list API allowlist. */

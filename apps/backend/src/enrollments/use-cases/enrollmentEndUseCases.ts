@@ -1,4 +1,4 @@
-import type { WithdrawalBillingOutcome } from "@mms/shared";
+import type { WithdrawalBillingOutcome } from "@mms/contracts";
 import { enrollmentOperationsRepository as repo } from "../repository/enrollmentOperationsRepositoryAdapter.js";
 import type { OperationActor } from "../repository/enrollmentOperationsRepository.js";
 import { settleEnrollmentWithdrawal } from "../../finance/use-cases/financeEnrollmentBillingUseCases.js";
@@ -6,7 +6,7 @@ import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { offerFreedSeatPostCommit } from "./admissionsWaitlistUseCases.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { recordEnrollmentAudit } from "./enrollmentAudit.js";
 
 /** Actor for changes triggered by the system (e.g. a student status change without a user). */

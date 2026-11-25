@@ -1,5 +1,5 @@
 import { createModuleWorkDrillDown } from "@/lib/query/createModuleWorkDrillDown";
-import type { ContactsWorkDrillDown } from "@mms/shared";
+import type { ContactsWorkDrillDown } from "@mms/contracts";
 
 export type { ContactsWorkDrillDown };
 

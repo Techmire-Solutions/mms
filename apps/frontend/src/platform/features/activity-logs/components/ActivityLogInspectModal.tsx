@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Code2 } from "lucide-react";
-import { formatDate } from "@mms/shared";
+import { formatDate } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Modal, CopyButton } from "@shared/ui";
+import { Modal, CopyButton } from "@mms/ui";
 import { SubTabBar } from "@/components/app/SubTabBar";
 import type { PlatformActivityLogItem } from "@/platform/features/activity-logs/hooks/usePlatformActivityLogs";
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { User, Calendar } from "lucide-react";
 import { SearchBar } from "@/components/app/SearchBar";
-import { STUDENTS_MODULE_MANIFEST } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST } from "@mms/contracts";
 import { calcAge, type Student } from "@/lib/data/studentsData";
 import { type Session } from "@/lib/data/sessionsData";
 import { WIZARD_SELECTION_DOT } from "@/lib/ui/semanticTone";

@@ -6,7 +6,7 @@ import {
   workspaceRoleDescription,
   type PermissionAction,
   type SystemUser,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { UserRoleBadge } from "@/tenant/features/users/components/UserBadges";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";

@@ -1,4 +1,4 @@
-import { closeDatabase, initializeDatabaseConnection } from "../db/dbConnection.js";
+import { closeDatabase, initializeDatabaseConnection } from "@mms/db/client";
 import { runAttachmentSweep } from "../services/attachmentSweepService.js";
 import { LEADER_LOCK_RETENTION_PURGE, tryAcquireLeaderLease } from "../lib/leaderElection.js";
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { UserX } from "lucide-react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
 import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import ContactsListDesktopTable from "@/tenant/features/contacts/components/ContactsListDesktopTable";

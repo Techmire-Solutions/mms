@@ -4,8 +4,8 @@ import {
   normalizeHasanatReportComparisonQuery,
   parseComparisonQueryParams,
   type User,
-} from "@mms/shared";
-import { hasanatContract } from "@mms/shared";
+} from "@mms/contracts";
+import { hasanatContract } from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import { handleContractError } from "../../../lib/contractError.js";
@@ -16,7 +16,7 @@ import {
   canWriteCollection,
 } from "../../../services/rbacService.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { hasanatUseCases } from "../../../hasanat/use-cases/hasanatUseCases.js";
 import {
   handleBatchAward,

@@ -21,7 +21,7 @@ vi.mock("@/lib/contexts/BrandingPaletteContext", () => ({
   }),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     children,
     title,

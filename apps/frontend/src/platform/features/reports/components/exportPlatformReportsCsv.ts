@@ -1,4 +1,4 @@
-import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
 import { triggerFileDownload } from "@/lib/download";
 
 export interface PlatformReportsSummaryStats {

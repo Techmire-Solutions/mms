@@ -11,7 +11,7 @@ import {
   getExportArtifact,
   deleteExportArtifact,
 } from "../services/exportArtifactService.js";
-import { USER_EXPORT_ARTIFACTS_OBJECT_KEY } from "@mms/shared";
+import { USER_EXPORT_ARTIFACTS_OBJECT_KEY } from "@mms/contracts";
 
 // In-memory doc-store object map (mirrors the locked tenant object read/write).
 const { mockStore } = vi.hoisted(() => ({ mockStore: new Map<string, unknown>() }));
@@ -21,7 +21,9 @@ vi.mock("../db/documentStoreObjects.js", () => ({
     mockStore.set(key, value);
   },
 }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, callback: (tx: unknown) => Promise<unknown>) => callback({}),
 }));
 vi.mock("../lib/tenantContext.js", () => ({

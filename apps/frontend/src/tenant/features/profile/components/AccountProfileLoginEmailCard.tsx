@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { CheckCircle2, Mail } from "lucide-react";
-import type { TenantUserProfile } from "@mms/shared";
+import type { TenantUserProfile } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardTitleBar } from "@/components/app/CardTitleBar";

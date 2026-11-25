@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type Student } from "@mms/shared";
-import { students } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type Student } from "@mms/contracts";
+import { students } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { hydrateStudentsList } from "./studentRepository.js";
 import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
 

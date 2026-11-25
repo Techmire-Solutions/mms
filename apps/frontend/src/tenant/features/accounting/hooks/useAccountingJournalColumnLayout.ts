@@ -1,5 +1,8 @@
-import { ACCOUNTING_MODULE_MANIFEST, buildAccountingJournalWorkColumnRegistry } from "@mms/shared";
-import { useTranslation } from "@/hooks/useTranslation";
+import {
+  ACCOUNTING_MODULE_MANIFEST,
+  buildAccountingJournalWorkColumnRegistry,
+} from "@mms/contracts";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 
 const STORAGE_SUFFIX = "journal";

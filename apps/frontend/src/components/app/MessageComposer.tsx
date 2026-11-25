@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type {
   MessageTemplate,
   StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { MessageComposerDispatchControls } from "../messageComposer/MessageComposerDispatchControls";
 import { MessageComposerFormBody } from "../messageComposer/MessageComposerFormBody";
 import type { DispatchSpeed } from "../messageComposer/messageComposerDispatchService";

@@ -1,5 +1,5 @@
-import type { PlatformWorkspaceRow } from "@mms/shared";
-import type { NotificationItem } from "@shared/ui";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
+import type { NotificationItem } from "@mms/ui";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ROUTES } from "@/lib/config/routes";
 

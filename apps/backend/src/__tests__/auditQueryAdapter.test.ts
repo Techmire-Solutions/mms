@@ -36,7 +36,9 @@ const fakeDb = {
   }),
 };
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: async (_tenant: string, cb: (db: unknown) => Promise<unknown>) => {
     state.inTenantTransaction = true;
     try {

@@ -8,7 +8,7 @@ import {
   type AttendanceMatrixStatus,
   type AttendanceMatrixTotals,
   type AttendanceMatrixStudent,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
 import { attendanceRepository } from "../attendance/repository/attendanceRepositoryAdapter.js";
 

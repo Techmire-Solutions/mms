@@ -1,5 +1,5 @@
 import { useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
-import { isFacultyQuickFilter, type FacultyQuickFilter } from "@mms/shared";
+import { isFacultyQuickFilter, type FacultyQuickFilter } from "@mms/contracts";
 import {
   FACULTY_WORK_DRILLDOWN_EVENT,
   consumeFacultyWorkDrillDown,

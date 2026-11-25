@@ -10,6 +10,10 @@ vi.mock("@/hooks/useTranslation", async () => {
   const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
   return { useTranslation: useTranslationEnMock() };
 });
+vi.mock("@mms/fe-core/i18n", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
 vi.mock("@/lib/notify", () => ({
   notify: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
 }));

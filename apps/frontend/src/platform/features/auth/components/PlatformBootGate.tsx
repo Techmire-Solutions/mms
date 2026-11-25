@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import type { PlatformAdminPermissionKey } from "@mms/shared";
-import { platformUserCan } from "@mms/shared";
+import type { PlatformAdminPermissionKey } from "@mms/contracts";
+import { platformUserCan } from "@mms/contracts";
 import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 import { ROUTES } from "@/lib/config/routes";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";

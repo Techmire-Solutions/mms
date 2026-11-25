@@ -8,7 +8,7 @@ import {
   type QuestionBookCitation,
   type QuestionSourceBook,
   type QuestionSourceFieldId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { QuestionSourceBooksSection } from "@/tenant/features/question-bank/components/QuestionSourceBooksSection";
 import { QuestionSourcesCitationsSection } from "@/tenant/features/question-bank/components/QuestionSourcesCitationsSection";
 

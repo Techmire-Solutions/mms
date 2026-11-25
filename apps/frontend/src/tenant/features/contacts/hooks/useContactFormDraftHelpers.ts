@@ -20,7 +20,7 @@ import {
   type Contact,
   type FieldDefinition,
   type ValidationError,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function useContactFormDraftHelpers({
   formInstanceId: _formInstanceId,

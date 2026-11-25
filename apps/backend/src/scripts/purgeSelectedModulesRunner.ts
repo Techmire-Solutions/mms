@@ -1,7 +1,7 @@
 import { inArray, sql } from "drizzle-orm";
-import { withTenant } from "../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { getQueryRows } from "../db/documentStoreKeys.js";
-import * as schema from "../db/schema.js";
+import * as schema from "@mms/db/schema";
 import {
   PURGE_DOCUMENT_STORE_SUFFIXES,
   PURGE_MODULE_TABLES,

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import type { AppTranslationKey } from "@mms/shared";
-import { resolveModuleTierTab } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
+import { resolveModuleTierTab } from "@mms/contracts";
 import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import {

@@ -5,7 +5,7 @@ import {
   type PermissionAction,
   type PermissionMap,
   type RbacModuleDef,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";

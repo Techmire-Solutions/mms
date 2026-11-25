@@ -1,4 +1,4 @@
-import { resolveStudentStatuses } from "@mms/shared";
+import { resolveStudentStatuses } from "@mms/contracts";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { createModuleStatusUi } from "@/lib/ui/moduleStatusUi";
 

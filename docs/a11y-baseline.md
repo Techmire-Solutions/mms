@@ -143,7 +143,7 @@ fill carrying *white* text; dark themes one carrying *dark* text) and only stops
 when the fill, both surfaces and the token's own resting tint all clear 4.5:1.
 `buildSemanticStatusTokens` and `maxRestingTintByMode` follow the same contract.
 
-**Enforcement:** `packages/shared/src/brandingTheme.test.ts` asserts all three roles
+**Enforcement:** `packages/contracts/src/brandingTheme.test.ts` asserts all three roles
 for every curated preset **and** for light brand colours (`#d09611`, `#facc15`,
 `#a3e635`) in both modes — the light-brand shape is what actually shipped the
 failure, and no curated preset covers it.

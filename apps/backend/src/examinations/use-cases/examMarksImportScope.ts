@@ -1,4 +1,4 @@
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import {
   assertTeacherAnyClassScope,

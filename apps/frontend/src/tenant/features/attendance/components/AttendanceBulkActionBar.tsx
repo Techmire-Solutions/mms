@@ -1,6 +1,6 @@
 import React from "react";
 import { UserCheck } from "lucide-react";
-import { ATTENDANCE_MODULE_MANIFEST } from "@mms/shared";
+import { ATTENDANCE_MODULE_MANIFEST } from "@mms/contracts";
 import { BulkSelectionBar } from "@/components/app/BulkSelectionBar";
 
 export interface AttendanceBulkActionBarProps {

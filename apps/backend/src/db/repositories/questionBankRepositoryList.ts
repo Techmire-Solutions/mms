@@ -18,15 +18,15 @@ import {
   toSqlSearchPattern,
   type QuestionBankListQuery,
   type QuestionBankListPageResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   questions,
   questionCategories,
   questionOptions,
   questionTags,
   questionCitations,
-} from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { runListPage } from "./listPageHelper.js";
 import { questionRowToRecord } from "./questionBankRepository.js";
 

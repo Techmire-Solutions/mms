@@ -1,7 +1,7 @@
 import { readFile, writeFile, mkdir, stat } from "node:fs/promises";
 import { join, normalize, relative, dirname } from "node:path";
 import { resolveUploadsRoot } from "../config/uploadConfig.js";
-import type { TenantDatabaseSnapshot } from "@mms/shared";
+import type { TenantDatabaseSnapshot } from "@mms/contracts";
 import { logger } from "../lib/logger.js";
 
 const UPLOADS_PATH_REGEX = /^\/uploads\/([a-zA-Z0-9_\-/.]+)$/;

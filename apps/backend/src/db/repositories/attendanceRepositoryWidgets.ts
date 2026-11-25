@@ -1,7 +1,7 @@
 import { and, eq, gte, isNull, lte, sql, type SQL } from "drizzle-orm";
-import type { WidgetAggregateResult, WidgetQuery } from "@mms/shared";
-import { attendance } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { WidgetAggregateResult, WidgetQuery } from "@mms/contracts";
+import { attendance } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Dashboard widget aggregates.

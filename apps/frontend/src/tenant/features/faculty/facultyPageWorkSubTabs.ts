@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Award, BarChart2, Building2, Settings, Users } from "lucide-react";
-import { normalizeModuleTierTabId } from "@mms/shared";
+import { normalizeModuleTierTabId } from "@mms/contracts";
 
 /** Faculty peer tabs (Faculty-only exception to Work | Reports | Setup). */
 export const FACULTY_PAGE_TAB_IDS = [

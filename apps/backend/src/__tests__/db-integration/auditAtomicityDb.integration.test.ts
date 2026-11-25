@@ -1,14 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import type { Contact, User } from "@mms/shared";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withGlobalTenant, withTenant } from "../../db/tenant-context.js";
-import { auditTrailEvents } from "../../db/schema/auditTrail.js";
-import { contacts, workspaces } from "../../db/schema.js";
+import type { Contact, User } from "@mms/contracts";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withGlobalTenant, withTenant } from "@mms/db/context";
+import { auditTrailEvents } from "@mms/db/schema/auditTrail";
+import { contacts, workspaces } from "@mms/db/schema";
 import { runWithTenant } from "../../lib/tenantContext.js";
-import { upsertContact } from "../../contacts/use-cases/contactWriteUseCases.js";
+import { upsertContact } from "@mms/mod-contacts/backend/use-cases";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const TENANT = `audit-atomic-${randomUUID().slice(0, 8)}`;

@@ -9,7 +9,7 @@ import type {
   ExchangeRatePutItem,
   ExchangeRateKey,
   ExchangeRateRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /** Storage gateway for IAS 21 currency settings and exchange rates. */
 export interface AccountingFxRepository {

@@ -1,5 +1,5 @@
-import type { AppTranslationKey } from "@mms/shared";
-import { resolveModuleTierTab } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
+import { resolveModuleTierTab } from "@mms/contracts";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { MEDIA_LG_UP } from "@/lib/breakpoints";

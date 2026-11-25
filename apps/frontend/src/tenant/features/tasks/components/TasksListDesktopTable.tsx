@@ -5,7 +5,7 @@
 
 import React, { useMemo } from "react";
 import { Pencil, Trash2, RotateCcw } from "lucide-react";
-import type { ModuleColumnRegistryEntry, TaskRecord, TaskStatus } from "@mms/shared";
+import type { ModuleColumnRegistryEntry, TaskRecord, TaskStatus } from "@mms/contracts";
 import { WorkBatchTable } from "@/components/common/work/WorkBatchTable";
 import { DataTableRowActions, resolveVisibleColumns } from "@/components/common/data-table";
 import { ModuleTableFooterCount } from "@/components/app/ModuleTableFooterCount";

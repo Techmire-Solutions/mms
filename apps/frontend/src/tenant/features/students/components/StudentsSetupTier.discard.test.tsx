@@ -59,7 +59,7 @@ vi.mock("@/tenant/features/students/components/StudentsSetupPanel", () => ({
   default: () => <div>prefs-panel</div>,
 }));
 
-vi.mock("@/components/app/ConfirmAlertDialog", () => ({
+vi.mock("@mms/fe-core/components/ConfirmAlertDialog", () => ({
   ConfirmAlertDialog: ({
     open,
     onConfirm,

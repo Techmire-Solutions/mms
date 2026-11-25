@@ -1,6 +1,6 @@
 import { escapeHtml } from "@/lib/escapeHtml";
 import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
-import type { VoucherPrintLayout } from "@/tenant/features/accounting/lib/paymentVoucherKind";
+import type { VoucherPrintLayout } from "@mms/mod-accounting/frontend/tenant";
 
 /** A5 portrait at 96 dpi — two vouchers per A4 sheet when printed 2-up. */
 export const PAYMENT_VOUCHER_PAGE = { width: 559, height: 794 } as const;

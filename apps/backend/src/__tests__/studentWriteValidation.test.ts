@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsByIdsForTenant: (...args: unknown[]) => mockLoadContacts(...args),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyRequest } from "fastify";
 
@@ -12,10 +22,6 @@ vi.mock("../students/use-cases/studentConfigService.js", () => ({
 
 vi.mock("../services/studentValidationService.js", () => ({
   collectStudentDynamicIssues: (...args: unknown[]) => mockCollectIssues(...args),
-}));
-
-vi.mock("../contacts/use-cases/contactLoadUseCases.js", () => ({
-  loadContactsByIdsForTenant: (...args: unknown[]) => mockLoadContacts(...args),
 }));
 
 vi.mock("../lib/tenantContext.js", () => ({

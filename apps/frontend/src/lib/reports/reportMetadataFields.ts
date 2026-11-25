@@ -4,7 +4,7 @@ import type { Session } from "@/lib/data/sessionsData";
 import type { Invoice } from "@/lib/data/financeData";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 import type { Distribution } from "@/lib/data/hasanatData";
-import type { Contact, Enrollment } from "@mms/shared";
+import type { Contact, Enrollment } from "@mms/contracts";
 import { QUESTION_BANK_METADATA_FIELDS } from "./reportMetadataQuestionBankFields";
 
 export const METADATA_FIELDS = {

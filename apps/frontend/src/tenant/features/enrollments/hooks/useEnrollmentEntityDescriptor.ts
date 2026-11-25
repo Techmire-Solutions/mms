@@ -1,4 +1,4 @@
-import type { Enrollment } from "@mms/shared";
+import type { Enrollment } from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { enrollmentsEntityDescriptor } from "@/components/common/entityRegistry";
 import { useStaticEntityDescriptor } from "@/components/common/useStaticEntityDescriptor";

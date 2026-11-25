@@ -1,6 +1,7 @@
 import { Worker } from "bullmq";
-import { initDb, closeDatabase } from "../db/database.js";
-import { activeDb, initializeDatabaseConnection } from "../db/dbConnection.js";
+import { closeDatabase } from "../db/database.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { activeDb, initializeDatabaseConnection } from "@mms/db/client";
 import { disconnectRedis } from "../lib/redis.js";
 import { loadBackendEnv } from "../config/loadEnv.js";
 
@@ -53,7 +54,7 @@ import {
 import {
   clearContactSystemTagSweep,
   scheduleContactSystemTagSweep,
-} from "./contactSystemTagSweep.js";
+} from "@mms/mod-contacts/backend/jobs";
 import { startOutboxCdcListener, type OutboxCdcHandle } from "./outboxCdcListener.js";
 import { cleanupOrphanedJobs } from "./workerOrphanCleanup.js";
 
@@ -157,7 +158,7 @@ export async function startWorkerDaemon(): Promise<void> {
 
   // Explicitly initialize dedicated worker connection pool (budgeted to max: 10)
   initializeDatabaseConnection({ role: "worker", max: 10 });
-  await initDb();
+  await initializeDatabase();
   await cleanupOrphanedJobs();
 
   // Register job runners

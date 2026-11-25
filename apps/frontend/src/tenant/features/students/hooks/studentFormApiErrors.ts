@@ -1,4 +1,4 @@
-import type { FieldDefinition, ValidationError } from "@mms/shared";
+import type { FieldDefinition, ValidationError } from "@mms/contracts";
 import { isApiError } from "@/lib/apiError";
 
 /** Shape of the field-level error entries the backend returns in `body.errors`. */

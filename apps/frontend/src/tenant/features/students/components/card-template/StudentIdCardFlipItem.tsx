@@ -1,7 +1,7 @@
 import React from "react";
 import { RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type { StudentCardTemplate } from "../../lib/studentCardTemplateTypes";
 import { StudentCardPrintPreview } from "./StudentCardPrintPreview";

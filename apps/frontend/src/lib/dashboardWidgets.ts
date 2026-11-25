@@ -1,4 +1,4 @@
-import type { AppTranslationKey, DashboardTrendMetric } from "@mms/shared";
+import type { AppTranslationKey, DashboardTrendMetric } from "@mms/contracts";
 
 /** Prefix for seeded default dashboard/report widgets (`widgetDefaults`). */
 export const SEED_WIDGET_ID_PREFIX = "def-";

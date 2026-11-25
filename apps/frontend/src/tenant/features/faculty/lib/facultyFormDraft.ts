@@ -6,7 +6,7 @@ import {
   type FacultyMember,
   type FieldDefinition,
   todayISO,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createModuleFormDraft } from "@/lib/forms/createModuleFormDraft";
 import {
   employDesignationRowsFromFaculty,

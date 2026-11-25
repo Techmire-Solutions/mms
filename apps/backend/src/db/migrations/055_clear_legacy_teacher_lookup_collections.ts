@@ -2,11 +2,11 @@
  * Deletes orphan document-store Teachers lookup collections after typed backfill (054).
  * Safe to re-run: skips delete when typed `teacher_lookups` has no rows for that tenant+kind.
  */
-import { parseTenantScopedStorageKey } from "@mms/shared";
+import { parseTenantScopedStorageKey } from "@mms/contracts";
 import { and, eq } from "drizzle-orm";
-import * as schema from "../schema.js";
+import * as schema from "@mms/db/schema";
 import { deleteCollectionByStorageName, listCollectionStorageNames } from "../database.js";
-import { withGlobalTenant } from "../tenant-context.js";
+import { withGlobalTenant } from "@mms/db/context";
 
 const TEACHER_LOOKUP_LEGACY_COLLECTION_KEYS = {
   teacherStatuses: "statuses",

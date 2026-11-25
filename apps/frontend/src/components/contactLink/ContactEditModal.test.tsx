@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import ContactEditModal from "./ContactEditModal";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 
 vi.mock("@/hooks/useTranslation", () => ({
   useTranslation: () => ({

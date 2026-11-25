@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { PublicRegistrationView } from "@mms/shared";
+import type { PublicRegistrationView } from "@mms/contracts";
 import RegistrationFormPage from "./RegistrationFormPage";
 
 const mockUseTenant = vi.fn();

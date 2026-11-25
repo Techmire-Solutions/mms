@@ -1,9 +1,9 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi } from "vitest";
-import { LiveRegionProvider, useLiveAnnouncer } from "@shared/ui";
+import { LiveRegionProvider, useLiveAnnouncer } from "@mms/ui";
 
-describe("LiveRegionProvider & useLiveAnnouncer (@shared/ui)", () => {
+describe("LiveRegionProvider & useLiveAnnouncer (@mms/ui)", () => {
   it("renders dual live regions with correct ARIA roles and attributes", () => {
     const container = document.createElement("div");
     document.body.appendChild(container);

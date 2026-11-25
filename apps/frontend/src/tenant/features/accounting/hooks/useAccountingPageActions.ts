@@ -1,16 +1,16 @@
 import { useCallback } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
-import { notify } from "@/lib/notify";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { notify } from "@mms/fe-core/notify";
 import {
   journalEntryListSchema,
   type Account,
   type AppTranslationKey,
   type FiscalYear,
   type JournalEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useAccountingMutations } from "@/tenant/features/accounting/hooks/useAccountingApi";
 import { NotifiedMutationError } from "@/lib/notifiedMutationError";
-import { getApiValidationMessage } from "@/lib/apiValidationMessage";
+import { getApiValidationMessage } from "@mms/fe-core/api/validationMessage";
 
 /**
  * Human-readable reason for a failed write.

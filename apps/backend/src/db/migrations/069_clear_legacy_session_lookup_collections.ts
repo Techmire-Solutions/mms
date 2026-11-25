@@ -8,11 +8,11 @@ import {
   isSessionLookupLegacyCollectionKey,
   SESSION_LOOKUP_LEGACY_COLLECTION_KEYS,
   type SessionLookupKind,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { and, eq, inArray } from "drizzle-orm";
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
 
 export async function runMigration069(): Promise<void> {
   const db = getDb();

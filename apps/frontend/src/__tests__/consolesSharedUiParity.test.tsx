@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { Button, EmptyState, ThemeScope, UiConfigProvider } from "@shared/ui";
+import { Button, EmptyState, ThemeScope, UiConfigProvider } from "@mms/ui";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

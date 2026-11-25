@@ -6,7 +6,7 @@ import {
   joinQuestionCompoundAnswer,
   splitQuestionCompoundAnswer,
   type AppTranslationKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { useStableRowList } from "@/lib/forms/useStableRowList";
 

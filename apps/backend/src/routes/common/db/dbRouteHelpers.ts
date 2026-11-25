@@ -3,8 +3,8 @@ import {
   WORKSPACES_COLLECTION,
   PLATFORM_SUPER_USERS_OBJECT_KEY,
   type TenantDatabaseSnapshot,
-} from "@mms/shared";
-import type { User } from "@mms/shared";
+} from "@mms/contracts";
+import type { User } from "@mms/contracts";
 import { canWriteCollection, canWriteObject } from "../../../services/rbacService.js";
 
 export function stripServerOnlyObjects(objects: Record<string, unknown>): void {

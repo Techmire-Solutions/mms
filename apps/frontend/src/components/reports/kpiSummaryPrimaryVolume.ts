@@ -1,4 +1,4 @@
-import type { QuestionBankQuestion, QuestionBankResult, QuestionBankTest } from "@mms/shared";
+import type { QuestionBankQuestion, QuestionBankResult, QuestionBankTest } from "@mms/contracts";
 import type {
   AttendanceCommandMetricsSnapshot,
   FinanceCommandMetricsSnapshot,
@@ -6,7 +6,7 @@ import type {
   SessionsCommandMetricsSnapshot,
   ExaminationsCommandMetricsSnapshot,
   QuestionBankCommandMetricsSnapshot,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ContactKPIAnalytics, EntityKPIMetrics, FacultyKPIMetrics } from "./kpiSummaryTypes";
 
 export interface PrimaryVolumeInputs {

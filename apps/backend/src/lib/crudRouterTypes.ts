@@ -1,1 +1,1 @@
-export type ResourceRecord = { id?: string | number };
+export * from "@mms/be-core/http/crud";

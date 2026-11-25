@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { HedgeRelationship, HedgeRelationshipCreate } from "@mms/shared";
+import type { HedgeRelationship, HedgeRelationshipCreate } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
-import { assertContractOk } from "@/lib/apiContractError";
+import { assertContractOk } from "@mms/fe-core/api/contractError";
 
 const HEDGES_KEY = ["accounting", "hedges"] as const;
 

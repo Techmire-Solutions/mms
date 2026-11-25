@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { generateReceiptNo } from "./obligationsData";
-import type { ObligationCollection } from "@mms/shared";
+import type { ObligationCollection } from "@mms/contracts";
 
 describe("generateReceiptNo", () => {
   it("formats deterministic sequence with default settings and empty list", () => {

@@ -1,7 +1,7 @@
 import React from "react";
 import { DollarSign, Tag, Info } from "lucide-react";
 import { calcFee, type CalculatedFee } from "@/lib/data/enrollmentData";
-import { classFeeDiscounts, toMoneyNumber } from "@mms/shared";
+import { classFeeDiscounts, toMoneyNumber } from "@mms/contracts";
 import { type Student } from "@/lib/data/studentsData";
 import { type Session, type Class } from "@/lib/data/sessionsData";
 import { useFinanceCurrency } from "@/hooks/useCurrency";

@@ -6,7 +6,7 @@ import {
   type MessageLogCreateDto,
   type MessageTemplate,
   type MessagingMetricsDto,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { tsrClient } from "@/lib/api";
 import { notifyApiFailure } from "@/lib/apiErrorNotify";
 import { useAuth } from "@/lib/contexts/AuthContext";

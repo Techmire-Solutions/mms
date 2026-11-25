@@ -1,12 +1,28 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsSummaryByIdsForTenant: mocks.loadContacts,
+    },
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsSummaryByIdsForTenant: mocks.loadContacts,
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   loadContacts: vi.fn(),
   listDesignations: vi.fn(),
-}));
-
-vi.mock("../services/contactService.js", () => ({
-  loadContactsSummaryByIdsForTenant: mocks.loadContacts,
 }));
 
 vi.mock("../db/repositories/facultyDesignationRepository.js", () => ({

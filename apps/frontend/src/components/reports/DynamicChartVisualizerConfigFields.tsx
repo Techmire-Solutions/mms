@@ -3,7 +3,7 @@ import {
   CHART_PALETTE_DEFS,
   isColorblindSafeChartPalette,
   type AppTranslationKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Input } from "@/components/ui/input";
 import { FormSelect } from "@/components/app/FormSelect";
 import { SectionLabel } from "@/components/app/SectionLabel";

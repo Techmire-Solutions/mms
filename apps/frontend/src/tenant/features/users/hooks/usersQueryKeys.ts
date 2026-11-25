@@ -1,4 +1,8 @@
-import { USERS_MODULE_MANIFEST, type UsersListPageResult, type WorkspaceUser } from "@mms/shared";
+import {
+  USERS_MODULE_MANIFEST,
+  type UsersListPageResult,
+  type WorkspaceUser,
+} from "@mms/contracts";
 import { createModuleListQueryBuilders } from "@/lib/query/createModuleListQueryBuilders";
 
 const USERS_API = USERS_MODULE_MANIFEST.restBasePath;

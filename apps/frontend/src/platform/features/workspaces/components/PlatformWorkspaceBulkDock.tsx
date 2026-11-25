@@ -1,5 +1,5 @@
 import React from "react";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { StatusBulkActionDock } from "@/components/app/StatusBulkActionDock";
 import { downloadWorkspacesCsv } from "@/platform/features/workspaces/lib/platformWorkspaceListData";

@@ -1,4 +1,4 @@
-import { getPageDimensions, type TemplateElement } from "@mms/shared";
+import { getPageDimensions, type TemplateElement } from "@mms/contracts";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
 import {

@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field, FormCheckboxCard } from "@/components/app/FormPrimitives";
 import { LeadingIconInput } from "@/components/app/LeadingIconInput";
 import { cn } from "@/lib/utils";
-import type { ContactSkill } from "@mms/shared";
+import type { ContactSkill } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 

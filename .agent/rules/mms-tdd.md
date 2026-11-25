@@ -7,7 +7,7 @@ description: Test-first delivery — Red/Green/Refactor for backend domain layer
 
 **Workflow skills:** testing workflows → `mms-testing-e2e` · PR/self-review → `mms-code-review` · auth/RLS specs → `mms-backend-security`.
 
-Applies to business logic, use-case handlers, services, repositories, `@mms/shared` pure helpers, tenant hooks, and every bug fix. UI component specs follow `mms-testing-observability.md` §2–§4.
+Applies to business logic, use-case handlers, services, repositories, `@mms/contracts` pure helpers, tenant hooks, and every bug fix. UI component specs follow `mms-testing-observability.md` §2–§4.
 
 ## 1. Red → Green → Refactor
 1. **Red:** write the failing Vitest spec first (`*.test.ts` / `*.test.tsx`, colocated or under `apps/backend/src/__tests__/`) that states the expected behaviour.

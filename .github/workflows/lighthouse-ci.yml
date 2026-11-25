@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - "apps/frontend/**"
-      - "packages/shared/**"
+      - "packages/contracts/**"
       - "packages/ui/**"
       - "perf/**"
       - "lighthouserc.cjs"

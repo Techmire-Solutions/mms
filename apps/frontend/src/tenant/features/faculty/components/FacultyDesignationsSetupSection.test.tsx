@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FacultyDesignationsSetupSection } from "./FacultyDesignationsSetupSection";
-import type { FacultyDesignationDefinition } from "@mms/shared";
+import type { FacultyDesignationDefinition } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/dbInit.js";
-import { activeDb, closeDatabase } from "../db/dbConnection.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { activeDb, closeDatabase } from "@mms/db/client";
 import { computeAndPublishMerkleCheckpoint } from "../services/auditVerificationService.js";
 
 loadBackendEnv();
@@ -21,7 +21,7 @@ async function main(): Promise<void> {
   }
 
   console.log(`[detach-audit-partition] Initializing database connection...`);
-  await initDb();
+  await initializeDatabase();
   const db = activeDb();
 
   console.log(

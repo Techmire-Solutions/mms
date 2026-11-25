@@ -6,10 +6,10 @@
  * and writes into the `workspaces` row. Idempotent — safe to re-run.
  */
 import { eq } from "drizzle-orm";
-import { getDb } from "../dbClient.js";
-import * as schema from "../schema.js";
-import { withGlobalTenant } from "../tenant-context.js";
-import { mergeGlobalSettings, parseTenantScopedStorageKey, SYSTEM_MODULES } from "@mms/shared";
+import { getDb } from "@mms/db/client";
+import * as schema from "@mms/db/schema";
+import { withGlobalTenant } from "@mms/db/context";
+import { mergeGlobalSettings, parseTenantScopedStorageKey, SYSTEM_MODULES } from "@mms/contracts";
 
 const GLOBAL_SETTINGS_KEY = "global_settings";
 const PLATFORM_SETTINGS_KEY = "platform_settings";

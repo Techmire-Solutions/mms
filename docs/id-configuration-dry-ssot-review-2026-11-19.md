@@ -19,7 +19,7 @@
 
 ### Phase 1 — one implementation of the sequence helpers (F1, F4)
 
-Added to `packages/shared/src/core/sequenceNumberingUtils.ts`:
+Added to `packages/contracts/src/core/sequenceNumberingUtils.ts`:
 
 - `sequenceFormatKey(config)` — counter identity `yearFormat|delimiter|prefix`.
 - `sequencePattern(config, periodYear)` — POSIX regex for one counter period.

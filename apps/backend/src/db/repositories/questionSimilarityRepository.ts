@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { questionSimilarity, SIMILAR_THRESHOLD } from "@mms/shared";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
-import { questionCategories } from "../schema.js";
+import { questionSimilarity, SIMILAR_THRESHOLD } from "@mms/contracts";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
+import { questionCategories } from "@mms/db/schema";
 
 /**
  * Candidate lookup for duplicate detection (migration 0242 follow-up).

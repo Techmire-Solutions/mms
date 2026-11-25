@@ -1,4 +1,4 @@
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { SEED_10_CONTACTS_PART1 } from "./seed-20-contacts-part1.js";
 import { SEED_10_CONTACTS_PART2 } from "./seed-20-contacts-part2.js";
 

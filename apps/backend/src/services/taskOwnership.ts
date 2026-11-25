@@ -1,4 +1,4 @@
-import type { TaskRecord } from "@mms/shared";
+import type { TaskRecord } from "@mms/contracts";
 
 /**
  * A task may be mutated/archived by its creator, one of its assignees, or a

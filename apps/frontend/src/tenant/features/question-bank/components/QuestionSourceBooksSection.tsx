@@ -11,12 +11,12 @@ import {
   type ModuleFieldDef,
   type QuestionSourceBook,
   type QuestionSourceFieldId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { QuestionSourceInput } from "@/tenant/features/question-bank/components/QuestionSourceInput";
 import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
 
 type TranslateFn = (
-  key: import("@mms/shared").AppTranslationKey,
+  key: import("@mms/contracts").AppTranslationKey,
   params?: Record<string, string | number>,
 ) => string;
 

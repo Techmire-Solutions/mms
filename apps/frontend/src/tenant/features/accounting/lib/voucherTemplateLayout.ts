@@ -1,4 +1,4 @@
-import type { AppTranslationKey, ElementStyle, TemplateElement } from "@mms/shared";
+import type { AppTranslationKey, ElementStyle, TemplateElement } from "@mms/contracts";
 import { PRINT_COLORS } from "@/lib/ui/printTemplateStyles";
 import type {
   VoucherPrintPayload,

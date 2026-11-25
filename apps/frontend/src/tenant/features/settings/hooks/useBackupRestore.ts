@@ -4,7 +4,7 @@ import {
   formatBackupSize,
   isBackupErrorKey,
   type WorkspaceBackupRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getWorkspaceLocalStoragePrefix } from "@/lib/db";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLiveCollection } from "@/hooks/useLiveCollection";

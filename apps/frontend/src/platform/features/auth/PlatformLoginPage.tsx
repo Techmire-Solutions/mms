@@ -5,7 +5,7 @@ import { usePlatformSetupStatus } from "@/platform/features/auth/hooks/usePlatfo
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AuthPageFrame } from "@/components/entry/AuthPageShell";
 import { useTranslation } from "@/hooks/useTranslation";
-import { ErrorState } from "@shared/ui";
+import { ErrorState } from "@mms/ui";
 import { ROUTES } from "@/lib/config/routes";
 import PlatformSignIn from "@/platform/features/auth/PlatformSignIn";
 import PlatformSetup from "@/platform/features/auth/PlatformSetup";

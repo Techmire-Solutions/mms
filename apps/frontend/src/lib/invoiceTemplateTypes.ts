@@ -1,4 +1,4 @@
-import type { BrandingSettings } from "@mms/shared";
+import type { BrandingSettings } from "@mms/contracts";
 import {
   translateApp,
   type AppTranslationKey,
@@ -24,7 +24,7 @@ import {
   type DocumentTemplate,
   type TemplateFieldDefinition,
   type DocumentTemplatePreset,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export {
   PAGE_SIZES,

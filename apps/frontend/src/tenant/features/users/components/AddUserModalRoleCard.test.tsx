@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { RoleCard } from "./AddUserModalRoleCard";
-import type { WorkspaceRole } from "@mms/shared";
+import type { WorkspaceRole } from "@mms/contracts";
 
 vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
   useGlobalSettings: () => ({

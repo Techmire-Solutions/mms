@@ -15,7 +15,7 @@ import {
   type EnrollmentTransferBody,
   type EnrollmentWithdrawBody,
   type Session,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Field, FormSelect } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { DatePicker } from "@/components/app/DatePicker";

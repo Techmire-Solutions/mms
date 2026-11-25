@@ -1,0 +1,235 @@
+import { useCallback, useRef, type ChangeEvent, type DragEvent, type RefObject } from "react";
+import type { LucideIcon } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
+import { Button } from "../button";
+import { cn } from "../utils";
+
+/** Clears the previous pick (so re-choosing the same file still fires `change`) and opens the picker. */
+function openFileInput(input: HTMLInputElement | null | undefined): void {
+  if (!input) return;
+  input.value = "";
+  input.click();
+}
+
+function assignInputRef(
+  ref: RefObject<HTMLInputElement | null> | undefined,
+  node: HTMLInputElement | null,
+): void {
+  if (ref) ref.current = node;
+}
+
+export interface DashedFileDropZoneProps {
+  isDragging: boolean;
+  onDraggingChange: (dragging: boolean) => void;
+  onFiles: (files: FileList | null) => void;
+  title: string;
+  description: string;
+  /** Accessible name for the hidden file input and browse control. */
+  inputAriaLabel: string;
+  /** When set with inputId/inputName, renders a hidden file input inside the zone. */
+  inputId?: string;
+  inputName?: string;
+  fileInputRef?: RefObject<HTMLInputElement | null>;
+  onFileChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  /** Prefer when the file input lives outside this component (e.g. Apple VCF panel). */
+  onOpenPicker?: () => void;
+  accept?: string;
+  multiple?: boolean;
+  isUploading?: boolean;
+  icon?: LucideIcon;
+  /** When set, renders a primary browse button; otherwise the zone itself is the picker. */
+  browseLabel?: string;
+  disabled?: boolean;
+  className?: string;
+}
+
+/**
+ * Shared dashed upload dropzone for drawer attachments and sync VCF import.
+ */
+export function DashedFileDropZone({
+  isDragging,
+  onDraggingChange,
+  onFiles,
+  title,
+  description,
+  inputAriaLabel,
+  inputId,
+  inputName,
+  fileInputRef,
+  onFileChange,
+  onOpenPicker,
+  accept,
+  multiple = false,
+  isUploading = false,
+  icon: Icon = FileText,
+  browseLabel,
+  disabled = false,
+  className,
+}: DashedFileDropZoneProps): React.JSX.Element {
+  // Own the input element so the zone opens the picker even when the caller
+  // passes only inputId/inputName (module CSV import) and no ref.
+  const localInputRef = useRef<HTMLInputElement | null>(null);
+  const setInputRef = useCallback(
+    (node: HTMLInputElement | null) => {
+      localInputRef.current = node;
+      assignInputRef(fileInputRef, node);
+    },
+    [fileInputRef],
+  );
+
+  const openPicker = () => {
+    if (disabled || isUploading) return;
+    if (onOpenPicker) {
+      onOpenPicker();
+      return;
+    }
+    openFileInput(localInputRef.current ?? fileInputRef?.current);
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (disabled || isUploading) return;
+    onDraggingChange(true);
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onDraggingChange(false);
+  };
+
+  const handleDrop = (event: DragEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onDraggingChange(false);
+    if (disabled || isUploading) return;
+    onFiles(event.dataTransfer.files);
+  };
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.target;
+    const files = input.files;
+    if (onFileChange) {
+      onFileChange(event);
+      input.value = "";
+      return;
+    }
+    onFiles(files);
+    input.value = "";
+  };
+
+  const draggingClass = isDragging
+    ? "border-primary bg-primary/5"
+    : "border-border bg-muted/20 hover:border-primary/40 hover:bg-primary/5";
+
+  const iconNode = (
+    <div
+      className={cn(
+        "flex items-center justify-center text-primary pointer-events-none",
+        browseLabel ? "h-12 w-12 rounded-2xl bg-primary/10" : "opacity-40",
+      )}
+    >
+      {isUploading ? (
+        <Loader2
+          className={cn("animate-spin", browseLabel ? "h-6 w-6" : "h-7 w-7")}
+          aria-hidden="true"
+        />
+      ) : (
+        <Icon className={browseLabel ? "h-6 w-6" : "h-7 w-7"} aria-hidden="true" />
+      )}
+    </div>
+  );
+
+  const copy = (
+    <div className="text-center pointer-events-none">
+      <p className="text-sm font-semibold text-foreground text-balance">{title}</p>
+      <p className="mt-1 text-xs text-muted-foreground text-pretty">{description}</p>
+    </div>
+  );
+
+  const effectiveInputId = inputId ?? (onOpenPicker ? undefined : "dashed-dropzone-file-input");
+  const effectiveInputName = inputName ?? (onOpenPicker ? undefined : "file");
+
+  const fileInput =
+    effectiveInputId && effectiveInputName ? (
+      <input
+        id={effectiveInputId}
+        name={effectiveInputName}
+        type="file"
+        ref={setInputRef}
+        onChange={handleInputChange}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+        multiple={multiple}
+        accept={accept}
+        className="hidden"
+        aria-label={inputAriaLabel}
+        disabled={disabled || isUploading}
+      />
+    ) : null;
+
+  if (browseLabel) {
+    return (
+      <div
+        role="presentation"
+        onClick={openPicker}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={cn(
+          "flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed p-8 text-center transition-all cursor-pointer",
+          isDragging && "scale-102 motion-reduce:scale-100",
+          draggingClass,
+          className,
+        )}
+      >
+        {iconNode}
+        {copy}
+        {fileInput}
+        <Button
+          disabled={disabled || isUploading}
+          onClick={(e) => {
+            e.stopPropagation();
+            openPicker();
+          }}
+          className="mt-2 min-h-11 rounded-xl bg-primary px-6 text-xs font-bold text-primary-foreground shadow-none transition-all hover:scale-105 active:scale-95 motion-reduce:transform-none cursor-pointer disabled:cursor-not-allowed"
+          type="button"
+          // WCAG 2.5.3: the accessible name must contain the visible label.
+          aria-label={browseLabel}
+        >
+          {browseLabel}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={disabled || isUploading}
+        onClick={openPicker}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        // WCAG 2.5.3: the zone's name must contain the copy it displays (title +
+        // description). The hidden file input keeps `inputAriaLabel`.
+        aria-label={`${title} ${description}`}
+        className={cn(
+          "h-auto w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-7 text-muted-foreground shadow-none transition-all",
+          draggingClass,
+          className,
+        )}
+      >
+        {iconNode}
+        {copy}
+      </Button>
+      {/* Kept outside the <button>: an input nested in a button is invalid
+          interactive content and its bubbled click re-entered openPicker. */}
+      {fileInput}
+    </>
+  );
+}

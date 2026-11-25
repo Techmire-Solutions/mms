@@ -1,9 +1,9 @@
 import { readdir, stat, unlink } from "node:fs/promises";
 import { join } from "node:path";
 import { resolveUploadsRoot } from "../config/uploadConfig.js";
-import { runInGlobalTransaction } from "../db/dbTransactions.js";
+import { runInGlobalTransaction } from "@mms/db/client";
 import { activeDb } from "../db/database.js";
-import { contactAttachments, questionAttachments } from "../db/schema.js";
+import { contactAttachments, questionAttachments } from "@mms/db/schema";
 import {
   attachmentFileKey,
   selectOrphanAttachmentFiles,

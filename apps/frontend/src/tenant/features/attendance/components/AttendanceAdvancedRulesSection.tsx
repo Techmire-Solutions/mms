@@ -4,10 +4,10 @@ import { CompactSegmentedControl } from "@/components/app/CompactSegmentedContro
 import { Badge } from "@/components/ui/badge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { cn } from "@/lib/utils";
-import type { AttendanceSettings } from "@mms/shared";
+import type { AttendanceSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SectionCard } from "@/components/app/SectionCard";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 
 export interface AttendanceAdvancedRulesSectionProps {

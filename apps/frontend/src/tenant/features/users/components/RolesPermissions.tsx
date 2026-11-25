@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Shield, Lock } from "lucide-react";
-import { workspaceRoleLabel } from "@mms/shared";
+import { workspaceRoleLabel } from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 

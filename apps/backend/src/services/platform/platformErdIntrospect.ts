@@ -1,5 +1,5 @@
 import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
-import type { ErdColumn, ErdRelationship, ErdTable } from "@mms/shared";
+import type { ErdColumn, ErdRelationship, ErdTable } from "@mms/contracts";
 
 export interface IntrospectedTableResult {
   table: ErdTable;

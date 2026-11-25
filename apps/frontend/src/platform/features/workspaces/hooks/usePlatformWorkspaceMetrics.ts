@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { PlatformWorkspaceMetrics } from "@mms/shared";
+import type { PlatformWorkspaceMetrics } from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";

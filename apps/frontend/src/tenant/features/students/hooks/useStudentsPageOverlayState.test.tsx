@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { STUDENT_STATUS_VALUES } from "@mms/shared";
+import { STUDENT_STATUS_VALUES } from "@mms/contracts";
 
 vi.mock("@/hooks/useTranslation", async () => {
   const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");

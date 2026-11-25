@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import {
   QUEUE_PDF_RENDERING,
   QUEUE_BULK_EXPORT,

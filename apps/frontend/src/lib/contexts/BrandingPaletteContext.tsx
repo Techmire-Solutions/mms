@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import type { BrandingChartPaletteHex } from "@mms/shared";
+import type { BrandingChartPaletteHex } from "@mms/contracts";
 import { SETTINGS_PREVIEW_EVENT } from "@/lib/settingsPreview";
 import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
 

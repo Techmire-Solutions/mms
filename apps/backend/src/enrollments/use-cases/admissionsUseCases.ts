@@ -9,13 +9,13 @@ import {
   type RegistrationApplicationStatus,
   type RegistrationReview,
   type User,
-} from "@mms/shared";
-import { withTenant, withTenantRead } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
 import type { ApplicationJoinedRow } from "../repository/admissionsRepository.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { approveApplications, type ApproveOutcome } from "./admissionsApprove.js";
 import { ADMISSIONS_BROADCAST_KEY } from "./registrationPublicUseCases.js";
 

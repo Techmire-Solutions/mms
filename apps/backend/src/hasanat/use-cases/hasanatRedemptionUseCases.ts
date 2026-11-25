@@ -11,8 +11,8 @@ import {
   type Redemption,
   type RedeemCardBody,
   validateRedemption,
-} from "@mms/shared";
-import { withTenant } from "../../db/tenant-context.js";
+} from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { workspaceTodayIso } from "../../lib/workspaceDay.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { throwRuleViolation } from "./hasanatRuleErrors.js";

@@ -3,11 +3,11 @@ import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { AccountingFiscalYearModal } from "./AccountingFiscalYearModal";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock("@/components/app/FormModal", () => ({
+vi.mock("@mms/fe-core/components/FormModal", () => ({
   FormModal: ({
     children,
     onSave,
@@ -24,7 +24,7 @@ vi.mock("@/components/app/FormModal", () => ({
   ),
 }));
 
-vi.mock("@/components/app/DatePicker", () => ({
+vi.mock("@mms/fe-core/components/DatePicker", () => ({
   DatePicker: ({
     id,
     value,

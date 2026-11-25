@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FacultyIjazah } from "@mms/shared";
+import type { FacultyIjazah } from "@mms/contracts";
 import { sanitizeFacultyIjazahs } from "./facultyIjazahPayload";
 
 const base: FacultyIjazah = {

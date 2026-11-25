@@ -1,4 +1,4 @@
-import { STUDENTS_MODULE_MANIFEST, type StudentsBulkEnrollPlacement } from "@mms/shared";
+import { STUDENTS_MODULE_MANIFEST, type StudentsBulkEnrollPlacement } from "@mms/contracts";
 import type { StudentsWorkTierSource } from "./studentsPageWorkTierProps";
 import type { useStudentsDirectoryFilters } from "./useStudentsDirectoryFilters";
 import type { useStudentsCrudActions } from "./useStudentsCrudActions";

@@ -6,7 +6,7 @@ import {
   MESSAGING_MODULE_MANIFEST,
   type Message,
   type StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useTranslation } from "@/hooks/useTranslation";

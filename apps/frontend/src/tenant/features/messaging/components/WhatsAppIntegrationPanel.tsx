@@ -1,8 +1,8 @@
 import React from "react";
 import { MessageCircle } from "lucide-react";
-import { type AppTranslationKey, type WhatsappProviderId } from "@mms/shared";
+import { type AppTranslationKey, type WhatsappProviderId } from "@mms/contracts";
 import { FormSelect } from "@/components/app/FormSelect";
-import { Input, IntegrationPanelChrome, Label } from "@shared/ui";
+import { Input, IntegrationPanelChrome, Label } from "@mms/ui";
 import { PasswordInput } from "@/components/app/PasswordInput";
 import { useWhatsAppIntegrationPanel } from "../hooks/useWhatsAppIntegrationPanel";
 

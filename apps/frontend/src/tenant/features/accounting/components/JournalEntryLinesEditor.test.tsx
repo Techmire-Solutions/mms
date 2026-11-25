@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { JournalEntryLinesEditor } from "./JournalEntryLinesEditor";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -18,7 +18,13 @@ vi.mock("framer-motion", () => {
     <div {...props}>{children}</div>
   );
   return {
-    m: new Proxy({}, { get: () => comp }),
+    m: new Proxy(
+      {},
+      {
+        get: (_target, key) =>
+          key === "create" ? (Component: React.ElementType) => Component : comp,
+      },
+    ),
     motion: {
       div: comp,
     },

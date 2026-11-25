@@ -12,7 +12,7 @@ This guide details the custom AST and heuristic ratchets enforced across the MMS
 | `pnpm run check:code-norms` | `scripts/check-code-norms.mjs` | Files exceeding 300 LOC cap, raw hex colors, usage of `any` | Extract subcomponents, use design tokens, enforce strict TS |
 | `pnpm run check:db-projections` | `scripts/check-db-projections.mjs` | Unconstrained `select()` or `findMany()` wildcard fetches | Explicitly declare requested columns in SQL/Drizzle projections |
 | `pnpm run check:work-directory` | `scripts/check-work-directory.mjs` | 6 Work directory invariants (dual CSS render, non-DataTable tables) | Consolidate onto `DataTable` / `WorkBatchTable` and `DirectoryCard` |
-| `pnpm run check:shared-ui` | `scripts/check-shared-ui.mjs` | Duplicate UI component files across Tenant & Platform consoles | Import from `@shared/ui` (`packages/ui`); retire console forks |
+| `pnpm run check:shared-ui` | `scripts/check-shared-ui.mjs` | Duplicate UI component files across Tenant & Platform consoles | Import from `@mms/ui` (`packages/ui`); retire console forks |
 | `pnpm run check:faculty-domain` | `scripts/check-faculty-domain.mjs` | Retired legacy nomenclature (`/api/teachers`, `FDA`) | Use `facultyDesignations`, `facultyAssignments`, `facultyDepartments` |
 | `pnpm run check:migrations-forward-only` | `scripts/check-migrations-forward-only.mjs` | Historical SQL migration modification | Only append forward DDL migrations; never rewrite existing SQL |
 | `node scripts/verify-rules-integrity.mjs` | `scripts/verify-rules-integrity.mjs` | Stale mirrors, broken citations, or frontmatter defects | Run `.agent/scripts/sync-all.sh` and align frontmatter |

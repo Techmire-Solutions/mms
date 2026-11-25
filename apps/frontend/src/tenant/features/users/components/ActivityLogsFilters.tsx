@@ -1,5 +1,5 @@
 import React from "react";
-import { ACTIVITY_ACTION_VALUES, type SystemUser } from "@mms/shared";
+import { ACTIVITY_ACTION_VALUES, type SystemUser } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DateRangeFilterBar } from "@/components/app/DateRangeFilterBar";
 import { WorkTaskToolbar } from "@/components/common/work";

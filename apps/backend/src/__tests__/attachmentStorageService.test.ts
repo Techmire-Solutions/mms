@@ -5,7 +5,9 @@ import { tmpdir } from "node:os";
 
 const mockWithTenantRead = vi.fn();
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: (...args: unknown[]) => mockWithTenantRead(...args),
 }));
 

@@ -7,10 +7,10 @@ import {
   type SessionRolloverBody,
   type SessionRolloverInput,
   type SessionRolloverRun,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { sessionsRepository } from "../repository/sessionsRepositoryAdapter.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { withTenant } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import { sessionRolloverRepository as runs } from "../repository/sessionRolloverRepositoryAdapter.js";
 import { listRolloverCandidates } from "../../enrollments/use-cases/enrollmentRolloverUseCases.js";
 import { enqueueBackgroundJob } from "../../services/backgroundJobWorkerService.js";

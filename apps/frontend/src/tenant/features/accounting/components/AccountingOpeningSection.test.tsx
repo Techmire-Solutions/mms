@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Account, FiscalYear, OpeningBalance } from "@mms/shared";
+import type { Account, FiscalYear, OpeningBalance } from "@mms/contracts";
 
 const mocks = vi.hoisted(() => ({
   openingQuery: {
@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
   notifyError: vi.fn(),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     success: mocks.notifySuccess,
     info: mocks.notifyInfo,
@@ -27,7 +27,7 @@ vi.mock("@/lib/notify", () => ({
   },
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 

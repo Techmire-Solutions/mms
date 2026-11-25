@@ -1,5 +1,8 @@
 import { useMemo } from "react";
-import { HASANAT_MODULE_MANIFEST, buildHasanatDistributionWorkColumnRegistry } from "@mms/shared";
+import {
+  HASANAT_MODULE_MANIFEST,
+  buildHasanatDistributionWorkColumnRegistry,
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

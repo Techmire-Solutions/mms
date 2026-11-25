@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
-import type { Workspace, BrandingSettings } from "@mms/shared";
-import { activeDb } from "../dbConnection.js";
-import { workspaces as workspacesTable } from "../schema.js";
+import type { Workspace, BrandingSettings } from "@mms/contracts";
+import { activeDb } from "@mms/db/client";
+import { workspaces as workspacesTable } from "@mms/db/schema";
 import { loadWorkspaceRow, invalidateWorkspaceCache } from "./workspaceRepositoryCache.js";
 import {
   rowToWorkspace,

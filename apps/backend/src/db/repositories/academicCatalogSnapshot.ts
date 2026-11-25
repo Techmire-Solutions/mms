@@ -1,5 +1,5 @@
-import type { AcademicCatalogKind } from "@mms/shared";
-import type { TenantTransaction } from "../tenant-context.js";
+import type { AcademicCatalogKind } from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
 import {
   ensureAcademicCatalogByNameTx,
   loadAcademicCatalogNamesTx,

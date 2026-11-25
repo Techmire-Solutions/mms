@@ -4,7 +4,7 @@ import {
   setStudentFieldRequired,
   type FieldDefinition,
   type StudentRequirableField,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import { safeAudit } from "@/lib/safeAudit";

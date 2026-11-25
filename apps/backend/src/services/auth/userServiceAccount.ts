@@ -1,6 +1,6 @@
-import { resolveTenantLoginEmail, type Contact } from "@mms/shared";
+import { resolveTenantLoginEmail, type Contact } from "@mms/contracts";
 import { findTenantUserRowById } from "../../db/repositories/tenantUserRepository.js";
-import { updateContactById } from "../contactService.js";
+import { updateContactById } from "@mms/mod-contacts/backend/services";
 import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
 import { hashPassword, verifyPassword } from "./passwordService.js";
 import {

@@ -47,7 +47,7 @@ import type { EnrollmentsRepository } from "../enrollments/repository/enrollment
 import { bulkEnrollStudentsIntoClass } from "../enrollments/use-cases/enrollmentBulkEnroll.js";
 import { enrollmentWriteConflict } from "../db/repositories/enrollmentRepositoryPersist.js";
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
 

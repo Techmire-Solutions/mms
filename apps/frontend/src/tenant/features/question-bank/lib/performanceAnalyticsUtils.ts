@@ -3,7 +3,7 @@ import type {
   QuestionBankResult,
   QuestionBankTest,
   QuestionCategory,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function sumScores(scores: Record<string, number>): number {
   return Object.values(scores).reduce((sum, value) => sum + value, 0);

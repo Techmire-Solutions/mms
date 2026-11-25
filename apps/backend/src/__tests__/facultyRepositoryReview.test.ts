@@ -4,7 +4,9 @@ import { listFacultyPage } from "../db/repositories/facultyRepositoryListQueryPa
 import { guardFacultyAssignmentDependents } from "../db/repositories/facultyDeleteGuard.js";
 
 const { tx } = vi.hoisted(() => ({ tx: { execute: vi.fn(), select: vi.fn() } }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (_tenant: string, work: (value: typeof tx) => Promise<unknown>) => work(tx),
   withTenantRead: (_tenant: string, work: (value: typeof tx) => Promise<unknown>) => work(tx),
 }));

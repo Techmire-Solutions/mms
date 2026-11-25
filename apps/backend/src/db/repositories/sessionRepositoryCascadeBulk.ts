@@ -1,10 +1,10 @@
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { sessions, enrollments } from "../schema.js";
-import { withTenant } from "../tenant-context.js";
+import { sessions, enrollments } from "@mms/db/schema";
+import { withTenant } from "@mms/db/context";
 import { syncEnrolledSessionsTx } from "./enrollmentSessionSync.js";
 import { recordCascadeEvents, returningEnrollmentIds } from "./sessionCascadeEvents.js";
 import { throwOverlapConflict } from "./sessionPersistErrors.js";
-import { enableIncludeDeleted } from "../../lib/softDeleteHelpers.js";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
 
 export async function bulkDeleteSessions(
   tenant: string,

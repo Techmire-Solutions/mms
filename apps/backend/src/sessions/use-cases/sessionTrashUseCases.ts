@@ -3,15 +3,15 @@ import {
   dedupeTrimmedIds,
   normalizeSessionStatus,
   parseSessionStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { SessionsRepository } from "../repository/sessionsRepository.js";
 import { getRequestTenant, getRequestUserId } from "../../lib/tenantContext.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import { ConflictError, NotFoundError } from "../../lib/httpErrors.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
-import { hasActiveTransaction } from "../../db/dbTransactions.js";
-import { withSavepoint } from "../../db/transactionSideEffects.js";
-import { runAfterCommit } from "../../db/commitScope.js";
+import { hasActiveTransaction } from "@mms/db/client";
+import { withSavepoint } from "@mms/db/transactionSideEffects";
+import { runAfterCommit } from "@mms/db/client";
 import { transitionSession } from "./sessionTransitionService.js";
 
 /**

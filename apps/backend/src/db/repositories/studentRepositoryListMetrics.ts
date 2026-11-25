@@ -2,9 +2,9 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   type StudentsCommandMetricsSnapshot,
-} from "@mms/shared";
-import { students } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { students } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { statusExpr } from "./studentRepositoryListQuery.js";
 import { studentScopeExistsSql } from "./studentScopeSql.js";
 

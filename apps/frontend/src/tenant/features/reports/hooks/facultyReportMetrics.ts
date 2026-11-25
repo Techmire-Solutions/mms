@@ -1,7 +1,7 @@
 import { UserCheck, UserMinus, UserPlus, UserX, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { FacultyCommandMetricsSnapshot, FacultyQuickFilter } from "@mms/shared";
-import { resolveFacultyStatusRoles } from "@mms/shared";
+import type { FacultyCommandMetricsSnapshot, FacultyQuickFilter } from "@mms/contracts";
+import { resolveFacultyStatusRoles } from "@mms/contracts";
 import type { AccentColor } from "@/components/app/statCardAccent";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { notify } from "@/lib/notify";

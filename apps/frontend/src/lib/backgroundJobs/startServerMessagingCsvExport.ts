@@ -1,4 +1,4 @@
-import type { BackgroundJobRecord, MessagingCsvExportQueryDto } from "@mms/shared";
+import type { BackgroundJobRecord, MessagingCsvExportQueryDto } from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 import { upsertLocalBackgroundJob } from "@/lib/backgroundJobs/backgroundJobStore";
 import { pollBackgroundJobUntilDone } from "@/lib/backgroundJobs/pollBackgroundJob";

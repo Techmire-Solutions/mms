@@ -1,5 +1,5 @@
 import { ExternalLink } from "lucide-react";
-import { formatSocialPlatformUrl, type Contact } from "@mms/shared";
+import { formatSocialPlatformUrl, type Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveSocialPlatformLabel } from "@/lib/contacts/contactI18n";
 import { ContactDetailExternalLinkSection } from "./ContactDetailExternalLinkSection";

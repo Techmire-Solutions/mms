@@ -6,7 +6,7 @@ import {
   todayISO,
   type HyperinflationSettings,
   type Ias29Run,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 import {

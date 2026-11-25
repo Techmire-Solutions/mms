@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ContactExperienceDatesSection } from "./ContactExperienceDatesSection";
-import type { ContactExperience } from "@mms/shared";
+import type { ContactExperience } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

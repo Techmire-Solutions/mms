@@ -1,7 +1,7 @@
 import { sql, type SQL } from "drizzle-orm";
-import { GRADE_BANDS, LOWEST_GRADE_BAND, type ExaminationsReportAnalytics } from "@mms/shared";
+import { GRADE_BANDS, LOWEST_GRADE_BAND, type ExaminationsReportAnalytics } from "@mms/contracts";
 import { getQueryRows } from "../documentStoreKeys.js";
-import { withTenantRead } from "../tenant-context.js";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Examinations analytics: subject pass/fail, grade distribution, top performers, section averages.

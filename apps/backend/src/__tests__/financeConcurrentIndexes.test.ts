@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { setDbLogger } from "@mms/db/testing";
 import type pg from "pg";
 
 /** Finance directory indexes: created once, repaired when invalid, never fatal. */
@@ -6,10 +7,10 @@ import type pg from "pg";
 const log = vi.hoisted(() => ({ error: vi.fn(), info: vi.fn(), warn: vi.fn() }));
 vi.mock("../lib/logger.js", () => ({ logger: log }));
 
-import {
-  FINANCE_CONCURRENT_INDEXES,
-  ensureFinanceConcurrentIndexes,
-} from "../db/migrations/financeConcurrentIndexes.js";
+// The maintenance helpers moved to @mms/db; inject the stub logger there too.
+setDbLogger(log as unknown as Parameters<typeof setDbLogger>[0]);
+
+import { FINANCE_CONCURRENT_INDEXES, ensureFinanceConcurrentIndexes } from "@mms/db/migrations";
 
 function fakeClient(
   options: { existing?: string[]; invalid?: string[]; createFails?: boolean } = {},

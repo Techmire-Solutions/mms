@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { runWithTenant } from "../lib/tenantContext.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 /**
  * The audit chain must never accept a row for another workspace, even if a caller builds one from a

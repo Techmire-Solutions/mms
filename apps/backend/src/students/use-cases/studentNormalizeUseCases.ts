@@ -4,7 +4,7 @@ import {
   normalizeStoredStudent,
   stripStudentClientSoftDeleteFields,
   stripStudentServerOwnedAuditFields,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 
 function getPgConstraint(error: unknown): string {

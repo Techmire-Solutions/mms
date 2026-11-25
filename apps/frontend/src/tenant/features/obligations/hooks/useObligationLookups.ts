@@ -1,6 +1,6 @@
 import { useContactsByIds } from "@/tenant/hooks/collections/contacts";
 import { useUsersByIds } from "@/tenant/hooks/collections/users";
-import type { Contact, WorkspaceUser } from "@mms/shared";
+import type { Contact, WorkspaceUser } from "@mms/contracts";
 
 /** Resolve obligation-linked contacts by id (globle2 §10 — no full list fetch). */
 export function useMergedObligationContacts(

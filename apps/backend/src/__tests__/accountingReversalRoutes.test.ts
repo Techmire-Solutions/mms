@@ -35,9 +35,12 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
 
 const mockReverse = vi.fn();
 
-vi.mock("../accounting/use-cases/reverseJournalEntryUseCase.js", () => ({
-  reverseJournalEntry: (...args: unknown[]) => mockReverse(...args),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/reverseJournalEntryUseCase.js",
+  () => ({
+    reverseJournalEntry: (...args: unknown[]) => mockReverse(...args),
+  }),
+);
 
 type Role = "admin" | "accountant" | "auditor" | "guardian";
 

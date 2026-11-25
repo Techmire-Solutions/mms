@@ -4,7 +4,7 @@ import {
   type PlatformAdminPermissionKey,
   type PlatformAdminPermissions,
   type PlatformUserProfile,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getPlatformErrorMessage } from "@/platform/features/auth/lib/platformAuthErrors";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";

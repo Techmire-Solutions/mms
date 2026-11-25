@@ -3,10 +3,10 @@ import {
   JournalEntriesListFilters,
   JournalEntriesAdvancedFilters,
 } from "@/tenant/features/accounting/components/JournalEntriesListFilters";
-import { AccountingBulkActionBar } from "@/tenant/features/accounting/components/AccountingBulkActionBar";
+import { AccountingBulkActionBar } from "@mms/mod-accounting/frontend/tenant";
 import { JournalEntriesModalLayer } from "@/tenant/features/accounting/components/JournalEntriesModalLayer";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useWorkDirectoryViewMode } from "@mms/fe-core/tenant";
 import type {
   JournalMode,
   JournalEntriesAdvancedModeProps,

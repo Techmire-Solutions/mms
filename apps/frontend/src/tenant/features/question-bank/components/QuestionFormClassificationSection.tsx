@@ -7,7 +7,7 @@ import {
   type AppTranslationKey,
   type QuestionCategory,
   type QuestionDifficulty,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";

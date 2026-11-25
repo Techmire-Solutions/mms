@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, gte, inArray, isNull, sql } from "drizzle-orm";
-import { attendance, attendanceAbsenceAlerts } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+import { attendance, attendanceAbsenceAlerts } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { loadCountableAttendanceSql } from "./attendanceCountableSql.js";
 
 /**

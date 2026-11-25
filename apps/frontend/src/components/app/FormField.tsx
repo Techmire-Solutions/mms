@@ -6,5 +6,5 @@ export {
   type FieldProps,
   type FieldErrorMessageProps,
   type FormFieldProps,
-} from "@shared/ui";
-export { Field as default } from "@shared/ui";
+} from "@mms/ui";
+export { Field as default } from "@mms/ui";

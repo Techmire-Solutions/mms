@@ -1,6 +1,6 @@
 import React from "react";
 import { Activity } from "lucide-react";
-import { formatDate, type ActivityLog } from "@mms/shared";
+import { formatDate, type ActivityLog } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { type TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";

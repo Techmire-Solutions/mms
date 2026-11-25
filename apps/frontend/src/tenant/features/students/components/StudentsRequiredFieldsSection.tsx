@@ -1,7 +1,7 @@
 import React from "react";
 import { ListChecks } from "lucide-react";
-import type { AppTranslationKey } from "@mms/shared";
-import { Badge, SectionCard, ToggleRow } from "@shared/ui";
+import type { AppTranslationKey } from "@mms/contracts";
+import { Badge, SectionCard, ToggleRow } from "@mms/ui";
 import { ErrorState } from "@/components/app/ErrorState";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { StudentsRequiredFieldsSetupState } from "@/tenant/features/students/hooks/useStudentsRequiredFieldsSetup";

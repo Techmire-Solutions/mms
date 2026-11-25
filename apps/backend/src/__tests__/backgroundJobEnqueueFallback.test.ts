@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import {
   enqueueBackgroundJob,
   QueueUnavailableError,
@@ -26,7 +26,9 @@ vi.mock("../worker/queues/index.js", () => ({ dispatchJobToQueue: dispatchMock }
 vi.mock("../lib/tenantContext.js", () => ({
   runWithTenant: (_tenant: string, fn: () => Promise<unknown>) => fn(),
 }));
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: async (_tenant: string, cb: (tx: unknown) => Promise<unknown>) => cb(txMock),
 }));
 vi.mock("../worker/pubsub/jobPubSub.js", () => ({

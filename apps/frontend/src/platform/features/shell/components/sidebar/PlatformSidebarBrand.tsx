@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ShieldAlert, X } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { ROUTES } from "@/lib/config/routes";
 import { usePlatformBranding } from "@/platform/features/settings/hooks/usePlatformBranding";
 

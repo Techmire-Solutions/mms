@@ -1,8 +1,8 @@
 import React from "react";
-import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/shared";
+import type { PlatformWorkspaceRow as PlatformWorkspaceRowData } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Switch } from "@shared/ui";
-import { Label } from "@shared/ui";
+import { Switch } from "@mms/ui";
+import { Label } from "@mms/ui";
 import { WorkspaceStatusBadge } from "@/platform/features/workspaces/components/WorkspaceStatusBadge";
 
 export interface WorkspaceTableSwitchCellsProps {

@@ -2,7 +2,7 @@ import {
   normalizeContactPreferences,
   CONTACTS_MODULE_MANIFEST,
   type ContactPreferences,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 const PREFERENCES_API = `${CONTACTS_MODULE_MANIFEST.restBasePath}/preferences`;

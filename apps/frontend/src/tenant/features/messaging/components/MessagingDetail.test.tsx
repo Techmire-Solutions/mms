@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MessagingDetail } from "./MessagingDetail";
-import type { Message, StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type { Message, StandardMessagingRecipient as MessagingRecipient } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 
 declare global {

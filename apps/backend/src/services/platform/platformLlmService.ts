@@ -5,7 +5,7 @@ import {
   type PlatformLlmTestBody,
   type PlatformLlmUpdateInput,
   type PlatformSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { fetchLlmModels } from "../llmModelsService.js";
 import { generateCompletion } from "../llmService.js";
 import {

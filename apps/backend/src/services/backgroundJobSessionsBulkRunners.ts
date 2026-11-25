@@ -1,7 +1,7 @@
 import { registerBackgroundJobRunner } from "./backgroundJobWorkerService.js";
 import { sessionsUseCases } from "../sessions/use-cases/sessionsUseCases.js";
-import { sessionsBulkArchiveJobBodySchema, sessionsBulkStatusJobBodySchema } from "@mms/shared";
-import { withTenant } from "../db/tenant-context.js";
+import { sessionsBulkArchiveJobBodySchema, sessionsBulkStatusJobBodySchema } from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant } from "../lib/tenantContext.js";
 
 /** Async bulk lifecycle/archive runners (large selections no longer run inside a request). */

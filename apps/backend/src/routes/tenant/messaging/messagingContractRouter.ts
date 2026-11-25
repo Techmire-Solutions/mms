@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { messagingContract } from "@mms/shared";
+import { messagingContract } from "@mms/contracts";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import { standardRequestValidationErrorHandler } from "../../../lib/contractRegistration.js";
 import { MESSAGING_LOG_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";

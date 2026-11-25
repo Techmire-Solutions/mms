@@ -1,8 +1,8 @@
 import React from "react";
-import { SYSTEM_MODULES, type ModuleDefinition } from "@mms/shared";
+import { SYSTEM_MODULES, type ModuleDefinition } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ReportChartCard } from "@/components/reports/ReportChartCard";
-import { Badge } from "@shared/ui";
+import { Badge } from "@mms/ui";
 import { resolveModuleIcon } from "@/lib/config/moduleIcons";
 
 export function PlatformReportsModuleAdoption(): React.JSX.Element {

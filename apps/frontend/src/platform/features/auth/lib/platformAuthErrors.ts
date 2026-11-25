@@ -1,5 +1,5 @@
-import { PLATFORM_API_ERROR_TYPES, PLATFORM_MIN_PASSWORD_LENGTH } from "@mms/shared";
-import type { AppTranslationKey, PlatformApiErrorType } from "@mms/shared";
+import { PLATFORM_API_ERROR_TYPES, PLATFORM_MIN_PASSWORD_LENGTH } from "@mms/contracts";
+import type { AppTranslationKey, PlatformApiErrorType } from "@mms/contracts";
 import { ApiError } from "@/lib/apiClient";
 import { mapAuthError, type MapAuthErrorConfig } from "@/lib/mapAuthError";
 

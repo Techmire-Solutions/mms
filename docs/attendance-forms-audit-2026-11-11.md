@@ -37,7 +37,7 @@ answers with 503.
   `calendar/CalendarEventFormModal.tsx`, `calendar/CalendarEventScopeFields.tsx`,
   the five `Attendance*RulesSection.tsx`, `AttendanceSettings.tsx`,
   `hooks/useAttendanceLifecycle.ts`, `hooks/useAttendanceRecordsState.ts`,
-  `packages/shared/src/attendance/attendanceSetupPreferences.ts`.
+  `packages/contracts/src/attendance/attendanceSetupPreferences.ts`.
 - i18n: new `attendance.excuses.*`, `attendance.alerts.*`, `attendance.calendar.scopeIncomplete`,
   `attendance.mark.validation*` and `attendance.toast.invalid*` keys in en/ar/ur/fa.
 

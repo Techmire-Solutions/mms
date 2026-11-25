@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { workshopsCompletionContract, workshopsContract } from "@mms/shared";
+import { workshopsCompletionContract, workshopsContract } from "@mms/contracts";
 
 type RouteLike = {
   method: string;

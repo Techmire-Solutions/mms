@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { INVOICE_TEMPLATE_OBJECT_KEY } from "@mms/shared";
+import { INVOICE_TEMPLATE_OBJECT_KEY } from "@mms/contracts";
 import {
   useDocumentTemplate,
   useResetDocumentTemplate,

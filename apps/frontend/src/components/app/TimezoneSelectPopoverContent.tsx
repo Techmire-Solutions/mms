@@ -13,7 +13,7 @@ interface TimezoneSelectPopoverContentProps {
   query: string;
   setQuery: (query: string) => void;
   detecting: boolean;
-  filtered: ReturnType<typeof import("@mms/shared").groupTimezoneOptions>;
+  filtered: ReturnType<typeof import("@mms/contracts").groupTimezoneOptions>;
   onLocationDetect: () => Promise<void>;
   onDeviceTimezone: () => void;
   onSelectTimezone: (timezone: string) => void;

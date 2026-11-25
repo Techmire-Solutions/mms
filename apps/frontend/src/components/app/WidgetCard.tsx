@@ -1,2 +1,2 @@
-export { WidgetCard, type WidgetCardProps } from "@shared/ui";
-export { WidgetCard as default } from "@shared/ui";
+export { WidgetCard, type WidgetCardProps } from "@mms/ui";
+export { WidgetCard as default } from "@mms/ui";

@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_ENROLLMENTS_SETTINGS } from "@mms/shared";
+import { DEFAULT_ENROLLMENTS_SETTINGS } from "@mms/contracts";
 import { EnrollmentsPreferencesSection } from "./EnrollmentsPreferencesSection";
 
 vi.mock("@/hooks/useTranslation", () => ({

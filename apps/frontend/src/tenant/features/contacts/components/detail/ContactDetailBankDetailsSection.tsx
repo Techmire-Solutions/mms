@@ -1,6 +1,6 @@
 import React from "react";
 import { Landmark, CreditCard } from "lucide-react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { COLLECTION_CONTAINER_CLASS } from "./contactDetailStyles";

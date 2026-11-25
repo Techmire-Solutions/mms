@@ -1,9 +1,9 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
-import { initDb } from "../db/database.js";
-import { getDb } from "../db/dbClient.js";
-import { workspaces } from "../db/schema.js";
+import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { getDb } from "@mms/db/client";
+import { workspaces } from "@mms/db/schema";
 import { bulkSaveInvoices } from "../db/repositories/financeInvoicesRepository.js";
-import type { Invoice } from "@mms/shared";
+import type { Invoice } from "@mms/contracts";
 
 loadBackendEnv();
 
@@ -17,7 +17,7 @@ const INVOICE_COUNT = 20;
 const STATUSES = ["pending", "paid", "overdue", "partial"] as const;
 
 async function main() {
-  await initDb();
+  await initializeDatabase();
   const db = getDb();
 
   const argSubdomain = process.argv[2]?.trim().toLowerCase();

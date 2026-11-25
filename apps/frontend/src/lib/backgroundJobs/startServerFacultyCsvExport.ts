@@ -1,4 +1,4 @@
-import type { BackgroundJobRecord, FacultyExportColumn, FacultyListQuery } from "@mms/shared";
+import type { BackgroundJobRecord, FacultyExportColumn, FacultyListQuery } from "@mms/contracts";
 import { startServerModuleCsvExport } from "@/lib/backgroundJobs/startServerModuleCsvExport";
 
 export async function startServerFacultyCsvExport(options: {

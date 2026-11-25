@@ -1,11 +1,11 @@
 import { and, eq, isNull, isNotNull } from "drizzle-orm";
-import { taskAssignees, tasks } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { taskAssignees, tasks } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import { lockFacultyHierarchy } from "./facultyAssignmentValidation.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
-import { emitOutboxEvent } from "../../services/outboxEventService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
+import { emitOutboxEvent } from "@mms/be-core/data/outbox";
 import { findTaskById } from "./tasksRepository.js";
-import { ConflictError, ForbiddenError } from "../../lib/httpErrors.js";
+import { ConflictError, ForbiddenError } from "@mms/be-core/http/errors";
 import { broadcastTenantUpdate } from "../../lib/livePush.js";
 
 /** True when the actor is an active assignee of the task. */

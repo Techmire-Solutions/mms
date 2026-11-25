@@ -6,7 +6,7 @@ import {
   type ConsolidationGroupPut,
   type ConsolidationReport,
   type ConsolidationReportQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { PlatformConsolidationRepository } from "../repository/platformConsolidationRepositoryAdapter.js";
 import { platformConsolidationRepository } from "../repository/platformConsolidationRepositoryAdapter.js";
 import { HttpDomainError } from "../../lib/httpErrors.js";

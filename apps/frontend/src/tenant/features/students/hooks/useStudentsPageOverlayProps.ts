@@ -1,4 +1,4 @@
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import type { StudentsPageOverlaysProps } from "@/tenant/features/students/hooks/studentsPageOverlaysTypes";
 import type { useStudentsPageFormState } from "@/tenant/features/students/hooks/useStudentsPageFormState";
 import type { useStudentsCrudActions } from "@/tenant/features/students/hooks/useStudentsCrudActions";

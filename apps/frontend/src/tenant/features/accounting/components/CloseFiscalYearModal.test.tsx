@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Account, FiscalYear } from "@mms/shared";
+import type { Account, FiscalYear } from "@mms/contracts";
 
 /**
  * Regression: closing a fiscal year is irreversible, but the `closing` state flag
@@ -15,11 +15,11 @@ vi.mock("@/tenant/features/accounting/hooks/useAccountingLedgerOps", () => ({
   useCloseFiscalYear: () => ({ mutateAsync: mocks.mutateAsync }),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: { success: vi.fn(), warning: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
 
-vi.mock("@/components/app/FormModal", () => ({
+vi.mock("@mms/fe-core/components/FormModal", () => ({
   FormModal: ({
     children,
     onSave,
@@ -42,7 +42,7 @@ vi.mock("@/components/app/FormModal", () => ({
   ),
 }));
 
-vi.mock("@/components/app/FormSelect", () => ({
+vi.mock("@mms/fe-core/components/FormSelect", () => ({
   FormSelect: ({
     id,
     value,

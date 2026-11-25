@@ -6,7 +6,7 @@ import {
   type AcademicCatalogKind,
   type AcademicCatalogStatus,
   type AcademicCatalogWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormModal } from "@/components/app/FormModal";
 import { FormSelect } from "@/components/app/FormSelect";

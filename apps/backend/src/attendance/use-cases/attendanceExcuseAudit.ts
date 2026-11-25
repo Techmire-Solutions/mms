@@ -1,5 +1,5 @@
-import { type AttendanceLeaveStatus, type User } from "@mms/shared";
-import { recordModernAuditEvent, type DbOrTransaction } from "../../services/auditTrailService.js";
+import { type AttendanceLeaveStatus, type User } from "@mms/contracts";
+import { recordModernAuditEvent, type DbOrTransaction } from "@mms/be-core/audit";
 import { notificationsUseCases } from "../../notifications/use-cases/notificationsUseCases.js";
 import {
   attendanceLeaveRepository as repo,

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import type { DocumentTemplate } from "@mms/shared";
-import { activeDb } from "../dbConnection.js";
-import { documentTemplates } from "../schema.js";
+import type { DocumentTemplate } from "@mms/contracts";
+import { activeDb } from "@mms/db/client";
+import { documentTemplates } from "@mms/db/schema";
 
 /** Stored layout plus the version token clients must echo when saving. */
 export interface StoredDocumentTemplate {

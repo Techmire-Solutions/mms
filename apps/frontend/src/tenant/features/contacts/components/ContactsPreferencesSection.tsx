@@ -1,5 +1,5 @@
 import type React from "react";
-import type { ContactPreferences } from "@mms/shared";
+import type { ContactPreferences } from "@mms/contracts";
 import { ContactsPreferencesGeneralSection } from "@/tenant/features/contacts/components/ContactsPreferencesGeneralSection";
 import { ContactsPreferencesDuplicateSection } from "@/tenant/features/contacts/components/ContactsPreferencesDuplicateSection";
 

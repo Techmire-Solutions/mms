@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PlatformModuleSelectCard } from "@/platform/features/shell/components/PlatformModuleSelectCard";
-import type { ModuleDefinition } from "@mms/shared";
+import type { ModuleDefinition } from "@mms/contracts";
 import { BookOpen } from "lucide-react";
 
 vi.mock("@/hooks/useTranslation", () => ({

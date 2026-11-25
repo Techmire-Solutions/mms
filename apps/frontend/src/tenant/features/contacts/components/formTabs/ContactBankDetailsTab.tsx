@@ -4,7 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { ContactSubListShell, resolveSubListAllowAdd } from "./ContactSubListCards";
 import type { ContactSubListTabBaseProps } from "./types";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type ContactBankDetail, DEFAULT_BANK_NAMES } from "@mms/shared";
+import { type ContactBankDetail, DEFAULT_BANK_NAMES } from "@mms/contracts";
 import { ContactBankDetailCard } from "./ContactBankDetailCard";
 import { ContactConfigContext } from "@/lib/contacts/contactConfigContextTypes";
 

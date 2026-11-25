@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/shared";
+import { DEFAULT_CONTACT_PREFERENCES, type Contact } from "@mms/contracts";
 import { ContactCardMetadataGrid } from "./ContactCardMetadataGrid";
 
 vi.mock("@/tenant/features/contacts/components/ContactMetadataCell", () => ({

@@ -18,7 +18,7 @@ vi.mock("@/hooks/usePersistedTabState", () => ({
   usePersistedTabState: (_key: string, initial: string) => React.useState(initial),
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
 }));
 

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
-import type { BackgroundJobRecord } from "@mms/shared";
+import type { BackgroundJobRecord } from "@mms/contracts";
 import { BACKGROUND_JOBS_QUERY_KEY, useBackgroundJobs } from "./useBackgroundJobs";
 import { createTestQueryClient } from "@/test/queryClientTestUtils";
 

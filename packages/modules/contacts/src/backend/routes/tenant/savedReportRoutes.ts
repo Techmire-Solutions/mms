@@ -1,0 +1,105 @@
+import type { FastifyPluginAsync } from "fastify";
+import type { User } from "@mms/contracts";
+import { CONTACTS_MODULE_MANIFEST } from "@mms/contracts";
+import {
+  createContactsSavedReport,
+  deleteContactsSavedReport,
+  listContactsSavedReports,
+  touchContactsSavedReportRun,
+} from "../../use-cases/contactSavedReportUseCases.js";
+import { contactsSavedReportCreateSchema, resourceIdParamsSchema } from "@mms/contracts";
+import { sendDatabaseError, sendForbidden, sendNotFound } from "@mms/be-core/http/errors";
+import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
+import {
+  auditContact,
+  requireContactPermission,
+  savedReportViewer,
+} from "./contactRouteHelpers.js";
+import { userHasPermission } from "@mms/be-core/rbac";
+
+export const contactSavedReportRoutes: FastifyPluginAsync = async (fastify) => {
+  fastify.get("/saved-reports", async (request, reply) => {
+    const user = request.user as User;
+    if (!requireContactPermission(reply, user, "read")) return;
+    try {
+      const reports = await listContactsSavedReports(savedReportViewer(user));
+      return reply.send({ reports });
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to list saved reports", error);
+    }
+  });
+
+  fastify.post("/saved-reports", async (request, reply) => {
+    const user = request.user as User;
+    if (!requireContactPermission(reply, user, "read")) return;
+    const parsed = parseRequest(contactsSavedReportCreateSchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    const scope = parsed.data.shareScope ?? "private";
+    if (
+      scope === "global" &&
+      !userHasPermission(user, CONTACTS_MODULE_MANIFEST.permissions.setupWrite)
+    ) {
+      return sendForbidden(reply);
+    }
+    if (scope === "users" && !parsed.data.sharedWithUserIds?.length) {
+      return replyValidationError(reply, "sharedWithUserIds required when shareScope is users");
+    }
+    try {
+      const report = await createContactsSavedReport({
+        name: parsed.data.name,
+        drillDown: parsed.data.drillDown,
+        createdBy: String(user.id),
+        createdByName: user.name || user.email,
+        shareScope: scope,
+        sharedWithRoles: parsed.data.sharedWithRoles,
+        sharedWithUserIds: parsed.data.sharedWithUserIds,
+      });
+      await auditContact(
+        user,
+        "contact.saved_report.create",
+        `Saved report "${report.name}" (${scope})`,
+      );
+      return reply.status(201).send({ report });
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to save report", error);
+    }
+  });
+
+  fastify.delete("/saved-reports/:id", async (request, reply) => {
+    const user = request.user as User;
+    if (!requireContactPermission(reply, user, "read")) return;
+    const params = parseRequest(resourceIdParamsSchema, request.params);
+    if (!params.ok) return replyValidationError(reply, params.message);
+    try {
+      const deleted = await deleteContactsSavedReport(params.data.id, savedReportViewer(user));
+      if (!deleted) {
+        return sendNotFound(reply, "Saved report not found");
+      }
+      await auditContact(
+        user,
+        "contact.saved_report.delete",
+        `Deleted saved report ${params.data.id}`,
+      );
+      return reply.send({ success: true });
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to delete saved report", error);
+    }
+  });
+
+  fastify.post("/saved-reports/:id/run", async (request, reply) => {
+    const user = request.user as User;
+    if (!requireContactPermission(reply, user, "read")) return;
+    const params = parseRequest(resourceIdParamsSchema, request.params);
+    if (!params.ok) return replyValidationError(reply, params.message);
+    try {
+      const report = await touchContactsSavedReportRun(params.data.id, savedReportViewer(user));
+      if (!report) {
+        return sendNotFound(reply, "Saved report not found");
+      }
+      await auditContact(user, "contact.saved_report.run", `Ran saved report "${report.name}"`);
+      return reply.send({ report });
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to run saved report", error);
+    }
+  });
+};

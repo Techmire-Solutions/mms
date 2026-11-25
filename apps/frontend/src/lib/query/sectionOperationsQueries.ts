@@ -5,7 +5,7 @@ import {
   type SectionMergeBody,
   type SectionOperationResult,
   type SectionSplitBody,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiJson } from "@/lib/apiClient";
 
 const post = async (

@@ -1,4 +1,4 @@
-import { ENROLLMENT_ERROR_CODES } from "@mms/shared";
+import { ENROLLMENT_ERROR_CODES } from "@mms/contracts";
 import {
   enrollmentBulkEndBodySchema,
   enrollmentFeeForClass,
@@ -12,7 +12,7 @@ import {
   type EnrollmentWithdrawBody,
   type User,
   type WithdrawalBillingOutcome,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { enrollmentOperationsRepository as repo } from "../repository/enrollmentOperationsRepositoryAdapter.js";
 import {
   actorOf,
@@ -20,7 +20,7 @@ import {
   loadOperable,
   recordOperationAudit,
 } from "./enrollmentOperationsSupport.js";
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import {
   ConflictError,
   HttpDomainError,

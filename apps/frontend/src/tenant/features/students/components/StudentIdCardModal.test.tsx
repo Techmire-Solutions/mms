@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createRoot } from "react-dom/client";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { StudentIdCardModal } from "./StudentIdCardModal";
 import { withQueryClient } from "@/test/queryClientTestUtils";
 
@@ -28,7 +28,7 @@ vi.mock("./card-template/StudentCardTemplateEditor", () => ({
   },
 }));
 
-vi.mock("@/lib/templates/documentTemplatesApi", () => ({
+vi.mock("@mms/fe-core/documentTemplates/documentTemplatesApi", () => ({
   fetchDocumentTemplateServer: vi.fn().mockResolvedValue(null),
   saveDocumentTemplateServer: vi.fn().mockImplementation(async (_key, template) => ({
     template,
@@ -37,7 +37,7 @@ vi.mock("@/lib/templates/documentTemplatesApi", () => ({
   deleteDocumentTemplateServer: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string | number>) => {
       if (params?.count) return `Batch (${params.count})`;
@@ -61,7 +61,7 @@ vi.mock("@/tenant/hooks/useBranding", () => ({
   }),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     open,
     title,

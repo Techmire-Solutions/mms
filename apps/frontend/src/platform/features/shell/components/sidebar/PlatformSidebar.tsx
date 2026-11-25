@@ -6,7 +6,7 @@ import { usePlatformSidebar } from "@/platform/features/shell/lib/PlatformSideba
 import { getVisiblePlatformNavSections } from "@/platform/features/shell/lib/platformNav";
 import { PlatformSignOutDialog } from "@/platform/features/shell/components/common/PlatformSignOutDialog";
 import { AppSidebar } from "@/components/common/AppSidebar";
-import { TooltipProvider } from "@shared/ui";
+import { TooltipProvider } from "@mms/ui";
 import { PlatformSidebarNav } from "@/platform/features/shell/components/sidebar/PlatformSidebarNav";
 import { PlatformSidebarBrand } from "@/platform/features/shell/components/sidebar/PlatformSidebarBrand";
 import { PlatformSidebarFooter } from "@/platform/features/shell/components/sidebar/PlatformSidebarFooter";

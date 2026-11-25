@@ -1,27 +1,33 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Account } from "@mms/shared";
+import type { Account } from "@mms/contracts";
 
 const mockLoadAccountsPage = vi.fn();
 const mockListLedgerRows = vi.fn();
 
-vi.mock("../accounting/use-cases/accountingUseCases.js", () => ({
-  accountingUseCases: {
-    loadAccountsPage: (...args: unknown[]) => mockLoadAccountsPage(...args),
-  },
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/use-cases/accountingUseCases.js",
+  () => ({
+    accountingUseCases: {
+      loadAccountsPage: (...args: unknown[]) => mockLoadAccountsPage(...args),
+    },
+  }),
+);
 
-vi.mock("../db/repositories/accountingLedgerDocumentRepository.js", () => ({
-  listLedgerExportRows: (...args: unknown[]) => mockListLedgerRows(...args),
-  // The report-documents adapter imports both loaders; a partial mock would make
-  // the adapter fail at import time with "No export is defined".
-  loadLedgerDocument: vi.fn(),
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/repository/accountingLedgerDocumentRepository.js",
+  () => ({
+    listLedgerExportRows: (...args: unknown[]) => mockListLedgerRows(...args),
+    // The report-documents adapter imports both loaders; a partial mock would make
+    // the adapter fail at import time with "No export is defined".
+    loadLedgerDocument: vi.fn(),
+  }),
+);
 
 import { runWithTenant } from "../lib/tenantContext.js";
 import {
   accountingChartExportService,
   generateLedgerExportCsv,
-} from "../services/accountingExportService.js";
+} from "@mms/mod-accounting/backend/services";
 
 const account = (overrides: Partial<Account> = {}): Account =>
   ({

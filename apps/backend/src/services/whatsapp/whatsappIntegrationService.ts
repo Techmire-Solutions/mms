@@ -3,11 +3,11 @@ import {
   type WhatsappIntegrationConfig,
   type WhatsappIntegrationSecrets,
   type WhatsappProviderId,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { createIntegrationConfigService } from "../../lib/createIntegrationConfigService.js";
 import { messagingRepository } from "../../messaging/repository/messagingRepositoryAdapter.js";
-import { type WhatsappIntegrationRow } from "../../db/schema/messaging.js";
+import { type WhatsappIntegrationRow } from "@mms/db/schema/messaging";
 
 function rowToConfig(row: WhatsappIntegrationRow): WhatsappIntegrationConfig {
   const overrides: Partial<WhatsappIntegrationConfig> = {

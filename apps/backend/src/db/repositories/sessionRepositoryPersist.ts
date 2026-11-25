@@ -1,19 +1,19 @@
 import { and, eq, isNull, notInArray, sql } from "drizzle-orm";
-import { normalizeSessionStatus, type Session } from "@mms/shared";
+import { normalizeSessionStatus, type Session } from "@mms/contracts";
 import { randomUUID } from "node:crypto";
-import { sessions, sessionFaculty } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { sessions, sessionFaculty } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import { persistSessionClassesTx } from "./sessionRepositoryPersistClasses.js";
 import { resolveSessionCatalogRefsTx } from "./sessionCatalogRefs.js";
 import { replaceSessionWorkingDaysTx } from "./sessionWorkingDays.js";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { toDbDate } from "../../lib/dbDate.js";
 import { getRequestUserId } from "../../lib/tenantContext.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError } from "@mms/be-core/http/errors";
 import { throwOverlapConflict } from "./sessionPersistErrors.js";
 import { sessionAuditStateTx } from "./sessionAuditState.js";
 import { overlapExemptForRestoreTx, type SaveSessionOptions } from "./sessionRepositoryDates.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 export {
   softDeleteSessionWithCascade,

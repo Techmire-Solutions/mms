@@ -1,4 +1,4 @@
-import type { AttendanceLeave } from "@mms/shared";
+import type { AttendanceLeave } from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 

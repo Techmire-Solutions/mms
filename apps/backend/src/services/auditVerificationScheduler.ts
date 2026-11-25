@@ -1,5 +1,5 @@
-import { activeDb } from "../db/dbConnection.js";
-import { workspaces } from "../db/schema/platform.js";
+import { activeDb } from "@mms/db/client";
+import { workspaces } from "@mms/db/schema/platform";
 import {
   verifyTenantAuditChain,
   computeAndPublishMerkleCheckpoint,

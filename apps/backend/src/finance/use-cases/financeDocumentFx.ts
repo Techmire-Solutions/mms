@@ -5,7 +5,7 @@ import {
   moneyToDecimalString,
   settlementInvoiceAmount,
   type Invoice,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { accountingFxRepository } from "../../accounting/repository/accountingFxRepositoryAdapter.js";
 import type { AccountingFxRepository } from "../../accounting/repository/accountingFxRepository.js";
 

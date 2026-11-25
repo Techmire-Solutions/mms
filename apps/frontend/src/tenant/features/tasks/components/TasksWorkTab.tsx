@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from "react";
-import type { TaskRecord, TaskStatus } from "@mms/shared";
+import type { TaskRecord, TaskStatus } from "@mms/contracts";
 import { useTasksWorkTabFilters } from "../hooks/useTasksWorkTabFilters";
 import { useTasksKeyboardShortcuts } from "../hooks/useTasksKeyboardShortcuts";
 import { useTaskSelectionScope } from "../hooks/useTaskSelectionScope";

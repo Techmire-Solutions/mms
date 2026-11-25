@@ -6,7 +6,7 @@ import {
   type FacultyTransferEntity,
   type FacultyDesignationCsvRow,
   type FacultyDepartmentCsvRow,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ModuleImportDialog } from "@/components/app/ModuleImportDialog";
 import { useModuleCsvImportActions } from "@/lib/backgroundJobs/useModuleCsvImportActions";
 import { useTranslation } from "@/hooks/useTranslation";

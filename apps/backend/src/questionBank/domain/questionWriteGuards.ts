@@ -2,7 +2,7 @@ import {
   canTransitionQuestion,
   isQuestionContentLocked,
   type QuestionInvariantIssue,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ConflictError, HttpDomainError } from "../../lib/httpErrors.js";
 
 /**

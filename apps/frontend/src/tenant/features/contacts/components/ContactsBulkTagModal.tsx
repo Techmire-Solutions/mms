@@ -6,7 +6,7 @@ import {
   CONTACTS_BULK_TAG_MAX_CONTACTS,
   CONTACTS_BULK_TAG_MAX_TAGS,
   isReservedSystemTagName,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { FormModal } from "@/components/app/FormModal";
 import { Field } from "@/components/app/FormPrimitives";
 import { Input } from "@/components/ui/input";

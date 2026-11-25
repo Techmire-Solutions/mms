@@ -1,5 +1,17 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
+      reconcileFacultyContactsByFacultyIds: vi.fn().mockResolvedValue(undefined),
+      reconcileDesignationContacts: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Faculty, FacultyListQuery } from "@mms/shared";
+import type { Faculty, FacultyListQuery } from "@mms/contracts";
 import type { FacultyRepository } from "../faculty/repository/facultyRepository.js";
 
 const mockGetRequestTenant = vi.fn();
@@ -37,22 +49,21 @@ vi.mock("../faculty/use-cases/facultyPreferencesService.js", () => ({
   loadFacultyModulePreferences: (...args: unknown[]) => mockLoadFacultyModulePreferences(...args),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
   emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
-  recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
-  sanitizeAuditState: (value: unknown) => value,
-}));
+vi.mock("@mms/be-core/audit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/be-core/audit")>();
+  return {
+    ...actual,
+    recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
+    sanitizeAuditState: (value: unknown) => value,
+  };
+});
 
 const mockReconcileContactSystemTags = vi.fn();
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
-  reconcileFacultyContactsByFacultyIds: vi.fn().mockResolvedValue(undefined),
-  reconcileDesignationContacts: vi.fn().mockResolvedValue(undefined),
-}));
 
 // Link guards are DB-backed (contacts / designations); the DI composition root is under test here.
 vi.mock("../faculty/use-cases/facultyWriteGuards.js", () => ({
@@ -79,7 +90,7 @@ vi.mock("../db/repositories/facultyEmployDesignationRepository.js", () => ({
 }));
 
 import { createFacultyUseCases } from "../faculty/use-cases/facultyUseCases.js";
-import { recordModernAuditEvent } from "../services/auditTrailService.js";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
 function fakeFaculty(id: string, overrides: Partial<Faculty> = {}): Faculty {
   return {

@@ -1,4 +1,4 @@
-import { invertExchangeRate, isValidExchangeRate, previewConvertedAmount } from "@mms/shared";
+import { invertExchangeRate, isValidExchangeRate, previewConvertedAmount } from "@mms/contracts";
 
 /**
  * An invoice-currency amount expressed in the payment currency (for balance

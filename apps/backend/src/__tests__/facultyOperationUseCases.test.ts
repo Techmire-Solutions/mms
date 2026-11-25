@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileFacultyContactsByFacultyIds: (...args: unknown[]) => mocks.reconcile(...args),
+    },
+  };
+});
+
 /**
  * Faculty employee-ID backfill.
  *
@@ -20,7 +30,9 @@ vi.mock("../lib/tenantContext.js", () => ({
   getRequestUserId: () => "admin-1",
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (...args: unknown[]) => mocks.withTenant(...args),
 }));
 
@@ -28,11 +40,7 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => mocks.broadcastCollection(...args),
 }));
 
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileFacultyContactsByFacultyIds: (...args: unknown[]) => mocks.reconcile(...args),
-}));
-
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (...args: unknown[]) => mocks.recordModernAuditEvent(...args),
   mapActionStringToAuditType: () => "UPDATE",
 }));

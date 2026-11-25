@@ -1,4 +1,4 @@
-import { type FeeStructure, type FeeStructureInsert } from "@mms/shared";
+import { type FeeStructure, type FeeStructureInsert } from "@mms/contracts";
 import { requireTenant } from "../../lib/tenantContext.js";
 import {
   deleteFeeStructure,

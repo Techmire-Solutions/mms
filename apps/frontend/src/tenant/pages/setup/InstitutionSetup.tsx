@@ -5,7 +5,7 @@ import {
   mergeBrandingIdentityOverServerBaseline,
   mergeBrandingSettings,
   type BrandingSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { useBranding } from "@/tenant/hooks/useBranding";

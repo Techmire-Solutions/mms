@@ -6,7 +6,7 @@ import {
   type AppTranslationKey,
   type MessageCategory,
   type MessageTemplate,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTranslation } from "@/hooks/useTranslation";

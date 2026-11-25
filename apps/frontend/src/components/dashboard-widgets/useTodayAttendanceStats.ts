@@ -1,5 +1,5 @@
 import React from "react";
-import { todayISO } from "@mms/shared";
+import { todayISO } from "@mms/contracts";
 import type { AttendanceRecord } from "@/lib/data/attendanceData";
 import type { Session } from "@/lib/data/sessionsData";
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {
   DASHBOARD_LOW_ATTENDANCE_THRESHOLD,
   DASHBOARD_URGENT_ATTENDANCE_THRESHOLD,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Field, FieldErrorMessage } from "@/components/app/FormField";
 import { Input } from "@/components/ui/input";

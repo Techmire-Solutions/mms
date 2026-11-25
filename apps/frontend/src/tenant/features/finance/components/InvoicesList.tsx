@@ -5,7 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
-import { FINANCE_MODULE_MANIFEST, type Invoice } from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST, type Invoice } from "@mms/contracts";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import { FinanceBulkActionBar } from "@/tenant/features/finance/components/FinanceBulkActionBar";
 import { InvoicesListContent } from "@/tenant/features/finance/components/InvoicesListContent";

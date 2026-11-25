@@ -6,7 +6,7 @@ vi.mock("../services/backgroundJobWorkerService.js", () => ({
 }));
 
 const mockAudit = vi.fn();
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordAuditEventSafely: (...args: unknown[]) => mockAudit(...args),
 }));
 

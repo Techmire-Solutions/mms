@@ -37,7 +37,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const migrationsDir = path.join(rootDir, "apps/backend/src/db/migrations_drizzle");
+const migrationsDir = path.join(rootDir, "packages/db/migrations_drizzle");
 const metaDir = path.join(migrationsDir, "meta");
 
 /** Measured 2026-10-28. These may only go down. */
@@ -81,25 +81,30 @@ const sqlFiles = fs
   .filter((name) => name.endsWith(".sql"))
   .sort();
 
-/** Files added relative to `baseRef`. */
+/**
+ * Files genuinely added relative to `baseRef`. Rename-aware: a migration tree
+ * that was moved (e.g. `apps/backend/src/db/migrations_drizzle` →
+ * `packages/db/migrations_drizzle`) is paired as `R100` and must not be read as
+ * 140 brand-new migrations — they are already-applied DDL and are immutable.
+ */
 function addedMigrationFiles() {
-  const out = execFileSync(
-    "git",
-    [
-      "diff",
-      "--name-only",
-      "--diff-filter=A",
-      `${baseRef}...HEAD`,
-      "--",
-      "apps/backend/src/db/migrations_drizzle",
-    ],
-    { cwd: rootDir, encoding: "utf8" },
-  );
+  const out = execFileSync("git", ["diff", "--name-status", "-M", `${baseRef}...HEAD`], {
+    cwd: rootDir,
+    encoding: "utf8",
+  });
   return out
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line.endsWith(".sql"))
-    .map((line) => path.basename(line));
+    .filter(Boolean)
+    .map((line) => line.split("\t"))
+    .filter(
+      ([status, target]) =>
+        status === "A" &&
+        Boolean(target) &&
+        target.startsWith("packages/db/migrations_drizzle/") &&
+        target.endsWith(".sql"),
+    )
+    .map(([, target]) => path.basename(target));
 }
 
 // --- 1. lock_timeout on NEW locking DDL ------------------------------------
@@ -161,18 +166,33 @@ if (!fs.existsSync(journalPath)) {
   const entries = Array.isArray(journal.entries) ? journal.entries : [];
   const journalTags = new Set();
   // Existing entries are immutable (forward-only). Validate only what the change set appends.
-  const journalRel = "apps/backend/src/db/migrations_drizzle/meta/_journal.json";
+  const journalRel = "packages/db/migrations_drizzle/meta/_journal.json";
+  // The journal moved with `packages/db`; a base commit that predates the move only
+  // has the legacy path. Try the current path first, then the historical locations, so
+  // the frozen-entry comparison still works across the relocation.
+  const journalCandidates = [
+    journalRel,
+    "apps/backend/src/db/migrations_drizzle/meta/_journal.json",
+  ];
   let frozenEntryCount = null;
-  try {
-    const baseJournal = JSON.parse(
-      execFileSync("git", ["show", `${baseRef}:${journalRel}`], {
-        cwd: rootDir,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }),
-    );
-    frozenEntryCount = Array.isArray(baseJournal.entries) ? baseJournal.entries.length : 0;
-  } catch {
+  let baseJournalRead = false;
+  for (const candidate of journalCandidates) {
+    try {
+      const baseJournal = JSON.parse(
+        execFileSync("git", ["show", `${baseRef}:${candidate}`], {
+          cwd: rootDir,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"],
+        }),
+      );
+      frozenEntryCount = Array.isArray(baseJournal.entries) ? baseJournal.entries.length : 0;
+      baseJournalRead = true;
+      break;
+    } catch {
+      // try the next candidate
+    }
+  }
+  if (!baseJournalRead) {
     journalIntegrity.push(`cannot read ${journalRel} at base ${baseRef}`);
   }
   for (let index = 0; index < entries.length; index += 1) {

@@ -4,7 +4,7 @@ import {
   requestTenantPasswordResetSchema,
   resetTenantPasswordSchema,
   verifyTenantPasswordResetSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   requestTenantPasswordReset,
   resetTenantPassword,

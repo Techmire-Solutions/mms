@@ -5,8 +5,8 @@ const matrix = vi.hoisted(() => ({
   value: { u1: { role: "teacher" } } as Record<string, { role: string; deletedAt?: unknown }>,
 }));
 
-vi.mock("@mms/shared", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@mms/shared")>();
+vi.mock("@mms/contracts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/contracts")>();
   return { ...actual, isWorkspaceEnabled: () => true };
 });
 
@@ -49,7 +49,10 @@ vi.mock("../services/rbacService.js", () => ({
 }));
 
 import { authenticateTenant } from "../middleware/authenticate.js";
+import { configureAccountDeletionGuard } from "../middleware/accountDeletionGuard.js";
 import { sendUnauthorized } from "../lib/httpErrors.js";
+// The composition root normally wires this; a direct-import test must do it itself.
+configureAccountDeletionGuard(async () => false);
 
 function makeReply(): FastifyReply {
   return {
@@ -62,7 +65,7 @@ function makeReply(): FastifyReply {
 function makeRequest(role: string): FastifyRequest {
   const request = {
     user: { id: "u1", role, workspaceSubdomain: "demo" },
-    headers: {},
+    headers: { host: "demo.example.com" },
     ip: "127.0.0.1",
     method: "GET",
     url: "/api/email/integration",
@@ -74,6 +77,7 @@ function makeRequest(role: string): FastifyRequest {
 
 describe("authenticateTenant fresh role", () => {
   beforeEach(() => {
+    process.env.MMS_APP_DOMAIN = "example.com";
     matrix.value = { u1: { role: "teacher" } };
   });
 
@@ -94,6 +98,6 @@ describe("authenticateTenant fresh role", () => {
 
     await authenticateTenant(request, reply);
 
-    expect(sendUnauthorized).toHaveBeenCalled();
+    expect(reply.status).toHaveBeenCalledWith(401);
   });
 });

@@ -13,7 +13,7 @@ import type { ContactSubListTabBaseProps } from "./types";
 import { ContactExperienceDatesSection } from "./ContactExperienceDatesSection";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import type { ContactExperience } from "@mms/shared";
+import type { ContactExperience } from "@mms/contracts";
 import { FORM_INPUT_ERROR } from "@/components/ui/formStyles";
 
 export interface ContactExperienceEntryCardProps extends Pick<

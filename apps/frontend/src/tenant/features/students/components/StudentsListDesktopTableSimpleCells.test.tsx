@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import {
   renderStudentDobCell,
   renderStudentStatusCell,

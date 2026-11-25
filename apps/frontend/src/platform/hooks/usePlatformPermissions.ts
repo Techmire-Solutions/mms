@@ -1,4 +1,4 @@
-import { platformUserCan, type PlatformAdminPermissionKey } from "@mms/shared";
+import { platformUserCan, type PlatformAdminPermissionKey } from "@mms/contracts";
 import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 
 /** Platform capability checks from the live session user (DB-backed permissions). */

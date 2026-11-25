@@ -5,7 +5,11 @@ import { FormModal } from "@/components/app/FormModal";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useFacultyContractList, useFacultyByIds } from "@/tenant/hooks/collections/faculty";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
-import { FACULTY_MODULE_MANIFEST, formatFacultyDisplayName, type FacultyMember } from "@mms/shared";
+import {
+  FACULTY_MODULE_MANIFEST,
+  formatFacultyDisplayName,
+  type FacultyMember,
+} from "@mms/contracts";
 import type { Class } from "@/lib/data/sessionsData";
 import {
   CLASS_DETAIL_TABS,

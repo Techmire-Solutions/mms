@@ -5,7 +5,7 @@ import {
   parseComparisonQueryParams,
   reportComparisonQuerySchema,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { canReadCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { examinationsUseCases } from "../../../examinations/use-cases/examinationsUseCases.js";
 import { sendDatabaseError, sendForbidden } from "../../../lib/httpErrors.js";

@@ -1,5 +1,5 @@
 import React from "react";
-import { calculateSmsSegments, type Message } from "@mms/shared";
+import { calculateSmsSegments, type Message } from "@mms/contracts";
 import { DetailSectionCard } from "@/components/app/DetailSectionCard";
 import { DetailAttributeRow } from "@/components/app/DetailAttributeRow";
 import { CopyBtn } from "@/components/app/CopyButton";

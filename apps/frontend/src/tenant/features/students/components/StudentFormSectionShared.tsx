@@ -3,7 +3,7 @@ import type { ComponentType } from "react";
 import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 import { resolveRegistryLabel } from "@/lib/contacts/contactI18n";
-import type { AppTranslationKey, FieldDefinition } from "@mms/shared";
+import type { AppTranslationKey, FieldDefinition } from "@mms/contracts";
 
 export type StudentFieldErrorGetter = (fieldId: string) => string | undefined;
 

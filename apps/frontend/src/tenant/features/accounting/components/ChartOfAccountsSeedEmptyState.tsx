@@ -4,14 +4,14 @@ import {
   DEFAULT_CHART_CASH_ACCOUNT_CODE,
   DEFAULT_CHART_OF_ACCOUNTS,
   DEFAULT_CHART_RETAINED_EARNINGS_CODE,
-} from "@mms/shared";
-import { EmptyState } from "@/components/app/EmptyState";
-import { Button } from "@/components/ui/button";
-import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
-import { useTranslation } from "@/hooks/useTranslation";
-import { isApiError } from "@/lib/apiClient";
+} from "@mms/contracts";
+import { EmptyState } from "@mms/ui";
+import { Button } from "@mms/ui";
+import { ConfirmAlertDialog } from "@mms/fe-core/components/ConfirmAlertDialog";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { isApiError } from "@mms/fe-core/api/client";
 import { notifyApiFailure } from "@/lib/apiErrorNotify";
-import { notify } from "@/lib/notify";
+import { notify } from "@mms/fe-core/notify";
 import { useSeedDefaultChart } from "@/tenant/features/accounting/hooks/useSeedDefaultChart";
 
 const seededAccountLabel = (code: string): string =>

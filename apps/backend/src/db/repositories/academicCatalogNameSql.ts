@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { exams, sessionClassTimetablePeriods, sessions } from "../schema.js";
+import { exams, sessionClassTimetablePeriods, sessions } from "@mms/db/schema";
 
 /**
  * Display names derived from catalog ids (migration 0181 dropped the text snapshots). Archived

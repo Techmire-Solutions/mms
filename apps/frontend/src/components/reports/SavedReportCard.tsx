@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
-import { formatDate, type AppTranslationKey, type GenericSavedReport } from "@mms/shared";
+import { formatDate, type AppTranslationKey, type GenericSavedReport } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useDateFormat } from "@/lib/contexts/DateFormatContext";

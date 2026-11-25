@@ -10,7 +10,7 @@ import {
   type AppTranslationKey,
   type ContactGoogleSyncConfigClient,
   type GoogleContactsSyncRunResult,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { notify } from "@/lib/notify";
 

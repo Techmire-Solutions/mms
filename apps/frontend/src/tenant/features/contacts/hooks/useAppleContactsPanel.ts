@@ -1,5 +1,5 @@
 import { useRef, useState, type ChangeEvent, type RefObject } from "react";
-import { type Contact, buildTenantExportFilename } from "@mms/shared";
+import { type Contact, buildTenantExportFilename } from "@mms/contracts";
 import { useOptionalTenant } from "@/lib/contexts/TenantContext";
 import { useContactConfig } from "@/lib/contexts/ContactConfigContext";
 import { resolvePhoneLabel, resolveEmailLabel } from "@/lib/contacts/contactI18n";

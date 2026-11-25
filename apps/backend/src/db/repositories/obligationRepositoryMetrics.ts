@@ -3,9 +3,9 @@ import {
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   roundMoneyAmount,
   type ObligationsCommandMetricsSnapshot,
-} from "@mms/shared";
-import { obligationCollections, obligationTypes } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { obligationCollections, obligationTypes } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /** SQL aggregates for Obligations command-centre metrics (active rows only). */
 export async function aggregateObligationsCommandMetrics(

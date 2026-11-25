@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { type UsersSettings } from "@mms/shared";
+import { type UsersSettings } from "@mms/contracts";
 import { useUsersConfig } from "@/hooks/useStandardModuleConfig";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useUsersSetupSaveActions } from "@/tenant/features/users/hooks/useUsersSetupSaveActions";

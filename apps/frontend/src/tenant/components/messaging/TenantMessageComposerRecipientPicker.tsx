@@ -7,7 +7,7 @@ import {
   type MessagingGenderFilter,
   type MessagingRoleFilter,
   type StandardMessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useMessagingWorkRecipients } from "@/tenant/features/messaging/hooks/useMessagingWorkRecipients";
 import { apiContract } from "@/lib/api";

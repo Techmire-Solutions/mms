@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { students } from "../schema.js";
+import { students } from "@mms/db/schema";
 
 /**
  * Canonical column projection for `students` SELECT queries.

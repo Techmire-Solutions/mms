@@ -1,5 +1,5 @@
 import React from "react";
-import { formatMoney } from "@mms/shared";
+import { formatMoney } from "@mms/contracts";
 import { WORK_SURFACE, WORK_SURFACE_INNER } from "@/components/ui/formStyles";
 import { StatusBadge, type StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { useMemo } from "react";

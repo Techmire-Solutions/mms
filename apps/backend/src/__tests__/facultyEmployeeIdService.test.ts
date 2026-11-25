@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { formatDeterministicEmployeeId } from "@mms/shared";
+import { formatDeterministicEmployeeId } from "@mms/contracts";
 import {
   getFacultySetupConfig,
   updateFacultySetupConfig,
@@ -8,7 +8,7 @@ import {
   previewNextEmployeeId,
   generateNextEmployeeId,
 } from "../faculty/use-cases/facultyEmployeeIdService.js";
-import type { FacultySetupConfigRow } from "../db/schema/faculty.js";
+import type { FacultySetupConfigRow } from "@mms/db/schema/faculty";
 
 vi.mock("../lib/workspaceDay.js", () => ({
   workspaceTodayIso: vi.fn(async () => `${new Date().getFullYear()}-01-01`),

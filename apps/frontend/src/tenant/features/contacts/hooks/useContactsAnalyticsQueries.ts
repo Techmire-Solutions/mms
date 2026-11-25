@@ -4,7 +4,7 @@ import {
   type ContactsWidgetQuery,
   type ContactsWidgetAggregateResult,
   contactsWidgetQueryFromWidget,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { serverMetricsQueryOptions, useServerMetrics } from "@/hooks/useServerMetrics";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";

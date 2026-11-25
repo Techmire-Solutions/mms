@@ -1,4 +1,4 @@
-import { WORKSHOPS_MODULE_MANIFEST } from "@mms/shared";
+import { WORKSHOPS_MODULE_MANIFEST } from "@mms/contracts";
 
 export const WORKSHOPS_QUERY_KEY = [WORKSHOPS_MODULE_MANIFEST.moduleId] as const;
 

@@ -4,7 +4,7 @@ import {
   academicCalendarEventSchema,
   type AcademicCalendarEvent,
   type AcademicCalendarEventWrite,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { z } from "zod";
 import { apiJson } from "@/lib/apiClient";
 

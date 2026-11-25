@@ -6,7 +6,7 @@ import { SettingsPanel } from "@/components/app/SettingsShell";
 import { Alert } from "@/components/app/Alert";
 import { Field } from "@/components/app/FormPrimitives";
 import { PasswordInput } from "@/components/app/PasswordInput";
-import { Badge, Button, Input, ToggleRow } from "@shared/ui";
+import { Badge, Button, Input, ToggleRow } from "@mms/ui";
 import { usePlatformAuth } from "@/platform/features/auth/lib/PlatformAuthContext";
 import { usePlatformPermissions } from "@/platform/hooks/usePlatformPermissions";
 import {
@@ -14,7 +14,7 @@ import {
   useImportPlatformBackup,
 } from "@/platform/features/settings/hooks/usePlatformBackup";
 import { getPlatformErrorMessage } from "@/platform/features/auth/lib/platformAuthErrors";
-import type { PlatformConfigBackupApplyResult } from "@mms/shared";
+import type { PlatformConfigBackupApplyResult } from "@mms/contracts";
 
 const HISTORY_KEY = "mms_platform_backup_history";
 

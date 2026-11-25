@@ -5,9 +5,9 @@ import {
   type WorkshopEvent,
   type WorkshopEventCreate,
   type WorkshopEventUpdate,
-} from "@mms/shared";
-import { workshopEvents } from "../schema.js";
-import { withTenant, withTenantRead, type TenantTransaction } from "../tenant-context.js";
+} from "@mms/contracts";
+import { workshopEvents } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
 import { runListPage } from "./listPageHelper.js";
 import {
   feeValue,

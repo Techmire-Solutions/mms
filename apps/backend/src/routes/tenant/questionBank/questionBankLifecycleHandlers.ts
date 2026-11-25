@@ -2,11 +2,11 @@ import {
   requiresQuestionApprovalAuthority,
   type User,
   type questionBankContract,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canDeleteCollection, canWriteCollection } from "../../../services/rbacService.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { questionBankLifecycleUseCases } from "../../../questionBank/use-cases/questionBankLifecycleUseCases.js";
 import { assemblePaper } from "../../../questionBank/use-cases/paperAssemblyUseCases.js";
 import { mapConstraintError, mapDomainError } from "../../../lib/httpErrors.js";

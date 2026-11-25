@@ -6,10 +6,10 @@ import {
   resolveBrandingCornerRadius,
   resolveBrandingThemeMode,
   type ThemeMode,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SettingsColoursBadge } from "@/components/app/SettingsShell";
-import { Badge } from "@shared/ui";
+import { Badge } from "@mms/ui";
 
 export interface PlatformThemeStatusBadgesProps {
   themeMode: ThemeMode;

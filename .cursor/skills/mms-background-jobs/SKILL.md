@@ -33,7 +33,7 @@ For report packs use a cutoff-consistent dataset and retain evidence per [closin
 - Runners: `apps/backend/src/services/backgroundJobRunnerService.ts`
 - Artifacts: `apps/backend/src/services/exportArtifactService.ts`
 - Frontend API/store: `apps/frontend/src/lib/backgroundJobs/`
-- Data transfer SSOT: `packages/shared/src/dataTransfer/` (`createModuleTransferSchema`, `buildExportGrid`, `moduleTransferRegistry`)
+- Data transfer SSOT: `packages/contracts/src/dataTransfer/` (`createModuleTransferSchema`, `buildExportGrid`, `moduleTransferRegistry`)
 - Frontend transfer actions: `apps/frontend/src/lib/backgroundJobs/useModuleCsvImportActions.ts`, `useModuleServerCsvExportActions.ts`
 - Generic import dialog: `apps/frontend/src/components/app/ModuleImportDialog.tsx`
 - Backend route helpers: `apps/backend/src/lib/registerModuleCsvImportRoutes.ts`, `registerModuleCsvExportRoutes.ts`
@@ -73,7 +73,7 @@ For report packs use a cutoff-consistent dataset and retain evidence per [closin
 - [ ] Progress/result/failure are user-visible
 - [ ] Download requires current user ownership
 - [ ] Export respects field visibility and soft-delete policy
-- [ ] Module CSV import/export adheres to @mms/shared data transfer schemas (Field Whitelist, 1:1 header symmetry)
+- [ ] Module CSV import/export adheres to @mms/contracts data transfer schemas (Field Whitelist, 1:1 header symmetry)
 - [ ] Tenant config/lookups load once per batch (threaded context), not once per record
 - [ ] Per-record live-update broadcast and cache/scan invalidations collapse to one call per batch
 - [ ] Sensitive job is audited

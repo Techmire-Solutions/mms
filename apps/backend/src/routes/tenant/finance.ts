@@ -1,7 +1,7 @@
 import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
 import { authenticateTenant } from "../../middleware/authenticate.js";
 import { registerModuleAccess } from "../../middleware/requireTenantModule.js";
-import { FINANCE_MODULE_MANIFEST } from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST } from "@mms/contracts";
 import { registerStandardExtendedRoutes } from "../../lib/crudStandardRoutes.js";
 import { registerSingleRestoreRoute } from "../../lib/crudResourceRoutes.js";
 

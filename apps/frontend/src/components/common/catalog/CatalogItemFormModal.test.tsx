@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AcademicCatalogItem } from "@mms/shared";
+import type { AcademicCatalogItem } from "@mms/contracts";
 import { CatalogItemFormModal } from "./CatalogItemFormModal";
 
 declare global {

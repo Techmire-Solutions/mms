@@ -1,7 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
-import type { EnrollmentPlacement } from "@mms/shared";
-import { enrollmentPlacements } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import type { EnrollmentPlacement } from "@mms/contracts";
+import { enrollmentPlacements } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 
 /**
  * Timeline of an enrollment's class/section placements (migration 0175).

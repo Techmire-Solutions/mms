@@ -4,7 +4,7 @@ import {
   formatDate,
   formatMoney,
   toMoneyNumber,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type {
   FieldLookupInfo,
   IndexedFieldLookups,

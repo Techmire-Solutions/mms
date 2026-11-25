@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { runBatchMerge, type BatchMergePair } from "./duplicateBatchMerge";
 
 const contact = (id: string): Contact => ({ id, name: `Contact ${id}` }) as Contact;

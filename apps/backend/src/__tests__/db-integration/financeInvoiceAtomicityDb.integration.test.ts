@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { invoiceRecordSchema, type Invoice } from "@mms/shared";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { financeInvoiceLines, financeInvoices, workspaces } from "../../db/schema.js";
+import { invoiceRecordSchema, type Invoice } from "@mms/contracts";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant } from "@mms/db/context";
+import { financeInvoiceLines, financeInvoices, workspaces } from "@mms/db/schema";
 import { saveInvoice } from "../../db/repositories/financeInvoicesPersist.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 

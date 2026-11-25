@@ -4,7 +4,7 @@ import {
   MESSAGE_LOGS_DEFAULT_PAGE_SIZE,
   type Message,
   type StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useDescriptorFilterChips } from "@/components/common/useDescriptorFilterChips";
 import { MESSAGING_WORK_SEARCH_INPUT_ID } from "../components/MessagingListFilters";
 import { useModuleShortcuts } from "@/hooks/useModuleShortcuts";

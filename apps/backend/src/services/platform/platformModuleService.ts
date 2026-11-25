@@ -3,7 +3,7 @@ import {
   type PlatformModuleCatalogEntry,
   type PlatformModulesUpdateInput,
   type PlatformSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { clearModuleAvailabilityCache } from "../../lib/moduleAvailabilityService.js";
 import { getPlatformSettings, updatePlatformSettings } from "./platformSettingsService.js";
 

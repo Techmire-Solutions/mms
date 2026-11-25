@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { WorkshopParticipant } from "@mms/shared";
+import type { WorkshopParticipant } from "@mms/contracts";
 import {
   buildWorkshopNameBadgesHtml,
   buildWorkshopRosterHtml,

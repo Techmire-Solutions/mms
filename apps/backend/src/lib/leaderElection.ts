@@ -1,4 +1,4 @@
-import { getPool } from "../db/dbConnection.js";
+import { getPool } from "@mms/db/client";
 import { logger } from "./logger.js";
 
 /**

@@ -6,7 +6,7 @@ import { getRequestTenant } from "../lib/tenantContext.js";
 import { sendForbidden } from "../lib/httpErrors.js";
 import { canReadCollection, canReadContacts } from "../services/rbacService.js";
 import { isQuestionMediaUploadPath } from "../lib/questionMediaPolicy.js";
-import type { User } from "@mms/shared";
+import type { User } from "@mms/contracts";
 
 export type HeaderTarget = {
   header: (name: string, value: string) => unknown;

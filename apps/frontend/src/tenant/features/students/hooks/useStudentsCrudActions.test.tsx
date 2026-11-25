@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 import { ApiError } from "@/lib/apiError";
 import { useStudentsCrudActions } from "@/tenant/features/students/hooks/useStudentsCrudActions";
 import type { useStudentMutations } from "@/tenant/features/students/hooks/useStudentMutations";

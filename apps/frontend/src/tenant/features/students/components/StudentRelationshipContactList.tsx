@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
-import type { EmailAddress, PhoneNumber } from "@mms/shared";
+import type { EmailAddress, PhoneNumber } from "@mms/contracts";
 import { EntityMessagingActions } from "@/components/app/EntityMessagingActions";
 import { useTranslation } from "@/hooks/useTranslation";
 

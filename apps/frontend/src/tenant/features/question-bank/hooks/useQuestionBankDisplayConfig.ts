@@ -3,7 +3,7 @@ import {
   QUESTION_TYPE_ICONS,
   isQuestionSourceFieldId,
   type QuestionBankQuestion,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import type { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
 

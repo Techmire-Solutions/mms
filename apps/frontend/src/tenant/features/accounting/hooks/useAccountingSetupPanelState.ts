@@ -4,18 +4,18 @@ import {
   composeAccountingSettings,
   normalizeAccountingModulePreferences,
   type AccountingSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   useAccountingPreferencesMutation,
   useAccountingPreferencesQuery,
 } from "@/tenant/features/accounting/hooks/useAccountingSetupConfig";
 import { toAccountingPreferencesPayload } from "@/tenant/features/accounting/hooks/accountingSetupConfigApi";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
-import { notify } from "@/lib/notify";
-import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
-import type { FiscalYear } from "@/lib/data/accountingData";
+import { notify } from "@mms/fe-core/notify";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import type { FiscalYear } from "@mms/mod-accounting/frontend/tenant";
 import { useAccountingSetupSaveActions } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
 
 export interface UseAccountingSetupPanelStateOptions {

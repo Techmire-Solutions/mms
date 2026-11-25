@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useContactsToolbarModel, type ContactsListFiltersModel } from "./useContactsToolbarModel";
-import { DEFAULT_COLUMN_REGISTRY, type AppTranslationKey } from "@mms/shared";
+import { DEFAULT_COLUMN_REGISTRY, type AppTranslationKey } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

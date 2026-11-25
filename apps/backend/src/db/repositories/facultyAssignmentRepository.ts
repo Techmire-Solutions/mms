@@ -1,8 +1,8 @@
-import { facultyAssignmentSchema } from "@mms/shared";
+import { facultyAssignmentSchema } from "@mms/contracts";
 import { and, eq, isNull, gte, lte, or } from "drizzle-orm";
-import { facultyAssignments } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
-import type { FacultyAssignmentRow } from "../schema/facultyAssignmentTables.js";
+import { facultyAssignments } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
+import type { FacultyAssignmentRow } from "@mms/db/schema/facultyAssignmentTables";
 
 export {
   type AssignmentTreeNode,

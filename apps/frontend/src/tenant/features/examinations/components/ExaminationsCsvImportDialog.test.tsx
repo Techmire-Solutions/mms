@@ -6,13 +6,18 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-query")>();
   return { ...actual, useQueryClient: () => ({ invalidateQueries: vi.fn() }) };
 });
+vi.mock("@mms/fe-core/i18n", async () => {
+  const { useTranslationEnMock } = await import("@/test/useTranslationEnMock");
+  return { useTranslation: useTranslationEnMock() };
+});
+
 import { ExaminationsCsvImportDialog } from "./ExaminationsCsvImportDialog";
 
-vi.mock("@/lib/download", () => ({
+vi.mock("@mms/fe-core/api/download", () => ({
   triggerFileDownload: vi.fn(),
 }));
 
-vi.mock("@/lib/notify", () => ({
+vi.mock("@mms/fe-core/notify", () => ({
   notify: {
     success: vi.fn(),
     error: vi.fn(),
@@ -32,7 +37,7 @@ const mockStartServerImport = vi.fn().mockResolvedValue({
   progress: { current: 1, total: 1 },
 });
 
-vi.mock("@/lib/backgroundJobs/startServerModuleCsvImport", () => ({
+vi.mock("@mms/fe-core/backgroundJobs/startServerModuleCsvImport", () => ({
   startServerModuleCsvImport: (...args: unknown[]) => mockStartServerImport(...args),
 }));
 

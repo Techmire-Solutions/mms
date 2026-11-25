@@ -1,4 +1,4 @@
-import type { Invoice } from "@mms/shared";
+import type { Invoice } from "@mms/contracts";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";
 import { createEntityDescriptor } from "../entityDescriptorFactory";
 

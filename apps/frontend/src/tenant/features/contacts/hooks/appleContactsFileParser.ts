@@ -4,7 +4,7 @@ import {
   type Contact,
   parseContactsCsv,
   parseVCard,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export interface ParseAppleContactsOptions {
   mobileLabel: string;

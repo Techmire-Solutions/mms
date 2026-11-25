@@ -9,7 +9,7 @@ import {
   setPlatformBrandingState,
   subscribePlatformBranding,
 } from "@/lib/branding/platformBrandingStore";
-import { DEFAULT_PLATFORM_BRANDING } from "@mms/shared";
+import { DEFAULT_PLATFORM_BRANDING } from "@mms/contracts";
 
 vi.mock("@/lib/config/tenantConfig", () => ({
   isTenantHost: () => false,

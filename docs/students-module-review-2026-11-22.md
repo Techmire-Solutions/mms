@@ -8,7 +8,7 @@ the [2026-11-04 UI/UX pass](students-ui-ux-review-2026-11-04.md) and the student
 **#347** (contracts, security scoping, export safety), **#428** (Setup required fields) and **#429** (GR
 label), under the form/table standards that landed in between (#379/#386, #415/#291/#295).
 
-**Scope.** `packages/shared/src/students/**` + `contracts/students.contract*.ts` + students auth entries;
+**Scope.** `packages/contracts/src/students/**` + `contracts/students.contract*.ts` + students auth entries;
 `apps/backend/src/routes/tenant/students/**`, `students/**` (incl. `repository/studentScopingRepository`,
 `studentsBulkStatusService`, `studentsImportService`), `db/repositories/student*.ts`,
 `services/studentValidationService.ts`, `integrations/edtech/**`, worker/queue wiring;
@@ -83,7 +83,7 @@ families gate on capability only:
 `resolveStudentAccessScope` derives the teacher scope from `sectionStaffAssignments` and the list SQL adds
 `EXISTS (… enrollments … e.section_id IN (…))` (`studentRepositoryListQuery.ts:226-242`), which is the right
 shape — it is simply not applied to the adjacent endpoints.
-**Impact.** `teacher` holds `students: ["read","update"]` (`packages/shared/src/auth/userRbacDefaultRoles.ts:96-98`),
+**Impact.** `teacher` holds `students: ["read","update"]` (`packages/contracts/src/auth/userRbacDefaultRoles.ts:96-98`),
 so a section-scoped teacher can export the full roster and change the status of any student in the tenant —
 the control the scope was introduced for is bypassed by the next endpoint over. Count/metrics also disclose
 tenant-wide totals to a scoped teacher.

@@ -1,5 +1,5 @@
 import { GraduationCap } from "lucide-react";
-import type { Student, StudentsListPageResult } from "@mms/shared";
+import type { Student, StudentsListPageResult } from "@mms/contracts";
 import { ModuleWorkDirectoryEmpty } from "@/components/app/ModuleWorkDirectoryEmpty";
 import { ModuleWorkListStateShell } from "@/components/app/ModuleWorkListStateShell";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";

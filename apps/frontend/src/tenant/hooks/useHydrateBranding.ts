@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { roleHasPermission } from "@mms/shared";
+import { roleHasPermission } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import { isEntryPath } from "@/lib/config/routes";

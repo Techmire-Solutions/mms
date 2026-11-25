@@ -9,7 +9,7 @@ import {
 import {
   loadContactChildMapsAggregated,
   loadContactSummaryChildMapsAggregated,
-} from "../db/repositories/contactRepositoryHydrateChildren.js";
+} from "@mms/mod-contacts/backend/repository";
 import { hydrateSessionsListAggregated } from "../db/repositories/sessionRepositoryHydrate.js";
 
 describe("Drizzle Query Optimization & Prepared Statements", () => {

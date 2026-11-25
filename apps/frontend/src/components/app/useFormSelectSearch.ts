@@ -5,4 +5,4 @@ export {
   type FormSelectSearchOption,
   type FormSelectSearchState,
   type UseFormSelectSearchArgs,
-} from "@shared/ui";
+} from "@mms/ui";

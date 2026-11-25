@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createMessagingUseCases } from "../messaging/use-cases/messagingUseCases.js";
 import type { MessagingRepository } from "../messaging/repository/messagingRepository.js";
 import { runWithTenant } from "../lib/tenantContext.js";
-import type { MessageTemplate, Message } from "@mms/shared";
+import type { MessageTemplate, Message } from "@mms/contracts";
 
 function createFakeRepo(): MessagingRepository {
   return {

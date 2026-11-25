@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq, inArray, sql } from "drizzle-orm";
-import type { JournalEntry, JournalLine } from "@mms/shared";
-import { beginLongLivedTenantTransaction, closeDatabase } from "../../db/dbConnection.js";
+import type { JournalEntry, JournalLine } from "@mms/contracts";
+import { beginLongLivedTenantTransaction, closeDatabase } from "@mms/db/client";
 import {
   accountingAccounts,
   accountingCurrencySettings,
@@ -9,7 +9,7 @@ import {
   accountingJournalLines,
   consolidationGroups,
   workspaces,
-} from "../../db/schema.js";
+} from "@mms/db/schema";
 import { bulkSaveEntries } from "../../db/repositories/accountingEntriesPersist.js";
 import { platformConsolidationRepository as repo } from "../../platform/repository/platformConsolidationRepositoryAdapter.js";
 import {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 
 /** Overlay / dialog UI state for Contacts Work (form, drawer, duplicates, import, bulk confirms). */

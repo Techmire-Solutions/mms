@@ -10,7 +10,7 @@ import {
   WEEKDAY_NAMES,
   type AcademicCalendarEvent,
   type AcademicCalendarEventKind,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";

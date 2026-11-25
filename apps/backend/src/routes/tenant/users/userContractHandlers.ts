@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import type { User, WorkspaceUser } from "@mms/shared";
-import type { userContract } from "@mms/shared";
+import type { User, WorkspaceUser } from "@mms/contracts";
+import type { userContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canWriteCollection, canDeleteCollection } from "../../../services/rbacService.js";
 import { usersUseCases } from "../../../users/use-cases/usersUseCases.js";

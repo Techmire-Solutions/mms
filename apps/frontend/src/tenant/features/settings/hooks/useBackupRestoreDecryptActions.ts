@@ -5,7 +5,7 @@ import {
   isEncryptedBackupPayload,
   type PendingDecrypt,
   type WorkspaceBackupRecord,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { saveCollection } from "@/lib/db";
 import { triggerFileDownload } from "@/lib/download";
 import { notify } from "@/lib/notify";

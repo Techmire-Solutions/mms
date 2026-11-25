@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readObjectLocal, shouldSkipTitleCase, writeObjectLocal } from "./dbObjectStorage";
-import type { BrandingSettings } from "@mms/shared";
+import type { BrandingSettings } from "@mms/contracts";
 
 describe("writeObjectLocal (branding)", () => {
   it("skips title-casing for the branding record", () => {

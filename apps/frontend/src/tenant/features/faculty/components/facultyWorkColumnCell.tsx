@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Star } from "lucide-react";
-import { customFieldKeyFromColumnKey, type Faculty, type FacultyCustomField } from "@mms/shared";
+import { customFieldKeyFromColumnKey, type Faculty, type FacultyCustomField } from "@mms/contracts";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

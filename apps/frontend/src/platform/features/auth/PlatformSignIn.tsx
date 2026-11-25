@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import type { NotificationChannel } from "@mms/shared";
+import type { NotificationChannel } from "@mms/contracts";
 import PlatformAuthLayout from "@/platform/features/auth/components/PlatformAuthLayout";
 import EntryPageHead, { formatEntryTitle } from "@/components/entry/EntryPageHead";
 import { useSignInCredentialsForm } from "@/components/entry/useSignInCredentialsForm";
-import { createEmptyOtp, isOtpComplete } from "@shared/ui";
+import { createEmptyOtp, isOtpComplete } from "@mms/ui";
 import { useResendCountdown } from "@/hooks/useResendCountdown";
 import {
   usePlatformAuth,

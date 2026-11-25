@@ -9,12 +9,14 @@ const mocks = vi.hoisted(() => ({
   captured: [] as Array<Record<string, unknown>>,
 }));
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenantRead: async (_tenant: string, work: (tx: unknown) => Promise<unknown>) =>
     work(createFakeTx()),
 }));
 
-vi.mock("../lib/softDeleteHelpers.js", () => ({
+vi.mock("@mms/db/soft-delete", () => ({
   enableIncludeDeleted: (tx: unknown) => mocks.enableIncludeDeleted(tx),
 }));
 

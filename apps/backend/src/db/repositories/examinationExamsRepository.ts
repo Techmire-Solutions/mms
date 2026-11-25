@@ -1,8 +1,8 @@
 import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
-import { dedupeTrimmedIds, type Exam, type RepositoryListOptions } from "@mms/shared";
+import { dedupeTrimmedIds, type Exam, type RepositoryListOptions } from "@mms/contracts";
 import { buildTenantSoftDeleteConditions } from "../../services/genericRelationalService.js";
-import { exams, examClasses, sessionClasses } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { exams, examClasses, sessionClasses } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { mapAuditTimestamps } from "./repositoryMappers.js";
 import { examSubjectSql } from "./academicCatalogNameSql.js";
 export { saveExam, bulkSaveExams } from "./examinationExamsPersist.js";

@@ -4,7 +4,7 @@
  */
 
 import type { FastifyInstance } from "fastify";
-import { bulkStringIdsBodySchema, type User } from "@mms/shared";
+import { bulkStringIdsBodySchema, type User } from "@mms/contracts";
 import { canPerformTaskAction } from "../../services/taskPermissionService.js";
 import {
   bulkDeleteTasks,

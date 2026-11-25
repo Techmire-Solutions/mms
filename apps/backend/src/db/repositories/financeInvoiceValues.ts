@@ -1,5 +1,5 @@
-import { type Invoice } from "@mms/shared";
-import type { financeInvoices } from "../schema.js";
+import { type Invoice } from "@mms/contracts";
+import type { financeInvoices } from "@mms/db/schema";
 import { mapAuditToInsert } from "./repositoryMappers.js";
 import { requireDbDate, requireDbDateValue } from "../../lib/dbDate.js";
 

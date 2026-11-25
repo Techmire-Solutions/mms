@@ -10,7 +10,7 @@ import type {
   ObligationsCommandMetricsSnapshot,
   ObligationsReportAggregates,
   ObligationsReportQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import type { ObligationsRepository } from "../repository/obligationsRepository.js";
 

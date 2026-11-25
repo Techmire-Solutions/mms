@@ -1,4 +1,4 @@
-import { DEFAULT_BRANDING_SETTINGS } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS } from "@mms/contracts";
 import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import { PRINT_COLORS, PRINT_NEUTRAL_PALETTE } from "@/lib/ui/printTemplateStyles";

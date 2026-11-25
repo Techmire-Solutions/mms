@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { createRoot } from "react-dom/client";
 import { ObligationVoucherModal } from "./ObligationVoucherModal";
 import type { ObligationCollection } from "@/lib/data/obligationsData";
-import type { Account, JournalEntry } from "@/lib/data/accountingData";
+import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

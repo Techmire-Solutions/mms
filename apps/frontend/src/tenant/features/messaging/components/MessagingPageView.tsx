@@ -4,7 +4,7 @@ import type {
   Message,
   MessageTemplate,
   StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ConfirmAlertDialog } from "@/components/app/ConfirmAlertDialog";
 import { ErrorState } from "@/components/app/ErrorState";
 import { ModuleScaffold } from "@/components/common/ModuleScaffold";

@@ -1,4 +1,4 @@
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import {
   MAX_CONTACTS_SYNC_CONFLICT_ATTEMPTS,
   currentContactsSyncKeys,

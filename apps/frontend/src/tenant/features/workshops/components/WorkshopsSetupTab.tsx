@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Save } from "lucide-react";
-import { workshopPreferencesSchema, type WorkshopPreferences } from "@mms/shared";
+import { workshopPreferencesSchema, type WorkshopPreferences } from "@mms/contracts";
 import { Field } from "@/components/app/FormPrimitives";
 import { ErrorState } from "@/components/app/ErrorState";
 import { Button } from "@/components/ui/button";

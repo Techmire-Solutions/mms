@@ -1,9 +1,9 @@
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
-import { normalizeSessionStatus, type Session } from "@mms/shared";
-import { sessions } from "../schema.js";
-import { withTenant, type TenantTransaction } from "../tenant-context.js";
+import { normalizeSessionStatus, type Session } from "@mms/contracts";
+import { sessions } from "@mms/db/schema";
+import { withTenant, type TenantTransaction } from "@mms/db/context";
 import { toDbDate } from "../../lib/dbDate.js";
-import { ConflictError } from "../../lib/httpErrors.js";
+import { ConflictError } from "@mms/be-core/http/errors";
 import { invalidateMultiTierCache } from "../../lib/cache/index.js";
 import { throwOverlapConflict } from "./sessionPersistErrors.js";
 

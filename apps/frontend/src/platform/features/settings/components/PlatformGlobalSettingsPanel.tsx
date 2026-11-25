@@ -19,7 +19,7 @@ import {
   ToggleRow,
   ErrorState,
   CardSkeleton,
-} from "@shared/ui";
+} from "@mms/ui";
 
 export function PlatformGlobalSettingsPanel(): React.JSX.Element {
   const { t } = useTranslation();

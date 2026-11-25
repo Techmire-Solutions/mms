@@ -7,7 +7,7 @@ import type {
   EnrollmentsWidgetAggregateResult,
   EnrollmentsReportAggregates,
   EnrollmentsReportComparisonQuery,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 /**
  * Sole storage gateway for the enrollments module.
@@ -37,7 +37,7 @@ export interface EnrollmentsRepository {
   saveEnrollment(tenant: string, record: Enrollment): Promise<void>;
   /** Guarded status transition for the manual CRUD channel (see enrollmentStateMachine). */
   transitionEnrollmentStatusTx?(
-    tx: import("../../db/tenant-context.js").TenantTransaction,
+    tx: import("@mms/db/context").TenantTransaction,
     subdomain: string,
     input: { id: string; from: string; to: string },
   ): Promise<void>;

@@ -6,7 +6,7 @@ import {
   IMAGE_UPLOAD_PRESETS,
   mergeBrandingSettings,
   type BrandingSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { saveBrandingSettings } from "@/lib/db";
 import { getScopedBrandingSettings } from "@/lib/settingsPreviewStore";
 import { reportClientError } from "@/lib/clientErrorReporting";

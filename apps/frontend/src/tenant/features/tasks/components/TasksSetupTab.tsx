@@ -7,7 +7,7 @@ import {
   DELEGATION_SCOPES,
   TASK_NOTIFICATION_CHANNELS,
   DEFAULT_TASK_SETTINGS,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { FormCheckboxCard } from "@/components/app/FormCheckboxCard";
 import { FormSelect } from "@/components/app/FormSelect";

@@ -1,5 +1,5 @@
 import React, { type ReactNode } from "react";
-import { formatMoney } from "@mms/shared";
+import { formatMoney } from "@mms/contracts";
 import { StatusBadge } from "@/components/app/StatusBadge";
 import { SEMANTIC_BADGE } from "@/lib/ui/semanticTone";
 import type { FieldDefinition } from "@/components/common/entityRegistryTypes";

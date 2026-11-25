@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowRight } from "lucide-react";
 import PlatformAuthLayout from "@/platform/features/auth/components/PlatformAuthLayout";
 import { AuthBackLink, AuthCheckEmailSuccess, AuthStatusBanner } from "@/components/entry";
-import { Button } from "@shared/ui";
+import { Button } from "@mms/ui";
 import { ROUTES } from "@/lib/config/routes";
 import type { PlatformForgotPasswordController } from "@/platform/features/auth/usePlatformForgotPasswordController";
 

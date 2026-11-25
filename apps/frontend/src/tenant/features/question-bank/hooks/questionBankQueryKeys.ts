@@ -1,4 +1,4 @@
-import { QUESTION_BANK_MODULE_MANIFEST } from "@mms/shared";
+import { QUESTION_BANK_MODULE_MANIFEST } from "@mms/contracts";
 
 export const QUESTION_BANK_API = QUESTION_BANK_MODULE_MANIFEST.restBasePath;
 

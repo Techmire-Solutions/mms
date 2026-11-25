@@ -1,5 +1,5 @@
-import { workspaces } from "../db/schema.js";
-import { activeDb, type DbClient } from "../db/dbConnection.js";
+import { workspaces } from "@mms/db/schema";
+import { activeDb, type DbClient } from "@mms/db/client";
 import { logger } from "../lib/logger.js";
 import { LEADER_LOCK_RETENTION_PURGE, tryAcquireLeaderLease } from "../lib/leaderElection.js";
 import { purgeExpiredArchivedRecords } from "./purgeArchivedRecordsJob.js";

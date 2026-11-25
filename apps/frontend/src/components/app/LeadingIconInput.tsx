@@ -1,1 +1,1 @@
-export { LeadingIconInput, type LeadingIconInputProps } from "@shared/ui";
+export { LeadingIconInput, type LeadingIconInputProps } from "@mms/ui";

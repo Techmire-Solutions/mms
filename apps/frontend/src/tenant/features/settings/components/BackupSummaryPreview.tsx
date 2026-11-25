@@ -1,6 +1,6 @@
 import React from "react";
 import { CheckCircle2 } from "lucide-react";
-import { formatBackupSize, type WorkspaceBackupSummary } from "@mms/shared";
+import { formatBackupSize, type WorkspaceBackupSummary } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Badge } from "@/components/ui/badge";
 

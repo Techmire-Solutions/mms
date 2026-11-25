@@ -1,4 +1,4 @@
-import type { Student } from "@mms/shared";
+import type { Student } from "@mms/contracts";
 
 /** True when the form is registering a new student (no persisted id). */
 export function isStudentCreate(student?: Partial<Student> | null): boolean {

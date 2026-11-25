@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SectionLabel } from "@/components/app/SectionLabel";
 import { useTranslation } from "@/hooks/useTranslation";
-import { type AppTranslationKey } from "@mms/shared";
+import { type AppTranslationKey } from "@mms/contracts";
 import { DraggableField } from "./CustomReportBuilderDraggableField";
 import { type AggregateFn, type PreviewRow } from "./customReportBuilderFields";
 import { exportReportExcel, exportReportPdf } from "@/lib/reports/reportExportCore";

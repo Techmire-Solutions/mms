@@ -3,15 +3,15 @@
  * @description Persist faculty profile + hydrate from employment SSOT (no dual-write mirrors).
  */
 import { and, eq, isNull } from "drizzle-orm";
-import { faculty, tenantUsers } from "../schema.js";
-import type { AppDb } from "../tenant-context.js";
-import type { FacultyMember } from "@mms/shared";
+import { faculty, tenantUsers } from "@mms/db/schema";
+import type { AppDb } from "@mms/db/context";
+import type { FacultyMember } from "@mms/contracts";
 import {
   DEFAULT_FACULTY_PROFILE_STATUS,
   DEFAULT_FACULTY_STATUS,
   isFacultyProfileStatus,
   parseFacultyPerformanceRating,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { mapAuditTimestamps, mapAuditToInsert } from "./repositoryMappers.js";
 import { attachPrimaryAppointmentFields } from "./facultyPrimaryAppointmentHydrate.js";
 import {

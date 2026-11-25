@@ -1,7 +1,10 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { EnrollmentReports } from "@/tenant/components/reports/moduleReportAdapters";
 import { useEnrollmentsReportAggregates } from "@/tenant/hooks/collections/enrollments";
-import { EMPTY_ENROLLMENTS_REPORT_AGGREGATES, type EnrollmentsReportAggregates } from "@mms/shared";
+import {
+  EMPTY_ENROLLMENTS_REPORT_AGGREGATES,
+  type EnrollmentsReportAggregates,
+} from "@mms/contracts";
 import { ErrorState } from "@/components/app/ErrorState";
 import type { ReportFilterFields } from "./ReportFilters";
 

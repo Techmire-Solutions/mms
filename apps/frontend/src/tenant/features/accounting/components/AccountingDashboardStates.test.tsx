@@ -24,7 +24,7 @@ vi.mock("@/lib/contexts/BrandingPaletteContext", () => ({
   useBrandPalette: () => ({ primary: "#0ea5e9", secondary: "#f97316", charts: ["#0ea5e9"] }),
 }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key, language: "en" }),
 }));
 

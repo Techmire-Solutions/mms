@@ -13,7 +13,9 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("../db/tenant-context.js", () => ({
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
   withTenant: (_tenant: string, fn: (tx: { insert: typeof mocks.insert }) => Promise<unknown>) =>
     fn({ insert: mocks.insert }),
   withTenantRead: vi.fn(),

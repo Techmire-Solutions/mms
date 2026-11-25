@@ -25,7 +25,7 @@ import {
   type QuestionBankQuestion,
   type QuestionBankResult,
   type QuestionBankTest,
-} from "@mms/shared";
+} from "@mms/contracts";
 
 export function getWidgetCollections(): ReportCollectionsSnapshot {
   // Contacts + students + faculty + sessions + enrollments: SQL aggregates / empty dump — do not invent localStorage rows.

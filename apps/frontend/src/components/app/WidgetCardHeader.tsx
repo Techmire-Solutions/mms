@@ -1,2 +1,2 @@
-export { WidgetCardHeader, type WidgetCardHeaderProps } from "@shared/ui";
-export { WidgetCardHeader as default } from "@shared/ui";
+export { WidgetCardHeader, type WidgetCardHeaderProps } from "@mms/ui";
+export { WidgetCardHeader as default } from "@mms/ui";

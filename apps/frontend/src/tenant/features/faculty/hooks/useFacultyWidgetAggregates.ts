@@ -1,7 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { apiContract } from "@/lib/api";
-import { facultyWidgetQueryFromWidget } from "@mms/shared";
+import { facultyWidgetQueryFromWidget } from "@mms/contracts";
 import {
   FACULTY_WIDGET_AGGREGATES_QUERY_KEY,
   type FacultyWidgetAggregateWidgetInput,

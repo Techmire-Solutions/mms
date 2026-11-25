@@ -1,4 +1,4 @@
-import { isIsoCurrencyCode, isValidExchangeRate } from "@mms/shared";
+import { isIsoCurrencyCode, isValidExchangeRate } from "@mms/contracts";
 
 /** One day's fixing from a provider: units of each quote currency per one base unit. */
 export interface FxRateSnapshot {

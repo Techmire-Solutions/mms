@@ -5,7 +5,7 @@ import {
   renderExperienceSubField,
   renderSkillsSubField,
 } from "./contactMetadataSubFields";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 
 const mockContact: Contact = {
   id: "c-1",

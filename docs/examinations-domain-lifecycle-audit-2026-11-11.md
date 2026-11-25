@@ -64,7 +64,7 @@ nobody sat, and twice; there was no reason and no unlock workflow.
 
 ### What is enforced now
 
-- A pure, shared transition table ([`examLifecycle.ts`](../packages/shared/src/examinations/examLifecycle.ts)):
+- A pure, shared transition table ([`examLifecycle.ts`](../packages/contracts/src/examinations/examLifecycle.ts)):
   `upcoming → scheduled | ongoing | cancelled`, `scheduled → ongoing | cancelled`,
   `ongoing → completed | cancelled`, `completed`/`cancelled` terminal; a no-op is an update, not a
   transition; unknown states fail closed.
@@ -114,7 +114,7 @@ retention), not a remediation — see §5 for the target model.
    from the stored mark.
 3. **Publication permission.** Proposed keys `examinations.publish` and
    `examinations.override_lock` (mirroring `sessions.override_lock`), mapped to module actions in
-   `packages/shared/src/auth/permissionRules.ts`, with the publish/unlock handlers switched over.
+   `packages/contracts/src/auth/permissionRules.ts`, with the publish/unlock handlers switched over.
 4. **Room/time conflict detection.** Needs `exams.room`, `exams.starts_at`, `exams.ends_at`
    (`timestamptz`), nullable `session_id`, and a `btree_gist` exclusion constraint on
    `(workspace_subdomain, room, tstzrange(starts_at, ends_at)) WHERE deleted_at IS NULL`.
@@ -125,7 +125,7 @@ retention), not a remediation — see §5 for the target model.
 
 ## 5. Delivered
 
-- [`examLifecycle.ts`](../packages/shared/src/examinations/examLifecycle.ts) + 6 unit tests.
+- [`examLifecycle.ts`](../packages/contracts/src/examinations/examLifecycle.ts) + 6 unit tests.
 - [`examWriteGuards.ts`](../apps/backend/src/examinations/domain/examWriteGuards.ts) (pure guards).
 - [`examLifecycleUseCases.ts`](../apps/backend/src/examinations/use-cases/examLifecycleUseCases.ts) + 10 unit tests.
 - [`examResultsSubmission.ts`](../apps/backend/src/examinations/use-cases/examResultsSubmission.ts)

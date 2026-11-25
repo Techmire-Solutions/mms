@@ -6,9 +6,9 @@ import {
   MODULE_METRICS_DEFAULT_PERIOD_DAYS,
   resolveFacultyStatusRoles,
   type FacultyCommandMetricsSnapshot,
-} from "@mms/shared";
-import { faculty, facultyEmployments } from "../schema.js";
-import { withTenant, withTenantRead } from "../tenant-context.js";
+} from "@mms/contracts";
+import { faculty, facultyEmployments } from "@mms/db/schema";
+import { withTenant, withTenantRead } from "@mms/db/context";
 import { facultyStatusExpr } from "./facultyRepositoryListQuerySql.js";
 
 const feEmp = alias(facultyEmployments, "fe_emp");

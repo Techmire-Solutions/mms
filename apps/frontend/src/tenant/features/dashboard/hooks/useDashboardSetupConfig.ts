@@ -8,7 +8,7 @@ import {
   DEFAULT_DASHBOARD_PREFERENCES,
   normalizeDashboardPreferences,
   normalizeDashboardWidgets,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { buildDefaultCustomWidgets } from "@/lib/reports/widgetDefaults";
 import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 import { apiContract, tsrClient } from "@/lib/api";

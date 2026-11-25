@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { isNull, sql } from "drizzle-orm";
-import type { AttendanceRecord } from "@mms/shared";
-import { attendance } from "../schema.js";
-import { ConflictError, ValidationError } from "../../lib/httpErrors.js";
+import type { AttendanceRecord } from "@mms/contracts";
+import { attendance } from "@mms/db/schema";
+import { ConflictError, ValidationError } from "@mms/be-core/http/errors";
 
 /**
  * Planning helpers for the attendance upsert.

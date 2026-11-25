@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMinimalCollectionsForSeed, getMinimalObjects } from "../db/minimalSeeds.js";
+import { getMinimalCollectionsForSeed, getMinimalObjects } from "@mms/db/seed";
 
 const TENANT_RECORD_COLLECTIONS = [
   "contacts",

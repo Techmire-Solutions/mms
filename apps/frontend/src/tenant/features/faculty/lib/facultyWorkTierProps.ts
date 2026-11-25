@@ -4,7 +4,7 @@ import type {
   FacultyQuickFilter,
   FacultySortField,
   ModuleColumnRegistryEntry,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ModuleColumnCustomizerLabels } from "@/components/app/ModuleColumnCustomizer";
 import type { WorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import type { FacultyWorkOverlayInteractions } from "@/tenant/features/faculty/hooks/facultyPageOverlaysTypes";

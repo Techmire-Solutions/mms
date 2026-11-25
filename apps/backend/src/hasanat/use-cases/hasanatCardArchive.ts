@@ -5,8 +5,8 @@
  * callers already run inside the tenant transaction.
  */
 
-import type { Distribution } from "@mms/shared";
-import { emitOutboxEvents } from "../../services/outboxEventService.js";
+import type { Distribution } from "@mms/contracts";
+import { emitOutboxEvents } from "@mms/be-core/data/outbox";
 import { auditCardMutation, cardAuditSnapshot } from "./hasanatAudit.js";
 
 /** One audit row per archived card + one batched CDC insert. */

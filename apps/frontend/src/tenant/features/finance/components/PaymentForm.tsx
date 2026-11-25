@@ -12,13 +12,13 @@ import { SectionCard } from "@/components/app/SectionCard";
 import { PaymentFormFields } from "@/tenant/features/finance/components/PaymentFormFields";
 import { useFinanceCurrency } from "@/hooks/useCurrency";
 import { useTranslation } from "@/hooks/useTranslation";
-import { moneyToCents, tryParseMoneyAmountNumber } from "@mms/shared";
+import { moneyToCents, tryParseMoneyAmountNumber } from "@mms/contracts";
 import {
   formatMoney,
   isValidExchangeRate,
   type PaymentCreateInput,
   paymentRecordInsertSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { DocumentCurrencyFields } from "@/components/app/DocumentCurrencyFields";
 import { useDocumentCurrency } from "@/tenant/hooks/useDocumentCurrency";
 import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";

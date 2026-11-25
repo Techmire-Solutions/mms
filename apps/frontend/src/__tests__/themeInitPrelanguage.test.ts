@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { describe, expect, it } from "vitest";
-import { getLanguageDirection } from "@mms/shared";
+import { getLanguageDirection } from "@mms/contracts";
 import { ENTRY_PATHS, ROUTES } from "@/lib/config/routes";
 import { TENANT_PATHS } from "@/lib/routing/moduleRegistry";
 

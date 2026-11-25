@@ -1,4 +1,4 @@
-import type { ContactExperience } from "@mms/shared";
+import type { ContactExperience } from "@mms/contracts";
 
 export function createEmptyExperience(
   defaultEmploymentType: string | undefined,

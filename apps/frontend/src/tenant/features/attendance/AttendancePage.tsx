@@ -5,7 +5,7 @@ import { ModulePageShell } from "@/components/app/ModulePageShell";
 import { ResponsiveAccordionTabs } from "@/components/app/ResponsiveAccordionTabs";
 import { AttendanceCommandMetrics } from "@/tenant/features/attendance/components/AttendanceCommandMetrics";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
-import { attendanceTransferSchema } from "@mms/shared";
+import { attendanceTransferSchema } from "@mms/contracts";
 import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
 import { AttendanceWorkTier } from "@/tenant/features/attendance/components/AttendanceWorkTier";
 import { AttendanceCsvImportDialog } from "@/tenant/features/attendance/components/AttendanceCsvImportDialog";

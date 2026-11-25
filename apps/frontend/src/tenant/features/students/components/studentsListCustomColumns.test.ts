@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatDateTime } from "@mms/shared";
+import { formatDate, formatDateTime } from "@mms/contracts";
 import {
   formatStudentsListContentCustomValue,
   studentCustomFieldKeyFromColumn,

@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Modal } from "@/components/app/Modal";
+import { Modal } from "@mms/fe-core/components/Modal";
 import { FormModal } from "@/components/app/FormModal";
 import { DetailDrawerShell } from "@/components/app/DetailDrawerShell";
 
@@ -10,7 +10,7 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => `t:${key}`,
     dir: "ltr",

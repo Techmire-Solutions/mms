@@ -1,5 +1,5 @@
-import type { ObligationCollection } from "@mms/shared";
-import { toMessagingRecipient } from "@mms/shared";
+import type { ObligationCollection } from "@mms/contracts";
+import { toMessagingRecipient } from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import { apiErrorMessage } from "@/lib/apiErrorMessage";
 import { isConflictError } from "@/lib/apiContractError";

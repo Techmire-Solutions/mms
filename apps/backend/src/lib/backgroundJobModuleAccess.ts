@@ -7,7 +7,7 @@ import {
   type ModuleAction,
   type Permission,
   type WorkspaceRole,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { loadModuleAvailability } from "./moduleAvailabilityService.js";
 import { getTenantRoleCatalog } from "./tenantRoleCatalog.js";
 import { resolveCurrentTenantRole } from "./currentTenantRole.js";

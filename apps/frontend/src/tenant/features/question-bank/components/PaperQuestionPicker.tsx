@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
 import { Input } from "@/components/ui/input";
 import { FormSelect, type FormSelectOption } from "@/components/app/FormSelect";
-import { getQuestionCategoryIds, type QuestionBankQuestion as Question } from "@mms/shared";
+import { getQuestionCategoryIds, type QuestionBankQuestion as Question } from "@mms/contracts";
 import type {
   DifficultyFilter,
   PaperSection,

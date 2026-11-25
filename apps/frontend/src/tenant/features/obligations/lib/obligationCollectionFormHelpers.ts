@@ -4,7 +4,7 @@ import type {
   ObligationCollection,
   WakalaType,
 } from "@/lib/data/obligationsData";
-import { generateClientEntityId, roundMoneyAmount, type AppTranslationKey } from "@mms/shared";
+import { generateClientEntityId, roundMoneyAmount, type AppTranslationKey } from "@mms/contracts";
 import type { ObligationCollectionFormState } from "../components/ObligationCollectionFormFields";
 
 export function eligibleRepsForType(

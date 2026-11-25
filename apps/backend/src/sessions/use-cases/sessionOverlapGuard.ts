@@ -2,7 +2,7 @@ import {
   SESSION_OVERLAP_STATES,
   normalizeSessionModulePreferences,
   normalizeSessionStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { toDbDate } from "../../lib/dbDate.js";
 import type { SessionsRepository } from "../repository/sessionsRepository.js";

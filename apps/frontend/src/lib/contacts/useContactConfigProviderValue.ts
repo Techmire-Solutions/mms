@@ -7,7 +7,7 @@ import {
   INITIAL_FIELD_SEED,
   resolveContactEnabledTabIds,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ContactConfigContextType } from "@/lib/contacts/contactConfigContextTypes";
 import type { ContactConfigExtras } from "@/lib/contacts/useContactConfigTypes";
 import { getFallbackCountryCode } from "@/lib/contacts/contactI18n";

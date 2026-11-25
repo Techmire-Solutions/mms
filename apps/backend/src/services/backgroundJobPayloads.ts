@@ -5,8 +5,8 @@ import type {
   MessagingCsvExportQueryDto,
   SessionExportColumn,
   StudentExportColumn,
-} from "@mms/shared";
-import type { ContactsExportQueryInput } from "../contacts/use-cases/contactExportUseCases.js";
+} from "@mms/contracts";
+import type { ContactsExportQueryInput } from "@mms/mod-contacts/backend/use-cases";
 import type { StudentsExportQueryInput } from "./studentsExportService.js";
 import type { FacultyExportQueryInput } from "./facultyExportService.js";
 import type { SessionsExportQueryInput } from "./sessionsExportService.js";

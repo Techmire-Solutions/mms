@@ -3,9 +3,9 @@ import {
   toSqlSearchPattern,
   type AdmissionsMetrics,
   type RegistrationApplicationStatus,
-} from "@mms/shared";
-import { registrationApplications, sessionClasses, sessions } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+} from "@mms/contracts";
+import { registrationApplications, sessionClasses, sessions } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 const a = registrationApplications;
 

@@ -1,5 +1,5 @@
 import process from "node:process";
-import { resolveBackendListenPort } from "@mms/shared";
+import { resolveBackendListenPort } from "@mms/contracts";
 import { buildApp } from "./app.js";
 import { closeDatabase } from "./db/database.js";
 import { startAuthArtifactPurgeScheduler } from "./services/auth/authArtifactPurgeScheduler.js";

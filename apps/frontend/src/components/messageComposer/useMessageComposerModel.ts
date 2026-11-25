@@ -4,7 +4,7 @@ import {
   mergeMessageTemplates,
   type MessageTemplate,
   type StandardMessagingRecipient as MessagingRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useMessageTemplates } from "@/hooks/useMessaging";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";

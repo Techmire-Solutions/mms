@@ -6,7 +6,7 @@ import {
   questionBankQuestionListSchema,
   questionBankTestListSchema,
   questionBankResultListSchema,
-} from "@mms/shared";
+} from "@mms/contracts";
 import {
   registerBulkRoutes,
   registerMetricsRoute,

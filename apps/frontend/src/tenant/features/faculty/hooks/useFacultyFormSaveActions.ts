@@ -11,7 +11,7 @@ import type {
   FacultyMember,
   FacultySettings,
   FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { facultyDraftSnapshot } from "@/tenant/features/faculty/lib/facultyFormDraft";
 import {
   confirmPendingFacultySave,

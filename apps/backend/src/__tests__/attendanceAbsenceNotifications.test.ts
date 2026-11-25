@@ -43,7 +43,7 @@ vi.mock("../attendance/repository/attendanceCalendarRepositoryAdapter.js", () =>
 vi.mock("../notifications/use-cases/notificationsUseCases.js", () => ({
   notificationsUseCases: { notify: mocks.notify },
 }));
-vi.mock("../services/auditTrailService.js", () => ({ recordModernAuditEvent: mocks.audit }));
+vi.mock("@mms/be-core/audit", () => ({ recordModernAuditEvent: mocks.audit }));
 
 const { scanAbsenceStreaks, ABSENCE_NOTIFY_MAX_PER_SCAN } =
   await import("../attendance/use-cases/attendanceEscalationUseCases.js");

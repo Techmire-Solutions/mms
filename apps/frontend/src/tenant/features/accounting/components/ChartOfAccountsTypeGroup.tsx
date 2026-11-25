@@ -1,21 +1,19 @@
 import React, { useMemo } from "react";
-import { type AppTranslationKey } from "@mms/shared";
-import { SectionLabel } from "@/components/app/SectionLabel";
-import { WORK_SURFACE } from "@/components/ui/formStyles";
-import { Badge } from "@/components/ui/badge";
-import { type StatusBadgeConfigItem, StatusBadge } from "@/components/app/StatusBadge";
-import { ModuleDirectoryCards } from "@/components/app/ModuleDirectoryCards";
+import { type AppTranslationKey } from "@mms/contracts";
+import { SectionLabel } from "@mms/ui";
+import { WORK_SURFACE } from "@mms/ui";
+import { Badge } from "@mms/ui";
+import { type StatusBadgeConfigItem, StatusBadge } from "@mms/fe-core/components/StatusBadge";
+import { ModuleDirectoryCards } from "@mms/fe-core/components/ModuleDirectoryCards";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@mms/fe-core/tenant";
 import {
-  useWorkDirectoryViewMode,
-  type WorkDirectoryViewMode,
-} from "@/hooks/useWorkDirectoryViewMode";
-import { ACCOUNT_TYPE_META, type Account, type AccountType } from "@/lib/data/accountingData";
-import {
-  AccountMobileCard,
-  AccountRowActions,
-} from "@/tenant/features/accounting/components/ChartOfAccountsTreeRows";
+  ACCOUNT_TYPE_META,
+  type Account,
+  type AccountType,
+} from "@mms/mod-accounting/frontend/tenant";
+import { AccountMobileCard, AccountRowActions } from "@mms/mod-accounting/frontend/tenant";
 
 export interface AccountTypeGroupProps {
   type: AccountType;

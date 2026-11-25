@@ -9,24 +9,6 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/app/ModuleWorkToolbar", () => ({
-  ModuleWorkToolbar: ({
-    search,
-    filterButton,
-    filterChips,
-  }: {
-    search: string;
-    filterButton: React.ReactNode;
-    filterChips?: React.ReactNode;
-  }) => (
-    <div data-testid="work-toolbar">
-      <span>Search: {search}</span>
-      <div>{filterButton}</div>
-      {filterChips}
-    </div>
-  ),
-}));
-
 vi.mock("@/components/app/FilterChips", () => ({
   FilterChips: () => <div data-testid="filter-chips">Filter Chips</div>,
 }));
@@ -56,7 +38,9 @@ describe("EnrollmentsListFilters Component", () => {
       />,
     );
 
-    expect(html).toContain("Search: Ali");
+    // The toolbar now comes from the shared WorkListFiltersScaffold, so the
+    // search value is rendered on the real input rather than a mocked summary.
+    expect(html).toContain('value="Ali"');
     expect(html).toContain("Filters Menu Button");
     expect(html).toContain("Filter Chips");
   });

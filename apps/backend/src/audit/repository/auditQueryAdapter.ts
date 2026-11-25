@@ -1,11 +1,11 @@
 import { and, desc, eq, sql } from "drizzle-orm";
-import type { ListAuditEventsQuery } from "@mms/shared";
-import { withGlobalTenant, withTenantRead } from "../../db/tenant-context.js";
+import type { ListAuditEventsQuery } from "@mms/contracts";
+import { withGlobalTenant, withTenantRead } from "@mms/db/context";
 import {
   auditMerkleRoots,
   auditTrailEvents,
   auditVerificationRuns,
-} from "../../db/schema/auditTrail.js";
+} from "@mms/db/schema/auditTrail";
 import { decryptSubjectAuditState, isEncryptedSubjectState } from "../../lib/subjectKeyService.js";
 
 /**

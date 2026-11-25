@@ -1,7 +1,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Contact } from "@mms/shared";
+import type { Contact } from "@mms/contracts";
 import { useContactFormSave } from "./useContactFormSave";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -52,7 +52,8 @@ vi.mock("@/lib/notify", () => ({
 
 // Pure identity helpers from the shared package would only add noise here; the
 // hook's own error/form-banner contract is the subject under test.
-vi.mock("@mms/shared", () => ({
+vi.mock("@mms/contracts", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/contracts")>()),
   applyTitleCaseToContact: (contact: unknown) => contact,
   composeContactName: (first: string, last: string) => `${first} ${last}`.trim(),
   cleanContactDraft: (draft: unknown) => draft,

@@ -1,4 +1,4 @@
-import type { Enrollment } from "@mms/shared";
+import type { Enrollment } from "@mms/contracts";
 import { EntityArchivedBanner } from "@/components/app/DetailDrawerArchiveChrome";
 import { useTranslation } from "@/hooks/useTranslation";
 

@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { dedupeTrimmedIds, type StoredTenantUser } from "@mms/shared";
-import { withTenantRead, withGlobalTenant } from "../tenant-context.js";
-import { tenantUsers } from "../schema.js";
+import { dedupeTrimmedIds, type StoredTenantUser } from "@mms/contracts";
+import { withTenantRead, withGlobalTenant } from "@mms/db/context";
+import { tenantUsers } from "@mms/db/schema";
 import { mapAuditTimestamps, toIsoString } from "./repositoryMappers.js";
 import { getPreparedTenantUserById } from "../preparedStatements.js";
 

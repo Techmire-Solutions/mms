@@ -21,7 +21,7 @@ vi.mock("../lib/logger.js", () => ({
 }));
 
 import { revokeFacultySessions } from "../faculty/use-cases/facultySoftDeleteSessions.js";
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 
 const members = [
   { id: "fac-1", contactId: "c-1" },

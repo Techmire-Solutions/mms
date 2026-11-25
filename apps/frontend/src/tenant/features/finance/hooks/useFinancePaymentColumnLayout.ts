@@ -1,4 +1,4 @@
-import { FINANCE_MODULE_MANIFEST, buildFinancePaymentWorkColumnRegistry } from "@mms/shared";
+import { FINANCE_MODULE_MANIFEST, buildFinancePaymentWorkColumnRegistry } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModuleColumnLayout } from "@/hooks/useModuleColumnLayout";
 

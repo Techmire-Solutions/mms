@@ -1,4 +1,4 @@
-import { getLlmProviderDefaultModel, type LlmProviderType } from "@mms/shared";
+import { getLlmProviderDefaultModel, type LlmProviderType } from "@mms/contracts";
 
 export type PlatformLlmHealthStatus = "verified" | "failed" | "testing" | "untested";
 

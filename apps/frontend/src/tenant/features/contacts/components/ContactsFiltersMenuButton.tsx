@@ -3,7 +3,7 @@ import {
   CONTACTS_QUICK_FILTER_OPTIONS,
   isContactsQuickFilter,
   type ContactsQuickFilter,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import { formatContactGenderLabel } from "@/lib/contacts/contactI18n";
 import { GenderIcon } from "@/components/app/GenderIcon";

@@ -1,4 +1,4 @@
-import { withTenant } from "../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import {
   invoiceAuditState,
   paymentAuditState,

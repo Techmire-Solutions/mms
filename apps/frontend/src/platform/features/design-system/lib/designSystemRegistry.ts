@@ -1,4 +1,4 @@
-import type { AppTranslationKey } from "@mms/shared";
+import type { AppTranslationKey } from "@mms/contracts";
 
 /** Gallery section ids — single catalog of shared UI primitives. */
 export type DesignSystemSectionId =

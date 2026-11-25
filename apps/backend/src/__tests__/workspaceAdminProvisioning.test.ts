@@ -1,13 +1,29 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      createAdminFirstContact: mocks.createAdminFirstContact,
+    },
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...{
+      createAdminFirstContact: mocks.createAdminFirstContact,
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   createAdminFirstContact: vi.fn<() => Promise<string>>(),
   createUser: vi.fn(),
   listWorkspaceSuperAdminIds: vi.fn<() => Promise<string[]>>(),
-}));
-
-vi.mock("../services/contactService.js", () => ({
-  createAdminFirstContact: mocks.createAdminFirstContact,
 }));
 
 vi.mock("../services/auth/userService.js", () => ({

@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { and, desc, eq, sql } from "drizzle-orm";
-import { SessionSchema } from "@mms/shared";
-import { closeDatabase } from "../../db/dbConnection.js";
-import { applyDrizzleMigrations } from "../../db/dbInit.js";
-import { withTenant } from "../../db/tenant-context.js";
-import { auditTrailEvents, workspaces } from "../../db/schema.js";
+import { SessionSchema } from "@mms/contracts";
+import { closeDatabase } from "@mms/db/client";
+import { applyDrizzleMigrations } from "@mms/db/migrations";
+import { withTenant } from "@mms/db/context";
+import { auditTrailEvents, workspaces } from "@mms/db/schema";
 import { saveSession } from "../../db/repositories/sessionRepositoryPersist.js";
 import { softDeleteSessionWithCascade } from "../../db/repositories/sessionRepositoryCascade.js";
 import { findSessionById } from "../../db/repositories/sessionRepositoryQueries.js";

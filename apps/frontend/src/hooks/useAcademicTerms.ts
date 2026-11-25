@@ -4,7 +4,7 @@ import {
   resolveAcademicTerm,
   type AcademicTermKey,
   type AcademicTermLabel,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSessionConfig } from "@/hooks/useStandardModuleConfig";
 

@@ -1,11 +1,11 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
-import { isValidSubdomain } from "@mms/shared";
+import { isValidSubdomain } from "@mms/contracts";
 import { getAppDomain } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import EntryPageHead, { formatEntryTitle } from "@/components/entry/EntryPageHead";
 import { AuthCardShell, AuthFormHeading, AuthMutedPanel, AuthPageFrame } from "@/components/entry";
-import { PlatformLogoMark } from "@shared/ui";
+import { PlatformLogoMark } from "@mms/ui";
 
 /**
  * Platform apex "Tenant Not Found" page.

@@ -1,4 +1,4 @@
-import { DEFAULT_FINANCE_SETTINGS, type FinanceModulePreferences } from "@mms/shared";
+import { DEFAULT_FINANCE_SETTINGS, type FinanceModulePreferences } from "@mms/contracts";
 import { todayInTimeZone } from "../lib/dbDate.js";
 import { logger } from "../lib/logger.js";
 import { runWithTenant } from "../lib/tenantContext.js";

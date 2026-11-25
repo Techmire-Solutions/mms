@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { sessionClassTimetablePeriods, scholarshipEligibilities } from "../schema.js";
-import { type TenantTransaction } from "../tenant-context.js";
+import { sessionClassTimetablePeriods, scholarshipEligibilities } from "@mms/db/schema";
+import { type TenantTransaction } from "@mms/db/context";
 import { periodSubjectSql } from "./academicCatalogNameSql.js";
 
 type Transaction = TenantTransaction;

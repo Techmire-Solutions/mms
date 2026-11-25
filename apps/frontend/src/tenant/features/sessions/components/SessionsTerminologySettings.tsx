@@ -7,7 +7,7 @@ import {
   APP_LANGUAGES,
   type AcademicTermKey,
   type AcademicTerminology,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SectionCard } from "@/components/app/SectionCard";
 import { ModuleSetupContent } from "@/components/app/ModuleSetupContent";
 import { ModuleSetupSaveFooter } from "@/components/app/ModuleSetupSaveFooter";

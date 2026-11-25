@@ -11,7 +11,7 @@ import {
   type Contact,
   type FacultyMember,
   type FieldDefinition,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { resolveFacultyFieldLabel } from "@/tenant/features/faculty/components/FacultyFormSectionShared";
 import { FacultyContactBackgroundSection } from "@/tenant/features/faculty/components/FacultyContactBackgroundSection";
 

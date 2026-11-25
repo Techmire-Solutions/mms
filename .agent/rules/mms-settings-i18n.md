@@ -29,7 +29,7 @@ description: App settings, live preview draft states, navigation registries, and
 - **Key Parity & Types:** Add new keys to `appTranslationsEn.ts` first, then mirror across ar, ur, fa. Settings and fields use `labelKey: AppTranslationKey`. Parameter interpolation matches `TranslationArgs<K>`.
 - **BiDi Layout Tokens:** Logical Tailwind only (`text-start`, `ms-*`, `ps-*`, `border-s-*`, `rtl:*`). Consume `dir`/`isRtl` from `useTranslation()`.
 - **Dynamic Label Catalogs:** Template field/preset labels resolve through module key prefixes (e.g. `finance.templateField.*`) and the shared localization helper; a guard test pins every key. Raw keys and English fallbacks are banned — a missing key returns the key, not `undefined`.
-- **Intl Formatting SSOT:** Format all dates and currency via settings-aware `formatDate`/`formatMoney` from `@mms/shared`. Raw `.toLocaleDateString()` and `.toLocaleString()` are banned.
+- **Intl Formatting SSOT:** Format all dates and currency via settings-aware `formatDate`/`formatMoney` from `@mms/contracts`. Raw `.toLocaleDateString()` and `.toLocaleString()` are banned.
 
 ## 5. Platform Isolation & Tenant Routing
 - **Platform Apex English Lock:** Platform apex (console, onboarding, admins, auth, tenant-not-found) is locked to **English + LTR**. Never consume tenant `settings.language`. Hardcode `dir="ltr"` and `lang="en"`.

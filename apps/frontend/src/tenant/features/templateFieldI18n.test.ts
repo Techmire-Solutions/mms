@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { APP_TRANSLATIONS_EN } from "@mms/shared/translations/en";
+import { APP_TRANSLATIONS_EN } from "@mms/contracts/translations/en";
 import {
   FINANCE_AVAILABLE_FIELDS,
   FINANCE_PRESETS,

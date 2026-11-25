@@ -1,4 +1,4 @@
-import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/shared";
+import type { StandardMessagingRecipient as MessagingRecipient } from "@mms/contracts";
 import { reportClientError } from "@/lib/clientErrorReporting";
 import { notify } from "@/lib/notify";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";

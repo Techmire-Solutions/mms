@@ -2,7 +2,7 @@ import {
   DEFAULT_USERS_SETTINGS,
   normalizeUserModulePreferences,
   type UsersSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { getUserModulePreferencesByWorkspace } from "../../db/repositories/userModulePreferencesRepository.js";
 

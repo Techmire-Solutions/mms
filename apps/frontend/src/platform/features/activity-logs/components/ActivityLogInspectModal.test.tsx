@@ -10,7 +10,7 @@ vi.mock("@/hooks/useTranslation", () => ({
   }),
 }));
 
-vi.mock("@/components/app/Modal", () => ({
+vi.mock("@mms/fe-core/components/Modal", () => ({
   Modal: ({
     open,
     title,
@@ -28,7 +28,7 @@ vi.mock("@/components/app/Modal", () => ({
     ) : null,
 }));
 
-vi.mock("@shared/ui", async (importOriginal) => {
+vi.mock("@mms/ui", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,

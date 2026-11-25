@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AttendanceRecord, User } from "@mms/shared";
+import type { AttendanceRecord, User } from "@mms/contracts";
 import { runWithTenant } from "../lib/tenantContext.js";
 
 /**

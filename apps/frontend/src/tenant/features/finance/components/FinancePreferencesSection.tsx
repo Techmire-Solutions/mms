@@ -5,13 +5,13 @@ import {
   type AppTranslationKey,
   type FinancePaymentMethod,
   type FinanceSettings,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { Button } from "@/components/ui/button";
 import { FormSelect } from "@/components/app/FormSelect";
 import { FORM_INPUT } from "@/components/ui/formStyles";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { useTranslation } from "@/hooks/useTranslation";
 

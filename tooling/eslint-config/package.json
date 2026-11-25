@@ -1,0 +1,31 @@
+{
+  "name": "@mms/eslint-config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared ESLint flat configs and architecture-boundary policies for the MMS monorepo.",
+  "type": "module",
+  "scripts": {
+    "lint": "node -r ../../scripts/eslint-ts-compat.cjs node_modules/eslint/bin/eslint.js --cache --cache-strategy content --cache-location node_modules/.cache/eslint/ . --quiet"
+  },
+  "exports": {
+    ".": "./index.mjs",
+    "./base": "./base.mjs",
+    "./node": "./node.mjs",
+    "./react": "./react.mjs",
+    "./boundaries": "./boundaries.mjs"
+  },
+  "dependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-boundaries": "^7.4.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "globals": "^17.14.0",
+    "typescript-eslint": "^8.74.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.15.0",
+    "typescript": "~7.0.2"
+  }
+}

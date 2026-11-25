@@ -1,4 +1,4 @@
-import type { ModuleColumnRegistryEntry } from "@mms/shared";
+import type { ModuleColumnRegistryEntry } from "@mms/contracts";
 import { DirectoryEntityCard } from "@/components/app/DirectoryEntityCard";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import type { StatusBadgeConfigItem } from "@/components/app/StatusBadge";

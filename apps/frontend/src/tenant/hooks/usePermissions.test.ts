@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { WorkspaceRole } from "@mms/shared";
+import type { WorkspaceRole } from "@mms/contracts";
 import {
   useModulePermissions,
   usePermissions,

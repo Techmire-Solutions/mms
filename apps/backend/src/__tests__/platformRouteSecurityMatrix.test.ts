@@ -129,7 +129,7 @@ const ROUTE_AREAS: ReadonlyArray<{ pattern: RegExp; area: Area }> = [
   { pattern: /^\/api\/platform\/auth\/session\/policy$/, area: "public" },
   { pattern: /^\/api\/platform\/auth\/(session\/extend|change-password)$/, area: "authenticated" },
   // Areas.
-  { pattern: /^\/api\/platform\/(users|admins)(\/|$)/, area: "admins" },
+  { pattern: /^\/api\/platform\/(users|admins|iam)(\/|$)/, area: "admins" },
   { pattern: /^\/api\/platform\/(workspaces|consolidation)(\/|$)/, area: "workspaces" },
   { pattern: /^\/api\/platform\/contacts(\/|$)/, area: "contacts" },
   { pattern: /^\/api\/platform\/messages(\/|$)/, area: "messaging" },

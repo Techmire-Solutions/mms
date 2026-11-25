@@ -1,6 +1,6 @@
 import React from "react";
 import { CheckCircle2, Clock, HardDriveDownload, RefreshCw, AlertTriangle } from "lucide-react";
-import { BACKUP_HISTORY_MAX, formatDateTime, type WorkspaceBackupRecord } from "@mms/shared";
+import { BACKUP_HISTORY_MAX, formatDateTime, type WorkspaceBackupRecord } from "@mms/contracts";
 import { SectionCard } from "@/components/app/SectionCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

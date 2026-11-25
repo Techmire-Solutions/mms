@@ -1,13 +1,13 @@
 ---
 description: Testing strategy (unit, API inject, Playwright E2E), coverage gates, isolation, and error reporting
 paths:
-  - "packages/shared/**/*.test.ts"
+  - "packages/contracts/**/*.test.ts"
   - "apps/backend/src/**/*.test.ts"
   - "apps/frontend/src/**/*.test.ts"
   - "apps/frontend/src/**/*.test.tsx"
   - "apps/backend/vitest*.config.ts"
   - "apps/frontend/vitest*.config.ts"
-  - "packages/shared/vitest*.config.ts"
+  - "packages/contracts/vitest*.config.ts"
   - "e2e/**"
   - "apps/frontend/src/components/app/ErrorBoundary.tsx"
   - "apps/frontend/src/lib/clientErrorReporting.ts"
@@ -20,7 +20,7 @@ paths:
 ## 1. Testing Strategy & Execution Invariants
 - **Test-first delivery:** Red → Green → Refactor is owned by `mms-tdd.md` (advisory pairing check: `pnpm run check:tdd-pairing`). The rules below govern how that spec is written and run.
 - **Workspace Test Execution:**
-  - Unit/Integration: `pnpm test` (root turbo) · `pnpm --filter mms-backend test:coverage` · `pnpm --filter @mms/shared test:coverage`.
+  - Unit/Integration: `pnpm test` (root turbo) · `pnpm --filter mms-backend test:coverage` · `pnpm --filter @mms/contracts test:coverage`.
   - Backend DB/RLS Integration: `pnpm --filter mms-backend run test:db` (requires live PostgreSQL).
   - Browser E2E: `pnpm test:e2e` (root) or `pnpm --filter e2e-tests exec playwright test tests/<spec>.spec.ts`.
 - **Deterministic Execution (Zero Skip Latches):** Banned: conditionally-skipping tests (`if (!isDbAvailable) return;`). Mocks use in-memory repository fakes with Fastify `inject()`. Real DB integration tests must fail if database infrastructure is unavailable.
@@ -32,7 +32,7 @@ paths:
 
 ## 2. Test File Organization & Specification Standards
 - **Co-Location & Layout:**
-  - Unit/Component: `[feature].test.ts` or `[feature].test.tsx` colocated next to `[feature].ts(x)` in `apps/frontend` and `packages/shared`.
+  - Unit/Component: `[feature].test.ts` or `[feature].test.tsx` colocated next to `[feature].ts(x)` in `apps/frontend` and `packages/contracts`.
   - Backend Unit/Routes: `apps/backend/src/__tests__/**/*.{test,spec}.ts` (or co-located `*.test.ts`).
   - Feature Integration: `features/[feature]/__tests__/[feature].integration.test.ts` or `apps/backend/src/__tests__/db-integration/`.
   - Browser E2E: `e2e/tests/[user-journey].spec.ts`.
@@ -59,11 +59,11 @@ paths:
   - **Dependency Isolation:** Mock all I/O boundaries (PostgreSQL/Drizzle queries, Redis/BullMQ instances, external HTTP clients, file storage, email gateways) using Vitest mocks (`vi.fn()`, `vi.spyOn()`). Unit tests must execute deterministically in milliseconds without network or database dependencies.
   - **Boundary & Contract Coverage:**
     - *Happy Path:* Valid input scenarios and expected return payloads.
-    - *Schema & Boundary Conditions:* Null, undefined, empty strings, boundary integers, invalid date strings, and malformed payload structures validated against `@mms/shared` Zod schemas.
+    - *Schema & Boundary Conditions:* Null, undefined, empty strings, boundary integers, invalid date strings, and malformed payload structures validated against `@mms/contracts` Zod schemas.
     - *Error Contracts:* Ensure custom domain exceptions (`ContractError`, `HttpError`, RBAC rejections) throw with expected HTTP status codes, structured error payloads, and diagnostic codes.
 - **Transport-Level Mocking:** Intercept network calls at the transport layer (Fastify `inject()` for backend; transport/network interception or isolated facade boundaries for frontend). Never mock raw `fetch`, `axios`, or internal API client classes directly with ad-hoc stubs.
 - **Query-Backed Components & Print:** Component tests that render `useDocumentTemplate`/Query hooks wrap in `withQueryClient` (`src/test/queryClientTestUtils.tsx`); print tests stub `window.open` and assert the written HTML. Never assert raw translation keys or rely on the live API.
-- **Typed Factories over JSON:** Never create static `.json` fixtures for mutable domain models. Use typed factory builders exporting pure functions with sensible `@mms/shared` defaults that accept partial overrides.
+- **Typed Factories over JSON:** Never create static `.json` fixtures for mutable domain models. Use typed factory builders exporting pure functions with sensible `@mms/contracts` defaults that accept partial overrides.
 - **Zero Shared Mutable State:**
   - Prohibit `let` variables in outer `describe` scopes that mutate across tests.
   - Reset all mocks, handlers, stores, and storage in lifecycle hooks (`beforeEach`/`afterEach`).
@@ -76,7 +76,7 @@ The per-workspace `thresholds` blocks are the only authoritative floors — neve
 | :--- | :--- | :--- |
 | Frontend | `apps/frontend/vitest.config.ts` | 42 / 41 / 34 / 40 |
 | Backend | `apps/backend/vitest.config.ts` | 44 / 42 / 40 / 32 |
-| `@mms/shared` | `packages/shared/vitest.config.ts` | 77 / 74 / 71 / 55 |
+| `@mms/contracts` | `packages/contracts/vitest.config.ts` | 77 / 74 / 71 / 55 |
 
 - **The Ratchet Rule:** A pull request or code generation task must never lower the configured floors to make a change pass; raise a floor only with the measured value from a green run.
 - **Branch Coverage Over Line Coverage:** Line coverage alone is insufficient. All edge cases (early returns, error catches, fallback defaults) must have explicit branch coverage.
@@ -116,7 +116,7 @@ The per-workspace `thresholds` blocks are the only authoritative floors — neve
   - Explicitly test Row-Level Security (RLS) enforcement and `tenant_id` scoping.
   - Execute cross-tenant isolation assertions: verify that Tenant A cannot read, mutate, or soft-delete records belonging to Tenant B under any circumstance.
   - Validate transaction rollbacks on failure to ensure atomic consistency across multi-table writes.
-- **API Route & Serialization Integrity:** Validate Fastify route handlers, authentication/session cookies, CSRF guards, and response payload serialization against their corresponding `@mms/shared` contract schemas.
+- **API Route & Serialization Integrity:** Validate Fastify route handlers, authentication/session cookies, CSRF guards, and response payload serialization against their corresponding `@mms/contracts` contract schemas.
 - **Zero Regression Suite:** Run the dependent subsystem suites (`pnpm --filter mms-backend run test:db` and `pnpm test`) to guarantee modifications do not introduce regressions across related modules.
 
 ## 13. Derived Projection & Concurrency Testing

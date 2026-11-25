@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ObligationCollection } from "@mms/shared";
+import type { ObligationCollection } from "@mms/contracts";
 
 const mockAudit = vi.hoisted(() => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({}),
@@ -11,8 +11,8 @@ const mockActor = vi.hoisted(() => ({
   getRequestUserId: vi.fn((): string | null => "usr-accountant"),
 }));
 
-vi.mock("../services/auditTrailService.js", () => mockAudit);
-vi.mock("../services/outboxEventService.js", () => mockOutbox);
+vi.mock("@mms/be-core/audit", () => mockAudit);
+vi.mock("@mms/be-core/data/outbox", () => mockOutbox);
 vi.mock("../lib/tenantContext.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../lib/tenantContext.js")>();
   return { ...actual, getRequestUserId: mockActor.getRequestUserId };

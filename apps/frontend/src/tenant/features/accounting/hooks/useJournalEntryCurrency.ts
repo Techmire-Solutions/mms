@@ -1,7 +1,7 @@
-import type { JournalEntry } from "@mms/shared";
+import type { JournalEntry } from "@mms/contracts";
 import { useAccountingCurrencySettings } from "@/tenant/features/accounting/hooks/useAccountingFx";
 import { useDocumentCurrency } from "@/tenant/hooks/useDocumentCurrency";
-import { entryCurrencyFromLines, entryRateFromLines } from "../lib/journalEntryCurrency";
+import { entryCurrencyFromLines, entryRateFromLines } from "@mms/mod-accounting/frontend/tenant";
 
 /**
  * Entry-level IAS 21 currency for the journal form: every line shares the

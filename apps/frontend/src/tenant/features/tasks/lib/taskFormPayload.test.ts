@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { TaskRecord } from "@mms/shared";
+import type { TaskRecord } from "@mms/contracts";
 import { assigneesChanged, buildTaskFormPayload, validateTaskDates } from "./taskFormPayload";
 
 const existing: TaskRecord = {

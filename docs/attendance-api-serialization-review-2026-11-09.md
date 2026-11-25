@@ -32,7 +32,7 @@ schema, batch-envelope and N+1 items follow.
 
 ## What changed
 
-**Shared (`packages/shared`)**
+**Shared (`packages/contracts`)**
 - `attendance/attendanceApiSchemas.ts`: bounded id/class/date/kind params, the strict list query
   (enum `sortField` shared with the SQL whitelist, `sectionId`, ISO days, `dateFrom <= dateTo`),
   the roster query, the batch rejection envelope and the tenant-attachment URL pattern.

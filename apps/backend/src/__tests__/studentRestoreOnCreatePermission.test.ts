@@ -1,3 +1,23 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsByIds: vi.fn().mockResolvedValue([]),
+    },
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsByIds: vi.fn().mockResolvedValue([]),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createStudent } from "../students/use-cases/studentUseCases.js";
 import { StudentPermissionError } from "../students/use-cases/studentNormalizeUseCases.js";
@@ -52,19 +72,15 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: vi.fn(),
 }));
 
-vi.mock("../services/contactService.js", () => ({
-  loadContactsByIds: vi.fn().mockResolvedValue([]),
-}));
-
 vi.mock("../students/use-cases/studentPreferencesService.js", () => ({
   loadStudentModulePreferences: vi.fn().mockResolvedValue({}),
 }));
 
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({ id: 1 }),
   sanitizeAuditState: (v: unknown) => v,
 }));

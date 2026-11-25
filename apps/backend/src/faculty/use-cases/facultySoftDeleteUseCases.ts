@@ -2,16 +2,16 @@
  * @file facultySoftDeleteUseCases.ts
  * @description Soft-delete faculty members (single + bulk) with subordinate guards.
  */
-import { dedupeTrimmedIds, type Faculty } from "@mms/shared";
+import { dedupeTrimmedIds, type Faculty } from "@mms/contracts";
 import { getRequestTenant } from "../../lib/tenantContext.js";
 import { runInTransaction } from "../../db/database.js";
 import { broadcastCollection } from "../../lib/livePush.js";
 import type { FacultyRepository } from "../repository/facultyRepository.js";
 import { facultyRepository } from "../repository/facultyRepositoryAdapter.js";
-import { nowIso } from "../../lib/softDeleteHelpers.js";
+import { nowIso } from "@mms/db/soft-delete";
 import { restoreFacultyById, bulkRestoreFaculty } from "./facultyRestoreUseCases.js";
 import { cascadeFacultySoftDeleteSideEffects } from "./facultySoftDeleteCascade.js";
-import { reconcileFacultyContactsByFacultyIds } from "../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileFacultyContactsByFacultyIds } from "@mms/mod-contacts/backend/use-cases";
 import { appendCollectionAuditInTx } from "../../lib/collectionAuditInTx.js";
 import {
   guardBulkSubordinatesOnDelete,

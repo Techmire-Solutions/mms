@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { WORKSHOPS_MODULE_MANIFEST, workshopsCsvExportBodySchema } from "@mms/shared";
+import { WORKSHOPS_MODULE_MANIFEST, workshopsCsvExportBodySchema } from "@mms/contracts";
 import { registerModuleCsvExportRoutes } from "../../../lib/registerModuleCsvExportRoutes.js";
 import { canDeleteCollection, canReadCollection } from "../../../services/rbacService.js";
 

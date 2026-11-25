@@ -45,11 +45,14 @@ const enqueueMocks = vi.hoisted(() => {
   return { pdf: vi.fn(), ledger: vi.fn(), QueueUnavailableError };
 });
 
-vi.mock("../routes/tenant/accounting/accountingReportDocumentEnqueue.js", () => ({
-  enqueueAccountingReportPdf: enqueueMocks.pdf,
-  enqueueAccountingLedgerExport: enqueueMocks.ledger,
-  QueueUnavailableError: enqueueMocks.QueueUnavailableError,
-}));
+vi.mock(
+  "../../../../packages/modules/accounting/dist/backend/routes/accountingReportDocumentEnqueue.js",
+  () => ({
+    enqueueAccountingReportPdf: enqueueMocks.pdf,
+    enqueueAccountingLedgerExport: enqueueMocks.ledger,
+    QueueUnavailableError: enqueueMocks.QueueUnavailableError,
+  }),
+);
 
 const job = {
   id: "job-1",

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { normalizeBrandingHex } from "@mms/shared";
+import { normalizeBrandingHex } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Field } from "@/components/app/FormPrimitives";
 import { Textarea } from "@/components/ui/textarea";

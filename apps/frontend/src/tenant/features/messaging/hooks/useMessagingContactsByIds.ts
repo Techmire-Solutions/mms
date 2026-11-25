@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { StandardMessagingRecipient } from "@mms/shared";
+import type { StandardMessagingRecipient } from "@mms/contracts";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { apiContract } from "@/lib/api";
 import { ApiError } from "@/lib/apiClient";

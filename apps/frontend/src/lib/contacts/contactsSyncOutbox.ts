@@ -1,4 +1,4 @@
-import { getDisplayName } from "@mms/shared";
+import { getDisplayName } from "@mms/contracts";
 import type { ContactsOutboxEntry } from "@/lib/contacts/contactsSyncOutboxStorage";
 
 export {

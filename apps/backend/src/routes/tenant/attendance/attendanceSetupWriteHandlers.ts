@@ -1,9 +1,9 @@
-import { type User, ATTENDANCE_MODULE_MANIFEST, type attendanceContract } from "@mms/shared";
+import { type User, ATTENDANCE_MODULE_MANIFEST, type attendanceContract } from "@mms/contracts";
 import { handleContractError } from "../../../lib/contractError.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
 import { createCollectionAuditHelper } from "../../../lib/createCollectionAuditHelper.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import {
   getAttendanceFieldConfigService,
   updateAttendanceFieldConfigService,
@@ -12,7 +12,7 @@ import {
   getAttendancePreferencesService,
   updateAttendancePreferencesService,
 } from "../../../services/attendancePreferencesService.js";
-import { normalizeAttendanceModulePreferences } from "@mms/shared";
+import { normalizeAttendanceModulePreferences } from "@mms/contracts";
 import { getTenantId } from "./attendanceRecordHandlers.js";
 
 /**

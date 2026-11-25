@@ -3,7 +3,7 @@ import {
   formatDate,
   type PlatformWorkspaceRow as PlatformWorkspaceRowData,
   type AppTranslationKey,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { tenantUrl } from "@/lib/config/tenantConfig";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { EntityDescriptor } from "@/components/common/entityRegistryTypes";

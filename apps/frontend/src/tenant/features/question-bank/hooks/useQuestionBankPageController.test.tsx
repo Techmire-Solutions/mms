@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
-import type { QuestionBankQuestion } from "@mms/shared";
+import type { QuestionBankQuestion } from "@mms/contracts";
 import { useQuestionBankPageController } from "./useQuestionBankPageController";
 
 const replaceQuestionsSpy = vi.hoisted(() => vi.fn(async () => []));

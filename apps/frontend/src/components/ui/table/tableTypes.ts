@@ -12,4 +12,4 @@ export type {
   TableHeadCellProps,
   TableCellProps,
   TableCaptionProps,
-} from "@shared/ui";
+} from "@mms/ui";

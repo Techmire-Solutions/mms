@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { Calendar, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/app/DatePicker";
-import { FormModal } from "@/components/app/FormModal";
-import { useSubmitGuard } from "@/lib/forms/useSubmitGuard";
-import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Field } from "@/components/app/FormPrimitives";
-import { Input } from "@/components/ui/input";
-import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@mms/ui";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { useSubmitGuard } from "@mms/fe-core/forms/useSubmitGuard";
+import { useDirtySnapshot } from "@mms/fe-core/forms/useDirtySnapshot";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Field } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { accountingErrorMessage } from "@/tenant/features/accounting/hooks/useAccountingSetupSaveActions";
-import { generateClientEntityId } from "@mms/shared";
-import type { FiscalYear } from "@/lib/data/accountingData";
+import { generateClientEntityId } from "@mms/contracts";
+import type { FiscalYear } from "@mms/mod-accounting/frontend/tenant";
 
 interface AccountingFiscalYearModalProps {
   open: boolean;

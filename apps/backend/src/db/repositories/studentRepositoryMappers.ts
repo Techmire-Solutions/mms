@@ -1,5 +1,5 @@
-import { type Student, type StudentStatus } from "@mms/shared";
-import type { StudentSelectRow } from "../schema.js";
+import { type Student, type StudentStatus } from "@mms/contracts";
+import type { StudentSelectRow } from "@mms/db/schema";
 import { mapAuditTimestamps, nullsToUndefined, parseNumericColumn } from "./repositoryMappers.js";
 
 export function studentRowToRecord(

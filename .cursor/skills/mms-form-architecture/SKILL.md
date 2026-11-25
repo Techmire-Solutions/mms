@@ -39,7 +39,7 @@ The shared helpers are the contract; a form that re-implements one is the defect
 | `useStableRowList` | `@/lib/forms/useStableRowList` | Repeatable rows that add/remove/reorder (stable `key`, no index keys) |
 | `mapZodFormErrors` | `@/lib/forms/mapZodFormErrors` | Mapping `ZodError` → field → localized message |
 | `mapApiFormError` | `@/lib/forms/serverFormErrors` | Mapping contract/domain field errors + conflict/fallback messages onto fields |
-| `Field` / `FieldErrorMessage` | `@/components/app/FormPrimitives` (from `@shared/ui`) | Every control: label, required mark, hint, inline error, `aria-invalid` + `aria-describedby` |
+| `Field` / `FieldErrorMessage` | `@/components/app/FormPrimitives` (from `@mms/ui`) | Every control: label, required mark, hint, inline error, `aria-invalid` + `aria-describedby` |
 | `FormErrorBanner` | rendered by `Modal` from the `error` prop | Never render a second banner inside the body |
 
 Advisory implementation checklist:

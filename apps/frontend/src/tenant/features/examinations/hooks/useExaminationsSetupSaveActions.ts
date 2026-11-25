@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type ExaminationsSettings } from "@mms/shared";
+import { type ExaminationsSettings } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { notify } from "@/lib/notify";
 

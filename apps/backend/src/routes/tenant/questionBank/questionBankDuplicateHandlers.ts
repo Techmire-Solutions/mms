@@ -1,7 +1,7 @@
-import type { User, questionBankContract } from "@mms/shared";
+import type { User, questionBankContract } from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import { canReadCollection } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { checkQuestionDuplicates } from "../../../questionBank/use-cases/questionDuplicateUseCases.js";
 import { mappedFailure } from "./questionBankLifecycleHandlers.js";
 

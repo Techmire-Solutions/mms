@@ -5,14 +5,14 @@ import {
   serializeQuestionsForClient,
   type QuestionBankQuestionSummary,
   type User,
-} from "@mms/shared";
+} from "@mms/contracts";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import {
   canDeleteCollection,
   canReadCollection,
   canWriteCollection,
 } from "../../../services/rbacService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { questionBankUseCases } from "../../../questionBank/use-cases/questionBankUseCases.js";
 import { mappedFailure } from "./questionBankLifecycleHandlers.js";
 

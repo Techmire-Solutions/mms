@@ -1,3 +1,39 @@
+const mocks = vi.hoisted(() => ({
+  loadFieldConfig: vi.fn(),
+  saveFieldConfig: vi.fn(),
+  loadPreferences: vi.fn(),
+  savePreferences: vi.fn(),
+  savedReports: {
+    find: vi.fn(),
+    create: vi.fn(),
+    touch: vi.fn(),
+    list: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("@mms/be-core/data/module-field-config", () => ({
+  createModuleFieldConfigService: () => ({
+    load: mocks.loadFieldConfig,
+    save: mocks.saveFieldConfig,
+  }),
+}));
+
+vi.mock("@mms/be-core/data/module-preferences", () => ({
+  createModulePreferencesService: () => ({
+    load: mocks.loadPreferences,
+    save: mocks.savePreferences,
+  }),
+}));
+
+vi.mock("@mms/be-core/data/saved-reports", () => ({
+  findSavedReportById: (...args: unknown[]) => mocks.savedReports.find(...args),
+  createPersistedSavedReport: (...args: unknown[]) => mocks.savedReports.create(...args),
+  touchSavedReportRunById: (...args: unknown[]) => mocks.savedReports.touch(...args),
+  listSavedReportsByCategory: (...args: unknown[]) => mocks.savedReports.list(...args),
+  deleteSavedReportById: (...args: unknown[]) => mocks.savedReports.delete(...args),
+}));
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../db/database.js", () => ({
@@ -65,51 +101,6 @@ const mockMatchContactIdentityIndex = vi.fn().mockResolvedValue({
 
 const mockBulkTagContacts = vi.fn();
 
-vi.mock("../contacts/use-cases/contactUseCases.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../contacts/use-cases/contactUseCases.js")>();
-  return {
-    ...actual,
-    contactUseCases: {
-      ...actual.contactUseCases,
-      loadContactsPage: (...args: unknown[]) => mockLoadContactsPage(...args),
-      countContacts: (...args: unknown[]) => mockCountContacts(...args),
-      getContactById: (...args: unknown[]) => mockGetContactById(...args),
-      upsertContact: (...args: unknown[]) => mockUpsertContact(...args),
-      updateContactById: (...args: unknown[]) => mockUpdateContactById(...args),
-      softDeleteContactById: (...args: unknown[]) => mockSoftDeleteContactById(...args),
-      restoreContactById: (...args: unknown[]) => mockRestoreContactById(...args),
-      bulkSoftDeleteContacts: (...args: unknown[]) => mockBulkSoftDeleteContacts(...args),
-      bulkRestoreContacts: (...args: unknown[]) => mockBulkRestoreContacts(...args),
-      bulkTagContacts: (...args: unknown[]) => mockBulkTagContacts(...args),
-      mergeContactsById: (...args: unknown[]) => mockMergeContactsById(...args),
-      loadContactsCommandMetrics: (...args: unknown[]) => mockLoadContactsCommandMetrics(...args),
-      loadContactsReportAnalytics: (...args: unknown[]) => mockLoadContactsReportAnalytics(...args),
-      loadContactsWidgetAggregates: (...args: unknown[]) =>
-        mockLoadContactsWidgetAggregates(...args),
-      loadContactsByIds: (...args: unknown[]) => mockLoadContactsByIds(...args),
-      loadContactDuplicatePairsPage: vi.fn(),
-      matchContactIdentityIndex: (...args: unknown[]) => mockMatchContactIdentityIndex(...args),
-    },
-  };
-});
-
-const mockLoadContactFieldConfig = vi.fn();
-const mockSaveContactFieldConfig = vi.fn();
-const mockLoadContactPreferences = vi.fn();
-const mockSaveContactPreferences = vi.fn();
-
-vi.mock("../contacts/use-cases/contactPreferencesService.js", () => ({
-  loadContactPreferences: (...args: unknown[]) => mockLoadContactPreferences(...args),
-  saveContactPreferences: (...args: unknown[]) => mockSaveContactPreferences(...args),
-}));
-
-vi.mock("../contacts/use-cases/contactSavedReportUseCases.js", () => ({
-  listContactsSavedReports: (...args: unknown[]) => mockListContactsSavedReports(...args),
-  createContactsSavedReport: (...args: unknown[]) => mockCreateContactsSavedReport(...args),
-  deleteContactsSavedReport: (...args: unknown[]) => mockDeleteContactsSavedReport(...args),
-  touchContactsSavedReportRun: (...args: unknown[]) => mockTouchContactsSavedReportRun(...args),
-}));
-
 vi.mock("../services/userColumnPreferencesService.js", () => ({
   getUserColumnPreferencesForModule: (...args: unknown[]) =>
     mockGetUserColumnPreferencesForModule(...args),
@@ -117,40 +108,14 @@ vi.mock("../services/userColumnPreferencesService.js", () => ({
     mockSetUserColumnPreferencesForModule(...args),
 }));
 
-vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
-  loadContactFieldConfig: (...args: unknown[]) => mockLoadContactFieldConfig(...args),
-  saveContactFieldConfig: (...args: unknown[]) => mockSaveContactFieldConfig(...args),
-}));
-
 const mockLoadContactLookupsMap = vi.fn();
 const mockReplaceContactLookupKind = vi.fn();
-
-vi.mock("../contacts/use-cases/contactLookupsService.js", () => ({
-  loadContactLookupsMap: (...args: unknown[]) => mockLoadContactLookupsMap(...args),
-  loadContactLookupKind: vi.fn(),
-  replaceContactLookupKind: (...args: unknown[]) => mockReplaceContactLookupKind(...args),
-}));
 
 vi.mock("../services/auth/userService.js", () => ({
   getLinkedContactId: (...args: unknown[]) => mockGetLinkedContactId(...args),
 }));
 
-vi.mock("../contacts/use-cases/contactGoogleSyncUseCases.js", () => ({
-  getContactGoogleSyncConfig: (...args: unknown[]) => mockGetContactGoogleSyncConfig(...args),
-  setContactGoogleSyncConfig: vi.fn(),
-  clearContactGoogleSyncConfig: vi.fn(),
-  clearGoogleSyncTokens: vi.fn(),
-  redactGoogleSyncConfigForClient: (...args: unknown[]) =>
-    mockRedactGoogleSyncConfigForClient(...args),
-  exchangeGoogleContactsOAuthCode: vi.fn(),
-  runGoogleContactsSync: vi.fn(),
-  GoogleOAuthExchangeError: class GoogleOAuthExchangeError extends Error {},
-  GoogleSyncError: class GoogleSyncError extends Error {
-    code = "api_error";
-  },
-}));
-
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: (first: unknown, second?: unknown) => {
     const input = (second ?? first) as {
       realUserId?: string;
@@ -185,10 +150,21 @@ vi.mock("../services/backgroundJobWorkerService.js", async (importOriginal) => {
   };
 });
 
+import {
+  createContactsUseCases,
+  resetContactUseCasesForTesting,
+  setContactUseCasesForTesting,
+} from "@mms/mod-contacts/backend/use-cases";
+import {
+  resetContactGoogleSyncRepositoryForTesting,
+  resetContactLookupsRepositoryForTesting,
+  setContactGoogleSyncRepositoryForTesting,
+  setContactLookupsRepositoryForTesting,
+} from "@mms/mod-contacts/backend/repository";
 import { buildApp } from "../app.js";
-import { ContactUniqueFieldError } from "../services/contactUniqueValidationService.js";
+import { ContactUniqueFieldError } from "@mms/mod-contacts/backend/services";
 import { accountantToken, adminToken, teacherToken, viewerToken } from "./helpers/tokens.js";
-import { DEFAULT_CONTACT_EXPORT_COLUMNS, filterNonMetadataColumns } from "@mms/shared";
+import { DEFAULT_CONTACT_EXPORT_COLUMNS, filterNonMetadataColumns } from "@mms/contracts";
 
 const sampleContact = {
   id: "c1",
@@ -199,6 +175,20 @@ const sampleContact = {
 };
 
 describe("contacts REST routes", () => {
+  let lookupsRepo: {
+    listByWorkspace: ReturnType<typeof vi.fn>;
+    listByKind: ReturnType<typeof vi.fn>;
+    replaceForKind: ReturnType<typeof vi.fn>;
+    listAllByWorkspace: ReturnType<typeof vi.fn>;
+    replaceForWorkspace: ReturnType<typeof vi.fn>;
+  };
+  let googleSyncRepo: {
+    findCredentials: ReturnType<typeof vi.fn>;
+    upsertCredentials: ReturnType<typeof vi.fn>;
+    deleteCredentials: ReturnType<typeof vi.fn>;
+    replaceCredentialsForWorkspace: ReturnType<typeof vi.fn>;
+  };
+
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
     mockGetLinkedContactId.mockReset().mockResolvedValue(null);
@@ -289,9 +279,63 @@ describe("contacts REST routes", () => {
       createdAt: "2026-06-21T00:00:00.000Z",
       lastRunAt: "2026-06-21T12:00:00.000Z",
     });
+    mocks.loadFieldConfig.mockReset().mockResolvedValue(null);
+    mocks.saveFieldConfig
+      .mockReset()
+      .mockResolvedValue({ version: 1, enabledTabs: [], fields: {} });
+    mocks.loadPreferences.mockReset().mockResolvedValue(null);
+    mocks.savePreferences.mockReset().mockResolvedValue(null);
+    lookupsRepo = {
+      listByWorkspace: vi.fn().mockResolvedValue([]),
+      listByKind: vi.fn().mockResolvedValue([]),
+      replaceForKind: vi.fn().mockResolvedValue(undefined),
+      listAllByWorkspace: vi.fn().mockResolvedValue([]),
+      replaceForWorkspace: vi.fn().mockResolvedValue(undefined),
+    };
+    googleSyncRepo = {
+      findCredentials: vi
+        .fn()
+        .mockResolvedValue({ clientId: "cid", updatedAt: "2026-06-21T00:00:00.000Z" }),
+      upsertCredentials: vi.fn().mockResolvedValue(null),
+      deleteCredentials: vi.fn().mockResolvedValue(undefined),
+      replaceCredentialsForWorkspace: vi.fn().mockResolvedValue(undefined),
+    };
+    setContactLookupsRepositoryForTesting(lookupsRepo as never);
+    setContactGoogleSyncRepositoryForTesting(googleSyncRepo as never);
+    setContactUseCasesForTesting({
+      ...createContactsUseCases(),
+      loadContactsPage: mockLoadContactsPage,
+      countContacts: mockCountContacts,
+      getContactById: mockGetContactById,
+      upsertContact: mockUpsertContact,
+      updateContactById: mockUpdateContactById,
+      softDeleteContactById: mockSoftDeleteContactById,
+      restoreContactById: mockRestoreContactById,
+      bulkSoftDeleteContacts: mockBulkSoftDeleteContacts,
+      bulkRestoreContacts: mockBulkRestoreContacts,
+      bulkTagContacts: mockBulkTagContacts,
+      mergeContactsById: mockMergeContactsById,
+      loadContactsCommandMetrics: mockLoadContactsCommandMetrics,
+      loadContactsReportAnalytics: mockLoadContactsReportAnalytics,
+      loadContactsWidgetAggregates: mockLoadContactsWidgetAggregates,
+      loadContactsByIds: mockLoadContactsByIds,
+      matchContactIdentityIndex: mockMatchContactIdentityIndex,
+      listContactsSavedReports: mockListContactsSavedReports,
+      createContactsSavedReport: mockCreateContactsSavedReport,
+      deleteContactsSavedReport: mockDeleteContactsSavedReport,
+      touchContactsSavedReportRun: mockTouchContactsSavedReportRun,
+      loadContactLookupsMap: mockLoadContactLookupsMap,
+      replaceContactLookupKind: mockReplaceContactLookupKind,
+      getContactGoogleSyncConfig: mockGetContactGoogleSyncConfig,
+      redactGoogleSyncConfigForClient: mockRedactGoogleSyncConfigForClient,
+    } as unknown as Parameters<typeof setContactUseCasesForTesting>[0]);
   });
 
   afterEach(() => {
+    resetContactUseCasesForTesting();
+    resetContactLookupsRepositoryForTesting();
+    resetContactGoogleSyncRepositoryForTesting();
+
     vi.restoreAllMocks();
   });
 
@@ -1213,6 +1257,15 @@ describe("contacts REST routes", () => {
   });
 
   it("POST /api/contacts/saved-reports creates preset", async () => {
+    mocks.savedReports.create.mockImplementation(
+      async (_tenant: string, input: Record<string, unknown>) => ({
+        ...input,
+        category: "contacts",
+        createdBy: "u-accountant",
+        createdByName: "",
+        createdAt: "2026-06-21T00:00:00.000Z",
+      }),
+    );
     const app = await buildApp();
     const res = await app.inject({
       method: "POST",
@@ -1224,11 +1277,26 @@ describe("contacts REST routes", () => {
       payload: { name: "Leads", drillDown: { gender: "male" } },
     });
     expect(res.statusCode).toBe(201);
-    expect(res.json().report).toMatchObject({ id: "csr_test", name: "Leads" });
+    expect(res.json().report).toMatchObject({ name: "Leads" });
+    expect(res.json().report.id).toMatch(/^csr_/);
     await app.close();
   });
 
   it("POST /api/contacts/saved-reports/:id/run updates last run", async () => {
+    const row = {
+      id: "csr_test",
+      name: "Leads",
+      category: "contacts",
+      filters: { drillDown: { gender: "male" } },
+      createdBy: "u-accountant",
+      createdByName: "",
+      createdAt: "2026-06-21T00:00:00.000Z",
+    };
+    mocks.savedReports.find.mockResolvedValue(row);
+    mocks.savedReports.touch.mockResolvedValue({
+      ...row,
+      lastRun: "2026-06-21T12:00:00.000Z",
+    });
     const app = await buildApp();
     const res = await app.inject({
       method: "POST",
@@ -1239,10 +1307,7 @@ describe("contacts REST routes", () => {
       },
     });
     expect(res.statusCode).toBe(200);
-    expect(mockTouchContactsSavedReportRun).toHaveBeenCalledWith(
-      "csr_test",
-      expect.objectContaining({ id: "u-accountant", role: "accountant" }),
-    );
+    expect(mocks.savedReports.touch).toHaveBeenCalledWith("demo", "csr_test", "contacts");
     expect(typeof res.json().report.lastRunAt).toBe("string");
     expect(res.json().report.lastRunAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     await app.close();
@@ -1477,7 +1542,7 @@ describe("contacts REST routes", () => {
       },
     });
     expect(allow.statusCode).toBe(200);
-    expect(mockGetContactGoogleSyncConfig).toHaveBeenCalled();
+    expect(googleSyncRepo.findCredentials).toHaveBeenCalled();
 
     const deny = await app.inject({
       method: "GET",
@@ -1508,20 +1573,21 @@ describe("contacts REST routes", () => {
   });
 
   it("GET /api/contacts/lookups allows readers and PUT requires setup write", async () => {
-    mockLoadContactLookupsMap.mockResolvedValue({
-      genders: ["male", "female"],
-      socialPlatforms: [],
-      relationships: [],
-      phoneLabels: ["Mobile"],
-      emailLabels: [],
-      addressLabels: [],
-      countryCodes: [{ country: "Pakistan", code: "+92" }],
-      educationDegrees: ["Bachelors"],
-      employmentTypes: ["Full-time"],
-      skillCategories: ["Teaching & Pedagogy"],
-      skillProficiencies: ["Intermediate"],
-    });
-    mockReplaceContactLookupKind.mockResolvedValue(["male", "female", "other"]);
+    // vi.fn() types mockImplementation's callback as void; the loader must resolve rows.
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    lookupsRepo.listByKind.mockImplementation((_tenant: string, kind: string) =>
+      Promise.resolve(
+        kind === "genders"
+          ? [
+              { kind, label: "male" },
+              { kind, label: "female" },
+            ]
+          : kind === "phoneLabels"
+            ? [{ kind, label: "Mobile" }]
+            : [],
+      ),
+    );
+    lookupsRepo.replaceForKind.mockResolvedValue(undefined);
 
     const app = await buildApp();
     const readOk = await app.inject({
@@ -1558,27 +1624,31 @@ describe("contacts REST routes", () => {
       payload: { items: ["male", "female", "other"] },
     });
     expect(writeOk.statusCode).toBe(200);
-    expect(mockReplaceContactLookupKind).toHaveBeenCalledWith("genders", [
-      "male",
-      "female",
-      "other",
-    ]);
+    expect(lookupsRepo.replaceForKind).toHaveBeenCalledWith(
+      "demo",
+      "genders",
+      expect.arrayContaining([
+        expect.objectContaining({ label: "male" }),
+        expect.objectContaining({ label: "other" }),
+      ]),
+    );
     await app.close();
   });
 
   it("GET/PUT /api/contacts/field-config and /preferences require setup permissions", async () => {
-    mockLoadContactFieldConfig.mockResolvedValue({
+    // The stored config differs from the PUT payload so the route exercises the save path.
+    mocks.loadFieldConfig.mockResolvedValue({
+      version: 1,
+      enabledTabs: ["other"],
+      fields: {},
+    });
+    mocks.saveFieldConfig.mockResolvedValue({
       version: 1,
       enabledTabs: ["basic"],
       fields: {},
     });
-    mockSaveContactFieldConfig.mockResolvedValue({
-      version: 1,
-      enabledTabs: ["basic"],
-      fields: {},
-    });
-    mockLoadContactPreferences.mockResolvedValue({ defaultCountry: "PK" });
-    mockSaveContactPreferences.mockResolvedValue({ defaultCountry: "PK" });
+    mocks.loadPreferences.mockResolvedValue({ defaultCountry: "SA" });
+    mocks.savePreferences.mockResolvedValue({ defaultCountry: "PK" });
 
     const app = await buildApp();
 
@@ -1623,7 +1693,7 @@ describe("contacts REST routes", () => {
       payload: { version: 1, enabledTabs: ["basic"], fields: {} },
     });
     expect(fieldWriteOk.statusCode).toBe(200);
-    expect(mockSaveContactFieldConfig).toHaveBeenCalled();
+    expect(mocks.saveFieldConfig).toHaveBeenCalled();
 
     const prefsWriteDenied = await app.inject({
       method: "PUT",
@@ -1646,7 +1716,7 @@ describe("contacts REST routes", () => {
       payload: { defaultCountry: "PK" },
     });
     expect(prefsWriteOk.statusCode).toBe(200);
-    expect(mockSaveContactPreferences).toHaveBeenCalled();
+    expect(mocks.savePreferences).toHaveBeenCalled();
     await app.close();
   });
 

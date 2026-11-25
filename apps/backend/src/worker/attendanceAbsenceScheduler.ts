@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { withTenant } from "../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { logger } from "../lib/logger.js";
 import { LEADER_LOCK_ATTENDANCE_ABSENCE, tryAcquireLeaderLease } from "../lib/leaderElection.js";
 import { scanAbsenceStreaks } from "../attendance/use-cases/attendanceEscalationUseCases.js";

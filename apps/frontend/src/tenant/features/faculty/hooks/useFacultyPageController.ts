@@ -3,7 +3,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { usePersistedTabState } from "@/hooks/usePersistedTabState";
 import { useWorkDirectoryViewMode } from "@/hooks/useWorkDirectoryViewMode";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { FACULTY_MODULE_MANIFEST } from "@mms/shared";
+import { FACULTY_MODULE_MANIFEST } from "@mms/contracts";
 import { useFacultyMutations, useFacultyMetrics } from "@/tenant/features/faculty/hooks/useFaculty";
 import { useFacultyDirectoryFilters } from "@/tenant/features/faculty/hooks/useFacultyDirectoryFilters";
 import { useEmployeeIdMigration } from "@/tenant/features/faculty/hooks/useEmployeeIdMigration";

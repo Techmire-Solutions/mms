@@ -4,8 +4,8 @@
  */
 import { and, eq, exists, isNull, notExists, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { tasks } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { tasks } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 
 /** Active-child predicate: the task is not currently a parent of live work. */
 export function hasActiveChild(tx: TenantTransaction, subdomain: string): SQL {

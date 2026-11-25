@@ -3,10 +3,10 @@ import {
   SESSION_LOOKUP_KINDS,
   sessionLookupPutBodySchema,
   type SessionLookupKind,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { createLookupKindPutHandler } from "../../../lib/createLookupKindPutHandler.js";
 import { replaceSessionLookupKind } from "../../../services/sessionLookupsService.js";
-import { withTenant } from "../../../db/tenant-context.js";
+import { withTenant } from "@mms/db/context";
 import { getRequestTenant } from "../../../lib/tenantContext.js";
 import { auditSession } from "./sessionRouteHelpers.js";
 

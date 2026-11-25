@@ -5,8 +5,13 @@ import { standardRequestValidationErrorHandler } from "../../../lib/contractRegi
 import { enforceSessionResponses } from "../../../lib/sessionContractResponses.js";
 import { parseOccHeaders } from "../../../lib/occHeaders.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
-import { withTenant } from "../../../db/tenant-context.js";
-import { sessionContract, isQueryFlagTrue, SESSIONS_MODULE_MANIFEST, type User } from "@mms/shared";
+import { withTenant } from "@mms/db/context";
+import {
+  sessionContract,
+  isQueryFlagTrue,
+  SESSIONS_MODULE_MANIFEST,
+  type User,
+} from "@mms/contracts";
 import {
   canDeleteCollection,
   canWriteCollection,

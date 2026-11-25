@@ -3,7 +3,7 @@ import {
   type AttendanceLookupKind,
   type AttendanceLookupsMap,
   type AttendanceStatus,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { apiContract } from "@/lib/api";
 import { createModuleLookupsHooks } from "@/lib/query/createModuleLookupsHooks";
 import { attendanceQueryKeys } from "./attendanceQueryKeys.js";

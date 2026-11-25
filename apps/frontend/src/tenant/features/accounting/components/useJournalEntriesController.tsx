@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingCurrency } from "@/hooks/useCurrency";
-import type { JournalEntriesProps } from "@/tenant/features/accounting/lib/journalEntriesTypes";
+import type { JournalEntriesProps } from "@mms/mod-accounting/frontend/tenant";
 import {
   buildJournalModeTabs,
   buildJournalStatusConfig,
@@ -11,7 +11,7 @@ import {
   computeJournalGrandTotals,
   type JournalEntriesServerQueryProps,
 } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
-import { createJournalNlHandlers } from "@/tenant/features/accounting/components/journalEntriesControllerSelection";
+import { createJournalNlHandlers } from "@mms/mod-accounting/frontend/tenant";
 import { useWorkSelection } from "@/hooks/useWorkSelection";
 import { useJournalEntriesUiState } from "../hooks/useJournalEntriesUiState";
 import { useJournalEntriesFilterBridge } from "../hooks/useJournalEntriesFilterBridge";

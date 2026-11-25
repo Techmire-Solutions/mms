@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { HasanatBatchAwardBody, HasanatTier } from "@mms/shared";
+import type { HasanatBatchAwardBody, HasanatTier } from "@mms/contracts";
 
 const TIERS: HasanatTier[] = [
   { key: "bronze", name: "Bronze", minPoints: 0 },
@@ -16,10 +16,10 @@ const state = vi.hoisted(() => ({
   revokedIds: [] as string[],
 }));
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn(async () => ({ sequence: 1, hashCurrent: "h", hashPrevious: "g" })),
 }));
-vi.mock("../services/outboxEventService.js", () => ({
+vi.mock("@mms/be-core/data/outbox", () => ({
   emitOutboxEvents: vi.fn(async () => undefined),
   emitOutboxEvent: vi.fn(async () => undefined),
 }));
@@ -133,7 +133,7 @@ const { HASANAT_BULK_AWARD_JOB_KIND, registerHasanatBulkAwardRunner } =
   await import("../hasanat/use-cases/hasanatBatchAwardJob.js");
 const { HASANAT_IMPORT_JOB_KEY, registerHasanatImportRunner } =
   await import("../hasanat/use-cases/hasanatImportJob.js");
-const { batchCardRequestId } = await import("@mms/shared");
+const { batchCardRequestId } = await import("@mms/contracts");
 
 function fakeRepo() {
   return {

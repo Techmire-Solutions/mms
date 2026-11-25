@@ -1,8 +1,8 @@
-import type { EnrollmentAuditReasonCode, User } from "@mms/shared";
-import type { TenantTransaction } from "../../db/tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import type { EnrollmentAuditReasonCode, User } from "@mms/contracts";
+import type { TenantTransaction } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 
-export { ENROLLMENT_AUDIT_REASON_CODES, type EnrollmentAuditReasonCode } from "@mms/shared";
+export { ENROLLMENT_AUDIT_REASON_CODES, type EnrollmentAuditReasonCode } from "@mms/contracts";
 
 export interface EnrollmentAuditInput {
   recordId: string;

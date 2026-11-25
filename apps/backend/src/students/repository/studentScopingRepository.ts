@@ -1,9 +1,9 @@
 import { and, eq, gte, inArray, isNull, lte, notInArray, or } from "drizzle-orm";
-import { SEAT_RELEASED_ENROLLMENT_STATUSES, dedupeTrimmedIds, type User } from "@mms/shared";
-import { withTenantRead } from "../../db/tenant-context.js";
-import { faculty } from "../../db/schema/faculty.js";
-import { sectionStaffAssignments } from "../../db/schema/sessionSections.js";
-import { enrollments } from "../../db/schema/enrollments.js";
+import { SEAT_RELEASED_ENROLLMENT_STATUSES, dedupeTrimmedIds, type User } from "@mms/contracts";
+import { withTenantRead } from "@mms/db/context";
+import { faculty } from "@mms/db/schema/faculty";
+import { sectionStaffAssignments } from "@mms/db/schema/sessionSections";
+import { enrollments } from "@mms/db/schema/enrollments";
 
 export interface StudentAccessScope {
   /** If true, the user has global tenant-wide student directory visibility. */

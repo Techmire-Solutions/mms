@@ -6,12 +6,15 @@ import {
   type AccountingNavigate,
 } from "@/tenant/features/accounting/hooks/useAccountingNavigation";
 import type { FxSetupGuideState } from "@/tenant/features/accounting/hooks/useFxSetupGuide";
-import { computeFxSetupReadiness, type FxSetupReadinessInput } from "../lib/fxSetupReadiness";
+import {
+  computeFxSetupReadiness,
+  type FxSetupReadinessInput,
+} from "@mms/mod-accounting/frontend/tenant";
 import { FxSetupGuide } from "./FxSetupGuide";
 
 const guideState = vi.hoisted(() => ({ current: null as FxSetupGuideState | null }));
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 

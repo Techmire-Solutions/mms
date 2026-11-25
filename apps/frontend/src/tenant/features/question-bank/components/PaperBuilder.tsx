@@ -4,7 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Badge } from "@/components/ui/badge";
 import { Alert } from "@/components/app/Alert";
 import { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
-import { type QuestionBankQuestion as Question, type QuestionBankTest } from "@mms/shared";
+import { type QuestionBankQuestion as Question, type QuestionBankTest } from "@mms/contracts";
 import { usePaperBuilderState } from "@/tenant/features/question-bank/hooks/usePaperBuilderState";
 import { usePaperBuilderHandlers } from "@/tenant/features/question-bank/hooks/usePaperBuilderHandlers";
 import { PaperDetailsForm } from "@/tenant/features/question-bank/components/PaperDetailsForm";

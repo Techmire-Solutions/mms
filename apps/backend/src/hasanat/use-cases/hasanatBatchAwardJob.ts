@@ -13,7 +13,7 @@ import {
   type HasanatAwardScope,
   type HasanatBatchAwardBody,
   type HasanatBatchRecipient,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { logger } from "../../lib/logger.js";
 import {
   registerBackgroundJobRunner,

@@ -1,5 +1,5 @@
 import { useCallback, useRef, type Dispatch, type SetStateAction } from "react";
-import { ensureSinglePrimaryFlag, type Contact } from "@mms/shared";
+import { ensureSinglePrimaryFlag, type Contact } from "@mms/contracts";
 import { useIdentityReset } from "@/lib/forms/useIdentityReset";
 import type {
   AddSubListItem,

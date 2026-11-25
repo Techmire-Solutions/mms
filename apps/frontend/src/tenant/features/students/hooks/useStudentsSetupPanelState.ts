@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useStudentConfig } from "@/hooks/useStandardModuleConfig";
-import { type StudentsSettings } from "@mms/shared";
+import { type StudentsSettings } from "@mms/contracts";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import { useStudentsSetupSaveActions } from "@/tenant/features/students/hooks/useStudentsSetupSaveActions";
 

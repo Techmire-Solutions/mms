@@ -1,4 +1,4 @@
-import type { Student, toMessagingRecipient } from "@mms/shared";
+import type { Student, toMessagingRecipient } from "@mms/contracts";
 import { ENTITY_CARD_OVERFLOW_TRIGGER_CLASS } from "@/components/app/entityCardChrome";
 import { DirectoryCardFooterActions } from "@/components/app/DirectoryCardFooterActions";
 import { useTranslation } from "@/hooks/useTranslation";

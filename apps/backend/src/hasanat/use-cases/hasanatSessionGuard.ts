@@ -6,7 +6,7 @@
  * session lifecycle — this module deliberately exposes no second lock.
  */
 
-import { cardWriteBlockedBySessionStatus, cardWriteBlockedMessage } from "@mms/shared";
+import { cardWriteBlockedBySessionStatus, cardWriteBlockedMessage } from "@mms/contracts";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { findSessionStatuses } from "../repository/hasanatRepositoryAdapter.js";
 

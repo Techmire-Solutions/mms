@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { purgeExpiredArchivedRecords } from "../worker/purgeArchivedRecordsJob.js";
-import type { DbClient } from "../db/dbConnection.js";
+import type { DbClient } from "@mms/db/client";
 
-vi.mock("../services/auditTrailService.js", () => ({
+vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue({
     id: 1,
     hashPrevious: "0".repeat(64),

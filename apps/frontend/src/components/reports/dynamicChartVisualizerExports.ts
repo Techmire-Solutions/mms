@@ -1,4 +1,4 @@
-import { formatDateTime, formatNumber } from "@mms/shared";
+import { formatDateTime, formatNumber } from "@mms/contracts";
 import type { AggregatedItem, ChartOperation } from "./dynamicChartVisualizerTypes";
 import { getPdfPageDimensions } from "./dynamicChartVisualizerHelpers";
 import { exportReportExcel, sanitizeExportValue } from "@/lib/reports/reportExportCore";

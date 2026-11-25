@@ -1,6 +1,6 @@
 import { HttpDomainError } from "../../lib/httpErrors.js";
 import { getRawUsers } from "../../services/auth/userServiceShared.js";
-import { isAdminRole, isSuperAdminRole } from "@mms/shared";
+import { isAdminRole, isSuperAdminRole } from "@mms/contracts";
 
 /** Whether a user is an active administrator (role + non-deleted active status). */
 export function isActiveAdmin(user: { role?: unknown; status?: unknown }): boolean {

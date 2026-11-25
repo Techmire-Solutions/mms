@@ -80,16 +80,16 @@ function canWriteDashboard(user: User): boolean {
 ```
 
 `DASHBOARD_MODULE_MANIFEST.permissions.customize` is `configuration.view`
-(`packages/shared/src/dashboard/dashboardModuleManifest.ts:21`), and
-`configuration.view` maps to **settings read** (`packages/shared/src/auth/permissionRules.ts:104`).
+(`packages/contracts/src/dashboard/dashboardModuleManifest.ts:21`), and
+`configuration.view` maps to **settings read** (`packages/contracts/src/auth/permissionRules.ts:104`).
 The system `auditor` role is defined as `createReadOnlyPermissionMap(ALL_RBAC_MODULE_IDS)`
-(`packages/shared/src/auth/userRbacDefaultRoles.ts:163-168`), i.e. settings read; `principal`
+(`packages/contracts/src/auth/userRbacDefaultRoles.ts:163-168`), i.e. settings read; `principal`
 also holds `settings: ["read"]`.
 
 The route layer does not compensate: every `/api/dashboard/` route is stamped
 `action: "availability"` (`apps/backend/src/lib/moduleRouteActions.ts:105-110`), and
 `evaluateModuleAccess` returns `allowed: true` before checking any permission for that action
-(`packages/shared/src/settings/moduleAccessPolicy.ts:181`). The mutating handlers call
+(`packages/contracts/src/settings/moduleAccessPolicy.ts:181`). The mutating handlers call
 `canWriteDashboard` only.
 
 **Impact.** An auditor/principal can:

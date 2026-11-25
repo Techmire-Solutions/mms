@@ -58,14 +58,14 @@ For seniority ranking rules, cycle prevention, and temporal constraint details, 
 
 | Concern | Path / Symbol |
 |---|---|
-| Drizzle Schema | `apps/backend/src/db/schema/faculty.ts`, `facultyDesignationTables.ts`, `facultyAssignmentTables.ts`, `facultyDepartmentTables.ts` |
+| Drizzle Schema | `packages/db/src/schema/faculty.ts`, `facultyDesignationTables.ts`, `facultyAssignmentTables.ts`, `facultyDepartmentTables.ts` |
 | Backend Use-Cases | `apps/backend/src/faculty/use-cases/facultyWriteUseCases.ts` |
 | Appointment Overlap Guard | `apps/backend/src/db/repositories/facultyAssignmentValidation.ts` |
 | Employee ID Generator | `apps/backend/src/faculty/use-cases/facultyEmployeeIdGenerator.ts` |
 | Frontend Page Shell | `apps/frontend/src/tenant/features/faculty/FacultyPage.tsx` |
 | Frontend Work Sub-tabs | `apps/frontend/src/tenant/features/faculty/facultyPageWorkSubTabs.ts` |
 | Legacy Surface Ratchet | `scripts/check-faculty-domain.mjs` |
-| Contact role tags | `apps/backend/src/contacts/systemTags/contactSystemTagFacultyCompute.ts`, `contactSystemTagReconcile.ts` |
+| Contact role tags | `packages/modules/contacts/src/backend/systemTags/contactSystemTagFacultyCompute.ts`, `contactSystemTagReconcile.ts` |
 
 ## 4. Role-Derived Contact Tags
 

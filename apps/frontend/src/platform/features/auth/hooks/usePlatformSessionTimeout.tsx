@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { resolvePlatformSessionPolicy, type SessionTimeoutPolicy } from "@mms/shared";
+import { resolvePlatformSessionPolicy, type SessionTimeoutPolicy } from "@mms/contracts";
 import { notify } from "@/lib/notify";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useIdleTimer } from "@/hooks/useIdleTimer";

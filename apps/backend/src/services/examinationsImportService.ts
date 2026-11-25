@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { MAX_MARKS_OBTAINED, type Exam } from "@mms/shared";
+import { MAX_MARKS_OBTAINED, type Exam } from "@mms/contracts";
 import { toDbDate } from "../lib/dbDate.js";
 import { throwIfBackgroundJobAborted } from "../lib/backgroundJobAbort.js";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";

@@ -1,4 +1,4 @@
-import type { Faculty } from "@mms/shared";
+import type { Faculty } from "@mms/contracts";
 import { Badge } from "@/components/ui/badge";
 import {
   DirectoryCardSubtitleStack,

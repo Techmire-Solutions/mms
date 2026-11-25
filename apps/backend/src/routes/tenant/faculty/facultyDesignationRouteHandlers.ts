@@ -1,4 +1,4 @@
-import { isQueryFlagTrue, type facultyContract } from "@mms/shared";
+import { isQueryFlagTrue, type facultyContract } from "@mms/contracts";
 import { canDeleteCollection } from "../../../services/rbacService.js";
 import type { ContractRouteArgs, ContractRouteResponse } from "../../../lib/contractRouterTypes.js";
 import {
@@ -10,7 +10,7 @@ import {
 } from "../../../faculty/use-cases/facultyCatalogUseCases.js";
 import { auditFaculty } from "./facultyRouteHelpers.js";
 import { broadcastCollection } from "../../../lib/livePush.js";
-import { reconcileDesignationContacts } from "../../../contacts/systemTags/contactSystemTagUseCases.js";
+import { reconcileDesignationContacts } from "@mms/mod-contacts/backend/use-cases";
 import {
   authorizeCatalogRoute,
   canArchiveFacultySetup,

@@ -8,7 +8,7 @@ import {
   buildObligationRevisionKey,
   type ObligationCollection,
   type ObligationDistributionRule,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { getPostingRules } from "../../db/repositories/accountingLedgerOpsRepository.js";
 import { listAccountsByWorkspace } from "../../db/repositories/accountingAccountsRepository.js";
 import { listFiscalYearsByWorkspace } from "../../db/repositories/accountingFiscalYearsRepository.js";
@@ -53,7 +53,7 @@ async function resolvePostingAccounts(tenant: string): Promise<ResolvedPostingAc
         DEFAULT_CHART_OF_ACCOUNTS,
         DEFAULT_CHART_RETAINED_EARNINGS_CODE,
         DEFAULT_CHART_CASH_ACCOUNT_CODE,
-      } = await import("@mms/shared");
+      } = await import("@mms/contracts");
       const { randomUUID } = await import("node:crypto");
       const { seedAccountsIfEmpty } =
         await import("../../db/repositories/accountingAccountsSeed.js");

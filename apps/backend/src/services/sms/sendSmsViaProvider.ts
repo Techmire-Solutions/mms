@@ -1,4 +1,4 @@
-import type { SendSmsResult, SmsIntegrationConfig, SmsIntegrationSecrets } from "@mms/shared";
+import type { SendSmsResult, SmsIntegrationConfig, SmsIntegrationSecrets } from "@mms/contracts";
 import { sendTwilioSms } from "./providers/twilioProvider.js";
 import { sendVonageSms } from "./providers/vonageProvider.js";
 import { sendMsg91Sms } from "./providers/msg91Provider.js";

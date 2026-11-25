@@ -1,5 +1,5 @@
-import type { AppDb } from "../tenant-context.js";
-import { recordModernAuditEvent } from "../../services/auditTrailService.js";
+import type { AppDb } from "@mms/db/context";
+import { recordModernAuditEvent } from "@mms/be-core/audit";
 import type { ExamWriteState } from "../../examinations/domain/examWriteGuards.js";
 
 /** The incoming exam fields the scoring-frame comparison needs. */

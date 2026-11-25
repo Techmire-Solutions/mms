@@ -1,4 +1,4 @@
-import { applyTitleCaseRecursive } from "@mms/shared";
+import { applyTitleCaseRecursive } from "@mms/contracts";
 import { dispatchLocalDatabaseUpdate, safeSetItem, scopedStorageKey } from "@/lib/dbStorageCore";
 import { reportClientError, reportClientWarn } from "@/lib/clientErrorReporting";
 

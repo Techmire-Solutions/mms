@@ -1,4 +1,4 @@
-import type { BadgeTone } from "@shared/ui";
+import type { BadgeTone } from "@mms/ui";
 import { Trash2, PlusCircle, RefreshCw, Key, Settings, Terminal } from "lucide-react";
 import type React from "react";
 

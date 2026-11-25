@@ -1,5 +1,9 @@
 import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { OBLIGATIONS_MODULE_MANIFEST, obligationsReportQuerySchema, type User } from "@mms/shared";
+import {
+  OBLIGATIONS_MODULE_MANIFEST,
+  obligationsReportQuerySchema,
+  type User,
+} from "@mms/contracts";
 import { canReadCollection } from "../../../services/rbacService.js";
 import { obligationsUseCases } from "../../../obligations/use-cases/obligationsUseCases.js";
 import {

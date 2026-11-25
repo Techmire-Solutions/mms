@@ -8,7 +8,7 @@ import {
   todayISO,
   validatePasswordPolicy,
   type SystemUser,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUsersConfig } from "@/hooks/useStandardModuleConfig";
 import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";

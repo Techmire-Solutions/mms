@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, isNotNull } from "drizzle-orm";
-import { dedupeTrimmedIds, type QuestionBankTest } from "@mms/shared";
-import { tests } from "../schema.js";
-import { withTenantRead } from "../tenant-context.js";
+import { dedupeTrimmedIds, type QuestionBankTest } from "@mms/contracts";
+import { tests } from "@mms/db/schema";
+import { withTenantRead } from "@mms/db/context";
 import { testRowToRecord } from "./questionBankTestsSync.js";
 import { testSelectFields, fetchTestsChildrenTx } from "./questionBankTestsHydrate.js";
 

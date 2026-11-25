@@ -2,10 +2,10 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AccountingWorkTier } from "./AccountingWorkTier";
-import { DEFAULT_ACCOUNTING_SETTINGS } from "@mms/shared";
+import { DEFAULT_ACCOUNTING_SETTINGS } from "@mms/contracts";
 import { EMPTY_JOURNAL_ENTRY_FILTERS } from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
 
-vi.mock("@/hooks/useTranslation", () => ({
+vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
@@ -54,7 +54,7 @@ vi.mock("./JournalEntries", () => ({
   JournalEntries: () => <div data-testid="accounting-journal" />,
 }));
 
-vi.mock("./TrialBalance", () => ({
+vi.mock("@mms/mod-accounting/frontend/tenant", () => ({
   TrialBalance: () => <div data-testid="accounting-trial" />,
 }));
 

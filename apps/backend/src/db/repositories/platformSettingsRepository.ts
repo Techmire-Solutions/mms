@@ -5,9 +5,9 @@ import {
   type PlatformConsolidationPrefs,
   type PlatformContactPrefs,
   type PlatformSettings,
-} from "@mms/shared";
-import { activeDb } from "../dbConnection.js";
-import { platformSettings } from "../schema.js";
+} from "@mms/contracts";
+import { activeDb } from "@mms/db/client";
+import { platformSettings } from "@mms/db/schema";
 import {
   decryptLlmApiKey,
   decryptLlmConfigs,

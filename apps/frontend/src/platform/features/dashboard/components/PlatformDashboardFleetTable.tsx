@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
 import { Building2 } from "lucide-react";
-import type { PlatformWorkspaceRow } from "@mms/shared";
+import type { PlatformWorkspaceRow } from "@mms/contracts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { BiDiText } from "@/components/app/BiDiText";
 import { usePlatformInspector } from "@/platform/features/shell/lib/PlatformInspectorContext";
-import { EmptyState, ListPagination } from "@shared/ui";
+import { EmptyState, ListPagination } from "@mms/ui";
 import { WorkBatchTable, type WorkBatchTableColumn } from "@/components/common/work/WorkBatchTable";
 import { WorkspaceStatusBadge } from "@/platform/features/workspaces/components/WorkspaceStatusBadge";
 import { PlatformDashboardFleetRowMenu } from "@/platform/features/dashboard/components/PlatformDashboardFleetRowMenu";

@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { InstitutionSetupAddressSection } from "./InstitutionSetupAddressSection";
-import { DEFAULT_BRANDING_SETTINGS, type BrandingSettings } from "@mms/shared";
+import { DEFAULT_BRANDING_SETTINGS, type BrandingSettings } from "@mms/contracts";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

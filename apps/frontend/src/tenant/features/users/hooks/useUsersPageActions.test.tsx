@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { useUsersPageActions } from "./useUsersPageActions";
-import { normalizeWorkspaceUser } from "@mms/shared";
+import { normalizeWorkspaceUser } from "@mms/contracts";
 import { notify } from "@/lib/notify";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

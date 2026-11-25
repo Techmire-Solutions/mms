@@ -1,14 +1,14 @@
 import type React from "react";
 import { Ban } from "lucide-react";
-import { DatePicker } from "@/components/app/DatePicker";
-import { ErrorState } from "@/components/app/ErrorState";
-import { FormCollectionShell } from "@/components/app/FormCollectionShell";
-import { FormListFieldCard } from "@/components/app/FormListFieldCard";
-import { Field, FieldErrorMessage } from "@/components/app/FormPrimitives";
-import { FormSelect } from "@/components/app/FormSelect";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useTranslation } from "@/hooks/useTranslation";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { FormCollectionShell } from "@mms/ui/app/FormCollectionShell";
+import { FormListFieldCard } from "@mms/fe-core/components/FormListFieldCard";
+import { Field, FieldErrorMessage } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Button } from "@mms/ui";
+import { Textarea } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
 import { useExchangeabilityDraft } from "@/tenant/features/accounting/hooks/useExchangeabilityDraft";
 
 interface AccountingSettingsExchangeabilitySectionProps {

@@ -1,13 +1,13 @@
 import { and, eq, getTableColumns, isNotNull, isNull, sql } from "drizzle-orm";
-import { workshopEvents, workshopParticipants } from "../schema.js";
-import type { TenantTransaction } from "../tenant-context.js";
+import { workshopEvents, workshopParticipants } from "@mms/db/schema";
+import type { TenantTransaction } from "@mms/db/context";
 import { auditRow } from "./workshopAudit.js";
 
 /**
  * Tx-scoped primitives for the workshop lifecycle service.
  *
  * The lifecycle decision (which transition is legal, whether registration is still open) lives in
- * `@mms/shared` + `workshops/domain`; this module only performs the reads and writes the caller
+ * `@mms/contracts` + `workshops/domain`; this module only performs the reads and writes the caller
  * needs **inside a single transaction**: lock the event, count the seats/certificates the guards
  * need, move the status with a compare-and-set, and archive the registrations a cancel voids.
  * Everything here takes the caller's transaction — the service owns the boundary, so the guard

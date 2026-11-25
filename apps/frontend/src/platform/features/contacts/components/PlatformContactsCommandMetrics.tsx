@@ -2,7 +2,7 @@ import React from "react";
 import { Users, Mail, Phone } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ModuleCommandMetricsGrid } from "@/components/app/ModuleCommandMetricsGrid";
-import { StatsSkeleton } from "@shared/ui";
+import { StatsSkeleton } from "@mms/ui";
 import { usePlatformContactsMetrics } from "@/platform/features/contacts/hooks/usePlatformContacts";
 
 interface ContactsMetrics {

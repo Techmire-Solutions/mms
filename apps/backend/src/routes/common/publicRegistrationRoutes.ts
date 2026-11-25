@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
-import { publicRegistrationContract } from "@mms/shared";
+import { publicRegistrationContract } from "@mms/contracts";
 import { handleContractError } from "../../lib/contractError.js";
 import { standardRequestValidationErrorHandler } from "../../lib/contractRegistration.js";
 import type { ContractRouteArgs } from "../../lib/contractRouterTypes.js";

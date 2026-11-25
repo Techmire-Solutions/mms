@@ -5,7 +5,7 @@ import { ErrorState } from "@/components/app/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { MESSAGING_MODULE_MANIFEST } from "@mms/shared";
+import { MESSAGING_MODULE_MANIFEST } from "@mms/contracts";
 import { WORK_SURFACE } from "@/components/ui/formStyles";
 import { MessagingReportHeaderBar } from "@/components/reports/MessagingReportHeaderBar";
 import { MessagingReportSummaryTable } from "@/components/reports/MessagingReportSummaryTable";

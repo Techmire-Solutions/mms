@@ -3,7 +3,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Hash } from "lucide-react";
 import { FORM_INPUT, SETUP_SECTION_CARD_CLASS } from "@/components/ui/formStyles";
 import { Input } from "@/components/ui/input";
-import { ToggleRow } from "@shared/ui";
+import { ToggleRow } from "@mms/ui";
 import { Field } from "@/components/app/FormPrimitives";
 import { FormSelect } from "@/components/app/FormSelect";
 import { SectionCard } from "@/components/app/SectionCard";
@@ -13,7 +13,7 @@ import {
   type SequenceNumberingConfig,
   type SequenceRolloverPolicy,
   type SequenceYearFormat,
-} from "@mms/shared";
+} from "@mms/contracts";
 import { SequenceNumberingPreview } from "./SequenceNumberingPreview";
 import { SequenceNumberingParametersGrid } from "./SequenceNumberingParametersGrid";
 import { SequenceNumberingTelemetry } from "./SequenceNumberingTelemetry";

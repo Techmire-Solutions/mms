@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ModuleCustomField } from "@mms/shared";
+import type { ModuleCustomField } from "@mms/contracts";
 import { validateUserCustomFields } from "./userCustomFieldValidation";
 
 const fields: ModuleCustomField[] = [
