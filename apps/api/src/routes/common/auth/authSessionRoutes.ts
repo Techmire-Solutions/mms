@@ -44,12 +44,14 @@ import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
  * Sends the authenticated tenant user. Shared by strict `GET /me` and soft `GET /session` so the
  * probe cannot bypass the deleted-user / deleted-faculty tombstone checks.
  */
-async function sendTenantSessionUser(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+async function sendTenantSessionUser(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<FastifyReply | void> {
   if (reply.sent) return;
   const user = request.user as User & { deletedAt?: unknown; deleted_at?: unknown };
   if (user.deletedAt || user.deleted_at) {
-    sendUnauthorized(reply, "Session revoked");
-    return;
+    return sendUnauthorized(reply, "Session revoked");
   }
   if (user.id) {
     try {
@@ -60,22 +62,20 @@ async function sendTenantSessionUser(request: FastifyRequest, reply: FastifyRepl
         ? await usersUseCases.loadTenantUserRowById(sessionTenant, String(user.id))
         : null;
       if (userRow?.deletedAt) {
-        sendUnauthorized(reply, "Session revoked");
-        return;
+        return sendUnauthorized(reply, "Session revoked");
       }
       // Tombstone probe by linked user id: a hydrated faculty load returns
       // null when the linked contact is unreadable, which would keep a deleted
       // teacher signed in. Not gated on the role name — composite
       // designation roles are not `faculty`/`teacher`.
       if (await facultyUseCases.isFacultyProfileDeletedForUser(String(user.id))) {
-        sendUnauthorized(reply, "Session revoked");
-        return;
+        return sendUnauthorized(reply, "Session revoked");
       }
     } catch {
       // Fall through for tests without DB context
     }
   }
-  reply.send({ user: request.user as User, isAuthenticated: true });
+  return reply.send({ user: request.user as User, isAuthenticated: true });
 }
 
 /**

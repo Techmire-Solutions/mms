@@ -1,5 +1,6 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
 import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 import { getDb } from "@mms/db/client";
 import { workspaces } from "@mms/db/schema";
 import { bulkSaveInvoices } from "@mms/mod-billing/backend/repository";
@@ -17,6 +18,7 @@ const INVOICE_COUNT = 20;
 const STATUSES = ["pending", "paid", "overdue", "partial"] as const;
 
 async function main() {
+  configureModuleAdapters();
   await initializeDatabase();
   const db = getDb();
 

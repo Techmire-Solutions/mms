@@ -64,7 +64,7 @@ export function configureEnrollmentsAdapters(): void {
     softDeleteSessionWithCascade: sessions.softDeleteSessionWithCascade,
     saveSession: sessions.saveSession,
     transitionSession: sessionsUseCases.transitionSession,
-    registrationLinkUseCases: sessionsUseCases,
+    registrationLinkUseCases: sessionsUseCases.registrationLinkUseCases,
     bulkSaveInvoices: (sessions as unknown as { bulkSaveInvoices?: unknown }).bulkSaveInvoices,
     bulkSoftDeleteStudentsSql: (students as unknown as { bulkSoftDeleteStudentsSql?: unknown })
       .bulkSoftDeleteStudentsSql,

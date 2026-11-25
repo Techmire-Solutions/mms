@@ -1,5 +1,6 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
 import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 import { getDb } from "@mms/db/client";
 import { workspaces } from "@mms/db/schema";
 import { bulkSaveFaculty } from "@mms/mod-faculty/backend/repository";
@@ -19,6 +20,7 @@ loadBackendEnv();
 const FACULTY_COUNT = 20;
 
 async function main() {
+  configureModuleAdapters();
   await initializeDatabase();
   const db = getDb();
 

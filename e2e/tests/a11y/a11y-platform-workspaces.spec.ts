@@ -10,6 +10,8 @@ import { ensureE2ePlatformAdmin } from "../../helpers/platformAdminSeeder.js";
 process.env.NODE_ENV = process.env.NODE_ENV || "test";
 process.env.JWT_SECRET = process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long";
 
+test.use({ baseURL: process.env.PLATFORM_BASE_URL || "http://localhost:5174" });
+
 const platformEmail = `platform-a11y-ws-${Date.now()}@test.com`;
 const platformPassword = "Pa$$w0rd123";
 

@@ -30,7 +30,12 @@ export function tenantUrl(subdomain: string, path = "/"): string {
 }
 
 export function apexUrl(path = "/"): string {
-  return buildApexUrl(path, getTenantUrlOptions());
+  const opts = getTenantUrlOptions();
+  // In local split-app dev/E2E (tenant-web on :5173, platform-web on :5174), apex
+  // navigation must target :5174 rather than staying on :5173.
+  const apexOpts =
+    opts.appDomain === "localhost" && opts.port === "5173" ? { ...opts, port: "5174" } : opts;
+  return buildApexUrl(path, apexOpts);
 }
 
 /** True when the current browser host is the apex domain (no tenant subdomain). */

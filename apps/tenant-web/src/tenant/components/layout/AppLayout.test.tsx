@@ -65,12 +65,8 @@ vi.mock("@/providers/MotionPreferences", () => ({
   MotionPreferences: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock("@/providers/ContactsHostProvider", () => ({
-  ContactsHostBridge: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-
-vi.mock("@/providers/HasanatHostProvider", () => ({
-  HasanatHostBridge: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+vi.mock("@/providers/TenantModuleHostBridges", () => ({
+  TenantModuleHostBridges: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@mms/mod-contacts/frontend/tenant/components/ContactConfigContext", () => ({

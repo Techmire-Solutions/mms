@@ -42,12 +42,12 @@ metadata:
 
 | Concern | Path / symbol |
 |---------|----------------|
-| Gold pages | `apps/tenant-web/src/tenant/features/accounting/AccountingPage.tsx`, `.../contacts/ContactsPage.tsx` |
-| Shell | `apps/tenant-web/src/components/app/ModulePageShell.tsx` |
-| Tier tabs | `apps/tenant-web/src/hooks/useModuleTierTabs.ts` (`useFilteredModuleTierTabs`) |
+| Gold pages | `apps/tenant-web/src/tenant/features/accounting/AccountingPage.tsx`, `packages/modules/contacts/src/frontend/tenant/ContactsPage.tsx` |
+| Shell | `packages/fe-core/src/components/ModulePageShell.tsx` |
+| Tier tabs | `packages/fe-core/src/lib/useModuleTierTabs.ts` (`useFilteredModuleTierTabs`) |
 | Permissions | `apps/tenant-web/src/tenant/hooks/usePermissions.ts` (`useModulePermissions`) |
-| Tab + trash state | `apps/tenant-web/src/hooks/usePersistedTabState.ts`, `apps/tenant-web/src/hooks/useDirectoryTrashState.ts` |
-| Router | `apps/tenant-web/src/components/routing/HostRoutes.tsx` |
+| Tab + trash state | `packages/fe-core/src/lib/usePersistedTabState.ts`, `packages/fe-core/src/lib/useDirectoryTrashState.ts` |
+| Router | `apps/tenant-web/src/tenant/routes/TenantRoutes.tsx` |
 | Policy | `packages/contracts/src/settings/moduleAccessPolicy.ts` + `ModuleAccessRoute` |
 | Template | `examples/TemplateModulePage.tsx` |
 

@@ -9,6 +9,7 @@ import {
 
 export function registerErrorHandlers(app: FastifyInstance, isProd: boolean): void {
   app.setErrorHandler((error: FastifyError, request, reply) => {
+    if (reply.sent) return;
     if (error.validation) {
       return reply.status(400).send({
         type: "validation_error",

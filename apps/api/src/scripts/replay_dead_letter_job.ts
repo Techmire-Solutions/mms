@@ -9,6 +9,7 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
 import { closeDatabase } from "../db/database.js";
 import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 import { withTenant } from "@mms/db/context";
 import { backgroundJobs } from "@mms/db/schema";
 import { eq } from "drizzle-orm";
@@ -19,6 +20,7 @@ import { resumePromotionRunForReplay } from "@mms/mod-sessions/backend/services"
 
 async function main(): Promise<void> {
   loadBackendEnv();
+  configureModuleAdapters();
   const [tenant, jobId] = process.argv.slice(2);
   if (!tenant || !jobId) throw new Error("Usage: replay_dead_letter_job <tenant> <jobId>");
   await initializeDatabase();

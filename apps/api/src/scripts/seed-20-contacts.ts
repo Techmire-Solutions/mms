@@ -1,5 +1,6 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
 import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 import { getDb } from "@mms/db/client";
 import { workspaces } from "@mms/db/schema";
 import { bulkSaveContacts } from "@mms/mod-contacts/backend/repository";
@@ -11,6 +12,7 @@ loadBackendEnv();
 const DUMMY_CONTACTS = SEED_20_DUMMY_CONTACTS;
 
 async function main() {
+  configureModuleAdapters();
   await initializeDatabase();
   const db = getDb();
 

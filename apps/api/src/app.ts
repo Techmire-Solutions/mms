@@ -11,27 +11,13 @@ import { registerWebApps } from "./plugins/registerWebApps.js";
 import { registerPlugins } from "./plugins/index.js";
 import { registerRoutes } from "./routes/index.js";
 import { registerDefaultBackgroundJobRunners } from "./services/backgroundJobRunnerService.js";
-import { configureContactsKernelAdapters } from "./modules/contacts/adapters.js";
-import { configureHasanatAdapters } from "./modules/hasanat/adapters.js";
-import { configureMessagingAdapters } from "./modules/messaging/adapters.js";
-import { configureBillingAdapters } from "./modules/billing/adapters.js";
-import { configureStudentsAdapters } from "./modules/students/adapters.js";
-import { configureSessionsAdapters } from "./modules/sessions/adapters.js";
-import { configureEnrollmentsAdapters } from "./modules/enrollments/adapters.js";
-import "./modules/examinations/configure.js";
-import "./modules/obligations/configure.js";
+import { configureModuleAdapters } from "./bootstrap/configureModuleAdapters.js";
 import { setStaticAssetHeaders } from "./plugins/staticAssets.js";
 
 loadBackendEnv();
 
-// Bind the contacts module kernel deps before background job runners register.
-configureContactsKernelAdapters();
-configureHasanatAdapters();
-configureMessagingAdapters();
-configureBillingAdapters();
-configureStudentsAdapters();
-configureSessionsAdapters();
-configureEnrollmentsAdapters();
+// Bind all module kernel ports before background job runners and routes register.
+configureModuleAdapters();
 
 export async function buildApp(): Promise<FastifyInstance> {
   const config = loadServerConfig();

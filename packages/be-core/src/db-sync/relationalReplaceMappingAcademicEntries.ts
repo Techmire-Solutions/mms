@@ -26,19 +26,19 @@ export const RELATIONAL_REPLACE_MAPPING_ACADEMIC: Record<string, RelationalColle
     snapshotFnName: "listAttendanceRecordsByWorkspace",
   },
   enrollments: {
-    importPath: "./repositories/enrollmentRepository.js",
+    importPath: "@mms/mod-enrollments/backend/repository",
     fnName: "replaceEnrollmentsForWorkspace",
     snapshotFnName: "listEnrollmentsByWorkspace",
   },
   enrollment_field_configs: {
     priority: 45,
-    importPath: "./repositories/enrollmentFieldConfigRepository.js",
+    importPath: "@mms/mod-enrollments/backend/repository",
     fnName: "replaceEnrollmentFieldConfigsForWorkspace",
     snapshotFnName: "listAllEnrollmentFieldConfigsByWorkspace",
   },
   enrollment_module_preferences: {
     priority: 46,
-    importPath: "./repositories/enrollmentModulePreferencesRepository.js",
+    importPath: "@mms/mod-enrollments/backend/repository",
     fnName: "replaceEnrollmentModulePreferencesForWorkspace",
     snapshotFnName: "listAllEnrollmentModulePreferencesByWorkspace",
   },

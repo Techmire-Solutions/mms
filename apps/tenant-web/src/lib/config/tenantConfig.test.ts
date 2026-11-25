@@ -6,10 +6,10 @@ import {
   apexUrl,
 } from "@mms/fe-core/config/tenantConfig";
 
-function setHostname(hostname: string): void {
+function setHostname(hostname: string, port = ""): void {
   Object.defineProperty(window, "location", {
     writable: true,
-    value: { ...window.location, hostname, protocol: "https:", port: "" },
+    value: { ...window.location, hostname, protocol: "http:", port },
   });
 }
 
@@ -39,5 +39,11 @@ describe("config/tenantConfig", () => {
     setHostname("localhost");
     const url = apexUrl("/settings");
     expect(url).toContain("/settings");
+  });
+
+  it("apexUrl routes split-app dev port 5173 on localhost to platform-web port 5174", () => {
+    setHostname("missing.localhost", "5173");
+    const url = apexUrl("/tenant-not-found?subdomain=missing");
+    expect(url).toBe("http://localhost:5174/tenant-not-found?subdomain=missing");
   });
 });
