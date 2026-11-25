@@ -70,8 +70,17 @@ if [ -n "$AVAIL_KB" ] && [ "$AVAIL_KB" -lt 10485760 ] 2>/dev/null; then
   df -h / || true
 fi
 
-# Pre-deploy PostgreSQL health check
-DB_URL="$(grep '^DATABASE_URL=' apps/api/.env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"\r' || true)"
+# Pre-deploy PostgreSQL health check (check migrated env path first, then legacy pre-rename path)
+ENV_CANDIDATE=""
+if [ -f apps/api/.env ]; then
+  ENV_CANDIDATE="apps/api/.env"
+elif [ -f apps/backend/.env ]; then
+  ENV_CANDIDATE="apps/backend/.env"
+fi
+DB_URL=""
+if [ -n "$ENV_CANDIDATE" ]; then
+  DB_URL="$(grep '^DATABASE_URL=' "$ENV_CANDIDATE" 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"\r' || true)"
+fi
 check_pg_ready() {
   if [ -n "$DB_URL" ]; then
     pg_isready -d "$DB_URL" >/dev/null 2>&1

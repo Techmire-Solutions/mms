@@ -1,4 +1,4 @@
-import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { FINANCE_MODULE_MANIFEST } from "@mms/contracts";
 import { registerStandardExtendedRoutes } from "@mms/be-core/http/crud";
 import { registerSingleRestoreRoute } from "@mms/be-core/http/crud";

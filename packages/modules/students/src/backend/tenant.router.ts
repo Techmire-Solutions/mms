@@ -1,4 +1,4 @@
-import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { studentSetupConfigRoutes } from "./routes/studentSetupConfigRoutes.js";
 import { studentLookupRoutes } from "./routes/studentLookupRoutes.js";
 import { studentExportRoutes } from "./routes/studentExportRoutes.js";

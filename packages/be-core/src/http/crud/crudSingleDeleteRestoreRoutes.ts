@@ -1,4 +1,4 @@
-import { type FastifyInstance } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { type User, resourceIdParamsSchema, softDeleteBodySchema } from "@mms/contracts";
 import { canDeleteCollection } from "../../rbac/helpers.js";
 import {

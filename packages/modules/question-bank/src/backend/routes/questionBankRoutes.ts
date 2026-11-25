@@ -1,4 +1,4 @@
-import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import {
   QUESTION_BANK_MODULE_MANIFEST,
   questionBankQuestionListSchema,

@@ -78,8 +78,30 @@ if [ -f "${TARBALL}.sha256" ]; then
   fi
 fi
 
+IS_LEGACY_TARBALL=false
+if tar tzf "$TARBALL" | grep -qE '^(\./)?apps/backend/dist/index\.js$'; then
+  IS_LEGACY_TARBALL=true
+fi
+
 echo "Extracting ${TARBALL} → ${ROOT_DIR}"
-rm -rf "${ROOT_DIR}/apps/tenant-web/dist" "${ROOT_DIR}/apps/platform-web/dist" "${ROOT_DIR}/apps/api/dist"
+if [ "$IS_LEGACY_TARBALL" = true ]; then
+  rm -rf \
+    "${ROOT_DIR}/apps/frontend/dist" \
+    "${ROOT_DIR}/apps/backend/dist" \
+    "${ROOT_DIR}/packages/shared/dist" \
+    "${ROOT_DIR}/packages/db/dist" \
+    "${ROOT_DIR}/packages/be-core/dist" \
+    "${ROOT_DIR}"/packages/modules/*/dist
+else
+  rm -rf \
+    "${ROOT_DIR}/apps/tenant-web/dist" \
+    "${ROOT_DIR}/apps/platform-web/dist" \
+    "${ROOT_DIR}/apps/api/dist" \
+    "${ROOT_DIR}/packages/contracts/dist" \
+    "${ROOT_DIR}/packages/db/dist" \
+    "${ROOT_DIR}/packages/be-core/dist" \
+    "${ROOT_DIR}"/packages/modules/*/dist
+fi
 tar xzf "$TARBALL" -C "$ROOT_DIR"
 
 # Restore the env that belonged to this release. Without this, a rollback
@@ -91,6 +113,20 @@ if [ -f "$RELEASE_ENV" ]; then
   echo "Restored ${ENV_FILE} from $(basename "$RELEASE_ENV")"
 else
   echo "WARNING: no env snapshot for $(basename "$TARBALL") — keeping current ${ENV_FILE}"
+fi
+
+ROLLBACK_SHA="$(basename "$TARBALL" .tar.gz)"
+RECOVERY_ENV_FILE="$ENV_FILE"
+if [ "$IS_LEGACY_TARBALL" = true ]; then
+  if [ ! -f "${ROOT_DIR}/apps/backend/.env" ] && [ -f "$ENV_FILE" ]; then
+    mkdir -p "${ROOT_DIR}/apps/backend"
+    cp -p "$ENV_FILE" "${ROOT_DIR}/apps/backend/.env" 2>/dev/null || true
+  fi
+  RECOVERY_ENV_FILE="apps/backend/.env"
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git checkout --detach "$ROLLBACK_SHA" 2>/dev/null || true
+  fi
+  pm2 delete mmsv2-backend mmsv2-worker 2>/dev/null || true
 fi
 
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -110,16 +146,17 @@ else
 fi
 
 if [ -f scripts/deploy-recover-backend.sh ]; then
-  bash scripts/deploy-recover-backend.sh "$ENV_FILE"
+  bash scripts/deploy-recover-backend.sh "$RECOVERY_ENV_FILE"
 fi
 
-ROLLBACK_SHA="$(basename "$TARBALL" .tar.gz)"
 printf '%s\n' "$ROLLBACK_SHA" > "${ROOT_DIR}/.deploy-current-sha"
-if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+if [ "$IS_LEGACY_TARBALL" != true ] && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   git checkout --detach "$ROLLBACK_SHA" 2>/dev/null || true
 fi
 pm2 save 2>/dev/null || true
 
 echo "Rollback complete — dist from ${ROLLBACK_SHA}"
-echo "Note: git working tree was not changed; only dist/ was restored."
+if [ "$IS_LEGACY_TARBALL" != true ]; then
+  echo "Note: git working tree was not changed; only dist/ was restored."
+fi
 exit 0

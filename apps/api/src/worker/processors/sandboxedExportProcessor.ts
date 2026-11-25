@@ -2,6 +2,7 @@ import type { SandboxedJob } from "bullmq";
 import type { EnqueuedJobData } from "../queues/index.js";
 import { initializeDatabaseConnection } from "@mms/db/client";
 import { initializeDatabase } from "../../bootstrap/initializeDatabase.js";
+import { configureModuleAdapters } from "../../bootstrap/configureModuleAdapters.js";
 import { registerDefaultBackgroundJobRunners } from "../../services/backgroundJobRunnerService.js";
 import { executeJob } from "../../services/backgroundJobWorkerService.js";
 import { logger } from "../../lib/logger.js";
@@ -20,6 +21,7 @@ async function ensureWorkerSubprocessInitialized(): Promise<void> {
     process.env.TZ = "UTC";
     process.env.MMS_PROCESS_ROLE = "worker";
     initializeDatabaseConnection({ role: "worker", max: 5 });
+    configureModuleAdapters();
     await initializeDatabase();
     registerDefaultBackgroundJobRunners();
     initialized = true;
