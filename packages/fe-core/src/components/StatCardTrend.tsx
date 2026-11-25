@@ -2,8 +2,8 @@ import React from "react";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { formatPercent } from "@mms/contracts";
 import { cn } from "@mms/ui";
-import { trendTextClass } from "@mms/fe-core/ui/semanticTone";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { trendTextClass } from "../ui/semanticTone.js";
+import { useTranslation } from "../i18n/index.js";
 
 /** Above this the raw delta stops being meaningful (and overflows the card). */
 export const TREND_DISPLAY_CAP = 999;

@@ -1,0 +1,137 @@
+import type { WithdrawalBillingOutcome } from "@mms/contracts";
+import { enrollmentOperationsRepository as repo } from "../repository/enrollmentOperationsRepositoryAdapter.js";
+import type { OperationActor } from "../repository/enrollmentOperationsRepository.js";
+import { settleEnrollmentWithdrawal } from "../deps.js";
+import { invalidateMultiTierCache } from "@mms/be-core/cache";
+import { broadcastCollection } from "@mms/be-core/realtime";
+import { offerFreedSeatPostCommit } from "./admissionsWaitlistUseCases.js";
+import { todayInTimeZone } from "@mms/be-core/http";
+import { withTenant } from "@mms/db/context";
+import { recordEnrollmentAudit } from "./enrollmentAudit.js";
+
+/** Actor for changes triggered by the system (e.g. a student status change without a user). */
+export const SYSTEM_ACTOR: OperationActor = { userId: null, label: "System" };
+
+/**
+ * Ends every live enrollment of the given sessions or student on `lastDay` through the withdrawal
+ * path: window end, placement closed, seat released, later untouched invoices cancelled (paid ones
+ * returned for review). Freed seats go to the waitlist only for withdrawals, not cancellations.
+ *
+ * Each row ends in its own guarded transaction (per-row `applyEnrollmentWithdrawal` is idempotent
+ * by status), so a mid-loop failure leaves a resumable partial result — re-running this with the
+ * same filter continues with the remaining live enrollments. This is intentional, not a gap.
+ */
+export async function endLiveEnrollments(
+  tenant: string,
+  filter: { sessionIds?: readonly string[]; studentId?: string; studentIds?: readonly string[] },
+  options: {
+    status: "withdrawn" | "cancelled";
+    lastDay: string;
+    reason: string;
+    actor: OperationActor;
+  },
+): Promise<{ ended: number; billing: WithdrawalBillingOutcome }> {
+  const live = await repo.listOperableEnrollments(tenant, filter);
+  const billing: WithdrawalBillingOutcome = { cancelled: [], review: [] };
+  for (const enrollment of live) {
+    const settled = await withTenant(tenant, async (tx) => {
+      await repo.applyEnrollmentWithdrawal(tenant, {
+        enrollmentId: enrollment.id,
+        studentId: enrollment.studentId,
+        effectiveOn: options.lastDay,
+        reason: options.reason,
+        actor: options.actor,
+        status: options.status,
+      });
+      const outcome = await settleEnrollmentWithdrawal(enrollment.id, options.lastDay);
+      await recordEnrollmentAudit(tx, tenant, {
+        recordId: enrollment.id,
+        actionType: "UPDATE",
+        actor: options.actor,
+        reasonCode:
+          options.status === "cancelled"
+            ? "session_cancelled"
+            : options.reason === "Session completed"
+              ? "session_completed"
+              : "withdraw",
+        oldState: { status: enrollment.status },
+        newState: {
+          status: options.status,
+          effectiveOn: options.lastDay,
+          reason: options.reason,
+        },
+      });
+      return outcome;
+    });
+    billing.cancelled.push(...settled.cancelled);
+    billing.review.push(...settled.review);
+    if (options.status === "withdrawn") {
+      await offerFreedSeatPostCommit(tenant, enrollment.classId);
+    }
+  }
+  if (live.length > 0) {
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+    await broadcastCollection("enrollments");
+    await broadcastCollection("sessions");
+  }
+  return { ended: live.length, billing };
+}
+
+/**
+ * Ends every operable enrollment of a session that is being marked `completed`, on the session's
+ * last day, with the `completed` status. Completion is a session outcome, not a fee decision:
+ * a still-pending enrollment belongs to the finished session and must stay reportable, so it is
+ * completed too (certificates are issued from completed enrollments).
+ */
+export async function completeLiveEnrollments(
+  tenant: string,
+  sessionId: string,
+  lastDay: string,
+  actor: OperationActor = SYSTEM_ACTOR,
+): Promise<{ ended: number; completed: number; cancelled: number }> {
+  const live = await repo.listOperableEnrollments(tenant, { sessionIds: [sessionId] });
+  let completed = 0;
+  for (const enrollment of live) {
+    await withTenant(tenant, async (tx) => {
+      await repo.applyEnrollmentWithdrawal(tenant, {
+        enrollmentId: enrollment.id,
+        studentId: enrollment.studentId,
+        effectiveOn: lastDay,
+        reason: "Session completed",
+        actor,
+        status: "completed",
+      });
+      await recordEnrollmentAudit(tx, tenant, {
+        recordId: enrollment.id,
+        actionType: "UPDATE",
+        actor,
+        reasonCode: "session_completed",
+        oldState: { status: enrollment.status },
+        newState: { status: "completed", effectiveOn: lastDay },
+      });
+    });
+    completed += 1;
+  }
+  if (live.length > 0) {
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "students" });
+    await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+    await broadcastCollection("enrollments");
+    await broadcastCollection("sessions");
+  }
+  return { ended: live.length, completed, cancelled: 0 };
+}
+
+/** A student left (inactive / transferred / graduated): withdraw their live enrollments today. */ export async function withdrawEnrollmentsForStudentStatus(
+  tenant: string,
+  studentId: string,
+  status: string,
+  actor: OperationActor = SYSTEM_ACTOR,
+): Promise<{ ended: number; billing: WithdrawalBillingOutcome }> {
+  const lastDay = todayInTimeZone(await repo.findWorkspaceTimezone(tenant));
+  return endLiveEnrollments(
+    tenant,
+    { studentId },
+    { status: "withdrawn", lastDay, reason: `Student marked ${status}`, actor },
+  );
+}

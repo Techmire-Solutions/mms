@@ -17,7 +17,7 @@ import { canReadContacts, canWriteContacts, canDeleteContacts } from "@mms/be-co
 import { enqueueBackgroundJob, getUserBackgroundJob } from "../../deps.js";
 import { getRequestTenant } from "@mms/be-core/http";
 import { sendForbidden } from "@mms/be-core/http/errors";
-import { loadContactFieldConfig } from "../../use-cases/contactConfigService.js";
+import { loadContactFieldConfig } from "../../use-cases/index.js";
 
 import {
   type ParsedUniqueConstraintError,

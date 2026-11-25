@@ -12,17 +12,17 @@ import type { ContactsPorts } from "./ports.js";
 export function createContactsService(): ContactsPorts {
   return {
     write: {
-      upsertContact: (contact: Contact, options?: any) => upsertContact(contact, options),
+      upsertContact: (contact, options) => upsertContact(contact, options),
     },
     config: {
-      loadContactFieldConfig: () => loadContactFieldConfig() as Promise<any>,
+      loadContactFieldConfig: async () => loadContactFieldConfig(),
     },
     systemTags: {
-      reconcileContactSystemTags: (tenant: string, contactIds: string[], options?: any) =>
+      reconcileContactSystemTags: (tenant, contactIds, options) =>
         reconcileContactSystemTags(tenant, contactIds, options),
     },
     load: {
-      loadContactsByIds: (ids: string[]) => loadContactsByIds(ids) as Promise<Contact[]>,
+      loadContactsByIds: (ids) => loadContactsByIds(ids) as Promise<Contact[]>,
     },
   };
 }

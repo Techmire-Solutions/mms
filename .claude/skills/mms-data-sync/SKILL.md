@@ -1,6 +1,6 @@
 ---
 name: mms-data-sync
-description: Governs legacy localStorage and /api/db document-store persistence (db.ts, useLiveCollection, objects/collections) for non-migrated entities. Use when modifying legacy storage keys, local drafts, or document sync endpoints. Do NOT use for ANY newly created modules or migrated REST entities (use mms-query-factories + mms-backend-api), printable document templates (migrated; use mms-document-templates), full workspace encrypted backups (use mms-backup-restore), or database DDL migrations (use mms-schema-migrate).
+description: Governs legacy localStorage and /api/db document-store sync (db.ts, useLiveCollection). Use when legacy storage keys/drafts. Do NOT use for new/migrated REST modules (use mms-query-factories + mms-backend-api), templates (use mms-document-templates), or backups (use mms-backup-restore).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -21,9 +21,9 @@ metadata:
 
 | Concern | Path |
 |---------|------|
-| Client store | `apps/frontend/src/lib/db.ts` |
-| Live collection hook | `apps/frontend/src/hooks/useLiveCollection.ts` |
-| Backend routes | `apps/backend/src/routes/common/db.ts` |
+| Client store | `apps/tenant-web/src/lib/db.ts` |
+| Live collection hook | `apps/tenant-web/src/hooks/useLiveCollection.ts` |
+| Backend routes | `apps/api/src/routes/common/db.ts` |
 | Helpers | `dbRouteHelpers` / `canReadCollection` / `canWriteCollection` near that route module |
 
 ## 1. Scope & Layer Boundaries
@@ -53,8 +53,8 @@ metadata:
 ```bash
 pnpm typecheck
 # When touching client store or /api/db routes, run the matching FE/BE tests
-pnpm --filter mms-frontend test
-pnpm --filter mms-backend test
+pnpm --filter mms-tenant-web test
+pnpm --filter mms-api test
 ```
 
 ## Related skills

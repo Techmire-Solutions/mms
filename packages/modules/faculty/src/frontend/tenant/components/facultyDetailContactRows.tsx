@@ -1,0 +1,105 @@
+import React from "react";
+import { Mail, Phone } from "lucide-react";
+import { facultyFieldLabelKey, type Contact, type Faculty } from "@mms/contracts";
+import { ContactPhoneAction } from "@mms/fe-core/components/contact-action/ContactPhoneAction";
+import { ContactEmailAction } from "@mms/fe-core/components/contact-action/ContactEmailAction";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import { resolveAllContactPhones, resolveAllContactEmails } from "@mms/fe-core/lib/contactI18n";
+import { formatContactGenderLabel } from "@mms/fe-core/lib/contactI18nFormat";
+import { getGenderIcon, getGenderIconClass } from "@mms/ui/app/genderUi";
+import type { FacultyMessagingLabels } from "../lib/facultyMessagingLabels";
+import { DetailAttributeRow } from "@mms/fe-core/components/DetailAttributeRow";
+
+export interface BuildFacultyContactRowsParams {
+  faculty: Faculty;
+  displayName: string;
+  t: TranslationFunction;
+  emptyDash: string;
+  messagingLabels: FacultyMessagingLabels;
+}
+
+/** Generates gender, phone, and email attribute rows for the Faculty detail drawer. */
+export function buildFacultyContactRows({
+  faculty,
+  displayName,
+  t,
+  emptyDash,
+  messagingLabels,
+}: BuildFacultyContactRowsParams): React.ReactNode[] {
+  const contactRows: React.ReactNode[] = [];
+
+  contactRows.push(
+    <DetailAttributeRow
+      key="gender"
+      variant="inset"
+      icon={getGenderIcon(faculty.gender)}
+      iconClassName={getGenderIconClass(faculty.gender)}
+      label={t(facultyFieldLabelKey("gender"))}
+      value={faculty.gender ? formatContactGenderLabel(faculty.gender, t) : emptyDash}
+    />,
+  );
+
+  const contact: Partial<Contact> = {
+    phone: faculty.phone,
+    email: faculty.email,
+  };
+
+  const allPhones = resolveAllContactPhones(contact);
+  const allEmails = resolveAllContactEmails(contact);
+
+  if (allPhones.length > 0) {
+    allPhones.forEach((p, idx) => {
+      contactRows.push(
+        <DetailAttributeRow
+          key={`phone-${p.phone}-${idx}`}
+          variant="inset"
+          icon={Phone}
+          label={p.label || t(facultyFieldLabelKey("phone"))}
+          value={
+            <ContactPhoneAction
+              phone={p.phone}
+              phoneDisplay={p.phoneDisplay}
+              countryCode={p.countryCode}
+              name={displayName}
+              variant="inline"
+              labels={{
+                call: messagingLabels.call,
+                sms: messagingLabels.sms,
+                whatsapp: messagingLabels.whatsapp,
+                copy: t("contacts.table.copy"),
+                copied: t("contacts.table.copied"),
+              }}
+            />
+          }
+        />,
+      );
+    });
+  }
+
+  if (allEmails.length > 0) {
+    allEmails.forEach((e, idx) => {
+      contactRows.push(
+        <DetailAttributeRow
+          key={`email-${e.email}-${idx}`}
+          variant="inset"
+          icon={Mail}
+          label={e.label || t(facultyFieldLabelKey("email"))}
+          value={
+            <ContactEmailAction
+              email={e.email}
+              name={displayName}
+              variant="inline"
+              labels={{
+                mail: messagingLabels.email,
+                copy: t("contacts.table.copy"),
+                copied: t("contacts.table.copied"),
+              }}
+            />
+          }
+        />,
+      );
+    });
+  }
+
+  return contactRows;
+}

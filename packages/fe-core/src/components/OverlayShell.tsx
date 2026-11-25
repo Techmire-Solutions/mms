@@ -1,8 +1,8 @@
 import React, { createContext, useContext, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { m, AnimatePresence } from "framer-motion";
-import { useOverlayBehavior } from "@mms/fe-core/hooks";
-import { useReducedMotion } from "@mms/fe-core/tenant";
+import { useOverlayBehavior } from "../hooks/index.js";
+import { useReducedMotion } from "../tenant/index.js";
 import { OVERLAY_BACKDROP } from "@mms/ui";
 import { cn } from "@mms/ui";
 

@@ -1,0 +1,266 @@
+import React from "react";
+import { useFinancePageController } from "./hooks/useFinancePageController";
+import { AnimatePresence } from "framer-motion";
+import { DollarSign } from "lucide-react";
+import { ModulePageShell } from "@mms/fe-core/components/ModulePageShell";
+import { ModuleTierMotion } from "@mms/ui/app/ModuleTierMotion";
+import { ResponsiveAccordionTabs } from "@mms/fe-core/components/ResponsiveAccordionTabs";
+import { SubTabBar } from "@mms/ui/app/SubTabBar";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { InvoicesList } from "./components/InvoicesList";
+import { PaymentsList } from "./components/PaymentsList";
+import RouteStatusFallback from "@mms/fe-core/routing/RouteStatusFallback";
+import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
+import { type Invoice } from "./lib/financeData";
+import { financeTransferSchema } from "@mms/contracts";
+import { useGenericModuleExport } from "./host/useGenericModuleExport";
+import { FinanceCommandMetrics } from "./components/FinanceCommandMetrics";
+import { notify } from "@mms/fe-core/notify";
+import { FinanceOverlays } from "./components/FinanceOverlays";
+import { FinanceCsvImportDialog } from "./components/FinanceCsvImportDialog";
+import { FinancePageHeaderActions } from "./components/FinancePageHeaderActions";
+
+const FinanceSetupTier = React.lazy(() =>
+  import("./components/FinanceSetupTier").then((m) => ({
+    default: m.FinanceSetupTier,
+  })),
+);
+const FinanceReportsTier = React.lazy(() =>
+  import("./host/moduleReports.js").then((m) => ({ default: m.ModuleReportsTier })),
+);
+
+/**
+ * Finance — invoices and payments. Work | Reports | Setup.
+ */
+export default function Finance(): React.JSX.Element {
+  const c = useFinancePageController();
+  const [receiptInvoices, setReceiptInvoices] = React.useState<Invoice[]>([]);
+  const [importOpen, setImportOpen] = React.useState(false);
+  const { handleExport, isExporting } = useGenericModuleExport({
+    path: "/api/finance/export/csv",
+    filename: "finance-invoices.csv",
+    auditPath: "/api/finance/export-audit",
+    columns: financeTransferSchema.exportColumns,
+    canExport: c.canWrite,
+  });
+
+  return (
+    <ModulePageShell
+      seoTitle={`MMS - ${c.t("nav.finance")}`}
+      seoDescription={c.t("page.finance.subtitle")}
+      headerIcon={DollarSign}
+      headerTitle={c.t("nav.finance")}
+      headerSubtitle={c.t("page.finance.subtitle")}
+      headerActions={
+        <FinancePageHeaderActions
+          canWrite={c.canWrite}
+          canExport={c.canWrite}
+          showDeleted={c.showDeleted}
+          isExporting={isExporting}
+          collectPending={c.collectPending}
+          remindPending={c.remindPending}
+          onCollectOverdue={() => void c.handleCollectOverdue()}
+          onRemindInvoices={() => void c.handleRemindInvoices()}
+          onGenerateInvoices={() => c.setGeneratingInvoices(true)}
+          onCreateInvoice={c.openCreateInvoice}
+          onImport={() => setImportOpen(true)}
+          onExport={handleExport}
+        />
+      }
+      metricsStrip={<FinanceCommandMetrics invoiceTotal={c.invoices.length} />}
+    >
+      <ResponsiveAccordionTabs
+        tabs={c.PAGE_TABS}
+        activeTab={c.activeTab}
+        onTabChange={c.setActiveTab}
+        panelIdPrefix="finance-tab"
+      >
+        {c.activeTab === "work" && (
+          <>
+            <SubTabBar
+              tabs={c.SUB_TABS.map((tab) => ({ key: tab.id, label: tab.label }))}
+              value={c.activeSubTab}
+              onChange={c.setActiveSubTab}
+            />
+          </>
+        )}
+
+        <AnimatePresence mode="wait">
+          <ModuleTierMotion tier={c.activeTab + "-" + c.activeSubTab} className="space-y-4">
+            <ErrorBoundary>
+              {c.activeTab === "reports" && (
+                <React.Suspense fallback={<RouteStatusFallback />}>
+                  <FinanceReportsTier category="finance" />
+                </React.Suspense>
+              )}
+              {c.activeTab === "setup" && (
+                <React.Suspense fallback={<RouteStatusFallback />}>
+                  <FinanceSetupTier />
+                </React.Suspense>
+              )}
+
+              {c.activeTab === "work" &&
+              c.activeSubTab === "invoices" &&
+              c.invoicesResult.isError ? (
+                <ErrorState
+                  title={c.t("finance.loadFailed")}
+                  description={c.t("finance.loadFailedHint")}
+                  onRetry={() => void c.invoicesResult.refetch()}
+                />
+              ) : (
+                c.activeTab === "work" &&
+                c.activeSubTab === "invoices" && (
+                  <InvoicesList
+                    isLoading={c.invoicesResult.isLoading}
+                    invoices={c.invoices}
+                    {...c.invoiceStatusFilter}
+                    onView={c.setViewInvoice}
+                    onRecord={c.setRecordInvoice}
+                    canWrite={c.canWrite}
+                    canDelete={c.canDelete}
+                    canWriteMessaging={c.canWriteMessaging}
+                    showDeleted={c.showDeleted}
+                    onToggleDeleted={() => c.setShowDeleted((value) => !value)}
+                    onDelete={(id) =>
+                      c.deleteInvoice.mutate(id, {
+                        onSuccess: () => notify.success(c.t("finance.trash.deleted")),
+                        onError: c.mutationError,
+                      })
+                    }
+                    onRestore={(id) =>
+                      c.restoreInvoice.mutate(id, {
+                        onSuccess: () => notify.success(c.t("finance.trash.restored")),
+                        onError: c.mutationError,
+                      })
+                    }
+                    onBulkDelete={(ids) =>
+                      c.bulkDeleteInvoices.mutate(ids, {
+                        onSuccess: (result: unknown) =>
+                          c.handleBulkResult(
+                            result as { succeeded: number; failed: number },
+                            "finance.trash.deleted",
+                            "invoices",
+                          ),
+                        onError: c.mutationError,
+                      })
+                    }
+                    onBulkRestore={(ids) =>
+                      c.bulkRestoreInvoices.mutate(ids, {
+                        onSuccess: (result: unknown) =>
+                          c.handleBulkResult(
+                            result as { succeeded: number; failed: number },
+                            "finance.trash.restored",
+                            "invoices",
+                          ),
+                        onError: c.mutationError,
+                      })
+                    }
+                    onBulkStatusChange={(ids, status) => void c.handleBulkStatusChange(ids, status)}
+                    onBulkPrintReceipts={(inv) => setReceiptInvoices(inv)}
+                    isBulkStatusPending={c.bulkUpdateInvoiceStatus.isPending}
+                    selectedIds={c.invoiceSelection.selectedIds}
+                    onToggleSelectedInvoice={c.invoiceSelection.toggleSelected}
+                    onToggleSelectAll={c.invoiceSelection.toggleSelectAll}
+                    onClearSelection={c.invoiceSelection.clearSelection}
+                    isColumnVisible={c.invoiceColumnLayout.isColumnVisible}
+                    getColumnWidth={c.invoiceColumnLayout.getColumnWidth}
+                    onColumnResize={c.invoiceColumnLayout.setColumnWidth}
+                    columnCustomizer={{
+                      columnRegistry: c.invoiceColumnLayout.columnRegistry,
+                      updateUserColumnLayout: c.invoiceColumnLayout.updateUserColumnLayout,
+                      onResetLayout: c.invoiceColumnLayout.resetColumnLayout,
+                      labels: c.invoiceColumnLayout.customizerLabels,
+                    }}
+                  />
+                )
+              )}
+              {c.activeTab === "work" &&
+              c.activeSubTab === "payments" &&
+              c.paymentsResult.isError ? (
+                <ErrorState
+                  title={c.t("finance.loadFailed")}
+                  description={c.t("finance.loadFailedHint")}
+                  onRetry={() => void c.paymentsResult.refetch()}
+                />
+              ) : (
+                c.activeTab === "work" &&
+                c.activeSubTab === "payments" && (
+                  <PaymentsList
+                    isLoading={c.paymentsResult.isLoading}
+                    payments={c.payments}
+                    canDelete={c.canDelete}
+                    showDeleted={c.showDeleted}
+                    onDelete={(id) =>
+                      c.deletePayment.mutate(id, {
+                        onSuccess: () => notify.success(c.t("finance.trash.deleted")),
+                        onError: c.mutationError,
+                      })
+                    }
+                    onRestore={(id) =>
+                      c.restorePayment.mutate(id, {
+                        onSuccess: () => notify.success(c.t("finance.trash.restored")),
+                        onError: c.mutationError,
+                      })
+                    }
+                    onBulkDelete={(ids) =>
+                      c.bulkDeletePayments.mutate(ids, {
+                        onSuccess: (result: unknown) =>
+                          c.handleBulkResult(
+                            result as { succeeded: number; failed: number },
+                            "finance.trash.deleted",
+                            "payments",
+                          ),
+                        onError: c.mutationError,
+                      })
+                    }
+                    onBulkRestore={(ids) =>
+                      c.bulkRestorePayments.mutate(ids, {
+                        onSuccess: (result: unknown) =>
+                          c.handleBulkResult(
+                            result as { succeeded: number; failed: number },
+                            "finance.trash.restored",
+                            "payments",
+                          ),
+                        onError: c.mutationError,
+                      })
+                    }
+                    selectedIds={c.paymentSelection.selectedIds}
+                    onTogglePayment={c.paymentSelection.toggleSelected}
+                    onToggleSelectAll={c.paymentSelection.toggleSelectAll}
+                    onClearSelection={c.paymentSelection.clearSelection}
+                    isColumnVisible={c.paymentColumnLayout.isColumnVisible}
+                    getColumnWidth={c.paymentColumnLayout.getColumnWidth}
+                    onColumnResize={c.paymentColumnLayout.setColumnWidth}
+                    columnCustomizer={{
+                      columnRegistry: c.paymentColumnLayout.columnRegistry,
+                      updateUserColumnLayout: c.paymentColumnLayout.updateUserColumnLayout,
+                      onResetLayout: c.paymentColumnLayout.resetColumnLayout,
+                      labels: c.paymentColumnLayout.customizerLabels,
+                    }}
+                    onRowClick={(id: string) => {
+                      const p = c.payments.find((x) => x.id === id);
+                      if (p) c.setActivePayment(p);
+                    }}
+                  />
+                )
+              )}
+            </ErrorBoundary>
+          </ModuleTierMotion>
+        </AnimatePresence>
+      </ResponsiveAccordionTabs>
+
+      <FinanceOverlays
+        c={c}
+        receiptInvoices={receiptInvoices}
+        onCloseReceipts={() => setReceiptInvoices([])}
+        onSetReceiptInvoices={setReceiptInvoices}
+      />
+
+      <FinanceCsvImportDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        canWrite={c.canWrite}
+      />
+    </ModulePageShell>
+  );
+}

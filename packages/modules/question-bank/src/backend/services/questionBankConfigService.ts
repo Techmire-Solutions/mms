@@ -1,0 +1,19 @@
+import type { QuestionBankFieldConfigBlob, QuestionBankSettings } from "@mms/contracts";
+import {
+  getQuestionBankFieldConfigsForWorkspace,
+  replaceQuestionBankFieldConfigsForWorkspace,
+} from "../repository/questionBankFieldConfigRepository.js";
+
+export async function getQuestionBankFieldConfig(
+  workspaceSubdomain: string,
+): Promise<Partial<QuestionBankSettings>> {
+  const config = await getQuestionBankFieldConfigsForWorkspace(workspaceSubdomain);
+  return config ?? {};
+}
+
+export async function updateQuestionBankFieldConfig(
+  workspaceSubdomain: string,
+  config: QuestionBankFieldConfigBlob,
+): Promise<void> {
+  await replaceQuestionBankFieldConfigsForWorkspace(workspaceSubdomain, config);
+}

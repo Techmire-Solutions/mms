@@ -9,10 +9,10 @@
  *   no module may import another module; no consumer may import a module root
  *   apps never import a module's backend audience from a frontend app.
  *
- * `apps/frontend` is the interim hybrid console host (P8 splits it): app-wide it
- * may import either frontend audience, but its `src/tenant/**` and
- * `src/platform/**` subtrees keep the per-audience restriction. `apps/tenant-web`
- * and `apps/platform-web` are checked with the single audience they will own.
+ * `apps/tenant-web` is the interim hybrid console host while `src/platform/**` still
+ * lives there: app-wide it may import either frontend audience, but its `src/tenant/**`
+ * and `src/platform/**` subtrees keep the per-audience restriction. Flip it to
+ * `"tenant"` once platform code has migrated to `apps/platform-web`.
  *
  * The ESLint probe test (`scripts/ci/module-audience-boundaries.test.mjs`) proves
  * the specifier-level `no-restricted-imports` rules; this script guards the
@@ -90,20 +90,28 @@ for (const moduleName of modules) {
 }
 
 // Current/future frontend apps must never import a module backend subpath or a
-// module root. `apps/frontend` is hybrid until P8: app-wide it may import either
-// frontend audience, while its tenant/platform subtrees stay audience-locked.
+// module root. `apps/tenant-web` is hybrid until platform code migrates: app-wide it
+// may import either frontend audience, while its tenant/platform subtrees stay
+// audience-locked.
 const MODULE_ROOT_RE = /^@mms\/mod-[a-z0-9-]+$/;
 const MODULE_BACKEND_RE = /^@mms\/mod-[a-z0-9-]+\/backend(\/|$)/;
 const MODULE_PLATFORM_FE_RE = /^@mms\/mod-[a-z0-9-]+\/frontend\/platform(\/|$)/;
 const MODULE_TENANT_FE_RE = /^@mms\/mod-[a-z0-9-]+\/frontend\/tenant(\/|$)/;
+// Both apps are temporarily hybrid: `apps/platform-web` still carries a `src/tenant/**`
+// copy and shared `src/lib/**` that imports tenant-audience module code. The subtree
+// locks below already keep platform and tenant source separated *inside* each app, so
+// the app-wide allowance only covers shared shell code. Flip each app to its single
+// audience (`tenant` / `platform`) once the duplicated tenant tree is pruned from
+// platform-web — at that point the per-app value becomes the real guard.
 const APP_AUDIENCES = {
-  "apps/frontend": "hybrid",
-  "apps/tenant-web": "tenant",
-  "apps/platform-web": "platform",
+  "apps/tenant-web": "hybrid",
+  "apps/platform-web": "hybrid",
 };
 const SUBTREE_AUDIENCES = [
-  { prefix: "apps/frontend/src/tenant/", audience: "tenant" },
-  { prefix: "apps/frontend/src/platform/", audience: "platform" },
+  { prefix: "apps/tenant-web/src/tenant/", audience: "tenant" },
+  { prefix: "apps/tenant-web/src/platform/", audience: "platform" },
+  { prefix: "apps/platform-web/src/tenant/", audience: "tenant" },
+  { prefix: "apps/platform-web/src/platform/", audience: "platform" },
 ];
 
 for (const [app, appAudience] of Object.entries(APP_AUDIENCES)) {

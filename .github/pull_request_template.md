@@ -6,7 +6,7 @@
 
 - [ ] Strict TDD Protocol followed (`mms-tdd.md` §1): Red-phase command + exact failure pasted below, then minimal Green, then Refactor
 
-<!-- e.g. `pnpm --filter mms-backend test src/finance/use-cases/x.test.ts` → expected 422, received 500 -->
+<!-- e.g. `pnpm --filter mms-api test src/finance/use-cases/x.test.ts` → expected 422, received 500 -->
 
 - [ ] `pnpm ci:local` (the pre-push hook also runs this)
 - [ ] `pnpm ci:local:full` and/or `--with-db` / `--with-e2e` if those buckets changed

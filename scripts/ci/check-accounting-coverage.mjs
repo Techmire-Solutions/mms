@@ -10,8 +10,8 @@
  * the measured baseline minus a two-point margin. Floors may only be raised.
  *
  * Usage:
- *   node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db
- *   node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db --update
+ *   node scripts/ci/check-accounting-coverage.mjs --coverage apps/api/coverage-finance-db
+ *   node scripts/ci/check-accounting-coverage.mjs --coverage apps/api/coverage-finance-db --update
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -31,6 +31,7 @@ function argValues(flag) {
 
 function isAccountingFile(file) {
   const normalized = file.replaceAll("\\", "/");
+  if (normalized.includes("__tests__")) return false;
   return (
     normalized.includes("src/accounting/") ||
     normalized.includes("src/db/repositories/accounting") ||
@@ -39,18 +40,35 @@ function isAccountingFile(file) {
   );
 }
 
+function mergeCoverageEntry(target, next) {
+  if (!target) return next;
+  for (const [k, count] of Object.entries(next.s ?? {})) {
+    target.s[k] = Number(target.s[k] ?? 0) + Number(count);
+  }
+  for (const [k, count] of Object.entries(next.f ?? {})) {
+    target.f[k] = Number(target.f[k] ?? 0) + Number(count);
+  }
+  for (const [k, counts] of Object.entries(next.b ?? {})) {
+    target.b[k] = (target.b[k] ?? []).map((prev, idx) => Number(prev) + Number(counts[idx] ?? 0));
+  }
+  return target;
+}
+
 const coverageDirs = argValues("--coverage");
-const dirs = coverageDirs.length > 0 ? coverageDirs : ["apps/backend/coverage-finance-db"];
+const dirs = coverageDirs.length > 0 ? coverageDirs : ["apps/api/coverage-finance-db"];
 const update = process.argv.includes("--update");
 const data = {};
 for (const coverageDir of dirs) {
   const jsonPath = path.join(coverageDir, "coverage-final.json");
   if (!fs.existsSync(jsonPath)) {
     console.error(`✗ Accounting coverage report not found: ${jsonPath}`);
-    console.error("Run: pnpm --filter mms-backend run test:db:coverage:finance");
+    console.error("Run: pnpm --filter mms-api run test:db:coverage:finance");
     process.exit(1);
   }
-  Object.assign(data, JSON.parse(fs.readFileSync(jsonPath, "utf8")));
+  const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+  for (const [file, entry] of Object.entries(parsed)) {
+    data[file] = mergeCoverageEntry(data[file], entry);
+  }
   console.log(`merged coverage report: ${jsonPath}`);
 }
 let statements = 0;

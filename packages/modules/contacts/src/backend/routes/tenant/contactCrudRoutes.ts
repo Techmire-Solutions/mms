@@ -4,7 +4,7 @@ import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import type { ContractRouteArgs, ContractRouteResponse } from "@mms/be-core/http/routes";
 import { ConflictError } from "@mms/be-core/http/errors";
 import { getLinkedContactId } from "../../deps.js";
-import { contactUseCases } from "../../use-cases/contactUseCases.js";
+import { contactUseCases } from "../../use-cases/index.js";
 import { canWriteContacts, canReadCollection, canDeleteCollection } from "@mms/be-core/rbac";
 import { standardRequestValidationErrorHandler } from "@mms/be-core/http/routes";
 

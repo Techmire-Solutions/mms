@@ -1,0 +1,190 @@
+import { describe, expect, it } from "vitest";
+import {
+  parseTenantDatabaseUpdate,
+  parseTenantJobEvent,
+  resolveTenantWebSocketUrl,
+} from "@/lib/tenantWebSocket";
+
+describe("tenantWebSocket", () => {
+  it("parses database-update messages", () => {
+    expect(
+      parseTenantDatabaseUpdate(
+        JSON.stringify({ event: "database-update", type: "collection", key: "contacts" }),
+      ),
+    ).toEqual({
+      event: "database-update",
+      type: "collection",
+      key: "contacts",
+    });
+  });
+
+  it("rejects malformed payloads", () => {
+    expect(parseTenantDatabaseUpdate("not-json")).toBeNull();
+    expect(parseTenantDatabaseUpdate(JSON.stringify({ event: "ping" }))).toBeNull();
+    expect(
+      parseTenantDatabaseUpdate(
+        JSON.stringify({ event: "database-update", type: "collection", key: "" }),
+      ),
+    ).toBeNull();
+  });
+
+  it("parses job-progress and job-completed events", () => {
+    const progressEvent = JSON.stringify({
+      event: "job-progress",
+      tenantId: "tenant-1",
+      jobId: "job-402",
+      progress: { current: 50, total: 100, percent: 50 },
+    });
+    expect(parseTenantJobEvent(progressEvent)).toEqual({
+      event: "job-progress",
+      tenantId: "tenant-1",
+      jobId: "job-402",
+      progress: { current: 50, total: 100, percent: 50 },
+    });
+
+    const completedEvent = JSON.stringify({
+      event: "job-completed",
+      tenantId: "tenant-1",
+      jobId: "job-402",
+      hasDownload: true,
+    });
+    expect(parseTenantJobEvent(completedEvent)).toEqual({
+      event: "job-completed",
+      tenantId: "tenant-1",
+      jobId: "job-402",
+      hasDownload: true,
+    });
+  });
+
+  it("rejects invalid job event payloads", () => {
+    expect(parseTenantJobEvent("invalid")).toBeNull();
+    expect(parseTenantJobEvent(JSON.stringify({ event: "unknown" }))).toBeNull();
+    expect(parseTenantJobEvent(JSON.stringify({ event: "job-progress" }))).toBeNull(); // Missing tenantId and jobId
+  });
+
+  it("resolves relative /api/ws to same-origin ws URL", () => {
+    const url = resolveTenantWebSocketUrl();
+    expect(url.endsWith("/api/ws")).toBe(true);
+    expect(url.startsWith("ws://") || url.startsWith("wss://")).toBe(true);
+  });
+
+  it("notifies session expired when socket closes with 4001 unauthorized code", async () => {
+    let capturedReason: string | undefined;
+    const { SESSION_EXPIRED_EVENT } = await import("@mms/fe-core/api/client");
+    const { connectTenantDatabaseSocket } = await import("@/lib/tenantWebSocket");
+
+    const listener = (event: Event) => {
+      const customEvent = event as CustomEvent<{ reason?: string }>;
+      capturedReason = customEvent.detail?.reason;
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, listener);
+
+    const createdSockets: MockWebSocket[] = [];
+    class MockWebSocket extends EventTarget {
+      readyState = 1;
+      url = "";
+      constructor(url: string) {
+        super();
+        this.url = url;
+        createdSockets.push(this);
+      }
+      close() {}
+    }
+    const originalWS = globalThis.WebSocket;
+    // @ts-expect-error Mocking WebSocket constructor for test
+    globalThis.WebSocket = MockWebSocket;
+
+    const disconnect = connectTenantDatabaseSocket({
+      onDatabaseUpdate: () => {},
+    });
+
+    // Simulate 4001 close event
+    createdSockets[0]?.dispatchEvent(new CloseEvent("close", { code: 4001 }));
+
+    expect(capturedReason).toBe("websocket_unauthorized");
+
+    disconnect();
+    window.removeEventListener(SESSION_EXPIRED_EVENT, listener);
+    globalThis.WebSocket = originalWS;
+  });
+
+  it("reconnects a closed socket when the browser comes back online or regains focus", async () => {
+    // Arrange
+    const createdSockets: MockWebSocket[] = [];
+    class MockWebSocket extends EventTarget {
+      readyState = 0;
+      url = "";
+      constructor(url: string) {
+        super();
+        this.url = url;
+        createdSockets.push(this);
+      }
+      close() {
+        this.readyState = 3;
+      }
+    }
+    const originalWS = globalThis.WebSocket;
+    // @ts-expect-error Mocking WebSocket constructor for test
+    globalThis.WebSocket = MockWebSocket;
+    const { connectTenantDatabaseSocket } = await import("@/lib/tenantWebSocket");
+    const disconnect = connectTenantDatabaseSocket({ onDatabaseUpdate: () => {} });
+    expect(createdSockets).toHaveLength(1);
+
+    // Act / Assert: a connecting or open socket is left alone.
+    createdSockets[0].readyState = 1;
+    window.dispatchEvent(new Event("online"));
+    expect(createdSockets).toHaveLength(1);
+
+    // Act / Assert: a closed socket reconnects on the wake signals.
+    createdSockets[0].readyState = 3;
+    window.dispatchEvent(new Event("online"));
+    expect(createdSockets).toHaveLength(2);
+
+    createdSockets[1].readyState = 3;
+    window.dispatchEvent(new Event("focus"));
+    expect(createdSockets).toHaveLength(3);
+
+    // Act / Assert: cleanup removes the listeners.
+    disconnect();
+    window.dispatchEvent(new Event("online"));
+    expect(createdSockets).toHaveLength(3);
+
+    globalThis.WebSocket = originalWS;
+  });
+
+  it("closes socket on pagehide and reconnects on pageshow for bfcache compatibility", async () => {
+    const createdSockets: MockWebSocket[] = [];
+    class MockWebSocket extends EventTarget {
+      readyState = 1;
+      url = "";
+      closeCalls: Array<{ code?: number; reason?: string }> = [];
+      constructor(url: string) {
+        super();
+        this.url = url;
+        createdSockets.push(this);
+      }
+      close(code?: number, reason?: string) {
+        this.readyState = 3;
+        this.closeCalls.push({ code, reason });
+      }
+    }
+    const originalWS = globalThis.WebSocket;
+    // @ts-expect-error Mocking WebSocket constructor for test
+    globalThis.WebSocket = MockWebSocket;
+    const { connectTenantDatabaseSocket } = await import("@/lib/tenantWebSocket");
+    const disconnect = connectTenantDatabaseSocket({ onDatabaseUpdate: () => {} });
+    expect(createdSockets).toHaveLength(1);
+
+    // pagehide closes the socket
+    window.dispatchEvent(new Event("pagehide"));
+    expect(createdSockets[0].readyState).toBe(3);
+    expect(createdSockets[0].closeCalls[0]?.reason).toContain("bfcache");
+
+    // pageshow reconnects
+    window.dispatchEvent(new Event("pageshow"));
+    expect(createdSockets).toHaveLength(2);
+
+    disconnect();
+    globalThis.WebSocket = originalWS;
+  });
+});

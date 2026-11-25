@@ -1,6 +1,6 @@
 ---
 description: Frontend React hooks standards, TanStack Query factories, page controllers, and view mode state
-globs: apps/frontend/src/hooks/**,apps/frontend/src/tenant/hooks/**,apps/frontend/src/tenant/features/**/hooks/**,apps/frontend/src/platform/**/hooks/**,apps/frontend/src/lib/contexts/ContactConfigContext.tsx,apps/frontend/src/lib/contacts/**,apps/frontend/src/lib/contexts/TenantContext.tsx,apps/frontend/src/lib/query/**
+globs: apps/tenant-web/src/hooks/**,apps/tenant-web/src/tenant/hooks/**,apps/tenant-web/src/tenant/features/**/hooks/**,apps/platform-web/src/platform/**/hooks/**,packages/modules/contacts/src/frontend/tenant/components/ContactConfigContext.tsx,apps/tenant-web/src/lib/contacts/**,packages/fe-core/src/tenant/TenantContext.tsx,apps/tenant-web/src/lib/query/**
 alwaysApply: false
 ---
 

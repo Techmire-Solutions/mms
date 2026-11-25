@@ -1,0 +1,146 @@
+/**
+ * @file TasksReportsTab.tsx
+ * @description Tasks Reports tier — KPI cards, Recharts series, and execution health.
+ */
+
+import React from "react";
+import { useTaskMetrics } from "../hooks/useTasksApi";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { StatsSkeleton } from "@mms/ui";
+import { ModuleCommandMetricsGrid } from "@mms/fe-core/components/ModuleCommandMetricsGrid";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { TasksReportsCharts } from "./TasksReportsCharts";
+import { TASK_METRIC_UI } from "../lib/taskMetricUi";
+
+export function TasksReportsTab(): React.JSX.Element {
+  const { t } = useTranslation();
+  const { data: metrics, isLoading, isError, refetch } = useTaskMetrics();
+
+  if (isLoading) {
+    return <StatsSkeleton count={6} />;
+  }
+
+  if (isError) {
+    return (
+      <ErrorState
+        title={t("tasks.loadFailed")}
+        description={t("tasks.loadFailedHint")}
+        onRetry={() => void refetch()}
+      />
+    );
+  }
+
+  const m = metrics ?? {
+    total: 0,
+    todo: 0,
+    inProgress: 0,
+    inReview: 0,
+    blocked: 0,
+    completed: 0,
+    cancelled: 0,
+    overdue: 0,
+    byPriority: { low: 0, medium: 0, high: 0, urgent: 0 },
+  };
+
+  const completionRate = m.total > 0 ? Math.round((m.completed / m.total) * 100) : 0;
+  // `overdue` is a live count, not completed-on-time history; label and compute
+  // this as "not currently overdue" rather than claiming punctuality.
+  const notOverdueRate =
+    m.total > 0 ? Math.max(0, Math.round(((m.total - m.overdue) / m.total) * 100)) : 100;
+  const notOverdueTone =
+    notOverdueRate >= 90
+      ? "text-success"
+      : notOverdueRate >= 70
+        ? "text-warning"
+        : "text-destructive";
+
+  return (
+    <div className="space-y-6">
+      <ModuleCommandMetricsGrid
+        items={[
+          {
+            key: "total",
+            label: t("tasks.metrics.total"),
+            value: m.total,
+            icon: TASK_METRIC_UI.total.icon,
+            accent: TASK_METRIC_UI.total.accent,
+          },
+          {
+            key: "inProgress",
+            label: t("tasks.metrics.inProgress"),
+            value: m.inProgress,
+            icon: TASK_METRIC_UI.inProgress.icon,
+            accent: TASK_METRIC_UI.inProgress.accent,
+          },
+          {
+            key: "completed",
+            label: t("tasks.metrics.completed"),
+            value: m.completed,
+            icon: TASK_METRIC_UI.completed.icon,
+            accent: TASK_METRIC_UI.completed.accent,
+          },
+          {
+            key: "blocked",
+            label: t("tasks.metrics.blocked"),
+            value: m.blocked,
+            icon: TASK_METRIC_UI.blocked.icon,
+            accent: TASK_METRIC_UI.blocked.accent,
+          },
+          {
+            key: "overdue",
+            label: t("tasks.metrics.overdue"),
+            value: m.overdue,
+            icon: TASK_METRIC_UI.overdue.icon,
+            accent: TASK_METRIC_UI.overdue.accent,
+          },
+          {
+            key: "completionRate",
+            label: t("tasks.metrics.completionRate"),
+            value: `${completionRate}%`,
+            icon: TASK_METRIC_UI.completionRate.icon,
+            accent: TASK_METRIC_UI.completionRate.accent,
+          },
+        ]}
+      />
+
+      <TasksReportsCharts metrics={m} />
+
+      <div className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-4">
+        <div>
+          <h3 className="font-semibold text-sm text-foreground mb-1">
+            {t("tasks.reports.executionHealth")}
+          </h3>
+          <p className="text-xs text-muted-foreground text-wrap-pretty">
+            {t("tasks.reports.executionHealthHint")}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="flex items-center justify-between p-3 rounded-md bg-muted/40 border border-border/50">
+            <span className="text-xs font-medium text-foreground">{t("tasks.reports.onTime")}</span>
+            <span className={`text-sm font-bold ${notOverdueTone}`}>{notOverdueRate}%</span>
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-md bg-muted/40 border border-border/50">
+            <span className="text-xs font-medium text-foreground">
+              {t("tasks.metrics.blocked")}
+            </span>
+            <span
+              className={`text-sm font-bold ${
+                m.blocked > 0 ? "text-destructive" : "text-muted-foreground"
+              }`}
+            >
+              {t("tasks.reports.blockedCount", { count: m.blocked })}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-md bg-muted/40 border border-border/50">
+            <span className="text-xs font-medium text-foreground">
+              {t("tasks.reports.activeWorkload")}
+            </span>
+            <span className="text-sm font-bold text-primary">
+              {t("tasks.reports.inFlight", { count: m.inProgress + m.inReview })}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,181 @@
+import React from "react";
+import { Building2, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import type { FacultyDepartmentEntity } from "@mms/contracts";
+import { EmptyCellDash } from "@mms/ui/app/EmptyCellDash";
+import { EmptyState } from "@mms/ui";
+import { StatusBadge, type StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import { ArchivedBadge } from "./ArchivedBadge";
+import { SEMANTIC_BADGE } from "@mms/fe-core/ui/semanticTone";
+import {
+  DataTable,
+  DataTableRowActions,
+  type DataTableColumn,
+  type DataTableFilter,
+} from "@mms/fe-core/components/data-table";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+export interface FacultyDepartmentsTableProps {
+  departments: FacultyDepartmentEntity[];
+  editingDepartmentId?: string;
+  isPending: boolean;
+  isLoading: boolean;
+  canWrite?: boolean;
+  onEdit: (dept: FacultyDepartmentEntity) => void;
+  onDelete: (dept: FacultyDepartmentEntity) => void;
+  onRestore?: (dept: FacultyDepartmentEntity) => void;
+  primaryAction?: React.ReactNode;
+}
+
+/** Departments directory — Faculty Management model: name, description, designation count, status. */
+export function FacultyDepartmentsTable({
+  departments,
+  editingDepartmentId,
+  isPending,
+  isLoading,
+  canWrite = true,
+  onEdit,
+  onDelete,
+  onRestore,
+  primaryAction,
+}: FacultyDepartmentsTableProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const statusLabel = (d: FacultyDepartmentEntity) => t(`faculty.status.${d.status}`);
+  const statusConfig: Record<string, StatusBadgeConfigItem> = {
+    active: { label: t("faculty.status.active"), cls: SEMANTIC_BADGE.success },
+    inactive: { label: t("faculty.status.inactive"), cls: SEMANTIC_BADGE.muted },
+  };
+
+  const columns: DataTableColumn<FacultyDepartmentEntity>[] = [
+    {
+      id: "name",
+      kind: "title",
+      label: t("faculty.setup.departmentName"),
+      fixed: true,
+      render: (d) => <span className="truncate font-medium">{d.name}</span>,
+    },
+    {
+      id: "description",
+      kind: "longText",
+      label: t("faculty.setup.departmentDescription"),
+      searchValue: (d) => d.description ?? "",
+      render: (d) => (
+        <span className="line-clamp-2 text-xs text-muted-foreground">
+          {d.description?.trim() ? d.description : <EmptyCellDash />}
+        </span>
+      ),
+    },
+    {
+      id: "designationCount",
+      label: t("faculty.setup.departmentDesignationCount"),
+      width: 130,
+      cellClassName: "text-end",
+      render: (d) => <span className="tabular-nums">{d.designationCount ?? 0}</span>,
+    },
+    {
+      id: "status",
+      label: t("common.status"),
+      width: 120,
+      searchValue: (d) => (d.deletedAt ? t("faculty.detail.archivedSubtitle") : statusLabel(d)),
+      render: (d) =>
+        d.deletedAt ? (
+          <ArchivedBadge />
+        ) : (
+          <StatusBadge status={d.status} config={statusConfig} size="sm" />
+        ),
+    },
+  ];
+
+  const filters: DataTableFilter<FacultyDepartmentEntity>[] = [
+    {
+      id: "status",
+      label: t("common.status"),
+      options: [
+        { value: "active", label: t("faculty.status.active") },
+        { value: "inactive", label: t("faculty.status.inactive") },
+      ],
+      getValue: (d) => d.status,
+    },
+  ];
+
+  return (
+    <DataTable
+      tableId="faculty.departments"
+      label={t("faculty.tabs.departments")}
+      data={departments}
+      columns={columns}
+      filters={filters}
+      isLoading={isLoading}
+      searchPlaceholder={t("faculty.setup.searchDepartments")}
+      primaryAction={primaryAction}
+      card={{
+        title: (d) => d.name,
+        badge: (d) =>
+          d.deletedAt ? (
+            <ArchivedBadge />
+          ) : (
+            <StatusBadge status={d.status} config={statusConfig} size="sm" />
+          ),
+      }}
+      rowClassName={(d) =>
+        d.id === editingDepartmentId
+          ? "bg-primary/10 ring-1 ring-inset ring-primary/40"
+          : d.deletedAt
+            ? "opacity-60 bg-muted/30"
+            : d.status === "active"
+              ? undefined
+              : "opacity-70"
+      }
+      renderRowActions={
+        canWrite
+          ? (d) => {
+              if (d.deletedAt) {
+                return onRestore ? (
+                  <DataTableRowActions
+                    actions={[
+                      {
+                        id: "restore",
+                        label: `${t("common.restore")} ${d.name}`,
+                        icon: RotateCcw,
+                        onClick: () => onRestore(d),
+                        disabled: isPending,
+                      },
+                    ]}
+                  />
+                ) : undefined;
+              }
+              return (
+                <DataTableRowActions
+                  actions={[
+                    {
+                      id: "edit",
+                      label: `${t("common.edit")} ${d.name}`,
+                      icon: Pencil,
+                      onClick: () => onEdit(d),
+                      disabled: isPending,
+                    },
+                    {
+                      id: "delete",
+                      label: `${t("common.delete")} ${d.name}`,
+                      icon: Trash2,
+                      tone: "destructive",
+                      onClick: () => onDelete(d),
+                      disabled: isPending,
+                    },
+                  ]}
+                />
+              );
+            }
+          : undefined
+      }
+      emptyState={
+        <EmptyState
+          icon={Building2}
+          title={t("faculty.setup.noDepartments")}
+          description={t("faculty.setup.departmentsHint")}
+          compact
+          variant="dashed"
+        />
+      }
+    />
+  );
+}

@@ -33,7 +33,7 @@ const REQUIRED = [
     names: ["matches the transition table for every ordered status pair"],
   },
   {
-    file: "apps/backend/src/__tests__/examinations.integration.test.ts",
+    file: "apps/api/src/__tests__/examinations.integration.test.ts",
     names: [
       "asks for published-only marks for a read-only audience",
       "different workspace than the request host",
@@ -70,11 +70,11 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/sandboxShutdownAbort.test.ts",
+    file: "apps/api/src/__tests__/sandboxShutdownAbort.test.ts",
     names: ["aborts the sandbox deadline when the child receives SIGTERM"],
   },
   {
-    file: "apps/backend/src/__tests__/typstEngine.test.ts",
+    file: "apps/api/src/__tests__/typstEngine.test.ts",
     names: [
       "fails loudly when the Typst CLI is unavailable (never a placeholder PDF)",
       "compiles with a private data file (no payload in argv) and bundled fonts",
@@ -82,30 +82,30 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/frontend/src/tenant/features/examinations/lib/marksGridNavigation.test.ts",
+    file: "apps/tenant-web/src/tenant/features/examinations/lib/marksGridNavigation.test.ts",
     names: ["tabs forward/backward but lets Tab leave the grid at an edge"],
   },
   {
-    file: "apps/frontend/src/tenant/features/examinations/lib/examFormValidation.test.ts",
+    file: "apps/tenant-web/src/tenant/features/examinations/lib/examFormValidation.test.ts",
     names: ["flags passing above total, non-positive totals and a blank duration immediately"],
   },
   {
-    file: "apps/frontend/src/tenant/features/examinations/components/EnterMarksTable.test.tsx",
+    file: "apps/tenant-web/src/tenant/features/examinations/components/EnterMarksTable.test.tsx",
     names: ["moves focus down/up between student rows with ArrowDown/ArrowUp"],
   },
   {
-    file: "apps/frontend/src/tenant/features/examinations/components/EnterMarks.test.tsx",
+    file: "apps/tenant-web/src/tenant/features/examinations/components/EnterMarks.test.tsx",
     names: ["keeps the draft when a background results refetch arrives while dirty"],
   },
   {
-    file: "apps/frontend/src/tenant/features/examinations/components/useExaminationForm.test.ts",
+    file: "apps/tenant-web/src/tenant/features/examinations/components/useExaminationForm.test.ts",
     names: [
       "flags an invalid numeric frame live and becomes dirty only after an edit",
       "shows a save failure inline without losing the draft",
     ],
   },
   {
-    file: "apps/backend/src/__tests__/examinationRepositoryAnalytics.test.ts",
+    file: "apps/api/src/__tests__/examinationRepositoryAnalytics.test.ts",
     names: ["computes all four aggregates in one tenant-scoped statement"],
   },
   {
@@ -120,11 +120,11 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/db-integration/examinationIntegrityDb.integration.test.ts",
+    file: "apps/api/src/__tests__/db-integration/examinationIntegrityDb.integration.test.ts",
     names: ["accepts every shared exam status at the DB boundary"],
   },
   {
-    file: "apps/backend/src/__tests__/examinationsMarksTransfer.test.ts",
+    file: "apps/api/src/__tests__/examinationsMarksTransfer.test.ts",
     names: [
       "neutralises formula-leading student names and roll numbers in the streamed broadsheet",
       "streams a page at a time until the marks run out",
@@ -132,11 +132,11 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/backgroundJobRetry.test.ts",
+    file: "apps/api/src/__tests__/backgroundJobRetry.test.ts",
     names: ["resets the failed row and re-dispatches with the new payload"],
   },
   {
-    file: "apps/backend/src/__tests__/backgroundJobsOwnership.test.ts",
+    file: "apps/api/src/__tests__/backgroundJobsOwnership.test.ts",
     names: [
       "serves only a job the caller owns",
       "404s another user's job instead of serializing it",
@@ -144,7 +144,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/db-integration/examinationsConcurrencyDb.integration.test.ts",
+    file: "apps/api/src/__tests__/db-integration/examinationsConcurrencyDb.integration.test.ts",
     names: [
       "saves disjoint batches concurrently without a deadlock",
       "serialises overlapping batches written in opposite orders without 40P01",
@@ -153,7 +153,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/db-integration/examinationSubsystemsDb.integration.test.ts",
+    file: "apps/api/src/__tests__/db-integration/examinationSubsystemsDb.integration.test.ts",
     names: [
       "keeps marks when a student is archived, drops them from the roster, and restores",
       "pins the student hard-purge FK cascade (retention decision pending)",
@@ -162,7 +162,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/rls/examinationsTenantIsolation.db.integration.test.ts",
+    file: "apps/api/src/__tests__/rls/examinationsTenantIsolation.db.integration.test.ts",
     names: ["cross-tenant eligibility overrides cannot be read, updated or granted"],
   },
   {
@@ -170,7 +170,7 @@ const REQUIRED = [
     names: ["enters, validates and saves marks, then locks published results"],
   },
   {
-    file: "apps/backend/src/__tests__/examMarksImportScope.test.ts",
+    file: "apps/api/src/__tests__/examMarksImportScope.test.ts",
     names: [
       "scopes the submitted rolls by their exact section on the exam date",
       "wraps a scope rejection in the import-specific 403",
@@ -187,22 +187,22 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/examEligibilityGate.test.ts",
+    file: "apps/api/src/__tests__/examEligibilityGate.test.ts",
     names: ["carries the blocked students and their decision evidence"],
   },
   {
-    file: "apps/backend/src/__tests__/contractError.test.ts",
+    file: "apps/api/src/__tests__/contractError.test.ts",
     names: [
       "preserves the structured details and violations a domain error carries",
       "maps a unique-violation constraint to 409 instead of a server fault",
     ],
   },
   {
-    file: "apps/backend/src/__tests__/errorHandler.test.ts",
+    file: "apps/api/src/__tests__/errorHandler.test.ts",
     names: ["keeps a domain error's type and structured details"],
   },
   {
-    file: "apps/backend/src/__tests__/examWriteGuards.test.ts",
+    file: "apps/api/src/__tests__/examWriteGuards.test.ts",
     names: [
       "rejects an illegal move with 409 illegal_exam_transition",
       "refuses to edit a trashed exam until it is restored",
@@ -212,7 +212,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/examLifecycleUseCases.test.ts",
+    file: "apps/api/src/__tests__/examLifecycleUseCases.test.ts",
     names: [
       "refuses to publish an exam that has not been sat yet",
       "refuses to unlock an archived exam",
@@ -221,7 +221,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/examinationModerationDomain.test.ts",
+    file: "apps/api/src/__tests__/examinationModerationDomain.test.ts",
     names: [
       "requires at least three characters",
       "rejects negative, non-finite and above-column values",
@@ -229,7 +229,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/examinationsMarksTransfer.test.ts",
+    file: "apps/api/src/__tests__/examinationsMarksTransfer.test.ts",
     names: [
       "runs the eligibility gate for the chunk and again for every fallback row",
       "exports only published marks and omits the moderation column for a non-grader",
@@ -237,7 +237,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/db-integration/examinationIntegrityDb.integration.test.ts",
+    file: "apps/api/src/__tests__/db-integration/examinationIntegrityDb.integration.test.ts",
     names: [
       "serialises two simultaneous writes carrying the same token",
       "stamps restore provenance when an exam is brought back",
@@ -260,7 +260,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/db-integration/questionBankPersistenceDb.integration.test.ts",
+    file: "apps/api/src/__tests__/db-integration/questionBankPersistenceDb.integration.test.ts",
     names: [
       "rejects a non-positive paper total and duration",
       "rejects negative question marks and a negative answer score",
@@ -286,7 +286,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/db-integration/examinationSubsystemsDb.integration.test.ts",
+    file: "apps/api/src/__tests__/db-integration/examinationSubsystemsDb.integration.test.ts",
     names: [
       "hides unpublished marks from read-only audiences",
       "report analytics (real Postgres)",
@@ -296,7 +296,7 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/backend/src/__tests__/rls/examinationsTenantIsolation.db.integration.test.ts",
+    file: "apps/api/src/__tests__/rls/examinationsTenantIsolation.db.integration.test.ts",
     names: [
       "FORCE row level security",
       "cross-tenant mark cannot be inserted",

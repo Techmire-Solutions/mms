@@ -1,0 +1,66 @@
+import type { FastifyPluginAsync } from "fastify";
+import { messagingContract } from "@mms/contracts";
+import { initServer, type RouterImplementation } from "@ts-rest/fastify";
+import { standardRequestValidationErrorHandler } from "@mms/be-core/http/routes";
+import { createStrictRateLimitGuard } from "../deps.js";
+import {
+  messagingListLogsHandler,
+  messagingGetMetricsHandler,
+  messagingRecordLogsHandler,
+  messagingClearLogsHandler,
+  messagingRestoreLogsHandler,
+} from "./messagingLogContractHandlers.js";
+import {
+  messagingListTemplatesHandler,
+  messagingSaveTemplateHandler,
+  messagingDeleteTemplateHandler,
+} from "./messagingTemplateContractHandlers.js";
+import {
+  messagingListRecipientsHandler,
+  messagingMatchRecipientsHandler,
+  messagingResolveContactsHandler,
+} from "./messagingRecipientContractHandlers.js";
+import {
+  messagingGetPreferencesHandler,
+  messagingUpdatePreferencesHandler,
+} from "./messagingPreferencesContractHandlers.js";
+
+const s = initServer();
+
+export const messagingContractRouter: FastifyPluginAsync = async (fastify) => {
+  const router = s.router(messagingContract, {
+    listLogs: messagingListLogsHandler,
+    listTemplates: messagingListTemplatesHandler,
+    listRecipients: messagingListRecipientsHandler,
+    getMetrics: messagingGetMetricsHandler,
+    saveTemplate: messagingSaveTemplateHandler,
+    deleteTemplate: messagingDeleteTemplateHandler,
+    recordLogs: messagingRecordLogsHandler,
+    clearLogs: messagingClearLogsHandler,
+    restoreLogs: messagingRestoreLogsHandler,
+    resolveContacts: messagingResolveContactsHandler,
+    matchRecipients: messagingMatchRecipientsHandler,
+    getPreferences: messagingGetPreferencesHandler,
+    updatePreferences: messagingUpdatePreferencesHandler,
+    // Deliberate, documented exception to the `as unknown as T` ban (mms-agent-universal):
+    // ts-rest's own `RouterImplementation` degrades this contract to any/never past the TS
+    // union-depth limit, so responses are typed by `ContractRouteResponse` instead — see
+    // `lib/contractRouterTypes.ts` for the rationale. All backend routers share this workaround.
+  } as unknown as RouterImplementation<typeof messagingContract>);
+
+  await fastify.register(async (scoped) => {
+    const strictGuard = createStrictRateLimitGuard(scoped);
+    // Destructive contract writes (clear/restore/record) carry the same strict
+    // limiter as the dispatch routes; reads keep the global limiter so the Work
+    // directory's polling is unaffected (`mms-auth-security` §4).
+    scoped.addHook("preHandler", async (request, reply) => {
+      if (request.method === "GET" || request.method === "HEAD") return;
+      await strictGuard(request, reply);
+      return reply.sent ? reply : undefined;
+    });
+
+    await scoped.register(s.plugin(router), {
+      requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    });
+  });
+};

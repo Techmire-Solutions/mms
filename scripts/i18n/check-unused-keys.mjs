@@ -31,9 +31,12 @@ const EN_PACK = path.join(ROOT, "packages/contracts/src/i18n/appTranslationsEn.t
 const BASELINE = 517;
 
 const SCAN_ROOTS = [
-  "apps/backend/src",
-  "apps/frontend/src",
+  "apps/api/src",
+  "apps/tenant-web/src",
+  "apps/platform-web/src",
   "packages/ui/src",
+  "packages/fe-core/src",
+  "packages/modules",
   "packages/contracts/src", // excluding the translation packs themselves
   "e2e/tests",
   "e2e/helpers",

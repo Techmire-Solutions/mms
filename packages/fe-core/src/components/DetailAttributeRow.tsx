@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { FORM_LABEL, WORK_SURFACE_INNER } from "@mms/ui";
 import { cn } from "@mms/ui";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@mms/fe-core/ui/semanticTone";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "../ui/semanticTone.js";
 
 export type DetailAttributeRowVariant = "card" | "list" | "inset";
 

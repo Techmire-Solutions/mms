@@ -3,7 +3,7 @@ import { Check, X } from "lucide-react";
 import { Button } from "@mms/ui";
 import { REMOVE_BTN } from "@mms/ui/form";
 import { formatContactOptionLabel } from "./contactOptionI18n";
-import type { TranslationFunction } from "@mms/fe-core/i18n";
+import type { TranslationFunction } from "../i18n/index.js";
 import { cn } from "@mms/ui";
 
 export interface EditableMultiSelectOptionItemProps {

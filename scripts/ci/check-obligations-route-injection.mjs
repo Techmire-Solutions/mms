@@ -17,7 +17,7 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const CONTRACT_DIR = path.join(ROOT, "packages/contracts/src/contracts");
-const TEST_ROOT = path.join(ROOT, "apps/backend/src/__tests__");
+const TEST_ROOT = path.join(ROOT, "apps/api/src/__tests__");
 
 function walk(dir, files = []) {
   if (!fs.existsSync(dir)) return files;

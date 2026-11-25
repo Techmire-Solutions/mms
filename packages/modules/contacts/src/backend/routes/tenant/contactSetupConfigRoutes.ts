@@ -7,15 +7,9 @@ import {
 } from "@mms/contracts";
 import { registerModuleSetupConfigRoutes } from "../registerModuleSetupConfigRoutes.js";
 import { canReadContacts } from "@mms/be-core/rbac";
-import {
-  loadContactFieldConfig,
-  saveContactFieldConfig,
-} from "../../use-cases/contactConfigService.js";
-import {
-  loadContactPreferences,
-  saveContactPreferences,
-} from "../../use-cases/contactPreferencesService.js";
-import { invalidateDuplicateScanCache } from "../../use-cases/contactDuplicateScanUseCases.js";
+import { loadContactFieldConfig, saveContactFieldConfig } from "../../use-cases/index.js";
+import { loadContactPreferences, saveContactPreferences } from "../../use-cases/index.js";
+import { invalidateDuplicateScanCache } from "../../use-cases/index.js";
 import { auditContact } from "./contactRouteHelpers.js";
 
 /**

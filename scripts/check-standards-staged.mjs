@@ -53,11 +53,26 @@ const mirrorsFor = (file) => {
   return [];
 };
 
+const isTrackedCleanMirror = (mirror) => {
+  if (!fs.existsSync(mirror)) return false;
+  // Mirrors that do not carry globs/paths (e.g. .agent/rules and .dsh/rules) can remain identical to
+  // HEAD when only globs change in .cursor/rules; accept them when tracked and clean against HEAD.
+  return git(["status", "--porcelain", "--", mirror]).length === 0;
+};
+
 const missing = [];
 for (const file of staged) {
   for (const mirror of mirrorsFor(file)) {
-    if (!staged.has(mirror)) missing.push(`${mirror}  (mirror of ${file})`);
-    else if (!fs.existsSync(mirror)) missing.push(`${mirror}  (missing on disk — run sync-all.sh)`);
+    if (!staged.has(mirror)) {
+      if (!isTrackedCleanMirror(mirror)) {
+        const reason = fs.existsSync(mirror)
+          ? "mirror of"
+          : "missing on disk — run sync-all.sh, mirror of";
+        missing.push(`${mirror}  (${reason} ${file})`);
+      }
+    } else if (!fs.existsSync(mirror)) {
+      missing.push(`${mirror}  (missing on disk — run sync-all.sh)`);
+    }
   }
 }
 

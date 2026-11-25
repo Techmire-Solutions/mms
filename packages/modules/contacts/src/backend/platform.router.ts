@@ -8,7 +8,7 @@ import {
 import type { PlatformAuthenticatedRequest } from "@mms/be-core/auth";
 import { sendDatabaseError, sendIfHttpDomainError } from "@mms/be-core/http/errors";
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
-import { platformContactsUseCases } from "./use-cases/platformContactsUseCases.js";
+import { platformContactsUseCases } from "./use-cases/index.js";
 
 function sendError(reply: FastifyReply, error: unknown, fallback: string) {
   const typed = error as { statusCode?: number; type?: string; message?: string };

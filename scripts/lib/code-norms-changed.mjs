@@ -20,15 +20,15 @@ const EMPTY = { anySites: [], arbitrarySites: [], hasHex: false, lineCount: 0 };
 /**
  * Sanctioned colour-source modules: the only files allowed to introduce NEW
  * raw hex literals (reviewed exception, mirrors the eslint "Colour-source
- * modules" block in apps/frontend/eslint.config.js).
+ * modules" block in apps/tenant-web/eslint.config.js).
  * - Platform branding seed: the apex theme config holds the MMS platform brand
  *   palette as literal hex BrandingSettings values (runtime branding engine,
  *   not CSS tokens).
  */
 const SANCTIONED_HEX_SOURCE_MODULES = new Set([
-  "apps/frontend/src/lib/branding/platformThemeConfig.ts",
+  "apps/tenant-web/src/lib/branding/platformThemeConfig.ts",
   // Print/PDF + QR output needs absolute colours (not CSS tokens); moved from
-  // apps/frontend to @mms/fe-core during the monorepo migration.
+  // apps/tenant-web to @mms/fe-core during the monorepo migration.
   "packages/fe-core/src/print/printTemplateStyles.ts",
   "packages/fe-core/src/print/qrCodeGenerator.ts",
 ]);

@@ -1,0 +1,90 @@
+import React from "react";
+import {
+  facultyTransferSchema,
+  facultyDesignationTransferSchema,
+  facultyDepartmentTransferSchema,
+  type FacultyTransferEntity,
+  type FacultyDesignationCsvRow,
+  type FacultyDepartmentCsvRow,
+} from "@mms/contracts";
+import { ModuleImportDialog } from "@mms/fe-core/components/ModuleImportDialog";
+import { useModuleCsvImportActions } from "@mms/fe-core/backgroundJobs";
+import { useTranslation } from "@mms/fe-core/i18n";
+import type { FacultyIoEntity } from "../facultyPageWorkSubTabs";
+
+export interface FacultyCsvImportDialogProps {
+  open: boolean;
+  entity: FacultyIoEntity | null;
+  onClose: () => void;
+  canWrite: boolean;
+}
+
+/** Standardized CSV import dialog for Faculties, Departments, and Designations using SSOT schema. */
+export function FacultyCsvImportDialog({
+  open,
+  entity,
+  onClose,
+  canWrite,
+}: FacultyCsvImportDialogProps): React.JSX.Element | null {
+  const { t } = useTranslation();
+
+  const facultyActions = useModuleCsvImportActions<FacultyTransferEntity>({
+    apiPath: "/api/faculty/import",
+    schema: facultyTransferSchema,
+    defaultLabel: t("faculty.io.importFacultiesJob"),
+    onSuccess: onClose,
+  });
+
+  const departmentActions = useModuleCsvImportActions<FacultyDepartmentCsvRow>({
+    apiPath: "/api/faculty/departments/import",
+    schema: facultyDepartmentTransferSchema,
+    defaultLabel: t("faculty.io.importDepartmentsJob"),
+    onSuccess: onClose,
+  });
+
+  const designationActions = useModuleCsvImportActions<FacultyDesignationCsvRow>({
+    apiPath: "/api/faculty/designations/import",
+    schema: facultyDesignationTransferSchema,
+    defaultLabel: t("faculty.io.importDesignationsJob"),
+    onSuccess: onClose,
+  });
+
+  if (!open || !entity || !canWrite) return null;
+
+  if (entity === "faculties") {
+    return (
+      <ModuleImportDialog<FacultyTransferEntity>
+        open={open}
+        onClose={onClose}
+        title={t("faculty.io.importFaculties")}
+        subtitle={t("faculty.io.csvHint")}
+        canWrite={canWrite}
+        actions={facultyActions}
+      />
+    );
+  }
+
+  if (entity === "departments") {
+    return (
+      <ModuleImportDialog<FacultyDepartmentCsvRow>
+        open={open}
+        onClose={onClose}
+        title={t("faculty.io.importDepartments")}
+        subtitle={t("faculty.io.csvHint")}
+        canWrite={canWrite}
+        actions={departmentActions}
+      />
+    );
+  }
+
+  return (
+    <ModuleImportDialog<FacultyDesignationCsvRow>
+      open={open}
+      onClose={onClose}
+      title={t("faculty.io.importDesignations")}
+      subtitle={t("faculty.io.csvHint")}
+      canWrite={canWrite}
+      actions={designationActions}
+    />
+  );
+}

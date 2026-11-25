@@ -21,13 +21,13 @@ test("accepts a consistent todo entry", () => {
   const result = check(
     [
       {
-        from: "apps/backend/src/contacts",
+        from: "apps/api/src/contacts",
         to: "packages/modules/contacts/src/backend",
         phase: "P4",
         status: "todo",
       },
     ],
-    ["apps/backend/src/contacts"],
+    ["apps/api/src/contacts"],
   );
   assert.deepEqual(result.errors, []);
   assert.deepEqual(result.summary, { P4: { total: 1, done: 0 } });
@@ -37,7 +37,7 @@ test("accepts a consistent done entry", () => {
   const result = check(
     [
       {
-        from: "apps/backend/src/contacts",
+        from: "apps/api/src/contacts",
         to: "packages/modules/contacts/src/backend",
         phase: "P4",
         status: "done",
@@ -53,13 +53,13 @@ test("rejects a done entry whose source still exists", () => {
   const result = check(
     [
       {
-        from: "apps/backend/src/contacts",
+        from: "apps/api/src/contacts",
         to: "packages/modules/contacts/src/backend",
         phase: "P4",
         status: "done",
       },
     ],
-    ["apps/backend/src/contacts", "packages/modules/contacts/src/backend"],
+    ["apps/api/src/contacts", "packages/modules/contacts/src/backend"],
   );
   assert.equal(result.errors.length, 1);
   assert.match(result.errors[0], /still exists/);
@@ -69,7 +69,7 @@ test("rejects a done entry whose target is missing", () => {
   const result = check(
     [
       {
-        from: "apps/backend/src/contacts",
+        from: "apps/api/src/contacts",
         to: "packages/modules/contacts/src/backend",
         phase: "P4",
         status: "done",
@@ -85,7 +85,7 @@ test("rejects a todo entry whose source is missing", () => {
   const result = check(
     [
       {
-        from: "apps/backend/src/contacts",
+        from: "apps/api/src/contacts",
         to: "packages/modules/contacts/src/backend",
         phase: "P4",
         status: "todo",
@@ -94,20 +94,20 @@ test("rejects a todo entry whose source is missing", () => {
     [],
   );
   assert.equal(result.errors.length, 1);
-  assert.match(result.errors[0], /"todo" but apps\/backend\/src\/contacts does not exist/);
+  assert.match(result.errors[0], /"todo" but apps\/api\/src\/contacts does not exist/);
 });
 
 test("rejects a todo entry whose target already exists (stale status)", () => {
   const result = check(
     [
       {
-        from: "apps/backend/src/contacts",
+        from: "apps/api/src/contacts",
         to: "packages/modules/contacts/src/backend",
         phase: "P4",
         status: "todo",
       },
     ],
-    ["apps/backend/src/contacts", "packages/modules/contacts/src/backend"],
+    ["apps/api/src/contacts", "packages/modules/contacts/src/backend"],
   );
   assert.equal(result.errors.length, 1);
   assert.match(result.errors[0], /flip status to "done"/);

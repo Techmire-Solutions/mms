@@ -14,7 +14,7 @@ export {
 } from "./platformAdminSeeder.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const backendDir = path.resolve(__dirname, "../../apps/backend");
+const backendDir = path.resolve(__dirname, "../../apps/api");
 
 export interface TenantBootstrapCredentials {
   subdomain: string;

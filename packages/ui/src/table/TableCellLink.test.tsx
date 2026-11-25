@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { TableCellLink } from "./TableCellLink";
 
-describe("TableCellLink Component (@shared/ui)", () => {
+describe("TableCellLink Component (@mms/ui)", () => {
   it("renders a ghost button with zero padding and auto direction", () => {
     const html = renderToStaticMarkup(<TableCellLink>Student Name</TableCellLink>);
 

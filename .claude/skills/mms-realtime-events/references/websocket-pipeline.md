@@ -20,7 +20,7 @@ React Client                          Fastify Backend
      │                                      │
 ```
 
-- **Endpoint:** `apps/backend/src/routes/common/websocket.ts`
+- **Endpoint:** `apps/api/src/routes/common/websocket.ts`
 - **Authentication:** Authenticated via standard session cookies (`mms_tenant_session`). Bearer tokens in URL query strings are strictly prohibited to prevent credential leaks in access logs.
 - **Tenant Isolation:** Sockets are indexed by `tenantId`. Broadcasts are scoped to the originating workspace unless explicitly addressed to a system-wide platform operator.
 
@@ -62,7 +62,7 @@ All frames exchanged over `/api/ws` use standard JSON serialization:
 
 ## 3. Frontend Client Integration
 
-Frontend subscription is managed via `apps/frontend/src/lib/tenantWebSocket.ts`:
+Frontend subscription is managed via `apps/tenant-web/src/lib/tenantWebSocket.ts`:
 
 - **Singleton Manager:** `TenantWebSocketManager` maintains a single active WebSocket connection per authenticated tenant session.
 - **Heartbeat & Reconnect:** Exponential backoff with jitter on disconnect (initial delay 500ms, cap 30s).
@@ -87,8 +87,8 @@ Frontend subscription is managed via `apps/frontend/src/lib/tenantWebSocket.ts`:
 
 ```bash
 # Test Fastify WebSocket route injection
-pnpm --filter mms-backend test apps/backend/src/__tests__/websocketRoute.test.ts
+pnpm --filter mms-api test apps/api/src/__tests__/websocketRoute.test.ts
 
 # Test Frontend WebSocket client manager
-pnpm --filter mms-frontend test apps/frontend/src/lib/tenantWebSocket.test.ts
+pnpm --filter mms-frontend test apps/tenant-web/src/lib/tenantWebSocket.test.ts
 ```

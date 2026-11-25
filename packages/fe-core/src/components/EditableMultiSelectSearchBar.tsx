@@ -1,7 +1,7 @@
 import React from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@mms/ui";
-import type { TranslationFunction } from "@mms/fe-core/i18n";
+import type { TranslationFunction } from "../i18n/index.js";
 
 export interface EditableMultiSelectSearchBarProps {
   searchQuery: string;

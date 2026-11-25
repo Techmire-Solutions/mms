@@ -1,0 +1,160 @@
+import {
+  type Student,
+  type User,
+  type StudentClearanceOptions,
+  roleHasPermission,
+} from "@mms/contracts";
+import { createCollectionAuditHelper } from "../lib/createCollectionAuditHelper.js";
+import { studentUseCases } from "../use-cases/index.js";
+import { StudentPermissionError } from "../use-cases/index.js";
+import { withTenant } from "@mms/db/context";
+import { enableIncludeDeleted } from "@mms/db/soft-delete";
+
+/** Thin Students audit helper — shared factory, same shape as Contacts/Faculty. */
+export const auditStudent = createCollectionAuditHelper("students", { subjectScoped: true });
+
+/** Resolves PII clearance flags based on the requesting user's institutional role. */
+export function resolveUserStudentClearance(user: User): StudentClearanceOptions {
+  const normalizedRole = (user.role ?? "").trim().toLowerCase();
+  const isAdminTier = ["super_admin", "admin", "principal", "registrar", "super_user"].includes(
+    normalizedRole,
+  );
+
+  return {
+    canViewNotes: roleHasPermission(user.role, "students.notes.read"),
+    canViewMedical: roleHasPermission(user.role, "students.medical.read"),
+    canViewIep: roleHasPermission(user.role, "students.iep.read"),
+    canViewSensitivePii: isAdminTier,
+  };
+}
+
+/** Strips student properties the viewer role cannot read (field-config + viewer role + PII clearance). */
+export async function sanitizeStudentsForUser(students: Student[], user: User): Promise<Student[]> {
+  const clearance = resolveUserStudentClearance(user);
+  return studentUseCases.sanitizeStudentsForViewer(students, user.role, clearance);
+}
+
+export async function sanitizeOneStudentForUser(student: Student, user: User): Promise<Student> {
+  const clearance = resolveUserStudentClearance(user);
+  return studentUseCases.sanitizeStudentForViewer(student, user.role, clearance);
+}
+
+/** Runs work within tenant context, optionally enabling soft-delete reads. */
+export async function withStudentTenantScope<T>(
+  tenantId: string,
+  includeDeleted: boolean,
+  work: () => Promise<T>,
+  options?: { readOnly?: boolean },
+): Promise<T> {
+  return withTenant(
+    tenantId,
+    async (tx) => {
+      if (includeDeleted) await enableIncludeDeleted(tx);
+      return work();
+    },
+    options,
+  );
+}
+
+type StudentWriteErrorBody =
+  | { type: string; message: string }
+  | { type: string; message: string; errors: Array<{ field: string; message: string }> };
+
+/** Maps create/update domain errors to ts-rest status/body (403 / 400 / 409). */
+export function mapStudentWriteHttpError(
+  error: unknown,
+): { status: 403 | 400 | 409; body: StudentWriteErrorBody } | null {
+  if (error instanceof StudentPermissionError) {
+    return { status: 403, body: { type: "forbidden", message: error.message } };
+  }
+  if (
+    error instanceof Error &&
+    "statusCode" in error &&
+    typeof (error as { statusCode?: unknown }).statusCode === "number" &&
+    (error as { statusCode: number }).statusCode === 409
+  ) {
+    const type =
+      "type" in error && typeof (error as { type?: unknown }).type === "string"
+        ? (error as { type: string }).type
+        : "conflict";
+    // Conflict errors raised by the domain carry the offending field; the client keys its
+    // GR/Student-ID/contact messaging off `errors[0].field` instead of message text.
+    const field =
+      "field" in error && typeof (error as { field?: unknown }).field === "string"
+        ? (error as { field: string }).field
+        : undefined;
+    return {
+      status: 409,
+      body: {
+        type,
+        message: error.message,
+        ...(field ? { errors: [{ field, message: error.message }] } : {}),
+      },
+    };
+  }
+  if (
+    error instanceof Error &&
+    "statusCode" in error &&
+    typeof (error as { statusCode?: unknown }).statusCode === "number" &&
+    (error as { statusCode: number }).statusCode === 400
+  ) {
+    const validationErrors =
+      "validationErrors" in error &&
+      Array.isArray((error as { validationErrors?: unknown }).validationErrors)
+        ? (
+            error as {
+              validationErrors: Array<{ fieldId?: string; field?: string; message: string }>;
+            }
+          ).validationErrors.map((e) => ({
+            field: e.field ?? e.fieldId ?? "form",
+            message: e.message,
+          }))
+        : [{ field: "form", message: error.message }];
+    return {
+      status: 400,
+      body: {
+        type: "validation_error",
+        message: error.message,
+        errors: validationErrors,
+      },
+    };
+  }
+  if (error && typeof error === "object" && "type" in error && "field" in error) {
+    const e = error as { type: string; message: string; field: string };
+    return {
+      status: 400,
+      body: {
+        type: e.type,
+        message: e.message,
+        errors: [{ field: e.field, message: e.message }],
+      },
+    };
+  }
+  return null;
+}
+
+/** Parsed optimistic-concurrency token; a malformed header is a client error, not a conflict. */
+export type ExpectedUpdatedAtParseResult = {
+  value?: string;
+  error?: { status: 400; body: { type: "validation_error"; message: string } };
+};
+
+export function expectedUpdatedAtForUpdate(
+  headerValue: string | string[] | undefined,
+): ExpectedUpdatedAtParseResult {
+  const raw = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+  const value = raw?.trim();
+  if (!value) return { value: undefined };
+  if (Number.isNaN(Date.parse(value))) {
+    return {
+      error: {
+        status: 400,
+        body: {
+          type: "validation_error",
+          message: "x-expected-updated-at must be an ISO-8601 timestamp",
+        },
+      },
+    };
+  }
+  return { value };
+}

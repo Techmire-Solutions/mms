@@ -12,7 +12,7 @@
 #   POSTGRES_PASSWORD   (chosen by operator)
 #   REDIS_PASSWORD      (generated, e.g. openssl rand -hex 24)
 #   JWT_SECRET          (32+ chars, e.g. openssl rand -hex 32)
-# See apps/backend/.env.example for the full application env contract.
+# See apps/api/.env.example for the full application env contract.
 
 services:
   postgres:
@@ -87,8 +87,8 @@ services:
   backend:
     build:
       context: .
-      dockerfile: apps/backend/Dockerfile
-    container_name: mms-backend
+      dockerfile: apps/api/Dockerfile
+    container_name: mms-api
     restart: unless-stopped
     ports:
       - "5002:5002"
@@ -118,7 +118,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: apps/backend/Dockerfile
+      dockerfile: apps/api/Dockerfile
     container_name: mms-worker
     command: ["node", "dist/worker/index.js"]
     restart: unless-stopped

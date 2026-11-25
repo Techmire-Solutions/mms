@@ -1,0 +1,230 @@
+import React, { lazy, Suspense, useState } from "react";
+import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
+import { useTranslation } from "@mms/fe-core/i18n";
+import {
+  useFinanceInvoicesPaginated,
+  useFinanceReportAggregates,
+} from "@/tenant/hooks/collections/finance";
+import { Skeleton } from "@mms/ui";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+
+const FinancialReportCharts = lazy(() =>
+  import("@/components/reports/FinancialReportSections").then((mod) => ({
+    default: mod.FinancialReportCharts,
+  })),
+);
+import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
+import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
+import { FinancialInvoiceTable } from "@/components/reports/FinancialReportTable";
+import {
+  formatMonthYear,
+  getCollectedAmountForInvoice,
+  getOutstandingAmountForInvoice,
+  moneyToCents,
+  parseIsoDate,
+} from "@mms/contracts";
+import type {
+  DiscountUsageByTypeItem,
+  MonthlyFeeCollectionItem,
+} from "@/components/reports/FinancialReportSections";
+
+/** Active filter state passed down from the parent report view. */
+interface FinancialReportFilters {
+  /** Invoice status to filter by, or "all" for no filter. */
+  status: string;
+  /** Substring to match against student names (case-insensitive). */
+  student: string;
+}
+
+/** Props for the FinancialReport component. */
+interface FinancialReportProps {
+  /** Active report filters. */
+  filters: FinancialReportFilters;
+  /** Optional callback to open the visualizer with an existing config. */
+  onEditVisual?: (config: unknown) => void;
+}
+
+/**
+ * Renders the financial reports and charts including revenue trends,
+ * collection rates, discount distribution, and a filterable invoice table.
+ */
+const FinancialReport = function FinancialReport({
+  filters,
+}: FinancialReportProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const palette = useBrandPalette();
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const PIE_COLORS = (() => [
+    palette.primary,
+    palette.secondary,
+    palette.charts[2],
+    palette.charts[3],
+    palette.charts[0],
+  ])();
+
+  const invoicesQuery = useFinanceInvoicesPaginated({
+    page: 1,
+    limit: 100,
+    search: filters.student || undefined,
+  });
+
+  const aggregatesQuery = useFinanceReportAggregates();
+
+  const financeInvoices = invoicesQuery.data?.invoices ?? [];
+
+  const monthlyFeeCollection = (() => {
+    if (
+      aggregatesQuery.data?.monthlyFeeCollection &&
+      aggregatesQuery.data.monthlyFeeCollection.length > 0
+    ) {
+      return aggregatesQuery.data.monthlyFeeCollection;
+    }
+    // Aggregate integer cents: `+=` on money numbers drifts before the display
+    // rounding (0.10 + 0.20 + … in binary floats), and this is a fallback chart.
+    const monthlyTotals: Record<string, { collected: number; outstanding: number; total: number }> =
+      {};
+    financeInvoices.forEach((invoice) => {
+      const dueDate = parseIsoDate(invoice.dueDate);
+      if (!dueDate) return;
+      const monthLabel = formatMonthYear(dueDate);
+
+      if (!monthlyTotals[monthLabel])
+        monthlyTotals[monthLabel] = { collected: 0, outstanding: 0, total: 0 };
+
+      monthlyTotals[monthLabel].collected += moneyToCents(getCollectedAmountForInvoice(invoice));
+      monthlyTotals[monthLabel].outstanding += moneyToCents(
+        getOutstandingAmountForInvoice(invoice),
+      );
+      monthlyTotals[monthLabel].total += moneyToCents(invoice.finalAmt);
+    });
+
+    return Object.entries(monthlyTotals)
+      .map(([month, monthTotals]) => ({
+        month,
+        collected: monthTotals.collected / 100,
+        outstanding: monthTotals.outstanding / 100,
+        total: monthTotals.total / 100,
+        rate:
+          monthTotals.total > 0 ? Math.round((monthTotals.collected / monthTotals.total) * 100) : 0,
+      }))
+      .sort(
+        (firstMonth, secondMonth) =>
+          new Date(firstMonth.month).getTime() - new Date(secondMonth.month).getTime(),
+      )
+      .slice(-6);
+  })() as MonthlyFeeCollectionItem[];
+
+  const discountUsageByType = (() => {
+    if (
+      aggregatesQuery.data?.discountUsageByType &&
+      aggregatesQuery.data.discountUsageByType.length > 0
+    ) {
+      return aggregatesQuery.data.discountUsageByType;
+    }
+    const discountTotalsByType: Record<string, { count: number; totalDiscounted: number }> = {};
+    let totalDiscountAmount = 0;
+
+    financeInvoices.forEach((invoice) => {
+      if (invoice.discountAmt > 0 && invoice.discountType && invoice.status !== "cancelled") {
+        const discountType = invoice.discountType;
+        if (!discountTotalsByType[discountType])
+          discountTotalsByType[discountType] = { count: 0, totalDiscounted: 0 };
+        discountTotalsByType[discountType].count++;
+        discountTotalsByType[discountType].totalDiscounted += moneyToCents(invoice.discountAmt);
+        totalDiscountAmount += moneyToCents(invoice.discountAmt);
+      }
+    });
+
+    return Object.entries(discountTotalsByType).map(([discountType, discountTotals]) => ({
+      type: discountType,
+      count: discountTotals.count,
+      totalDiscounted: discountTotals.totalDiscounted / 100,
+      percentage:
+        totalDiscountAmount > 0
+          ? Math.round((discountTotals.totalDiscounted / totalDiscountAmount) * 100)
+          : 0,
+    }));
+  })() as DiscountUsageByTypeItem[];
+
+  const invoices = (() => {
+    let filteredInvoices = financeInvoices;
+    if (filters.status !== "all") {
+      filteredInvoices = filteredInvoices.filter((invoice) => invoice.status === filters.status);
+    }
+    if (selectedMonth) {
+      filteredInvoices = filteredInvoices.filter((invoice) => {
+        const dueDate = parseIsoDate(invoice.dueDate);
+        return dueDate ? formatMonthYear(dueDate) === selectedMonth : false;
+      });
+    }
+    return filteredInvoices;
+  })();
+
+  const toggleMonthFilter = (month: string) => {
+    setSelectedMonth((current) => (current === month ? null : month));
+  };
+
+  const usingFallback =
+    !aggregatesQuery.data?.monthlyFeeCollection?.length &&
+    !aggregatesQuery.data?.discountUsageByType?.length;
+
+  if (invoicesQuery.isLoading || aggregatesQuery.isLoading) {
+    return (
+      <div className="space-y-4 p-1" aria-busy="true">
+        <Skeleton className="h-chart-md w-full rounded-2xl" />
+        <Skeleton className="h-40 w-full rounded-2xl" />
+      </div>
+    );
+  }
+
+  if (invoicesQuery.isError || aggregatesQuery.isError) {
+    return (
+      <div className="p-4">
+        <ErrorState
+          title={t("finance.loadFailed")}
+          description={t("finance.loadFailedHint")}
+          onRetry={() => {
+            void invoicesQuery.refetch();
+            void aggregatesQuery.refetch();
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {usingFallback && (
+        <p role="status" className="rounded-lg border border-warning/40 bg-warning/10 p-2 text-xs">
+          {t("finance.report.fallbackNotice")}
+        </p>
+      )}
+      <Suspense fallback={<Skeleton className="h-chart-md w-full rounded-xl" />}>
+        <FinancialReportCharts
+          monthlyFeeCollection={monthlyFeeCollection}
+          discountUsageByType={discountUsageByType}
+          pieColors={PIE_COLORS}
+          selectedMonth={selectedMonth}
+          onToggleMonthFilter={toggleMonthFilter}
+        />
+      </Suspense>
+      <ReportFilterBanner
+        filters={[
+          selectedMonth
+            ? {
+                key: "month",
+                label: t("finance.report.monthFilterLabel"),
+                value: selectedMonth,
+                onClear: () => setSelectedMonth(null),
+                clearLabel: t("finance.report.clearMonthFilter"),
+              }
+            : null,
+        ]}
+      />
+      <FinancialInvoiceTable invoices={invoices} />
+      <PinnedWidgets category="finance" />
+    </div>
+  );
+};
+
+export default FinancialReport;

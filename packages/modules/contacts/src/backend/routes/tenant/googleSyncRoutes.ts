@@ -10,7 +10,7 @@ import {
   redactGoogleSyncConfigForClient,
   runGoogleContactsSync,
   setContactGoogleSyncConfig,
-} from "../../use-cases/contactGoogleSyncUseCases.js";
+} from "../../use-cases/index.js";
 import {
   contactGoogleSyncAuditSchema,
   contactGoogleSyncConfigSchema,

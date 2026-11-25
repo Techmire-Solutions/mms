@@ -14,7 +14,7 @@ function descriptorColumnsToRegistry(
     fixed: column.fixed ?? false,
   }));
 }
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import type {
   ModuleColumnCustomizerLabels,
   ModuleColumnCustomizerProps,

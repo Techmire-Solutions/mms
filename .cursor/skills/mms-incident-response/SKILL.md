@@ -1,6 +1,6 @@
 ---
 name: mms-incident-response
-description: Runs the MMS production incident procedure on the Hetzner host — diagnose, decide rollback vs fix-forward, execute, and verify the site is genuinely serving again. Use when production is down, a deploy broke the site, or a release must be reverted. Do NOT use for routine deploys (use mms-ops-deploy), single-request error investigations (use mms-error-triage), or a wedged background worker (use mms-queue-ops).
+description: Runs production incident procedure (diagnose, rollback vs fix-forward, verify). Use when prod is down or a deploy broke the site. Do NOT use for routine deploys (use mms-ops-deploy), single-request errors (use mms-error-triage), or queue ops (use mms-queue-ops).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -22,7 +22,7 @@ compatibility: Requires SSH access to the Hetzner VPS with PM2 and Apache; do no
 1. **Confirm the blast radius:** is it one tenant subdomain, all tenants, or the apex platform console? A single tenant points at data/config; everything points at the process, the proxy, or the database.
 2. **Do not deploy a fix yet.** Capture the current state first — it is the only evidence you get:
    ```bash
-   bash scripts/server-diagnose.sh apps/backend/.env
+   bash scripts/server-diagnose.sh apps/api/.env
    pm2 status
    pm2 logs mmsv2-backend --lines 200
    ```

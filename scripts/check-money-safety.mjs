@@ -18,18 +18,17 @@ const ROOT = process.cwd();
 const SCAN_DIRS = [
   "packages/contracts/src/finance",
   "packages/contracts/src/money",
-  "apps/backend/src/finance",
-  "apps/backend/src/accounting",
   "packages/modules/accounting/src/backend",
-  "apps/backend/src/db/repositories",
-  "apps/frontend/src/lib/data",
+  "apps/api/src/db/repositories",
+  "apps/tenant-web/src/lib/data",
   // The template/receipt renderers format money for print; they were outside every scan root
   // (audit S5).
-  "apps/frontend/src/lib",
-  "apps/frontend/src/tenant/features/finance",
-  "apps/frontend/src/tenant/features/accounting",
+  "apps/tenant-web/src/lib",
+  // Finance moved out of the tenant app into @mms/mod-billing (P4 extraction).
+  "packages/modules/billing/src/frontend/tenant",
+  "apps/tenant-web/src/tenant/features/accounting",
   "packages/modules/accounting/src/frontend",
-  "apps/frontend/src/tenant/features/obligations",
+  "apps/tenant-web/src/tenant/features/obligations",
 ];
 // Fail closed: money-safety must cover every finance surface, so an empty scan
 // root is a gate bug (docs/monorepo-migration-plan.md §2.7).
@@ -44,7 +43,7 @@ const SKIP = /(?:^|\/)(?:__tests__|dist|node_modules)\/|\.(?:test|spec)\.(?:ts|t
 const FINDINGS = [];
 const ALLOW = [
   {
-    file: /^apps\/backend\/src\/db\/repositories\//,
+    file: /^apps\/api\/src\/db\/repositories\//,
     rule: "db-adapter",
     reason: "exact only for the 2-dp column precisions asserted by financeEnumParityDb",
   },
@@ -54,7 +53,7 @@ const ALLOW = [
     file: /^packages\/modules\/(?:accounting|finance|obligations)\/src\/backend\/repository\//,
     rule: "db-adapter",
     reason:
-      "moved db adapters — same 2-dp column precision contract as apps/backend/src/db/repositories",
+      "moved db adapters — same 2-dp column precision contract as apps/api/src/db/repositories",
   },
   {
     // Forward-only data backfills: run once by a migration runner, never on a
@@ -64,9 +63,20 @@ const ALLOW = [
     reason: "one-time backfill migration; compares 2-dp trial balances, no runtime money path",
   },
   {
-    file: /^apps\/frontend\/src\/tenant\/features\/finance\/lib\/paymentFormHelpers\.ts$/,
+    // The finance form-draft helper moved into @mms/mod-billing (P4); both paths
+    // share the same DECIMAL_MONEY_REGEX validation contract.
+    file: /^(?:apps\/tenant-web\/src\/tenant\/features\/finance\/lib|packages\/modules\/billing\/src\/frontend\/tenant\/lib)\/paymentFormHelpers\.ts$/,
     rule: "db-adapter",
     reason: "form draft is validated by DECIMAL_MONEY_REGEX before conversion",
+  },
+  {
+    // Finance UI moved into @mms/mod-billing (P4). These casts are pre-existing
+    // UI draft/row heterogeneity (heterogeneous form payloads, table row
+    // unions), not float money math — the money math stays in the backend
+    // db-adapter (see financeEnumParityDb).
+    file: /^packages\/modules\/billing\/src\/frontend\/tenant\//,
+    rule: "any-cast",
+    reason: "moved finance UI components — pre-existing UI casts, not money float math",
   },
 ];
 
@@ -102,7 +112,7 @@ for (const scanDir of SCAN_DIRS) {
     // The repository layer is shared infrastructure; only its finance/accounting
     // files are in scope for this ratchet (other modules' `any` is not ours).
     if (
-      relative.startsWith("apps/backend/src/db/repositories/") &&
+      relative.startsWith("apps/api/src/db/repositories/") &&
       !/(?:finance|accounting|obligation)/i.test(relative)
     ) {
       continue;

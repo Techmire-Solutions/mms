@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Badge } from "@mms/ui";
 import { formatContactOptionLabel } from "./contactOptionI18n";
-import type { TranslationFunction } from "@mms/fe-core/i18n";
+import type { TranslationFunction } from "../i18n/index.js";
 import { isOptionSelected } from "@mms/ui/app/editableMultiSelectUtils";
 import {
   EditableMultiSelectOptionItem,

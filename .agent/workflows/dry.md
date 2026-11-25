@@ -11,9 +11,10 @@ This workflow enforces the Single Source of Truth (SSOT) policy, eliminates dupl
 - [ ] **Load the owning rules**: Review `rules/mms-core.md`, `rules/mms-dry.md`, and `rules/mms-structure-naming.md`.
 - [ ] **Search before writing**: Before creating new helpers or components, search the following paths for existing solutions:
   - `@mms/contracts`
-  - `apps/frontend/src/lib/`
-  - `apps/frontend/src/components/ui/`
-  - `apps/backend/src/`
+  - `packages/fe-core/src/`
+  - `packages/ui/src/`
+  - `apps/tenant-web/src/lib/`
+  - `apps/api/src/`
 
 ## Phase 2: Pattern Identification
 
@@ -53,8 +54,8 @@ This workflow enforces the Single Source of Truth (SSOT) policy, eliminates dupl
 - [ ] **Run static analysis**:
   ```bash
   pnpm typecheck
-  cd apps/frontend && pnpm lint
-  cd apps/backend && pnpm lint
+  cd apps/tenant-web && pnpm lint
+  cd apps/api && pnpm lint
   ```
 - [ ] **Sync Standards**: If any standards files or skills were modified during this audit, run:
   ```bash

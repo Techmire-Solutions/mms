@@ -1,6 +1,6 @@
 import React, { type JSX } from "react";
 import { ConfirmAlertDialog } from "./ConfirmAlertDialog";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import type { AppTranslationKey } from "@mms/contracts";
 
 export interface ModuleTrashConfirmDialogsProps {

@@ -1,6 +1,6 @@
 ---
 name: mms-module-page
-description: Creates or modifies MMS module pages per mms-module-architecture.mdc — operational tabs plus required Reports/Setup, module manifest, ModulePageShell command centre, and settings panels. Use when adding a module page, aligning tab navigation, or aligning an existing module to universal architecture. Do NOT use for isolated form modals (use mms-form-architecture), Work directory tables/drawers (use mms-module-work), or custom field definitions (use mms-fields-registry).
+description: Creates module pages (operational tabs + Reports/Setup, manifest, ModulePageShell). Use when module page/nav alignment. Do NOT use for form modals (use mms-form-architecture), work directories (use mms-module-work), or fields (use mms-fields-registry).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -42,12 +42,12 @@ metadata:
 
 | Concern | Path / symbol |
 |---------|----------------|
-| Gold pages | `apps/frontend/src/tenant/features/accounting/AccountingPage.tsx`, `.../contacts/ContactsPage.tsx` |
-| Shell | `apps/frontend/src/components/app/ModulePageShell.tsx` |
-| Tier tabs | `apps/frontend/src/hooks/useModuleTierTabs.ts` (`useFilteredModuleTierTabs`) |
-| Permissions | `apps/frontend/src/tenant/hooks/usePermissions.ts` (`useModulePermissions`) |
-| Tab + trash state | `apps/frontend/src/hooks/usePersistedTabState.ts`, `apps/frontend/src/hooks/useDirectoryTrashState.ts` |
-| Router | `apps/frontend/src/components/routing/HostRoutes.tsx` |
+| Gold pages | `apps/tenant-web/src/tenant/features/accounting/AccountingPage.tsx`, `packages/modules/contacts/src/frontend/tenant/ContactsPage.tsx` |
+| Shell | `packages/fe-core/src/components/ModulePageShell.tsx` |
+| Tier tabs | `packages/fe-core/src/lib/useModuleTierTabs.ts` (`useFilteredModuleTierTabs`) |
+| Permissions | `apps/tenant-web/src/tenant/hooks/usePermissions.ts` (`useModulePermissions`) |
+| Tab + trash state | `packages/fe-core/src/lib/usePersistedTabState.ts`, `packages/fe-core/src/lib/useDirectoryTrashState.ts` |
+| Router | `apps/tenant-web/src/tenant/routes/TenantRoutes.tsx` |
 | Policy | `packages/contracts/src/settings/moduleAccessPolicy.ts` + `ModuleAccessRoute` |
 | Template | `examples/TemplateModulePage.tsx` |
 
@@ -66,7 +66,7 @@ Derive allowed tabs with `useFilteredModuleTierTabs({ workLabelKey: 'nav.<module
 - [ ] Trash mode (?view=trash) via useDirectoryTrashState, with restore + bulk restore wired
 - [ ] Write surfaces use FormModal + mms-form-architecture chrome (not DetailSheet embeds)
 - [ ] i18n keys added to en/ar/ur/fa (pnpm run check:i18n)
-- [ ] Verify: pnpm typecheck && pnpm --filter mms-frontend lint
+- [ ] Verify: pnpm typecheck && pnpm --filter mms-tenant-web lint
 ```
 
 ## References

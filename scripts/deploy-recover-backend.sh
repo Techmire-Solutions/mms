@@ -12,9 +12,9 @@ source "$ROOT_DIR/scripts/lib/read-env.sh"
 # shellcheck source=lib/curl-local-backend.sh
 source "$ROOT_DIR/scripts/lib/curl-local-backend.sh"
 
-ENV_FILE="${1:-apps/backend/.env}"
+ENV_FILE="${1:-apps/api/.env}"
 BACKEND_PORT="$MMS_PROD_BACKEND_PORT"
-DIST_ENTRY="apps/backend/dist/index.js"
+DIST_ENTRY="apps/api/dist/index.js"
 ECOSYSTEM="$ROOT_DIR/ecosystem.config.cjs"
 
 BACKEND_PORT="$(read_env_var PORT "$MMS_PROD_BACKEND_PORT" "$ENV_FILE")"

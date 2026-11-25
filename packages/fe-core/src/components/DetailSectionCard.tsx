@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Card } from "@mms/ui";
 import { DetailSectionTitle } from "@mms/ui/app/DetailSectionTitle";
-import type { CardAccentColor } from "@mms/fe-core/ui/semanticTone";
+import type { CardAccentColor } from "../ui/semanticTone.js";
 
 export interface DetailSectionCardProps {
   title: string;

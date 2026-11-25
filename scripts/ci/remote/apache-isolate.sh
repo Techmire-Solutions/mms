@@ -6,4 +6,4 @@ cd /var/www/mmsv2
 
 git fetch origin main 2>/dev/null || true
 git reset --hard origin/main
-bash scripts/apply-production-host-isolation.sh apps/backend/.env < /dev/null
+bash scripts/apply-production-host-isolation.sh apps/api/.env < /dev/null

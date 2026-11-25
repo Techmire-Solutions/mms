@@ -2,10 +2,10 @@ import React, { useEffect, useRef } from "react";
 import { AnimatePresence, m } from "framer-motion";
 import { Button } from "@mms/ui";
 import { cn } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
-import { useReducedMotion } from "@mms/fe-core/tenant";
-import { useRovingToolbar } from "@mms/fe-core/hooks";
-import { isAnotherLayerFocused, overlayLayerCount } from "@mms/fe-core/hooks";
+import { useTranslation } from "../i18n/index.js";
+import { useReducedMotion } from "../tenant/index.js";
+import { useRovingToolbar } from "../hooks/index.js";
+import { isAnotherLayerFocused, overlayLayerCount } from "../hooks/index.js";
 import {
   BulkSelectionClearAction,
   BulkSelectionDeleteAction,

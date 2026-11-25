@@ -481,7 +481,7 @@ e2e/  scripts/  docs/  .github/  .githooks/  docker/  perf/
 | Current                                                                 | Target                                                                                              | Phase |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ----- |
 | `Dockerfile`                                                            | `apps/api/Dockerfile` (copy `packages/{contracts,db,be-core,modules/*}`; build the API only)         | P7    |
-| `package.json` (`mms-backend`)                                          | `apps/api/package.json` (`mms-api`); `db:migrate`/`db:check` move to `@mms/db`                        | P1/P7 |
+| `package.json` (`mms-backend`)                                          | `apps/api/package.json` (`mms-api`); `db:check`/`index:concurrent`/RLS CLIs run from `@mms/db`, `db:migrate` stays (it runs the app boot pipeline) | P1/P7 |
 | `vitest.config.ts`, `vitest.db.config.ts`, `vitest.rls.config.ts`        | `apps/api/vitest*.config.ts`; DB/RLS configs move to `packages/db`                                    | P1/P7 |
 | `tsconfig.json`, `eslint.config.js`                                     | `apps/api/*`                                                                                        | P7    |
 | `scripts/sql/*.sql` (3 concurrent-index files)                          | `packages/db/scripts/sql/**` (out-of-band index builds accompany migrations)                         | P1    |
@@ -791,7 +791,7 @@ one sibling `dist` exists. P0/R1–R3 fix this before the first move.
 | U19 | Split e2e projects + two-server bootstrap + seed helpers                                                | P8    |
 | U20 | Codemod `@shared/ui → @mms/ui` (10 stale comments in `packages/ui`) and remove the phantom alias        | P2    |
 | U21 | Move `apps/frontend/eslint-rules` → `tooling/eslint-config/{rules,baselines}` and repoint baselines      | P2    |
-| U22 | `packages/db` gains `db:migrate`/`test:db`/`test:rls`; root `db:migrate` stops targeting `mms-backend` (blocked on moving `migrateDb.ts` → P1b) | P1 |
+| U22 | `packages/db` gains `db:check`/`test:db`/`test:rls` + the RLS/index CLIs; **`db:migrate` deliberately stays on `mms-api`** because it runs the app-owned boot pipeline (DDL + 81 data migrations + seeds, P1b-4) | P1 ✅ |
 | U23 | ~~`DocumentStoreRepositoryLoader` port so the legacy doc store can move into `be-core/db-sync`~~ — **closed in P1b-3**; `relationalSnapshot` stays app-side by design (materialized loader) and uses the port | P1 ✅ |
 
 ---
@@ -946,12 +946,50 @@ points at a nonexistent root.
 > repositories with their module until P6), so they stay in the app for now.
 > **Ratchet coverage extended in the same change:** `check:code-norms` and `check:db-projections` now scan
 > `packages/db/src` — moving code into the package must not let it escape a gate.
+>
+> **Decided (P1b-4) — `database.ts`, `dbInit.ts` and the data migrations stay app-side.** Measured on the live
+> tree: the 81 data migrations are **not** portable as the original estimate assumed.
+> - `../database.js` ×38 — all 7 symbols are document-store admin/object helpers, which now live in
+>   `@mms/be-core/db-sync/documentStore` (P1b-3).
+> - `../../services/workspaceService.js` ×4, `../repositories/facultyAssignmentValidation.js` ×2,
+>   `../../lib/logger.js` ×3 — app service/repository/lib coupling.
+> Moving them into `packages/db` would force a `db → be-core` import for the document store, inverting the
+> only current kernel direction (`@mms/db` has **0** `@mms/be-core` imports; `@mms/be-core` has 23 `@mms/db`
+> imports). They are one-time historical migrations (frozen; only re-run on a fresh dev/test DB), so — like
+> `dbInit` (D-kept in `apps/api`) — they stay app-side. `database.ts` is already the thin app facade tying
+> `config → @mms/db` + the doc store + `initDb`; `dbInit.ts` is the boot pipeline. Nothing further to move.
+>
+> **Landed (P1b-5): the RLS role CLIs moved to `packages/db`.** `checkRlsRole` and `provisionRlsRole` (both
+> `pg`-only) moved to `packages/db/src/scripts/` with their unit test (`checkRlsRole.test.ts`, 12 tests); the
+> app keeps delegating scripts (`db:check-rls` / `db:provision-rls` → `pnpm --filter @mms/db run …`) so the
+> operator runbooks stay valid. **Deploy literals updated in the same change** as the move: the preflight in
+> `scripts/deploy-on-server.sh` now looks for `packages/db/{dist,src}/scripts/checkRlsRole.{js,ts}`, and the
+> CI provision step runs `pnpm --filter @mms/db exec node src/scripts/provisionRlsRole.ts` (Node 24 type
+> stripping — no `tsx` dependency added). Verified end-to-end against local Postgres: `strict` + superuser
+> exits 1 with the refusal message, `strict` + `mms_app` exits 0. `packages/db` suite 25/25; ledger 20/20.
+>
+> **Landed (P1b-6): `db:check` and `index:concurrent` logic moved to `packages/db`.** Both CLIs now live in
+> `packages/db/src/scripts/` (`checkMigrations`, `createIndexConcurrently`) and build the connection from the
+> process environment only — `packages/db` never parses `.env`. `apps/api` keeps 2-line env-loading wrappers
+> (`loadBackendEnv()` → package `main()`), so `pnpm --filter mms-api run db:check` / `index:concurrent` behave
+> exactly as before. The 13 out-of-band index `.sql` files (10 from `apps/api/src/scripts/`, 3 from
+> `apps/api/scripts/sql/`) now have one home, `packages/db/scripts/sql/`; the 2 doc links, 3 path mentions, the
+> `check-migration-indexes` comment and the `enrollmentIntegrityIndexes` error string were repointed in the same
+> change. `migrateDb` **stays app-side** (U22 corrected): it runs `initializeDatabase()` = DDL + the 81
+> app-owned data migrations + seeds. Tests added where there were none: `findUnappliedMigrations` (journal↔applied
+> coercion) and `parseArgs` (the DDL injection boundary) — `packages/db` suite 39/39. The 4 migration ratchets
+> needed **no** scan-root change (verified green with their existing roots).
+>
+> **Coordination fix in the same change:** the concurrent examinations-module extraction left **35** broken
+> links in the 6 `docs/examinations-*-audit-2026-11-11*.md` files (`../apps/api/src/examinations/**`,
+> `db/repositories/examination*`, `routes/tenant/examinations.ts`, `services/examinationsMarksImportService.ts`).
+> Each was repointed to its existing `packages/modules/examinations/src/backend/**` target with an
+> existence check per link (0 unresolved), restoring `check:docs`. `verify-rules-integrity` remains red from
+> the same extraction (`mms-student-lifecycle` SKILL.md still cites `apps/api/src/examinations/` and
+> `apps/api/src/hasanat/`) — that is the extraction owner's fix, not P1b.
 
-- [ ] Move `apps/backend/src/db/{database,preparedStatements,preparedColumns,tenantTransactionGuards,tenantScopeGuard,rlsRoleGuard,commitScope,dbPoolMetrics}.ts` into `packages/db/src/**`;
-      move `documentStore*`, `dbPurge`, `streamingSnapshotProducer`, `relationalSnapshot`,
-      `relationalReplaceMapping*` into `be-core/db-sync`; keep `dbInit` in `apps/api`.
-- [ ] Move the 70 portable TS data migrations into `packages/db/src/migrations/**`; add the `db:migrate`,
-      `test:db`, `test:rls` scripts and their vitest configs.
+- [x] Move `apps/backend/src/db/{tenantTransactionGuards,tenantScopeGuard,rlsRoleGuard,commitScope,dbPoolMetrics,transactionSideEffects,genericRelationalConditions}.ts` into `packages/db/src/**`; move `documentStore*`, `dbPurge`, `streamingSnapshotProducer`, `relationalReplaceMapping*` into `be-core/db-sync`; keep `dbInit` + `database` (facade) + `prepared*` (repo-coupled) + `relationalSnapshot` (materialized loader) in the app. — **done** (P1b-1/2/3)
+- [ ] ~~Move the 70 portable TS data migrations into `packages/db/src/migrations/**`~~ — **corrected: stay app-side** (see P1b-4 decision). Add the `db:migrate`, `test:db`, `test:rls` scripts and their vitest configs, still targeting the app-owned migrations.
 - [ ] Move migrate/RLS/index/partition CLIs + `scripts/sql` into `packages/db`; leave seeds/resets/purges in
       `apps/api/src/scripts`.
 - [ ] Update the 4 migration ratchets (`check:{migration-hygiene,migration-indexes,migrations-forward-only,db-projections}`),
@@ -959,6 +997,94 @@ points at a nonexistent root.
       `backend_db` CI filter in one commit.
 
 **P1c — `packages/be-core`**
+
+> **Landed (P1c-1):** `cryptoAtRest` deduplicated — `apps/backend/src/lib/cryptoAtRest.ts` was byte-identical
+> to `packages/be-core/src/audit/cryptoAtRest.ts`; the app file is now a shim
+> (`export * from "@mms/be-core/audit/cryptoAtRest"`) with a new `./audit/cryptoAtRest` subpath (so the shim
+> does not drag in the whole `audit` barrel). Its 3 app importers (`subjectKeyService`, `workspaceLlmSecrets`,
+> `cryptoAtRest.test.ts`) are untouched and the 5 app crypto tests pass through the shim.
+>
+> **Landed (P1c-3…7):** `contentDisposition` (`http/`), `metrics` (`telemetry/`), `concurrencyLimiter` +
+> `leaderElection` (`queues/`), `devLogging` (`logger/`) and the `backgroundJobAbort`/`backgroundJobIds`
+> pair (`jobs/`, new top-level `./jobs` home), `syncLimits` + `restoreLock` (`db-sync/`), and the calendar
+> helpers `zonedTime` + `workspaceDayBounds` + `icalFormat` (new `be-core/datetime/` module) and `cacheManager`
+> (`be-core/cache/`, completing the cache surface) moved into `be-core`; app files codemod-retargeted and
+> deleted; recorded `done` in the move ledger (18/18).
+>
+> **Cycle measured (P1c planning gate).** Kernel `lib` extraction is complete: a corrected scan (resolving
+> `./` siblings) finds **0** movable kernel `lib` files left — the 5 remaining "pure" files are domain-bound
+> (`messageLogClaimId`, `questionMediaPolicy`, `taskNotificationI18n`, `moduleRouteActionRules{Examinations,Sessions}`)
+> and belong in their modules (P4/P6), not `be-core`. `lib → services` is **9** edges, all app-layer glue
+> (`csvExportEnqueue`, `registerModuleCsv*`, `currentTenantRole`, `errorHandler`, `moduleAvailabilityService`,
+> `rateLimitConfig`, `tenantRoleCatalog`) that correctly stays app-side. `services → lib` is 78 files, all
+> domain-specific or entangled. **Next P1c step:** break `services ↔ repositories` + `services ↔ db` facade
+> edges with injected ports (the `onAudit`/`enqueueJob`/`can` pattern) before the ~55 kernel services can move;
+> this is the architectural slice, not a file shuffle.
+>
+> **Landed (P1c-11, first services-kernel move via injected port):** `sessionClockService` → `be-core/auth/sessionClock`.
+> The idle-clock implementation moved into the kernel with a `configureSessionTokenRevoker` port (fail-closed
+> when `revokeSession(scope, jti)` needs the revoker but none is registered); the app keeps
+> `services/sessionClockService.ts` as a registration shim that injects `revokeToken` and re-exports the
+> kernel (plus the two `*SessionScope` helpers, which already lived in `be-core/auth` guards). This is the
+> `onAudit`/`enqueueJob`/`can` pattern in miniature — the template for the remaining ~54 kernel services.
+>
+> **Landed (P1c-12):** `sessionPolicyService` → `be-core/auth/sessionPolicy` with a
+> `configurePlatformIdleMinutesProvider` port (the only app dep was `getPlatformSettings().idleSessionMinutes`);
+> the app keeps a registration shim. Also repointed two orphaned imports in the concurrent `hasanat`
+> use-cases (`backgroundJobIds`/`backgroundJobAbort` → `@mms/be-core/jobs/*`) left by the P1c-7 move.
+> Backend `typecheck` is back to **0 errors** after the concurrent module extraction settled.
+>
+> **Landed (P1c-13):** `dbSyncRestoreAudit` → `be-core/db-sync/restoreAudit` with a
+> `configureRestoreDataSynchronizer` port (its only app dep was `dbSyncService.synchronizeData`). Attempted
+> `sessionGuardService` → `be-core/auth/sessionGuard` but **reverted**: the concurrent process already moved
+> the Fastify-aware session enforcement into `be-core/auth/session.ts`, which exports the same
+> `SessionClockOutcome`/`SESSION_EXPIRY_RESPONSE`/`SessionClockCheck` — a duplicate would have collided. The
+> low-level clock enforcement still in `services/sessionGuardService.ts` must be *reconciled* with that file,
+> not moved beside it.
+>
+> **Landed (P1c-14):** `authSessionService` → `be-core/auth/sessionRevocation` (pure move — zero app deps, only
+> the redis shim; no port needed). Fixed two orphaned `lib/cache/index.js` imports in concurrent files and
+> **repaired a mock-sensitivity regression from P1c-11**: the `sessionClock` shim's static `revokeToken`
+> import broke any test that `vi.mock`ed `authSessionService` partially, so the shim now registers the
+> revoker lazily (dynamic import on first use). Re-created `services/authSessionService.ts` as a shim after
+> the concurrent `services/auth/` reorg deleted it.
+>
+> **Landed (P1c-15):** `backgroundJobDeadline` → `be-core/jobs/backgroundJobDeadline` with a
+> `configureJobTimeoutResolver` port (its only app dep was `worker/queues/queueConfig.resolveJobExecutionTimeoutMs`).
+> The jobs runtime in `be-core/jobs` now holds `backgroundJobAbort`, `backgroundJobIds`, `backgroundJobDeadline`
+> alongside the concurrent `jobEnqueuer`/`jobRunnerRegistry`/`registerModuleCsvImportJobRunner`.
+>
+> **Landed (P1c-16):** `backupAssetService` → `be-core/db-sync/backupAssetService` with a
+> `configureUploadsRootResolver` port (its only app dep was `config/uploadConfig.resolveUploadsRoot`).
+> The backup asset seam (`collectAssetUrlsFromValue`, `readAssetBase64`, `exportBackupAssetsForSnapshot`,
+> `restoreTenantAssets`) now lives beside the snapshot producer; real-Postgres `/backup` parity still passes.
+>
+> **Coverage measured (P1c gate, round 18):** the kernel-move phase is **complete**. Of the 111
+> `services/*.ts`, 5 are already be-core shims and the remaining 106 real implementations are all coupled:
+> **37** repository, **34** service-to-service, **8** app-config (`config/uploadConfig` etc.), **7** module
+> (`@mms/mod-*`), and **11** domain (import `../<domain>/use-cases/*`) — i.e. **0** remaining clean kernel
+> services. Moving any of them needs the injected ports (`onAudit`/`enqueueJob`/`can` + repository/config
+> ports) or the module extraction, not a file shuffle.
+> **Rejected this round:** `messagingOutboundProvider` → `be-core/transports` (3 real importers: SMS +
+> WhatsApp send paths + its test). It worked at build/typecheck but the suite failed: the test spies
+> `fetchSafeExternal` on the app `../lib/outboundUrl.js` shim, which the be-core module does not route
+> through. Reverted cleanly — it needs the test's 5 spy sites retargeted to
+> `@mms/be-core/transports/outboundUrl` in the same change.
+>
+> **Pinned (P1c, round 19):** the five port registries now have a consolidated fail-closed suite
+> (`packages/be-core/src/portRegistries.test.ts`, 9 tests) covering `sessionClock` revoker,
+> `sessionPolicy` idle-minutes, `backupAssetService` uploads-root, `restoreAudit` synchronizer and
+> `backgroundJobDeadline` timeout resolver — an unconfigured port throws instead of silently skipping
+> revocation / path resolution / restore / a job budget. be-core suite 34/34.
+>
+> **Landed (P1c-2):** `lib/cache/*` shims retired. `index`, `multiTierCache` and `cacheInvalidation` were
+> already 1-line shims over `@mms/be-core/cache/*`; the codemod (`--retarget`, which also rewrites
+> `vi.mock` paths) repointed **59** files (40 importers + 15 `vi.mock("../lib/cache/index.js")` sites +
+> the `cacheInvalidation`/`multiTierCache` direct importers) to the `@mms/be-core/cache*` subpaths, the 3
+> app files were deleted, and the 3 moves are recorded `done` in the ledger. **12** cache-touching suites
+> (74 tests) pass. Also fixed the `cacheInvalidationSubscriber` test that the cache extraction left broken:
+> its redis mock now targets `@mms/be-core/redis` (what be-core's `cacheInvalidation` actually imports)
+> instead of the app `../lib/redis.js` shim. Backend `typecheck` is clean.
 
 - [ ] Move the kernel subset of `lib` (route factories, `httpErrors`, `zodRequest`, `contract*`, `rbac*`,
       `rateLimit*`, `livePush*`, `redis*`, `cache*`, `workspaceDay*`, `occHeaders`, `payloadTrimmer`,
@@ -1010,6 +1136,394 @@ entries unchanged.
 unchanged.
 
 **Rollback:** revert the phase; UI/fe-core are additive packages.
+
+> **Ledger catch-up (same round):** the JSON move ledger had drifted to **21 P1 entries only** — none of the
+> module extractions performed since (contacts, hasanat, examinations, question-bank, faculty, messaging,
+> audit, documents, notifications, obligations, accounting, billing, workshops) were recorded, so the
+> `check-move-manifest` gate was validating a stale picture. Recorded the verifiable P4 moves
+> (feature dir → `src/frontend/tenant`, API domain → `src/backend`, routes → `src/backend/routes`,
+> repositories → `src/backend/repository`) as `done`; the gate confirms the ledger now matches the tree
+> (**75 entries: P1 21, P4 54** after the sessions/students/enrollments extraction caught up in P12e).
+> Future extractions must add their entry in the same change.
+
+### P13c — sessions host invalidators wired in the app (landed)
+
+> `providers/SessionsHostProvider.tsx` bound four invalidation seams as `undefined`:
+> `invalidateSessionsQueries`, `invalidateStudentsQueries`, `invalidateFinanceQueries` and
+> `ENROLLMENT_PLACEMENTS_QUERY_KEY`. That made the module's `invalidateEnrollmentImpacts` fan-out a no-op for
+> seat counts, student schedules and finance caches after an enrollment write — a functional gap, not just a
+> test failure.
+> - Bound them to the real implementations (`@mms/mod-sessions|mod-students|mod-billing/…/hooks/invalidate*Queries`
+>   and the app's `ENROLLMENT_PLACEMENTS_QUERY_KEY`). Typecheck passed with 0 errors at the time of the change.
+> - Its conformance test (`lib/query/enrollmentImpactInvalidation.test.ts`) exercises the module in isolation, so
+>   it needs the host seam configured itself; I tried three variations and **reverted the test to its original
+>   state** — the remaining 2 assertions are blocked on the enrollments extraction publishing
+>   `@mms/mod-enrollments/frontend/tenant/lib/enrollmentDescriptors` (typecheck currently shows 27 errors, all of
+>   that one missing subpath), so touching the test again would only churn.
+> - Round-end state: the tree is mid-extraction; the bundle/PWA gates need a green build (their `dist/assets` is
+>   currently absent) and the suite shows 52 collection failures from the same extraction. `check:docs`,
+>   `check:form-architecture` (inventory regenerated, 120 form-like files), `verify:rules` and `check:scripts`
+>   are green.
+
+### P13b — CI changed-file coverage enforced for both consoles (landed)
+
+> P13a flagged it as unsafe to patch blind; the plumbing is now proven, so it is patched:
+> - Probing `pnpm --filter mms-tenant-web --filter mms-platform-web exec vitest run <test> --coverage
+>   --coverage.reportsDirectory=coverage-changed` showed **each app writes its own**
+>   `apps/<app>/coverage-changed/coverage-final.json`, and `check-changed-coverage.mjs` runs cleanly against both
+>   paths (both reported "no changed source files — nothing to enforce" against `--base HEAD`).
+> - The CI step now loops `for app in tenant-web platform-web` and enforces the same `--min 60` on each, so the
+>   platform console's coverage is no longer produced and discarded. Workflow YAML validated (17 jobs parse).
+> - Probe directories removed afterwards (they are CI artifacts, not tracked files).
+
+### P13a — local CI buckets match the two-app + modules topology (landed)
+
+> `scripts/ci/lint-changed.sh` only knew about `apps/tenant-web`, `apps/api`, `packages/contracts` and `e2e` —
+> so a PR touching the platform console **or any extracted `@mms/mod-*` package** was not linted at all by the
+> changed-files path. (The repo now has 15 module packages holding most of the code.)
+> - `PACKAGES` now lists `apps/platform-web`, `packages/{db,be-core,fe-core,ui}`, and a loop appends **every**
+>   `packages/modules/*` directory that has an `eslint.config.js` (each is its own workspace package with its own
+>   config and local `eslint`). Verified by dispatching real paths: `apps/platform-web/…` → the platform bucket,
+>   a module file → the module bucket (which immediately reported 12 `no-explicit-any` errors in the new sessions
+>   host wrapper), and a clean single file → exit 0.
+> - `scripts/ci/local-ci.sh` runs `mms-tenant-web`'s Vitest for the frontend bucket but never the platform app's;
+>   it now runs both.
+>
+> **Recorded gap (not patched — needs the owning CI change):** `.github/workflows/ci.yml` already *runs* both
+> apps in the vitest steps, but the changed-file coverage check reads only `apps/tenant-web/coverage-changed`, so
+> platform-web's coverage output is produced and then ignored. Making that a per-app pair of invocations is the
+> next CI step; I did not edit the workflow blind since it cannot be exercised locally against a PR diff.
+
+### P12e — prune guard hardened + ledger caught up (landed)
+
+> - **`--require-quiet`**: `report:dead-sources --quiet-window N --require-quiet` now exits **2** when the tree
+>   moved inside the window, so an automated prune can refuse to run instead of trusting a stale graph.
+>   Verified: active tree → 2, no window → 0.
+> - **Ledger:** the sessions / students / enrollments extraction added 8 more verified P4 moves
+>   (`apps/{api,tenant-web}/…` → `packages/modules/{sessions,students,enrollments}/…`); the ledger is now
+>   **75 entries (P1 21, P4 54)** and `check:move-manifest` validates it against the tree.
+> - The guarded prune itself is still **not** run: the quiescence check reports the tree as active
+>   (129 source files changed in 5 min), which is exactly the condition that broke round 29.
+
+### P12d — the prune lesson became tooling (landed)
+
+> Three follow-ups from P12c, none of which touch the tree being actively extracted:
+> - **`--quiet-window <minutes>`** on `report:dead-sources`: counts source files changed under `apps/`+`packages/`
+>   in that window and prints a verdict before the report (`tree is quiet — a prune can rely on this report`
+>   vs `tree is ACTIVE — wait`). Today it correctly reports *ACTIVE*. Covered by a new test in
+>   `scripts/ci/dead-sources.test.mjs` (6 cases; `test:scripts` 134).
+> - **Move-proof form exemptions:** the form-contract audit matched `DIRTY_EXEMPT` by exact app-relative path, so
+>   when the sessions extraction moved `SessionLockOverrideDialog` into `@mms/mod-sessions` the exemption stopped
+>   matching and the *module copy* was reported as a new offender. Exemption lookup now falls back to the
+>   basename tail (`isExempt`), so one declaration covers the component wherever it lives — the forced-lock
+>   prompt is the same surface, not a new violation.
+> - **Suite status:** tenant-web is at **740 files / 2,891 tests with a single failing file** —
+>   `enrollmentImpactInvalidation`, whose 2 assertions fail because `providers/SessionsHostProvider.tsx` still
+>   binds `invalidateSessionsQueries`, `invalidateStudentsQueries`, `invalidateFinanceQueries` and
+>   `ENROLLMENT_PLACEMENTS_QUERY_KEY` as `undefined`, so the module's fan-out no-ops. That is the extraction's
+>   own wiring, deliberately not "fixed" from the test side.
+
+### P12c — prune attempt vs a live extraction: what happened, and the rule it produced
+
+> I tried to extend the prune to the remaining dead files in `tenant-web` mid-round and it **raced the
+> concurrent sessions extraction**: the agent had just repointed that feature's imports to `@mms/mod-sessions`,
+> which made the app-local copies genuinely unreachable — so the graph walk said "dead", bytes-identical twins
+> existed, and the delete went ahead. Moments later the agent's own rewrite and my delete interleaved: 193
+> typecheck errors appeared, some restored files came back at the wrong paths (`tenant/features/components/*`
+> where the real home is `components/common/catalog/*`), and a few rule globs/doc links pointed at the
+> deleted paths again.
+>
+> **Recovery, all verified:** every deletion was restored from its byte-identical twin (package module or the
+> platform copy), the misplaced tree was removed, and the tree converged: typecheck **0**, all 18 gates green,
+> `verify:rules` green, `test:scripts` 133, `report:dead-sources` shows tenant-web at **12 dead (1 %)**, 42
+> unrouted, and platform-web at 58 dead (3 %).
+>
+> **Rule this produced (for the next prune):** a dead-file sweep is only valid against a *quiescent* tree.
+> Check `find <app>/src -newer <marker>` first; if packages are being edited, wait. And after any deletion,
+> run `typecheck` + the suite *immediately* — the walker cannot see an import that is being rewritten in
+> parallel, and a cascade (a deleted parent makes its children look dead) reports as one big lie.
+>
+> Glue fixed while recovering: 5 rule globs that had drifted onto deleted paths (contact-field helpers now
+> live in `packages/contracts/src/contacts/contactField*.ts`, the contact config context in
+> `@mms/mod-contacts`, and the retired `components/ui/**` layer now points at `packages/ui/src/**`), the
+> `mms-shared-ui` skill prose/script comment (the facade layer is retired), and
+> `check-frontend-structure` now treats `components/ui/` as **optional per app** — the primitive layer moved to
+> `@mms/ui`, so requiring a local directory would fail closed on a correct tree.
+
+### P12b — platform-web facades pruned too (landed)
+
+> Same analysis, second console: 403 pure re-export shims in `apps/platform-web`, of which **350 were
+> unreachable** from its entry *and* every test file — deleted (+4 empty dirs), 53 kept.
+> - Effect: `apps/platform-web/src` **2,425 → 2,075 files**; files referenced by nothing fell from 408 (17 %) to
+>   **58 (3 %)**. Its unrouted share (1,666) is the tenant-console copy P11a tracks for deletion — the facades
+>   were not part of that decision.
+> - `buttonSystemContract.test.ts` in the platform app asserted a facade at **tenant-web's** path (a leftover
+>   from the split); it now asserts the shared no-fork invariant for both apps.
+> - Suite **1,008 files / 3,694 tests — 0 failed**; typecheck 0; 18 gates green apart from `check-code-norms`,
+>   which is red on 2 explicit `any` in the concurrent sessions-module extraction
+>   (`apps/api/src/modules/sessions/adapters.ts:63-64`), not on this change.
+
+### P12a — 378 dead re-export facades deleted (landed)
+
+> The blueprint's P2 item "delete the remaining `@mms/ui` / `@mms/fe-core` facades" is done for the tenant app.
+> 401 files were pure re-exports (`export … from "@mms/ui…"` / `"@mms/fe-core…"`); a graph walk from `main.tsx`
+> plus every test file showed **378 of them are unreachable** — nothing imports them because the app already
+> imports the packages directly. Deleted all 378 (+3 empty dirs); the 23 still reachable stayed.
+>
+> Effect: `apps/tenant-web/src` **1,915 → 1,537 files**, and its unrouted share fell from 497 (26 %) to
+> **119 (6 %)** per `pnpm run report:dead-sources`.
+>
+> Consequences handled in the same change:
+> - **36 rule globs** in 8 `.cursor/rules/*.mdc` files pointed at the deleted paths; remapped to their real homes
+>   (`packages/fe-core/src/components/FormModal.tsx`, `packages/ui/src/app/ModuleTierMotion.tsx`,
+>   `packages/fe-core/src/i18n/index.ts`, …) and mirrored with `sync-all.sh` — `verify:rules` clean.
+> - **13 imports in two skill examples** (`mms-form-architecture`, `mms-module-page`) now use the package
+>   specifiers the app itself uses (`@mms/fe-core/components/FormModal`, `@mms/fe-core/forms/useFormSubmission`,
+>   `@mms/ui/app/ModuleTierMotion`, …).
+> - **`buttonSystemContract.test.ts`** asserted the facade existed *as a pure re-export*; with the shims gone it
+>   now asserts the stronger invariant — no app-local `components/ui/button.tsx` at all, the primitive lives in
+>   `@mms/ui` — so a local fork still fails the test.
+> - 16 doc links repointed to the package sources; forms inventory regenerated (143 files).
+>
+> Verification: tenant typecheck 0, 18 gates green, `verify:rules` + `test:scripts` (133) green, suite 2,989
+> tests with the one expected contract-test update.
+
+### P11c — structural coverage complete: all three ratchets cover both consoles (landed)
+
+> `check-frontend-structure` was the last gate policing one app. It now evaluates a `ROOTS` table
+> (`fe` / `featuresDir` / `uiDir` / `libDir` + a barrel-scan skip per app) and runs its six norms over
+> `tenant-web` **and** the platform console's live `platform/features` tree:
+> - **Live barrels allowlisted** — the 7 shared barrels the platform console actually imports
+>   (`components/common{,/data-table,/descriptors,/work}`, `entry`, `sequence-numbering`, `template-editor`),
+>   each verified reachable from its `platform/` tree, mirroring the tenant app's reviewed entries.
+> - **`apps/platform-web/src/tenant/**` stays out of the barrel scan** — it is the unrouted copy P11a measured,
+>   so no dead path gets encoded as an exception.
+> - **The console's structural debt is recorded, not waived:** its first run surfaced 19 feature-shape sites
+>   (files at `features/*/` roots, `account/` missing `components/`, `controllers/` dirs) and 10 logic `.ts`
+>   files under `features/*/components/`. Both counts are set in `BASELINE` with a written reason, so the
+>   ratchet now only lets them fall — the same treatment the tenant app's debt got when this gate landed.
+>
+> The dead-source report also gained a test suite (`scripts/ci/dead-sources.test.mjs`, 5 cases: reachability,
+> side-effect and re-export edges, test-only files, duplicate proof, missing entry); `test:scripts` is 133.
+
+### P11b — ratchets extended to the platform console's live tree (landed)
+
+> Until now the structural ratchets policed only `apps/tenant-web`, so the operator console's 374 live files
+> were unchecked. Two of the three now cover it, scoped to `apps/platform-web/src/platform` (the live tree) and
+> deliberately skipping `apps/platform-web/src/tenant/**`, which is the unrouted copy P11a measured:
+> - **`check-work-directory`** — 2 roots, **3,061 files** scanned (tenant-web 2,687 + platform-web 374), all eight
+>   directory/table norms clean on the first run.
+> - **`check-form-architecture`** — 2 roots, **157 form-like files / 59 `FormModal` files / 55 write surfaces**
+>   across both consoles, clean. The one apparent platform finding (`PlatformWorkspaceResetPasswordDialog`)
+>   was a prefix bug, not a defect: the gate only stripped `apps/tenant-web/src/`, so the file's existing
+>   `DIRTY_EXEMPT` entry ("credential step-up; closing abandons the action") never matched. The strip now covers
+>   both app prefixes, and `docs/forms-inventory.md` was regenerated.
+> - **`check-frontend-structure` stays tenant-only for now** — it is the one gate whose allowlist is per-path:
+>   extending it would mean encoding the platform copy's dead `tenant/**` barrels as reviewed exceptions. It
+>   joins after the P11a prune.
+
+### P11a — dead-source report (landed, report-only)
+
+> The migration leaves superseded trees behind; nothing told us how much. Added
+> `scripts/report-dead-sources.mjs` (`pnpm run report:dead-sources`, `--app <name>`, `--json`) — it walks the real
+> import graph from `src/main.tsx` (`import … from`, bare `import "…"`, `import()`, `export … from`, `@/` and
+> relative specifiers) and reports what the graph never reaches. Deliberately **not** a gate: the numbers are
+> large while a tree is mid-deprecation, so it stays a report until a prune brings them to zero.
+>
+> Measured today:
+>
+> | App | Source files | Not routed by the app | Referenced by nothing (app nor tests) |
+> |---|---|---|---|
+> | `platform-web` | 2,425 | **2,016 (83 %)** — 1,256 of them `src/tenant/**` | 408 (17 %) |
+> | `tenant-web` | 1,915 | 497 (26 %) | 466 (24 %) |
+>
+> So `apps/platform-web` still carries a full tenant-console copy that its app never routes (only 3 tenant files
+> are in its graph) but its 1,008-file test suite exercises — tests of code the product does not ship. That is the
+> blocker behind the structural-ratchet gap recorded in P3a/P10a: those gates are scoped to `tenant-web` because
+> policing a tree slated for deletion would be noise. The order of work is therefore: prune the unrooted tree
+> (and its tests) with this report as the checklist, then extend `check-frontend-structure` (P11b already extended
+> `check-work-directory` and `check-form-architecture`).
+>
+> **Prune checklist (`--duplicates`).** The report can also prove redundancy by content, so a deletion does not have
+> to be guessed: `pnpm run report:dead-sources --app platform-web --duplicates` hashes every unrouted file and looks
+> for a byte-identical twin anywhere else in the repo. Today: **1,818 of platform-web's 2,016 unrouted files are
+> exact copies** (safe to delete with their tests); **198 have no twin** — mostly `components/messageComposer/**`,
+> i.e. copies that drifted from their tenant-web original — and need a reviewer's eye. `tenant-web` for comparison:
+> 497 unrouted, 458 of them exact copies, 39 without a twin. The files are untouched by this round: the platform
+> app was last edited ~2 h ago (its tree is idle) but a 2,000-file deletion is the owning migration's call, now
+> backed by a verifiable list rather than a judgement.
+
+### P10c — whole test surface green (landed)
+
+> With the students extraction settled, the task is green end to end:
+> - **tenant-web 772 files / 2,989 tests**, **platform-web 1,008 files / 3,694 tests** — 0 failed, 2 skipped each.
+> - **All 15 module packages pass** (accounting 327+83, contacts 308+497, faculty 245+276, hasanat 107+80, iam 36+10,
+>   messaging 69+125, students 262+257, billing 145+68, documents 6, notifications 1, workshops 10; audit,
+>   examinations, obligations and question-bank backend-only) — the extracted suites moved with their code and run
+>   through each package's `test` script (`vitest.backend.config.ts` + `vitest.frontend.config.ts`).
+> - 18 gates, `verify:rules`, `test:scripts` (128) and both typechecks are green.
+>
+> Last seam fix: `queryInvalidationConformance.test.ts` binds `configureStudentsHost({ contactsCollection })` — the
+> students invalidator delegates to the module host seam, so "a student write also refreshes the contact-derived
+> caches" is now asserted through the real collection rather than a stub.
+
+### P10b — suite stabilised against the extraction seams (landed)
+
+> After the finance→`@mms/mod-billing` extraction settled, the tenant suite's remaining failures were the
+> same *seam* class — tests mocking an app wrapper that the moved code no longer imports:
+> - `useMessageComposerState.test.tsx` now mocks `@mms/mod-messaging/frontend/tenant/host/usePermissions`
+>   (the hook lives in the module and reads the module host, so mocking `@/tenant/hooks/usePermissions` never
+>   reached the gate).
+> - `queryInvalidationConformance.test.ts` also binds `configureFinanceAccountingKeys(...)` (the app binds it
+>   in `providers/BillingHostProvider.tsx`), so a finance write's ledger-cache invalidation is actually asserted.
+> - `useMessaging.test.tsx`: its `@tanstack/react-query` mock now exposes `useMutation`.
+> - `crossFeatureImports.test.ts`: the cross-feature case targets a *feature-internal* path again (module
+>   packages are out of that rule's scope), and the baseline cases assert with containment so a changing
+>   baseline cannot flip them; copied to platform-web.
+> - Fixtures re-pruned (tenant-web 513 → 500).
+>
+> Two collection errors in one run (`ENOENT … node_modules/.vite`) were Vite dep-optimizer cache races from
+> running Vitest concurrently with another process, not test failures — they pass on re-run.
+
+### P10a — platform-web unit suite green (landed)
+
+> The platform console's suite went from **36 real failures / 23 files** to **1,008 files / 3,694 tests, 0 failed**.
+> Almost everything was one dead mock path:
+> - **i18n mocks (69 files, ~15 tests):** components import `useTranslation` from `@mms/fe-core/i18n`, but tests
+>   still mocked `@/hooks/useTranslation` — a shim **no app file imports**, so the mock never applied and
+>   assertions saw raw keys (`platform.signIn`). Repointed to `@mms/fe-core/i18n` (the convention 413 platform
+>   tests already used).
+> - **`@/hooks/useIdleTimer` → `@mms/fe-core/hooks/useIdleTimer`** (session-timeout hook, 6 tests).
+> - **`@/components/app/ModuleCommandMetricsGrid` → `@mms/fe-core/components/ModuleCommandMetricsGrid`**
+>   (dashboard section-order test).
+> - **Portal renders (4 tests):** two suites used `renderToStaticMarkup` on components that mount Radix
+>   portals; converted to DOM rendering (`createRoot` + `act`), asserting on the document like
+>   `calendarLocalization.test.tsx` does.
+> - **Missing app infrastructure:** copied `eslint-rules/{no-cross-feature-imports,no-direct-api-client,no-physical-directional-classes}.cjs`
+>   + their baseline JSONs into `apps/platform-web/eslint-rules/` (its config only loaded `@mms/eslint-config`,
+>   so the app-local rules and their unit tests had nothing to run). Removed the duplicated
+>   `themeInitPrelanguage.test.ts` — the platform `index.html` never references `public/theme-init.js` and the app
+>   ships no `public/` assets; the counterpart test stays in tenant-web. **Follow-up for the platform owner:**
+>   decide whether the apex console needs `public/` assets and pre-language theme init, and whether the
+>   app-local ESLint rules should be hoisted into `@mms/eslint-config` instead of copied per app.
+> - **Self-maintaining fixture:** the cross-feature baseline cases now *derive* their file and sanctioned
+>   targets from `eslint-rules/feature-internal-imports-baseline.json` instead of hardcoding
+>   `MessagingReportsVolumeChart.ts` — the concurrent pruning of that baseline had broken them twice in a row
+>   (one entry, five targets today).
+> - Fixtures re-pruned (tenant-web 525 → 513); both suites green.
+
+### P9a — frontend unit-suite cleanup after the split (landed)
+
+> The 8 files / 13 tests that the first full post-split run left red were all migration drift. Fixed at the
+> test/fixture layer, keeping every assertion's intent:
+> - **Stale paths:** `moduleWorkspaceDay.test.ts` now resolves surfaces app-relative *or* repo-relative
+>   (the hasanat modals moved into `packages/modules/hasanat`); `formContractArchitecture.test.ts` scans
+>   `apps/tenant-web/src/{tenant,components}` + `apps/platform-web/src/platform` (its `platform/` root had
+>   moved apps).
+> - **Fixtures:** `src/test/shard-timings.json` pruned in both apps (801 → 525 keys; the split and the faculty
+>   extraction deleted the rest). Re-prune whenever files move — the sequencer only needs live keys.
+> - **Test setup:** merged a duplicated `vi.mock("@mms/fe-core/backgroundJobs")` (the second call dropped
+>   `patchLocalBackgroundJobOnly`); wrapped `ContactCreateModal` renders in `withQueryClient` and aligned two
+>   assertions with current behaviour (sr-only refusal region, eagerly rendered form); bound the contacts
+>   cross-module query keys in `queryInvalidationConformance.test.ts`; mounted `UiConfigProvider` in
+>   `calendarLocalization.test.tsx` (the calendar reads `useUiConfig()`, not `useTranslation()`).
+> - **Baselines:** `crossFeatureImports.test.ts` now exercises live baseline entries
+>   (`MessagingReportsVolumeChart.ts`); the contacts bridge case is an out-of-scope module import now that
+>   contacts left the app tree.
+> - **Missing infrastructure (platform-web):** the app had **no `vitest.config.ts`**, so it ran with Vitest
+>   defaults (node environment, no `@` alias, no setup) and failed every DOM test. Added one mirroring
+>   tenant-web's (aliases, happy-dom, setup file, shard sequencer, optimizer) — coverage floors deliberately
+>   deferred until the platform tree's baseline is measured.
+>
+> The residual suite red during this phase was the **in-flight faculty extraction** (`@mms/mod-faculty`
+> frontend exports landed mid-run; 39 files failed to resolve until then) — not this cleanup.
+
+### P8b — module host bridges out of the entry closure (landed)
+
+> Fixes the regression P8a's lazy floor and FORBIDDEN rule exposed.
+> `providers/AppProviders.tsx` (entry closure) statically imported `ContactsHostBridge` +
+> `HasanatHostBridge`, which import `@/tenant/components/moduleReports`; that chunk (309K, 142 static
+> imports) made **240 chunks / 3.36 MB** of the precache reachable only through it, including the
+> forbidden `vendor-motion` (92K) and `vendor-charts` (524K).
+> - **Move:** both bridges now mount in `providers/TenantScopedProviders.tsx` — inside the
+>   tenant branch, wrapping `{children}` in the same order as before. That module is reached only through
+>   the lazy `TenantRoutes` chunk, so nothing in the shell's static graph touches module report code.
+>   Same reasoning `providers/MotionPreferences.tsx` already documented.
+> - **Measured effect (fresh build):** precache entries **277 → 79**, entry closure **270 → 72**,
+>   payload **3.93 MB → 2.25 MB** (-43 %), lazy chunks **324 → 529**; `vendor-motion`, `vendor-charts`
+>   and `moduleReports` are absent from `sw.js`.
+> - **Ratchets tightened, not relaxed:** closure ceiling 300 → **80**, payload 4.25 → **2.5 MB**, lazy
+>   floor 300 → **450** (a re-eager-mount would drop lazy toward ~330 and fail). `check:pwa` and
+>   `check:bundle` are green.
+> - **Tests:** `TenantScopedProviders.test.tsx` mocks the two bridges as markers and now asserts they
+>   mount on the tenant branch and stay absent on the apex render (3/3); providers + layout suites 27/27;
+>   `pwa-precache-budget.test.mjs` 9/9; `test:scripts` 128/128.
+> - **One intentional delta:** the tenant-web apex path no longer mounts them. The apex console lives in
+>   `apps/platform-web`, which has no host bridges, and tenant-web renders no module pages outside the
+>   tenant tree.
+
+### P8a — PWA precache gate: split budgets + lazy floor (landed)
+
+> The single "80 entries / 3.5 MB" cap conflated two populations and had gone stale after the split
+> (measured 282 / 3.93 MB). It is now split, with the missing regression guard added:
+> - **shell glob** ≤ 10 (measured 7) · **entry closure** ≤ 300 (measured ~270) · **payload** ≤ 4.25 MB
+>   (measured 3.93) · **lazy-chunk floor** ≥ 300 (measured ~325 of ~590 chunks).
+> - The floor is new and is the point: the old cap could only catch growth, never a *lazy-loading
+>   regression*. It reads `dist/.vite/manifest.json` and BFSes the entry's static imports (same rule as
+>   `entryClosurePrecache.ts`), failing closed when the manifest is missing.
+> - Pure helpers (`classifyPrecacheEntries`, `countLazyChunks`, `evaluateBudgets`, `budgetsFromEnv`,
+>   `parsePrecacheEntries`) are exported and covered by `scripts/ci/pwa-precache-budget.test.mjs`
+>   (9 tests); `test:scripts` is 128/128.
+>
+> **What the new guard immediately caught (real, not a threshold slip):** the entry closure pulls
+> `_moduleReports` (309K, 142 static imports) because `providers/AppProviders.tsx` statically imports
+> `ContactsHostBridge` + `HasanatHostBridge`, and both import `@/tenant/components/moduleReports`. That
+> chain drags `vendor-charts` (524K) and `vendor-motion` (92K) into the precache, so the `FORBIDDEN` rule
+> fails on `vendor-motion`. The gate is therefore **red on an architecture finding**, not on its budgets:
+> fix direction is to mount the host bridges below the entry closure (mirroring the documented
+> `providers/MotionPreferences.tsx` pattern) or to resolve the reports tier through the module registry.
+> Deliberately **not** re-baselined — weakening `FORBIDDEN` would hide exactly the regression class the
+> gate exists to prevent.
+
+### P3a — tooling/deploy migration off `apps/frontend` (landed)
+
+> The app split landed (`apps/tenant-web` = live hybrid console still holding `tenant/` + `platform/`;
+> `apps/platform-web` = 2-file placeholder). Tooling followed in one change:
+> - **Runtime:** the SPA grew from one dist to two. P3a first pointed the old
+>   `plugins/frontendSpa.ts` at `apps/tenant-web/dist` (it had built `…/frontend/dist` and **silently
+>   skipped hosting**, so production would have 404'd). The concurrent platform migration then replaced it
+>   with `plugins/registerWebApps.ts`, which serves `apps/platform-web/dist` on the apex and
+>   `apps/tenant-web/dist` on tenant hosts — a superset of that fix.
+> - **Deploy/packaging:** `package-dist.sh`, `deploy-on-server.sh`, `deploy-rollback.sh`, `deploy-verify.sh`
+>   now use `apps/tenant-web/dist`.
+> - **Gates:** scan roots and allowlists moved off `apps/frontend` in 15 scripts — including the two
+>   **escaped-regex** forms my first pass missed (`/^apps\/frontend\/src\//` in `check-form-architecture`,
+>   the `paymentFormHelpers` allow in `check-money-safety`), which is what had re-surfaced 3 money findings and
+>   7 modal findings. `check-module-boundaries` now classifies `apps/tenant-web` as **hybrid** (it still hosts
+>   `platform/` source) and `apps/platform-web` as platform.
+> - **SSOT/codemod:** `PATHS.frontend` removed (no consumers), `codemod/move-modules` default srcRoot →
+>   `apps/tenant-web/src`; CI glue (`lint-changed.sh`, `check-changed-coverage`) and the probe/fixture tests
+>   updated. `verify-rules-integrity` already resolved `@/` against tenant-web.
+> - **Docs:** 95 links repointed with per-link existence checks (64 `apps/frontend` → tenant-web, plus 31 the
+>   concurrent examinations/obligations extractions left dangling) → `check:docs` green; the forms inventory was
+>   regenerated (193 files) restoring `check:form-architecture`.
+>
+> **Layout moved again while P8a landed (recorded here so the notes above stay true):**
+> `apps/platform-web` is no longer a placeholder — it carries ~1,354 files, including a `src/tenant/**`
+> copy plus its own `src/platform/**`, and `apps/tenant-web` has dropped `src/platform`. Consequences:
+> `check-module-boundaries` classifies **both** apps as hybrid (with per-app `tenant/`/`platform/` subtree
+> locks) until the duplicated tenant tree is pruned from platform-web; and three structural ratchets
+> (`check-frontend-structure`, `check-work-directory`, `check-form-architecture`) still scan only
+> `tenant-web`, so those ~1,354 platform-web files are **not** covered by them (`check-code-norms` and
+> `check-shared-structure` do cover both). Extending the structural ratchets to a second root is the
+> explicit next item — it needs the platform app's intended tree shape settled first.
+>
+> **Still red, and not from this migration:** (a) `check:code-norms` — 54 explicit `any` sites in the
+> concurrent `packages/modules/contacts/src/backend/**`; (b) `check:pwa-precache` — the tenant-web entry
+> closure now measures **282 entries / 3.93 MB** against the reviewed 80 / 3.5 MB budget (vite config is
+> byte-identical to the old frontend one, so this is real app growth, not a split regression — needs either
+> chunk-splitting work or a reviewed re-baseline); (c) `check-topology` — `packages/modules/messaging` has no
+> `package.json` yet (half-created by the concurrent extraction).
 
 ### P3 — Finish `@mms/mod-accounting` (depth 0)
 

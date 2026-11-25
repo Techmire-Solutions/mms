@@ -1,6 +1,6 @@
 ---
 name: mms-schema-migrate
-description: Forward-only Drizzle migrations with journal/meta, expand/contract DDL, FORCE RLS on new tenant tables, and ban on drizzle-kit push against shared/prod DBs. Use when changing schema.ts, writing SQL migrations, or reviewing DDL PRs. Do NOT use for client-side query caching (use mms-query-factories) or application Fastify route handlers (use mms-backend-api).
+description: Forward-only Drizzle migrations (journal/meta, expand/contract, RLS). Use when schema.ts/SQL/DDL review. Do NOT use for query caching (use mms-query-factories) or route handlers (use mms-backend-api).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -23,7 +23,7 @@ metadata:
 | Soft-delete mixin | `packages/db/src/schema/softDeleteSchema.ts` (`softDeleteColumns`) |
 | Migrations | `packages/db/migrations_drizzle/` (+ `meta/_journal.json`) |
 | Drizzle config | `packages/db/drizzle.config.ts` |
-| Concurrent indexes | `pnpm --filter mms-backend index:concurrent` |
+| Concurrent indexes | `pnpm --filter mms-api index:concurrent` |
 | Integrity script | `scripts/check-migrations.sh` |
 
 ## 1. Schema Authoring Standards
@@ -37,14 +37,14 @@ metadata:
 ## 2. Migration Execution Procedure
 
 1. **Author Schema**: Add/edit `packages/db/src/schema/[entity].ts` and export from `schema.ts`.
-2. **Generate Migration**: Run `pnpm --filter mms-backend exec drizzle-kit generate` (requires `DATABASE_URL`). If generation is blocked by a malformed historical snapshot, stop and report; a hand-authored migration is a reviewed exception only (copy the previous snapshot, append the journal entry, document the reason in the PR). Never squash or alter existing committed migrations.
+2. **Generate Migration**: Run `pnpm --filter mms-api exec drizzle-kit generate` (requires `DATABASE_URL`). If generation is blocked by a malformed historical snapshot, stop and report; a hand-authored migration is a reviewed exception only (copy the previous snapshot, append the journal entry, document the reason in the PR). Never squash or alter existing committed migrations.
 
    > **Applied SQL is immutable; snapshot metadata is repairable.** `meta/*_snapshot.json` is drizzle-kit's diff input, not applied DDL, so repairing a malformed serialization (e.g. a missing `name`/`schema`, a `null` `prevId`, duplicate snapshot ids) is a *metadata repair*, not a retcon of history that has already run on a database. The `check-migrations-forward-only` ratchet exempts snapshots for this reason; `.sql` files and the hand-written TS data migrations remain byte-identical, and `_journal.json` remains append-only.
 3. **Commit Parity**: Always commit SQL migration + `_journal.json` + meta snapshot in the exact same change.
 4. **Expand/Contract Workflow**: Add nullable column → deploy & backfill → apply NOT NULL/CHECK constraint. Drop old columns only after dual-read window.
 5. **Attach RLS Policies**: Tenant tables must include `tenant_isolation_policy` and `platform_superadmin_policy` (`mms-data-layer.mdc` §1).
 6. **Soft-Delete Strategy**: Soft-deletable tables use `softDeleteColumns` from `softDeleteSchema.ts`, Category B partial index (`WHERE deleted_at IS NULL`), and `forbid_hard_delete()` trigger (`mms-soft-delete`).
-7. **Non-Blocking Indexes**: Never write-blocking `CREATE INDEX` on large production tables in migration SQL. Run concurrent indexes via `pnpm --filter mms-backend index:concurrent`.
+7. **Non-Blocking Indexes**: Never write-blocking `CREATE INDEX` on large production tables in migration SQL. Run concurrent indexes via `pnpm --filter mms-api index:concurrent`.
 8. **Ban Direct Push**: `drizzle-kit push` and `db push` are strictly banned against shared or production databases.
 9. **Data-Only Backfills**: Derived-row backfills (e.g. system tags) are forward-only, idempotent, and conflict-targeted. They still require a journal entry + meta snapshot even when no schema column changes (`0202_backfill_relationship_role_tags.sql` is the reference). Do not edit an applied backfill.
 

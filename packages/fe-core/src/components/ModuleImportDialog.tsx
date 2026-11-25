@@ -5,7 +5,7 @@ import { DashedFileDropZone } from "@mms/ui/app/DashedFileDropZone";
 import { Modal } from "./Modal";
 import { Alert } from "@mms/ui";
 import { Button } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 
 export interface ModuleImportDialogProps<TRow = Record<string, unknown>> {
   open: boolean;

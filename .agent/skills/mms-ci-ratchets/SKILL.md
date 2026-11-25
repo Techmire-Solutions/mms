@@ -1,6 +1,6 @@
 ---
 name: mms-ci-ratchets
-description: Diagnoses and resolves failures in MMS custom CI ratchets and pre-commit checks — check:backend-boundaries, check:code-norms, check:db-projections, check:work-directory, and verify-rules-integrity. Use when a local or CI ratchet script fails or when verifying pre-PR compliance. Do NOT use for running unit/E2E test suites (use mms-testing-e2e) or setting up dev environment packages (use mms-dev-setup).
+description: Diagnoses/resolves CI ratchets and pre-commit checks (backend-boundaries, code-norms, db-projections, work-directory, verify-rules-integrity). Use when a ratchet fails. Do NOT use for unit/E2E tests (use mms-testing-e2e) or env setup (use mms-dev-setup).
 license: Proprietary
 metadata:
   owner: mms-platform

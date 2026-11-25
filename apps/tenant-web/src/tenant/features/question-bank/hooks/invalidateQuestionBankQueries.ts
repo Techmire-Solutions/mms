@@ -1,0 +1,21 @@
+import { createModuleQueryInvalidator } from "@mms/fe-core/query/createModuleQueryInvalidator";
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@mms/fe-core/query/dashboardQueryKeys";
+import {
+  QUESTION_BANK_METRICS_QUERY_KEY,
+  QUESTION_BANK_QUESTIONS_QUERY_KEY,
+  QUESTION_BANK_REPORT_AGGREGATES_QUERY_KEY,
+  QUESTION_BANK_RESULTS_QUERY_KEY,
+  QUESTION_BANK_TESTS_QUERY_KEY,
+} from "./questionBankQueryKeys.js";
+
+/** Invalidate Question Bank questions/tests/results/metrics Query keys. */
+export const invalidateQuestionBankQueries = createModuleQueryInvalidator({
+  list: QUESTION_BANK_QUESTIONS_QUERY_KEY,
+  lists: [QUESTION_BANK_TESTS_QUERY_KEY, QUESTION_BANK_RESULTS_QUERY_KEY],
+  metrics: QUESTION_BANK_METRICS_QUERY_KEY,
+  // The report aggregates carry a 5-minute staleTime; without this the coverage/difficulty panels
+  // stayed stale after create/approve/retire.
+  reports: QUESTION_BANK_REPORT_AGGREGATES_QUERY_KEY,
+  // Dashboard summary carries a question-bank coverage KPI.
+  dashboard: DASHBOARD_SUMMARY_QUERY_KEY_ROOT,
+});

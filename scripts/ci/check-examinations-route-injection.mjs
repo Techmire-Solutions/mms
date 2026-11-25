@@ -14,7 +14,7 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const CONTRACT_DIR = path.join(ROOT, "packages/contracts/src/contracts");
-const TEST_ROOTS = [path.join(ROOT, "apps/backend/src/__tests__")];
+const TEST_ROOTS = [path.join(ROOT, "apps/api/src/__tests__")];
 const BASELINE_FILE = path.join(ROOT, "scripts/ci/examinations-route-injection-baseline.txt");
 const writeBaseline = process.argv.includes("--write-baseline");
 

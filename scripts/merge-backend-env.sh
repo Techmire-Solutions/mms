@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Merges deploy-time environment variables into apps/backend/.env (used by CI SSH deploy).
+# Merges deploy-time environment variables into apps/api/.env (used by CI SSH deploy).
 # Only overwrites keys present in the runner environment; existing JWT_SECRET / DATABASE_URL are kept.
 set -euo pipefail
 
-ENV_FILE="${1:-apps/backend/.env}"
+ENV_FILE="${1:-apps/api/.env}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 

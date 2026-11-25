@@ -5,16 +5,9 @@
  * The DB integration suite is excluded from the unit coverage gate; this script
  * enforces a scoped floor for the finance/accounting storage, use-case and route
  * slice. Floors are the measured baseline minus a two-point margin and may only be
- * raised (re-measure with `pnpm --filter mms-backend run test:db:coverage:finance` and
- * `pnpm --filter @mms/mod-accounting run test:db:coverage:finance`).
+ * raised (re-measure with `pnpm --filter mms-api run test:db:coverage:finance`).
  *
- * The slice spans the backend app and `@mms/mod-accounting` (the extraction moved the
- * accounting repository/routes/ledger posting there), so every report passed with
- * `--coverage` is merged before the floors are checked.
- *
- * Usage: node scripts/ci/check-finance-coverage.mjs \
- *   --coverage apps/backend/coverage-finance-db \
- *   --coverage packages/modules/accounting/coverage-finance-db
+ * Usage: node scripts/ci/check-finance-coverage.mjs --coverage apps/api/coverage-finance-db
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -34,19 +27,36 @@ function argValues(flag) {
 }
 
 function isFinanceFile(file) {
+  const normalized = file.replaceAll("\\", "/");
+  if (normalized.includes("__tests__")) return false;
   return (
-    file.includes("src/finance/") ||
-    file.includes("src/accounting/") ||
-    file.includes("src/db/repositories/finance") ||
-    file.includes("src/db/repositories/accounting") ||
-    file.includes("src/routes/tenant/finance") ||
-    file.includes("src/routes/tenant/accounting") ||
-    file.includes("packages/modules/accounting/src/backend/")
+    normalized.includes("src/finance/") ||
+    normalized.includes("src/accounting/") ||
+    normalized.includes("src/db/repositories/finance") ||
+    normalized.includes("src/db/repositories/accounting") ||
+    normalized.includes("src/routes/tenant/finance") ||
+    normalized.includes("src/routes/tenant/accounting") ||
+    normalized.includes("packages/modules/billing/src/backend/") ||
+    normalized.includes("packages/modules/accounting/src/backend/")
   );
 }
 
+function mergeCoverageEntry(target, next) {
+  if (!target) return next;
+  for (const [k, count] of Object.entries(next.s ?? {})) {
+    target.s[k] = Number(target.s[k] ?? 0) + Number(count);
+  }
+  for (const [k, count] of Object.entries(next.f ?? {})) {
+    target.f[k] = Number(target.f[k] ?? 0) + Number(count);
+  }
+  for (const [k, counts] of Object.entries(next.b ?? {})) {
+    target.b[k] = (target.b[k] ?? []).map((prev, idx) => Number(prev) + Number(counts[idx] ?? 0));
+  }
+  return target;
+}
+
 const coverageDirs = argValues("--coverage");
-const dirs = coverageDirs.length > 0 ? coverageDirs : ["apps/backend/coverage-finance-db"];
+const dirs = coverageDirs.length > 0 ? coverageDirs : ["apps/api/coverage-finance-db"];
 
 const data = {};
 for (const coverageDir of dirs) {
@@ -55,7 +65,10 @@ for (const coverageDir of dirs) {
     console.error(`✗ Finance coverage report not found: ${jsonPath}`);
     process.exit(1);
   }
-  Object.assign(data, JSON.parse(fs.readFileSync(jsonPath, "utf8")));
+  const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+  for (const [file, entry] of Object.entries(parsed)) {
+    data[file] = mergeCoverageEntry(data[file], entry);
+  }
   console.log(`merged coverage report: ${jsonPath}`);
 }
 let statements = 0;

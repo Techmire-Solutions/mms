@@ -1,0 +1,65 @@
+import React, { createContext, useContext, useEffect, useMemo } from "react";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { getLanguageDirection, isRtlLanguage, type AppLanguageCode } from "@mms/contracts";
+import { applyDocumentLanguage } from "@mms/fe-core/i18n/documentLanguage";
+import { ensureLocaleFontsLoaded } from "@mms/fe-core/i18n/localeFonts";
+
+export interface DirectionContextValue {
+  dir: "ltr" | "rtl";
+  isRtl: boolean;
+  language: string;
+}
+
+const DirectionContext = createContext<DirectionContextValue>({
+  dir: "ltr",
+  isRtl: false,
+  language: "en",
+});
+
+export interface DirectionProviderProps {
+  children: React.ReactNode;
+}
+
+/**
+ * BiDi Direction Provider
+ * Synchronizes HTML document `dir`, `lang`, and multi-script font classes
+ * based on the active language from TranslationContext.
+ */
+export function DirectionProvider({ children }: DirectionProviderProps): React.JSX.Element {
+  const { language } = useTranslation();
+  const dir = getLanguageDirection(language);
+  const isRtl = isRtlLanguage(language);
+
+  useEffect(() => {
+    applyDocumentLanguage(language);
+    ensureLocaleFontsLoaded(language as AppLanguageCode);
+
+    if (typeof document !== "undefined") {
+      const root = document.documentElement;
+      root.setAttribute("dir", dir);
+      root.setAttribute("lang", language);
+
+      // Manage typography script classes on the document element
+      root.classList.remove("font-arabic", "font-urdu", "font-persian");
+      if (language === "ar") {
+        root.classList.add("font-arabic");
+      } else if (language === "ur") {
+        root.classList.add("font-urdu");
+      } else if (language === "fa") {
+        root.classList.add("font-persian");
+      }
+    }
+  }, [language, dir]);
+
+  // Stable identity so direction consumers don't re-render on unrelated parent renders.
+  const value = useMemo<DirectionContextValue>(
+    () => ({ dir, isRtl, language }),
+    [dir, isRtl, language],
+  );
+
+  return <DirectionContext.Provider value={value}>{children}</DirectionContext.Provider>;
+}
+
+export function useDirection(): DirectionContextValue {
+  return useContext(DirectionContext);
+}

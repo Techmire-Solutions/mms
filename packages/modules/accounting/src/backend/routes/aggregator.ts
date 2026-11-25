@@ -27,8 +27,8 @@ import {
   registerSoftDeletableBulkRoutes,
 } from "@mms/be-core/http/crud";
 
-import { accountingUseCases } from "../use-cases/accountingUseCases.js";
-import { assertEntriesPostable } from "../use-cases/accountingPostingGuard.js";
+import { accountingUseCases } from "../use-cases/index.js";
+import { assertEntriesPostable } from "../use-cases/index.js";
 import { accountingSetupConfigRoutes } from "./accountingSetupConfigRoutes.js";
 import { getAccountingExtraRoutes } from "./extraRoutes.js";
 import { accountingContractRouter } from "./accountingContractRouter.js";

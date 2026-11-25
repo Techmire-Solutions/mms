@@ -1,0 +1,38 @@
+import { vi } from "vitest";
+import { configureSessionsPorts } from "../deps.js";
+
+const noop = vi.fn(async () => ({})) as unknown as (...args: any[]) => Promise<any>;
+configureSessionsPorts({
+  SYSTEM_ACTOR: { id: "system", name: "System" } as any,
+  completeLiveEnrollments: noop,
+  endLiveEnrollments: noop,
+  bulkCloseRolloverSourceEnrollments: noop,
+  carryRolloverEnrollments: noop,
+  listRolloverCandidates: vi.fn(async () => []),
+  bulkEnrollStudentsIntoClass: noop,
+  copySessionCalendarEvents: noop,
+  loadCountableAttendanceSql: vi.fn(() => ({})),
+  isPresentOrLateSql: vi.fn(() => ({})),
+  loadWorkspaceWeekdays: vi.fn(async () => []),
+  findFacultyByIds: vi.fn(async () => []),
+  syncEnrolledSessionsTx: noop,
+  getPreparedSessionById: vi.fn(async () => null),
+  findWorkspaceTimezone: vi.fn(async () => "UTC"),
+  getWorkspaceTimezone: vi.fn(async () => "UTC"),
+  deleteRefreshTokensForUser: noop,
+  getPlatformSettings: vi.fn(() => ({})),
+  getPlatformIdleSessionMinutes: vi.fn(() => 0),
+  platformSettingsService: {},
+  enqueueCsvExportJob: noop,
+  normalizeExportQuery: vi.fn((query: unknown) => query),
+  enqueueBackgroundJob: noop,
+  getUserBackgroundJob: vi.fn(async () => null),
+  getUserBackgroundJobPayload: vi.fn(async () => null),
+  retryFailedBackgroundJob: noop,
+  hasBackgroundJobRunner: vi.fn(() => true),
+  isBackgroundJobLimitError: vi.fn(() => false),
+  isQueueUnavailableError: vi.fn(() => false),
+  registerModuleCsvExportJobRunner: vi.fn(),
+  streamAcademicCalendarCsv: vi.fn(function* () {}),
+  streamAcademicCalendarIcs: vi.fn(function* () {}),
+});

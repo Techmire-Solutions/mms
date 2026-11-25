@@ -1,6 +1,6 @@
 ---
 description: Performance rules, query optimization, render hygiene, caching, streaming, and DOM virtualization
-globs: apps/backend/src/lib/redis.ts,apps/backend/src/worker/**,apps/frontend/src/components/common/data-table/**,apps/frontend/src/lib/queryClient.ts
+globs: apps/api/src/lib/redis.ts,apps/api/src/worker/**,packages/fe-core/src/components/data-table/**,packages/fe-core/src/query/queryClient.ts
 alwaysApply: false
 ---
 

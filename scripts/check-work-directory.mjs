@@ -26,10 +26,18 @@ import path from "node:path";
 import { assertScanDirs } from "./lib/repo-paths.mjs";
 
 const ROOT = process.cwd();
-const FE_SRC = path.join(ROOT, "apps/frontend/src");
+// Live console trees only: `apps/platform-web/src/tenant/**` is an unrouted copy awaiting the P11a
+// prune (see `pnpm run report:dead-sources`), so policing it would just encode dead paths.
+const FE_SRC_ROOTS = [
+  { label: "tenant-web src", dir: path.join(ROOT, "apps/tenant-web/src") },
+  { label: "platform-web src/platform", dir: path.join(ROOT, "apps/platform-web/src/platform") },
+];
 
 // Fail closed: never report a clean work-directory convergence on an empty scan.
-assertScanDirs({ "frontend src": FE_SRC }, "work directory");
+assertScanDirs(
+  Object.fromEntries(FE_SRC_ROOTS.map((root) => [root.label, root.dir])),
+  "work directory",
+);
 
 const IGNORED = /(^|\/)(node_modules|dist|coverage|\.turbo)\//;
 const SOURCE_EXT = /\.(ts|tsx)$/;
@@ -52,7 +60,7 @@ function walk(dir, out = []) {
   return out;
 }
 
-const files = walk(FE_SRC);
+const files = FE_SRC_ROOTS.flatMap((root) => walk(root.dir));
 
 const retiredBulkBarImports = [];
 const retiredShellImports = [];
@@ -99,25 +107,25 @@ function findUnsizedColumns(source) {
  * directory, so search / card view / column toggles do not apply. Review before adding.
  */
 const RAW_TABLE_ALLOWLIST = new Set([
-  "apps/frontend/src/platform/features/design-system/components/DesignSystemGallery.tsx",
-  "apps/frontend/src/tenant/features/accounting/components/AccountingDashboardCharts.tsx",
-  "apps/frontend/src/tenant/features/accounting/components/CashFlowStatementPanel.tsx",
-  "apps/frontend/src/tenant/features/accounting/components/FinancialReportSection.tsx",
-  "apps/frontend/src/tenant/features/accounting/components/JournalEntryDetailLines.tsx",
-  "apps/frontend/src/tenant/features/accounting/components/JournalEntryLinesEditor.tsx",
-  "apps/frontend/src/tenant/features/accounting/components/TrialBalance.tsx",
-  "apps/frontend/src/tenant/features/accounting/components/TrialBalanceTypeGroup.tsx",
-  "apps/frontend/src/tenant/features/attendance/components/MarkAttendanceTableView.tsx",
-  "apps/frontend/src/tenant/features/contacts/components/ContactsSyncConflictDiffBody.tsx",
-  "apps/frontend/src/tenant/features/enrollments/components/EnrollmentReports.tsx",
-  "apps/frontend/src/tenant/features/hasanat/components/RedemptionTable.tsx",
-  "apps/frontend/src/tenant/features/obligations/components/ObligationsRepDuesSection.tsx",
-  "apps/frontend/src/tenant/features/obligations/components/ObligationsWakalaSummarySection.tsx",
-  "apps/frontend/src/tenant/features/obligations/components/detail/ObligationCollectionDistributionsSection.tsx",
-  "apps/frontend/src/tenant/features/question-bank/components/PrintablePaper.tsx",
-  "apps/frontend/src/tenant/features/reports/components/ContactReport.tsx",
-  "apps/frontend/src/tenant/features/reports/components/QuestionBankSummaryDataGrid.tsx",
-  "apps/frontend/src/tenant/features/users/components/PermissionMatrixDesktopTable.tsx",
+  "apps/tenant-web/src/platform/features/design-system/components/DesignSystemGallery.tsx",
+  "apps/tenant-web/src/tenant/features/accounting/components/AccountingDashboardCharts.tsx",
+  "apps/tenant-web/src/tenant/features/accounting/components/CashFlowStatementPanel.tsx",
+  "apps/tenant-web/src/tenant/features/accounting/components/FinancialReportSection.tsx",
+  "apps/tenant-web/src/tenant/features/accounting/components/JournalEntryDetailLines.tsx",
+  "apps/tenant-web/src/tenant/features/accounting/components/JournalEntryLinesEditor.tsx",
+  "apps/tenant-web/src/tenant/features/accounting/components/TrialBalance.tsx",
+  "apps/tenant-web/src/tenant/features/accounting/components/TrialBalanceTypeGroup.tsx",
+  "apps/tenant-web/src/tenant/features/attendance/components/MarkAttendanceTableView.tsx",
+  "apps/tenant-web/src/tenant/features/contacts/components/ContactsSyncConflictDiffBody.tsx",
+  "apps/tenant-web/src/tenant/features/enrollments/components/EnrollmentReports.tsx",
+  "apps/tenant-web/src/tenant/features/hasanat/components/RedemptionTable.tsx",
+  "apps/tenant-web/src/tenant/features/obligations/components/ObligationsRepDuesSection.tsx",
+  "apps/tenant-web/src/tenant/features/obligations/components/ObligationsWakalaSummarySection.tsx",
+  "apps/tenant-web/src/tenant/features/obligations/components/detail/ObligationCollectionDistributionsSection.tsx",
+  "apps/tenant-web/src/tenant/features/question-bank/components/PrintablePaper.tsx",
+  "apps/tenant-web/src/tenant/features/reports/components/ContactReport.tsx",
+  "apps/tenant-web/src/tenant/features/reports/components/QuestionBankSummaryDataGrid.tsx",
+  "apps/tenant-web/src/tenant/features/users/components/PermissionMatrixDesktopTable.tsx",
 ]);
 
 /**
@@ -131,7 +139,7 @@ const RAW_TABLE_ALLOWLIST = new Set([
  * New Work/setup *Card* composites must use DirectoryCard.
  */
 const ENTITY_CARD_OUTER_ALLOWLIST = new Set([
-  "apps/frontend/src/tenant/features/attendance/components/MarkAttendanceStudentCard.tsx",
+  "apps/tenant-web/src/tenant/features/attendance/components/MarkAttendanceStudentCard.tsx",
 ]);
 
 const WORK_CARD_COMPOSITE = /(CardItem\.tsx|Card\.tsx|ListCards\.tsx|CardsView\.tsx|Cards\.tsx)$/;
@@ -183,8 +191,8 @@ for (const rel of files) {
   }
 
   const isFeatureSource =
-    (rel.startsWith("apps/frontend/src/tenant/features/") ||
-      rel.startsWith("apps/frontend/src/platform/")) &&
+    (rel.startsWith("apps/tenant-web/src/tenant/features/") ||
+      rel.startsWith("apps/tenant-web/src/platform/")) &&
     rel.endsWith(".tsx") &&
     !TEST_FILE.test(rel);
   if (isFeatureSource && /<(Table|table)[\s>]/.test(content) && !RAW_TABLE_ALLOWLIST.has(rel)) {
@@ -210,7 +218,7 @@ for (const rel of files) {
 
   // Check tenant feature directory *List.tsx for CSS dual-rendering (table/cards rendered simultaneously via CSS)
   if (
-    rel.startsWith("apps/frontend/src/tenant/features/") &&
+    rel.startsWith("apps/tenant-web/src/tenant/features/") &&
     rel.endsWith("List.tsx") &&
     !TEST_FILE.test(rel)
   ) {
@@ -295,5 +303,6 @@ if (failures > 0) {
 }
 
 console.log(
-  `✅ All Work Directory convergence checks passed (scanned ${files.length} frontend files).`,
+  `✅ All Work Directory convergence checks passed (scanned ${files.length} frontend files across ` +
+    `${FE_SRC_ROOTS.length} roots).`,
 );

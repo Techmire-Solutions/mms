@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "../..");
 const perfBaselineDir = path.resolve(repoRoot, "perf/baseline");
-const frontendDir = path.resolve(repoRoot, "apps/frontend");
+const frontendDir = path.resolve(repoRoot, "apps/tenant-web");
 
 fs.mkdirSync(perfBaselineDir, { recursive: true });
 
@@ -58,7 +58,7 @@ async function main() {
     ANALYZE: "1",
   };
 
-  const buildResult = spawnSync("pnpm", ["--filter", "mms-frontend", "build"], {
+  const buildResult = spawnSync("pnpm", ["--filter", "mms-tenant-web", "build"], {
     cwd: repoRoot,
     env: buildEnv,
     stdio: "inherit",
@@ -86,7 +86,16 @@ async function main() {
 
   const previewProcess = spawn(
     "pnpm",
-    ["--filter", "mms-frontend", "exec", "vite", "preview", "--port", String(port), "--strictPort"],
+    [
+      "--filter",
+      "mms-tenant-web",
+      "exec",
+      "vite",
+      "preview",
+      "--port",
+      String(port),
+      "--strictPort",
+    ],
     {
       cwd: repoRoot,
       stdio: ["ignore", "pipe", "pipe"],

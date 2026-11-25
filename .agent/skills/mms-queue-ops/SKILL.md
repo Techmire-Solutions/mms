@@ -1,6 +1,6 @@
 ---
 name: mms-queue-ops
-description: Diagnoses and safely operates the MMS BullMQ worker — stuck, retrying, or failed jobs, queue backlog, and worker restarts. Use when a background export/import, PDF render, messaging broadcast, or settings job never completes, or when the worker process is unhealthy. Do NOT use for authoring new job types and progress UI (use mms-background-jobs), for deploy/rollback mechanics (use mms-incident-response), or for slow database queries (use mms-db-performance).
+description: Diagnoses/operates BullMQ worker (stuck/retry/failed jobs, backlog, restarts). Use when a job never completes. Do NOT use for authoring jobs (use mms-background-jobs), deploy (use mms-incident-response), or slow queries (use mms-db-performance).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -27,10 +27,10 @@ An export retry can regenerate an artifact, but its source cutoff may change. A 
 
 | Piece | Location |
 |---|---|
-| Worker entry | `apps/backend/src/worker/index.ts` |
-| Queues | `apps/backend/src/worker/queues/index.ts` — `QUEUE_PDF_RENDERING`, `QUEUE_BULK_EXPORT`, `QUEUE_MESSAGING_BROADCAST`, `QUEUE_SETTINGS` |
-| Connection | `apps/backend/src/lib/redis.ts` (ioredis, `REDIS_URL`), options in `worker/queues/queueConfig.ts` |
-| Process | docker-compose `worker` service, PM2 `mmsv2-worker`, dev `pnpm --filter mms-backend worker` |
+| Worker entry | `apps/api/src/worker/index.ts` |
+| Queues | `apps/api/src/worker/queues/index.ts` — `QUEUE_PDF_RENDERING`, `QUEUE_BULK_EXPORT`, `QUEUE_MESSAGING_BROADCAST`, `QUEUE_SETTINGS` |
+| Connection | `apps/api/src/lib/redis.ts` (ioredis, `REDIS_URL`), options in `worker/queues/queueConfig.ts` |
+| Process | docker-compose `worker` service, PM2 `mmsv2-worker`, dev `pnpm --filter mms-api worker` |
 | Row-claiming jobs | `worker/purgeArchivedRecordsJob.ts`, `worker/processors/outboxCdcProcessor.ts` (`FOR UPDATE SKIP LOCKED`) |
 
 Job state lives in Redis, so the worker scales horizontally and the API process must never execute jobs inline. For Redis query commands and key patterns, see [references/bullmq-redis-cheatsheet.md](references/bullmq-redis-cheatsheet.md).
@@ -42,7 +42,7 @@ Job state lives in Redis, so the worker scales horizontally and the API process 
    pm2 status                      # expect mmsv2-worker online
    pm2 logs mmsv2-worker --lines 100
    ```
-   Local: `pnpm --filter mms-backend worker` in its own terminal.
+   Local: `pnpm --filter mms-api worker` in its own terminal.
 2. **Is Redis reachable from the worker?** Connection failures surface as reconnect loops in the worker log.
    ```bash
    redis-cli -u "$REDIS_URL" ping
@@ -51,7 +51,7 @@ Job state lives in Redis, so the worker scales horizontally and the API process 
 4. **Classify the failure from the job payload + log**: tenant context missing (job ran without `withTenant`), a soft-deleted or purged row the job still expects, an external provider timeout (WhatsApp/PDF), or an OOM in the worker heap.
 5. **Heap/profile a suspected leak** rather than guessing:
    ```bash
-   pnpm --filter mms-backend benchmark:worker
+   pnpm --filter mms-api benchmark:worker
    ```
 6. **Replay deliberately.** Re-enqueue only idempotent jobs, and make sure the enqueue carries tenant + user binding and an idempotency key (`mms-module-architecture.md` §5). A bulk export can be re-run; a messaging broadcast usually cannot — check whether the partial send will double-message recipients before replaying.
 7. **Restart to clear a wedged worker** (deploy state unchanged): `pm2 reload mmsv2-worker`. If the restart loop continues, treat it as an incident (`mms-incident-response`) — a crash-looping worker can exhaust Redis connections and destabilise the API.
@@ -60,7 +60,7 @@ Job state lives in Redis, so the worker scales horizontally and the API process 
 
 ```bash
 pm2 status                                   # worker online, restart count stable
-pnpm --filter mms-backend typecheck && pnpm --filter mms-backend test
+pnpm --filter mms-api typecheck && pnpm --filter mms-api test
 ```
 
 Confirm the original job reached a terminal state (`completed` or a deliberate `failed`), the `BackgroundJobsTray` reflects it, and no orphaned rows are left in the outbox or purge tables. If you replayed a job, state explicitly what you re-ran and why it was safe to re-run.

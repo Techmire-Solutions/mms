@@ -14,7 +14,7 @@ import type { ContractRouteArgs, ContractRouteResponse } from "@mms/be-core/http
 import { canReadCollection, canDeleteCollection } from "@mms/be-core/rbac";
 import { handleContractError } from "@mms/be-core/http/routes";
 import { withTenant } from "@mms/db/context";
-import { accountingUseCases } from "../use-cases/accountingUseCases.js";
+import { accountingUseCases } from "../use-cases/index.js";
 import { accountingReportDocumentHandlers } from "./accountingReportDocumentHandlers.js";
 
 const s = initServer();

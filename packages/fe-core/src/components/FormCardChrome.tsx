@@ -3,7 +3,7 @@ import { Trash2, Star } from "lucide-react";
 import { Button } from "@mms/ui";
 import { REMOVE_BTN } from "@mms/ui/form";
 import { cn } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 
 export function CardTypeLabel({ children }: { children: ReactNode }): React.JSX.Element {
   return (

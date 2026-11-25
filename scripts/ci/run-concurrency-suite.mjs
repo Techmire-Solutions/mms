@@ -11,13 +11,13 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..
 
 const RUNS = Number(process.env.CONCURRENCY_RUNS ?? 5);
 
-/** Suites that still live in the backend app. */
+/** Suites executed under apps/api/vitest.db.config.ts (app + composition-root module suites). */
 const APP_FILES = [
-  "src/__tests__/db-integration/enrollmentConcurrencyDb.integration.test.ts",
+  "../../packages/modules/enrollments/src/backend/__tests__/db-integration/enrollmentConcurrencyDb.integration.test.ts",
   // Two staff marking one roster in different orders used to deadlock on the ON CONFLICT locks.
   "src/__tests__/db-integration/attendanceConcurrencyDb.integration.test.ts",
   // Double redeem/void, idempotent issue, OCC, stock and quota races behind the Hasanat cards.
-  "src/__tests__/db-integration/hasanatConcurrencyDb.integration.test.ts",
+  "../../packages/modules/hasanat/src/backend/__tests__/db-integration/hasanatConcurrencyDb.integration.test.ts",
   // Exam OCC batches/moderation/publication: repeated so a lucky single run cannot hide a race.
   "src/__tests__/db-integration/examinationsConcurrencyDb.integration.test.ts",
   // Workshop seat capacity: concurrent registration, duplicate submission, cap lowering, trash race.
@@ -27,8 +27,8 @@ const APP_FILES = [
   // Completion/certificate races: evaluate, issue, transition vs issue, attendance, cancel.
   "src/__tests__/db-integration/workshopsCompletionConcurrencyDb.integration.test.ts",
   // One-winner collection (late fee + reminder claim) and payment/invoice balance races.
-  "src/__tests__/db-integration/financeCollectConcurrencyDb.integration.test.ts",
-  "src/__tests__/db-integration/financePaymentConcurrencyDb.integration.test.ts",
+  "../../packages/modules/billing/src/backend/__tests__/db-integration/financeCollectConcurrencyDb.integration.test.ts",
+  "../../packages/modules/billing/src/backend/__tests__/db-integration/financePaymentConcurrencyDb.integration.test.ts",
 ];
 
 /**
@@ -52,7 +52,7 @@ const ACCOUNTING_FILES = [
 ];
 
 const SUITES = [
-  { dir: path.join(REPO_ROOT, "apps/backend"), files: APP_FILES },
+  { dir: path.join(REPO_ROOT, "apps/api"), files: APP_FILES },
   { dir: path.join(REPO_ROOT, "packages/modules/accounting"), files: ACCOUNTING_FILES },
 ];
 

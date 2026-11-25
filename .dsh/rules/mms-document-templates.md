@@ -9,7 +9,7 @@ description: Printable document-template engine — server-authoritative layouts
 
 **Scope:** printable layouts designed in the shared editor and printed by module screens — invoices, fee receipts, student cards, examination report cards and Hasanat vouchers. Messaging templates are plain-text campaign content and belong to `mms-messaging.md`; analytics/PDF exports belong to `mms-reports.md`.
 
-**Ownership:** the editor engine lives in `packages/fe-core/src/components/template-editor/`; server-backed hooks/API in `packages/fe-core/src/documentTemplates/`; the contract/schema in `packages/contracts/src/contracts/documentTemplates.contract.ts` and `packages/contracts/src/documents/`; the tenant route in `apps/backend/src/routes/tenant/templates/`; module adapters in `tenant/features/{module}/components/*TemplateEditor.tsx` with their data/presets/payloads in `lib/`. New printable module documents extend these layers — they do not add a second editor or print stack.
+**Ownership:** the editor engine lives in `packages/fe-core/src/components/template-editor/`; server-backed hooks/API in `packages/fe-core/src/documentTemplates/`; the contract/schema in `packages/contracts/src/contracts/documentTemplates.contract.ts` and `packages/contracts/src/documents/`; the tenant route in `packages/modules/documents/src/backend/routes/`; module adapters in `tenant/features/{module}/components/*TemplateEditor.tsx` with their data/presets/payloads in `lib/`. New printable module documents extend these layers — they do not add a second editor or print stack.
 
 ## 1. Persistence & Concurrency
 
@@ -42,16 +42,16 @@ description: Printable document-template engine — server-authoritative layouts
 
 - Every field and preset label resolves through `templateLocalization` and a module key prefix: `finance.templateField.*` / `finance.templatePreset.*`, `examinations.*`, `hasanat.*`, `students.cardTemplate.field.*`. No hardcoded English labels in adapters/data files.
 - The key builder must remain visible as an inline template literal at the call site so the unused-translation ratchet sees the static prefix.
-- A guard test (`apps/frontend/src/tenant/features/templateFieldI18n.test.ts`) asserts every derived field/preset key exists in the English pack; `pnpm check:i18n` proves ar/ur/fa parity.
+- A guard test (`apps/tenant-web/src/tenant/features/templateFieldI18n.test.ts`) asserts every derived field/preset key exists in the English pack; `pnpm check:i18n` proves ar/ur/fa parity.
 - Never display a raw key or an English fallback when a locale is active (`t(key) || label` does not work: a missing key returns the key, not `undefined`).
 
 ## 5. Verification
 
 ```bash
 pnpm --filter @mms/contracts build
-pnpm --filter mms-frontend typecheck && pnpm --filter mms-frontend lint
-pnpm --filter mms-frontend exec vitest run src/components/template-editor src/lib/templates src/tenant/features/templateFieldI18n.test.ts
-pnpm --filter mms-backend exec vitest run src/__tests__/documentTemplatesContractRoutes.test.ts src/__tests__/documentTemplatesUseCases.test.ts
+pnpm --filter mms-tenant-web typecheck && pnpm --filter mms-tenant-web lint
+pnpm --filter mms-tenant-web exec vitest run src/components/template-editor src/lib/templates src/tenant/features/templateFieldI18n.test.ts
+pnpm --filter mms-api exec vitest run src/__tests__/documentTemplatesContractRoutes.test.ts src/__tests__/documentTemplatesUseCases.test.ts
 pnpm check:i18n && node scripts/i18n/check-unused-keys.mjs
 ```
 

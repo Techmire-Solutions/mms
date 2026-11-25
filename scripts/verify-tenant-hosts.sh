@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Verify tenant subdomain routing (DNS, TLS, Apache, workspace API).
-# Usage: bash scripts/verify-tenant-hosts.sh [subdomain] [apps/backend/.env]
+# Usage: bash scripts/verify-tenant-hosts.sh [subdomain] [apps/api/.env]
 #   subdomain optional — when omitted, uses first entry from workspace registry.
 set -uo pipefail
 
@@ -17,7 +17,7 @@ source "$ROOT_DIR/scripts/lib/curl-local-backend.sh"
 source "$ROOT_DIR/scripts/lib/tenant-https-guard.sh"
 
 SUBDOMAIN="${1:-}"
-ENV_FILE="${2:-apps/backend/.env}"
+ENV_FILE="${2:-apps/api/.env}"
 FAIL=0
 ALL_SUBDOMAINS=()
 

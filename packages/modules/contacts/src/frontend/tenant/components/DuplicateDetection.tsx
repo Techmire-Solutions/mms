@@ -1,0 +1,106 @@
+import type React from "react";
+import { AnimatePresence } from "framer-motion";
+import type { Contact } from "@mms/contracts";
+import { MergePreview } from "./DuplicateMergePreview.js";
+import { DuplicateDetectionModal } from "./DuplicateDetectionModal.js";
+import { useDuplicateDetectionState } from "../hooks/useDuplicateDetectionState";
+
+export interface DuplicateDetectionProps {
+  onClose: () => void;
+  onMerge: (
+    keepId: string | number,
+    deleteId: string | number,
+    mergedData: Contact,
+    keepUpdatedAt?: string,
+  ) => Promise<void>;
+  canWrite?: boolean;
+}
+
+/**
+ * DuplicateDetection component that finds duplicate contacts dynamically
+ * and allows the user to merge them.
+ */
+export function DuplicateDetection({
+  onClose,
+  onMerge,
+  canWrite = false,
+}: DuplicateDetectionProps): React.JSX.Element {
+  const {
+    prefs,
+    pairsLoading,
+    pairsFetching,
+    pairsError,
+    refetchPairs,
+    hasMore,
+    activePairs,
+    totalPairs,
+    tierCounts,
+    searchQuery,
+    setSearchQuery,
+    tierFilter,
+    setTierFilter,
+    keepIndex,
+    merging,
+    confirming,
+    totalMerged,
+    highConfidenceCount,
+    batchMerging,
+    batchConfirmOpen,
+    setBatchConfirmOpen,
+    handleBatchMergeHighConfidence,
+    setMerging,
+    handleLoadMoreDuplicates,
+    handleMergeConfirm,
+    handleDismiss,
+    setKeepIndexForPair,
+  } = useDuplicateDetectionState({ onMerge });
+
+  return (
+    <>
+      <DuplicateDetectionModal
+        prefs={prefs}
+        pairsLoading={pairsLoading}
+        pairsFetching={pairsFetching}
+        pairsError={pairsError}
+        hasMore={hasMore}
+        activePairs={activePairs}
+        totalPairs={totalPairs}
+        tierCounts={tierCounts}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        tierFilter={tierFilter}
+        setTierFilter={setTierFilter}
+        keepIndex={keepIndex}
+        totalMerged={totalMerged}
+        highConfidenceCount={highConfidenceCount}
+        batchMerging={batchMerging}
+        batchConfirmOpen={batchConfirmOpen}
+        setBatchConfirmOpen={setBatchConfirmOpen}
+        onBatchMergeConfirm={handleBatchMergeHighConfidence}
+        canWrite={canWrite}
+        onClose={onClose}
+        onMergePair={setMerging}
+        onDismiss={handleDismiss}
+        onSelectKeep={setKeepIndexForPair}
+        onLoadMore={handleLoadMoreDuplicates}
+        onRetry={() => {
+          void refetchPairs();
+        }}
+      />
+
+      <AnimatePresence>
+        {merging && (
+          <MergePreview
+            pair={merging}
+            keepIndex={keepIndex[merging.id] ?? 0}
+            onClose={() => setMerging(null)}
+            onConfirm={handleMergeConfirm}
+            confirming={confirming}
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+export default DuplicateDetection;

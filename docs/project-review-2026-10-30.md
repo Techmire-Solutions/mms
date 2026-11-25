@@ -68,35 +68,35 @@ Each claim was re-read in code and/or covered by a test that ran in this pass.
 
 | Prior finding | Evidence |
 | --- | --- |
-| Print-window title XSS (10-29 project review §3.1) | [`printHtmlDocument.ts`](../apps/frontend/src/lib/ui/printHtmlDocument.ts#L21) and [`printWindowHtml.ts`](../apps/frontend/src/lib/printWindowHtml.ts#L33) still run titles through `escapeHtml`; both popups also null their `opener`. |
+| Print-window title XSS (10-29 project review §3.1) | [`printHtmlDocument.ts`](../apps/tenant-web/src/lib/ui/printHtmlDocument.ts#L21) and [`printWindowHtml.ts`](../packages/fe-core/src/print/printWindowHtml.ts) still run titles through `escapeHtml`; both popups also null their `opener`. |
 | Executable social URL schemes (10-29 §3.2) | [`socialPlatformUtils.ts`](../packages/contracts/src/messaging/socialPlatformUtils.ts#L33) rejects any explicit scheme outside `http(s)`/`mailto`/`tel`. |
 | Backend F1/F12 audit trail | [`auditTrailService.ts`](../packages/be-core/src/audit/auditTrailService.ts#L66) joins the active transaction; shard append takes `pg_advisory_xact_lock(hashtext(...))` at L122. |
-| Backend F4/F5 finance | Invoice replay check → `409 conflict` ([`financeInvoiceMutationOperations.ts`](../apps/backend/src/finance/financeInvoiceMutationOperations.ts#L129)); settlement row lock `forUpdate: true` ([`financeMutationOperations.ts`](../apps/backend/src/finance/use-cases/financeMutationOperations.ts#L116)). |
-| Backend F37/F45 | Revocation TTL `Math.max(60, remainingSeconds)` ([`authSessionRoutes.ts`](../apps/backend/src/routes/common/auth/authSessionRoutes.ts#L83)); 2FA challenge tenant match ([`twoFactorService.ts`](../apps/backend/src/services/auth/twoFactorService.ts#L89)). |
-| Backend F39/F40 | Uploads and tenant files send `Cache-Control: private, no-store`; 5xx upload errors return a request reference ([`staticAssets.ts`](../apps/backend/src/plugins/staticAssets.ts#L43), [`uploads.ts`](../apps/backend/src/routes/common/uploads.ts#L43)). |
-| Backend F6/F17 | Erasure requires `X-Confirm-Erasure` ([`auditPrivacyRoutes.ts`](../apps/backend/src/routes/tenant/audit/auditPrivacyRoutes.ts#L37)); worker shutdown budget `JOB_EXECUTION_TIMEOUT_MS + 10_000` ([`worker/index.ts`](../apps/backend/src/worker/index.ts#L181)). |
-| Frontend F-01 pagination keys | `common.pagination.*` exists ×4 locales; `ListPagination` compares `value !== key` instead of `??`, with explicit namespace → shared → English fallback ([`ListPagination.tsx`](../apps/frontend/src/components/app/ListPagination.tsx#L41)). |
-| Frontend F-02 settings deep links | One validated contract in [`settingsDeepLink.ts`](../apps/frontend/src/lib/config/settingsDeepLink.ts#L9). |
+| Backend F4/F5 finance | Invoice replay check → `409 conflict` ([`financeInvoiceMutationOperations.ts`](../packages/modules/billing/src/backend/use-cases/financeInvoiceMutationOperations.ts)); settlement row lock `forUpdate: true` ([`financeMutationOperations.ts`](../packages/modules/billing/src/backend/use-cases/financeMutationOperations.ts)). |
+| Backend F37/F45 | Revocation TTL `Math.max(60, remainingSeconds)` ([`authSessionRoutes.ts`](../apps/api/src/routes/common/auth/authSessionRoutes.ts#L83)); 2FA challenge tenant match ([`twoFactorService.ts`](../apps/api/src/services/auth/twoFactorService.ts#L89)). |
+| Backend F39/F40 | Uploads and tenant files send `Cache-Control: private, no-store`; 5xx upload errors return a request reference ([`staticAssets.ts`](../apps/api/src/plugins/staticAssets.ts#L43), [`uploads.ts`](../apps/api/src/routes/common/uploads.ts#L43)). |
+| Backend F6/F17 | Erasure requires `X-Confirm-Erasure` ([`auditPrivacyRoutes.ts`](../packages/modules/audit/src/backend/routes/auditPrivacyRoutes.ts#L37)); worker shutdown budget `JOB_EXECUTION_TIMEOUT_MS + 10_000` ([`worker/index.ts`](../apps/api/src/index.ts#L181)). |
+| Frontend F-01 pagination keys | `common.pagination.*` exists ×4 locales; `ListPagination` compares `value !== key` instead of `??`, with explicit namespace → shared → English fallback ([`ListPagination.tsx`](../packages/fe-core/src/components/ListPagination.tsx)). |
+| Frontend F-02 settings deep links | One validated contract in [`settingsDeepLink.ts`](../apps/tenant-web/src/lib/config/settingsDeepLink.ts#L9). |
 | Frontend tranche 3/4 | `apiContractErrorUsage.test.ts`, `retryPolicy.ts`, `RouteAnnouncer.tsx`, `calendarLocale.ts` all present; retry policy skips 401/403/404/409/422/429 and honours `Retry-After`. |
-| Coverage basis correction (frontend) | `coverage.include: ["src/**/*.{ts,tsx}"]` + floors 42/41/34/40 ([`vitest.config.ts`](../apps/frontend/vitest.config.ts#L111)). |
-| UI/UX date corruption | [`DateText.tsx`](../apps/frontend/src/components/app/DateText.tsx#L13) renders dates in an isolated `bdi dir="ltr"` run. |
+| Coverage basis correction (frontend) | `coverage.include: ["src/**/*.{ts,tsx}"]` + floors 42/41/34/40 ([`vitest.config.ts`](../apps/tenant-web/vitest.config.ts#L111)). |
+| UI/UX date corruption | [`DateText.tsx`](../packages/ui/src/app/DateText.tsx#L13) renders dates in an isolated `bdi dir="ltr"` run. |
 | `packages/ui` types | Now a real private package (`packages/ui/package.json`) and covered by the code-norm ratchets; register updated. |
 
 ### 3.2 New findings
 
 #### P-01 — Major — Automatic printing is dead in production (inline script vs CSP)
 
-**Where:** [`printWindowHtml.ts:50`](../apps/frontend/src/lib/printWindowHtml.ts#L50) and
-[`paperBuilderUtils.ts:161`](../apps/frontend/src/tenant/features/question-bank/lib/paperBuilderUtils.ts#L161)
+**Where:** [`printWindowHtml.ts:50`](../packages/fe-core/src/print/printWindowHtml.ts) and
+[`paperBuilderUtils.ts:161`](../apps/tenant-web/src/tenant/features/question-bank/lib/paperBuilderUtils.ts#L161)
 write an inline `<script>` into a `window.open("")` document; consumers are the accounting payment
-voucher ([`usePaymentVoucherPrint.ts:129`](../apps/frontend/src/tenant/features/accounting/hooks/usePaymentVoucherPrint.ts#L129)),
+voucher ([`usePaymentVoucherPrint.ts:129`](../apps/tenant-web/src/tenant/features/accounting/hooks/usePaymentVoucherPrint.ts#L129)),
 the obligations/invoice print controller
-([`usePrintInvoiceModalController.ts:69`](../apps/frontend/src/tenant/features/obligations/components/invoice/usePrintInvoiceModalController.ts#L69)),
+([`usePrintInvoiceModalController.ts:69`](../apps/tenant-web/src/tenant/features/obligations/components/invoice/usePrintInvoiceModalController.ts#L69)),
 and the question-bank paper builder
-([`usePaperBuilderHandlers.ts:73`](../apps/frontend/src/tenant/features/question-bank/hooks/usePaperBuilderHandlers.ts#L73)).
+([`usePaperBuilderHandlers.ts:73`](../apps/tenant-web/src/tenant/features/question-bank/hooks/usePaperBuilderHandlers.ts#L73)).
 
 **Evidence:** the app sends a nonce-only CSP (`script-src 'self' 'nonce-…'`, no `'unsafe-inline'`)
-on every response ([`security.ts:47`](../apps/backend/src/plugins/security.ts#L47)). An `about:blank`
+on every response ([`security.ts:47`](../apps/api/src/plugins/security.ts#L47)). An `about:blank`
 document created by `window.open` inherits that policy container, so the written inline script is
 blocked. Reproduced directly with Playwright against a server sending `script-src 'self' 'nonce-abc123'`:
 
@@ -123,7 +123,7 @@ and remains a follow-up (the unit assertion is the change-time ratchet).
 
 #### P-02 — Major (gate integrity) — backend and shared coverage still measure only loaded files
 
-**Where:** [`apps/backend/vitest.config.ts:45`](../apps/backend/vitest.config.ts#L45) and
+**Where:** [`apps/backend/vitest.config.ts:45`](../apps/api/vitest.config.ts#L45) and
 [`packages/contracts/vitest.config.ts:17`](../packages/contracts/vitest.config.ts#L17) define `coverage`
 exclusions and thresholds but no `coverage.include`; the frontend added one on 2026-10-30 after
 discovering that 715 of 2,820 source files never entered its denominator.
@@ -149,9 +149,9 @@ check) passes, and both coverage gates were re-run green under the new floors.
 
 #### P-03 — Minor — CI-built source maps are shipped and publicly served
 
-**Where:** [`vite.config.ts:111`](../apps/frontend/vite.config.ts#L111) emits `hidden` source maps
+**Where:** [`vite.config.ts:111`](../apps/tenant-web/vite.config.ts#L111) emits `hidden` source maps
 whenever `CI=true`; [`package-dist.sh:7`](../scripts/ci/package-dist.sh#L7) tars the whole
-`apps/frontend/dist`; [`frontendSpa.ts:27`](../apps/backend/src/plugins/frontendSpa.ts#L27) serves
+`apps/frontend/dist`; [`registerWebApps.ts`](../apps/api/src/plugins/registerWebApps.ts) serves
 that tree at `/` with no extension filter.
 
 **Evidence:** a `CI=true` local build wrote **590 `*.map` files** under `dist/assets`. No workflow or
@@ -171,7 +171,7 @@ them) but never reach the server.
 
 #### P-04 — Minor — Initial admin password generated with `Math.random()`
 
-**Where:** [`create-tenant-admin.ts:14`](../apps/backend/src/scripts/create-tenant-admin.ts#L14) chooses
+**Where:** [`create-tenant-admin.ts:14`](../apps/api/src/scripts/create-tenant-admin.ts#L14) chooses
 the generated password with `Math.random()`; the same file already imports `randomBytes` for the user
 id.
 
@@ -193,7 +193,7 @@ seven seed scripts, `process.execPath` for the temp seeder, argv for the platfor
 
 #### P-06 — Minor (advisory) — OTP and email are logged in non-production
 
-**Where:** [`tenantPasswordOtpDispatch.ts:178`](../apps/backend/src/services/auth/tenantPasswordOtpDispatch.ts#L178)
+**Where:** [`tenantPasswordOtpDispatch.ts:178`](../apps/api/src/services/auth/tenantPasswordOtpDispatch.ts#L178)
 logs `{ email, code }` when `NODE_ENV !== "production"` and neither channel delivered.
 
 **Impact:** deliberate dev convenience, but any non-production deployment (staging keeps
@@ -209,11 +209,11 @@ production.
   persistence. Type-contract drift only.
 - `.passthrough()` on module setup-preference schemas is the documented forward-compatibility choice
   (unknown keys survive future field additions); not widened here.
-- The single `dangerouslySetInnerHTML` ([`ErdMermaidDiagram.tsx:184`](../apps/frontend/src/platform/features/erd/components/ErdMermaidDiagram.tsx#L184))
+- The single `dangerouslySetInnerHTML` ([`ErdMermaidDiagram.tsx:184`](../apps/platform-web/src/platform/features/erd/components/ErdMermaidDiagram.tsx))
   renders Mermaid output with `securityLevel: "strict"` from schema-derived ERD source.
 - Sampled `catch {}` blocks are deliberate best-effort paths (faculty sequence sync, JSON citation
   parsing). One handler returns a generic 500 without logging
-  ([`studentOperationRoutes.ts:196`](../apps/backend/src/routes/tenant/students/studentOperationRoutes.ts#L200)),
+  ([`studentOperationRoutes.ts:196`](../packages/modules/students/src/backend/routes/studentOperationRoutes.ts)),
   which is consistent with the error envelope but weakens triage.
 
 ### 3.3 Residual register re-confirmed

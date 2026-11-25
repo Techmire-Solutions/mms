@@ -1,8 +1,8 @@
 import React from "react";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import { Button } from "@mms/ui";
-import { useRovingToolbar } from "@mms/fe-core/hooks";
+import { useRovingToolbar } from "../hooks/index.js";
 
 export interface ExportToolbarCompactProps {
   compactFormat: "excel" | "pdf";

@@ -21,12 +21,12 @@ Advisory review checklist. Existing tests demonstrate only their asserted cases.
 Read assertions before relying on a filename:
 
 - `packages/contracts/src/finance/accountingLedgerInvariants.test.ts`, `packages/contracts/src/finance/accountingLedgerOps.test.ts`, `packages/contracts/src/finance/accountingReportAggregates.test.ts` — shared contracts/helpers; not database or accounting-framework proof.
-- `apps/backend/src/__tests__/accountingUseCases.test.ts` — lifecycle and posted-content guards, create replay and lock-before-validation orchestration with fakes.
-- `apps/backend/src/__tests__/accountingPeriodClose.test.ts` — close orchestration and retained-earnings validation.
-- `apps/backend/src/__tests__/accountingLedgerGuards.test.ts`, `apps/backend/src/__tests__/ledgerPostingService.test.ts`, `apps/backend/src/__tests__/accountingLedgerOpsUseCases.test.ts` — inspect case-level coverage for the operation.
-- `apps/backend/src/__tests__/accounting.integration.test.ts` — route contracts and permission cases with mocked services.
-- `apps/backend/src/__tests__/db-integration/accountingConcurrencyDb.integration.test.ts` — PostgreSQL stale draft/post conflict and competing creates.
-- `apps/backend/src/__tests__/db-integration/accountingReportDb.integration.test.ts` — real aggregation and closing-report behavior.
+- `apps/api/src/__tests__/accountingUseCases.test.ts` — lifecycle and posted-content guards, create replay and lock-before-validation orchestration with fakes.
+- `apps/api/src/__tests__/accountingPeriodClose.test.ts` — close orchestration and retained-earnings validation.
+- `apps/api/src/__tests__/accountingLedgerGuards.test.ts`, `apps/api/src/__tests__/ledgerPostingService.test.ts`, `apps/api/src/__tests__/accountingLedgerOpsUseCases.test.ts` — inspect case-level coverage for the operation.
+- `apps/api/src/__tests__/accounting.integration.test.ts` — route contracts and permission cases with mocked services.
+- `apps/api/src/__tests__/db-integration/accountingConcurrencyDb.integration.test.ts` — PostgreSQL stale draft/post conflict and competing creates.
+- `apps/api/src/__tests__/db-integration/accountingReportDb.integration.test.ts` — real aggregation and closing-report behavior.
 
 These anchors do **not** establish complete safe-integer bounds, monthly-period locking, close/post synchronization, fund accounting, all cash-flow classifications, dual approvals, or universal DB-level posted immutability. Treat each as a capability to inspect and test, not a promise inferred from a schema or this skill.
 
@@ -37,8 +37,8 @@ Run from the repository root; use the package names actually declared in the wor
 ```bash
 pnpm typecheck
 pnpm --filter @mms/contracts test -- src/accountingLedgerInvariants.test.ts src/accountingLedgerOps.test.ts src/accountingReportAggregates.test.ts
-pnpm --filter mms-backend test -- src/__tests__/accountingUseCases.test.ts src/__tests__/accountingPeriodClose.test.ts src/__tests__/accountingLedgerGuards.test.ts src/__tests__/accountingLedgerOpsUseCases.test.ts src/__tests__/ledgerPostingService.test.ts src/__tests__/accounting.integration.test.ts
-pnpm --filter mms-backend test:db -- src/__tests__/db-integration/accountingConcurrencyDb.integration.test.ts src/__tests__/db-integration/accountingReportDb.integration.test.ts
+pnpm --filter mms-api test -- src/__tests__/accountingUseCases.test.ts src/__tests__/accountingPeriodClose.test.ts src/__tests__/accountingLedgerGuards.test.ts src/__tests__/accountingLedgerOpsUseCases.test.ts src/__tests__/ledgerPostingService.test.ts src/__tests__/accounting.integration.test.ts
+pnpm --filter mms-api test:db -- src/__tests__/db-integration/accountingConcurrencyDb.integration.test.ts src/__tests__/db-integration/accountingReportDb.integration.test.ts
 ```
 
 Run relevant finance billing/collection tests when those paths change. The ordinary backend suite uses mocks; the opt-in database suite requires a reachable **test** PostgreSQL and isolated fixtures. Require actual assertions to execute; report unavailable infrastructure as blocked verification, not passing skipped tests. Avoid credentials in output. See `mms-testing-e2e` for harnesses and `mms-completion-review.md` for lint, UI, and authorization checks.

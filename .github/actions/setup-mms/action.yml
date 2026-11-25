@@ -75,6 +75,5 @@ runs:
     - name: Build workspace libraries
       if: inputs.build-shared == 'true'
       shell: bash
-      # `@mms/db` re-exports runtime schema/context used by the backend and its
-      # tests; both libraries are consumed from `dist`.
-      run: pnpm --filter @mms/contracts build && pnpm --filter @mms/db build && pnpm --filter @mms/be-core build && pnpm --filter @mms/mod-iam build && pnpm --filter @mms/mod-accounting build && pnpm --filter @mms/mod-contacts build
+      # Shared workspace libraries and vertical modules are consumed from `dist` by apps and tests.
+      run: pnpm exec turbo run build --filter='./packages/*' --filter='./packages/modules/*'

@@ -35,7 +35,7 @@ import { changeBase, changedFiles, readAtBase, readCurrent } from "./lib/changed
 import { SOURCE_EXTENSIONS, assertScanDirs, fromRoot } from "./lib/repo-paths.mjs";
 
 /** Both migration trees: the hand-written TS data migrations and the Drizzle SQL ones. */
-const MIGRATION_DIRS = ["apps/backend/src/db/migrations/", "packages/db/migrations_drizzle/"];
+const MIGRATION_DIRS = ["apps/api/src/db/migrations/", "packages/db/migrations_drizzle/"];
 
 // Fail closed: a moved migration tree must fail loudly instead of diffing nothing
 // and reporting "no migration changes" (docs/monorepo-migration-plan.md §2.7).
@@ -118,7 +118,8 @@ if (explicitBase !== null) {
  *
  * Package relocations (`@mms/shared` → `@mms/contracts`, `db/*` modules → `@mms/db/*`,
  * `lib/tenantContext` → `@mms/be-core/http`, `repositories/contact*` →
- * `@mms/mod-contacts/backend/repository`) and import-depth fixes are structural, not
+ * `@mms/mod-contacts/backend/repository`, `repositories/accounting*` →
+ * `@mms/mod-accounting/backend/repository`) and import-depth fixes are structural, not
  * logic: the SQL and control flow are unchanged. Compare migrations with their import
  * specifiers canonicalized so a repository-wide move does not read as "rewrote an
  * applied migration", while any change to the migration body still fails.
@@ -131,10 +132,59 @@ const MOVED_DB_SCHEMA = /^(?:\.\.\/)+(?:db\/)?schema(\/[^"']*)?\.js$/;
 const MOVED_SEED = /^(?:\.\.\/)+(?:db\/)?minimalSeeds\.js$/;
 const MOVED_LIB = /^(?:\.\.\/)+lib\/(?:softDeleteHelpers|logRedaction)\.js$/;
 const MOVED_TENANT_CONTEXT = /^(?:\.\.\/)+lib\/tenantContext\.js$/;
-// Contacts repositories moved into the audience-separated module package (P5); the
-// migrations barrel still resolves the same symbols.
-const MOVED_CONTACT_REPOSITORY =
-  /^(?:\.\.\/)+(?:db\/)?repositories\/contact[A-Za-z0-9_]*Repository\.js$/;
+// Domain repositories moved into audience-separated module packages (P5); the
+// applied data migrations still import the same symbols with unchanged SQL/body.
+const MOVED_MODULE_REPOSITORIES = [
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/contact[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-contacts/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/accounting[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-accounting/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/student[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-students/backend/repository",
+  },
+  {
+    pattern:
+      /^(?:\.\.\/)+(?:db\/)?repositories\/faculty(?:[A-Za-z0-9_]*Repository|AssignmentValidation)\.js$/,
+    pkg: "@mms/mod-faculty/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/session[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-sessions/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/enrollment[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-enrollments/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/obligation[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-obligations/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/finance[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-billing/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/examination[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-examinations/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/hasanat[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-hasanat/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/questionBank[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-question-bank/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/messaging[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-messaging/backend/repository",
+  },
+];
 const MOVED_MIGRATION_MODULE = /^(?:\.{1,2}\/)+(?:migrations\/)?(\d{3}_[A-Za-z0-9_]+)\.js$/;
 
 function canonicalModuleSpecifier(specifier) {
@@ -158,12 +208,10 @@ function canonicalModuleSpecifier(specifier) {
   ) {
     return "@mms/be-core/http";
   }
-  if (
-    MOVED_CONTACT_REPOSITORY.test(specifier) ||
-    normalized === "@mms/mod-contacts/backend/repository" ||
-    normalized.startsWith("@mms/mod-contacts/backend/repository/")
-  ) {
-    return "@mms/mod-contacts/backend/repository";
+  for (const { pattern, pkg } of MOVED_MODULE_REPOSITORIES) {
+    if (pattern.test(specifier) || normalized === pkg || normalized.startsWith(`${pkg}/`)) {
+      return pkg;
+    }
   }
   if (
     MOVED_DB_CLIENT.test(specifier) ||

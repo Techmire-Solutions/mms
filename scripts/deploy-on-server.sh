@@ -5,7 +5,7 @@ set +e
 
 ROOT_DIR="${MMS_DEPLOY_ROOT:-/var/www/mmsv2}"
 TARBALL="${MMS_DEPLOY_TARBALL:-/tmp/mms-dist.tar.gz}"
-ENV_FILE="${MMS_DEPLOY_ENV:-apps/backend/.env}"
+ENV_FILE="${MMS_DEPLOY_ENV:-apps/api/.env}"
 LOCK_HASH_FILE="${ROOT_DIR}/.deploy-lock-hash"
 APACHE_FP_FILE="${ROOT_DIR}/.deploy-apache-fingerprint"
 RELEASES_DIR="${ROOT_DIR}/.deploy-releases"
@@ -132,7 +132,7 @@ if [ -f "$TARBALL" ]; then
   fi
 
   echo "Extracting production dist..."
-  rm -rf "${ROOT_DIR}/apps/frontend/dist" "${ROOT_DIR}/apps/backend/dist" "${ROOT_DIR}/packages/db/dist" "${ROOT_DIR}/packages/be-core/dist" "${ROOT_DIR}/packages/modules/iam/dist" "${ROOT_DIR}/packages/modules/accounting/dist" "${ROOT_DIR}/packages/modules/contacts/dist"
+  rm -rf "${ROOT_DIR}/apps/tenant-web/dist" "${ROOT_DIR}/apps/platform-web/dist" "${ROOT_DIR}/apps/api/dist" "${ROOT_DIR}/packages/db/dist" "${ROOT_DIR}/packages/be-core/dist" "${ROOT_DIR}/packages/modules/iam/dist" "${ROOT_DIR}/packages/modules/accounting/dist" "${ROOT_DIR}/packages/modules/contacts/dist" "${ROOT_DIR}/packages/modules/hasanat/dist" "${ROOT_DIR}/packages/modules/faculty/dist" "${ROOT_DIR}/packages/modules/messaging/dist" "${ROOT_DIR}/packages/modules/billing/dist" "${ROOT_DIR}/packages/modules/students/dist" "${ROOT_DIR}/packages/modules/sessions/dist"
   tar xzf "$TARBALL" -C "$ROOT_DIR"
   if [ $? -ne 0 ]; then
     echo "FATAL: tar extract failed"
@@ -141,8 +141,8 @@ if [ -f "$TARBALL" ]; then
   rm -f "$TARBALL" "${TARBALL}.sha256"
 else
   echo "No tarball found at ${TARBALL} — checking pre-extracted dist folders..."
-  if [ ! -d "${ROOT_DIR}/apps/backend/dist" ] || [ ! -d "${ROOT_DIR}/apps/frontend/dist" ] || [ ! -d "${ROOT_DIR}/packages/db/dist" ] || [ ! -d "${ROOT_DIR}/packages/be-core/dist" ] || [ ! -d "${ROOT_DIR}/packages/modules/iam/dist" ] || [ ! -d "${ROOT_DIR}/packages/modules/accounting/dist" "${ROOT_DIR}/packages/modules/contacts/dist" ]; then
-    echo "FATAL: missing pre-built dist directories (apps/backend/dist, apps/frontend/dist, packages/db/dist, packages/be-core/dist, packages/modules/iam/dist, packages/modules/accounting/dist, packages/modules/contacts/dist) and no tarball at ${TARBALL}"
+  if [ ! -d "${ROOT_DIR}/apps/api/dist" ] || [ ! -d "${ROOT_DIR}/apps/tenant-web/dist" "${ROOT_DIR}/apps/platform-web/dist" ] || [ ! -d "${ROOT_DIR}/packages/db/dist" ] || [ ! -d "${ROOT_DIR}/packages/be-core/dist" ] || [ ! -d "${ROOT_DIR}/packages/modules/iam/dist" ] || [ ! -d "${ROOT_DIR}/packages/modules/accounting/dist" "${ROOT_DIR}/packages/modules/contacts/dist" "${ROOT_DIR}/packages/modules/hasanat/dist" "${ROOT_DIR}/packages/modules/faculty/dist" "${ROOT_DIR}/packages/modules/messaging/dist" "${ROOT_DIR}/packages/modules/billing/dist" "${ROOT_DIR}/packages/modules/students/dist" "${ROOT_DIR}/packages/modules/sessions/dist" ]; then
+    echo "FATAL: missing pre-built dist directories (apps/api/dist, apps/tenant-web/dist apps/platform-web/dist, packages/db/dist, packages/be-core/dist, packages/modules/iam/dist, packages/modules/accounting/dist, packages/modules/contacts/dist) and no tarball at ${TARBALL}"
     exit 1
   fi
 fi
@@ -225,17 +225,17 @@ if command -v pg_isready >/dev/null 2>&1; then
     sleep 2
   done
 fi
-if [ -f "$ROOT_DIR/apps/backend/dist/scripts/checkRlsRole.js" ]; then
+if [ -f "$ROOT_DIR/packages/db/dist/scripts/checkRlsRole.js" ]; then
   echo "Checking database role for RLS enforcement (mode=${MMS_DB_ROLE_ENFORCEMENT})..."
-  if ! (cd "$ROOT_DIR/apps/backend" && node dist/scripts/checkRlsRole.js); then
+  if ! (cd "$ROOT_DIR/packages/db" && node dist/scripts/checkRlsRole.js); then
     echo "ERROR: RLS preflight failed — database role check exited with error."
     echo "       Ensure PostgreSQL is running, provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
     echo "       then redeploy. The running release has NOT been replaced."
     fail_preflight
   fi
-elif [ -f "$ROOT_DIR/apps/backend/src/scripts/checkRlsRole.ts" ]; then
+elif [ -f "$ROOT_DIR/packages/db/src/scripts/checkRlsRole.ts" ]; then
   echo "Checking database role for RLS enforcement (tsx fallback)..."
-  if ! (cd "$ROOT_DIR/apps/backend" && node --experimental-strip-types src/scripts/checkRlsRole.ts); then
+  if ! (cd "$ROOT_DIR/packages/db" && node --experimental-strip-types src/scripts/checkRlsRole.ts); then
     echo "ERROR: RLS preflight failed — database role check exited with error."
     echo "       Ensure PostgreSQL is running, provision mms_app and point DATABASE_URL at it (docs/rls-operations.md),"
     echo "       then redeploy. The running release has NOT been replaced."
@@ -243,7 +243,7 @@ elif [ -f "$ROOT_DIR/apps/backend/src/scripts/checkRlsRole.ts" ]; then
   fi
 else
   echo "ERROR: checkRlsRole script not found — cannot verify RLS. Refusing to deploy."
-  echo "       The running release has NOT been replaced; restore the backend build and redeploy."
+  echo "       The running release has NOT been replaced; restore the @mms/db build and redeploy."
   fail_preflight
 fi
 if ! node "$ROOT_DIR/scripts/ci/rls-deploy-policy.mjs" \
@@ -257,7 +257,7 @@ if ! node "$ROOT_DIR/scripts/ci/rls-deploy-policy.mjs" \
 fi
 
 mkdir -p "$ROOT_DIR/.logs"
-# Legacy vite-preview PM2 app — SPA is served by Fastify from apps/frontend/dist.
+# Legacy vite-preview PM2 app — SPA is served by Fastify from apps/tenant-web/dist apps/platform-web/dist.
 pm2 delete mmsv2-frontend 2>/dev/null || true
 
 # Apply schema DDL + data migrations BEFORE swapping the backend over.
@@ -267,9 +267,9 @@ pm2 delete mmsv2-frontend 2>/dev/null || true
 # serving, instead of taking the API down mid-restart. The runner is idempotent
 # (Drizzle tracks applied DDL; data migrations are guarded by an advisory lock
 # and a `data_migrations` ledger), so re-running it on boot is harmless.
-if [ -f "$ROOT_DIR/apps/backend/dist/scripts/migrateDb.js" ]; then
+if [ -f "$ROOT_DIR/apps/api/dist/scripts/migrateDb.js" ]; then
   echo "Applying database migrations (pre-restart)..."
-  if ! (cd "$ROOT_DIR/apps/backend" && node dist/scripts/migrateDb.js); then
+  if ! (cd "$ROOT_DIR/apps/api" && node dist/scripts/migrateDb.js); then
     echo "ERROR: database migration failed — leaving the running release in place"
     exit 1
   fi

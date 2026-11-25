@@ -6,7 +6,7 @@
  * `scripts/ci/accounting-route-security.json` with the module action the route
  * enforces and the roles it must deny. The classification is reproducible from the
  * method default (`GET` → read, other methods → write) plus the explicit overrides
- * in `apps/backend/src/lib/moduleRouteActionRulesFinance.ts` and the setup-write
+ * in `apps/api/src/lib/moduleRouteActionRulesFinance.ts` and the setup-write
  * routes; `--write-matrix` regenerates the file after a reviewed route change.
  *
  * The inject suite `accountingRouteSecurityMatrix.test.ts` pins the denials, so a

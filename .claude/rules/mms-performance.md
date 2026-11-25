@@ -1,10 +1,10 @@
 ---
 description: Performance rules, query optimization, render hygiene, caching, streaming, and DOM virtualization
 paths:
-  - "apps/backend/src/lib/redis.ts"
-  - "apps/backend/src/worker/**"
-  - "apps/frontend/src/components/common/data-table/**"
-  - "apps/frontend/src/lib/queryClient.ts"
+  - "apps/api/src/lib/redis.ts"
+  - "apps/api/src/worker/**"
+  - "packages/fe-core/src/components/data-table/**"
+  - "packages/fe-core/src/query/queryClient.ts"
 ---
 
 # MMS Performance & Resource Efficiency Rules

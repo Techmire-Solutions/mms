@@ -1,0 +1,54 @@
+import { useMemo } from "react";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import type { SessionStatus } from "../lib/sessionPageTypes";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import { SEMANTIC_BADGE } from "@mms/fe-core/ui/semanticTone";
+import { sessionLifecycleDisplay } from "./sessionLifecycleDisplay";
+
+interface UseSessionDisplayConfigParams {
+  types: string[];
+  t: TranslationFunction;
+}
+
+export function useSessionDisplayConfig({ types, t }: UseSessionDisplayConfigParams) {
+  // Derived once per locale/catalog change: stable identities keep StatusBadge config lookups
+  // in table/card rows stable across keystroke-driven controller re-renders.
+  return useMemo(() => {
+    const lifecycle = sessionLifecycleDisplay(t);
+    const statusOptions: SessionStatus[] = lifecycle.statusOptions;
+    // Program names from the tenant catalog (Sessions → Setup → Programs).
+    const typeOptions = types;
+
+    const statusLabels: Record<string, string> = lifecycle.statusLabels;
+
+    const typeLabels = (() => {
+      const sessionTypeLabelsByValue: Record<string, string> = {};
+      for (const typeOption of typeOptions) {
+        sessionTypeLabelsByValue[typeOption] = typeOption;
+      }
+      return sessionTypeLabelsByValue;
+    })();
+
+    const statusConfig = lifecycle.statusConfig;
+
+    const typeConfig = (() => {
+      const config: Record<string, StatusBadgeConfigItem> = {};
+      for (const [typeValue, label] of Object.entries(typeLabels)) {
+        config[typeValue] = {
+          label,
+          cls: SEMANTIC_BADGE.info,
+        };
+      }
+      return config;
+    })() as Record<string, StatusBadgeConfigItem>;
+
+    return {
+      statusOptions,
+      typeOptions,
+      statusLabels,
+      typeLabels,
+      statusConfig,
+      typeConfig,
+    };
+  }, [t, types]);
+}

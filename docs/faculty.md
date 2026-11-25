@@ -169,7 +169,7 @@ WHERE deleted_at IS NOT NULL;
 
 ### 3.3 PostgreSQL 16 Recursive CTEs with Cycle Detection
 
-Org-chart supervisor and subordinate traversals are executed in [`apps/backend/src/db/repositories/facultyHierarchySql.ts`](../apps/backend/src/db/repositories/facultyHierarchySql.ts) using parameterized SQL queries with safety barriers:
+Org-chart supervisor and subordinate traversals are executed in [`apps/backend/src/db/repositories/facultyHierarchySql.ts`](../packages/modules/faculty/src/backend/repository/db/facultyHierarchySql.ts) using parameterized SQL queries with safety barriers:
 
 ```sql
 WITH RECURSIVE eligible AS NOT MATERIALIZED (
@@ -230,14 +230,14 @@ ORDER BY depth, path;
 ### 3.4 Concurrency, Advisory Locks & Atomic ID Generation
 
 1. **Hierarchy Mutation Advisory Lock:**
-   Mutations to assignments, departments, and reporting relationships acquire a PostgreSQL tenant-scoped advisory lock ([`lockFacultyHierarchy`](../apps/backend/src/db/repositories/facultyAssignmentValidation.ts)):
+   Mutations to assignments, departments, and reporting relationships acquire a PostgreSQL tenant-scoped advisory lock ([`lockFacultyHierarchy`](../packages/modules/faculty/src/backend/repository/db/facultyAssignmentValidation.ts)):
    ```ts
    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${subdomain || 'tenant'} || ':faculty_hierarchy'))`);
    ```
    This prevents concurrent requests from slipping past cycle validations or creating overlapping active primary assignments.
 
 2. **Atomic Employee ID Generator:**
-   Implemented in [`facultyEmployeeIdGenerator.ts`](../apps/backend/src/faculty/use-cases/facultyEmployeeIdGenerator.ts):
+   Implemented in [`facultyEmployeeIdGenerator.ts`](../packages/modules/faculty/src/backend/use-cases/facultyEmployeeIdGenerator.ts):
    - Acquires a row lock using `SELECT ... FROM faculty_setup_config WHERE workspace_subdomain = $1 FOR UPDATE`.
    - Checks `lastYear === currentYear`. If the calendar year has rolled over, resets `currentSequence` to 1.
    - Atomically updates `currentSequence = currentSequence + 1` and returns the formatted identifier (e.g., `FAC-2026-0042`).
@@ -252,22 +252,22 @@ The backend exposes canonical endpoints under `/api/faculty`, `/api/tenant/facul
 
 | Sub-Route Plugin | Responsibility | File Path |
 |---|---|---|
-| [`facultyCrudRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultyCrudRoutes.ts) | Main CRUD, single item fetch, list pagination, duplicate check | [`facultyCrudRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultyCrudRoutes.ts) |
-| [`facultyMutationRouteHandlers.ts`](../apps/backend/src/routes/tenant/faculty/facultyMutationRouteHandlers.ts) | Create, Update, Soft-delete, Bulk Status, Bulk Specialization | [`facultyMutationRouteHandlers.ts`](../apps/backend/src/routes/tenant/faculty/facultyMutationRouteHandlers.ts) |
-| [`facultyAssignmentRouteHandlers.ts`](../apps/backend/src/routes/tenant/faculty/facultyAssignmentRouteHandlers.ts) | Temporal appointments, close assignment, manager/subordinate trees | [`facultyAssignmentRouteHandlers.ts`](../apps/backend/src/routes/tenant/faculty/facultyAssignmentRouteHandlers.ts) |
-| [`facultyDepartmentRouteHandlers.ts`](../apps/backend/src/routes/tenant/faculty/facultyDepartmentRouteHandlers.ts) | Department catalog list, save, delete (guarded against active assignments) | [`facultyDepartmentRouteHandlers.ts`](../apps/backend/src/routes/tenant/faculty/facultyDepartmentRouteHandlers.ts) |
-| [`facultyDesignationRouteHandlers.ts`](../apps/backend/src/routes/tenant/faculty/facultyDesignationRouteHandlers.ts) | Designation catalog list, save, delete, assignment history | [`facultyDesignationRouteHandlers.ts`](../apps/backend/src/routes/tenant/faculty/facultyDesignationRouteHandlers.ts) |
-| [`facultyAggregateRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultyAggregateRoutes.ts) | Widget aggregates, command metrics | [`facultyAggregateRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultyAggregateRoutes.ts) |
-| [`facultySetupConfigRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultySetupConfigRoutes.ts) | Preferences, field configurations, auto-ID sequence config | [`facultySetupConfigRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultySetupConfigRoutes.ts) |
-| [`facultySoftDeleteRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultySoftDeleteRoutes.ts) | Restore single, bulk restore, bulk soft-delete | [`facultySoftDeleteRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultySoftDeleteRoutes.ts) |
-| [`facultyExportRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultyExportRoutes.ts) | Server-side streamed CSV export, export audit logging | [`facultyExportRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultyExportRoutes.ts) |
-| [`facultyLookupRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultyLookupRoutes.ts) | Option lookups (specializations, titles, statuses) | [`facultyLookupRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultyLookupRoutes.ts) |
+| [`facultyCrudRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultyCrudRoutes.ts) | Main CRUD, single item fetch, list pagination, duplicate check | [`facultyCrudRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultyCrudRoutes.ts) |
+| [`facultyMutationRouteHandlers.ts`](../packages/modules/faculty/src/backend/routes/facultyMutationRouteHandlers.ts) | Create, Update, Soft-delete, Bulk Status, Bulk Specialization | [`facultyMutationRouteHandlers.ts`](../packages/modules/faculty/src/backend/routes/facultyMutationRouteHandlers.ts) |
+| [`facultyAssignmentRouteHandlers.ts`](../packages/modules/faculty/src/backend/routes/facultyAssignmentRouteHandlers.ts) | Temporal appointments, close assignment, manager/subordinate trees | [`facultyAssignmentRouteHandlers.ts`](../packages/modules/faculty/src/backend/routes/facultyAssignmentRouteHandlers.ts) |
+| [`facultyDepartmentRouteHandlers.ts`](../packages/modules/faculty/src/backend/routes/facultyDepartmentRouteHandlers.ts) | Department catalog list, save, delete (guarded against active assignments) | [`facultyDepartmentRouteHandlers.ts`](../packages/modules/faculty/src/backend/routes/facultyDepartmentRouteHandlers.ts) |
+| [`facultyDesignationRouteHandlers.ts`](../packages/modules/faculty/src/backend/routes/facultyDesignationRouteHandlers.ts) | Designation catalog list, save, delete, assignment history | [`facultyDesignationRouteHandlers.ts`](../packages/modules/faculty/src/backend/routes/facultyDesignationRouteHandlers.ts) |
+| [`facultyAggregateRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultyAggregateRoutes.ts) | Widget aggregates, command metrics | [`facultyAggregateRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultyAggregateRoutes.ts) |
+| [`facultySetupConfigRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultySetupConfigRoutes.ts) | Preferences, field configurations, auto-ID sequence config | [`facultySetupConfigRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultySetupConfigRoutes.ts) |
+| [`facultySoftDeleteRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultySoftDeleteRoutes.ts) | Restore single, bulk restore, bulk soft-delete | [`facultySoftDeleteRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultySoftDeleteRoutes.ts) |
+| [`facultyExportRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultyExportRoutes.ts) | Server-side streamed CSV export, export audit logging | [`facultyExportRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultyExportRoutes.ts) |
+| [`facultyLookupRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultyLookupRoutes.ts) | Option lookups (specializations, titles, statuses) | [`facultyLookupRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultyLookupRoutes.ts) |
 
 ### 4.2 Clean Architecture Use-Cases & Repository Pattern
 
-Business logic is completely isolated from HTTP concerns in [`apps/backend/src/faculty/use-cases/`](../apps/backend/src/faculty/use-cases):
-- **Composition Root ([`facultyUseCases.ts`](../apps/backend/src/faculty/use-cases/facultyUseCases.ts)):** Injects `FacultyRepository` into use-cases, allowing unit tests to run fakes in memory without spinning up database transactions.
-- **Write Use-Cases ([`facultyWriteUseCases.ts`](../apps/backend/src/faculty/use-cases/facultyWriteUseCases.ts)):**
+Business logic is completely isolated from HTTP concerns in [`apps/backend/src/faculty/use-cases/`](../packages/modules/faculty/src/backend/use-cases):
+- **Composition Root ([`facultyUseCases.ts`](../packages/modules/faculty/src/backend/use-cases/facultyUseCases.ts)):** Injects `FacultyRepository` into use-cases, allowing unit tests to run fakes in memory without spinning up database transactions.
+- **Write Use-Cases ([`facultyWriteUseCases.ts`](../packages/modules/faculty/src/backend/use-cases/facultyWriteUseCases.ts)):**
   1. Enforces tenant RLS via `withTenant(subdomain, ...)`.
   2. Strips contact personal data (`stripFacultyWriteNoise`) to enforce Contacts SSOT.
   3. Validates supervisory seniority: verifies supervisor rank < subordinate rank (lower number = higher authority).
@@ -290,13 +290,13 @@ The shared package maintains single sources of truth for both frontend and backe
 ### 5.2 Pure Utilities & Helpers
 - **[`formatDeterministicEmployeeId`](../packages/contracts/src/faculty/facultyUtils.ts):** Formats sequences with zero-padding and configurable date formats (`YYYY`, `YY`, `NONE`).
 - **[`stripFacultyWriteNoise`](../packages/contracts/src/faculty/facultyUtils.ts):** Strips personal contact fields (`firstName`, `lastName`, `phone`, `email`, `nationalId`, `avatarUrl`) from writes before they hit the faculty table.
-- **[`resolveFacultyDisplayName`](../apps/frontend/src/tenant/features/faculty/lib/facultyFieldDisplay.ts):** Gracefully resolves a display name across linked Contact models, legacy profile names, or localized placeholder fallbacks.
+- **[`resolveFacultyDisplayName`](../packages/modules/faculty/src/frontend/tenant/lib/facultyFieldDisplay.ts):** Gracefully resolves a display name across linked Contact models, legacy profile names, or localized placeholder fallbacks.
 
 ### 5.3 Standardized Data Transfer & Symmetrical CSV Schemas (`@mms/shared`)
 Faculty data transfer implements the monorepo's DRY, symmetric SSOT transfer architecture:
 - **[`facultyTransferSchema`](../packages/contracts/src/dataTransfer/schemas/facultyTransferSchema.ts):** Unified schema for Faculty Member CSV export and import. Enforces strict Field Whitelist by stripping internal metadata (`id`, `tenantId`, `createdAt`, `updatedAt`, `deletedAt`). Guaranteed 1:1 header symmetry between exported columns and import mappings.
 - **[`facultyDesignationTransferSchema`](../packages/contracts/src/dataTransfer/schemas/facultyDesignationTransferSchema.ts):** Unified SSOT schema for Faculty Designation CSV export, import mappings, and template generation.
-- **Frontend Dialog Integration ([`FacultyCsvImportDialog.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultyCsvImportDialog.tsx)):** Employs the generic [`ModuleImportDialog`](../apps/frontend/src/components/app/ModuleImportDialog.tsx) driven by `useModuleCsvImportActions`, consuming schemas without ad-hoc mapping duplication.
+- **Frontend Dialog Integration ([`FacultyCsvImportDialog.tsx`](../packages/modules/faculty/src/frontend/tenant/components/FacultyCsvImportDialog.tsx)):** Employs the generic [`ModuleImportDialog`](../packages/fe-core/src/components/ModuleImportDialog.tsx) driven by `useModuleCsvImportActions`, consuming schemas without ad-hoc mapping duplication.
 
 ---
 
@@ -322,18 +322,18 @@ The user interface follows the **Three-Tier Command Centre** model:
 +---------------------------------------------------------------------------------------+
 ```
 
-#### Tier 1: Work Tier ([`FacultyWorkTier.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultyWorkTier.tsx))
+#### Tier 1: Work Tier ([`FacultyWorkTier.tsx`](../packages/modules/faculty/src/frontend/tenant/components/FacultyWorkTier.tsx))
 - **Dual Presentation Views:** High-density desktop table (`FacultyListTable`) and mobile-optimized responsive card grid (`FacultyCardItem`).
 - **Filter Engine:** Debounced search, status pill toggles, specialization filters, gender filters, active filter chips (`FilterChips`), and clear-all actions.
-- **Bulk Operations:** Multi-row checkbox selection triggering [`FacultyBulkActionBar.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultyBulkActionBar.tsx) for batch status updates, specialization updates, batch soft-deleting, or batch printing ID cards.
-- **Detail Drawer ([`FacultyDetail.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultyDetail.tsx)):** Non-disruptive slide-over sheet containing identity hero cards, quick communication actions (SMS/WhatsApp via centralized `openComposer`), academic details, session class assignments, designation timeline, and audit stamps.
-- **Laminated ID Card Generator ([`FacultyIdCardModal.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultyIdCardModal.tsx)):** Single or batch printable ID cards styled with Tailwind CSS, high-contrast typography, user avatars, barcode/ID placeholders, and `@media print` CSS rules for direct physical printing.
+- **Bulk Operations:** Multi-row checkbox selection triggering [`FacultyBulkActionBar.tsx`](../packages/modules/faculty/src/frontend/tenant/components/FacultyBulkActionBar.tsx) for batch status updates, specialization updates, batch soft-deleting, or batch printing ID cards.
+- **Detail Drawer ([`FacultyDetail.tsx`](../packages/modules/faculty/src/frontend/tenant/components/FacultyDetail.tsx)):** Non-disruptive slide-over sheet containing identity hero cards, quick communication actions (SMS/WhatsApp via centralized `openComposer`), academic details, session class assignments, designation timeline, and audit stamps.
+- **Laminated ID Card Generator ([`FacultyIdCardModal.tsx`](../packages/modules/faculty/src/frontend/tenant/components/FacultyIdCardModal.tsx)):** Single or batch printable ID cards styled with Tailwind CSS, high-contrast typography, user avatars, barcode/ID placeholders, and `@media print` CSS rules for direct physical printing.
 
-#### Tier 2: Reports Tier ([`FacultyReportsTier.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultyReportsTier.tsx))
+#### Tier 2: Reports Tier ([`FacultyReportsTier.tsx`](../packages/modules/faculty/src/frontend/tenant/components/FacultyReportsTier.tsx))
 - Code-split via `React.lazy` and `Suspense`.
 - Integrates `KPISummary` and `ModuleReports` widgets showing staffing distribution, teacher-student ratios, qualification percentages, and scheduled classes.
 
-#### Tier 3: Setup Tier ([`FacultySetupTier.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultySetupTier.tsx))
+#### Tier 3: Setup Tier ([`FacultySetupTier.tsx`](../packages/modules/faculty/src/frontend/tenant/components/FacultySetupTier.tsx))
 - Code-split with read-only permission enforcement (`canEditSetup`).
 - **Institutional Preferences:** Configures employee ID generation rules (prefix, delimiter, year format, sequence padding) with live interactive preview.
 - **Department Catalog Manager:** In-place creation, editing, and soft-deletion of departments with parent hierarchy selectors and department head assignments.
@@ -341,7 +341,7 @@ The user interface follows the **Three-Tier Command Centre** model:
 
 ---
 
-### 6.2 Static Form Modal Architecture ([`FacultyForm.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultyForm.tsx))
+### 6.2 Static Form Modal Architecture ([`FacultyForm.tsx`](../packages/modules/faculty/src/frontend/tenant/components/FacultyForm.tsx))
 
 The modal adheres to the MMS Form Modal specification:
 - **5 Structured Tabs:**
@@ -350,16 +350,16 @@ The modal adheres to the MMS Form Modal specification:
   3. **Designation & Hierarchy:** Department selector, designation selector, supervisor/manager picker, and authority rank presets.
   4. **User Account:** Optional inline provisioning of system login accounts (`tenantUsers`) with role assignment and credentials.
   5. **Notes & Custom Fields:** Unstructured observations and tenant-configured custom fields.
-- **Validation Scroll & Tab Switching:** If submission fails validation, [`useFacultyFormTabs`](../apps/frontend/src/tenant/features/faculty/lib/facultyFormTabs.ts) detects which tab owns the invalid field, switches to it automatically, and focuses the offending input element.
+- **Validation Scroll & Tab Switching:** If submission fails validation, [`useFacultyFormTabs`](../packages/modules/faculty/src/frontend/tenant/lib/facultyFormTabs.ts) detects which tab owns the invalid field, switches to it automatically, and focuses the offending input element.
 - **Duplicate Prevention:** Invokes `/api/faculty/duplicate-check` to identify if a contact or employee ID is already assigned, displaying a `ConfirmAlertDialog` if ambiguous.
 
 ---
 
 ### 6.3 TanStack Query v5 & Facade Architecture
 
-Data fetching hooks are consolidated in [`@/tenant/hooks/collections/faculty.ts`](../apps/frontend/src/tenant/hooks/collections/faculty.ts) as a stable facade:
+Data fetching hooks are consolidated in [`@/tenant/hooks/collections/faculty.ts`](../apps/tenant-web/src/tenant/hooks/collections/faculty.ts) as a stable facade:
 - **Deterministic Query Keys:** Standardized tuple hierarchy `['tenant', 'faculty', subkey, ...]`.
-- **Cache Invalidation:** Calling [`invalidateFacultyQueries(queryClient)`](../apps/frontend/src/tenant/features/faculty/hooks/invalidateFacultyQueries.ts) synchronizes work lists, metric counters, widget aggregates, and lookup caches.
+- **Cache Invalidation:** Calling [`invalidateFacultyQueries(queryClient)`](../packages/modules/faculty/src/frontend/tenant/hooks/invalidateFacultyQueries.ts) synchronizes work lists, metric counters, widget aggregates, and lookup caches.
 - **Background Paging for Export:** `fetchAllFacultyForQuery` pages sequentially up to 100,000 records with progress callbacks, preventing browser OOM crashes.
 
 ---
@@ -379,7 +379,7 @@ The frontend avoids hardcoded directional CSS (`left`, `right`, `ml-`, `mr-`, `p
 
 ### 7.3 Accessibility (WCAG 2.1 AA)
 - **Touch Targets:** Minimum 44×44px interactive tap area (`min-h-11`, `min-w-11`) across all buttons, dropdown items, and table action icons.
-- **Keyboard Navigation:** Full tab trapping in `FormModal` and `Modal`, escape key dismissals, and shortcut bindings via [`useFacultyKeyboardShortcuts`](../apps/frontend/src/tenant/features/faculty/hooks/useFacultyKeyboardShortcuts.ts) (`Cmd+K`/`Ctrl+K` search, `C` create, `X` clear selection).
+- **Keyboard Navigation:** Full tab trapping in `FormModal` and `Modal`, escape key dismissals, and shortcut bindings via [`useFacultyKeyboardShortcuts`](../packages/modules/faculty/src/frontend/tenant/hooks/useFacultyKeyboardShortcuts.ts) (`Cmd+K`/`Ctrl+K` search, `C` create, `X` clear selection).
 - **Screen Reader Support:** Semantic tables, `aria-expanded`, `aria-busy` indicators during background server fetching, and accessible labels on all icon-only buttons.
 
 ---
@@ -397,10 +397,10 @@ The Faculty module is covered by automated unit, integration, and database tests
 | Static Types | TypeScript (`pnpm typecheck`) | 4 workspaces | Zero errors | **Clean Pass** |
 
 ### Key Regression Suites
-1. **Hierarchy Cycle Tests ([`facultyAssignmentsHierarchy.integration.test.ts`](../apps/backend/src/__tests__/facultyHierarchy.integration.test.ts)):** Verifies multi-node cycle detection (A → B → C → A), depth limits, and self-reporting rejection.
-2. **Contact SSOT Integration ([`facultyContactSqlSsot.test.ts`](../apps/backend/src/__tests__/facultyContactSqlSsot.test.ts)):** Verifies that personal data updates in `contacts` reflect immediately in faculty queries without dual-writing.
-3. **Soft-Delete Lifecycle ([`facultySoftDelete.integration.test.ts`](../apps/backend/src/__tests__/facultySoftDelete.integration.test.ts)):** Verifies trash indexing, cascade soft-delete of active assignments, outbox event generation, and single/bulk restoration.
-4. **Form Validation & Tab Switching ([`FacultyFormValidationScroll.test.tsx`](../apps/frontend/src/tenant/features/faculty/components/FacultyFormValidationScroll.test.tsx)):** Verifies that client errors focus the exact tab and field.
+1. **Hierarchy Cycle Tests ([`facultyAssignmentsHierarchy.integration.test.ts`](../apps/api/src/__tests__/facultyHierarchy.integration.test.ts)):** Verifies multi-node cycle detection (A → B → C → A), depth limits, and self-reporting rejection.
+2. **Contact SSOT Integration ([`facultyContactSqlSsot.test.ts`](../packages/modules/faculty/src/backend/__tests__/facultyContactSqlSsot.test.ts)):** Verifies that personal data updates in `contacts` reflect immediately in faculty queries without dual-writing.
+3. **Soft-Delete Lifecycle ([`facultySoftDelete.integration.test.ts`](../apps/api/src/__tests__/facultySoftDelete.integration.test.ts)):** Verifies trash indexing, cascade soft-delete of active assignments, outbox event generation, and single/bulk restoration.
+4. **Form Validation & Tab Switching ([`FacultyFormValidationScroll.test.tsx`](../packages/modules/faculty/src/frontend/tenant/components/FacultyFormValidationScroll.test.tsx)):** Verifies that client errors focus the exact tab and field.
 
 ---
 
@@ -413,7 +413,7 @@ The Faculty module is covered by automated unit, integration, and database tests
 
 ### 9.2 Technical Debt & Future Optimization Notes
 1. **Legacy Backup Hydrator Check Warning:**
-   - Running `node scripts/check-faculty-domain.mjs` identifies legacy string mentions of `hydrateFacultySetupFromLegacyBackup` in historical migration files ([`005_normalize_teacher_contacts.ts`](../apps/backend/src/db/migrations/005_normalize_teacher_contacts.ts) etc.).
+   - Running `node scripts/check-faculty-domain.mjs` identifies legacy string mentions of `hydrateFacultySetupFromLegacyBackup` in historical migration files ([`005_normalize_teacher_contacts.ts`](../apps/api/src/db/migrations/005_normalize_teacher_contacts.ts) etc.).
    - *Recommendation:* Keep these legacy references in historical migrations as immutable audit records; update the checker script if historical migrations should be exempt.
 2. **UUID Identifier Migration:**
    - Currently, `workspaces.id` and `contacts.id` use text/nanoid strings. An enterprise roadmap milestone is planned to transition tenant primary keys to sequential UUIDv7. The Faculty schema is prepared with isolated column mapping definitions.

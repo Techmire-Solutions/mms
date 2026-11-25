@@ -1,0 +1,45 @@
+import { createModuleQueryInvalidator } from "@mms/fe-core/query/createModuleQueryInvalidator";
+import { invalidateAccountingQueries } from "../host/accountingCollection";
+import { invalidateDashboardDataQueries } from "@mms/fe-core/query/dashboardDataInvalidation";
+import {
+  FINANCE_FEE_STRUCTURES_QUERY_KEY,
+  FINANCE_INVOICES_QUERY_KEY,
+  FINANCE_METRICS_QUERY_KEY,
+  FINANCE_PAYMENTS_QUERY_KEY,
+  FINANCE_CONTRACT_PREFERENCES_QUERY_KEY,
+  FINANCE_REPORT_AGGREGATES_QUERY_KEY,
+} from "./financeQueryKeys";
+
+/**
+ * Invalidate Finance invoices/payments/fee-structures/metrics/report-aggregates/setup keys.
+ * Fee structures are a setup read that the backend broadcasts independently
+ * (`finance_fee_structures`), so they must be part of the module's invalidation set.
+ */
+const invalidateFinanceModuleQueries = createModuleQueryInvalidator({
+  list: FINANCE_INVOICES_QUERY_KEY,
+  lists: [
+    FINANCE_PAYMENTS_QUERY_KEY,
+    FINANCE_REPORT_AGGREGATES_QUERY_KEY,
+    FINANCE_FEE_STRUCTURES_QUERY_KEY,
+  ],
+  metrics: FINANCE_METRICS_QUERY_KEY,
+  preferences: FINANCE_CONTRACT_PREFERENCES_QUERY_KEY,
+});
+
+/**
+ * Invalidate every query a Finance mutation can affect.
+ *
+ * Invoice/payment/credit/reversal writes post ledger entries, so the Accounting
+ * caches (entries, Trial Balance/BS/IS aggregates, metrics, General Ledger,
+ * receivables aging — all nested under the accounting prefixes) and the dashboard
+ * data are refreshed for the acting client even before the websocket echo lands.
+ * Accounting must never call back into Finance: a ledger write leaves invoices and
+ * payments unchanged, so there is no cycle.
+ */
+export function invalidateFinanceQueries(
+  queryClient: Parameters<typeof invalidateFinanceModuleQueries>[0],
+): void {
+  invalidateFinanceModuleQueries(queryClient);
+  invalidateAccountingQueries(queryClient);
+  invalidateDashboardDataQueries(queryClient);
+}

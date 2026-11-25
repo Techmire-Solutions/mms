@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { useBodyScrollLock } from "./useBodyScrollLock";
 import { useFocusTrap } from "./useFocusTrap";
 import { isAnotherLayerFocused, isTopmostOverlayLayer, useOverlayLayer } from "./overlayStack";
@@ -44,12 +44,18 @@ export function useOverlayBehavior<T extends HTMLElement = HTMLElement>({
   // read) so the layer stack key survives every re-render of the overlay.
   const [layerId] = useState(() => Symbol("overlay-layer"));
 
+  const hasOnClose = Boolean(onClose);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   // A non-dismissible overlay still participates in the layer stack: it blocks
   // Escape from reaching the overlays underneath it.
   useOverlayLayer(layerId, open && dismissible);
 
   useEffect(() => {
-    if (!open || !onClose || !dismissible) return;
+    if (!open || !hasOnClose || !dismissible) return;
 
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== "Escape") return;
@@ -59,12 +65,12 @@ export function useOverlayBehavior<T extends HTMLElement = HTMLElement>({
       // focus out of this container; an Escape aimed at one of those must not
       // reach us even though they are not in the registry.
       if (isAnotherLayerFocused(containerRef.current)) return;
-      onClose();
+      onCloseRef.current?.();
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose, containerRef, dismissible, layerId]);
+  }, [open, hasOnClose, containerRef, dismissible, layerId]);
 
   return containerRef;
 }

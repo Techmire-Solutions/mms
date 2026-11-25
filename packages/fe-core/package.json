@@ -92,6 +92,7 @@
     "./components/FormSelectWithQuickCreate": "./src/components/FormSelectWithQuickCreate.tsx",
     "./components/FormCardChrome": "./src/components/FormCardChrome.tsx",
     "./hooks": "./src/hooks/index.ts",
+    "./hooks/*": "./src/hooks/*.ts",
     "./components/ModuleSetupSaveFooter": "./src/components/ModuleSetupSaveFooter.tsx",
     "./components/ListPagination": "./src/components/ListPagination.tsx",
     "./ui/semanticTone": "./src/ui/semanticTone.ts",
@@ -235,10 +236,109 @@
     "./routing/RouteStatusFallback": "./src/routing/RouteStatusFallback.tsx",
     "./forms/TranslatedFormMessage": "./src/forms/TranslatedFormMessage.tsx",
     "./lib/*": "./src/lib/*.ts",
-    "./package.json": "./package.json",
     "./components/workTaskToolbarTypes": "./src/components/workTaskToolbarTypes.ts",
     "./components/WorkTaskToolbar": "./src/components/WorkTaskToolbar.tsx",
-    "./components/data-table": "./src/components/data-table/index.ts"
+    "./components/data-table": "./src/components/data-table/index.ts",
+    "./components/entityDescriptorRenderers": {
+      "import": "./src/components/entityDescriptorRenderers.tsx",
+      "types": "./src/components/entityDescriptorRenderers.tsx"
+    },
+    "./components/entityDescriptorFactory": {
+      "import": "./src/components/entityDescriptorFactory.tsx",
+      "types": "./src/components/entityDescriptorFactory.tsx"
+    },
+    "./components/CopyButton": {
+      "import": "./src/components/CopyButton.tsx",
+      "types": "./src/components/CopyButton.tsx"
+    },
+    "./components/EntityMessagingActions": {
+      "import": "./src/components/EntityMessagingActions.tsx",
+      "types": "./src/components/EntityMessagingActions.tsx"
+    },
+    "./components/OptionSelectPopover": {
+      "import": "./src/components/OptionSelectPopover.tsx",
+      "types": "./src/components/OptionSelectPopover.tsx"
+    },
+    "./components/EditableSelect": {
+      "import": "./src/components/EditableSelect.tsx",
+      "types": "./src/components/EditableSelect.tsx"
+    },
+    "./components/FormPrimitives": {
+      "import": "./src/components/FormPrimitives.tsx",
+      "types": "./src/components/FormPrimitives.tsx"
+    },
+    "./components/RegistryCustomFieldControl": {
+      "import": "./src/components/RegistryCustomFieldControl.tsx",
+      "types": "./src/components/RegistryCustomFieldControl.tsx"
+    },
+    "./components/RegistryCustomFieldsGrid": {
+      "import": "./src/components/RegistryCustomFieldsGrid.tsx",
+      "types": "./src/components/RegistryCustomFieldsGrid.tsx"
+    },
+    "./components/PersonIdentityMeta": {
+      "import": "./src/components/PersonIdentityMeta.tsx",
+      "types": "./src/components/PersonIdentityMeta.tsx"
+    },
+    "./components/PersonDetailHeroCard": {
+      "import": "./src/components/PersonDetailHeroCard.tsx",
+      "types": "./src/components/PersonDetailHeroCard.tsx"
+    },
+    "./components/PersonMessagingRowActionsExtras": {
+      "import": "./src/components/PersonMessagingRowActionsExtras.tsx",
+      "types": "./src/components/PersonMessagingRowActionsExtras.tsx"
+    },
+    "./components/DrawerUpdatedStamp": {
+      "import": "./src/components/DrawerUpdatedStamp.tsx",
+      "types": "./src/components/DrawerUpdatedStamp.tsx"
+    },
+    "./components/ModuleOverlayLoadingChrome": {
+      "import": "./src/components/ModuleOverlayLoadingChrome.tsx",
+      "types": "./src/components/ModuleOverlayLoadingChrome.tsx"
+    },
+    "./components/ModuleWorkListStateShell": {
+      "import": "./src/components/ModuleWorkListStateShell.tsx",
+      "types": "./src/components/ModuleWorkListStateShell.tsx"
+    },
+    "./components/AvatarCropper": {
+      "import": "./src/components/AvatarCropper.tsx",
+      "types": "./src/components/AvatarCropper.tsx"
+    },
+    "./components/AppFooter": "./src/components/AppFooter.tsx",
+    "./components/BackgroundJobsTray": "./src/components/BackgroundJobsTray.tsx",
+    "./components/ChannelBadge": "./src/components/ChannelBadge.tsx",
+    "./components/CommandPaletteModal": "./src/components/CommandPaletteModal.tsx",
+    "./components/DateFormatSelect": "./src/components/DateFormatSelect.tsx",
+    "./components/DateTimePicker": "./src/components/DateTimePicker.tsx",
+    "./components/EntityNotesFormSection": "./src/components/EntityNotesFormSection.tsx",
+    "./components/NetworkStatusIndicator": "./src/components/NetworkStatusIndicator.tsx",
+    "./components/OtpInput": "./src/components/OtpInput.tsx",
+    "./components/PageHelpCallout": "./src/components/PageHelpCallout.tsx",
+    "./components/PasswordInput": "./src/components/PasswordInput.tsx",
+    "./components/PasswordStrengthMeter": "./src/components/PasswordStrengthMeter.tsx",
+    "./components/SearchableSelectField": "./src/components/SearchableSelectField.tsx",
+    "./components/SettingsAdminOnlyNotice": "./src/components/SettingsAdminOnlyNotice.tsx",
+    "./components/SettingsFormActions": "./src/components/SettingsFormActions.tsx",
+    "./components/SettingsShell": "./src/components/SettingsShell.tsx",
+    "./components/SkipToContentLink": "./src/components/SkipToContentLink.tsx",
+    "./components/StatCardBody": "./src/components/StatCardBody.tsx",
+    "./components/TimezoneSelect": "./src/components/TimezoneSelect.tsx",
+    "./components/AppShell": "./src/components/AppShell.tsx",
+    "./components/MobileSidebarDrawer": "./src/components/MobileSidebarDrawer.tsx",
+    "./components/SectionFilterField": "./src/components/SectionFilterField.tsx",
+    "./components/WorkingDaysPicker": "./src/components/WorkingDaysPicker.tsx",
+    "./components/TimezoneSelectPopoverContent": {
+      "import": "./src/components/TimezoneSelectPopoverContent.tsx",
+      "types": "./src/components/TimezoneSelectPopoverContent.tsx"
+    },
+    "./ui/brandingChartPalette": "./src/ui/brandingChartPalette.ts",
+    "./ui/denominationColors": "./src/ui/denominationColors.ts",
+    "./components/useStaticEntityDescriptor": {
+      "import": "./src/components/useStaticEntityDescriptor.ts",
+      "types": "./src/components/useStaticEntityDescriptor.ts"
+    },
+    "./ui/moduleStatusUi": "./src/ui/moduleStatusUi.ts",
+    "./components/sequence-numbering": "./src/components/sequence-numbering/index.ts",
+    "./package.json": "./package.json"
   },
   "scripts": {
     "build": "tsc --noEmit -p tsconfig.json",
@@ -251,6 +351,7 @@
     "@jsquash/webp": "1.5.0",
     "@mms/contracts": "workspace:*",
     "@mms/ui": "workspace:*",
+    "@photostructure/tz-lookup": "^11.8.0",
     "@radix-ui/react-tabs": "^1.2.1",
     "@sentry/react": "^11.17.0",
     "@tanstack/react-query": "catalog:",

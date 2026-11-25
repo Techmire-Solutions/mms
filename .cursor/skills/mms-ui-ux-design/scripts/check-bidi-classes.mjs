@@ -82,7 +82,7 @@ function scanPath(targetPath, fileList = []) {
   return fileList;
 }
 
-const targetPath = resolve(process.argv[2] || 'apps/frontend/src');
+const targetPath = resolve(process.argv[2] || 'apps/tenant-web/src');
 console.log(`Scanning for banned physical directional classes in: ${targetPath}`);
 
 const files = scanPath(targetPath);

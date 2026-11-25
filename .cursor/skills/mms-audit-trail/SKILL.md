@@ -1,6 +1,6 @@
 ---
 name: mms-audit-trail
-description: Implements or audits the database audit trail — RFC 8785 canonical JSON, sharded hash chains, crypto-shredding, monthly partitions, and outbox capture. Use when tracking entity mutations, compliance exports, or right-to-erasure events. Do NOT use for transient error logging (use Pino in mms-backend-api), soft-delete trash recovery (use mms-soft-delete), or financial invoice posting (use mms-finance-accounting).
+description: Implements/audits the DB audit trail (RFC 8785 JSON, sharded hash chains, crypto-shredding, partitions, outbox). Use when mutation tracking, compliance exports, erasure. Do NOT use for error logging (use mms-backend-api), soft-delete (use mms-soft-delete), or invoicing (use mms-finance-accounting).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -90,10 +90,10 @@ Advisory procedure when erasure is applicable and authorized:
 
 ```bash
 # Verify TypeScript type correctness across audit services
-pnpm --filter mms-backend typecheck
+pnpm --filter mms-api typecheck
 
 # Run backend inject tests for audit and entity mutations
-pnpm --filter mms-backend test
+pnpm --filter mms-api test
 ```
 
 - [ ] All audit events are written within the same transaction as entity changes.

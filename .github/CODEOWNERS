@@ -2,8 +2,8 @@
 /.github/                                   @hasnainwasaya88
 /scripts/deploy-*.sh                        @hasnainwasaya88
 /packages/db/migrations_drizzle/   @hasnainwasaya88
-/apps/backend/src/middleware/authenticate*  @hasnainwasaya88
-/apps/backend/src/services/auth/            @hasnainwasaya88
+/apps/api/src/middleware/authenticate*  @hasnainwasaya88
+/apps/api/src/services/auth/            @hasnainwasaya88
 
 # Ratchets, quality gates, and the agent-standards source/mirror trees.
 # A baseline bump (scripts/check-*.mjs) or a direct mirror edit must be reviewed.

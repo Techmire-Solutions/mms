@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const backendDir = path.resolve(__dirname, "../../apps/backend");
+const backendDir = path.resolve(__dirname, "../../apps/api");
 
 export const E2E_PLATFORM_PERMISSIONS = [
   "workspaces",
@@ -31,7 +31,7 @@ function resolveDatabaseUrl(): string {
 
 /**
  * Sanitized `host:port/db` for the database the seeder will write to. The seeder
- * falls back to `apps/backend/.env` when `DATABASE_URL` is unset, so a backend
+ * falls back to `apps/api/.env` when `DATABASE_URL` is unset, so a backend
  * started against another database (e.g. a disposable one) silently diverges and
  * every login fails with "Invalid platform credentials". Printing the target makes
  * that mismatch obvious in the Playwright output.

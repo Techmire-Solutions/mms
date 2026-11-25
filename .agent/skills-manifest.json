@@ -143,6 +143,22 @@
       ]
     },
     {
+      "name": "mms-contacts",
+      "path": "skills/mms-contacts",
+      "keywords": [
+        "governs",
+        "contacts",
+        "person-directory",
+        "domain",
+        "person",
+        "ssot",
+        "contactid",
+        "linking",
+        "dedup",
+        "system"
+      ]
+    },
+    {
       "name": "mms-data-import",
       "path": "skills/mms-data-import",
       "keywords": [

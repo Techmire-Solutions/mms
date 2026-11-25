@@ -1,6 +1,6 @@
 ---
 name: antigravity-workspace
-description: Orients Antigravity agents to the MMS workspace layout — .agent rules, skills, workflows, and parity with Cursor, Claude Code, and DeepSeek Harness. Use when starting work in Antigravity, loading project context, or syncing agent standards. Do NOT use for local server operations (use mms-dev-setup) or code review checklists (use mms-code-review).
+description: Orients Antigravity agents to the MMS workspace (.agent rules/skills/workflows, mirror parity with Cursor/Claude/DSH). Use when starting in Antigravity or syncing agent standards. Do NOT use for local server ops (use mms-dev-setup) or code review (use mms-code-review).
 license: Proprietary
 metadata:
   owner: mms-platform

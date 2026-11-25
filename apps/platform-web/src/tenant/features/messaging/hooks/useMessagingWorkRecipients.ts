@@ -1,0 +1,113 @@
+import { useCallback } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type {
+  MessagingRoleFilter,
+  MessagingGenderFilter,
+  MessagingRecipientsPageResponse,
+  StandardMessagingRecipient,
+} from "@mms/contracts";
+import { MESSAGING_MODULE_MANIFEST } from "@mms/contracts";
+import { apiContract } from "@mms/fe-core/api/tsRest";
+import { ApiError } from "@mms/fe-core/api/client";
+import { useAuth } from "@mms/fe-core/auth/AuthContext";
+
+export const MESSAGING_RECIPIENTS_QUERY_KEY = ["messaging", "recipients"] as const;
+
+export interface UseMessagingWorkRecipientsParams {
+  roleFilter: MessagingRoleFilter;
+  genderFilter: MessagingGenderFilter;
+  search: string;
+  page: number;
+  pageSize?: number;
+  hasPhone?: boolean;
+  hasEmail?: boolean;
+  kind?: "phone" | "email";
+  enabled?: boolean;
+}
+
+export interface MessagingWorkRecipientsResult {
+  recipients: StandardMessagingRecipient[];
+  page: number;
+  total: number;
+  pageSize: number;
+  hasMore: boolean;
+  isError: boolean;
+  isPending: boolean;
+  isFetching: boolean;
+  refetch: () => void;
+}
+
+/**
+ * Work-tab recipients via GET /api/messaging/recipients (messaging RBAC + server pagination).
+ */
+export function useMessagingWorkRecipients(
+  params: UseMessagingWorkRecipientsParams,
+): MessagingWorkRecipientsResult {
+  const { isAuthenticated } = useAuth();
+  const pageSize = params.pageSize ?? MESSAGING_MODULE_MANIFEST.defaultPageSize;
+  const enabled = params.enabled !== false && isAuthenticated;
+  const role = params.roleFilter;
+  const gender = params.genderFilter;
+  const search = params.search.trim();
+  const page = params.page;
+  const hasPhone = params.kind === "phone" ? true : params.hasPhone;
+  const hasEmail = params.kind === "email" ? true : params.hasEmail;
+
+  const query = useQuery({
+    queryKey: [
+      ...MESSAGING_RECIPIENTS_QUERY_KEY,
+      role,
+      gender,
+      search,
+      hasPhone,
+      hasEmail,
+      page,
+      pageSize,
+    ] as const,
+    queryFn: async ({ signal }) => {
+      const response = await apiContract.messaging.listRecipients({
+        query: {
+          page,
+          pageSize,
+          ...(role !== "all" ? { role } : {}),
+          ...(gender !== "all" ? { gender } : {}),
+          ...(search ? { search } : {}),
+          ...(hasPhone ? { hasPhone: "true" } : {}),
+          ...(hasEmail ? { hasEmail: "true" } : {}),
+        },
+        signal,
+        fetchOptions: { signal },
+      });
+      if (response.status !== 200) {
+        const errorBody = response.body as { message?: string; type?: string } | undefined;
+        throw new ApiError(
+          response.status,
+          errorBody?.message ?? "Failed to load messaging recipients",
+          errorBody?.type,
+        );
+      }
+      return response.body as MessagingRecipientsPageResponse;
+    },
+    enabled,
+    staleTime: 15_000,
+    placeholderData: keepPreviousData,
+  });
+
+  const data = query.data;
+  const { refetch: queryRefetch } = query;
+  const refetch = useCallback((): void => {
+    void queryRefetch();
+  }, [queryRefetch]);
+
+  return {
+    recipients: data?.recipients ?? [],
+    page: data?.page ?? page,
+    total: data?.total ?? 0,
+    pageSize: data?.pageSize ?? pageSize,
+    hasMore: Boolean(data?.hasMore),
+    isError: query.isError,
+    isPending: query.isPending,
+    isFetching: query.isFetching,
+    refetch,
+  };
+}

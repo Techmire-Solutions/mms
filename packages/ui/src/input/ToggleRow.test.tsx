@@ -8,7 +8,7 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-describe("ToggleRow Component (@shared/ui)", () => {
+describe("ToggleRow Component (@mms/ui)", () => {
   let container: HTMLDivElement;
   let root: Root;
 

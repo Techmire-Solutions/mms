@@ -88,10 +88,15 @@ const sqlFiles = fs
  * 140 brand-new migrations — they are already-applied DDL and are immutable.
  */
 function addedMigrationFiles() {
-  const out = execFileSync("git", ["diff", "--name-status", "-M", `${baseRef}...HEAD`], {
-    cwd: rootDir,
-    encoding: "utf8",
-  });
+  const out = execFileSync(
+    "git",
+    ["-c", "diff.renameLimit=20000", "diff", "--name-status", "-M", `${baseRef}...HEAD`],
+    {
+      cwd: rootDir,
+      encoding: "utf8",
+      maxBuffer: 64 * 1024 * 1024,
+    },
+  );
   return out
     .split("\n")
     .map((line) => line.trim())
@@ -170,10 +175,7 @@ if (!fs.existsSync(journalPath)) {
   // The journal moved with `packages/db`; a base commit that predates the move only
   // has the legacy path. Try the current path first, then the historical locations, so
   // the frozen-entry comparison still works across the relocation.
-  const journalCandidates = [
-    journalRel,
-    "apps/backend/src/db/migrations_drizzle/meta/_journal.json",
-  ];
+  const journalCandidates = [journalRel, "apps/api/src/db/migrations_drizzle/meta/_journal.json"];
   let frozenEntryCount = null;
   let baseJournalRead = false;
   for (const candidate of journalCandidates) {

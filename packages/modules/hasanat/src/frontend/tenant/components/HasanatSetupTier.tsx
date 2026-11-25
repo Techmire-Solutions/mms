@@ -1,0 +1,128 @@
+import React, { lazy, Suspense, useRef } from "react";
+import type { Denomination } from "@mms/contracts";
+import { SubTabBar } from "@mms/ui/app/SubTabBar";
+import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
+import { ModuleTierMotion } from "@mms/ui/app/ModuleTierMotion";
+import { SetupReadOnlyMessage } from "@mms/ui/app/SetupReadOnlyMessage";
+import { ConfirmAlertDialog } from "@mms/fe-core/components/ConfirmAlertDialog";
+import { ModulePanelSuspenseFallback } from "@mms/fe-core/components/ModulePanelSuspenseFallback";
+import { useModuleSetupSubTabs } from "@mms/fe-core/hooks/useModuleSetupSubTabs";
+import { useTemplateDraftGuard } from "@mms/fe-core/hooks/useTemplateDraftGuard";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+const DenominationsManager = lazy(() =>
+  import("./DenominationsManager.js").then((m) => ({
+    default: m.DenominationsManager,
+  })),
+);
+
+const HasanatSettings = lazy(() => import("./HasanatSettings.js"));
+
+const HasanatTemplateEditor = lazy(() => import("./HasanatTemplateEditor.js"));
+
+export interface SetupTab {
+  id: string;
+  label: string;
+}
+
+export interface HasanatSetupTierProps {
+  tabs: SetupTab[];
+  activeTab: string;
+  canEditSetup: boolean;
+  canWrite: boolean;
+  denoms: Denomination[];
+  onTabChange: (tab: string) => void;
+  onUpdateDenoms: (denoms: Denomination[]) => Promise<void>;
+  /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */
+  onPrefsDirtyChange?: (isDirty: boolean) => void;
+}
+
+export const HasanatSetupTier = function HasanatSetupTier({
+  tabs,
+  activeTab,
+  canEditSetup,
+  canWrite,
+  denoms,
+  onTabChange,
+  onUpdateDenoms,
+  onPrefsDirtyChange,
+}: HasanatSetupTierProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const prefsDirtyRef = useRef(false);
+
+  const handlePrefsDirtyChange = (dirty: boolean) => {
+    prefsDirtyRef.current = dirty;
+    onPrefsDirtyChange?.(dirty);
+  };
+
+  const templateGuard = useTemplateDraftGuard();
+
+  const subTabs = useModuleSetupSubTabs({
+    initialKey: activeTab || "denominations",
+    isDirty: (currentKey: string) => {
+      if (currentKey === "preferences") return prefsDirtyRef.current;
+      if (currentKey === "templates") return templateGuard.isDirty();
+      return false;
+    },
+    onDiscard: (leavingKey: string) => {
+      if (leavingKey === "preferences") {
+        prefsDirtyRef.current = false;
+        onPrefsDirtyChange?.(false);
+      }
+      if (leavingKey === "templates") templateGuard.discard();
+    },
+    onChange: onTabChange,
+  });
+
+  return (
+    <ModuleTierMotion tier="setup">
+      <ErrorBoundary>
+        <div className="space-y-4">
+          <SubTabBar
+            tabs={tabs.map((tab) => ({ key: tab.id, label: tab.label }))}
+            value={subTabs.sub}
+            onChange={subTabs.handleSubTabChange}
+          />
+          {!canEditSetup ? (
+            <SetupReadOnlyMessage title={t("hasanat.setup.readOnly")} />
+          ) : (
+            <Suspense fallback={<ModulePanelSuspenseFallback />}>
+              {subTabs.sub === "denominations" && (
+                <DenominationsManager
+                  denoms={denoms}
+                  onUpdate={onUpdateDenoms}
+                  canWrite={canWrite}
+                />
+              )}
+              {subTabs.sub === "preferences" && (
+                <HasanatSettings onPrefsDirtyChange={handlePrefsDirtyChange} />
+              )}
+              {subTabs.sub === "templates" && (
+                <HasanatTemplateEditor
+                  key={templateGuard.resetNonce}
+                  onDirtyChange={templateGuard.markDirty}
+                  onClose={() => subTabs.handleSubTabChange("denominations")}
+                />
+              )}
+            </Suspense>
+          )}
+
+          <ConfirmAlertDialog
+            open={subTabs.discardConfirmOpen}
+            onOpenChange={(open) => {
+              if (!open) subTabs.clearPendingSubTab();
+            }}
+            title={t("settings.unsavedChanges")}
+            description={t("hasanat.setup.unsavedPreferencesWarning")}
+            confirmLabel={t("common.yes")}
+            cancelLabel={t("common.cancel")}
+            destructive
+            onConfirm={subTabs.handleConfirmDiscard}
+          />
+        </div>
+      </ErrorBoundary>
+    </ModuleTierMotion>
+  );
+};
+
+export default HasanatSetupTier;

@@ -33,17 +33,50 @@ import path from "node:path";
 import { assertScanDirs } from "./lib/repo-paths.mjs";
 
 const ROOT = process.cwd();
-const FE = path.join(ROOT, "apps/frontend/src");
-const UI_DIR = path.join(FE, "components/ui");
-const FEATURES_DIR = path.join(FE, "tenant/features");
-const LIB_DIR = path.join(FE, "lib");
+
+/**
+ * Both live console trees. `apps/platform-web/src/tenant/**` is the unrouted copy measured by
+ * `pnpm run report:dead-sources` (P11a) and stays out of the barrel scan until it is pruned.
+ */
+const ROOTS = [
+  {
+    label: "tenant-web",
+    fe: path.join(ROOT, "apps/tenant-web/src"),
+    featuresDir: path.join(ROOT, "apps/tenant-web/src/tenant/features"),
+    barrelSkip: null,
+  },
+  {
+    label: "platform-web",
+    fe: path.join(ROOT, "apps/platform-web/src"),
+    featuresDir: path.join(ROOT, "apps/platform-web/src/platform/features"),
+    barrelSkip: path.join(ROOT, "apps/platform-web/src/tenant"),
+  },
+].map((root) => ({
+  ...root,
+  uiDir: path.join(root.fe, "components/ui"),
+  libDir: path.join(root.fe, "lib"),
+}));
 
 // Fail closed: a renamed/removed root must break the gate, not silently retire it
 // (docs/monorepo-migration-plan.md §2.7, U2).
 assertScanDirs(
-  { "frontend src": FE, "components/ui": UI_DIR, "tenant features": FEATURES_DIR, lib: LIB_DIR },
+  Object.fromEntries(
+    ROOTS.flatMap((root) => [
+      [`${root.label} src`, root.fe],
+      [`${root.label} features`, root.featuresDir],
+      [`${root.label} lib`, root.libDir],
+    ]),
+  ),
   "frontend structure",
 );
+
+// `components/ui/` is no longer a required root: the primitive layer moved to `@mms/ui` and the app-local
+// re-export shims were deleted (P12a/P12b), so an app may legitimately have no local ui directory. The
+// norm still runs wherever the directory exists.
+for (const root of ROOTS) {
+  const localUi = fs.existsSync(root.uiDir) && fs.statSync(root.uiDir).isDirectory();
+  if (!localUi) root.uiDir = null;
+}
 
 /**
  * Baselines measured when the ratchet landed; only lower them.
@@ -135,80 +168,106 @@ const UI_HELPER_BASENAMES = new Set([
 
 /** Norm 5 — the sanctioned barrels. */
 const KEEP_BARRELS = new Set([
-  "apps/frontend/src/components/common/index.ts",
-  "apps/frontend/src/components/common/data-table/index.ts",
-  "apps/frontend/src/components/common/descriptors/index.ts",
-  "apps/frontend/src/components/common/work/index.ts",
-  "apps/frontend/src/components/entry/index.ts",
-  "apps/frontend/src/components/sequence-numbering/index.ts",
-  "apps/frontend/src/components/template-editor/index.ts",
-  "apps/frontend/src/tenant/components/reports/index.ts",
-  "apps/frontend/src/tenant/features/sessions/components/tabs/class-detail/index.ts",
+  "apps/tenant-web/src/components/common/index.ts",
+  "apps/tenant-web/src/components/common/data-table/index.ts",
+  "apps/tenant-web/src/components/common/descriptors/index.ts",
+  "apps/tenant-web/src/components/common/work/index.ts",
+  "apps/tenant-web/src/components/entry/index.ts",
+  "apps/tenant-web/src/components/sequence-numbering/index.ts",
+  "apps/tenant-web/src/components/template-editor/index.ts",
+  "apps/tenant-web/src/tenant/components/reports/index.ts",
+  "apps/tenant-web/src/tenant/features/sessions/components/tabs/class-detail/index.ts",
+  // The platform console reuses the same reviewed shared barrels (verified imported from its live
+  // `platform/` tree). Its dead `tenant/**` copy contributes no entries while P11a is unpruned.
+  "apps/platform-web/src/components/common/index.ts",
+  "apps/platform-web/src/components/common/data-table/index.ts",
+  "apps/platform-web/src/components/common/descriptors/index.ts",
+  "apps/platform-web/src/components/common/work/index.ts",
+  "apps/platform-web/src/components/entry/index.ts",
+  "apps/platform-web/src/components/sequence-numbering/index.ts",
+  "apps/platform-web/src/components/template-editor/index.ts",
 ]);
 
 // --- Norm 1: primitives only in components/ui/ -------------------------------
-const uiViolations = [];
-for (const file of walkFiles(UI_DIR)) {
-  const rel = path.relative(UI_DIR, file).split(path.sep);
-  if (rel.length === 1) {
-    if (!PRIMITIVE_FILES.has(rel[0])) uiViolations.push(toRel(file));
-  } else if (!PRIMITIVE_DIRS.has(rel[0])) {
-    uiViolations.push(toRel(file));
+const uiViolations = ROOTS.flatMap((root) => {
+  const out = [];
+  if (!root.uiDir) return out;
+  for (const file of walkFiles(root.uiDir)) {
+    const rel = path.relative(root.uiDir, file).split(path.sep);
+    if (rel.length === 1) {
+      if (!PRIMITIVE_FILES.has(rel[0])) out.push(toRel(file));
+    } else if (!PRIMITIVE_DIRS.has(rel[0])) {
+      out.push(toRel(file));
+    }
   }
-}
+  return out;
+});
 
 // --- Norm 2: canonical feature shape -----------------------------------------
-const featureViolations = [];
-for (const entry of readDir(FEATURES_DIR)) {
-  if (!entry.isDirectory()) continue;
-  const feature = path.join(FEATURES_DIR, entry.name);
-  const featureRel = toRel(feature);
-  for (const child of readDir(feature)) {
-    if (
-      child.isFile() &&
-      child.name.endsWith(".tsx") &&
-      !/\.test\.tsx$/.test(child.name) &&
-      !/Page\.tsx$/.test(child.name)
-    ) {
-      featureViolations.push(`${featureRel}/${child.name}`);
+const featureViolations = ROOTS.flatMap((root) => {
+  const out = [];
+  for (const entry of readDir(root.featuresDir)) {
+    if (!entry.isDirectory()) continue;
+    const feature = path.join(root.featuresDir, entry.name);
+    const featureRel = toRel(feature);
+    for (const child of readDir(feature)) {
+      if (
+        child.isFile() &&
+        child.name.endsWith(".tsx") &&
+        !/\.test\.tsx$/.test(child.name) &&
+        !/Page\.tsx$/.test(child.name)
+      ) {
+        out.push(`${featureRel}/${child.name}`);
+      }
     }
+    if (!isDir(path.join(feature, "components"))) out.push(`${featureRel}/ (missing components/)`);
+    if (isDir(path.join(feature, "controllers")))
+      out.push(`${featureRel}/controllers/ (use hooks/)`);
   }
-  if (!isDir(path.join(feature, "components")))
-    featureViolations.push(`${featureRel}/ (missing components/)`);
-  if (isDir(path.join(feature, "controllers")))
-    featureViolations.push(`${featureRel}/controllers/ (use hooks/)`);
-}
+  return out;
+});
 
 // --- Norm 3: no logic .ts directly under features/*/components/ ---------------
-const logicViolations = [];
-for (const entry of readDir(FEATURES_DIR)) {
-  if (!entry.isDirectory()) continue;
-  const componentsDir = path.join(FEATURES_DIR, entry.name, "components");
-  for (const child of readDir(componentsDir)) {
-    if (child.isFile() && child.name.endsWith(".ts") && !/\.(test|spec)\.ts$/.test(child.name)) {
-      logicViolations.push(toRel(path.join(componentsDir, child.name)));
+const logicViolations = ROOTS.flatMap((root) => {
+  const out = [];
+  for (const entry of readDir(root.featuresDir)) {
+    if (!entry.isDirectory()) continue;
+    const componentsDir = path.join(root.featuresDir, entry.name, "components");
+    for (const child of readDir(componentsDir)) {
+      if (child.isFile() && child.name.endsWith(".ts") && !/\.(test|spec)\.ts$/.test(child.name)) {
+        out.push(toRel(path.join(componentsDir, child.name)));
+      }
     }
   }
-}
+  return out;
+});
 
 // --- Norm 4: UI helpers out of the lib/ root ---------------------------------
-const libHelperViolations = [];
-for (const child of readDir(LIB_DIR)) {
-  if (child.isFile() && UI_HELPER_BASENAMES.has(child.name)) {
-    libHelperViolations.push(toRel(path.join(LIB_DIR, child.name)));
+const libHelperViolations = ROOTS.flatMap((root) => {
+  const out = [];
+  for (const child of readDir(root.libDir)) {
+    if (child.isFile() && UI_HELPER_BASENAMES.has(child.name)) {
+      out.push(toRel(path.join(root.libDir, child.name)));
+    }
   }
-}
+  return out;
+});
 
 // --- Norm 5: barrels are an allowlist ----------------------------------------
-const barrelViolations = walkFiles(FE)
-  .filter((f) => path.basename(f) === "index.ts")
-  .map(toRel)
-  .filter((rel) => !KEEP_BARRELS.has(rel));
+const barrelViolations = ROOTS.flatMap((root) =>
+  walkFiles(root.fe)
+    .filter((file) => !root.barrelSkip || !file.startsWith(root.barrelSkip))
+    .filter((f) => path.basename(f) === "index.ts")
+    .map(toRel)
+    .filter((rel) => !KEEP_BARRELS.has(rel)),
+);
 
 // --- Norm 6: template layouts must not use the legacy document store ---------
 const TEMPLATE_MODULE_DIRS = [
-  path.join(FE, "components/template-editor"),
-  path.join(FE, "lib/templates"),
+  ...ROOTS.flatMap((root) => [
+    path.join(root.fe, "components/template-editor"),
+    path.join(root.fe, "lib/templates"),
+  ]),
 ];
 const TEMPLATE_MODULE_FILES = [
   "components/app/TemplateEditor.tsx",
@@ -217,19 +276,27 @@ const TEMPLATE_MODULE_FILES = [
   "lib/invoiceTemplateFields.ts",
   "tenant/features/students/lib/studentCardTemplateStore.ts",
   "tenant/features/accounting/lib/voucherTemplateModel.ts",
-  "tenant/features/finance/components/FinanceTemplateEditor.tsx",
   "tenant/features/examinations/components/ExaminationTemplateEditor.tsx",
   "tenant/features/hasanat/components/HasanatTemplateEditor.tsx",
   "tenant/features/students/components/card-template/StudentCardTemplateEditor.tsx",
   "tenant/features/accounting/components/AccountingVoucherTemplateEditor.tsx",
   "tenant/features/obligations/components/invoice/InvoiceTemplateEditor.tsx",
-].map((rel) => path.join(FE, rel));
+].map((rel) => path.join(ROOTS[0].fe, rel));
+
+// Extracted module surfaces that own template layouts stay in this norm's scan set.
+const TEMPLATE_MODULE_ABSOLUTE_FILES = [
+  path.join(
+    ROOT,
+    "packages/modules/billing/src/frontend/tenant/components/FinanceTemplateEditor.tsx",
+  ),
+];
 
 const LEGACY_TEMPLATE_PERSISTENCE_PATTERN =
   /(?:from\s+["\']@\/lib\/db["\']|\b(?:getObject|saveObject)\s*\()/;
 const legacyTemplatePersistenceViolations = [
   ...TEMPLATE_MODULE_DIRS.flatMap((dir) => walkFiles(dir)),
   ...TEMPLATE_MODULE_FILES.filter((file) => fs.existsSync(file)),
+  ...TEMPLATE_MODULE_ABSOLUTE_FILES.filter((file) => fs.existsSync(file)),
 ]
   .filter((file) => /\.(?:ts|tsx)$/.test(file) && !/\.test\.(?:ts|tsx)$/.test(file))
   .filter((file) => LEGACY_TEMPLATE_PERSISTENCE_PATTERN.test(fs.readFileSync(file, "utf8")))

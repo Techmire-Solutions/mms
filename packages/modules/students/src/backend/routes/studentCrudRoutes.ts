@@ -1,0 +1,292 @@
+import type { FastifyPluginAsync } from "fastify";
+import { withTenant } from "@mms/db/context";
+import { canDeleteCollection, canWriteCollection, canReadCollection } from "@mms/be-core/rbac";
+import { isQueryFlagTrue, type User, type Student, studentCrudContract } from "@mms/contracts";
+import { studentUseCases } from "../use-cases/index.js";
+import { initServer, type RouterImplementation } from "@ts-rest/fastify";
+import type { ContractRouteArgs, ContractRouteResponse } from "@mms/be-core/http/routes";
+import { handleContractError } from "@mms/be-core/http/routes";
+import { replyValidationError } from "@mms/be-core/http/routes";
+import {
+  auditStudent,
+  mapStudentWriteHttpError,
+  sanitizeOneStudentForUser,
+  sanitizeStudentsForUser,
+  expectedUpdatedAtForUpdate,
+  withStudentTenantScope,
+} from "./studentRouteHelpers.js";
+import { validateStudentWrite } from "./studentWriteValidation.js";
+import { isStudentInAssignedSections, resolveStudentAccessScope } from "../use-cases/index.js";
+const s = initServer();
+/** Main student CRUD — @ts-rest contract router. */
+export const studentCrudRoutes: FastifyPluginAsync = async (fastify) => {
+  const router = s.router(studentCrudContract, {
+    list: async ({
+      query,
+      request,
+    }: ContractRouteArgs<(typeof studentCrudContract)["list"]>): Promise<
+      ContractRouteResponse<(typeof studentCrudContract)["list"]>
+    > => {
+      const user = request.user as User;
+      if (!canReadCollection(user, "students")) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Insufficient permissions" },
+        };
+      }
+      const includeDeleted = isQueryFlagTrue(query?.includeDeleted);
+      const skipCount = isQueryFlagTrue(query?.skipCount);
+      if (includeDeleted && !canDeleteCollection(user, "students")) {
+        return {
+          status: 403 as const,
+          body: {
+            type: "forbidden",
+            message: "Viewing deleted students requires delete permissions",
+          },
+        };
+      }
+      const tenantId = String(request.tenant?.id);
+      const scope = await resolveStudentAccessScope(tenantId, user);
+      if (!scope.isUnrestricted && scope.assignedSectionIds.length === 0) {
+        return {
+          status: 200 as const,
+          body: {
+            students: [],
+            total: 0,
+            page: Number(query?.page ?? 1),
+            limit: Number(query?.limit ?? 50),
+            hasMore: false,
+          },
+        };
+      }
+      const queryWithScope = {
+        ...query,
+        includeDeleted,
+        skipCount,
+        ...(scope.isUnrestricted ? {} : { scopedSectionIds: scope.assignedSectionIds }),
+      };
+      const result = await withStudentTenantScope(
+        tenantId,
+        includeDeleted,
+        () => studentUseCases.loadStudentsPage(queryWithScope),
+        { readOnly: true },
+      );
+      return {
+        status: 200 as const,
+        body: {
+          ...result,
+          students: await sanitizeStudentsForUser(result.students, user),
+        },
+      };
+    },
+    get: async ({
+      params: { id },
+      query,
+      request,
+    }: ContractRouteArgs<(typeof studentCrudContract)["get"]>): Promise<
+      ContractRouteResponse<(typeof studentCrudContract)["get"]>
+    > => {
+      const user = request.user as User;
+      if (!canReadCollection(user, "students")) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Insufficient permissions" },
+        };
+      }
+      try {
+        const includeDeleted = isQueryFlagTrue(query?.includeDeleted);
+        if (includeDeleted && !canDeleteCollection(user, "students")) {
+          return {
+            status: 403 as const,
+            body: {
+              type: "forbidden",
+              message: "Viewing deleted students requires delete permissions",
+            },
+          };
+        }
+        const tenantId = String(request.tenant?.id);
+        const scope = await resolveStudentAccessScope(tenantId, user);
+        if (!scope.isUnrestricted) {
+          const allowed = await isStudentInAssignedSections(tenantId, id, scope.assignedSectionIds);
+          if (!allowed) {
+            return {
+              status: 403 as const,
+              body: {
+                type: "forbidden",
+                message:
+                  "Access restricted: you may only view students enrolled in your assigned sections",
+              },
+            };
+          }
+        }
+        const item = await withStudentTenantScope(
+          tenantId,
+          includeDeleted,
+          () => studentUseCases.loadStudentById(id, includeDeleted),
+          { readOnly: true },
+        );
+        if (!item || (!includeDeleted && (item as { deletedAt?: unknown }).deletedAt != null)) {
+          return {
+            status: 404 as const,
+            body: { type: "not_found", message: "Student not found" },
+          };
+        }
+        const response = await sanitizeOneStudentForUser(item as Student, user);
+        return { status: 200 as const, body: { student: response } };
+      } catch (error: unknown) {
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "database_error", message: "Failed to load student" },
+        });
+      }
+    },
+
+    create: async ({
+      body,
+      request,
+    }: ContractRouteArgs<(typeof studentCrudContract)["create"]>): Promise<
+      ContractRouteResponse<(typeof studentCrudContract)["create"]>
+    > => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, "students")) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Insufficient permissions" },
+        };
+      }
+      try {
+        // Audit is appended inside the write transaction by the use case
+        // (`mms-data-layer` §5.4), including the restore-on-re-registration path.
+        const result = await withTenant(
+          String(request.tenant?.id),
+          async () => {
+            const validated = await validateStudentWrite(request, body);
+            return studentUseCases.createStudent(validated, user);
+          },
+          { readOnly: false },
+        );
+        const response = await sanitizeOneStudentForUser(result.record as Student, user);
+        return result.restored
+          ? { status: 200 as const, body: { student: response } }
+          : { status: 201 as const, body: { student: response } };
+      } catch (error: unknown) {
+        const mapped = mapStudentWriteHttpError(error);
+        if (mapped) return { status: mapped.status as 400 | 403 | 409, body: mapped.body };
+        request.log.error(error, "Failed to create student");
+        return {
+          status: 500 as const,
+          body: { type: "database_error", message: "Failed to create student" },
+        };
+      }
+    },
+
+    update: async ({
+      params: { id },
+      body,
+      request,
+    }: ContractRouteArgs<(typeof studentCrudContract)["update"]>): Promise<
+      ContractRouteResponse<(typeof studentCrudContract)["update"]>
+    > => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, "students")) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Insufficient permissions" },
+        };
+      }
+      const occ = expectedUpdatedAtForUpdate(request.headers["x-expected-updated-at"]);
+      if (occ.error) return occ.error;
+      try {
+        const updated = await withTenant(
+          String(request.tenant?.id),
+          async () => {
+            const validated = await validateStudentWrite(request, body);
+            return studentUseCases.updateStudentById(
+              id,
+              {
+                ...validated,
+                id,
+              },
+              {
+                user,
+                expectedUpdatedAt: occ.value,
+              },
+            );
+          },
+          { readOnly: false },
+        );
+        if (!updated) {
+          return {
+            status: 404 as const,
+            body: { type: "not_found", message: "Student not found" },
+          };
+        }
+        // The use case appends the audit row inside the write transaction.
+        const response = await sanitizeOneStudentForUser(updated as Student, user);
+        return { status: 200 as const, body: { student: response } };
+      } catch (error: unknown) {
+        const mapped = mapStudentWriteHttpError(error);
+        if (mapped) return { status: mapped.status as 400 | 403 | 409, body: mapped.body };
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "database_error", message: "Failed to update student" },
+        });
+      }
+    },
+
+    delete: async ({
+      params: { id },
+      body,
+      request,
+    }: ContractRouteArgs<(typeof studentCrudContract)["delete"]>): Promise<
+      ContractRouteResponse<(typeof studentCrudContract)["delete"]>
+    > => {
+      const user = request.user as User;
+      if (!canDeleteCollection(user, "students")) {
+        return {
+          status: 403 as const,
+          body: { type: "forbidden", message: "Insufficient permissions" },
+        };
+      }
+      try {
+        const reason = body?.deletionReason;
+        const deleted = await withTenant(
+          String(request.tenant?.id),
+          () => studentUseCases.softDeleteStudentById(id, String(user.id), reason),
+          { readOnly: false },
+        );
+        if (!deleted) {
+          return {
+            status: 404 as const,
+            body: { type: "not_found", message: "Student not found" },
+          };
+        }
+        const reasonNote = reason?.trim() ? ` — ${reason.trim()}` : "";
+        await auditStudent(
+          user,
+          "student.soft_delete",
+          `Soft-deleted student ${id}${reasonNote}`,
+          id,
+        );
+        return { status: 200 as const, body: { success: true } };
+      } catch (error: unknown) {
+        const mapped = mapStudentWriteHttpError(error);
+        if (mapped && mapped.status === 409) {
+          return { status: 409 as const, body: mapped.body };
+        }
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "database_error", message: "Failed to delete student" },
+        });
+      }
+    },
+  } as unknown as RouterImplementation<typeof studentCrudContract>);
+
+  await fastify.register(s.plugin(router), {
+    requestValidationErrorHandler: (err, _request, reply) => {
+      const zErr = err.body ?? err.query ?? err.pathParams ?? err.headers;
+      const message = zErr instanceof Error ? zErr.message : err.message;
+      void replyValidationError(reply, message);
+    },
+  });
+};

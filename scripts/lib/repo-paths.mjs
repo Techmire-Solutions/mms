@@ -8,8 +8,8 @@
  * (`docs/monorepo-migration-plan.md` §2.7, U1/U2, R1) moves four roots, so each
  * gate imports its scan roots from here and wraps them in `assertScanDirs`.
  *
- * Both the transitional roots (`apps/backend`, `apps/frontend`) and the target
- * roots (`apps/api`, `apps/tenant-web`, `apps/platform-web`) live in `PATHS`, so
+ * Transitional and target roots (`apps/api`, `apps/tenant-web`, `apps/platform-web`)
+ * live in `PATHS`, so
  * a rename is a one-line change in this file rather than a grep across ~25
  * scripts.
  *
@@ -35,7 +35,6 @@ export const PATHS = Object.freeze({
   backend: at("apps", "backend"),
   tenantWeb: at("apps", "tenant-web"),
   platformWeb: at("apps", "platform-web"),
-  frontend: at("apps", "frontend"),
   packages: at("packages"),
   contracts: at("packages", "contracts"),
   db: at("packages", "db"),

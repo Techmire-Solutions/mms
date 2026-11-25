@@ -1,0 +1,64 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type {
+  AppTranslationKey,
+  SectionCloseBody,
+  SectionMergeBody,
+  SectionOperationResult,
+  SectionSplitBody,
+} from "@mms/contracts";
+import { isApiError } from "@mms/fe-core/api/errors";
+import { notify } from "@mms/fe-core/notify";
+import { useTranslation } from "@mms/fe-core/i18n";
+import {
+  closeSectionMutationOptions,
+  mergeSectionMutationOptions,
+  splitSectionMutationOptions,
+} from "@/lib/query/sectionOperationsQueries";
+import { invalidateEnrollmentImpacts } from "@/lib/query/enrollmentImpactInvalidation";
+
+/** Merge / split / close with call-site toasts; each resolves the result, or null on failure. */
+export function useSectionOperations() {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const onSuccess = () => invalidateEnrollmentImpacts(queryClient);
+  const mergeMutation = useMutation({ ...mergeSectionMutationOptions(), onSuccess });
+  const splitMutation = useMutation({ ...splitSectionMutationOptions(), onSuccess });
+  const closeMutation = useMutation({ ...closeSectionMutationOptions(), onSuccess });
+
+  const run = async <B>(
+    mutate: (input: { sectionId: string; body: B }) => Promise<SectionOperationResult>,
+    sectionId: string,
+    body: B,
+    keys: { ok: AppTranslationKey; failed: AppTranslationKey },
+  ): Promise<SectionOperationResult | null> => {
+    try {
+      const result = await mutate({ sectionId, body });
+      notify.success(t(keys.ok, { count: result.moved }));
+      return result;
+    } catch (error) {
+      notify.error(t(keys.failed), {
+        description: isApiError(error) && error.status < 500 ? error.message : undefined,
+      });
+      return null;
+    }
+  };
+
+  return {
+    merge: (sectionId: string, body: SectionMergeBody) =>
+      run(mergeMutation.mutateAsync, sectionId, body, {
+        ok: "sessions.sections.ops.merged",
+        failed: "sessions.sections.ops.mergeFailed",
+      }),
+    split: (sectionId: string, body: SectionSplitBody) =>
+      run(splitMutation.mutateAsync, sectionId, body, {
+        ok: "sessions.sections.ops.split",
+        failed: "sessions.sections.ops.splitFailed",
+      }),
+    close: (sectionId: string, body: SectionCloseBody) =>
+      run(closeMutation.mutateAsync, sectionId, body, {
+        ok: "sessions.sections.ops.closed",
+        failed: "sessions.sections.ops.closeFailed",
+      }),
+    isPending: mergeMutation.isPending || splitMutation.isPending || closeMutation.isPending,
+  };
+}

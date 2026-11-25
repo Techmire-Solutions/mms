@@ -1,4 +1,4 @@
-import { requireTenant } from "../http/tenantContext.js";
+import { getRequestTenant, requireTenant } from "../http/tenantContext.js";
 import { broadcastCollection } from "../realtime/index.js";
 
 /**
@@ -29,7 +29,12 @@ export function createModuleFieldConfigService<
   reloadFailedMessage: string;
 }) {
   async function load(): Promise<(TDocument & { formTabs: TFormTab[] }) | null> {
-    const tenant = requireTenant();
+    // Field config is tenant-scoped, but reads must stay graceful outside a
+    // request (unit tests, cross-module helpers): `null` means "no config",
+    // which every consumer handles (`ContactWriteContext.fieldConfig` is
+    // `FieldConfig | null`). `save` still fails closed on a missing tenant.
+    const tenant = getRequestTenant();
+    if (!tenant) return null;
     const raw = await getByWorkspace(tenant);
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
     const document = await toDocument(raw, tenant);

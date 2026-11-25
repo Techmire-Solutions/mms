@@ -15,9 +15,9 @@
  *
  * Usage:
  *   node scripts/ci/check-changed-coverage.mjs \
- *     --coverage apps/frontend/coverage-changed \
+ *     --coverage apps/tenant-web/coverage-changed \
  *     --base "$GITHUB_BASE_SHA" \
- *     --root apps/frontend/src
+ *     --root apps/tenant-web/src
  *
  * Exits 0 only when there are no changed source files (e.g. a docs-only diff).
  * Changed source with missing coverage data now FAILS — the previous skip made

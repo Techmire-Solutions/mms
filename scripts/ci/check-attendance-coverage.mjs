@@ -8,8 +8,8 @@
  * drift): run with `--update` after a green DB run to print the measured values and raise them.
  *
  * Usage:
- *   node scripts/ci/check-attendance-coverage.mjs --coverage apps/backend/coverage-attendance-db
- *   node scripts/ci/check-attendance-coverage.mjs --coverage apps/backend/coverage-attendance-db --update
+ *   node scripts/ci/check-attendance-coverage.mjs --coverage apps/api/coverage-attendance-db
+ *   node scripts/ci/check-attendance-coverage.mjs --coverage apps/api/coverage-attendance-db --update
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -21,7 +21,7 @@ function argValue(flag) {
   return index >= 0 ? process.argv[index + 1] : undefined;
 }
 
-const coverageDir = argValue("--coverage") ?? "apps/backend/coverage-attendance-db";
+const coverageDir = argValue("--coverage") ?? "apps/api/coverage-attendance-db";
 const update = process.argv.includes("--update");
 const jsonPath = path.join(coverageDir, "coverage-final.json");
 if (!fs.existsSync(jsonPath)) {

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { glob } from "node:fs/promises";
 import { assertScanDirs, fromRoot } from "./lib/repo-paths.mjs";
 
-const roots = ["apps/backend/src", "apps/frontend/src", "packages/contracts/src"];
+const roots = ["apps/api/src", "apps/tenant-web/src", "packages/contracts/src"];
 
 // Fail closed: the legacy-surface scan must not pass on a renamed app root.
 assertScanDirs(

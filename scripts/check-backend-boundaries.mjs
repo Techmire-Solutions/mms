@@ -30,7 +30,7 @@ import { fileURLToPath } from "node:url";
 import { changedFiles } from "./lib/changed-files.mjs";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const routesDir = path.join(rootDir, "apps", "backend", "src", "routes");
+const routesDir = path.join(rootDir, "apps", "api", "src", "routes");
 
 /** Measured 2026-10-12: all route→storage imports migrated away. Zero tolerated. */
 const BASELINE = 0;
@@ -105,7 +105,7 @@ const baseline = changedMode ? 0 : BASELINE;
 
 const sources = changedMode
   ? changedFiles()
-      .filter((rel) => rel.startsWith("apps/backend/src/routes/") && isRouteSource(rel))
+      .filter((rel) => rel.startsWith("apps/api/src/routes/") && isRouteSource(rel))
       .map((rel) => path.join(rootDir, rel))
       .filter((file) => fs.existsSync(file))
   : collectSourceFiles(routesDir);

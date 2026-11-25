@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { Mail } from "lucide-react";
 import { IntegrationPanelChrome } from "./IntegrationPanelChrome";
 
-describe("IntegrationPanelChrome Component (@shared/ui)", () => {
+describe("IntegrationPanelChrome Component (@mms/ui)", () => {
   const baseProps = {
     icon: Mail,
     title: "Email Integration",

@@ -3,8 +3,8 @@ import { m } from "framer-motion";
 import { cn } from "@mms/ui";
 import { CardRemoveButton } from "./FormCardChrome";
 import { FORM_CARD } from "@mms/ui";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@mms/fe-core/ui/semanticTone";
-import { useReducedMotion } from "@mms/fe-core/tenant";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "../ui/semanticTone.js";
+import { useReducedMotion } from "../tenant/index.js";
 
 const LIST_CARD_STRIPE = "bg-primary/60 group-hover:bg-primary";
 const LIST_CARD_ICON = "text-primary/70 group-hover:text-primary";

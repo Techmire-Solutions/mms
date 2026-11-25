@@ -1,6 +1,6 @@
 ---
 name: mms-error-triage
-description: Triages a production error report end to end in MMS — Sentry issue to request id to traceparent to the audit row and the responsible code path. Use when investigating a reported bug, an error spike, or a Sentry alert that needs a root cause and an owning fix. Do NOT use for a server that is down right now (use mms-incident-response) or for failing local test suites (use mms-testing-e2e).
+description: Triages a production error (Sentry issue to request id to traceparent to audit row to code). Use when bug/error investigation. Do NOT use for a down server (use mms-incident-response) or local test failures (use mms-testing-e2e).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -22,7 +22,7 @@ Every hop already carries an identifier — use it instead of guessing from time
 
 | Hop | Identifier | Where to look |
 |---|---|---|
-| Browser error | Sentry issue + event id | `apps/frontend/src/lib/clientErrorReporting.ts` wiring; tenant tag attached when known |
+| Browser error | Sentry issue + event id | `apps/tenant-web/src/lib/clientErrorReporting.ts` wiring; tenant tag attached when known |
 | API request | `requestId` / `reqId`, `x-request-id`, W3C `traceparent` | Pino logs (`LOG_LEVEL`), Fastify request logging |
 | Database audit | `correlation_id` | `audit_trail_events` rows for the same request |
 | Tenant | `workspace_subdomain` / `tenant.id` | audit rows, logs, and the platform registry |
@@ -49,7 +49,7 @@ If the report indicates cross-tenant data exposure, credential leakage, or destr
 ## Verification
 
 - **Regression proof:** the new spec fails on the pre-fix code and passes after; the Red command + failure are recorded in the PR body (`mms-tdd.mdc` §1–§2).
-- **Gates:** the owning suite (`pnpm --filter mms-backend test <path>` / `pnpm --filter mms-frontend test <path>` / `pnpm --filter @mms/contracts test`) plus `pnpm typecheck`; run `pnpm ci:local` before proposing the fix.
+- **Gates:** the owning suite (`pnpm --filter mms-api test <path>` / `pnpm --filter mms-tenant-web test <path>` / `pnpm --filter @mms/contracts test`) plus `pnpm typecheck`; run `pnpm ci:local` before proposing the fix.
 - **Resolution evidence:** the Sentry issue links the request id/traceparent → audit row → the owning fix; "the error stopped" alone is not a resolution.
 
 ## Do not

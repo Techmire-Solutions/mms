@@ -1,0 +1,21 @@
+import { DEFAULT_BRANDING_SETTINGS } from "@mms/contracts";
+import { getBrandingChartPalette } from "./brandingChartPalette.js";
+import { PRINT_COLORS } from "@mms/fe-core/print/printTemplateStyles";
+
+/** Default card colour for new denominations. */
+export const DEFAULT_DENOMINATION_COLOR = DEFAULT_BRANDING_SETTINGS.primaryColor;
+
+/** Metallic swatches plus branded chart colours for the denomination picker. */
+export function getDenominationPresetColors(): readonly string[] {
+  const palette = getBrandingChartPalette();
+  return [
+    PRINT_COLORS.metallicBronze,
+    PRINT_COLORS.metallicSilver,
+    palette.secondary,
+    palette.charts[4],
+    palette.charts[3],
+    palette.primary,
+    palette.charts[0],
+    palette.charts[2],
+  ];
+}

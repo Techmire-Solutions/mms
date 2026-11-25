@@ -82,7 +82,7 @@ overrides:
   # Deliberately NOT overridden to >=8:
   #   1. ts-deepmerge@8's CJS build no longer exports `.default()`, which
   #      @anatine/zod-openapi calls — the override breaks /api/openapi.json
-  #      outright (guarded by a test in apps/backend/src/__tests__/app.health.test.ts).
+  #      outright (guarded by a test in apps/api/src/__tests__/app.health.test.ts).
   #   2. The advisory is NOT reachable here. The only consumer is
   #      `generateOpenApi(rootContract, {info})` in routes/common/openapi.ts, whose
   #      two arguments are static, developer-authored module constants — no

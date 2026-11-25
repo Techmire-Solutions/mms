@@ -1,6 +1,6 @@
 ---
 name: mms-soft-delete
-description: Implements, verifies, or audits the MMS Soft-Delete System — column sextuple, 3-tier index strategy, partial unique indexes, BEFORE DELETE triggers, RLS policies, dynamic query ASTs, and trash UX. Use when adding or changing soft-delete, trash directories, restore handlers, DDL migrations, or auditing deletion lifecycles. Do NOT use for ephemeral scratchpad data (hard-delete directly per mms-data-layer.mdc), immutable audit log events (use mms-audit-trail), or posted-journal corrections (use mms-finance-accounting).
+description: Implements/audits Soft-Delete (column sextuple, 3-tier indexes, triggers, RLS, trash UX). Use when soft-delete/trash/restore. Do NOT use for hard-delete scratchpad, audit log (use mms-audit-trail), or journal corrections.
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -70,7 +70,7 @@ Financial posted ledgers are append-only/reversal-driven; see ledger controls be
 bash .agent/skills/mms-soft-delete/scripts/verify-soft-delete-schema.sh
 
 # Run backend soft-delete test suite
-pnpm --filter mms-backend test
+pnpm --filter mms-api test
 ```
 
 ## References

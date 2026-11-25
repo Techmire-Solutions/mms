@@ -1,6 +1,6 @@
 ---
 name: mms-vuln-response
-description: Triages and responds to a dependency security advisory in MMS — reachability analysis, override policy, and the reviewed-exception pattern. Use when pnpm audit, Dependabot, dependency-review, or gitleaks reports a finding and it must be fixed or explicitly accepted. Do NOT use for routine version bumps (use mms-dependency-upgrade) or for application-level auth weaknesses (use mms-backend-security).
+description: Triages dependency advisories (reachability, overrides, reviewed-exception). Use when pnpm audit/Dependabot/gitleaks findings. Do NOT use for routine bumps (use mms-dependency-upgrade) or app auth (use mms-backend-security).
 license: Proprietary
 metadata:
   owner: mms-platform

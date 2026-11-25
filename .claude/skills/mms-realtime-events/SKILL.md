@@ -1,6 +1,6 @@
 ---
 name: mms-realtime-events
-description: Implements and maintains WebSocket real-time event distribution over /api/ws, event multiplexing, and client TanStack Query cache invalidation. Use when dispatching live update events from backend services, adding websocket channels, or subscribing to realtime updates in frontend hooks. Do NOT use for standard HTTP REST polling (use mms-query-factories), background job worker execution (use mms-background-jobs), or SMS/WhatsApp messaging (use mms-messaging).
+description: WebSocket /api/ws event distribution, multiplexing, client cache invalidation. Use when live updates/subscriptions. Do NOT use for REST polling (use mms-query-factories), workers (use mms-background-jobs), or messaging (use mms-messaging).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -22,7 +22,7 @@ metadata:
 
 MMS uses a singular cookie-authenticated WebSocket endpoint (`/api/ws`):
 - **Handshake & Auth**: Authenticated via the tenant session cookie (`mms_tenant_session`) during the HTTP upgrade. The connection is automatically bound to the tenant workspace (`subdomain`).
-- **Connection Isolation**: Sockets are tracked per tenant workspace in `apps/backend/src/lib/livePush.ts`. Clients never receive events or payload broadcasts across tenant boundaries.
+- **Connection Isolation**: Sockets are tracked per tenant workspace in `apps/api/src/lib/livePush.ts`. Clients never receive events or payload broadcasts across tenant boundaries.
 - **Heartbeat & Reconnect**: The frontend client `tenantWebSocket.ts` implements exponential backoff reconnection and ping/pong heartbeats to keep the connection alive through reverse proxies.
 
 ## 2. Event Types & Cache Invalidation
@@ -54,17 +54,17 @@ await broadcastToTenant(tenantSubdomain, {
 
 | Layer | Path |
 |---|---|
-| Backend WS Route | `apps/backend/src/routes/common/websocket.ts` |
-| Backend Live Push Dispatcher | `apps/backend/src/lib/livePush.ts` |
-| Frontend WS Client | `apps/frontend/src/lib/tenantWebSocket.ts` |
-| Query Invalidation Hook | `apps/frontend/src/hooks/useTenantDatabaseUpdates.ts` |
-| Integration Suite | `apps/backend/src/__tests__/websocketRoute.test.ts` |
+| Backend WS Route | `apps/api/src/routes/common/websocket.ts` |
+| Backend Live Push Dispatcher | `apps/api/src/lib/livePush.ts` |
+| Frontend WS Client | `apps/tenant-web/src/lib/tenantWebSocket.ts` |
+| Query Invalidation Hook | `apps/tenant-web/src/hooks/useTenantDatabaseUpdates.ts` |
+| Integration Suite | `apps/api/src/__tests__/websocketRoute.test.ts` |
 
 ## 4. Verification
 
 ```bash
-pnpm --filter mms-backend test apps/backend/src/__tests__/websocketRoute.test.ts
-pnpm --filter mms-frontend test apps/frontend/src/lib/tenantWebSocket.test.ts
+pnpm --filter mms-api test apps/api/src/__tests__/websocketRoute.test.ts
+pnpm --filter mms-tenant-web test apps/tenant-web/src/lib/tenantWebSocket.test.ts
 ```
 
 ## References

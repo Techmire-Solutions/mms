@@ -7,3 +7,6 @@ export * from "./session.js";
 export * from "./tenantAuthGuard.js";
 export * from "./tokenCookie.js";
 export * from "./verification.js";
+export * from "./sessionClock.js";
+export * from "./sessionPolicy.js";
+export * from "./sessionRevocation.js";

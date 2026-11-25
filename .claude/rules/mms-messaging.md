@@ -1,18 +1,18 @@
 ---
 description: SMS and WhatsApp campaign composition, template interpolation, delivery channels, and messaging API
 paths:
-  - "apps/frontend/src/tenant/features/messaging/**"
-  - "apps/frontend/src/components/app/MessageComposer.tsx"
-  - "apps/frontend/src/components/app/MessagingVariableTokensBar.tsx"
-  - "apps/frontend/src/components/messageComposer/**"
-  - "apps/frontend/src/hooks/useMessaging.ts"
-  - "apps/frontend/src/lib/backgroundJobs/startServerMessagingCsvExport.ts"
+  - "packages/modules/messaging/src/frontend/tenant/**"
+  - "apps/tenant-web/src/components/app/MessageComposer.tsx"
+  - "packages/modules/messaging/src/frontend/components/MessagingVariableTokensBar.tsx"
+  - "packages/modules/messaging/src/frontend/components/messageComposer/**"
+  - "packages/modules/messaging/src/frontend/tenant/hooks/useMessaging.ts"
+  - "packages/fe-core/src/lib/startServerMessagingCsvExport.ts"
   - "packages/contracts/src/**/messagingModuleManifest.ts"
   - "packages/contracts/src/**/messagingSchemas.ts"
-  - "apps/backend/src/routes/tenant/messaging.ts"
-  - "apps/backend/src/routes/tenant/messaging/**"
-  - "apps/backend/src/db/repositories/messagingRepository.ts"
-  - "apps/backend/src/services/messaging*.ts"
+  - "packages/modules/messaging/src/backend/routes/**/*.ts"
+  - "packages/modules/messaging/src/backend/**/*.ts"
+  - "packages/modules/messaging/src/backend/**/*.ts"
+  - "apps/api/src/services/messaging*.ts"
 ---
 
 # MMS Messaging & Campaign Specification

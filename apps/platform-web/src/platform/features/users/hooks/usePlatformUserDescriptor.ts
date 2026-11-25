@@ -1,0 +1,19 @@
+import type { PlatformUserProfile } from "@mms/contracts";
+import type { EntityDescriptor } from "@mms/fe-core/components/entityRegistryTypes";
+import { platformUsersEntityDescriptor } from "@/components/common/entityRegistry";
+import { useStaticEntityDescriptor } from "@mms/fe-core/components/useStaticEntityDescriptor";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+/**
+ * Returns an i18n-resolved EntityDescriptor<PlatformUserProfile> for
+ * platform admin user management tables and drawers.
+ */
+export function usePlatformUserDescriptor(): EntityDescriptor<PlatformUserProfile> {
+  const { t } = useTranslation();
+  return useStaticEntityDescriptor(
+    platformUsersEntityDescriptor,
+    (key, fallback) => t(key as Parameters<typeof t>[0]) || fallback,
+  );
+}
+
+export const usePlatformUsersEntityDescriptor = usePlatformUserDescriptor;

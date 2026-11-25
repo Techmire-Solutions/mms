@@ -1,6 +1,6 @@
 ---
 name: mms-i18n-completeness
-description: Audits and fixes MMS translation coverage across en/ar/ur/fa — missing keys, untranslated strings, RTL/LTR formatting, and hardcoded copy. Use when adding user-facing text, when check:i18n fails, or when a locale renders English or overflows. Do NOT use for settings-page structure or navigation registries (use mms-settings-i18n), for BiDi token/logical-CSS work (use mms-ui-ux-design), or for form field validation copy (use mms-form-architecture).
+description: Audits/fixes translation coverage (en/ar/ur/fa): missing keys, RTL, hardcoded copy. Use when check:i18n fails or copy is untranslated. Do NOT use for settings/nav registries (use mms-settings-i18n), BiDi tokens (use mms-ui-ux-design), or validation copy (use mms-form-architecture).
 license: Proprietary
 metadata:
   owner: mms-platform

@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { User } from "@mms/contracts";
-import { contactUseCases } from "./use-cases/contactUseCases.js";
+import { contactUseCases } from "./use-cases/index.js";
 import {
   registerMetricsRoute,
   registerCountRoute,

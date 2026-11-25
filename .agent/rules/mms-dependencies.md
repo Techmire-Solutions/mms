@@ -14,7 +14,7 @@ description: Node 24, pnpm catalogs, package versions, React Compiler, and depen
 
 ## 2. Upgrade Workflow
 - **Dedicated PRs Only:** Never bump dependencies mid-feature.
-- **Procedure:** Run `pnpm outdated -r` → bump stale deps → `pnpm install && pnpm typecheck && pnpm test` → app lints (`cd apps/frontend && pnpm lint`, `cd apps/backend && pnpm lint`) → `pnpm audit` (resolve high+ CVEs) → resolve breaking API changes in the same commit.
+- **Procedure:** Run `pnpm outdated -r` → bump stale deps → `pnpm install && pnpm typecheck && pnpm test` → app lints (`cd apps/tenant-web && pnpm lint`, `cd apps/api && pnpm lint`) → `pnpm audit` (resolve high+ CVEs) → resolve breaking API changes in the same commit.
 
 ## 3. Node 24 Native Built-Ins & Banned Dependencies
 - **Configuration:** Use native `--env-file=.env` or `process.loadEnvFile()`. Ban `dotenv`.
@@ -42,5 +42,5 @@ description: Node 24, pnpm catalogs, package versions, React Compiler, and depen
 - **Required:** explicit class property declarations and `import type` in new code.
 
 ## 6. React Compiler (When Enabling)
-- Add plugin strictly to `apps/frontend/vite.config.ts` (never root).
+- Add plugin strictly to `apps/tenant-web/vite.config.ts` (never root).
 - Verify with `pnpm typecheck`, `pnpm test`, and FE lint before removing working manual memoization.

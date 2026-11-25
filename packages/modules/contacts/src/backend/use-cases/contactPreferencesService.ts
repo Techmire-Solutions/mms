@@ -4,7 +4,7 @@ import {
   type ContactPreferences,
   type RelationshipPair,
 } from "@mms/contracts";
-import { requireTenant } from "@mms/be-core/http";
+import { getRequestTenant } from "@mms/be-core/http";
 import {
   getContactModulePreferencesByWorkspace,
   upsertContactModulePreferences,
@@ -39,13 +39,17 @@ async function loadContactPreferencesWithoutMirror(): Promise<ContactPreferences
 }
 
 export async function loadContactPreferences(): Promise<ContactPreferences | null> {
-  const raw = await getContactModulePreferencesByWorkspace(requireTenant());
+  // Reads stay graceful outside a request (unit tests, cross-module helpers):
+  // no tenant → no preferences. Writes below still require a tenant.
+  const tenant = getRequestTenant();
+  if (!tenant) return null;
+  const raw = await getContactModulePreferencesByWorkspace(tenant);
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const record = raw as Record<string, unknown>;
   const normalized = normalizeContactPreferences(record as Partial<ContactPreferences>);
   // One-shot: rewrite stored pairs to the fixed system catalog when they diverge.
   if (rawNeedsRelationshipPairsRewrite(record)) {
-    await upsertContactModulePreferences(requireTenant(), Object.assign({}, normalized));
+    await upsertContactModulePreferences(tenant, Object.assign({}, normalized));
   }
   // Align lookups + field-config options with pair-derived labels (purges stale seeds).
   await syncRelationshipMirrorsFromPairs(

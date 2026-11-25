@@ -33,12 +33,12 @@ Repository documentation is indexed in [`docs/README.md`](docs/README.md); decis
 | **Frontend UI Primitives**   | `apps/frontend/src/components/ui/`            | Reusable UI chrome, design tokens, Radix UI wrappers. Pure presentation with zero feature-domain imports.                                           |
 | **Frontend Shared Lib**      | `apps/frontend/src/lib/`                      | Application-wide apiClient, TanStack Query factories, i18n configurations, currency formatting.                                                     |
 | **Frontend Tenant Features** | `apps/frontend/src/tenant/features/{module}/` | Module pages, presentation sub-components, custom hooks. Cross-feature imports are forbidden; communication occurs via facades or `@mms/contracts`. |
-| **Backend API Routes**       | `apps/backend/src/routes/`                    | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots.                                                      |
+| **Backend API Routes**       | `apps/api/src/routes/`                        | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots.                                                      |
 | **Backend Kernel**           | `packages/be-core/`                           | Auth/session/RBAC guard factories, logger+correlation tracing, Redis/BullMQ abstractions, realtime emitters, email/notification transport adapters. |
 | **Frontend Runtime**         | `packages/fe-core/`                           | Typed API SDK, auth/tenant contexts, TanStack query/cache factories, shared form hooks and i18n initialization.                                     |
 | **Shared UI**                | `packages/ui/`                                | Primitives, layout shells, tables, form controls and dumb UI; zero API/router/domain imports.                                                       |
 | **Database Layer**           | `packages/db/`                                | Drizzle schema, migrations, seeds, soft-delete helpers and the tenant-scoped client (`withTenant`, audited `bypassTenantScope`).                    |
-| **Backend Clean Domain**     | `apps/backend/src/{module}/`                  | Clean Architecture domain layers: `use-cases/` (business logic) and `repository/` (Drizzle storage adapters).                                       |
+| **Backend Clean Domain**     | `apps/api/src/{module}/`                      | Clean Architecture domain layers: `use-cases/` (business logic) and `repository/` (Drizzle storage adapters).                                       |
 
 ---
 
@@ -92,7 +92,7 @@ MMS uses React 19 with a strict separation of concerns:
 Backend modules follow Clean Architecture principles:
 
 ```
-apps/backend/src/{module}/
+apps/api/src/{module}/
 ├── use-cases/
 │   ├── {module}UseCases.ts          # Composition root (factory + singleton) & DI wiring
 │   └── {concern}UseCases.ts         # Business logic interactors
@@ -102,7 +102,7 @@ apps/backend/src/{module}/
 ```
 
 - **Ports & Adapters over `db/repositories/`:** the real Drizzle/SQL lives in
-  `apps/backend/src/db/repositories/**` — the only layer that imports `drizzle-orm`. The domain
+  `apps/api/src/db/repositories/**` — the only layer that imports `drizzle-orm`. The domain
   `{module}/repository/{module}RepositoryAdapter.ts` is a thin binding of that SQL to the module's port
   (it contains no SQL itself). The enforced direction is
   `routes → use-cases → port → adapter → db/repositories`. Route files must not import
@@ -121,8 +121,8 @@ apps/backend/src/{module}/
 
 To prevent critical system disruptions, the following infrastructure zones require explicit, logged user authorization prior to modification:
 
-1. **Database Migrations:** `apps/backend/src/db/migrations_drizzle/` and `migrations/`.
-2. **Authentication Middleware:** `apps/backend/src/middleware/authenticate*.ts` and `apps/backend/src/services/auth/`.
+1. **Database Migrations:** `apps/api/src/db/migrations_drizzle/` and `migrations/`.
+2. **Authentication Middleware:** `apps/api/src/middleware/authenticate*.ts` and `apps/api/src/services/auth/`.
 3. **CI/CD & DevOps:** `.github/workflows/`, `Dockerfile*`, and deployment scripts.
 4. **Global Build Tooling:** `tsconfig.json`, `tailwind.config.js`, `vite.config.ts`, `turbo.json`.
 5. **Third-Party Dependencies:** New package additions require prior evaluation.

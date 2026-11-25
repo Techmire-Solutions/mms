@@ -1,6 +1,6 @@
 ---
 name: ui-ux-pro-max
-description: AI-powered design intelligence for UI/UX with 79 styles, 192 color palettes, 74 font pairings, 119 UX guidelines, and 25 chart types across 22 stacks. Generates design systems, styles, colors, typography, layout, and UX reviews. Use when generating design systems, selecting styles/palettes/typography, or retrieving UX & chart guidelines. Do NOT use for backend Fastify APIs (use mms-backend-api), database migrations (use mms-schema-migrate), or form field schemas (use mms-form-architecture).
+description: AI design intelligence (styles, palettes, typography, UX, charts). Use when design systems/palettes/typography/UX reviews. Do NOT use for backend (use mms-backend-api), DDL (use mms-schema-migrate), or forms (use mms-form-architecture).
 license: MIT
 metadata:
   owner: mms-platform

@@ -17,7 +17,7 @@ contacts only.
 
 | # | Sev | Where | Finding |
 |---|---|---|---|
-| BP1 | P1 | [`QuestionBankWorkTier.tsx:132`](../apps/frontend/src/tenant/features/question-bank/components/QuestionBankWorkTier.tsx) | **No assembly engine.** The `generate` sub-tab was one button that opened the manual paper builder. No topic weightage, difficulty distribution, type quota, marks budget, recently-used exclusion or randomness existed anywhere — so determinism, constraint satisfaction and "criteria cannot be met" had no implementation to audit. |
+| BP1 | P1 | [`QuestionBankWorkTier.tsx:132`](../apps/tenant-web/src/tenant/features/question-bank/components/QuestionBankWorkTier.tsx) | **No assembly engine.** The `generate` sub-tab was one button that opened the manual paper builder. No topic weightage, difficulty distribution, type quota, marks budget, recently-used exclusion or randomness existed anywhere — so determinism, constraint satisfaction and "criteria cannot be met" had no implementation to audit. |
 | BP2 | P2 | [`examinationTestTables.ts:30`](../packages/db/src/schema/examinationTestTables.ts) | `tests.difficulty` accepts `"mixed"` but nothing derives a mix; `total_marks` was unrelated to the selected questions. |
 | BP3 | P2 | `questionBankTestsHydrate.ts` | No recently-used signal was read, although `test_questions` + `tests.created_at` make it available. |
 | BP4 | P3 | `questionBankModuleManifest.ts` | `directoryViews: ["questions","generate"]` promised a generator the module did not have. |
@@ -27,10 +27,10 @@ contacts only.
 | # | Sev | Where | Finding |
 |---|---|---|---|
 | MD1 | P1 | `examinationQuestionBankTables.ts` | **No media model.** Stems and options were text-only; nothing uploaded, stored or rendered an image/audio/diagram. |
-| MD2 | P1 | [`attachmentSweepService.ts:57`](../apps/backend/src/services/attachmentSweepService.ts) | **Orphan risk, inverted.** The nightly sweep (`retentionPurgeScheduler` → `runAttachmentSweep`, `apply: true`) treated a file as an orphan unless **`contact_attachments`** referenced it. Question media stored under `attachments/` would have been deleted after the 24 h floor. |
-| MD3 | P1 | [`staticAssets.ts:158-173`](../apps/backend/src/plugins/staticAssets.ts) | The read gate hardcoded "any `…/attachments/…` path needs `contacts.read`". Attendance excuse files already fell under it, and question media there would have been unreadable for a teacher without `contacts.read`. |
-| MD4 | P2 | [`attachmentSweepService.ts:34`](../apps/backend/src/services/attachmentSweepService.ts) | The sweep only walked `tenants/*/attachments/`. Files under `images/` are never cleaned — the opposite failure, permanent orphans. |
-| MD5 | P2 | [`uploads.ts:154`](../apps/backend/src/routes/common/uploads.ts) | The delete endpoint checked references outside any transaction; a concurrent attach could be orphaned by an unlink. |
+| MD2 | P1 | [`attachmentSweepService.ts:57`](../apps/api/src/services/attachmentSweepService.ts) | **Orphan risk, inverted.** The nightly sweep (`retentionPurgeScheduler` → `runAttachmentSweep`, `apply: true`) treated a file as an orphan unless **`contact_attachments`** referenced it. Question media stored under `attachments/` would have been deleted after the 24 h floor. |
+| MD3 | P1 | [`staticAssets.ts:158-173`](../apps/api/src/plugins/staticAssets.ts) | The read gate hardcoded "any `…/attachments/…` path needs `contacts.read`". Attendance excuse files already fell under it, and question media there would have been unreadable for a teacher without `contacts.read`. |
+| MD4 | P2 | [`attachmentSweepService.ts:34`](../apps/api/src/services/attachmentSweepService.ts) | The sweep only walked `tenants/*/attachments/`. Files under `images/` are never cleaned — the opposite failure, permanent orphans. |
+| MD5 | P2 | [`uploads.ts:154`](../apps/api/src/routes/common/uploads.ts) | The delete endpoint checked references outside any transaction; a concurrent attach could be orphaned by an unlink. |
 | MD6 | P3 | `uploads.ts` | No signed/expiring URLs. Access is session + tenant + module gated, which is defensible, but it was undocumented and did not cover a question-media category. |
 
 ### 3. Duplicate & similarity detection
@@ -38,7 +38,7 @@ contacts only.
 | # | Sev | Where | Finding |
 |---|---|---|---|
 | DUP1 | P1 | `questionBankQuestionWritePlan.ts` | **No duplicate detection** of any kind — not in the form, not at the write boundary, not in a report. |
-| DUP2 | P1 | [`registerModuleCsvImportRoutes.ts:49`](../apps/backend/src/lib/registerModuleCsvImportRoutes.ts) | Bulk import and export both return **503**: no `questionBank:import` / `questionBank:export` runner is registered. "Duplicate detection during bulk import" could not run. |
+| DUP2 | P1 | [`registerModuleCsvImportRoutes.ts:49`](../apps/api/src/lib/registerModuleCsvImportRoutes.ts) | Bulk import and export both return **503**: no `questionBank:import` / `questionBank:export` runner is registered. "Duplicate detection during bulk import" could not run. |
 | DUP3 | P2 | [`questionBankTransferSchema.ts`](../packages/contracts/src/dataTransfer/schemas/questionBankTransferSchema.ts) | The CSV contract maps `title/explanation/points/source/category`, while storage uses `text/answer/marks/sourceCitations/categoryIds`; samples use `"open-ended"`/`"intermediate"`, outside the enums. Enabling the runner as-is would export empty stems and import invalid types. |
 
 ### Loops, races and orphans
@@ -68,10 +68,10 @@ contacts only.
 `test_blueprint_buckets` (ordered buckets, target checks, FORCE RLS) and `tests.assembly_seed`.
 
 **Assembly**
-- [`questionBankAssemblyPersist.ts`](../apps/backend/src/db/repositories/questionBankAssemblyPersist.ts)
+- [`questionBankAssemblyPersist.ts`](../packages/modules/question-bank/src/backend/repository/questionBankAssemblyPersist.ts)
   — two-query candidate load (approved, not deleted, optional recently-used exclusion), engine run,
   link/blueprint/seed persistence, published-paper refusal, all inside one transaction.
-- [`paperAssemblyUseCases.ts`](../apps/backend/src/questionBank/use-cases/paperAssemblyUseCases.ts) +
+- [`paperAssemblyUseCases.ts`](../packages/modules/question-bank/src/backend/use-cases/paperAssemblyUseCases.ts) +
   `POST /api/question-bank/tests/:id/assemble` → `{ test, seedUsed, totalMarks, selectedCount, deficits }`.
 - The `generate` sub-tab is now a bucket editor with an **Assemble** action that renders the deficit
   list.
@@ -88,7 +88,7 @@ contacts only.
   drawer (image preview, audio player, upload/remove).
 
 **Duplicates**
-- [`questionSimilarityRepository.ts`](../apps/backend/src/db/repositories/questionSimilarityRepository.ts)
+- [`questionSimilarityRepository.ts`](../packages/modules/question-bank/src/backend/repository/questionSimilarityRepository.ts)
   — `text % $q` candidate narrowing (uses the 0240 trigram index), shared-scorer re-ranking,
   `ILIKE` fallback when `pg_trgm` is unavailable.
 - `POST /api/question-bank/questions/check-duplicates` + a debounced warning in the authoring form.

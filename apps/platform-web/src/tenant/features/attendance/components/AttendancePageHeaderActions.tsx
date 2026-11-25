@@ -1,0 +1,53 @@
+import React from "react";
+import { ClipboardEdit, Download, Upload } from "lucide-react";
+import { Button } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ATTENDANCE_IMPORT_AVAILABLE } from "@/tenant/features/attendance/lib/attendanceCapabilities";
+
+export interface AttendancePageHeaderActionsProps {
+  canWrite: boolean;
+  canExport?: boolean;
+  showDeleted: boolean;
+  isExporting?: boolean;
+  onMarkAttendance: () => void;
+  onImport: () => void;
+  onExport?: () => void;
+}
+
+export function AttendancePageHeaderActions({
+  canWrite,
+  canExport = true,
+  showDeleted,
+  isExporting = false,
+  onMarkAttendance,
+  onImport,
+  onExport,
+}: AttendancePageHeaderActionsProps): React.JSX.Element | null {
+  const { t } = useTranslation();
+
+  if (!canWrite || showDeleted) return null;
+
+  return (
+    <div className="flex items-center gap-2">
+      {canExport && onExport ? (
+        <Button
+          variant="ghost"
+          icon={Download}
+          onClick={onExport}
+          loading={isExporting}
+          disabled={isExporting}
+        >
+          {t("common.export")}
+        </Button>
+      ) : null}
+      {ATTENDANCE_IMPORT_AVAILABLE ? (
+        <Button variant="outline" icon={Upload} onClick={onImport}>
+          {t("common.import")}
+        </Button>
+      ) : null}
+      <Button variant="primary" icon={ClipboardEdit} onClick={onMarkAttendance}>
+        {t("attendance.tabs.mark")}
+      </Button>
+    </div>
+  );
+}

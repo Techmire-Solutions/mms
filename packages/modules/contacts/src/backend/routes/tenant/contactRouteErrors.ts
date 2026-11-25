@@ -1,7 +1,7 @@
 import type { FastifyReply } from "fastify";
 import { ConflictError, sendDatabaseError, sendForbidden } from "@mms/be-core/http/errors";
 import { replyValidationError } from "@mms/be-core/http/routes";
-import { ContactPermissionError, ContactUniqueFieldError } from "../../services/contactService.js";
+import { ContactPermissionError, ContactUniqueFieldError } from "../../services/index.js";
 
 export interface ParsedUniqueConstraintError {
   fieldId: string;

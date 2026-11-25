@@ -14,9 +14,9 @@ import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from "@mms/be
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
 import { sendValidated } from "@mms/be-core/http/routes";
 import { withTenant } from "@mms/db/context";
-import { postFxRevaluation, previewFxRevaluation } from "../use-cases/fxRevaluationUseCases.js";
-import { buildFxReport } from "../use-cases/fxReportUseCases.js";
-import { fxReportDeps, fxRevaluationDeps as deps } from "../use-cases/fxRevaluationDeps.js";
+import { postFxRevaluation, previewFxRevaluation } from "../use-cases/index.js";
+import { buildFxReport } from "../use-cases/index.js";
+import { fxReportDeps, fxRevaluationDeps as deps } from "../use-cases/index.js";
 
 const COLLECTION = ACCOUNTING_MODULE_MANIFEST.collectionKey;
 

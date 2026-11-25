@@ -9,7 +9,7 @@ import { canWriteCollection } from "@mms/be-core/rbac";
 import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from "@mms/be-core/http/errors";
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
 import { sendValidated } from "@mms/be-core/http/routes";
-import { seedDefaultChartOfAccountsUseCase } from "../use-cases/seedDefaultChartOfAccounts.js";
+import { seedDefaultChartOfAccountsUseCase } from "../use-cases/index.js";
 
 /** The seed takes no input; reject a body rather than silently ignoring one. */
 const emptyBodySchema = z.object({}).strict();

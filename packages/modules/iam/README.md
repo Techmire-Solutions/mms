@@ -19,7 +19,7 @@ TypeScript source.
 ## Backend composition
 
 The module owns policy and orchestration; data/cross-domain access is injected
-through `IamPorts` implemented by `apps/backend/src/modules/iam/adapters.ts`.
+through `IamPorts` implemented by `apps/api/src/modules/iam/adapters.ts`.
 The app mounts the route plugins inside its existing auth scopes:
 
 - tenant: `authenticateTenant` + `registerModuleAccess(scope, "users")`
@@ -100,7 +100,7 @@ node --test scripts/ci/module-audience-boundaries.test.mjs   # tenant-web probe
 pnpm run check:module-boundaries                             # app/module source ratchet
 
 # Real-Postgres proof of the platform adapter (offset/count/order/tenant scoping):
-pnpm --filter mms-backend exec vitest run --config vitest.db.config.ts \
+pnpm --filter mms-api exec vitest run --config vitest.db.config.ts \
   src/__tests__/db-integration/iamPlatformSearch.db.integration.test.ts
 ```
 

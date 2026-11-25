@@ -22,8 +22,8 @@ import {
   previewIas29Restatement,
   savePriceIndices,
   updateHyperinflationSettings,
-} from "../use-cases/ias29UseCases.js";
-import { ias29Deps as deps } from "../use-cases/ias29Deps.js";
+} from "../use-cases/index.js";
+import { ias29Deps as deps } from "../use-cases/index.js";
 
 const COLLECTION = ACCOUNTING_MODULE_MANIFEST.collectionKey;
 const SETUP_WRITE = { moduleAction: "setupWrite" } as const;

@@ -4,13 +4,13 @@ paths:
   - "package.json"
   - "pnpm-workspace.yaml"
   - "turbo.json"
-  - "apps/backend/Dockerfile"
+  - "apps/api/Dockerfile"
   - "restart_servers.sh"
-  - "apps/backend/.env.example"
+  - "apps/api/.env.example"
   - "scripts/**/*.sh"
   - "scripts/apache/**"
   - "scripts/production/**"
-  - "apps/backend/src/index.ts"
+  - "apps/api/src/index.ts"
   - ".github/workflows/**"
   - "ecosystem.config.cjs"
   - "docker-compose*.yml"
@@ -51,7 +51,7 @@ paths:
 - **Verification Cron & Tiering:** Scheduled `runAuditVerificationJob` validates Merkle roots and hash chains (`mms-data-layer.md` §5). Cold audit archives (>90 days) export to WORM-locked storage (S3 Object Lock / MinIO); monthly partitions detached via automated lifecycle.
 
 ## 6. Environment Variables & Secret Lifecycle
-- **Documentation & Hygiene:** Document variable shape and safe defaults in `apps/backend/.env.example` in the same change. Never commit real `.env` files.
+- **Documentation & Hygiene:** Document variable shape and safe defaults in `apps/api/.env.example` in the same change. Never commit real `.env` files.
 - **Client Bundle Isolation:** Only `VITE_*` keys reach the browser. Never expose `JWT_SECRET`, `DATABASE_URL`, `REDIS_URL`, or server flags in frontend code or Vite `define`.
 - **Fail Closed:** Fail process startup immediately if required security credentials (`JWT_SECRET`, `DATABASE_URL`) are missing or defaulted.
 - **Zero Echo:** Never log or output secrets into error messages, health endpoints, CI logs, or transcripts.

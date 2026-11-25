@@ -2,7 +2,7 @@ import React from "react";
 import { GripVertical, Eye, EyeOff } from "lucide-react";
 import type { ModuleColumnCustomizerListProps } from "./moduleColumnCustomizerTypes";
 import { cn } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 
 export type { ModuleColumnCustomizerListProps };
 

@@ -7,6 +7,8 @@ import {
   waitForAppShellReady,
 } from "../../helpers/responsive.js";
 
+const PLATFORM_ORIGIN = process.env.PLATFORM_BASE_URL || "http://localhost:5174";
+
 const APEX_READY =
   '#platform-setup-email, #platform-email, a[href*="login"], button:has-text("Sign"), #main-content';
 
@@ -17,10 +19,16 @@ function getTenantOrigin(subdomain: string, baseURL?: string): string {
   return base.origin;
 }
 
-const PUBLIC_ROUTES: readonly { path: string; ready?: string; checkTouch?: boolean }[] = [
-  { path: "/", ready: APEX_READY, checkTouch: true },
+const PUBLIC_ROUTES: readonly {
+  path: string;
+  origin?: string;
+  ready?: string;
+  checkTouch?: boolean;
+}[] = [
+  { path: "/", origin: PLATFORM_ORIGIN, ready: APEX_READY, checkTouch: true },
   {
     path: "/platform/forgot-password",
+    origin: PLATFORM_ORIGIN,
     ready: 'form, input[type="email"], #email, button',
     checkTouch: true,
   },
@@ -89,11 +97,12 @@ test.describe("Unknown tenant host redirect", { tag: "@smoke" }, () => {
 test.describe("Public shell responsive layout", { tag: "@smoke" }, () => {
   for (const viewport of RESPONSIVE_VIEWPORTS) {
     for (const route of PUBLIC_ROUTES) {
+      const routeTarget = route.origin ? `${route.origin}${route.path}` : route.path;
       test(`${viewport.name} (${viewport.width}px) ${route.path} layout & touch targets`, async ({
         page,
       }) => {
         await page.setViewportSize(viewport);
-        await openPublicRoute(page, route.path, route.ready);
+        await openPublicRoute(page, routeTarget, route.ready);
         await assertNoHorizontalOverflow(page);
         if (route.checkTouch) {
           await assertPrimaryControlsMeetTouchTarget(page);
@@ -104,7 +113,7 @@ test.describe("Public shell responsive layout", { tag: "@smoke" }, () => {
         page,
       }) => {
         await page.setViewportSize(viewport);
-        await openPublicRoute(page, route.path, route.ready);
+        await openPublicRoute(page, routeTarget, route.ready);
         await forceRtl(page);
         await assertNoHorizontalOverflow(page);
       });

@@ -6,7 +6,7 @@ Operational guide for responding to production outages, failed deployments, and 
 
 Run the server diagnostic script to inspect processes, ports, memory, and Apache proxy state:
 ```bash
-bash scripts/server-diagnose.sh apps/backend/.env
+bash scripts/server-diagnose.sh apps/api/.env
 ```
 
 Key checks:

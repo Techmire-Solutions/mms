@@ -1,0 +1,88 @@
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import type { Contact } from "@mms/contracts";
+import { ContactDetailFiles } from "./ContactDetailFiles.js";
+
+vi.mock("@mms/ui/app/DashedFileDropZone", async (importOriginal) => ({
+  ...((await importOriginal()) as Record<string, unknown>),
+  DashedFileDropZone: ({ title }: { title: string }) => <div data-testid="drop-zone">{title}</div>,
+}));
+
+const translationState = vi.hoisted(() => ({ language: "en" }));
+
+vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
+  ...((await importOriginal()) as Record<string, unknown>),
+  useTranslation: () => ({
+    t: (key: string) => key,
+    language: translationState.language,
+  }),
+}));
+
+const mockContact: Contact = {
+  id: "cnt-1",
+  name: "Zayd Harith",
+  firstName: "Zayd",
+  lastName: "Harith",
+  attachments: [
+    {
+      id: "file-1",
+      name: "id_card.pdf",
+      size: 204800,
+      type: "application/pdf",
+      date: "2024-01-01T00:00:00Z",
+      url: "https://example.com/id_card.pdf",
+    },
+  ],
+  type: "student",
+  status: "active",
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z",
+};
+
+describe("ContactDetailFiles Component", () => {
+  it("renders drop zone and attachments list", () => {
+    const html = renderToStaticMarkup(
+      <ContactDetailFiles
+        contact={mockContact}
+        canPersistContact={true}
+        isDragging={false}
+        isUploading={false}
+        fileInputRef={{ current: null }}
+        onDraggingChange={vi.fn()}
+        onFiles={vi.fn()}
+        onFileChange={vi.fn()}
+        onRequestDelete={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("contacts.detail.cloudStorageRepository");
+    expect(html).toContain("id_card.pdf");
+    expect(html).toContain("200.0 contacts.detail.kbLabel");
+  });
+});
+
+describe("ContactDetailFiles locale-aware sizes", () => {
+  it("formats attachment sizes with the application language", () => {
+    translationState.language = "fa";
+    try {
+      const html = renderToStaticMarkup(
+        <ContactDetailFiles
+          contact={mockContact}
+          canPersistContact={false}
+          isDragging={false}
+          isUploading={false}
+          fileInputRef={{ current: null }}
+          onDraggingChange={vi.fn()}
+          onFiles={vi.fn()}
+          onFileChange={vi.fn()}
+          onRequestDelete={vi.fn()}
+        />,
+      );
+
+      expect(html).not.toContain("200.0");
+      expect(html).toContain("۲۰۰");
+    } finally {
+      translationState.language = "en";
+    }
+  });
+});

@@ -1,0 +1,123 @@
+import type { ModuleColumnCustomizerProps } from "@mms/fe-core/components/ModuleColumnCustomizer";
+import {
+  WorkListFiltersScaffold,
+  type WorkListFilterChip,
+} from "../host/WorkListFiltersScaffold.js";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import type { WorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
+import type { Session } from "@mms/contracts";
+import { EnrollmentsFiltersMenuButton } from "./EnrollmentsFiltersMenuButton";
+
+export const ENROLLMENTS_WORK_SEARCH_INPUT_ID = "enrollments-work-search";
+
+export interface EnrollmentsListFiltersProps {
+  search: string;
+  statusFilter: string;
+  sessionFilter: string;
+  sessions: Session[];
+  showDeleted: boolean;
+  canDelete: boolean;
+  statusConfig: Record<string, StatusBadgeConfigItem>;
+  columnCustomizer: ModuleColumnCustomizerProps;
+  onSearchChange: (value: string) => void;
+  onStatusChange: (value: string) => void;
+  onSessionChange: (value: string) => void;
+  onClearFilters: () => void;
+  onShowDeletedChange?: (showDeleted: boolean) => void;
+  viewMode: WorkDirectoryViewMode;
+  onViewModeChange: (mode: WorkDirectoryViewMode) => void;
+}
+
+export function EnrollmentsListFilters({
+  search,
+  statusFilter,
+  sessionFilter,
+  sessions,
+  showDeleted,
+  canDelete,
+  statusConfig,
+  columnCustomizer,
+  onSearchChange,
+  onStatusChange,
+  onSessionChange,
+  onClearFilters,
+  onShowDeletedChange,
+  viewMode,
+  onViewModeChange,
+}: EnrollmentsListFiltersProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const activeFilterCount = (statusFilter !== "all" ? 1 : 0) + (sessionFilter !== "all" ? 1 : 0);
+
+  const statusOptions = Object.keys(statusConfig).map((statusKey) => ({
+    value: statusKey,
+    label: statusConfig[statusKey]?.label ?? statusKey,
+  }));
+  const sessionOptions = sessions.map((sessionItem) => ({
+    value: sessionItem.id,
+    label: sessionItem.name,
+  }));
+
+  const chips: WorkListFilterChip[] = [
+    ...(statusFilter !== "all"
+      ? [
+          {
+            key: `status:${statusFilter}`,
+            label: statusConfig[statusFilter]?.label ?? statusFilter,
+            onRemove: () => onStatusChange("all"),
+          },
+        ]
+      : []),
+    ...(sessionFilter !== "all"
+      ? [
+          {
+            key: `session:${sessionFilter}`,
+            label: sessions.find((s) => s.id === sessionFilter)?.name ?? sessionFilter,
+            onRemove: () => onSessionChange("all"),
+          },
+        ]
+      : []),
+  ];
+
+  return (
+    <WorkListFiltersScaffold
+      regionLabel={t("nav.enrollments")}
+      search={search}
+      onSearchChange={onSearchChange}
+      searchPlaceholder={t("enrollments.searchPlaceholder")}
+      searchId={ENROLLMENTS_WORK_SEARCH_INPUT_ID}
+      activeFilterCount={activeFilterCount}
+      clearFiltersLabel={t("enrollments.clearFilters")}
+      onClearFilters={onClearFilters}
+      filterButton={
+        <EnrollmentsFiltersMenuButton
+          statusFilter={statusFilter}
+          sessionFilter={sessionFilter}
+          statusOptions={statusOptions}
+          sessionOptions={sessionOptions}
+          activeFilterCount={activeFilterCount}
+          onStatusFilterChange={onStatusChange}
+          onSessionFilterChange={onSessionChange}
+          onClearFilters={onClearFilters}
+        />
+      }
+      chips={chips}
+      trashToggle={
+        canDelete && onShowDeletedChange
+          ? {
+              canViewDeleted: canDelete,
+              viewingDeleted: showDeleted,
+              onToggle: (viewing: any) => onShowDeletedChange(viewing),
+              activeLabel: t("enrollments.showActive"),
+              deletedLabel: t("enrollments.showDeleted"),
+            }
+          : undefined
+      }
+      viewModeToggle={{
+        viewMode,
+        onViewModeChange,
+      }}
+      columnCustomizer={columnCustomizer}
+    />
+  );
+}

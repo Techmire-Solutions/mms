@@ -43,33 +43,33 @@ jobs:
         with:
           filters: |
             backend_db:
-              - 'apps/backend/src/db/**'
+              - 'apps/api/src/db/**'
               # Target root (migration plan P0/P7): a no-op until apps/api exists,
               # but it means the DB job cannot silently skip the moved code.
               - 'apps/api/**'
               - 'packages/be-core/**'
               - 'packages/db/**'
               - 'packages/modules/**'
-              - 'apps/backend/src/examinations/**'
-              - 'apps/backend/src/routes/tenant/examinations/**'
+              - 'apps/api/src/examinations/**'
+              - 'apps/api/src/routes/tenant/examinations/**'
               - 'packages/db/drizzle.config.ts'
-              - 'apps/backend/src/**/repository/**'
-              - 'apps/backend/src/**/ledgerPosting/**'
-              - 'apps/backend/src/**/use-cases/**'
+              - 'apps/api/src/**/repository/**'
+              - 'apps/api/src/**/ledgerPosting/**'
+              - 'apps/api/src/**/use-cases/**'
               # 66 files under services/ import drizzle-orm or db/repositories
               # directly (grandfathered by check-backend-structure). Their SQL
               # changes must run the real-Postgres suite.
-              - 'apps/backend/src/services/**'
-              - 'apps/backend/src/accounting/**'
+              - 'apps/api/src/services/**'
+              - 'apps/api/src/accounting/**'
               # lib/auditCheckpoint.ts, lib/subjectKeyService.ts and the auth
               # middleware issue real SQL / protect RLS-critical paths; without
               # these a PR can skip both DB integration and the RLS suite.
-              - 'apps/backend/src/lib/**'
-              - 'apps/backend/src/middleware/**'
-              - 'apps/backend/src/__tests__/db-integration/**'
-              - 'apps/backend/src/__tests__/rls/**'
-              - 'apps/backend/vitest.db.config.ts'
-              - 'apps/backend/vitest.rls.config.ts'
+              - 'apps/api/src/lib/**'
+              - 'apps/api/src/middleware/**'
+              - 'apps/api/src/__tests__/db-integration/**'
+              - 'apps/api/src/__tests__/rls/**'
+              - 'apps/api/vitest.db.config.ts'
+              - 'apps/api/vitest.rls.config.ts'
               - 'packages/contracts/**'
               # Shared TS/ESLint presets affect the backend's compile/lint; keep
               # them in the job's input set (migration plan P0 filter policy).
@@ -78,7 +78,6 @@ jobs:
               - 'pnpm-lock.yaml'
               - '.github/**'
             frontend:
-              - 'apps/frontend/**'
               # Target roots (migration plan P0/P8) — no-ops until the split.
               - 'apps/tenant-web/**'
               - 'apps/platform-web/**'
@@ -94,7 +93,7 @@ jobs:
               - 'pnpm-lock.yaml'
               - '.github/**'
             backend_unit:
-              - 'apps/backend/**'
+              - 'apps/api/**'
               # Target root (migration plan P0/P7).
               - 'apps/api/**'
               - 'packages/contracts/**'
@@ -138,7 +137,7 @@ jobs:
               - 'turbo.json'
               - '**/tsconfig*.json'
               - '**/vitest*.config.*'
-              - 'apps/frontend/src/test/**'
+              - 'apps/tenant-web/src/test/**'
               - '.github/**'
 
       - name: Decide test scope
@@ -234,7 +233,7 @@ jobs:
       - name: Lint warnings report (frontend, non-blocking)
         if: github.event_name != 'pull_request'
         continue-on-error: true
-        run: pnpm --filter mms-frontend lint:warn
+        run: pnpm --filter mms-tenant-web --filter mms-platform-web lint:warn
 
       # Formatting is owned by Prettier (.prettierrc.json); ESLint defers all
       # stylistic rules to it via eslint-config-prettier (see each eslint.config.js).
@@ -256,7 +255,7 @@ jobs:
       # Fails on high/critical advisories. One moderate finding is a reviewed,
       # documented exception (ts-deepmerge via @ts-rest/open-api) — see the
       # `overrides` block in pnpm-workspace.yaml and the OpenAPI test in
-      # apps/backend/src/__tests__/app.health.test.ts for the full rationale.
+      # apps/api/src/__tests__/app.health.test.ts for the full rationale.
       # Keeping this at `high` means the exception never masks a serious
       # advisory, which is the failure mode of blanket-ignoring audit output.
       - name: Dependency audit (high and critical)
@@ -320,7 +319,7 @@ jobs:
 
       # Ratchet: no new write-blocking CREATE INDEX on large tables in migrations.
       # CONCURRENTLY cannot live in a migration (Drizzle runs each migration run in
-      # one transaction) — use `pnpm --filter mms-backend index:concurrent`.
+      # one transaction) — use `pnpm --filter mms-api index:concurrent`.
       - name: Migration index lock safety
         run: pnpm run check:migration-indexes
 
@@ -331,7 +330,7 @@ jobs:
 
       # Ratchet (ADR-011): route handlers must reach storage only through their
       # module's use-cases/repository seam. Catches static AND dynamic
-      # `db/repositories` / `drizzle-orm` imports in apps/backend/src/routes/**.
+      # `db/repositories` / `drizzle-orm` imports in apps/api/src/routes/**.
       # Baseline is 0 — every offender has been migrated.
       - name: Backend route→storage boundary
         run: pnpm run check:backend-boundaries
@@ -483,12 +482,6 @@ jobs:
 
       # Frontend bundle budget gate: catches chunk bloat and un-lazy-loaded dependencies
       - name: Frontend bundle budget
-        # Migration (P5/P6): moving UI primitives into @mms/ui and the vertical
-        # modules changes chunk boundaries; measured 4.51 MB gzip against the
-        # 4.5 MB budget. Deliberate 0.05 MB headroom for the migration branch —
-        # restore to 4.5 once the module extraction lands.
-        env:
-          BUNDLE_BUDGET_GZIP_MB: "4.55"
         run: pnpm run check:bundle
 
       # Service-worker precache budget: keeps optional vendors/locale packs lazy
@@ -599,7 +592,7 @@ jobs:
       - name: Run Frontend Tests (changed files only, with coverage)
         if: needs.changes.outputs.test_scope == 'changed'
         run: |
-          pnpm --filter mms-frontend exec vitest run \
+          pnpm --filter mms-tenant-web --filter mms-platform-web exec vitest run \
             --changed HEAD^1 \
             --passWithNoTests \
             --coverage \
@@ -617,11 +610,14 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          node scripts/ci/check-changed-coverage.mjs \
-            --coverage apps/frontend/coverage-changed \
-            --root apps/frontend/src \
-            --base "${BASE_SHA}" \
-            --min 60
+          # Both consoles run in the vitest step above and each writes its own report; enforce both.
+          for app in tenant-web platform-web; do
+            node scripts/ci/check-changed-coverage.mjs \
+              --coverage "apps/${app}/coverage-changed" \
+              --root "apps/${app}/src" \
+              --base "${BASE_SHA}" \
+              --min 60
+          done
 
       # The matrix is built from a job output, so it reaches the shell through
       # env rather than inline template expansion (zizmor template-injection).
@@ -631,8 +627,8 @@ jobs:
           SHARD_INDEX: ${{ matrix.shardIndex }}
           SHARD_TOTAL: ${{ matrix.shardTotal }}
         run: |
-          mkdir -p apps/frontend/.vitest-reports
-          pnpm --filter mms-frontend exec vitest run \
+          mkdir -p apps/tenant-web/.vitest-reports apps/platform-web/.vitest-reports
+          pnpm --filter mms-tenant-web --filter mms-platform-web exec vitest run \
             --shard="${SHARD_INDEX}/${SHARD_TOTAL}" \
             --coverage \
             --coverage.thresholds.lines=0 \
@@ -649,7 +645,15 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: vitest-blob-report-${{ matrix.shardIndex }}
-          path: apps/frontend/.vitest-reports/blob-${{ matrix.shardIndex }}.json
+          path: apps/tenant-web/.vitest-reports/blob-${{ matrix.shardIndex }}.json
+          retention-days: 1
+
+      - name: Upload Platform Shard Report Artifact
+        if: always() && needs.changes.outputs.test_scope == 'full'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vitest-platform-blob-report-${{ matrix.shardIndex }}
+          path: apps/platform-web/.vitest-reports/blob-${{ matrix.shardIndex }}.json
           retention-days: 1
 
   test-frontend-coverage:
@@ -671,22 +675,29 @@ jobs:
       - name: Setup Environment
         uses: ./.github/actions/setup-mms
         with:
-          install-filter: "mms-frontend..."
+          install-filter: "mms-tenant-web... mms-platform-web..."
 
       - name: Download All Shard Report Artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: vitest-blob-report-*
           merge-multiple: true
-          path: apps/frontend/.vitest-reports
+          path: apps/tenant-web/.vitest-reports
+
+      - name: Download Platform Shard Report Artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: vitest-platform-blob-report-*
+          merge-multiple: true
+          path: apps/platform-web/.vitest-reports
 
       - name: Merge Shard Reports & Enforce Coverage Gate
         run: |
-          mkdir -p apps/frontend/.vitest-reports
-          if [ -d "apps/frontend/.vitest-reports" ] && [ "$(ls -A apps/frontend/.vitest-reports)" ]; then
-            pnpm --filter mms-frontend exec vitest run --merge-reports=.vitest-reports --coverage
+          mkdir -p apps/tenant-web/.vitest-reports apps/platform-web/.vitest-reports
+          if [ -d "apps/tenant-web/.vitest-reports" ] && [ "$(ls -A apps/tenant-web/.vitest-reports)" ] && [ -d "apps/platform-web/.vitest-reports" ] && [ "$(ls -A apps/platform-web/.vitest-reports)" ]; then
+            pnpm --filter mms-tenant-web --filter mms-platform-web exec vitest run --merge-reports=.vitest-reports --coverage
           else
-            echo "::error::No vitest blob reports found in apps/frontend/.vitest-reports to merge!"
+            echo "::error::Missing vitest blob reports in apps/tenant-web/.vitest-reports or apps/platform-web/.vitest-reports to merge!"
             exit 1
           fi
 
@@ -734,7 +745,7 @@ jobs:
       - name: Run Backend Unit Tests (changed files only, with coverage)
         if: needs.changes.outputs.test_scope == 'changed'
         run: |
-          pnpm --filter mms-backend exec vitest run \
+          pnpm --filter mms-api exec vitest run \
             --changed HEAD^1 \
             --passWithNoTests \
             --coverage \
@@ -751,23 +762,23 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           node scripts/ci/check-changed-coverage.mjs \
-            --coverage apps/backend/coverage-changed \
-            --root apps/backend/src \
+            --coverage apps/api/coverage-changed \
+            --root apps/api/src \
             --base "${BASE_SHA}" \
             --min 55
 
       # Shards collect coverage (thresholds zeroed — a shard only sees a slice of
       # the suite, so a per-shard percentage is meaningless) and emit a blob
       # report; `test-backend-coverage` merges them and enforces the real
-      # thresholds from apps/backend/vitest.config.ts globally.
+      # thresholds from apps/api/vitest.config.ts globally.
       - name: Run Backend Unit Tests Shard & Generate Blob Report
         if: needs.changes.outputs.test_scope == 'full'
         env:
           SHARD_INDEX: ${{ matrix.shardIndex }}
           SHARD_TOTAL: ${{ matrix.shardTotal }}
         run: |
-          mkdir -p apps/backend/.vitest-reports
-          pnpm --filter mms-backend exec vitest run \
+          mkdir -p apps/api/.vitest-reports
+          pnpm --filter mms-api exec vitest run \
             --shard="${SHARD_INDEX}/${SHARD_TOTAL}" \
             --coverage \
             --coverage.thresholds.lines=0 \
@@ -784,7 +795,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: backend-vitest-blob-report-${{ matrix.shardIndex }}
-          path: apps/backend/.vitest-reports/blob-${{ matrix.shardIndex }}.json
+          path: apps/api/.vitest-reports/blob-${{ matrix.shardIndex }}.json
           retention-days: 1
 
   test-backend-coverage:
@@ -806,25 +817,25 @@ jobs:
         with:
           build-shared: "true"
           # Only the backend workspace project is needed to merge reports.
-          install-filter: "mms-backend..."
+          install-filter: "mms-api..."
 
       - name: Download All Shard Report Artifacts
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: backend-vitest-blob-report-*
           merge-multiple: true
-          path: apps/backend/.vitest-reports
+          path: apps/api/.vitest-reports
 
       # Merging blob reports runs no tests, but it does evaluate the merged
-      # coverage, so the thresholds in apps/backend/vitest.config.ts are enforced
+      # coverage, so the thresholds in apps/api/vitest.config.ts are enforced
       # here against the whole suite (shards zeroed them deliberately).
       - name: Merge Shard Reports & Enforce Coverage Gate
         run: |
-          mkdir -p apps/backend/.vitest-reports
-          if [ -d "apps/backend/.vitest-reports" ] && [ "$(ls -A apps/backend/.vitest-reports)" ]; then
-            pnpm --filter mms-backend exec vitest run --merge-reports=.vitest-reports --coverage
+          mkdir -p apps/api/.vitest-reports
+          if [ -d "apps/api/.vitest-reports" ] && [ "$(ls -A apps/api/.vitest-reports)" ]; then
+            pnpm --filter mms-api exec vitest run --merge-reports=.vitest-reports --coverage
           else
-            echo "::error::No vitest blob reports found in apps/backend/.vitest-reports to merge!"
+            echo "::error::No vitest blob reports found in apps/api/.vitest-reports to merge!"
             exit 1
           fi
 
@@ -871,36 +882,36 @@ jobs:
           build-shared: "true"
 
       - name: Run DB Migrations
-        run: pnpm --filter mms-backend run db:migrate
+        run: pnpm --filter mms-api run db:migrate
 
       # Real-Postgres suite for the accounting module (parallel-file deadlocks and
       # the restore-attribution clock race were fixed; keep it serialized here).
-      - name: Run Accounting Module DB Tests
-        run: pnpm --filter @mms/mod-accounting run test:db
+      - name: Run Accounting Module DB Tests (with coverage)
+        run: pnpm --filter @mms/mod-accounting run test:db:coverage:finance
 
       - name: Run Backend DB Integration Tests (with Sessions coverage)
-        run: pnpm --filter mms-backend run test:db:coverage
+        run: pnpm --filter mms-api run test:db:coverage
 
       - name: Sessions integration coverage ratchet
-        run: node scripts/ci/check-session-coverage.mjs --coverage apps/backend/coverage-sessions-db
+        run: node scripts/ci/check-session-coverage.mjs --coverage apps/api/coverage-sessions-db
 
       - name: Enrollments DB coverage
-        run: pnpm --filter mms-backend run test:db:coverage:enrollments
+        run: pnpm --filter mms-api run test:db:coverage:enrollments
 
       - name: Enrollments integration coverage ratchet
-        run: node scripts/ci/check-enrollment-coverage.mjs --coverage apps/backend/coverage-enrollments-db
+        run: node scripts/ci/check-enrollment-coverage.mjs --coverage apps/api/coverage-enrollments-db
 
       - name: Attendance DB coverage
-        run: pnpm --filter mms-backend run test:db:coverage:attendance
+        run: pnpm --filter mms-api run test:db:coverage:attendance
 
       - name: Attendance integration coverage ratchet
-        run: node scripts/ci/check-attendance-coverage.mjs --coverage apps/backend/coverage-attendance-db
+        run: node scripts/ci/check-attendance-coverage.mjs --coverage apps/api/coverage-attendance-db
 
       - name: Examinations DB coverage
-        run: pnpm --filter mms-backend run test:db:coverage:examinations
+        run: pnpm --filter mms-api run test:db:coverage:examinations
 
       - name: Examinations integration coverage ratchet
-        run: node scripts/ci/check-examinations-coverage.mjs --coverage apps/backend/coverage-examinations-db
+        run: node scripts/ci/check-examinations-coverage.mjs --coverage apps/api/coverage-examinations-db
 
       - name: DB test hygiene and manifest (enrollments + attendance)
         run: |
@@ -908,21 +919,13 @@ jobs:
           node scripts/ci/check-db-test-manifest.mjs
 
       - name: Repeat concurrency suites (enrollments, attendance, finance)
-        run: pnpm --filter mms-backend run test:db:concurrency
+        run: pnpm --filter mms-api run test:db:concurrency
 
       - name: Finance/accounting DB coverage
-        run: pnpm --filter mms-backend run test:db:coverage:finance
-
-      # The extraction moved the accounting repository/routes/ledger posting into the module;
-      # its DB suites are the coverage for that half of the slice.
-      - name: Accounting module finance coverage
-        run: pnpm --filter @mms/mod-accounting run test:db:coverage:finance
+        run: pnpm --filter mms-api run test:db:coverage:finance
 
       - name: Finance/accounting coverage ratchet
-        run: |
-          node scripts/ci/check-finance-coverage.mjs \
-            --coverage apps/backend/coverage-finance-db \
-            --coverage packages/modules/accounting/coverage-finance-db
+        run: node scripts/ci/check-finance-coverage.mjs --coverage apps/api/coverage-finance-db --coverage packages/modules/accounting/coverage-finance-db
 
       # Accounting-only floor: the finance slice can mask an accounting regression.
       - name: Accounting coverage
@@ -930,7 +933,7 @@ jobs:
 
       - name: Shuffle enrollment DB files before execution
         run: >
-          pnpm --filter mms-backend exec vitest run --config vitest.db.config.ts
+          pnpm --filter mms-api exec vitest run --config vitest.db.config.ts
           src/__tests__/db-integration/enrollment
           src/__tests__/db-integration/registration
           src/__tests__/db-integration/attendance
@@ -985,19 +988,19 @@ jobs:
         env:
           ADMIN_DATABASE_URL: postgres://postgres:postgres@localhost:5432/mms
           MMS_DB_PASSWORD: mms_app_test
-        run: pnpm --filter mms-backend exec tsx src/scripts/provisionRlsRole.ts
+        run: pnpm --filter @mms/db exec node src/scripts/provisionRlsRole.ts
 
       - name: Run DB Migrations as mms_app (strict)
         env:
           DATABASE_URL: postgres://mms_app:mms_app_test@localhost:5432/mms
           MMS_DB_ROLE_ENFORCEMENT: strict
-        run: pnpm --filter mms-backend run db:migrate
+        run: pnpm --filter mms-api run db:migrate
 
       - name: Run RLS enforcement suite
         env:
           DATABASE_URL: postgres://mms_app:mms_app_test@localhost:5432/mms
           MMS_DB_ROLE_ENFORCEMENT: strict
-        run: pnpm --filter mms-backend run test:rls
+        run: pnpm --filter mms-api run test:rls
 
   e2e:
     needs: [changes]
@@ -1066,7 +1069,7 @@ jobs:
           build-shared: "true"
 
       - name: Run DB Migrations
-        run: pnpm --filter mms-backend run db:migrate
+        run: pnpm --filter mms-api run db:migrate
 
       - name: Cache Playwright Binaries
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

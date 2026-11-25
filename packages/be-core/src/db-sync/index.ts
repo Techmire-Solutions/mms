@@ -23,3 +23,7 @@ export type { SnapshotJsonSource } from "./streamingSnapshotJson.js";
 export * from "./documentStore.js";
 export * from "./dbPurge.js";
 export * from "./streamingSnapshotProducer.js";
+export * from "./syncLimits.js";
+export * from "./restoreLock.js";
+export * from "./restoreAudit.js";
+export * from "./backupAssetService.js";

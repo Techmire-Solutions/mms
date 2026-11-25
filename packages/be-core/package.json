@@ -143,6 +143,90 @@
     "./audit/auditTrailService": {
       "import": "./dist/audit/auditTrailService.js",
       "types": "./dist/audit/auditTrailService.d.ts"
+    },
+    "./audit/cryptoAtRest": {
+      "import": "./dist/audit/cryptoAtRest.js",
+      "types": "./dist/audit/cryptoAtRest.d.ts"
+    },
+    "./http/contentDisposition": {
+      "import": "./dist/http/contentDisposition.js",
+      "types": "./dist/http/contentDisposition.d.ts"
+    },
+    "./telemetry/metrics": {
+      "import": "./dist/telemetry/metrics.js",
+      "types": "./dist/telemetry/metrics.d.ts"
+    },
+    "./queues/concurrencyLimiter": {
+      "import": "./dist/queues/concurrencyLimiter.js",
+      "types": "./dist/queues/concurrencyLimiter.d.ts"
+    },
+    "./queues/leaderElection": {
+      "import": "./dist/queues/leaderElection.js",
+      "types": "./dist/queues/leaderElection.d.ts"
+    },
+    "./logger/devLogging": {
+      "import": "./dist/logger/devLogging.js",
+      "types": "./dist/logger/devLogging.d.ts"
+    },
+    "./jobs": {
+      "import": "./dist/jobs/index.js",
+      "types": "./dist/jobs/index.d.ts"
+    },
+    "./jobs/backgroundJobAbort": {
+      "import": "./dist/jobs/backgroundJobAbort.js",
+      "types": "./dist/jobs/backgroundJobAbort.d.ts"
+    },
+    "./jobs/backgroundJobIds": {
+      "import": "./dist/jobs/backgroundJobIds.js",
+      "types": "./dist/jobs/backgroundJobIds.d.ts"
+    },
+    "./datetime/zonedTime": {
+      "import": "./dist/datetime/zonedTime.js",
+      "types": "./dist/datetime/zonedTime.d.ts"
+    },
+    "./datetime/workspaceDayBounds": {
+      "import": "./dist/datetime/workspaceDayBounds.js",
+      "types": "./dist/datetime/workspaceDayBounds.d.ts"
+    },
+    "./datetime/icalFormat": {
+      "import": "./dist/datetime/icalFormat.js",
+      "types": "./dist/datetime/icalFormat.d.ts"
+    },
+    "./datetime": {
+      "import": "./dist/datetime/index.js",
+      "types": "./dist/datetime/index.d.ts"
+    },
+    "./cache/cacheManager": {
+      "import": "./dist/cache/cacheManager.js",
+      "types": "./dist/cache/cacheManager.d.ts"
+    },
+    "./auth/sessionClock": {
+      "import": "./dist/auth/sessionClock.js",
+      "types": "./dist/auth/sessionClock.d.ts"
+    },
+    "./auth/sessionPolicy": {
+      "import": "./dist/auth/sessionPolicy.js",
+      "types": "./dist/auth/sessionPolicy.d.ts"
+    },
+    "./auth/sessionRevocation": {
+      "import": "./dist/auth/sessionRevocation.js",
+      "types": "./dist/auth/sessionRevocation.d.ts"
+    },
+    "./jobs/backgroundJobDeadline": {
+      "import": "./dist/jobs/backgroundJobDeadline.js",
+      "types": "./dist/jobs/backgroundJobDeadline.d.ts"
+    },
+    "./storage": {
+      "import": "./dist/storage/index.js",
+      "types": "./dist/storage/index.d.ts"
+    },
+    "./http/rate-limit": {
+      "import": "./dist/http/rate-limit/index.js",
+      "types": "./dist/http/rate-limit/index.d.ts"
+    },
+    "./auth/artifacts": {
+      "import": "./dist/auth/artifacts/index.js",
+      "types": "./dist/auth/artifacts/index.d.ts"
     }
   },
   "scripts": {
@@ -163,10 +247,12 @@
     "lru-cache": "^11.5.3",
     "nodemailer": "^10.6.1",
     "pino": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@fastify/rate-limit": "^11.3.0"
   },
   "peerDependencies": {
-    "fastify": "^5.12.8"
+    "fastify": "^5.12.8",
+    "@fastify/rate-limit": "^10.3.0"
   },
   "devDependencies": {
     "@mms/eslint-config": "workspace:*",
@@ -175,6 +261,7 @@
     "eslint": "^10.15.0",
     "fastify": "catalog:",
     "typescript": "~7.0.2",
-    "vitest": "5.1.1"
+    "vitest": "5.1.1",
+    "@fastify/rate-limit": "^10.3.0"
   }
 }

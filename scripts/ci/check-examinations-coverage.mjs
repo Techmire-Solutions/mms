@@ -5,7 +5,7 @@
  * Reads the json-summary produced by `test:db:coverage:examinations` and enforces the exam
  * module/repository/route floor. Floors may only be raised (baseline policy).
  *
- *   node scripts/ci/check-examinations-coverage.mjs --coverage apps/backend/coverage-examinations-db
+ *   node scripts/ci/check-examinations-coverage.mjs --coverage apps/api/coverage-examinations-db
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -13,7 +13,7 @@ import path from "node:path";
 const args = process.argv.slice(2);
 const coverageIndex = args.indexOf("--coverage");
 const coverageDir =
-  coverageIndex >= 0 ? args[coverageIndex + 1] : "apps/backend/coverage-examinations-db";
+  coverageIndex >= 0 ? args[coverageIndex + 1] : "apps/api/coverage-examinations-db";
 const summaryPath = path.join(process.cwd(), coverageDir, "coverage-summary.json");
 
 if (!fs.existsSync(summaryPath)) {

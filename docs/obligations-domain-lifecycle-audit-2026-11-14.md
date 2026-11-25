@@ -16,7 +16,7 @@ The model in the brief is real, but it belongs to **Finance**, and that is where
 | --- | --- |
 | Draft / Pending / Partially Fulfilled / Fulfilled / Overdue / Waived / Cancelled | `INVOICE_STATUSES = paid \| pending \| overdue \| partial \| cancelled` ([financeInvoiceTypes.ts:8](../packages/contracts/src/finance/financeInvoiceTypes.ts#L8)) |
 | `assessed − fulfilled − waived == outstanding ≥ 0` | `finalAmt + lateFee − credited − paid`, integer cents, clamped at 0 ([financeInvoiceAmounts.ts:29-41](../packages/contracts/src/finance/financeInvoiceAmounts.ts#L29-L41)) |
-| "Overdue Obligations" | a dashboard widget over **finance invoices** ([OverdueObligationsWidget.tsx:26-46](../apps/frontend/src/components/dashboard-widgets/OverdueObligationsWidget.tsx#L26-L46)) |
+| "Overdue Obligations" | a dashboard widget over **finance invoices** ([OverdueObligationsWidget.tsx:26-46](../apps/tenant-web/src/components/dashboard-widgets/OverdueObligationsWidget.tsx#L26-L46)) |
 | Obligations with `status` and `dueDate` | only in the CSV contract, which invented both — now removed ([obligationsTransferSchema.ts](../packages/contracts/src/dataTransfer/schemas/obligationsTransferSchema.ts)) |
 
 What Obligations actually is: **a receipt ledger**. A collection is money received from a contact, attributed to an obligation type and a mujtahid's representative, split across the wakala's distribution rules, and posted to the general ledger. Its state space is:
@@ -44,34 +44,34 @@ Everything below is audited against **that** model, and every question in the br
 
 | # | Sev | Finding | Evidence |
 | --- | --- | --- | --- |
-| **A1** | HIGH | The domain layer is a **CRUD shell**. `obligationsUseCases` composes `createGenericRelationalService` + `defineTenantBulkCollectionService`, and all 16 original tests assert *delegation*. Module-wide there were exactly two rules: `assertDistributionAccountsValid` and the ledger wiring. | [obligationsUseCases.ts:44-70](../apps/backend/src/obligations/use-cases/obligationsUseCases.ts#L44) |
-| **A2** | HIGH | The **controller owned the transaction boundary** (4 read handlers opened `withTenant`) and reached into another module for the voucher lookup. | [obligationContractRouter.ts:49](../apps/backend/src/routes/tenant/obligations/obligationContractRouter.ts#L49) |
-| **A3** | HIGH | **Domain errors were flattened to 500**: 7 handlers were `try { … } catch { return 500 database_error }` with no log, and `assertDistributionAccountsValid` threw a bare `Error` with `statusCode` instead of an `HttpDomainError`. | [obligationContractRouter.ts:55](../apps/backend/src/routes/tenant/obligations/obligationContractRouter.ts#L55), [obligationDistributionAccounts.ts:31-35](../apps/backend/src/obligations/use-cases/obligationDistributionAccounts.ts#L31) |
-| **A4** | MEDIUM | The one real rule was **bypassed on one of three write paths**: save and replace validated the account mapping, the bulk upsert did not. | [obligationsCatalogUseCases.ts:199](../apps/backend/src/obligations/use-cases/obligationsCatalogUseCases.ts#L199) |
+| **A1** | HIGH | The domain layer is a **CRUD shell**. `obligationsUseCases` composes `createGenericRelationalService` + `defineTenantBulkCollectionService`, and all 16 original tests assert *delegation*. Module-wide there were exactly two rules: `assertDistributionAccountsValid` and the ledger wiring. | [obligationsUseCases.ts:44-70](../packages/modules/obligations/src/backend/use-cases/obligationsUseCases.ts#L44) |
+| **A2** | HIGH | The **controller owned the transaction boundary** (4 read handlers opened `withTenant`) and reached into another module for the voucher lookup. | [obligationContractRouter.ts:49](../packages/modules/obligations/src/backend/routes/obligations/obligationContractRouter.ts#L49) |
+| **A3** | HIGH | **Domain errors were flattened to 500**: 7 handlers were `try { … } catch { return 500 database_error }` with no log, and `assertDistributionAccountsValid` threw a bare `Error` with `statusCode` instead of an `HttpDomainError`. | [obligationContractRouter.ts:55](../packages/modules/obligations/src/backend/routes/obligations/obligationContractRouter.ts#L55), [obligationDistributionAccounts.ts:31-35](../packages/modules/obligations/src/backend/use-cases/obligationDistributionAccounts.ts#L31) |
+| **A4** | MEDIUM | The one real rule was **bypassed on one of three write paths**: save and replace validated the account mapping, the bulk upsert did not. | [obligationsCatalogUseCases.ts:199](../packages/modules/obligations/src/backend/use-cases/obligationsCatalogUseCases.ts#L199) |
 | **A5** | MEDIUM | **Another module's domain lived in the obligations namespace**: the Tasks state machine (`TASK_STATUS_TRANSITIONS`, `isTaskStatusTransitionAllowed`) sat in `packages/contracts/src/obligations/` and was imported by `moduleAccessPolicy`, `tasks.contract` and `csvExport.dto`. | [tasksModuleManifest.ts:18-42](../packages/contracts/src/tasks/tasksModuleManifest.ts#L18) |
-| **A6** | MEDIUM | The **split calculation was duplicated with different normalisation**: the ledger renormalised by the sum of all rules, the frontend divided by the liability sum only — so the rep-dues figure and the posted liability diverged whenever a wakala's percentages ≠ 100. | [obligationPostingLogic.ts:129-130](../packages/contracts/src/finance/obligationPostingLogic.ts#L129), [obligationsSummaryCalculations.ts:110-114](../apps/frontend/src/tenant/features/obligations/lib/obligationsSummaryCalculations.ts#L110) |
-| **A7** | LOW | The preferences **audit row was written by the controller**. | [obligationContractRouter.ts:179](../apps/backend/src/routes/tenant/obligations/obligationContractRouter.ts#L179) |
+| **A6** | MEDIUM | The **split calculation was duplicated with different normalisation**: the ledger renormalised by the sum of all rules, the frontend divided by the liability sum only — so the rep-dues figure and the posted liability diverged whenever a wakala's percentages ≠ 100. | [obligationPostingLogic.ts:129-130](../packages/contracts/src/finance/obligationPostingLogic.ts#L129), [obligationsSummaryCalculations.ts:110-114](../apps/tenant-web/src/tenant/features/obligations/lib/obligationsSummaryCalculations.ts#L110) |
+| **A7** | LOW | The preferences **audit row was written by the controller**. | [obligationContractRouter.ts:179](../packages/modules/obligations/src/backend/routes/obligations/obligationContractRouter.ts#L179) |
 
 ### S. Lifecycle state machine
 
 | # | Sev | Finding | Evidence |
 | --- | --- | --- | --- |
-| **S1** | HIGH | **The briefed machine does not exist.** The real transitions are `active → archived` and `archived → active`, enforced as `already archived` / `already active` **404s from the generic service** — a transport-shaped rule, not a domain one. There is no "cannot cancel a settled obligation" analogue because nothing is settled. | [genericRelationalService.ts:103](../apps/backend/src/services/genericRelationalService.ts#L103) |
+| **S1** | HIGH | **The briefed machine does not exist.** The real transitions are `active → archived` and `archived → active`, enforced as `already archived` / `already active` **404s from the generic service** — a transport-shaped rule, not a domain one. There is no "cannot cancel a settled obligation" analogue because nothing is settled. | [genericRelationalService.ts:103](../apps/api/src/services/genericRelationalService.ts#L103) |
 | **S2** | HIGH | **The illegal transition this module really has: a receipt recorded for a type/representative pair with no wakala.** The browser filtered the picker; the API did not, and the posting engine then credited **100 % to income**, silently converting a wakala liability into income. | [obligationPostingLogic.ts:116](../packages/contracts/src/finance/obligationPostingLogic.ts#L116) |
-| **S3** | HIGH | **A catalogue replace could silently destroy split rules.** `mujtahids → mujtahid_reps → wakala_types → obligation_distributions` is a 3-level `ON DELETE CASCADE` (`0068`), and every `replace*ForWorkspace` deletes the rows the caller omitted — so `PUT /mujtahids/bulk` with a shortened list wiped wakalas *and* their rules. Past receipts kept their entries; every later receipt posted 100 % income. | [obligationWakalaRepository.ts:135](../apps/backend/src/db/repositories/obligationWakalaRepository.ts#L135) |
-| **S4** | MEDIUM | A wakala and its rules are **one aggregate split across two endpoints and two transactions**; between them the DB held a wakala with no rules. | [useWakalaTypeManager.ts:66](../apps/frontend/src/tenant/features/obligations/hooks/useWakalaTypeManager.ts#L66) |
-| **S5** | MEDIUM | **No set-level validation of percentages.** Individual rows are CHECKed 0–100 (migration 0258); nothing rejected a wakala totalling 40 % or 180 %, and the UI accumulated with `parseFloat`. | [useWakalaTypeManager.ts:48](../apps/frontend/src/tenant/features/obligations/hooks/useWakalaTypeManager.ts#L48) |
+| **S3** | HIGH | **A catalogue replace could silently destroy split rules.** `mujtahids → mujtahid_reps → wakala_types → obligation_distributions` is a 3-level `ON DELETE CASCADE` (`0068`), and every `replace*ForWorkspace` deletes the rows the caller omitted — so `PUT /mujtahids/bulk` with a shortened list wiped wakalas *and* their rules. Past receipts kept their entries; every later receipt posted 100 % income. | [obligationWakalaRepository.ts:135](../packages/modules/obligations/src/backend/repository/obligationWakalaRepository.ts#L135) |
+| **S4** | MEDIUM | A wakala and its rules are **one aggregate split across two endpoints and two transactions**; between them the DB held a wakala with no rules. | [useWakalaTypeManager.ts:66](../apps/tenant-web/src/tenant/features/obligations/hooks/useWakalaTypeManager.ts#L66) |
+| **S5** | MEDIUM | **No set-level validation of percentages.** Individual rows are CHECKed 0–100 (migration 0258); nothing rejected a wakala totalling 40 % or 180 %, and the UI accumulated with `parseFloat`. | [useWakalaTypeManager.ts:48](../apps/tenant-web/src/tenant/features/obligations/hooks/useWakalaTypeManager.ts#L48) |
 | **S6** | LOW | Catalogue rows have **no OCC token** — wakala/rep/type edits are last-write-wins, unlike collections (which gained `version` in 0258). | [obligationCatalogTables.ts](../packages/db/src/schema/obligationCatalogTables.ts) |
 
 ### B. Balance invariants & transactional boundaries
 
 | # | Sev | Finding | Evidence |
 | --- | --- | --- | --- |
-| **B1** | HIGH | **There is no balance to be invariant.** Nothing computes `assessed − fulfilled − waived`; the only money aggregate is `sum(amount)` over receipts (exact since the `numeric::text` fix). Every "outstanding" figure is the client-side dues computation. | [obligationRepositoryMetrics.ts:40](../apps/backend/src/db/repositories/obligationRepositoryMetrics.ts#L40) |
-| **B2** | — | The invariant the brief wants **is implemented in Finance, correctly** — locked invoice (`forUpdate`), integer cents, `delta > remaining` rejected, cancelled invoices refused. It is the reference pattern, not a defect. | [financePaymentArchiveDeltas.ts:84-110](../apps/backend/src/finance/use-cases/financePaymentArchiveDeltas.ts#L84) |
-| **B3** | HIGH | **The create/edit path is still non-atomic with the ledger**: the row commits, then the journal sync runs in another transaction with failures only logged. Archive/restore became atomic in the previous change set; save/create did not. A downgraded amount can commit while the ledger keeps the old value, and nothing reconciles it. | [obligationsUseCases.ts:100](../apps/backend/src/obligations/use-cases/obligationsUseCases.ts#L100) |
-| **B4** | MEDIUM | The ledger revision is chosen by probing epochs 0…99 one query at a time, and the epoch is read **before** the row is written (TOCTOU across the two transactions). The OCC token mitigates but does not serialise. | [obligationPostingSources.ts:45](../apps/backend/src/accounting/ledgerPosting/obligationPostingSources.ts#L45) |
-| **B5** | — | **No multi-table balance update exists to be atomic.** The brief's "update installment status + parent summary" has no implementation. The only multi-table write is collection + journal entry (+ lines), already one transaction in `persistGeneratedEntry`. | [ledgerPostingHelpers.ts:109](../apps/backend/src/accounting/ledgerPosting/ledgerPostingHelpers.ts#L109) |
+| **B1** | HIGH | **There is no balance to be invariant.** Nothing computes `assessed − fulfilled − waived`; the only money aggregate is `sum(amount)` over receipts (exact since the `numeric::text` fix). Every "outstanding" figure is the client-side dues computation. | [obligationRepositoryMetrics.ts:40](../packages/modules/obligations/src/backend/repository/obligationRepositoryMetrics.ts#L40) |
+| **B2** | — | The invariant the brief wants **is implemented in Finance, correctly** — locked invoice (`forUpdate`), integer cents, `delta > remaining` rejected, cancelled invoices refused. It is the reference pattern, not a defect. | [financePaymentArchiveDeltas.ts:84-110](../packages/modules/billing/src/backend/use-cases/financePaymentArchiveDeltas.ts) |
+| **B3** | HIGH | **The create/edit path is still non-atomic with the ledger**: the row commits, then the journal sync runs in another transaction with failures only logged. Archive/restore became atomic in the previous change set; save/create did not. A downgraded amount can commit while the ledger keeps the old value, and nothing reconciles it. | [obligationsUseCases.ts:100](../packages/modules/obligations/src/backend/use-cases/obligationsUseCases.ts#L100) |
+| **B4** | MEDIUM | The ledger revision is chosen by probing epochs 0…99 one query at a time, and the epoch is read **before** the row is written (TOCTOU across the two transactions). The OCC token mitigates but does not serialise. | [obligationPostingSources.ts:45](../packages/modules/accounting/src/backend/ledgerPosting/obligationPostingSources.ts#L45) |
+| **B5** | — | **No multi-table balance update exists to be atomic.** The brief's "update installment status + parent summary" has no implementation. The only multi-table write is collection + journal entry (+ lines), already one transaction in `persistGeneratedEntry`. | [ledgerPostingHelpers.ts:109](../packages/modules/accounting/src/backend/ledgerPosting/ledgerPostingHelpers.ts#L109) |
 
 ### E. Uncovered edge cases
 
@@ -104,7 +104,7 @@ const collectionCrud = createGenericRelationalService<ObligationCollection>({
 
 and the test suite pinned exactly that shape ("delegates to the injected repository", 16 times). A layer that only forwards cannot reject anything, which is why every defect in this report reached production.
 
-**Refactor applied.** The rules now exist as a pure domain module, [`obligations/domain/obligationWriteGuards.ts`](../apps/backend/src/obligations/domain/obligationWriteGuards.ts):
+**Refactor applied.** The rules now exist as a pure domain module, [`obligations/domain/obligationWriteGuards.ts`](../packages/modules/obligations/src/backend/domain/obligationWriteGuards.ts):
 
 | Guard | Rule |
 | --- | --- |
@@ -113,7 +113,7 @@ and the test suite pinned exactly that shape ("delegates to the injected reposit
 | `assertNoCascadingLoss` | a catalogue replace may not delete rows that wakalas or distribution rules still reference |
 | `findWakalaForReceipt` | the pair lookup the posting service also uses, extracted so the two cannot drift |
 
-They are pure (no I/O) and covered by [obligationDomainGuards.test.ts](../apps/backend/src/__tests__/obligationDomainGuards.test.ts) — 13 tests, including the float trap (`33.33 + 33.33 + 33.34`) and the "four rules on two cents" allocation.
+They are pure (no I/O) and covered by [obligationDomainGuards.test.ts](../apps/api/src/__tests__/obligationDomainGuards.test.ts) — 13 tests, including the float trap (`33.33 + 33.33 + 33.34`) and the "four rules on two cents" allocation.
 
 ### 1.2 A2 — the controller owned the transaction and crossed modules
 
@@ -204,7 +204,7 @@ PUT /api/obligations/mujtahids/bulk  [m1]        (m2 omitted)
 
 No error, no audit row, no trace. Posted receipts keep their ledger entries; every *future* receipt for those pairs falls into S2's 100 %-income fallback.
 
-**Refactor applied.** `replaceMujtahids`, `replaceMujtahidReps` and `replaceWakalaTypes` compute the doomed ids and ask `repo.countCatalogueDependents(tenant, kind, ids)` what would be lost; a non-zero answer throws `409 catalogue_in_use` naming up to five ids, the wakala count and the rule count. The count lives in a repository ([obligationCatalogueDependentsRepository.ts](../apps/backend/src/db/repositories/obligationCatalogueDependentsRepository.ts)); the *policy* lives in the use case and the message in the domain guard.
+**Refactor applied.** `replaceMujtahids`, `replaceMujtahidReps` and `replaceWakalaTypes` compute the doomed ids and ask `repo.countCatalogueDependents(tenant, kind, ids)` what would be lost; a non-zero answer throws `409 catalogue_in_use` naming up to five ids, the wakala count and the rule count. The count lives in a repository ([obligationCatalogueDependentsRepository.ts](../packages/modules/obligations/src/backend/repository/obligationCatalogueDependentsRepository.ts)); the *policy* lives in the use case and the message in the domain guard.
 
 **Deferred (D1):** move the three FKs to `RESTRICT` so the database enforces it too, and give the UI an explicit "reassign these rules / delete them" flow. The use-case guard closes the silent-loss hole without a migration.
 
@@ -278,7 +278,7 @@ Recorded as D5 rather than built, because it needs a product decision, a schema,
 
 | Area | Change |
 | --- | --- |
-| Domain | new [`obligations/domain/obligationWriteGuards.ts`](../apps/backend/src/obligations/domain/obligationWriteGuards.ts) + 13 tests |
+| Domain | new [`obligations/domain/obligationWriteGuards.ts`](../packages/modules/obligations/src/backend/domain/obligationWriteGuards.ts) + 13 tests |
 | Use cases | receipt guard on all three collection writes; catalogue cascade guard; `replaceWakalaAggregate`; upsert-path account validation; `runObligationsRead`; `loadObligationCollectionVoucher` |
 | Preferences | audit row moved into the service (actor argument) |
 | Repository | `replaceWakalaAggregateForWorkspace` (one transaction), `countCatalogueDependents` (+ port, adapter, barrel) |
@@ -320,4 +320,4 @@ Green on this change set (this repository state, no database):
 | `node scripts/check-code-norms.mjs`, `check-docs.mjs`, `pnpm check:i18n` | held |
 | `pnpm exec prettier --check` (changed files) | clean |
 
-**Verified later on a live database:** `test:db` ran in a subsequent session. [obligationsPersistenceDb.integration.test.ts](../apps/backend/src/__tests__/db-integration/obligationsPersistenceDb.integration.test.ts) initially failed — its fixtures predated the `0258` composite FKs — and passes 7/7 once the sender/mujtahid parents were seeded; `obligationsTenantIsolation` (run as a `NOBYPASSRLS` role) proves the catalogue tables stay tenant-isolated.
+**Verified later on a live database:** `test:db` ran in a subsequent session. [obligationsPersistenceDb.integration.test.ts](../apps/api/src/__tests__/db-integration/obligationsPersistenceDb.integration.test.ts) initially failed — its fixtures predated the `0258` composite FKs — and passes 7/7 once the sender/mujtahid parents were seeded; `obligationsTenantIsolation` (run as a `NOBYPASSRLS` role) proves the catalogue tables stay tenant-isolated.

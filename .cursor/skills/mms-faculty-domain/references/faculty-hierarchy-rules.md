@@ -7,7 +7,7 @@ Governs staff seniority, reporting lines, and temporal appointment constraints i
 Reporting hierarchy is **derived**, not written: a faculty member's supervisor is
 inferred from the designation tree (`parent_designation_id`), and `reportingFacultyId`
 is a read-only projection (soft-stopped on write). Rank and cycle prevention are
-enforced in `apps/backend/src/db/repositories/facultyDesignationValidation.ts`:
+enforced in `apps/api/src/db/repositories/facultyDesignationValidation.ts`:
 - **Seniority Rank Direction:** Lower rank numbers indicate higher seniority (e.g., Rank 1 = Principal, Rank 5 = Head of Department, Rank 10 = Lecturer). `hierarchy_rank` is derived from the parent-chain depth.
 - **Circular Hierarchy Prohibition:** a designation can never be its own ancestor — checked via a recursive CTE (`WITH RECURSIVE`) in `validateFacultyDesignationLink()`.
 
@@ -19,7 +19,7 @@ constraint `faculty_designation_assignments_no_overlap_excl` created with
 migration `0123_faculty_temporal_designations.sql` for it — was retired by
 `0143_drop_faculty_designation_assignments.sql`. Do not reintroduce or cite it.
 
-Non-overlap is enforced in `apps/backend/src/db/repositories/facultyAssignmentValidation.ts`:
+Non-overlap is enforced in `apps/api/src/db/repositories/facultyAssignmentValidation.ts`:
 - **Workspace lock:** `lockFacultyHierarchy()` takes `pg_advisory_xact_lock` per workspace, so concurrent appointment writes serialize.
 - **Single primary:** a faculty member cannot hold a second `is_primary` appointment whose `start_date`–`end_date` range overlaps an existing primary one (open ends compare as infinity).
 - **Link checks:** the faculty member, department, and designation must be active (not soft-deleted) in the same workspace.

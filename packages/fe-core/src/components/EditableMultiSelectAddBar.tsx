@@ -1,7 +1,7 @@
 import React from "react";
 import { Plus } from "lucide-react";
 import { Button, Input, FORM_INPUT_COMPACT, cn, isImeSafeEnter } from "@mms/ui";
-import type { TranslationFunction } from "@mms/fe-core/i18n";
+import type { TranslationFunction } from "../i18n/index.js";
 
 const INPUT_CLASS = cn("h-auto min-w-0 flex-1", FORM_INPUT_COMPACT);
 

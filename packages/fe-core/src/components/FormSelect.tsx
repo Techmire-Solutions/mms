@@ -5,7 +5,7 @@ import {
   type FormSelectOption,
   type FormSelectSearchLabels,
 } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 
 export type { FormSelectOption, FormSelectSearchLabels };
 export type FormSelectProps = SharedFormSelectProps;

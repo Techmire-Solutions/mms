@@ -1,6 +1,6 @@
 ---
 description: App settings, live preview draft states, navigation registries, and i18n translation keys (en/ar/ur/fa)
-globs: apps/frontend/src/tenant/features/settings/**,apps/frontend/src/tenant/features/**/*Settings*,apps/frontend/src/platform/**,apps/frontend/src/lib/contexts/TranslationContext.tsx,apps/frontend/src/platform/features/settings/lib/themeScope.ts,apps/frontend/src/lib/config/settings*,apps/frontend/src/lib/config/routes.ts,apps/frontend/src/lib/config/navConfig.tsx,apps/frontend/src/hooks/useTranslation.ts,packages/contracts/src/i18n/appTranslations*.ts
+globs: apps/tenant-web/src/tenant/features/settings/**,apps/tenant-web/src/tenant/features/**/*Settings*,apps/platform-web/src/platform/**,apps/tenant-web/src/lib/contexts/TranslationContext.tsx,apps/platform-web/src/platform/features/settings/lib/themeScope.ts,apps/tenant-web/src/lib/config/settings*,packages/fe-core/src/config/routes.ts,apps/tenant-web/src/lib/config/navConfig.tsx,packages/fe-core/src/i18n/index.ts,packages/contracts/src/i18n/appTranslations*.ts
 alwaysApply: false
 ---
 

@@ -1,0 +1,84 @@
+import type { FastifyPluginAsync } from "fastify";
+import { initServer, type RouterImplementation } from "@ts-rest/fastify";
+import { admissionsContract, ENROLLMENTS_MODULE_MANIFEST, type User } from "@mms/contracts";
+import { handleContractError } from "@mms/be-core/http/routes";
+import { standardRequestValidationErrorHandler } from "@mms/be-core/http/routes";
+import type { ContractRouteArgs, ContractRouteHandler } from "@mms/be-core/http/routes";
+import { canReadCollection, canWriteCollection } from "@mms/be-core/rbac";
+import { admissionsUseCases } from "../use-cases/index.js";
+
+type Contract = typeof admissionsContract;
+const COLLECTION = ENROLLMENTS_MODULE_MANIFEST.collectionKey;
+const forbidden = {
+  status: 403 as const,
+  body: { type: "forbidden", message: "Insufficient permissions" },
+};
+const s = initServer();
+
+/** `/api/enrollments/applications` — admissions queue (review public registrations). */
+export const admissionsRouter: FastifyPluginAsync = async (fastify) => {
+  const handlers: {
+    [K in keyof typeof admissionsContract]: ContractRouteHandler<(typeof admissionsContract)[K]>;
+  } = {
+    list: async ({ query, request }: ContractRouteArgs<Contract["list"]>) => {
+      const user = request.user as User;
+      if (!canReadCollection(user, COLLECTION)) return forbidden;
+      try {
+        return {
+          status: 200 as const,
+          body: await admissionsUseCases.list(String(request.tenant?.id ?? ""), query),
+        };
+      } catch (error) {
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "server_error", message: "Failed to load applications" },
+        });
+      }
+    },
+    metrics: async ({ query, request }: ContractRouteArgs<Contract["metrics"]>) => {
+      const user = request.user as User;
+      if (!canReadCollection(user, COLLECTION)) return forbidden;
+      try {
+        return {
+          status: 200 as const,
+          body: await admissionsUseCases.metrics(
+            String(request.tenant?.id ?? ""),
+            query?.sessionId,
+          ),
+        };
+      } catch (error) {
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "server_error", message: "Failed to load admissions metrics" },
+        });
+      }
+    },
+    review: async ({ body, request }: ContractRouteArgs<Contract["review"]>) => {
+      const user = request.user as User;
+      if (!canWriteCollection(user, COLLECTION)) return forbidden;
+      try {
+        return {
+          status: 200 as const,
+          body: await admissionsUseCases.review(String(request.tenant?.id ?? ""), body, user),
+        };
+      } catch (error) {
+        return handleContractError(request, error, {
+          status: 500,
+          body: { type: "server_error", message: "Failed to review applications" },
+        });
+      }
+    },
+  };
+
+  const router = s.router(
+    admissionsContract,
+    handlers as unknown as RouterImplementation<Contract>,
+  );
+
+  await fastify.register(s.plugin(router), {
+    requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    // The declared response schemas are the wire contract: validate them at runtime so a
+    // handler that returns a drifted shape fails fast instead of silently shipping it.
+    responseValidation: true,
+  });
+};

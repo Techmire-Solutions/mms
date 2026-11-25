@@ -26,8 +26,8 @@ import {
   lookupExchangeRate,
   updateCurrencySettings,
   upsertExchangeRates,
-} from "../use-cases/exchangeRateUseCases.js";
-import { exchangeRateDeps as deps } from "../use-cases/exchangeRateDeps.js";
+} from "../use-cases/index.js";
+import { exchangeRateDeps as deps } from "../use-cases/index.js";
 
 const COLLECTION = ACCOUNTING_MODULE_MANIFEST.collectionKey;
 const SETUP_WRITE = { moduleAction: "setupWrite" } as const;

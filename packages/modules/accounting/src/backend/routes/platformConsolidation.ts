@@ -8,7 +8,7 @@ import { sendDatabaseError, sendIfHttpDomainError } from "@mms/be-core/http/erro
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
 // Only the use-case surface: routes must never import a repository adapter
 // (check:backend-boundaries, ADR-011).
-import { consolidationUseCases } from "../use-cases/consolidationUseCases.js";
+import { consolidationUseCases } from "../use-cases/index.js";
 
 function sendError(reply: FastifyReply, error: unknown, fallback: string) {
   const typed = error as { statusCode?: number; type?: string; message?: string };

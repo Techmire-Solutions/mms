@@ -6,7 +6,7 @@ through `extensions` (inserted before `eslint-config-prettier`, which always run
 last).
 
 ```js
-// apps/backend/eslint.config.js
+// apps/api/eslint.config.js
 import { createNodeConfig } from "@mms/eslint-config";
 
 export default createNodeConfig({
@@ -25,21 +25,21 @@ export default createReactConfig({ files: ["src/**/*.{ts,tsx}"], appKind: "tenan
 
 ## Boundary policy matrix (`boundaries/dependencies`, `default: "disallow"`)
 
-| Source element                                                 | May import                                                                                             |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `apps/backend`                                                 | `contracts`, `db`, `be-core`, `tooling`, module backend/shared audiences — **never another app**       |
-| `apps/frontend` (hybrid until P7)                              | `contracts`, `fe-core`, `ui`, `tooling`, module tenant/platform/shared audiences — never backend       |
-| future `apps/tenant-web` / `apps/platform-web`                 | each app's own frontend audience set; see `POLICIES` — **never another app, never a backend audience** |
-| `packages/modules/*/src/shared`                                | `contracts`, `tooling` — **never an app or another module**                                            |
-| `packages/modules/*/src/backend`                               | `contracts`, `db`, `be-core`, `tooling`, own shared — **never an app**                                 |
-| `packages/modules/*/src/frontend/{tenant,platform,components}` | `contracts`, `fe-core`, `ui`, `tooling`, own shared/components — **never an app**                      |
-| `packages/fe-core`                                             | `contracts`, `ui`, `tooling`                                                                           |
-| `packages/be-core`                                             | `contracts`, `db`, `tooling`                                                                           |
-| `packages/db`                                                  | `contracts`, `tooling`                                                                                 |
-| `packages/ui`                                                  | `contracts`, `tooling`                                                                                 |
-| `packages/contracts`                                           | `tooling`                                                                                              |
-| `e2e`                                                          | `contracts`                                                                                            |
-| `tooling/*`                                                    | `tooling/*`                                                                                            |
+| Source element                                                 | May import                                                                                                              |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `apps/api`                                                     | `contracts`, `db`, `be-core`, `tooling`, module backend/shared audiences — **never another app**                        |
+| `apps/tenant-web`                                              | `contracts`, `fe-core`, `ui`, `tooling`, module tenant/shared audiences — **never another app, never backend/platform** |
+| `apps/platform-web`                                            | `contracts`, `fe-core`, `ui`, `tooling`, module platform/shared audiences — **never another app, never backend/tenant** |
+| `packages/modules/*/src/shared`                                | `contracts`, `tooling` — **never an app or another module**                                                             |
+| `packages/modules/*/src/backend`                               | `contracts`, `db`, `be-core`, `tooling`, own shared — **never an app**                                                  |
+| `packages/modules/*/src/frontend/{tenant,platform,components}` | `contracts`, `fe-core`, `ui`, `tooling`, own shared/components — **never an app**                                       |
+| `packages/fe-core`                                             | `contracts`, `ui`, `tooling`                                                                                            |
+| `packages/be-core`                                             | `contracts`, `db`, `tooling`                                                                                            |
+| `packages/db`                                                  | `contracts`, `tooling`                                                                                                  |
+| `packages/ui`                                                  | `contracts`, `tooling`                                                                                                  |
+| `packages/contracts`                                           | `tooling`                                                                                                               |
+| `e2e`                                                          | `contracts`                                                                                                             |
+| `tooling/*`                                                    | `tooling/*`                                                                                                             |
 
 The `check:core-packages` ratchet independently enforces the five core packages'
 workspace-import sets (`contracts` leaf; `db → contracts`; `be-core → contracts/db`;
@@ -48,12 +48,11 @@ workspace-import sets (`contracts` leaf; `db → contracts`; `be-core → contra
 Additional hard rule: a tenant app may never import the platform console. Element
 policies deny `apps/platform-web` with a custom message, and
 `audienceImportRestrictions("tenant")` bans `*/platform` / `*/platform/**`
-(`@/platform/**` included) plus module platform/backend audiences. Because
-`apps/frontend` still hosts both consoles, [`apps/frontend/eslint.config.js`](../../apps/frontend/eslint.config.js)
-applies that helper to `src/tenant/**/*.{ts,tsx}` (the rest of the bundle keeps
-`appKind: "app"`). `no-restricted-imports` only inspects static imports, so
-`no-tenant-platform-dynamic-import.cjs` covers `import()` / `require()`. After P7,
-`apps/tenant-web` passes `appKind: "tenant"` and keeps the dynamic rule.
+(`@/platform/**` included) plus module platform/backend audiences.
+[`apps/tenant-web/eslint.config.js`](../../apps/tenant-web/eslint.config.js) passes
+`appKind: "tenant"` and enables `no-tenant-platform-dynamic-import.cjs`, because
+`no-restricted-imports` only inspects static imports while the custom rule covers
+`import()` / `require()`.
 
 ### Element descriptors
 
@@ -77,7 +76,7 @@ module audiences (`packages/modules/*/src/{shared,backend,frontend/...}`) →
   imports and unresolved aliases are not boundary crossings.
 - `@/`-aliased imports are not Node-resolvable, so element policies skip them;
   the tenant audience rule is specifier-based precisely to catch `@/platform/**`.
-- `@shared/ui` legacy aliases are gone: `packages/ui` is a real `workspace:*`
+- `@mms/ui` legacy aliases are gone: `packages/ui` is a real `workspace:*`
   dependency, so its imports resolve and are enforceable.
 
 ## Verification

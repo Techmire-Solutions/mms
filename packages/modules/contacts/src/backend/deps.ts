@@ -4,7 +4,7 @@ import type { Permission } from "@mms/contracts";
  * App-supplied kernel dependencies for the contacts module.
  *
  * The module owns contacts domain logic; these callbacks are bound once by the
- * app composition root (`apps/backend/src/modules/contacts/configure.ts`)
+ * app composition root (`apps/api/src/modules/contacts/configure.ts`)
  * because they reach app-only kernel services: the auth user list, the BullMQ
  * job worker, storage/artifact writers, workspace branding, the tenant role
  * catalog and the CSV-export route factory. Keeping them behind this registry
@@ -36,13 +36,15 @@ export interface ContactsKernelDeps {
   deleteObject(key: string): Promise<void>;
 }
 
-let configured: ContactsKernelDeps | null = null;
+const PORTS_KEY = Symbol.for("@mms/mod-contacts/ports");
+type GlobalWithPorts = typeof globalThis & { [PORTS_KEY]?: ContactsKernelDeps | null };
 
 export function configureContactsKernelDeps(next: ContactsKernelDeps): void {
-  configured = next;
+  (globalThis as GlobalWithPorts)[PORTS_KEY] = next;
 }
 
 function deps(): ContactsKernelDeps {
+  const configured = (globalThis as GlobalWithPorts)[PORTS_KEY];
   if (!configured) {
     throw new Error(
       "Contacts kernel deps are not configured (call configureContactsKernelDeps from the app composition root)",

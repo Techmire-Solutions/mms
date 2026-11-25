@@ -1,0 +1,110 @@
+import React from "react";
+import { type ModuleColumnCustomizerProps } from "@mms/fe-core/components/ModuleColumnCustomizer";
+import { FilterChips } from "@mms/fe-core/components/FilterChips";
+import { WorkTaskToolbar } from "@/components/common";
+import type { WorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ExaminationsFiltersMenuButton } from "@/tenant/features/examinations/components/ExaminationsFiltersMenuButton";
+import { isExamStatus, type ExamStatus } from "@mms/contracts";
+
+export const EXAMINATIONS_WORK_SEARCH_INPUT_ID = "examinations-work-search";
+
+export interface ExaminationsListFiltersProps {
+  viewMode: WorkDirectoryViewMode;
+  onViewModeChange: (mode: WorkDirectoryViewMode) => void;
+  search: string;
+  filterStatus: string[];
+  canWrite: boolean;
+  canDelete?: boolean;
+  showDeleted: boolean;
+  onToggleDeleted?: () => void;
+  columnCustomizer?: ModuleColumnCustomizerProps;
+  statusLabels: Record<ExamStatus, string>;
+  onSearchChange: (value: string) => void;
+  onToggleStatus: (status: ExamStatus) => void;
+  onClearStatuses: () => void;
+  onNew: () => void;
+}
+
+export function ExaminationsListFilters({
+  viewMode,
+  onViewModeChange,
+  search,
+  filterStatus,
+  canWrite: _canWrite,
+  canDelete = false,
+  showDeleted,
+  onToggleDeleted,
+  columnCustomizer,
+  statusLabels,
+  onSearchChange,
+  onToggleStatus,
+  onClearStatuses,
+  onNew: _onNew,
+}: ExaminationsListFiltersProps): React.JSX.Element {
+  const { t } = useTranslation();
+
+  const clearFilters = (): void => {
+    onClearStatuses();
+  };
+
+  return (
+    <WorkTaskToolbar
+      regionLabel={t("nav.examinations")}
+      search={search}
+      onSearchChange={onSearchChange}
+      searchPlaceholder={t("examinations.searchExams")}
+      searchId={EXAMINATIONS_WORK_SEARCH_INPUT_ID}
+      hasActiveFilters={filterStatus.length > 0}
+      onClearFilters={clearFilters}
+      clearFiltersLabel={t("examinations.clearFilters")}
+      filterButton={
+        <ExaminationsFiltersMenuButton
+          filterStatus={filterStatus}
+          activeFilterCount={filterStatus.length}
+          statusLabels={statusLabels}
+          onToggleStatus={onToggleStatus}
+          onClearFilters={clearFilters}
+        />
+      }
+      filterChips={
+        <FilterChips
+          chips={filterStatus.map((status) => ({
+            key: `status:${status}`,
+            label: statusLabels[status as ExamStatus],
+            onRemove: () => {
+              if (isExamStatus(status)) onToggleStatus(status);
+            },
+          }))}
+          onClearAll={clearFilters}
+        />
+      }
+      primaryAction={undefined}
+      trashToggle={
+        canDelete && onToggleDeleted
+          ? {
+              canViewDeleted: canDelete,
+              viewingDeleted: showDeleted,
+              onToggle: onToggleDeleted,
+              activeLabel: t("examinations.trash.showActive"),
+              deletedLabel: t("examinations.trash.showDeleted"),
+            }
+          : undefined
+      }
+      viewModeToggle={{
+        viewMode,
+        onViewModeChange,
+      }}
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
+    />
+  );
+}

@@ -8,7 +8,7 @@
  * as an app-relative module path (`./repositories/<name>.js`).
  *
  * `be-core` must not know app paths, so the app injects the importer
- * (`apps/backend/src/db/documentStoreRepositoryLoader.ts`), which keeps the
+ * (`apps/api/src/db/documentStoreRepositoryLoader.ts`), which keeps the
  * specifier resolution relative to the app's `db/` directory. Fail closed: an
  * unconfigured loader throws rather than silently skipping the relational
  * mirror, which would leave the relational tables stale while the document
@@ -22,7 +22,7 @@ export class DocumentStoreRepositoryLoaderNotConfiguredError extends Error {
   constructor(importPath: string) {
     super(
       `Document store repository loader is not configured (needed for "${importPath}"). ` +
-        "The app composition injects it: importing apps/backend/src/db/documentStoreRepositoryLoader.ts " +
+        "The app composition injects it: importing apps/api/src/db/documentStoreRepositoryLoader.ts " +
         "registers it via configureDocumentStoreRepositoryLoader(). In tests that use the document store " +
         "directly, import that module (or call configureDocumentStoreRepositoryLoader) first.",
     );

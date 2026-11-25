@@ -1,0 +1,80 @@
+import type { Faculty } from "@mms/contracts";
+import {
+  bulkSaveFaculty,
+  findFacultyById,
+  findFacultyByIds,
+  isFacultyDeletedByUserId,
+  saveFaculty,
+  saveFacultyIfVersionMatches,
+  countSubordinates,
+  countSubordinatesBatch,
+  findSubordinates,
+  reassignSubordinates,
+  findAncestorChain,
+} from "./db/facultyRepository.js";
+import {
+  aggregateFacultyCommandMetrics,
+  bulkUpdateFacultySpecializationSql,
+  bulkUpdateFacultyStatusSql,
+  countFacultyActive,
+  countFacultyForNextEmployeeId,
+  findSoftDeletedFacultyByContactIdSql,
+  findFacultyRegistrationConflictSql,
+  findFacultyIdsByEmployeeIdsSql,
+  listActiveFacultyMissingEmployeeId,
+  listFacultyLinkedContactIdsSql,
+  listFacultyPage,
+} from "./db/facultyRepositoryList.js";
+import { aggregateFacultyWidgetQueries } from "./db/facultyRepositoryWidgets.js";
+import type { FacultyRepository } from "./facultyRepository.js";
+import { guardFacultyAssignmentDependents } from "./db/facultyDeleteGuard.js";
+import { lockFacultyHierarchy } from "./db/facultyAssignmentValidation.js";
+
+/**
+ * Drizzle adapter for `FacultyRepository`.
+ *
+ * Delegates to the tenant-scoped Drizzle repository functions; the
+ * interface is the contract use cases depend on (SSOT storage gateway).
+ */
+function createFacultyRepository(): FacultyRepository {
+  return {
+    countByWorkspace: (tenant, options) => countFacultyActive(tenant, options),
+    listPage: (tenant, query) => listFacultyPage(tenant, query),
+    findById: (tenant, id) => findFacultyById(tenant, id),
+    findByIds: (tenant, ids) => findFacultyByIds(tenant, ids),
+    isDeletedByUserId: (tenant, userId) => isFacultyDeletedByUserId(tenant, userId),
+    findIdsByEmployeeIds: (tenant, employeeIds) =>
+      findFacultyIdsByEmployeeIdsSql(tenant, employeeIds),
+    findSoftDeletedByContactId: (tenant, contactId) =>
+      findSoftDeletedFacultyByContactIdSql(tenant, contactId),
+    save: (tenant, member, options) => saveFaculty(tenant, member as Faculty, options),
+    saveIfVersionMatches: (tenant, member, expectedUpdatedAt, options) =>
+      saveFacultyIfVersionMatches(tenant, member as Faculty, expectedUpdatedAt, options),
+    guardAssignmentDependents: guardFacultyAssignmentDependents,
+    lockHierarchy: (tx, tenant) => lockFacultyHierarchy(tx, tenant),
+    bulkSave: (tenant, members, options) => bulkSaveFaculty(tenant, members as Faculty[], options),
+    aggregateCommandMetrics: (tenant, periodDays) =>
+      aggregateFacultyCommandMetrics(tenant, periodDays),
+    aggregateWidgetQueries: (tenant, queries) => aggregateFacultyWidgetQueries(tenant, queries),
+    listLinkedContactIds: (tenant, excludeFacultyId) =>
+      listFacultyLinkedContactIdsSql(tenant, excludeFacultyId),
+    countNextEmployeeId: (tenant, options) => countFacultyForNextEmployeeId(tenant, options),
+    listActiveMissingEmployeeId: (tenant) => listActiveFacultyMissingEmployeeId(tenant),
+    findRegistrationConflict: (tenant, input) => findFacultyRegistrationConflictSql(tenant, input),
+    bulkUpdateStatusSql: (tenant, ids, status, updatedBy) =>
+      bulkUpdateFacultyStatusSql(tenant, ids, status, updatedBy),
+    bulkUpdateSpecializationSql: (tenant, ids, specialization) =>
+      bulkUpdateFacultySpecializationSql(tenant, ids, specialization),
+    countSubordinates: (tenant, supervisorId) => countSubordinates(tenant, supervisorId),
+    countSubordinatesBatch: (tenant, supervisorIds) =>
+      countSubordinatesBatch(tenant, supervisorIds),
+    findSubordinates: (tenant, supervisorId) => findSubordinates(tenant, supervisorId),
+    reassignSubordinates: (tenant, oldSupervisorId, newSupervisorId, txClient) =>
+      reassignSubordinates(tenant, oldSupervisorId, newSupervisorId, txClient),
+    findAncestorChain: (tenant, facultyId, maxDepth) =>
+      findAncestorChain(tenant, facultyId, maxDepth),
+  };
+}
+
+/** Default Drizzle-backed instance used by the production use-case layer. */
+export const facultyRepository: FacultyRepository = createFacultyRepository();

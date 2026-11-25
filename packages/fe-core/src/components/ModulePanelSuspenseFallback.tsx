@@ -1,5 +1,5 @@
 import { Skeleton } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import { cn } from "@mms/ui";
 
 /**

@@ -61,7 +61,7 @@ export interface UiConfigProviderProps {
 }
 
 /**
- * Provides default labels and direction for @shared/ui components,
+ * Provides default labels and direction for @mms/ui components,
  * decoupling them from any console-specific i18n implementation.
  */
 export function UiConfigProvider({ config, children }: UiConfigProviderProps): React.JSX.Element {

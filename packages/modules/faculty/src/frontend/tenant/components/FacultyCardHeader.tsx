@@ -1,0 +1,89 @@
+import type { Faculty } from "@mms/contracts";
+import { Badge } from "@mms/ui";
+import {
+  DirectoryCardSubtitleStack,
+  PersonIdentityMeta,
+} from "@mms/fe-core/components/PersonIdentityMeta";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { EntityCard } from "@mms/fe-core/components/EntityCard";
+import { FacultyWorkloadPill } from "./FacultyWorkloadPill";
+
+export interface FacultyCardHeaderProps {
+  faculty: Faculty;
+  facultyId: string;
+  isSelected: boolean;
+  displayName: string;
+  /** Column-visibility gate — employees show employee id / gender like Students gates GR/gender on cards. */
+  isColumnVisible?: (key: string) => boolean;
+  onSelectOne: (id: string) => void;
+  onView: (faculty: Faculty) => void;
+  reducedMotion?: boolean;
+}
+
+/** Contacts-shaped horizontal card header: checkbox | avatar + name + employee id. */
+export function FacultyCardHeader({
+  faculty,
+  facultyId,
+  isSelected,
+  displayName,
+  isColumnVisible,
+  onSelectOne,
+  onView,
+  reducedMotion = false,
+}: FacultyCardHeaderProps): React.JSX.Element {
+  const { t } = useTranslation();
+
+  const showEmployeeId =
+    (!isColumnVisible || isColumnVisible("employeeId")) && Boolean(faculty.employeeId);
+  const showGender = (!isColumnVisible || isColumnVisible("gender")) && Boolean(faculty.gender);
+  const effectiveGender = showGender ? faculty.gender : undefined;
+
+  const subtitle = (
+    <DirectoryCardSubtitleStack>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {showEmployeeId && faculty.employeeId ? (
+          <Badge
+            as="span"
+            size="sm"
+            tone="muted"
+            className="mt-1 max-w-full px-1.5 py-0.5 rounded font-bold tracking-tight truncate self-start"
+            title={faculty.employeeId}
+          >
+            {faculty.employeeId}
+          </Badge>
+        ) : null}
+        {faculty.designation ? (
+          <Badge
+            as="span"
+            size="sm"
+            tone="primary"
+            className="mt-1 max-w-full px-1.5 py-0.5 rounded font-semibold truncate"
+            title={faculty.designation}
+          >
+            {faculty.designation}
+          </Badge>
+        ) : null}
+        <FacultyWorkloadPill faculty={faculty} className="mt-1" />
+      </div>
+      {showGender && faculty.gender ? (
+        <PersonIdentityMeta gender={faculty.gender} className="font-semibold truncate" />
+      ) : null}
+    </DirectoryCardSubtitleStack>
+  );
+
+  return (
+    <EntityCard.Header
+      id={facultyId}
+      displayName={displayName}
+      avatar={faculty.avatar}
+      gender={effectiveGender}
+      isSelected={isSelected}
+      onSelect={() => onSelectOne(facultyId)}
+      selectAriaLabel={t("faculty.table.selectFaculty", { name: displayName })}
+      onView={() => onView(faculty)}
+      viewAriaLabel={`${t("faculty.list.viewDetails")} - ${displayName}`}
+      reducedMotion={reducedMotion}
+      subtitle={subtitle}
+    />
+  );
+}

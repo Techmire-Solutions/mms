@@ -4,15 +4,16 @@
  */
 
 export const SCAN_DIRS = [
-  "apps/frontend/src",
-  "apps/backend/src",
+  // P7 split: apps/frontend retired into apps/tenant-web + apps/platform-web.
+  "apps/tenant-web/src",
+  "apps/api/src",
   "packages/contracts/src",
   "packages/db/src",
   "packages/be-core/src",
   "packages/fe-core/src",
   "packages/ui/src",
-  "packages/modules/iam/src",
   "packages/modules/accounting/src",
+  "packages/modules/iam/src",
   // Design tokens moved to the shared Tailwind package; the inert-`@theme`
   // namespace check walks CSS under every SCAN_DIR, so it must include this one
   // or the token file would silently stop being covered.
@@ -71,7 +72,8 @@ export function measureSource(rel, content) {
   const lines = content.split("\n");
   const result = { anySites: [], arbitrarySites: [], hasHex: false, lineCount: lines.length };
   const isTestFile = TEST_FILE.test(rel);
-  const isExemptTestFile = isTestFile && !rel.startsWith("apps/frontend/");
+  const isExemptTestFile =
+    isTestFile && !rel.startsWith("apps/tenant-web/") && !rel.startsWith("apps/platform-web/");
   lines.forEach((line, index) => {
     if (isComment(line)) return;
     if (!isExemptTestFile && ANY_ANNOTATION.test(line)) result.anySites.push(`${rel}:${index + 1}`);

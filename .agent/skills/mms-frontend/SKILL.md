@@ -1,6 +1,6 @@
 ---
 name: mms-frontend
-description: Builds or modifies the MMS React frontend — apiClient, routing, providers, TanStack Query vs useLiveCollection, Vitest, Playwright, and module file structure. Use when editing apps/frontend, Vite config, frontend hooks, pages, components, or frontend tests. Do NOT use for backend Fastify APIs (use mms-backend-api), shared DTO schemas (use mms-shared-package), or production server configuration (use mms-ops-deploy).
+description: Builds the React frontend (apiClient, routing, providers, Query vs localStorage, Vitest, Playwright). Use when apps/tenant-web, hooks, pages, components, tests. Do NOT use for backend (use mms-backend-api), DTOs (use mms-shared-package), or deploys (use mms-ops-deploy).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -13,7 +13,7 @@ metadata:
 
 ## When to use
 
-- Editing `apps/frontend` pages, components, hooks, or Vite config
+- Editing `apps/tenant-web` pages, components, hooks, or Vite config
 - Changing apiClient, providers, routing, or frontend tests
 
 Operational guide for authoring React 19 frontend features, UI components, hooks, and routing.
@@ -55,13 +55,14 @@ Operational guide for authoring React 19 frontend features, UI components, hooks
 
 ```bash
 # Run frontend typecheck, linter, and Vitest suite
-cd apps/frontend && pnpm typecheck && pnpm lint && pnpm test
+cd apps/tenant-web && pnpm typecheck && pnpm lint && pnpm test
 
 # Run E2E smoke tests
 pnpm test:e2e tests/responsive-shell.spec.ts
 ```
 
 - A changed hook/component ships a test that pins the contract it consumes (lean recipient DTO, relative upload URL, post-save unlink), not only a render assertion; mock the data source at its boundary.
+- **Facade-mock relocation:** when an implementation moves from `apps/tenant-web` into `@mms/fe-core` or a `@mms/mod-*` package, every app-side `vi.mock("…")` that still targets the old `@/...` path stops intercepting (the moved module now imports fe-core/module paths directly), surfacing as "No QueryClient set" / "useAuth must be used within AuthProvider". Update those mocks to the new import location in the same change.
 
 ## References
 

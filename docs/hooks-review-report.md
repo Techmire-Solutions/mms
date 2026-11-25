@@ -45,7 +45,7 @@ Repo-wide React hook audit — every hook reviewed one-by-one, bugs fixed with r
 
 ## Cross-cutting SSOT (P5)
 
-- Background-jobs mirror now tenant+user scoped ([backgroundJobStorageKeys.ts](../apps/frontend/src/lib/backgroundJobs/backgroundJobStorageKeys.ts)) with provider injection from both auth contexts + logout purge; `fetchBackgroundJobs` gained AbortSignal.
+- Background-jobs mirror now tenant+user scoped ([background-jobs store](../packages/fe-core/src/backgroundJobs/index.ts)) with provider injection from both auth contexts + logout purge; `fetchBackgroundJobs` gained AbortSignal.
 - Stored-notifications query key auth-prefixed (IDB persistence fix).
 - Platform query keys registered in SSOT (`platformQueryKeys.ts`); ERD query auth-gated; platform notification-ack storage extracted to a cycle-free lib module with logout purge.
 - Template fetch + all four integration-config fetchers now accept AbortSignal; shared integration panels abort on unmount/reload.
@@ -66,7 +66,7 @@ Repo-wide React hook audit — every hook reviewed one-by-one, bugs fixed with r
 
 - Attendance lookups/preferences now forward `AbortSignal` via `fetchOptions` (no `@mms/shared` contract change was needed — ts-rest client args accept `fetchOptions.signal`); pinned by existing tests.
 - `usePersistedTabState` returns a referentially stable setter (memoized on the store setter) and exports a stable `identityTabNormalizer`; `SettingsPage` consumes it, removing the per-render setter churn behind hotkey/effect registrations.
-- TDD-pairing gap closed: `platform/use-cases/consolidationUseCases.ts` now has [consolidationUseCases.test.ts](../apps/backend/src/__tests__/consolidationUseCases.test.ts) pinning the `HttpDomainError` contracts (500/404/422 + types + messages).
+- TDD-pairing gap closed: `platform/use-cases/consolidationUseCases.ts` now has [consolidationUseCases.test.ts](../apps/api/src/__tests__/consolidationUseCases.test.ts) pinning the `HttpDomainError` contracts (500/404/422 + types + messages).
 - Loose-assertion ratchet restored: six new loose assertions tightened (baseline unchanged, still 277).
 - 300-line ceiling restored (`useMessageComposerDispatch.ts` 299, `useTasksApi.ts` 298).
 - Faculty SSR workaround mocks removed — the 4 pre-existing SSR specs pass unmocked again, proving the `getServerSnapshot` fix end-to-end (the new regression spec keeps its fixed-date mock for determinism).

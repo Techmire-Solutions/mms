@@ -94,7 +94,7 @@ gates — they are behaviours the gates cannot see.
 | F28 | **Medium** | Tenant fair-share inflight counter is decremented on every failed attempt but incremented once per job, inverting priority for retrying tenants. | `worker/index.ts:100-110`; `worker/queues/index.ts:105-108` |
 | F29 | **Medium** | Unbounded memory/scan paths: XLSX/JSON export buffers the whole result set; messaging "restore all" updates a 365-day table in one statement. | `lib/createModuleExportService.ts:78-87`; `db/repositories/messagingLogsMutationRepository.ts:36-56` |
 | F30 | **Medium** | PM2 cluster mode multiplies the DB pool by core count, but the documented budget assumes one backend process; `.env.example` and compose both say "2 × PG_POOL_MAX". | `ecosystem.config.cjs:40-45`; `apps/backend/.env.example:32-36` |
-| F37 | **Medium** | Sign-out revocation is shorter than the token it revokes: the `jti` marker TTL is 15 min while access tokens are signed for `sessionTimeout` (60 min default, up to 24 h). | `services/authSessionService.ts:16`; `services/auth/authService.ts:90-95` |
+| F37 | **Medium** | Sign-out revocation is shorter than the token it revokes: the `jti` marker TTL is 15 min while access tokens are signed for `sessionTimeout` (60 min default, up to 24 h). | `packages/be-core/src/auth/sessionRevocation.ts:16`; `services/auth/authService.ts:90-95` |
 | F38 | **Medium** | Self-service password change does not revoke other sessions or the 7-day refresh token (the admin reset path does). | `routes/common/auth/authProfileRoutes.ts:84-90`; `users/use-cases/userPasswordUseCases.ts:129` |
 | F39 | **Medium** | Tenant attachments are served `Cache-Control: public, max-age=0`: the `/attachments/` branch returns before the `private, no-store` rule. Root-level attachments have no tenant segment (shared by all sessions) and `avatars` is public. | `plugins/staticAssets.ts:35-38,71-77,145-151` |
 | F40 | **Medium** | Upload handlers echo raw 5xx messages (`ENOSPC … /srv/...`) instead of going through the prod error mask. | `routes/common/uploads.ts:40-43,115-118` |
@@ -116,7 +116,7 @@ gates — they are behaviours the gates cannot see.
 ### F1 — The audit trail is not tenant-transaction-bound
 
 **Where:** [`auditTrailService.ts:145`](../packages/be-core/src/audit/auditTrailService.ts#L145),
-[`auditQueryAdapter.ts:28`](../apps/backend/src/audit/repository/auditQueryAdapter.ts#L28).
+[`auditQueryAdapter.ts:28`](../packages/modules/audit/src/backend/repository/auditQueryAdapter.ts#L28).
 
 ```ts
 // services/auditTrailService.ts
@@ -151,7 +151,7 @@ Consequences under the RLS-subject role that `assertRlsRuntimeRole` **requires**
    `/api/audit/events` would show an empty trail and `/api/audit/verify` would return
    `VERIFIED` having checked nothing.
 3. **`POST /api/audit/erasure` 500s after doing the damage** —
-   [`cryptoShreddingService.ts:186`](../apps/backend/src/services/cryptoShreddingService.ts#L186)
+   [`cryptoShreddingService.ts:186`](../packages/modules/audit/src/backend/services/cryptoShreddingService.ts#L186)
    calls `recordModernAuditEvent(db, …)` on the pool *after* the key update and erasure row are
    committed; the audit insert throws, the route returns 500, and the client believes it failed
    while the key is shredded.
@@ -169,8 +169,8 @@ statements succeed because RLS is inert — is not a fix: it is the state
 
 ### F2 — Chain verification is a false green (and a false alarm after archival)
 
-**Where:** [`auditVerificationService.ts:89`](../apps/backend/src/services/auditVerificationService.ts#L89),
-[`:189`](../apps/backend/src/services/auditVerificationService.ts#L189),
+**Where:** [`auditVerificationService.ts:89`](../packages/modules/audit/src/backend/services/auditVerificationService.ts#L89),
+[`:189`](../packages/modules/audit/src/backend/services/auditVerificationService.ts#L189),
 [`auditTrailService.ts:241`](../packages/be-core/src/audit/auditTrailService.ts#L241).
 
 ```ts
@@ -194,7 +194,7 @@ the latest published Merkle root. Only stamp `verification_status` from a verifi
 
 ### F3 — Batch invoice generation skips the ledger
 
-**Where:** [`financeInvoiceGenerationUseCases.ts:52-69`](../apps/backend/src/finance/use-cases/financeInvoiceGenerationUseCases.ts#L52-L69).
+**Where:** [`financeInvoiceGenerationUseCases.ts:52-69`](../packages/modules/billing/src/backend/use-cases/financeInvoiceGenerationUseCases.ts).
 
 ```ts
 if (drafts.length === 1) {
@@ -206,7 +206,7 @@ return invoices;
 ```
 
 `createInvoice` is the only path that calls `tryPostInvoiceJournal`
-([`financeMutationOperations.ts:131`](../apps/backend/src/finance/use-cases/financeMutationOperations.ts#L131)).
+([`financeMutationOperations.ts:131`](../packages/modules/billing/src/backend/use-cases/financeMutationOperations.ts)).
 The normal "generate term/monthly invoices" run creates hundreds of invoices through the batch
 branch, so the ledger receives **zero** Dr AR / Cr Income for them. Each later payment still posts
 Dr Cash / Cr AR, driving AR negative; revenue is never recognised; cancelling one of these invoices
@@ -219,8 +219,8 @@ invoices from the subledger before enabling the feature in production.
 
 ### F4 — `POST /api/finance/invoices` can reset a settled invoice
 
-**Where:** [`financeMutationOperations.ts:118-131`](../apps/backend/src/finance/use-cases/financeMutationOperations.ts#L118-L131),
-[`financeInvoicesPersist.ts:17-47`](../apps/backend/src/db/repositories/financeInvoicesPersist.ts#L17-L47).
+**Where:** [`financeMutationOperations.ts:118-131`](../packages/modules/billing/src/backend/use-cases/financeMutationOperations.ts),
+[`financeInvoicesPersist.ts:17-47`](../packages/modules/billing/src/backend/repository/db/financeInvoicesPersist.ts).
 
 The PUT path is guarded by `assertInvoiceAmountsEditable` (posted invoices cannot change
 `finalAmt`/`discountAmt`/`lateFeeAmt`/`paidAmt`). The POST path is not. `invoiceCrud.create()` is a
@@ -236,7 +236,7 @@ reversal.
 
 ### F5 — Payment commits before allocations and journal
 
-**Where:** [`financeMutationOperations.ts:190-253`](../apps/backend/src/finance/use-cases/financeMutationOperations.ts#L190-L253).
+**Where:** [`financeMutationOperations.ts:190-253`](../packages/modules/billing/src/backend/use-cases/financeMutationOperations.ts).
 
 ```ts
 const savedPayment = await runInTransaction(async () => { … saveInvoice … savePayment … });
@@ -257,9 +257,9 @@ invoice update; keep the idempotency check under the lock.
 
 ### F6 — Crypto-shredding is global, under-authorised and inert
 
-**Where:** [`cryptoShreddingService.ts:156-186`](../apps/backend/src/services/cryptoShreddingService.ts#L156-L186),
+**Where:** [`cryptoShreddingService.ts:156-186`](../packages/modules/audit/src/backend/services/cryptoShreddingService.ts#L156-L186),
 [`auditTrail.ts:145-198`](../packages/db/src/schema/auditTrail.ts#L145-L198),
-[`auditPrivacyRoutes.ts:27-30`](../apps/backend/src/routes/tenant/audit/auditPrivacyRoutes.ts#L27-L30).
+[`auditPrivacyRoutes.ts:27-30`](../packages/modules/audit/src/backend/routes/auditPrivacyRoutes.ts#L27-L30).
 
 `crypto_shredding_keys` and `audit_erasure_requests` have **no `workspace_subdomain` column**, and
 the shred is `UPDATE … WHERE subject_id = $1` with no tenant predicate. `subjectId` is a
@@ -281,7 +281,7 @@ redact historical state for `REDACT_APPEND` (append-only copy, no hash rewrite).
 
 ### F7 — Credit-note/cancel invoice paths are not serialised
 
-**Where:** [`financeCollectUseCases.ts:186-206`](../apps/backend/src/finance/use-cases/financeCollectUseCases.ts#L186-L206).
+**Where:** [`financeCollectUseCases.ts:186-206`](../packages/modules/billing/src/backend/use-cases/financeCollectUseCases.ts).
 
 ```ts
 const invoice = await financeUseCases.getInvoiceById(parsed.invoiceId);   // no FOR UPDATE
@@ -301,7 +301,7 @@ re-check the balance under the lock, and post the journal in the same transactio
 
 ### F8 — Backups are paged without an ORDER BY in READ COMMITTED
 
-**Where:** [`streamingSnapshotProducer.ts:238`](../apps/backend/src/db/streamingSnapshotProducer.ts#L238),
+**Where:** [`streamingSnapshotProducer.ts:238`](../apps/api/src/db/streamingSnapshotProducer.ts#L238),
 [`dbTransactions.ts:139`](../packages/db/src/dbTransactions.ts#L139).
 
 ```ts
@@ -321,7 +321,7 @@ this reason). Add a checksum/row-count to the backup manifest.
 
 ### F9 — Messaging campaigns resend on retry
 
-**Where:** [`messagingCampaignJobRunner.ts:45-140`](../apps/backend/src/services/messagingCampaignJobRunner.ts#L45-L140).
+**Where:** [`messagingCampaignJobRunner.ts:45-140`](../packages/modules/messaging/src/backend/services/messagingCampaignJobRunner.ts#L45-L140).
 
 The runner loops recipients and sends through the carrier gateway. `attempts: 3` is the queue
 default; any throw after the first batch — a progress patch failing because the row was cleared
@@ -391,7 +391,7 @@ monotonic per-shard sequence column) and make the head query and the verifier us
 
 ### F35 — Audit governance is a dashboard read permission
 
-**Where:** [`auditPrivacyRoutes.ts:23`](../apps/backend/src/routes/tenant/audit/auditPrivacyRoutes.ts#L23),
+**Where:** [`auditPrivacyRoutes.ts:23`](../packages/modules/audit/src/backend/routes/auditPrivacyRoutes.ts#L23),
 [`permissionRules.ts:95-99`](../packages/contracts/src/auth/permissionRules.ts#L95-L99),
 [`userRbacDefaultRoles.ts:97`](../packages/contracts/src/auth/userRbacDefaultRoles.ts#L97).
 
@@ -417,9 +417,9 @@ role defaults.
 
 ### F36 — Staff activity logs can be forged by any `analytics.view` holder
 
-**Where:** [`rbacPermissionMaps.ts:147`](../apps/backend/src/lib/rbacPermissionMaps.ts#L147),
-[`users.ts:47-55`](../apps/backend/src/routes/tenant/users.ts#L47-L55),
-[`logsRepository.ts:163-172`](../apps/backend/src/db/repositories/logsRepository.ts#L163-L172).
+**Where:** [`rbacPermissionMaps.ts:147`](../apps/api/src/lib/rbacPermissionMaps.ts#L147),
+[`users.ts:47-55`](../apps/api/src/routes/tenant/users.ts#L47-L55),
+[`logsRepository.ts:163-172`](../apps/api/src/db/repositories/logsRepository.ts#L163-L172).
 
 `COLLECTION_WRITE_PERMISSION.user_activity_logs` is `analytics.view` — the same value as the read
 map. `PUT /api/users/activity/bulk` (registered through `registerBulkRoutes`) is gated only by
@@ -453,7 +453,7 @@ per-tenant accounting advisory lock shared by posting.
 
 Export/import routes accept a client `idempotencyKey` and use it directly as
 `background_jobs.id` (`text primary key`) and BullMQ `jobId`
-([`csvExportEnqueue.ts:40`](../apps/backend/src/lib/csvExportEnqueue.ts#L40),
+([`csvExportEnqueue.ts:40`](../apps/api/src/lib/csvExportEnqueue.ts#L40),
 [`system.ts:59`](../packages/db/src/schema/system.ts#L59)). `getUserBackgroundJob` is
 user-scoped, so a second tenant with the same key reaches the insert and gets a 23505 → 500; if the
 first row has been dismissed, the insert succeeds but `queue.add` is deduped by the surviving BullMQ
@@ -463,7 +463,7 @@ composite unique index and a per-tenant queue key.
 ### F15 — Job status never becomes `running`
 
 `enqueueBackgroundJob` forces `status: "pending"` and `executeJob` only patches progress/completed/
-failed ([`backgroundJobWorkerService.ts:237-243`](../apps/backend/src/services/backgroundJobWorkerService.ts#L237-L243)).
+failed ([`backgroundJobWorkerService.ts:237-243`](../apps/api/src/services/backgroundJobWorkerService.ts#L237-L243)).
 So: "clear finished" (`ne(status, "running")`) deletes queued and in-flight rows; startup cleanup
 fails every `pending` row older than 10 minutes by `createdAt`, i.e. legitimate backlog; and the
 `running` heartbeat sweep in `workerOrphanCleanup.ts` can never match a row. A deleted row also makes
@@ -473,7 +473,7 @@ sweeps.
 
 ### F16 — Sandbox timeout does not cancel the runner
 
-[`sandboxedExportProcessor.ts:47-66`](../apps/backend/src/worker/processors/sandboxedExportProcessor.ts#L47-L66)
+[`sandboxedExportProcessor.ts:47-66`](../apps/api/src/worker/processors/sandboxedExportProcessor.ts#L47-L66)
 rejects a `Promise.race` and aborts an `AbortController` that no export/PDF runner reads (only the
 messaging runner checks `ctx.signal`). The original `executeJob` continues in the forked child while
 BullMQ starts the retry; both upload to distinct `Date.now()` keys and the retry can regress a
@@ -483,7 +483,7 @@ have the timeout path await/terminate the child rather than abandon it.
 ### F17 — Worker shutdown kills work it should drain
 
 `forceExitTimer` is 10 s while `JOB_EXECUTION_TIMEOUT_MS` is 60 s and `lockDuration` is 60 s, and
-`await worker.close()` waits for active jobs ([`worker/index.ts:169-189`](../apps/backend/src/worker/index.ts#L169-L189)).
+`await worker.close()` waits for active jobs ([`worker/index.ts:169-189`](../apps/api/src/index.ts#L169-L189)).
 Any deploy during an export or campaign kills it; BullMQ recovers it as stalled and re-runs it.
 Fix: derive the force-exit budget from the largest job timeout + drain margin, and stop accepting
 new jobs first (`worker.pause()`).
@@ -491,7 +491,7 @@ new jobs first (`worker.pause()`).
 ### F18 — BullMQ loses Redis URL semantics
 
 `getBullMQConnectionOptions` parses `REDIS_URL` manually and returns only
-`{ host, port, password, username, … }` ([`redisBullMQ.ts:18-45`](../apps/backend/src/lib/redisBullMQ.ts#L18-L45)):
+`{ host, port, password, username, … }` ([`redisBullMQ.ts:18-45`](../apps/api/src/lib/redisBullMQ.ts#L18-L45)):
 the DB index (`/2`) is dropped and `rediss://` never gets `tls`, so jobs land in DB 0 next to any
 other deployment sharing the instance (and a TLS-only Redis cannot be reached). Queue names are
 hard-coded with no prefix. Fix: pass the parsed URL to ioredis/BullMQ (or forward `db` and `tls`
@@ -500,7 +500,7 @@ explicitly) and add `QUEUE_PREFIX` per environment.
 ### F19 — Any tenant user can dismiss another user's job
 
 `dismissUserBackgroundJob(_userId, jobId)` filters only `tenantId` + `id`
-([`backgroundJobService.ts:170-181`](../apps/backend/src/services/backgroundJobService.ts#L170-L181)).
+([`backgroundJobService.ts:170-181`](../apps/api/src/services/backgroundJobService.ts#L170-L181)).
 The route then deletes the artifact under the *caller's* id, so the victim's artifact map entry is
 unreachable and its blob is never pruned. Fix: include `userId` (or `effectiveUserId`) in the WHERE
 and delete the artifact for the row's owner.
@@ -508,7 +508,7 @@ and delete the artifact for the row's owner.
 ### F20 — Export-artifact registry is a global read-modify-write document
 
 `saveExportArtifact` loads the whole per-tenant map, mutates it and writes it back with no CAS/lock
-([`exportArtifactService.ts:72-92`](../apps/backend/src/services/exportArtifactService.ts#L72-L92)).
+([`exportArtifactService.ts:72-92`](../apps/api/src/services/exportArtifactService.ts#L72-L92)).
 Two workers completing exports concurrently lose one entry (download 404s, blob orphaned); retries
 write fresh `Date.now()`-suffixed keys, so the loser's blob is orphaned by design; clear-finished and
 tenant purge never delete blobs. Fix: store artifacts as rows keyed `(tenant, user, jobId)` or use
@@ -524,7 +524,7 @@ purgeSchedulerTimer = setTimeout(() => {
   })().finally(() => scheduleNextDailyPurge(…));                              // ← no .catch
 }, delayMs);
 ```
-([`retentionPurgeScheduler.ts:82-96`](../apps/backend/src/worker/retentionPurgeScheduler.ts#L82-L96);
+([`retentionPurgeScheduler.ts:82-96`](../apps/api/src/worker/retentionPurgeScheduler.ts#L82-L96);
 same shape in `sessionLifecycleScheduler.ts`.) `tryAcquireLeaderLease` rethrows query failures, and
 `worker/index.ts` turns `unhandledRejection` into `process.exit(1)`, killing every in-flight job.
 Fix: `.catch()` the acquisition (log and reschedule) — `fxRates/fxRateFeedScheduler.ts` already does
@@ -534,7 +534,7 @@ this correctly.
 
 The 6 s race returns `false` on timeout while the `addPromise` is never cancelled; the caller marks
 the row failed and returns 503, and Redis may still accept the job seconds later
-([`worker/queues/index.ts:154-183`](../apps/backend/src/worker/queues/index.ts#L154-L183)). Fix:
+([`worker/queues/index.ts:154-183`](../apps/api/src/index.ts#L154-L183)). Fix:
 retry the `add` with a bounded deadline and reconcile (check `queue.getJob`) before declaring
 failure; or mark the row `unknown` rather than terminal.
 
@@ -543,7 +543,7 @@ failure; or mark the row `unknown` rather than terminal.
 `beginLongLivedTenantTransaction` applies the per-transaction guards with defaults
 `statement_timeout = 30 s` and `idle_in_transaction_session_timeout = 15 s`
 ([`tenantTransactionGuards.ts:35-36`](../packages/db/src/tenantTransactionGuards.ts#L35-L36)),
-and the backup/sync routes pass no override ([`dbSyncRoutes.ts:87,112`](../apps/backend/src/routes/common/db/dbSyncRoutes.ts#L87)).
+and the backup/sync routes pass no override ([`dbSyncRoutes.ts:87,112`](../apps/api/src/routes/common/db/dbSyncRoutes.ts#L87)).
 The asset loop does disk/S3 I/O between statements, so a slow asset read or slow client aborts the
 session (`57P05`). Fix: pass an explicit larger `statementTimeoutMs`/idle budget for snapshot
 transactions.
@@ -552,19 +552,19 @@ transactions.
 
 `POST /api/db/reset` (admin `settings.global.write`) calls `resetTenantData`, which purges every
 tenant row across several transactions and then reseeds collection-by-collection
-([`dbPurge.ts:84-100`](../apps/backend/src/db/dbPurge.ts#L84-L100)) — a crash mid-way leaves a
+([`dbPurge.ts:84-100`](../apps/api/src/db/dbPurge.ts#L84-L100)) — a crash mid-way leaves a
 partially wiped workspace. The route records the audit event **after** the wipe with
-`void recordModernAuditEvent(...)` ([`dbSyncRoutes.ts:187-210`](../apps/backend/src/routes/common/db/dbSyncRoutes.ts#L187)),
+`void recordModernAuditEvent(...)` ([`dbSyncRoutes.ts:187-210`](../apps/api/src/routes/common/db/dbSyncRoutes.ts#L187)),
 which under F1 never persists. There is no step-up authentication or typed confirmation. Fix:
 single transaction for purge+seed, audit inside it, and require a short-lived confirmation token.
 
 ### F25 — Cursor pagination never starts
 
 `nextCursor` is returned only when the request already carried `afterId`
-([`listPageHelper.ts:96`](../apps/backend/src/db/repositories/listPageHelper.ts#L96)), so the first
+([`listPageHelper.ts:96`](../apps/api/src/db/repositories/listPageHelper.ts#L96)), so the first
 page (no `afterId`) never returns one. The frontend's cursor-based infinite lists pass
 `getNextPageParam: (lastPage) => lastPage.nextCursor`
-([`useContactsQueries.ts:90`](../apps/frontend/src/tenant/features/contacts/hooks/useContactsQueries.ts#L90)),
+([`useContactsQueries.ts:90`](../packages/modules/contacts/src/frontend/tenant/hooks/useContactsQueries.ts#L90)),
 so they can never fetch page 2. No UI consumes `useContactsInfiniteList` today, so it is latent, but
 the contract is broken by construction. Fix: return `nextCursor` whenever there is a next page,
 regardless of how this page was requested.
@@ -574,7 +574,7 @@ regardless of how this page was requested.
 `GET /api/audit/merkle-roots` has no permission check and `listMerkleRoots` reads the global table
 with no tenant predicate; `POST` (gated only by `analytics.view`) publishes a checkpoint covering
 **all** tenants from a tenant-scoped route
-([`auditIntegrityRoutes.ts:34-48`](../apps/backend/src/routes/tenant/audit/auditIntegrityRoutes.ts#L34-L48)).
+([`auditIntegrityRoutes.ts:34-48`](../packages/modules/audit/src/backend/routes/auditIntegrityRoutes.ts#L34-L48)).
 Fix: gate both on a platform/audit-admin permission and scope the checkpoint to the shard, or move
 the global operations to the platform console.
 
@@ -591,7 +591,7 @@ both the page and the count.
 ### F28 — Fair-share priority is inverted for retrying tenants
 
 `incrementTenantInflightJobs` runs once at dispatch; `worker.on("failed")` decrements on **every**
-failed attempt ([`worker/index.ts:100-110`](../apps/backend/src/worker/index.ts#L100-L110)). A job
+failed attempt ([`worker/index.ts:100-110`](../apps/api/src/index.ts#L100-L110)). A job
 that fails twice and is still retrying has already decremented twice, so a loaded tenant is scored
 as idle and gets the highest priority band. Fix: decrement only on the final failure/completion
 (compare `attemptsMade` to `opts.attempts`), or track job ids in the counter.
@@ -599,9 +599,9 @@ as idle and gets the highest priority band. Fix: decrement only on the final fai
 ### F29 — Unbounded export and restore paths
 
 The JSON/XLSX export path loads every matching row then builds the grid and base64 string in memory
-([`createModuleExportService.ts:78-87`](../apps/backend/src/lib/createModuleExportService.ts#L78-L87)),
+([`createModuleExportService.ts:78-87`](../apps/api/src/lib/createModuleExportService.ts#L78-L87)),
 while the CSV path is capped. "Restore all" messaging logs issues one `UPDATE` over a 365-day table
-with no batching or limit ([`messagingLogsMutationRepository.ts:36-56`](../apps/backend/src/db/repositories/messagingLogsMutationRepository.ts#L36-L56)).
+with no batching or limit ([`messagingLogsMutationRepository.ts:36-56`](../packages/modules/messaging/src/backend/repository/db/messagingLogsMutationRepository.ts#L36-L56)).
 Fix: stream XLSX (ExcelJS streaming writer already exists) and batch the log restore with
 `LIMIT`/`SKIP LOCKED` loops.
 
@@ -611,7 +611,7 @@ Fix: stream XLSX (ExcelJS streaming writer already exists) and batch the log res
 instance opens `PG_POOL_MAX` (≥20) connections; `.env.example` and `docker-compose.yml` document a
 "2 × PG_POOL_MAX" budget that assumes one API process
 ([`ecosystem.config.cjs:40-45`](../ecosystem.config.cjs#L40-L45),
-[`apps/backend/.env.example:32-40`](../apps/backend/.env.example#L32-L40)). On an 8-core host that is
+[`apps/backend/.env.example:32-40`](../apps/api/.env.example#L32-L40)). On an 8-core host that is
 ~170 connections plus the worker's 10 against Postgres' default 100. Fix: set `PM2_INSTANCES`
 explicitly and compute `PG_POOL_MAX = floor(budget / instances)`, or document the required
 `max_connections`.
@@ -619,9 +619,9 @@ explicitly and compute `PG_POOL_MAX = floor(budget / instances)`, or document th
 ### F37 — Logout revokes a token for less time than it lives
 
 `revokeToken(jti)` writes `session:revoked:<jti>` with a 15-minute TTL
-([`authSessionService.ts:16,31-36`](../apps/backend/src/services/authSessionService.ts#L16-L36)), but
+([`authSessionService.ts:16,31-36`](../packages/be-core/src/auth/sessionRevocation.ts#L16-L36)), but
 access tokens are signed with `expiresIn = sessionTimeout` minutes
-([`authService.ts:90-95`](../apps/backend/src/services/auth/authService.ts#L90-L95)) — 60 minutes
+([`authService.ts:90-95`](../apps/api/src/services/auth/authService.ts#L90-L95)) — 60 minutes
 by default, up to 1,440. Fifteen minutes after sign-out the marker expires and a stolen access token
 is accepted again until its own `exp`. Logout also leaves the server-side idle clock fresh
 (`sessionClockService`), so the session does not re-expire. Fix: derive the revocation TTL from the
@@ -630,9 +630,9 @@ token's remaining lifetime (`exp − now`), or revoke the user session (which th
 ### F38 — Password change leaves other sessions alive
 
 `POST /api/auth/change-password` hashes the new password and clears the caller's cookies
-([`authProfileRoutes.ts:84-90`](../apps/backend/src/routes/common/auth/authProfileRoutes.ts#L84-L90));
+([`authProfileRoutes.ts:84-90`](../apps/api/src/routes/common/auth/authProfileRoutes.ts#L84-L90));
 unlike the admin reset path it never calls `revokeAllUserSessions`
-([`userPasswordUseCases.ts:129`](../apps/backend/src/users/use-cases/userPasswordUseCases.ts#L129)).
+([`userPasswordUseCases.ts:129`](../apps/api/src/users/use-cases/userPasswordUseCases.ts#L129)).
 A stolen refresh token (7-day artifact) or another device's access token keeps working after the
 password change — precisely the action a user takes when they suspect compromise. Fix: revoke all
 sessions and refresh artifacts after a successful self-service change (and require re-login, which
@@ -642,7 +642,7 @@ the response already signals with `requiresSignIn: true`).
 
 `setStaticAssetHeaders` returns early for any path containing `/attachments/`, before the
 `uploads/tenants/` rule that sets `Cache-Control: private, no-store` and
-`Vary: Authorization` ([`staticAssets.ts:35-38,71-77`](../apps/backend/src/plugins/staticAssets.ts#L35-L77)).
+`Vary: Authorization` ([`staticAssets.ts:35-38,71-77`](../apps/api/src/plugins/staticAssets.ts#L35-L77)).
 `@fastify/static`/`send` then leave their default `Cache-Control: public, max-age=0`, so a shared
 proxy may store pupil/finance documents. Revalidation still requires the session, but the module's
 own contract says these must never be public. Two related gaps in the same file: files under the
@@ -655,7 +655,7 @@ root-level uploads, and require a session for avatars.
 ### F40 — Upload errors bypass the production error mask
 
 Both upload handlers return `err.message` for any status, including 500
-([`uploads.ts:40-43,115-118`](../apps/backend/src/routes/common/uploads.ts#L40-L43)). Filesystem
+([`uploads.ts:40-43,115-118`](../apps/api/src/routes/common/uploads.ts#L40-L43)). Filesystem
 failures surface as `ENOSPC: no space left on device, write /srv/mms/uploads/tenants/<tenant>/…`,
 leaking internal paths and infrastructure state to any authenticated uploader — the one place in
 the backend that bypasses `registerErrorHandlers`' prod masking. Fix: pass the error through the
@@ -667,41 +667,41 @@ shared handler (or log it and return the generic stage message + request id).
 
 - **F31 `/health`** is public through Apache (the deploy workflow curls it), exempt from rate
   limiting, and returns pool counts, replica state, Redis connectivity and cache metrics
-  ([`health.ts:20-40`](../apps/backend/src/routes/common/health.ts#L20-L40)). Return a bare status to
+  ([`health.ts:20-40`](../apps/api/src/routes/common/health.ts#L20-L40)). Return a bare status to
   unauthenticated callers (or require the metrics token) and keep the detail for loopback scrapes.
 - **F32 GR numbers** are computed by `COALESCE(registered_date::text,'') LIKE 'YYYY%' OR
   COALESCE(gr_number,'') LIKE '%YYYY%'` on every student create — a full scan of live **and**
-  archived rows ([`studentRepositoryWidgetsOps.ts:42-56`](../apps/backend/src/db/repositories/studentRepositoryWidgetsOps.ts#L42-L56)).
+  archived rows ([`studentRepositoryWidgetsOps.ts:42-56`](../packages/modules/students/src/backend/repository/db/studentRepositoryWidgetsOps.ts)).
 - **F33** `pageTenantCollections` applies `LIMIT/OFFSET` *above* `jsonb_array_elements`, so chunk
-  *n* re-parses `n × 500` elements ([`streamingSnapshotProducer.ts:58-74`](../apps/backend/src/db/streamingSnapshotProducer.ts#L58-L74)).
+  *n* re-parses `n × 500` elements ([`streamingSnapshotProducer.ts:58-74`](../apps/api/src/db/streamingSnapshotProducer.ts#L58-L74)).
 - **F34** `0193`–`0195` lack `SET LOCAL lock_timeout` (the newest migration has it). They only touch
   freshly-created tables today; add the preamble so a future edit cannot take a blocking lock.
 - **F41** Both static registrations omit `dotfiles`, and `@fastify/static` defaults to `allow`
-  ([`staticAssets.ts:158-166`](../apps/backend/src/plugins/staticAssets.ts#L158-L166),
-  [`frontendSpa.ts:26-35`](../apps/backend/src/plugins/frontendSpa.ts#L26-L35)). Traversal is
+  ([`staticAssets.ts:158-166`](../apps/api/src/plugins/staticAssets.ts#L158-L166),
+  [`registerWebApps.ts`](../apps/api/src/plugins/registerWebApps.ts)). Traversal is
   rejected, so exposure depends on a dotfile landing in the uploads root or `dist/` (e.g. `.env`).
   Set `dotfiles: "deny"` (or `"ignore"`).
 - **F42** Multipart accepts the library defaults for `parts` (1,000) and leaves `files`/`fieldSize`
   unset, so one authenticated request can stream up to ~1,000 × 10 MB parts while `request.file()`
-  consumes only the first ([`uploads.ts:19-21`](../apps/backend/src/routes/common/uploads.ts#L19-L21)).
+  consumes only the first ([`uploads.ts:19-21`](../apps/api/src/routes/common/uploads.ts#L19-L21)).
   Set `files: 1`, a small `parts`/`fieldSize`, and rely on the 10 MB `fileSize`.
 - **F43** Live-push sockets have no per-user or global cap (a 30 s ping timer per socket) and the
   duplicate root `/ws` registration is outside `/api`, so it is exempt from the limiter
-  ([`websocket.ts:94`](../apps/backend/src/routes/common/websocket.ts#L94),
-  [`livePushConnections.ts:78-92`](../apps/backend/src/lib/livePushConnections.ts#L78-L92)). Socket
+  ([`websocket.ts:94`](../apps/api/src/routes/common/websocket.ts#L94),
+  [`livePushConnections.ts:78-92`](../apps/api/src/lib/livePushConnections.ts#L78-L92)). Socket
   auth itself is sound.
 - **F44** `requestHostname` falls back to the client's `X-Forwarded-Host` whenever `Host` is an
-  IP/localhost ([`requestHost.ts:22-33`](../apps/backend/src/lib/requestHost.ts#L22-L33)), and that
+  IP/localhost ([`requestHost.ts:22-33`](../apps/api/src/lib/requestHost.ts#L22-L33)), and that
   tenant feeds the rate-limit key. An attacker who can reach the Node port directly can rotate
   buckets. Token↔tenant binding still prevents data access; only reachable behind a proxy that
   preserves `Host`.
 - **F45** `verifyTwoFactorChallenge` never compares the challenge's `workspaceSubdomain` to the
-  request tenant ([`twoFactorService.ts:90-104`](../apps/backend/src/services/auth/twoFactorService.ts#L90-L104)).
+  request tenant ([`twoFactorService.ts:90-104`](../apps/api/src/services/auth/twoFactorService.ts#L90-L104)).
   The issued token is workspace-bound and rejected on the wrong host, so this is login-CSRF/forced
   logout, not impersonation.
 - **F46** The OTP `attempts` counter increments only in `verifyTenantPasswordResetOtp`; the
   `resetTenantPassword` step re-verifies the same code without counting
-  ([`tenantPasswordOtpService.ts:136-176`](../apps/backend/src/services/auth/tenantPasswordOtpService.ts#L136-L176)).
+  ([`tenantPasswordOtpService.ts:136-176`](../apps/api/src/services/auth/tenantPasswordOtpService.ts#L136-L176)).
   The 5-attempt lockout can be skipped by calling the reset route repeatedly; only the 10/min rate
   limit bounds guesses.
 - **Nested `withTenant` re-points RLS**: a nested call with a different tenant `set_config`s
@@ -732,12 +732,12 @@ These are not consolation prizes; each is a control that would otherwise be a fi
 4. **Auth is server-authoritative per request.** Role is reloaded from the RBAC matrix (not trusted
    from the JWT), revocation and workspace-enabled checks are batched in one Redis round-trip,
    soft-deleted users/faculty are rejected, and a tenant mismatch between token and host is a 403
-   ([`authenticate.ts:44-260`](../apps/backend/src/middleware/authenticate.ts#L44-L260)).
+   ([`authenticate.ts:44-260`](../apps/api/src/middleware/authenticate.ts#L44-L260)).
 5. **CSRF is defence-in-depth, not a header check.** Origin/Referer + `Sec-Fetch-Site` + JSON
    media-type + double-submit token, failing closed for cookie-authenticated mutations with no
-   origin signal ([`csrfOriginGuard.ts:89-232`](../apps/backend/src/plugins/csrfOriginGuard.ts#L89-L232)).
+   origin signal ([`csrfOriginGuard.ts:89-232`](../apps/api/src/plugins/csrfOriginGuard.ts#L89-L232)).
 6. **Session cookies are HttpOnly, Secure in production, host-only, SameSite=Lax**, with a separate
-   7-day CSRF cookie ([`authCookieService.ts:41-78`](../apps/backend/src/services/auth/authCookieService.ts#L41-L78)).
+   7-day CSRF cookie ([`authCookieService.ts:41-78`](../apps/api/src/services/auth/authCookieService.ts#L41-L78)).
 7. **Money and FX are exact.** BigInt minor units, explicit rounding, no float in the conversion
    path; posting invariants (single-sided lines, balanced totals) are enforced at persist
    (`accountingLedgerInvariants.ts`, `money.ts`).

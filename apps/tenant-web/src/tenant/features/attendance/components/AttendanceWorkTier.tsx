@@ -1,0 +1,157 @@
+import type React from "react";
+import { ShieldCheck } from "lucide-react";
+import { ModuleTierMotion } from "@mms/ui/app/ModuleTierMotion";
+import { SubTabBar } from "@mms/ui/app/SubTabBar";
+import { Alert } from "@mms/ui";
+import { AttendanceFilters } from "@/tenant/features/attendance/components/AttendanceFilters";
+import { AttendanceRecords } from "@/tenant/features/attendance/components/AttendanceRecords";
+import { AuditLog } from "@/tenant/features/attendance/components/AuditLog";
+import { MarkAttendance } from "@/tenant/features/attendance/components/MarkAttendance";
+import { AttendanceLifecyclePanel } from "@/tenant/features/attendance/components/AttendanceLifecyclePanel";
+import type { AttendanceRecord } from "@/lib/data/attendanceData";
+
+export type AttendanceWorkTab = {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+export type AttendanceColumnProps = Pick<
+  React.ComponentProps<typeof AttendanceRecords>,
+  "isColumnVisible" | "getColumnWidth" | "onColumnResize" | "columnCustomizer"
+>;
+
+export interface AttendanceWorkTierProps {
+  showRoleBanner: boolean;
+  role: string;
+  roleLabel: string;
+  teacherRoleText: string | false | null;
+  accountantRoleText: string | false | null;
+  filters: React.ComponentProps<typeof AttendanceFilters>["filters"];
+  onFiltersChange: React.ComponentProps<typeof AttendanceFilters>["onChange"];
+  activeOpsTab: string;
+  operationsTabs: AttendanceWorkTab[];
+  canDeleteAttendance: boolean;
+  showDeleted: boolean;
+  onShowDeletedToggle: () => void;
+  showActiveLabel: string;
+  showDeletedLabel: string;
+  onOpsTabChange: (tab: string) => void;
+  activeRecords: AttendanceRecord[];
+  /** Saves the roster and resolves with the persisted rows (server ids + OCC versions). */
+  onPersistRecords: (
+    batch: AttendanceRecord[],
+    overrideReason?: string,
+  ) => Promise<AttendanceRecord[]>;
+  onUpdateRecord: (record: AttendanceRecord) => Promise<void>;
+  onDeleteRecord: (id: string) => Promise<void>;
+  onRestoreRecord: (id: string) => Promise<void>;
+  onBulkDeleteRecords: (ids: string[]) => Promise<void>;
+  onBulkRestoreRecords: (ids: string[]) => Promise<void>;
+  onMessage: (channel: "sms" | "whatsapp" | "email", records: AttendanceRecord[]) => void;
+  /** Locks the roster day after a successful save. */
+  onSubmitDay: (classId: string, date: string) => Promise<unknown>;
+  /** Admin reopen of a submitted day. */
+  onReopenDay: (classId: string, date: string, reason?: string) => Promise<unknown>;
+  /** True when the user may reopen a locked day (delete-level permission). */
+  canReopenDay: boolean;
+  onRosterDirtyChange?: (dirty: boolean) => void;
+  onTotalChange?: (total: number) => void;
+  columnProps?: AttendanceColumnProps;
+}
+
+export function AttendanceWorkTier({
+  showRoleBanner,
+  role,
+  roleLabel,
+  teacherRoleText,
+  accountantRoleText,
+  filters,
+  onFiltersChange,
+  activeOpsTab,
+  operationsTabs,
+  canDeleteAttendance: _canDeleteAttendance,
+  showDeleted,
+  onShowDeletedToggle,
+  showActiveLabel: _showActiveLabel,
+  showDeletedLabel: _showDeletedLabel,
+  onOpsTabChange,
+  activeRecords,
+  onPersistRecords,
+  onUpdateRecord,
+  onDeleteRecord,
+  onRestoreRecord,
+  onBulkDeleteRecords,
+  onBulkRestoreRecords,
+  onMessage,
+  onSubmitDay,
+  onReopenDay,
+  canReopenDay,
+  onRosterDirtyChange,
+  onTotalChange,
+  columnProps,
+}: AttendanceWorkTierProps): React.JSX.Element {
+  return (
+    <ModuleTierMotion tier="work" className="space-y-5">
+      {showRoleBanner && (
+        <Alert
+          tone="info"
+          density="compact"
+          icon={ShieldCheck}
+          title={<span className="font-bold capitalize">{roleLabel}</span>}
+          description={
+            teacherRoleText || accountantRoleText ? (
+              <span>
+                {teacherRoleText}
+                {accountantRoleText}
+              </span>
+            ) : undefined
+          }
+        />
+      )}
+
+      <AttendanceFilters filters={filters} onChange={onFiltersChange} />
+
+      {operationsTabs.length > 1 && (
+        <SubTabBar
+          tabs={operationsTabs.map((tab) => ({ key: tab.id, label: tab.label, icon: tab.icon }))}
+          value={activeOpsTab}
+          onChange={onOpsTabChange}
+        />
+      )}
+
+      {activeOpsTab === "mark" && (
+        <MarkAttendance
+          filters={filters}
+          role={role}
+          records={activeRecords}
+          persistBatch={onPersistRecords}
+          onSubmitDay={onSubmitDay}
+          onReopenDay={onReopenDay}
+          canReopenDay={canReopenDay}
+          onDirtyChange={onRosterDirtyChange}
+        />
+      )}
+
+      {activeOpsTab === "lifecycle" && <AttendanceLifecyclePanel />}
+
+      {activeOpsTab === "records" && (
+        <AttendanceRecords
+          filters={filters}
+          onUpdateRecord={onUpdateRecord}
+          onDeleteRecord={onDeleteRecord}
+          onRestoreRecord={onRestoreRecord}
+          onBulkDeleteRecords={onBulkDeleteRecords}
+          onBulkRestoreRecords={onBulkRestoreRecords}
+          showDeleted={showDeleted}
+          onToggleDeleted={onShowDeletedToggle}
+          onMessage={onMessage}
+          onTotalChange={onTotalChange}
+          {...columnProps}
+        />
+      )}
+
+      {activeOpsTab === "audit" && <AuditLog filters={filters} />}
+    </ModuleTierMotion>
+  );
+}

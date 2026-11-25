@@ -14,14 +14,14 @@ import path from "node:path";
 import { assertScanDirs } from "../lib/repo-paths.mjs";
 
 const ROOTS = [
-  path.resolve(process.cwd(), "apps/backend/src/__tests__/db-integration"),
+  path.resolve(process.cwd(), "apps/api/src/__tests__/db-integration"),
   path.resolve(process.cwd(), "packages/modules/accounting/src/backend/__tests__/db-integration"),
 ];
 
 /** Every root whose suites must import package entry points, not app db facades. */
 const PACKAGE_ENTRYPOINT_ROOTS = [
-  path.resolve(process.cwd(), "apps/backend/src/__tests__/db-integration"),
-  path.resolve(process.cwd(), "apps/backend/src/__tests__/rls"),
+  path.resolve(process.cwd(), "apps/api/src/__tests__/db-integration"),
+  path.resolve(process.cwd(), "apps/api/src/__tests__/rls"),
   path.resolve(process.cwd(), "packages/modules/accounting/src/backend/__tests__/db-integration"),
 ];
 // Fail closed: an empty suite root must fail rather than report "no skips".
@@ -50,7 +50,7 @@ for (const name of files) {
 }
 
 // Package-entry rule: the DDL runner and migrations folder live in `@mms/db`. Importing them
-// through `apps/backend/src/db/dbInit.ts` re-couples DB suites to the app and defeats the split.
+// through `apps/api/src/db/dbInit.ts` re-couples DB suites to the app and defeats the split.
 const packageEntrypointFiles = PACKAGE_ENTRYPOINT_ROOTS.flatMap((root) =>
   fs.existsSync(root)
     ? fs

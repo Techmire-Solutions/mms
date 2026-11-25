@@ -1,6 +1,6 @@
 # Hook Review Checklist (mms-frontend)
 
-Review checklist for **every** React hook in `apps/frontend`. Verdict per file: **OK** / **Fixed** / **Justified exception**. Severity: B0 correctness (fix + regression test), B1 robustness/perf (fix), B2 modernization (fix, non-breaking), B3 style (only trivial). Norms: `mms-hooks.md`, `mms-frontend`, `mms-dry.md`, `mms-performance.md` §4–§5, `mms-tdd.md`.
+Review checklist for **every** React hook in `apps/tenant-web`. Verdict per file: **OK** / **Fixed** / **Justified exception**. Severity: B0 correctness (fix + regression test), B1 robustness/perf (fix), B2 modernization (fix, non-breaking), B3 style (only trivial). Norms: `mms-hooks.md`, `mms-frontend`, `mms-dry.md`, `mms-performance.md` §4–§5, `mms-tdd.md`.
 
 ## B0 — Correctness (fix + regression test)
 

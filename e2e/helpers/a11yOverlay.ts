@@ -80,6 +80,26 @@ export async function auditOverlay(
     ).toBe("none");
   }
 
+  // @axe-core/playwright opens and closes a helper tab; restore frontmost page focus before Escape.
+  await page.bringToFront();
+
+  await page
+    .evaluate(() => {
+      const w = window as Window & {
+        __mmsEscapeCount?: number;
+        __mmsEscapeProbe?: (e: KeyboardEvent) => void;
+      };
+      w.__mmsEscapeCount = 0;
+      const listener = (e: KeyboardEvent): void => {
+        if (e.key === "Escape") {
+          w.__mmsEscapeCount = (w.__mmsEscapeCount ?? 0) + 1;
+        }
+      };
+      w.__mmsEscapeProbe = listener;
+      window.addEventListener("keydown", listener, true);
+    })
+    .catch(() => undefined);
+
   // Dismiss via Escape and assert clean closure
   await page.keyboard.press("Escape");
   const closed = await overlay
@@ -87,7 +107,49 @@ export async function auditOverlay(
     .then(() => true)
     .catch(() => false);
 
+  const probeStats = await page
+    .evaluate(() => {
+      const w = window as Window & {
+        __mmsEscapeCount?: number;
+        __mmsEscapeProbe?: (e: KeyboardEvent) => void;
+      };
+      if (w.__mmsEscapeProbe) {
+        window.removeEventListener("keydown", w.__mmsEscapeProbe, true);
+        delete w.__mmsEscapeProbe;
+      }
+      const escapeEventsSeen = w.__mmsEscapeCount ?? 0;
+      delete w.__mmsEscapeCount;
+      const layerRegistry = (globalThis as Record<symbol, unknown>)[
+        Symbol.for("@mms/fe-core/overlay-layers")
+      ];
+      return {
+        hasFocus: document.hasFocus(),
+        escapeEventsSeen,
+        overlayLayerCount: Array.isArray(layerRegistry) ? layerRegistry.length : null,
+      };
+    })
+    .catch(() => null);
+
+  let escapeDiag = "";
   if (!closed) {
+    const diag = await page
+      .evaluate(() => {
+        const active = document.activeElement as HTMLElement | null;
+        const overlayEl = document.querySelector('[role="dialog"]');
+        return {
+          activeTag: active?.tagName ?? null,
+          activeRole: active?.getAttribute("role") ?? null,
+          activeId: active?.id ?? null,
+          activeInOverlay: Boolean(overlayEl && active && overlayEl.contains(active)),
+          activeInRoot: Boolean(active?.closest("#root")),
+          dialogCount: document.querySelectorAll('[role="dialog"]').length,
+          overlayRootCount: document.querySelectorAll('[data-slot="overlay-root"]').length,
+        };
+      })
+      .catch(() => null);
+    if (diag || probeStats) {
+      escapeDiag = ` (${JSON.stringify({ ...diag, ...probeStats })})`;
+    }
     // Attempt cleanup dismiss to avoid corrupting subsequent audits
     await page.keyboard.press("Escape").catch(() => undefined);
     const closeBtn = page
@@ -100,6 +162,6 @@ export async function auditOverlay(
     }
   }
 
-  expect(closed, `${context}: ${kind} overlay failed to close on Escape`).toBe(true);
+  expect(closed, `${context}: ${kind} overlay failed to close on Escape${escapeDiag}`).toBe(true);
   return true;
 }

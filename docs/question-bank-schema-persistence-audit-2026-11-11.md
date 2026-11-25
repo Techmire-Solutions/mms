@@ -75,28 +75,28 @@ and no reverse `(ws, question_id)` index on either paper-link table.
 
 | # | Sev | Where | Finding | Status |
 |---|---|---|---|---|
-| QB4 | P1 | [`questionBankRepositoryList.ts:35`](../apps/backend/src/db/repositories/questionBankRepositoryList.ts) | **The requested `(tenant, subject, difficulty, type, status, deleted_at)` key was not representable** — three of its six columns did not exist. Even the representable part was missing: the filter is `ws + deleted_at IS NULL + difficulty IN (…) + category EXISTS + text ILIKE` sorted `updated_at DESC`, with **no index on `updated_at`** (every default page top-N-sorted the tenant's questions) and no `difficulty`+`type` composite. The declared `(ws, type)` index is never used by the list query — it has no `type` predicate. | **Fixed** — 0240 subset |
-| QB5 | P1 | [`questionBankRepositoryList.ts:46`](../apps/backend/src/db/repositories/questionBankRepositoryList.ts) | Search is `text ILIKE '%term%'` with no trigram index, even though `pg_trgm` is installed by 0197 and used on `contacts`/`hasanat_*`. | **Fixed (out of band)** — 0240 concurrent script |
+| QB4 | P1 | [`questionBankRepositoryList.ts:35`](../packages/modules/question-bank/src/backend/repository/questionBankRepositoryList.ts) | **The requested `(tenant, subject, difficulty, type, status, deleted_at)` key was not representable** — three of its six columns did not exist. Even the representable part was missing: the filter is `ws + deleted_at IS NULL + difficulty IN (…) + category EXISTS + text ILIKE` sorted `updated_at DESC`, with **no index on `updated_at`** (every default page top-N-sorted the tenant's questions) and no `difficulty`+`type` composite. The declared `(ws, type)` index is never used by the list query — it has no `type` predicate. | **Fixed** — 0240 subset |
+| QB5 | P1 | [`questionBankRepositoryList.ts:46`](../packages/modules/question-bank/src/backend/repository/questionBankRepositoryList.ts) | Search is `text ILIKE '%term%'` with no trigram index, even though `pg_trgm` is installed by 0197 and used on `contacts`/`hasanat_*`. | **Fixed (out of band)** — 0240 concurrent script |
 | QB6 | P2 | [`examinationTestTables.ts:66`](../packages/db/src/schema/examinationTestTables.ts) | **No reverse `(ws, question_id)` index** on `test_questions` or `test_section_questions`; the PKs put `question_id` last, so "which papers use question X" seq-scanned both tables — the exact check the guard needs. | **Fixed** — 0240 |
-| QB7 | P2 | [`examinationQuestionBankTables.ts:69`](../packages/db/src/schema/examinationQuestionBankTables.ts) | `question_options` had **no unique `(ws, question_id, option_index)`**; option order was a convention. The delete-then-reinsert sync ([`questionBankQuestionsSync.ts:51`](../apps/backend/src/db/repositories/questionBankQuestionsSync.ts)) can leave two options in one slot under concurrency and nothing rejected it. | **Fixed** — 0240 |
+| QB7 | P2 | [`examinationQuestionBankTables.ts:69`](../packages/db/src/schema/examinationQuestionBankTables.ts) | `question_options` had **no unique `(ws, question_id, option_index)`**; option order was a convention. The delete-then-reinsert sync ([`questionBankQuestionsSync.ts:51`](../packages/modules/question-bank/src/backend/repository/questionBankQuestionsSync.ts)) can leave two options in one slot under concurrency and nothing rejected it. | **Fixed** — 0240 |
 | QB8 | P2 | [`examinationQuestionBankTables.ts:111`](../packages/db/src/schema/examinationQuestionBankTables.ts), [`0090_performance_audit_indexes.sql:7`](../packages/db/migrations_drizzle/0090_performance_audit_indexes.sql) | **Drift:** `question_citations_workspace_book_idx` exists in the live DB (created by the journaled migration 0090) but was absent from the Drizzle table **and from every meta snapshot** — a rebuilt database would silently lose it (the round-2 F6 class). | **Fixed** — declared in Drizzle + snapshot |
 | QB9 | P3 | [`examinationQuestionBankTables.ts:35`](../packages/db/src/schema/examinationQuestionBankTables.ts) | Four indexes were strict PK prefixes — pure write amplification: `question_options_workspace_q_idx`, `question_tags_workspace_q_idx`, `question_citations_workspace_q_idx`, `question_categories_workspace_q_idx`. | **Fixed** — dropped (options replaced by the unique key) |
-| QB10 | P3 | [`usePaperBuilderState.ts:50`](../apps/frontend/src/tenant/features/question-bank/hooks/usePaperBuilderState.ts) | **No server-side blueprint selection.** The paper builder filters the already-loaded list in JS, so composing a paper requires loading the tenant's question bank client-side; `listTests`/`listResults` are equally unpaged (500 default, 5 000 max). | **Deferred** — D5 |
+| QB10 | P3 | [`usePaperBuilderState.ts:50`](../apps/tenant-web/src/tenant/features/question-bank/hooks/usePaperBuilderState.ts) | **No server-side blueprint selection.** The paper builder filters the already-loaded list in JS, so composing a paper requires loading the tenant's question bank client-side; `listTests`/`listResults` are equally unpaged (500 default, 5 000 max). | **Deferred** — D5 |
 
 ### C. Question Bank ↔ Examinations, soft-delete, OCC
 
 | # | Sev | Where | Finding | Status |
 |---|---|---|---|---|
 | QB11 | P1 | [`examinationTestTables.ts:83,130,216`](../packages/db/src/schema/examinationTestTables.ts) | Every paper/answer FK to `questions` is **CASCADE**. Hard delete is blocked by `trg_questions_forbid_hard_delete` ([`0108:216`](../packages/db/migrations_drizzle/0108_soft_delete_schema_rls_and_triggers.sql)), so the cascades only fire under `app.allow_hard_purge` — but **nothing protected a graded question from destructive edits or soft-delete.** Editing `text`/`answer`/`marks`/`type`/`difficulty` silently rewrote a delivered paper and its key; trashing it left `test_questions` pointing at a trashed row. No snapshot, no version, no restrict, no app guard. | **Fixed** — `trg_questions_referenced_guard` (0240) |
-| QB12 | P1 | [`questionBankQuestionsPersist.ts:32`](../apps/backend/src/db/repositories/questionBankQuestionsPersist.ts), [`genericRelationalService.ts:71`](../apps/backend/src/services/genericRelationalService.ts) | **No OCC.** `saveQuestion` upserted last-write-wins and `updateById` was a read-modify-write with no predicate: two editors silently overwrote each other. | **Fixed** — `version` column + CAS (§0240) |
-| QB13 | P2 | [`questionBankQuestionsPersist.ts:313`](../apps/backend/src/db/repositories/questionBankQuestionsPersist.ts), [`questionBankQuestionsSync.ts:16`](../apps/backend/src/db/repositories/questionBankQuestionsSync.ts) | `bulkRestoreQuestions` never stamped `restored_at`/`restored_by` and never reset `deleted_with_cascade`; `questionRowToRecord` projected only the three delete columns, so `restoredAt`/`restoredBy`/`deletedWithCascade` — present in the table **and in the DTO** — never reached a client. Trash rows had no restore evidence (`mms-soft-delete` §2.5/§6). | **Fixed** |
+| QB12 | P1 | [`questionBankQuestionsPersist.ts:32`](../packages/modules/question-bank/src/backend/repository/questionBankQuestionsPersist.ts), [`genericRelationalService.ts:71`](../apps/api/src/services/genericRelationalService.ts) | **No OCC.** `saveQuestion` upserted last-write-wins and `updateById` was a read-modify-write with no predicate: two editors silently overwrote each other. | **Fixed** — `version` column + CAS (§0240) |
+| QB13 | P2 | [`questionBankQuestionsPersist.ts:313`](../packages/modules/question-bank/src/backend/repository/questionBankQuestionsPersist.ts), [`questionBankQuestionsSync.ts:16`](../packages/modules/question-bank/src/backend/repository/questionBankQuestionsSync.ts) | `bulkRestoreQuestions` never stamped `restored_at`/`restored_by` and never reset `deleted_with_cascade`; `questionRowToRecord` projected only the three delete columns, so `restoredAt`/`restoredBy`/`deletedWithCascade` — present in the table **and in the DTO** — never reached a client. Trash rows had no restore evidence (`mms-soft-delete` §2.5/§6). | **Fixed** |
 | QB14 | P3 | [`examinationQuestionBankTables.ts:16`](../packages/db/src/schema/examinationQuestionBankTables.ts) | No `status` on `questions` and none on `tests`: drafts and retired questions are indistinguishable, so a paper (or blueprint) cannot exclude them. Trash is the only retirement path. | **Deferred** — D4 |
-| QB15 | P3 | [`questionBankResultsPersist.ts:202`](../apps/backend/src/db/repositories/questionBankResultsPersist.ts) | `deleteQuestionBankByWorkspace` raw hard-deletes `questions`/`tests` but has **no caller** and would raise `check_violation` from the soft-delete trigger unless `app.allow_hard_purge=true`. | Recorded; dead path left unreferenced |
+| QB15 | P3 | [`questionBankResultsPersist.ts:202`](../packages/modules/question-bank/src/backend/repository/questionBankResultsPersist.ts) | `deleteQuestionBankByWorkspace` raw hard-deletes `questions`/`tests` but has **no caller** and would raise `check_violation` from the soft-delete trigger unless `app.allow_hard_purge=true`. | Recorded; dead path left unreferenced |
 
 **N+1 verdict — option loading is clean.** Every read path batches children with one `inArray` per
-child table: [`questionBankRepositoryList.ts:134`](../apps/backend/src/db/repositories/questionBankRepositoryList.ts),
-[`questionBankQuestionsSync.ts:137`](../apps/backend/src/db/repositories/questionBankQuestionsSync.ts),
-[`questionBankTestsHydrate.ts:36`](../apps/backend/src/db/repositories/questionBankTestsHydrate.ts).
+child table: [`questionBankRepositoryList.ts:134`](../packages/modules/question-bank/src/backend/repository/questionBankRepositoryList.ts),
+[`questionBankQuestionsSync.ts:137`](../packages/modules/question-bank/src/backend/repository/questionBankQuestionsSync.ts),
+[`questionBankTestsHydrate.ts:36`](../packages/modules/question-bank/src/backend/repository/questionBankTestsHydrate.ts).
 No per-question query loop exists. Three residual costs, none a classic N+1: the widget endpoint ran
 2 queries per widget; `hydrateQuestionRecords` receives up to 5 000 ids with no chunk guard; and the
 paper builder filters client-side (QB10).
@@ -123,10 +123,10 @@ blocked by the 0216/0217 snapshot-chain collision):
    working.
 6. Dropped the four PK-prefix indexes.
 
-**Out-of-band:** [`scripts/sql/0240_question_bank_indexes_concurrent.sql`](../apps/backend/scripts/sql/0240_question_bank_indexes_concurrent.sql)
+**Out-of-band:** [`packages/db/scripts/sql/0240_question_bank_indexes_concurrent.sql`](../packages/db/scripts/sql/0240_question_bank_indexes_concurrent.sql)
 — `questions_text_trgm_idx` (GIN trigram). `CONCURRENTLY` cannot be expressed in a Drizzle migration,
 so it is a deploy step:
-`pnpm --filter mms-backend index:concurrent -- --file scripts/sql/0240_question_bank_indexes_concurrent.sql`.
+`pnpm --filter mms-api index:concurrent -- --file packages/db/scripts/sql/0240_question_bank_indexes_concurrent.sql`.
 Like the 0197/0228 trgm indexes it is intentionally absent from the snapshot chain.
 
 **Persistence:** OCC (`version` + `ON CONFLICT … WHERE version = excluded.version`, 0 rows →
@@ -227,7 +227,7 @@ CREATE TABLE answer_keys (
 ```
 
 `ON DELETE RESTRICT` here is deliberate — but it must be added to
-[`purgeSelectedModulesAllowlist.ts`](../apps/backend/src/scripts/purgeSelectedModulesAllowlist.ts)
+[`purgeSelectedModulesAllowlist.ts`](../apps/api/src/scripts/purgeSelectedModulesAllowlist.ts)
 before the `questions` entry, or module purge will fail closed.
 
 **D4 — paper lifecycle.** `tests.published_at timestamptz` (plus optional `questions.status` from D1)

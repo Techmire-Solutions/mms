@@ -1,9 +1,9 @@
 import React from "react";
 import type { AppTranslationKey, ModuleTransferSchema } from "@mms/contracts";
 import { ModuleImportDialog } from "./ModuleImportDialog";
-import { useModuleCsvImportActions } from "@mms/fe-core/backgroundJobs";
-import type { ModuleCsvImportSubmitRows } from "@mms/fe-core/backgroundJobs";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useModuleCsvImportActions } from "../backgroundJobs/index.js";
+import type { ModuleCsvImportSubmitRows } from "../backgroundJobs/index.js";
+import { useTranslation } from "../i18n/index.js";
 
 export interface StandardModuleCsvImportDialogProps<TRow = Record<string, unknown>> {
   open: boolean;

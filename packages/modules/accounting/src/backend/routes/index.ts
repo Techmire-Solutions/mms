@@ -15,6 +15,7 @@ export { configureAccountingJobEnqueuer } from "../jobs/enqueuer.js";
 export type { AccountingJobEnqueuer } from "../jobs/enqueuer.js";
 export * from "./accountingSpecializedEntryRoutes.js";
 export { configureAccountingFinancePort } from "../ports/finance.js";
+export { configureObligationVoucherPort } from "../ports/obligationVoucher.js";
 export * from "./accountingSetupConfigRoutes.js";
 export { default as tenantAccountingRoutes } from "./aggregator.js";
 export { configureAccountingExtraRoutes } from "./extraRoutes.js";

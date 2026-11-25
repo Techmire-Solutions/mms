@@ -1,6 +1,6 @@
 ---
 name: mms-faculty-domain
-description: Governs the Faculty and Academic Staff domain — faculty records, designation assignments, temporal appointments, departments, and workload. Use when modifying faculty tables, appointments, or staff directory/drawers. Do NOT use for student admissions/enrollments (use mms-student-lifecycle), generic form layouts (use mms-form-architecture), or retired legacy surfaces like /api/teachers or FDA (enforced by check:faculty-domain).
+description: Governs Faculty domain (records, designations, appointments, departments, workload). Use when faculty tables/appointments/directory. Do NOT use for admissions (use mms-student-lifecycle), form layouts (use mms-form-architecture), or legacy /api/teachers.
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -39,7 +39,7 @@ There is **no database exclusion constraint** on appointments. The retired
 `faculty_assignments` is the appointment SSOT.
 
 Non-overlap is enforced in the application, not by DDL:
-- `apps/backend/src/db/repositories/facultyAssignmentValidation.ts` —
+- `apps/api/src/db/repositories/facultyAssignmentValidation.ts` —
   `lockFacultyHierarchy()` takes `pg_advisory_xact_lock` on the workspace key,
   then `validateFacultyAssignment()` rejects a second overlapping `is_primary`
   row for the same faculty (`start_date`–`end_date`, open ends = infinity),
@@ -50,7 +50,7 @@ Non-overlap is enforced in the application, not by DDL:
   date-only ends are written with the **workspace-local day**, not UTC.
 - Reporting hierarchy is **derived** from the designation tree; `reportingFacultyId`
   is a read-only projection (soft-stopped on write). Rank/cycle prevention live in
-  `apps/backend/src/db/repositories/facultyDesignationValidation.ts`.
+  `apps/api/src/db/repositories/facultyDesignationValidation.ts`.
 
 For seniority ranking rules, cycle prevention, and temporal constraint details, see [references/faculty-hierarchy-rules.md](references/faculty-hierarchy-rules.md).
 
@@ -59,11 +59,11 @@ For seniority ranking rules, cycle prevention, and temporal constraint details, 
 | Concern | Path / Symbol |
 |---|---|
 | Drizzle Schema | `packages/db/src/schema/faculty.ts`, `facultyDesignationTables.ts`, `facultyAssignmentTables.ts`, `facultyDepartmentTables.ts` |
-| Backend Use-Cases | `apps/backend/src/faculty/use-cases/facultyWriteUseCases.ts` |
-| Appointment Overlap Guard | `apps/backend/src/db/repositories/facultyAssignmentValidation.ts` |
-| Employee ID Generator | `apps/backend/src/faculty/use-cases/facultyEmployeeIdGenerator.ts` |
-| Frontend Page Shell | `apps/frontend/src/tenant/features/faculty/FacultyPage.tsx` |
-| Frontend Work Sub-tabs | `apps/frontend/src/tenant/features/faculty/facultyPageWorkSubTabs.ts` |
+| Backend Use-Cases | `apps/api/src/faculty/use-cases/facultyWriteUseCases.ts` |
+| Appointment Overlap Guard | `apps/api/src/db/repositories/facultyAssignmentValidation.ts` |
+| Employee ID Generator | `apps/api/src/faculty/use-cases/facultyEmployeeIdGenerator.ts` |
+| Frontend Page Shell | `apps/tenant-web/src/tenant/features/faculty/FacultyPage.tsx` |
+| Frontend Work Sub-tabs | `apps/tenant-web/src/tenant/features/faculty/facultyPageWorkSubTabs.ts` |
 | Legacy Surface Ratchet | `scripts/check-faculty-domain.mjs` |
 | Contact role tags | `packages/modules/contacts/src/backend/systemTags/contactSystemTagFacultyCompute.ts`, `contactSystemTagReconcile.ts` |
 
@@ -82,9 +82,9 @@ For seniority ranking rules, cycle prevention, and temporal constraint details, 
 pnpm run check:faculty-domain
 
 # Run faculty domain tests
-pnpm --filter mms-backend test faculty
-pnpm --filter mms-frontend test apps/frontend/src/tenant/features/faculty
-pnpm --filter mms-backend test:db contactsSystemTagsDb
+pnpm --filter mms-api test faculty
+pnpm --filter mms-tenant-web test apps/tenant-web/src/tenant/features/faculty
+pnpm --filter mms-api test:db contactsSystemTagsDb
 ```
 
 ## Related skills

@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { WorkspaceLogo } from "./WorkspaceLogo";
 
-describe("WorkspaceLogo Component (@shared/ui)", () => {
+describe("WorkspaceLogo Component (@mms/ui)", () => {
   it("keeps stable dimensions when callers add custom styling", () => {
     const html = renderToStaticMarkup(
       <WorkspaceLogo

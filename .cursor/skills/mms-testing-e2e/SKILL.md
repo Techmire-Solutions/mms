@@ -1,6 +1,6 @@
 ---
 name: mms-testing-e2e
-description: Automated testing guide for MMS — Vitest unit/integration tests, Fastify inject() API tests, Playwright E2E specs, responsive/RTL smoke suites, and axe-core accessibility checks. Use when writing, running, or debugging frontend, backend, shared package, or end-to-end tests. Do NOT use for static TypeScript typechecks (use pnpm typecheck) or dependency auditing (use mms-dependency-upgrade).
+description: Vitest unit/integration, Fastify inject(), Playwright E2E, responsive/RTL, axe. Use when writing/running/debugging tests. Do NOT use for typechecks (use pnpm typecheck) or dep audits (use mms-dependency-upgrade).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -21,9 +21,9 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 ## 1. Monorepo Testing Tiers & Commands
 
 - **Shared Pure Helpers**: `pnpm --filter @mms/contracts test` (Vitest unit tests for schemas, formatters, pure utils).
-- **Backend API & RBAC**: `pnpm --filter mms-backend test` (Fastify `inject()` + `vi.hoisted()` in-memory repository mocks).
-- **Database Integration**: `pnpm --filter mms-backend test:db` (Real PostgreSQL suite for RLS, transaction locks, and SQL aggregates).
-- **Frontend Components & Hooks**: `pnpm --filter mms-frontend test` (Vitest + happy-dom for TanStack Query facades, modals, and forms).
+- **Backend API & RBAC**: `pnpm --filter mms-api test` (Fastify `inject()` + `vi.hoisted()` in-memory repository mocks).
+- **Database Integration**: `pnpm --filter mms-api test:db` (Real PostgreSQL suite for RLS, transaction locks, and SQL aggregates).
+- **Frontend Components & Hooks**: `pnpm --filter mms-tenant-web test` (Vitest + happy-dom for TanStack Query facades, modals, and forms).
 - **Playwright E2E**: `pnpm test:e2e` (Playwright project root is `e2e/`). For execution commands and directory layout, see [references/playwright-test-guide.md](references/playwright-test-guide.md).
 - **Responsive & A11y Smoke**: Specs live at `e2e/tests/responsive/responsive-shell.spec.ts` and `e2e/tests/a11y/a11y-shell.spec.ts`; run via `pnpm test:e2e tests/responsive/responsive-shell.spec.ts` and `pnpm test:e2e tests/a11y/a11y-shell.spec.ts`. Auth bootstrap: `e2e/helpers/tenantBootstrap.ts`.
 
@@ -46,7 +46,7 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 
 ## 2.1 Query-Backed Editors & Print Surfaces
 
-- Wrap component tests that render `useDocumentTemplate`/Query hooks in `withQueryClient` (`apps/frontend/src/test/queryClientTestUtils.tsx`).
+- Wrap component tests that render `useDocumentTemplate`/Query hooks in `withQueryClient` (`apps/tenant-web/src/test/queryClientTestUtils.tsx`).
 - Print tests stub `window.open`, assert the written HTML fields/rows, and cover the popup-blocked path.
 - Never assert raw translation keys; assert visible localized copy or the payload that reaches print.
 - Full template test matrix: `mms-document-templates`.
@@ -60,8 +60,8 @@ allowed-tools: Read Grep Glob Bash(pnpm test) Bash(pnpm test:e2e) Bash(pnpm --fi
 
 ## Verification
 
-- Unit/integration: `pnpm --filter @mms/contracts test`, `pnpm --filter mms-backend test`, `pnpm --filter mms-frontend test` — all suites green, no skipped files.
-- DB/RLS evidence: `pnpm --filter mms-backend test:db` (real PostgreSQL) or `pnpm ci:local --with-db` when schema/migrations/queries/derived projections changed.
+- Unit/integration: `pnpm --filter @mms/contracts test`, `pnpm --filter mms-api test`, `pnpm --filter mms-tenant-web test`, `pnpm --filter mms-platform-web test` — all suites green, no skipped files.
+- DB/RLS evidence: `pnpm --filter mms-api test:db` (real PostgreSQL) or `pnpm ci:local --with-db` when schema/migrations/queries/derived projections changed.
 - Browser: `pnpm test:e2e` (or a single spec path); a11y smoke must report zero serious/critical axe violations. A self-skipping spec must log its reason and is reported as skipped, never as browser evidence.
 - New endpoints: pin forbidden, invalid/malformed, guarded/skipped, and success branches. Changed hooks/components: pin the new contract (lean DTO shape, relative upload URL, post-save unlink), not just render output.
 - Red evidence: `pnpm run check:tdd-pairing` shows no unpaired backend domain file, and the PR body records the failing command + assertion.

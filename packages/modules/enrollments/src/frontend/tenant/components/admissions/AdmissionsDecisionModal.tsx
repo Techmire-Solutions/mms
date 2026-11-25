@@ -1,0 +1,151 @@
+import { translateValidationMessage } from "@mms/fe-core/forms/translateValidationMessage";
+import React, { useState } from "react";
+import { useIdentityReset } from "@mms/fe-core/forms/useIdentityReset";
+import { ClipboardCheck } from "lucide-react";
+import {
+  registrationReviewSchema,
+  type RegistrationApplication,
+  type RegistrationReview,
+} from "@mms/contracts";
+import { Field } from "@mms/fe-core/components/FormPrimitives";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { Textarea } from "@mms/ui";
+import { ToggleRow } from "@mms/ui";
+import { Alert } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+export type AdmissionsDecision = RegistrationReview["decision"];
+
+export interface AdmissionsDecisionModalProps {
+  open: boolean;
+  decision: AdmissionsDecision;
+  applications: readonly RegistrationApplication[];
+  isPending: boolean;
+  onClose: () => void;
+  onConfirm: (body: RegistrationReview) => Promise<boolean>;
+}
+
+/** Confirms a review decision; reject needs a reason, approval can reuse a matched student. */
+export function AdmissionsDecisionModal({
+  open,
+  decision,
+  applications,
+  isPending,
+  onClose,
+  onConfirm,
+}: AdmissionsDecisionModalProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const [reason, setReason] = useState("");
+  const [useMatch, setUseMatch] = useState(true);
+  const [attempted, setAttempted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const single = applications.length === 1 ? applications[0] : null;
+  const matchedStudentId = single?.matchedStudentId ?? null;
+  const ineligible = applications.filter((app) => app.eligibilityReasons.length > 0).length;
+  const reasonRequired = decision === "reject";
+  const trimmedReason = reason.trim();
+  // Match `registrationReviewSchema`: reject requires a non-empty trimmed
+  // reason (max 500 is enforced by the textarea + shared optionalText(max)).
+  const reasonError =
+    attempted && reasonRequired && trimmedReason.length === 0
+      ? t("enrollments.admissions.rejectReasonRequired")
+      : undefined;
+
+  // Clear the previous decision's reason/match choice on each (re)open (render-phase reset).
+  useIdentityReset(open ? "open" : "closed", () => {
+    if (open) {
+      setReason("");
+      setUseMatch(true);
+      setAttempted(false);
+      setFormError(null);
+    }
+  });
+
+  const handleSave = async (): Promise<void> => {
+    setAttempted(true);
+    const parsed = registrationReviewSchema.safeParse({
+      ids: applications.map((app) => app.id),
+      decision,
+      reason: trimmedReason || null,
+      existingStudentId: decision === "approve" && useMatch ? matchedStudentId : null,
+    });
+    if (!parsed.success) {
+      setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+      return;
+    }
+    const done = await onConfirm(parsed.data);
+    if (done) onClose();
+    else setFormError(t("enrollments.toast.saveFailed"));
+  };
+
+  return (
+    <FormModal
+      open={open}
+      onClose={onClose}
+      title={t(`enrollments.admissions.decision.${decision}`)}
+      subtitle={
+        single
+          ? `${single.fullName} · ${single.reference}`
+          : t("enrollments.admissions.selectedCount", { count: applications.length })
+      }
+      icon={ClipboardCheck}
+      size="sm"
+      cancelLabel={t("common.cancel")}
+      saveLabel={t(`enrollments.admissions.confirm.${decision}`)}
+      saving={isPending}
+      saveDisabled={isPending || Boolean(reasonError)}
+      error={formError ?? undefined}
+      isDirty={Boolean(reason.trim())}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("enrollments.admissions.discardDescription")}
+      discardConfirmLabel={t("common.yes")}
+      discardCancelLabel={t("common.cancel")}
+      onSave={handleSave}
+      formId="admissions-decision-form"
+    >
+      <form
+        id="admissions-decision-form"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          void handleSave();
+        }}
+      >
+        <div className="space-y-3 py-1 text-start">
+          {decision === "approve" && ineligible > 0 ? (
+            <Alert title={t("enrollments.admissions.ineligibleWarning", { count: ineligible })} />
+          ) : null}
+          {decision === "approve" && matchedStudentId ? (
+            <ToggleRow
+              label={t("enrollments.admissions.useMatch")}
+              description={t("enrollments.admissions.useMatchHint")}
+              value={useMatch}
+              onChange={setUseMatch}
+            />
+          ) : null}
+          {decision === "approve" ? (
+            <p className="text-pretty text-sm text-muted-foreground">
+              {t("enrollments.admissions.approveHint")}
+            </p>
+          ) : null}
+          <Field
+            id="admissions-reason"
+            label={t("enrollments.admissions.reason")}
+            required={reasonRequired}
+            error={reasonError}
+          >
+            <Textarea
+              id="admissions-reason"
+              name="reason"
+              rows={3}
+              maxLength={500}
+              value={reason}
+              disabled={isPending}
+              onChange={(event) => setReason(event.target.value)}
+            />
+          </Field>
+        </div>
+      </form>
+    </FormModal>
+  );
+}

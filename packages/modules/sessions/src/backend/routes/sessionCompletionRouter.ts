@@ -1,0 +1,84 @@
+import type { FastifyPluginAsync } from "fastify";
+import { initServer, type RouterImplementation } from "@ts-rest/fastify";
+import { SESSIONS_MODULE_MANIFEST, sessionCompletionContract, type User } from "@mms/contracts";
+import { handleContractError } from "@mms/be-core/http/routes";
+import { standardRequestValidationErrorHandler } from "@mms/be-core/http/routes";
+import { enforceSessionResponses } from "../lib/sessionContractResponses.js";
+import type { ContractRouteArgs } from "@mms/be-core/http/routes";
+import { canReadCollection, canWriteCollection } from "@mms/be-core/rbac";
+import { userHasPermission } from "@mms/be-core/rbac";
+import { sessionCompletionUseCases as completion } from "../use-cases/index.js";
+
+type Contract = typeof sessionCompletionContract;
+type Request = Parameters<typeof handleContractError>[0];
+const COLLECTION = SESSIONS_MODULE_MANIFEST.collectionKey;
+const OVERRIDE_LOCK_PERM = SESSIONS_MODULE_MANIFEST.permissions.overrideLock;
+const forbidden = {
+  status: 403 as const,
+  body: { type: "forbidden", message: "Insufficient permissions" },
+};
+const s = initServer();
+const tenantOf = (request: Request) => String(request.tenant?.id ?? "");
+const fail = (request: Request, error: unknown, message: string) =>
+  handleContractError(request, error, { status: 500, body: { type: "server_error", message } });
+
+/** `/api/sessions/:id/completion{,/evaluate,/certificates}` — short-course completion (Phase 11). */
+export const sessionCompletionRouter: FastifyPluginAsync = async (fastify) => {
+  const router = s.router(
+    sessionCompletionContract,
+    enforceSessionResponses(sessionCompletionContract, {
+      list: async ({ params, request }: ContractRouteArgs<Contract["list"]>) => {
+        if (!canReadCollection(request.user as User, COLLECTION)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: { rows: await completion.list(tenantOf(request), params.id) },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to load completion");
+        }
+      },
+      evaluate: async ({ params, body, request }: ContractRouteArgs<Contract["evaluate"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: {
+              rows: await completion.evaluate(tenantOf(request), params.id, body, {
+                canOverride: userHasPermission(user, OVERRIDE_LOCK_PERM),
+              }),
+            },
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to evaluate completion");
+        }
+      },
+      certificates: async ({
+        params,
+        body,
+        request,
+      }: ContractRouteArgs<Contract["certificates"]>) => {
+        const user = request.user as User;
+        if (!canWriteCollection(user, COLLECTION)) return forbidden;
+        if (!userHasPermission(user, SESSIONS_MODULE_MANIFEST.permissions.manage)) return forbidden;
+        try {
+          return {
+            status: 200 as const,
+            body: await completion.issueCertificates(tenantOf(request), params.id, body, {
+              canOverride: userHasPermission(user, OVERRIDE_LOCK_PERM),
+            }),
+          };
+        } catch (error) {
+          return fail(request, error, "Failed to issue certificates");
+        }
+      },
+    } as unknown as RouterImplementation<Contract>),
+  );
+
+  await fastify.register(s.plugin(router), {
+    requestValidationErrorHandler: standardRequestValidationErrorHandler,
+    responseValidation: true,
+  });
+};

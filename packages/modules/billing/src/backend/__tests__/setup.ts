@@ -1,0 +1,48 @@
+import { vi } from "vitest";
+import { configureFinancePorts } from "../deps.js";
+
+// Deterministic defaults for the app-bound ports; tests that assert behaviour
+// override them with partial `vi.mock("../deps.js", importOriginal)` factories.
+const noop = vi.fn(async () => ({}));
+configureFinancePorts({
+  findEntryIdBySource: noop,
+  tryPostInvoiceJournal: noop,
+  tryPostInvoiceJournals: noop,
+  tryPostPaymentJournal: noop,
+  tryPostArchiveReversalJournal: noop,
+  tryPostRestoreJournal: noop,
+  tryPostCreditNoteJournal: noop,
+  tryPostInvoiceReversalJournal: noop,
+  tryPostLateFeeJournals: noop,
+  tryPostLateFeeReversalJournal: noop,
+  getPostingRules: noop,
+  accountingFxRepository: {},
+  lookupExchangeRate: noop,
+  listRealizedFxByCurrency: noop,
+  upsertExchangeRates: noop,
+  upsertEntriesHelper: noop,
+  upsertVoucherNumbering: noop,
+  accountingUseCases: {},
+  findEntryById: noop,
+  findAccountById: noop,
+  allocateVoucherNumbers: noop,
+  accountingRepository: {},
+  linkEnrollmentInvoiceIds: noop,
+  findEnrollmentById: noop,
+  loadContactsSummaryByIdsForTenant: vi.fn(async () => []),
+  loadContactFieldConfig: vi.fn(async () => ({})),
+  findStudentsByNames: vi.fn(async () => []),
+  findStudentsByIds: vi.fn(async () => []),
+  enqueueCsvExportJob: noop,
+  normalizeExportQuery: vi.fn((query: unknown) => query),
+  enqueueBackgroundJob: noop,
+  getUserBackgroundJob: vi.fn(async () => null),
+  getUserBackgroundJobPayload: vi.fn(async () => null),
+  retryFailedBackgroundJob: noop,
+  hasBackgroundJobRunner: vi.fn(() => true),
+  isBackgroundJobLimitError: vi.fn(() => false),
+  isQueueUnavailableError: vi.fn(() => false),
+  loadSessionClassRefTx: noop,
+  sessionHasEnrollments: noop,
+  registerModuleCsvExportJobRunner: vi.fn(),
+});

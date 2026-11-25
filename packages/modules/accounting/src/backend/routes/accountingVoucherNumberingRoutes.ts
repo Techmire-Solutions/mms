@@ -11,10 +11,7 @@ import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from "@mms/be
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
 import { sendValidated } from "@mms/be-core/http/routes";
 import { withTenant } from "@mms/db/context";
-import {
-  loadVoucherNumbering,
-  upsertVoucherNumbering,
-} from "../use-cases/accountingVoucherNumberingUseCases.js";
+import { loadVoucherNumbering, upsertVoucherNumbering } from "../use-cases/index.js";
 
 const COLLECTION = ACCOUNTING_MODULE_MANIFEST.collectionKey;
 

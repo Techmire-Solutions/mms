@@ -26,8 +26,8 @@ import {
   previewHedgeValuation,
   reclassifyHedgeReserve,
   settleHedge,
-} from "../use-cases/hedgeUseCases.js";
-import { hedgeDeps as deps } from "../use-cases/hedgeDeps.js";
+} from "../use-cases/index.js";
+import { hedgeDeps as deps } from "../use-cases/index.js";
 
 const COLLECTION = ACCOUNTING_MODULE_MANIFEST.collectionKey;
 const DEFAULT_LIMIT = 100;

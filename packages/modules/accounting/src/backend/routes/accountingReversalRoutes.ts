@@ -9,8 +9,8 @@ import { canManageAccounting } from "@mms/be-core/rbac";
 import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from "@mms/be-core/http/errors";
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
 import { sendValidated } from "@mms/be-core/http/routes";
-import { reverseJournalEntry } from "../use-cases/reverseJournalEntryUseCase.js";
-import { reverseJournalEntryDeps } from "../use-cases/reverseJournalEntryDeps.js";
+import { reverseJournalEntry } from "../use-cases/index.js";
+import { reverseJournalEntryDeps } from "../use-cases/index.js";
 
 /** Posts a linked reversing journal for a posted entry (the original stays intact). */
 export const accountingReversalRoutes: FastifyPluginAsync = async (fastify) => {

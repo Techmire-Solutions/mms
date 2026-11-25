@@ -1,5 +1,4 @@
-import type { ContactsRepository } from "../repository/contactsRepository.js";
-import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
+import { contactsRepository, type ContactsRepository } from "../repository/index.js";
 import * as loadUseCases from "./contactLoadUseCases.js";
 import * as writeUseCases from "./contactWriteUseCases.js";
 import * as softDeleteUseCases from "./contactSoftDeleteUseCases.js";

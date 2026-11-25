@@ -1,0 +1,10 @@
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    environment: "node",
+    include: ["src/shared/**/*.test.ts", "src/backend/**/*.test.ts"],
+    exclude: ["src/backend/__tests__/db-integration/**"],
+    setupFiles: ["src/backend/__tests__/setup.ts"],
+  },
+});

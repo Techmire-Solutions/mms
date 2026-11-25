@@ -1,6 +1,6 @@
 ---
 name: mms-form-architecture
-description: Implements static FormModal forms with shared Zod DTOs, React 19 defaults, decimal-as-string money, tenant RLS saves, authenticated multipart uploads, and the draft-lifecycle contract (identity reset, guarded submit, server-error mapping, dirty guard). Use when building or auditing create/edit forms, FormModal tabs, DatePicker/TimePicker/DateTimePicker/phone fields, upload flows, or running a form inventory/audit. Do NOT use for table/card directory views (use mms-module-work), multi-tier module tabs (use mms-module-page), or accessibility audits (use mms-a11y-smoke).
+description: Implements static FormModal forms (Zod DTOs, decimal money, RLS saves, uploads, draft lifecycle). Use when create/edit forms, pickers, uploads, form audit. Do NOT use for directory views (use mms-module-work) or module shells (use mms-module-page).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -21,7 +21,7 @@ metadata:
 
 ## Form contract and draft lifecycle
 
-`FormModalProps` in `apps/frontend/src/components/app/FormModal.tsx`: `open`, `onClose`,
+`FormModalProps` in `apps/tenant-web/src/components/app/FormModal.tsx`: `open`, `onClose`,
 `onSave`, `saving`, `saveDisabled`, `saved`, `error`, `onSelectError`, `isDirty`, `tabs`,
 `activeTab`, `onTabChange`, `saveOnTabChange`, `tall`, `footerStart`, `hideFooter`,
 `saveVariant`, and the discard-confirm copy. There is no `isOpen`, `isSubmitting`, or
@@ -67,7 +67,7 @@ its spec exists.
 
 Three static vitest guards already fail the frontend suite, and scanning them is faster than
 re-deriving their rules:
-`apps/frontend/src/lib/forms/formContractArchitecture.test.ts` (no `void mutate(`, no removed
+`apps/tenant-web/src/lib/forms/formContractArchitecture.test.ts` (no `void mutate(`, no removed
 props, no legacy store), `formUiPrimitives.test.ts` (no raw controls / literal copy / physical
 direction classes), `formCollectionKeys.test.ts` (no index keys).
 
@@ -146,7 +146,7 @@ python3 .agent/skills/ui-ux-pro-max/scripts/search.py "<form-topic>" --domain ux
 - [ ] Attachment removal unlinks only after the save commits and no row references the file
 - [ ] Focus-return restored to opener on dialog close
 - [ ] Inventory regenerated; pnpm run check:forms green with no baseline increase
-- [ ] Run: pnpm typecheck && cd apps/frontend && pnpm lint
+- [ ] Run: pnpm typecheck && cd apps/tenant-web && pnpm lint
 ```
 
 ## References

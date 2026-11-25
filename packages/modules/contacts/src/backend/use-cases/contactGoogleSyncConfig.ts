@@ -1,6 +1,8 @@
 import { requireTenant } from "@mms/be-core/http";
-import { contactGoogleSyncRepository } from "../repository/contactGoogleSyncAdapter.js";
-import type { ContactGoogleSyncCredentialRecord } from "../repository/contactGoogleSyncRepository.js";
+import {
+  contactGoogleSyncRepository,
+  type ContactGoogleSyncCredentialRecord,
+} from "../repository/index.js";
 
 export type ContactGoogleSyncConfig = ContactGoogleSyncCredentialRecord;
 

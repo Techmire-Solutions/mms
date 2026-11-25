@@ -1,6 +1,6 @@
 ---
 name: mms-dependency-upgrade
-description: Upgrades MMS workspace dependencies with pnpm catalogs, Dependabot/Renovate + dependency-review, audits, and the React Compiler enablement checklist. Use when bumping Node/pnpm/React/Vite/Fastify/Drizzle/Zod/Query, enabling Dependabot, or turning on React Compiler. Do NOT use for routine feature bug fixes (use mms-frontend or mms-backend-api) or migration technical debt (use mms-migration-fixes).
+description: Upgrades deps with pnpm catalogs, Dependabot/Renovate, audits, React Compiler. Use when bumping Node/pnpm/React/Vite/Fastify/Drizzle/Zod/Query. Do NOT use for bug fixes (use mms-frontend/mms-backend-api) or migration debt (use mms-migration-fixes).
 license: Proprietary
 metadata:
   owner: mms-platform

@@ -170,10 +170,10 @@ kill_repo_dev_processes() {
   while IFS= read -r pid; do
     [ -z "$pid" ] && continue
     cmd="$(ps -p "$pid" -o args= 2>/dev/null || true)"
-    [[ "$cmd" == *"$ROOT_DIR"* || "$cmd" == *"mms-backend"* || "$cmd" == *"mms-frontend"* ]] || continue
+    [[ "$cmd" == *"$ROOT_DIR"* || "$cmd" == *"mms-api"* || "$cmd" == *"mms-tenant-web"* ]] || continue
     case "$cmd" in
       *"turbo"*"run dev"*|*"pnpm"*"dev"*|*"pnpm"*"worker"*|\
-      *"/apps/frontend"*"vite"*|*"/apps/backend"*"tsx"*)
+      *"/apps/tenant-web"*"vite"*|*"/apps/api"*"tsx"*)
         log "Stopping orphan dev process (pid $pid)..."
         kill -TERM "$pid" 2>/dev/null || true
         ;;
@@ -183,10 +183,10 @@ kill_repo_dev_processes() {
   while IFS= read -r pid; do
     [ -z "$pid" ] && continue
     cmd="$(ps -p "$pid" -o args= 2>/dev/null || true)"
-    [[ "$cmd" == *"$ROOT_DIR"* || "$cmd" == *"mms-backend"* || "$cmd" == *"mms-frontend"* ]] || continue
+    [[ "$cmd" == *"$ROOT_DIR"* || "$cmd" == *"mms-api"* || "$cmd" == *"mms-tenant-web"* ]] || continue
     case "$cmd" in
       *"turbo"*"run dev"*|*"pnpm"*"dev"*|*"pnpm"*"worker"*|\
-      *"/apps/frontend"*"vite"*|*"/apps/backend"*"tsx"*)
+      *"/apps/tenant-web"*"vite"*|*"/apps/api"*"tsx"*)
         kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null || true
         ;;
     esac
@@ -291,19 +291,19 @@ check_prerequisites() {
     log "Running pnpm install..."
     pnpm install
   fi
-  if [ ! -f "apps/backend/.env" ]; then
-    [ -f "apps/backend/.env.example" ] || die "Missing apps/backend/.env"
-    log "Creating apps/backend/.env from .env.example..."
-    cp apps/backend/.env.example apps/backend/.env
-    ok "Created apps/backend/.env — review JWT_SECRET before production"
+  if [ ! -f "apps/api/.env" ]; then
+    [ -f "apps/api/.env.example" ] || die "Missing apps/api/.env"
+    log "Creating apps/api/.env from .env.example..."
+    cp apps/api/.env.example apps/api/.env
+    ok "Created apps/api/.env — review JWT_SECRET before production"
   fi
-  grep -q '^JWT_SECRET=.\+' apps/backend/.env 2>/dev/null || die "JWT_SECRET missing in apps/backend/.env"
+  grep -q '^JWT_SECRET=.\+' apps/api/.env 2>/dev/null || die "JWT_SECRET missing in apps/api/.env"
 }
 
 maybe_clear_vite_cache() {
   if [ "$QUICK" = false ]; then
     log "Clearing Vite cache..."
-    rm -rf apps/frontend/node_modules/.vite 2>/dev/null || true
+    rm -rf apps/tenant-web/node_modules/.vite 2>/dev/null || true
   fi
 }
 
@@ -385,11 +385,11 @@ run_dev_foreground() {
   echo "  Backend   http://localhost:$BACKEND_PORT/health"
   echo ""
   trap 'kill 0 2>/dev/null; exit 0' INT TERM
-  pnpm --filter mms-backend exec tsx watch src/index.ts &
+  pnpm --filter mms-api exec tsx watch src/index.ts &
   sleep 2
-  pnpm --filter mms-backend exec tsx watch src/worker/index.ts &
+  pnpm --filter mms-api exec tsx watch src/worker/index.ts &
   sleep 2
-  pnpm --filter mms-frontend exec vite &
+  pnpm --filter mms-tenant-web exec vite &
   wait
 }
 
@@ -498,9 +498,9 @@ show_status() {
     warn "Screen session '$SCREEN_SESSION' not running"
   fi
 
-  if [ -f "apps/backend/.env" ]; then
+  if [ -f "apps/api/.env" ]; then
     local db_url db_host db_port
-    db_url="$(grep '^DATABASE_URL=' apps/backend/.env | sed 's/DATABASE_URL=//')"
+    db_url="$(grep '^DATABASE_URL=' apps/api/.env | sed 's/DATABASE_URL=//')"
     if [[ "$db_url" == postgres://* || "$db_url" == postgresql://* ]]; then
       local temp="${db_url#*//}"
       temp="${temp#*@}"
@@ -516,7 +516,7 @@ show_status() {
     else
       local db_file="${db_url#sqlite://}"
       if [[ "$db_file" != /* ]]; then
-        db_file="apps/backend/$db_file"
+        db_file="apps/api/$db_file"
       fi
       if [ -f "$db_file" ]; then
         ok "SQLite: database file exists ($db_file, $(stat -f%z "$db_file" 2>/dev/null || stat -c%s "$db_file" 2>/dev/null) bytes)"
@@ -525,7 +525,7 @@ show_status() {
       fi
     fi
   else
-    warn "Database: missing apps/backend/.env"
+    warn "Database: missing apps/api/.env"
   fi
 
   local be fe

@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+test.use({ baseURL: process.env.PLATFORM_BASE_URL || "http://localhost:5174" });
+
 /**
  * Apex navigation smoke. Authenticated tenant settings are covered in
  * `onboarding-login.spec.ts` after onboard.

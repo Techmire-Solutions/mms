@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal, type ModalProps } from "./Modal";
 import { ConfirmAlertDialog } from "./ConfirmAlertDialog";
 import { useFormModalLayout } from "./useFormModalLayout";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import type { SubTab } from "@mms/ui/app/SubTabBar";
 
 export type { SubTab as FormModalTab };

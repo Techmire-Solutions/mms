@@ -88,7 +88,7 @@ jobs:
           build-shared: "true"
 
       - name: Run DB Migrations
-        run: pnpm --filter mms-backend run db:migrate
+        run: pnpm --filter mms-api run db:migrate
 
       - name: Cache Playwright Binaries
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

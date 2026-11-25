@@ -50,8 +50,8 @@ above so no requirement silently disappears.
 | # | Sev | Where | Finding | Status |
 |---|---|---|---|---|
 | V1 | **P1** | `examinationsUseCases.ts` (10 `getRequestTenant()` sites), `examEligibilityGate.ts`, `examResultsSubmission.ts` | The domain/use-case layer reads ambient request state (ALS) instead of receiving the tenant; use cases cannot run without a request scope and unit tests must mock `lib/tenantContext`. | **Documented** — R1 (mechanical refactor, ~20 call sites) |
-| V2 | **P1** | `db/repositories/examinationResultModeration.ts`, `examinationsUseCases.ts` | Moderation validation, effective-score bound and response scoring lived in the Drizzle adapter; the use case was a passthrough. | **Fixed** — rules extracted to [`domain/moderation.ts`:17](../apps/backend/src/examinations/domain/moderation.ts); the use case validates before delegating ([`examinationsUseCases.ts:144`:144](../apps/backend/src/examinations/use-cases/examinationsUseCases.ts)); the adapter keeps only in-transaction persistence + the bound (same domain functions) |
-| V3 | **P1** | `examinationExamsPersist.ts`, `examinationsUseCases.ts:160-161` | **The round-1 audit fix ran on a dead path.** `createExam`/`updateExamById` are exported but no route uses them; the live UI save is `bulkSaveExams`, which computed frame changes into a map it never read and never emitted `auditExamCreated`. Exam creates and scoring-frame changes made in the UI were unaudited while the DB tests asserted the opposite by calling `saveExam`. | **Fixed** — bulk path audits creates and every frame change in-transaction ([`examinationExamsPersist.ts:236-252`:236](../apps/backend/src/db/repositories/examinationExamsPersist.ts)); dead map + dead use-case exports removed |
+| V2 | **P1** | `db/repositories/examinationResultModeration.ts`, `examinationsUseCases.ts` | Moderation validation, effective-score bound and response scoring lived in the Drizzle adapter; the use case was a passthrough. | **Fixed** — rules extracted to [`domain/moderation.ts`:17](../packages/modules/examinations/src/backend/domain/moderation.ts); the use case validates before delegating ([`examinationsUseCases.ts:144`:144](../packages/modules/examinations/src/backend/use-cases/examinationsUseCases.ts)); the adapter keeps only in-transaction persistence + the bound (same domain functions) |
+| V3 | **P1** | `examinationExamsPersist.ts`, `examinationsUseCases.ts:160-161` | **The round-1 audit fix ran on a dead path.** `createExam`/`updateExamById` are exported but no route uses them; the live UI save is `bulkSaveExams`, which computed frame changes into a map it never read and never emitted `auditExamCreated`. Exam creates and scoring-frame changes made in the UI were unaudited while the DB tests asserted the opposite by calling `saveExam`. | **Fixed** — bulk path audits creates and every frame change in-transaction ([`examinationExamsPersist.ts:236-252`:236](../packages/modules/examinations/src/backend/repository/examinationExamsPersist.ts)); dead map + dead use-case exports removed |
 | V4 | **P2** | `routes/tenant/examinations.ts:74` vs `contracts/examinations.contract.ts:130` | The results bulk route registered the full record schema (marks `default(0)`, moderation fields accepted) while the contract advertises `examMarksWriteListSchema`. An omitted `marksObtained` silently recorded **0**; the strict contract was dead enforcement. | **Fixed** — route uses `examMarksWriteListSchema`; missing marks/moderation fields are 400 (route tests) |
 | V5 | **P2** | `examinationContractRouter.ts`, `routes/tenant/examinations.ts` | Two registration surfaces: the contract declares `bulkUpdateExams` / `bulkUpdateResults` / `deleteExam` / `restoreExam`, but the legacy bulk router serves them, so guards/permissions must be changed twice. | **Documented** — R3 |
 | V6 | P3 | `examWriteGuards.ts`, `examLifecycleUseCases.ts` | Domain modules import transport error classes (`lib/httpErrors`). Consistent with repo convention, but a dependency inversion. | **Documented** — R4 |
@@ -91,26 +91,26 @@ above so no requirement silently disappears.
   `PUBLISHABLE_EXAM_STATUSES`, `isPublishableExamStatus`, `PUBLISH_TARGET_STATUS`,
   `UNPUBLISH_TARGET_STATUS`, `isExamArchived`, `publishExamRejection`, `unpublishExamRejection`;
   corrected the publication comment. 5 new shared tests (11 total).
-- **Domain guards** ([`examWriteGuards.ts`](../apps/backend/src/examinations/domain/examWriteGuards.ts)):
+- **Domain guards** ([`examWriteGuards.ts`](../packages/modules/examinations/src/backend/domain/examWriteGuards.ts)):
   `ExamWriteState.deletedAt`, `examArchivedError`, `assertExamNotArchived`; both save paths call it.
   New `examWriteGuards.test.ts` (17 cases — the guards previously had no direct spec).
-- **Live-path audit** ([`examinationExamsPersist.ts`](../apps/backend/src/db/repositories/examinationExamsPersist.ts)):
+- **Live-path audit** ([`examinationExamsPersist.ts`](../packages/modules/examinations/src/backend/repository/examinationExamsPersist.ts)):
   `bulkSaveExams` now emits `auditExamCreated` and `auditScoringFrameChange` in the write
   transaction; the dead `frameChangesByExam` map and the unreachable `createExam`/`updateExamById`
   exports are gone.
-- **Publication use case** ([`examLifecycleUseCases.ts`](../apps/backend/src/examinations/use-cases/examLifecycleUseCases.ts)):
+- **Publication use case** ([`examLifecycleUseCases.ts`](../packages/modules/examinations/src/backend/use-cases/examLifecycleUseCases.ts)):
   rejections derive from the shared module (`exam_not_sat`, `exam_archived`, `exam_cancelled`,
   `exam_already_published`, `exam_not_published`); a lost CAS re-reads once and reports the real
   reason (`exam_state_changed` if nothing else matches). Unpublish now refuses archived exams.
-- **CAS state predicates** ([`examClassMembershipRepository.ts`](../apps/backend/src/db/repositories/examClassMembershipRepository.ts)):
+- **CAS state predicates** ([`examClassMembershipRepository.ts`](../packages/modules/examinations/src/backend/repository/examClassMembershipRepository.ts)):
   `require: "publishable" | "unlockable"` applied in the same UPDATE (status/archive; completed
   owning session via `NOT EXISTS`).
-- **Strict marks boundary** ([`examinations.ts:74`:74](../apps/backend/src/routes/tenant/examinations.ts)):
+- **Strict marks boundary** ([`examinations.ts:74`:74](../packages/modules/examinations/src/backend/routes/examinations.ts)):
   the bulk results route uses `examMarksWriteListSchema`; missing marks and moderation fields are 400.
-- **Import gating** ([`examinationsMarksImportService.ts:129`:129](../apps/backend/src/services/examinationsMarksImportService.ts)):
+- **Import gating** ([`examinationsMarksImportService.ts:129`:129](../packages/modules/examinations/src/backend/services/examinationsMarksImportService.ts)):
   the attendance/roster/override gate runs per chunk and per fallback row; the gate is
   tenant-explicit and reads the exam through the repository port.
-- **Moderation domain** ([`moderation.ts`](../apps/backend/src/examinations/domain/moderation.ts)):
+- **Moderation domain** ([`moderation.ts`](../packages/modules/examinations/src/backend/domain/moderation.ts)):
   reason/grace/effective rules extracted and reused by the use case and adapter; the contract's
   grace cap now uses `MAX_GRACE_MARKS`.
 - **Tests**: shared lifecycle (11), pure guards (17), lifecycle use cases (14), moderation domain

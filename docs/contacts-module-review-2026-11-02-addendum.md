@@ -40,9 +40,9 @@ limits); the duplicate SQL is tenant-scoped and correct, but its cache lifecycle
 
 **Evidence.**
 - `GET /api/messaging/recipients` is gated only by `canReadMessaging` and returns
-  `loadMessagingRecipients` unchanged ([messagingRecipientContractHandlers.ts:23-50](../apps/backend/src/routes/tenant/messaging/messagingRecipientContractHandlers.ts)).
+  `loadMessagingRecipients` unchanged ([messagingRecipientContractHandlers.ts:23-50](../packages/modules/messaging/src/backend/routes/messagingRecipientContractHandlers.ts)).
 - That use case returns `loadContactsPageForTenant(...)` — a `ContactsListPageResult` of hydrated
-  contacts ([messagingRecipientUseCases.ts:21-59](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts)).
+  contacts ([messagingRecipientUseCases.ts:21-59](../packages/modules/messaging/src/backend/use-cases/messagingRecipientUseCases.ts)).
 - The response schema is the **full** `contactListPageResponseSchema`
   ([messaging.contract.ts:59-64](../packages/contracts/src/contracts/messaging.contract.ts),
   [contacts.contract.schemas.ts:20-28](../packages/contracts/src/contracts/contacts.contract.schemas.ts)).
@@ -72,7 +72,7 @@ notes/DOB/addresses.
 ### A-02 — P2 — Recipient resolution ignores Contacts field permissions
 
 `resolveMessagingRecipients` and `matchMessagingRecipients` map contacts with `toMessagingRecipient`
-([messagingRecipientUseCases.ts:62-120](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts))
+([messagingRecipientUseCases.ts:62-120](../packages/modules/messaging/src/backend/use-cases/messagingRecipientUseCases.ts))
 without the viewer field config. A Setup rule hiding phone/email from a role is bypassed for any role with
 `messaging.read`. Precondition: non-empty `permissions` in contact field config (API-written today, same as
 C-04/C-05). Fix: apply `sanitizeContactsForViewer` (or the column-access filter) before mapping, and add a
@@ -90,18 +90,18 @@ restricted-role test.
 ## 3. Lane B — Avatar and attachment uploads
 
 Positive checks: image uploads accept only AVIF/WebP, verify magic bytes (buffer and stream paths), enforce
-512 KB, and partition by tenant ([imageAssetService.ts:13-175](../apps/backend/src/services/imageAssetService.ts)).
+512 KB, and partition by tenant ([imageAssetService.ts:13-175](../apps/api/src/services/imageAssetService.ts)).
 Attachments enforce 10 MB, sanitize filenames, unlink on size/stream failure, and serve as
 `application/octet-stream` + `Content-Disposition: attachment` with `private, no-store`
-([uploads.ts:96-174](../apps/backend/src/routes/common/uploads.ts),
-[staticAssets.ts:30-46](../apps/backend/src/plugins/staticAssets.ts)). `/uploads/**` is session-gated and
-tenant-matched, with traversal rejection ([staticAssets.ts:99-186](../apps/backend/src/plugins/staticAssets.ts)).
+([uploads.ts:96-174](../apps/api/src/routes/common/uploads.ts),
+[staticAssets.ts:30-46](../apps/api/src/plugins/staticAssets.ts)). `/uploads/**` is session-gated and
+tenant-matched, with traversal rejection ([staticAssets.ts:99-186](../apps/api/src/plugins/staticAssets.ts)).
 No stored-HTML/XSS path was found; upload POSTs are inside the global rate limiter.
 
 ### B-01 — P3 — Root-level uploads skip the tenant match
 
 `authorizeUpload` authenticates, then returns early when the path has no `tenants/<t>/` segment
-([staticAssets.ts:149-166](../apps/backend/src/plugins/staticAssets.ts)). Any authenticated tenant session can
+([staticAssets.ts:149-166](../apps/api/src/plugins/staticAssets.ts)). Any authenticated tenant session can
 therefore read root-level non-branding files. No root-level `attachments/` or `avatars/` currently exist in
 the dev tree, and new uploads are tenant-partitioned, so this is legacy-data exposure; the code comments
 themselves acknowledge root-level attachments. Fix: require a tenant segment for every non-public category
@@ -109,7 +109,7 @@ themselves acknowledge root-level attachments. Fix: require a tenant segment for
 
 ### B-02 — P3 — Uploads are session-only
 
-`authenticateUploader` accepts any tenant session ([authenticateUploader.ts](../apps/backend/src/middleware/authenticateUploader.ts));
+`authenticateUploader` accepts any tenant session ([authenticateUploader.ts](../apps/api/src/middleware/authenticateUploader.ts));
 `/api/uploads/attachment` has no module action gate and no per-tenant quota. A viewer can write 10 MB files
 (global rate limit applies). Fix: gate attachment purpose by the owning module action (contacts.write,
 messaging.write, …) or add a per-tenant upload budget.
@@ -118,14 +118,14 @@ messaging.write, …) or add a per-tenant upload budget.
 
 Removing an attachment deletes the contact child row only
 ([contactPersistEngagementChildren.ts:72-90](../packages/modules/contacts/src/backend/repository/contactPersistEngagementChildren.ts),
-[useContactDetailAttachments.ts:90-110](../apps/frontend/src/tenant/features/contacts/hooks/useContactDetailAttachments.ts));
+[useContactDetailAttachments.ts:90-110](../packages/modules/contacts/src/frontend/tenant/hooks/useContactDetailAttachments.ts));
 the file under `/uploads/tenants/<t>/attachments/` remains. Upload-then-save-failure leaves one too. No
 sweeper exists. Fix: unlink on explicit remove and add an orphan reconciler (list-by-prefix vs rows).
 
 ### B-04 — P3 — Client-controlled attachment links
 
 Contact writes accept `attachments[].url/name/type` verbatim and the UI renders `href={file.url}`
-([ContactDetailFiles.tsx:70-102](../apps/frontend/src/tenant/features/contacts/components/detail/ContactDetailFiles.tsx)).
+([ContactDetailFiles.tsx:70-102](../packages/modules/contacts/src/frontend/tenant/components/detail/ContactDetailFiles.tsx)).
 A writer can store an external/phishing URL (React blocks `javascript:`), and the `download` attribute is
 ignored cross-origin. Fix: accept only same-origin `/uploads/…` URLs for attachments (server validation on
 contact write), or render a non-navigating preview.
@@ -184,13 +184,13 @@ point-in-time review record.
 
 | ID | Status | Fix | Key tests |
 | --- | --- | --- | --- |
-| A-01 | Closed | `listRecipients` now returns a lean `{recipients,total,page,limit,hasMore}` page; frontend picker consumes it directly ([messagingRecipientUseCases.ts](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts), [messagingModuleManifest.ts](../packages/contracts/src/messaging/messagingModuleManifest.ts)). Live probe returned only `id/name/phone/email`. | `messagingRecipientsService.test.ts`, `messaging.integration.test.ts` |
-| A-02 | Closed | List/resolve/match apply `sanitizeContactsForViewer` with the session role; hidden channels are dropped from channel-required queries ([messagingRecipientUseCases.ts](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts), [messagingRecipientContractHandlers.ts](../apps/backend/src/routes/tenant/messaging/messagingRecipientContractHandlers.ts)). | `messagingRecipientsService.test.ts` |
+| A-01 | Closed | `listRecipients` now returns a lean `{recipients,total,page,limit,hasMore}` page; frontend picker consumes it directly ([messagingRecipientUseCases.ts](../packages/modules/messaging/src/backend/use-cases/messagingRecipientUseCases.ts), [messagingModuleManifest.ts](../packages/contracts/src/messaging/messagingModuleManifest.ts)). Live probe returned only `id/name/phone/email`. | `messagingRecipientsService.test.ts`, `messaging.integration.test.ts` |
+| A-02 | Closed | List/resolve/match apply `sanitizeContactsForViewer` with the session role; hidden channels are dropped from channel-required queries ([messagingRecipientUseCases.ts](../packages/modules/messaging/src/backend/use-cases/messagingRecipientUseCases.ts), [messagingRecipientContractHandlers.ts](../packages/modules/messaging/src/backend/routes/messagingRecipientContractHandlers.ts)). | `messagingRecipientsService.test.ts` |
 | A-03 | Closed | Recipient listing uses a two-collection projection (phones/emails only) via `recipientProjection`; no addresses/socials/relationships queries ([contactRepositoryRecipientHydrate.ts](../packages/modules/contacts/src/backend/repository/contactRepositoryRecipientHydrate.ts), [contactRepositoryList.ts](../packages/modules/contacts/src/backend/repository/contactRepositoryList.ts)). | `contactsConcurrencyDb.integration.test.ts` |
-| A-04 | Closed | Resolve uses `loadContactsSummaryByIdsForTenant` instead of full hydration ([messagingRecipientUseCases.ts](../apps/backend/src/messaging/use-cases/messagingRecipientUseCases.ts)). | `messagingRecipientsService.test.ts` |
-| B-01 | Closed | Tenant sessions are denied root-level non-public uploads via `isCrossTenantRootUpload` ([staticAssets.ts](../apps/backend/src/plugins/staticAssets.ts)). | `uploadsAuth.test.ts` |
-| B-02 | Closed | `/attachment` uploads require `contacts.write`; image/branding uploads unchanged ([uploads.ts](../apps/backend/src/routes/common/uploads.ts)). | `uploadsHardening.test.ts` |
-| B-03 | Closed | Explicit removal unlinks the file after a successful save, and the nightly retention cycle (02:00 UTC, leader-leased) sweeps files older than 24 h that no attachment row references; `MMS_ORPHAN_ATTACHMENT_SWEEP=off` disables it ([attachmentStorageService.ts](../apps/backend/src/services/attachmentStorageService.ts), [attachmentSweepService.ts](../apps/backend/src/services/attachmentSweepService.ts), [retentionPurgeScheduler.ts](../apps/backend/src/worker/retentionPurgeScheduler.ts)). Manual dry-run: `pnpm --filter mms-backend purge:orphaned-attachments`. | `attachmentStorageService.test.ts`, `attachmentSweepService.test.ts`, `purgeArchivedRecordsWorker.test.ts` |
+| A-04 | Closed | Resolve uses `loadContactsSummaryByIdsForTenant` instead of full hydration ([messagingRecipientUseCases.ts](../packages/modules/messaging/src/backend/use-cases/messagingRecipientUseCases.ts)). | `messagingRecipientsService.test.ts` |
+| B-01 | Closed | Tenant sessions are denied root-level non-public uploads via `isCrossTenantRootUpload` ([staticAssets.ts](../apps/api/src/plugins/staticAssets.ts)). | `uploadsAuth.test.ts` |
+| B-02 | Closed | `/attachment` uploads require `contacts.write`; image/branding uploads unchanged ([uploads.ts](../apps/api/src/routes/common/uploads.ts)). | `uploadsHardening.test.ts` |
+| B-03 | Closed | Explicit removal unlinks the file after a successful save, and the nightly retention cycle (02:00 UTC, leader-leased) sweeps files older than 24 h that no attachment row references; `MMS_ORPHAN_ATTACHMENT_SWEEP=off` disables it ([attachmentStorageService.ts](../apps/api/src/services/attachmentStorageService.ts), [attachmentSweepService.ts](../apps/api/src/services/attachmentSweepService.ts), [retentionPurgeScheduler.ts](../apps/api/src/worker/retentionPurgeScheduler.ts)). Manual dry-run: `pnpm --filter mms-backend purge:orphaned-attachments`. | `attachmentStorageService.test.ts`, `attachmentSweepService.test.ts`, `purgeArchivedRecordsWorker.test.ts` |
 | B-04 | Closed | New/changed attachment URLs must be relative `/uploads/tenants/<tenant>/attachments/…`; unchanged legacy absolute URLs are grandfathered on update/merge ([contactAttachmentUrls.ts](../packages/modules/contacts/src/backend/use-cases/contactAttachmentUrls.ts), [contactWriteUseCases.ts](../packages/modules/contacts/src/backend/use-cases/contactWriteUseCases.ts)). The frontend now stores relative upload URLs. | `contactAttachmentUrls.test.ts`, `contactUseCases.test.ts` |
 | C-01 | Closed | Duplicate cache has a 24 h TTL and contact preferences saves invalidate it best-effort ([contactDuplicateScanUseCases.ts](../packages/modules/contacts/src/backend/use-cases/contactDuplicateScanUseCases.ts), [contactSetupConfigRoutes.ts](../packages/modules/contacts/src/backend/routes/tenant/contactSetupConfigRoutes.ts)). | `contactDuplicateScanService.test.ts`, `contactSetupConfigRoutes.test.ts` |
 | C-02 | Closed | Uncached page reads persist the computed pairs, blocked participants hydrate through the summary projection, and both the scan and the on-demand fill are guarded by a tenant `MAX(updated_at)` write version: a write during the scan skips the save, and a write after the save deletes the cache ([contactDuplicateScanUseCases.ts](../packages/modules/contacts/src/backend/use-cases/contactDuplicateScanUseCases.ts), [contactRepositoryPersist.ts](../packages/modules/contacts/src/backend/repository/contactRepositoryPersist.ts)). | `contactDuplicateScanService.test.ts`, `contactsConcurrencyDb.integration.test.ts` |

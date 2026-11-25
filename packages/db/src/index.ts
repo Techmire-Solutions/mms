@@ -17,6 +17,10 @@
 export * from "./client.js";
 export * from "./context.js";
 export * from "./scope.js";
+export * from "./listPageHelper.js";
+export * from "./repositoryMappers.js";
+export * from "./workspaceRepositoryCache.js";
+export * from "./workspaceTimezone.js";
 export * from "./soft-delete/index.js";
 export * from "./seed/index.js";
 export * from "./runtime/config.js";
@@ -25,3 +29,7 @@ export * from "./runtime/logger.js";
 export * from "./runtime/logRedaction.js";
 export * from "./runtime/telemetry.js";
 export { applyDrizzleMigrations, resolveMigrationsFolder } from "./migrations.js";
+export * from "./academicCatalogReferences.js";
+export * from "./academicCatalogSnapshot.js";
+export * from "./academicCatalogNameSql.js";
+export * from "./sequenceNumberAllocator.js";

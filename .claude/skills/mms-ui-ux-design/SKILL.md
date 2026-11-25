@@ -1,6 +1,6 @@
 ---
 name: mms-ui-ux-design
-description: Covers the Master Module Scaffold Layout, Tailwind CSS v4 BiDi Design Tokens, and Directional Class Refactoring Guide. Use when designing UI/UX components, enforcing logical CSS properties for BiDi layouts, or adhering to the layout contract. Do NOT use for form field validation and form modals (use mms-form-architecture) or accessibility axe testing (use mms-a11y-smoke).
+description: Master Module Scaffold, Tailwind v4 BiDi tokens, directional classes. Use when UI/UX design, logical CSS, layout. Do NOT use for form validation (use mms-form-architecture) or axe testing (use mms-a11y-smoke).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -57,7 +57,7 @@ The standard module scaffolding requires a strict three-tier page structure with
 
 ## 2. Tailwind CSS v4 BiDi Design Tokens
 
-Read `apps/frontend/src/index.css` and `apps/frontend/src/components/ui/formStyles.ts` before adding styles. Existing semantic colors use HSL channel variables and theme mappings; copying an invented OKLCH palette into the same variables breaks consumers such as `hsl(var(--primary))`. Locale font selection belongs to the existing language/theme helpers, not a generic `[dir="rtl"]` font override.
+Read `apps/tenant-web/src/index.css` and `apps/tenant-web/src/components/ui/formStyles.ts` before adding styles. Existing semantic colors use HSL channel variables and theme mappings; copying an invented OKLCH palette into the same variables breaks consumers such as `hsl(var(--primary))`. Locale font selection belongs to the existing language/theme helpers, not a generic `[dir="rtl"]` font override.
 
 Advisory: reserve dimensions for media and loading states, verify actual font metrics, and use container queries/subgrid when the embedding layout benefits. Neither those primitives nor a fixed Nastaliq line height guarantees zero layout shift.
 
@@ -77,7 +77,7 @@ Integrate design intelligence from the `ui-ux-pro-max` skill (`.agent/skills/ui-
 - **Design System Generation**: Run `python3 .agent/skills/ui-ux-pro-max/scripts/search.py "<product/feature>" --design-system -p "MMS"` for comprehensive system recommendations (pattern, style, palette, typography, effects, anti-patterns).
 - **Targeted Domain Queries**: Query specific guidelines via `python3 .agent/skills/ui-ux-pro-max/scripts/search.py "<query>" --domain <style|ux|chart|color|typography>`.
 - **Resilient Text & Compact UI**: Headings use `text-wrap: balance`; compact chips and badges wrap or offer operable `+n` disclosures; badge semantics pair with localized `t()` copy; motion transitions (150–300ms) cancel cleanly without corrupting state.
-- **MMS HSL Token Mapping**: Map palette colors to existing semantic tokens in `apps/frontend/src/index.css` (`hsl(var(--primary))`, `hsl(var(--card))`, etc.). Raw hex colors remain banned.
+- **MMS HSL Token Mapping**: Map palette colors to existing semantic tokens in `apps/tenant-web/src/index.css` (`hsl(var(--primary))`, `hsl(var(--card))`, etc.). Raw hex colors remain banned.
 
 ## Checklist
 

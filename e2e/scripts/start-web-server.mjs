@@ -78,13 +78,22 @@ async function waitForBackend(url, timeoutMs = 60000) {
   throw new Error(`Backend at ${url} failed to become ready within ${timeoutMs}ms`);
 }
 
-start("backend", "apps/backend", process.execPath, [
-  binScript("apps/backend", "tsx", "tsx"),
+start("backend", "apps/api", process.execPath, [
+  binScript("apps/api", "tsx", "tsx"),
   "src/index.ts",
 ]);
 await waitForBackend("http://127.0.0.1:3000/ready");
-start("frontend", "apps/frontend", process.execPath, [
-  binScript("apps/frontend", "vite", "vite"),
+start("tenant-web", "apps/tenant-web", process.execPath, [
+  binScript("apps/tenant-web", "vite", "vite"),
   "--host",
   "127.0.0.1",
+  "--port",
+  "5173",
+]);
+start("platform-web", "apps/platform-web", process.execPath, [
+  binScript("apps/platform-web", "vite", "vite"),
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "5174",
 ]);

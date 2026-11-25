@@ -18,7 +18,7 @@ import {
 } from "@mms/contracts";
 
 /**
- * Maps raw entity records into the exact JSON structure expected by apps/backend/src/worker/templates/fee-receipt.typ.
+ * Maps raw entity records into the exact JSON structure expected by apps/api/src/worker/templates/fee-receipt.typ.
  */
 export function mapToTypstFeeReceipt(
   data: Record<string, unknown>,
@@ -64,7 +64,7 @@ export function mapToTypstFeeReceipt(
 }
 
 /**
- * Maps student exam evaluation data into the exact JSON structure expected by apps/backend/src/worker/templates/report-card.typ.
+ * Maps student exam evaluation data into the exact JSON structure expected by apps/api/src/worker/templates/report-card.typ.
  */
 export function mapToTypstReportCard(
   data: Record<string, unknown>,
@@ -108,7 +108,7 @@ export function mapToTypstReportCard(
 }
 
 /**
- * Maps ledger transaction records into the exact JSON structure expected by apps/backend/src/worker/templates/financial-ledger.typ.
+ * Maps ledger transaction records into the exact JSON structure expected by apps/api/src/worker/templates/financial-ledger.typ.
  */
 export function mapToTypstFinancialLedger(
   data: Record<string, unknown>,

@@ -2,7 +2,7 @@ import React from "react";
 import { AnimatePresence, m } from "framer-motion";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import type { SubTab } from "@mms/ui/app/SubTabBar";
-import { useReducedMotion } from "@mms/fe-core/tenant";
+import { useReducedMotion } from "../tenant/index.js";
 import { useDragScroll } from "@mms/ui/app/useDragScroll";
 import { cn } from "@mms/ui";
 

@@ -5,10 +5,10 @@
  * Enforces the Single Source of Truth (SSOT) policy for UI primitives:
  *   1. All reusable primitives live in `@mms/ui` (`packages/ui`).
  *   2. Duplicate UI primitive definitions across Tenant Console and Platform Console are banned.
- *   3. Platform Console (`apps/frontend/src/platform/`) must import directly from `@mms/ui`,
+ *   3. Platform Console (`apps/platform-web/src/platform/`) must import directly from `@mms/ui`,
  *      not from `@/components/ui/*`.
  *   4. Zero cross-console imports between `tenant/` and `platform/`.
- *   5. `apps/frontend/src/components/ui/` serves exclusively as a clean typed facade re-exporting
+ *   5. The app-local `components/ui/` facade layer was retired (import `@mms/ui` directly); when the
  *      from `@mms/ui`, with zero duplicate local JSX component implementations.
  *   6. Zero orphaned imports referencing non-existent or deprecated UI modules.
  *   7. Shared layer (src/lib, src/components, src/hooks, src/providers) never imports `@/platform/*`.
@@ -25,9 +25,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
-const FE_SRC = path.join(ROOT, "apps/frontend/src");
-const PLATFORM_DIR = path.join(FE_SRC, "platform");
+const FE_SRC = path.join(ROOT, "apps/tenant-web/src");
+const PLATFORM_DIR = path.join(ROOT, "apps/platform-web/src/platform");
 const TENANT_DIR = path.join(FE_SRC, "tenant");
+// Optional: the facade layer was deleted in the migration, so this dir may legitimately be absent.
 const UI_FACADE_DIR = path.join(FE_SRC, "components/ui");
 const SHARED_UI_DIR = path.join(ROOT, "packages/ui/src");
 
@@ -161,12 +162,17 @@ for (const file of platformFiles) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. Check: Facade Purity in apps/frontend/src/components/ui/
+// 3. Check: Facade Purity in apps/tenant-web/src/components/ui/
 //    Components that exist in @mms/ui must only re-export from @mms/ui.
 // ─────────────────────────────────────────────────────────────────────────────
 const facadeViolations = [];
-const facadeFiles = walkFiles(UI_FACADE_DIR, (f) => f.endsWith(".tsx") || f.endsWith(".ts"));
-assertScanned("UI facade", UI_FACADE_DIR, facadeFiles);
+// The tenant `components/ui/` facades were consolidated into @mms/ui (direct
+// package imports). A missing directory is the end-state, not a scan failure.
+const facadeDirExists = fs.existsSync(UI_FACADE_DIR);
+const facadeFiles = facadeDirExists
+  ? walkFiles(UI_FACADE_DIR, (f) => f.endsWith(".tsx") || f.endsWith(".ts"))
+  : [];
+if (facadeDirExists) assertScanned("UI facade", UI_FACADE_DIR, facadeFiles);
 
 const SHARED_PRIMITIVE_NAMES = new Set([
   "alert-dialog.tsx",

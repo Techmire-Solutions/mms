@@ -382,7 +382,7 @@ implemented on `fix/backend-review-hardening`; the review document tracks each o
 follow-ups:
 
 - **Trgm indexes are an operator step.** Drizzle migrations run in one transaction, so the new
-  contact/student expression indexes are in `apps/backend/scripts/sql/0197_search_indexes_concurrent.sql`
+  contact/student expression indexes are in `packages/db/scripts/sql/0197_search_indexes_concurrent.sql`
   and are applied with `create-index-concurrently.ts --file` after the migration.
 - **Snapshot ordering is partial.** Sixteen high-volume loaders got `ORDER BY id`; the rest rely on
   the REPEATABLE READ snapshot plus the duplicate-id abort in `streamingSnapshotProducer`.

@@ -7,7 +7,7 @@ const ROOT = process.cwd();
 const requireFromRoot = createRequire(path.join(ROOT, "package.json"));
 requireFromRoot("./scripts/eslint-ts-compat.cjs");
 const requireFromTooling = createRequire(path.join(ROOT, "tooling/eslint-config/package.json"));
-const requireFromApp = createRequire(path.join(ROOT, "apps/frontend/package.json"));
+const requireFromApp = createRequire(path.join(ROOT, "apps/tenant-web/package.json"));
 const { ESLint, Linter } = requireFromTooling("eslint");
 const tenantPlatformDynamicImportRule = requireFromApp(
   "./eslint-rules/no-tenant-platform-dynamic-import.cjs",
@@ -31,11 +31,11 @@ async function lint(source, filePath, appKind, audienceRules) {
   return eslint.lintText(source, { filePath: path.join(ROOT, filePath) });
 }
 
-/** Mirrors `apps/frontend/eslint.config.js`: hybrid bundle + audience-locked subtree. */
+/** Mirrors `apps/tenant-web/eslint.config.js`: hybrid bundle + audience-locked subtree. */
 function lintHybridSubtree(source, subtree, audience) {
   return lint(
     source,
-    `apps/frontend/src/${subtree}/probe.ts`,
+    `apps/tenant-web/src/${subtree}/probe.ts`,
     "app",
     audienceImportRestrictions(audience),
   );
@@ -87,7 +87,7 @@ test("no app audience may import a module root", async () => {
   for (const [appKind, filePath] of [
     ["tenant", "apps/tenant-web/src/probe.ts"],
     ["platform", "apps/platform-web/src/probe.ts"],
-    ["app", "apps/frontend/src/probe.ts"],
+    ["app", "apps/tenant-web/src/probe.ts"],
   ]) {
     const [result] = await lint(IMPORT_ROOT, filePath, appKind);
     assert.ok(
@@ -106,9 +106,9 @@ test("tenant-web is blocked from any module's platform audience", async () => {
   assert.ok(result.messages.some((message) => message.ruleId === "no-restricted-imports"));
 });
 
-test("the hybrid apps/frontend bundle may import both frontend audiences", async () => {
+test("the hybrid apps/tenant-web bundle may import both frontend audiences", async () => {
   for (const source of [IMPORT_PLATFORM, IMPORT_TENANT]) {
-    const [result] = await lint(source, "apps/frontend/src/probe.ts", "app");
+    const [result] = await lint(source, "apps/tenant-web/src/probe.ts", "app");
     assert.ok(
       !result.messages.some((message) => message.ruleId === "no-restricted-imports"),
       `expected the hybrid bundle to allow ${source.trim()}`,
@@ -176,7 +176,7 @@ const DYNAMIC_IMPORT_CONFIG = [
 
 function lintDynamicImport(code) {
   return new Linter().verify(code, DYNAMIC_IMPORT_CONFIG, {
-    filename: "apps/frontend/src/tenant/probe.ts",
+    filename: "apps/tenant-web/src/tenant/probe.ts",
   });
 }
 

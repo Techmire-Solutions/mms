@@ -1,0 +1,175 @@
+import React from "react";
+import {
+  formatCnic,
+  getContactTags,
+  isRelationshipWorkColumnKey,
+  type Contact,
+  type ContactPreferences,
+} from "@mms/contracts";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import { ContactTagList } from "./ContactTagBadge.js";
+import { BiDiText } from "@mms/ui/app/BiDiText";
+import { formatContactCellValue } from "@mms/fe-core/lib/contactI18n";
+import {
+  renderSocialMetadata,
+  renderRelationshipMetadata,
+  renderEducationMetadata,
+  renderExperienceMetadata,
+  renderSkillsMetadata,
+} from "./contactMetadataCollections.js";
+import { renderLunarDobMetadata, renderSolarDobMetadata } from "./contactMetadataDates.js";
+import {
+  renderEducationSubField,
+  renderExperienceSubField,
+  renderSkillsSubField,
+} from "./contactMetadataSubFields.js";
+import {
+  renderAddressFieldMetadata,
+  renderGenderMetadata,
+  renderSyedMetadata,
+  renderWhatsAppMetadata,
+} from "./contactMetadataIdentity.js";
+
+/** Tags shown inline in directory cells; the rest open from the "+N" chip. */
+const CONTACT_TABLE_VISIBLE_TAGS = 3;
+
+export interface RenderContactMetadataCellValueArgs {
+  colId: string;
+  contact: Contact;
+  prefs: Pick<ContactPreferences, "showDetailedSolarAge" | "showLunarDob" | "showDetailedLunarAge">;
+  contactsMap: Map<string, Contact> | null;
+  t: TranslationFunction;
+  language?: string;
+  renderDash: () => React.ReactNode;
+  renderJoinedList: (items: (string | undefined | null)[], showTitle?: boolean) => React.ReactNode;
+}
+
+export function renderContactMetadataCellValue({
+  colId,
+  contact,
+  prefs,
+  contactsMap,
+  t,
+  language,
+  renderDash,
+  renderJoinedList,
+}: RenderContactMetadataCellValueArgs): React.ReactNode {
+  const showDetailedSolarAge = prefs.showDetailedSolarAge !== false;
+  const showLunarDob = Boolean(prefs.showLunarDob);
+  const showDetailedLunarAge = Boolean(prefs.showDetailedLunarAge);
+  const effectiveLang = language || "en";
+
+  switch (colId) {
+    case "gender":
+      return renderGenderMetadata({ contact, emptyNode: renderDash(), t });
+    case "isSyed":
+      return renderSyedMetadata({ contact, emptyNode: renderDash(), t });
+    case "city":
+    case "country":
+    case "state":
+    case "line1":
+      return renderAddressFieldMetadata({
+        contact,
+        colId,
+        emptyNode: renderDash(),
+      });
+    case "solarDob":
+    case "dob":
+      return renderSolarDobMetadata({
+        dob: contact.dob,
+        showDetailedSolarAge,
+        language: effectiveLang,
+        emptyNode: renderDash(),
+      });
+    case "lunarDob":
+      return renderLunarDobMetadata({
+        dob: contact.dob,
+        showLunarDob,
+        showDetailedLunarAge,
+        language: effectiveLang,
+        emptyNode: renderDash(),
+      });
+    case "whatsapp":
+      return renderWhatsAppMetadata({ contact });
+    case "socials":
+    case "socials_platform":
+    case "socials_url":
+      return renderSocialMetadata({
+        contact,
+        emptyNode: renderDash(),
+        t,
+      });
+    case "cnic": {
+      if (!contact.cnic) return renderDash();
+      return (
+        <bdi dir="ltr" className="font-mono">
+          {formatCnic(contact.cnic) || contact.cnic}
+        </bdi>
+      );
+    }
+    case "tag":
+    case "tags": {
+      const hasTags = getContactTags(contact).length > 0 || (contact.systemTags?.length ?? 0) > 0;
+      if (!hasTags) return renderDash();
+      return (
+        <ContactTagList
+          contact={contact}
+          className="gap-1"
+          maxVisible={CONTACT_TABLE_VISIBLE_TAGS}
+        />
+      );
+    }
+    case "notes": {
+      if (!contact.notes) return renderDash();
+      return (
+        <BiDiText as="span" className="truncate max-w-50 block" titleFromContent>
+          {contact.notes}
+        </BiDiText>
+      );
+    }
+    case "education":
+      return renderEducationMetadata({
+        contact,
+        emptyNode: renderDash(),
+      });
+    case "experience":
+      return renderExperienceMetadata({
+        contact,
+        emptyNode: renderDash(),
+      });
+    case "skills":
+      return renderSkillsMetadata({
+        contact,
+        emptyNode: renderDash(),
+      });
+    default: {
+      const eduSub = renderEducationSubField(colId, contact, renderJoinedList);
+      if (eduSub !== null) return eduSub;
+
+      const expSub = renderExperienceSubField(colId, contact, renderJoinedList);
+      if (expSub !== null) return expSub;
+
+      const skillSub = renderSkillsSubField({
+        colId,
+        contact,
+        renderJoinedList,
+        emptyNode: renderDash(),
+        t,
+      });
+      if (skillSub !== null) return skillSub;
+
+      if (isRelationshipWorkColumnKey(colId)) {
+        return renderRelationshipMetadata({
+          contact,
+          contactsMap,
+          emptyNode: renderDash(),
+          renderJoinedList,
+          t,
+        });
+      }
+      const raw = contact[colId as keyof Contact];
+      const formatted = formatContactCellValue(raw, t);
+      return formatted ? <BiDiText as="span">{formatted}</BiDiText> : renderDash();
+    }
+  }
+}

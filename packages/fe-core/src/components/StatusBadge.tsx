@@ -4,7 +4,7 @@ import {
   type StatusBadgeProps as SharedStatusBadgeProps,
   type StatusBadgeConfigItem,
 } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import type { AppTranslationKey } from "@mms/contracts";
 
 export type { StatusBadgeConfigItem };

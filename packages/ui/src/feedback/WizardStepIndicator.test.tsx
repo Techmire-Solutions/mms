@@ -7,7 +7,7 @@ import { WizardStepIndicator, type WizardStepItem } from "./WizardStepIndicator"
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-describe("WizardStepIndicator Component (@shared/ui)", () => {
+describe("WizardStepIndicator Component (@mms/ui)", () => {
   const steps: WizardStepItem[] = [
     { id: 1, label: "Profile", icon: User },
     { id: 2, label: "Security", icon: Shield },

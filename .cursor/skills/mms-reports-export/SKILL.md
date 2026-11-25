@@ -1,6 +1,6 @@
 ---
 name: mms-reports-export
-description: Builds MMS module analytics, CustomReportBuilder, Recharts dashboards, and PDF/Excel/print exports. Use when editing Reports tabs, KPIs, ExportToolbar, drill-down, saved reports, or dashboard widgets. Do NOT use for printable document templates (use mms-document-templates), primary entity CRUD directories (use mms-module-work), multi-tier module layout (use mms-module-page), or background worker scheduling (use mms-background-jobs).
+description: Module analytics, CustomReportBuilder, Recharts dashboards, PDF/Excel/print exports. Use when Reports tabs/KPIs/exports. Do NOT use for doc templates (use mms-document-templates), CRUD directories (use mms-module-work), or page layout (use mms-module-page).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -27,7 +27,7 @@ Saved report definitions remain live logic. An explicitly issued/exported financ
 
 ## Placement
 
-Reports tab **inside** each module — no standalone `/reports` page. Shared UI: `apps/frontend/src/components/reports/` · utils: `@/lib/reports/*`.
+Reports tab **inside** each module — no standalone `/reports` page. Shared UI: `apps/tenant-web/src/components/reports/` · utils: `@/lib/reports/*`.
 
 ## Data (Query-first)
 
@@ -103,7 +103,7 @@ Detailed size gates, background queuing, formula injection protection, and tampe
 
 ## Done
 
-`pnpm typecheck` · `cd apps/frontend && pnpm lint` — `mms-completion-review.mdc`.
+`pnpm typecheck` · `cd apps/tenant-web && pnpm lint` — `mms-completion-review.mdc`.
 
 ## Related skills
 

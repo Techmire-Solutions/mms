@@ -12,7 +12,7 @@ source "$ROOT_DIR/scripts/lib/read-env.sh"
 # shellcheck source=lib/curl-local-backend.sh
 source "$ROOT_DIR/scripts/lib/curl-local-backend.sh"
 
-ENV_FILE="${1:-apps/backend/.env}"
+ENV_FILE="${1:-apps/api/.env}"
 BACKEND_PORT="$MMS_PROD_BACKEND_PORT"
 
 BACKEND_PORT="$(read_env_var PORT "$MMS_PROD_BACKEND_PORT" "$ENV_FILE")"
@@ -83,7 +83,7 @@ if [[ "$LOCAL_OK" == true ]]; then
   if curl_local_backend_ok "${LOCAL_BASE}/" "$APP_DOMAIN"; then
     echo "SPA root OK on backend port ${BACKEND_PORT}"
   else
-    echo "ERROR: backend / did not return SPA — check apps/frontend/dist in tarball"
+    echo "ERROR: backend / did not return SPA — check apps/tenant-web/dist apps/platform-web/dist in tarball"
     LOCAL_OK=false
   fi
 fi

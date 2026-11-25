@@ -1,4 +1,4 @@
-// Clean Architecture Route Pattern (Reference: apps/backend/src/routes/tenant/contacts.ts)
+// Clean Architecture Route Pattern (Reference: apps/api/src/routes/tenant/contacts.ts)
 import type { FastifyPluginAsync } from 'fastify';
 import { authenticateTenant } from '../../middleware/authenticate.js';
 import { canWriteCollection, canReadCollection } from '../../services/rbac.js';

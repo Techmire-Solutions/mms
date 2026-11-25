@@ -19,7 +19,7 @@ every migration touching those tables (`0048`, `0068`, `0076`, `0091`, `0104`, `
 the shared DTOs, the entry grid, and the CI ratchets
 (`scripts/check-migration-indexes.mjs`, `scripts/check-migration-hygiene.mjs`). Verified against
 PostgreSQL semantics with a new real-Postgres suite
-([`examinationIntegrityDb.integration.test.ts`](../apps/backend/src/__tests__/db-integration/examinationIntegrityDb.integration.test.ts), 12 cases).
+([`examinationIntegrityDb.integration.test.ts`](../apps/api/src/__tests__/db-integration/examinationIntegrityDb.integration.test.ts), 12 cases).
 
 **Overall finding:** the table *shapes* were sound — composite tenant keys, FORCE RLS, a natural-key
 unique index and a partial-index soft-delete trio on `exams`. The defects were at the **seams**:
@@ -58,16 +58,16 @@ duplicate of the unique index.
 
 ### F1 · **P0** · Mark records had no optimistic concurrency
 `exam_results` had no `version` column and the upsert wrote `marks_obtained` unconditionally
-([`examinationResultsRepository.ts:95-104`](../apps/backend/src/db/repositories/examinationResultsRepository.ts)).
+([`examinationResultsRepository.ts:95-104`](../packages/modules/examinations/src/backend/repository/examinationResultsRepository.ts)).
 Two examiners saving the same roster: the later write silently replaced the earlier scores.
 **Fixed:** `exam_results.version` (0236) + `setWhere` OCC predicate
-([`examResultUpsert.ts`](../apps/backend/src/db/repositories/examResultUpsert.ts)) mirroring the
+([`examResultUpsert.ts`](../packages/modules/examinations/src/backend/repository/examResultUpsert.ts)) mirroring the
 Attendance pattern; a stale save returns **409 `stale_write`** and writes nothing.
 **Verified:** DB suite — "increments version on every write and refuses a stale token",
 "writes the whole batch or nothing when one row is stale".
 
 ### F2 · **P0** · The upsert arbiter was not the integrity key
-[`:96`](../apps/backend/src/db/repositories/examinationResultsRepository.ts) targeted
+[`:96`](../packages/modules/examinations/src/backend/repository/examinationResultsRepository.ts) targeted
 `(workspace, id)`; the unique index is `(workspace, exam_id, student_id)` (0222). This only worked
 because the frontend derives `er_${exam}_${student}`; any other writer (import, repair, legacy
 path, a future client) hit `23505` → 500 instead of an update.
@@ -87,7 +87,7 @@ count) instead of warning, so the guarantee cannot be silently missing.
 
 ### F4 · **P0** · Marks stayed editable after results were published
 `results_finalized_at` is written by the finalization path and consumed as completion evidence
-([`sessionCompletionRepository.ts:65-70`](../apps/backend/src/db/repositories/sessionCompletionRepository.ts)),
+([`sessionCompletionRepository.ts:65-70`](../packages/modules/sessions/src/backend/repository/sessionCompletionRepository.ts)),
 yet the marks path never read it. **Fixed:** the marks write takes `FOR SHARE` on the exam row and
 refuses published (`409 exam_results_finalized`) and archived (`409 exam_archived`) exams; the
 publish path takes `FOR UPDATE` on the same row, so the two cannot interleave.
@@ -104,7 +104,7 @@ normalization that rounds the *decimal text* (matching Postgres) instead of the 
 
 ### F6 · **P1** · "A mark may not exceed its exam's total" was app-only
 The only DB check was `marks_obtained >= 0`; the upper bound lived in
-[`examEligibilityGate.ts:47-56`](../apps/backend/src/examinations/use-cases/examEligibilityGate.ts)
+[`examEligibilityGate.ts:47-56`](../packages/modules/examinations/src/backend/use-cases/examEligibilityGate.ts)
 with a comment admitting the database cannot compare against another table. Every bypass path
 (backup restore, legacy migration 029, a direct repository call) could store an impossible score.
 **Fixed:** `trg_exam_results_bounds` (BEFORE INSERT/UPDATE OF marks/exam) compares against
@@ -153,10 +153,10 @@ longer writes those columns (the backup restore path still does).
   because `drizzle-kit generate` is blocked by the 0216/0217 snapshot collision — a documented,
   reviewed exception).
 - Drizzle mirror in [`examinationExamTables.ts`](../packages/db/src/schema/examinationExamTables.ts).
-- Split persistence: [`examResultUpsert.ts`](../apps/backend/src/db/repositories/examResultUpsert.ts)
-  (pure planner), [`examinationResultsPersist.ts`](../apps/backend/src/db/repositories/examinationResultsPersist.ts)
+- Split persistence: [`examResultUpsert.ts`](../packages/modules/examinations/src/backend/repository/examResultUpsert.ts)
+  (pure planner), [`examinationResultsPersist.ts`](../packages/modules/examinations/src/backend/repository/examinationResultsPersist.ts)
   (tx, OCC, lock, audit), read surface in
-  [`examinationResultsRepository.ts`](../apps/backend/src/db/repositories/examinationResultsRepository.ts).
+  [`examinationResultsRepository.ts`](../packages/modules/examinations/src/backend/repository/examinationResultsRepository.ts).
 - Shared DTO: `ExamResult.version`, `Exam.resultsFinalizedAt`, `MAX_MARKS_OBTAINED`, batch caps
   (1000 exams / 2000 marks).
 - Tests: `examResultUpsert.test.ts` (11), `examinationIntegrityDb.integration.test.ts` (12, real

@@ -1,0 +1,213 @@
+/**
+ * Hasanat batch (group) awarding use case.
+ *
+ * One request, one transaction: recipients are resolved server-side from live enrollments, the
+ * group is validated once, cards are written with a single multi-row insert, and tier evidence is
+ * reconciled with one state query. Larger groups are delegated to the `hasanat:bulk-award` job by
+ * the caller (see `hasanatBatchAwardUseCases.enqueueBatchAward`).
+ */
+
+import {
+  batchCardRequestId,
+  cardValue,
+  generateClientEntityId,
+  HASANAT_BATCH_INLINE_MAX,
+  validateBatchIssuance,
+  type Distribution,
+  type HasanatBatchAwardBody,
+  type HasanatAwardScope,
+  type HasanatBatchAwardResult,
+  type HasanatBatchRecipient,
+  type HasanatBatchTarget,
+} from "@mms/contracts";
+import { workspaceTodayIso } from "@mms/be-core/datetime";
+import { ConflictError } from "@mms/be-core/http/errors";
+import { throwRuleViolation } from "./hasanatRuleErrors.js";
+import type { HasanatRepository } from "../repository/hasanatRepository.js";
+import {
+  findDistributionsByClientRequestIds,
+  insertBatchDistributions,
+  listBatchRecipients,
+  type NewBatchCard,
+} from "../repository/index.js";
+import { reconcileTiersForStudents } from "./hasanatTierUseCases.js";
+import { assertSessionsWritable } from "./hasanatSessionGuard.js";
+import { assertAwardScope } from "./hasanatAwardScope.js";
+import { auditCardState } from "./hasanatAudit.js";
+
+export interface BatchAwardActor {
+  userId: string;
+  displayName?: string | null;
+  quotaLimit?: number | null;
+  /** Workspace award-scope preference, loaded by the caller. */
+  awardScope?: HasanatAwardScope;
+  /** Admins (holders of `hasanat.delete`) award outside their classes. */
+  bypassAwardScope?: boolean;
+}
+
+export async function resolveBatchAwardRecipients(
+  tenant: string,
+  target: HasanatBatchTarget,
+): Promise<HasanatBatchRecipient[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  return listBatchRecipients(subdomain, target);
+}
+
+/**
+ * Issues one card per recipient. All-or-nothing: any failure rolls the whole batch back.
+ * A replayed `clientRequestId` returns the cards already issued instead of duplicating them.
+ */
+export async function issueHasanatCardsBatch(
+  tenant: string,
+  body: HasanatBatchAwardBody,
+  actor: BatchAwardActor,
+  repo: HasanatRepository,
+  options: {
+    /** Pre-resolved recipients (avoids a second resolution query). */
+    recipients?: readonly HasanatBatchRecipient[];
+    /** The background runner disables the inline cap because it feeds ≤ chunk-size slices. */
+    enforceInlineCap?: boolean;
+  } = {},
+): Promise<HasanatBatchAwardResult> {
+  const subdomain = tenant.trim().toLowerCase();
+  const today = await workspaceTodayIso(subdomain);
+
+  const recipients = options.recipients
+    ? [...options.recipients]
+    : await listBatchRecipients(subdomain, body.target);
+  if (recipients.length === 0) {
+    throw new ConflictError("No active students match this batch target.", "empty_batch_target");
+  }
+  if ((options.enforceInlineCap ?? true) && recipients.length > HASANAT_BATCH_INLINE_MAX) {
+    throw new ConflictError(
+      `This group has ${recipients.length} recipients; queue it as a background job instead.`,
+      "batch_too_large",
+      { recipients: recipients.length, maxInline: HASANAT_BATCH_INLINE_MAX },
+    );
+  }
+
+  const keys = new Map<string, string>();
+  for (const recipient of recipients) {
+    keys.set(recipient.studentId, batchCardRequestId(body.clientRequestId, recipient.studentId));
+  }
+
+  const existing = await findDistributionsByClientRequestIds(subdomain, [...keys.values()]);
+  const alreadyIssued = new Set(existing.map((row) => row.clientRequestId));
+  const skipped: Array<{ studentId: string; reason: string }> = [];
+  const pending = recipients.filter((recipient) => {
+    const key = keys.get(recipient.studentId) ?? "";
+    if (alreadyIssued.has(key)) {
+      skipped.push({ studentId: recipient.studentId, reason: "already_awarded" });
+      return false;
+    }
+    return true;
+  });
+
+  if (pending.length === 0) {
+    return {
+      issued: 0,
+      distributionIds: existing.map((row) => row.id),
+      skipped,
+      queued: false,
+    };
+  }
+
+  // Scope first: an instructor may only award inside the classes they teach (when enabled).
+  await assertAwardScope({
+    tenant: subdomain,
+    repo,
+    actorUserId: actor.userId,
+    bypass: actor.bypassAwardScope === true,
+    awardScope: actor.awardScope ?? "tenant",
+    classIds: body.target.kind === "class" ? [body.target.classId] : [],
+    studentIds: pending.map((recipient) => recipient.studentId),
+  });
+
+  // One query for the whole group: a single closed session blocks the award.
+  await assertSessionsWritable(
+    subdomain,
+    pending.map((recipient) => recipient.sessionId ?? ""),
+  );
+
+  const denomination = await repo.findDenomById(subdomain, body.denominationId);
+  const batchRemaining = await repo.findBatchRemaining(subdomain, body.batchId);
+
+  // Serialize with concurrent awards for the same instructor/day, then count once.
+  await repo.lockInstructorQuota(subdomain, actor.userId, body.issuedDate);
+  const quotaUsed = await repo.countIssuedByUserOnDate(subdomain, actor.userId, body.issuedDate);
+
+  const rule = validateBatchIssuance({
+    denomination,
+    recipientCount: pending.length,
+    batchRemaining,
+    issuedDate: body.issuedDate,
+    today,
+    quota: { used: quotaUsed, limit: actor.quotaLimit },
+  });
+  if (!rule.ok) {
+    throwRuleViolation(rule.violation);
+  }
+
+  const pointsPerUnit = denomination?.points ?? 0;
+  const cards: NewBatchCard[] = pending.map((recipient) => ({
+    id: generateClientEntityId("hd"),
+    studentId: recipient.studentId,
+    studentName: recipient.studentName,
+    classId: recipient.classId,
+    sessionId: recipient.sessionId,
+    batchId: body.batchId,
+    denominationId: body.denominationId,
+    denominationName: denomination?.name ?? "",
+    quantity: 1,
+    pointsSnapshot: cardValue(pointsPerUnit, 1),
+    clientRequestId: keys.get(recipient.studentId) ?? "",
+    expiresOn: body.expiresOn ?? null,
+    reason: body.reason,
+    issuedDate: body.issuedDate,
+    issuedByUserId: actor.userId,
+    issuedBy: actor.displayName ?? null,
+  }));
+
+  const distributionIds = await insertBatchDistributions(subdomain, cards);
+
+  // Audit stays per record (the chain is per record); the CDC outbox is what gets batched.
+  for (const card of cards) {
+    await auditCardState({
+      tenant: subdomain,
+      actorUserId: actor.userId,
+      action: "CREATE",
+      cardId: card.id,
+      after: {
+        studentId: card.studentId,
+        classId: card.classId ?? null,
+        sessionId: card.sessionId ?? null,
+        batchId: card.batchId,
+        denominationId: card.denominationId,
+        quantity: card.quantity,
+        pointsSnapshot: card.pointsSnapshot ?? null,
+        status: "active",
+        issuedDate: card.issuedDate,
+        expiresOn: card.expiresOn ?? null,
+      },
+      reason: body.reason ?? null,
+      tag: "hasanat.batch.issue",
+    });
+  }
+
+  // One state query for the whole group — not one reconcile per student.
+  await reconcileTiersForStudents(
+    subdomain,
+    cards.map((card) => card.studentId),
+    { actorUserId: actor.userId },
+  );
+
+  return {
+    issued: distributionIds.length,
+    distributionIds,
+    skipped,
+    queued: false,
+  };
+}
+
+/** Cards produced by a batch, for the caller's response envelope. */
+export type BatchDistributionIds = Distribution["id"][];

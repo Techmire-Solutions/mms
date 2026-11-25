@@ -31,8 +31,8 @@ This workflow guides the systematic review of codebase changes (e.g., Pull Reque
 - [ ] **Run tests**: If applicable, run `pnpm test` for the affected packages or apps. Verify backend tests include `inject()` allow+deny authorization checks.
 - [ ] **Verify module access coverage**: When touching routes, navigation, or module endpoints, run:
   ```bash
-  pnpm --filter mms-backend test src/__tests__/moduleAccessCoverage.test.ts
-  pnpm --filter mms-frontend test src/lib/config/routeAccess.test.ts
+  pnpm --filter mms-api test src/__tests__/moduleAccessCoverage.test.ts
+  pnpm --filter mms-tenant-web test src/lib/config/routeAccess.test.ts
   ```
 
 ## Phase 3: Diff Analysis & Project Alignment

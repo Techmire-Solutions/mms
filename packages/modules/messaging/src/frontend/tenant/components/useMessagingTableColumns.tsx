@@ -1,0 +1,165 @@
+import { useMemo } from "react";
+import { AlertCircle, Filter } from "lucide-react";
+import {
+  calculateSmsSegments,
+  formatDateTime,
+  getInitials,
+  getMessageCategoryLabelKey,
+  type Message,
+} from "@mms/contracts";
+import { type StatusBadgeConfigItem, StatusBadge } from "@mms/fe-core/components/StatusBadge";
+import { ChannelBadge } from "@mms/fe-core/components/ChannelBadge";
+import { CopyBtn } from "@mms/fe-core/components/CopyButton";
+import { Button } from "@mms/ui";
+import { type WorkBatchTableColumn } from "@mms/fe-core/components/WorkBatchTable";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { SEMANTIC_TEXT, SEMANTIC_BG } from "@mms/fe-core/ui/semanticTone";
+
+export interface UseMessagingTableColumnsOptions {
+  isColumnVisible: (key: string) => boolean;
+  logStatusConfig: Record<string, StatusBadgeConfigItem>;
+  getRecipientName: (contactId: string | number) => string;
+  onFilterContact?: (name: string) => void;
+}
+
+export function useMessagingTableColumns({
+  isColumnVisible,
+  logStatusConfig,
+  getRecipientName,
+  onFilterContact,
+}: UseMessagingTableColumnsOptions): WorkBatchTableColumn<Message>[] {
+  const { t } = useTranslation();
+
+  const showRecipient = isColumnVisible("recipient");
+  const showChannel = isColumnVisible("channel");
+  const showBody = isColumnVisible("body");
+  const showDateSent = isColumnVisible("dateSent");
+
+  return useMemo<WorkBatchTableColumn<Message>[]>(() => {
+    const cols: WorkBatchTableColumn<Message>[] = [];
+
+    if (showRecipient) {
+      cols.push({
+        id: "recipient",
+        kind: "person",
+        label: t("messaging.recipient"),
+        cellClassName: "font-semibold text-foreground",
+        render: (log) => {
+          const name = getRecipientName(log.contactId);
+          return (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-xs ${SEMANTIC_BG.primary} text-xs font-black ${SEMANTIC_TEXT.primary}`}
+                >
+                  {getInitials(name)}
+                </span>
+                <span className="truncate hover:text-primary transition-colors">{name}</span>
+              </div>
+              {onFilterContact && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFilterContact(name);
+                  }}
+                  className="h-11 w-11 min-h-11 min-w-11 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-primary cursor-pointer"
+                  title={t("messaging.filterByContact", { name })}
+                  aria-label={t("messaging.filterByContact", { name })}
+                >
+                  <Filter className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          );
+        },
+      });
+    }
+
+    if (showChannel) {
+      cols.push({
+        id: "channel",
+        kind: "status",
+        label: t("messaging.channel"),
+        render: (log) => {
+          const isFailed = log.status === "failed";
+          const smsSegments = log.channel === "sms" ? calculateSmsSegments(log.body) : null;
+          const categoryKey = log.category ? getMessageCategoryLabelKey(log.category) : null;
+          return (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <ChannelBadge channel={log.channel} />
+              {categoryKey && (
+                <span className="text-2xs px-1.5 py-0.5 bg-muted/60 text-muted-foreground rounded-md font-medium">
+                  {t(categoryKey)}
+                </span>
+              )}
+              {smsSegments && (
+                <span className="text-2xs font-mono text-muted-foreground bg-muted/60 px-1 py-0.5 rounded-md">
+                  {t("messaging.smsSegmentBadge", { count: smsSegments.totalSegments })}
+                </span>
+              )}
+              <StatusBadge status={log.status || "sent"} size="sm" config={logStatusConfig} />
+              {isFailed && (
+                <span title={log.errorMessage} className="shrink-0">
+                  <AlertCircle
+                    className={`h-3.5 w-3.5 ${SEMANTIC_TEXT.destructive}`}
+                    aria-hidden="true"
+                  />
+                </span>
+              )}
+            </div>
+          );
+        },
+      });
+    }
+
+    if (showBody) {
+      cols.push({
+        id: "body",
+        kind: "longText",
+        label: t("messaging.messageBody"),
+        cellClassName: "max-w-xs truncate text-muted-foreground",
+        render: (log) => {
+          return (
+            <div className="flex items-center justify-between gap-2" title={log.body}>
+              <span dir="auto" className="truncate">
+                {log.channel === "email" && log.subject && (
+                  <strong className="text-foreground font-semibold me-1.5">{log.subject}:</strong>
+                )}
+                {log.body}
+              </span>
+              <CopyBtn
+                text={log.body}
+                showToast
+                className="h-11 w-11 min-h-11 min-w-11 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-primary shadow-none cursor-pointer"
+              />
+            </div>
+          );
+        },
+      });
+    }
+
+    if (showDateSent) {
+      cols.push({
+        id: "dateSent",
+        kind: "dateTime",
+        label: t("messaging.dateSent"),
+        cellClassName: "font-mono text-xs text-muted-foreground",
+        render: (log) => formatDateTime(log.sentAt),
+      });
+    }
+
+    return cols;
+  }, [
+    getRecipientName,
+    logStatusConfig,
+    onFilterContact,
+    showBody,
+    showChannel,
+    showDateSent,
+    showRecipient,
+    t,
+  ]);
+}

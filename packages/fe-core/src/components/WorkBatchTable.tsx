@@ -13,13 +13,13 @@ import {
   resolveWorkColumnWidth,
 } from "./workBatchTableWidths";
 import type { WorkBatchTableColumn, WorkBatchTableProps } from "./workBatchTableTypes";
-import { useListRowMotion } from "@mms/fe-core/hooks";
-import { WORK_TABLE_DENSITY_PADDING } from "@mms/fe-core/hooks";
+import { useListRowMotion } from "../hooks/index.js";
+import { WORK_TABLE_DENSITY_PADDING } from "../hooks/index.js";
 import { useWorkBatchTableInternalState } from "./useWorkBatchTableInternalState";
 import { useWorkBatchTableAnnouncements } from "./useWorkBatchTableAnnouncements";
 import { useWorkBatchTableStickyOffsets } from "./useWorkBatchTableStickyOffsets";
 import { cn } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import { WORK_SURFACE } from "@mms/ui";
 
 export type { WorkBatchTableColumn, WorkBatchTableProps };

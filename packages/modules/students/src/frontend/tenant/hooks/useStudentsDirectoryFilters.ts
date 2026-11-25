@@ -1,0 +1,185 @@
+import { useCallback, useEffect, useState } from "react";
+import { useDebounce } from "@mms/fe-core/hooks";
+import { useDirectoryTrashState } from "@mms/fe-core/lib/useDirectoryTrashState";
+import { toggleIdInSelection, togglePageIdsInSelection } from "@mms/fe-core/lib/directorySelection";
+import { isStudentsQuickFilter, type StudentsQuickFilter } from "@mms/contracts";
+import {
+  STUDENTS_WORK_DRILLDOWN_EVENT,
+  consumeStudentsWorkDrillDown,
+  type StudentsWorkDrillDown,
+} from "./studentsWorkDrillDown";
+import type { StudentsListContentSortField } from "../lib/studentsListTypes";
+
+/** Directory filters, sort, trash, and selection SSOT for Students Work (Contacts-shaped). */
+export function useStudentsDirectoryFilters({
+  setActiveTab,
+}: {
+  setActiveTab: (tab: string) => void;
+}) {
+  const [initialDrillDown] = useState(() => consumeStudentsWorkDrillDown());
+  const [listPage, setListPage] = useState(1);
+  const [viewingDeleted, setViewingDeleted] = useDirectoryTrashState();
+  const [sortField, setSortField] = useState<StudentsListContentSortField | null>("grNumber");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [studentSearch, setStudentSearch] = useState("");
+  const debouncedSearch = useDebounce(studentSearch, 250);
+  const [studentFilterStatus, setStudentFilterStatus] = useState<string[]>(() =>
+    initialDrillDown?.status ? [initialDrillDown.status] : [],
+  );
+  const [studentFilterGender, setStudentFilterGender] = useState("");
+  const [quickFilter, setQuickFilter] = useState<StudentsQuickFilter>("all");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const filterKey = `${debouncedSearch}|${studentFilterStatus.join(",")}|${studentFilterGender}|${quickFilter}|${viewingDeleted}|${sortField}|${sortDir}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (prevFilterKey !== filterKey) {
+    setPrevFilterKey(filterKey);
+    if (listPage !== 1) {
+      setListPage(1);
+    }
+  }
+
+  // Bulk delete/status/export/ID-card bind to what the directory shows, so a selection must not
+  // outlive the filter/search/sort/page/trash view that produced it — the actions would hit rows
+  // the user can no longer see (contacts R4-06 parity). Adjusted during render, not in an effect.
+  // `filterKey` already carries the trash flag, so this subsumes the previous trash-only reset.
+  const selectionScopeKey = `${filterKey}|${listPage}`;
+  const [prevSelectionScopeKey, setPrevSelectionScopeKey] = useState(selectionScopeKey);
+  if (prevSelectionScopeKey !== selectionScopeKey) {
+    setPrevSelectionScopeKey(selectionScopeKey);
+    if (selectedIds.length > 0) {
+      setSelectedIds([]);
+    }
+  }
+
+  const applyDrillDown = useCallback(
+    (filter: StudentsWorkDrillDown) => {
+      setQuickFilter("all");
+      if (filter.status) setStudentFilterStatus([filter.status]);
+      setActiveTab("work");
+    },
+    [setActiveTab],
+  );
+
+  useEffect(() => {
+    if (initialDrillDown) {
+      setActiveTab("work");
+    }
+
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<StudentsWorkDrillDown>).detail;
+      if (detail) applyDrillDown(detail);
+    };
+    window.addEventListener(STUDENTS_WORK_DRILLDOWN_EVENT, handler);
+    return () => window.removeEventListener(STUDENTS_WORK_DRILLDOWN_EVENT, handler);
+  }, [applyDrillDown, initialDrillDown, setActiveTab]);
+
+  const changeQuickFilter = useCallback((preset: string) => {
+    if (!isStudentsQuickFilter(preset)) return;
+    // Status presets express status via the preset; clear the overlapping status filter.
+    setStudentFilterStatus([]);
+    setQuickFilter(preset);
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setStudentSearch("");
+    setStudentFilterStatus([]);
+    setStudentFilterGender("");
+    setQuickFilter("all");
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds([]);
+  }, []);
+
+  const hasActiveFilters =
+    Boolean(studentSearch.trim()) ||
+    studentFilterStatus.length > 0 ||
+    Boolean(studentFilterGender) ||
+    quickFilter !== "all";
+
+  const activeFilterCount =
+    studentFilterStatus.length +
+    (studentFilterGender ? 1 : 0) +
+    (studentSearch.trim() ? 1 : 0) +
+    (quickFilter !== "all" ? 1 : 0);
+
+  const handleServerSort = useCallback(
+    (field: StudentsListContentSortField | null) => {
+      // `null` is the Filters menu's "None": clear the column sort and let the server default apply.
+      if (field === null) {
+        setSortField(null);
+        return;
+      }
+      if (sortField === field) {
+        setSortDir((currentDir) => (currentDir === "asc" ? "desc" : "asc"));
+      } else {
+        setSortField(field);
+        setSortDir("asc");
+      }
+    },
+    [sortField],
+  );
+
+  const handleSelectOne = useCallback((id: string) => {
+    setSelectedIds((current) => toggleIdInSelection(current, id));
+  }, []);
+
+  const handleSelectAll = useCallback((pageIds: string[]) => {
+    setSelectedIds((current) => togglePageIdsInSelection(current, pageIds));
+  }, []);
+
+  const toggleStudentStatus = useCallback((status: string) => {
+    // Manual status selection supersedes any quick-filter preset.
+    setQuickFilter("all");
+    setStudentFilterStatus((selectedStatuses) => {
+      const nextSet = new Set(selectedStatuses);
+      if (nextSet.has(status)) {
+        nextSet.delete(status);
+      } else {
+        nextSet.add(status);
+      }
+      return [...nextSet];
+    });
+  }, []);
+
+  const toggleViewingDeleted = useCallback(() => {
+    setViewingDeleted((previous) => !previous);
+  }, [setViewingDeleted]);
+
+  /**
+   * The gender menu renders an "All genders" option whose value is the sentinel `all`.
+   * The API has no such value (it applies an equality filter), so the sentinel must be
+   * normalised to "no filter" here — writing it verbatim emptied the directory
+   * (2026-11-04 review, M1).
+   */
+  const handleGenderChange = useCallback((value: string) => {
+    setStudentFilterGender(value === "all" ? "" : value);
+  }, []);
+
+  return {
+    listPage,
+    setListPage,
+    viewingDeleted,
+    toggleViewingDeleted,
+    sortField,
+    sortDir,
+    handleServerSort,
+    studentSearch,
+    setStudentSearch,
+    debouncedSearch,
+    studentFilterStatus,
+    studentFilterGender,
+    setStudentFilterGender: handleGenderChange,
+    quickFilter,
+    changeQuickFilter,
+    selectedIds,
+    clearSelection,
+    handleSelectOne,
+    handleSelectAll,
+    clearFilters,
+    hasActiveFilters,
+    activeFilterCount,
+    toggleStudentStatus,
+  };
+}
