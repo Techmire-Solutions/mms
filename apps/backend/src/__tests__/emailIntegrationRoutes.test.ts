@@ -55,6 +55,7 @@ vi.mock("../services/email/emailService.js", () => ({
 
 vi.mock("../services/globalSettingsService.js", () => ({
   loadGlobalSettings: vi.fn().mockResolvedValue({ emailNotifications: true }),
+  maskGlobalSettingsForClient: vi.fn((settings) => settings),
 }));
 
 describe("emailRoutes", () => {

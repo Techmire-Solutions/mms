@@ -1,3 +1,67 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      contactUseCases: {
+        ...actual.contactUseCases,
+        loadContactsPage: (...args: unknown[]) => mockLoadContactsPage(...args),
+        countContacts: (...args: unknown[]) => mockCountContacts(...args),
+        getContactById: (...args: unknown[]) => mockGetContactById(...args),
+        upsertContact: (...args: unknown[]) => mockUpsertContact(...args),
+        updateContactById: (...args: unknown[]) => mockUpdateContactById(...args),
+        softDeleteContactById: (...args: unknown[]) => mockSoftDeleteContactById(...args),
+        restoreContactById: (...args: unknown[]) => mockRestoreContactById(...args),
+        bulkSoftDeleteContacts: (...args: unknown[]) => mockBulkSoftDeleteContacts(...args),
+        bulkRestoreContacts: (...args: unknown[]) => mockBulkRestoreContacts(...args),
+        bulkTagContacts: (...args: unknown[]) => mockBulkTagContacts(...args),
+        mergeContactsById: (...args: unknown[]) => mockMergeContactsById(...args),
+        loadContactsCommandMetrics: (...args: unknown[]) => mockLoadContactsCommandMetrics(...args),
+        loadContactsReportAnalytics: (...args: unknown[]) =>
+          mockLoadContactsReportAnalytics(...args),
+        loadContactsWidgetAggregates: (...args: unknown[]) =>
+          mockLoadContactsWidgetAggregates(...args),
+        loadContactsByIds: (...args: unknown[]) => mockLoadContactsByIds(...args),
+        loadContactDuplicatePairsPage: vi.fn(),
+        matchContactIdentityIndex: (...args: unknown[]) => mockMatchContactIdentityIndex(...args),
+      },
+    },
+    ...{
+      loadContactPreferences: (...args: unknown[]) => mockLoadContactPreferences(...args),
+      saveContactPreferences: (...args: unknown[]) => mockSaveContactPreferences(...args),
+    },
+    ...{
+      listContactsSavedReports: (...args: unknown[]) => mockListContactsSavedReports(...args),
+      createContactsSavedReport: (...args: unknown[]) => mockCreateContactsSavedReport(...args),
+      deleteContactsSavedReport: (...args: unknown[]) => mockDeleteContactsSavedReport(...args),
+      touchContactsSavedReportRun: (...args: unknown[]) => mockTouchContactsSavedReportRun(...args),
+    },
+    ...{
+      loadContactFieldConfig: (...args: unknown[]) => mockLoadContactFieldConfig(...args),
+      saveContactFieldConfig: (...args: unknown[]) => mockSaveContactFieldConfig(...args),
+    },
+    ...{
+      loadContactLookupsMap: (...args: unknown[]) => mockLoadContactLookupsMap(...args),
+      loadContactLookupKind: vi.fn(),
+      replaceContactLookupKind: (...args: unknown[]) => mockReplaceContactLookupKind(...args),
+    },
+    ...{
+      getContactGoogleSyncConfig: (...args: unknown[]) => mockGetContactGoogleSyncConfig(...args),
+      setContactGoogleSyncConfig: vi.fn(),
+      clearContactGoogleSyncConfig: vi.fn(),
+      clearGoogleSyncTokens: vi.fn(),
+      redactGoogleSyncConfigForClient: (...args: unknown[]) =>
+        mockRedactGoogleSyncConfigForClient(...args),
+      exchangeGoogleContactsOAuthCode: vi.fn(),
+      runGoogleContactsSync: vi.fn(),
+      GoogleOAuthExchangeError: class GoogleOAuthExchangeError extends Error {},
+      GoogleSyncError: class GoogleSyncError extends Error {
+        code = "api_error";
+      },
+    },
+  };
+});
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../db/database.js", () => ({
@@ -65,50 +129,10 @@ const mockMatchContactIdentityIndex = vi.fn().mockResolvedValue({
 
 const mockBulkTagContacts = vi.fn();
 
-vi.mock("../contacts/use-cases/contactUseCases.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
-  return {
-    ...actual,
-    contactUseCases: {
-      ...actual.contactUseCases,
-      loadContactsPage: (...args: unknown[]) => mockLoadContactsPage(...args),
-      countContacts: (...args: unknown[]) => mockCountContacts(...args),
-      getContactById: (...args: unknown[]) => mockGetContactById(...args),
-      upsertContact: (...args: unknown[]) => mockUpsertContact(...args),
-      updateContactById: (...args: unknown[]) => mockUpdateContactById(...args),
-      softDeleteContactById: (...args: unknown[]) => mockSoftDeleteContactById(...args),
-      restoreContactById: (...args: unknown[]) => mockRestoreContactById(...args),
-      bulkSoftDeleteContacts: (...args: unknown[]) => mockBulkSoftDeleteContacts(...args),
-      bulkRestoreContacts: (...args: unknown[]) => mockBulkRestoreContacts(...args),
-      bulkTagContacts: (...args: unknown[]) => mockBulkTagContacts(...args),
-      mergeContactsById: (...args: unknown[]) => mockMergeContactsById(...args),
-      loadContactsCommandMetrics: (...args: unknown[]) => mockLoadContactsCommandMetrics(...args),
-      loadContactsReportAnalytics: (...args: unknown[]) => mockLoadContactsReportAnalytics(...args),
-      loadContactsWidgetAggregates: (...args: unknown[]) =>
-        mockLoadContactsWidgetAggregates(...args),
-      loadContactsByIds: (...args: unknown[]) => mockLoadContactsByIds(...args),
-      loadContactDuplicatePairsPage: vi.fn(),
-      matchContactIdentityIndex: (...args: unknown[]) => mockMatchContactIdentityIndex(...args),
-    },
-  };
-});
-
 const mockLoadContactFieldConfig = vi.fn();
 const mockSaveContactFieldConfig = vi.fn();
 const mockLoadContactPreferences = vi.fn();
 const mockSaveContactPreferences = vi.fn();
-
-vi.mock("../contacts/use-cases/contactPreferencesService.js", () => ({
-  loadContactPreferences: (...args: unknown[]) => mockLoadContactPreferences(...args),
-  saveContactPreferences: (...args: unknown[]) => mockSaveContactPreferences(...args),
-}));
-
-vi.mock("../contacts/use-cases/contactSavedReportUseCases.js", () => ({
-  listContactsSavedReports: (...args: unknown[]) => mockListContactsSavedReports(...args),
-  createContactsSavedReport: (...args: unknown[]) => mockCreateContactsSavedReport(...args),
-  deleteContactsSavedReport: (...args: unknown[]) => mockDeleteContactsSavedReport(...args),
-  touchContactsSavedReportRun: (...args: unknown[]) => mockTouchContactsSavedReportRun(...args),
-}));
 
 vi.mock("../services/userColumnPreferencesService.js", () => ({
   getUserColumnPreferencesForModule: (...args: unknown[]) =>
@@ -117,37 +141,11 @@ vi.mock("../services/userColumnPreferencesService.js", () => ({
     mockSetUserColumnPreferencesForModule(...args),
 }));
 
-vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
-  loadContactFieldConfig: (...args: unknown[]) => mockLoadContactFieldConfig(...args),
-  saveContactFieldConfig: (...args: unknown[]) => mockSaveContactFieldConfig(...args),
-}));
-
 const mockLoadContactLookupsMap = vi.fn();
 const mockReplaceContactLookupKind = vi.fn();
 
-vi.mock("../contacts/use-cases/contactLookupsService.js", () => ({
-  loadContactLookupsMap: (...args: unknown[]) => mockLoadContactLookupsMap(...args),
-  loadContactLookupKind: vi.fn(),
-  replaceContactLookupKind: (...args: unknown[]) => mockReplaceContactLookupKind(...args),
-}));
-
 vi.mock("../services/auth/userService.js", () => ({
   getLinkedContactId: (...args: unknown[]) => mockGetLinkedContactId(...args),
-}));
-
-vi.mock("../contacts/use-cases/contactGoogleSyncUseCases.js", () => ({
-  getContactGoogleSyncConfig: (...args: unknown[]) => mockGetContactGoogleSyncConfig(...args),
-  setContactGoogleSyncConfig: vi.fn(),
-  clearContactGoogleSyncConfig: vi.fn(),
-  clearGoogleSyncTokens: vi.fn(),
-  redactGoogleSyncConfigForClient: (...args: unknown[]) =>
-    mockRedactGoogleSyncConfigForClient(...args),
-  exchangeGoogleContactsOAuthCode: vi.fn(),
-  runGoogleContactsSync: vi.fn(),
-  GoogleOAuthExchangeError: class GoogleOAuthExchangeError extends Error {},
-  GoogleSyncError: class GoogleSyncError extends Error {
-    code = "api_error";
-  },
 }));
 
 vi.mock("@mms/be-core/audit", () => ({

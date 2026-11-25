@@ -29,7 +29,8 @@ vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../services/auth/userService.js", () => ({
+vi.mock("../services/auth/userService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/userService.js")>()),
   getPublicUserById: (...args: unknown[]) => mockGetPublicUserById(...args),
   getTenantUserProfile: (...args: unknown[]) => mockGetTenantUserProfile(...args),
   updateOwnLinkedContact: (...args: unknown[]) => mockUpdateOwnLinkedContact(...args),

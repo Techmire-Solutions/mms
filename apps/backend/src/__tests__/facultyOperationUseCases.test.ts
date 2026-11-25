@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileFacultyContactsByFacultyIds: (...args: unknown[]) => mocks.reconcile(...args),
+    },
+  };
+});
+
 /**
  * Faculty employee-ID backfill.
  *
@@ -28,10 +38,6 @@ vi.mock("@mms/db/context", async (importOriginal) => ({
 
 vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => mocks.broadcastCollection(...args),
-}));
-
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileFacultyContactsByFacultyIds: (...args: unknown[]) => mocks.reconcile(...args),
 }));
 
 vi.mock("@mms/be-core/audit", () => ({

@@ -13,7 +13,9 @@ const mocks = vi.hoisted(() => ({
   redisDelPattern: vi.fn(),
 }));
 
-vi.mock("../lib/redis.js", () => ({
+// The invalidation subscriber reads the Redis clients from the kernel package;
+// mocking the package specifier intercepts the relative import in cacheInvalidation.ts.
+vi.mock("../../redis/index.js", () => ({
   getRedisClient: () => null,
   getRedisSubscriberClient: () => mocks.subscriber,
   redisDel: mocks.redisDel,
@@ -41,7 +43,7 @@ describe("cache invalidation subscriber startup", () => {
   it("subscribes once from the production bootstrap path", async () => {
     mocks.subscriber = makeSubscriber();
     const { startCacheInvalidationSubscriber, hasCacheInvalidationSubscriber } =
-      await import("../lib/cache/cacheInvalidation.js");
+      await import("../cacheInvalidation.js");
 
     expect(startCacheInvalidationSubscriber()).toBe(true);
     expect(mocks.subscriber.subscribe).toHaveBeenCalledTimes(1);
@@ -58,7 +60,7 @@ describe("cache invalidation subscriber startup", () => {
 
   it("reports an unavailable subscriber instead of pretending invalidation works", async () => {
     const { startCacheInvalidationSubscriber, hasCacheInvalidationSubscriber } =
-      await import("../lib/cache/cacheInvalidation.js");
+      await import("../cacheInvalidation.js");
 
     expect(startCacheInvalidationSubscriber()).toBe(false);
     expect(hasCacheInvalidationSubscriber()).toBe(false);

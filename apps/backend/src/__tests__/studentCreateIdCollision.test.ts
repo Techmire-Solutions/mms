@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Student } from "@mms/contracts";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
@@ -26,10 +36,6 @@ vi.mock("../db/repositories/studentEnrollmentCascade.js", () => ({
 
 vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
-}));
-
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
 }));
 
 vi.mock("@mms/be-core/data/outbox", () => ({

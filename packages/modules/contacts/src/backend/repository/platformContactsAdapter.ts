@@ -33,13 +33,39 @@ export interface PlatformContactsRepository {
   ): ReturnType<typeof insertPlatformActivityLog>;
 }
 
-export const platformContactsRepository: PlatformContactsRepository = {
-  list: listPlatformContacts,
-  get: getPlatformContact,
-  create: createPlatformContact,
-  update: updatePlatformContact,
-  softDelete: softDeletePlatformContact,
-  restore: restorePlatformContact,
-  metrics: platformContactsMetrics,
-  insertActivityLog: insertPlatformActivityLog,
-};
+function createPlatformContactsRepository(): PlatformContactsRepository {
+  return {
+    list: listPlatformContacts,
+    get: getPlatformContact,
+    create: createPlatformContact,
+    update: updatePlatformContact,
+    softDelete: softDeletePlatformContact,
+    restore: restorePlatformContact,
+    metrics: platformContactsMetrics,
+    insertActivityLog: insertPlatformActivityLog,
+  };
+}
+
+/** Active repository binding (production functions by default; overridable in tests). */
+let activePlatformRepository: PlatformContactsRepository = createPlatformContactsRepository();
+
+/** Delegates to the active repository so tests can inject a fake without touching routes. */
+export const platformContactsRepository: PlatformContactsRepository = new Proxy(
+  {} as PlatformContactsRepository,
+  {
+    get: (_target, property) =>
+      (activePlatformRepository as unknown as Record<PropertyKey, unknown>)[property],
+  },
+);
+
+/** Test-only: point the adapter at a fake repository. */
+export function setPlatformContactsRepositoryForTesting(
+  repository: PlatformContactsRepository,
+): void {
+  activePlatformRepository = repository;
+}
+
+/** Test-only: restore the production repository. */
+export function resetPlatformContactsRepositoryForTesting(): void {
+  activePlatformRepository = createPlatformContactsRepository();
+}

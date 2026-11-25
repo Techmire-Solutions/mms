@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileDesignationContacts: mocks.reconcileDesignationContacts,
+    },
+  };
+});
+
 /**
  * Faculty catalog route error mapping.
  *
@@ -29,10 +39,6 @@ vi.mock("../faculty/use-cases/facultyCatalogUseCases.js", () => ({
   softDeleteFacultyDepartment: vi.fn(),
   restoreFacultyDepartment: mocks.restoreFacultyDepartment,
   findFacultyDepartmentById: mocks.findFacultyDepartmentById,
-}));
-
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileDesignationContacts: mocks.reconcileDesignationContacts,
 }));
 
 vi.mock("../lib/livePush.js", () => ({

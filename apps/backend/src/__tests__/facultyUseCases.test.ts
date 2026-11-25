@@ -1,3 +1,15 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
+      reconcileFacultyContactsByFacultyIds: vi.fn().mockResolvedValue(undefined),
+      reconcileDesignationContacts: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Faculty, FacultyListQuery } from "@mms/contracts";
 import type { FacultyRepository } from "../faculty/repository/facultyRepository.js";
@@ -52,11 +64,6 @@ vi.mock("@mms/be-core/audit", async (importOriginal) => {
 });
 
 const mockReconcileContactSystemTags = vi.fn();
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
-  reconcileFacultyContactsByFacultyIds: vi.fn().mockResolvedValue(undefined),
-  reconcileDesignationContacts: vi.fn().mockResolvedValue(undefined),
-}));
 
 // Link guards are DB-backed (contacts / designations); the DI composition root is under test here.
 vi.mock("../faculty/use-cases/facultyWriteGuards.js", () => ({

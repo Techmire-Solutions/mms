@@ -1,3 +1,25 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
+        mocks.loadContactsSummaryByIdsForTenant(...args),
+    },
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
+        mocks.loadContactsSummaryByIdsForTenant(...args),
+    },
+  };
+});
+
 /**
  * @file taskNotificationDeliveryService.test.ts
  * @description Unit coverage for the task notification delivery consumer (M4).
@@ -28,10 +50,7 @@ vi.mock("../users/use-cases/usersUseCases.js", () => ({
     loadUserContactIdsByTenant: (...args: unknown[]) => mocks.loadUserContactIdsByTenant(...args),
   },
 }));
-vi.mock("../services/contactService.js", () => ({
-  loadContactsSummaryByIdsForTenant: (...args: unknown[]) =>
-    mocks.loadContactsSummaryByIdsForTenant(...args),
-}));
+
 vi.mock("../messaging/use-cases/messagingUseCases.js", () => ({
   messagingUseCases: {
     loadMessagingPreferences: (...args: unknown[]) => mocks.loadMessagingPreferences(...args),

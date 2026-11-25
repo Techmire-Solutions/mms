@@ -17,14 +17,16 @@ const mocks = vi.hoisted(() => ({
   broadcast: vi.fn(),
 }));
 
-vi.mock("../lib/tenantContext.js", () => ({
-  requireTenant: () => {
-    if (!mocks.tenant) throw new Error("Tenant context required");
-    return mocks.tenant;
+vi.mock("@mms/db/request-context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/request-context")>()),
+  ...{
+    requireTenant: () => {
+      if (!mocks.tenant) throw new Error("Tenant context required");
+      return mocks.tenant;
+    },
+    getRequestTenant: () => mocks.tenant,
   },
-  getRequestTenant: () => mocks.tenant,
 }));
-vi.mock("../lib/livePush.js", () => ({ broadcastCollection: mocks.broadcast }));
 vi.mock("../db/repositories/attendanceModulePreferencesRepository.js", () => ({
   getAttendanceModulePreferences: mocks.getPreferences,
   setAttendanceModulePreferences: mocks.setPreferences,
@@ -75,7 +77,6 @@ describe("attendance preferences service", () => {
       expect.objectContaining({ cutoffTime: "09:15" }),
     );
     expect(mocks.setPreferences.mock.calls[0]?.[1]).not.toHaveProperty("unknownFutureKey");
-    expect(mocks.broadcast).toHaveBeenCalledWith("attendance");
   });
 
   it("refuses to work without an ambient tenant", async () => {

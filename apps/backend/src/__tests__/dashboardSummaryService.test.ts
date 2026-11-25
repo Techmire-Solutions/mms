@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      contactUseCases: { loadContactsCommandMetrics: mocks.contacts },
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -31,9 +41,7 @@ vi.mock("../faculty/use-cases/facultyUseCases.js", () => ({
     loadFacultyCommandMetrics: mocks.faculty,
   },
 }));
-vi.mock("../contacts/use-cases/contactUseCases.js", () => ({
-  contactUseCases: { loadContactsCommandMetrics: mocks.contacts },
-}));
+
 vi.mock("../services/sessionService.js", () => ({
   loadSessionsCommandMetrics: mocks.sessions,
 }));

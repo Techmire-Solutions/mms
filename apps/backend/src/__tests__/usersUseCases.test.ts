@@ -1,3 +1,23 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsByIds: vi.fn().mockResolvedValue([]),
+    },
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsByIds: vi.fn().mockResolvedValue([]),
+    },
+  };
+});
+
 import { describe, expect, it, vi } from "vitest";
 import { createUsersUseCases } from "../users/use-cases/usersUseCases.js";
 import type { UsersRepository } from "../users/repository/usersRepository.js";
@@ -13,10 +33,6 @@ vi.mock("../services/auth/userServiceShared.js", () => ({
 vi.mock("../lib/livePush.js", () => ({
   broadcastCollection: vi.fn(),
   broadcastTenantUpdate: vi.fn(),
-}));
-
-vi.mock("../services/contactService.js", () => ({
-  loadContactsByIds: vi.fn().mockResolvedValue([]),
 }));
 
 function createFakeRepo(): UsersRepository {

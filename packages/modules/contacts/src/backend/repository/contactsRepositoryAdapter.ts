@@ -93,5 +93,25 @@ function createContactsRepository(): ContactsRepository {
   };
 }
 
-/** Default Drizzle-backed instance used by the production use-case layer. */
-export const contactsRepository: ContactsRepository = createContactsRepository();
+/** Active repository binding (Drizzle by default; overridable in tests). */
+let activeRepository: ContactsRepository = createContactsRepository();
+
+/**
+ * Default instance used by the production use-case layer. Delegates through a
+ * proxy so tests can swap the backing repository without rewriting every
+ * use-case's default parameter.
+ */
+export const contactsRepository: ContactsRepository = new Proxy({} as ContactsRepository, {
+  get: (_target, property) =>
+    (activeRepository as unknown as Record<PropertyKey, unknown>)[property],
+});
+
+/** Test-only: point the adapter at a fake repository. */
+export function setContactsRepositoryForTesting(repository: ContactsRepository): void {
+  activeRepository = repository;
+}
+
+/** Test-only: restore the Drizzle-backed repository. */
+export function resetContactsRepositoryForTesting(): void {
+  activeRepository = createContactsRepository();
+}

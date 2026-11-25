@@ -1,3 +1,23 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      getContactById: mocks.getContactById,
+    },
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...{
+      getContactById: mocks.getContactById,
+    },
+  };
+});
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -22,10 +42,6 @@ vi.mock("../services/platform/platformEmailService.js", () => ({
 
 vi.mock("../services/sms/smsService.js", () => ({
   sendTenantSms: mocks.sendTenantSms,
-}));
-
-vi.mock("../services/contactService.js", () => ({
-  getContactById: mocks.getContactById,
 }));
 
 import {

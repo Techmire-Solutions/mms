@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: vi.fn(),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FacultyRepository } from "../faculty/repository/facultyRepository.js";
 import { ConflictError } from "../lib/httpErrors.js";
@@ -10,9 +20,7 @@ vi.mock("../db/database.js", () => ({
 }));
 vi.mock("../lib/tenantContext.js", () => ({ getRequestTenant: () => "demo" }));
 vi.mock("../lib/livePush.js", () => ({ broadcastCollection: vi.fn() }));
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: vi.fn(),
-}));
+
 vi.mock("../lib/collectionAuditInTx.js", () => ({ appendCollectionAuditInTx: vi.fn() }));
 vi.mock("../faculty/use-cases/facultyWriteHelpers.js", () => ({
   applyFacultyWriteGuards: async (_tenant: string, record: unknown) => ({

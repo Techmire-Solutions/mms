@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: vi.fn().mockResolvedValue(undefined),
+    },
+  };
+});
+
 /**
  * GAP COVERAGE: Concurrency and allocation race condition tests.
  *
@@ -43,10 +53,6 @@ vi.mock("../lib/livePush.js", () => ({
 
 vi.mock("../lib/cache/index.js", () => ({
   invalidateMultiTierCache: vi.fn().mockResolvedValue(undefined),
-}));
-
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@mms/be-core/audit", () => ({

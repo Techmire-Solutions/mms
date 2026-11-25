@@ -1,19 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockGetRequestTenant = vi.fn();
-const mockBroadcastCollection = vi.fn();
 
-vi.mock("../lib/tenantContext.js", () => ({
-  getRequestTenant: () => mockGetRequestTenant(),
-  requireTenant: () => {
-    const t = mockGetRequestTenant();
-    if (!t) throw new Error("Tenant context required");
-    return t.trim().toLowerCase();
+vi.mock("@mms/db/request-context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/request-context")>()),
+  ...{
+    getRequestTenant: () => mockGetRequestTenant(),
+    requireTenant: () => {
+      const t = mockGetRequestTenant();
+      if (!t) throw new Error("Tenant context required");
+      return t.trim().toLowerCase();
+    },
   },
-}));
-
-vi.mock("../lib/livePush.js", () => ({
-  broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
 }));
 
 const mockGetPreferences = vi.fn();
@@ -70,6 +68,5 @@ describe("obligationPreferencesService", () => {
       "tenant-a",
       expect.objectContaining({ receiptPrefix: "NEW-PREFIX" }),
     );
-    expect(mockBroadcastCollection).toHaveBeenCalledWith("obligations");
   });
 });

@@ -50,7 +50,8 @@ const mockGetExportArtifact = vi.fn();
 const mockDeleteExportArtifact = vi.fn();
 const mockDeleteExportArtifacts = vi.fn();
 
-vi.mock("../services/exportArtifactService.js", () => ({
+vi.mock("../services/exportArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/exportArtifactService.js")>()),
   getExportArtifact: (...args: unknown[]) => mockGetExportArtifact(...args),
   deleteExportArtifact: (...args: unknown[]) => mockDeleteExportArtifact(...args),
   deleteExportArtifacts: (...args: unknown[]) => mockDeleteExportArtifacts(...args),
@@ -59,7 +60,8 @@ vi.mock("../services/exportArtifactService.js", () => ({
 
 const mockGetUserBackgroundJob = vi.fn();
 
-vi.mock("../services/backgroundJobWorkerService.js", () => ({
+vi.mock("../services/backgroundJobWorkerService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/backgroundJobWorkerService.js")>()),
   getUserBackgroundJob: (...args: unknown[]) => mockGetUserBackgroundJob(...args),
   enqueueBackgroundJob: vi.fn(),
   registerBackgroundJobRunner: vi.fn(),

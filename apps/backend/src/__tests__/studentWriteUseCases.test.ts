@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Student } from "@mms/contracts";
 import type { StudentsRepository } from "../students/repository/studentsRepository.js";
@@ -31,10 +41,6 @@ vi.mock("../lib/cache/index.js", () => ({
 vi.mock("../db/repositories/studentEnrollmentCascade.js", () => ({
   cascadeSoftDeleteEnrollmentsForStudents: vi.fn().mockResolvedValue(undefined),
   restoreCascadedEnrollmentsForStudents: vi.fn().mockResolvedValue(undefined),
-}));
-
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: (...args: unknown[]) => mockReconcileContactSystemTags(...args),
 }));
 
 vi.mock("../students/use-cases/studentPreferencesService.js", () => ({

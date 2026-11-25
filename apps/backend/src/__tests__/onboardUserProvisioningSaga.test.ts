@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/repository", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/repository")>();
+  return {
+    ...actual,
+    ...{
+      upsertContactModulePreferences: mocks.upsertContactModulePreferences,
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -47,10 +57,6 @@ vi.mock("../services/globalSettingsService.js", () => ({
 vi.mock("../lib/tenantContext.js", () => ({
   runWithTenant: (_tenant: string, callback: () => Promise<unknown>) => callback(),
   getRequestTenant: () => "demo",
-}));
-
-vi.mock("../db/repositories/contactModulePreferencesRepository.js", () => ({
-  upsertContactModulePreferences: mocks.upsertContactModulePreferences,
 }));
 
 vi.mock("../services/authSessionService.js", () => ({

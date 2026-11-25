@@ -1,5 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+/**
+ * Contacts picker routes.
+ *
+ * The picker handler lives in `@mms/mod-contacts` and calls its use cases via
+ * relative imports, so the old app-local use-case mocks could never intercept
+ * them. The suite now injects a fake repository through the module's test seam
+ * and mocks the be-core field-config factory the sanitizer depends on.
+ */
+
+const mocks = vi.hoisted(() => ({ loadFieldConfig: vi.fn() }));
+
+vi.mock("@mms/be-core/data/module-field-config", () => ({
+  createModuleFieldConfigService: () => ({
+    load: mocks.loadFieldConfig,
+    save: vi.fn(),
+  }),
+}));
+
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
   pingDatabase: vi.fn().mockResolvedValue(true),
@@ -18,31 +36,14 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   return { ...actual, getWorkspaceBySubdomain };
 });
 
-const mockLoadContactsPage = vi.fn();
-const mockGetContactById = vi.fn();
-
-vi.mock("../contacts/use-cases/contactUseCases.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
-  return {
-    ...actual,
-    contactUseCases: {
-      ...actual.contactUseCases,
-      loadContactsPage: (...args: unknown[]) => mockLoadContactsPage(...args),
-      getContactById: (...args: unknown[]) => mockGetContactById(...args),
-    },
-  };
-});
-
-const mockLoadContactFieldConfig = vi.fn();
-
-vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
-  loadContactFieldConfig: (...args: unknown[]) => mockLoadContactFieldConfig(...args),
-  saveContactFieldConfig: vi.fn(),
-}));
-
-import { buildApp } from "../app.js";
-import { teacherToken, viewerToken } from "./helpers/tokens.js";
 import type { Contact } from "@mms/contracts";
+import {
+  resetContactsRepositoryForTesting,
+  setContactsRepositoryForTesting,
+} from "@mms/mod-contacts/backend/repository";
+import { buildApp } from "../app.js";
+import { createFakeContactsRepository } from "./helpers/fakeContactsRepository.js";
+import { teacherToken, viewerToken } from "./helpers/tokens.js";
 
 const HOST = { host: "demo.localhost" };
 
@@ -113,20 +114,26 @@ async function inject(
 }
 
 describe("contacts picker routes", () => {
+  let repo: ReturnType<typeof createFakeContactsRepository>;
+
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret";
-    mockLoadContactsPage.mockReset().mockResolvedValue({
-      contacts: [sampleContact],
-      total: 1,
-      page: 1,
-      limit: 8,
-      hasMore: false,
+    repo = createFakeContactsRepository({
+      listPage: vi.fn().mockResolvedValue({
+        contacts: [sampleContact],
+        total: 1,
+        page: 1,
+        limit: 8,
+        hasMore: false,
+      }),
+      findById: vi.fn().mockResolvedValue(sampleContact),
     });
-    mockGetContactById.mockReset().mockResolvedValue(sampleContact);
-    mockLoadContactFieldConfig.mockReset().mockResolvedValue(null);
+    setContactsRepositoryForTesting(repo);
+    mocks.loadFieldConfig.mockReset().mockResolvedValue(null);
   });
 
   afterEach(() => {
+    resetContactsRepositoryForTesting();
     vi.restoreAllMocks();
   });
 
@@ -136,7 +143,7 @@ describe("contacts picker routes", () => {
     await app.close();
 
     expect(res.statusCode).toBe(401);
-    expect(mockLoadContactsPage).not.toHaveBeenCalled();
+    expect(repo.listPage).not.toHaveBeenCalled();
   });
 
   it("lets a teacher search and returns only the lean option shape", async () => {
@@ -147,7 +154,8 @@ describe("contacts picker routes", () => {
     expect(Object.keys(option).sort()).toEqual(["city", "email", "id", "name", "phone"]);
     expect(option).toMatchObject({ id: "c1", name: "Ali Khan", city: "Lahore" });
     expect(String(option.phone)).toContain("3001234567");
-    expect(mockLoadContactsPage).toHaveBeenCalledWith(
+    expect(repo.listPage).toHaveBeenCalledWith(
+      "demo",
       expect.objectContaining({ page: 1, limit: 8, search: "ali" }),
     );
   });
@@ -159,7 +167,8 @@ describe("contacts picker routes", () => {
       teacherToken,
     );
 
-    expect(mockLoadContactsPage).toHaveBeenCalledWith(
+    expect(repo.listPage).toHaveBeenCalledWith(
+      "demo",
       expect.objectContaining({
         page: 1,
         limit: 5,
@@ -183,11 +192,11 @@ describe("contacts picker routes", () => {
         city: "Lahore",
       },
     });
-    expect(mockGetContactById).toHaveBeenCalledWith("c1", false);
+    expect(repo.findById).toHaveBeenCalledWith("demo", "c1");
   });
 
   it("returns 404 for a deleted or nonexistent contact", async () => {
-    mockGetContactById.mockResolvedValue(null);
+    vi.mocked(repo.findById).mockResolvedValue(null);
 
     const res = await inject("GET", "/api/contacts/picker/missing", teacherToken);
 
@@ -200,16 +209,16 @@ describe("contacts picker routes", () => {
 
     expect(res.statusCode).toBe(403);
     expect(res.json()).toMatchObject({ type: "forbidden" });
-    expect(mockLoadContactsPage).not.toHaveBeenCalled();
+    expect(repo.listPage).not.toHaveBeenCalled();
   });
 
   it("omits field-config-restricted phone/email/city for the teacher viewer", async () => {
-    mockLoadContactFieldConfig.mockResolvedValue(restrictedFieldConfig);
+    mocks.loadFieldConfig.mockResolvedValue(restrictedFieldConfig);
 
     const res = await inject("GET", "/api/contacts/picker/c1", teacherToken);
 
     expect(res.statusCode).toBe(200);
-    expect(mockLoadContactFieldConfig).toHaveBeenCalled();
+    expect(mocks.loadFieldConfig).toHaveBeenCalled();
     expect(res.json()).toEqual({ contact: { id: "c1", name: "Ali Khan", phone: "" } });
   });
 
@@ -217,6 +226,6 @@ describe("contacts picker routes", () => {
     const res = await inject("GET", "/api/contacts/picker?limit=50", teacherToken);
 
     expect(res.statusCode).toBe(400);
-    expect(mockLoadContactsPage).not.toHaveBeenCalled();
+    expect(repo.listPage).not.toHaveBeenCalled();
   });
 });

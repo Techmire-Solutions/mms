@@ -10,6 +10,7 @@ vi.mock("../examinations/repository/examinationsRepositoryAdapter.js", () => ({
   examinationsRepository: { listExamsByWorkspace },
 }));
 
+import { configureContactsKernelDeps } from "@mms/mod-contacts/backend/deps";
 import { resolveJobExecutionTimeoutMs } from "../worker/queues/queueConfig.js";
 import { registerDefaultBackgroundJobRunners } from "../services/backgroundJobRunnerService.js";
 import { hasBackgroundJobRunner } from "../services/backgroundJobWorkerService.js";
@@ -23,6 +24,24 @@ const exportOptions: ExaminationsCsvExportOptions = { viewerRole: "admin" };
 const CLASSES = new Map([["class 5 - a", "cls-1"]]);
 
 beforeEach(() => {
+  configureContactsKernelDeps({
+    getLinkedContactId: async () => null,
+    enqueueBackgroundJob: async () => ({ id: "test-job" }),
+    getUserBackgroundJob: async () => null,
+    hasBackgroundJobRunner: () => false,
+    registerBackgroundJobRunner: () => {},
+    resolveTenantExportKey: (tenantId: string, filename: string) => `${tenantId}/${filename}`,
+    uploadStreamToStorage: async () => ({ key: "test-key", storageType: "local" }),
+    saveStreamedExportArtifact: async () => {},
+    tenantUserHasPermission: async () => true,
+    getWorkspaceBranding: async () => null,
+    registerCsvExportRoutes: () => {},
+    insertPlatformActivityLog: async () => {},
+    getPreparedContactById: () => ({ execute: async () => ({ rows: [] }) }),
+    getObject: async () => null,
+    saveObject: async () => {},
+    deleteObject: async () => {},
+  });
   vi.clearAllMocks();
   listExamsByWorkspace.mockResolvedValue([]);
 });

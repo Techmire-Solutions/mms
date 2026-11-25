@@ -1,3 +1,13 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      reconcileContactSystemTags: mocks.reconcile,
+    },
+  };
+});
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -23,10 +33,6 @@ vi.mock("../db/repositories/facultyDepartmentRepository.js", () => ({
 
 vi.mock("../db/repositories/facultyDesignationRepository.js", () => ({
   listFacultyDesignations: mocks.listDesignations,
-}));
-
-vi.mock("../contacts/systemTags/contactSystemTagUseCases.js", () => ({
-  reconcileContactSystemTags: mocks.reconcile,
 }));
 
 vi.mock("../lib/tenantRoleCatalog.js", () => ({

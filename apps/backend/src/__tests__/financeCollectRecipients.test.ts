@@ -1,14 +1,30 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsSummaryByIdsForTenant: (...args: unknown[]) => mockLoadSummary(...args),
+    },
+    ...{
+      loadContactFieldConfig: (...args: unknown[]) => mockLoadFieldConfig(...args),
+    },
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...{
+      loadContactsSummaryByIdsForTenant: (...args: unknown[]) => mockLoadSummary(...args),
+    },
+  };
+});
+
 import { describe, expect, it, vi } from "vitest";
 
 const mockLoadSummary = vi.fn();
 const mockLoadFieldConfig = vi.fn();
-
-vi.mock("../services/contactService.js", () => ({
-  loadContactsSummaryByIdsForTenant: (...args: unknown[]) => mockLoadSummary(...args),
-}));
-vi.mock("../contacts/use-cases/contactConfigService.js", () => ({
-  loadContactFieldConfig: (...args: unknown[]) => mockLoadFieldConfig(...args),
-}));
 
 import {
   loadSanitizedReminderContacts,

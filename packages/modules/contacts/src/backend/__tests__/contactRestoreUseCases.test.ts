@@ -2,23 +2,41 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Contact } from "@mms/contracts";
 import type { ContactsRepository } from "../repository/index.js";
 import { runWithTenant } from "@mms/be-core/http";
+import { ConflictError } from "@mms/be-core/http/errors";
 
 const mockReconcile = vi.fn();
-const mockAssertContactUniqueFields = vi.fn();
 const mockInvalidateCache = vi.fn();
 
 vi.mock("../systemTags/contactSystemTagUseCases.js", () => ({
   reconcileContactSystemTags: (...args: unknown[]) => mockReconcile(...args),
-}));
-vi.mock("../use-cases/contactValidationUseCases.js", () => ({
-  assertContactUniqueFields: (...args: unknown[]) => mockAssertContactUniqueFields(...args),
 }));
 vi.mock("../use-cases/contactAttachmentUrls.js", () => ({
   assertContactAttachmentUrls: vi.fn(),
 }));
 vi.mock("../use-cases/contactWriteContext.js", () => ({
   loadContactWriteContext: vi.fn().mockResolvedValue({
-    fieldConfig: null,
+    runtimeDefaults: { defaultPhoneCountryCode: "+92" },
+    countryCodes: [],
+    fieldConfig: {
+      version: 1,
+      fields: {
+        emails: [
+          {
+            key: "address",
+            label: "Email",
+            type: "email",
+            enabled: true,
+            unique: true,
+            order: 0,
+            required: false,
+            permissions: [],
+            defaultValue: "",
+          },
+        ],
+      },
+      formTabs: [],
+      enabledTabs: ["emails"],
+    },
     lookups: {},
     preferences: null,
   }),
@@ -57,10 +75,34 @@ const makeDeletedContact = (id: string): Contact =>
     relationshipContacts: [],
   }) as Contact;
 
+function createFakeContactsRepo(): ContactsRepository {
+  return {
+    countByWorkspace: vi.fn().mockResolvedValue(0),
+    listPage: vi
+      .fn()
+      .mockResolvedValue({ contacts: [], total: 0, page: 1, limit: 12, hasMore: false }),
+    findById: vi.fn().mockResolvedValue(null),
+    findByIds: vi.fn().mockResolvedValue([]),
+    save: vi.fn().mockResolvedValue(undefined),
+    bulkSave: vi.fn().mockResolvedValue(undefined),
+    bulkSoftDelete: vi.fn().mockResolvedValue({ succeeded: 1, failed: 0 }),
+    bulkRestore: vi.fn().mockResolvedValue({ succeeded: 1, failed: 0 }),
+    findExistingNormalizedContactNames: vi.fn().mockResolvedValue(new Set()),
+    findActiveContactsMatchingUniqueValues: vi.fn().mockResolvedValue([]),
+    findContactDuplicateCandidateIds: vi.fn().mockResolvedValue([]),
+    findContactDuplicateBlockedIds: vi.fn().mockResolvedValue([]),
+    acquireUniqueValueLocks: vi.fn().mockResolvedValue(undefined),
+  } as unknown as ContactsRepository;
+}
+
+const archivedContactWithEmail = (id = "c-archived") => ({
+  ...makeDeletedContact(id),
+  email: "zayd@example.com",
+});
+
 describe("contactRestoreUseCases", () => {
   beforeEach(() => {
     mockReconcile.mockReset().mockResolvedValue(0);
-    mockAssertContactUniqueFields.mockReset().mockResolvedValue(undefined);
     mockInvalidateCache.mockReset().mockResolvedValue(undefined);
   });
 
@@ -83,6 +125,47 @@ describe("contactRestoreUseCases", () => {
     });
   });
 
+  it("throws ConflictError with field details when an active contact owns the same email", async () => {
+    const repo = createFakeContactsRepo();
+    vi.mocked(repo.findById).mockResolvedValue(archivedContactWithEmail());
+    vi.mocked(repo.findActiveContactsMatchingUniqueValues).mockResolvedValue([
+      {
+        id: "c-active-conflict",
+        firstName: "Zayd",
+        lastName: "Hassan",
+        email: "zayd@example.com",
+      } as any,
+    ]);
+
+    await expect(
+      runWithTenant("demo", () => restoreContactById("c-archived", "u-admin", repo)),
+    ).rejects.toThrow(ConflictError);
+
+    await expect(
+      runWithTenant("demo", () => restoreContactById("c-archived", "u-admin", repo)),
+    ).rejects.toMatchObject({
+      errors: [{ fieldId: "address", tabId: "emails" }],
+    });
+  });
+
+  it("traps a 23505 unique violation from save and throws ConflictError", async () => {
+    const repo = createFakeContactsRepo();
+    vi.mocked(repo.findById).mockResolvedValue(archivedContactWithEmail());
+    const pgError = new Error("duplicate key value violates unique constraint");
+    (pgError as any).code = "23505";
+    vi.mocked(repo.save).mockRejectedValue(pgError);
+
+    await expect(
+      runWithTenant("demo", () => restoreContactById("c-archived", "u-admin", repo)),
+    ).rejects.toThrow(ConflictError);
+
+    await expect(
+      runWithTenant("demo", () => restoreContactById("c-archived", "u-admin", repo)),
+    ).rejects.toThrow(
+      "Cannot restore contact: active record with this unique identifier already exists",
+    );
+  });
+
   describe("bulkRestoreContacts", () => {
     it("bulk restores contacts and reconciles system tags without touchContacts option", async () => {
       const repo = {
@@ -100,6 +183,24 @@ describe("contactRestoreUseCases", () => {
       expect(mockReconcile).toHaveBeenCalledWith("demo", ["c-1", "c-2"], {
         actorId: "user-admin",
       });
+    });
+
+    it("traps a 23505 unique violation from bulkSave and throws ConflictError", async () => {
+      const repo = createFakeContactsRepo();
+      vi.mocked(repo.findByIds).mockResolvedValue([archivedContactWithEmail()]);
+      const pgError = new Error("duplicate key value violates unique constraint");
+      (pgError as any).code = "23505";
+      vi.mocked(repo.bulkSave).mockRejectedValue(pgError);
+
+      await expect(
+        runWithTenant("demo", () => bulkRestoreContacts(["c-archived"], "u-admin", repo)),
+      ).rejects.toThrow(ConflictError);
+
+      await expect(
+        runWithTenant("demo", () => bulkRestoreContacts(["c-archived"], "u-admin", repo)),
+      ).rejects.toThrow(
+        "Cannot restore contact: active record with this unique identifier already exists",
+      );
     });
   });
 });

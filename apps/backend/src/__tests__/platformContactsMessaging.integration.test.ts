@@ -1,6 +1,30 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
+import {
+  resetPlatformContactsRepositoryForTesting,
+  setPlatformContactsRepositoryForTesting,
+  type PlatformContactsRepository,
+} from "@mms/mod-contacts/backend/repository";
 import { buildApp } from "../app.js";
+
+function createFakePlatformRepository(): PlatformContactsRepository {
+  const contact = { id: "c1", name: "Ali", kind: "external" };
+  return {
+    list: vi.fn().mockResolvedValue([contact]),
+    get: vi.fn().mockResolvedValue(contact),
+    create: vi.fn().mockResolvedValue(contact),
+    update: vi.fn().mockResolvedValue(contact),
+    softDelete: vi.fn().mockResolvedValue(true),
+    restore: vi.fn().mockResolvedValue(true),
+    metrics: vi.fn().mockResolvedValue({
+      total: 1,
+      byKind: { external: 1 },
+      reachableEmail: 0,
+      reachablePhone: 0,
+    }),
+    insertActivityLog: vi.fn().mockResolvedValue(undefined),
+  };
+}
 
 const { mockUser } = vi.hoisted(() => ({
   mockUser: {
@@ -40,23 +64,6 @@ vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../platform/use-cases/platformContactsUseCases.js", () => ({
-  platformContactsUseCases: {
-    list: vi.fn().mockResolvedValue([{ id: "c1", name: "Ali", kind: "external" }]),
-    get: vi.fn().mockResolvedValue({ id: "c1", name: "Ali", kind: "external" }),
-    create: vi.fn().mockResolvedValue({ id: "c1", name: "Ali", kind: "external" }),
-    update: vi.fn().mockResolvedValue({ id: "c1", name: "Ali", kind: "external" }),
-    softDelete: vi.fn().mockResolvedValue(undefined),
-    restore: vi.fn().mockResolvedValue(undefined),
-    metrics: vi.fn().mockResolvedValue({
-      total: 1,
-      byKind: { external: 1 },
-      reachableEmail: 0,
-      reachablePhone: 0,
-    }),
-  },
-}));
-
 vi.mock("../platform/use-cases/platformMessagingUseCases.js", () => ({
   platformMessagingUseCases: {
     listMessages: vi.fn().mockResolvedValue([]),
@@ -74,6 +81,14 @@ vi.mock("../platform/use-cases/platformMessagingUseCases.js", () => ({
 
 describe("platform contacts + messaging routes", () => {
   let app: FastifyInstance;
+
+  beforeEach(() => {
+    setPlatformContactsRepositoryForTesting(createFakePlatformRepository());
+  });
+
+  afterEach(() => {
+    resetPlatformContactsRepositoryForTesting();
+  });
 
   beforeAll(async () => {
     process.env.JWT_SECRET = "test-secret";

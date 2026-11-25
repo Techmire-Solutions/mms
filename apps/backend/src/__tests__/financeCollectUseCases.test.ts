@@ -1,3 +1,20 @@
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>();
+  return {
+    ...actual,
+    ...mockContacts,
+    ...mockFieldConfig,
+  };
+});
+
+vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-contacts/backend/services")>();
+  return {
+    ...actual,
+    ...mockContacts,
+  };
+});
+
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { runWithTenant } from "../lib/tenantContext.js";
 
@@ -54,8 +71,7 @@ vi.mock("@mms/be-core/audit", () => ({
 vi.mock("../db/repositories/financeCollectRepository.js", () => mockRepo);
 vi.mock("../accounting/ledgerPosting/ledgerPostingService.js", () => mockLedgerPosting);
 vi.mock("../services/financePreferencesService.js", () => mockPrefs);
-vi.mock("../services/contactService.js", () => mockContacts);
-vi.mock("../contacts/use-cases/contactConfigService.js", () => mockFieldConfig);
+
 // The sweep day is now resolved in the workspace zone; stub it so this stays a pure orchestration
 // test (the zone behaviour itself is covered by financeCollectTimeZone.test.ts).
 vi.mock("../lib/workspaceDay.js", () => ({
