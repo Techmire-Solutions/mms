@@ -121,6 +121,9 @@ importers:
       '@mms/mod-contacts':
         specifier: workspace:*
         version: link:../../packages/modules/contacts
+      '@mms/mod-iam':
+        specifier: workspace:*
+        version: link:../../packages/modules/iam
       '@ts-rest/core':
         specifier: ^3.52.1
         version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
@@ -227,6 +230,9 @@ importers:
       '@mms/mod-accounting':
         specifier: workspace:*
         version: link:../../packages/modules/accounting
+      '@mms/mod-iam':
+        specifier: workspace:*
+        version: link:../../packages/modules/iam
       '@mms/ui':
         specifier: workspace:*
         version: link:../../packages/ui
