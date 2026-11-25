@@ -22,6 +22,10 @@ vi.mock("@/platform/features/users/PlatformAdminsList", () => ({
   PlatformAdminsList: () => <div data-testid="admins-list">Operators List</div>,
 }));
 
+vi.mock("@/platform/features/users/components/PlatformIamPanel", () => ({
+  PlatformIamPanel: () => <div data-testid="platform-iam-panel">IAM Panel</div>,
+}));
+
 describe("PlatformUsersWorkTier", () => {
   it("given operators data, should render operators directory without activity subtabs", () => {
     const html = renderToStaticMarkup(<PlatformUsersWorkTier />);
