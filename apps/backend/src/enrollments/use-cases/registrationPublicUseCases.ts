@@ -11,7 +11,10 @@ import {
 } from "@mms/shared";
 import { withTenant, withTenantRead } from "../../db/tenant-context.js";
 import { admissionsRepository as repo } from "../repository/admissionsRepositoryAdapter.js";
-import { getWorkspaceBySubdomain } from "../../services/workspaceService.js";
+import {
+  fetchPublicBrandingForSubdomain,
+  getWorkspaceBySubdomain,
+} from "../../services/workspaceService.js";
 import { ConflictError, HttpDomainError, NotFoundError } from "../../lib/httpErrors.js";
 import { isUniqueViolation } from "../../lib/pgErrors.js";
 import { todayInTimeZone } from "../../lib/dbDate.js";
@@ -45,17 +48,25 @@ export async function viewPublicRegistration(
   slug: string,
 ): Promise<PublicRegistrationView> {
   const workspace = await requireWorkspace(subdomain);
+  const branding = await fetchPublicBrandingForSubdomain(subdomain);
   const link = await withTenantRead(subdomain, (tx) =>
     repo.findRegistrationLinkBySlugTx(tx, subdomain, slug),
   );
   if (!link || !link.isActive) throw new NotFoundError(NOT_FOUND);
   const session = await repo.findSessionById(subdomain, link.sessionId);
   if (!session || session.deletedAt) throw new NotFoundError(NOT_FOUND);
-  return toPublicView(link, session, workspace.madrasaName ?? "", new Date());
+  return toPublicView(
+    link,
+    session,
+    branding.madrasaName || workspace.madrasaName || "",
+    new Date(),
+    branding.logoUrl ?? null,
+  );
 }
 
 export async function listOpenRegistrations(subdomain: string): Promise<PublicRegistrationView[]> {
   const workspace = await requireWorkspace(subdomain);
+  const branding = await fetchPublicBrandingForSubdomain(subdomain);
   const links = await withTenantRead(subdomain, (tx) =>
     repo.listActiveRegistrationLinksTx(tx, subdomain),
   );
@@ -68,7 +79,13 @@ export async function listOpenRegistrations(subdomain: string): Promise<PublicRe
   for (const link of links) {
     const session = sessionById.get(link.sessionId);
     if (!session || session.deletedAt) continue;
-    const view = toPublicView(link, session, workspace.madrasaName ?? "", now);
+    const view = toPublicView(
+      link,
+      session,
+      branding.madrasaName || workspace.madrasaName || "",
+      now,
+      branding.logoUrl ?? null,
+    );
     if (view.acceptingSubmissions) views.push(view);
   }
   return views;
