@@ -1,6 +1,7 @@
 import { Worker } from "bullmq";
 import { closeDatabase } from "../db/database.js";
 import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 import { activeDb, initializeDatabaseConnection } from "@mms/db/client";
 import { disconnectRedis } from "../lib/redis.js";
 import { loadBackendEnv } from "../config/loadEnv.js";
@@ -158,6 +159,7 @@ export async function startWorkerDaemon(): Promise<void> {
 
   // Explicitly initialize dedicated worker connection pool (budgeted to max: 10)
   initializeDatabaseConnection({ role: "worker", max: 10 });
+  configureModuleAdapters();
   await initializeDatabase();
   await cleanupOrphanedJobs();
 

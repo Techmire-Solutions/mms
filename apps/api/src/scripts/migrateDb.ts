@@ -1,9 +1,11 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
 import { closeDatabase } from "@mms/db/client";
 import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
+import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 import { disconnectRedis } from "../lib/redis.js";
 
 loadBackendEnv();
+configureModuleAdapters();
 
 async function runMigrations() {
   console.log("[migrateDb] Applying all schema DDL and pending data migrations...");

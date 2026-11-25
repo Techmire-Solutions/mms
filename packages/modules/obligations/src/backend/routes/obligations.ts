@@ -1,4 +1,4 @@
-import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import {
   OBLIGATIONS_MODULE_MANIFEST,
   obligationTypeListSchema,

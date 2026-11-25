@@ -1,4 +1,4 @@
-import { type FastifyInstance } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { z, type ZodType } from "zod";
 
 import { isQueryFlagTrue, type User, resourceIdParamsSchema } from "@mms/contracts";

@@ -1,4 +1,4 @@
-import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { HASANAT_MODULE_MANIFEST, hasanatCommandMetricsResponseSchema } from "@mms/contracts";
 import { registerMetricsRoute } from "@mms/be-core/http/crud";
 import { hasanatUseCases } from "./use-cases/index.js";

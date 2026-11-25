@@ -1,4 +1,4 @@
-import { type FastifyInstance, type FastifyPluginOptions } from "fastify";
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
 import {
   ACCOUNTING_MODULE_MANIFEST,
   accountArchiveResponseSchema,

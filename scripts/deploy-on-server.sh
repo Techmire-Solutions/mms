@@ -91,6 +91,22 @@ if [ "${NODE_MAJOR}" -lt "${MMS_NODE_MAJOR_MIN}" ] 2>/dev/null; then
   echo "WARNING: Node $(node -v 2>/dev/null || echo unknown) — MMS requires Node >= ${MMS_NODE_MAJOR_MIN} (engines >=24.14)"
 fi
 
+if [ ! -f "$ENV_FILE" ] && [ "$ENV_FILE" = "apps/api/.env" ] && [ -f "apps/backend/.env" ]; then
+  mkdir -p "$(dirname "$ENV_FILE")"
+  if cp -p "apps/backend/.env" "$ENV_FILE"; then
+    chmod 600 "$ENV_FILE" 2>/dev/null || true
+    echo "Migrated legacy apps/backend/.env → apps/api/.env (original kept as backup)."
+  else
+    echo "FATAL: failed to migrate apps/backend/.env to ${ENV_FILE}."
+    fail_preflight
+  fi
+fi
+
+if [ -f scripts/merge-backend-env.sh ] && [ ! -f "$ENV_FILE" ]; then
+  echo "FATAL: ${ENV_FILE} is missing — cannot snapshot it before merging."
+  fail_preflight
+fi
+
 if [ -f "$TARBALL" ]; then
   if [ -f "${TARBALL}.sha256" ]; then
     echo "Verifying tarball checksum..."
@@ -132,7 +148,14 @@ if [ -f "$TARBALL" ]; then
   fi
 
   echo "Extracting production dist..."
-  rm -rf "${ROOT_DIR}/apps/tenant-web/dist" "${ROOT_DIR}/apps/platform-web/dist" "${ROOT_DIR}/apps/api/dist" "${ROOT_DIR}/packages/db/dist" "${ROOT_DIR}/packages/be-core/dist" "${ROOT_DIR}/packages/modules/iam/dist" "${ROOT_DIR}/packages/modules/accounting/dist" "${ROOT_DIR}/packages/modules/contacts/dist" "${ROOT_DIR}/packages/modules/hasanat/dist" "${ROOT_DIR}/packages/modules/faculty/dist" "${ROOT_DIR}/packages/modules/messaging/dist" "${ROOT_DIR}/packages/modules/billing/dist" "${ROOT_DIR}/packages/modules/students/dist" "${ROOT_DIR}/packages/modules/sessions/dist"
+  rm -rf \
+    "${ROOT_DIR}/apps/tenant-web/dist" \
+    "${ROOT_DIR}/apps/platform-web/dist" \
+    "${ROOT_DIR}/apps/api/dist" \
+    "${ROOT_DIR}/packages/contracts/dist" \
+    "${ROOT_DIR}/packages/db/dist" \
+    "${ROOT_DIR}/packages/be-core/dist" \
+    "${ROOT_DIR}"/packages/modules/*/dist
   tar xzf "$TARBALL" -C "$ROOT_DIR"
   if [ $? -ne 0 ]; then
     echo "FATAL: tar extract failed"
@@ -141,8 +164,26 @@ if [ -f "$TARBALL" ]; then
   rm -f "$TARBALL" "${TARBALL}.sha256"
 else
   echo "No tarball found at ${TARBALL} — checking pre-extracted dist folders..."
-  if [ ! -d "${ROOT_DIR}/apps/api/dist" ] || [ ! -d "${ROOT_DIR}/apps/tenant-web/dist" "${ROOT_DIR}/apps/platform-web/dist" ] || [ ! -d "${ROOT_DIR}/packages/db/dist" ] || [ ! -d "${ROOT_DIR}/packages/be-core/dist" ] || [ ! -d "${ROOT_DIR}/packages/modules/iam/dist" ] || [ ! -d "${ROOT_DIR}/packages/modules/accounting/dist" "${ROOT_DIR}/packages/modules/contacts/dist" "${ROOT_DIR}/packages/modules/hasanat/dist" "${ROOT_DIR}/packages/modules/faculty/dist" "${ROOT_DIR}/packages/modules/messaging/dist" "${ROOT_DIR}/packages/modules/billing/dist" "${ROOT_DIR}/packages/modules/students/dist" "${ROOT_DIR}/packages/modules/sessions/dist" ]; then
-    echo "FATAL: missing pre-built dist directories (apps/api/dist, apps/tenant-web/dist apps/platform-web/dist, packages/db/dist, packages/be-core/dist, packages/modules/iam/dist, packages/modules/accounting/dist, packages/modules/contacts/dist) and no tarball at ${TARBALL}"
+  MISSING_DIST=()
+  for req_dir in \
+    "${ROOT_DIR}/apps/api/dist" \
+    "${ROOT_DIR}/apps/tenant-web/dist" \
+    "${ROOT_DIR}/apps/platform-web/dist" \
+    "${ROOT_DIR}/packages/contracts/dist" \
+    "${ROOT_DIR}/packages/db/dist" \
+    "${ROOT_DIR}/packages/be-core/dist"; do
+    if [ ! -d "$req_dir" ]; then
+      MISSING_DIST+=("${req_dir#${ROOT_DIR}/}")
+    fi
+  done
+  for mod_dir in "${ROOT_DIR}"/packages/modules/*/; do
+    [ -f "${mod_dir}package.json" ] || continue
+    if [ ! -d "${mod_dir}dist" ]; then
+      MISSING_DIST+=("${mod_dir#${ROOT_DIR}/}dist")
+    fi
+  done
+  if [ "${#MISSING_DIST[@]}" -gt 0 ]; then
+    echo "FATAL: missing pre-built dist directories (${MISSING_DIST[*]}) and no tarball at ${TARBALL}"
     exit 1
   fi
 fi
@@ -276,6 +317,34 @@ if [ -f "$ROOT_DIR/apps/api/dist/scripts/migrateDb.js" ]; then
   echo "Migrations applied."
 else
   echo "Notice: dist/scripts/migrateDb.js not found — migrations will run on backend startup."
+fi
+
+if command -v pm2 >/dev/null 2>&1; then
+  STALE_PM2_APPS="$(pm2 jlist 2>/dev/null | node -e '
+    const fs = require("node:fs");
+    const root = process.argv[1];
+    const expected = {
+      "mmsv2-backend": `${root}/apps/api/dist/index.js`,
+      "mmsv2-worker": `${root}/apps/api/dist/worker/index.js`,
+    };
+    try {
+      const raw = fs.readFileSync(0, "utf8").trim();
+      const idx = raw.indexOf("[");
+      if (idx < 0) process.exit(0);
+      const list = JSON.parse(raw.slice(idx));
+      for (const proc of list) {
+        const exp = expected[proc?.name];
+        const cur = proc?.pm2_env?.pm_exec_path;
+        if (exp && cur && cur !== exp) {
+          console.log(proc.name);
+        }
+      }
+    } catch {}
+  ' "$ROOT_DIR" 2>/dev/null || true)"
+  for app_name in $STALE_PM2_APPS; do
+    echo "Recreating PM2 process ${app_name} with updated script path..."
+    pm2 delete "$app_name" 2>/dev/null || true
+  done
 fi
 
 if [ -f "$ROOT_DIR/ecosystem.config.cjs" ]; then

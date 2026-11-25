@@ -1,4 +1,4 @@
-import { type FastifyInstance, type FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ZodType } from "zod";
 
 import type { User } from "@mms/contracts";
