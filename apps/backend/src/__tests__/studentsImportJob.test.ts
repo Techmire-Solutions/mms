@@ -18,11 +18,9 @@ vi.mock("@mms/db/context", async (importOriginal) => ({
   withTenantRead: async (_tenant: string, cb: () => Promise<unknown>) => cb(),
 }));
 
-vi.mock("../contacts/use-cases/contactWriteUseCases.js", () => ({
+vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>()),
   upsertContact: (...args: unknown[]) => mockUpsertContact(...args),
-}));
-
-vi.mock("../contacts/use-cases/contactLoadUseCases.js", () => ({
   findContactsMatchingUniqueValues: (...args: unknown[]) => mockFindContacts(...args),
 }));
 
