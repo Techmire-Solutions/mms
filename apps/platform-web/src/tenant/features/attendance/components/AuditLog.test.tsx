@@ -1,5 +1,5 @@
 import React, { act } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { AuditLog } from "./AuditLog";
 
@@ -42,13 +42,22 @@ vi.mock("@/tenant/features/attendance/components/MarkAttendance", () => ({
 
 describe("AuditLog Component", () => {
   let container: HTMLDivElement | null = null;
+  let root: Root | null = null;
 
   beforeEach(() => {
     container = document.createElement("div");
     document.body.appendChild(container);
+    root = createRoot(container);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    if (root) {
+      const currentRoot = root;
+      root = null;
+      await act(async () => {
+        currentRoot.unmount();
+      });
+    }
     if (container) {
       document.body.removeChild(container);
       container = null;
@@ -57,8 +66,7 @@ describe("AuditLog Component", () => {
 
   it("renders audit log entries list after loading", async () => {
     await act(async () => {
-      const root = createRoot(container!);
-      root.render(
+      root!.render(
         React.createElement(AuditLog, { filters: { classId: "cls-1", date: "2025-01-01" } }),
       );
     });
@@ -70,8 +78,7 @@ describe("AuditLog Component", () => {
 
   it("renders audit log in cards mode without table", async () => {
     await act(async () => {
-      const root = createRoot(container!);
-      root.render(
+      root!.render(
         React.createElement(AuditLog, {
           filters: { classId: "cls-1", date: "2025-01-01" },
           viewMode: "cards",
@@ -85,8 +92,7 @@ describe("AuditLog Component", () => {
 
   it("renders audit log in table mode", async () => {
     await act(async () => {
-      const root = createRoot(container!);
-      root.render(
+      root!.render(
         React.createElement(AuditLog, {
           filters: { classId: "cls-1", date: "2025-01-01" },
           viewMode: "table",
