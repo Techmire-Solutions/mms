@@ -54,7 +54,7 @@
     "check:obligations-route-injection": "node scripts/ci/check-obligations-route-injection.mjs",
     "check:accounting-route-injection": "node scripts/ci/check-accounting-route-injection.mjs",
     "check:accounting-route-security": "node scripts/ci/check-accounting-route-security.mjs",
-    "check:accounting-coverage": "node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db",
+    "check:accounting-coverage": "node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db --coverage packages/modules/accounting/coverage-finance-db",
     "check:examinations-route-injection": "node scripts/ci/check-examinations-route-injection.mjs",
     "check:examinations-route-security": "node scripts/ci/check-examinations-route-security.mjs",
     "check:money-safety": "node scripts/check-money-safety.mjs",
