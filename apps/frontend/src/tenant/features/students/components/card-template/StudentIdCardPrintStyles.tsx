@@ -13,13 +13,13 @@ export interface StudentIdCardPrintStylesProps {
 export function StudentIdCardPrintStyles({
   width,
   height,
-  orientation = "landscape",
+  orientation: _orientation = "landscape",
 }: StudentIdCardPrintStylesProps): React.JSX.Element {
   return (
     <style>{`
       @media print {
         @page {
-          size: ${width}px ${height}px ${orientation};
+          size: ${width}px ${height}px;
           margin: 0;
         }
         html, body {
@@ -30,7 +30,7 @@ export function StudentIdCardPrintStyles({
           background: white !important;
           overflow: visible !important;
         }
-        body > :not([data-slot="overlay-root"]),
+        body > :not([data-slot="overlay-root"]):not([data-print-unclamp]),
         [data-overlay-backdrop],
         [data-print-hide],
         [data-slot="modal-header"],
@@ -38,7 +38,8 @@ export function StudentIdCardPrintStyles({
         [data-slot="modal-controls"] {
           display: none !important;
         }
-        [data-slot="overlay-root"] {
+        [data-slot="overlay-root"],
+        [data-print-unclamp] {
           position: static !important;
           display: block !important;
           padding: 0 !important;

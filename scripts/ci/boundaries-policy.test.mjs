@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 
 /**
@@ -20,8 +21,12 @@ const requireFromRoot = createRequire(path.join(ROOT, "package.json"));
 requireFromRoot("./scripts/eslint-ts-compat.cjs");
 const requireFromTooling = createRequire(path.join(ROOT, "tooling/eslint-config/package.json"));
 const { ESLint } = requireFromTooling("eslint");
-const { createNodeConfig } = await import(path.join(ROOT, "tooling/eslint-config/node.mjs"));
-const { createReactConfig } = await import(path.join(ROOT, "tooling/eslint-config/react.mjs"));
+const { createNodeConfig } = await import(
+  pathToFileURL(path.join(ROOT, "tooling/eslint-config/node.mjs")).href
+);
+const { createReactConfig } = await import(
+  pathToFileURL(path.join(ROOT, "tooling/eslint-config/react.mjs")).href
+);
 
 const nodeEslint = new ESLint({
   cwd: ROOT,

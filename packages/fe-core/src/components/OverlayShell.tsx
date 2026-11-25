@@ -70,6 +70,7 @@ export function OverlayShell<T extends HTMLElement = HTMLElement>({
       {open && (
         <div
           data-print-unclamp
+          data-slot="overlay-root"
           className={cn(
             "fixed inset-0 print:static print:inset-auto print:p-0 print:m-0 print:w-full print:h-auto print:overflow-visible",
             priority ? "z-modal-priority" : "z-modal",
