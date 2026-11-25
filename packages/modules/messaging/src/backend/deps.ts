@@ -1,13 +1,15 @@
 import type { MessagingPorts } from "./ports.js";
 
-let ports: MessagingPorts | null = null;
+const PORTS_KEY = Symbol.for("@mms/mod-messaging/ports");
+type GlobalWithPorts = typeof globalThis & { [PORTS_KEY]?: MessagingPorts | null };
 
 /** Composition-root binding; called once from `apps/api` before routes/jobs load. */
 export function configureMessagingPorts(next: MessagingPorts): void {
-  ports = next;
+  (globalThis as GlobalWithPorts)[PORTS_KEY] = next;
 }
 
 function requirePorts(): MessagingPorts {
+  const ports = (globalThis as GlobalWithPorts)[PORTS_KEY];
   if (!ports) throw new Error("Messaging ports are not configured (call configureMessagingPorts)");
   return ports;
 }

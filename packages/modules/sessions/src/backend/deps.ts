@@ -1,13 +1,15 @@
 import type { SessionsPorts } from "./ports.js";
 
-let ports: SessionsPorts | null = null;
+const PORTS_KEY = Symbol.for("@mms/mod-sessions/ports");
+type GlobalWithPorts = typeof globalThis & { [PORTS_KEY]?: SessionsPorts | null };
 
 /** Composition-root binding; called once from `apps/api` before routes/jobs load. */
 export function configureSessionsPorts(next: SessionsPorts): void {
-  ports = next;
+  (globalThis as GlobalWithPorts)[PORTS_KEY] = next;
 }
 
 function requirePorts(): SessionsPorts {
+  const ports = (globalThis as GlobalWithPorts)[PORTS_KEY];
   if (!ports) throw new Error("Sessions ports are not configured (call configureSessionsPorts)");
   return ports;
 }

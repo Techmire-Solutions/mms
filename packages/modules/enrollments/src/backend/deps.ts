@@ -1,13 +1,15 @@
 import type { EnrollmentsPorts } from "./ports.js";
 
-let ports: EnrollmentsPorts | null = null;
+const PORTS_KEY = Symbol.for("@mms/mod-enrollments/ports");
+type GlobalWithPorts = typeof globalThis & { [PORTS_KEY]?: EnrollmentsPorts | null };
 
 /** Composition-root binding; called once from `apps/api` before routes/jobs load. */
 export function configureEnrollmentsPorts(next: EnrollmentsPorts): void {
-  ports = next;
+  (globalThis as GlobalWithPorts)[PORTS_KEY] = next;
 }
 
 function requirePorts(): EnrollmentsPorts {
+  const ports = (globalThis as GlobalWithPorts)[PORTS_KEY];
   if (!ports)
     throw new Error("Enrollments ports are not configured (call configureEnrollmentsPorts)");
   return ports;

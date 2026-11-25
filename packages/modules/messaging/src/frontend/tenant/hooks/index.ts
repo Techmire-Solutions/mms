@@ -11,7 +11,6 @@ export * from "./useMessagingGatewaysStatus.js";
 export * from "./useMessagingKeyboardShortcuts.js";
 export * from "./useMessagingPageOptions.js";
 export * from "./useMessagingQueries.js";
-export * from "./useMessagingQueries.test.js";
 export * from "./useMessagingSetupConfig.js";
 export * from "./useMessagingTemplateEditor.js";
 export * from "./useMessagingWorkFilters.js";

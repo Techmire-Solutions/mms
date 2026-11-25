@@ -3,7 +3,6 @@ export * from "./financeQueryKeys.js";
 export * from "./financeSetupConfigApi.js";
 export * from "./financeWorkDrillDown.js";
 export * from "./invalidateFinanceQueries.js";
-export * from "./invalidateFinanceQueries.test.js";
 export * from "./useFinanceApi.js";
 export * from "./useFinanceBulkActions.js";
 export * from "./useFinanceCollect.js";

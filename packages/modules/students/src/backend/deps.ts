@@ -3,14 +3,16 @@ import type { StudentPorts } from "./ports.js";
 export type BulkEnrollInput = any;
 export type OperationActor = any;
 
-let ports: StudentPorts | null = null;
+const PORTS_KEY = Symbol.for("@mms/mod-students/ports");
+type GlobalWithPorts = typeof globalThis & { [PORTS_KEY]?: StudentPorts | null };
 
 /** Composition-root binding; called once from `apps/api` before routes/jobs load. */
 export function configureStudentPorts(next: StudentPorts): void {
-  ports = next;
+  (globalThis as GlobalWithPorts)[PORTS_KEY] = next;
 }
 
 function requirePorts(): StudentPorts {
+  const ports = (globalThis as GlobalWithPorts)[PORTS_KEY];
   if (!ports) throw new Error("Student ports are not configured (call configureStudentPorts)");
   return ports;
 }

@@ -1,13 +1,15 @@
 import type { FinancePorts } from "./ports.js";
 
-let ports: FinancePorts | null = null;
+const PORTS_KEY = Symbol.for("@mms/mod-billing/ports");
+type GlobalWithPorts = typeof globalThis & { [PORTS_KEY]?: FinancePorts | null };
 
 /** Composition-root binding; called once from `apps/api` before routes/jobs load. */
 export function configureFinancePorts(next: FinancePorts): void {
-  ports = next;
+  (globalThis as GlobalWithPorts)[PORTS_KEY] = next;
 }
 
 function requirePorts(): FinancePorts {
+  const ports = (globalThis as GlobalWithPorts)[PORTS_KEY];
   if (!ports) throw new Error("Finance ports are not configured (call configureFinancePorts)");
   return ports;
 }

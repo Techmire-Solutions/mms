@@ -13,8 +13,6 @@ export * from "./studentDetailRelationships.js";
 export * from "./studentDetailSiblingMatch.js";
 export * from "./studentDetailSortedFields.js";
 export * from "./studentFormDraft.js";
-export * from "./studentFormDraft.test.js";
-export * from "./studentFormValidation.test.js";
 export * from "./studentStatusUi.js";
 export * from "./studentsData.js";
 export * from "./studentsDescriptor.js";

@@ -1,5 +1,8 @@
 import path from "node:path";
 import { defineConfig } from "vitest/config";
+import { buildModuleSourceAliases } from "./src/__tests__/moduleSourceAliases.js";
+
+const repoRoot = path.resolve(import.meta.dirname, "../..");
 
 /**
  * RLS enforcement suite. Runs only against a database whose role is NOT a
@@ -11,9 +14,10 @@ import { defineConfig } from "vitest/config";
  */
 export default defineConfig({
   resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "./src"),
-    },
+    alias: [
+      { find: "@", replacement: path.resolve(import.meta.dirname, "./src") },
+      ...buildModuleSourceAliases(repoRoot),
+    ],
   },
   test: {
     environment: "node",
@@ -22,7 +26,12 @@ export default defineConfig({
       LOG_LEVEL: "silent",
       JWT_SECRET: "test-secret-at-least-32-chars-long!!",
     },
-    include: ["src/__tests__/rls/**/*.{test,spec}.ts"],
+    setupFiles: ["./src/__tests__/dbIntegrationSetup.ts"],
+    include: [
+      "src/__tests__/rls/**/*.{test,spec}.ts",
+      "../../packages/modules/enrollments/src/backend/__tests__/db-integration/enrollmentsTrashRls.db.integration.test.ts",
+      "../../packages/modules/hasanat/src/backend/__tests__/db-integration/hasanatTenantIsolation.db.integration.test.ts",
+    ],
     pool: "threads",
     isolate: false,
     maxWorkers: 1,

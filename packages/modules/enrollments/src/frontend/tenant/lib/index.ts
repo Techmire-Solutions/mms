@@ -1,5 +1,4 @@
 export * from "./enrollmentCapacity.js";
-export * from "./enrollmentCapacity.test.js";
 export * from "./enrollmentData.js";
 export * from "./enrollmentEligibility.js";
 export * from "./enrollmentListContentShared.js";

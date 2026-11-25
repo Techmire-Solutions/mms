@@ -1,5 +1,8 @@
 import path from "node:path";
 import { defineConfig } from "vitest/config";
+import { buildModuleSourceAliases } from "./src/__tests__/moduleSourceAliases.js";
+
+const repoRoot = path.resolve(import.meta.dirname, "../..");
 
 /**
  * Opt-in real-Postgres integration suite (src/__tests__/db-integration).
@@ -11,9 +14,10 @@ import { defineConfig } from "vitest/config";
  */
 export default defineConfig({
   resolve: {
-    alias: {
-      "@": path.resolve(import.meta.dirname, "./src"),
-    },
+    alias: [
+      { find: "@", replacement: path.resolve(import.meta.dirname, "./src") },
+      ...buildModuleSourceAliases(repoRoot),
+    ],
   },
   test: {
     environment: "node",
@@ -28,7 +32,18 @@ export default defineConfig({
       PORT: "0",
       MMS_LOG_DEV_CREDENTIALS: "true",
     },
-    include: ["src/__tests__/db-integration/**/*.{test,spec}.ts"],
+    setupFiles: ["./src/__tests__/dbIntegrationSetup.ts"],
+    include: [
+      "src/__tests__/db-integration/**/*.{test,spec}.ts",
+      "../../packages/modules/sessions/src/backend/__tests__/db-integration/**/*.integration.test.ts",
+      "../../packages/modules/enrollments/src/backend/__tests__/db-integration/**/*Db.integration.test.ts",
+      "../../packages/modules/billing/src/backend/__tests__/db-integration/**/*.integration.test.ts",
+      "../../packages/modules/contacts/src/backend/__tests__/db-integration/**/*.integration.test.ts",
+      "../../packages/modules/faculty/src/backend/__tests__/db-integration/**/*.integration.test.ts",
+      "../../packages/modules/hasanat/src/backend/__tests__/db-integration/**/*Db.integration.test.ts",
+      "../../packages/modules/messaging/src/backend/__tests__/db-integration/**/*.integration.test.ts",
+      "../../packages/modules/students/src/backend/__tests__/db-integration/**/*.integration.test.ts",
+    ],
     pool: "threads",
     isolate: false,
     maxWorkers: 1,

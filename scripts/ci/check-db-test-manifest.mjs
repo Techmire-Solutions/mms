@@ -12,6 +12,14 @@ import path from "node:path";
 const ROOTS = [
   path.resolve(process.cwd(), "apps/api/src/__tests__/db-integration"),
   path.resolve(process.cwd(), "packages/modules/accounting/src/backend/__tests__/db-integration"),
+  path.resolve(process.cwd(), "packages/modules/billing/src/backend/__tests__/db-integration"),
+  path.resolve(process.cwd(), "packages/modules/contacts/src/backend/__tests__/db-integration"),
+  path.resolve(process.cwd(), "packages/modules/enrollments/src/backend/__tests__/db-integration"),
+  path.resolve(process.cwd(), "packages/modules/faculty/src/backend/__tests__/db-integration"),
+  path.resolve(process.cwd(), "packages/modules/hasanat/src/backend/__tests__/db-integration"),
+  path.resolve(process.cwd(), "packages/modules/messaging/src/backend/__tests__/db-integration"),
+  path.resolve(process.cwd(), "packages/modules/sessions/src/backend/__tests__/db-integration"),
+  path.resolve(process.cwd(), "packages/modules/students/src/backend/__tests__/db-integration"),
 ];
 const BASELINE = {
   "enrollmentConcurrencyDb.integration.test.ts": 6,

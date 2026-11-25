@@ -9,6 +9,7 @@ import { configureEnrollmentsPorts } from "@mms/mod-enrollments/backend/deps";
 import * as sessions from "@mms/mod-sessions/backend/repository";
 import * as sessionsUseCases from "@mms/mod-sessions/backend/use-cases";
 import * as students from "@mms/mod-students/backend/repository";
+import * as billing from "@mms/mod-billing/backend/repository";
 import { createStudent } from "@mms/mod-students/backend/use-cases";
 import { upsertContact } from "@mms/mod-contacts/backend/use-cases";
 import { notificationsUseCases } from "@mms/mod-notifications/backend/use-cases";
@@ -65,9 +66,8 @@ export function configureEnrollmentsAdapters(): void {
     saveSession: sessions.saveSession,
     transitionSession: sessionsUseCases.transitionSession,
     registrationLinkUseCases: sessionsUseCases.registrationLinkUseCases,
-    bulkSaveInvoices: (sessions as unknown as { bulkSaveInvoices?: unknown }).bulkSaveInvoices,
-    bulkSoftDeleteStudentsSql: (students as unknown as { bulkSoftDeleteStudentsSql?: unknown })
-      .bulkSoftDeleteStudentsSql,
+    bulkSaveInvoices: billing.bulkSaveInvoices,
+    bulkSoftDeleteStudentsSql: students.bulkSoftDeleteStudentsSql,
     findStudentById: students.findStudentById,
     findStudentsByIds: students.findStudentsByIds,
     createStudent,

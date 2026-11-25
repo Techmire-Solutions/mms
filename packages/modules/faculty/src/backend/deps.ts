@@ -1,13 +1,15 @@
 import type { FacultyPorts } from "./ports.js";
 
-let ports: FacultyPorts | null = null;
+const PORTS_KEY = Symbol.for("@mms/mod-faculty/ports");
+type GlobalWithPorts = typeof globalThis & { [PORTS_KEY]?: FacultyPorts | null };
 
 /** Composition-root binding; called once from `apps/api` before routes/jobs load. */
 export function configureFacultyPorts(next: FacultyPorts): void {
-  ports = next;
+  (globalThis as GlobalWithPorts)[PORTS_KEY] = next;
 }
 
 function requirePorts(): FacultyPorts {
+  const ports = (globalThis as GlobalWithPorts)[PORTS_KEY];
   if (!ports) throw new Error("Faculty ports are not configured (call configureFacultyPorts)");
   return ports;
 }

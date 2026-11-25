@@ -27,15 +27,32 @@ function argValues(flag) {
 }
 
 function isFinanceFile(file) {
+  const normalized = file.replaceAll("\\", "/");
+  if (normalized.includes("__tests__")) return false;
   return (
-    file.includes("src/finance/") ||
-    file.includes("src/accounting/") ||
-    file.includes("src/db/repositories/finance") ||
-    file.includes("src/db/repositories/accounting") ||
-    file.includes("src/routes/tenant/finance") ||
-    file.includes("src/routes/tenant/accounting") ||
-    file.includes("packages/modules/accounting/src/backend/")
+    normalized.includes("src/finance/") ||
+    normalized.includes("src/accounting/") ||
+    normalized.includes("src/db/repositories/finance") ||
+    normalized.includes("src/db/repositories/accounting") ||
+    normalized.includes("src/routes/tenant/finance") ||
+    normalized.includes("src/routes/tenant/accounting") ||
+    normalized.includes("packages/modules/billing/src/backend/") ||
+    normalized.includes("packages/modules/accounting/src/backend/")
   );
+}
+
+function mergeCoverageEntry(target, next) {
+  if (!target) return next;
+  for (const [k, count] of Object.entries(next.s ?? {})) {
+    target.s[k] = Number(target.s[k] ?? 0) + Number(count);
+  }
+  for (const [k, count] of Object.entries(next.f ?? {})) {
+    target.f[k] = Number(target.f[k] ?? 0) + Number(count);
+  }
+  for (const [k, counts] of Object.entries(next.b ?? {})) {
+    target.b[k] = (target.b[k] ?? []).map((prev, idx) => Number(prev) + Number(counts[idx] ?? 0));
+  }
+  return target;
 }
 
 const coverageDirs = argValues("--coverage");
@@ -48,7 +65,10 @@ for (const coverageDir of dirs) {
     console.error(`✗ Finance coverage report not found: ${jsonPath}`);
     process.exit(1);
   }
-  Object.assign(data, JSON.parse(fs.readFileSync(jsonPath, "utf8")));
+  const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+  for (const [file, entry] of Object.entries(parsed)) {
+    data[file] = mergeCoverageEntry(data[file], entry);
+  }
   console.log(`merged coverage report: ${jsonPath}`);
 }
 let statements = 0;

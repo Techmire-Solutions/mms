@@ -627,7 +627,7 @@ jobs:
           SHARD_INDEX: ${{ matrix.shardIndex }}
           SHARD_TOTAL: ${{ matrix.shardTotal }}
         run: |
-          mkdir -p apps/tenant-web/.vitest-reports
+          mkdir -p apps/tenant-web/.vitest-reports apps/platform-web/.vitest-reports
           pnpm --filter mms-tenant-web --filter mms-platform-web exec vitest run \
             --shard="${SHARD_INDEX}/${SHARD_TOTAL}" \
             --coverage \
@@ -646,6 +646,14 @@ jobs:
         with:
           name: vitest-blob-report-${{ matrix.shardIndex }}
           path: apps/tenant-web/.vitest-reports/blob-${{ matrix.shardIndex }}.json
+          retention-days: 1
+
+      - name: Upload Platform Shard Report Artifact
+        if: always() && needs.changes.outputs.test_scope == 'full'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vitest-platform-blob-report-${{ matrix.shardIndex }}
+          path: apps/platform-web/.vitest-reports/blob-${{ matrix.shardIndex }}.json
           retention-days: 1
 
   test-frontend-coverage:
@@ -676,13 +684,20 @@ jobs:
           merge-multiple: true
           path: apps/tenant-web/.vitest-reports
 
+      - name: Download Platform Shard Report Artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: vitest-platform-blob-report-*
+          merge-multiple: true
+          path: apps/platform-web/.vitest-reports
+
       - name: Merge Shard Reports & Enforce Coverage Gate
         run: |
-          mkdir -p apps/tenant-web/.vitest-reports
-          if [ -d "apps/tenant-web/.vitest-reports" ] && [ "$(ls -A apps/tenant-web/.vitest-reports)" ]; then
+          mkdir -p apps/tenant-web/.vitest-reports apps/platform-web/.vitest-reports
+          if [ -d "apps/tenant-web/.vitest-reports" ] && [ "$(ls -A apps/tenant-web/.vitest-reports)" ] && [ -d "apps/platform-web/.vitest-reports" ] && [ "$(ls -A apps/platform-web/.vitest-reports)" ]; then
             pnpm --filter mms-tenant-web --filter mms-platform-web exec vitest run --merge-reports=.vitest-reports --coverage
           else
-            echo "::error::No vitest blob reports found in apps/tenant-web/.vitest-reports to merge!"
+            echo "::error::Missing vitest blob reports in apps/tenant-web/.vitest-reports or apps/platform-web/.vitest-reports to merge!"
             exit 1
           fi
 
@@ -871,8 +886,8 @@ jobs:
 
       # Real-Postgres suite for the accounting module (parallel-file deadlocks and
       # the restore-attribution clock race were fixed; keep it serialized here).
-      - name: Run Accounting Module DB Tests
-        run: pnpm --filter @mms/mod-accounting run test:db
+      - name: Run Accounting Module DB Tests (with coverage)
+        run: pnpm --filter @mms/mod-accounting run test:db:coverage:finance
 
       - name: Run Backend DB Integration Tests (with Sessions coverage)
         run: pnpm --filter mms-api run test:db:coverage
@@ -910,7 +925,7 @@ jobs:
         run: pnpm --filter mms-api run test:db:coverage:finance
 
       - name: Finance/accounting coverage ratchet
-        run: node scripts/ci/check-finance-coverage.mjs --coverage apps/api/coverage-finance-db
+        run: node scripts/ci/check-finance-coverage.mjs --coverage apps/api/coverage-finance-db --coverage packages/modules/accounting/coverage-finance-db
 
       # Accounting-only floor: the finance slice can mask an accounting regression.
       - name: Accounting coverage

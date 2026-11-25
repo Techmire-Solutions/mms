@@ -39,7 +39,7 @@ const collections = [
 ] as never;
 
 describe("obligationsSummaryCalculations", () => {
-  it("sums floats via integer cents accurately", () => {
+  it("sums 2-dp amounts without float drift", () => {
     expect(sumAmounts([50000.1, 50000.2, Number.NaN])).toBe(100000.3);
   });
 

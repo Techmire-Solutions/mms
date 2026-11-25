@@ -13,19 +13,43 @@ import path from "node:path";
 
 const FLOORS = { statements: 45, functions: 50, branches: 35 };
 
-function argValue(flag) {
-  const index = process.argv.indexOf(flag);
-  return index >= 0 ? process.argv[index + 1] : undefined;
+function argValues(flag) {
+  const values = [];
+  for (let i = 0; i < process.argv.length; i += 1) {
+    if (process.argv[i] === flag && process.argv[i + 1]) values.push(process.argv[i + 1]);
+  }
+  return values;
 }
 
-const coverageDir = argValue("--coverage") ?? "apps/api/coverage-sessions-db";
-const jsonPath = path.join(coverageDir, "coverage-final.json");
-if (!fs.existsSync(jsonPath)) {
-  console.error(`✗ Sessions coverage report not found: ${jsonPath}`);
-  process.exit(1);
+function mergeCoverageEntry(target, next) {
+  if (!target) return next;
+  for (const [k, count] of Object.entries(next.s ?? {})) {
+    target.s[k] = Number(target.s[k] ?? 0) + Number(count);
+  }
+  for (const [k, count] of Object.entries(next.f ?? {})) {
+    target.f[k] = Number(target.f[k] ?? 0) + Number(count);
+  }
+  for (const [k, counts] of Object.entries(next.b ?? {})) {
+    target.b[k] = (target.b[k] ?? []).map((prev, idx) => Number(prev) + Number(counts[idx] ?? 0));
+  }
+  return target;
 }
 
-const data = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+const coverageDirs = argValues("--coverage");
+const dirs = coverageDirs.length > 0 ? coverageDirs : ["apps/api/coverage-sessions-db"];
+const data = {};
+for (const coverageDir of dirs) {
+  const jsonPath = path.join(coverageDir, "coverage-final.json");
+  if (!fs.existsSync(jsonPath)) {
+    console.error(`✗ Sessions coverage report not found: ${jsonPath}`);
+    process.exit(1);
+  }
+  const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+  for (const [file, entry] of Object.entries(parsed)) {
+    data[file] = mergeCoverageEntry(data[file], entry);
+  }
+}
+
 let statements = 0;
 let statementsHit = 0;
 let functions = 0;
@@ -34,11 +58,14 @@ let branches = 0;
 let branchesHit = 0;
 
 for (const [file, entry] of Object.entries(data)) {
+  const normalized = file.replaceAll("\\", "/");
+  if (normalized.includes("__tests__")) continue;
   if (
-    !file.includes("src/sessions/") &&
-    !file.includes("src/db/repositories/session") &&
-    !file.includes("src/routes/tenant/sessions/") &&
-    !file.includes("sessionLifecycleScheduler")
+    !normalized.includes("src/sessions/") &&
+    !normalized.includes("src/db/repositories/session") &&
+    !normalized.includes("src/routes/tenant/sessions/") &&
+    !normalized.includes("sessionLifecycleScheduler") &&
+    !normalized.includes("packages/modules/sessions/src/backend/")
   )
     continue;
   for (const count of Object.values(entry.s ?? {})) {

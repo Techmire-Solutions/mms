@@ -36,13 +36,15 @@ export interface ContactsKernelDeps {
   deleteObject(key: string): Promise<void>;
 }
 
-let configured: ContactsKernelDeps | null = null;
+const PORTS_KEY = Symbol.for("@mms/mod-contacts/ports");
+type GlobalWithPorts = typeof globalThis & { [PORTS_KEY]?: ContactsKernelDeps | null };
 
 export function configureContactsKernelDeps(next: ContactsKernelDeps): void {
-  configured = next;
+  (globalThis as GlobalWithPorts)[PORTS_KEY] = next;
 }
 
 function deps(): ContactsKernelDeps {
+  const configured = (globalThis as GlobalWithPorts)[PORTS_KEY];
   if (!configured) {
     throw new Error(
       "Contacts kernel deps are not configured (call configureContactsKernelDeps from the app composition root)",
