@@ -913,8 +913,16 @@ jobs:
       - name: Finance/accounting DB coverage
         run: pnpm --filter mms-backend run test:db:coverage:finance
 
+      # The extraction moved the accounting repository/routes/ledger posting into the module;
+      # its DB suites are the coverage for that half of the slice.
+      - name: Accounting module finance coverage
+        run: pnpm --filter @mms/mod-accounting run test:db:coverage:finance
+
       - name: Finance/accounting coverage ratchet
-        run: node scripts/ci/check-finance-coverage.mjs --coverage apps/backend/coverage-finance-db
+        run: |
+          node scripts/ci/check-finance-coverage.mjs \
+            --coverage apps/backend/coverage-finance-db \
+            --coverage packages/modules/accounting/coverage-finance-db
 
       # Accounting-only floor: the finance slice can mask an accounting regression.
       - name: Accounting coverage

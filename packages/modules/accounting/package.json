@@ -51,7 +51,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.backend.json && tsc --noEmit -p tsconfig.frontend.json",
     "lint": "node -r ../../../scripts/eslint-ts-compat.cjs node_modules/eslint/bin/eslint.js --cache --cache-strategy content --cache-location node_modules/.cache/eslint/ . --quiet --rule '@typescript-eslint/no-explicit-any:off'",
     "test": "vitest run --config vitest.backend.config.ts && vitest run --config vitest.frontend.config.ts",
-    "test:db": "vitest run --config vitest.db.config.ts"
+    "test:db": "vitest run --config vitest.db.config.ts",
+    "test:db:coverage:finance": "vitest run --config vitest.db.config.ts --coverage --coverage.include='src/backend/repository/**' --coverage.include='src/backend/routes/**' --coverage.include='src/backend/ledgerPosting/**' --coverage.include='src/backend/accounting.service.ts' --coverage.reportsDirectory=coverage-finance-db --coverage.reporter=json"
   },
   "dependencies": {
     "@mms/be-core": "workspace:*",
