@@ -20,7 +20,11 @@ import { useEffect } from "react";
  * instead — see `isAnotherLayerFocused`.
  */
 
-const layers: symbol[] = [];
+const OVERLAY_LAYERS_KEY = Symbol.for("@mms/fe-core/overlay-layers");
+const globalOverlayState = globalThis as typeof globalThis & {
+  [OVERLAY_LAYERS_KEY]?: symbol[];
+};
+const layers: symbol[] = (globalOverlayState[OVERLAY_LAYERS_KEY] ??= []);
 
 /** Marks `layer` as no longer dismissible. Safe to call more than once. */
 function removeLayer(layer: symbol): void {

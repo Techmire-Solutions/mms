@@ -50,27 +50,23 @@ export function FinanceOverlays({
 }: FinanceOverlaysProps): React.JSX.Element {
   return (
     <>
-      <AnimatePresence>
-        {c.generatingInvoices && c.canWrite && !c.showDeleted && (
-          <Suspense fallback={null}>
+      <Suspense fallback={null}>
+        <AnimatePresence>
+          {c.generatingInvoices && c.canWrite && !c.showDeleted && (
             <FinanceGenerateInvoicesDialog
               open={c.generatingInvoices}
               onClose={() => c.setGeneratingInvoices(false)}
             />
-          </Suspense>
-        )}
-        {c.creatingInvoice && c.canWrite && !c.showDeleted && (
-          <Suspense fallback={null}>
+          )}
+          {c.creatingInvoice && c.canWrite && !c.showDeleted && (
             <InvoiceForm
               open={c.creatingInvoice}
               saving={c.createInvoice.isPending}
               onClose={() => c.setCreatingInvoice(false)}
               onSave={c.handleCreateInvoice}
             />
-          </Suspense>
-        )}
-        {c.viewInvoice && (
-          <Suspense fallback={null}>
+          )}
+          {c.viewInvoice && (
             <InvoiceDetail
               invoice={c.viewInvoice}
               onClose={() => c.setViewInvoice(null)}
@@ -86,19 +82,17 @@ export function FinanceOverlays({
               canDelete={c.canDelete}
               onRestore={c.restoreInvoice.mutateAsync}
             />
-          </Suspense>
-        )}
-        {c.recordInvoice && c.canWrite && !c.showDeleted && (
-          <Suspense fallback={null}>
+          )}
+          {c.recordInvoice && c.canWrite && !c.showDeleted && (
             <PaymentForm
               open={Boolean(c.recordInvoice)}
               invoice={c.recordInvoice}
               onClose={() => c.setRecordInvoice(null)}
               onSave={c.handleRecordPayment}
             />
-          </Suspense>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </Suspense>
 
       {receiptInvoices.length > 0 && (
         <Suspense fallback={null}>
@@ -117,18 +111,18 @@ export function FinanceOverlays({
         </Suspense>
       )}
 
-      <AnimatePresence>
-        {c.activePayment && (
-          <Suspense fallback={null}>
+      <Suspense fallback={null}>
+        <AnimatePresence>
+          {c.activePayment && (
             <PaymentDetail
               payment={c.activePayment}
               onClose={() => c.setActivePayment(null)}
               canDelete={c.canDelete}
               onRestore={c.restorePayment.mutateAsync}
             />
-          </Suspense>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </Suspense>
     </>
   );
 }

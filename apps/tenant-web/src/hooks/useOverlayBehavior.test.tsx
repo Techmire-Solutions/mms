@@ -243,4 +243,20 @@ describe("useOverlayBehavior — Escape ownership", () => {
       appRoot.remove();
     }
   });
+
+  it("invokes the latest onClose closure when re-rendered without dropping Escape", async () => {
+    const firstClose = vi.fn();
+    const secondClose = vi.fn();
+
+    await act(async () => {
+      root.render(<Overlay onClose={firstClose} />);
+    });
+    await act(async () => {
+      root.render(<Overlay onClose={secondClose} />);
+    });
+
+    pressEscape();
+    expect(firstClose).not.toHaveBeenCalled();
+    expect(secondClose).toHaveBeenCalledTimes(1);
+  });
 });
