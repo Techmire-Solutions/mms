@@ -15,7 +15,7 @@ import {
   type ErrorEnvelopeBody,
 } from "./dbErrorMapping.js";
 
-export { sendForbidden, sendUnauthorized } from "@mms/be-core/auth";
+export { sendForbidden, sendUnauthorized } from "../../auth/index.js";
 
 export function sendNotFound(reply: FastifyReply, message = "Resource not found"): FastifyReply {
   return reply.status(404).send({ type: "not_found", message });
@@ -120,7 +120,7 @@ export function sendInvalidCurrentPassword(
   return reply.status(401).send({ type: "invalid_current_password", message });
 }
 
-export { sendServiceUnavailable } from "@mms/be-core/auth";
+export { sendServiceUnavailable } from "../../auth/index.js";
 
 /** Base domain error with status code and error type contract. */
 export class HttpDomainError extends Error {
