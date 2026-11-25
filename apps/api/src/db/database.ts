@@ -24,10 +24,10 @@ import { loadServerConfig } from "../config/serverConfig.js";
 
 // Hand the validated server config to the data layer so pool sizing, statement
 // timeouts and the read replica match the rest of the process exactly. Only when
-// DATABASE_URL is already present: the opt-in DB test suites load it from
-// `apps/api/.env` in `beforeAll`, and pinning a fallback here would win over
-// that later assignment. `@mms/db` resolves the same values from env per call.
-if (process.env.DATABASE_URL) {
+// both DATABASE_URL and JWT_SECRET are already present: opt-in DB test suites
+// load DATABASE_URL from `apps/api/.env` in `beforeAll`, and standalone scripts
+// with only DATABASE_URL pre-exported would otherwise fail buildServerConfig().
+if (process.env.DATABASE_URL && process.env.JWT_SECRET) {
   const serverConfig = loadServerConfig();
   configureDbConfig({
     databaseUrl: serverConfig.databaseUrl,

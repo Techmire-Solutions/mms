@@ -1,12 +1,10 @@
+import "../config/preloadEnv.js";
 import { Worker } from "bullmq";
 import { closeDatabase } from "../db/database.js";
 import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
 import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 import { activeDb, initializeDatabaseConnection } from "@mms/db/client";
 import { disconnectRedis } from "../lib/redis.js";
-import { loadBackendEnv } from "../config/loadEnv.js";
-
-loadBackendEnv();
 import {
   QUEUE_SETTINGS,
   SANDBOXED_EXPORT_QUEUES,
