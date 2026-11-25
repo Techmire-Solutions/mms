@@ -64,12 +64,13 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
     <m.div
       variants={reducedMotion ? undefined : containerVariants}
       initial={reducedMotion ? false : "hidden"}
-      animate="visible"
+      animate={reducedMotion ? undefined : "visible"}
       className="space-y-6 text-start"
     >
       {/* System Maintenance Header Metrics */}
       <m.div
-        variants={cardVariants}
+        variants={reducedMotion ? undefined : cardVariants}
+        initial={reducedMotion ? false : undefined}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
       >
         <StatCard
@@ -127,7 +128,11 @@ export function PlatformSystemMaintenance(): React.JSX.Element {
       </m.div>
 
       {/* Maintenance Action Cards */}
-      <m.div variants={cardVariants} className="space-y-6">
+      <m.div
+        variants={reducedMotion ? undefined : cardVariants}
+        initial={reducedMotion ? false : undefined}
+        className="space-y-6"
+      >
         <div className="p-4 rounded-xl border border-border/60 bg-muted/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="flex h-2.5 w-2.5 rounded-xs bg-success animate-pulse shrink-0" />

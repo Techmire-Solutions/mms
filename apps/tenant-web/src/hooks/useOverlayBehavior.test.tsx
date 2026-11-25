@@ -201,4 +201,46 @@ describe("useOverlayBehavior — Escape ownership", () => {
     pressEscape();
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it("closes when focus is on document.documentElement", async () => {
+    const onClose = vi.fn();
+    await act(async () => {
+      root.render(<Overlay onClose={onClose} />);
+    });
+
+    Object.defineProperty(document, "activeElement", {
+      configurable: true,
+      get: () => document.documentElement,
+    });
+    try {
+      pressEscape();
+      expect(onClose).toHaveBeenCalledTimes(1);
+    } finally {
+      delete (document as { activeElement?: Element | null }).activeElement;
+    }
+  });
+
+  it("closes portalled overlay when focus unexpectedly stays inside inert #root", async () => {
+    const appRoot = document.createElement("div");
+    appRoot.id = "root";
+    const backgroundButton = document.createElement("button");
+    appRoot.appendChild(backgroundButton);
+    document.body.appendChild(appRoot);
+
+    const onClose = vi.fn();
+    try {
+      await act(async () => {
+        root.render(<Overlay onClose={onClose} />);
+      });
+
+      act(() => {
+        backgroundButton.focus();
+      });
+
+      pressEscape();
+      expect(onClose).toHaveBeenCalledTimes(1);
+    } finally {
+      appRoot.remove();
+    }
+  });
 });

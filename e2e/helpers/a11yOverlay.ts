@@ -87,7 +87,26 @@ export async function auditOverlay(
     .then(() => true)
     .catch(() => false);
 
+  let escapeDiag = "";
   if (!closed) {
+    const diag = await page
+      .evaluate(() => {
+        const active = document.activeElement as HTMLElement | null;
+        const overlay = document.querySelector('[role="dialog"]');
+        return {
+          activeTag: active?.tagName ?? null,
+          activeRole: active?.getAttribute("role") ?? null,
+          activeId: active?.id ?? null,
+          activeInOverlay: Boolean(overlay && active && overlay.contains(active)),
+          activeInRoot: Boolean(active?.closest("#root")),
+          dialogCount: document.querySelectorAll('[role="dialog"]').length,
+          overlayRootCount: document.querySelectorAll('[data-slot="overlay-root"]').length,
+        };
+      })
+      .catch(() => null);
+    if (diag) {
+      escapeDiag = ` (${JSON.stringify(diag)})`;
+    }
     // Attempt cleanup dismiss to avoid corrupting subsequent audits
     await page.keyboard.press("Escape").catch(() => undefined);
     const closeBtn = page
@@ -100,6 +119,6 @@ export async function auditOverlay(
     }
   }
 
-  expect(closed, `${context}: ${kind} overlay failed to close on Escape`).toBe(true);
+  expect(closed, `${context}: ${kind} overlay failed to close on Escape${escapeDiag}`).toBe(true);
   return true;
 }

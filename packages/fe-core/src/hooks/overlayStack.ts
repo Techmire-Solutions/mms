@@ -68,6 +68,17 @@ export function overlayLayerCount(): number {
 export function isAnotherLayerFocused(container: HTMLElement | null): boolean {
   if (typeof document === "undefined") return false;
   const active = document.activeElement;
-  if (!container || !active || active === document.body) return false;
-  return !container.contains(active);
+  if (!container || !active || active === document.body || active === document.documentElement) {
+    return false;
+  }
+  if (container.contains(active)) return false;
+  // A portalled overlay (mounted outside #root) still owns Escape if focus
+  // fell back into the inert app root behind it (e.g. after a prior popover's
+  // focus restoration or print-media hiding the focused close button). Only
+  // sibling portalled layers (Radix AlertDialog/Popover/Menu/Select) outside
+  // #root supersede it.
+  if (container.closest("#root") === null && active.closest("#root") !== null) {
+    return false;
+  }
+  return true;
 }
