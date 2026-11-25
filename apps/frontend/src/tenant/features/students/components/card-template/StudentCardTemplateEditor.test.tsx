@@ -125,4 +125,26 @@ describe("StudentCardTemplateEditor", () => {
     });
     container.remove();
   });
+
+  it("safely handles undefined sessionNames and renders sample data without crashing", () => {
+    const html = renderToStaticMarkup(
+      withQueryClient(
+        <StudentCardTemplateEditor
+          onClose={vi.fn()}
+          sampleStudent={{
+            id: "std-test-1",
+            contactId: "cnt-1",
+            name: "Test Student",
+            status: "active",
+            createdAt: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+          }}
+          sessionNames={undefined}
+        />,
+      ),
+    );
+
+    expect(html).toContain("students.cardTemplate.title");
+    expect(html).toContain("students.cardTemplate.side.front");
+  });
 });

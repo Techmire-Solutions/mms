@@ -5,6 +5,7 @@
  */
 
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
+import { cn } from "@mms/ui";
 import {
   TemplateEditorKeyboardHints,
   TemplateEditorPaneSwitcher,
@@ -46,6 +47,7 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
   canSave: canSaveProp,
   topBanner,
   branding: brandingProp,
+  className: classNameProp,
 }: TemplateEditorProps<TPayload>): React.JSX.Element {
   const [pane, setPane] = useState<EditorPane>("canvas");
   const branding = brandingProp ?? DEFAULT_FALLBACK_BRANDING;
@@ -151,11 +153,12 @@ export function TemplateEditor<TPayload = Record<string, unknown>>({
       aria-labelledby={titleId}
       data-template-editor-root={editorId}
       data-print-unclamp
-      className={
+      className={cn(
         isFullscreen
           ? "fixed inset-0 z-modal flex flex-col bg-background outline-hidden print:static print:bg-white print:overflow-visible print:border-none print:p-0 print:m-0"
-          : "flex flex-col bg-background rounded-xl border border-border overflow-hidden h-[calc(100dvh-14rem)] min-h-144 max-h-216 outline-hidden print:static print:bg-white print:h-auto print:max-h-none print:overflow-visible print:border-none print:p-0 print:m-0"
-      }
+          : "flex flex-col bg-background rounded-xl border border-border overflow-hidden h-[calc(100dvh-14rem)] min-h-144 max-h-216 outline-hidden print:static print:bg-white print:h-auto print:max-h-none print:overflow-visible print:border-none print:p-0 print:m-0",
+        classNameProp,
+      )}
     >
       <TemplateEditorPrintRules
         width={editor.size.width}
