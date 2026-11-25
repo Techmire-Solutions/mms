@@ -1,3 +1,4 @@
+import "./config/preloadEnv.js";
 import process from "node:process";
 import { resolveBackendListenPort } from "@mms/contracts";
 import { buildApp } from "./app.js";

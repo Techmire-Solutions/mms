@@ -1,10 +1,9 @@
-import { loadBackendEnv } from "../config/loadEnv.js";
+import "../config/preloadEnv.js";
 import { closeDatabase } from "@mms/db/client";
 import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
 import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 import { disconnectRedis } from "../lib/redis.js";
 
-loadBackendEnv();
 configureModuleAdapters();
 
 async function runMigrations() {

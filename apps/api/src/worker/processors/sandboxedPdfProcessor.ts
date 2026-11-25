@@ -1,3 +1,4 @@
+import "../../config/preloadEnv.js";
 import type { SandboxedJob } from "bullmq";
 import type { EnqueuedJobData } from "../queues/index.js";
 import { initializeDatabaseConnection } from "@mms/db/client";
