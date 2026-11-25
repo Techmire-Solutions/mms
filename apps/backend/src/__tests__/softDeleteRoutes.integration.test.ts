@@ -331,7 +331,10 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
 
   it("Assertion 3: DELETE /api/contacts/:id on an already-deleted contact returns 404 Not Found", async () => {
     // When softDeleteContactById returns false (record does not exist or already soft-deleted)
-    vi.mocked(repo.bulkSoftDelete).mockResolvedValue({ succeeded: 0, failed: 1 });
+    vi.mocked(repo.bulkSoftDelete as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      succeeded: 0,
+      failed: 1,
+    });
 
     const token = adminToken(app, { workspaceSubdomain: "demo" });
     const response = await app.inject({
@@ -466,7 +469,10 @@ describe("Soft Delete Route Semantics & Session Invalidation Integration", () =>
 
   it("Assertion 5: Manifest compliance — forwards deletionReason for modules that capture it", async () => {
     mockDeleteExamById.mockResolvedValue(true);
-    vi.mocked(repo.bulkSoftDelete).mockResolvedValue({ succeeded: 1, failed: 0 });
+    vi.mocked(repo.bulkSoftDelete as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+      succeeded: 1,
+      failed: 0,
+    });
 
     const token = adminToken(app, { workspaceSubdomain: "demo" });
 
