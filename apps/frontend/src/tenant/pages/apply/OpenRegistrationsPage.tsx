@@ -1,10 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, ClipboardList, Users } from "lucide-react";
-import { formatDate } from "@mms/shared";
+import { ClipboardList } from "lucide-react";
 import { AuthPageFrame } from "@/components/entry";
-import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/app/EmptyState";
 import { ErrorState } from "@/components/app/ErrorState";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
@@ -12,90 +10,64 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useTenant } from "@/lib/contexts/TenantContext";
 import { ROUTES } from "@/lib/config/routes";
 import { openRegistrationsQueryOptions } from "@/lib/query/registrationQueries";
+import { AdmissionsBrandHeader } from "./AdmissionsBrandHeader";
+import { AdmissionsCard } from "./AdmissionsCard";
 
 /** Public "open sessions" board at `/apply` (no sign-in). */
 export default function OpenRegistrationsPage(): React.JSX.Element {
   const { t } = useTranslation();
-  const { workspace } = useTenant();
+  const { workspace, publicBranding } = useTenant();
   const query = useQuery(openRegistrationsQueryOptions());
 
   if (query.isPending) return <RouteStatusFallback fullScreen />;
 
+  const items = query.data ?? [];
+  const effectiveMadrasaName =
+    items[0]?.madrasaName || workspace?.madrasaName || publicBranding?.madrasaName || "";
+  const effectiveLogoUrl = items[0]?.logoUrl ?? publicBranding?.logoUrl ?? null;
+
+  const gridClass =
+    items.length === 1
+      ? "grid grid-cols-1 max-w-md mx-auto"
+      : items.length === 2
+        ? "grid grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto gap-6"
+        : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+
   return (
     <AuthPageFrame>
-      <div className="relative z-elevated w-full max-w-3xl space-y-4">
-        <header className="space-y-1 text-center">
-          <p className="text-sm text-muted-foreground">{workspace?.madrasaName}</p>
-          <h1 className="text-balance text-2xl font-semibold">{t("apply.openTitle")}</h1>
-        </header>
+      <div className="relative z-elevated w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-10">
+        <AdmissionsBrandHeader
+          logoUrl={effectiveLogoUrl}
+          institutionName={effectiveMadrasaName}
+          heroTitle={t("apply.openTitle")}
+          heroSubtitle={t("apply.openHeroSubtitle")}
+        />
+
         {query.isError ? (
-          <ErrorState title={t("apply.loadFailed")} onRetry={() => void query.refetch()} />
-        ) : query.data.length === 0 ? (
-          <EmptyState
-            icon={ClipboardList}
-            title={t("apply.noneOpen")}
-            description={t("apply.noneOpenDesc")}
-            action={
-              <Link
-                to={ROUTES.login}
-                className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              >
-                {t("apply.signIn")}
-              </Link>
-            }
-          />
+          <div className="max-w-md mx-auto">
+            <ErrorState title={t("apply.loadFailed")} onRetry={() => void query.refetch()} />
+          </div>
+        ) : items.length === 0 ? (
+          <div className="max-w-md mx-auto">
+            <EmptyState
+              icon={ClipboardList}
+              title={t("apply.noneOpen")}
+              description={t("apply.noneOpenDesc")}
+              action={
+                <Link
+                  to={ROUTES.login}
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-5 text-sm font-semibold text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {t("apply.signIn")}
+                </Link>
+              }
+            />
+          </div>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {query.data.map((item) => (
-              <li key={item.slug}>
-                <Card className="flex h-full flex-col gap-3 p-4">
-                  <div>
-                    <h2 className="text-balance text-base font-semibold">{item.title}</h2>
-                    <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <CalendarDays className="size-3.5" aria-hidden />
-                      {[
-                        item.startDate && formatDate(item.startDate),
-                        item.endDate && formatDate(item.endDate),
-                      ]
-                        .filter(Boolean)
-                        .join(" – ")}
-                    </p>
-                  </div>
-                  <ul className="space-y-1 text-sm">
-                    {item.classes.map((cls) => (
-                      <li
-                        key={cls.id}
-                        className="flex flex-wrap items-center justify-between gap-2"
-                      >
-                        <span>
-                          {cls.name}
-                          {cls.minAge || cls.maxAge
-                            ? ` · ${t("apply.ages", { min: cls.minAge || 0, max: cls.maxAge || "+" })}`
-                            : ""}
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Users className="size-3.5" aria-hidden />
-                          {cls.seatsLeft === null
-                            ? t("apply.seatsOpen")
-                            : cls.seatsLeft > 0
-                              ? t("apply.seatsLeft", { count: cls.seatsLeft })
-                              : t("apply.waitlistOnly")}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  {item.closesAt ? (
-                    <p className="text-xs text-muted-foreground">
-                      {t("apply.closesOn", { date: formatDate(item.closesAt) })}
-                    </p>
-                  ) : null}
-                  <Link
-                    to={`${ROUTES.apply}/${item.slug}`}
-                    className="mt-auto inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {t("apply.applyNow")}
-                  </Link>
-                </Card>
+          <ul className={gridClass}>
+            {items.map((item) => (
+              <li key={item.slug} className="h-full">
+                <AdmissionsCard item={item} />
               </li>
             ))}
           </ul>

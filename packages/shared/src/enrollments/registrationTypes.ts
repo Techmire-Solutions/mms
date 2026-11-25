@@ -84,6 +84,7 @@ export const publicRegistrationViewSchema = z
     slug: z.string(),
     title: z.string(),
     madrasaName: z.string(),
+    logoUrl: z.string().nullable().optional(),
     sessionName: z.string(),
     startDate: z.string(),
     endDate: z.string(),
