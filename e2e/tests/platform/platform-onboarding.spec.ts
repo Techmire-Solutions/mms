@@ -163,7 +163,9 @@ test.describe.serial(
       await renameBtn.click();
       await page.fill('input[name="madrasaName"]', renamedMadrasa);
       await page.keyboard.press("Enter");
-      await expect(page.getByText(renamedMadrasa).first()).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByRole("heading", { name: renamedMadrasa })).toBeVisible({
+        timeout: 20_000,
+      });
       assertWorkspaceMadrasaName(subdomain, renamedMadrasa);
 
       // 5. Navigate to tenant login page & login with the temporary password

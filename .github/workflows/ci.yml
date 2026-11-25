@@ -1022,6 +1022,9 @@ jobs:
           - project: chromium
             shardIndex: 1
             shardTotal: 1
+          - project: platform
+            shardIndex: 1
+            shardTotal: 1
           - project: a11y
             shardIndex: 1
             shardTotal: 4

@@ -44,6 +44,9 @@ jobs:
           - project: chromium
             shardIndex: 4
             shardTotal: 4
+          - project: platform
+            shardIndex: 1
+            shardTotal: 1
           - project: a11y
             shardIndex: 1
             shardTotal: 2
@@ -177,7 +180,7 @@ jobs:
           {
             echo "## Nightly E2E Test Run Summary"
             echo ""
-            echo "- **Matrix Shards:** 6 parallel jobs (4 chromium + 2 a11y)"
+            echo "- **Matrix Shards:** 7 parallel jobs (4 chromium + 1 platform + 2 a11y)"
             echo "- **Full Suite Flag:** \`E2E_FULL_SUITE=1\` (includes @local-only and mutation/seed flows)"
             echo "- **HTML Report Artifact:** \`nightly-playwright-html-report\`"
             echo ""

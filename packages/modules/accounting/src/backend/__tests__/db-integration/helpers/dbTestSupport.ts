@@ -28,8 +28,10 @@ const backendRoot = resolve(
   "..",
   "..",
   "..",
+  "..",
+  "..",
   "apps",
-  "backend",
+  "api",
 );
 
 /** Populates DATABASE_URL from apps/api/.env when the environment has none. */

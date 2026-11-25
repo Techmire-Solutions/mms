@@ -21,7 +21,18 @@ const STUDENT_ID = "stu-cascade-1";
 const SESSION_ID = "ses-cascade-1";
 const CLASS_ID = "cls-cascade-1";
 const ENROLLMENT_ID = "enr-cascade-1";
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const backendRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "apps",
+  "api",
+);
 
 function applyDatabaseUrlFromEnvFile(): void {
   if (process.env.DATABASE_URL) return;

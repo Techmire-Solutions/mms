@@ -19,7 +19,18 @@ const RECENT_REGISTERED = "stu-new-registered";
 const RECENT_CREATED = "stu-new-created";
 const OLD_REGISTERED = "stu-old-registered";
 const RECENT_DELETED = "stu-new-deleted";
-const backendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const backendRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "apps",
+  "api",
+);
 
 function applyDatabaseUrlFromEnvFile(): void {
   if (process.env.DATABASE_URL) return;

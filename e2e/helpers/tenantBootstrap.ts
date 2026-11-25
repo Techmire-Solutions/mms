@@ -104,7 +104,11 @@ export async function bootstrapAuthenticatedTenant(
 
   ensureE2ePlatformAdmin(platformEmail, platformPassword);
 
-  await page.goto("/", { waitUntil: "domcontentloaded" }).catch(async () => {
+  const platformOrigin = (process.env.PLATFORM_BASE_URL || "http://localhost:5174").replace(
+    /\/$/,
+    "",
+  );
+  await page.goto(`${platformOrigin}/`, { waitUntil: "domcontentloaded" }).catch(async () => {
     // Cold dev-server navigation: one reload after the first transform wave.
     await page.reload({ waitUntil: "domcontentloaded" });
   });
@@ -113,8 +117,9 @@ export async function bootstrapAuthenticatedTenant(
   const setupEmailInput = page.locator("#platform-setup-email");
   const signInEmailInput = page.locator("#platform-email");
   const platformLanding = page
-    .getByRole("heading", { name: /Dashboard|Welcome back/i })
-    .or(page.locator('a[href="/onboarding"]'));
+    .getByRole("heading", { name: /Dashboard/i })
+    .or(page.locator('a[href="/onboarding"]'))
+    .or(page.locator('a[href="/platform/workspaces"]'));
 
   await setupEmailInput
     .or(signInEmailInput)
@@ -135,7 +140,12 @@ export async function bootstrapAuthenticatedTenant(
 
   await expect(platformLanding.first()).toBeVisible({ timeout: 20_000 });
 
-  await page.locator('a[href="/onboarding"]:visible').first().click();
+  const onboardingLink = page.locator('a[href="/onboarding"]:visible').first();
+  if (await onboardingLink.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await onboardingLink.click();
+  } else {
+    await page.goto(`${platformOrigin}/onboarding`, { waitUntil: "domcontentloaded" });
+  }
   await page.waitForURL("**/onboarding");
   await page.waitForSelector("#wizard-step-title");
 
