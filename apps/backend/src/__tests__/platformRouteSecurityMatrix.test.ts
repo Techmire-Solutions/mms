@@ -153,6 +153,8 @@ const SUPER_USER_ONLY = new Set([
   "POST /api/platform/workspaces/:subdomain/reset-admin-password",
   "POST /api/platform/workspaces/:subdomain/admin-users",
   "POST /api/platform/users",
+  "PATCH /api/platform/iam/users/:tenant/:userId/status",
+  "POST /api/platform/iam/impersonations",
   "DELETE /api/platform/users/:adminId",
   "PATCH /api/platform/users/:adminId/disabled",
   "PATCH /api/platform/users/:adminId/permissions",
