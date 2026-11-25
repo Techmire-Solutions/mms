@@ -81,25 +81,30 @@ const sqlFiles = fs
   .filter((name) => name.endsWith(".sql"))
   .sort();
 
-/** Files added relative to `baseRef`. */
+/**
+ * Files genuinely added relative to `baseRef`. Rename-aware: a migration tree
+ * that was moved (e.g. `apps/backend/src/db/migrations_drizzle` →
+ * `packages/db/migrations_drizzle`) is paired as `R100` and must not be read as
+ * 140 brand-new migrations — they are already-applied DDL and are immutable.
+ */
 function addedMigrationFiles() {
-  const out = execFileSync(
-    "git",
-    [
-      "diff",
-      "--name-only",
-      "--diff-filter=A",
-      `${baseRef}...HEAD`,
-      "--",
-      "packages/db/migrations_drizzle",
-    ],
-    { cwd: rootDir, encoding: "utf8" },
-  );
+  const out = execFileSync("git", ["diff", "--name-status", "-M", `${baseRef}...HEAD`], {
+    cwd: rootDir,
+    encoding: "utf8",
+  });
   return out
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line.endsWith(".sql"))
-    .map((line) => path.basename(line));
+    .filter(Boolean)
+    .map((line) => line.split("\t"))
+    .filter(
+      ([status, target]) =>
+        status === "A" &&
+        Boolean(target) &&
+        target.startsWith("packages/db/migrations_drizzle/") &&
+        target.endsWith(".sql"),
+    )
+    .map(([, target]) => path.basename(target));
 }
 
 // --- 1. lock_timeout on NEW locking DDL ------------------------------------
